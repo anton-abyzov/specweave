@@ -12,6 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 describe('TDD Enforcement Guard', () => {
   let tempDir: string;
@@ -73,7 +75,7 @@ describe('TDD Enforcement Guard', () => {
       const output = execSync(`bash "${hookPath}" "${tempDir}" "${tasksPath}" "Edit"`, {
         encoding: 'utf-8',
         cwd: tempDir,
-        env: { ...process.env, PATH: process.env.PATH },
+        env: getCleanEnv(),
       });
       return { exitCode: 0, output };
     } catch (error: unknown) {

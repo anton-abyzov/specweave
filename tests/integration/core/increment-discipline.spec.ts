@@ -11,6 +11,8 @@ import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../../src/utils/clean-env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -132,7 +134,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       const output = execSync(`cat ${tempInput} | bash ${hookPath}`, {
         cwd: testDir,
         encoding: 'utf-8',
-        env: { ...process.env, PATH: process.env.PATH },
+        env: getCleanEnv(),
       });
 
       // Clean up temp file

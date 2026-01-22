@@ -316,14 +316,18 @@ specweave migrate-lazy      # Convert to lazy mode (with backup)
 specweave migrate-lazy --rollback  # Restore if needed
 ```
 
-**Manual plugin control:**
+**Manual plugin control (Claude's native commands - RECOMMENDED):**
 
 ```bash
-specweave load-plugins core      # Load core plugins
-specweave load-plugins github    # Load GitHub integration
-specweave load-plugins all       # Load all plugins
-specweave unload-plugins         # Unload all except router
-specweave plugin-status          # Check loaded vs cached
+# Install plugins using SHORT names from marketplace.json
+claude plugin install sw@specweave           # Core framework
+claude plugin install sw-frontend@specweave  # Frontend development
+claude plugin install sw-github@specweave    # GitHub integration
+
+# List/manage installed plugins
+claude plugin list                           # Show all installed
+claude plugin enable sw-frontend@specweave   # Enable plugin
+claude plugin disable sw-frontend@specweave  # Disable plugin
 ```
 
 **Full install mode** (skip lazy loading):

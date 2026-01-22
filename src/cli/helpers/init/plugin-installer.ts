@@ -652,10 +652,10 @@ async function installLazyMode(
   console.log(chalk.gray('   • "React", "frontend" → loads specweave-frontend'));
   console.log(chalk.gray('   • ...and more'));
   console.log('');
-  console.log(chalk.cyan('Manual loading:'));
-  console.log(chalk.gray('   specweave load-plugins github    # Load GitHub plugin'));
-  console.log(chalk.gray('   specweave load-plugins all       # Load all plugins'));
-  console.log(chalk.gray('   specweave plugin-status          # Check loaded plugins'));
+  console.log(chalk.cyan('Manual installation (Claude CLI):'));
+  console.log(chalk.gray('   claude plugin install sw@specweave         # Core framework'));
+  console.log(chalk.gray('   claude plugin install sw-github@specweave  # GitHub integration'));
+  console.log(chalk.gray('   claude plugin list                         # Check installed'));
   console.log('');
 
   return {

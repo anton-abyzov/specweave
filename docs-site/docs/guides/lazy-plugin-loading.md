@@ -141,30 +141,39 @@ specweave migrate-lazy --rollback
 
 ### Manual Control
 
-Power users can manually manage plugin loading:
+Power users can manually manage plugin loading using Claude's native plugin commands:
 
 ```bash
-# Load specific plugin group
-specweave load-plugins core
-specweave load-plugins github
-specweave load-plugins jira
+# Install plugins using SHORT names (RECOMMENDED)
+claude plugin install sw@specweave           # Core framework
+claude plugin install sw-frontend@specweave  # Frontend development
+claude plugin install sw-github@specweave    # GitHub integration
+claude plugin install sw-jira@specweave      # JIRA integration
 
-# Unload all plugins (back to router only)
-specweave unload-plugins
+# Manage installed plugins
+claude plugin list                           # Show all installed
+claude plugin enable sw-frontend@specweave   # Enable plugin
+claude plugin disable sw-frontend@specweave  # Disable plugin
+claude plugin uninstall sw-testing@specweave # Remove plugin
 
-# Check what's loaded
-specweave plugin-status
+# Update marketplace cache (if install fails)
+claude plugin marketplace update specweave
 ```
 
-**Available plugin groups:**
-- `core` - Core SpecWeave functionality
-- `github` - GitHub integration
-- `jira` - JIRA integration
-- `ado` - Azure DevOps integration
-- `frontend` - Frontend development
-- `backend` - Backend development
-- `infra` - Infrastructure/DevOps
-- `ml` - Machine learning
+**Available plugins:**
+
+| Short Name | Install Command | Description |
+|------------|-----------------|-------------|
+| `sw` | `claude plugin install sw@specweave` | Core SpecWeave functionality |
+| `sw-router` | `claude plugin install sw-router@specweave` | Agent routing |
+| `sw-github` | `claude plugin install sw-github@specweave` | GitHub integration |
+| `sw-jira` | `claude plugin install sw-jira@specweave` | JIRA integration |
+| `sw-ado` | `claude plugin install sw-ado@specweave` | Azure DevOps integration |
+| `sw-frontend` | `claude plugin install sw-frontend@specweave` | Frontend development |
+| `sw-backend` | `claude plugin install sw-backend@specweave` | Backend development |
+| `sw-infra` | `claude plugin install sw-infra@specweave` | Infrastructure/DevOps |
+| `sw-ml` | `claude plugin install sw-ml@specweave` | Machine learning |
+| `sw-testing` | `claude plugin install sw-testing@specweave` | Testing/QA |
 
 ## Context Forking for Heavy Skills
 
@@ -223,7 +232,7 @@ If hot-reload fails:
 2. "Restart Claude Code" option offered
 3. Failure logged to `~/.specweave/logs/lazy-loading.log`
 4. Retry mechanism attempts up to 3 times
-5. Fallback: `specweave load-plugins --force`
+5. Fallback: `claude plugin install sw@specweave`
 
 ## Cross-Platform Support
 

@@ -10,6 +10,7 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 test.describe('GitHub Sync - Idempotency', () => {
   let tmpDir: string;
@@ -29,8 +30,8 @@ test.describe('GitHub Sync - Idempotency', () => {
     process.chdir(tmpDir);
 
     // Setup git repo
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/idempotency-test.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/idempotency-test.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'idempotency-test/FS-900');
@@ -93,8 +94,8 @@ Users often re-sync to update content after making changes.
   test('should preserve AC checkbox states when syncing multiple times', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/checkbox-test.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/checkbox-test.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'checkbox-test/FS-901');
@@ -162,8 +163,8 @@ created: 2025-11-15
   test('should handle content changes between syncs', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/content-change.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/content-change.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'content-change/FS-902');
@@ -240,8 +241,8 @@ Added new business context.
   test('should handle Related Stories changes between syncs', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/related-changes.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/related-changes.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'related-changes/FS-903');
@@ -318,8 +319,8 @@ created: 2025-11-15
   test('should consistently format links across multiple syncs', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/link-format.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/link-format.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'link-format/FS-904');

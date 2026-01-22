@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
@@ -35,7 +36,7 @@ test.describe('Spec Synchronization E2E Flow', () => {
 
     // Initialize SpecWeave in test directory
     process.chdir(TEST_PROJECT_DIR);
-    execSync('npx specweave init --yes', { stdio: 'inherit' });
+    execSync('npx specweave init --yes', { stdio: 'inherit', env: getCleanEnv() });
   });
 
   test.afterAll(() => {

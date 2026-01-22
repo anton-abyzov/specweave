@@ -18,6 +18,8 @@ import { spawn } from 'child_process';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 describe('stop-auto.sh hook', () => {
   let tempDir: string;
@@ -191,7 +193,7 @@ describe('stop-auto.sh hook', () => {
         (resolve, reject) => {
           const proc = spawn('bash', [hookPath], {
             cwd: tempDir,
-            env: { ...process.env, PROJECT_ROOT: tempDir },
+            env: { ...getCleanEnv(), PROJECT_ROOT: tempDir },
           });
 
           let stdout = '';
@@ -243,7 +245,7 @@ describe('stop-auto.sh hook', () => {
         (resolve, reject) => {
           const proc = spawn('bash', [hookPath], {
             cwd: tempDir,
-            env: { ...process.env, PROJECT_ROOT: tempDir },
+            env: { ...getCleanEnv(), PROJECT_ROOT: tempDir },
           });
 
           let stdout = '';

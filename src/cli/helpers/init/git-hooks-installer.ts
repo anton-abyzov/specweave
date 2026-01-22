@@ -10,11 +10,9 @@
  */
 
 import * as fs from '../../../utils/fs-native.js';
+import { chmodSync } from '../../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
-import { getDirname } from '../../../utils/esm-helpers.js';
-
-const __dirname = getDirname(import.meta.url);
 
 /**
  * Install git pre-commit hook in user project
@@ -66,8 +64,7 @@ export function installGitHooks(projectPath: string, templatesDir: string): bool
     fs.copyFileSync(templatePath, targetPath);
 
     // Make executable
-    const nodeFs = require('fs');
-    nodeFs.chmodSync(targetPath, '755');
+    chmodSync(targetPath, 0o755);
 
     console.log(chalk.green('   ✓ Git hooks installed'));
     console.log(chalk.gray('     Pre-commit checks:'));

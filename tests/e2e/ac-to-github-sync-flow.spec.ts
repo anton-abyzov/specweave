@@ -22,6 +22,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import * as os from 'os';
 import { execSync, spawn } from 'child_process';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debugger flags from breaking child processes
+import { getCleanEnv } from '../test-utils/clean-env.js';
 
 // ✅ SAFE: Isolated test directory with unique ID
 const TEST_ROOT = path.join(
@@ -32,7 +34,8 @@ const TEST_ROOT = path.join(
 // Check if GitHub CLI is available and authenticated
 const isGitHubAvailable = (): boolean => {
   try {
-    execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe' });
+    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
+    execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe', env: getCleanEnv() });
     return true;
   } catch {
     return false;
@@ -42,8 +45,10 @@ const isGitHubAvailable = (): boolean => {
 // Get current repo info
 const getRepoInfo = (): { owner: string; repo: string } | null => {
   try {
+    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
     const remoteUrl = execSync('git remote get-url origin', {
-      encoding: 'utf-8'
+      encoding: 'utf-8',
+      env: getCleanEnv()
     }).trim();
     const match = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/.]+)/);
     if (match) {
@@ -79,10 +84,12 @@ describe('E2E: AC to GitHub Sync Flow', () => {
     if (skipIfNoGitHub) return;
 
     // Clean up GitHub issues
+    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
     if (createdIssueNumber) {
       try {
         execSync(`gh issue delete ${createdIssueNumber} --yes`, {
-          stdio: 'pipe'
+          stdio: 'pipe',
+          env: getCleanEnv()
         });
       } catch {
         // Issue may already be deleted
@@ -94,12 +101,12 @@ describe('E2E: AC to GitHub Sync Flow', () => {
     try {
       const issues = execSync(
         `gh issue list --search "${FEATURE_ID}" --state all --json number --limit 5`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const issueNumbers = JSON.parse(issues).map((i: any) => i.number);
       for (const num of issueNumbers) {
         try {
-          execSync(`gh issue delete ${num} --yes`, { stdio: 'pipe' });
+          execSync(`gh issue delete ${num} --yes`, { stdio: 'pipe', env: getCleanEnv() });
         } catch {
           // Ignore
         }
@@ -193,9 +200,10 @@ created: 2025-12-31
 **Feature**: ${FEATURE_ID}
 **User Story**: US-001`;
 
+      // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
       const createResult = execSync(
         `gh issue create --title "[${FEATURE_ID}][US-001] Test AC Sync Flow" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -260,9 +268,10 @@ external:
       );
 
       // 7. Verify initial state - checkboxes should be unchecked
+      // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
       let issueData = execSync(
         `gh issue view ${createdIssueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       let { body } = JSON.parse(issueData);
       expect(body).toMatch(/- \[ \] \*\*AC-US1-01\*\*/);
@@ -336,7 +345,7 @@ external:
 
       issueData = execSync(
         `gh issue view ${createdIssueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       body = JSON.parse(issueData).body;
 
@@ -369,9 +378,10 @@ external:
 ---
 **Feature**: ${FEATURE_ID}`;
 
+      // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
       const createResult = execSync(
         `gh issue create --title "[${FEATURE_ID}][US-001] Race Condition Test" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -384,7 +394,7 @@ external:
 
       const token =
         process.env.GITHUB_TOKEN ||
-        execSync('gh auth token', { encoding: 'utf-8' }).trim();
+        execSync('gh auth token', { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       // Simulate simultaneous updates (race condition scenario)
       const acStatus1 = new Map<string, boolean>([
@@ -424,7 +434,7 @@ external:
       // Final state should have both AC-US1-01 and AC-US1-02 checked
       const issueData = execSync(
         `gh issue view ${createdIssueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const { body } = JSON.parse(issueData);
 

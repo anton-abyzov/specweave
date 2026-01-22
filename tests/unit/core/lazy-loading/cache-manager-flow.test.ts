@@ -160,7 +160,12 @@ describe('Cache Manager Flow Tests', () => {
     });
   });
 
-  describe('Existing Install → Migrate → Verify Flow', () => {
+  // NOTE: These migration tests are SKIPPED because the architecture changed.
+  // Strategy 3 (skills dir copy to ~/.claude/skills/) was REMOVED.
+  // Claude Code only uses installed_plugins.json registry now.
+  // Migration from "full install" to "lazy mode" is no longer relevant
+  // since we don't copy to skills dir anymore.
+  describe.skip('Existing Install → Migrate → Verify Flow (SKIPPED - architecture changed)', () => {
     it('should migrate from full install to lazy mode', async () => {
       // Step 1: Simulate existing full installation
       const existingPlugins = [
@@ -278,7 +283,11 @@ describe('Cache Manager Flow Tests', () => {
     });
   });
 
-  describe('Migrate → Rollback → Verify Flow', () => {
+  // NOTE: These migration/rollback tests are SKIPPED because the architecture changed.
+  // Strategy 3 (skills dir copy to ~/.claude/skills/) was REMOVED.
+  // Plugin installation now uses: Strategy 1 (CLI) or Strategy 2 (registry fallback).
+  // The rollback scenarios that depend on skills dir copying are no longer relevant.
+  describe.skip('Migrate → Rollback → Verify Flow (SKIPPED - architecture changed)', () => {
     it('should rollback migration successfully', async () => {
       // Step 1: Setup full installation
       const existingPlugins = ['specweave', 'specweave-github', 'specweave-jira'];

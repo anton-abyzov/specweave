@@ -14,7 +14,7 @@
  * - Faster startup (native APIs)
  * - Better debugging (native stack traces)
  */
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync, chmodSync } from 'fs';
 /**
  * Ensures that a directory exists. If the directory does not exist, it is created.
  * @param dirPath - The directory path to ensure
@@ -165,7 +165,7 @@ export declare function ensureSpecWeaveDirAsync(dirPath: string, projectRoot?: s
 export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, lstat: typeof fsPromises.lstat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile, mkdtemp: typeof fsPromises.mkdtemp, mkdir: typeof fsPromises.mkdir, symlink: typeof fsPromises.symlink, readlink: typeof fsPromises.readlink;
 export declare const renameSync: typeof fsRenameSync;
 export declare const mkdtempSync: typeof fsMkdtempSync;
-export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
+export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, chmodSync, };
 declare const _default: {
     ensureDir: typeof ensureDir;
     pathExists: typeof pathExists;
@@ -209,6 +209,7 @@ declare const _default: {
     copyFileSync: typeof copyFileSync;
     renameSync: typeof fsRenameSync;
     mkdtempSync: typeof fsMkdtempSync;
+    chmodSync: typeof chmodSync;
     isSpecWeaveInitialized: typeof isSpecWeaveInitialized;
     findSpecWeaveRoot: typeof findSpecWeaveRoot;
     ensureSpecWeaveDir: typeof ensureSpecWeaveDir;

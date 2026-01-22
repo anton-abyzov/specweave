@@ -337,7 +337,9 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 | Router not spawning agents | Restart Claude Code; check `/plugin` shows `sw-router` |
-| Need all plugins loaded | `specweave load-plugins all` (~60K tokens) |
+| Need all plugins loaded | Install via `/plugin` UI or `claude plugin install sw-*@specweave` |
+| Plugin install fails "Source path does not exist" | Run: `cd ~/.claude/plugins/marketplaces/specweave && git checkout HEAD -- plugins` |
+| Marketplace shows 0 installed | Normal if using auto-load; check `/plugin list` for actual status |
 <!-- /SECTION -->
 
 <!-- SECTION:lazyloading -->
@@ -371,14 +373,27 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | test, tdd, playwright, vitest | `sw-testing` |
 | ml, pytorch, tensorflow, training | `sw-ml` |
 
-### Manual Fallback (Rarely Needed)
+### Manual Plugin Installation
 
-If auto-loading misses something, install manually:
+If auto-loading misses something, use Claude's native plugin commands:
 ```bash
-specweave load-plugins github    # Load specific plugin
-specweave load-plugins all       # Load all 24 plugins (~60K tokens)
-specweave plugin-status          # Check what's loaded
+# Install plugins (uses short names from marketplace.json)
+claude plugin install sw@specweave           # Core framework
+claude plugin install sw-frontend@specweave  # Frontend development
+claude plugin install sw-github@specweave    # GitHub integration
+
+# Enable/disable installed plugins
+claude plugin enable sw-frontend@specweave
+claude plugin disable sw-frontend@specweave
+
+# List installed plugins
+claude plugin list
+
+# Update marketplace cache (if plugins folder missing)
+claude plugin marketplace update specweave
 ```
+
+**Plugin names** use SHORT format: `sw`, `sw-frontend`, `sw-github` (NOT `specweave-frontend`)
 
 ### Disable Auto-Loading
 

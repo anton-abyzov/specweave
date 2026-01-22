@@ -4,9 +4,11 @@
  * Creates mock Claude Code sessions for testing process lifecycle
  */
 
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import * as path from 'path';
 import { sleep, isProcessRunning, waitForSessionInRegistry } from './test-utils.js';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debugger flags from breaking child processes
+import { getCleanEnv } from '../test-utils/clean-env.js';
 
 export interface MockSessionOptions {
   projectRoot?: string;
@@ -181,10 +183,11 @@ export async function createMockSession(
     session.heartbeatProcess = heartbeatProcess;
 
     // Add heartbeat PID to session
+    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
     if (heartbeatProcess.pid) {
       execSync(
         `node dist/src/cli/add-child-pid.js "${sessionId}" ${heartbeatProcess.pid}`,
-        { cwd: projectRoot, stdio: 'pipe' }
+        { cwd: projectRoot, stdio: 'pipe', env: getCleanEnv() }
       );
     }
 
@@ -202,11 +205,11 @@ export async function cleanupMockSession(session: MockSession): Promise<void> {
   await session.terminate();
 
   // Remove session from registry
-  const { execSync } = require('child_process');
+  // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debugger flags from breaking child process
   try {
     execSync(
       `node dist/src/cli/remove-session.js "${session.sessionId}"`,
-      { cwd: session['projectRoot'], stdio: 'pipe' }
+      { cwd: session['projectRoot'], stdio: 'pipe', env: getCleanEnv() }
     );
   } catch (err) {
     // Session may already be removed

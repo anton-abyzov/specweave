@@ -18,6 +18,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
 import { ACStatusManager } from '../../../../src/core/increment/ac-status-manager.js';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 describe('AC Status Hook Integration', () => {
   let testDir: string;
@@ -405,7 +406,8 @@ increment: 0001-test-increment
         // Execute hook from project root
         const output = execSync(`node ${hookPath} 0001-test-increment`, {
           encoding: 'utf-8',
-          stdio: 'pipe'
+          stdio: 'pipe',
+          env: getCleanEnv(),
         });
 
         // Should NOT contain module resolution errors
@@ -434,7 +436,8 @@ increment: 0001-test-increment
         // Execute hook
         const output = execSync(`node ${hookPath} 0001-test-increment`, {
           encoding: 'utf-8',
-          stdio: 'pipe'
+          stdio: 'pipe',
+          env: getCleanEnv(),
         });
 
         // Verify AC was updated
@@ -460,9 +463,10 @@ increment: 0001-test-increment
 
       try {
         // Execute with skip flag
-        const output = execSync(`SKIP_AC_SYNC=true node ${hookPath} 0001-test-increment`, {
+        const output = execSync(`node ${hookPath} 0001-test-increment`, {
           encoding: 'utf-8',
-          stdio: 'pipe'
+          stdio: 'pipe',
+          env: { ...getCleanEnv(), SKIP_AC_SYNC: 'true' },
         });
 
         // Should indicate skip

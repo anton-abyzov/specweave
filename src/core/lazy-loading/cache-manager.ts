@@ -217,12 +217,12 @@ export class PluginCacheManager {
    * Populates the cache with plugins from marketplace
    *
    * @deprecated SIMPLIFIED (v1.0.122+): This method is now a no-op.
-   * Plugins are loaded directly from marketplace to skills directory,
+   * Plugins are loaded directly from marketplace to Claude's registry,
    * eliminating the need for an intermediate cache at ~/.specweave/skills-cache/.
    *
    * The marketplace at ~/.claude/plugins/marketplaces/specweave/plugins/ IS the cache.
    * When you run `specweave refresh-marketplace`, it updates from GitHub.
-   * When you run `specweave load-plugins`, it copies directly from marketplace.
+   * Use `claude plugin install sw@specweave` to install plugins.
    *
    * This method remains for backward compatibility but does nothing except
    * return success with the count of available plugins.
@@ -347,7 +347,6 @@ export class PluginCacheManager {
 
       for (const pluginName of pluginsToInstall) {
         const sourcePath = path.join(this.marketplacePath, pluginName);
-        const destPath = path.join(this.activePath, pluginName);
 
         // Check if source exists in marketplace
         if (!fs.existsSync(sourcePath)) {
@@ -355,20 +354,24 @@ export class PluginCacheManager {
           continue;
         }
 
-        // Check if already registered in Claude's registry AND loaded in skills dir
+        // Check if already registered in Claude's installed_plugins.json
+        // NOTE: We no longer check skills dir since Strategy 3 (skills dir copy) was removed.
+        // Claude Code only uses installed_plugins.json and plugins/cache/ for plugin management.
         const alreadyRegistered = this.isPluginRegistered(pluginName);
-        const alreadyLoaded = fs.existsSync(destPath);
 
-        // Skip only if BOTH registered AND loaded (unless force)
-        // This allows re-installing after unload (registered but not loaded)
-        if (!force && alreadyRegistered && alreadyLoaded) {
+        // Skip if already in registry (unless force)
+        if (!force && alreadyRegistered) {
           logger.debug(`Plugin already installed: ${pluginName}`);
           continue;
         }
 
         let installed = false;
 
-        // Strategy 1: Try Claude CLI installation (preferred)
+        // Strategy 1: Claude CLI installation (PREFERRED - only reliable method)
+        // Uses `claude plugin install` which:
+        // - Properly registers in Claude's internal structures
+        // - Triggers Claude Code's hot-reload mechanism
+        // - Works on all platforms (Windows needs shell:true, handled by execFileNoThrow)
         if (useCliInstall) {
           installed = await this.installPluginViaCli(pluginName);
           if (installed) {
@@ -376,22 +379,22 @@ export class PluginCacheManager {
           }
         }
 
-        // Strategy 2: Fallback to direct registry update
+        // Strategy 2: Fallback to direct registry update (for CI/CD only)
+        // NOTE: This writes to installed_plugins.json but does NOT trigger hot-reload.
+        // Claude Code must be restarted to pick up registry changes.
+        // Use only when CLI is unavailable (e.g., building containers, CI pipelines).
         if (!installed) {
           installed = await this.installPluginViaRegistry(pluginName, sourcePath);
           if (installed) {
-            logger.debug(`Plugin installed via registry: ${pluginName}`);
+            logger.debug(`Plugin installed via registry: ${pluginName} (requires Claude restart)`);
           }
         }
 
-        // Strategy 3: Also copy to skills directory (backward compatibility)
-        if (!fs.existsSync(destPath) || force) {
-          try {
-            await this.copyDirectory(sourcePath, destPath);
-          } catch (copyError) {
-            logger.warn(`Failed to copy plugin to skills dir: ${pluginName}`);
-          }
-        }
+        // NOTE: Strategy 3 (copy to ~/.claude/skills/) was REMOVED
+        // That directory is NOT used by Claude Code's plugin system.
+        // Claude Code only reads from:
+        // - ~/.claude/plugins/installed_plugins.json (registry)
+        // - ~/.claude/plugins/cache/ (plugin files)
 
         if (installed) {
           installedCount++;
@@ -737,14 +740,16 @@ export class PluginCacheManager {
   }
 
   /**
-   * Checks if a plugin is currently loaded (installed to active directory)
+   * Checks if a plugin is currently loaded (registered with Claude Code)
+   *
+   * NOTE: This now checks installed_plugins.json instead of the old skills dir.
+   * Strategy 3 (skills dir copy) was removed - Claude Code only uses the registry.
    *
    * @param pluginName - Plugin name to check
-   * @returns True if plugin is loaded
+   * @returns True if plugin is registered with Claude Code
    */
   isPluginLoaded(pluginName: string): boolean {
-    const pluginPath = path.join(this.activePath, pluginName);
-    return fs.existsSync(pluginPath);
+    return this.isPluginRegistered(pluginName);
   }
 
   /**
@@ -796,19 +801,28 @@ export class PluginCacheManager {
   }
 
   /**
-   * Gets list of loaded plugins
+   * Gets list of loaded plugins (registered with Claude Code)
    *
-   * @returns Array of plugin names currently loaded
+   * NOTE: This now reads from installed_plugins.json instead of the old skills dir.
+   * Strategy 3 (skills dir copy) was removed - Claude Code only uses the registry.
+   *
+   * @returns Array of plugin names currently registered
    */
   getLoadedPlugins(): string[] {
-    if (!fs.existsSync(this.activePath)) {
+    try {
+      if (!fs.existsSync(this.registryPath)) {
+        return [];
+      }
+
+      const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
+
+      // Extract plugin names from keys like "specweave@specweave" -> "specweave"
+      return Object.keys(registry.plugins)
+        .filter((key) => key.endsWith('@specweave') && registry.plugins[key]?.length > 0)
+        .map((key) => key.replace('@specweave', ''));
+    } catch {
       return [];
     }
-
-    return fs
-      .readdirSync(this.activePath, { withFileTypes: true })
-      .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
-      .map((e) => e.name);
   }
 
   /**
@@ -873,7 +887,10 @@ export class PluginCacheManager {
   /**
    * Unloads plugins from active directory
    *
-   * Removes plugins from ~/.claude/skills/ but preserves cache.
+   * Removes plugins from Claude Code's registry (installed_plugins.json).
+   *
+   * NOTE: This now removes from the registry instead of the old skills dir.
+   * Strategy 3 (skills dir copy) was removed - Claude Code only uses the registry.
    *
    * @param plugins - Plugins to unload (empty = all except router)
    * @returns Operation result
@@ -904,14 +921,26 @@ export class PluginCacheManager {
 
       let unloadedCount = 0;
 
-      for (const pluginName of pluginsToUnload) {
-        const pluginPath = path.join(this.activePath, pluginName);
+      // Remove from registry (installed_plugins.json)
+      if (fs.existsSync(this.registryPath)) {
         try {
-          await this.removeDirectory(pluginPath);
-          unloadedCount++;
-          logger.debug(`Unloaded plugin: ${pluginName}`);
+          const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
+
+          for (const pluginName of pluginsToUnload) {
+            const pluginKey = `${pluginName}@specweave`;
+            if (registry.plugins[pluginKey]) {
+              delete registry.plugins[pluginKey];
+              unloadedCount++;
+              logger.debug(`Unloaded plugin from registry: ${pluginName}`);
+            }
+          }
+
+          // Write registry atomically
+          const tempPath = `${this.registryPath}.tmp.${process.pid}`;
+          fs.writeFileSync(tempPath, JSON.stringify(registry, null, 2));
+          fs.renameSync(tempPath, this.registryPath);
         } catch (error) {
-          logger.warn(`Failed to unload ${pluginName}: ${error}`);
+          logger.warn(`Failed to update registry: ${error}`);
         }
       }
 

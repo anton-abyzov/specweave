@@ -14,6 +14,7 @@ import os from 'os';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { findProjectRoot } from '../../test-utils/project-root.js';
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,7 +57,8 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       const result = execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: Marker removed
@@ -82,7 +84,8 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: Marker added
@@ -122,7 +125,8 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
       execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: All tasks now consistent
@@ -170,14 +174,16 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
       execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Then run AC sync hook
       const acHookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-ac-status.js');
       execSync(`node ${acHookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: Task header updated AND AC checked
@@ -214,14 +220,16 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       const hookOutput = execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Then run AC sync hook
       const acHookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-ac-status.js');
       const acHookOutput = execSync(`node ${acHookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: Task header fixed (✅ COMPLETE removed)
@@ -271,7 +279,8 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
       execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv(),
       });
 
       // Verify: Progress updated to 2/3 (67%)
@@ -302,13 +311,13 @@ describe('Task Consistency Integration', () => {
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
 
       // Execute: Run hook 3 times
-      execSync(`node ${hookPath} 0001-test`, { cwd: testDir });
+      execSync(`node ${hookPath} 0001-test`, { cwd: testDir, env: getCleanEnv() });
       const firstRun = await fs.readFile(tasksPath, 'utf-8');
 
-      execSync(`node ${hookPath} 0001-test`, { cwd: testDir });
+      execSync(`node ${hookPath} 0001-test`, { cwd: testDir, env: getCleanEnv() });
       const secondRun = await fs.readFile(tasksPath, 'utf-8');
 
-      execSync(`node ${hookPath} 0001-test`, { cwd: testDir });
+      execSync(`node ${hookPath} 0001-test`, { cwd: testDir, env: getCleanEnv() });
       const thirdRun = await fs.readFile(tasksPath, 'utf-8');
 
       // Verify: All runs produce identical result
@@ -332,7 +341,7 @@ describe('Task Consistency Integration', () => {
 
       // Should not crash
       expect(() => {
-        execSync(`node ${hookPath} 0001-test`, { cwd: testDir });
+        execSync(`node ${hookPath} 0001-test`, { cwd: testDir, env: getCleanEnv() });
       }).not.toThrow();
 
       // Marker should be removed (no checkboxes to verify)
@@ -356,7 +365,7 @@ describe('Task Consistency Integration', () => {
       `.trim());
 
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
-      execSync(`node ${hookPath} 0001-test`, { cwd: testDir });
+      execSync(`node ${hookPath} 0001-test`, { cwd: testDir, env: getCleanEnv() });
 
       const updated = await fs.readFile(tasksPath, 'utf-8');
 

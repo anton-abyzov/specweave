@@ -5,6 +5,7 @@ import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -158,7 +159,7 @@ completed_tasks: 0
         .catch(err => { console.error(err); process.exit(1); });
     `;
 
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     // 3. Verify user story files exist (Greenfield: numeric folder naming FS-XXX)
     // Find the feature folder (should be FS-031 for increment 0031)
@@ -280,7 +281,7 @@ title: Backend Auth Tasks
         .catch(err => { console.error(err); process.exit(1); });
     `;
 
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     // Verify links point to correct project folder (backend, not default)
     // Find backend feature folder (should be FS-025 for increment 0025)
@@ -347,7 +348,7 @@ title: Tasks
         .catch(err => { console.error(err); process.exit(1); });
     `;
 
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     // Verify task appears in BOTH user stories (forward links)
     const specsDir2 = path.join(testDir, '.specweave/docs/internal/specs/default');
@@ -410,13 +411,13 @@ title: Tasks
     `;
 
     // Run sync FIRST time
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     const tasksAfterFirst = fs.readFileSync(path.join(incrementDir, 'tasks.md'), 'utf-8');
     const linkCountFirst = (tasksAfterFirst.match(/\*\*User Story\*\*:/g) || []).length;
 
     // Run sync SECOND time (should be idempotent)
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     const tasksAfterSecond = fs.readFileSync(path.join(incrementDir, 'tasks.md'), 'utf-8');
     const linkCountSecond = (tasksAfterSecond.match(/\*\*User Story\*\*:/g) || []).length;
@@ -465,7 +466,7 @@ title: Tasks
         .catch(err => { console.error(err); process.exit(1); });
     `;
 
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     const finalTasksContent = fs.readFileSync(path.join(incrementDir, 'tasks.md'), 'utf-8');
 
@@ -514,7 +515,7 @@ title: Tasks
         .catch(err => { console.error(err); process.exit(1); });
     `;
 
-    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
+    execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit', env: getCleanEnv() });
 
     // FEATURE.md is in cross-project _features/ folder (Universal Hierarchy)
     const specsBaseDir = path.join(testDir, '.specweave/docs/internal/specs');

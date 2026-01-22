@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { consoleLogger as logger } from '../../utils/logger.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
-import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
+import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
 
 /**
  * Available SpecWeave plugins for detection
@@ -285,6 +285,9 @@ function executeClaudeCli(
   // Use direct binary path if available (bypasses shell functions)
   if (cachedCliStatus.commandPath && !cachedCliStatus.shellWorkaround) {
     logger.debug(`[executeClaudeCli] Using direct binary: ${cachedCliStatus.commandPath}`);
+    // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+    // that would cause Claude CLI to fail silently in test/debug environments
+    const cleanEnv = getCleanEnv();
     return spawnSync(cachedCliStatus.commandPath, args, {
       encoding: 'utf8',
       timeout,
@@ -292,7 +295,7 @@ function executeClaudeCli(
       windowsHide: true,
       cwd: os.tmpdir(),
       env: {
-        ...process.env,
+        ...cleanEnv,
         LANG: 'en_US.UTF-8',
         LC_ALL: 'en_US.UTF-8',
       },
@@ -306,6 +309,8 @@ function executeClaudeCli(
   }
 
   // Windows: try with shell for PATH resolution
+  // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+  const cleanEnv = getCleanEnv();
   return spawnSync('claude', args, {
     encoding: 'utf8',
     timeout,
@@ -314,7 +319,7 @@ function executeClaudeCli(
     shell: true,
     cwd: os.tmpdir(),
     env: {
-      ...process.env,
+      ...cleanEnv,
       LANG: 'en_US.UTF-8',
       LC_ALL: 'en_US.UTF-8',
     },
@@ -342,6 +347,8 @@ function executeViaInteractiveShell(
   });
   const command = `claude ${escapedArgs.join(' ')}`;
 
+  // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+  const cleanEnv = getCleanEnv();
   const result = spawnSync(shell, ['-ic', command], {
     encoding: 'utf8',
     timeout,
@@ -349,7 +356,7 @@ function executeViaInteractiveShell(
     windowsHide: true,
     cwd: os.tmpdir(),
     env: {
-      ...process.env,
+      ...cleanEnv,
       LANG: 'en_US.UTF-8',
       LC_ALL: 'en_US.UTF-8',
       BASH_SILENCE_DEPRECATION_WARNING: '1',

@@ -493,4 +493,4 @@ Ready to dive deeper? Choose your path:
 **Learn More:**
 - [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
 - [Command Reference](/docs/commands/status-management)
-- Best Practices
+- [Best Practices](/docs/guides/best-practices) - Claude Code + SpecWeave optimization tips

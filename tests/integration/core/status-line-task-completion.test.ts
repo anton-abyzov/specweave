@@ -24,6 +24,8 @@ import * as os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { findProjectRoot } from '../../test-utils/project-root.js';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 const execAsync = promisify(exec);
 
@@ -95,7 +97,7 @@ created: 2025-11-18
       try {
         await execAsync(`bash "${updateScriptPath}"`, {
           cwd: testRoot,
-          env: { ...process.env, PROJECT_ROOT: testRoot }
+          env: { ...getCleanEnv(), PROJECT_ROOT: testRoot }
         });
       } catch (error) {
         // Script may fail in test environment (no jq, etc.) - that's OK

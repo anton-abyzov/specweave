@@ -9,6 +9,8 @@
 
 import { spawn } from 'child_process';
 import * as path from 'path';
+// CRITICAL: Import getCleanEnv to remove NODE_OPTIONS debugger flags from child processes
+import { getCleanEnv } from '../../utils/clean-env.js';
 import {
   HookDefinition,
   HookExecutionResult,
@@ -98,9 +100,11 @@ export class HookExecutor {
       const args = this.getHookArgs(hook);
       const command = this.getHookCommand(hook);
 
+      // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+      // Without this, running hooks from VSCode debug mode fails silently
       const childProcess = spawn(command, args, {
         cwd: path.dirname(hook.path),
-        env: { ...process.env, NODE_ENV: 'test' },
+        env: { ...getCleanEnv(), NODE_ENV: 'test' },
         timeout: this.config.timeout
       });
 

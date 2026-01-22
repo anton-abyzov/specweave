@@ -16,6 +16,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import * as os from 'os';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 describe('Dashboard Cache Scripts', () => {
   let testDir: string;
@@ -88,7 +90,7 @@ describe('Dashboard Cache Scripts', () => {
     try {
       execSync(`bash "${scriptPath}" --quiet`, {
         cwd: testDir,
-        env: { ...process.env, PWD: testDir }
+        env: { ...getCleanEnv(), PWD: testDir }
       });
     } catch (error) {
       // Script may not fail gracefully in all cases
@@ -216,7 +218,7 @@ describe('Dashboard Cache Scripts', () => {
       try {
         return execSync(`bash "${scriptPath}" ${args}`, {
           cwd: testDir,
-          env: { ...process.env, PWD: testDir },
+          env: { ...getCleanEnv(), PWD: testDir },
           encoding: 'utf-8'
         });
       } catch (error: any) {
@@ -284,7 +286,7 @@ describe('Dashboard Cache Scripts', () => {
       try {
         return execSync(`bash "${scriptPath}"`, {
           cwd: testDir,
-          env: { ...process.env, PWD: testDir },
+          env: { ...getCleanEnv(), PWD: testDir },
           encoding: 'utf-8'
         });
       } catch (error: any) {
@@ -392,7 +394,7 @@ describe('Dashboard Cache Scripts', () => {
       try {
         execSync(`bash "${scriptPath}" "${incrementId}" "${changeType}"`, {
           cwd: testDir,
-          env: { ...process.env, PWD: testDir }
+          env: { ...getCleanEnv(), PWD: testDir }
         });
       } catch (error) {
         // Script may fail silently for missing increments

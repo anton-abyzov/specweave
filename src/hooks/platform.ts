@@ -10,6 +10,8 @@
 import { spawn, SpawnOptions, ChildProcess } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+// CRITICAL: Import getCleanEnv to remove NODE_OPTIONS debugger flags from child processes
+import { getCleanEnv } from '../utils/clean-env.js';
 
 /**
  * Platform types
@@ -171,13 +173,15 @@ export function spawnNodeBackground(
   const nodeExecutable = process.execPath;
 
   try {
+    // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+    // Without this, spawning background processes from VSCode debug mode fails silently
     const spawnOptions: SpawnOptions = {
       cwd: cwd || process.cwd(),
       detached: true,
       stdio: 'ignore',
       windowsHide: true,
       env: {
-        ...process.env,
+        ...getCleanEnv(),
         SPECWEAVE_BACKGROUND_PROCESS: '1',
       },
     };

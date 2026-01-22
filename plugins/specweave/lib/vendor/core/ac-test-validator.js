@@ -20,6 +20,8 @@ import { promisify } from 'util';
 import path from 'path';
 import * as fs from '../utils/fs-native.js';
 import chalkFallback, { getChalk } from '../utils/chalk-fallback.js';
+// CRITICAL: Import getCleanEnv to remove NODE_OPTIONS debugger flags from child processes
+import { getCleanEnv } from '../utils/clean-env.js';
 // Use chalk if available, otherwise fallback to ANSI codes
 let chalk = chalkFallback;
 getChalk().then(c => { chalk = c; }).catch(() => { });
@@ -113,9 +115,11 @@ export class ACTestValidator {
             // Most test runners support filtering: vitest -t "AC-US1-01", jest --testNamePattern="AC-US1-01"
             const command = this.buildTestCommand(testFile, acId);
             console.log(`  ${chalk.gray('Running:')} ${command}`);
+            // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+            // Without this, running tests from VSCode debug mode fails silently
             const { stdout, stderr } = await execAsync(command, {
                 cwd: this.config.cwd,
-                env: { ...process.env, ...this.config.env },
+                env: { ...getCleanEnv(), ...this.config.env },
                 timeout: this.config.timeout
             });
             // Parse test output (basic implementation - can be enhanced)

@@ -26,7 +26,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 // Use canonical Claude CLI detector (handles shell functions, nvm, etc.)
-import { detectClaudeCli } from '../../../utils/claude-cli-detector.js';
+// CRITICAL: Import getCleanEnv to remove NODE_OPTIONS debugger flags from child processes
+import { detectClaudeCli, getCleanEnv } from '../../../utils/claude-cli-detector.js';
 import type {
   LLMProvider,
   LLMProviderType,
@@ -152,9 +153,11 @@ export class ClaudeCodeProvider implements LLMProvider {
       let stdout = '';
       let stderr = '';
 
+      // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
+      // Without this, spawning claude from VSCode debug mode fails silently (exit code 1, empty output)
       const proc = spawn(command, args, {
         cwd: this.cwd || process.cwd(),
-        env: process.env,
+        env: getCleanEnv(),
         // Use 'ignore' for stdin to prevent Claude from waiting for input
         // This is essential for non-interactive background use
         stdio: ['ignore', 'pipe', 'pipe'],

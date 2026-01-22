@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debugger flags from breaking child processes
+import { getCleanEnv } from '../test-utils/clean-env.js';
 
 describe('/sw:jobs command', () => {
   let tempDir: string;
@@ -56,7 +58,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('No background jobs found');
@@ -81,7 +84,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Running (1)');
@@ -107,7 +111,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Paused (1)');
@@ -134,7 +139,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Failed (1)');
@@ -163,7 +169,8 @@ describe('/sw:jobs command', () => {
       // Without --all
       const resultWithout = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
       expect(resultWithout).toContain('No active jobs');
       expect(resultWithout).not.toContain('Completed (1)');
@@ -171,7 +178,8 @@ describe('/sw:jobs command', () => {
       // With --all
       const resultWith = execSync(`node ${scriptPath} --all`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
       expect(resultWith).toContain('Completed (1)');
       expect(resultWith).toContain('[complete] brownfield-analysis - 1234 items');
@@ -196,7 +204,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath} --id specific-123`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Job Details: specific-123');
@@ -223,7 +232,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath} --id partial`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Job Details: partial-match-789');
@@ -238,7 +248,8 @@ describe('/sw:jobs command', () => {
       try {
         execSync(`node ${scriptPath} --id nonexistent`, {
           cwd: tempDir,
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
         expect.fail('Should have exited with non-zero code');
       } catch (error: any) {
@@ -277,7 +288,8 @@ describe('/sw:jobs command', () => {
         const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
         const result = execSync(`node ${scriptPath}`, {
           cwd: tempDir,
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
 
         expect(result).toContain(`${current}/${total} (${expected}%)`);
@@ -288,7 +300,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath} --help`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('SpecWeave Instant Jobs');
@@ -319,7 +332,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
       const result = execSync(`bash ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Current Work Status');
@@ -341,7 +355,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
       const result = execSync(`bash ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Auto Mode: RUNNING');
@@ -368,7 +383,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
       const result = execSync(`bash ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Background Jobs');
@@ -381,7 +397,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
       const result = execSync(`bash ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Commands:');
@@ -398,7 +415,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/read-jobs.sh');
       const result = execSync(`bash ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('No increment data available');
@@ -425,7 +443,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Running (1)');
@@ -440,7 +459,8 @@ describe('/sw:jobs command', () => {
       try {
         execSync(`node ${scriptPath}`, {
           cwd: tempDir,
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
         expect.fail('Should have exited with non-zero code');
       } catch (error: any) {
@@ -483,7 +503,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath}`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Running (3)');
@@ -509,7 +530,8 @@ describe('/sw:jobs command', () => {
       const scriptPath = path.join(process.cwd(), 'plugins/specweave/scripts/jobs.js');
       const result = execSync(`node ${scriptPath} --all`, {
         cwd: tempDir,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       });
 
       expect(result).toContain('Completed (15)');

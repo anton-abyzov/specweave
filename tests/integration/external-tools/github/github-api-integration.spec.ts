@@ -15,6 +15,7 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 // Only run if explicitly enabled
 const GITHUB_API_TESTS = process.env.GITHUB_API_TESTS === 'true';
@@ -31,14 +32,14 @@ test.describe('GitHub API Integration - Real', () => {
   test.beforeAll(async () => {
     // Check GitHub CLI available
     try {
-      execSync('gh --version', { stdio: 'ignore' });
+      execSync('gh --version', { stdio: 'ignore', env: getCleanEnv() });
     } catch {
       throw new Error('GitHub CLI (gh) not installed. Install from: https://cli.github.com/');
     }
 
     // Check authentication
     try {
-      execSync('gh auth status', { stdio: 'ignore' });
+      execSync('gh auth status', { stdio: 'ignore', env: getCleanEnv() });
     } catch {
       throw new Error('GitHub CLI not authenticated. Run: gh auth login');
     }
@@ -67,7 +68,7 @@ test.describe('GitHub API Integration - Real', () => {
         try {
           execSync(
             `gh issue close ${issueNumber} --repo ${testRepo!.owner}/${testRepo!.repo} --comment "Cleaning up test issue"`,
-            { stdio: 'ignore' }
+            { stdio: 'ignore', env: getCleanEnv() }
           );
         } catch (error) {
           console.warn(`Failed to close issue #${issueNumber}:`, error);
@@ -84,8 +85,8 @@ test.describe('GitHub API Integration - Real', () => {
 
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, testRepo.repo, 'FS-999');
@@ -149,7 +150,7 @@ This is a test issue to verify the complete GitHub sync flow.
     // Create issue
     const createResult = execSync(
       `gh issue create --title "${issueContent.title}" --body-file "${bodyFile}" --repo ${testRepo.owner}/${testRepo.repo} ${issueContent.labels.map(l => `--label "${l}"`).join(' ')}`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     // Extract issue number from URL
@@ -164,7 +165,7 @@ This is a test issue to verify the complete GitHub sync flow.
     // Verify issue was created
     const issueData = execSync(
       `gh issue view ${issueNumber} --repo ${testRepo.owner}/${testRepo.repo} --json title,body,labels,state`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     const issue = JSON.parse(issueData);
@@ -199,8 +200,8 @@ This is a test issue to verify the complete GitHub sync flow.
 
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, testRepo.repo, 'FS-999');
@@ -243,7 +244,7 @@ created: 2025-11-15
 
     const createResult = execSync(
       `gh issue create --title "${initialIssue.title}" --body-file "${bodyFile}" --repo ${testRepo.owner}/${testRepo.repo} --label "user-story"`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     const match = createResult.match(/issues\/(\d+)/);
@@ -286,13 +287,13 @@ created: 2025-11-15
     // Update issue
     execSync(
       `gh issue edit ${issueNumber} --title "${updatedIssue.title}" --body-file "${updatedBodyFile}" --repo ${testRepo.owner}/${testRepo.repo}`,
-      { stdio: 'ignore' }
+      { stdio: 'ignore', env: getCleanEnv() }
     );
 
     // Verify update
     const issueData = execSync(
       `gh issue view ${issueNumber} --repo ${testRepo.owner}/${testRepo.repo} --json title,body`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     const issue = JSON.parse(issueData);
@@ -308,8 +309,8 @@ created: 2025-11-15
 
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync(`git remote add origin https://github.com/${testRepo.owner}/${testRepo.repo}.git`, { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, testRepo.repo, 'FS-999');
@@ -360,7 +361,7 @@ created: 2025-11-15
 
     const createResult = execSync(
       `gh issue create --title "${issueContent.title}" --body-file "${bodyFile}" --repo ${testRepo.owner}/${testRepo.repo} --label "user-story"`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     const match = createResult.match(/issues\/(\d+)/);
@@ -373,7 +374,7 @@ created: 2025-11-15
     // Verify issue created
     const issueData = execSync(
       `gh issue view ${issueNumber} --repo ${testRepo.owner}/${testRepo.repo} --json url`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
 
     const issue = JSON.parse(issueData);
