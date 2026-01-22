@@ -35,19 +35,22 @@ describe('PluginCacheManager', () => {
     testActivePath = path.join(testDir, 'skills');
     testStatePath = path.join(testDir, 'state', 'plugins-loaded.json');
     testMarketplacePath = path.join(testDir, 'marketplace', 'plugins');
+    const testRegistryPath = path.join(testDir, 'plugins', 'installed_plugins.json');
 
     // Create directories
     fs.mkdirSync(testCachePath, { recursive: true });
     fs.mkdirSync(testActivePath, { recursive: true });
     fs.mkdirSync(path.dirname(testStatePath), { recursive: true });
     fs.mkdirSync(testMarketplacePath, { recursive: true });
+    fs.mkdirSync(path.dirname(testRegistryPath), { recursive: true });
 
-    // Create manager with test paths
+    // Create manager with test paths (including registryPath to isolate from user's real registry)
     cacheManager = new PluginCacheManager({
       cachePath: testCachePath,
       activePath: testActivePath,
       statePath: testStatePath,
       marketplacePath: testMarketplacePath,
+      registryPath: testRegistryPath,
     });
   });
 
