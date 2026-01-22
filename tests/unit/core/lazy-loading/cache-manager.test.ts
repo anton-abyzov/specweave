@@ -3,8 +3,9 @@
  *
  * @module tests/unit/core/lazy-loading/cache-manager
  *
- * IMPORTANT: Mocks detectClaudeCli to always return unavailable, so tests use
- * the fast fallback registry method instead of spawning the real Claude CLI.
+ * IMPORTANT: Uses vi.hoisted() for ESM mocking in vitest 4.x to ensure mocks
+ * are properly applied before module imports. This prevents tests from timing
+ * out due to real Claude CLI spawning when running in VSCode or in parallel.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -12,11 +13,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+// Use vi.hoisted() to create mock functions that are hoisted with vi.mock (vitest 4.x ESM pattern)
+const { mockDetectClaudeCli, mockIsClaudeCliAvailable, mockClearCliCache } = vi.hoisted(() => ({
+  mockDetectClaudeCli: vi.fn().mockReturnValue({ available: false }),
+  mockIsClaudeCliAvailable: vi.fn().mockReturnValue(false),
+  mockClearCliCache: vi.fn(),
+}));
+
 // Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
 vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
-  detectClaudeCli: vi.fn().mockReturnValue({ available: false }),
-  isClaudeCliAvailable: vi.fn().mockReturnValue(false),
-  clearCliCache: vi.fn(),
+  detectClaudeCli: mockDetectClaudeCli,
+  isClaudeCliAvailable: mockIsClaudeCliAvailable,
+  clearCliCache: mockClearCliCache,
 }));
 
 import {
