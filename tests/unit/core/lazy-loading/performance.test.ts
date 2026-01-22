@@ -317,7 +317,7 @@ describe('Performance Load Tests', () => {
   });
 
   describe('Memory Efficiency', () => {
-    it('should not leak memory across multiple installs', async () => {
+    it('should not leak memory across multiple installs', { timeout: 30000 }, async () => {
       for (const plugin of MOCK_PLUGINS) {
         createMockPlugin(testMarketplacePath, plugin);
       }

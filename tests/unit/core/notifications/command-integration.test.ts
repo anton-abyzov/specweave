@@ -1,19 +1,15 @@
 /**
  * Command Integration Tests
+ *
+ * IMPORTANT: Uses vi.hoisted() with class-based mocks for vitest 4.x compatibility.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import {
-  checkAndFormatNotifications,
-  printNotificationSummary,
-  withNotifications,
-} from '../../../../src/core/notifications/command-integration.js';
-import { NotificationManager } from '../../../../src/core/notifications/notification-manager.js';
 import { Notification } from '../../../../src/core/notifications/notification-types.js';
 
-// Mock NotificationManager
-vi.mock('../../../../src/core/notifications/notification-manager.js', () => {
-  const mockNotifications: Notification[] = [
+// Use vi.hoisted() to create mock class and functions
+const { mockGetPending, MockNotificationManager, defaultMockNotifications } = vi.hoisted(() => {
+  const _mockNotifications: Notification[] = [
     {
       id: 'notif-1',
       type: 'sync-failure',
@@ -40,18 +36,40 @@ vi.mock('../../../../src/core/notifications/notification-manager.js', () => {
     },
   ];
 
+  const _mockGetPending = vi.fn().mockResolvedValue(_mockNotifications);
+
+  class _MockNotificationManager {
+    getPending = _mockGetPending;
+  }
+
   return {
-    NotificationManager: vi.fn().mockImplementation(() => ({
-      getPending: vi.fn().mockResolvedValue(mockNotifications),
-    })),
+    mockGetPending: _mockGetPending,
+    MockNotificationManager: _MockNotificationManager,
+    defaultMockNotifications: _mockNotifications,
   };
 });
+
+// Mock NotificationManager
+vi.mock('../../../../src/core/notifications/notification-manager.js', () => {
+  return {
+    NotificationManager: MockNotificationManager,
+  };
+});
+
+// Import AFTER mocks are set up
+import {
+  checkAndFormatNotifications,
+  printNotificationSummary,
+  withNotifications,
+} from '../../../../src/core/notifications/command-integration.js';
 
 describe('command-integration', () => {
   let consoleSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Reset to default notifications before each test
+    mockGetPending.mockResolvedValue(defaultMockNotifications);
   });
 
   afterEach(() => {
@@ -162,9 +180,7 @@ describe('command-integration', () => {
   describe('empty notifications', () => {
     it('should return empty output when no notifications', async () => {
       // Override mock to return empty
-      vi.mocked(NotificationManager).mockImplementation(() => ({
-        getPending: vi.fn().mockResolvedValue([]),
-      }) as unknown as NotificationManager);
+      mockGetPending.mockResolvedValue([]);
 
       const result = await checkAndFormatNotifications();
 
@@ -173,9 +189,7 @@ describe('command-integration', () => {
     });
 
     it('should not print when no notifications', async () => {
-      vi.mocked(NotificationManager).mockImplementation(() => ({
-        getPending: vi.fn().mockResolvedValue([]),
-      }) as unknown as NotificationManager);
+      mockGetPending.mockResolvedValue([]);
 
       const printed = await printNotificationSummary();
 

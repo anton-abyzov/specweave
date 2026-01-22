@@ -1,11 +1,84 @@
 /**
  * Sync Logs Command Tests
+ *
+ * IMPORTANT: Uses vi.hoisted() with class-based mocks for vitest 4.x compatibility.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
+import { LogQueryResult } from '../../../../src/core/logs/log-aggregator.js';
+import { AuditLogEntry } from '../../../../src/core/sync/sync-audit-logger.js';
+
+// Use vi.hoisted() to create mock classes
+const { mockQuery, mockExport, MockLogAggregator, MockLogExporter } = vi.hoisted(() => {
+  const _mockQuery = vi.fn().mockResolvedValue({
+    entries: [
+      {
+        timestamp: '2025-12-01T12:00:05Z',
+        platform: 'github',
+        operation: 'upsert-internal',
+        itemId: 'FS-001',
+        result: 'success',
+        durationMs: 150,
+      },
+      {
+        timestamp: '2025-12-01T12:00:04Z',
+        platform: 'jira',
+        operation: 'update-status',
+        itemId: 'US-001',
+        result: 'success',
+        durationMs: 200,
+      },
+      {
+        timestamp: '2025-12-01T12:00:03Z',
+        platform: 'github',
+        operation: 'upsert-external',
+        itemId: 'EXT-001',
+        result: 'denied',
+        reason: 'External updates disabled',
+      },
+    ],
+    total: 3,
+    hasMore: false,
+    query: {},
+    executionTimeMs: 15,
+  });
+
+  const _mockExport = vi.fn().mockResolvedValue(undefined);
+
+  class _MockLogAggregator {
+    query = _mockQuery;
+  }
+
+  class _MockLogExporter {
+    export = _mockExport;
+  }
+
+  return {
+    mockQuery: _mockQuery,
+    mockExport: _mockExport,
+    MockLogAggregator: _MockLogAggregator,
+    MockLogExporter: _MockLogExporter,
+  };
+});
+
+// Mock the LogAggregator
+vi.mock('../../../../src/core/logs/log-aggregator.js', () => {
+  return {
+    LogAggregator: MockLogAggregator,
+  };
+});
+
+// Mock the LogExporter
+vi.mock('../../../../src/core/logs/log-exporter.js', () => {
+  return {
+    LogExporter: MockLogExporter,
+  };
+});
+
+// Import AFTER mocks are set up
 import {
   createSyncLogsCommand,
   runSyncLogs,
@@ -13,57 +86,6 @@ import {
   formatLogLine,
   parseDate,
 } from '../../../../src/cli/commands/sync-logs.js';
-import { LogQueryResult } from '../../../../src/core/logs/log-aggregator.js';
-import { AuditLogEntry } from '../../../../src/core/sync/sync-audit-logger.js';
-
-// Mock the LogAggregator
-vi.mock('../../../../src/core/logs/log-aggregator.js', () => {
-  return {
-    LogAggregator: vi.fn().mockImplementation(() => ({
-      query: vi.fn().mockResolvedValue({
-        entries: [
-          {
-            timestamp: '2025-12-01T12:00:05Z',
-            platform: 'github',
-            operation: 'upsert-internal',
-            itemId: 'FS-001',
-            result: 'success',
-            durationMs: 150,
-          },
-          {
-            timestamp: '2025-12-01T12:00:04Z',
-            platform: 'jira',
-            operation: 'update-status',
-            itemId: 'US-001',
-            result: 'success',
-            durationMs: 200,
-          },
-          {
-            timestamp: '2025-12-01T12:00:03Z',
-            platform: 'github',
-            operation: 'upsert-external',
-            itemId: 'EXT-001',
-            result: 'denied',
-            reason: 'External updates disabled',
-          },
-        ],
-        total: 3,
-        hasMore: false,
-        query: {},
-        executionTimeMs: 15,
-      }),
-    })),
-  };
-});
-
-// Mock the LogExporter
-vi.mock('../../../../src/core/logs/log-exporter.js', () => {
-  return {
-    LogExporter: vi.fn().mockImplementation(() => ({
-      export: vi.fn().mockResolvedValue(undefined),
-    })),
-  };
-});
 
 describe('sync-logs command', () => {
   let consoleSpy: ReturnType<typeof vi.spyOn>;
@@ -136,9 +158,7 @@ describe('sync-logs command', () => {
 
       await runSyncLogs({ export: exportPath });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Exported')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Exported'));
 
       await fs.rm(tmpDir, { recursive: true, force: true });
     });

@@ -1,68 +1,97 @@
 /**
  * Sync Monitor Command Tests
+ *
+ * IMPORTANT: Uses vi.hoisted() with class-based mocks for vitest 4.x compatibility.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { DashboardData } from '../../../../src/core/dashboard/dashboard-data.js';
+
+// Use vi.hoisted() to create mock class
+const { mockGetData, mockGetJobStatusEmoji, mockFormatRelativeTime, MockDashboardDataProvider } =
+  vi.hoisted(() => {
+    const _mockGetData = vi.fn().mockResolvedValue({
+      jobs: [
+        {
+          id: 'external-sync',
+          type: 'external-sync',
+          status: 'idle',
+          lastRun: '2025-12-01T12:00:00Z',
+          nextRun: '2025-12-01T12:10:00Z',
+        },
+        {
+          id: 'discrepancy-check',
+          type: 'discrepancy-check',
+          status: 'running',
+        },
+      ],
+      notifications: {
+        total: 10,
+        pending: 2,
+        bySeverity: { info: 1, warning: 0, critical: 1 },
+        recent: [
+          {
+            id: 'notif-1',
+            type: 'sync-failure',
+            severity: 'critical',
+            title: 'GitHub sync failed',
+            message: 'Rate limited',
+            createdAt: '2025-12-01T12:00:00Z',
+          },
+        ],
+      },
+      activity: {
+        last24h: { synced: 45, failed: 2, skipped: 8 },
+        byPlatform: { github: 40, jira: 12, ado: 3 },
+      },
+      generatedAt: '2025-12-01T12:05:00Z',
+    });
+
+    const _mockGetJobStatusEmoji = vi.fn().mockImplementation((status: string) => {
+      switch (status) {
+        case 'idle':
+          return '✅';
+        case 'running':
+          return '🔄';
+        case 'failed':
+          return '❌';
+        case 'disabled':
+          return '⏸️';
+        default:
+          return '❓';
+      }
+    });
+
+    const _mockFormatRelativeTime = vi.fn().mockReturnValue('5m ago');
+
+    class _MockDashboardDataProvider {
+      getData = _mockGetData;
+      getJobStatusEmoji = _mockGetJobStatusEmoji;
+      formatRelativeTime = _mockFormatRelativeTime;
+    }
+
+    return {
+      mockGetData: _mockGetData,
+      mockGetJobStatusEmoji: _mockGetJobStatusEmoji,
+      mockFormatRelativeTime: _mockFormatRelativeTime,
+      MockDashboardDataProvider: _MockDashboardDataProvider,
+    };
+  });
+
+// Mock the dashboard provider
+vi.mock('../../../../src/core/dashboard/dashboard-data.js', () => {
+  return {
+    DashboardDataProvider: MockDashboardDataProvider,
+  };
+});
+
+// Import AFTER mocks are set up
 import {
   createSyncMonitorCommand,
   runSyncMonitor,
   formatDashboard,
 } from '../../../../src/cli/commands/sync-monitor.js';
-import { DashboardDataProvider, DashboardData } from '../../../../src/core/dashboard/dashboard-data.js';
-
-// Mock the dashboard provider
-vi.mock('../../../../src/core/dashboard/dashboard-data.js', () => {
-  return {
-    DashboardDataProvider: vi.fn().mockImplementation(() => ({
-      getData: vi.fn().mockResolvedValue({
-        jobs: [
-          {
-            id: 'external-sync',
-            type: 'external-sync',
-            status: 'idle',
-            lastRun: '2025-12-01T12:00:00Z',
-            nextRun: '2025-12-01T12:10:00Z',
-          },
-          {
-            id: 'discrepancy-check',
-            type: 'discrepancy-check',
-            status: 'running',
-          },
-        ],
-        notifications: {
-          total: 10,
-          pending: 2,
-          bySeverity: { info: 1, warning: 0, critical: 1 },
-          recent: [
-            {
-              id: 'notif-1',
-              type: 'sync-failure',
-              severity: 'critical',
-              title: 'GitHub sync failed',
-              message: 'Rate limited',
-              createdAt: '2025-12-01T12:00:00Z',
-            },
-          ],
-        },
-        activity: {
-          last24h: { synced: 45, failed: 2, skipped: 8 },
-          byPlatform: { github: 40, jira: 12, ado: 3 },
-        },
-        generatedAt: '2025-12-01T12:05:00Z',
-      }),
-      getJobStatusEmoji: vi.fn().mockImplementation((status: string) => {
-        switch (status) {
-          case 'idle': return '✅';
-          case 'running': return '🔄';
-          case 'failed': return '❌';
-          case 'disabled': return '⏸️';
-          default: return '❓';
-        }
-      }),
-      formatRelativeTime: vi.fn().mockReturnValue('5m ago'),
-    })),
-  };
-});
+import { DashboardDataProvider } from '../../../../src/core/dashboard/dashboard-data.js';
 
 describe('sync-monitor command', () => {
   let consoleSpy: ReturnType<typeof vi.spyOn>;

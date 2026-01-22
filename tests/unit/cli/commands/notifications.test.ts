@@ -1,8 +1,89 @@
 /**
  * Notifications Command Tests
+ *
+ * IMPORTANT: Uses vi.hoisted() with class-based mocks for vitest 4.x compatibility.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { Notification } from '../../../../src/core/notifications/notification-types.js';
+
+// Use vi.hoisted() to create mock class and data
+const { mockNotifications, mockGetAll, mockGetPending, mockGetById, mockDismiss, mockDismissAll, MockNotificationManager } =
+  vi.hoisted(() => {
+    const _mockNotifications: Notification[] = [
+      {
+        id: 'notif-1',
+        type: 'sync-failure',
+        severity: 'critical',
+        title: 'GitHub sync failed',
+        message: 'Rate limit exceeded',
+        createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2m ago
+        data: { platform: 'github', error: 'Rate limit exceeded' },
+      },
+      {
+        id: 'notif-2',
+        type: 'discrepancy',
+        severity: 'warning',
+        title: '2 discrepancies found',
+        message: 'In FS-045',
+        createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1h ago
+      },
+      {
+        id: 'notif-3',
+        type: 'import-complete',
+        severity: 'info',
+        title: '107 items imported',
+        message: 'From JIRA project CORE',
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago
+        dismissedAt: new Date().toISOString(),
+      },
+    ];
+
+    const _mockGetAll = vi.fn().mockImplementation(async (options: any) => {
+      if (options?.includeDismissed) {
+        return _mockNotifications;
+      }
+      return _mockNotifications.filter(n => !n.dismissedAt);
+    });
+
+    const _mockGetPending = vi.fn().mockResolvedValue(
+      _mockNotifications.filter(n => !n.dismissedAt)
+    );
+
+    const _mockGetById = vi.fn().mockImplementation(async (id: string) => {
+      return _mockNotifications.find(n => n.id === id);
+    });
+
+    const _mockDismiss = vi.fn().mockResolvedValue(undefined);
+    const _mockDismissAll = vi.fn().mockResolvedValue(undefined);
+
+    class _MockNotificationManager {
+      getAll = _mockGetAll;
+      getPending = _mockGetPending;
+      getById = _mockGetById;
+      dismiss = _mockDismiss;
+      dismissAll = _mockDismissAll;
+    }
+
+    return {
+      mockNotifications: _mockNotifications,
+      mockGetAll: _mockGetAll,
+      mockGetPending: _mockGetPending,
+      mockGetById: _mockGetById,
+      mockDismiss: _mockDismiss,
+      mockDismissAll: _mockDismissAll,
+      MockNotificationManager: _MockNotificationManager,
+    };
+  });
+
+// Mock the NotificationManager
+vi.mock('../../../../src/core/notifications/notification-manager.js', () => {
+  return {
+    NotificationManager: MockNotificationManager,
+  };
+});
+
+// Import AFTER mocks are set up
 import {
   createNotificationsCommand,
   listNotifications,
@@ -10,59 +91,6 @@ import {
   dismissNotification,
   formatRelativeTime,
 } from '../../../../src/cli/commands/notifications.js';
-import { NotificationManager } from '../../../../src/core/notifications/notification-manager.js';
-import { Notification } from '../../../../src/core/notifications/notification-types.js';
-
-// Mock the NotificationManager
-vi.mock('../../../../src/core/notifications/notification-manager.js', () => {
-  const mockNotifications: Notification[] = [
-    {
-      id: 'notif-1',
-      type: 'sync-failure',
-      severity: 'critical',
-      title: 'GitHub sync failed',
-      message: 'Rate limit exceeded',
-      createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2m ago
-      data: { platform: 'github', error: 'Rate limit exceeded' },
-    },
-    {
-      id: 'notif-2',
-      type: 'discrepancy',
-      severity: 'warning',
-      title: '2 discrepancies found',
-      message: 'In FS-045',
-      createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1h ago
-    },
-    {
-      id: 'notif-3',
-      type: 'import-complete',
-      severity: 'info',
-      title: '107 items imported',
-      message: 'From JIRA project CORE',
-      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago
-      dismissedAt: new Date().toISOString(),
-    },
-  ];
-
-  return {
-    NotificationManager: vi.fn().mockImplementation(() => ({
-      getAll: vi.fn().mockImplementation(async (options) => {
-        if (options?.includeDismissed) {
-          return mockNotifications;
-        }
-        return mockNotifications.filter(n => !n.dismissedAt);
-      }),
-      getPending: vi.fn().mockResolvedValue(
-        mockNotifications.filter(n => !n.dismissedAt)
-      ),
-      getById: vi.fn().mockImplementation(async (id: string) => {
-        return mockNotifications.find(n => n.id === id);
-      }),
-      dismiss: vi.fn().mockResolvedValue(undefined),
-      dismissAll: vi.fn().mockResolvedValue(undefined),
-    })),
-  };
-});
 
 describe('notifications command', () => {
   let consoleSpy: ReturnType<typeof vi.spyOn>;

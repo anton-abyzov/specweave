@@ -8,17 +8,38 @@ import path from 'path';
  * instead of using configured projects. This ensures GitHub sync works correctly
  * with 1:1 mapping between project folder name and repository name.
  *
- * IMPORTANT: Uses vi.hoisted() for mocks to ensure they are applied before
- * module imports. This is required for consistent behavior across platforms
- * (macOS, Linux, Windows) and in CI environments.
+ * IMPORTANT: Uses vi.hoisted() with class-based mocks for vitest 4.x compatibility.
+ * The mock classes are created in the hoisted block to ensure they're available
+ * when the mock factories run.
  */
 
-// Use vi.hoisted() to create mock functions that are hoisted with vi.mock
-const { mockReadFile, mockExistsSync, mockLoadAsync } = vi.hoisted(() => ({
-  mockReadFile: vi.fn(),
-  mockExistsSync: vi.fn(),
-  mockLoadAsync: vi.fn(),
-}));
+// Use vi.hoisted() to create mock functions AND mock classes that are hoisted with vi.mock
+const {
+  mockReadFile,
+  mockExistsSync,
+  mockLoadAsync,
+  MockConfigManager,
+  MockFeatureIDManager,
+} = vi.hoisted(() => {
+  const _mockLoadAsync = vi.fn();
+
+  // Create mock class that can be instantiated
+  class _MockConfigManager {
+    loadAsync = _mockLoadAsync;
+  }
+
+  class _MockFeatureIDManager {
+    generateFeatureId = vi.fn().mockReturnValue('FS-001');
+  }
+
+  return {
+    mockReadFile: vi.fn(),
+    mockExistsSync: vi.fn(),
+    mockLoadAsync: _mockLoadAsync,
+    MockConfigManager: _MockConfigManager,
+    MockFeatureIDManager: _MockFeatureIDManager,
+  };
+});
 
 // Mock dependencies BEFORE imports - use explicit factories for CI compatibility
 vi.mock('../../../src/utils/fs-native.js', () => {
@@ -33,17 +54,13 @@ vi.mock('../../../src/utils/fs-native.js', () => {
 
 vi.mock('../../../src/core/config-manager.js', () => {
   return {
-    ConfigManager: vi.fn().mockImplementation(() => ({
-      loadAsync: mockLoadAsync,
-    })),
+    ConfigManager: MockConfigManager,
   };
 });
 
 vi.mock('../../../src/core/living-docs/feature-id-manager.js', () => {
   return {
-    FeatureIDManager: vi.fn().mockImplementation(() => ({
-      generateFeatureId: vi.fn().mockReturnValue('FS-001'),
-    })),
+    FeatureIDManager: MockFeatureIDManager,
   };
 });
 
