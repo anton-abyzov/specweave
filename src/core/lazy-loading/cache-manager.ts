@@ -355,10 +355,14 @@ export class PluginCacheManager {
           continue;
         }
 
-        // Check if already registered in Claude's registry
+        // Check if already registered in Claude's registry AND loaded in skills dir
         const alreadyRegistered = this.isPluginRegistered(pluginName);
-        if (!force && alreadyRegistered) {
-          logger.debug(`Plugin already registered: ${pluginName}`);
+        const alreadyLoaded = fs.existsSync(destPath);
+
+        // Skip only if BOTH registered AND loaded (unless force)
+        // This allows re-installing after unload (registered but not loaded)
+        if (!force && alreadyRegistered && alreadyLoaded) {
+          logger.debug(`Plugin already installed: ${pluginName}`);
           continue;
         }
 
