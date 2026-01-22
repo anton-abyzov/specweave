@@ -210,7 +210,9 @@ type: feature
       expect(await fs.pathExists(metadataPath)).toBe(true);
 
       // Verify default values
-      expect(metadata.status).toBe(IncrementStatus.ACTIVE);
+      // NOTE: Default status is PLANNING (not ACTIVE) - increments auto-transition to ACTIVE
+      // when tasks.md is created or first task starts (see auto-transition-manager.ts)
+      expect(metadata.status).toBe(IncrementStatus.PLANNING);
       expect(metadata.type).toBe(IncrementType.FEATURE); // Default
     } finally {
       process.chdir(oldCwd);
@@ -246,30 +248,34 @@ type: feature
     }
   });
 
-  it('metadata.json validates required fields on read', async () => {
-    // Create increment with INVALID metadata (missing required fields)
-    const incrementId = '0008-invalid-metadata';
+  it('metadata.json normalizes missing fields via schema normalization', async () => {
+    // Create increment with metadata missing 'created' field
+    // Schema normalization should provide a default (not throw an error)
+    const incrementId = '0008-normalized-metadata';
     const incrementDir = path.join(testDir, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementDir);
 
-    // Write invalid metadata (missing 'created' field)
-    const invalidMetadata = {
+    // Write metadata without 'created' field
+    const incompleteMetadata = {
       id: incrementId,
       status: 'active',
       type: 'feature',
       lastActivity: new Date().toISOString()
-      // Missing 'created' field!
+      // Missing 'created' field - will be normalized!
     };
-    await fs.writeJson(path.join(incrementDir, 'metadata.json'), invalidMetadata);
+    await fs.writeJson(path.join(incrementDir, 'metadata.json'), incompleteMetadata);
 
     const oldCwd = process.cwd();
     process.chdir(testDir);
 
     try {
-      // MetadataManager.read() should throw validation error
-      expect(() => {
-        MetadataManager.read(incrementId);
-      }).toThrow(/missing required field.*created/i);
+      // MetadataManager.read() should NOT throw - it normalizes missing fields
+      // per ADR schema normalization (handles legacy schemas gracefully)
+      const metadata = MetadataManager.read(incrementId);
+
+      // Verify normalization worked - 'created' should be auto-generated
+      expect(metadata.created).toBeDefined();
+      expect(metadata.id).toBe(incrementId);
     } finally {
       process.chdir(oldCwd);
     }
@@ -362,7 +368,8 @@ feature: FS-038
       expect(metadata.id).toBe(incrementId);
 
       // Verify defaults were used
-      expect(metadata.status).toBe(IncrementStatus.ACTIVE);
+      // NOTE: Default status is PLANNING (not ACTIVE) per createDefaultMetadata()
+      expect(metadata.status).toBe(IncrementStatus.PLANNING);
       expect(metadata.type).toBe(IncrementType.FEATURE);
     } finally {
       process.chdir(oldCwd);
