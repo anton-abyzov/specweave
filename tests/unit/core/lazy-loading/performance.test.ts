@@ -15,11 +15,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+// Use vi.hoisted() to create mock functions that are hoisted with vi.mock (vitest 4.x ESM pattern)
+const { mockDetectClaudeCli, mockIsClaudeCliAvailable, mockClearCliCache } = vi.hoisted(() => ({
+  mockDetectClaudeCli: vi.fn().mockReturnValue({ available: false }),
+  mockIsClaudeCliAvailable: vi.fn().mockReturnValue(false),
+  mockClearCliCache: vi.fn(),
+}));
+
 // Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
 vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
-  detectClaudeCli: vi.fn().mockReturnValue({ available: false }),
-  isClaudeCliAvailable: vi.fn().mockReturnValue(false),
-  clearCliCache: vi.fn(),
+  detectClaudeCli: mockDetectClaudeCli,
+  isClaudeCliAvailable: mockIsClaudeCliAvailable,
+  clearCliCache: mockClearCliCache,
 }));
 
 import { PluginCacheManager } from '../../../../src/core/lazy-loading/cache-manager.js';
