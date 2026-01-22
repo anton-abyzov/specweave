@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import path from 'path';
 
 /**
  * Unit tests for HierarchyMapper Project Detection (Fix for default → repo name)
@@ -6,31 +7,48 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
  * Tests the critical fix where project detection fallback was hardcoded to 'default'
  * instead of using configured projects. This ensures GitHub sync works correctly
  * with 1:1 mapping between project folder name and repository name.
+ *
+ * IMPORTANT: Uses vi.hoisted() for mocks to ensure they are applied before
+ * module imports. This is required for consistent behavior across platforms
+ * (macOS, Linux, Windows) and in CI environments.
  */
 
-// Mock dependencies BEFORE imports
-vi.mock('../../../src/utils/fs-native.js', () => ({
-  readFile: vi.fn(),
-  existsSync: vi.fn(),
-  ensureDir: vi.fn(),
-  writeFile: vi.fn(),
-  readdir: vi.fn(),
+// Use vi.hoisted() to create mock functions that are hoisted with vi.mock
+const { mockReadFile, mockExistsSync, mockLoadAsync } = vi.hoisted(() => ({
+  mockReadFile: vi.fn(),
+  mockExistsSync: vi.fn(),
+  mockLoadAsync: vi.fn(),
 }));
 
-vi.mock('../../../src/core/config-manager.js');
-vi.mock('../../../src/core/living-docs/feature-id-manager.js');
+// Mock dependencies BEFORE imports - use explicit factories for CI compatibility
+vi.mock('../../../src/utils/fs-native.js', () => {
+  return {
+    readFile: mockReadFile,
+    existsSync: mockExistsSync,
+    ensureDir: vi.fn(),
+    writeFile: vi.fn(),
+    readdir: vi.fn(),
+  };
+});
 
+vi.mock('../../../src/core/config-manager.js', () => {
+  return {
+    ConfigManager: vi.fn().mockImplementation(() => ({
+      loadAsync: mockLoadAsync,
+    })),
+  };
+});
+
+vi.mock('../../../src/core/living-docs/feature-id-manager.js', () => {
+  return {
+    FeatureIDManager: vi.fn().mockImplementation(() => ({
+      generateFeatureId: vi.fn().mockReturnValue('FS-001'),
+    })),
+  };
+});
+
+// Import AFTER mocks are set up
 import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper.js';
-import { ConfigManager } from '../../../src/core/config-manager.js';
-import * as fs from '../../../src/utils/fs-native.js';
-import path from 'path';
-
-// Type-safe mocked functions
-const mockReadFile = vi.mocked(fs.readFile);
-const mockExistsSync = vi.mocked(fs.existsSync);
-
-// Mock ConfigManager
-const mockLoadAsync = vi.fn();
 
 describe('HierarchyMapper - Project Detection Fallback Fix', () => {
   let mapper: HierarchyMapper;
@@ -66,9 +84,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -133,9 +149,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -200,9 +214,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -264,9 +276,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -295,9 +305,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -346,9 +354,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -360,9 +366,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     it('should handle missing multiProject config', async () => {
       const mockConfig = {};
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -379,9 +383,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -405,9 +407,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      vi.mocked(ConfigManager).mockImplementation(() => ({
-        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
-      } as any));
+      mockLoadAsync.mockResolvedValue(mockConfig as any);
       mapper = new HierarchyMapper(mockProjectRoot);
 
       mockReadFile.mockResolvedValue('---\ntitle: Test\n---\n');
