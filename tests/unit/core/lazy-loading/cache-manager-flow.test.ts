@@ -29,6 +29,7 @@ describe('Cache Manager Flow Tests', () => {
   let testStatePath: string;
   let testMarketplacePath: string;
   let testBackupPath: string;
+  let testRegistryPath: string;
 
   beforeEach(() => {
     // Create unique test directories for each test
@@ -40,12 +41,14 @@ describe('Cache Manager Flow Tests', () => {
     testStatePath = path.join(testDir, 'state', 'plugins-loaded.json');
     testMarketplacePath = path.join(testDir, 'marketplace', 'plugins');
     testBackupPath = path.join(testDir, 'skills-backup');
+    testRegistryPath = path.join(testDir, 'plugins', 'installed_plugins.json');
 
     // Create directories
     fs.mkdirSync(testCachePath, { recursive: true });
     fs.mkdirSync(testActivePath, { recursive: true });
     fs.mkdirSync(path.dirname(testStatePath), { recursive: true });
     fs.mkdirSync(testMarketplacePath, { recursive: true });
+    fs.mkdirSync(path.dirname(testRegistryPath), { recursive: true });
   });
 
   afterEach(() => {
@@ -72,6 +75,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Step 2: Verify marketplace ready (populateCache is now a no-op)
@@ -134,6 +138,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       await cacheManager.populateCache();
@@ -180,6 +185,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Verify pre-migration state
@@ -240,6 +246,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Backup memories
@@ -295,6 +302,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Step 2: Create backup
@@ -364,6 +372,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Backup only one plugin (simulating partial backup)
@@ -410,6 +419,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Simulate --full mode: populate cache AND install all
@@ -442,6 +452,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       // Setup: full install
@@ -474,6 +485,7 @@ describe('Cache Manager Flow Tests', () => {
         activePath: testActivePath,
         statePath: testStatePath,
         marketplacePath: testMarketplacePath,
+        registryPath: testRegistryPath,
       });
 
       await cacheManager.populateCache();
