@@ -4,16 +4,16 @@
  * Tests the full workflow from increment → living docs → GitHub issue with checkable tasks.
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
 import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
-test.describe('GitHub User Story Tasks Sync E2E', () => {
+describe('GitHub User Story Tasks Sync E2E', () => {
   const testProjectRoot = path.join(__dirname, '../fixtures/e2e-github-tasks-test');
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Create clean test environment
     await fs.ensureDir(testProjectRoot);
     await fs.ensureDir(path.join(testProjectRoot, '.specweave'));
@@ -26,12 +26,12 @@ test.describe('GitHub User Story Tasks Sync E2E', () => {
     });
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // Clean up test environment
     await fs.remove(testProjectRoot);
   });
 
-  test('should generate user story with project-specific tasks and sync to GitHub', async () => {
+  it('should generate user story with project-specific tasks and sync to GitHub', async () => {
     // Step 1: Create increment with multi-project user stories
     const incrementId = '0040-github-tasks-e2e';
     const incrementPath = path.join(testProjectRoot, '.specweave', 'increments', incrementId);
@@ -230,7 +230,7 @@ Testing project-specific task generation and GitHub sync.
     expect(issueData.labels).toContain('project:backend');
   });
 
-  test('should handle user story without tasks gracefully', async () => {
+  it('should handle user story without tasks gracefully', async () => {
     const incrementId = '0041-no-tasks';
     const incrementPath = path.join(testProjectRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -281,7 +281,7 @@ title: "No Tasks Test"
     expect(usContent).toContain('## Implementation');
   });
 
-  test('should preserve task completion status through sync', async () => {
+  it('should preserve task completion status through sync', async () => {
     const incrementId = '0042-completion-sync';
     const incrementPath = path.join(testProjectRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -363,7 +363,7 @@ title: "Completion Sync Test"
     expect(issueData.body).toContain('- [ ] **T-002**: In progress task');
   });
 
-  test('should support multi-project task filtering', async () => {
+  it('should support multi-project task filtering', async () => {
     const incrementId = '0043-multi-project-filter';
     const incrementPath = path.join(testProjectRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);

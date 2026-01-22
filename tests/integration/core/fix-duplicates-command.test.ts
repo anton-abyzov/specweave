@@ -10,7 +10,7 @@
  * - Dry-run mode
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -24,16 +24,16 @@ const INCREMENTS_DIR = path.join(TEST_ROOT, '.specweave', 'increments');
 const ARCHIVE_DIR = path.join(INCREMENTS_DIR, '_archive');
 const ABANDONED_DIR = path.join(INCREMENTS_DIR, '_abandoned');
 
-test.describe('Fix Duplicates Command E2E Tests', () => {
+describe('Fix Duplicates Command E2E Tests', () => {
   // Setup and teardown
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     await fs.mkdir(TEST_ROOT, { recursive: true });
     await fs.mkdir(INCREMENTS_DIR, { recursive: true });
     await fs.mkdir(ARCHIVE_DIR, { recursive: true });
     await fs.mkdir(ABANDONED_DIR, { recursive: true });
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await fs.rm(TEST_ROOT, { recursive: true, force: true });
   });
 
@@ -79,7 +79,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   }
 
   // Test 1: Detect and resolve duplicates
-  test('fixDuplicates_withDuplicates_resolvesAll', async () => {
+  it('fixDuplicates_withDuplicates_resolvesAll', async () => {
     // Arrange: Create duplicate increments
     const now = new Date();
     const older = new Date(now);
@@ -124,7 +124,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 2: Content merging
-  test('fixDuplicates_withMerge_preservesContent', async () => {
+  it('fixDuplicates_withMerge_preservesContent', async () => {
     // Arrange: Create duplicates with different content
     await createTestIncrement(
       INCREMENTS_DIR,
@@ -158,7 +158,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 3: Resolution report generation
-  test('fixDuplicates_generatesReport', async () => {
+  it('fixDuplicates_generatesReport', async () => {
     // Arrange: Create duplicates
     await createTestIncrement(INCREMENTS_DIR, '0031-test-report', 'active');
     await createTestIncrement(ARCHIVE_DIR, '0031-test-report', 'completed');
@@ -179,7 +179,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 4: Dry-run mode
-  test('fixDuplicates_dryRun_doesNotDelete', async () => {
+  it('fixDuplicates_dryRun_doesNotDelete', async () => {
     // Arrange: Create duplicates
     await createTestIncrement(INCREMENTS_DIR, '0031-dry-run-test', 'active');
     await createTestIncrement(ARCHIVE_DIR, '0031-dry-run-test', 'completed');
@@ -196,7 +196,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 5: Winner selection by status priority
-  test('fixDuplicates_selectsWinner_byStatusPriority', async () => {
+  it('fixDuplicates_selectsWinner_byStatusPriority', async () => {
     // Arrange: Create duplicates with different statuses
     await createTestIncrement(ARCHIVE_DIR, '0031-status-test', 'completed');
     await createTestIncrement(INCREMENTS_DIR, '0031-status-test', 'active');
@@ -211,7 +211,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 6: Winner selection by recency
-  test('fixDuplicates_selectsWinner_byRecency', async () => {
+  it('fixDuplicates_selectsWinner_byRecency', async () => {
     // Arrange: Create duplicates with same status but different activity
     const now = new Date();
     const recent = new Date(now);
@@ -241,7 +241,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 7: Winner selection by completeness
-  test('fixDuplicates_selectsWinner_byCompleteness', async () => {
+  it('fixDuplicates_selectsWinner_byCompleteness', async () => {
     // Arrange: Create duplicates with same status/recency but different file counts
     const sameTime = new Date().toISOString();
 
@@ -275,7 +275,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 8: Multiple duplicates resolution
-  test('fixDuplicates_resolvesMultiple_simultaneously', async () => {
+  it('fixDuplicates_resolvesMultiple_simultaneously', async () => {
     // Arrange: Create multiple duplicates
     await createTestIncrement(INCREMENTS_DIR, '0031-multi-1', 'active');
     await createTestIncrement(ARCHIVE_DIR, '0031-multi-1', 'completed');
@@ -302,7 +302,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 9: Three-way duplicate
-  test('fixDuplicates_resolves_threeWayDuplicate', async () => {
+  it('fixDuplicates_resolves_threeWayDuplicate', async () => {
     // Arrange: Create three versions of same increment
     await createTestIncrement(INCREMENTS_DIR, '0031-three-way', 'active');
     await createTestIncrement(ARCHIVE_DIR, '0031-three-way', 'completed');
@@ -322,7 +322,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 10: Merge with filename conflicts
-  test('fixDuplicates_mergeHandles_filenameConflicts', async () => {
+  it('fixDuplicates_mergeHandles_filenameConflicts', async () => {
     // Arrange: Create duplicates with conflicting filenames
     await createTestIncrement(
       INCREMENTS_DIR,
@@ -358,7 +358,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 11: Resolution report content validation
-  test('fixDuplicates_reportContains_allDetails', async () => {
+  it('fixDuplicates_reportContains_allDetails', async () => {
     // Arrange: Create duplicates with metadata
     const incDir1 = path.join(INCREMENTS_DIR, '0031-report-detail');
     await fs.mkdir(incDir1, { recursive: true });
@@ -397,7 +397,7 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   // Test 12: Error handling - permission denied simulation
-  test('fixDuplicates_handlesErrors_gracefully', async () => {
+  it('fixDuplicates_handlesErrors_gracefully', async () => {
     // Arrange: Create duplicates
     await createTestIncrement(INCREMENTS_DIR, '0031-error-test', 'active');
     await createTestIncrement(ARCHIVE_DIR, '0031-error-test', 'completed');
@@ -429,16 +429,16 @@ test.describe('Fix Duplicates Command E2E Tests', () => {
   });
 });
 
-test.describe('Fix Duplicates Integration Tests', () => {
-  test.beforeEach(async () => {
+describe('Fix Duplicates Integration Tests', () => {
+  beforeEach(async () => {
     await fs.mkdir(TEST_ROOT);
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await fs.rm(TEST_ROOT, { recursive: true, force: true });
   });
 
-  test('fixDuplicates_fullWorkflow_detectResolveVerify', async () => {
+  it('fixDuplicates_fullWorkflow_detectResolveVerify', async () => {
     // This test verifies the complete fix-duplicates workflow
 
     const incDir = path.join(TEST_ROOT, '.specweave', 'increments');

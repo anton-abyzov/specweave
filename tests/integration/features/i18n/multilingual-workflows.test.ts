@@ -8,7 +8,7 @@
  * - Living docs translation
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -19,12 +19,12 @@ const TEST_DIR = path.join(process.cwd(), 'tests/fixtures/e2e-i18n');
 const CLEANUP_RETRIES = 3;
 const CLEANUP_INITIAL_DELAY = 100; // ms
 
-test.describe('Multilingual Workflows E2E', () => {
+describe('Multilingual Workflows E2E', () => {
   let workerTestDir: string;
 
-  test.beforeAll(async ({ }, testInfo) => {
+  beforeAll(async () => {
     // Create unique directory for this worker to avoid parallel test conflicts
-    workerTestDir = path.join(TEST_DIR, `worker-${testInfo.workerIndex}`);
+    workerTestDir = path.join(TEST_DIR, `worker-${Date.now()}`);
 
     // Cleanup any previous test artifacts with exponential backoff
     let retries = CLEANUP_RETRIES;
@@ -52,7 +52,7 @@ test.describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  test.afterAll(async () => {
+  afterAll(async () => {
     // Cleanup test directory with exponential backoff (non-fatal)
     let retries = CLEANUP_RETRIES;
     let delay = CLEANUP_INITIAL_DELAY;
@@ -78,7 +78,7 @@ test.describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  test('should initialize project with English (default)', async () => {
+  it('should initialize project with English (default)', async () => {
     const projectDir = path.join(workerTestDir, 'english-project');
     await fs.ensureDir(projectDir);
 
@@ -107,7 +107,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(savedConfig.translation).toBeDefined();
   });
 
-  test('should initialize project with Russian', async () => {
+  it('should initialize project with Russian', async () => {
     const projectDir = path.join(workerTestDir, 'russian-project');
     await fs.ensureDir(projectDir);
 
@@ -134,7 +134,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(savedConfig.translation.autoTranslateLivingDocs).toBe(true);
   });
 
-  test('should initialize project with Spanish', async () => {
+  it('should initialize project with Spanish', async () => {
     const projectDir = path.join(workerTestDir, 'spanish-project');
     await fs.ensureDir(projectDir);
 
@@ -160,7 +160,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(savedConfig.language).toBe('es');
   });
 
-  test('should switch language in existing project', async () => {
+  it('should switch language in existing project', async () => {
     const projectDir = path.join(workerTestDir, 'language-switch-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
@@ -201,7 +201,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(savedConfig.translation.autoTranslateLivingDocs).toBe(true);
   });
 
-  test('should preserve framework terms in config', async () => {
+  it('should preserve framework terms in config', async () => {
     const projectDir = path.join(workerTestDir, 'framework-terms-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
@@ -228,7 +228,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(savedConfig.translation.keepTechnicalTerms).toBe(true);
   });
 
-  test('should create increment folder structure regardless of language', async () => {
+  it('should create increment folder structure regardless of language', async () => {
     const projectDir = path.join(workerTestDir, 'increment-structure-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
@@ -268,7 +268,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(await fs.pathExists(scriptsDir)).toBe(true);
   });
 
-  test('should handle all 9 supported languages', async () => {
+  it('should handle all 9 supported languages', async () => {
     const languages = ['en', 'ru', 'es', 'zh', 'de', 'fr', 'ja', 'ko', 'pt'];
 
     for (const lang of languages) {
@@ -298,7 +298,7 @@ test.describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  test('should create translator skill files', async () => {
+  it('should create translator skill files', async () => {
     const skillPath = path.join(process.cwd(), 'plugins/specweave/skills/translator/SKILL.md');
 
     // Verify translator skill exists
@@ -317,7 +317,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('Framework terms');
   });
 
-  test('should create translator agent files', async () => {
+  it('should create translator agent files', async () => {
     const agentPath = path.join(process.cwd(), 'plugins/specweave/agents/translator/AGENT.md');
 
     // Verify translator agent exists
@@ -332,7 +332,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('Translation Planning');
   });
 
-  test('should create translate command', async () => {
+  it('should create translate command', async () => {
     const commandPath = path.join(process.cwd(), 'plugins/specweave/commands/specweave-translate.md');
 
     // Verify translate command exists
@@ -350,7 +350,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('--scope');
   });
 
-  test('should have locale files for supported languages', async () => {
+  it('should have locale files for supported languages', async () => {
     const supportedLanguages = ['en', 'ru', 'es'];
 
     for (const lang of supportedLanguages) {
@@ -374,7 +374,7 @@ test.describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  test('should preserve emojis in locale files', async () => {
+  it('should preserve emojis in locale files', async () => {
     const languages = ['en', 'ru', 'es'];
 
     for (const lang of languages) {
@@ -385,12 +385,12 @@ test.describe('Multilingual Workflows E2E', () => {
       if (content.init && content.init.welcome) {
         const welcome = content.init.welcome;
         // Should contain at least one emoji (🚀 is common)
-        expect(/[\u{1F000}-\u{1F9FF}]/u.test(welcome)).toBe(true);
+        expect(/[\u{1F000}-\u{1F9FF}]/u.it(welcome)).toBe(true);
       }
     }
   });
 
-  test('should preserve framework terms in non-English locales', async () => {
+  it('should preserve framework terms in non-English locales', async () => {
     const nonEnglishLanguages = ['ru', 'es'];
 
     for (const lang of nonEnglishLanguages) {
@@ -405,7 +405,7 @@ test.describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  test('should support translation config toggles', async () => {
+  it('should support translation config toggles', async () => {
     const projectDir = path.join(workerTestDir, 'translation-toggles-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));

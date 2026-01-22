@@ -9,7 +9,7 @@
  * 4. Stakeholders receive notifications
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -64,7 +64,7 @@ test.describe.serial('Immutable Description Pattern E2E', () => {
   let tempDir: string;
   let userStoryPath: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Create temp directory
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immutable-e2e-'));
 
@@ -72,12 +72,12 @@ test.describe.serial('Immutable Description Pattern E2E', () => {
     mockGitHubAPI.reset();
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // Cleanup
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  test('should create issue with immutable description and never edit it', async () => {
+  it('should create issue with immutable description and never edit it', async () => {
     // ARRANGE: Create user story file
     const userStoryContent = `---
 id: US-001
@@ -192,7 +192,7 @@ created: 2025-11-15
     expect(mockGitHubAPI.getIssue(1).comments[1]).toContain('67%');
   });
 
-  test('should create audit trail with multiple progress comments', async () => {
+  it('should create audit trail with multiple progress comments', async () => {
     // ARRANGE: Create user story with 4 ACs
     const userStoryContent = `---
 id: US-003
@@ -260,7 +260,7 @@ Original issue description (immutable)`;
     expect(mockGitHubAPI.getIssue(issue.number).comments[3]).toContain('100%');
   });
 
-  test('should handle multi-user-story sync correctly', async () => {
+  it('should handle multi-user-story sync correctly', async () => {
     // ARRANGE: Create 3 user story files
     const userStories = [
       {
@@ -328,7 +328,7 @@ ${Array.from({ length: us.acs }, (_, i) => `- [ ] **AC-${us.id.replace('-', '')}
     }
   });
 
-  test('should preserve description even when sync errors occur', async () => {
+  it('should preserve description even when sync errors occur', async () => {
     // ARRANGE: Create user story
     const userStoryContent = `---
 id: US-004
@@ -366,7 +366,7 @@ created: 2025-11-15
     expect(mockGitHubAPI.getIssue(issue.number).comments.length).toBe(0);
   });
 
-  test('should notify stakeholders via GitHub notifications', async () => {
+  it('should notify stakeholders via GitHub notifications', async () => {
     // ARRANGE: Create user story
     const userStoryContent = `---
 id: US-005

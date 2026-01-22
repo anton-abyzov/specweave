@@ -6,19 +6,19 @@
  * Tests multi-project file structure and config persistence
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 
-test.describe('Multi-Project Workflow (E2E)', () => {
+describe('Multi-Project Workflow (E2E)', () => {
   // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let specweaveRoot: string;
 
-  test.beforeEach(async ({ }, testInfo) => {
+  beforeEach(async () => {
     // Create unique directory in OS temp folder to avoid parallel execution race conditions
-    testDir = path.join(os.tmpdir(), `specweave-e2e-multi-project-${testInfo.workerIndex}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = path.join(os.tmpdir(), `specweave-e2e-multi-project-${Date.now()}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specweaveRoot = path.join(testDir, '.specweave');
 
     // Clean up any existing test directory
@@ -29,11 +29,11 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     await fs.ensureDir(specweaveRoot);
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await fs.remove(testDir);
   });
 
-  test('should support basic multi-project file structure', async () => {
+  it('should support basic multi-project file structure', async () => {
     // Create config with 2 projects
     const configPath = path.join(specweaveRoot, 'config.json');
     const config = {
@@ -93,7 +93,7 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     expect(savedConfig.multiProject.activeProject).toBe('web-app');
   });
 
-  test('should support agency managing 4 client projects', async () => {
+  it('should support agency managing 4 client projects', async () => {
     // Real-world scenario: Digital agency with 4 client projects
     const configPath = path.join(specweaveRoot, 'config.json');
     const config = {
@@ -150,7 +150,7 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     expect(ecommerceProject.techStack).toContain('stripe');
   });
 
-  test('should support project switching without data loss', async () => {
+  it('should support project switching without data loss', async () => {
     // Setup: 2 projects
     const configPath = path.join(specweaveRoot, 'config.json');
     let config = {
@@ -203,7 +203,7 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     expect(backendFiles.length).toBe(2);
   });
 
-  test('should persist project metadata across config updates', async () => {
+  it('should persist project metadata across config updates', async () => {
     // Create project with rich metadata
     const configPath = path.join(specweaveRoot, 'config.json');
     const config = {
@@ -244,7 +244,7 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     expect(savedConfig.multiProject.projects[0].description).toBe('Updated description');
   });
 
-  test('should support brownfield imports to different projects', async () => {
+  it('should support brownfield imports to different projects', async () => {
     // Setup: 2 projects for brownfield imports
     const configPath = path.join(specweaveRoot, 'config.json');
     const config = {

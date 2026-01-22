@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import { ensureDir, remove } from '../../../../src/utils/fs-native.js';
@@ -31,11 +31,11 @@ test.describe.serial('Azure DevOps Sync E2E', () => {
   let adoClient: AdoClient;
   let workItemId: number;
 
-  test.beforeAll(async () => {
+  beforeAll(async () => {
     if (skipIfNoAdo) {
       // Skip all ADO tests when environment variables are not configured
       // This is expected behavior - ADO tests require Azure DevOps credentials
-      test.skip();
+      it.skip();
       return;
     }
 
@@ -115,7 +115,7 @@ total_tasks: 3
     );
   });
 
-  test.afterAll(async () => {
+  afterAll(async () => {
     if (skipIfNoAdo) return;
 
     // Cleanup: Delete test work item
@@ -131,7 +131,7 @@ total_tasks: 3
     await remove(TEST_SPECWEAVE_DIR);
   });
 
-  test('should create ADO work item from increment', async () => {
+  it('should create ADO work item from increment', async () => {
     // Create work item
     const workItem = await adoClient.createWorkItem({
       title: `Test Increment: ${TEST_INCREMENT_ID}`,
@@ -165,7 +165,7 @@ total_tasks: 3
     );
   });
 
-  test('should add comment to work item', async () => {
+  it('should add comment to work item', async () => {
     expect(workItemId).toBeDefined();
 
     const comment = await adoClient.addComment(
@@ -178,7 +178,7 @@ total_tasks: 3
     expect(comment.text).toContain('Progress Update');
   });
 
-  test('should get work item by ID', async () => {
+  it('should get work item by ID', async () => {
     expect(workItemId).toBeDefined();
 
     const workItem = await adoClient.getWorkItem(workItemId);
@@ -188,7 +188,7 @@ total_tasks: 3
     expect(workItem.fields['System.Title']).toContain(TEST_INCREMENT_ID);
   });
 
-  test('should update work item state', async () => {
+  it('should update work item state', async () => {
     expect(workItemId).toBeDefined();
 
     // Update state to Doing (valid for Epic work items in this project)
@@ -200,7 +200,7 @@ total_tasks: 3
     expect(updatedWorkItem.fields['System.State']).toBe('Doing');
   });
 
-  test('should get comments for work item', async () => {
+  it('should get comments for work item', async () => {
     expect(workItemId).toBeDefined();
 
     const comments = await adoClient.getComments(workItemId);
@@ -211,7 +211,7 @@ total_tasks: 3
     expect(comments[0].text).toBeDefined();
   });
 
-  test('should close work item', async () => {
+  it('should close work item', async () => {
     expect(workItemId).toBeDefined();
 
     // Add final comment
@@ -229,7 +229,7 @@ total_tasks: 3
     expect(closedWorkItem.fields['System.State']).toBe('Done');
   });
 
-  test('should handle error when PAT is invalid', async () => {
+  it('should handle error when PAT is invalid', async () => {
     const invalidClient = createAdoClient({
       organization: process.env.AZURE_DEVOPS_ORG!,
       project: process.env.AZURE_DEVOPS_PROJECT!,
@@ -241,16 +241,16 @@ total_tasks: 3
     ).rejects.toThrow(/ADO API error: (401|302)/);
   });
 
-  test('should handle error when work item not found', async () => {
+  it('should handle error when work item not found', async () => {
     await expect(adoClient.getWorkItem(999999)).rejects.toThrow(/404/);
   });
 
-  test('should test connection successfully', async () => {
+  it('should test connection successfully', async () => {
     const connected = await adoClient.testConnection();
     expect(connected).toBe(true);
   });
 
-  test('should test connection failure with invalid PAT', async () => {
+  it('should test connection failure with invalid PAT', async () => {
     const invalidClient = createAdoClient({
       organization: process.env.AZURE_DEVOPS_ORG!,
       project: process.env.AZURE_DEVOPS_PROJECT!,
@@ -262,13 +262,13 @@ total_tasks: 3
   });
 });
 
-test.describe('ADO Sync - Rate Limiting', () => {
-  test.skip('should handle rate limiting gracefully', async () => {
+describe('ADO Sync - Rate Limiting', () => {
+  it.skip('should handle rate limiting gracefully', async () => {
     if (skipIfNoAdo) return;
 
     // INTENTIONALLY SKIPPED: This test would make 250+ API calls to trigger rate limits
     // This is destructive to the ADO API quota and should only be run manually when needed
-    // To enable: Remove test.skip() and run with caution
+    // To enable: Remove it.skip() and run with caution
 
     const adoClient = createAdoClient();
 
@@ -283,10 +283,10 @@ test.describe('ADO Sync - Rate Limiting', () => {
   });
 });
 
-test.describe('ADO Sync - Error Scenarios', () => {
+describe('ADO Sync - Error Scenarios', () => {
   let savedEnv: Record<string, string | undefined>;
 
-  test.beforeEach(() => {
+  beforeEach(() => {
     // Save and clear environment variables for these tests
     savedEnv = {
       AZURE_DEVOPS_PAT: process.env.AZURE_DEVOPS_PAT,
@@ -298,7 +298,7 @@ test.describe('ADO Sync - Error Scenarios', () => {
     delete process.env.AZURE_DEVOPS_PROJECT;
   });
 
-  test.afterEach(() => {
+  afterEach(() => {
     // Restore environment variables
     if (savedEnv.AZURE_DEVOPS_PAT !== undefined) {
       process.env.AZURE_DEVOPS_PAT = savedEnv.AZURE_DEVOPS_PAT;
@@ -311,7 +311,7 @@ test.describe('ADO Sync - Error Scenarios', () => {
     }
   });
 
-  test('should throw error when organization not configured', () => {
+  it('should throw error when organization not configured', () => {
     expect(() =>
       createAdoClient({
         project: 'test',
@@ -320,7 +320,7 @@ test.describe('ADO Sync - Error Scenarios', () => {
     ).toThrow('ADO organization not configured');
   });
 
-  test('should throw error when project not configured', () => {
+  it('should throw error when project not configured', () => {
     expect(() =>
       createAdoClient({
         organization: 'test',
@@ -329,7 +329,7 @@ test.describe('ADO Sync - Error Scenarios', () => {
     ).toThrow('ADO project not configured');
   });
 
-  test('should throw error when PAT not configured', () => {
+  it('should throw error when PAT not configured', () => {
     expect(() =>
       createAdoClient({
         organization: 'test',
@@ -339,11 +339,11 @@ test.describe('ADO Sync - Error Scenarios', () => {
   });
 });
 
-test.describe('ADO Sync - Multi-Project Support', () => {
-  test.skip('should query work items across multiple projects', async () => {
+describe('ADO Sync - Multi-Project Support', () => {
+  it.skip('should query work items across multiple projects', async () => {
     // INTENTIONALLY SKIPPED: Requires access to multiple ADO projects (SpecWeaveSync, FAQ Chat)
     // These specific projects may not exist in test environments
-    // To enable: Ensure test projects exist and remove test.skip()
+    // To enable: Ensure test projects exist and remove it.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
@@ -393,10 +393,10 @@ test.describe('ADO Sync - Multi-Project Support', () => {
     expect(projects.size).toBeGreaterThanOrEqual(0);
   });
 
-  test.skip('should filter by area paths in multi-project mode', async () => {
+  it.skip('should filter by area paths in multi-project mode', async () => {
     // INTENTIONALLY SKIPPED: Requires specific area paths (SpecWeaveSync\\Area 1) to exist
     // These area paths are project-specific and may not exist in test environments
-    // To enable: Create required area paths and remove test.skip()
+    // To enable: Create required area paths and remove it.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
@@ -436,10 +436,10 @@ test.describe('ADO Sync - Multi-Project Support', () => {
     });
   });
 
-  test.skip('should support custom WIQL queries', async () => {
+  it.skip('should support custom WIQL queries', async () => {
     // INTENTIONALLY SKIPPED: Uses custom WIQL queries that depend on specific project structure
     // Requires SpecWeaveSync and FAQ Chat projects with Epic work items
-    // To enable: Ensure test projects and work items exist, then remove test.skip()
+    // To enable: Ensure test projects and work items exist, then remove it.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');

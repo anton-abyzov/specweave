@@ -11,7 +11,7 @@
  * - Dry-run mode
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -84,11 +84,11 @@ async function incrementExists(id: string, inArchive: boolean = false): Promise<
   }
 }
 
-test.describe('Archive Command E2E Tests', () => {
+describe('Archive Command E2E Tests', () => {
   // Setup and teardown
-  test.beforeEach(async ({ }, testInfo) => {
+  beforeEach(async () => {
     // Create worker-specific temp directory to avoid race conditions
-    TEST_ROOT = await fs.mkdtemp(path.join(os.tmpdir(), `archive-test-${testInfo.workerIndex}-`));
+    TEST_ROOT = await fs.mkdtemp(path.join(os.tmpdir(), `archive-test-${Date.now()}-`));
     INCREMENTS_DIR = path.join(TEST_ROOT, '.specweave', 'increments');
     ARCHIVE_DIR = path.join(INCREMENTS_DIR, '_archive');
 
@@ -96,14 +96,14 @@ test.describe('Archive Command E2E Tests', () => {
     await fs.mkdir(ARCHIVE_DIR, { recursive: true });
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     if (TEST_ROOT) {
       await fs.rm(TEST_ROOT, { recursive: true, force: true });
     }
   });
 
   // Test 1: Archive specific increment
-  test('archive_withKeepLast_archivesOldest', async () => {
+  it('archive_withKeepLast_archivesOldest', async () => {
     // Arrange: Create 15 completed increments (use 1001-1015 to avoid duplicates)
     for (let i = 1001; i <= 1015; i++) {
       const id = `${i}-test-increment`;
@@ -134,7 +134,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 2: Default keep-last behavior (10)
-  test('archive_withNoOptions_usesDefault10', async () => {
+  it('archive_withNoOptions_usesDefault10', async () => {
     // Arrange: Create 20 completed increments (use 2001-2020 to avoid duplicates)
     for (let i = 2001; i <= 2020; i++) {
       const id = `${i}-test-increment`;
@@ -152,7 +152,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 3: Never archive active or paused increments
-  test('archive_neverArchivesActive_orPaused', async () => {
+  it('archive_neverArchivesActive_orPaused', async () => {
     // Arrange: Create mix of statuses (use 3001-3004 to avoid duplicates)
     await createTestIncrement('3001-active-inc', 'active');
     await createTestIncrement('3002-paused-inc', 'paused');
@@ -176,7 +176,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 4: Older-than filtering
-  test('archive_olderThan_archivesOldOnly', async () => {
+  it('archive_olderThan_archivesOldOnly', async () => {
     // Arrange: Create increments with different ages (use 4001-4004 to avoid duplicates)
     const now = new Date();
     const old = new Date(now);
@@ -205,7 +205,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 5: Pattern filtering
-  test('archive_patternFilter_archivesMatchingPattern', async () => {
+  it('archive_patternFilter_archivesMatchingPattern', async () => {
     // Arrange: Create increments with different naming patterns (use 5001-5004 to avoid duplicates)
     await createTestIncrement('5001-auth-service', 'completed');
     await createTestIncrement('5002-auth-enhancements', 'completed');
@@ -224,7 +224,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 6: Dry-run mode
-  test('archive_dryRun_showsPreviewOnly', async () => {
+  it('archive_dryRun_showsPreviewOnly', async () => {
     // Arrange: Create test increments (use 6001-6002 to avoid duplicates)
     await createTestIncrement('6001-test-inc', 'completed');
     await createTestIncrement('6002-test-inc2', 'completed');
@@ -242,7 +242,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 7: Skip archiving duplicates (already in archive)
-  test('archive_whenAlreadyInArchive_skipsGracefully', async () => {
+  it('archive_whenAlreadyInArchive_skipsGracefully', async () => {
     // Arrange: Create increment in both active and archive (use 7001 to avoid duplicates)
     await createTestIncrement('7001-duplicate-test', 'completed');
     const archivePath = path.join(ARCHIVE_DIR, '7001-duplicate-test');
@@ -262,7 +262,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 8: Skip increments with open GitHub issues
-  test('archive_withOpenGitHubIssue_skips', async () => {
+  it('archive_withOpenGitHubIssue_skips', async () => {
     // Arrange: Create increment with open GitHub issue (use 8001 to avoid duplicates)
     const incDir = path.join(INCREMENTS_DIR, '8001-github-sync');
     await fs.mkdir(incDir, { recursive: true });
@@ -291,7 +291,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 9: Archive increment with closed GitHub issue
-  test('archive_withClosedGitHubIssue_succeeds', async () => {
+  it('archive_withClosedGitHubIssue_succeeds', async () => {
     // Arrange: Create increment with closed GitHub issue (use 9001 to avoid duplicates)
     const incDir = path.join(INCREMENTS_DIR, '9001-github-closed');
     await fs.mkdir(incDir, { recursive: true });
@@ -320,7 +320,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 10: Archive specific increments by ID
-  test('archive_specificIncrements_archivesOnlyThose', async () => {
+  it('archive_specificIncrements_archivesOnlyThose', async () => {
     // Arrange: Create multiple increments (use 1001-1003 to avoid duplicates)
     await createTestIncrement('1001-test-a', 'completed');
     await createTestIncrement('1002-test-b', 'completed');
@@ -343,7 +343,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 11: Combined filters (pattern + older-than)
-  test('archive_combinedFilters_archivesIntersection', async () => {
+  it('archive_combinedFilters_archivesIntersection', async () => {
     // Arrange: Create increments with different patterns and ages (use 1101-1103 to avoid duplicates)
     const old = new Date();
     old.setDate(old.getDate() - 100);
@@ -369,7 +369,7 @@ test.describe('Archive Command E2E Tests', () => {
   });
 
   // Test 12: Calculate total archive size
-  test('archive_calculatesSize_correctly', async () => {
+  it('archive_calculatesSize_correctly', async () => {
     // Arrange: Create increments with known file sizes (use 1201 to avoid duplicates)
     await createTestIncrement('1201-test-inc', 'completed');
 
@@ -386,21 +386,21 @@ test.describe('Archive Command E2E Tests', () => {
   });
 });
 
-test.describe('Archive Command Integration Tests', () => {
-  test.beforeEach(async ({ }, testInfo) => {
+describe('Archive Command Integration Tests', () => {
+  beforeEach(async () => {
     // Create worker-specific temp directory
-    TEST_ROOT = await fs.mkdtemp(path.join(os.tmpdir(), `archive-int-test-${testInfo.workerIndex}-`));
+    TEST_ROOT = await fs.mkdtemp(path.join(os.tmpdir(), `archive-int-test-${Date.now()}-`));
     INCREMENTS_DIR = path.join(TEST_ROOT, '.specweave', 'increments');
     ARCHIVE_DIR = path.join(INCREMENTS_DIR, '_archive');
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     if (TEST_ROOT) {
       await fs.rm(TEST_ROOT, { recursive: true, force: true });
     }
   });
 
-  test('archive_fullWorkflow_createDuplicateFixVerify', async () => {
+  it('archive_fullWorkflow_createDuplicateFixVerify', async () => {
     // This test verifies the full workflow from creation to archiving (use 9001 to avoid duplicates)
     const incDir = path.join(TEST_ROOT, '.specweave', 'increments');
     await fs.mkdir(incDir, { recursive: true });

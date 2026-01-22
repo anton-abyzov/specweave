@@ -10,7 +10,7 @@
  * This ensures teams can collaborate effectively using GitHub as the shared workspace.
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -62,10 +62,10 @@ const mockGitHubAPI = {
   }
 };
 
-test.describe('GitHub Bidirectional Sync (E2E)', () => {
+describe('GitHub Bidirectional Sync (E2E)', () => {
   let testDir: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Setup test directory
     // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
     testDir = path.join(os.tmpdir(), `specweave-e2e-github-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -98,13 +98,13 @@ test.describe('GitHub Bidirectional Sync (E2E)', () => {
     mockGitHubAPI.nextIssueNumber = 100;
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     if (testDir && await fs.pathExists(testDir)) {
       await fs.remove(testDir);
     }
   });
 
-  test('should sync new increment to GitHub issue', async () => {
+  it('should sync new increment to GitHub issue', async () => {
     const incrementId = '0001-user-auth';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -194,7 +194,7 @@ Progress: 0/3 tasks (0%)
     expect(savedMetadata.github.issue).toBe(100);
   });
 
-  test('should sync task completion to GitHub', async () => {
+  it('should sync task completion to GitHub', async () => {
     const incrementId = '0002-api-endpoints';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -252,7 +252,7 @@ Progress: 1/3 tasks (33%)
     expect(updatedIssue.comments).toBe(1);
   });
 
-  test('should sync GitHub changes back to local', async () => {
+  it('should sync GitHub changes back to local', async () => {
     const incrementId = '0003-database-setup';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -306,7 +306,7 @@ Progress: 2/2 tasks (100%)
     expect(completedTasks).toBe(2);
   });
 
-  test('should handle sync conflicts', async () => {
+  it('should handle sync conflicts', async () => {
     const incrementId = '0004-conflict-test';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -397,7 +397,7 @@ Progress: 2/3 tasks (67%)
     expect(finalTasks.match(/\*\*Status\*\*: completed/g)).toHaveLength(2);
   });
 
-  test('should sync increment closure to GitHub', async () => {
+  it('should sync increment closure to GitHub', async () => {
     const incrementId = '0005-completed-feature';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -471,7 +471,7 @@ Great work team! 🚀`);
     expect(closedIssue.comments).toBe(1);
   });
 
-  test('should handle rate limiting gracefully', async () => {
+  it('should handle rate limiting gracefully', async () => {
     const incrementId = '0006-rate-limit';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -510,7 +510,7 @@ Great work team! 🚀`);
     expect(canSync).toBe(false);
   });
 
-  test('should batch sync multiple increments', async () => {
+  it('should batch sync multiple increments', async () => {
     const increments = ['0007-feature-a', '0008-feature-b', '0009-feature-c'];
     const syncBatch = [];
 
@@ -569,22 +569,22 @@ total_tasks: 1
   });
 });
 
-test.describe('GitHub Sync Error Handling', () => {
+describe('GitHub Sync Error Handling', () => {
   let testDir: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
     testDir = path.join(os.tmpdir(), `specweave-e2e-github-errors-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     if (testDir && await fs.pathExists(testDir)) {
       await fs.remove(testDir);
     }
   });
 
-  test('should handle network failures', async () => {
+  it('should handle network failures', async () => {
     const incrementId = '0010-network-fail';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);
@@ -612,7 +612,7 @@ test.describe('GitHub Sync Error Handling', () => {
     expect(savedError.retryCount).toBe(0);
   });
 
-  test('should handle authentication errors', async () => {
+  it('should handle authentication errors', async () => {
     const incrementId = '0011-auth-fail';
     const incrementPath = path.join(testDir, '.specweave/increments', incrementId);
     await fs.ensureDir(incrementPath);

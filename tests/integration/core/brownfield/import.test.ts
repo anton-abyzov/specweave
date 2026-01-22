@@ -10,20 +10,20 @@
  * - Performance (<10s for 50 files)
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 
-test.describe('Brownfield Import Workflow (E2E)', () => {
+describe('Brownfield Import Workflow (E2E)', () => {
   // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let specweaveRoot: string;
   let sourceDir: string;
 
-  test.beforeEach(async ({ }, testInfo) => {
+  beforeEach(async () => {
     // Create unique directory in OS temp folder to avoid parallel execution race conditions
-    testDir = path.join(os.tmpdir(), `specweave-e2e-brownfield-${testInfo.workerIndex}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = path.join(os.tmpdir(), `specweave-e2e-brownfield-${Date.now()}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specweaveRoot = path.join(testDir, '.specweave');
     sourceDir = path.join(testDir, 'source-docs');
 
@@ -158,11 +158,11 @@ Next meeting: Friday.
     );
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await fs.remove(testDir);
   });
 
-  test('should execute import and copy files to correct folders', async () => {
+  it('should execute import and copy files to correct folders', async () => {
     // Dynamically import BrownfieldImporter
     const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
     const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
@@ -209,7 +209,7 @@ Next meeting: Friday.
     expect(await fs.pathExists(path.join(legacyPath, 'random-ideas.md'))).toBe(true);
   });
 
-  test('should create migration report in legacy folder', async () => {
+  it('should create migration report in legacy folder', async () => {
     const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
     const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
 
@@ -246,7 +246,7 @@ Next meeting: Friday.
     expect(reportContent).toContain('**Legacy**:');  // Fixed: Bold formatting
   });
 
-  test('should update config with import history', async () => {
+  it('should update config with import history', async () => {
     const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
     const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
 
@@ -278,7 +278,7 @@ Next meeting: Friday.
     expect(lastImport.project).toBe('default');  // Implementation includes project field
   });
 
-  test('should support dry run mode (preview without copying)', async () => {
+  it('should support dry run mode (preview without copying)', async () => {
     const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
     const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
 
@@ -307,7 +307,7 @@ Next meeting: Friday.
     expect(await fs.pathExists(path.join(specsPath, 'auth-feature.md'))).toBe(false);
   });
 
-  test('should handle structure preservation mode', async () => {
+  it('should handle structure preservation mode', async () => {
     const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
     const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
 
@@ -339,7 +339,7 @@ Next meeting: Friday.
     expect(await fs.pathExists(path.join(teamPath, 'team/conventions.md'))).toBe(true);
   });
 
-  test('should complete import of 50 files in <10 seconds (performance)', async () => {
+  it('should complete import of 50 files in <10 seconds (performance)', async () => {
     // Create 50 test files
     for (let i = 1; i <= 50; i++) {
       const filename = `test-file-${i}.md`;

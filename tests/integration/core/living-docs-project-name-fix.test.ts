@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -24,23 +24,23 @@ const __dirname = dirname(__filename);
  * - AFTER: Living docs creates specs/specweave/ (matches repo name!)
  */
 
-test.describe('Living Docs Project Name Fix (E2E)', () => {
+describe('Living Docs Project Name Fix (E2E)', () => {
   let testDir: string;
 
-  test.beforeEach(() => {
+  beforeEach(() => {
     // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
     // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
     testDir = path.join(os.tmpdir(), `specweave-test-project-name-fix-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(testDir, { recursive: true });
   });
 
-  test.afterEach(() => {
+  afterEach(() => {
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
-  test('should use repo name (specweave) instead of hardcoded default', async () => {
+  it('should use repo name (specweave) instead of hardcoded default', async () => {
     // 1. Setup: Create SpecWeave project config with specweave project
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });
 
@@ -137,7 +137,7 @@ Implement bidirectional status synchronization.
     expect(fs.existsSync(readmeFile)).toBe(true);
   });
 
-  test('should work with multi-project config (multiple repos)', async () => {
+  it('should work with multi-project config (multiple repos)', async () => {
     // Setup: Multi-project with 3 repos
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });
 
@@ -213,7 +213,7 @@ project: backend
     expect(fs.existsSync(userStoryFile)).toBe(true);
   });
 
-  test('should detect project from increment name when frontmatter missing', async () => {
+  it('should detect project from increment name when frontmatter missing', async () => {
     // Setup
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });
 
@@ -268,7 +268,7 @@ title: User Dashboard
     expect(fs.existsSync(backendFolder)).toBe(false);
   });
 
-  test('should fallback to all configured projects when no indicators', async () => {
+  it('should fallback to all configured projects when no indicators', async () => {
     // Setup: Multi-project mode
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });
 
@@ -321,7 +321,7 @@ title: Generic Task
     expect(fs.existsSync(frontendFolder)).toBe(true);
   });
 
-  test('REGRESSION: should NOT create specs/default/ folder', async () => {
+  it('REGRESSION: should NOT create specs/default/ folder', async () => {
     // This is the CRITICAL regression test for the bug fix
 
     // Setup: specweave single-project
@@ -387,7 +387,7 @@ title: Test Feature ${incNum}
     expect(fs.existsSync(path.join(specweaveFolder, 'FS-035'))).toBe(true);
   });
 
-  test('should maintain GitHub sync compatibility (1:1 mapping)', async () => {
+  it('should maintain GitHub sync compatibility (1:1 mapping)', async () => {
     // Verify the fix ensures 1:1 mapping for GitHub sync
 
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });

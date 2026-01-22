@@ -3,7 +3,7 @@
  * Tests CLI commands end-to-end
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
@@ -15,24 +15,24 @@ import { getCleanEnv } from '../../../src/utils/clean-env.js';
 
 const execAsync = promisify(exec);
 
-test.describe('SpecWeave CLI E2E Tests', () => {
+describe('SpecWeave CLI E2E Tests', () => {
   let testDir: string;
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const specweaveBin = path.join(__dirname, '../../bin/specweave.js');
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Create temporary test directory
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-test-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // Cleanup test directory
     if (testDir) {
       await fs.remove(testDir);
     }
   });
 
-  test('should initialize project with specweave init', async () => {
+  it('should initialize project with specweave init', async () => {
     // Run: specweave init (CI mode via env var)
     const { stdout, stderr } = await execAsync(
       `node "${specweaveBin}" init --adapter=claude --language=en`,
@@ -64,14 +64,14 @@ test.describe('SpecWeave CLI E2E Tests', () => {
     expect(await fs.pathExists(docsDir)).toBe(true);
   });
 
-  test('should show version with --version flag', async () => {
+  it('should show version with --version flag', async () => {
     const { stdout } = await execAsync(`node "${specweaveBin}" --version`);
 
     // Verify version format (e.g., "0.7.0")
     expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  test('should show help with --help flag', async () => {
+  it('should show help with --help flag', async () => {
     const { stdout } = await execAsync(`node "${specweaveBin}" --help`);
 
     // Verify help output contains key commands
@@ -80,7 +80,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
     expect(stdout).toContain('version');
   });
 
-  test('should create correct directory structure', async () => {
+  it('should create correct directory structure', async () => {
     // Initialize project (CI mode via env var)
     await execAsync(
       `node "${specweaveBin}" init --adapter=claude --language=en`,
@@ -103,7 +103,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
     expect(await fs.pathExists(logsDir)).toBe(true);
   });
 
-  test('should handle non-interactive mode correctly', async () => {
+  it('should handle non-interactive mode correctly', async () => {
     // Run with CI env var (non-interactive mode)
     const { stdout, stderr } = await execAsync(
       `node "${specweaveBin}" init --adapter=claude --language=en`,
@@ -121,7 +121,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
     expect(await fs.pathExists(specweaveDir)).toBe(true);
   });
 
-  test('should validate config.json structure', async () => {
+  it('should validate config.json structure', async () => {
     // Initialize project (CI mode via env var)
     await execAsync(
       `node "${specweaveBin}" init --adapter=claude --language=en`,

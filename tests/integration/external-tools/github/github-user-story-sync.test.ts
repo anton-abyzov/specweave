@@ -13,28 +13,28 @@
  * - Proper link conversion to GitHub blob URLs
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
-test.describe('GitHub User Story Sync - E2E', () => {
+describe('GitHub User Story Sync - E2E', () => {
   let tmpDir: string;
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-e2e-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
   });
 
-  test('should sync user story with all content to GitHub issue', async () => {
+  it('should sync user story with all content to GitHub issue', async () => {
     // 1. Setup test environment
     process.chdir(tmpDir);
 
@@ -204,7 +204,7 @@ External stakeholders need complete context in GitHub issues without accessing t
     expect(result.body).toContain('🤖 Auto-created by SpecWeave User Story Sync');
   });
 
-  test('should detect repo name from git remote and use it as project name', async () => {
+  it('should detect repo name from git remote and use it as project name', async () => {
     // Setup test environment
     process.chdir(tmpDir);
 
@@ -230,7 +230,7 @@ External stakeholders need complete context in GitHub issues without accessing t
     expect(projects[0].id).toBe('awesome-app');
   });
 
-  test('should handle multi-repo setup with separate project folders', async () => {
+  it('should handle multi-repo setup with separate project folders', async () => {
     // Setup test environment
     process.chdir(tmpDir);
 
@@ -289,7 +289,7 @@ created: 2025-11-15
     );
   });
 
-  test('should preserve absolute URLs and not convert them', async () => {
+  it('should preserve absolute URLs and not convert them', async () => {
     process.chdir(tmpDir);
 
     // Create test structure
@@ -335,7 +335,7 @@ created: 2025-11-15
     expect(result.body).toContain('test-repo/blob/main/.specweave/docs/internal/specs/default/FS-200/us-002-internal.md');
   });
 
-  test('should handle edge case: no Business Rationale or Related Stories', async () => {
+  it('should handle edge case: no Business Rationale or Related Stories', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs/default/FS-300');

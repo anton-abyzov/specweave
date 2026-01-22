@@ -14,7 +14,7 @@
  * - .specweave/increments/0034-github-ac-checkboxes-fix/reports/ULTRATHINK-AC-PROJECT-SPECIFIC-DESIGN.md
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import * as os from 'os';
@@ -26,8 +26,8 @@ import { getCleanEnv } from '../../../test-utils/clean-env.js';
 const TEST_ROOT = path.join(os.tmpdir(), `specweave-test-github-status-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const FEATURE_ID = 'FS-TEST-STATUS';
 
-test.describe('GitHub User Story Status Sync', () => {
-  test.beforeEach(async () => {
+describe('GitHub User Story Status Sync', () => {
+  beforeEach(async () => {
     // Clean up test directory
     if (await fs.stat(TEST_ROOT).catch(() => null)) {
       await fs.rm(TEST_ROOT, { recursive: true });
@@ -35,7 +35,7 @@ test.describe('GitHub User Story Status Sync', () => {
     await fs.mkdir(TEST_ROOT, { recursive: true });
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // Clean up test issues on GitHub
     try {
       const issues = execSync(
@@ -55,7 +55,7 @@ test.describe('GitHub User Story Status Sync', () => {
     await fs.rm(TEST_ROOT, { recursive: true, force: true });
   });
 
-  test('creates closed issue for completed user story', async () => {
+  it('creates closed issue for completed user story', async () => {
     // Setup: Create living docs structure with completed user story
     const specsDir = path.join(TEST_ROOT, '.specweave/docs/internal/specs');
     const featureDir = path.join(specsDir, '_features', FEATURE_ID);
@@ -137,7 +137,7 @@ completed: 2025-11-15
     expect(issueList[0].title).toContain('Test Completed User Story');
   });
 
-  test('creates open issue for active user story', async () => {
+  it('creates open issue for active user story', async () => {
     // Setup: Create living docs structure with active user story
     const specsDir = path.join(TEST_ROOT, '.specweave/docs/internal/specs');
     const featureDir = path.join(specsDir, '_features', FEATURE_ID);
@@ -213,7 +213,7 @@ created: 2025-11-15
     expect(issueList[0].title).toContain('US-001');
   });
 
-  test('updates existing issue when status changes from active to complete', async () => {
+  it('updates existing issue when status changes from active to complete', async () => {
     // Setup: Create user story as active first
     const specsDir = path.join(TEST_ROOT, '.specweave/docs/internal/specs');
     const featureDir = path.join(specsDir, '_features', FEATURE_ID);

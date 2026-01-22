@@ -18,7 +18,7 @@
  * 5. metadata.json created for all increment types
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -29,18 +29,18 @@ import { createTestDir, cleanupTestDir, createTestIncrement } from '../../helper
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test.describe('Metadata Provisioning', () => {
+describe('Metadata Provisioning', () => {
   let testDir: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     testDir = await createTestDir('metadata-provision');
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await cleanupTestDir(testDir);
   });
 
-  test('metadata.json is created during increment creation', async () => {
+  it('metadata.json is created during increment creation', async () => {
     // Create test increment
     const incrementId = '0001-test-feature';
     await createTestIncrement(testDir, 'active', incrementId);
@@ -50,7 +50,7 @@ test.describe('Metadata Provisioning', () => {
     expect(await fs.pathExists(metadataPath)).toBe(true);
   });
 
-  test('metadata.json has all required fields', async () => {
+  it('metadata.json has all required fields', async () => {
     // Create test increment
     const incrementId = '0002-test-feature';
     await createTestIncrement(testDir, 'active', incrementId);
@@ -81,7 +81,7 @@ test.describe('Metadata Provisioning', () => {
     }
   });
 
-  test('metadata.json inherits testing config from .specweave/config.json', async () => {
+  it('metadata.json inherits testing config from .specweave/config.json', async () => {
     // Create config with custom testing settings
     const configPath = path.join(testDir, '.specweave', 'config.json');
     const config = {
@@ -135,7 +135,7 @@ created: 2025-11-16
     }
   });
 
-  test('metadata.json created for all increment types', async () => {
+  it('metadata.json created for all increment types', async () => {
     const types: IncrementType[] = [
       IncrementType.FEATURE,
       IncrementType.HOTFIX,
@@ -174,7 +174,7 @@ created: 2025-11-16
     }
   });
 
-  test('MetadataManager.read() creates metadata.json if missing (lazy init)', async () => {
+  it('MetadataManager.read() creates metadata.json if missing (lazy init)', async () => {
     // Create increment WITHOUT metadata.json (simulating 0038 bug)
     const incrementId = '0038-missing-metadata';
     const incrementDir = path.join(testDir, '.specweave', 'increments', incrementId);
@@ -217,7 +217,7 @@ type: feature
     }
   });
 
-  test('metadata.json creation is idempotent', async () => {
+  it('metadata.json creation is idempotent', async () => {
     // Create increment with metadata
     const incrementId = '0007-idempotent-test';
     await createTestIncrement(testDir, 'active', incrementId, {
@@ -246,7 +246,7 @@ type: feature
     }
   });
 
-  test('metadata.json validates required fields on read', async () => {
+  it('metadata.json validates required fields on read', async () => {
     // Create increment with INVALID metadata (missing required fields)
     const incrementId = '0008-invalid-metadata';
     const incrementDir = path.join(testDir, '.specweave', 'increments', incrementId);
@@ -276,18 +276,18 @@ type: feature
   });
 });
 
-test.describe('Regression Tests for 0038 Bug', () => {
+describe('Regression Tests for 0038 Bug', () => {
   let testDir: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     testDir = await createTestDir('regression-0038');
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await cleanupTestDir(testDir);
   });
 
-  test('REGRESSION: increment 0038 should have metadata.json', async () => {
+  it('REGRESSION: increment 0038 should have metadata.json', async () => {
     // This test documents the exact bug that occurred
     const incrementId = '0038-serverless-architecture-intelligence';
     const incrementDir = path.join(testDir, '.specweave', 'increments', incrementId);
@@ -335,7 +335,7 @@ feature: FS-038
     expect(savedMetadata.coverageTarget).toBe(80);
   });
 
-  test('REGRESSION: MetadataManager.read() rescues missing metadata.json', async () => {
+  it('REGRESSION: MetadataManager.read() rescues missing metadata.json', async () => {
     // Simulate the exact scenario: increment exists but no metadata.json
     const incrementId = '0038-serverless-architecture-intelligence';
     const incrementDir = path.join(testDir, '.specweave', 'increments', incrementId);
