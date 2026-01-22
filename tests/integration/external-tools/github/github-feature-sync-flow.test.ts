@@ -9,28 +9,28 @@
  * 5. Frontmatter updates with GitHub links
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
-test.describe('GitHubFeatureSync - Complete Flow E2E', () => {
+describe('GitHubFeatureSync - Complete Flow E2E', () => {
   let tmpDir: string;
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-feature-sync-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
   });
 
-  test('should discover all user stories across multiple projects', async () => {
+  it('should discover all user stories across multiple projects', async () => {
     process.chdir(tmpDir);
 
     // Setup git repo
@@ -139,7 +139,7 @@ created: 2025-11-15
     expect(userStories.map((us: any) => us.project)).toEqual(['backend', 'backend', 'frontend']);
   });
 
-  test('should generate correct issue content for each user story', async () => {
+  it('should generate correct issue content for each user story', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -278,7 +278,7 @@ Stakeholders need full visibility without repo access.
     expect(result.labels).toContain('project:product');
   });
 
-  test('should handle repo name detection for project naming', async () => {
+  it('should handle repo name detection for project naming', async () => {
     process.chdir(tmpDir);
 
     // Test different git remote formats
@@ -315,7 +315,7 @@ Stakeholders need full visibility without repo access.
     }
   });
 
-  test('should skip features not present in a project', async () => {
+  it('should skip features not present in a project', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -383,7 +383,7 @@ created: 2025-11-15
     expect(userStories[0].project).toBe('backend');
   });
 
-  test('should handle branch name detection', async () => {
+  it('should handle branch name detection', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });

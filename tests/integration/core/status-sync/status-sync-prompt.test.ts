@@ -7,7 +7,7 @@
  * Critical Path Coverage: 100%
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as fs from '../../../../src/utils/fs-native.js';
@@ -15,10 +15,10 @@ import * as fs from '../../../../src/utils/fs-native.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test.describe('Status Sync Prompt Flow', () => {
+describe('Status Sync Prompt Flow', () => {
   const testProjectRoot = path.join(__dirname, '../../../temp/test-project-prompt');
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Setup test project
     await fs.ensureDir(testProjectRoot);
     await fs.ensureDir(path.join(testProjectRoot, '.specweave/increments/0001-test-feature'));
@@ -57,12 +57,12 @@ test.describe('Status Sync Prompt Flow', () => {
     );
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // Cleanup
     await fs.remove(testProjectRoot);
   });
 
-  test('should prompt user when completing increment with GitHub link', async ({ page }) => {
+  it('should prompt user when completing increment with GitHub link', async ({ page }) => {
     // This test would require a full CLI interface in browser
     // For now, we'll test the underlying logic
 
@@ -71,7 +71,7 @@ test.describe('Status Sync Prompt Flow', () => {
     expect(true).toBe(true); // Placeholder
   });
 
-  test('should sync to GitHub when user selects "Yes"', async ({ page }) => {
+  it('should sync to GitHub when user selects "Yes"', async ({ page }) => {
     // TODO: Mock GitHub API
     // TODO: Complete increment via CLI
     // TODO: User selects "Yes" in prompt
@@ -79,14 +79,14 @@ test.describe('Status Sync Prompt Flow', () => {
     expect(true).toBe(true); // Placeholder
   });
 
-  test('should skip sync when user selects "No"', async ({ page }) => {
+  it('should skip sync when user selects "No"', async ({ page }) => {
     // TODO: Complete increment via CLI
     // TODO: User selects "No" in prompt
     // TODO: Verify GitHub issue status unchanged
     expect(true).toBe(true); // Placeholder
   });
 
-  test('should support auto-sync mode without prompts', async ({ page }) => {
+  it('should support auto-sync mode without prompts', async ({ page }) => {
     // TODO: Set autoSync: true, promptUser: false
     // TODO: Complete increment
     // TODO: Verify sync happened automatically (no prompt)

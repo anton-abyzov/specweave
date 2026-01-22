@@ -9,19 +9,19 @@
  * - Error handling for invalid projects
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 
-test.describe('Project Switching (E2E)', () => {
+describe('Project Switching (E2E)', () => {
   // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let specweaveRoot: string;
 
-  test.beforeEach(async ({ }, testInfo) => {
+  beforeEach(async () => {
     // Create unique directory in OS temp folder to avoid parallel execution race conditions
-    testDir = path.join(os.tmpdir(), `specweave-e2e-project-switching-${testInfo.workerIndex}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testDir = path.join(os.tmpdir(), `specweave-e2e-project-switching-${Date.now()}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specweaveRoot = path.join(testDir, '.specweave');
 
     // Clean up any existing test directory
@@ -88,11 +88,11 @@ test.describe('Project Switching (E2E)', () => {
     );
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     await fs.remove(testDir);
   });
 
-  test('should switch project successfully and update config', async () => {
+  it('should switch project successfully and update config', async () => {
     // Dynamically import ProjectManager
     const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
@@ -115,7 +115,7 @@ test.describe('Project Switching (E2E)', () => {
     expect(config.multiProject.activeProject).toBe('backend');
   });
 
-  test('should use new active project for path resolution after switch', async () => {
+  it('should use new active project for path resolution after switch', async () => {
     const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
@@ -140,7 +140,7 @@ test.describe('Project Switching (E2E)', () => {
     expect(await fs.pathExists(uiFile)).toBe(false);
   });
 
-  test('should throw error when switching to non-existent project', async () => {
+  it('should throw error when switching to non-existent project', async () => {
     const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
@@ -154,7 +154,7 @@ test.describe('Project Switching (E2E)', () => {
     expect(currentProject.id).toBe('frontend'); // Still frontend
   });
 
-  test('should allow switching to same project (idempotent)', async () => {
+  it('should allow switching to same project (idempotent)', async () => {
     const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 

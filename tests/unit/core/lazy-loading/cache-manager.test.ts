@@ -2,12 +2,23 @@
  * Tests for Plugin Cache Manager - Lazy Loading
  *
  * @module tests/unit/core/lazy-loading/cache-manager
+ *
+ * IMPORTANT: Mocks detectClaudeCli to always return unavailable, so tests use
+ * the fast fallback registry method instead of spawning the real Claude CLI.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+// Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
+vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
+  detectClaudeCli: vi.fn().mockReturnValue({ available: false }),
+  isClaudeCliAvailable: vi.fn().mockReturnValue(false),
+  clearCliCache: vi.fn(),
+}));
+
 import {
   PluginCacheManager,
   CACHE_PATHS,

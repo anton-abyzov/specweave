@@ -5,28 +5,28 @@
  * and properly updates existing issues.
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
-test.describe('GitHub Sync - Idempotency', () => {
+describe('GitHub Sync - Idempotency', () => {
   let tmpDir: string;
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-idempotency-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
   });
 
-  test('should generate same content when syncing user story twice', async () => {
+  it('should generate same content when syncing user story twice', async () => {
     process.chdir(tmpDir);
 
     // Setup git repo
@@ -91,7 +91,7 @@ Users often re-sync to update content after making changes.
     expect(result1.userStoryId).toBe(result2.userStoryId);
   });
 
-  test('should preserve AC checkbox states when syncing multiple times', async () => {
+  it('should preserve AC checkbox states when syncing multiple times', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -160,7 +160,7 @@ created: 2025-11-15
     expect(result2.body).toContain('- [x] **AC-US1-03**: Third AC (completed)');
   });
 
-  test('should handle content changes between syncs', async () => {
+  it('should handle content changes between syncs', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -238,7 +238,7 @@ Added new business context.
     expect(result2.body).toContain('Added new business context');
   });
 
-  test('should handle Related Stories changes between syncs', async () => {
+  it('should handle Related Stories changes between syncs', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -316,7 +316,7 @@ created: 2025-11-15
     );
   });
 
-  test('should consistently format links across multiple syncs', async () => {
+  it('should consistently format links across multiple syncs', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });

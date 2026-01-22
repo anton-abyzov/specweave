@@ -10,7 +10,7 @@
  * Run explicitly with: GITHUB_API_TESTS=true npx playwright test github-api-integration.spec.ts
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -20,16 +20,16 @@ import { getCleanEnv } from '../../../test-utils/clean-env.js';
 // Only run if explicitly enabled
 const GITHUB_API_TESTS = process.env.GITHUB_API_TESTS === 'true';
 
-test.describe('GitHub API Integration - Real', () => {
+describe('GitHub API Integration - Real', () => {
   // Skip all tests in this suite unless explicitly enabled
-  test.skip(!GITHUB_API_TESTS, 'GitHub API tests disabled (set GITHUB_API_TESTS=true to enable)');
+  it.skip(!GITHUB_API_TESTS, 'GitHub API tests disabled (set GITHUB_API_TESTS=true to enable)');
 
   let tmpDir: string;
   let originalCwd: string;
   let testRepo: { owner: string; repo: string } | null = null;
   let createdIssues: number[] = [];
 
-  test.beforeAll(async () => {
+  beforeAll(async () => {
     // Check GitHub CLI available
     try {
       execSync('gh --version', { stdio: 'ignore', env: getCleanEnv() });
@@ -52,12 +52,12 @@ test.describe('GitHub API Integration - Real', () => {
     console.log(`Using test repository: ${testRepoEnv}`);
   });
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-gh-api-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
 
@@ -78,7 +78,7 @@ test.describe('GitHub API Integration - Real', () => {
     }
   });
 
-  test('should create real GitHub issue with complete content', async () => {
+  it('should create real GitHub issue with complete content', async () => {
     if (!testRepo) {
       throw new Error('Test repo not configured');
     }
@@ -193,7 +193,7 @@ This is a test issue to verify the complete GitHub sync flow.
     expect(labelNames).toContain('specweave');
   });
 
-  test('should update existing GitHub issue', async () => {
+  it('should update existing GitHub issue', async () => {
     if (!testRepo) {
       throw new Error('Test repo not configured');
     }
@@ -302,7 +302,7 @@ created: 2025-11-15
     expect(issue.body).toContain('**AC-US2-02**: New criterion added');
   });
 
-  test('should verify links work in GitHub web interface', async () => {
+  it('should verify links work in GitHub web interface', async () => {
     if (!testRepo) {
       throw new Error('Test repo not configured');
     }

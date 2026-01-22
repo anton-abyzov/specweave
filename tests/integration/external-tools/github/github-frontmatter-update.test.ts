@@ -5,7 +5,7 @@
  * after sync, enabling bidirectional tracking.
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -13,21 +13,21 @@ import { execSync } from 'child_process';
 import * as yaml from 'yaml';
 import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
-test.describe('GitHub Frontmatter Updates', () => {
+describe('GitHub Frontmatter Updates', () => {
   let tmpDir: string;
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-frontmatter-'));
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
   });
 
-  test('should parse frontmatter with external GitHub info', async () => {
+  it('should parse frontmatter with external GitHub info', async () => {
     process.chdir(tmpDir);
 
     execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
@@ -76,7 +76,7 @@ external:
     expect(frontmatter.external.github.url).toBe('https://github.com/test-org/frontmatter-test/issues/42');
   });
 
-  test('should extract existing GitHub issue number from frontmatter', async () => {
+  it('should extract existing GitHub issue number from frontmatter', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
@@ -125,7 +125,7 @@ external:
     expect(frontmatter.external?.github?.issue).toBe(123);
   });
 
-  test('should handle user story without external section', async () => {
+  it('should handle user story without external section', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
@@ -159,7 +159,7 @@ created: 2025-11-15
     expect(frontmatter.external).toBeUndefined();
   });
 
-  test('should update frontmatter with GitHub issue after sync', async () => {
+  it('should update frontmatter with GitHub issue after sync', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
@@ -216,7 +216,7 @@ created: 2025-11-15
     expect(updatedFrontmatter.external?.github?.url).toBe(mockIssueUrl);
   });
 
-  test('should preserve all frontmatter fields when updating', async () => {
+  it('should preserve all frontmatter fields when updating', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
@@ -280,7 +280,7 @@ custom_field: custom_value
     expect(updatedFrontmatter.external?.github?.issue).toBe(789);
   });
 
-  test('should update existing GitHub issue number', async () => {
+  it('should update existing GitHub issue number', async () => {
     process.chdir(tmpDir);
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');

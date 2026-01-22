@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -24,10 +24,10 @@ const __dirname = dirname(__filename);
  * - Bidirectional linking: Creates forward (US → Tasks) and reverse (Tasks → US) links
  */
 
-test.describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
+describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
   let testDir: string;
 
-  test.beforeEach(() => {
+  beforeEach(() => {
     // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
     // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
     testDir = path.join(os.tmpdir(), `specweave-test-living-docs-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -55,13 +55,13 @@ test.describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
     );
   });
 
-  test.afterEach(() => {
+  afterEach(() => {
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
-  test('should create bidirectional links between user stories and tasks', async () => {
+  it('should create bidirectional links between user stories and tasks', async () => {
     // 1. Create increment with spec.md (user stories with AC-IDs)
     const incrementDir = path.join(testDir, '.specweave/increments/0031-external-tool-status-sync');
     fs.mkdirSync(incrementDir, { recursive: true });
@@ -203,7 +203,7 @@ completed_tasks: 0
     expect(updatedTasksContent).toContain('**User Story**: [US-002: Task-Level Mapping]');
   });
 
-  test('should handle multi-project bidirectional links correctly', async () => {
+  it('should handle multi-project bidirectional links correctly', async () => {
     // Setup multi-project config
     const config = {
       version: '1.0',
@@ -301,7 +301,7 @@ title: Backend Auth Tasks
     expect(syncedTasksContent).toContain('FS-025'); // Feature folder (numeric naming)
   });
 
-  test('should handle tasks with multiple AC-IDs (maps to multiple user stories)', async () => {
+  it('should handle tasks with multiple AC-IDs (maps to multiple user stories)', async () => {
     const incrementDir = path.join(testDir, '.specweave/increments/0032-complex-feature');
     fs.mkdirSync(incrementDir, { recursive: true });
 
@@ -369,7 +369,7 @@ title: Tasks
     expect(userStoryLinkCount).toBe(1); // Only one link per task (to primary US)
   });
 
-  test('should be idempotent (safe to run sync multiple times)', async () => {
+  it('should be idempotent (safe to run sync multiple times)', async () => {
     const incrementDir = path.join(testDir, '.specweave/increments/0033-idempotent-test');
     fs.mkdirSync(incrementDir, { recursive: true });
 
@@ -427,7 +427,7 @@ title: Tasks
     expect(linkCountSecond).toBe(1); // Still just 1 link
   });
 
-  test('should handle tasks without AC-IDs gracefully (no links added)', async () => {
+  it('should handle tasks without AC-IDs gracefully (no links added)', async () => {
     const incrementDir = path.join(testDir, '.specweave/increments/0034-no-ac-ids');
     fs.mkdirSync(incrementDir, { recursive: true });
 
@@ -474,7 +474,7 @@ title: Tasks
     expect(finalTasksContent).not.toContain('**User Story**:');
   });
 
-  test('should create FEATURE.md in feature folder with implementation history', async () => {
+  it('should create FEATURE.md in feature folder with implementation history', async () => {
     const incrementDir = path.join(testDir, '.specweave/increments/0035-epic-readme-test');
     fs.mkdirSync(incrementDir, { recursive: true });
 
