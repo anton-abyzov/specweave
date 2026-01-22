@@ -385,7 +385,7 @@ describe('Multilingual Workflows E2E', () => {
       if (content.init && content.init.welcome) {
         const welcome = content.init.welcome;
         // Should contain at least one emoji (🚀 is common)
-        expect(/[\u{1F000}-\u{1F9FF}]/u.it(welcome)).toBe(true);
+        expect(/[\u{1F000}-\u{1F9FF}]/u.test(welcome)).toBe(true);
       }
     }
   });
