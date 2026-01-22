@@ -15,7 +15,7 @@
  * - Better debugging (native stack traces)
  */
 
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync, chmodSync } from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';
 
@@ -426,6 +426,7 @@ export {
   mkdirSync,
   rmSync,
   copyFileSync,
+  chmodSync,
 };
 
 // Default export for convenience
@@ -475,6 +476,7 @@ export default {
   copyFileSync,
   renameSync,
   mkdtempSync,
+  chmodSync,
 
   // SpecWeave guards
   isSpecWeaveInitialized,

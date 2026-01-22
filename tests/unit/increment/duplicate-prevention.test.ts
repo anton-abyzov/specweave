@@ -1,5 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
 /**
  * Tests for duplicate increment ID prevention
  */
@@ -8,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 import os from 'os';
 import { fileURLToPath } from 'url';
 
@@ -65,7 +64,8 @@ describe('Increment Duplicate Prevention', () => {
       // Check existing increment
       try {
         execSync(`${checkCmd} 0001 "${path.join(testDir, '.specweave/increments')}"`, {
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
         expect(true).toBe(false); // Should have thrown
       } catch (error: any) {
@@ -75,7 +75,8 @@ describe('Increment Duplicate Prevention', () => {
 
       // Check non-existing increment
       const result = execSync(`${checkCmd} 0003 "${path.join(testDir, '.specweave/increments')}"`, {
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        env: getCleanEnv()
       }).trim();
       expect(result).toBe('OK: Increment 0003 is available');
     });
@@ -90,7 +91,8 @@ describe('Increment Duplicate Prevention', () => {
       // Check 3-digit (should match against 001)
       try {
         execSync(`${checkCmd} 0001 "${path.join(testDir, '.specweave/increments')}"`, {
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
         expect(true).toBe(false); // Should have thrown
       } catch (error: any) {
@@ -100,7 +102,8 @@ describe('Increment Duplicate Prevention', () => {
       // Check 4-digit
       try {
         execSync(`${checkCmd} 0002 "${path.join(testDir, '.specweave/increments')}"`, {
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          env: getCleanEnv()
         });
         expect(true).toBe(false); // Should have thrown
       } catch (error: any) {
@@ -116,7 +119,7 @@ describe('Increment Duplicate Prevention', () => {
       const checkCmd = `node "${utilsPath}" check-increment 0010 "${path.join(testDir, '.specweave/increments')}"`;
 
       try {
-        execSync(checkCmd, { encoding: 'utf-8' });
+        execSync(checkCmd, { encoding: 'utf-8', env: getCleanEnv() });
         expect(true).toBe(false); // Should have thrown
       } catch (error: any) {
         expect(error.stderr).toContain('ERROR: Increment 0010 already exists');
@@ -133,14 +136,14 @@ describe('Increment Duplicate Prevention', () => {
       fs.mkdirSync(path.join(testDir, '.specweave/increments/0005-fifth')); // Gap
 
       const nextCmd = `node "${utilsPath}" next "${path.join(testDir, '.specweave/increments')}"`;
-      const result = execSync(nextCmd, { encoding: 'utf-8' }).trim();
+      const result = execSync(nextCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       expect(result).toBe('0006'); // Should be next after highest (0005)
     });
 
     it('should handle empty increments directory', () => {
       const nextCmd = `node "${utilsPath}" next "${path.join(testDir, '.specweave/increments')}"`;
-      const result = execSync(nextCmd, { encoding: 'utf-8' }).trim();
+      const result = execSync(nextCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       expect(result).toBe('0001'); // Should start at 0001
     });
@@ -152,7 +155,7 @@ describe('Increment Duplicate Prevention', () => {
       fs.mkdirSync(path.join(testDir, '.specweave/increments/0010-new'));
 
       const nextCmd = `node "${utilsPath}" next "${path.join(testDir, '.specweave/increments')}"`;
-      const result = execSync(nextCmd, { encoding: 'utf-8' }).trim();
+      const result = execSync(nextCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       expect(result).toBe('0011'); // Should be next after highest (0010)
     });
@@ -164,12 +167,12 @@ describe('Increment Duplicate Prevention', () => {
 
       // Step 1: Get next increment number
       const nextCmd = `node "${utilsPath}" next "${path.join(testDir, '.specweave/increments')}"`;
-      const nextNumber = execSync(nextCmd, { encoding: 'utf-8' }).trim();
+      const nextNumber = execSync(nextCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
       expect(nextNumber).toBe('0001');
 
       // Step 2: Check if it's available (should be)
       const checkCmd = `node "${utilsPath}" check-increment ${nextNumber} "${path.join(testDir, '.specweave/increments')}"`;
-      const checkResult = execSync(checkCmd, { encoding: 'utf-8' }).trim();
+      const checkResult = execSync(checkCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
       expect(checkResult).toBe('OK: Increment 0001 is available');
 
       // Step 3: Create the increment
@@ -177,14 +180,14 @@ describe('Increment Duplicate Prevention', () => {
 
       // Step 4: If someone tries to create same number again, it should fail
       try {
-        execSync(checkCmd, { encoding: 'utf-8' });
+        execSync(checkCmd, { encoding: 'utf-8', env: getCleanEnv() });
         expect(true).toBe(false); // Should have thrown
       } catch (error: any) {
         expect(error.stderr).toContain('ERROR: Increment 0001 already exists');
       }
 
       // Step 5: Next increment should be 0002
-      const nextNumber2 = execSync(nextCmd, { encoding: 'utf-8' }).trim();
+      const nextNumber2 = execSync(nextCmd, { encoding: 'utf-8', env: getCleanEnv() }).trim();
       expect(nextNumber2).toBe('0002');
     });
   });

@@ -19,6 +19,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
@@ -39,12 +40,12 @@ test.describe('GitHub User Story Status Sync', () => {
     try {
       const issues = execSync(
         `gh issue list --search "${FEATURE_ID}" --state all --json number`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const issueNumbers = JSON.parse(issues).map((i: any) => i.number);
 
       for (const number of issueNumbers) {
-        execSync(`gh issue close ${number} --delete`);
+        execSync(`gh issue close ${number} --delete`, { env: getCleanEnv() });
       }
     } catch (err) {
       console.warn('Failed to clean up test issues:', err);
@@ -126,7 +127,7 @@ completed: 2025-11-15
     // Get issue details
     const issues = execSync(
       `gh issue list --search "${FEATURE_ID}" --state all --json number,state,title`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
     const issueList = JSON.parse(issues);
 
@@ -203,7 +204,7 @@ created: 2025-11-15
 
     const issues = execSync(
       `gh issue list --search "${FEATURE_ID}" --state all --json number,state,title`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
     const issueList = JSON.parse(issues);
 
@@ -270,7 +271,7 @@ created: 2025-11-15
     // Verify: Issue is OPEN
     let issues = execSync(
       `gh issue list --search "${FEATURE_ID}" --state all --json number,state`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
     let issueList = JSON.parse(issues);
     expect(issueList[0].state).toBe('OPEN');
@@ -305,7 +306,7 @@ external:
     // Verify: Issue is now CLOSED
     issues = execSync(
       `gh issue list --search "${FEATURE_ID}" --state all --json number,state`,
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8', env: getCleanEnv() }
     );
     issueList = JSON.parse(issues);
     expect(issueList[0].state).toBe('CLOSED');

@@ -18,6 +18,7 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 test.describe('GitHub User Story Sync - E2E', () => {
   let tmpDir: string;
@@ -38,8 +39,8 @@ test.describe('GitHub User Story Sync - E2E', () => {
     process.chdir(tmpDir);
 
     // Initialize git repo (required for repo name detection)
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-owner/test-repo.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-owner/test-repo.git', { cwd: tmpDir, env: getCleanEnv() });
 
     // Create SpecWeave structure
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
@@ -208,8 +209,8 @@ External stakeholders need complete context in GitHub issues without accessing t
     process.chdir(tmpDir);
 
     // Initialize git repo with specific remote
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/mycompany/awesome-app.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/mycompany/awesome-app.git', { cwd: tmpDir, env: getCleanEnv() });
 
     // Create minimal config
     const configPath = path.join(tmpDir, '.specweave/config.json');
@@ -234,8 +235,8 @@ External stakeholders need complete context in GitHub issues without accessing t
     process.chdir(tmpDir);
 
     // Initialize git repo for backend
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin git@github.com:mycompany/backend-api.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin git@github.com:mycompany/backend-api.git', { cwd: tmpDir, env: getCleanEnv() });
 
     // Create backend project structure
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');

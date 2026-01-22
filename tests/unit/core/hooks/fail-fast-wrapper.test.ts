@@ -4,6 +4,8 @@ import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+// CRITICAL: Import getCleanEnv to prevent debugger interference in subprocess calls
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 const execAsync = promisify(exec);
 
@@ -51,7 +53,7 @@ describe('fail-fast-wrapper.sh with warnings', () => {
 
     // When: Running wrapper with short timeout (1s)
     const env = {
-      ...process.env,
+      ...getCleanEnv(),
       HOOK_TIMEOUT: '1',
       PWD: testDir,
     };
@@ -87,7 +89,7 @@ describe('fail-fast-wrapper.sh with warnings', () => {
 
     // When: Running wrapper
     const env = {
-      ...process.env,
+      ...getCleanEnv(),
       PWD: testDir,
     };
 
@@ -114,7 +116,7 @@ describe('fail-fast-wrapper.sh with warnings', () => {
 
     // When: Running wrapper with missing script
     const env = {
-      ...process.env,
+      ...getCleanEnv(),
       PWD: testDir,
     };
 
@@ -146,7 +148,7 @@ describe('fail-fast-wrapper.sh with warnings', () => {
 
     // When: Running wrapper
     const env = {
-      ...process.env,
+      ...getCleanEnv(),
       PWD: testDir,
     };
 

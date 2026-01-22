@@ -15,45 +15,8 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileNoThrowSync } from '../../../src/utils/execFileNoThrow.js';
-import { detectClaudeCli } from '../../../src/utils/claude-cli-detector.js';
+import { detectClaudeCli, getCleanEnv } from '../../../src/utils/claude-cli-detector.js';
 import { clearCliCache, isClaudeCliAvailable } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
-
-/**
- * CRITICAL: Get clean environment for spawning child processes.
- *
- * Removes debugger and instrumentation env vars that can cause
- * child processes to fail across different environments:
- *
- * - VSCode Debug: NODE_OPTIONS contains --inspect-brk flags
- * - WebStorm/IntelliJ: NODE_OPTIONS or IDEA-specific vars
- * - CI/CD (GitHub Actions, etc.): May set NODE_OPTIONS for coverage
- * - Jest/Vitest: May set NODE_OPTIONS for debugging
- *
- * This function is safe to use in ALL environments:
- * - Windows, macOS, Linux
- * - Local development, CI/CD pipelines
- * - Debug mode, run mode, production
- *
- * If NODE_OPTIONS is not set, delete is a no-op (safe).
- *
- * This is the same fix used in claude-cli-detector.ts
- */
-function getCleanEnv(): NodeJS.ProcessEnv {
-  const cleanEnv = { ...process.env };
-
-  // Remove Node.js debugger/inspector flags (VSCode, WebStorm, etc.)
-  delete cleanEnv.NODE_OPTIONS;
-  delete cleanEnv.NODE_INSPECT;
-  delete cleanEnv.NODE_INSPECT_RESUME_ON_START;
-
-  // Remove coverage instrumentation that can interfere with spawned processes
-  delete cleanEnv.NODE_V8_COVERAGE;
-
-  // Remove test runner debug vars
-  delete cleanEnv.VSCODE_INSPECTOR_OPTIONS;
-
-  return cleanEnv;
-}
 
 describe('Claude CLI Detection (Isolated)', () => {
   beforeEach(() => {

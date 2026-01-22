@@ -25,6 +25,7 @@ describe('PluginCacheManager', () => {
   let testActivePath: string;
   let testStatePath: string;
   let testMarketplacePath: string;
+  let testRegistryPath: string;
 
   beforeEach(() => {
     // Create unique test directories for each test
@@ -35,7 +36,7 @@ describe('PluginCacheManager', () => {
     testActivePath = path.join(testDir, 'skills');
     testStatePath = path.join(testDir, 'state', 'plugins-loaded.json');
     testMarketplacePath = path.join(testDir, 'marketplace', 'plugins');
-    const testRegistryPath = path.join(testDir, 'plugins', 'installed_plugins.json');
+    testRegistryPath = path.join(testDir, 'plugins', 'installed_plugins.json');
 
     // Create directories
     fs.mkdirSync(testCachePath, { recursive: true });
@@ -160,9 +161,13 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(3);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave'))).toBe(true);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-github'))).toBe(true);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-jira'))).toBe(true);
+      // NOTE: Strategy 3 (copy to skills dir) was removed - check registry instead
+      // Plugins are now registered in installed_plugins.json, not copied to skills dir
+      // The state file tracks what's been installed
+      const state = cacheManager.readState();
+      expect(state.loadedPlugins).toContain('specweave');
+      expect(state.loadedPlugins).toContain('specweave-github');
+      expect(state.loadedPlugins).toContain('specweave-jira');
     });
 
     it('should install specific plugins', async () => {
@@ -172,9 +177,11 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(2);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave'))).toBe(true);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-github'))).toBe(true);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-jira'))).toBe(false);
+      // Check state file instead of skills dir (Strategy 3 removed)
+      const state = cacheManager.readState();
+      expect(state.loadedPlugins).toContain('specweave');
+      expect(state.loadedPlugins).toContain('specweave-github');
+      expect(state.loadedPlugins).not.toContain('specweave-jira');
     });
 
     it('should install plugins by group name', async () => {
@@ -183,29 +190,31 @@ describe('PluginCacheManager', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave'))).toBe(true);
+      // Check state file instead of skills dir (Strategy 3 removed)
+      const state = cacheManager.readState();
+      expect(state.loadedPlugins).toContain('specweave');
     });
 
     it('should skip already installed plugins', async () => {
       // First install
-      await cacheManager.installPlugins({ plugins: ['specweave'] });
+      const firstResult = await cacheManager.installPlugins({ plugins: ['specweave'] });
+      expect(firstResult.pluginsAffected).toBe(1);
 
-      // Second install should skip
+      // Second install should skip (already in registry)
       const result = await cacheManager.installPlugins({ plugins: ['specweave'] });
 
       expect(result.success).toBe(true);
+      // NOTE: With Strategy 3 removed, we only check registry.
+      // Plugin is already registered, so should be skipped.
       expect(result.pluginsAffected).toBe(0);
     });
 
     it('should reinstall with force option', async () => {
       // First install
-      await cacheManager.installPlugins({ plugins: ['specweave'] });
+      const firstResult = await cacheManager.installPlugins({ plugins: ['specweave'] });
+      expect(firstResult.pluginsAffected).toBe(1);
 
-      // Modify the installed version
-      const testFile = path.join(testActivePath, 'specweave', 'test-marker.txt');
-      fs.writeFileSync(testFile, 'old version');
-
-      // Force reinstall
+      // Force reinstall - should re-register in registry
       const result = await cacheManager.installPlugins({
         plugins: ['specweave'],
         force: true,
@@ -213,8 +222,9 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(1);
-      // Marker file should be gone (fresh copy)
-      expect(fs.existsSync(testFile)).toBe(false);
+      // Verify plugin is still registered
+      const state = cacheManager.readState();
+      expect(state.loadedPlugins).toContain('specweave');
     });
 
     it('should update state file after installation', async () => {
@@ -236,13 +246,26 @@ describe('PluginCacheManager', () => {
   });
 
   describe('isPluginLoaded', () => {
-    it('should return true for loaded plugins', async () => {
-      createMockPlugin(testActivePath, 'specweave');
+    it('should return true for registered plugins', async () => {
+      // Register plugin in test registry (isPluginLoaded now checks registry)
+      const registry = {
+        version: 2,
+        plugins: {
+          'specweave@specweave': [{
+            scope: 'user',
+            installPath: '/test/path',
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+        },
+      };
+      fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
 
       expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
     });
 
-    it('should return false for unloaded plugins', () => {
+    it('should return false for unregistered plugins', () => {
       expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
     });
   });
@@ -291,9 +314,28 @@ describe('PluginCacheManager', () => {
   });
 
   describe('getLoadedPlugins', () => {
-    it('should return list of loaded plugins', () => {
-      createMockPlugin(testActivePath, 'specweave');
-      createMockPlugin(testActivePath, 'specweave-github');
+    it('should return list of loaded plugins from registry', () => {
+      // Register plugins in test registry (getLoadedPlugins now reads from registry)
+      const registry = {
+        version: 2,
+        plugins: {
+          'specweave@specweave': [{
+            scope: 'user',
+            installPath: '/test/path',
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+          'specweave-github@specweave': [{
+            scope: 'user',
+            installPath: '/test/path',
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+        },
+      };
+      fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
 
       const plugins = cacheManager.getLoadedPlugins();
 
@@ -301,7 +343,7 @@ describe('PluginCacheManager', () => {
       expect(plugins).toContain('specweave-github');
     });
 
-    it('should return empty array if no active plugins', () => {
+    it('should return empty array if no plugins registered', () => {
       const plugins = cacheManager.getLoadedPlugins();
       expect(plugins).toEqual([]);
     });
@@ -325,9 +367,39 @@ describe('PluginCacheManager', () => {
 
   describe('unloadPlugins', () => {
     beforeEach(() => {
-      createMockPlugin(testActivePath, 'specweave');
-      createMockPlugin(testActivePath, 'specweave-github');
-      createMockPlugin(testActivePath, 'specweave-router');
+      // Create mock plugins in marketplace
+      createMockPlugin(testMarketplacePath, 'specweave');
+      createMockPlugin(testMarketplacePath, 'specweave-github');
+      createMockPlugin(testMarketplacePath, 'specweave-router');
+
+      // Register plugins in test registry (since isPluginLoaded now checks registry)
+      const registry = {
+        version: 2,
+        plugins: {
+          'specweave@specweave': [{
+            scope: 'user',
+            installPath: path.join(testMarketplacePath, 'specweave'),
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+          'specweave-github@specweave': [{
+            scope: 'user',
+            installPath: path.join(testMarketplacePath, 'specweave-github'),
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+          'specweave-router@specweave': [{
+            scope: 'user',
+            installPath: path.join(testMarketplacePath, 'specweave-router'),
+            version: '1.0.0',
+            installedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }],
+        },
+      };
+      fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
     });
 
     it('should unload all plugins except router', async () => {
@@ -335,9 +407,10 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(2);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave'))).toBe(false);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-github'))).toBe(false);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-router'))).toBe(true);
+      // Check registry instead of skills dir (Strategy 3 removed)
+      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('specweave-github')).toBe(false);
+      expect(cacheManager.isPluginLoaded('specweave-router')).toBe(true);
     });
 
     it('should unload specific plugins', async () => {
@@ -345,18 +418,19 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(1);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave'))).toBe(false);
-      expect(fs.existsSync(path.join(testActivePath, 'specweave-github'))).toBe(true);
+      // Check registry instead of skills dir (Strategy 3 removed)
+      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('specweave-github')).toBe(true);
     });
 
     it('should update state after unload', async () => {
-      // First, set up state with loaded plugins
-      const initialState = cacheManager.readState();
-      initialState.loadedPlugins = ['specweave', 'specweave-github', 'specweave-router'];
-      fs.writeFileSync(testStatePath, JSON.stringify(initialState));
+      // First, verify plugins are registered
+      expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
 
       await cacheManager.unloadPlugins(['specweave']);
 
+      // Check both registry and state
+      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
       const state = cacheManager.readState();
       expect(state.loadedPlugins).not.toContain('specweave');
     });

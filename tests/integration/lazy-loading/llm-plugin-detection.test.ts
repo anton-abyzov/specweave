@@ -114,7 +114,9 @@ describe('Claude CLI Availability Detection', () => {
 });
 
 describe('LLM Plugin Detection', () => {
-  // Check if CLI is available for real LLM tests
+  // CRITICAL: Clear cache BEFORE checking CLI availability to prevent test pollution
+  // This ensures fresh state when running with other test files
+  clearCliCache();
   const cliStatus = isClaudeCliAvailable();
   const describeIfCli = cliStatus.available ? describe : describe.skip;
 
@@ -428,6 +430,8 @@ Plugin auto-loading is disabled until Claude CLI is installed.`,
 });
 
 describe('Performance', () => {
+  // CRITICAL: Clear cache BEFORE checking CLI availability to prevent test pollution
+  clearCliCache();
   const cliStatus = isClaudeCliAvailable();
 
   beforeEach(() => {

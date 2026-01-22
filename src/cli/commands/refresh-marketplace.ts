@@ -1293,8 +1293,8 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(`  2. Run ${chalk.yellow('/plugin')} to verify router loaded`);
     console.log(`  3. Use keywords to trigger on-demand plugin loading`);
     console.log(chalk.gray('     Examples: "GitHub sync", "JIRA integration", "React frontend"'));
-    console.log(`  4. Run ${chalk.yellow('specweave load-plugins <group>')} to preload plugins`);
-    console.log(chalk.gray('     Groups: github, jira, ado, frontend, backend, ml, infra, all'));
+    console.log(`  4. Or install plugins manually: ${chalk.yellow('claude plugin install sw@specweave')}`);
+    console.log(chalk.gray('     Available: sw, sw-frontend, sw-github, sw-jira, sw-ado, sw-ml, sw-infra'));
   } else {
     console.log(`  2. Run ${chalk.yellow('/plugin')} to verify all plugins loaded`);
     console.log(`  3. Check ${chalk.yellow('~/.claude/plugins/installed_plugins.json')}`);

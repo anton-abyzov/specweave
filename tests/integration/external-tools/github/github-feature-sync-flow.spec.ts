@@ -14,6 +14,7 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 test.describe('GitHubFeatureSync - Complete Flow E2E', () => {
   let tmpDir: string;
@@ -33,8 +34,8 @@ test.describe('GitHubFeatureSync - Complete Flow E2E', () => {
     process.chdir(tmpDir);
 
     // Setup git repo
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/test-repo.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/test-repo.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
 
@@ -141,8 +142,8 @@ created: 2025-11-15
   test('should generate correct issue content for each user story', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/acme/product.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/acme/product.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
 
@@ -300,8 +301,8 @@ Stakeholders need full visibility without repo access.
       // Clean up previous git config
       await fs.remove(path.join(tmpDir, '.git'));
 
-      execSync('git init', { cwd: tmpDir });
-      execSync(`git remote add origin ${testCase.remote}`, { cwd: tmpDir });
+      execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+      execSync(`git remote add origin ${testCase.remote}`, { cwd: tmpDir, env: getCleanEnv() });
 
       // Import fresh ProjectDetector
       // Note: In ESM, imports are cached. We work around this by passing different config paths
@@ -317,8 +318,8 @@ Stakeholders need full visibility without repo access.
   test('should skip features not present in a project', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test/repo.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test/repo.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
 
@@ -385,8 +386,8 @@ created: 2025-11-15
   test('should handle branch name detection', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test/repo.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test/repo.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs/default/FS-800');
     await fs.ensureDir(specsDir);

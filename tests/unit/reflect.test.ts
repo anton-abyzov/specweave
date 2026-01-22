@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../test-utils/clean-env.js';
 
 // Test fixtures
 const CORRECTION_SIGNALS = [
@@ -84,7 +86,7 @@ Claude: I'll use the Button component instead.
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -122,7 +124,7 @@ User: ${APPROVAL_SIGNALS[0]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -151,7 +153,7 @@ User: ${APPROVAL_SIGNALS[0]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -180,7 +182,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -207,7 +209,7 @@ User: ${CORRECTION_SIGNALS[2]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -234,7 +236,7 @@ User: ${CORRECTION_SIGNALS[4]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -262,7 +264,7 @@ User: ${CORRECTION_SIGNALS[5]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -296,7 +298,7 @@ User: never run e2e tests directly in prod, rather run all locally first
                     `bash ${reflectScript} reflect --transcript ${transcriptPath}`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -333,7 +335,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath}`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -386,7 +388,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath}`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -408,7 +410,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} on`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -437,7 +439,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} off`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -463,7 +465,7 @@ User: ${CORRECTION_SIGNALS[0]}
                     `bash ${reflectScript} status`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -499,7 +501,7 @@ User: Perfect! That looks good.
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --confidence high --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -532,7 +534,7 @@ User: That's exactly right!
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --confidence medium --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -568,7 +570,7 @@ User: That's exactly right!
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --max 2`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );
@@ -601,7 +603,7 @@ User: ${CORRECTION_SIGNALS[2]}
                     `bash ${reflectScript} reflect --transcript ${transcriptPath} --skill frontend --dry-run`,
                     {
                         cwd: projectRoot,
-                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
                         encoding: 'utf-8'
                     }
                 );

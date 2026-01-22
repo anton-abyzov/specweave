@@ -1,5 +1,6 @@
 import { execFile, execFileSync, ExecFileException } from 'child_process';
 import { promisify } from 'util';
+import { getCleanEnv } from './clean-env.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -67,8 +68,14 @@ export async function execFileNoThrow(
     // Without shell, execFileAsync can't find 'claude.cmd' even if it's in PATH
     const needsShell = process.platform === 'win32' && options.shell !== false;
 
+    // CRITICAL: Use clean environment to prevent debugger/instrumentation from breaking child processes
+    // If caller provides custom env, merge with clean env (caller's values take precedence)
+    const cleanEnv = getCleanEnv();
+    const mergedEnv = options.env ? { ...cleanEnv, ...options.env } : cleanEnv;
+
     const { stdout, stderr } = await execFileAsync(command, args, {
       ...options,
+      env: mergedEnv,
       encoding: 'utf-8',
       windowsHide: true, // Don't show console window on Windows
       shell: needsShell,
@@ -123,8 +130,14 @@ export function execFileNoThrowSync(
     // Without shell, execFileSync can't find 'claude.cmd' even if it's in PATH
     const needsShell = process.platform === 'win32' && options.shell !== false;
 
+    // CRITICAL: Use clean environment to prevent debugger/instrumentation from breaking child processes
+    // If caller provides custom env, merge with clean env (caller's values take precedence)
+    const cleanEnv = getCleanEnv();
+    const mergedEnv = options.env ? { ...cleanEnv, ...options.env } : cleanEnv;
+
     const stdout = execFileSync(command, args, {
       ...options,
+      env: mergedEnv,
       encoding: 'utf-8',
       windowsHide: true,
       shell: needsShell,

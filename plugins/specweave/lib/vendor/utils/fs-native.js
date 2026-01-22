@@ -14,7 +14,7 @@
  * - Faster startup (native APIs)
  * - Better debugging (native stack traces)
  */
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync, chmodSync } from 'fs';
 import path from 'path';
 /**
  * Ensures that a directory exists. If the directory does not exist, it is created.
@@ -340,7 +340,7 @@ export const renameSync = fsRenameSync;
 // Create mkdtempSync alias
 export const mkdtempSync = fsMkdtempSync;
 // Re-export common synchronous methods
-export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
+export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, chmodSync, };
 // Default export for convenience
 export default {
     // Async methods
@@ -387,6 +387,7 @@ export default {
     copyFileSync,
     renameSync,
     mkdtempSync,
+    chmodSync,
     // SpecWeave guards
     isSpecWeaveInitialized,
     findSpecWeaveRoot,

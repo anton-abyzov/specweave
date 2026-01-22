@@ -15,6 +15,8 @@ import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 describe('Status Line Synchronization', () => {
   let testRoot: string;
@@ -315,7 +317,7 @@ async function runStatusLineUpdate(projectRoot: string): Promise<void> {
     // Use --force to bypass TTL and mtime caching
     execSync(`bash "${scriptPath}" --force`, {
       cwd: projectRoot,
-      env: { ...process.env, PROJECT_ROOT: projectRoot },
+      env: { ...getCleanEnv(), PROJECT_ROOT: projectRoot },
       timeout: 5000
     });
   } catch (error) {

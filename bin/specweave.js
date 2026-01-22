@@ -860,55 +860,6 @@ program
     });
   });
 
-// Load plugins command - Lazy loading: load plugin groups on-demand
-const loadPluginsCmd = program
-  .command('load-plugins [group]')
-  .description('Load plugin groups for SpecWeave lazy loading')
-  .option('-f, --force', 'Force reinstall even if already loaded')
-  .option('-b, --background', 'Run installation in background')
-  .option('-v, --verbose', 'Show detailed output')
-  .option('-s, --silent', 'Silent mode - no stdout output (for hooks)')
-  .option('--list-groups', 'Show available plugin groups')
-  .action(async (group, options) => {
-    if (options.listGroups) {
-      const { showAvailableGroups } = await import('../dist/src/cli/commands/load-plugins.js');
-      console.log(chalk.bold('\nAvailable Plugin Groups:\n'));
-      showAvailableGroups();
-      console.log('\nUsage: specweave load-plugins <group>');
-      console.log('Example: specweave load-plugins github\n');
-      return;
-    }
-    const { loadPluginsCommand } = await import('../dist/src/cli/commands/load-plugins.js');
-    await loadPluginsCommand(group, options);
-  });
-
-// Add extended help text for load-plugins
-loadPluginsCmd.addHelpText('after', `
-Plugin Groups:
-  core       Core SpecWeave functionality (specweave)
-  github     GitHub integration (specweave-github)
-  jira       JIRA integration (specweave-jira)
-  ado        Azure DevOps integration (specweave-ado)
-  frontend   Frontend development (specweave-frontend)
-  backend    Backend & database (specweave-backend)
-  infra      Infrastructure & K8s (specweave-infrastructure, specweave-k8s)
-  ml         Machine learning (specweave-ml)
-  kafka      Apache Kafka (specweave-kafka)
-  confluent  Confluent Cloud (specweave-confluent)
-  mobile     Mobile development (specweave-mobile)
-  payments   Payment processing (specweave-payments)
-  release    Release management (specweave-release)
-  testing    Testing & QA (specweave-testing)
-  diagrams   Diagrams & visualization (specweave-diagrams)
-  all        Load all available plugins
-
-Examples:
-  $ specweave load-plugins                 # Load all plugins
-  $ specweave load-plugins github          # Load GitHub plugin group
-  $ specweave load-plugins infra --force   # Force reload infra plugins
-  $ specweave load-plugins ml --background # Load ML plugins in background
-`);
-
 // Detect intent command - Hook helper for automatic plugin loading
 program
   .command('detect-intent <prompt>')
@@ -935,57 +886,6 @@ program
     const result = await detectProjectCommand(path, options);
     // Exit code: 0 if types detected, 1 if none
     process.exit(result.types.length > 0 ? 0 : 1);
-  });
-
-// Unload plugins command - Lazy loading: remove plugin groups from active
-const unloadPluginsCmd = program
-  .command('unload-plugins [group]')
-  .description('Unload plugin groups (keeps cache for quick reload)')
-  .option('--no-keep-router', 'Also unload the router skill')
-  .option('-v, --verbose', 'Show detailed output')
-  .option('--dry-run', 'Preview without unloading')
-  .option('--list-groups', 'Show available plugin groups')
-  .action(async (group, options) => {
-    if (options.listGroups) {
-      const { showUnloadGroups } = await import('../dist/src/cli/commands/unload-plugins.js');
-      console.log(chalk.bold('\nAvailable Plugin Groups:\n'));
-      showUnloadGroups();
-      console.log('\nUsage: specweave unload-plugins <group>');
-      console.log('Example: specweave unload-plugins github\n');
-      return;
-    }
-    const { unloadPluginsCommand } = await import('../dist/src/cli/commands/unload-plugins.js');
-    await unloadPluginsCommand(group, options);
-  });
-
-// Add extended help text for unload-plugins
-unloadPluginsCmd.addHelpText('after', `
-Plugin Groups:
-  core       Core SpecWeave functionality
-  github     GitHub integration
-  jira       JIRA integration
-  ado        Azure DevOps integration
-  frontend   Frontend development tools
-  backend    Backend & database tools
-  infra      Infrastructure & Kubernetes
-  ml         Machine learning tools
-  all        Unload all plugins (keeps router by default)
-
-Examples:
-  $ specweave unload-plugins                       # Unload all (keep router)
-  $ specweave unload-plugins github                # Unload GitHub plugin
-  $ specweave unload-plugins all --no-keep-router  # Unload everything
-  $ specweave unload-plugins --dry-run             # Preview what would unload
-`);
-
-// Plugin status command - Show loaded vs cached plugin status
-program
-  .command('plugin-status')
-  .description('Show plugin status: loaded, cached, lazy mode, and cache size')
-  .option('-v, --verbose', 'Show detailed information')
-  .action(async (options) => {
-    const { pluginStatusCommand } = await import('../dist/src/cli/commands/plugin-status.js');
-    await pluginStatusCommand(options);
   });
 
 // Migrate to lazy loading command
@@ -1119,14 +1019,12 @@ program.on('--help', () => {
   console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
   console.log('  $ specweave update --no-self                # Skip CLI update, only project files');
   console.log('  $ specweave update --check                  # Dry run - preview changes');
-  console.log('  $ specweave load-plugins                    # Load all plugins');
-  console.log('  $ specweave load-plugins github             # Load GitHub plugin group');
-  console.log('  $ specweave load-plugins infra --force      # Force reload infra plugins');
-  console.log('  $ specweave unload-plugins                  # Unload all (keep router)');
-  console.log('  $ specweave unload-plugins github           # Unload GitHub plugin');
-  console.log('  $ specweave unload-plugins --dry-run        # Preview what would unload');
-  console.log('  $ specweave plugin-status                   # Show loaded vs cached plugins');
-  console.log('  $ specweave plugin-status --verbose         # Detailed plugin information');
+  console.log('');
+  console.log('Plugin Management (use Claude CLI commands):');
+  console.log('  $ claude plugin install sw@specweave        # Install core SpecWeave');
+  console.log('  $ claude plugin install sw-frontend@specweave # Install frontend plugin');
+  console.log('  $ claude plugin list                        # Show installed plugins');
+  console.log('  $ claude plugin uninstall sw-testing@specweave # Remove a plugin');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
