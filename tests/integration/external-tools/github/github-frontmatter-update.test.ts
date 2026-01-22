@@ -108,7 +108,7 @@ external:
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // Import and build (should detect existing issue)
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,

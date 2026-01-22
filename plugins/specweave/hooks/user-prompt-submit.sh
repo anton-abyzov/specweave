@@ -45,28 +45,43 @@ else
 fi
 
 # ==============================================================================
-# AUTO-LOAD PLUGIN DETECTION (v1.0.140 - LLM-Only Detection)
+# AUTO-LOAD PLUGIN DETECTION + INCREMENT ASSIST (v1.0.141)
 # ==============================================================================
-# Detect plugin needs using LLM (Claude Haiku) and auto-install in background
+# Detect plugin needs AND increment creation suggestions using LLM (Claude Haiku)
 # This runs BEFORE the SpecWeave keyword check to catch plugin-specific prompts
 #
-# Control:
+# Plugin Auto-Load Control:
 # - SPECWEAVE_DISABLE_AUTO_LOAD=1 environment variable
 # - pluginAutoLoad.enabled: false in .specweave/config.json
 #
-# When disabled: NO detection, NO LLM calls, fastest response time
+# Increment Assist Control:
+# - incrementAssist.enabled: false in .specweave/config.json (disables suggestions)
+# - incrementAssist.confidenceThreshold: 0.7 (minimum confidence to show suggestion)
+#
+# When both disabled: NO detection, NO LLM calls, fastest response time (~5-7s saved)
 
-# Check config for pluginAutoLoad.enabled setting (default: true)
+# Check config for pluginAutoLoad.enabled and incrementAssist.enabled settings
 PLUGIN_AUTOLOAD_ENABLED=true
+INCREMENT_ASSIST_ENABLED=true
+INCREMENT_CONFIDENCE_THRESHOLD=0.7
 CONFIG_PATH=".specweave/config.json"
 if [[ -f "$CONFIG_PATH" ]]; then
   if command -v jq >/dev/null 2>&1; then
     AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
     [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
+
+    INCREMENT_VALUE=$(jq -r '.incrementAssist.enabled // true' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$INCREMENT_VALUE" == "false" ]] && INCREMENT_ASSIST_ENABLED=false
+
+    THRESHOLD_VALUE=$(jq -r '.incrementAssist.confidenceThreshold // 0.7' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$THRESHOLD_VALUE" =~ ^[0-9.]+$ ]] && INCREMENT_CONFIDENCE_THRESHOLD="$THRESHOLD_VALUE"
   else
-    # Fallback: grep for explicit false setting
+    # Fallback: grep for explicit false settings
     if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -q '"enabled"[[:space:]]*:[[:space:]]*false' "$CONFIG_PATH" 2>/dev/null; then
       PLUGIN_AUTOLOAD_ENABLED=false
+    fi
+    if grep -q '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*false'; then
+      INCREMENT_ASSIST_ENABLED=false
     fi
   fi
 fi
@@ -133,10 +148,10 @@ if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LO
           PROMPT_HASH=$(echo "$MATCHED_KEYWORDS" | md5sum 2>/dev/null | cut -c1-8 || echo "unknown")
 
           if command -v timeout >/dev/null 2>&1; then
-            timeout 10 specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            timeout 10 specweave detect-intent "$ESCAPED_PROMPT" --install --silent >/dev/null 2>>"$LAZY_LOAD_LOG"
             EXIT_CODE=$?
           else
-            specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            specweave detect-intent "$ESCAPED_PROMPT" --install --silent >/dev/null 2>>"$LAZY_LOAD_LOG"
             EXIT_CODE=$?
           fi
 
@@ -151,6 +166,86 @@ if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LO
           fi
         ) &
         disown 2>/dev/null
+      fi
+    fi
+  fi
+fi
+
+# ==============================================================================
+# INCREMENT ASSIST - SUGGEST NEW INCREMENT (v1.0.141)
+# ==============================================================================
+# Detect if user is starting new work and suggest creating an increment
+# This runs synchronously (~5-7s) to show suggestion BEFORE Claude responds
+#
+# Triggers on prompts that look like new work:
+# - "build X", "create X", "implement X", "add feature X", "develop X"
+# - "I want to build", "let's make", "we need to add"
+#
+# Does NOT trigger when:
+# - User is already using /sw: commands (already in workflow)
+# - Prompt is a question ("how do I", "what is", "explain")
+# - incrementAssist.enabled is false in config
+#
+# Output: systemMessage with suggestion to create increment
+
+# Only run if increment assist is enabled and not already using /sw: commands
+if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
+  # Check if prompt looks like new work (not already using /sw: or asking questions)
+  if ! echo "$PROMPT" | grep -qE "^[[:space:]]*/sw:" && \
+     ! echo "$PROMPT" | grep -qiE "^(how|what|where|when|why|explain|describe|tell me|can you|could you|would you|is there|are there)" && \
+     echo "$PROMPT" | grep -qiE "(build|create|implement|add|develop|make|design|set up|setup|start|begin|initialize|write|new feature|add feature|need to build|want to build|let's make|let's build|we need)"; then
+
+    # Check if specweave CLI is available
+    if command -v specweave >/dev/null 2>&1; then
+      # Escape prompt for shell
+      ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
+
+      # Run detect-intent synchronously to get increment suggestion
+      # Use shorter timeout (8s) since this blocks the response
+      DETECT_OUTPUT=""
+      if command -v timeout >/dev/null 2>&1; then
+        DETECT_OUTPUT=$(timeout 8 specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
+      else
+        DETECT_OUTPUT=$(specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
+      fi
+
+      # Parse increment suggestion from JSON output
+      if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
+        INCREMENT_ACTION=$(echo "$DETECT_OUTPUT" | jq -r '.increment.action // "none"' 2>/dev/null)
+        INCREMENT_CONFIDENCE=$(echo "$DETECT_OUTPUT" | jq -r '.increment.confidence // 0' 2>/dev/null)
+        INCREMENT_NAME=$(echo "$DETECT_OUTPUT" | jq -r '.increment.suggestedName // ""' 2>/dev/null)
+        INCREMENT_KEYWORD=$(echo "$DETECT_OUTPUT" | jq -r '.increment.relatedKeyword // ""' 2>/dev/null)
+        INCREMENT_REASON=$(echo "$DETECT_OUTPUT" | jq -r '.increment.reasoning // ""' 2>/dev/null)
+
+        # Only show suggestion if confidence exceeds threshold and action is actionable
+        if [[ "$INCREMENT_ACTION" == "new" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+          # Suggest creating new increment
+          SUGGESTED_CMD="/sw:increment"
+          [[ -n "$INCREMENT_NAME" ]] && SUGGESTED_CMD="/sw:increment \"$INCREMENT_NAME\""
+
+          cat << EOF
+{"decision":"approve","systemMessage":"💡 **Increment Suggestion**: This looks like a new feature or significant work.\\n\\nConsider creating an increment first for proper tracking:\\n\`\`\`\\n$SUGGESTED_CMD\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
+EOF
+          exit 0
+
+        elif [[ "$INCREMENT_ACTION" == "reopen" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+          # Suggest reopening existing increment
+          SEARCH_HINT=""
+          [[ -n "$INCREMENT_KEYWORD" ]] && SEARCH_HINT=" (look for: *$INCREMENT_KEYWORD*)"
+
+          cat << EOF
+{"decision":"approve","systemMessage":"💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.\\n\\nConsider reopening the existing increment:\\n\`\`\`\\n/sw:status  # Find the related increment\\n/sw:resume <id>  # Reopen it\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
+EOF
+          exit 0
+
+        elif [[ "$INCREMENT_ACTION" == "hotfix" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+          # Suggest creating hotfix increment
+          cat << EOF
+{"decision":"approve","systemMessage":"🚨 **Hotfix Detected**: This appears to be an urgent production issue.\\n\\nCreate a hotfix increment:\\n\`\`\`\\n/sw:increment --type=hotfix \"$INCREMENT_NAME\"\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
+EOF
+          exit 0
+        fi
+        # For "small_fix" or "none" - no suggestion, let prompt through
       fi
     fi
   fi

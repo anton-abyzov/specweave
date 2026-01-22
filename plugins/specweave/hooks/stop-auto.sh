@@ -77,6 +77,7 @@ AUTO_ENABLED="true"
 REQUIRE_TESTS="false"
 REQUIRE_VALIDATION="true"
 REQUIRE_JUDGE_LLM="false"
+REQUIRE_LLM_EVAL="false"    # NEW: LLM-based completion evaluation
 MAX_TURNS="20"           # HARD STOP: Total turns in session (NEVER resets during session)
 MAX_RETRIES="20"         # Stuck detection: Retries on same work (resets when work changes)
 TDD_MODE="false"
@@ -88,6 +89,7 @@ if [ -f "$CONFIG_FILE" ]; then
     REQUIRE_TESTS=$(jq -r '.auto.requireTests // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     REQUIRE_VALIDATION=$(jq -r '.auto.requireValidation // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
     REQUIRE_JUDGE_LLM=$(jq -r '.auto.requireJudgeLLM // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+    REQUIRE_LLM_EVAL=$(jq -r '.auto.requireLLMEval // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     # maxTurns = HARD STOP (total turns in session, NEVER resets) - default 20
     MAX_TURNS=$(jq -r '.auto.maxTurns // 20' "$CONFIG_FILE" 2>/dev/null || echo "20")
     # maxRetries = stuck detection (resets when increments change) - default 20
@@ -139,8 +141,39 @@ fi
 # Update session file mtime to keep it fresh (touch it)
 touch "$AUTO_SESSION_FILE" 2>/dev/null
 
-log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, MaxTurns=$MAX_TURNS, MaxRetries=$MAX_RETRIES"
+# ============================================================================
+# CHECK FOR CUSTOM SUCCESS CRITERIA (auto-enables LLM eval)
+# ============================================================================
+
+HAS_CUSTOM_CRITERIA="false"
+LLM_EVAL_MODEL="sonnet"  # Default model for LLM evaluation
+USER_GOAL=""
+SUCCESS_SUMMARY=""
+
+# Read success criteria from auto-mode.json
+CRITERIA_COUNT=$(jq -r '.successCriteria | length // 0' "$AUTO_SESSION_FILE" 2>/dev/null || echo "0")
+if [ "$CRITERIA_COUNT" -gt 2 ]; then
+    # More than default criteria (tasks_complete + acs_satisfied) = custom criteria
+    HAS_CUSTOM_CRITERIA="true"
+    REQUIRE_LLM_EVAL="true"  # Auto-enable LLM eval when custom criteria exist
+    log "Custom success criteria detected ($CRITERIA_COUNT), enabling LLM evaluation"
+fi
+
+# Check if any criterion has type=llm_evaluate
+HAS_LLM_CRITERION=$(jq -r '.successCriteria[]? | select(.type == "llm_evaluate") | .type' "$AUTO_SESSION_FILE" 2>/dev/null | head -1)
+if [ -n "$HAS_LLM_CRITERION" ]; then
+    REQUIRE_LLM_EVAL="true"
+    log "LLM evaluation criterion found, enabling LLM evaluation"
+fi
+
+# Read user goal and success summary for logging
+USER_GOAL=$(jq -r '.userGoal // ""' "$AUTO_SESSION_FILE" 2>/dev/null || echo "")
+SUCCESS_SUMMARY=$(jq -r '.successSummary // "All tasks and acceptance criteria complete"' "$AUTO_SESSION_FILE" 2>/dev/null)
+
+log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, RequireLLMEval=$REQUIRE_LLM_EVAL, MaxTurns=$MAX_TURNS, MaxRetries=$MAX_RETRIES"
 log "Auto mode session active: $AUTO_SESSION_ACTIVE"
+log "User goal: $USER_GOAL"
+log "Success summary: $SUCCESS_SUMMARY"
 
 # ============================================================================
 # TURN COUNTER - HARD STOP after maxTurns (NEVER resets during session)
@@ -451,6 +484,35 @@ validate_increment() {
             return
         fi
         log "Tests passed for $inc_id"
+    fi
+
+    # If requireLLMEval, run LLM-based completion evaluation
+    if [ "$REQUIRE_LLM_EVAL" = "true" ]; then
+        log "Running LLM completion evaluation for $inc_id..."
+
+        # Check if specweave CLI is available
+        if command -v specweave >/dev/null 2>&1; then
+            local eval_result
+            eval_result=$(cd "$PROJECT_ROOT" && timeout 60 specweave evaluate-completion "$inc_id" --model sonnet --silent 2>/dev/null)
+            local eval_exit=$?
+
+            if [ "$eval_exit" -eq 0 ]; then
+                log "LLM evaluation: COMPLETE for $inc_id"
+            else
+                # Parse the reason from JSON if possible
+                local eval_reason=""
+                if [ -n "$eval_result" ]; then
+                    eval_reason=$(echo "$eval_result" | jq -r '.overallReason // "Unknown reason"' 2>/dev/null || echo "Unknown reason")
+                else
+                    eval_reason="LLM evaluation returned incomplete"
+                fi
+                log "LLM evaluation: NOT COMPLETE - $eval_reason"
+                echo "invalid:LLM evaluation incomplete - $eval_reason"
+                return
+            fi
+        else
+            log "WARN: specweave CLI not available, skipping LLM evaluation"
+        fi
     fi
 
     echo "valid"

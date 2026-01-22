@@ -20,9 +20,8 @@ import { getCleanEnv } from '../../../test-utils/clean-env.js';
 // Only run if explicitly enabled
 const GITHUB_API_TESTS = process.env.GITHUB_API_TESTS === 'true';
 
-describe('GitHub API Integration - Real', () => {
-  // Skip all tests in this suite unless explicitly enabled
-  it.skip(!GITHUB_API_TESTS, 'GitHub API tests disabled (set GITHUB_API_TESTS=true to enable)');
+// Skip entire suite unless GITHUB_API_TESTS=true
+describe.skipIf(!GITHUB_API_TESTS)('GitHub API Integration - Real', () => {
 
   let tmpDir: string;
   let originalCwd: string;
@@ -132,7 +131,7 @@ This is a test issue to verify the complete GitHub sync flow.
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // Create issue via GitHub CLI
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,
@@ -228,7 +227,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-002-update-test.md');
     await fs.writeFile(userStoryPath, initialContent);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const builder1 = new UserStoryIssueBuilder(
       userStoryPath,
@@ -339,7 +338,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-003-link-test.md');
     await fs.writeFile(userStoryPath, userStoryContent);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       userStoryPath,

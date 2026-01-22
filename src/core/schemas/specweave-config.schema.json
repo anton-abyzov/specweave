@@ -1207,6 +1207,47 @@
         }
       },
       "additionalProperties": false
+    },
+    "pluginAutoLoad": {
+      "type": "object",
+      "description": "Plugin auto-load configuration (v1.0.140+). Controls automatic plugin detection using LLM.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable automatic plugin detection and installation. When true, uses Claude Haiku to analyze prompts (~5-6s overhead). When false, disables detection for maximum speed.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "incrementAssist": {
+      "type": "object",
+      "description": "Increment assist configuration (v1.0.141+). Controls intelligent increment creation suggestions using LLM.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable increment creation suggestions. When true, LLM analyzes prompts and suggests creating/reopening increments or proceeding without one. When false, disables suggestions for maximum speed.",
+          "default": true
+        },
+        "suggestNewIncrement": {
+          "type": "boolean",
+          "description": "Suggest creating new increments for feature work, multi-file changes, new functionality that should be spec'd and tracked.",
+          "default": true
+        },
+        "suggestReopen": {
+          "type": "boolean",
+          "description": "Suggest reopening existing increments when user mentions work related to recent increments (e.g., 'the login feature is broken').",
+          "default": true
+        },
+        "confidenceThreshold": {
+          "type": "number",
+          "description": "Minimum confidence threshold (0.0-1.0) for showing suggestions. Higher = fewer but more confident suggestions.",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true,
