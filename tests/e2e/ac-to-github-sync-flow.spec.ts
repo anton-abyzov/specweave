@@ -62,7 +62,7 @@ const getRepoInfo = (): { owner: string; repo: string } | null => {
 
 describe('E2E: AC to GitHub Sync Flow', () => {
   const skipIfNoGitHub = !isGitHubAvailable();
-  const FEATURE_ID = 'FS-E2E-AC-SYNC';
+  const FEATURE_ID = 'FS-996';
   let createdIssueNumber: number | null = null;
 
   beforeEach(async () => {

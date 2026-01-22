@@ -32,6 +32,7 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
+import { migrateOldMemoryFiles } from '../../core/reflection/index.js';
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
@@ -180,6 +181,23 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
         cleanupResult.files.forEach(file => {
           console.log(chalk.gray(`    - ${file}`));
         });
+      }
+    }
+  }
+
+  // Step 2.5: Migrate old memory files to CLAUDE.md (reflect v2.0)
+  if (isSpecWeaveProject && !options.check) {
+    try {
+      const migrationResult = migrateOldMemoryFiles(projectPath);
+      if (migrationResult.migrated > 0) {
+        console.log(chalk.green(`  ✓ Migrated ${migrationResult.migrated} learning(s) from old memory files to CLAUDE.md`));
+        if (migrationResult.deleted.length > 0 && options.verbose) {
+          console.log(chalk.gray(`    Removed ${migrationResult.deleted.length} old memory file(s)`));
+        }
+      }
+    } catch (error) {
+      if (options.verbose) {
+        console.log(chalk.yellow(`  ⚠ Memory migration skipped: ${error}`));
       }
     }
   }

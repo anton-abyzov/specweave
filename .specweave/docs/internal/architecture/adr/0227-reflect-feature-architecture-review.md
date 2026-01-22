@@ -1,9 +1,17 @@
 # ADR-0227: Reflect Feature Architecture Review
 
 **Date**: 2026-01-10
-**Status**: Review
+**Status**: Superseded
+**Superseded By**: Reflect v2.0 Simplification (2026-01-22)
 **Author**: Architecture Review
 **Category**: Self-Improving AI
+
+> **Note (2026-01-22)**: This ADR documents the original complex architecture. It has been superseded by the Reflect v2.0 simplification which:
+> - Uses CLAUDE.md as single source of truth (no more `.specweave/memory/*.md` files)
+> - Always uses LLM for extraction (no quick signal check)
+> - Organizes learnings under "## Skill Memories" section in CLAUDE.md
+> - Reduces ~900 lines of code to ~150 lines
+> - See `src/core/reflection/reflect-handler.ts` for the new implementation.
 
 ## Context
 

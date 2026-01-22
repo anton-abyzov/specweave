@@ -452,6 +452,229 @@ it('should update user', () => {
 
 ---
 
+## VSCode Debug Mode & Child Process Testing
+
+**CRITICAL**: When tests spawn child processes (like CLI tools, hooks, or external commands), they may fail in VSCode debug mode due to NODE_OPTIONS inheritance.
+
+### Problem: NODE_OPTIONS Breaks Child Processes
+
+VSCode debugger sets `NODE_OPTIONS=--inspect-brk=<port>` which child processes inherit, causing them to try to attach to the same debugger port and fail with exit code 1.
+
+**Symptoms**:
+- Tests pass with "Run Test" but fail with "Debug Test"
+- Spawned processes exit with code 1 and empty output
+- `spawnSync`/`execFileSync` calls fail silently
+
+### Solution: getCleanEnv() Pattern
+
+```typescript
+// src/utils/clean-env.ts
+export function getCleanEnv(): NodeJS.ProcessEnv {
+  const cleanEnv = { ...process.env };
+
+  // Debugger flags (VSCode, WebStorm, IntelliJ)
+  delete cleanEnv.NODE_OPTIONS;
+  delete cleanEnv.NODE_INSPECT;
+  delete cleanEnv.NODE_INSPECT_RESUME_ON_START;
+
+  // Coverage/instrumentation (CI/CD pipelines)
+  delete cleanEnv.NODE_V8_COVERAGE;
+  delete cleanEnv.VSCODE_INSPECTOR_OPTIONS;
+
+  return cleanEnv;
+}
+```
+
+### Usage in Tests
+
+```typescript
+import { getCleanEnv } from '../test-utils/clean-env.js';
+import { execSync, spawnSync } from 'child_process';
+
+it('should execute CLI command', () => {
+  const result = execSync('node my-cli.js', {
+    encoding: 'utf-8',
+    env: getCleanEnv(),  // ← CRITICAL for debug mode + CI/CD
+  });
+  expect(result).toContain('expected output');
+});
+
+it('should spawn child process', () => {
+  const result = spawnSync('npm', ['run', 'build'], {
+    encoding: 'utf-8',
+    env: getCleanEnv(),  // ← CRITICAL
+  });
+  expect(result.status).toBe(0);
+});
+```
+
+### When to Use getCleanEnv
+
+**✅ ALWAYS USE** when spawning:
+- CLI tools (`node`, `npm`, `npx`, `claude`, etc.)
+- External commands (`git`, `gh`, etc.)
+- Test hooks that spawn processes
+- Integration tests with real processes
+
+**❌ NOT NEEDED** for:
+- Pure unit tests (no child processes)
+- Mocked dependencies
+- In-process testing
+
+---
+
+## ESM Module Mocking with vi.hoisted()
+
+**CRITICAL**: In ESM (ECMAScript Modules), imports are hoisted. Use `vi.hoisted()` to ensure mocks are defined before imports.
+
+### Problem: Mock Defined After Import
+
+```typescript
+// ❌ WRONG: vi.mock hoisted, but mockFn not defined yet
+vi.mock('./module', () => ({
+  myFunc: mockFn  // ReferenceError: mockFn is not defined
+}));
+
+const mockFn = vi.fn();
+import { myFunc } from './module';
+```
+
+### Solution: vi.hoisted() Pattern
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+
+// ✅ Define mocks in hoisted context FIRST
+const { mockFn } = vi.hoisted(() => ({
+  mockFn: vi.fn()
+}));
+
+// Now vi.mock can use the hoisted mock
+vi.mock('./module', () => ({
+  myFunc: mockFn
+}));
+
+// Import AFTER mock setup
+import { myFunc } from './module';
+
+describe('Module', () => {
+  it('should use mocked function', () => {
+    mockFn.mockReturnValue('mocked');
+    expect(myFunc()).toBe('mocked');
+    expect(mockFn).toHaveBeenCalled();
+  });
+});
+```
+
+### Complete ESM Mocking Example
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// 1. Hoisted mock definitions
+const { mockReadFile, mockWriteFile } = vi.hoisted(() => ({
+  mockReadFile: vi.fn(),
+  mockWriteFile: vi.fn()
+}));
+
+// 2. Mock the module using hoisted mocks
+vi.mock('fs/promises', () => ({
+  readFile: mockReadFile,
+  writeFile: mockWriteFile
+}));
+
+// 3. Import AFTER mock setup (imports are automatically hoisted in Vitest)
+import { readFile, writeFile } from 'fs/promises';
+
+describe('FileService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should read file', async () => {
+    mockReadFile.mockResolvedValue('file content');
+
+    const content = await readFile('/path/to/file', 'utf-8');
+
+    expect(content).toBe('file content');
+    expect(mockReadFile).toHaveBeenCalledWith('/path/to/file', 'utf-8');
+  });
+});
+```
+
+### vi.hoisted() vs Traditional Mocking
+
+| Approach | ESM Compatible | Jest Compatible |
+|----------|---------------|-----------------|
+| `vi.hoisted()` + `vi.mock()` | ✅ Yes | ❌ No (Vitest only) |
+| `jest.mock()` with factory | ⚠️ Partial | ✅ Yes |
+| Manual module replacement | ✅ Yes | ✅ Yes |
+
+---
+
+## Testing with Isolated Temp Directories
+
+**CRITICAL**: Integration tests should NEVER operate on project directories. Always use isolated temp directories.
+
+### Problem: Tests Affecting Project State
+
+```typescript
+// ❌ DANGEROUS: Can corrupt project state
+const testDir = path.join(process.cwd(), '.specweave/test');
+```
+
+### Solution: Isolated Temp Directories
+
+```typescript
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs/promises';
+
+// ✅ SAFE: Unique temp directory per test run
+const TEST_ROOT = path.join(
+  os.tmpdir(),
+  `my-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+);
+
+describe('Integration Test', () => {
+  beforeEach(async () => {
+    await fs.mkdir(TEST_ROOT, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.rm(TEST_ROOT, { recursive: true, force: true });
+  });
+
+  it('should work in isolated directory', async () => {
+    const testFile = path.join(TEST_ROOT, 'test.json');
+    await fs.writeFile(testFile, '{"test": true}');
+    // Test logic...
+  });
+});
+```
+
+### CWD Restoration Pattern
+
+When tests change working directory, always restore it to prevent affecting other tests:
+
+```typescript
+describe('Tests that change CWD', () => {
+  let originalCwd: string;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();  // ← Save BEFORE changing
+    process.chdir(TEST_ROOT);
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);   // ← Restore BEFORE cleanup
+    // Now safe to delete TEST_ROOT
+  });
+});
+```
+
+---
+
 ## Best Practices Summary
 
 **✅ DO**:

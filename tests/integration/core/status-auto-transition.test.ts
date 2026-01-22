@@ -112,13 +112,14 @@ status: planning
     metadata = MetadataManager.read(incrementId);
     expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-    // Step 4: Write tasks.md (should auto-transition to ACTIVE)
+    // Step 4: Write tasks.md with in-progress tasks (should auto-transition to ACTIVE)
+    // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])
     const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
     const tasksContent = `# Tasks
 
 ## Phase 1: JWT Setup
 
-- [ ] **T-001**: Install jsonwebtoken package
+- [⏳] **T-001**: Install jsonwebtoken package
 - [ ] **T-002**: Create JWT utility functions
 - [ ] **T-003**: Add authentication middleware
 `;
@@ -152,9 +153,10 @@ status: planning
     metadata = MetadataManager.read(incrementId);
     expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-    // Step 3: Complete planning - create tasks.md
+    // Step 3: Complete planning - create tasks.md with in-progress task
+    // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])
     const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
-    fs.writeFileSync(tasksPath, '- [ ] **T-001**: Integrate Stripe');
+    fs.writeFileSync(tasksPath, '- [⏳] **T-001**: Integrate Stripe');
 
     // Should transition PLANNING → ACTIVE
     transitioned = autoTransitionStatus(incrementId);
@@ -284,9 +286,10 @@ status: planning
     let metadata = MetadataManager.read(incrementId);
     expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-    // Create tasks.md → PLANNING → ACTIVE
+    // Create tasks.md with in-progress task → PLANNING → ACTIVE
+    // Note: PLANNING → ACTIVE requires tasks with in-progress markers ([⏳], [🔄], or [x])
     const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
-    fs.writeFileSync(tasksPath, '- [ ] **T-001**: Task');
+    fs.writeFileSync(tasksPath, '- [⏳] **T-001**: Task');
     autoTransitionStatus(incrementId);
 
     metadata = MetadataManager.read(incrementId);

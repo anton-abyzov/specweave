@@ -873,6 +873,35 @@ program
     process.exit(result.detected ? 0 : 1);
   });
 
+// Evaluate completion command - LLM-based completion evaluation for auto mode
+program
+  .command('evaluate-completion <increment-id>')
+  .description('Evaluate whether an auto mode session should be considered complete')
+  .option('--model <model>', 'Model for LLM evaluation: haiku or sonnet (default: sonnet)')
+  .option('--timeout <ms>', 'Timeout in milliseconds (default: 45000)', parseInt)
+  .option('--silent', 'Minimal output')
+  .action(async (incrementId, options) => {
+    const { evaluateCompletionCommand } = await import('../dist/src/cli/commands/evaluate-completion.js');
+    const result = await evaluateCompletionCommand(incrementId, options);
+    if (!options.silent) {
+      console.log(JSON.stringify(result, null, 2));
+    }
+    // Exit code: 0 if complete, 1 if not
+    process.exit(result.complete ? 0 : 1);
+  });
+
+// Reflect stop command - Extract learnings at session end (called by stop hook)
+program
+  .command('reflect-stop <transcript-path>')
+  .description('Extract learnings from session transcript (called by stop hook)')
+  .option('-s, --silent', 'Silent mode - output JSON only')
+  .option('-m, --model <model>', 'Model to use (haiku, sonnet, opus)')
+  .option('--migrate', 'Run migration of old memory files first')
+  .action(async (transcriptPath, options) => {
+    const { reflectStopCommand } = await import('../dist/src/cli/commands/reflect-stop.js');
+    await reflectStopCommand(transcriptPath, options);
+  });
+
 // Detect project command - Analyze project files and suggest plugins
 program
   .command('detect-project [path]')
@@ -943,20 +972,6 @@ program
     await cmd.parseAsync(args, { from: 'user' });
   });
 
-// Migrate memory command - Migrate global memory from legacy location
-program
-  .command('migrate-memory')
-  .description('Migrate global memory files from legacy ~/.claude/specweave/memory/ to correct location')
-  .option('--dry-run', 'Preview what would be migrated without making changes')
-  .option('-y, --yes', 'Skip confirmation prompt')
-  .action(async (options) => {
-    const { migrateMemory } = await import('../dist/src/cli/commands/migrate-memory.js');
-    await migrateMemory({
-      dryRun: options.dryRun,
-      yes: options.yes,
-    });
-  });
-
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -1013,8 +1028,6 @@ program.on('--help', () => {
   console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K tokens)');
   console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
   console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
-  console.log('  $ specweave migrate-memory                  # Migrate legacy memory files');
-  console.log('  $ specweave migrate-memory --dry-run        # Preview migration');
   console.log('  $ specweave update                          # Update CLI + instructions + config');
   console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
   console.log('  $ specweave update --no-self                # Skip CLI update, only project files');

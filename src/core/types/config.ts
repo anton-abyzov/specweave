@@ -496,6 +496,64 @@ export interface PluginAutoLoadConfig {
 }
 
 /**
+ * Increment Assist Configuration (v1.0.141+)
+ *
+ * Controls intelligent increment creation suggestions.
+ * Uses LLM (Claude Haiku) to analyze prompts and determine if work should be tracked
+ * in a new increment, existing increment, or done as a quick fix without tracking.
+ *
+ * This helps enforce spec-driven development discipline by suggesting structured workflow
+ * when appropriate, while allowing quick fixes to bypass overhead.
+ */
+export interface IncrementAssistConfig {
+  /**
+   * Enable increment creation suggestions
+   *
+   * When true (default): LLM analyzes prompts and suggests:
+   * - Creating new increments for features/significant work
+   * - Reopening existing increments for related fixes
+   * - Proceeding without increment for quick fixes/typos
+   *
+   * When false: Disables increment suggestions for maximum speed.
+   * Use this if you prefer manual increment management.
+   *
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * Suggest creating new increments for feature work
+   *
+   * When true (default): Suggests `/sw:increment` for new features, multi-file changes,
+   * new functionality that should be spec'd and tracked.
+   *
+   * @default true
+   */
+  suggestNewIncrement?: boolean;
+
+  /**
+   * Suggest reopening existing increments for related work
+   *
+   * When true (default): When user mentions work related to a recent increment
+   * (e.g., "the login feature is broken"), suggests reopening that increment
+   * instead of creating a new one.
+   *
+   * @default true
+   */
+  suggestReopen?: boolean;
+
+  /**
+   * Minimum confidence threshold for suggestions (0.0-1.0)
+   *
+   * Only show increment suggestions when LLM confidence exceeds this threshold.
+   * Lower = more suggestions, higher = fewer but more confident suggestions.
+   *
+   * @default 0.7
+   */
+  confidenceThreshold?: number;
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -565,6 +623,9 @@ export interface SpecweaveConfig {
 
   /** Plugin auto-load configuration (v1.0.140+) */
   pluginAutoLoad?: PluginAutoLoadConfig;
+
+  /** Increment assist configuration (v1.0.141+) */
+  incrementAssist?: IncrementAssistConfig;
 
   /** Allow additional properties */
   [key: string]: any;
@@ -690,5 +751,11 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
   },
   pluginAutoLoad: {
     enabled: true,  // v1.0.140+: LLM-based plugin detection enabled by default
+  },
+  incrementAssist: {
+    enabled: true,              // v1.0.141+: LLM-based increment suggestions enabled by default
+    suggestNewIncrement: true,  // Suggest /sw:increment for new features
+    suggestReopen: true,        // Suggest reopening related increments
+    confidenceThreshold: 0.7,   // Only show suggestions above 70% confidence
   },
 };

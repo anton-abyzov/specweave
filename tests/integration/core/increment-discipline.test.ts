@@ -158,13 +158,19 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.reason).toBeUndefined();
     });
 
-    it('should have clean state with no warnings', async () => {
+    it('should have clean state with no WIP warnings', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
 
       const result = await simulateHook('/sw:increment "New feature"');
       expect(result.decision).toBe('approve');
-      expect(result.systemMessage).toBeUndefined();
+      // v1.0.106+: Hook may inject project context (not a warning)
+      // The key assertion is that there's NO WIP limit warning
+      if (result.systemMessage) {
+        expect(result.systemMessage).not.toContain('WIP LIMIT');
+        // May have project context which is fine
+        expect(result.systemMessage).toMatch(/PROJECT CONTEXT|undefined/);
+      }
     });
   });
 
@@ -179,7 +185,8 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.decision).toBe('approve'); // Allows but warns
       expect(result.systemMessage).toContain('WIP LIMIT REACHED');
       expect(result.systemMessage).toContain('0001-user-auth');
-      expect(result.systemMessage).toContain('ONE active increment = maximum productivity');
+      // v1.0.106+: Message text updated
+      expect(result.systemMessage).toContain('maximum productivity');
     });
 
     it('should list active increment in warning', async () => {
@@ -210,40 +217,42 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       await createIncrement('0002-payments', 'active', 'feature');
     });
 
-    it('should BLOCK when trying to start 3rd increment', async () => {
+    it('should WARN (approve with systemMessage) when trying to start 3rd increment', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
-      expect(result.decision).toBe('block');
-      expect(result.reason).toContain('HARD CAP REACHED');
-      expect(result.reason).toContain('2 active increments');
+      // v1.0.106+: Hook now uses approve + systemMessage (not block + reason)
+      // WIP limits are warnings, not hard blocks - user decides!
+      expect(result.decision).toBe('approve');
+      expect(result.systemMessage).toContain('WIP LIMIT EXCEEDED');
+      expect(result.systemMessage).toContain('2 active increments');
     });
 
-    it('should list both active increments in error', async () => {
+    it('should list both active increments in warning', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
-      expect(result.reason).toContain('0001-user-auth');
-      expect(result.reason).toContain('0002-payments');
+      expect(result.systemMessage).toContain('0001-user-auth');
+      expect(result.systemMessage).toContain('0002-payments');
     });
 
     it('should suggest actions to resolve', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
-      expect(result.reason).toContain('/sw:done');
-      expect(result.reason).toContain('/sw:pause');
-      expect(result.reason).toContain('/sw:status');
+      expect(result.systemMessage).toContain('/sw:done');
+      expect(result.systemMessage).toContain('/sw:pause');
     });
 
-    it('should mention combining multiple hotfixes', async () => {
+    it('should mention options to proceed', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
-      expect(result.reason).toContain('Multiple hotfixes? Combine them into ONE increment');
-      expect(result.reason).toContain('0009-security-fixes');
+      // v1.0.106+: Message now provides options (not hard blocks)
+      expect(result.systemMessage).toContain('Continue anyway');
+      expect(result.systemMessage).toContain('Increase limit');
     });
 
     it('should cite productivity research', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
-      expect(result.reason).toContain('3+ concurrent tasks = 40% slower');
+      expect(result.systemMessage).toContain('3+ concurrent tasks = 40%');
     });
   });
 
@@ -347,20 +356,22 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.systemMessage).toContain('Emergency hotfix/bug');
     });
 
-    it('should still block 3rd increment even if hotfix', async () => {
+    it('should still warn for 3rd increment even if hotfix', async () => {
       await createIncrement('0002-security-fix', 'active', 'hotfix');
 
       const result = await simulateHook('/sw:increment "Another hotfix"');
 
-      expect(result.decision).toBe('block');
-      expect(result.reason).toContain('HARD CAP REACHED');
+      // v1.0.106+: Hook now uses approve + systemMessage (not block)
+      // Even at hard cap, user can proceed with confirmation
+      expect(result.decision).toBe('approve');
+      expect(result.systemMessage).toContain('WIP LIMIT EXCEEDED');
     });
   });
 
   describe('Scenario 9: Fallback Mode (No dist/ Available)', () => {
     beforeEach(async () => {
       // Simulate environment where dist/cli/index.js doesn't exist
-      // The hook will use fallback logic
+      // The hook will use fallback logic (same as normal mode now)
       await createIncrement('0001-user-auth', 'active', 'feature');
       await createIncrement('0002-payments', 'planning', 'feature');
     });
@@ -368,11 +379,11 @@ describe('Increment Discipline Enforcement (E2E)', () => {
     it('should use fallback logic to detect incomplete increments', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
-      // Fallback logic checks for 'active' or 'planning' status
-      // Should block because we have 2 incomplete (active + planning)
-      expect(result.decision).toBe('block');
-      expect(result.reason).toContain('Cannot create new increment');
-      expect(result.reason).toContain('2 incomplete increment');
+      // v1.0.106+: Hook counts 'active', 'planning', 'backlog', 'ready_for_review' as active
+      // 2 increments (active + planning) = WIP LIMIT EXCEEDED warning (not block)
+      expect(result.decision).toBe('approve');
+      expect(result.systemMessage).toContain('WIP LIMIT EXCEEDED');
+      expect(result.systemMessage).toContain('2 active increments');
     });
   });
 

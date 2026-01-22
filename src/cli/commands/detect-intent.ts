@@ -5,13 +5,18 @@
  * and optionally installs matching plugins.
  *
  * v1.0.140+: Switched from keyword-based to LLM-only detection.
- * The LLM analyzes the prompt and decides which plugins are needed.
+ * v1.0.141+: Added increment creation suggestions.
+ *
+ * The LLM analyzes the prompt and decides:
+ * 1. Which plugins are needed
+ * 2. Whether work should be tracked in an increment
  *
  * Configuration:
- *   Set lazyLoading.llmDetection: false in config.json to disable detection entirely.
+ *   Set pluginAutoLoad.enabled: false to disable plugin detection.
+ *   Set incrementAssist.enabled: false to disable increment suggestions.
  *
  * Usage:
- *   specweave detect-intent "prompt text"                    # Returns JSON with detected plugins
+ *   specweave detect-intent "prompt text"                    # Returns JSON with detected plugins + increment suggestion
  *   specweave detect-intent "prompt text" --install          # Also installs detected plugins
  *   specweave detect-intent "prompt text" --install --silent # Silent mode for hooks
  *
@@ -22,7 +27,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { detectPluginsViaLLM } from '../../core/lazy-loading/llm-plugin-detector.js';
+import {
+  detectPluginsViaLLM,
+  IncrementAction,
+} from '../../core/lazy-loading/llm-plugin-detector.js';
 import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
 
@@ -52,6 +60,22 @@ export interface DetectIntentResult {
   installMessage?: string;
   /** Whether LLM detection was skipped (config disabled) */
   skipped?: boolean;
+
+  /** Increment recommendation (v1.0.141+) */
+  increment?: {
+    /** Recommended action: new, reopen, small_fix, hotfix, none */
+    action: IncrementAction;
+    /** Confidence score (0-1) */
+    confidence: number;
+    /** Suggested increment name (for 'new' action) */
+    suggestedName?: string;
+    /** Related keyword for reopening (for 'reopen' action) */
+    relatedKeyword?: string;
+    /** Brief explanation */
+    reasoning: string;
+  };
+  /** Whether increment assist was skipped (config disabled) */
+  incrementSkipped?: boolean;
 }
 
 /**
@@ -71,6 +95,34 @@ function findProjectRoot(): string | null {
 }
 
 /**
+ * Read and cache the project config
+ */
+let cachedConfig: Record<string, unknown> | null = null;
+
+function getProjectConfig(): Record<string, unknown> | null {
+  if (cachedConfig !== null) {
+    return cachedConfig;
+  }
+
+  const projectRoot = findProjectRoot();
+  if (!projectRoot) {
+    return null;
+  }
+
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) {
+    return null;
+  }
+
+  try {
+    cachedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    return cachedConfig;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Check if plugin auto-load is enabled in config
  *
  * Returns true if:
@@ -81,23 +133,55 @@ function findProjectRoot(): string | null {
  * Returns false only if explicitly set to false.
  */
 function isPluginAutoLoadEnabled(): boolean {
-  const projectRoot = findProjectRoot();
-  if (!projectRoot) {
-    return true; // Default to enabled if no project found
-  }
-
-  const configPath = path.join(projectRoot, '.specweave', 'config.json');
-  if (!fs.existsSync(configPath)) {
+  const config = getProjectConfig();
+  if (!config) {
     return true; // Default to enabled if no config
   }
 
-  try {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    // Only return false if explicitly set to false
-    return config.pluginAutoLoad?.enabled !== false;
-  } catch {
-    return true; // Default to enabled on read error
+  // Only return false if explicitly set to false
+  const pluginAutoLoad = config.pluginAutoLoad as { enabled?: boolean } | undefined;
+  return pluginAutoLoad?.enabled !== false;
+}
+
+/**
+ * Check if increment assist is enabled in config
+ *
+ * Returns true if:
+ * - No config exists (default to enabled)
+ * - Config exists but incrementAssist.enabled is undefined (default to true)
+ * - Config has incrementAssist.enabled: true
+ *
+ * Returns false only if explicitly set to false.
+ */
+function isIncrementAssistEnabled(): boolean {
+  const config = getProjectConfig();
+  if (!config) {
+    return true; // Default to enabled if no config
   }
+
+  // Only return false if explicitly set to false
+  const incrementAssist = config.incrementAssist as { enabled?: boolean } | undefined;
+  return incrementAssist?.enabled !== false;
+}
+
+/**
+ * Get increment assist confidence threshold from config
+ * @returns Threshold (0-1), defaults to 0.7
+ */
+function getIncrementConfidenceThreshold(): number {
+  const config = getProjectConfig();
+  if (!config) {
+    return 0.7; // Default threshold
+  }
+
+  const incrementAssist = config.incrementAssist as { confidenceThreshold?: number } | undefined;
+  const threshold = incrementAssist?.confidenceThreshold;
+
+  if (typeof threshold === 'number' && threshold >= 0 && threshold <= 1) {
+    return threshold;
+  }
+
+  return 0.7; // Default threshold
 }
 
 /**
@@ -140,6 +224,10 @@ export async function detectIntentCommand(
     return result;
   }
 
+  // Check if increment assist is enabled
+  const incrementAssistEnabled = isIncrementAssistEnabled();
+  const confidenceThreshold = getIncrementConfidenceThreshold();
+
   // Run LLM detection
   const llmResult = await detectPluginsViaLLM(prompt);
 
@@ -165,6 +253,38 @@ export async function detectIntentCommand(
     }
 
     return result;
+  }
+
+  // Process increment recommendation (v1.0.141+)
+  if (!incrementAssistEnabled) {
+    result.incrementSkipped = true;
+    logInfo('detect-intent', 'Increment assist disabled via config', {
+      configSetting: 'incrementAssist.enabled: false',
+    });
+  } else if (llmResult.increment) {
+    // Only include recommendation if confidence exceeds threshold
+    if (llmResult.increment.confidence >= confidenceThreshold) {
+      result.increment = {
+        action: llmResult.increment.action,
+        confidence: llmResult.increment.confidence,
+        suggestedName: llmResult.increment.suggestedName,
+        relatedKeyword: llmResult.increment.relatedKeyword,
+        reasoning: llmResult.increment.reasoning,
+      };
+
+      logInfo('detect-intent', 'Increment recommendation', {
+        action: llmResult.increment.action,
+        confidence: llmResult.increment.confidence,
+        suggestedName: llmResult.increment.suggestedName,
+        reasoning: llmResult.increment.reasoning,
+      });
+    } else {
+      logInfo('detect-intent', 'Increment recommendation below threshold', {
+        action: llmResult.increment.action,
+        confidence: llmResult.increment.confidence,
+        threshold: confidenceThreshold,
+      });
+    }
   }
 
   // Handle installation if requested
@@ -222,6 +342,8 @@ export async function detectIntentCommand(
     latencyMs: result.latencyMs,
     installed: result.installed,
     reasoning: result.reasoning,
+    incrementAction: result.increment?.action,
+    incrementConfidence: result.increment?.confidence,
   });
 
   return result;

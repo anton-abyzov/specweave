@@ -7,6 +7,14 @@
  * - Config updates
  * - Commands using new active project
  * - Error handling for invalid projects
+ *
+ * NOTE (v0.33.0): Project switching functionality has been REMOVED!
+ * - ProjectManager.switchProject() method no longer exists
+ * - config.multiProject.activeProject is no longer used
+ * - Per-US project targeting replaces global activeProject
+ * - See: 0125-cross-project-user-story-targeting
+ *
+ * These tests are skipped as they test removed functionality.
  */
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
@@ -14,7 +22,8 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 
-describe('Project Switching (E2E)', () => {
+// Skip: Project switching functionality removed in v0.33.0
+describe.skip('Project Switching (E2E)', () => {
   // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let specweaveRoot: string;
@@ -94,7 +103,7 @@ describe('Project Switching (E2E)', () => {
 
   it('should switch project successfully and update config', async () => {
     // Dynamically import ProjectManager
-    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
+    const { ProjectManager } = await import('../../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Verify initial active project
@@ -116,7 +125,7 @@ describe('Project Switching (E2E)', () => {
   });
 
   it('should use new active project for path resolution after switch', async () => {
-    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
+    const { ProjectManager } = await import('../../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Initial paths (frontend) - flattened structure (v0.15.0+, ADR-0028)
@@ -141,7 +150,7 @@ describe('Project Switching (E2E)', () => {
   });
 
   it('should throw error when switching to non-existent project', async () => {
-    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
+    const { ProjectManager } = await import('../../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Attempt to switch to invalid project
@@ -155,7 +164,7 @@ describe('Project Switching (E2E)', () => {
   });
 
   it('should allow switching to same project (idempotent)', async () => {
-    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
+    const { ProjectManager } = await import('../../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Switch to current project (frontend)

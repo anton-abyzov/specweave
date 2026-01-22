@@ -125,8 +125,8 @@ created: 2025-11-15
     );
 
     // Import GitHubFeatureSync (mock mode - no actual GitHub API calls)
-    const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
-    const { GitHubFeatureSync } = await import('../../plugins/specweave-github/lib/github-feature-sync.js');
+    const { GitHubClientV2 } = await import('../../../../plugins/specweave-github/lib/github-client-v2.js');
+    const { GitHubFeatureSync } = await import('../../../../plugins/specweave-github/lib/github-feature-sync.js');
 
     const client = GitHubClientV2.fromRepo('test-org', 'test-repo');
     const featureSync = new GitHubFeatureSync(client, specsDir, tmpDir);
@@ -227,7 +227,7 @@ Stakeholders need full visibility without repo access.
     );
 
     // Import and build issue
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const userStoryPath = path.join(productDir, 'us-001-complete.md');
     const builder = new UserStoryIssueBuilder(
@@ -304,11 +304,14 @@ Stakeholders need full visibility without repo access.
       execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
       execSync(`git remote add origin ${testCase.remote}`, { cwd: tmpDir, env: getCleanEnv() });
 
+      // Create .specweave folder so getProjectRoot() returns tmpDir (not the real specweave root)
+      await fs.ensureDir(path.join(tmpDir, '.specweave'));
+
       // Import fresh ProjectDetector
       // Note: In ESM, imports are cached. We work around this by passing different config paths
-      const { ProjectDetector } = await import('../../src/core/living-docs/project-detector.js');
+      const { ProjectDetector } = await import('../../../../src/core/living-docs/project-detector.js');
 
-      const detector = new ProjectDetector({ configPath: '/tmp/nonexistent.json' });
+      const detector = new ProjectDetector({ configPath: path.join(tmpDir, '.specweave', 'config.json') });
       const projects = detector.getProjects();
 
       expect(projects[0].id).toBe(testCase.expectedProject);
@@ -369,8 +372,8 @@ created: 2025-11-15
     await fs.ensureDir(path.join(specsDir, 'frontend'));
 
     // Import and test
-    const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
-    const { GitHubFeatureSync } = await import('../../plugins/specweave-github/lib/github-feature-sync.js');
+    const { GitHubClientV2 } = await import('../../../../plugins/specweave-github/lib/github-client-v2.js');
+    const { GitHubFeatureSync } = await import('../../../../plugins/specweave-github/lib/github-feature-sync.js');
 
     const client = GitHubClientV2.fromRepo('test', 'repo');
     const featureSync = new GitHubFeatureSync(client, specsDir, tmpDir);
@@ -411,7 +414,7 @@ created: 2025-11-15
     );
 
     // Test with custom branch
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const builder = new UserStoryIssueBuilder(
       path.join(specsDir, 'us-001-branch-test.md'),

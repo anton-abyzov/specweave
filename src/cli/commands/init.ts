@@ -371,11 +371,17 @@ export async function initCommand(
   } else {
     // Create subdirectory
     if (!projectName) {
-      projectName = await input({
-        message: 'Project name:',
-        default: 'my-saas',
-        validate: (val: string) => /^[a-z0-9-]+$/.test(val) || 'Project name must be lowercase letters, numbers, and hyphens only',
-      });
+      if (isCI) {
+        // CI/quick mode: use default project name
+        projectName = 'my-saas';
+        console.log(chalk.gray('   → CI/quick mode: Using default project name "my-saas"'));
+      } else {
+        projectName = await input({
+          message: 'Project name:',
+          default: 'my-saas',
+          validate: (val: string) => /^[a-z0-9-]+$/.test(val) || 'Project name must be lowercase letters, numbers, and hyphens only',
+        });
+      }
     }
 
     targetDir = path.resolve(process.cwd(), projectName);
@@ -397,10 +403,15 @@ export async function initCommand(
         const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
         if (existingFiles.length > 0) {
           console.log(chalk.yellow('\nDirectory ' + projectName + ' exists with ' + existingFiles.length + ' file(s).'));
-          const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
-          if (!initExisting) {
-            console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-            process.exit(0);
+          if (isCI) {
+            // CI/quick mode: proceed without asking
+            console.log(chalk.gray('   → CI/quick mode: Proceeding with initialization'));
+          } else {
+            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
+            if (!initExisting) {
+              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+              process.exit(0);
+            }
           }
           console.log(chalk.green('   ✅ Initializing in existing directory (brownfield-safe)\n'));
         }

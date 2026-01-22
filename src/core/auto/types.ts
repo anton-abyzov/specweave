@@ -5,6 +5,7 @@
  * No complex session management needed.
  *
  * Extended with Parallel Orchestration support for multi-agent execution.
+ * Extended with Success Criteria for LLM-based completion evaluation.
  */
 
 // ============================================================================
@@ -181,6 +182,72 @@ export function isGitProvider(value: unknown): value is GitProvider {
 }
 
 // ============================================================================
+// SUCCESS CRITERIA TYPES (for auto mode completion evaluation)
+// ============================================================================
+
+/**
+ * Success criteria type for auto mode completion evaluation
+ * Determines when auto mode session should end
+ */
+export type SuccessCriteriaType =
+  | 'tasks_complete' // All tasks marked [x] complete
+  | 'acs_satisfied' // All acceptance criteria checked
+  | 'tests_pass' // Tests must pass
+  | 'build_succeeds' // Build must succeed
+  | 'llm_evaluate' // LLM evaluates if goal is met
+  | 'custom_command'; // Custom command returns 0
+
+/**
+ * Individual success criterion for auto mode
+ */
+export interface SuccessCriterion {
+  type: SuccessCriteriaType;
+  description: string; // Human-readable description
+  required: boolean; // Mandatory vs optional
+  command?: string; // For custom_command/tests_pass/build_succeeds type
+  threshold?: number; // For coverage-based criteria
+  model?: 'haiku' | 'sonnet'; // For llm_evaluate type (default: sonnet)
+}
+
+/**
+ * Result of evaluating a success criterion
+ */
+export interface CriterionEvaluationResult {
+  criterion: SuccessCriterion;
+  satisfied: boolean;
+  reason: string;
+  durationMs?: number;
+}
+
+/**
+ * Result of full completion evaluation
+ */
+export interface CompletionEvaluationResult {
+  complete: boolean;
+  overallReason: string;
+  confidence: number; // 0-1 for LLM evaluations
+  results: CriterionEvaluationResult[];
+  nextSteps: string[];
+  durationMs: number;
+}
+
+/**
+ * Default success criteria - what most projects need
+ */
+export const DEFAULT_SUCCESS_CRITERIA: SuccessCriterion[] = [
+  {
+    type: 'tasks_complete',
+    description: 'All tasks marked complete in tasks.md',
+    required: true,
+  },
+  {
+    type: 'acs_satisfied',
+    description: 'All acceptance criteria satisfied in spec.md',
+    required: true,
+  },
+];
+
+// ============================================================================
 // BASE AUTO TYPES
 // ============================================================================
 
@@ -193,6 +260,10 @@ export interface AutoModeFlag {
   timestamp: string;
   incrementIds?: string[]; // Optional: specific increments to process
   parallel?: boolean; // Whether parallel mode is active
+  // Success criteria for completion evaluation
+  successCriteria?: SuccessCriterion[];
+  successSummary?: string; // Human-readable summary of what ends the session
+  userGoal?: string; // Original user intent/prompt
 }
 
 /**
@@ -260,6 +331,7 @@ export interface AutoConfig {
   requireTests?: boolean; // Require tests to pass before completion (default: false)
   requireValidation?: boolean; // Require /sw:validate before completion (default: true)
   requireJudgeLLM?: boolean; // Require /sw:judge-llm before completion (default: false)
+  requireLLMEval?: boolean; // Use LLM to evaluate completion (default: false)
   // Legacy fields (still supported in config but not used by simplified auto mode)
   maxHours?: number;
   testCommand?: string;
@@ -291,6 +363,7 @@ export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   requireTests: false, // Set true to require tests pass before completion
   requireValidation: true, // Run /sw:validate before completion
   requireJudgeLLM: false, // Set true to require AI quality verification
+  requireLLMEval: false, // Set true to use LLM completion evaluation
   maxHours: 600,
   testCommand: 'npm test',
   coverageThreshold: 80,

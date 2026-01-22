@@ -60,7 +60,7 @@ const mockGitHubAPI = {
   },
 };
 
-test.describe.serial('Immutable Description Pattern E2E', () => {
+describe('Immutable Description Pattern E2E', () => {
   let tempDir: string;
   let userStoryPath: string;
 

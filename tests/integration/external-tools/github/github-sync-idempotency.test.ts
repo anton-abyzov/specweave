@@ -72,7 +72,7 @@ Users often re-sync to update content after making changes.
     await fs.writeFile(userStoryPath, userStoryContent);
 
     // Import builder
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const repoInfo = { owner: 'test-org', repo: 'idempotency-test', branch: 'main' };
 
@@ -122,7 +122,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-001-checkbox.md');
     await fs.writeFile(userStoryPath, initialContent);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     // First sync
     const builder1 = new UserStoryIssueBuilder(
@@ -189,7 +189,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-001-content-change.md');
     await fs.writeFile(userStoryPath, version1);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const repoInfo = { owner: 'test-org', repo: 'content-change', branch: 'main' };
 
@@ -267,7 +267,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-001-related-evolution.md');
     await fs.writeFile(userStoryPath, version1);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const repoInfo = { owner: 'test-org', repo: 'related-changes', branch: 'main' };
 
@@ -348,7 +348,7 @@ created: 2025-11-15
     const userStoryPath = path.join(projectDir, 'us-001-link-format.md');
     await fs.writeFile(userStoryPath, userStoryContent);
 
-    const { UserStoryIssueBuilder } = await import('../../plugins/specweave-github/lib/user-story-issue-builder.js');
+    const { UserStoryIssueBuilder } = await import('../../../../plugins/specweave-github/lib/user-story-issue-builder.js');
 
     const repoInfo = { owner: 'test-org', repo: 'link-format', branch: 'develop' };
 
