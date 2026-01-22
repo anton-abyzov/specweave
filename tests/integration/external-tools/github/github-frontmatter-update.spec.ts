@@ -11,6 +11,7 @@ import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import * as yaml from 'yaml';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 test.describe('GitHub Frontmatter Updates', () => {
   let tmpDir: string;
@@ -29,8 +30,8 @@ test.describe('GitHub Frontmatter Updates', () => {
   test('should parse frontmatter with external GitHub info', async () => {
     process.chdir(tmpDir);
 
-    execSync('git init', { cwd: tmpDir });
-    execSync('git remote add origin https://github.com/test-org/frontmatter-test.git', { cwd: tmpDir });
+    execSync('git init', { cwd: tmpDir, env: getCleanEnv() });
+    execSync('git remote add origin https://github.com/test-org/frontmatter-test.git', { cwd: tmpDir, env: getCleanEnv() });
 
     const specsDir = path.join(tmpDir, '.specweave/docs/internal/specs');
     const projectDir = path.join(specsDir, 'frontmatter-test/FS-950');

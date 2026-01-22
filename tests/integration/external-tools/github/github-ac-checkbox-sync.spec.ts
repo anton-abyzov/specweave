@@ -23,6 +23,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
 const TEST_ROOT = path.join(
@@ -34,7 +35,7 @@ const FEATURE_ID = 'FS-TEST-AC-SYNC';
 // Check if GitHub CLI is available and authenticated
 const isGitHubAvailable = (): boolean => {
   try {
-    execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe' });
+    execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe', env: getCleanEnv() });
     return true;
   } catch {
     return false;
@@ -45,7 +46,8 @@ const isGitHubAvailable = (): boolean => {
 const getRepoInfo = (): { owner: string; repo: string } | null => {
   try {
     const remoteUrl = execSync('git remote get-url origin', {
-      encoding: 'utf-8'
+      encoding: 'utf-8',
+      env: getCleanEnv()
     }).trim();
     const match = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/.]+)/);
     if (match) {
@@ -78,13 +80,13 @@ describe('GitHub AC Checkbox Sync', () => {
     try {
       const issues = execSync(
         `gh issue list --search "${FEATURE_ID}" --state all --json number --limit 10`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const issueNumbers = JSON.parse(issues).map((i: any) => i.number);
 
       for (const number of issueNumbers) {
         try {
-          execSync(`gh issue delete ${number} --yes`, { stdio: 'pipe' });
+          execSync(`gh issue delete ${number} --yes`, { stdio: 'pipe', env: getCleanEnv() });
         } catch {
           // Issue may already be deleted
         }
@@ -121,7 +123,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const createResult = execSync(
         `gh issue create --title "[${FEATURE_ID}][US-001] Test AC Sync" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -135,7 +137,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const token =
         process.env.GITHUB_TOKEN ||
-        execSync('gh auth token', { encoding: 'utf-8' }).trim();
+        execSync('gh auth token', { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       const acStatus = new Map<string, boolean>([
         ['AC-US1-01', true], // Mark first AC as complete
@@ -161,7 +163,7 @@ describe('GitHub AC Checkbox Sync', () => {
       // Verify: Fetch issue body and check checkboxes
       const issueData = execSync(
         `gh issue view ${issueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const { body } = JSON.parse(issueData);
 
@@ -175,13 +177,13 @@ describe('GitHub AC Checkbox Sync', () => {
       // Verify: Check for progress comment
       const comments = execSync(
         `gh issue view ${issueNumber} --json comments --jq '.comments[-1].body'`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       expect(comments).toContain('Progress Update');
       expect(comments).toContain('2/3'); // 2 out of 3 complete
 
       // Cleanup
-      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe' });
+      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe', env: getCleanEnv() });
     }
   );
 
@@ -206,7 +208,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const createResult = execSync(
         `gh issue create --title "[${FEATURE_ID}][US-002] Test Duplicate Prevention" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -218,7 +220,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const token =
         process.env.GITHUB_TOKEN ||
-        execSync('gh auth token', { encoding: 'utf-8' }).trim();
+        execSync('gh auth token', { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       const acStatus = new Map<string, boolean>([['AC-US2-01', true]]);
 
@@ -249,7 +251,7 @@ describe('GitHub AC Checkbox Sync', () => {
       // Verify: Should only have one progress comment
       const commentsData = execSync(
         `gh issue view ${issueNumber} --json comments`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const { comments } = JSON.parse(commentsData);
       const progressComments = comments.filter((c: any) =>
@@ -258,7 +260,7 @@ describe('GitHub AC Checkbox Sync', () => {
       expect(progressComments.length).toBe(1); // Only ONE comment
 
       // Cleanup
-      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe' });
+      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe', env: getCleanEnv() });
     }
   );
 
@@ -284,7 +286,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const createResult = execSync(
         `gh issue create --title "[${FEATURE_ID}][US-003] Test Legacy Format" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -296,7 +298,7 @@ describe('GitHub AC Checkbox Sync', () => {
 
       const token =
         process.env.GITHUB_TOKEN ||
-        execSync('gh auth token', { encoding: 'utf-8' }).trim();
+        execSync('gh auth token', { encoding: 'utf-8', env: getCleanEnv() }).trim();
 
       // Act: Update legacy format ACs
       const acStatus = new Map<string, boolean>([
@@ -319,7 +321,7 @@ describe('GitHub AC Checkbox Sync', () => {
       // Verify checkbox state
       const issueData = execSync(
         `gh issue view ${issueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const { body } = JSON.parse(issueData);
 
@@ -327,7 +329,7 @@ describe('GitHub AC Checkbox Sync', () => {
       expect(body).toMatch(/- \[ \] \*\*AC-002\*\*/);
 
       // Cleanup
-      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe' });
+      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe', env: getCleanEnv() });
     }
   );
 });
@@ -358,12 +360,12 @@ describe('AC Sync via SyncCoordinator', () => {
     try {
       const issues = execSync(
         `gh issue list --search "FS-COORD-TEST" --state all --json number --limit 10`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const issueNumbers = JSON.parse(issues).map((i: any) => i.number);
       for (const number of issueNumbers) {
         try {
-          execSync(`gh issue delete ${number} --yes`, { stdio: 'pipe' });
+          execSync(`gh issue delete ${number} --yes`, { stdio: 'pipe', env: getCleanEnv() });
         } catch {
           // Ignore
         }
@@ -420,7 +422,7 @@ describe('AC Sync via SyncCoordinator', () => {
 
       const createResult = execSync(
         `gh issue create --title "[FS-COORD-TEST][US-001] Coordinator Test" --body "${issueBody.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
 
       const issueMatch = createResult.match(/issues\/(\d+)/);
@@ -509,7 +511,7 @@ feature: FS-COORD-TEST
       // Verify checkboxes in GitHub
       const issueData = execSync(
         `gh issue view ${issueNumber} --json body`,
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8', env: getCleanEnv() }
       );
       const { body } = JSON.parse(issueData);
 
@@ -517,7 +519,7 @@ feature: FS-COORD-TEST
       expect(body).toMatch(/- \[x\] \*\*AC-US1-02\*\*/);
 
       // Cleanup
-      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe' });
+      execSync(`gh issue delete ${issueNumber} --yes`, { stdio: 'pipe', env: getCleanEnv() });
     }
   );
 });

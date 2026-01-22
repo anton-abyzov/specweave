@@ -2,23 +2,25 @@
  * Unit tests for ImportCoordinator multi-repo handling
  *
  * Tests multi-repository GitHub import coordination (T-017)
+ *
+ * IMPORTANT: Uses vi.hoisted() for mocks to ensure they are applied before
+ * module imports. This is required for consistent behavior across platforms
+ * (macOS, Linux, Windows) and in CI environments.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ImportCoordinator, type CoordinatorConfig, type ProgressInfo } from '../../../src/importers/import-coordinator.js';
-import type { ExternalItem, ImportResult } from '../../../src/importers/external-importer.js';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
+import type { ExternalItem } from '../../../src/importers/external-importer.js';
 
-// Mock the importers to avoid real API calls
-vi.mock('../../../src/importers/github-importer.js', () => ({
-  GitHubImporter: vi.fn().mockImplementation((owner, repo, token) => ({
+// Create mock factory that generates mock items
+function createMockGitHubImporter(owner: string, repo: string, _token?: string) {
+  return {
     platform: 'github',
     owner,
     repo,
-    async *paginate(config: any) {
-      // Return mock items tagged with source repo
+    async *paginate(_config: unknown) {
       const items: ExternalItem[] = [
         {
           id: `GITHUB-${owner}-${repo}-1`,
@@ -47,30 +49,63 @@ vi.mock('../../../src/importers/github-importer.js', () => ({
       ];
       yield items;
     },
-  })),
-}));
+  };
+}
 
-vi.mock('../../../src/importers/jira-importer.js', () => ({
-  JiraImporter: vi.fn().mockImplementation(() => ({
-    platform: 'jira',
-    async *paginate() {
-      yield [];
-    },
-  })),
-}));
+// Mock modules BEFORE they are imported by import-coordinator
+// Use hoisted mocks to ensure proper ESM module replacement
+vi.mock('../../../src/importers/github-importer.js', () => {
+  return {
+    GitHubImporter: vi.fn().mockImplementation(createMockGitHubImporter),
+  };
+});
 
-vi.mock('../../../src/importers/ado-importer.js', () => ({
-  ADOImporter: vi.fn().mockImplementation(() => ({
-    platform: 'ado',
-    async *paginate() {
-      yield [];
-    },
-  })),
-}));
+vi.mock('../../../src/importers/jira-importer.js', () => {
+  return {
+    JiraImporter: vi.fn().mockImplementation(() => ({
+      platform: 'jira',
+      async *paginate() {
+        yield [];
+      },
+    })),
+  };
+});
 
-vi.mock('../../../src/sync/sync-metadata.js', () => ({
-  updateSyncMetadata: vi.fn(),
-}));
+vi.mock('../../../src/importers/ado-importer.js', () => {
+  return {
+    ADOImporter: vi.fn().mockImplementation(() => ({
+      platform: 'ado',
+      async *paginate() {
+        yield [];
+      },
+    })),
+  };
+});
+
+vi.mock('../../../src/sync/sync-metadata.js', () => {
+  return {
+    updateSyncMetadata: vi.fn(),
+  };
+});
+
+// Mock auth-helpers to ensure consistent behavior in CI (no filesystem access)
+vi.mock('../../../src/utils/auth-helpers.js', () => {
+  return {
+    getGitHubAuthFromProject: vi.fn().mockReturnValue({
+      token: '',
+      source: 'none',
+    }),
+    getGitHubAuth: vi.fn().mockReturnValue({
+      token: '',
+      source: 'none',
+    }),
+    isOAuthToken: vi.fn().mockReturnValue(false),
+    isPersonalAccessToken: vi.fn().mockReturnValue(true),
+  };
+});
+
+// Import AFTER mocks are set up
+import { ImportCoordinator, type CoordinatorConfig, type ProgressInfo } from '../../../src/importers/import-coordinator.js';
 
 describe('ImportCoordinator Multi-Repo Support', () => {
   let testDir: string;

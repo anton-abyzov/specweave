@@ -424,8 +424,8 @@ if [ "$LAZY_MODE" = true ]; then
   echo -e "  2. Run ${YELLOW}/plugin${NC} to verify sw + sw-router loaded"
   echo -e "  3. Test: ${YELLOW}/sw:increment \"test feature\"${NC} (from core)"
   echo -e "  4. Test: \"Build React dashboard\" → should spawn sw-frontend agent"
-  echo -e "  5. Manual load: ${YELLOW}specweave load-plugins <group>${NC}"
-  echo -e "${BLUE}     Groups: github, jira, ado, frontend, backend, ml, infra, all${NC}"
+  echo -e "  5. Manual install: ${YELLOW}claude plugin install sw@specweave${NC}"
+  echo -e "${BLUE}     Available: sw, sw-frontend, sw-github, sw-jira, sw-ml, sw-infra${NC}"
 else
   echo -e "  2. Run ${YELLOW}/plugin${NC} to verify all plugins loaded"
   echo -e "  3. Check ${YELLOW}~/.claude/plugins/installed_plugins.json${NC}"

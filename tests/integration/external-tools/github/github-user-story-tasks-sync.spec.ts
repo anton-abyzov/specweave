@@ -8,6 +8,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 test.describe('GitHub User Story Tasks Sync E2E', () => {
   const testProjectRoot = path.join(__dirname, '../fixtures/e2e-github-tasks-test');
@@ -21,6 +22,7 @@ test.describe('GitHub User Story Tasks Sync E2E', () => {
     execSync('specweave init --adapter github', {
       cwd: testProjectRoot,
       stdio: 'pipe',
+      env: getCleanEnv(),
     });
   });
 
@@ -133,6 +135,7 @@ Testing project-specific task generation and GitHub sync.
     execSync('specweave sync-docs update', {
       cwd: testProjectRoot,
       stdio: 'pipe',
+      env: getCleanEnv(),
     });
 
     // Step 3: Verify backend user story file has correct tasks
@@ -188,6 +191,7 @@ Testing project-specific task generation and GitHub sync.
     const syncOutput = execSync('specweave-github sync-spec specweave/FS-040 --dry-run', {
       cwd: testProjectRoot,
       encoding: 'utf-8',
+      env: getCleanEnv(),
     });
 
     // Verify sync output shows task creation
@@ -254,6 +258,7 @@ title: "No Tasks Test"
     execSync('specweave sync-docs update', {
       cwd: testProjectRoot,
       stdio: 'pipe',
+      env: getCleanEnv(),
     });
 
     const usPath = path.join(
@@ -320,6 +325,7 @@ title: "Completion Sync Test"
     execSync('specweave sync-docs update', {
       cwd: testProjectRoot,
       stdio: 'pipe',
+      env: getCleanEnv(),
     });
 
     const usPath = path.join(
@@ -428,6 +434,7 @@ projects:
     execSync('specweave sync-docs update', {
       cwd: testProjectRoot,
       stdio: 'pipe',
+      env: getCleanEnv(),
     });
 
     // Backend should have API task only

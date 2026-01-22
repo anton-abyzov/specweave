@@ -227,14 +227,14 @@ Task({
 
 ## SpecWeave Commands
 
-For explicit `/sw:*` commands, load the appropriate plugin:
+For explicit `/sw:*` commands, plugins auto-load via hooks. If needed, use Claude's native commands:
 
-| Command | Action |
-|---------|--------|
-| `/sw:*` | `specweave load-plugins core` then execute |
-| `/sw-github:*` | `specweave load-plugins github` then execute |
-| `/sw-jira:*` | `specweave load-plugins jira` then execute |
-| `/sw-ado:*` | `specweave load-plugins ado` then execute |
+| Command | Plugin Required |
+|---------|-----------------|
+| `/sw:*` | `claude plugin install sw@specweave` |
+| `/sw-github:*` | `claude plugin install sw-github@specweave` |
+| `/sw-jira:*` | `claude plugin install sw-jira@specweave` |
+| `/sw-ado:*` | `claude plugin install sw-ado@specweave` |
 
 ## Project Detection
 

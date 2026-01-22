@@ -44,7 +44,8 @@ jobs:
           for VAR in "${CONFIG_VARS[@]}"; do
             echo "Checking for process.env.$VAR..."
 
-            # Search in src/ files, excluding tests, deprecated files, and adapter factory methods
+            # Search in src/ files, excluding tests, deprecated files, adapter factory methods, and CI/CD-specific files
+            # Note: cicd-monitor.ts and config-loader.ts legitimately read CI env vars in pipeline context
             MATCHES=$(grep -rn "process\.env\.$VAR" src/ \
               --include="*.ts" \
               --exclude="*.test.ts" \
@@ -52,6 +53,8 @@ jobs:
               --exclude="credentials-manager.ts" \
               --exclude="env-multi-project-parser.ts" \
               --exclude="*-items-adapter.ts" \
+              --exclude="cicd-monitor.ts" \
+              --exclude="config-loader.ts" \
               2>/dev/null || true)
 
             if [[ -n "$MATCHES" ]]; then

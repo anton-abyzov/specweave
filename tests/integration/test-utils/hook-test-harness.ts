@@ -2,6 +2,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import * as fs from '../../../src/utils/fs-native.js';
+// CRITICAL: Import getCleanEnv to prevent debugger interference in subprocess calls
+import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 const execAsync = promisify(exec);
 
@@ -28,10 +30,11 @@ export class HookTestHarness {
     const startTime = Date.now();
 
     try {
+      // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
       const result = await execAsync(`bash ${this.hookPath}`, {
         cwd: this.testRoot,
         env: {
-          ...process.env,
+          ...getCleanEnv(),
           PWD: this.testRoot,
           ...env
         }

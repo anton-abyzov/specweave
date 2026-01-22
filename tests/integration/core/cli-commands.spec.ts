@@ -10,6 +10,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as fs from '../../../src/utils/fs-native.js';
 import os from 'os';
+// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
+import { getCleanEnv } from '../../../src/utils/clean-env.js';
 
 const execAsync = promisify(exec);
 
@@ -36,7 +38,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
       `node "${specweaveBin}" init --adapter=claude --language=en`,
       {
         cwd: testDir,
-        env: { ...process.env, CI: 'true' }
+        env: { ...getCleanEnv(), CI: 'true' }
       }
     );
 
@@ -84,7 +86,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
       `node "${specweaveBin}" init --adapter=claude --language=en`,
       {
         cwd: testDir,
-        env: { ...process.env, CI: 'true' }
+        env: { ...getCleanEnv(), CI: 'true' }
       }
     );
 
@@ -107,7 +109,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
       `node "${specweaveBin}" init --adapter=claude --language=en`,
       {
         cwd: testDir,
-        env: { ...process.env, CI: 'true' }
+        env: { ...getCleanEnv(), CI: 'true' }
       }
     );
 
@@ -125,7 +127,7 @@ test.describe('SpecWeave CLI E2E Tests', () => {
       `node "${specweaveBin}" init --adapter=claude --language=en`,
       {
         cwd: testDir,
-        env: { ...process.env, CI: 'true' }
+        env: { ...getCleanEnv(), CI: 'true' }
       }
     );
 

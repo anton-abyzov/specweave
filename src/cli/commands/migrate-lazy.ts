@@ -185,7 +185,7 @@ async function rollbackMigration(options: MigrateLazyOptions): Promise<void> {
   if (!fs.existsSync(BACKUP_DIR)) {
     console.log(chalk.yellow('No backup found.'));
     console.log(chalk.gray('Cannot rollback - no pre-migration state saved.'));
-    console.log(chalk.gray('\nTo install all plugins: specweave load-plugins all'));
+    console.log(chalk.gray('\nTo install all plugins: claude plugin install sw@specweave'));
     return;
   }
 

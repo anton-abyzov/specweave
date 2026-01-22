@@ -13,6 +13,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
+import { getCleanEnv } from '../../../test-utils/clean-env.js';
 
 const TEST_DIR = path.join(process.cwd(), 'tests/fixtures/e2e-living-docs-translation');
 
