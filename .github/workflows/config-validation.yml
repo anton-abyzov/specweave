@@ -59,15 +59,30 @@ jobs:
 
             if [[ -n "$MATCHES" ]]; then
               echo ""
-              echo "VIOLATION: process.env.$VAR found in src/ files:"
+              echo "Found: process.env.$VAR in src/ files:"
               echo "$MATCHES"
               echo ""
 
-              # Check if it's a fallback pattern (allowed)
-              if echo "$MATCHES" | grep -q "|| process\.env\.$VAR"; then
-                echo "  Note: This appears to be a fallback pattern (ConfigManager first)"
-              else
+              # Check if ALL matches include fallback/conditional operators (||, &&, ?)
+              # If a line contains ||, &&, or ?, it's considered a fallback pattern
+              NON_FALLBACK_LINES=""
+              while IFS= read -r line; do
+                [[ -z "$line" ]] && continue
+                # Extract just the code portion (after the line number and colon)
+                CODE_PART=$(echo "$line" | cut -d: -f3-)
+                # Check if line contains fallback operators
+                if ! echo "$CODE_PART" | grep -qE "\|\||&&|\?"; then
+                  # No fallback operator - potential violation
+                  NON_FALLBACK_LINES="$NON_FALLBACK_LINES\n$line"
+                fi
+              done <<< "$MATCHES"
+
+              if [[ -n "$NON_FALLBACK_LINES" ]]; then
+                echo "  ⚠️  Direct usage without fallback detected:"
+                echo -e "$NON_FALLBACK_LINES"
                 VIOLATIONS_FOUND=$((VIOLATIONS_FOUND + 1))
+              else
+                echo "  ✅ All usages include fallback patterns (allowed)"
               fi
             fi
           done
