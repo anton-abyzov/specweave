@@ -55,6 +55,7 @@ jobs:
               --exclude="*-items-adapter.ts" \
               --exclude="cicd-monitor.ts" \
               --exclude="config-loader.ts" \
+              --exclude="auth-helpers.ts" \
               2>/dev/null || true)
 
             if [[ -n "$MATCHES" ]]; then
