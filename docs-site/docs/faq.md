@@ -913,26 +913,23 @@ fi
 
 ### Commands not working? Skills not loading?
 
-**Quick Fix** - Run these two commands to recover from most issues:
+**Quick Fix** - Run this command to recover from most issues:
 
 ```bash
-# Refresh plugins and skills from GitHub marketplace
-specweave refresh-marketplace
-
-# Update CLAUDE.md with latest instructions
-specweave update-instructions
+specweave update
 ```
 
-**When to use these commands:**
+**When to use:**
 - ✅ Claude Code was updated and skills stopped working
 - ✅ Commands like `/sw:increment` not recognized
 - ✅ Hooks not firing properly
-- ✅ Agents not spawning or behaving unexpectedly
 - ✅ After upgrading SpecWeave version
 
-**What they do:**
-- `specweave refresh-marketplace` - Pulls latest plugins from GitHub, reinstalls all 24 plugins with 136 skills, 68 agents, 53 commands
-- `specweave update-instructions` - Regenerates CLAUDE.md with current SpecWeave version instructions
+**What it does:**
+- CLI self-update (npm)
+- Regenerates CLAUDE.md and AGENTS.md
+- Updates config with new defaults
+- Refreshes marketplace plugins (24 plugins, 136 skills, 68 agents)
 
 ### Auto Mode Issues
 
@@ -997,8 +994,7 @@ specweave init .
 **Install latest SpecWeave:**
 ```bash
 npm install -g specweave@latest
-specweave refresh-marketplace
-specweave update-instructions
+specweave update
 ```
 
 **Clear stale state:**

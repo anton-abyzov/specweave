@@ -161,8 +161,7 @@ node --version  # Must be 20.12.0+
 After Claude Code updates:
 
 ```bash
-specweave refresh-marketplace   # Reinstall plugins
-specweave update-instructions   # Regenerate CLAUDE.md
+specweave update      # Full update: CLI + instructions + config + plugins
 ```
 
 Then restart Claude Code.

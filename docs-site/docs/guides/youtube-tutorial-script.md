@@ -436,16 +436,16 @@ Task({
 **[TERMINAL: Show marketplace refresh]**
 
 ```bash
+# Full update: CLI + instructions + config + plugins (recommended)
+specweave update
+
 # For SpecWeave contributors (in the repo)
 bash scripts/refresh-marketplace.sh
-
-# For end users (installed via npm)
-specweave refresh-marketplace
 ```
 
-> "The marketplace lets you install all plugins with one command. SpecWeave refreshes from GitHub — always pulling the latest committed code. No symlinks, no filesystem coupling, just stable production plugins.
+> "The marketplace lets you install all plugins with one command. Since v1.0.138, `specweave update` does everything — updates CLI, regenerates CLAUDE.md, migrates config, AND refreshes marketplace plugins. No separate commands needed.
 >
-> Install SpecWeave, run refresh-marketplace, restart Claude Code. Done. 136 skills and 68 agents available instantly."
+> Install SpecWeave, run `specweave update`, restart Claude Code. Done. 136 skills and 68 agents available instantly."
 
 ### 5. Hooks - Event-Driven Automation
 

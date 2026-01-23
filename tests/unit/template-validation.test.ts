@@ -44,9 +44,9 @@ describe('Template Validation Tests', () => {
       expect(claudeContent).toContain('## Workflow');
     });
 
-    test('should contain file organization rules in Rules section', () => {
-      // File organization is part of Rules section (Root clean rule)
-      expect(claudeContent).toMatch(/Root clean.*NEVER/);
+    test('should contain file organization rules in Structure section', () => {
+      // File organization is now in Structure section (condensed from Rules)
+      expect(claudeContent).toMatch(/Increment root.*ONLY/);
     });
 
     test('should contain command table', () => {
@@ -58,7 +58,8 @@ describe('Template Validation Tests', () => {
     });
 
     test('should contain critical file organization rule', () => {
-      expect(claudeContent).toMatch(/NEVER create.*project root|Root clean/);
+      // Structure section has "Everything else → subfolders"
+      expect(claudeContent).toMatch(/Everything else.*subfolders/);
     });
 
     test('should contain Truth reference in header', () => {
@@ -169,9 +170,9 @@ describe('Template Validation Tests', () => {
       const agentsContent = fs.readFileSync(AGENTS_TEMPLATE, 'utf-8');
 
       // Both should mention file organization rules (different wording but same intent)
-      // CLAUDE: "Root clean: NEVER create .md/reports/scripts in project root"
+      // CLAUDE: "⛔ Increment root: ONLY ..." + "Everything else → subfolders"
       // AGENTS: "NEVER pollute project root"
-      expect(claudeContent).toMatch(/NEVER.*project root|Root clean/i);
+      expect(claudeContent).toMatch(/Increment root.*ONLY|Everything else.*subfolders/i);
       expect(agentsContent).toMatch(/NEVER.*project root/i);
     });
 
