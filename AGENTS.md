@@ -1,6 +1,6 @@
-<!-- SW:META template="agents" version="1.0.144" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
+<!-- SW:META template="agents" version="1.0.145" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
 
-<!-- SW:SECTION:index version="1.0.144" -->
+<!-- SW:SECTION:index version="1.0.145" -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
@@ -14,7 +14,7 @@
 | Troubleshoot | `#troubleshooting` | Common issues |
 <!-- SW:END:index -->
 
-<!-- SW:SECTION:quickstart version="1.0.144" -->
+<!-- SW:SECTION:quickstart version="1.0.145" -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
@@ -23,7 +23,7 @@
 4. **Execute**: `/sw:do` to start implementation
 <!-- SW:END:quickstart -->
 
-<!-- SW:SECTION:rules version="1.0.144" -->
+<!-- SW:SECTION:rules version="1.0.145" -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -77,7 +77,7 @@
 ```
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:commands version="1.0.144" -->
+<!-- SW:SECTION:commands version="1.0.145" -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -101,7 +101,7 @@
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
-<!-- SW:SECTION:nonclaudetools version="1.0.144" -->
+<!-- SW:SECTION:nonclaudetools version="1.0.145" -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
@@ -350,7 +350,7 @@ cat plugins/specweave/commands/increment.md
 **Without these manual steps, your work won't be tracked!**
 <!-- SW:END:nonclaudetools -->
 
-<!-- SW:SECTION:syncworkflow version="1.0.144" -->
+<!-- SW:SECTION:syncworkflow version="1.0.145" -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -432,7 +432,7 @@ TASK COMPLETED
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 <!-- SW:END:syncworkflow -->
 
-<!-- SW:SECTION:contextloading version="1.0.144" -->
+<!-- SW:SECTION:contextloading version="1.0.145" -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -452,7 +452,7 @@ Read only what's needed for the current task:
 4. Avoid loading entire documentation trees
 <!-- SW:END:contextloading -->
 
-<!-- SW:SECTION:structure version="1.0.144" -->
+<!-- SW:SECTION:structure version="1.0.145" -->
 ## Project Structure
 
 ```
@@ -473,7 +473,7 @@ Read only what's needed for the current task:
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:agents version="1.0.144" -->
+<!-- SW:SECTION:agents version="1.0.145" -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
@@ -481,7 +481,7 @@ Read only what's needed for the current task:
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 
-<!-- SW:SECTION:skills version="1.0.144" -->
+<!-- SW:SECTION:skills version="1.0.145" -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -531,7 +531,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 <!-- SW:END:skills -->
 
-<!-- SW:SECTION:taskformat version="1.0.144" -->
+<!-- SW:SECTION:taskformat version="1.0.145" -->
 ## Task Format
 
 ```markdown
@@ -545,142 +545,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:tdd version="1.0.145" -->
-## TDD Mode (Test-Driven Development) {#tdd-mode}
-
-**When `testing.defaultTestMode: "TDD"` is configured in `.specweave/config.json`, you MUST follow TDD discipline.**
-
-### Check TDD Configuration (MANDATORY BEFORE IMPLEMENTATION)
-
-```bash
-# Check if TDD mode is enabled
-jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json
-
-# Check enforcement level
-jq -r '.testing.tddEnforcement // "warn"' .specweave/config.json
-```
-
-| Result | Meaning |
-|--------|---------|
-| `"TDD"` | **MANDATORY**: Write tests BEFORE implementation |
-| `"test-first"` | **RECOMMENDED**: Write tests first, but not enforced |
-| `"test-after"` | Standard: Write tests after implementation |
-
-### TDD Workflow (RED-GREEN-REFACTOR)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ TDD CYCLE - MANDATORY WHEN defaultTestMode = "TDD"           │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. 🔴 RED: Write FAILING test first                        │
-│     • Test must FAIL initially (proves test works)           │
-│     • DO NOT write implementation code yet!                  │
-│                                                              │
-│  2. 🟢 GREEN: Write MINIMAL code to pass                     │
-│     • Only enough code to make test pass                     │
-│     • No extra features, no optimization                     │
-│                                                              │
-│  3. 🔵 REFACTOR: Improve code quality                        │
-│     • Clean up, remove duplication                           │
-│     • Keep tests GREEN throughout                            │
-│                                                              │
-│  4. Repeat for next feature                                  │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### TDD Task Format
-
-When TDD is enabled, tasks come in triplets with dependencies:
-
-```markdown
-### T-001: [RED] Write user authentication tests
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
-**Test Plan**: Write failing tests for login, logout, token refresh
-
-### T-002: [GREEN] Implement user authentication
-**User Story**: US-001
-**Depends On**: T-001
-**Status**: [ ] pending
-
-### T-003: [REFACTOR] Extract auth utilities
-**User Story**: US-001
-**Depends On**: T-002
-**Status**: [ ] pending
-```
-
-**CRITICAL**: Complete tasks in order - T-001 (RED) before T-002 (GREEN)!
-
-### TDD Commands (Claude Code)
-
-| Command | Phase | Purpose |
-|---------|-------|---------|
-| `/sw:tdd-red` | RED | Write failing tests |
-| `/sw:tdd-green` | GREEN | Minimal implementation |
-| `/sw:tdd-refactor` | REFACTOR | Code improvement |
-| `/sw:tdd-cycle` | ALL | Orchestrated full cycle |
-
-### TDD for Non-Claude Tools
-
-**Non-Claude tools don't have `/sw:tdd-*` commands. Follow manually:**
-
-1. **Before each feature**:
-   - Check TDD config: `jq -r '.testing.defaultTestMode' .specweave/config.json`
-   - If `"TDD"`: Write test file FIRST, verify it fails
-
-2. **Workflow**:
-   ```bash
-   # 1. Write test file (RED)
-   vim src/auth/auth.service.test.ts
-   npm test src/auth/auth.service.test.ts  # Must FAIL
-
-   # 2. Implement (GREEN)
-   vim src/auth/auth.service.ts
-   npm test src/auth/auth.service.test.ts  # Must PASS
-
-   # 3. Refactor (BLUE)
-   # Clean up, extract utilities
-   npm test  # All tests still PASS
-   ```
-
-3. **Update tasks.md**:
-   - Mark RED task complete ONLY after test file exists and fails
-   - Mark GREEN task complete ONLY after test passes
-   - Mark REFACTOR task complete after cleanup (tests still green)
-
-### Enforcement Levels
-
-Set in `.specweave/config.json`:
-
-```json
-{
-  "testing": {
-    "defaultTestMode": "TDD",
-    "tddEnforcement": "strict"  // "strict" | "warn" | "off"
-  }
-}
-```
-
-| Level | Behavior |
-|-------|----------|
-| `strict` | BLOCKS completion if TDD order violated |
-| `warn` | Shows warning but allows (default) |
-| `off` | No enforcement |
-
-### Common Mistakes
-
-| Mistake | Why It's Wrong | Fix |
-|---------|---------------|-----|
-| Writing implementation first | Defeats TDD purpose | Write test file FIRST |
-| Test passes immediately | Test doesn't prove anything | Ensure test FAILS first |
-| Skipping REFACTOR | Code debt accumulates | Always clean up after GREEN |
-| Marking GREEN before RED | Violates dependencies | Complete tasks in order |
-<!-- SW:END:tdd -->
-
-<!-- SW:SECTION:usformat version="1.0.144" -->
+<!-- SW:SECTION:usformat version="1.0.145" -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -714,7 +579,7 @@ specweave context projects
 ```
 <!-- SW:END:usformat -->
 
-<!-- SW:SECTION:workflows version="1.0.144" -->
+<!-- SW:SECTION:workflows version="1.0.145" -->
 ## Workflows
 
 ### Creating Increment
@@ -771,7 +636,7 @@ title: "Feature Title"
 4. GitHub issue closed (if enabled)
 <!-- SW:END:workflows -->
 
-<!-- SW:SECTION:plugincommands version="1.0.144" -->
+<!-- SW:SECTION:plugincommands version="1.0.145" -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -781,7 +646,7 @@ title: "Feature Title"
 | `/sw-ado:sync` | Azure DevOps |
 <!-- SW:END:plugincommands -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.144" -->
+<!-- SW:SECTION:troubleshooting version="1.0.145" -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -886,7 +751,7 @@ npx playwright test
 - Running `npx` instead of MCP tools (better anyway!)
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:docs version="1.0.144" -->
+<!-- SW:SECTION:docs version="1.0.145" -->
 ## Documentation
 
 | Resource | Purpose |
