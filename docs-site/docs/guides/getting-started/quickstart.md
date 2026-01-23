@@ -319,8 +319,7 @@ If you see an error like `SyntaxError: Unexpected token 'with'`, your Node.js is
 
 If commands, skills, or hooks stop working after a Claude Code update:
 ```bash
-specweave refresh-marketplace   # Reinstall all plugins from GitHub
-specweave update-instructions   # Regenerate CLAUDE.md
+specweave update      # Full update: CLI + instructions + config + plugins
 ```
 
 ### Auto Mode Issues
@@ -355,8 +354,7 @@ specweave refresh-marketplace
 Install latest and refresh:
 ```bash
 npm install -g specweave@latest
-specweave refresh-marketplace
-specweave update-instructions
+specweave update
 ```
 
 ---

@@ -207,9 +207,9 @@ Then in Claude Code:
 
 **Troubleshooting** - if commands/skills stop working:
 ```bash
-specweave update              # Full update: CLI + instructions + config (recommended)
-specweave update --plugins    # Also refresh marketplace plugins
-specweave refresh-marketplace # Reinstall all plugins from GitHub (standalone)
+specweave update              # Full update: CLI + instructions + config + plugins
+specweave update --no-plugins # Skip plugins refresh
+specweave refresh-marketplace # Standalone plugins refresh (without CLI update)
 ```
 
 **[Full Quickstart Guide ->](https://spec-weave.com/docs/guides/getting-started/quickstart)**
@@ -393,9 +393,9 @@ Anthropic doesn't just use standards — they **define** them. SpecWeave builds 
 
 | Command | Purpose |
 |---------|---------|
-| `specweave update` | **Full update**: CLI (self-update via npm), instructions, config |
-| `specweave update --plugins` | Update + refresh marketplace plugins |
-| `specweave refresh-marketplace` | Reinstall plugins from GitHub |
+| `specweave update` | **Full update**: CLI + instructions + config + plugins |
+| `specweave update --no-plugins` | Update without refreshing plugins |
+| `specweave refresh-marketplace` | Standalone plugins refresh |
 | `specweave init .` | Initialize project |
 
 **[53 total commands ->](https://spec-weave.com/docs/commands/overview)**

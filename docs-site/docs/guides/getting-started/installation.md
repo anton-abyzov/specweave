@@ -395,13 +395,13 @@ integrations:
 The easiest way to upgrade SpecWeave:
 
 ```bash
-# Full update: CLI + instructions + config (self-updates via npm by default!)
+# Full update: CLI + instructions + config + plugins
 specweave update
 
-# Also refresh marketplace plugins
-specweave update --plugins
+# Skip plugins refresh
+specweave update --no-plugins
 
-# Full update with all plugins
+# Full update with ALL 24 plugins (not just router)
 specweave update --all
 
 # Dry run - see what would change
@@ -412,10 +412,11 @@ specweave update --no-self
 ```
 
 **What `specweave update` does:**
-1. **Self-updates CLI** via `npm install -g specweave@latest` (by default)
+1. **Self-updates CLI** via `npm install -g specweave@latest`
 2. **Migrates config.json** - adds missing sections like `auto` for older projects
 3. **Updates instruction files** - CLAUDE.md, AGENTS.md with latest templates
-4. **Validates project health** - checks for stale files, missing config
+4. **Refreshes marketplace plugins** - router + context-detected plugins
+5. **Validates project health** - checks for stale files, missing config
 
 :::tip Config Migration
 Projects created before v1.0.131 may be missing the `auto` config section. Running `specweave update` automatically adds default values without affecting existing settings.

@@ -97,7 +97,7 @@ These run in **isolated context**, keeping your main conversation clean.
 
 ## CLAUDE.md Best Practices
 
-SpecWeave generates comprehensive `CLAUDE.md` via `/sw:update-instructions`. Keep it lean:
+SpecWeave generates comprehensive `CLAUDE.md` via `specweave update` (or `/sw:update-instructions` skill). Keep it lean:
 
 ### Include
 

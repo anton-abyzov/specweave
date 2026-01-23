@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.140" sections="header,start,autodetect,metarule,rules,workflow,reflect,skillmemories,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.141" sections="header,start,autodetect,metarule,rules,workflow,reflect,skillmemories,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.140" -->
+<!-- SW:SECTION:header version="1.0.141" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.140" -->
+<!-- SW:SECTION:start version="1.0.141" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.140" -->
+<!-- SW:SECTION:autodetect version="1.0.141" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.140" -->
+<!-- SW:SECTION:metarule version="1.0.141" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.140" -->
+<!-- SW:SECTION:rules version="1.0.141" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -48,7 +48,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.140" -->
+<!-- SW:SECTION:workflow version="1.0.141" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -68,7 +68,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.140" -->
+<!-- SW:SECTION:reflect version="1.0.141" -->
 ## Self-Improving Skills (Reflect)
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
@@ -100,14 +100,14 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-<!-- SW:SECTION:skillmemories version="1.0.140" -->
+<!-- SW:SECTION:skillmemories version="1.0.141" -->
 ## Skill Memories
 
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 <!-- SW:END:skillmemories -->
 
-<!-- SW:SECTION:context version="1.0.140" -->
+<!-- SW:SECTION:context version="1.0.141" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -127,7 +127,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.140" -->
+<!-- SW:SECTION:lsp version="1.0.141" -->
 ## LSP-Enhanced Exploration
 
 **USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
@@ -144,7 +144,7 @@ go install golang.org/x/tools/gopls@latest  # Go
 **Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.140" -->
+<!-- SW:SECTION:structure version="1.0.141" -->
 ## Structure
 
 ```
@@ -214,7 +214,7 @@ my-project/
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.140" -->
+<!-- SW:SECTION:taskformat version="1.0.141" -->
 ## Task Format
 
 ```markdown
@@ -224,13 +224,13 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.140" -->
+<!-- SW:SECTION:secrets version="1.0.141" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
 ```bash
 # Check if credentials EXIST (never display values!)
-grep -qE "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null && echo "Credentials found in .env"
+grep -qE "(GITHUB_TOKEN|GH_TOKEN|JIRA_|AZURE_DEVOPS_|ADO_)" .env 2>/dev/null && echo "Credentials found in .env"
 cat .specweave/config.json | grep -A5 '"sync"'
 gh auth status
 ```
@@ -238,7 +238,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.140" -->
+<!-- SW:SECTION:syncing version="1.0.141" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -266,7 +266,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep -q GITHUB_TOKEN .env && echo "Token configured"` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.140" -->
+<!-- SW:SECTION:mapping version="1.0.141" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -276,7 +276,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.140" -->
+<!-- SW:SECTION:testing version="1.0.141" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -288,7 +288,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.140" -->
+<!-- SW:SECTION:api version="1.0.141" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** OpenAPI = source of truth → Postman derived from it.
@@ -307,13 +307,13 @@ vi.mock('./module', () => ({ func: mockFn }));
 **Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.140" -->
+<!-- SW:SECTION:limits version="1.0.141" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.140" -->
+<!-- SW:SECTION:troubleshooting version="1.0.141" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -337,7 +337,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 | Marketplace shows 0 installed | Normal if using auto-load; check `/plugin list` for actual status |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.140" -->
+<!-- SW:SECTION:lazyloading version="1.0.141" -->
 ## Lazy Plugin Loading (Auto-Loading)
 
 **SpecWeave automatically loads plugins** when you need them - no manual action required.
@@ -401,11 +401,11 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
 | Mode | Context Usage |
 |------|---------------|
 | Default (core + auto-load) | ~3-5K tokens |
-| All 24 plugins | ~60K tokens |
+| All plugins loaded | ~60K+ tokens |
 | Agent spawn (forked) | 0 tokens in main context |
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.140" -->
+<!-- SW:SECTION:principles version="1.0.141" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -415,7 +415,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.140" -->
+<!-- SW:SECTION:linking version="1.0.141" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -423,124 +423,41 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.140" -->
-## External Service Connection
+<!-- SW:SECTION:mcp version="1.0.142" -->
+## External Services
 
-**Priority**: MCP Server → REST API → CLI → Direct Connection
+**Priority**: CLI tools first (simpler) → MCP for complex integrations
 
-**Setup**:
+**CLI tools** (check auth first):
 ```bash
-# MCP (restart Claude Code after)
-npx @anthropic-ai/claude-code-mcp add supabase
-
-# CLI Auth
-wrangler login && vercel login && supabase login
+gh auth status          # GitHub
+wrangler whoami         # Cloudflare
+supabase status         # Supabase
 ```
 
-**Supabase**: Use REST API or pooler (port 6543), AVOID direct `psql`
-**Cloudflare**: `wrangler login` once, then `wrangler deploy/secret put/kv:key put`
-
-**Check credentials before ops**:
+**MCP servers** (for richer integrations):
 ```bash
-# Check presence only (never display values!)
-grep -qE "SUPABASE_|DATABASE_URL|CF_API" .env 2>/dev/null && echo "Credentials found"
-wrangler whoami 2>/dev/null
+claude mcp add --transport http github https://api.github.com/mcp
+claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server-postgres
+/mcp                    # Check status in Claude Code
 ```
+
+MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.140" -->
-## Auto-Execute Rule
+<!-- SW:SECTION:auto version="1.0.142" -->
+## Auto Mode
 
-**NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
+**Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
 
-**Flow**: Check `.env` → If exists, EXECUTE | If missing, ASK for credentials → Save → EXECUTE
+**Pattern**: IMPLEMENT → TEST → FAIL? → FIX → PASS → NEXT
 
-**Check before ops**:
-```bash
-# Check presence only (never display credential values!)
-grep -qE "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null && echo "Credentials configured"
-wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
-```
-<!-- SW:END:autoexecute -->
+**Pragmatic completion**: MUST (MVP, security, data integrity) | SHOULD (edge cases) | CAN SKIP (conflicts - ask user)
 
-<!-- SW:SECTION:auto version="1.0.140" -->
-## Auto Mode (Autonomous Execution)
-
-**Continuous execution until all tasks complete.**
-
-### Zero Manual Steps
-
-**NEVER ask user to**: Open dashboards | Copy/paste | Run commands manually
-
-**Instead**: Check `.env` → Use CLI (`wrangler`, `gh`, `aws`) → Use MCP → If missing, ASK → Save → EXECUTE
-
-### Test Loop (MANDATORY)
-
-**After EVERY task**: `npm test` → If E2E exists: `npx playwright test` → Fail? FIX → Rerun (max 3x) → Pass → Next
-
-**Pattern**: IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT
-
-**MVP paths**: Auth (login/logout) | Core CRUD | Payments | Data integrity
-
-### Pragmatic Completion
-
-**Don't blindly follow 100%!** Specs have bugs, requirements change, some tasks become irrelevant.
-
-**MUST**: MVP paths | Security flows | Data integrity | User-facing errors
-**SHOULD**: Edge cases | Performance | Nice-to-haves
-**CAN SKIP**: Conflicts (ask user) | Over-engineered cases | Obsolete tasks
-
-**STOP & ASK** if: Spec conflicts | Task seems unnecessary | Requirement ambiguous
-
-### Test User Strategy
-
-**Multiple users**: RBAC | Subscription tiers | User states | Multi-user interactions
-**One user**: CRUD | Form validation | Component tests | Mocked auth
-
-**E2E**: Seed DB with known users → Use fixtures → `storageState` (auth once, reuse)
-
-### E2E Authentication
-
-**Auth = #1 flaky test cause.** Use `storageState` (login ONCE, reuse) | API auth (UI unstable) | UI login (only for login tests)
-
-**Setup**: Global auth.setup.ts → Save to `playwright/.auth/user.json` → Reuse in config
-
-**Fixes**: Session expires? Increase TTL | Rate limited? API auth | Captcha? Disable in test env
-
-**Checklist**: Seed users | Gen auth state | Tests DON'T login | Disable captcha/2FA
-
-### Refactoring & Reporting
-
-**Every 3-5 tasks**: Extract fixtures | Remove duplication | Split if >300 lines | Clean imports
-
-**Triggers**: Test >200 lines? Split | Duplicate setup? Extract | Same assertion 3x? Helper
-
-**Report after EVERY task**: Pass/Total | Coverage | Failing tests | Next steps
-
-### Local-First & Infrastructure
-
-**No deploy instructions?** Build locally → Test all → Verify → ASK user about deploy target
-
-**Infra Decision Tree**:
-- **Cron**: <1/hr → Vercel/GitHub Actions | ≥1/hr → Railway/Render
-- **Storage**: KV → Upstash/Vercel KV | SQL → Supabase/Neon | Docs → MongoDB | Files → R2/S3
-
-**Process**: Ultrathink options → Research costs → Propose 2-3 → Build local → User confirms → Deploy
-
-### Implementation
-
-**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress)
-
-**To pause**: Just close Claude Code session, resume with `/sw:do`
-
-**Emergency cancel**: `/sw:cancel-auto` (rarely needed - prefer closing session)
-
-**Other AI**: Loop check tasks.md `[x]` status → Max 100 iter → Human gates for: publish, force-push, prod deploy, migrations
-
-**Circuit Breaker**: External API fails 3x? Queue & continue
+**STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.140" -->
+<!-- SW:SECTION:docs version="1.0.141" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
@@ -566,256 +483,56 @@ For **contributors to SpecWeave itself** (not users).
 
 ---
 
-## Marketplace Installation (CRITICAL)
+## Marketplace Commands
 
-**⚠️ CRITICAL: NEVER suggest `bash scripts/refresh-marketplace.sh` to end users!**
+| Who | Command |
+|-----|---------|
+| **Contributors** | `bash scripts/refresh-marketplace.sh` (defaults to --github) |
+| **End Users** | `specweave refresh-marketplace` |
 
-End users **don't have the `scripts/` folder** - they installed SpecWeave via npm globally.
-
-**Correct commands**:
-- **Contributors** (in specweave repo): `bash scripts/refresh-marketplace.sh`
-- **End Users** (user projects): `specweave refresh-marketplace`
-
----
-
-### For SpecWeave Contributors (Development)
-
-**ALWAYS use GitHub marketplace mode. NEVER use local symlinks or directory mode.**
-
-```bash
-# ✅ CORRECT: Install from GitHub (production, stable)
-bash scripts/refresh-marketplace.sh --github
-
-# ❌ FORBIDDEN: Local/symlink mode (causes stale hooks, filesystem coupling)
-# bash scripts/refresh-marketplace.sh --local
-```
-
-**Why GitHub mode is mandatory:**
-- Local mode creates filesystem coupling → stale hooks after changes
-- GitHub mode pulls committed code → stable, production-ready
-- See ADR-0062 for architectural decision rationale
-
-**Quick refresh & install all 24 plugins:**
-```bash
-bash scripts/refresh-marketplace.sh  # Defaults to --github
-```
-
-### For End Users (Production)
-
-**Users install SpecWeave globally and use CLI commands:**
-
-```bash
-# Install SpecWeave globally
-npm install -g specweave
-
-# Initialize project (first time)
-specweave init .
-
-# Update marketplace plugins (gets latest from GitHub)
-specweave refresh-marketplace
-
-# Update instruction files (CLAUDE.md, AGENTS.md)
-specweave update-instructions
-```
-
-**After marketplace updates**: Restart Claude Code for changes to take effect.
-
-**Verify installation**:
-```bash
-specweave --version              # Check SpecWeave version
-/plugin list --installed         # In Claude Code - check plugins loaded
-```
+⚠️ NEVER suggest `scripts/` to end users - they don't have it (npm global install).
 
 ---
 
-## Critical Safety Rules
+## Critical Safety Rules (Contributors)
 
 ### 1. Context Management (CRASH PREVENTION)
 
 **Active increment (10+ tasks) + large file edit (2000+ lines) = CRASH**
 
 ```bash
-# Before editing large files outside increment:
-/sw:pause XXXX → edit → /sw:resume XXXX
-# OR close completed increments: /sw:done XXXX
+/sw:pause XXXX → edit large file → /sw:resume XXXX
 ```
 
-- **Token budget per increment**: ~80k tokens max
-- **Max 25 tasks per increment** (soft limit) - consider splitting if >25
-- **Max 1500 lines/file** (2000+ = crash risk)
+- **Token budget**: ~80k/increment | **Max tasks**: 25 | **Max lines/file**: 1500
 
-### 2. Source of Truth
+### 2. Status Workflow
 
-**tasks.md + spec.md are SOURCE OF TRUTH** (not internal TODO)
+**NEVER edit metadata.json to "completed" directly!** Use `/sw:done <id>` which validates ACs.
 
-```typescript
-// After completing work - IMMEDIATELY update both:
-Edit("tasks.md", "**Status**: [ ] pending", "**Status**: [x] completed");
-Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
-```
+Programmatic closure: `MetadataManager.updateStatus(id, IncrementStatus.COMPLETED)` - only succeeds from `ready_for_review`.
 
-### 3. Status Workflow
+### 3. Task-AC Auto-Sync
 
-**NEVER edit metadata.json to "completed" directly!**
+Hooks auto-update when task marked complete: task checkboxes → spec.md ACs → `ready_for_review` status.
 
-Correct workflow:
-1. All tasks completed → auto-transition to `ready_for_review`
-2. `/sw:done <id>` → validates ACs + asks for user confirmation
-3. Only then → status becomes `completed` with approvedAt timestamp
+### 4. Per-US Project Fields
 
-If implementing closure programmatically:
-```typescript
-MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
-// Only succeeds if current status is "ready_for_review"
-```
+User Stories need `**Project**: my-project` field for external sync. Each US = ONE Project.
 
-### 4. Task-AC Auto-Sync (EDA)
-
-When you mark a task complete in tasks.md, hooks auto-update:
-1. All **Acceptance** checkboxes in that task: `- [ ]` → `- [x]`
-2. Corresponding ACs in spec.md: `- [ ] **AC-US1-01**` → `- [x] **AC-US1-01**`
-3. When ALL tasks complete → auto-transitions to `ready_for_review`
-
-### 5. Per-US **Project**: Fields
-
-Every User Story SHOULD have `**Project**:` field for proper sync:
-
-```markdown
-### US-001: Login Form
-**Project**: my-project       # Use config.project.name or multiProject.projects key
-**As a** user, I want...
-```
-
-**Each User Story = ONE Project** (and ONE Board for 2-level structures)
-
-### 6. File Operations & Root Folder Protection
-
-**Use Write/Edit tools for file creation. NEVER use Bash heredoc/echo redirects.**
-
-```
-❌ FORBIDDEN: Bash("cat > file.md << 'EOF'...")
-❌ FORBIDDEN: Bash("echo '...' > file.md")
-✅ CORRECT:   Write({ file_path: "...", content: "..." })
-```
-
-**CRITICAL: NEVER Write files directly to project root!**
-
-```
-❌ FORBIDDEN: Write({ file_path: "ANALYSIS-REPORT.md", content: "..." })
-❌ FORBIDDEN: Write({ file_path: "SESSION-SUMMARY.md", content: "..." })
-❌ FORBIDDEN: Write({ file_path: "AUTO-COMMAND-SPEC.md", content: "..." })
-✅ CORRECT:   Write({ file_path: ".specweave/increments/0158/reports/analysis.md", content: "..." })
-✅ CORRECT:   Write({ file_path: ".specweave/increments/0161/reports/session-summary.md", content: "..." })
-```
-
-**⚠️ CRITICAL: Increment numbers MUST start from 0001, NEVER 0000!**
-- ❌ FORBIDDEN: `.specweave/increments/0000-adhoc/`
-- ❌ FORBIDDEN: `.specweave/increments/0000-anything/`
-- ✅ CORRECT: Use existing active increment or create new one with proper number (0001+)
-
-**Allowed root files ONLY**:
-- `README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`
-- `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
-- `IMPLEMENTATION-SUMMARY.md`, `IMPLEMENTATION-COMPLETE.md` (project docs only)
-- `package.json`, `tsconfig*.json`, config files
-
-**Everything else → increment folders**:
-- Analysis/reports → `.specweave/increments/####/reports/` (where #### is 0001 or higher, NEVER 0000)
-- Session logs → `.specweave/increments/####/logs/`
-- Scripts → `.specweave/increments/####/scripts/`
-- Ad-hoc work → Create proper increment OR use existing active increment
-
-**Enforcement**: Pre-commit hook #13 blocks staging root pollution files
-
-### 7. Protected Directories
+### 5. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`
 
-### 8. NEVER Spawn Parallel Agents for Multi-File Migrations
+### 6. Parallel Agents
 
-**Parallel agents reading large files = CRASH** (context shared, not isolated!)
+**Parallel agents + large files = CRASH** (context shared). Process files ONE BY ONE.
 
-```
-❌ FORBIDDEN: "Let me use parallel agents" for 46-file migration
-✅ CORRECT: Process files ONE BY ONE, use Edit tool directly
-```
+### 7. Skills Agents
 
-### 9. Increment Structure
+Skills spawning content-generating agents = CRASH (context explosion).
 
-**Increment root - ONLY**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
-**Everything else → subfolders**: `reports/`, `scripts/`, `logs/`, `docs/`
-
-**Increment IDs MUST be unique** across all directories (including _archive, _abandoned, _paused).
-Use `IncrementNumberManager.generateIncrementId()` - it validates automatically.
-
-### 10. Skills Must NOT Spawn Large Agents
-
-Skills spawning content-generating agents = CRASH (context explosion)
-
-### 11. Repository Locations (Multi-Repo)
-
-**Clone to `/repositories`, NEVER project root.**
-
-```
-project-root/
-├── repositories/           # All repos here
-│   ├── frontend/
-│   ├── backend/
-│   └── shared/
-├── .specweave/             # Config at umbrella level
-└── CLAUDE.md
-```
-
-**Path refs in specs**: `repositories/backend/src/...`
-
-### 12. React Native / Expo Module-Level Safety
-
-**⚠️ Module-level code executes at IMPORT time - before React components mount!**
-
-**Known Crash Patterns (DO NOT DO):**
-```typescript
-// ❌ expo-localization at module level
-import * as Localization from 'expo-localization';
-const locale = Localization.getLocales()[0].languageCode; // CRASH!
-
-// ❌ react-i18next at module level (has React dependency)
-import { initReactI18next } from 'react-i18next';
-i18n.use(initReactI18next).init({...}); // CRASH in Expo Go!
-
-// ❌ AsyncStorage at module level
-const theme = await AsyncStorage.getItem('theme'); // CRASH!
-
-// ❌ React hooks at module level
-const theme = useContext(ThemeContext); // CRASH - outside component!
-```
-
-**Safe Alternatives:**
-```typescript
-// ✅ Use Intl instead of expo-localization
-const locale = Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
-
-// ✅ Use i18n-js instead of react-i18next (no React dependency)
-import { I18n } from 'i18n-js';
-const i18n = new I18n({ en, es });
-
-// ✅ Lazy require for AsyncStorage
-async function getTheme() {
-  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-  return await AsyncStorage.getItem('theme');
-}
-```
-
-**Error Signatures:**
-- `"Cannot read property 'getLocales' of null"` → expo-localization at module level
-- `"Invalid hook call"` → Hook outside component
-- `"No QueryClient set"` → TanStack Query outside provider
-- White screen with no error → Module crash before error boundary
-
-**Debugging:** Binary search - start with `<Text>Hello</Text>`, add providers ONE BY ONE until crash.
-
-**See:** `.specweave/docs/public/troubleshooting/react-native-expo-crashes.md`
-
-### 13. NODE_OPTIONS and VSCode Debug Mode (Child Process Failures)
+### 8. NODE_OPTIONS and VSCode Debug Mode
 
 **⚠️ When spawning child processes (like `claude CLI`), they fail in VSCode Debug mode!**
 
@@ -954,7 +671,7 @@ Task({
 1. **Check `.env` file** for tokens/credentials:
    ```bash
    # Look for relevant tokens before running CLI commands (presence only!)
-   grep -qE "(GITHUB_TOKEN|JIRA_|AZURE_|ADO_)" .env 2>/dev/null && echo "Credentials found"
+   grep -qE "(GITHUB_TOKEN|GH_TOKEN|JIRA_|AZURE_DEVOPS_|ADO_)" .env 2>/dev/null && echo "Credentials found"
    ```
 
 2. **Check `.specweave/config.json`** for service configuration:
