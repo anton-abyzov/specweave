@@ -82,7 +82,7 @@ export interface FSIdAllocatorOptions {
   globalCollisionDetection?: boolean;
 
   /**
-   * External container context for 2-level directory structure (v0.29.0+)
+   * External container context for 2-level directory structure
    *
    * When provided, creates features in 2-level structure:
    * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
@@ -187,7 +187,7 @@ export class FSIdAllocator {
    * - Scans ALL project folders under specs/
    * - Prevents ID collisions like FS-001 in project-a and FS-001E in project-b
    *
-   * CRITICAL FIX (v0.30.12): Legacy mode now properly handles 2-level structures
+   * CRITICAL FIX: Legacy mode now properly handles 2-level structures
    * by using getBaseDirectory() instead of incorrectly building the path.
    */
   async scanExistingIds(): Promise<void> {
@@ -198,7 +198,7 @@ export class FSIdAllocator {
       await this.scanAllProjects();
     } else {
       // LEGACY MODE: Scan only the specified project folder
-      // CRITICAL FIX (v0.30.12): Use getBaseDirectory() to correctly handle 2-level structures
+      // CRITICAL FIX: Use getBaseDirectory() to correctly handle 2-level structures
       // Previously this used path.join(specsPath, projectId) which was WRONG for 2-level:
       // - Expected: specs/{container}/{projectId}/ (e.g., specs/acme-corp/backend-services/)
       // - Got: specs/{projectId}/ (e.g., specs/backend-services/) - WRONG!

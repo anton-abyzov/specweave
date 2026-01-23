@@ -102,7 +102,7 @@ Available increments:
 Usage: /sw:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
-### Step 1.5: Sync AC Status (NEW - v0.33.0)
+### Step 1.5: Sync AC Status
 
 **Before running validation, synchronize spec.md ACs with tasks.md completion status**:
 
@@ -134,14 +134,14 @@ Run 130+ validation rules across 7 categories:
 
 **CRITICAL: Always run structure validation FIRST to prevent duplicate task files**
 
-1. **Structure Rules (5 checks)** - v0.18.4:
+1. **Structure Rules (5 checks)**:
    - Only ONE tasks.md file exists (no tasks-detailed.md, tasks-final.md)
    - Only allowed root files present (spec.md, plan.md, tasks.md, metadata.json, README.md)
    - Unknown files moved to subdirectories (reports/, scripts/, logs/)
    - No root-level pollution (analysis.md, summary.md moved to reports/)
    - Metadata.json structure valid
 
-2. **Three-File Canonical Structure (10 checks)** - ADR-0047 (v0.21.3):
+2. **Three-File Canonical Structure (10 checks)** - ADR-0047:
    - **tasks.md validations (CRITICAL)**:
      - ❌ Does NOT contain "**Acceptance Criteria**:" sections
      - ✅ MUST have "**Implementation**:" sections for each task
@@ -177,7 +177,7 @@ Run 130+ validation rules across 7 categories:
    - ADR references exist
    - Diagram references valid
 
-7. **AC Coverage & Traceability (NEW - v0.23.0)**:
+7. **AC Coverage & Traceability**:
    - All Acceptance Criteria have implementing tasks (0% uncovered)
    - All tasks link to valid User Stories (**User Story**: US-XXX)
    - All tasks link to valid Acceptance Criteria (**Satisfies ACs**: AC-USXX-YY)
@@ -198,7 +198,7 @@ VALIDATION RESULTS: Increment 0001-authentication
    ✓ Completeness (23/23)
    ✓ Quality (31/31)
    ✓ Traceability (19/19)
-   ✓ AC Coverage & Traceability (6/6) [NEW - v0.23.0]
+   ✓ AC Coverage & Traceability (6/6)
       • 100% AC coverage (15/15 ACs covered)
       • 0 orphan tasks
       • All tasks linked to valid User Stories
@@ -221,7 +221,7 @@ Files validated:
    ✓ Completeness (23/23)
    ⚠️  Quality (28/31) - 3 warnings
    ✓ Traceability (19/19)
-   ❌ AC Coverage & Traceability (3/6) - 3 ERRORS [NEW - v0.23.0]
+   ❌ AC Coverage & Traceability (3/6) - 3 ERRORS
       • 73% AC coverage (11/15 ACs covered) - 4 uncovered
       • 2 orphan tasks detected
       • All US linkage valid
@@ -242,7 +242,7 @@ CRITICAL THREE-FILE VIOLATIONS (ADR-0047):
   🚨 spec.md:102 - Contains task ID reference "T-001"
      → Tasks belong in tasks.md, use AC-IDs to link instead
 
-AC COVERAGE ERRORS (3) [NEW - v0.23.0]:
+AC COVERAGE ERRORS (3):
   🔴 4 Acceptance Criteria uncovered by tasks:
      → AC-US2-03: Real-time notification delivery (no implementing tasks)
      → AC-US3-01: API rate limiting (no implementing tasks)
@@ -267,7 +267,7 @@ Action required:
    - Run refactoring script: .specweave/increments/XXXX/scripts/refactor-tasks-ac-to-implementation.sh
    - Or manually replace "**Acceptance Criteria**:" with "**Implementation**:"
    - Add "**AC-IDs**: AC-US-XX-YY" references to link tasks to spec.md
-3. 🔴 FIX AC COVERAGE ERRORS (v0.23.0 - US-Task Linkage):
+3. 🔴 FIX AC COVERAGE ERRORS (US-Task Linkage):
    - Create tasks for 4 uncovered ACs (AC-US2-03, AC-US3-01, AC-US3-05, AC-US4-02)
    - Add **Satisfies ACs** field to 2 orphan tasks (T-008, T-015)
    - Run: /sw:validate 0001 to verify 100% coverage

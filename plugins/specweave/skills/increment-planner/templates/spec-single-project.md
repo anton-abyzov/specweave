@@ -8,7 +8,7 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-# NOTE: project: field REMOVED per ADR-0140 (v0.35.0+)
+# NOTE: project: field REMOVED per ADR-0140
 # Project is now resolved from per-US **Project**: fields or config.project.name
 ---
 
@@ -21,7 +21,7 @@ coverage_target: {{COVERAGE_TARGET}}
 ## User Stories
 
 <!--
-⛔ MANDATORY: **Project**: field on EVERY User Story (v0.35.0+)
+⛔ MANDATORY: **Project**: field on EVERY User Story
 
 BEFORE creating this file, you MUST:
 1. Run: specweave context projects

@@ -17,7 +17,7 @@ You are helping the user create a new SpecWeave increment with automatic closure
 
 ## Steps:
 
-### Step 0A: STRICT Pre-Flight Check (MANDATORY - v0.6.0+)
+### Step 0A: STRICT Pre-Flight Check (MANDATORY)
 
 **⛔ THE IRON RULE: Cannot start increment N+1 until increment N is DONE**
 
@@ -53,7 +53,7 @@ fi
 echo "✅ Discipline check passed"
 ```
 
-**Why This is Strict** (changed from v0.5.0):
+**Why This is Strict**:
 - ❌ NO "suggest, don't force" - this IS forced
 - ❌ NO options to defer - close previous first
 - ❌ NO auto-closing gates - explicit closure required
@@ -143,7 +143,7 @@ This step remains for auto-closing "in-progress" increments that ARE complete.
 - ✅ Enforces quality awareness (can't ignore incomplete work)
 - ✅ No manual `/done` needed when gates pass
 
-### Step 0C: Simplified WIP Enforcement (v0.7.0+ Redesigned)
+### Step 0C: WIP Enforcement
 
 **NEW PHILOSOPHY: Default to 1 active increment (maximum focus), allow 2 only for emergencies.**
 
@@ -413,7 +413,7 @@ specweave context projects
 }
 ```
 
-**🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+**🧠 ULTRATHINK - SMART PROJECT RESOLUTION:**
 
 **RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
 ```
@@ -467,7 +467,7 @@ AVAILABLE_BOARDS = {...}  // for 2-level only
 - Find highest number across both directories (e.g., 032)
 - Next increment: 033
 
-### Step 1.5: Detect Structure Level & Select Project/Board (v0.31.0+ MANDATORY!)
+### Step 1.5: Detect Structure Level & Select Project/Board (MANDATORY)
 
 **⚠️ MANDATORY CHECK before generating spec.md!**
 
@@ -566,7 +566,7 @@ Multiple projects within 15% → AUTO-SPLIT across projects
 <50% OR ambiguous → ASK user with ALL options listed
 ```
 
-**RULE 5: MANDATORY **Project**: FIELD (v0.35.0+)**
+**RULE 5: MANDATORY **Project**: FIELD**
 ```
 ⛔ EVERY US MUST have explicit **Project**: field - NO FALLBACKS!
 
@@ -731,7 +731,7 @@ Feature: "Improve system performance"
 
 #### SPEC.MD YAML FORMAT
 
-**spec.md YAML Format (v0.35.0+ - no project/board in frontmatter!):**
+**spec.md YAML Format (no project/board in frontmatter!):**
 ```yaml
 ---
 increment: 0045-user-auth
@@ -773,9 +773,9 @@ title: "User Authentication"
 - "What's the short name?" (e.g., "user-authentication" for increment 003-user-authentication)
 - "Priority? (P1/P2/P3)" (default: P1)
 
-### Step 4: Detect Suggested Plugins (T-019 - Plugin Auto-Detection)
+### Step 4: Detect Suggested Plugins
 
-**🔌 NEW IN v0.4.0**: Auto-detect plugins based on increment description
+Auto-detect plugins based on increment description:
 
 Before planning, analyze the feature description for plugin keywords and suggest relevant plugins:
 
@@ -883,7 +883,7 @@ Wait for the skill to complete. Do NOT continue to Step 7 until the increment-pl
 **Self-Awareness Check (SpecWeave Contributors):**
 If you are working in the SpecWeave repository itself (detected via package.json name === 'specweave'), you should see warnings reminding you that changes affect the framework itself, not a user project.
 
-**Error Handling (v1.0.102+):**
+**Error Handling:**
 If errors occur, use standardized error messages for consistent UX:
 ```typescript
 import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
@@ -936,7 +936,7 @@ After the increment-planner skill completes, verify:
 2. **Increment files created:**
    - `.specweave/increments/####-name/spec.md` (references strategy docs, AC-IDs)
    - `.specweave/increments/####-name/plan.md` (references architecture docs, test strategy)
-   - `.specweave/increments/####-name/tasks.md` (implementation + embedded tests in BDD format, v0.7.0+)
+   - `.specweave/increments/####-name/tasks.md` (implementation + embedded tests in BDD format)
    - `.specweave/increments/####-name/context-manifest.yaml`
 
 3. **Hooks executed:**
@@ -998,7 +998,7 @@ This will:
 ✅ Strategic documentation synchronized!
 ```
 
-### Step 10: Trigger Living Docs & External Tool Sync (v0.32.2+)
+### Step 10: Trigger Living Docs & External Tool Sync
 
 **🔄 CRITICAL: After increment files are created, sync to living docs AND external tools:**
 
@@ -1017,7 +1017,7 @@ SlashCommand(command: "/sw:sync-specs {increment-id}")
 
 **DO NOT** just mention the command in output - you MUST actually execute it!
 
-**WHY THIS IS MANDATORY (Bug Fix v0.33.0):**
+**WHY THIS IS MANDATORY:**
 - Without explicit SlashCommand call, living docs get out of sync
 - Increments folder and specs folder diverge
 - External tool sync doesn't happen
@@ -1061,7 +1061,7 @@ if (result.success) {
    ✅ Synced to GitHub: 0 updated, 3 created
 ```
 
-**Permission-aware sync (v0.32.2+):**
+**Permission-aware sync:**
 
 Before calling external sync, `syncToExternalTools()` checks permissions from `.specweave/config.json`:
 
@@ -1174,7 +1174,7 @@ Living docs sync does NOT automatically create GitHub issues. You MUST run:
 
 **IMPORTANT**: Tech stack is AUTO-DETECTED from project files (package.json, requirements.txt, etc.), NOT hardcoded!
 
-**IMPORTANT (v0.31.0+)**: `project:` (and `board:` for 2-level) fields are MANDATORY. See Step 1.5.
+**IMPORTANT**: `project:` (and `board:` for 2-level) fields are MANDATORY. See Step 1.5.
 
 ```yaml
 ---
@@ -1186,7 +1186,7 @@ created: 2025-10-26
 dependencies: []
 structure: user-stories
 
-# PROJECT/BOARD (v0.31.0+ MANDATORY)
+# PROJECT/BOARD (MANDATORY)
 project: web-app                           # REQUIRED - target project for living docs sync
 board: digital-operations                  # REQUIRED only for 2-level structures (ADO/JIRA boards)
 

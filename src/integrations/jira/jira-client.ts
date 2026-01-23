@@ -927,7 +927,7 @@ export class JiraClient {
   /**
    * Execute raw JQL search query
    *
-   * NEW (v0.24.0): Used by FilterProcessor for custom JQL filtering
+   * Used by FilterProcessor for custom JQL filtering
    *
    * @param jql - JQL query string
    * @param maxResults - Maximum results (default: 100)

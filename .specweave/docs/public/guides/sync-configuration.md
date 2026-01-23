@@ -1,7 +1,7 @@
 # Sync Configuration Guide
 
 **Version**: 1.0.0
-**For**: SpecWeave v0.24.0+
+**For**: SpecWeave v0.24.0 and later
 
 ## Overview
 

@@ -170,9 +170,9 @@ Progress: 1/5 tasks (20%)
 
 ---
 
-## Intelligent Living Docs Sync (v0.18.0+)
+## Intelligent Living Docs Sync
 
-**NEW in v0.18.0**: Intelligent mode automatically classifies and distributes content to correct folders.
+Intelligent mode automatically classifies and distributes content to correct folders.
 
 ### Simple Mode vs Intelligent Mode
 
@@ -866,7 +866,7 @@ GitHub issue closed → Hook updates living docs → Link removed
 - **Living docs** (`.specweave/docs/internal/specs/`) = Permanent knowledge base
 - **Increment specs** (`.specweave/increments/####/`) = Temporary implementation tracker
 
-**Intelligent Mode** (v0.18.0+):
+**Intelligent Mode**:
 - 9-category classification
 - Project detection (backend/frontend)
 - Auto-generated frontmatter

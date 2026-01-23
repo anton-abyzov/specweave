@@ -244,5 +244,5 @@ After resuming, the command shows helpful context:
 
 **Command**: `/sw:resume`
 **Plugin**: specweave (core)
-**Version**: v0.7.0+
+**Version**: v0.7.0
 **Part of**: Increment 0007 - Smart Status Management

@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.141" sections="header,start,autodetect,metarule,rules,workflow,reflect,skillmemories,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.142" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.141" -->
+<!-- SW:SECTION:header version="1.0.142" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.141" -->
+<!-- SW:SECTION:start version="1.0.142" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.141" -->
+<!-- SW:SECTION:autodetect version="1.0.142" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.141" -->
+<!-- SW:SECTION:metarule version="1.0.142" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,20 +35,18 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.141" -->
+<!-- SW:SECTION:rules version="1.0.142" -->
 ## Rules
 
-1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
+1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
 3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
-5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
-6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
-7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
-8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
+5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
+6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.141" -->
+<!-- SW:SECTION:workflow version="1.0.142" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -68,31 +66,12 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.141" -->
-## Self-Improving Skills (Reflect)
+<!-- SW:SECTION:reflect version="1.0.142" -->
+## Skill Memories
 
-**Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
+SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
 
-**How it works**:
-1. Session ends → Stop hook runs LLM extraction
-2. Learnings saved to **Skill Memories** section below (organized by skill)
-3. Future sessions see learnings immediately (they're in this file!)
-
-**What gets captured** (SpecWeave-specific only):
-- Skill behavior preferences: "mobile: Run expo tests on localhost:8081"
-- Workflow preferences: "general: User prefers small increments (max 5 tasks)"
-- Tech stack choices: "frontend: Prefer Vercel over Cloudflare for this project"
-
-**What does NOT get captured**:
-- Generic coding patterns (not SpecWeave's job)
-- One-time fixes that won't recur
-
-**Config** (`.specweave/config.json`):
-```json
-{ "reflect": { "enabled": true, "model": "haiku", "maxLearningsPerSession": 3 } }
-```
-
-**Disable**: Set `"reflect": { "enabled": false }` in config
+**Disable**: Set `"reflect": { "enabled": false }` in `.specweave/config.json`
 <!-- SW:END:reflect -->
 
 ## Skill Memories
@@ -100,121 +79,30 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-<!-- SW:SECTION:skillmemories version="1.0.141" -->
-## Skill Memories
+<!-- SW:SECTION:context version="1.0.142" -->
+## Context
 
-<!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
-<!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
-<!-- SW:END:skillmemories -->
+**Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
 
-<!-- SW:SECTION:context version="1.0.141" -->
-## Living Docs Context
-
-**Before implementing features**: Check existing docs for patterns and decisions.
-
-```bash
-# Search for related docs
-grep -ril "keyword" .specweave/docs/internal/
-
-# Key locations
-.specweave/docs/internal/specs/       # Feature specifications
-.specweave/docs/internal/architecture/adr/  # Architecture decisions (ADRs)
-.specweave/docs/internal/architecture/      # System design
-```
-
-**Always check ADRs** before making design decisions to avoid contradicting past choices.
-
-**Use `/sw:context <topic>`** to load relevant living docs into conversation.
+**Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.141" -->
-## LSP-Enhanced Exploration
-
-**USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
-
-**Key operations**: `findReferences` (before refactoring) | `goToDefinition` (navigate) | `documentSymbol` (structure) | `hover` (types) | `getDiagnostics` (errors)
-
-**Install**:
-```bash
-npm install -g typescript-language-server typescript  # TS/JS
-pip install python-lsp-server  # Python
-go install golang.org/x/tools/gopls@latest  # Go
-```
-
-**Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
-<!-- SW:END:lsp -->
-
-<!-- SW:SECTION:structure version="1.0.141" -->
+<!-- SW:SECTION:structure version="1.0.142" -->
 ## Structure
 
 ```
 .specweave/
-├── increments/####-name/     # metadata.json, spec.md, tasks.md
-├── docs/internal/specs/      # Living docs (check before implementing!)
-│   └── architecture/adr/     # ADRs (check before design decisions!)
+├── increments/####-name/     # metadata.json, spec.md, plan.md, tasks.md
+├── docs/internal/specs/      # Living docs
 └── config.json
 ```
 
-### ⛔ INCREMENT FOLDER ORGANIZATION (CRITICAL!)
+**⛔ Increment root**: ONLY `metadata.json`, `spec.md`, `plan.md`, `tasks.md`
 
-**Increment folders MUST stay clean. NEVER pollute them with random files!**
-
-**ONLY these 4 files at increment root**:
-- `metadata.json` (required)
-- `spec.md` (required)
-- `plan.md` (optional)
-- `tasks.md` (required)
-
-**EVERYTHING ELSE → subfolders**:
-| File Type | Destination Folder |
-|-----------|-------------------|
-| Reports, analysis, summaries (*.md) | `reports/` |
-| Validation reports, QA reports | `reports/` |
-| Session reports, completion reports | `reports/` |
-| Logs, execution output | `logs/{YYYY-MM-DD}/` |
-| Helper scripts, automation | `scripts/` |
-| Domain-specific docs | `docs/domain/` |
-| Backup files | `backups/` |
-
-**Examples**:
-```bash
-# ✅ CORRECT
-.specweave/increments/0021-feature/
-├── metadata.json
-├── spec.md
-├── tasks.md
-├── reports/
-│   ├── validation-report.md
-│   ├── completion-report.md
-│   └── auto-session-summary.md
-└── logs/
-    └── 2026-01-04/
-        └── execution.log
-
-# ❌ WRONG - polluted increment folder!
-.specweave/increments/0021-feature/
-├── metadata.json
-├── spec.md
-├── tasks.md
-├── completion-report.md      # WRONG! → reports/
-├── auto-session-summary.md   # WRONG! → reports/
-└── analysis.md               # WRONG! → reports/
-```
-
-**Multi-repo projects**: Create in `repositories/` folder (NEVER project root!)
-```
-my-project/
-├── repositories/     # All repos here: frontend/, backend/, shared/
-└── .specweave/
-```
-
-**Permissions** (`.claude/settings.json`):
-```json
-{"permissions":{"allow":["Write(//**)","Edit(//**)"],"additionalDirectories":["repositories"]}}
-```
+**Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.141" -->
+<!-- SW:SECTION:taskformat version="1.0.142" -->
 ## Task Format
 
 ```markdown
@@ -224,7 +112,7 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.141" -->
+<!-- SW:SECTION:secrets version="1.0.142" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -238,45 +126,17 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.141" -->
+<!-- SW:SECTION:syncing version="1.0.142" -->
 ## External Sync (GitHub/JIRA/ADO)
 
-**After increment creation**: Run `/sw-github:sync {id}` to create issues!
+**Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
 
-Living docs sync ≠ External sync. They are separate:
-1. `/sw:sync-specs` → Living docs only
-2. `/sw-github:sync` → GitHub issues (MUST run explicitly!)
+**Mapping**: Feature → Milestone | Story → Issue | Task → Checkbox
 
-**Required config** (`.specweave/config.json`):
-```json
-"sync": {
-  "settings": {
-    "canUpsertInternalItems": true,
-    "canUpdateExternalItems": true,
-    "autoSyncOnCompletion": true
-  },
-  "github": {
-    "enabled": true,
-    "owner": "your-org",
-    "repo": "your-repo"
-  }
-}
-```
-
-**Verify tokens**: `grep -q GITHUB_TOKEN .env && echo "Token configured"` | `gh auth status`
+**Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.141" -->
-## GitHub Mapping
-
-| SpecWeave | GitHub |
-|-----------|--------|
-| Feature FS-XXX | Milestone |
-| Story US-XXX | Issue `[FS-XXX][US-YYY] Title` |
-| Task T-XXX | Checkbox |
-<!-- SW:END:mapping -->
-
-<!-- SW:SECTION:testing version="1.0.141" -->
+<!-- SW:SECTION:testing version="1.0.142" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -288,134 +148,60 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.141" -->
+<!-- SW:SECTION:api version="1.0.142" -->
 ## API Development (OpenAPI-First)
 
-**For API projects only.** OpenAPI = source of truth → Postman derived from it.
+**For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
 
-**Config** (`.specweave/config.json`):
-```json
-{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml","generatePostman":true,"generateOn":"on-increment-done"}}
-```
-
-**Frameworks**: NestJS (`@nestjs/swagger`) | FastAPI (built-in) | Express (`swagger-jsdoc`) | Spring Boot (`springdoc-openapi`)
-
-**Commands**: `/sw:api-docs --all` (OpenAPI + Postman) | `--openapi` | `--postman` | `--env` | `--validate`
-
-**Flow**: Code decorators → `openapi.yaml` → `/sw:done` or `/sw:api-docs` → Postman collection + env
-
-**Import**: Postman → Import collection + env → Fill secrets → Select env
+Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.141" -->
+<!-- SW:SECTION:limits version="1.0.142" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.141" -->
+<!-- SW:SECTION:troubleshooting version="1.0.142" -->
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
-| Skills missing | Restart Claude Code |
-| Plugins outdated | `specweave refresh-marketplace` (NEVER use `scripts/refresh-marketplace.sh` - that's for contributors only!) |
-| Commands gone | `/plugin list --installed` |
+| Skills/commands missing | Restart Claude Code |
+| Plugins outdated | `specweave refresh-marketplace` |
 | Out of sync | `/sw:sync-tasks` |
 | Find increment | `/sw:status` |
-| Root polluted | Move files to `.specweave/increments/####/reports/` |
+| Root polluted | Move to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
-| GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
-| Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
-| No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
-| Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
-| Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
-| Router not spawning agents | Restart Claude Code; check `/plugin` shows `sw-router` |
-| Need all plugins loaded | Install via `/plugin` UI or `claude plugin install sw-*@specweave` |
-| Plugin install fails "Source path does not exist" | Run: `cd ~/.claude/plugins/marketplaces/specweave && git checkout HEAD -- plugins` |
-| Marketplace shows 0 installed | Normal if using auto-load; check `/plugin list` for actual status |
+| GitHub sync issues | Check config: `sync.github.enabled`, `canUpdateExternalItems` |
+| Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
+| Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.141" -->
-## Lazy Plugin Loading (Auto-Loading)
+<!-- SW:SECTION:lazyloading version="1.0.142" -->
+## Plugin Auto-Loading
 
-**SpecWeave automatically loads plugins** when you need them - no manual action required.
-
-### Three-Layer Auto-Loading
-
-| Layer | When | What Happens |
-|-------|------|--------------|
-| **Session Start** | Claude starts | Detects project type (React, K8s, etc.) → installs matching plugins |
-| **Prompt Detection** | You type | Detects keywords (stripe, terraform, etc.) → installs matching plugins |
-| **Router Spawn** | Implementation | Router spawns specialized agents via Task tool (isolated context) |
-
-**Example flow**:
-1. You open a React project → `sw-frontend` auto-installed
-2. You type "add stripe checkout" → `sw-payments` auto-installed
-3. You run `/sw:do` → Router spawns `frontend-architect` agent
-
-### Keyword → Plugin Mapping
-
-| Keywords | Plugin Installed |
-|----------|------------------|
-| react, vue, angular, nextjs, UI, component | `sw-frontend` |
-| stripe, payment, checkout, billing | `sw-payments` |
-| k8s, kubernetes, docker, terraform | `sw-k8s`, `sw-infrastructure` |
-| github, PR, issue, actions | `sw-github` |
-| jira, epic, story | `sw-jira` |
-| release, changelog, npm publish | `sw-release` |
-| test, tdd, playwright, vitest | `sw-testing` |
-| ml, pytorch, tensorflow, training | `sw-ml` |
-
-### Manual Plugin Installation
-
-If auto-loading misses something, use Claude's native plugin commands:
-```bash
-# Install plugins (uses short names from marketplace.json)
-claude plugin install sw@specweave           # Core framework
-claude plugin install sw-frontend@specweave  # Frontend development
-claude plugin install sw-github@specweave    # GitHub integration
-
-# Enable/disable installed plugins
-claude plugin enable sw-frontend@specweave
-claude plugin disable sw-frontend@specweave
-
-# List installed plugins
-claude plugin list
-
-# Update marketplace cache (if plugins folder missing)
-claude plugin marketplace update specweave
-```
-
-**Plugin names** use SHORT format: `sw`, `sw-frontend`, `sw-github` (NOT `specweave-frontend`)
-
-### Disable Auto-Loading
+Plugins load automatically based on project type and keywords. Manual install if needed:
 
 ```bash
-export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
+claude plugin install sw-frontend@specweave  # Install plugin
+claude plugin list                           # Check installed
+export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 ```
 
-### Token Savings
-
-| Mode | Context Usage |
-|------|---------------|
-| Default (core + auto-load) | ~3-5K tokens |
-| All plugins loaded | ~60K+ tokens |
-| Agent spawn (forked) | 0 tokens in main context |
+**Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.141" -->
+<!-- SW:SECTION:principles version="1.0.142" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
 2. **Docs = truth**: Specs guide implementation
 3. **Incremental**: Small, validated increments
 4. **Traceable**: All work → specs → ACs
-5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.141" -->
+<!-- SW:SECTION:linking version="1.0.142" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -457,10 +243,10 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.141" -->
+<!-- SW:SECTION:docs version="1.0.142" -->
 ## Docs
 
-[spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
+[spec-weave.com](https://spec-weave.com)
 <!-- SW:END:docs -->
 
 ---

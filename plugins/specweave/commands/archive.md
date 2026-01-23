@@ -18,7 +18,7 @@ specweave archive [increments...] [options]
 This command automatically synchronizes living docs by archiving features in:
 - `.specweave/docs/internal/specs/{project}/_archive/`
 
-**Note (v5.0.0+)**: Features live in project folders, NOT in `_features/`.
+**Note**: Features live in project folders, NOT in `_features/`.
 
 ## Philosophy
 
@@ -61,7 +61,7 @@ This command automatically synchronizes living docs by archiving features in:
 - `--dry-run`: Show what would be archived without moving files
 - `--external`: **Archive external living docs** (FS-XXXE folders imported from ADO/JIRA/GitHub)
 
-## NEW: External Living Docs Archiving (v0.30.12+)
+## External Living Docs Archiving
 
 **CRITICAL POLICY**: External items (imported from ADO/JIRA/GitHub) are **NEVER auto-archived** during import. Archive is **USER-INITIATED ONLY** via the `--external` flag.
 

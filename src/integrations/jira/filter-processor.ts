@@ -3,7 +3,7 @@
  *
  * Smart filtering for JIRA projects with active/archived, type, lead, and JQL support.
  *
- * NEW (v0.24.0): Enables selective project imports with filter presets
+ * Enables selective project imports with filter presets
  *
  * @module integrations/jira/filter-processor
  */

@@ -203,7 +203,7 @@ SpecWeave-specific concepts and features.
 - [Specs](/docs/glossary/terms/specs) - Permanent knowledge base specifications
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
 - [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
-- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution (v0.18.0+)
+- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution
 - [Content Classification](/docs/glossary/terms/content-classification) - 9-category automatic classification
 - [Project Detection](/docs/glossary/terms/project-detection) - Auto-detect backend/frontend/mobile
 - [Cross-Linking](/docs/glossary/terms/cross-linking) - Automatic bidirectional document linking

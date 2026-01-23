@@ -1,5 +1,5 @@
 /**
- * External Issue Auto-Creator (v1.0.19)
+ * External Issue Auto-Creator
  *
  * Automatically creates external issues (GitHub/JIRA/ADO) for increments
  * when they don't have linked issues.
@@ -271,7 +271,7 @@ export class ExternalIssueAutoCreator {
         try {
           featureId = deriveFeatureId(incrementId);
         } catch {
-          // CRITICAL FIX (v1.0.127): If deriveFeatureId fails, parse manually
+          // CRITICAL FIX: If deriveFeatureId fails, parse manually
           // Old code: `FS-${incrementId.substring(0, 4)}` created FS-0142 instead of FS-142
           const numMatch = incrementId.match(/^(\d+)/);
           if (numMatch) {

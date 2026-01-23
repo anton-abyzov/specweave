@@ -552,5 +552,4 @@ gate_decision = decide({
 ---
 
 **Version**: 2.0.0
-**Since**: v0.8.0
-**Related**: /sw:qa command, QAOrchestrator agent (v0.9.0)
+**Related**: /sw:qa command, QAOrchestrator agent

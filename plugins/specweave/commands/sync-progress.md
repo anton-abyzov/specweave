@@ -814,7 +814,7 @@ Would sync:
 
 ## Architecture
 
-**Multi-System Sync Flow (v1.0.48+)**:
+**Multi-System Sync Flow**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

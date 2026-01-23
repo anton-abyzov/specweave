@@ -5,7 +5,7 @@
  * Standalone script that runs repository cloning in a detached process.
  * Survives terminal close - progress tracked via job state file.
  *
- * CRITICAL BEHAVIOR (v0.34.0+):
+ * CRITICAL BEHAVIOR:
  * - NEVER stops on individual repo failures - always continues to the end!
  * - Already-cloned repos are automatically skipped (enables easy resume)
  * - Final status: 'completed' (all success) or 'completed_with_warnings' (any failure)
@@ -226,7 +226,7 @@ async function main(): Promise<void> {
     }
 
     // Mark job as complete
-    // CRITICAL FIX (v0.34.0): NEVER mark clone jobs as 'failed'!
+    // CRITICAL FIX: NEVER mark clone jobs as 'failed'!
     // Clone jobs always complete - either 'completed' (all success) or 'completed_with_warnings' (any failure)
     // This ensures users can always resume by re-running the command
     const successRate = repos.length > 0 ? (succeeded / repos.length) * 100 : 100;
@@ -261,7 +261,7 @@ async function main(): Promise<void> {
       resumeHint: failed > 0 ? 'Run /sw-github:clone or /sw-ado:clone again to retry. Already-cloned repos will be skipped.' : null
     }, null, 2));
 
-    // Persist umbrella config to config.json (v0.31.0+)
+    // Persist umbrella config to config.json
     log('Persisting umbrella configuration...');
     try {
       const configPath = path.join(projectPath, '.specweave', 'config.json');
@@ -309,7 +309,7 @@ async function main(): Promise<void> {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       log(`Umbrella config saved: ${mergedRepos.length} repos (${newChildRepos.length} from this job)`);
 
-      // CRITICAL FIX (v1.0.37): Remove parent project folder from specs/ for GitHub multi-repo
+      // CRITICAL FIX: Remove parent project folder from specs/ for GitHub multi-repo
       // The scaffold creates specs/{parent-project}/ but for umbrella repos each child creates its own folder
       // The parent folder is incorrect and should be removed
       const projectName = config?.project?.name as string | undefined;
@@ -333,7 +333,7 @@ async function main(): Promise<void> {
     }
 
     log(`Clone job completed: ${succeeded}/${repos.length} succeeded, ${failed} failed (${successRate.toFixed(1)}% success rate)`);
-    // ALWAYS exit with code 0 - clone jobs never "fail" (v0.34.0+)
+    // ALWAYS exit with code 0 - clone jobs never "fail"
     // Any failures are tracked as warnings, allowing easy resume
     process.exit(0);
 

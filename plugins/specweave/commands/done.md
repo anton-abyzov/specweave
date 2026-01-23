@@ -14,9 +14,9 @@ hooks:
 
 You are acting as the Product Manager to validate increment completion before closure. You must check all 3 gates: tasks done, tests passing, and docs updated.
 
-**NEW (v0.8.0+)**: Automatic GitHub issue reopening when validation fails. If PM gates fail and a GitHub issue exists for this increment, the system automatically reopens the issue with validation failure details. This ensures issues aren't prematurely closed when work is incomplete.
+**Automatic GitHub issue reopening**: When validation fails. If PM gates fail and a GitHub issue exists for this increment, the system automatically reopens the issue with validation failure details. This ensures issues aren't prematurely closed when work is incomplete.
 
-**NEW (v0.28.63+)**: **EXPLICIT USER APPROVAL REQUIRED**. This command is the ONLY way to transition from `ready_for_review` → `completed`. This prevents the auto-completion bug where increments get marked "completed" without:
+**EXPLICIT USER APPROVAL REQUIRED**: This command is the ONLY way to transition from `ready_for_review` → `completed`. This prevents the auto-completion bug where increments get marked "completed" without:
 1. All ACs being checked in spec.md
 2. User explicitly confirming the closure
 
@@ -34,7 +34,7 @@ You are acting as the Product Manager to validate increment completion before cl
 
 ## Workflow
 
-### Step 0: Self-Awareness Check (v1.0.102+)
+### Step 0: Self-Awareness Check
 
 **🎯 OPTIONAL BUT INFORMATIVE**: Check if closing a SpecWeave framework increment.
 
@@ -73,7 +73,7 @@ Contributors closing SpecWeave features need reminders about:
 
 ---
 
-### Step 0.5: Status Validation (NEW - v0.28.63+)
+### Step 0.5: Status Validation
 
 **🔥 CRITICAL: Only `ready_for_review` or `active` increments can be closed!**
 
@@ -183,8 +183,8 @@ if (!validation.isValid) {
 
   • 17 acceptance criteria still open
   • 13 tasks still pending
-  • 4 ACs uncovered by tasks (NEW - v0.23.0)
-  • 2 orphan tasks detected (NEW - v0.23.0)
+  • 4 ACs uncovered by tasks
+  • 2 orphan tasks detected
 
 Fix these issues before running /sw:done again
 ```
@@ -194,8 +194,8 @@ Fix these issues before running /sw:done again
 ✅ Automated validation passed
   • All acceptance criteria completed
   • All tasks completed
-  • 100% AC coverage (29/29 ACs) (NEW - v0.23.0)
-  • 0 orphan tasks (NEW - v0.23.0)
+  • 100% AC coverage (29/29 ACs)
+  • 0 orphan tasks
 
 Proceeding to PM validation...
 ```
@@ -205,7 +205,7 @@ Proceeding to PM validation...
 - [ ] All tasks are completed in **tasks.md** (`**Status**: [x] completed`)
 - [ ] Required files exist (`spec.md`, `tasks.md`)
 - [ ] **NEW**: Tasks count in frontmatter matches checked tasks (source of truth validation)
-- [ ] **NEW (v0.23.0)**: AC coverage validation (US-Task Linkage Architecture)
+- [ ] AC coverage validation (US-Task Linkage Architecture)
   - [ ] All ACs covered by at least one task (0% uncovered)
   - [ ] No orphan tasks (all tasks have **Satisfies ACs** field)
   - [ ] All US linkage valid (**User Story** field references exist in spec.md)
@@ -239,7 +239,7 @@ if (tasksInFile < total_tasks) {
 - ❌ Marking work "done" without updating acceptance criteria
 - ❌ The critical violation from increment 0044 (2025-11-19)
 
-**⚠️  AC COVERAGE VALIDATION (NEW - v0.23.0)**:
+**AC COVERAGE VALIDATION**:
 
 Gate 0 now validates AC coverage to ensure all Acceptance Criteria have implementing tasks:
 
@@ -578,7 +578,7 @@ Closing increment 0001-user-authentication...
 
 **CRITICAL**: After increment closes, the following syncs happen AUTOMATICALLY via the `post-increment-completion.sh` hook:
 
-#### 0) Sync spec.md Status (ALWAYS - v0.28.8+)
+#### 0) Sync spec.md Status (ALWAYS)
 
 **MANDATORY**: Ensures spec.md frontmatter status matches metadata.json.
 
@@ -682,7 +682,7 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 ℹ️ No GitHub issue linked to this increment
 ```
 
-#### B.2) Auto-Close External-Origin GitHub Issue (NEW - v0.32.2+)
+#### B.2) Auto-Close External-Origin GitHub Issue
 
 **For increments with E-suffix (external origin), auto-close the source issue:**
 
@@ -778,7 +778,7 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 
 **IMPORTANT**: This section runs ONLY for external-origin increments (E-suffix). Regular increments (without E-suffix) skip this section entirely.
 
-#### C) Sync Status to External Tools (NEW in Phase 2)
+#### C) Sync Status to External Tools
 
 **CRITICAL**: After increment completes, automatically sync status to all linked external tools (GitHub, JIRA, Azure DevOps).
 
@@ -1023,7 +1023,7 @@ Increment remains: in-progress
 Try again after fixing blockers: /sw:done 0001
 ```
 
-### Step 5.25: Sync Living Docs (MANDATORY - v0.33.0+)
+### Step 5.25: Sync Living Docs (MANDATORY)
 
 **🔄 CRITICAL: Before quality assessment, sync increment to living docs!**
 
@@ -1052,12 +1052,12 @@ SlashCommand(command: "/sw:sync-specs {increment-id}")
    Created/Updated: 4 files (FEATURE.md, us-001.md, us-002.md, us-003.md)
 ```
 
-**Why this is mandatory (Bug Fix v0.33.0)**:
+**Why this is mandatory**:
 - The event-driven hook may not fire reliably in all scenarios
 - Explicit sync ensures living docs are ALWAYS up-to-date after closure
 - Prevents stale documentation in `.specweave/docs/internal/specs/`
 
-### Step 5.5: Post-Closure Quality Assessment (NEW - v0.24.0+)
+### Step 5.5: Post-Closure Quality Assessment
 
 **🎯 MANDATORY**: After successful closure, automatically run quality assessment to validate implementation quality.
 

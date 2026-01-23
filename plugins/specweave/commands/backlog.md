@@ -207,5 +207,5 @@ If your backlog grows too large (10+ increments), `/sw:status` will warn:
 
 **Command**: `/sw:backlog`
 **Plugin**: specweave (core)
-**Version**: v0.19.0+
+**Version**: v0.19.0
 **Part of**: Backlog Support Feature

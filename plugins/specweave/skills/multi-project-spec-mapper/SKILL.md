@@ -95,7 +95,7 @@ US-005: Cross-Platform Data Sync (Mobile)
     └── README.md
 ```
 
-**spec.md YAML Frontmatter (v0.31.0+ MANDATORY)**:
+**spec.md YAML Frontmatter (MANDATORY)**:
 
 ```yaml
 # For 1-level structure (projects only)
@@ -416,7 +416,6 @@ Project Distribution:
 
 ---
 
-## Version History
+---
 
-- **v1.0.0** (0.14.0): Initial release with intelligent project mapping
-- Based on: Increment 0020-multi-project-intelligent-sync
+Based on: Increment 0020-multi-project-intelligent-sync

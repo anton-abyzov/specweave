@@ -34,7 +34,7 @@ Convert one or more brownfield discrepancies into a new increment for systematic
      - Single increment covering all modules
      - Separate increments per module
 
-3. **Generate Increment ID with Validation** (v1.0.102+)
+3. **Generate Increment ID with Validation**
    - Get next available increment number
    - **Validate increment number** using increment-validator:
      ```typescript

@@ -80,7 +80,7 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 ## How It Works
 
-**Multi-Phase Orchestration (v1.0.48+)**:
+**Multi-Phase Orchestration**:
 
 ```
 Phase 1: Tasks → ACs (spec.md)
@@ -429,13 +429,9 @@ Solution: Single command orchestrates all steps
 
 ---
 
-## When Command Was Added
+## Background
 
-**Version**: v0.25.0+
-**Increment**: 0053-safe-feature-deletion
-**ADR**: None yet (new feature)
-
-**Context**: Before this command, users had to manually:
+Before this command, users had to manually:
 1. Run `/sw:sync-acs`
 2. Run `/sw:sync-specs`
 3. Run `/sw-github:sync`

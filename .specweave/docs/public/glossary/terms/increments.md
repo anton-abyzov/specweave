@@ -564,7 +564,7 @@ graph LR
 
 ### Status Line (Fast Cache)
 
-**NEW in v0.14.0**: Ultra-fast status display (&lt;1ms)
+**Ultra-fast status display** (&lt;1ms)
 
 ```bash
 # Shows current increment progress

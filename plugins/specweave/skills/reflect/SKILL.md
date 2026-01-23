@@ -3,7 +3,7 @@ name: reflect
 description: Self-improving AI memory system that learns from sessions. Stores learnings in skill-specific MEMORY.md files. Supports cross-platform Claude Code and non-Claude environments. Smart merging preserves user learnings during marketplace updates. Activates for reflect, remember, learn from session, memory, self-improvement, AI memory, correction patterns, skill learning, persistent memory.
 ---
 
-# Self-Improving Skills (Reflect) v4.0
+# Self-Improving Skills (Reflect)
 
 ## Overview
 
@@ -17,7 +17,7 @@ Session 3+: Knowledge compounds, Claude gets smarter over time
 
 ---
 
-## Architecture (v4.0)
+## Architecture
 
 ### Skill-Specific Memory
 
@@ -81,7 +81,7 @@ User Memory + Default Memory → Merged Memory
 
 ---
 
-## ⚠️ CRITICAL: Learning Extraction Rules (v4.2)
+## ⚠️ CRITICAL: Learning Extraction Rules
 
 **This section is MANDATORY for Claude to follow when extracting learnings.**
 
@@ -525,7 +525,7 @@ When enabled, the stop hook automatically:
 1. **Step 1**: Download latest marketplace
 2. **Step 2**: Install plugins
 3. **Step 3**: Copy skills to installed location
-4. **Step 4**: **Merge skill memories** (NEW in v4.0)
+4. **Step 4**: **Merge skill memories**
    - Reads user's existing MEMORY.md files
    - Reads any new default learnings from marketplace
    - Merges: user learnings + new defaults (deduplicated)

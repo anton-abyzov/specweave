@@ -1,10 +1,10 @@
 # Intelligent Living Docs Sync - User Guide
 
-**Version**: 0.18.3+
+**Version**: 0.18.3
 **Status**: Production-Ready
 **Last Updated**: 2025-11-15
 
-## NEW in v0.18.3: Project-Specific Tasks
+## Project-Specific Tasks
 
 User stories now include **checkable task lists** instead of just links:
 
@@ -770,7 +770,7 @@ A: Set `splitByCategory: false` in config. All content goes to one file per proj
 A: Yes! Generated frontmatter is Docusaurus-compatible out-of-the-box.
 
 **Q: Can I customize classification rules?**
-A: Not yet (v0.18.0). Custom rules planned for v0.19.0.
+A: Not yet. Custom rules planned for a future version.
 
 **Q: What about performance?**
 A: Fast! ~10-50ms to parse, classify, and distribute. Async (non-blocking).

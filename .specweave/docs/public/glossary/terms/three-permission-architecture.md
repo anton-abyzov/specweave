@@ -6,7 +6,7 @@ sidebar_label: Three-Permission Architecture
 
 # Three-Permission Architecture
 
-**Three-Permission Architecture** (v0.24.0+) replaces the old "bidirectional sync" binary flag with granular control over three distinct sync operations.
+**Three-Permission Architecture** replaces the old "bidirectional sync" binary flag with granular control over three distinct sync operations.
 
 ---
 

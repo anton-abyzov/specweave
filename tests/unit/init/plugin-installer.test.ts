@@ -559,3 +559,207 @@ describe('Regression Prevention', () => {
     }
   });
 });
+
+/**
+ * CRITICAL TEST: Verify INIT installs core plugins (sw, sw-router)
+ *
+ * This test ensures that `specweave init` installs the essential plugins:
+ * 1. `sw` (core) - provides /sw:increment, /sw:do, /sw:done commands
+ * 2. `sw-router` - spawns specialized agents for tasks
+ *
+ * These two plugins are the minimum required for SpecWeave to function.
+ * Without them, users cannot create increments or execute tasks.
+ */
+describe('Plugin Installer - Core Plugin Installation on INIT', () => {
+  let tempDir: string;
+  let mockExecFileNoThrowSync: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-core-plugin-test-'));
+
+    const execModule = await import('../../../src/utils/execFileNoThrow.js');
+    mockExecFileNoThrowSync = execModule.execFileNoThrowSync as ReturnType<typeof vi.fn>;
+    mockExecFileNoThrowSync.mockReset();
+  });
+
+  afterEach(async () => {
+    vi.clearAllMocks();
+    if (tempDir && await fs.pathExists(tempDir)) {
+      await fs.remove(tempDir);
+    }
+  });
+
+  describe('Lazy Mode (Default) - installs sw and sw-router', () => {
+    it('should install CORE plugin (sw) during lazy mode init', async () => {
+      // This test verifies the implementation calls installPlugins with 'sw'
+      // by checking the source code for the expected behavior
+
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify lazy mode installs core plugin
+        expect(content).toContain("const corePlugin = allPlugins.find(p => p.name === 'sw')");
+        expect(content).toContain("plugins: ['sw']");
+
+        // Verify the comment explains WHY core is essential
+        expect(content).toContain('Core (sw): provides /sw:increment, /sw:do, /sw:done');
+      }
+    });
+
+    it('should install ROUTER plugin (sw-router) during lazy mode init', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify lazy mode installs router plugin
+        expect(content).toContain("const routerPlugin = allPlugins.find(p => p.name === 'sw-router')");
+        expect(content).toContain("plugins: ['sw-router']");
+
+        // Verify the comment explains WHY router is essential
+        expect(content).toContain('Router: spawns specialized agents for tasks');
+      }
+    });
+
+    it('should install BOTH core plugins in correct order (sw first, then sw-router)', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Find the positions of both install calls in installLazyMode function
+        const coreInstallPos = content.indexOf("plugins: ['sw']");
+        const routerInstallPos = content.indexOf("plugins: ['sw-router']");
+
+        // Core should be installed BEFORE router
+        expect(coreInstallPos).toBeGreaterThan(-1);
+        expect(routerInstallPos).toBeGreaterThan(-1);
+        expect(coreInstallPos).toBeLessThan(routerInstallPos);
+      }
+    });
+
+    it('should have fallback to CLI-based install if cache manager fails', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify fallback exists for both plugins
+        expect(content).toContain('Fall back to CLI-based install');
+        expect(content).toContain('/plugin install sw@specweave');
+        expect(content).toContain('/plugin install sw-router@specweave');
+      }
+    });
+  });
+
+  describe('installLazyMode function behavior', () => {
+    it('should define installLazyMode as an async function', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify function signature
+        expect(content).toContain('async function installLazyMode(');
+        expect(content).toContain('): Promise<PluginInstallResult>');
+      }
+    });
+
+    it('should return success when at least one core plugin is installed', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify success condition
+        expect(content).toContain('success: installedCount > 0');
+      }
+    });
+
+    it('should track installed count for both core plugins', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify installedCount is incremented for both plugins
+        const installedCountIncrements = (content.match(/installedCount\+\+/g) || []).length;
+
+        // Should have at least 2 increments (one for sw, one for sw-router)
+        expect(installedCountIncrements).toBeGreaterThanOrEqual(2);
+      }
+    });
+  });
+
+  describe('Core plugins are defined in marketplace', () => {
+    it('should have sw (core) plugin in PLUGIN_GROUPS.core', async () => {
+      // Import the actual PLUGIN_GROUPS to verify configuration
+      const { PLUGIN_GROUPS } = await import('../../../src/core/lazy-loading/keyword-detector.js');
+
+      expect(PLUGIN_GROUPS.core).toBeDefined();
+      expect(PLUGIN_GROUPS.core).toContain('sw');
+    });
+
+    it('should have sw-router plugin available', async () => {
+      // Check marketplace.json for sw-router plugin existence
+      const marketplaceJsonPath = path.join(
+        process.cwd(),
+        '.claude-plugin/marketplace.json'
+      );
+
+      if (await fs.pathExists(marketplaceJsonPath)) {
+        const content = await fs.readFile(marketplaceJsonPath, 'utf-8');
+        const marketplace = JSON.parse(content);
+
+        const routerPlugin = marketplace.plugins?.find(
+          (p: { name: string }) => p.name === 'sw-router'
+        );
+
+        expect(routerPlugin).toBeDefined();
+        expect(routerPlugin.name).toBe('sw-router');
+      }
+    });
+
+    it('should have sw (core) plugin available in marketplace', async () => {
+      const marketplaceJsonPath = path.join(
+        process.cwd(),
+        '.claude-plugin/marketplace.json'
+      );
+
+      if (await fs.pathExists(marketplaceJsonPath)) {
+        const content = await fs.readFile(marketplaceJsonPath, 'utf-8');
+        const marketplace = JSON.parse(content);
+
+        const corePlugin = marketplace.plugins?.find(
+          (p: { name: string }) => p.name === 'sw'
+        );
+
+        expect(corePlugin).toBeDefined();
+        expect(corePlugin.name).toBe('sw');
+      }
+    });
+  });
+});

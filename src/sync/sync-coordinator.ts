@@ -108,9 +108,9 @@ export class SyncCoordinator {
     this.projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
     // Store resolved ADO profile for multi-project sync
     this.adoProfile = options.adoProfile;
-    // Initialize closure metrics (v0.34.0)
+    // Initialize closure metrics
     this.metrics = createClosureMetrics(this.projectRoot, this.incrementId, this.logger);
-    // Initialize provider router (v1.0.115)
+    // Initialize provider router
     this.providerRouter = new ProviderRouter({
       projectRoot: this.projectRoot,
       logger: this.logger
@@ -118,7 +118,7 @@ export class SyncCoordinator {
   }
 
   /**
-   * Get closure sync metrics summary (v0.34.0)
+   * Get closure sync metrics summary
    *
    * Returns aggregated metrics for all external tool closure operations.
    * Useful for monitoring and alerting on sync health.
@@ -128,7 +128,7 @@ export class SyncCoordinator {
   }
 
   /**
-   * Get formatted closure metrics for display (v0.34.0)
+   * Get formatted closure metrics for display
    */
   getFormattedClosureMetrics(): string {
     return this.metrics.formatSummary();
@@ -192,7 +192,7 @@ export class SyncCoordinator {
 
       if (!featureId) {
         // AUTO-GENERATE feature ID using deriveFeatureId() (ADR-0139)
-        // CRITICAL FIX (v0.34.0): Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
+        // CRITICAL FIX: Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
         // The old code used raw regex match which preserved leading zeros, causing duplicates
         try {
           featureId = deriveFeatureId(this.incrementId);
@@ -367,7 +367,7 @@ export class SyncCoordinator {
 
           // All 3 layers miss - but check for DUPLICATES with wrong format first!
           // ========================================================================
-          // DUPLICATE DETECTION (v0.34.0): Prevent FS-0128 vs FS-128 duplicates
+          // DUPLICATE DETECTION: Prevent FS-0128 vs FS-128 duplicates
           // ========================================================================
           // Before creating, search for issues with similar titles but different feature ID formats.
           // This catches cases where an old bug created issues with leading zeros (FS-0128)
@@ -559,7 +559,7 @@ export class SyncCoordinator {
 
       if (!featureId) {
         // AUTO-GENERATE feature ID using deriveFeatureId() (same logic as create)
-        // CRITICAL FIX (v0.34.0): Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
+        // CRITICAL FIX: Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
         try {
           featureId = deriveFeatureId(this.incrementId);
           this.logger.log(`📝 Auto-generated feature ID: ${featureId}`);
@@ -607,7 +607,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 ---
 🤖 Auto-closed by SpecWeave on increment completion`;
 
-          // Track metrics (v0.34.0)
+          // Track metrics
           this.metrics.startOperation();
           try {
             await client.closeIssue(existingIssue.number, completionComment);
@@ -638,7 +638,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   }
 
   /**
-   * Close JIRA issues for completed user stories (v0.34.0)
+   * Close JIRA issues for completed user stories
    *
    * Transitions JIRA issues to "Done" status when increment is completed.
    * Reads issue references from user story frontmatter (external.jira.issue_key).
@@ -699,7 +699,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
           // Transition to Done
           this.logger.log(`  🔒 Transitioning JIRA ${jiraKey} to ${targetStatus}...`);
 
-          // Track metrics (v0.34.0)
+          // Track metrics
           this.metrics.startOperation();
           try {
             await jiraClient.updateIssue({
@@ -726,7 +726,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   }
 
   /**
-   * Close ADO work items for completed user stories (v0.34.0)
+   * Close ADO work items for completed user stories
    *
    * Transitions ADO work items to "Closed" state when increment is completed.
    * Reads work item references from user story frontmatter (external.ado.id).
@@ -814,7 +814,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
           // Update to Closed state
           this.logger.log(`  🔒 Closing ADO work item #${workItemId}...`);
 
-          // Track metrics (v0.34.0)
+          // Track metrics
           this.metrics.startOperation();
           try {
             await adoClient.updateWorkItem({
@@ -931,7 +931,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
 
       // ========================================================================
-      // JIRA Closure (v0.34.0)
+      // JIRA Closure
       // ========================================================================
       if (jiraEnabled) {
         this.logger.log('\n🔹 JIRA: Closing issues for completed user stories...');
@@ -946,7 +946,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
 
       // ========================================================================
-      // ADO Closure (v0.34.0)
+      // ADO Closure
       // ========================================================================
       if (adoEnabled) {
         this.logger.log('\n🔹 ADO: Closing work items for completed user stories...');
@@ -989,7 +989,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   }
 
   /**
-   * Detect duplicate issues with different feature ID formats (v0.34.0)
+   * Detect duplicate issues with different feature ID formats
    *
    * Searches for issues that match the user story but have a different feature ID format.
    * This prevents creating duplicates like:
@@ -1635,7 +1635,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
   /**
    * Detect GitHub repository from config or git
-   * Delegates to ProviderRouter (v1.0.115)
+   * Delegates to ProviderRouter
    */
   private async detectGitHubRepo(githubConfig: GitHubRepoConfig): Promise<RepoInfo | null> {
     return this.providerRouter.detectGitHubRepo(githubConfig);
@@ -1736,7 +1736,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   }
 
   /**
-   * Sync AC checkbox status to GitHub issues (v1.0.59)
+   * Sync AC checkbox status to GitHub issues
    *
    * CRITICAL FIX: Updates AC checkboxes in GitHub issue bodies when tasks are completed.
    * Handles both bold (**AC-US5-01**:) and plain (AC-US5-01:) formats.

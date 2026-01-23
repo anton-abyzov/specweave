@@ -276,7 +276,7 @@ Changes take effect immediately (no restart required).
 
 ## Migration from Old Format
 
-### Old Format (v0.23.0 and earlier)
+### Old Format
 
 ```json
 {
@@ -288,7 +288,7 @@ Changes take effect immediately (no restart required).
 }
 ```
 
-### New Format (v0.24.0+)
+### New Format
 
 ```json
 {

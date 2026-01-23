@@ -7,7 +7,7 @@
  * - Two-level (e.g., Backend-API, Backend-Database)
  * - Full tree (all levels)
  *
- * NEW (v0.24.0): Enables multi-project organization in ADO
+ * Enables multi-project organization in ADO
  *
  * @module integrations/ado/area-path-mapper
  */

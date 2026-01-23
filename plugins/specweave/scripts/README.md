@@ -18,7 +18,7 @@ Status commands (`/sw:status`, `/sw:progress`, `/sw:jobs`) were taking 3+ minute
 
 ## Scripts
 
-### Bash Scripts (v0.32.0+ - Recommended)
+### Bash Scripts (Recommended)
 
 These read from the pre-computed dashboard cache for <10ms response time.
 

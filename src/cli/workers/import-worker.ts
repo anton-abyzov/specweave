@@ -281,7 +281,7 @@ async function main(): Promise<void> {
       const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
 
       // Group items by source for proper folder structure
-      // REFACTOR (v0.34.1): Use shared function from external-import-grouping
+      // REFACTOR: Use shared function from external-import-grouping
       const { groupItemsByExternalContainer } = await import('../../cli/helpers/init/external-import-grouping.js');
       const groups = groupItemsByExternalContainer(result.allItems, projectPath);
       let totalConverted = 0;

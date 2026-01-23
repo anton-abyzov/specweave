@@ -1,5 +1,5 @@
 /**
- * ADO Area Path Selection Helper (v0.29.0+)
+ * ADO Area Path Selection Helper
  *
  * Provides UI prompts for selecting ADO area paths and mapping them to SpecWeave projects.
  * Used during `specweave init` when user selects area path-based team organization.

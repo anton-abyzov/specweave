@@ -7,7 +7,7 @@
  * 3. Sync configuration (JIRA project key, ADO project name)
  * 4. User prompt (fallback)
  *
- * NOTE (v0.33.0): multiProject.activeProject has been REMOVED!
+ * NOTE: multiProject.activeProject has been REMOVED!
  * Per-US project targeting replaces global activeProject.
  * See: 0125-cross-project-user-story-targeting
  *
@@ -114,7 +114,7 @@ export function parseRepoName(repoName: string): ParsedRepoName {
 /**
  * Detect default project ID from configuration
  *
- * NOTE (v0.33.0): multiProject.activeProject has been REMOVED!
+ * NOTE: multiProject.activeProject has been REMOVED!
  * This function now only uses sync.defaultProfile for legacy umbrella repos.
  *
  * Priority:

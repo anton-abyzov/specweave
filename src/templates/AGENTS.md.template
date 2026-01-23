@@ -54,7 +54,7 @@
 4. ⛔ ALL reports/scripts/logs → increment subfolders (NEVER at root!)
 5. metadata.json MUST exist BEFORE spec.md can be created
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
-7. ⛔ EVERY User Story MUST have **Project**: field (v0.35.0+)
+7. ⛔ EVERY User Story MUST have **Project**: field
 8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
 ```
 
@@ -131,7 +131,7 @@
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
 
-### Latest Features (v0.28+)
+### Latest Features
 
 SpecWeave v0.28+ introduces powerful automation that **works differently** in non-Claude tools:
 
@@ -142,8 +142,7 @@ SpecWeave v0.28+ introduces powerful automation that **works differently** in no
 | **Background Jobs** | Automatic with hooks | Monitor with `specweave jobs` CLI |
 | **EDA Hooks** | Auto-detect task completion | Manually update tasks.md + spec.md |
 
-### Background Jobs Workflow (NEW in v0.28)
-
+### Background Jobs Workflow 
 SpecWeave now runs heavy operations as **background jobs**:
 
 ```bash
@@ -281,8 +280,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 /sw-github:sync <increment-id>
 ```
 
-#### 5. Bidirectional Sync - PULL from External Tools (NEW in v0.28)
-```bash
+#### 5. Bidirectional Sync - PULL from External Tools ```bash
 # Claude hook: SessionStart (runs automatically)
 # For non-Claude tools, run manually to catch external changes:
 
@@ -301,8 +299,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # - After PM updates status in external tool
 ```
 
-#### 6. After Init on Brownfield Project (NEW in v0.28)
-```bash
+#### 6. After Init on Brownfield Project ```bash
 # SpecWeave automatically launches living-docs-builder job after init
 # For non-Claude tools, monitor it manually:
 
@@ -363,8 +360,7 @@ cat plugins/specweave/commands/increment.md
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Quick Reference: Session Start Routine (NEW in v0.28)
-
+### Quick Reference: Session Start Routine 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ START OF EVERY SESSION (FOR NON-CLAUDE TOOLS)               │

@@ -213,8 +213,8 @@ async function detectProjectProcessTemplate(
 /**
  * Prompt user for Azure DevOps credentials with cache support
  *
- * NEW (v0.24.0): Caches last used organization/project for quick re-initialization
- * NEW (v0.28.x): Multi-project selection for enterprise users (AC-US5-01 to AC-US5-05)
+ * Caches last used organization/project for quick re-initialization
+ * Multi-project selection for enterprise users (AC-US5-01 to AC-US5-05)
  *
  * @param language - User's language
  * @param projectRoot - Project root path (optional, for cache manager)

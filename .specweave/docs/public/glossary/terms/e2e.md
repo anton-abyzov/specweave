@@ -249,7 +249,7 @@ describe('User Registration', () => {
 
 ## How SpecWeave Uses E2E Testing
 
-### 1. Embedded in tasks.md (v0.7.0+)
+### 1. Embedded in tasks.md
 
 E2E tests are planned alongside implementation:
 

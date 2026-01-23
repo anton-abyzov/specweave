@@ -36,7 +36,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 
 1. **Detects configured external tools** (GitHub, JIRA, ADO) from environment/config
 2. **Fetches work items** based on time range filter (since last import by default)
-3. **Assigns IDs with E suffix and validation** (v1.0.102+)
+3. **Assigns IDs with E suffix and validation**
    - IDs have E suffix to indicate external origin (US-001E, T-001E, FS-042E)
    - **Validates FS (Feature) IDs** to avoid conflicts:
      ```typescript
