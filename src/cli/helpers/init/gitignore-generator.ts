@@ -380,6 +380,9 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
 
   // === Common entries (always included) ===
   common: [
+    '# Dependencies',
+    'node_modules/',
+    '',
     '# Environment',
     '.env',
     '.env.local',

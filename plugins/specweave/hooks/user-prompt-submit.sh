@@ -139,6 +139,72 @@ if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LO
         # Escape prompt for shell (replace quotes and special chars)
         ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
 
+        # v1.0.144: Map matched keywords to likely plugins for user feedback
+        # This is a fast local mapping (no LLM) for immediate visibility
+        SUGGESTED_PLUGINS=""
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(react|vue|angular|svelte|nextjs|nuxt|tailwind|dashboard|component|frontend|ui)"; then
+          SUGGESTED_PLUGINS="sw-frontend"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(api|graphql|express|fastapi|django|nestjs|spring|backend|database|postgres|mongodb|redis)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-backend"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(test|tdd|vitest|jest|playwright|cypress)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-testing"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(kubernetes|k8s|helm|argocd)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-k8s"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(docker|terraform|aws|azure|gcp)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-infra"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(github)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-github"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(jira)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-jira"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(ado|azure.?devops)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-ado"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(mobile|expo|ios|android|flutter)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-mobile"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(ml|ai|pytorch|tensorflow|mlops|llm)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-ml"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(kafka|confluent)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-kafka"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(stripe|paypal|payment)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-payments"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(release|changelog)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-release"
+        fi
+        if echo "$MATCHED_KEYWORDS" | grep -qiE "(diagram|mermaid)"; then
+          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
+          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-diagrams"
+        fi
+
+        # Store suggested plugins for later feedback (if increment assist doesn't trigger)
+        # This variable will be checked after all early exits
+        AUTOLOAD_PLUGINS_MSG=""
+        if [[ -n "$SUGGESTED_PLUGINS" ]]; then
+          AUTOLOAD_PLUGINS_MSG="🔌 **Auto-loading plugins**: ${SUGGESTED_PLUGINS}\\n\\n*Detected from keywords: ${MATCHED_KEYWORDS%%-}*\\n\\n---\\n"
+        fi
+
         # Run with timeout (10s max per T-011) and log errors for debugging
         # T-011: Background timeout is 10s; hook itself returns immediately (<500ms)
         # Graceful degradation: errors logged but don't block Claude
@@ -306,8 +372,14 @@ fi
 
 # CRITICAL: Exit immediately for non-SpecWeave prompts
 # This covers 90%+ of prompts with <5ms overhead
+# v1.0.144: Still show plugin autoload message if plugins are being loaded
 if ! echo "$PROMPT" | grep -qE "(specweave|/sw:|increment|add|create|implement|build|develop)"; then
-  echo '{"decision":"approve"}'
+  if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+    # Show plugin loading feedback even for non-SpecWeave prompts
+    jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+  else
+    echo '{"decision":"approve"}'
+  fi
   exit 0
 fi
 
@@ -315,9 +387,15 @@ fi
 # EARLY EXIT FOR NON-SPECWEAVE PROJECTS (T-006 - v0.26.15)
 # ==============================================================================
 # Even if prompt contains SpecWeave keywords, exit if no .specweave directory
+# v1.0.144: Still show plugin autoload message for non-SpecWeave projects
 SPECWEAVE_DIR=".specweave"
 if [[ ! -d "$SPECWEAVE_DIR" ]]; then
-  echo '{"decision":"approve"}'
+  if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+    # Show plugin loading feedback even for non-SpecWeave projects
+    jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+  else
+    echo '{"decision":"approve"}'
+  fi
   exit 0
 fi
 
@@ -831,11 +909,25 @@ fi
 # ==============================================================================
 # OUTPUT: Approve with context or no context
 # ==============================================================================
+# v1.0.144: Prepend plugin auto-loading message if plugins are being loaded
+# This gives users visible feedback that plugins are being auto-loaded
 
+FINAL_MESSAGE=""
+
+# Add plugin auto-loading message if set (from earlier keyword detection)
+if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+  FINAL_MESSAGE="$AUTOLOAD_PLUGINS_MSG"
+fi
+
+# Add context if available
 if [[ -n "$CONTEXT" ]]; then
-  # Escape context for JSON (newlines, quotes)
-  CONTEXT_ESCAPED=$(echo "$CONTEXT" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$CONTEXT_ESCAPED"
+  FINAL_MESSAGE="${FINAL_MESSAGE}${CONTEXT}"
+fi
+
+if [[ -n "$FINAL_MESSAGE" ]]; then
+  # Escape for JSON (newlines, quotes)
+  FINAL_MESSAGE_ESCAPED=$(echo "$FINAL_MESSAGE" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$FINAL_MESSAGE_ESCAPED"
 else
   echo '{"decision":"approve"}'
 fi
