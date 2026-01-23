@@ -1073,7 +1073,7 @@ Links:
 
 ---
 
-## Migration to Three-Permission Architecture (v0.24.0)
+## Migration to Three-Permission Architecture
 
 ### Why the Change?
 

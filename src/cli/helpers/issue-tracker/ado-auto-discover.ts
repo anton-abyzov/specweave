@@ -1,7 +1,7 @@
 /**
  * Azure DevOps Auto-Discovery with Smart Pagination
  *
- * NEW (v0.24.0): Uses ProjectCountFetcher + ImportStrategyPrompter + AsyncProjectLoader + CacheManager
+ * Uses ProjectCountFetcher + ImportStrategyPrompter + AsyncProjectLoader + CacheManager
  * Same pattern as JIRA for consistency.
  *
  * @module cli/helpers/issue-tracker/ado-auto-discover

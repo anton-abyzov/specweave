@@ -58,7 +58,7 @@ Automates creation of increment structure for ANY type of work:
 
 ## Critical Rules
 
-### 0. **Project**: Field is MANDATORY (v0.35.0+ - HIGHEST PRIORITY!)
+### 0. **Project**: Field is MANDATORY (HIGHEST PRIORITY)
 
 **⛔ EVERY User Story MUST have `**Project**:` field - NO EXCEPTIONS!**
 
@@ -88,7 +88,7 @@ This applies to BOTH single-project AND multi-project modes:
 → ALSO add: **Board**: digital-ops
 ```
 
-**EXAMPLE (v0.35.0+):**
+**EXAMPLE:**
 ```markdown
 ### US-001: Show Last 2 Git Commits
 **Project**: aac              # ← MANDATORY! Value from config
@@ -188,13 +188,13 @@ Every increment MUST have `metadata.json` or:
 
 **plan.md is OPTIONAL** - create only for complex features with architecture decisions. Skip for bug fixes, migrations, hotfixes.
 
-**NO separate tests.md** - tests embedded in tasks.md (v0.7.0+)
+**NO separate tests.md** - tests embedded in tasks.md
 
 ---
 
 ## Workflow (Safe, Self-Contained)
 
-### STEP 0-Prime: Self-Awareness Check (v1.0.102+)
+### STEP 0-Prime: Self-Awareness Check
 
 **🚨 CRITICAL: Detect if running in SpecWeave repository itself!**
 
@@ -309,7 +309,7 @@ testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test
 # Read coverageTarget (default: 80)
 coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80')
 
-# NEW (v1.0.111+): Select template based on testMode
+# Select template based on testMode
 if [ "$testMode" = "TDD" ]; then
   TASK_TEMPLATE="tasks-tdd-single-project.md"
   INCLUDE_TDD_CONTRACT=true
@@ -326,7 +326,7 @@ echo "Using task template: $TASK_TEMPLATE"
 
 **Store these values for use in STEP 4 and STEP 7!**
 
-**TDD Template Selection (v1.0.111+)**:
+**TDD Template Selection**:
 - When `testMode: "TDD"` → Use `tasks-tdd-single-project.md` with TDD triplet structure
 - When `testMode: "test-after"` (default) → Use standard `tasks-single-project.md`
 - TDD mode also injects `## TDD Contract` section into spec.md
@@ -383,7 +383,7 @@ For 2-level structures (ADO/JIRA boards):
 }
 ```
 
-**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION (CRITICAL):**
 
 **RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
 ```
@@ -478,7 +478,7 @@ specweave context boards --project=acme-corp
 
 ---
 
-### RULE 0: LEVERAGE ALL AVAILABLE CONTEXT (v0.33.0+ CRITICAL!)
+### RULE 0: LEVERAGE ALL AVAILABLE CONTEXT (CRITICAL)
 
 **🧠 YOU ARE AN LLM WITH FULL CONTEXT ACCESS - USE IT!**
 
@@ -550,7 +550,7 @@ IF 1-level AND only 1 project → AUTO-SELECT silently
 IF 2-level AND only 1 project AND only 1 board → AUTO-SELECT silently
 ```
 
-**RULE 2: KEYWORD-BASED AUTO-DETECTION (v0.33.0+)**
+**RULE 2: KEYWORD-BASED AUTO-DETECTION**
 
 Use `CrossCuttingDetector` utility for programmatic detection:
 
@@ -856,7 +856,7 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}-' | sort | tail -1
 # Get highest number, add 1
 ```
 
-### STEP 1.5: Validate Increment Number (v1.0.102+)
+### STEP 1.5: Validate Increment Number
 
 **Warn if non-sequential number is requested.**
 
@@ -1053,7 +1053,7 @@ Create `.specweave/increments/0021-feature-name/spec.md`:
 - [ ] **AC-FE-US1-01**: Login form displays email/password fields
 ```
 
-**Key Rules for spec.md (ADR-0140: v0.35.0+):**
+**Key Rules for spec.md (per ADR-0140):**
 1. **`project:` field REMOVED from YAML frontmatter** - now resolved from per-US fields
 2. **`board:` field REMOVED from YAML frontmatter** (2-level) - now in per-US fields
 3. **Each User Story MUST have `**Project**:` field** - source of truth for project
@@ -1082,7 +1082,7 @@ Create `.specweave/increments/0021-feature-name/tasks.md`:
 
 **⚠️ IMPORTANT: Use the correct template based on STEP 0A testMode detection!**
 
-#### 7-TDD: TDD Mode Template (testMode: "TDD") - v1.0.111+
+#### 7-TDD: TDD Mode Template (testMode: "TDD")
 
 **Template File**: `templates/tasks-tdd-single-project.md`
 
@@ -1147,7 +1147,7 @@ Replace placeholders: `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID
 
 **DO NOT invoke Task() tool to spawn agents from this skill!**
 
-### STEP 9: Trigger Living Docs & External Tool Sync (v0.32.2+)
+### STEP 9: Trigger Living Docs & External Tool Sync
 
 **🔄 CRITICAL: After increment files are created, trigger sync to living docs AND external tools!**
 
@@ -1174,7 +1174,7 @@ This step uses the existing sync infrastructure to:
    ✅ Synced to GitHub: 0 updated, 3 created
 ```
 
-**Permission handling (v0.32.2+):**
+**Permission handling:**
 
 If `canUpsertInternalItems: false` in config:
 ```
@@ -1230,7 +1230,7 @@ When creating tasks, assign optimal models:
 
 ---
 
-## TDD Task Generation (v1.0.105+)
+## TDD Task Generation
 
 **When `testMode: "TDD"` is set in metadata.json, tasks MUST follow RED-GREEN-REFACTOR triplet pattern!**
 
@@ -1500,7 +1500,7 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 - Spawn agents from this skill (causes crashes)
 - Skip metadata.json creation
 - Create plan.md for bug fixes, simple migrations, or hotfixes
-- Create separate tests.md (deprecated v0.7.0+)
+- Create separate tests.md (deprecated - use tasks.md instead)
 - Reference SpecWeave internal docs/ADRs (users won't have them)
 - Over-plan in skill (keep templates simple)
 

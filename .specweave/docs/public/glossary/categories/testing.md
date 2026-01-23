@@ -28,7 +28,7 @@ Testing and quality terms cover the practices, tools, and methodologies for veri
 - Tests written as user behavior (Given/When/Then)
 - Bridges gap between business and technical teams
 - Format: "Given user logged in, When clicks button, Then sees confirmation"
-- SpecWeave uses BDD format in tasks.md (v0.7.0+)
+- SpecWeave uses BDD format in tasks.md
 
 ### Testing Levels
 
@@ -211,7 +211,7 @@ Unit Tests (70% - Base of Pyramid)
 - ✅ Catch 80% of bugs with fast unit tests
 - ✅ Reserve E2E for critical user flows only
 
-### SpecWeave Testing Example (v0.7.0+ Format)
+### SpecWeave Testing Example
 
 ```markdown
 # Increment 0025: User Authentication
@@ -284,7 +284,7 @@ Unit Tests (70% - Base of Pyramid)
 
 ## How SpecWeave Uses Testing Terms
 
-### 1. Test-Aware Planning (v0.7.0+)
+### 1. Test-Aware Planning
 
 SpecWeave embeds tests in `tasks.md` instead of separate `tests.md`:
 
@@ -293,7 +293,7 @@ SpecWeave embeds tests in `tasks.md` instead of separate `tests.md`:
 - ❌ Manual TC-ID management (TC-001, TC-002)
 - ❌ No BDD format
 
-**New Format** (v0.7.0+):
+**New Format**:
 - ✅ Tests embedded in `tasks.md`
 - ✅ BDD format (Given/When/Then)
 - ✅ AC-ID traceability

@@ -165,8 +165,8 @@ Next meeting: Friday.
 
   it('should execute import and copy files to correct folders', async () => {
     // Dynamically import BrownfieldImporter
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);
@@ -211,8 +211,8 @@ Next meeting: Friday.
   });
 
   it('should create migration report in legacy folder', async () => {
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);
@@ -248,8 +248,8 @@ Next meeting: Friday.
   });
 
   it('should update config with import history', async () => {
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);
@@ -280,8 +280,8 @@ Next meeting: Friday.
   });
 
   it('should support dry run mode (preview without copying)', async () => {
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);
@@ -309,8 +309,8 @@ Next meeting: Friday.
   });
 
   it('should handle structure preservation mode', async () => {
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);
@@ -354,8 +354,8 @@ Next meeting: Friday.
       );
     }
 
-    const { BrownfieldImporter } = await import('../../../src/core/brownfield/importer.js');
-    const { BrownfieldAnalyzer } = await import('../../../src/core/brownfield/analyzer.js');
+    const { BrownfieldImporter } = await import('../../../../src/core/brownfield/importer.js');
+    const { BrownfieldAnalyzer } = await import('../../../../src/core/brownfield/analyzer.js');
 
     const analyzer = new BrownfieldAnalyzer();
     const importer = new BrownfieldImporter(testDir);

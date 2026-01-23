@@ -1,6 +1,6 @@
 ---
 name: sw:migrate-config
-description: Migrate .env-only configuration to split secrets/config format (v0.24.0+)
+description: Migrate .env-only configuration to split secrets/config format
 ---
 
 Migrate your project from the old .env-only format to the new split format where secrets stay in `.env` (gitignored) and configuration moves to `.specweave/config.json` (committed to git).

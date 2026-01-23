@@ -1,6 +1,6 @@
 # Multi-Project Setup Guide
 
-**Version**: 0.16.11+ (Flattened Structure)
+**Version**: 0.16.11 (Flattened Structure)
 **Last Updated**: 2025-11-11
 **Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
 
@@ -266,7 +266,7 @@ legacy/
 
 ---
 
-## Increment spec.md Requirements (v0.31.0+)
+## Increment spec.md Requirements
 
 When creating increments in multi-project mode, you must specify the target project in the spec.md YAML frontmatter. This ensures increments sync to the correct location in living docs.
 
@@ -623,4 +623,4 @@ modules/
 ---
 
 **Last Updated**: 2025-11-05
-**Version**: 0.8.0+
+**Version**: 0.8.0

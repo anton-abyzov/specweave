@@ -146,5 +146,5 @@ External items are also shown in:
 
 **Command**: `/sw:external`
 **Plugin**: specweave (core)
-**Version**: v0.31.0+
+**Version**: v0.31.0
 **Part of**: Increment 0109 - External Items Dashboard

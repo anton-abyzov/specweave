@@ -209,7 +209,7 @@ bash plugins/specweave/scripts/hook-health.sh --reset    # Reset circuit breaker
 bash plugins/specweave/scripts/hook-health.sh --clean    # Clean stale state
 ```
 
-## Concurrency System (v1.0.30+)
+## Concurrency System
 
 The hook system uses proper concurrency primitives:
 

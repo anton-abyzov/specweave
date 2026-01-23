@@ -50,8 +50,8 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** (v2.3) |
-| `--max-hours N` | Maximum hours to run | **600 hours** (25 days, v2.3) |
+| `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** |
+| `--max-hours N` | Maximum hours to run | **600 hours** (25 days) |
 | `--simple` | Pure Ralph mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
@@ -59,23 +59,23 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 | `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
 | `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
-| `--tdd`, `--strict` | **NEW v2.2**: Enable TDD strict mode - ALL tests must pass | false |
-| **`--build`** | **NEW v0.4.0**: Build must pass before completion (auto-heal: 3 retries) | false |
-| **`--tests`** | **NEW v0.4.0**: Tests must pass before completion (unit + integration) | false |
-| **`--e2e`** | **NEW v0.4.0**: E2E tests must pass before completion | false |
-| **`--lint`** | **NEW v0.4.0**: Linting must pass before completion (auto-heal: 3 retries) | false |
-| **`--types`** | **NEW v0.4.0**: Type-checking must pass before completion (auto-heal: 3 retries) | false |
-| **`--cov <n>`** | **NEW v0.4.0**: Code coverage must meet threshold (%) | 80 |
-| **`--e2e-cov <n>`** | **NEW v0.4.0**: E2E coverage must meet threshold (%) | 70 |
-| **`--cmd "<command>"`** | **NEW v0.4.0**: Custom command must pass before completion | None |
+| `--tdd`, `--strict` | Enable TDD strict mode - ALL tests must pass | false |
+| **`--build`** | Build must pass before completion (auto-heal: 3 retries) | false |
+| **`--tests`** | Tests must pass before completion (unit + integration) | false |
+| **`--e2e`** | E2E tests must pass before completion | false |
+| **`--lint`** | Linting must pass before completion (auto-heal: 3 retries) | false |
+| **`--types`** | Type-checking must pass before completion (auto-heal: 3 retries) | false |
+| **`--cov <n>`** | Code coverage must meet threshold (%) | 80 |
+| **`--e2e-cov <n>`** | E2E coverage must meet threshold (%) | 70 |
+| **`--cmd "<command>"`** | Custom command must pass before completion | None |
 
-:::warning v2.3 - Iteration limits are SAFETY NETS
+:::warning Iteration limits are SAFETY NETS
 The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Per the Ralph Wiggum pattern, completion should be detected through **external verification** (test results), not self-assessment.
 
 **IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
 :::
 
-## Completion Conditions (v0.4.0+)
+## Completion Conditions
 
 **Auto mode will NOT stop until ALL specified conditions pass.**
 
@@ -591,9 +591,9 @@ Pure Ralph Wiggum behavior:
 - **Max Iterations**: Prevents runaway loops (2500 default)
 - **Max Hours**: Time boxing (600 hours / 25 days default)
 - **stop_hook_active**: Prevents infinite continuation loops
-- **Sound Notifications** (v2.6): Audible alerts when Claude stops working
+- **Sound Notifications**: Audible alerts when Claude stops working
 
-## 🔔 Sound Notifications (NEW in v2.6!)
+## Sound Notifications
 
 **Auto mode plays a satisfying sound when work completes successfully!**
 

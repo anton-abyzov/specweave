@@ -21,7 +21,7 @@ graph LR
 **Each increment contains:**
 - 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria) — **required**
 - 🏗️ **plan.md** - How (architecture, test strategy, implementation approach) — **optional**, for complex features
-- ✅ **tasks.md** - Checklist with embedded tests (v0.7.0+) — **required**
+- ✅ **tasks.md** - Checklist with embedded tests — **required**
 - 📊 **logs/** - Execution history
 - 📝 **reports/** - Completion summaries, scope changes
 
@@ -41,7 +41,7 @@ graph LR
 │                        # - Skip for bug fixes, simple migrations
 │                        # - Example: JWT auth design, database schema
 │
-├── tasks.md             # Checklist + embedded tests (v0.7.0+)
+├── tasks.md             # Checklist + embedded tests
 │                        # - T-001: AuthService [in_progress]
 │                        # - T-002: Login endpoint [pending]
 │                        # - Each task has BDD test plan

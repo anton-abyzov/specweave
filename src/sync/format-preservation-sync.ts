@@ -319,7 +319,7 @@ export class FormatPreservationSyncService {
 
   /**
    * Post JIRA comment with atomic locking to prevent concurrent duplicates
-   * FIX (v1.0.20): Prevent duplicate comments under concurrent load
+   * FIX: Prevent duplicate comments under concurrent load
    *
    * Note: JIRA doesn't have a simple getComments API exposed in our client,
    * so we rely on atomic locking to serialize comment posts per issue.
@@ -361,7 +361,7 @@ export class FormatPreservationSyncService {
 
   /**
    * Post ADO comment with atomic locking to prevent concurrent duplicates
-   * FIX (v1.0.20): Prevent duplicate comments under concurrent load
+   * FIX: Prevent duplicate comments under concurrent load
    *
    * Note: ADO doesn't have a simple getComments API exposed in our client,
    * so we rely on atomic locking to serialize comment posts per work item.

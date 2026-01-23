@@ -1,5 +1,5 @@
 /**
- * Closure Metrics - Telemetry for External Tool Sync Operations (v0.34.0)
+ * Closure Metrics - Telemetry for External Tool Sync Operations
  *
  * Tracks closure success/failure rates for GitHub, JIRA, and ADO.
  * Persists metrics to .specweave/state/closure-metrics.json

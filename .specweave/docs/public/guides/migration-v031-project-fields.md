@@ -1,6 +1,6 @@
 # Migration Guide: spec.md Project/Board Fields (v0.31.0)
 
-**Version**: 0.31.0+
+**Version**: 0.31.0
 **Date**: 2025-12-04
 **Related ADR**: [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md)
 

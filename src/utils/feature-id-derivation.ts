@@ -25,7 +25,7 @@
  * This eliminates the need to store feature_id in metadata.json,
  * as it's 100% derivable from the increment ID.
  *
- * CRITICAL (v0.33.0): External increments (with E suffix like 0111E-...)
+ * CRITICAL: External increments (with E suffix like 0111E-...)
  * MUST map to external features (FS-111E), not internal ones (FS-111).
  *
  * @param incrementId - Increment ID (e.g., "0081-ado-repo-cloning" or "0111E-external-issue")

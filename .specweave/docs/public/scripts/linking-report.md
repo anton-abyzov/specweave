@@ -796,7 +796,7 @@
 - **Line 705:** `**Q: Does this work with existing increments?**...`
 - **Line 708:** `**Q: Can I disable for specific increments?**...`
 
-#### Intelligent Living Docs Sync (v0.18.0+) (→ `/docs/glossary/terms/intelligent-living-docs-sync`)
+#### Intelligent Living Docs Sync (→ `/docs/glossary/terms/intelligent-living-docs-sync`)
 
 - **Line 1:** `# Intelligent Living Docs Sync - User Guide...`
 - **Line 33:** `## What Is Intelligent Living Docs Sync?...`

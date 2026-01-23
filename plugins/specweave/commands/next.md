@@ -9,7 +9,7 @@ description: Smart increment transition - auto-close current if ready, intellige
 
 You are helping the user complete their current increment and move to the next one with intelligent suggestions.
 
-**CRITICAL (v0.28.63+)**: This command now requires **EXPLICIT USER CONFIRMATION** before closing any increment! This prevents the auto-completion bug where increments were marked "completed" without user approval.
+**CRITICAL**: This command requires **EXPLICIT USER CONFIRMATION** before closing any increment! This prevents the auto-completion bug where increments were marked "completed" without user approval.
 
 ## Usage
 
@@ -134,7 +134,7 @@ Status: ✅ PASS
 
 **Based on PM validation results**:
 
-#### Scenario A: All Gates Pass ✅ (ASK USER CONFIRMATION - v0.28.63+)
+#### Scenario A: All Gates Pass (ASK USER CONFIRMATION)
 
 **CRITICAL**: NEVER auto-close! Always ask for user confirmation to prevent the auto-completion bug.
 
@@ -152,7 +152,7 @@ Increment 0001-user-authentication is ready for closure!
 📋 Status: ready_for_review (awaiting your approval)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  CONFIRMATION REQUIRED (v0.28.63+)
+⚠️  CONFIRMATION REQUIRED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 This will permanently mark the increment as COMPLETED.
@@ -253,7 +253,7 @@ What would you like to do? [A/B/C]
 
 **🔥 CRITICAL**: NEVER auto-close with incomplete work! Always give user control.
 
-### Step 3.5: Post-Closure Quality Assessment (NEW - v0.24.0+)
+### Step 3.5: Post-Closure Quality Assessment
 
 **🎯 MANDATORY**: After successful closure, automatically run quality assessment to validate implementation quality.
 
@@ -454,7 +454,7 @@ Active: 0001-user-authentication
 📋 Status: ready_for_review (awaiting your approval)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  CONFIRMATION REQUIRED (v0.28.63+)
+⚠️  CONFIRMATION REQUIRED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 This will permanently mark increment 0001 as COMPLETED.
@@ -639,7 +639,7 @@ Your choice? [A/B/C] _
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
-- ✅ **NEW (v0.24.0+)**: Automatic post-closure quality assessment
+- ✅ Automatic post-closure quality assessment
 
 ---
 

@@ -189,5 +189,5 @@ Increments paused for **7+ days** trigger warnings in `/sw:status`:
 
 **Command**: `/sw:pause`
 **Plugin**: specweave (core)
-**Version**: v0.7.0+
+**Version**: v0.7.0
 **Part of**: Increment 0007 - Smart Status Management

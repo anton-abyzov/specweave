@@ -38,13 +38,13 @@ Shows:
 
 ## What It Does
 
-### Architecture Change (v0.7.0)
+### Architecture Change
 
-**OLD Format** (pre-v0.7.0):
+**OLD Format**:
 - Separate tests.md file with TC-IDs
 - validate-coverage command parsed tests.md
 
-**NEW Format** (v0.7.0+):
+**NEW Format**:
 - Embedded tests in tasks.md
 - check-tests command parses tasks.md for test plans
 
@@ -322,7 +322,7 @@ AC-US1-01 → Covered by T-001 ✅
 
 ## Backward Compatibility (OLD Format)
 
-**If increment has tests.md** (pre-v0.7.0):
+**If increment has tests.md** (OLD format):
 
 ```bash
 /sw:check-tests 0003  # Old format increment
@@ -439,7 +439,7 @@ The command reads:
 | **AC Traceability** | Manual | Automatic (AC-IDs) |
 | **Sync Issues** | tasks ↔ tests | None (single file) |
 | **Coverage Target** | Per test case | Per task + overall |
-| **Status** | Deprecated (v0.7+) | Current |
+| **Status** | Deprecated | Current |
 
 ---
 
@@ -519,7 +519,7 @@ function generateReport(results: TaskTest[]): Report {
 
 ---
 
-## Future Enhancements (Post-v0.7.0)
+## Future Enhancements
 
 - **Visual coverage reports**: HTML report generation
 - **Trend tracking**: Coverage over time (per increment)
@@ -531,7 +531,7 @@ function generateReport(results: TaskTest[]): Report {
 
 ## Summary
 
-**check-tests** is the NEW command (v0.7.0+) for validating test coverage from tasks.md with embedded test plans.
+**check-tests** is the command for validating test coverage from tasks.md with embedded test plans.
 
 **Key Features**:
 - ✅ Parses tasks.md (NEW format)
