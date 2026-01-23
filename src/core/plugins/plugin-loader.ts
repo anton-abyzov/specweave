@@ -254,15 +254,14 @@ export class PluginLoader {
           const content = await fs.readFile(skillMdPath, 'utf-8');
           const description = this.extractDescription(content);
           const testCases = await this.loadTestCases(skillPath);
-          const { visibility, invocableBy } = this.extractSkillVisibility(content);
+          const visibility = this.extractSkillVisibility(content);
 
           skills.push({
             name: entry.name,
             path: skillPath,
             description,
             testCases,
-            visibility,
-            invocableBy
+            visibility
           });
         }
       }
@@ -272,18 +271,15 @@ export class PluginLoader {
   }
 
   /**
-   * Extract visibility and invocableBy from SKILL.md frontmatter
+   * Extract visibility from SKILL.md frontmatter
    *
    * @param content - SKILL.md file content
-   * @returns Object with visibility and invocableBy fields
+   * @returns Visibility value or undefined
    */
-  private extractSkillVisibility(content: string): {
-    visibility?: 'public' | 'internal';
-    invocableBy?: string[];
-  } {
+  private extractSkillVisibility(content: string): 'public' | 'internal' | undefined {
     const frontmatterMatch = content.match(/^---\n([\s\S]+?)\n---/);
     if (!frontmatterMatch) {
-      return {};
+      return undefined;
     }
 
     const frontmatter = frontmatterMatch[1];
@@ -291,18 +287,9 @@ export class PluginLoader {
     // Extract visibility field - only accept 'public' or 'internal'
     const visibilityMatch = frontmatter.match(/^visibility:\s*(\w+)/m);
     const rawVisibility = visibilityMatch?.[1];
-    const visibility = rawVisibility === 'public' || rawVisibility === 'internal'
+    return rawVisibility === 'public' || rawVisibility === 'internal'
       ? rawVisibility
       : undefined;
-
-    // Extract invocableBy field (YAML array)
-    const invocableByMatch = frontmatter.match(/^invocableBy:\s*\n((?:\s+-\s*.+\n?)+)/m);
-    const invocableBy = invocableByMatch?.[1]
-      .split('\n')
-      .map(line => line.match(/^\s+-\s*(.+)$/)?.[1]?.trim())
-      .filter((item): item is string => !!item);
-
-    return { visibility, invocableBy };
   }
 
   /**

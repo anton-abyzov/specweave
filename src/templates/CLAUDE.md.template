@@ -4,6 +4,60 @@
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- /SECTION -->
 
+<!-- SECTION:claude-code-concepts -->
+## Claude Code Concepts (2.1.3+)
+
+**Skills and slash commands are now unified.** Both file formats create the same `/name` command:
+- `.claude/commands/review.md` → `/review`
+- `.claude/skills/review/SKILL.md` → `/review`
+
+### Core Concepts
+
+| Concept | What It Is | How to Use |
+|---------|------------|------------|
+| **Skills** | Reusable instructions in SKILL.md | `/skill-name` or auto-invoke via keywords |
+| **Plugins** | Packages with skills, agents, hooks | `claude plugin install sw@specweave` |
+| **Agents** | Isolated subagents with own context | Task tool or `context: fork` in skill |
+
+### Skill Invocation Control (Frontmatter)
+
+| Frontmatter | User Can Invoke | Claude Can Invoke | Use Case |
+|-------------|-----------------|-------------------|----------|
+| (default) | Yes | Yes | Most skills |
+| `disable-model-invocation: true` | Yes | **No** | Workflows with side effects (`/deploy`) |
+| `user-invocable: false` | **No** | Yes | Background knowledge |
+
+### SpecWeave Skill Organization
+
+```
+plugins/specweave/
+├── commands/          # User-invocable workflows (have hooks)
+│   ├── do.md          # → /sw:do (execute tasks)
+│   ├── done.md        # → /sw:done (close increment)
+│   └── status.md      # → /sw:status
+└── skills/            # Auto-activating expertise (keyword-triggered)
+    ├── architect/     # → activates on "architecture", "system design"
+    ├── pm/            # → activates on "product", "requirements", "MVP"
+    └── tech-lead/     # → activates on "code review", "best practices"
+```
+
+### Quick Examples
+
+```bash
+# Explicit invocation (user types command)
+/sw:do                              # Execute tasks
+/sw:increment "auth feature"        # Plan increment
+
+# Auto-activation (Claude detects keywords, loads skill)
+"Design the auth architecture"      # → architect skill
+"Help me plan this product"         # → PM skill
+```
+
+### Key Insight
+
+**Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
+<!-- /SECTION -->
+
 <!-- SECTION:start -->
 ## Getting Started
 

@@ -180,8 +180,6 @@ describe('PluginLoader - Skill Visibility (v1.0.102+)', () => {
 
       if (incrementPlannerSkill) {
         expect(incrementPlannerSkill.visibility).toBe('public');
-        expect(incrementPlannerSkill.invocableBy).toBeDefined();
-        expect(incrementPlannerSkill.invocableBy).toContain('sw:increment');
       } else {
         console.warn('increment-planner skill not found, skipping visibility test');
       }
@@ -203,25 +201,8 @@ describe('PluginLoader - Skill Visibility (v1.0.102+)', () => {
       if (publicSkill) {
         // undefined means public (default)
         expect(publicSkill.visibility).toBeUndefined();
-        expect(publicSkill.invocableBy).toBeUndefined();
       }
     }
   });
 
-  it('should parse invocableBy array correctly', async () => {
-    const specweavePluginPath = path.join(__dirname, '../../../plugins/specweave');
-
-    if (await fs.pathExists(specweavePluginPath)) {
-      const plugin = await loader.loadFromDirectory(specweavePluginPath);
-
-      const incrementPlannerSkill = plugin.skills.find(s => s.name === 'increment-planner');
-
-      if (incrementPlannerSkill?.invocableBy) {
-        expect(Array.isArray(incrementPlannerSkill.invocableBy)).toBe(true);
-        expect(incrementPlannerSkill.invocableBy.length).toBeGreaterThan(0);
-        // Should contain the sw:increment command
-        expect(incrementPlannerSkill.invocableBy).toContain('sw:increment');
-      }
-    }
-  });
 });

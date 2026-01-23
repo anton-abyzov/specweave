@@ -246,8 +246,6 @@ hooks:
 name: increment-planner
 description: Creates comprehensive implementation plans
 visibility: internal
-invocableBy:
-  - sw:increment
 context: fork
 model: opus
 hooks:
@@ -271,9 +269,6 @@ hooks:
       expect(frontmatter.context).toBe('fork');
       expect(frontmatter.model).toBe('opus');
       expect(frontmatter.hooks).toBeDefined();
-
-      // invocableBy (array)
-      expect(frontmatter.invocableBy).toEqual(['sw:increment']);
     });
 
     it('should handle SpecWeave pm skill format', () => {
