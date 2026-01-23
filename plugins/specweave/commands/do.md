@@ -278,6 +278,105 @@ fi
 - `testMode` is not "TDD"
 - Already showed banner in current session
 
+### Step 1.6: TDD Enforcement (MANDATORY when TDD mode is enabled)
+
+**🚨 CRITICAL: When TDD mode is active, enforce RED→GREEN→REFACTOR order!**
+
+**Read enforcement level from config.json:**
+
+```bash
+CONFIG_PATH=".specweave/config.json"
+TDD_ENFORCEMENT=$(cat "$CONFIG_PATH" | jq -r '.testing.tddEnforcement // "warn"')
+# Values: "strict" (blocks), "warn" (allows but warns), "off" (no checks)
+```
+
+**Before marking ANY task as complete, check TDD discipline:**
+
+```typescript
+function checkTDDViolation(currentTask: Task, allTasks: Task[]): TDDViolation | null {
+  // Only check if task has TDD phase marker
+  const phase = extractPhase(currentTask.title); // [RED], [GREEN], [REFACTOR]
+  if (!phase) return null;
+
+  // Find related tasks in the same triplet (e.g., T-001, T-002, T-003)
+  const tripletBase = Math.floor((currentTask.number - 1) / 3) * 3 + 1;
+
+  if (phase === 'GREEN') {
+    // GREEN requires RED to be completed first
+    const redTask = allTasks.find(t =>
+      t.number === tripletBase && t.title.includes('[RED]')
+    );
+    if (redTask && redTask.status !== 'completed') {
+      return {
+        type: 'GREEN_BEFORE_RED',
+        message: `Cannot complete GREEN task (${currentTask.id}) before RED task (${redTask.id})`,
+        redTaskId: redTask.id,
+      };
+    }
+  }
+
+  if (phase === 'REFACTOR') {
+    // REFACTOR requires GREEN to be completed first
+    const greenTask = allTasks.find(t =>
+      t.number === tripletBase + 1 && t.title.includes('[GREEN]')
+    );
+    if (greenTask && greenTask.status !== 'completed') {
+      return {
+        type: 'REFACTOR_BEFORE_GREEN',
+        message: `Cannot complete REFACTOR task (${currentTask.id}) before GREEN task (${greenTask.id})`,
+        greenTaskId: greenTask.id,
+      };
+    }
+  }
+
+  return null; // No violation
+}
+```
+
+**Enforcement behavior based on level:**
+
+| Level | On Violation | Behavior |
+|-------|--------------|----------|
+| `strict` | **BLOCK** | ❌ "TDD VIOLATION: Cannot complete GREEN before RED. Complete T-001 [RED] first." |
+| `warn` (default) | **WARN but allow** | ⚠️ "TDD Warning: Completing GREEN before RED violates TDD discipline." |
+| `off` | **No check** | Silent pass |
+
+**Example output (strict mode):**
+
+```
+❌ TDD ENFORCEMENT BLOCKED
+
+You attempted to complete: T-002: [GREEN] Implement login handler
+But its RED counterpart is not done: T-001: [RED] Write login test
+
+TDD DISCIPLINE REQUIRES:
+  1. 🔴 RED - Write failing test FIRST
+  2. 🟢 GREEN - Then implement to pass
+  3. 🔵 REFACTOR - Then improve code
+
+💡 Complete T-001 first, then come back to T-002.
+   Or disable strict enforcement: Set tddEnforcement: "warn" in config.json
+```
+
+**Example output (warn mode):**
+
+```
+⚠️  TDD DISCIPLINE WARNING
+
+Completing T-002 [GREEN] before T-001 [RED] violates TDD discipline.
+
+TDD works best when you:
+  1. Write the failing test first (RED)
+  2. Then implement just enough to pass (GREEN)
+
+Proceeding anyway... (set tddEnforcement: "strict" to block)
+```
+
+**When to check:**
+- ✅ Before marking any [GREEN] or [REFACTOR] task complete
+- ❌ Skip check for [RED] tasks (they can be completed freely)
+- ❌ Skip check for non-TDD tasks (no phase marker)
+
 ### Step 2: Smart Resume - Find Next Incomplete Task
 
 **🎯 CRITICAL: Auto-resume functionality** - no need to remember which task you were on!
