@@ -19,7 +19,6 @@ interface SpecWeaveSkill {
   description: string;
   'allowed-tools'?: string;
   visibility?: string;
-  invocableBy?: string[];
   context?: string;
   model?: string;
 }

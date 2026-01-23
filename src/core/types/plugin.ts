@@ -136,14 +136,6 @@ export interface Skill {
    * @default "public"
    */
   visibility?: 'public' | 'internal';
-
-  /**
-   * Commands/skills that can invoke this skill (v1.0.102+)
-   * If specified, only these callers can invoke this skill.
-   * Empty array or undefined = anyone can invoke.
-   * @example ["sw:increment", "sw:plan"]
-   */
-  invocableBy?: string[];
 }
 
 /**
