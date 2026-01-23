@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.150] - 2026-01-23
+
+### 🧹 Maintenance
+
+- **Cleaned up archived increment reports**: Removed 1000+ obsolete report files from archived increments to reduce repository size
+- **Added new documentation**:
+  - Claude Code basics and terminal empowerment guides
+  - Marketing materials for hooks/skill workaround
+
+---
+
 ## [1.0.145] - 2026-01-23
 
 ### Changes
