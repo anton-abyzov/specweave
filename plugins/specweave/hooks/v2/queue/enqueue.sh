@@ -1,9 +1,9 @@
 #!/bin/bash
-# enqueue.sh - Add event to queue with deduplication and coalescing
+# enqueue.sh - Add event to queue (v1.0.148 - simplified)
 # Usage: enqueue.sh <event_type> <event_data>
 #
+# v1.0.148: Writes to pending.jsonl (processed by stop-sync.sh at session end)
 # Events are coalesced (deduplicated) by type+data hash within 10 second window.
-# Events have priorities: lifecycle=1 (highest), user-story=2, other=3 (lowest)
 #
 # IMPORTANT: This script must be fast (<5ms) and never crash
 set +e
@@ -21,24 +21,14 @@ done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
 QUEUE_DIR="$PROJECT_ROOT/.specweave/state/event-queue"
+PENDING_FILE="$QUEUE_DIR/pending.jsonl"
 mkdir -p "$QUEUE_DIR" 2>/dev/null || exit 0
 
-# Assign event priority
-# Priority 1: Lifecycle events (most important)
-# Priority 2: User story events
-# Priority 3: Other events
-PRIORITY=3
-case "$EVENT_TYPE" in
-  increment.created|increment.done|increment.archived|increment.reopened)
-    PRIORITY=1
-    ;;
-  user-story.completed|user-story.reopened)
-    PRIORITY=2
-    ;;
-esac
+# ============================================================================
+# DEDUPLICATION: Skip if same event within 10s window
+# ============================================================================
 
-# Coalescing: hash event type + data for deduplication
-# Cross-platform md5 (works on macOS and Linux)
+# Cross-platform md5 (works on macOS, Linux, Windows Git Bash)
 if command -v md5 >/dev/null 2>&1; then
   HASH=$(echo "${EVENT_TYPE}:${EVENT_DATA}" | md5 | cut -c1-8)
 elif command -v md5sum >/dev/null 2>&1; then
@@ -49,7 +39,7 @@ else
 fi
 
 DEDUP_FILE="$QUEUE_DIR/.dedup-$HASH"
-DEDUP_TTL=10  # Increased from 5s to 10s for better coalescing
+DEDUP_TTL=10  # 10 second deduplication window
 
 # Coalescing check: skip if same event within TTL
 if [[ -f "$DEDUP_FILE" ]]; then
@@ -62,18 +52,30 @@ if [[ -f "$DEDUP_FILE" ]]; then
 fi
 touch "$DEDUP_FILE"
 
-# Enqueue event (atomic write)
-# Filename includes priority for priority-ordered processing
-TIMESTAMP=$(date +%s%N 2>/dev/null || date +%s)
-EVENT_FILE="$QUEUE_DIR/${PRIORITY}-${TIMESTAMP}-${EVENT_TYPE}.event"
+# ============================================================================
+# ENQUEUE: Append to pending.jsonl (atomic via temp file)
+# ============================================================================
 
-# Create event file atomically
-TMP_FILE="$EVENT_FILE.tmp.$$"
-cat > "$TMP_FILE" << EOF
-{"type":"$EVENT_TYPE","data":"$EVENT_DATA","priority":$PRIORITY,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)"}
-EOF
-mv "$TMP_FILE" "$EVENT_FILE" 2>/dev/null
+TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)
+EVENT_JSON="{\"type\":\"$EVENT_TYPE\",\"data\":\"$EVENT_DATA\",\"ts\":\"$TIMESTAMP\",\"hash\":\"$HASH\"}"
 
-# Cleanup old dedup files (>30s) - non-blocking
+# Atomic append: write to temp, then append and rename
+# This prevents partial writes if process is killed
+TMP_FILE="$QUEUE_DIR/.pending-$$.tmp"
+{
+  [[ -f "$PENDING_FILE" ]] && cat "$PENDING_FILE"
+  echo "$EVENT_JSON"
+} > "$TMP_FILE" 2>/dev/null
+
+mv "$TMP_FILE" "$PENDING_FILE" 2>/dev/null || {
+  # Fallback: direct append (less safe but usually works)
+  echo "$EVENT_JSON" >> "$PENDING_FILE" 2>/dev/null
+  rm -f "$TMP_FILE" 2>/dev/null
+}
+
+# ============================================================================
+# CLEANUP: Remove old dedup files (>1 minute) - non-blocking background
+# ============================================================================
+
 find "$QUEUE_DIR" -name ".dedup-*" -mmin +1 -delete 2>/dev/null &
 exit 0

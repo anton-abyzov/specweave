@@ -253,6 +253,14 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | GitHub sync issues | Check config: `sync.github.enabled`, `canUpdateExternalItems` |
 | Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
+| Plugin commands broken | Use `claude plugin uninstall/install` CLI commands |
+
+**⛔ NEVER manually edit `~/.claude/plugins/installed_plugins.json`** - use Claude CLI commands instead:
+```bash
+claude plugin install sw-github@specweave   # Install plugin
+claude plugin uninstall sw-github           # Uninstall plugin
+claude plugin list                          # List installed plugins
+```
 <!-- SW:END:troubleshooting -->
 
 <!-- SW:SECTION:lazyloading version="1.0.147" -->

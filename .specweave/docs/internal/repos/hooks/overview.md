@@ -10,17 +10,17 @@ Cross-platform hooks module for SpecWeave that provides platform-independent hoo
 
 - Cross-platform compatibility (Windows/macOS/Linux)
 - Hook protocol for Claude Code integration
-- Background daemon process management
-- Event-driven architecture with queue processing
+- Event-driven architecture with pending.jsonl queue (v1.0.148)
+- Batched sync at session end via stop-sync.sh (v1.0.148)
 - File-based locking mechanism
 - Scheduled job orchestration
 - Git Bash fallback on Windows
 
 ## Patterns
 
-- **Event-Driven Architecture with Event Queue** (architecture)
-- **Background Daemon Process Pattern** (architecture)
-- **File-Based Locking (Atomic mkdir)** (data)
+- **Event-Driven Architecture with pending.jsonl** (architecture) (v1.0.148)
+- **Stop Hook Batched Sync Pattern** (architecture) (v1.0.148)
+- **Idempotent Event Processing** (data) (v1.0.148)
 - **Hook Protocol for Claude Code** (integration)
 - **Cross-Platform Process Spawning** (deployment)
 - **Handler Routing with Timeout** (architecture)

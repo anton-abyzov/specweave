@@ -379,8 +379,65 @@ This skill activates automatically when you mention:
 - "illustration of", "graphic of", "visual for"
 - Any image asset request during web/app development
 
+## Documentation Site Assets (SpecWeave Brand)
+
+When generating images for SpecWeave documentation sites, use these brand guidelines:
+
+### Brand Colors for Prompts
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Primary Purple | #7c3aed | Main brand color, gradients |
+| Purple Dark | #6d28d9 | Accents, shadows |
+| Purple Light | #a78bfa | Highlights, glows |
+| Purple Darkest | #5b21b6 | Deep backgrounds |
+
+**Include in prompts:** `purple violet gradient #7c3aed`, `professional SaaS aesthetic`
+
+### Standard Docs Dimensions
+
+| Asset Type | Width | Height | Model | Usage |
+|------------|-------|--------|-------|-------|
+| Hero Banner | 1920 | 1080 | flux | Homepage hero, landing pages |
+| Feature Card | 800 | 600 | flux | Feature illustrations |
+| Section Header | 1200 | 400 | flux | Section banners |
+| Icon | 64 | 64 | flux | Navigation, feature icons |
+| Empty State | 400 | 300 | flux-anime | Empty states, placeholders |
+| Social Card | 1200 | 630 | flux | OG images, social sharing |
+
+### Docs-Specific Prompt Templates
+
+| Asset Type | Prompt Pattern |
+|------------|---------------|
+| **Hero** | `[concept] in abstract form, purple gradient #7c3aed to #a78bfa, professional SaaS, glowing nodes, dark background, 8k, clean minimal` |
+| **Feature Illustration** | `isometric illustration of [feature], purple accent #7c3aed, white background, clean vector style, professional` |
+| **Section Banner** | `abstract [theme] visualization, flowing lines, purple gradient #7c3aed, minimal, professional, wide format` |
+| **Icon** | `minimal icon [concept], purple fill #7c3aed, white background, app icon style, centered, simple` |
+| **Living Docs** | `interconnected documents with glowing purple connections #7c3aed, network visualization, professional, clean` |
+| **Agent System** | `AI agents as geometric shapes in orbital formation, purple violet theme #7c3aed, futuristic, professional` |
+| **Workflow** | `branching flowchart paths, glowing circuit lines, purple gradient #7c3aed, decision tree visualization, minimal` |
+
+### SpecWeave Docs Ready-to-Use URLs
+
+**Living Documentation Illustration:**
+```
+https://image.pollinations.ai/prompt/interconnected%20hexagonal%20document%20nodes%20forming%20network%2C%20glowing%20purple%20connections%20%237c3aed%2C%20gradient%20to%20%23a78bfa%2C%20professional%20SaaS%2C%20dark%20background%2C%208k%2C%20minimal%20vector?width=800&height=600&model=flux&nologo=true&seed=42
+```
+
+**Multi-Agent System Illustration:**
+```
+https://image.pollinations.ai/prompt/interconnected%20AI%20agents%20as%20geometric%20avatars%20in%20orbital%20formation%2C%20purple%20violet%20theme%20%237c3aed%2C%20futuristic%20holographic%2C%20professional%2C%20clean%20dark%20background%2C%208k?width=800&height=600&model=flux&nologo=true&seed=42
+```
+
+**Workflow/Decision Tree Illustration:**
+```
+https://image.pollinations.ai/prompt/branching%20flowchart%20paths%20made%20of%20glowing%20circuit%20lines%2C%20purple%20gradient%20%237c3aed%20to%20%23a78bfa%2C%20decision%20trees%2C%20minimal%20geometric%2C%20professional%2C%20dark%20background?width=800&height=600&model=flux&nologo=true&seed=42
+```
+
 ## Related Skills
 
 - **frontend-design**: For UI/UX design patterns
 - **browser-automation**: For screenshot capture
 - **visual-regression**: For image comparison testing
+- **docusaurus**: For documentation site setup
+- **technical-writing**: For documentation content

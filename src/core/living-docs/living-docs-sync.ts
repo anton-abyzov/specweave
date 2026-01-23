@@ -56,6 +56,14 @@ import {
   cleanupDuplicateFiles,
   cleanupTempFiles,
 } from './sync-helpers/index.js';
+// Image generation for living docs (v1.0.148+)
+import {
+  generateLivingDocsImagesEnhanced,
+  getRelativeImagePath,
+  markdownImage,
+  extractKeywordsFromContent,
+  type DocContext,
+} from '../../utils/image-generator.js';
 
 // Re-export types for backward compatibility
 export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCriterionData };
@@ -270,6 +278,35 @@ export class LivingDocsSync {
             if (crossRefs) {
               featureContent += crossRefs;
             }
+
+            // Generate feature illustration image for cross-project (v1.0.148+)
+            // Detect doc context: internal by default (living docs are internal)
+            const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
+            const docContext: DocContext = crossProjectPath.includes('/public/') ? 'public' : 'internal';
+            if (!skipImageGen) {
+              try {
+                const crossProjectFeatureFile = path.join(crossProjectPath, 'FEATURE.md');
+                const imageResult = await generateLivingDocsImagesEnhanced(
+                  crossProjectPath,
+                  parsed.title,
+                  featureId,
+                  docContext
+                );
+                if (imageResult.featureImage) {
+                  const imagePath = getRelativeImagePath(crossProjectFeatureFile, imageResult.featureImage);
+                  const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
+                  featureContent = featureContent.replace(
+                    /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
+                    `$1${imageMarkdown}\n\n`
+                  );
+                  this.logger.log(`   🖼️  Generated ${docContext} feature illustration: ${path.basename(imageResult.featureImage)}`);
+                  result.filesCreated.push(imageResult.featureImage);
+                }
+              } catch (imgError) {
+                this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
+              }
+            }
+
             await fs.writeFile(path.join(crossProjectPath, 'FEATURE.md'), featureContent, 'utf-8');
             result.filesCreated.push(path.join(crossProjectPath, 'FEATURE.md'));
 
@@ -359,7 +396,41 @@ export class LivingDocsSync {
 
       if (!options.dryRun) {
         await ensureDir(projectPath);
-        const featureContent = generateFeatureFile(featureId, parsed, incrementId);
+        let featureContent = generateFeatureFile(featureId, parsed, incrementId);
+
+        // Generate feature illustration image (v1.0.148+)
+        // Skip if SPECWEAVE_SKIP_IMAGE_GEN is set (for CI/testing)
+        // Enhanced in v1.0.149: Context-aware enterprise styling (public vs internal)
+        const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
+        if (!skipImageGen) {
+          try {
+            // Detect document context based on path for enterprise-appropriate styling
+            const docContext: DocContext = projectPath.includes('/public/') ? 'public' : 'internal';
+            const imageResult = await generateLivingDocsImagesEnhanced(
+              projectPath,
+              parsed.title,
+              featureId,
+              docContext
+            );
+            if (imageResult.featureImage) {
+              // Add image reference to feature content (after TL;DR section)
+              const imagePath = getRelativeImagePath(featureFile, imageResult.featureImage);
+              const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
+              // Insert after ## TL;DR section
+              featureContent = featureContent.replace(
+                /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
+                `$1${imageMarkdown}\n\n`
+              );
+              const styleLabel = docContext === 'public' ? 'marketing-grade' : 'functional';
+              this.logger.log(`   🖼️  Generated ${styleLabel} feature illustration: ${path.basename(imageResult.featureImage)}`);
+              result.filesCreated.push(imageResult.featureImage);
+            }
+          } catch (imgError) {
+            // Image generation is non-blocking - log but continue
+            this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
+          }
+        }
+
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
       } else {

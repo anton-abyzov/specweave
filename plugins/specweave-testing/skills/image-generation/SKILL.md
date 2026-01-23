@@ -379,8 +379,91 @@ This skill activates automatically when you mention:
 - "illustration of", "graphic of", "visual for"
 - Any image asset request during web/app development
 
+## Documentation Site Assets (SpecWeave Brand)
+
+### Brand Colors for Prompts
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Primary | #7c3aed | Main purple accent |
+| Primary Light | #a78bfa | Gradient end, highlights |
+| Gradient | `purple violet gradient #7c3aed to #a78bfa` | Hero backgrounds |
+
+**Always include in prompts**: `purple violet gradient #7c3aed, professional SaaS aesthetic`
+
+### Enterprise Styling (Public vs Internal)
+
+| Context | Style | Use Case |
+|---------|-------|----------|
+| **Public** | Marketing-grade, dramatic lighting, cinematic, polished | Website, landing pages, marketing |
+| **Internal** | Functional, clean, minimal, informative | Internal docs, architecture diagrams |
+
+**Public docs prompt suffix**:
+```
+professional SaaS aesthetic, premium quality, polished, aspirational,
+dark gradient background, subtle glow, dramatic lighting,
+8k uhd, high resolution, sharp focus, highly detailed
+```
+
+**Internal docs prompt suffix**:
+```
+clean technical illustration, functional, clear, informative,
+clean white background, minimal, soft even lighting,
+sharp lines, clean vector style, high clarity
+```
+
+### Standard Docs Dimensions
+
+| Asset | Width | Height | Model | Use Case |
+|-------|-------|--------|-------|----------|
+| Hero Banner | 1920 | 1080 | flux | Homepage hero |
+| Feature Card | 1200 | 675 | flux | Homepage features |
+| Section Header | 1200 | 400 | flux | Page section dividers |
+| Icon | 64 | 64 | flux | UI icons |
+| Empty State | 400 | 300 | flux-anime | No data illustrations |
+| Diagram | 800 | 600 | flux | Architecture diagrams |
+
+### Docs-Specific Prompt Templates
+
+| Asset Type | Prompt Pattern |
+|------------|---------------|
+| **Living Docs Hero** | `interconnected hexagonal document nodes, flowing data streams, ${BRAND_GRADIENT}, geometric network, professional SaaS, dark background, 8k` |
+| **Feature Card** | `isometric illustration of [feature], ${BRAND_GRADIENT} accent, white background, clean vector style` |
+| **Architecture** | `abstract system architecture visualization, flowing connection lines, ${BRAND_GRADIENT}, minimal, professional` |
+| **Workflow** | `branching flowchart paths made of glowing circuit lines, ${BRAND_GRADIENT}, decision trees, geometric` |
+
+### Docusaurus Integration
+
+SpecWeave docs-site includes FREE image generation scripts:
+
+```bash
+# Generate hero images (FREE - Pollinations.ai)
+cd docs-site
+npm run generate:hero-images-free
+
+# Generated images saved to:
+# static/img/hero/greenfield.jpg
+# static/img/hero/brownfield.jpg
+# static/img/hero/compliance.jpg
+```
+
+### Ready-to-Use URLs for SpecWeave Docs
+
+```markdown
+<!-- Living Docs Illustration -->
+![Living Docs](https://image.pollinations.ai/prompt/purple%20geometric%20hexagonal%20nodes%20forming%20document%20network%2C%20glowing%20connections%2C%20gradient%207c3aed%20to%20a78bfa%2C%20minimal%20vector%20style%2C%20professional%20SaaS%2C%20dark%20background%2C%208k?width=1200&height=675&model=flux&nologo=true)
+
+<!-- Agent System Illustration -->
+![Agents](https://image.pollinations.ai/prompt/interconnected%20AI%20agents%20as%20geometric%20avatars%20in%20orbital%20formation%2C%20purple%20violet%20theme%207c3aed%2C%20futuristic%20holographic%20style%2C%20professional%2C%20clean?width=1200&height=675&model=flux&nologo=true)
+
+<!-- Workflow Illustration -->
+![Workflow](https://image.pollinations.ai/prompt/branching%20flowchart%20paths%20made%20of%20glowing%20circuit%20lines%2C%20purple%20gradient%207c3aed%2C%20decision%20trees%2C%20minimal%20geometric%2C%20professional?width=1200&height=675&model=flux&nologo=true)
+```
+
 ## Related Skills
 
 - **frontend-design**: For UI/UX design patterns
 - **browser-automation**: For screenshot capture
 - **visual-regression**: For image comparison testing
+- **docs-writer**: For documentation content generation
+- **living-docs-navigator**: For navigating project documentation

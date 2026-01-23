@@ -79,15 +79,13 @@ if [[ -f "$CLAUDE_DEBUG" ]]; then
   fi
 fi
 
-# Background processor paths (HOOK_DIR already defined above)
+# Script paths (HOOK_DIR already defined above)
 # HOOK_DIR is hooks/v2/dispatchers (where this script is)
 # Need to go up THREE levels to reach plugin root: dispatchers -> v2 -> hooks -> plugin
-PROCESSOR="$HOOK_DIR/../queue/processor.sh"
-SCHEDULER_STARTUP="$HOOK_DIR/../../../lib/scheduler-startup.sh"
-SESSION_WATCHDOG="$PROJECT_ROOT/plugins/specweave/scripts/session-watchdog.sh"
-SCRIPTS_WATCHDOG="$HOOK_DIR/../../../scripts/session-watchdog.sh"
 PLUGIN_ROOT="$(cd "$HOOK_DIR/../../.." && pwd)"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
+SCHEDULER_STARTUP="$PLUGIN_ROOT/lib/scheduler-startup.sh"
+CLEANUP_SCRIPT="$SCRIPTS_DIR/cleanup-legacy-state.sh"
 
 # === Dashboard Cache Validation (v0.34.0 - Instant Status Commands) ===
 # Rebuild cache if missing or schema version mismatch
@@ -183,21 +181,11 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]]; then
   fi
 fi
 
-# === Queue Processor (DISABLED BY DEFAULT) ===
-# Background processor daemon is now OPT-IN ONLY
-# Reason: Most hooks execute synchronously, making async queue unnecessary in VSCode
-# To enable: export SPECWEAVE_ENABLE_PROCESSOR=1
-#
-# PROCESSOR DISABLED - Removed to eliminate:
-# - Background daemon processes consuming resources
-# - Complex async execution model when synchronous works fine
-# - Lock contention between processor and hook execution
-#
-# Event handlers now execute directly in hooks (synchronous, simpler)
-
-if [[ "${SPECWEAVE_ENABLE_PROCESSOR:-0}" == "1" ]] && [[ -f "$PROCESSOR" ]]; then
-  nohup bash "$PROCESSOR" --daemon > /dev/null 2>&1 &
-  disown 2>/dev/null
+# === LEGACY STATE CLEANUP (v1.0.148) ===
+# Clean up old processor state files on session start
+# This is a one-time migration - old files are removed automatically
+if [[ -f "$CLEANUP_SCRIPT" ]]; then
+  bash "$CLEANUP_SCRIPT" 2>/dev/null || true
 fi
 
 # Check for due scheduled jobs (non-blocking)

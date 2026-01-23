@@ -73,9 +73,24 @@ export function generateFeatureFile(
   if (ctx.projectId !== 'default') {
     lines.push('project: ' + ctx.projectId);
   }
+  // LLM-optimized fields for quick context loading
+  const tldrSummary = parsed.overview
+    ? parsed.overview.split('.')[0].trim() + '.'
+    : parsed.title;
+  lines.push('tldr: "' + tldrSummary.replace(/"/g, "'") + '"');
+  lines.push('complexity: ' + (parsed.userStories.length > 3 ? 'high' : parsed.userStories.length > 1 ? 'medium' : 'low'));
+  lines.push('stakeholder_relevant: true');
   lines.push('---');
   lines.push('');
   lines.push('# ' + parsed.title);
+  lines.push('');
+
+  // TL;DR summary block for LLM and stakeholder quick context
+  lines.push('## TL;DR');
+  lines.push('');
+  lines.push('**What**: ' + (parsed.overview ? parsed.overview.split('.')[0].trim() + '.' : parsed.title));
+  lines.push('**Status**: ' + parsed.status + ' | **Priority**: ' + parsed.priority);
+  lines.push('**User Stories**: ' + parsed.userStories.length);
   lines.push('');
 
   if (parsed.overview) {
@@ -201,6 +216,11 @@ export function generateUserStoryFile(
   lines.push('status: ' + (story.status || parsed.status));
   lines.push('priority: ' + parsed.priority);
   lines.push('created: ' + parsed.created);
+  // LLM-optimized fields
+  const storyTldr = story.description
+    ? story.description.split('.')[0].trim() + '.'
+    : story.title;
+  lines.push('tldr: "' + storyTldr.replace(/"/g, "'") + '"');
 
   // Cross-project targeting (v0.33.0+)
   // Use story.project if available, otherwise use context project
