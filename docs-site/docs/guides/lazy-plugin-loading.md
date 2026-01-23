@@ -209,13 +209,13 @@ Loading state is tracked at `~/.specweave/state/plugins-loaded.json`:
   "loadedAt": "2026-01-18T12:00:00Z",
   "loadedPlugins": [
     {
-      "name": "specweave",
+      "name": "sw",
       "loadedAt": "2026-01-18T12:00:00Z",
       "trigger": "User mentioned 'increment'",
       "skillCount": 50
     }
   ],
-  "cachedPlugins": ["specweave", "specweave-github", "specweave-jira", ...],
+  "cachedPlugins": ["sw", "sw-github", "sw-jira", ...],
   "analytics": {
     "totalLoads": 42,
     "avgLoadTimeMs": 850,

@@ -42,10 +42,20 @@
   "auto": {
     "enabled": true,
     "maxRetries": 20,
-    "requireTests": false,
+    "requireTests": true,
     "requireValidation": true,
     "requireJudgeLLM": false,
     "skipQualityGates": false
+  },
+  "testing": {
+    "defaultTestMode": "TDD",
+    "tddEnforcement": "strict",
+    "defaultCoverageTarget": 90,
+    "coverageTargets": {
+      "unit": 95,
+      "integration": 90,
+      "e2e": 100
+    }
   },
   "documentation": {
     "preview": {

@@ -79,7 +79,7 @@ export class ClaudeAdapter extends AdapterBase {
     console.log('\n  2️⃣  Install SpecWeave core:');
     console.log('     /plugin install specweave');
     console.log('\n  3️⃣  (Optional) Install GitHub plugin:');
-    console.log('     /plugin install specweave-github');
+    console.log('     /plugin install sw-github@specweave');
     console.log('\n  4️⃣  Start using SpecWeave:');
     console.log('     /specweave.inc "create a todo app"');
     console.log('\n💡 Tip: Plugins load natively - no file copying needed!');

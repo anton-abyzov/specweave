@@ -52,10 +52,10 @@ Comprehensive plugin providing MCP server integration, CLI tools (kcat), Terrafo
 
 ```bash
 # Via SpecWeave marketplace
-specweave plugin install specweave-kafka
+specweave plugin install sw-kafka
 
 # Or via Claude Code plugin system
-/plugin install specweave-kafka
+/plugin install sw-kafka@specweave
 ```
 
 ## Quick Start

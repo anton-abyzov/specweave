@@ -459,10 +459,10 @@ export class PluginCacheManager {
 
       // Update state file with detailed analytics
       await this.updateState((state) => {
-        // Store directory names in state (consistent with registry)
+        // Store MARKETPLACE names in state (consistent with registry and getLoadedPlugins)
         const newlyLoaded = pluginsToInstall
           .filter((p) => this.isPluginRegistered(p))
-          .map((p) => marketplaceNameToDirectory(p));
+          .map((p) => directoryToMarketplaceName(p));
         state.loadedPlugins = [...new Set([...state.loadedPlugins, ...newlyLoaded])];
         state.lastUpdated = new Date().toISOString();
         state.analytics.totalLoads++;
@@ -561,6 +561,10 @@ export class PluginCacheManager {
    * Install a plugin by directly updating Claude's registry file
    * Fallback method when CLI is unavailable (CI/CD, CLI not in PATH)
    *
+   * IMPORTANT: Registry keys use MARKETPLACE names (sw-*), not directory names!
+   * Claude CLI uses marketplace names for registry keys, so we must match that.
+   * Directory names (specweave-*) are ONLY used for filesystem paths.
+   *
    * @param pluginName - Plugin name (marketplace or directory name)
    * @param sourcePath - Path to plugin source in marketplace
    * @returns true if installation succeeded
@@ -584,9 +588,11 @@ export class PluginCacheManager {
         }
       }
 
-      // Registry uses directory names (e.g., specweave-router@specweave)
-      const directoryName = marketplaceNameToDirectory(pluginName);
-      const pluginKey = `${directoryName}@specweave`;
+      // Registry uses MARKETPLACE names (sw-*, sw), not directory names!
+      // Claude CLI uses `sw-testing@specweave`, so we must match that format.
+      // Convert directory name back to marketplace name if needed.
+      const marketplaceName = directoryToMarketplaceName(pluginName);
+      const pluginKey = `${marketplaceName}@specweave`;
 
       // Skip if already in registry
       if (registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0) {
@@ -594,8 +600,9 @@ export class PluginCacheManager {
       }
 
       // Copy plugin to Claude's cache directory (use configurable path for testing)
-      // Cache path uses directory names: specweave/specweave-router/1.0.0
-      const cacheDir = path.join(this.pluginCachePath, 'specweave', directoryName, '1.0.0');
+      // IMPORTANT: Cache path uses MARKETPLACE names to match Claude CLI behavior!
+      // Claude CLI creates paths like: specweave/sw-testing/1.1.0
+      const cacheDir = path.join(this.pluginCachePath, 'specweave', marketplaceName, '1.0.0');
       if (!fs.existsSync(cacheDir)) {
         fs.mkdirSync(cacheDir, { recursive: true });
         await this.copyDirectory(sourcePath, cacheDir);
@@ -626,6 +633,10 @@ export class PluginCacheManager {
   /**
    * Check if a plugin is registered in Claude's registry
    *
+   * Checks BOTH naming formats for backward compatibility:
+   * - Marketplace name: sw-testing@specweave (Claude CLI format, correct)
+   * - Directory name: specweave-testing@specweave (old fallback format, deprecated)
+   *
    * @param pluginName - Plugin name (marketplace or directory name)
    * @returns true if plugin is in the registry
    */
@@ -636,11 +647,20 @@ export class PluginCacheManager {
       }
 
       const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
-      // Registry uses directory names (e.g., specweave-router@specweave)
-      const directoryName = marketplaceNameToDirectory(pluginName);
-      const pluginKey = `${directoryName}@specweave`;
 
-      return !!(registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0);
+      // Check marketplace name format (correct, matches Claude CLI)
+      const marketplaceName = directoryToMarketplaceName(pluginName);
+      const marketplaceKey = `${marketplaceName}@specweave`;
+
+      // Check directory name format (deprecated, for backward compatibility)
+      const directoryName = marketplaceNameToDirectory(pluginName);
+      const directoryKey = `${directoryName}@specweave`;
+
+      // Return true if registered under EITHER format
+      return !!(
+        (registry.plugins[marketplaceKey] && registry.plugins[marketplaceKey].length > 0) ||
+        (registry.plugins[directoryKey] && registry.plugins[directoryKey].length > 0)
+      );
     } catch {
       return false;
     }
@@ -871,7 +891,10 @@ export class PluginCacheManager {
    * NOTE: This now reads from installed_plugins.json instead of the old skills dir.
    * Strategy 3 (skills dir copy) was removed - Claude Code only uses the registry.
    *
-   * @returns Array of plugin names currently registered
+   * Returns MARKETPLACE names (sw-*) for consistency with Claude CLI.
+   * Deduplicates entries that may exist under both naming formats.
+   *
+   * @returns Array of plugin names (marketplace format) currently registered
    */
   getLoadedPlugins(): string[] {
     try {
@@ -881,10 +904,17 @@ export class PluginCacheManager {
 
       const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
 
-      // Extract plugin names from keys like "specweave@specweave" -> "specweave"
-      return Object.keys(registry.plugins)
+      // Extract plugin names and normalize to marketplace format
+      const plugins = Object.keys(registry.plugins)
         .filter((key) => key.endsWith('@specweave') && registry.plugins[key]?.length > 0)
-        .map((key) => key.replace('@specweave', ''));
+        .map((key) => {
+          const rawName = key.replace('@specweave', '');
+          // Convert to marketplace name for consistency
+          return directoryToMarketplaceName(rawName);
+        });
+
+      // Deduplicate (in case same plugin registered under both formats)
+      return [...new Set(plugins)];
     } catch {
       return [];
     }
@@ -978,15 +1008,14 @@ export class PluginCacheManager {
             expanded.push(pluginOrGroup);
           }
         }
-        // Convert marketplace names to directory names for comparison
-        // (getLoadedPlugins returns directory names from registry)
+        // getLoadedPlugins now returns marketplace names (sw-*)
+        // Convert to marketplace names for consistent comparison
         pluginsToUnload = expanded
-          .map((p) => marketplaceNameToDirectory(p))
+          .map((p) => directoryToMarketplaceName(p))
           .filter((p) => loadedPlugins.includes(p));
       } else {
-        // Unload all except router (convert to directory name for comparison)
-        const routerDirName = marketplaceNameToDirectory('sw-router');
-        pluginsToUnload = loadedPlugins.filter((p) => p !== routerDirName);
+        // Unload all except router (use marketplace name for comparison)
+        pluginsToUnload = loadedPlugins.filter((p) => p !== 'sw-router');
       }
 
       let unloadedCount = 0;
@@ -997,13 +1026,22 @@ export class PluginCacheManager {
           const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
 
           for (const pluginName of pluginsToUnload) {
-            // Registry uses directory names (e.g., specweave-router@specweave)
+            // Check and remove BOTH naming formats for complete cleanup
+            const marketplaceName = directoryToMarketplaceName(pluginName);
+            const marketplaceKey = `${marketplaceName}@specweave`;
             const directoryName = marketplaceNameToDirectory(pluginName);
-            const pluginKey = `${directoryName}@specweave`;
-            if (registry.plugins[pluginKey]) {
-              delete registry.plugins[pluginKey];
+            const directoryKey = `${directoryName}@specweave`;
+
+            // Remove marketplace name format (correct)
+            if (registry.plugins[marketplaceKey]) {
+              delete registry.plugins[marketplaceKey];
               unloadedCount++;
-              logger.debug(`Unloaded plugin from registry: ${pluginName}`);
+              logger.debug(`Unloaded plugin from registry: ${marketplaceKey}`);
+            }
+            // Also remove directory name format (deprecated, for cleanup)
+            if (marketplaceKey !== directoryKey && registry.plugins[directoryKey]) {
+              delete registry.plugins[directoryKey];
+              logger.debug(`Cleaned up deprecated registry entry: ${directoryKey}`);
             }
           }
 

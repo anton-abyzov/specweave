@@ -44,10 +44,10 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 
 ```bash
 # Check if installed
-/plugin list --installed | grep specweave-ado
+/plugin list --installed | grep sw-ado
 
 # Install if needed
-/plugin install specweave-ado
+/plugin install sw-ado@specweave
 ```
 
 ### 2. Azure DevOps Personal Access Token (PAT)

@@ -352,7 +352,7 @@ This project uses SpecWeave for spec-driven development. SpecWeave provides spec
 /plugin install specweave
 
 # Install GitHub plugin (optional)
-/plugin install specweave-github
+/plugin install sw-github@specweave
 \`\`\`
 
 ### For Other Tools (Cursor, Copilot, etc.)

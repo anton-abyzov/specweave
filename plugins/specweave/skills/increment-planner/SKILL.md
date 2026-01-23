@@ -2,6 +2,8 @@
 name: increment-planner
 description: Creates comprehensive implementation plans for ANY type of SpecWeave increment (feature, hotfix, bug, change-request, refactor, experiment). Supports all work types from features to bug investigations to POCs. Activates for: increment planning, feature planning, hotfix, bug investigation, root cause analysis, SRE investigation, change request, refactor, POC, prototype, spike work, experiment, implementation plan, create increment, organize work, break down work, new product, build project, MVP, SaaS, app development, tech stack planning, production issue, critical bug, stakeholder request.
 visibility: public
+invocableBy:
+  - sw:increment
 context: fork
 model: opus
 ---
@@ -298,33 +300,79 @@ infra-terraform        → prefix: INFRA (infrastructure)
 
 ---
 
-### STEP 0A: Read Config Values (MANDATORY)
+### STEP 0A: TDD Mode Detection (⚠️ MANDATORY - OUTPUT REQUIRED!)
 
+**🚨 CRITICAL: You MUST run this detection AND output the result. DO NOT SKIP!**
+
+**Run this command using Bash tool:**
 ```bash
-# Read testMode (default: "test-after" for user projects)
-testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"')
+# TDD MODE DETECTION - MANDATORY OUTPUT
+echo "════════════════════════════════════════════════════════════"
+echo "🔍 TDD MODE DETECTION"
+echo "════════════════════════════════════════════════════════════"
 
-# Read coverageTarget (default: 80)
-coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80')
+# Read testMode from config
+testMode=$(jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/null)
+coverageTarget=$(jq -r '.testing.defaultCoverageTarget // 80' .specweave/config.json 2>/dev/null)
+tddEnforcement=$(jq -r '.testing.tddEnforcement // "warn"' .specweave/config.json 2>/dev/null)
 
-# Select template based on testMode
-if [ "$testMode" = "TDD" ]; then
+echo "Config: .specweave/config.json"
+echo "  testing.defaultTestMode: $testMode"
+echo "  testing.tddEnforcement: $tddEnforcement"
+echo "  testing.defaultCoverageTarget: $coverageTarget"
+echo ""
+
+if [ "$testMode" = "TDD" ] || [ "$testMode" = "tdd" ]; then
+  echo "🔴🔴🔴 TDD MODE ACTIVE 🔴🔴🔴"
+  echo ""
+  echo "TASK TEMPLATE: tasks-tdd-single-project.md"
+  echo "TASK STRUCTURE: RED → GREEN → REFACTOR triplets"
+  echo "ENFORCEMENT: $tddEnforcement"
+  echo ""
+  echo "⚠️  YOU MUST USE TDD TASK TEMPLATE!"
+  echo "⚠️  EVERY feature needs: [RED] test → [GREEN] impl → [REFACTOR] cleanup"
+  echo ""
   TASK_TEMPLATE="tasks-tdd-single-project.md"
-  INCLUDE_TDD_CONTRACT=true
-  echo "🔴 TDD MODE: Using TDD task template with RED-GREEN-REFACTOR triplets"
+  INCLUDE_TDD_CONTRACT="true"
 else
+  echo "📝 STANDARD MODE (test-after)"
+  echo ""
+  echo "TASK TEMPLATE: tasks-single-project.md"
+  echo ""
   TASK_TEMPLATE="tasks-single-project.md"
-  INCLUDE_TDD_CONTRACT=false
+  INCLUDE_TDD_CONTRACT="false"
 fi
 
-echo "Using testMode: $testMode"
-echo "Using coverageTarget: $coverageTarget"
-echo "Using task template: $TASK_TEMPLATE"
+echo "════════════════════════════════════════════════════════════"
+echo "RESULT:"
+echo "  TASK_TEMPLATE=$TASK_TEMPLATE"
+echo "  INCLUDE_TDD_CONTRACT=$INCLUDE_TDD_CONTRACT"
+echo "  testMode=$testMode"
+echo "  coverageTarget=$coverageTarget"
+echo "════════════════════════════════════════════════════════════"
 ```
 
-**Store these values for use in STEP 4 and STEP 7!**
+**⚠️ AFTER RUNNING: Capture and REMEMBER these values!**
 
-**TDD Template Selection**:
+| Variable | Value | Used In |
+|----------|-------|---------|
+| `TASK_TEMPLATE` | `tasks-tdd-single-project.md` OR `tasks-single-project.md` | STEP 7 |
+| `INCLUDE_TDD_CONTRACT` | `true` OR `false` | STEP 4 |
+| `testMode` | `TDD` OR `test-after` | metadata.json |
+| `coverageTarget` | Number (0-100) | metadata.json |
+
+**IF TDD MODE DETECTED:**
+1. ✅ Use `tasks-tdd-single-project.md` template in STEP 7
+2. ✅ Add TDD Contract section to spec.md in STEP 4
+3. ✅ Generate tasks as RED-GREEN-REFACTOR triplets
+4. ✅ Include `[RED]`, `[GREEN]`, `[REFACTOR]` markers in task titles
+5. ✅ Add `**Depends On**` for GREEN (needs RED) and REFACTOR (needs GREEN)
+
+**IF STANDARD MODE:**
+- Use `tasks-single-project.md` template
+- Normal task structure
+
+**TDD Template Selection Summary**:
 - When `testMode: "TDD"` → Use `tasks-tdd-single-project.md` with TDD triplet structure
 - When `testMode: "test-after"` (default) → Use standard `tasks-single-project.md`
 - TDD mode also injects `## TDD Contract` section into spec.md

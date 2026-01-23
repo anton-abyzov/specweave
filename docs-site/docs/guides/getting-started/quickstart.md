@@ -317,10 +317,12 @@ If you see an error like `SyntaxError: Unexpected token 'with'`, your Node.js is
 
 ### Quick Recovery (Most Issues)
 
-If commands, skills, or hooks stop working after a Claude Code update:
+If commands, skills, or hooks stop working:
 ```bash
-specweave update      # Full update: CLI + instructions + config + plugins
+specweave update      # Full update: CLI + plugins + instructions
 ```
+
+This fixes 98% of issues. It updates everything: CLI version, plugins, instruction files.
 
 ### Auto Mode Issues
 
@@ -331,31 +333,31 @@ Session stuck or not completing?
 /sw:auto          # Resume with fresh session
 ```
 
-### Skills not activating?
+### Skills or Hooks Not Working?
+
+First, try the full update:
 ```bash
-ls -la .claude/skills/
-# Should see 17+ SpecWeave skills
-
-# If missing:
-specweave refresh-marketplace
-```
-
-### Commands not found?
-```bash
-ls -la .claude/commands/
-# Should see 22+ command files
-
-# If missing:
-specweave refresh-marketplace
-```
-
-### Errors during Bash or Edit tool calls?
-
-Install latest and refresh:
-```bash
-npm install -g specweave@latest
 specweave update
 ```
+
+If that doesn't help, use the plugin-only refresh:
+```bash
+specweave refresh-marketplace
+```
+
+**Why this exists:** Claude Code's native marketplace auto-update doesn't:
+- Fix hook permissions (`chmod +x`) — hooks may silently fail
+- Clean up orphaned cache/skills directories
+- Update instruction files (CLAUDE.md, AGENTS.md)
+
+### Enable Marketplace Auto-Update (Optional)
+
+You can enable Claude Code's native auto-update for the specweave marketplace:
+```bash
+/plugin → Marketplaces tab → Select specweave → Enable auto-update
+```
+
+This keeps marketplace.json and installed plugins updated automatically. However, you may still need `specweave refresh-marketplace` occasionally for hook permissions and instruction file updates.
 
 ---
 

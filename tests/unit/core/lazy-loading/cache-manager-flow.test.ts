@@ -117,7 +117,7 @@ describe('Cache Manager Flow Tests', () => {
       // Verify state reflects lazy mode
       const state1 = cacheManager.readState();
       expect(state1.lazyMode).toBe(true);
-      expect(state1.loadedPlugins).toEqual(['specweave-router']);
+      expect(state1.loadedPlugins).toEqual(['sw-router']);
       expect(state1.cachedPlugins).toHaveLength(4);
 
       // Step 4: User triggers lazy load (like router skill does)
@@ -133,9 +133,9 @@ describe('Cache Manager Flow Tests', () => {
       expect(cacheManager.isPluginLoaded('specweave-router')).toBe(true);
 
       const state2 = cacheManager.readState();
-      expect(state2.loadedPlugins).toContain('specweave');
-      expect(state2.loadedPlugins).toContain('specweave-github');
-      expect(state2.loadedPlugins).toContain('specweave-router');
+      expect(state2.loadedPlugins).toContain('sw');
+      expect(state2.loadedPlugins).toContain('sw-github');
+      expect(state2.loadedPlugins).toContain('sw-router');
     });
 
     it('should support selective plugin loading', async () => {
@@ -233,12 +233,12 @@ describe('Cache Manager Flow Tests', () => {
       await cacheManager.installPlugins({ plugins: ['specweave-router'] });
 
       // Step 6: Verify migration complete
-      expect(cacheManager.getLoadedPlugins()).toEqual(['specweave-router']);
+      expect(cacheManager.getLoadedPlugins()).toEqual(['sw-router']);
       expect(cacheManager.getCachedPlugins()).toHaveLength(5);
 
       const state = cacheManager.readState();
       expect(state.lazyMode).toBe(true);
-      expect(state.loadedPlugins).toEqual(['specweave-router']);
+      expect(state.loadedPlugins).toEqual(['sw-router']);
 
       // Step 7: Verify backup exists for rollback
       expect(fs.existsSync(path.join(testBackupPath, 'specweave'))).toBe(true);
@@ -345,7 +345,7 @@ describe('Cache Manager Flow Tests', () => {
       await cacheManager.installPlugins({ plugins: ['specweave-router'] });
 
       // Verify migrated state
-      expect(cacheManager.getLoadedPlugins()).toEqual(['specweave-router']);
+      expect(cacheManager.getLoadedPlugins()).toEqual(['sw-router']);
 
       // Step 4: Rollback
       // Clear active directory
@@ -517,18 +517,19 @@ describe('Cache Manager Flow Tests', () => {
       await cacheManager.installPlugins();
 
       const state1 = cacheManager.readState();
-      expect(state1.loadedPlugins).toContain('specweave');
+      // State now uses marketplace names (sw-*) for consistency
+      expect(state1.loadedPlugins).toContain('sw');
 
-      await cacheManager.unloadPlugins(['specweave']);
+      await cacheManager.unloadPlugins(['sw']);
 
       const state2 = cacheManager.readState();
-      expect(state2.loadedPlugins).not.toContain('specweave');
-      expect(state2.loadedPlugins).toContain('specweave-router');
+      expect(state2.loadedPlugins).not.toContain('sw');
+      expect(state2.loadedPlugins).toContain('sw-router');
 
-      await cacheManager.installPlugins({ plugins: ['specweave'] });
+      await cacheManager.installPlugins({ plugins: ['sw'] });
 
       const state3 = cacheManager.readState();
-      expect(state3.loadedPlugins).toContain('specweave');
+      expect(state3.loadedPlugins).toContain('sw');
     });
   });
 });

@@ -39,10 +39,10 @@ Event-driven workflows, Kafka triggers, producers, and no-code/low-code patterns
 
 ```bash
 # Via SpecWeave marketplace
-specweave plugin install specweave-n8n
+specweave plugin install sw-n8n
 
 # Or via Claude Code plugin system
-/plugin install specweave-n8n
+/plugin install sw-n8n@specweave
 ```
 
 ## Quick Start

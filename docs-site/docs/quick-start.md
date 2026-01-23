@@ -258,14 +258,13 @@ specweave init .
 
 **Claude doesn't recognize commands:**
 ```bash
-# Full update (recommended) - updates CLI, instructions, and config
+# Full update (recommended) - fixes 98% of issues
 specweave update
-
-# Or just refresh marketplace
-specweave refresh-marketplace
 
 # Then restart Claude Code extension
 ```
+
+If `specweave update` doesn't help, try `specweave refresh-marketplace` which fixes hook permissions and cleans up plugin state. See [Troubleshooting](#troubleshooting) for details.
 
 ### Auto Mode Issues
 
