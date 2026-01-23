@@ -7,9 +7,15 @@
 # Event routing (EDA v2):
 # - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler + github-sync-handler
 # - user-story.completed/reopened -> status-line-handler + project-bridge-handler + github-sync-handler (v1.0.45+: CRITICAL FIX)
-# - spec.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (creates GitHub issues for User Stories)
-# - task.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (v1.0.127+: syncs to GitHub on task completion!)
-# - metadata.changed -> github-sync-handler
+# - spec.updated -> ac-validation-handler + project-bridge-handler + github-sync-handler (syncs to ALL external tools!)
+# - task.updated -> ac-validation-handler + project-bridge-handler + github-sync-handler (syncs to ALL external tools!)
+# - metadata.changed -> project-bridge-handler + github-sync-handler
+#
+# IMPORTANT (v1.0.144): Living docs sync ONLY happens on increment.done (via living-specs-handler)
+# NOT on every task/spec update. This prevents excessive syncs and ensures full scan on completion.
+#
+# IMPORTANT (v1.0.144): ALL external tools (GitHub/JIRA/ADO) are now synced via project-bridge-handler
+# on spec.updated and task.updated events. This ensures AC completion updates propagate universally.
 #
 # CRITICAL FIX (v1.0.45): user-story.completed now triggers github-sync-handler!
 # Root cause: GitHub issues were CREATED but NEVER UPDATED when User Stories completed.
@@ -182,27 +188,35 @@ process_event() {
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # Spec updated -> sync to living docs + validate ACs + sync to GitHub
+    # Spec updated -> validate ACs + sync to ALL external tools (GitHub/JIRA/ADO)
     # CRITICAL: spec.updated fires AFTER spec.md has User Stories defined
-    # This is the key event that triggers GitHub issue creation for USs
+    # This is the key event that triggers issue creation and AC status updates
+    # NOTE (v1.0.144): Living docs sync removed - only happens on increment.done for full scan
+    # FIX (v1.0.144): Added project-bridge-handler for universal external tool sync
     spec.updated)
-      run_handler "$HANDLER_DIR/living-docs-handler.sh" "" "$EVENT_DATA"
       run_handler "$HANDLER_DIR/ac-validation-handler.sh" "" "$EVENT_DATA"
-      # Sync to GitHub (creates issues for User Stories when spec has USs)
+      # Bridge to ALL external tools (GitHub/JIRA/ADO) - creates issues & syncs AC status
+      run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # GitHub-specific sync (creates issues for User Stories when spec has USs)
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # Task updated event - sync to living docs + validate ACs + sync to GitHub
+    # Task updated event -> validate ACs + sync to ALL external tools
     # CRITICAL FIX (v1.0.127): Added github-sync-handler to update GitHub on task completion
     # Without this, GitHub issues remained active even after all tasks complete!
+    # NOTE (v1.0.144): Living docs sync removed - only happens on increment.done for full scan
+    # FIX (v1.0.144): Added project-bridge-handler for universal external tool sync (JIRA/ADO)
     task.updated)
-      run_handler "$HANDLER_DIR/living-docs-handler.sh" "" "$EVENT_DATA"
       run_handler "$HANDLER_DIR/ac-validation-handler.sh" "" "$EVENT_DATA"
-      # Sync to GitHub on every task update - throttled handler prevents spam
+      # Bridge to ALL external tools (GitHub/JIRA/ADO) - updates task/AC completion status
+      run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # GitHub-specific sync - throttled handler prevents spam
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
     metadata.changed)
+      # Bridge to ALL external tools (GitHub/JIRA/ADO) - syncs metadata changes
+      run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "" "$EVENT_DATA"
       ;;
 
