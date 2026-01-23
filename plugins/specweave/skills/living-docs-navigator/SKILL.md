@@ -137,3 +137,123 @@ When executing `/sw:do`:
 - **Specs show history** - see what was already built
 - **Use grep liberally** - find docs by keyword, not guessing paths
 - **Cross-reference** - related documents link to each other
+
+---
+
+## Stakeholder Views
+
+Living docs serve different audiences. Navigate by role:
+
+### For Business Stakeholders
+
+Quick access to high-level, non-technical documentation:
+
+```
+.specweave/docs/internal/
+├── strategy/                    # Business context
+│   ├── executive-summary.md     # Project overview for leadership
+│   ├── feature-dashboard.md     # Feature status tracking
+│   ├── roadmap.md               # Product roadmap
+│   └── business-impact/         # Per-feature impact statements
+├── operations/                  # System health
+│   └── health-dashboard.md      # Current system status
+└── specs/
+    └── _feature-status.md       # Active features & completion %
+```
+
+**Use case**: Board reports, investor updates, quarterly reviews
+
+### For Technical Leads
+
+Quick access to architecture and decisions:
+
+```bash
+# Recent architectural decisions
+ls -lt .specweave/docs/internal/architecture/adr/ | head -10
+
+# Search for decisions about specific topics
+grep -ril "authentication" .specweave/docs/internal/architecture/adr/
+
+# Find system architecture diagrams
+ls .specweave/docs/internal/architecture/*.md
+```
+
+**Use case**: Design reviews, tech debt assessment, onboarding
+
+### For Product Managers
+
+Quick access to specifications and progress:
+
+```bash
+# Feature specifications
+ls .specweave/docs/internal/specs/
+
+# Find features by keyword
+grep -ril "checkout" .specweave/docs/internal/specs/
+
+# Check increment status
+ls .specweave/increments/*/metadata.json
+```
+
+**Use case**: Sprint planning, release notes, stakeholder updates
+
+---
+
+## Executive Summary Generation
+
+Living docs can be transformed into executive-friendly formats:
+
+### Automatic Generation
+
+Use the **stakeholder-docs** skill to generate:
+- Executive summaries from technical specs
+- Feature status dashboards
+- Business impact statements
+- Release summaries
+
+```
+"Create an executive summary of our current project status"
+"Generate a feature status dashboard for Q1"
+```
+
+### Manual Navigation
+
+For quick stakeholder context:
+
+1. **Project Overview**: `.specweave/docs/internal/strategy/executive-summary.md`
+2. **Feature Status**: `.specweave/docs/internal/strategy/feature-dashboard.md`
+3. **Recent Decisions**: Latest 3 ADRs in `architecture/adr/`
+
+---
+
+## Visual Documentation
+
+When documentation needs diagrams or illustrations:
+
+### Architecture Diagrams
+Use Mermaid in markdown files:
+```markdown
+```mermaid
+graph TD
+    A[Client] --> B[API Gateway]
+    B --> C[Auth Service]
+```
+```
+
+### AI-Generated Illustrations
+Use the `/sw-ui:image` skill for professional visuals:
+```
+"Generate an architecture diagram illustration for the API docs"
+"Create a feature illustration for the living docs"
+```
+
+Brand colors: Purple #7c3aed, Light purple #a78bfa
+
+---
+
+## Related Skills
+
+- **stakeholder-docs**: Generate executive-friendly views
+- **docs-writer**: Create detailed documentation
+- **image-generation**: Add visuals via `/sw-ui:image`
+- **docusaurus**: Preview docs as website via `/sw-docs:view`

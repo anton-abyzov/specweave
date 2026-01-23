@@ -11,8 +11,7 @@
 # What gets killed:
 #   - Heredoc processes (cat.*EOF)
 #   - Stuck node processes from hooks
-#   - Background SpecWeave processors
-#   - Zombie bash processes
+#   - Zombie bash processes from hooks
 
 set -euo pipefail
 
@@ -97,30 +96,22 @@ if kill_processes "dispatcher.mjs" "dispatcher"; then
   KILLED_ANY=true
 fi
 
-# 4. Kill background processors
-if kill_processes "processor.sh" "background processor"; then
-  KILLED_ANY=true
-fi
-
-# 5. Kill stuck sync processes
+# 4. Kill stuck sync processes
 if kill_processes "node.*sync.*specweave" "sync node"; then
   KILLED_ANY=true
 fi
 
-# 6. Kill any bash processes with specweave in command (older than 60s)
-# This is more aggressive - use pattern carefully
 if kill_processes "bash.*specweave.*hooks" "specweave bash"; then
   KILLED_ANY=true
 fi
 
-# 7. Clean up lock files
+# 6. Clean up lock files (v1.0.148: processor removed, simplified)
 if [[ "$DRY_RUN" != "true" ]]; then
-  log "\n${GREEN}Cleaning lock files...${NC}"
-  rm -f .specweave/state/.processor.lock 2>/dev/null || true
-  rm -f .specweave/state/.processor.pid 2>/dev/null || true
+  log "\n${GREEN}Cleaning state files...${NC}"
   rm -f .specweave/state/.hook-* 2>/dev/null || true
-  rm -rf .specweave/state/.dedup-cache/*.lock 2>/dev/null || true
-  log "  ✓ Lock files cleaned"
+  rm -f .specweave/state/event-queue/*.event 2>/dev/null || true
+  rm -f .specweave/state/event-queue/.dedup-* 2>/dev/null || true
+  log "  ✓ State files cleaned"
 fi
 
 echo

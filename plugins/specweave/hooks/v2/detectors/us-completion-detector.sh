@@ -17,6 +17,12 @@
 # - mktemp with fallback for different systems
 # - No stat commands (different syntax per OS)
 #
+# IDEMPOTENCY (v1.0.148): No locks needed - idempotent by design:
+# - State file tracks previous completion status per US
+# - Events only emitted on state TRANSITIONS (no→yes or yes→no)
+# - enqueue.sh has 10s deduplication window for extra safety
+# - Multiple concurrent runs produce same result (idempotent)
+#
 # IMPORTANT: This script must be fast (<50ms) and never crash
 set +e
 

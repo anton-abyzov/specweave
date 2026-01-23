@@ -109,3 +109,101 @@ npm install your-package
 3. **Structure**: Clear headings
 4. **Completeness**: Cover edge cases
 5. **Accuracy**: Keep in sync with code
+
+## LLM-Optimized Documentation Patterns
+
+When generating documentation that will be consumed by LLMs (Claude Code, AI assistants), follow these patterns for maximum efficiency:
+
+### TL;DR Frontmatter (REQUIRED)
+
+Every document MUST include machine-readable frontmatter:
+
+```yaml
+---
+title: Feature Name
+tldr: One-sentence summary for quick LLM context loading
+business_value: How this impacts users/revenue/efficiency
+complexity: low|medium|high
+last_verified: 2025-01-23
+stakeholder_relevant: true|false
+dependencies:
+  - related-feature-1
+  - related-module-2
+---
+```
+
+### Structured Summary Block (REQUIRED)
+
+After the title, include a scannable summary block:
+
+```markdown
+## TL;DR
+
+**What**: [One sentence describing the feature/doc purpose]
+**Why**: [Business value or problem solved]
+**How**: [Key mechanism or approach in 1-2 sentences]
+**Dependencies**: [List related features/components]
+```
+
+### Scannable Content Patterns
+
+For LLM efficiency, structure content as:
+
+| Pattern | Usage | Example |
+|---------|-------|---------|
+| **Tables** | Comparisons, options, mappings | Parameters, API endpoints |
+| **Bullet Lists** | Steps, features, requirements | Installation steps |
+| **Code Blocks** | Examples, commands, configs | Usage examples |
+| **Headers** | Section navigation | H2 for main, H3 for sub |
+
+### Business Context Requirements
+
+Every feature doc should include:
+
+1. **Business Value Statement** (who benefits, how)
+2. **Success Metrics** (measurable outcomes)
+3. **Risk/Limitations** (what this doesn't do)
+
+### Example LLM-Optimized Doc
+
+```markdown
+---
+title: User Authentication
+tldr: JWT-based auth with OAuth2 support for secure user sessions
+business_value: Enables enterprise SSO compliance, reduces login friction
+complexity: medium
+last_verified: 2025-01-23
+stakeholder_relevant: true
+dependencies:
+  - user-management
+  - session-storage
+---
+
+# User Authentication
+
+## TL;DR
+
+**What**: JWT-based authentication system with OAuth2 provider support
+**Why**: Enables secure user sessions and enterprise SSO compliance
+**How**: Issues JWTs on login, validates on each request, supports refresh tokens
+**Dependencies**: user-management, session-storage, redis-cache
+
+## Business Value
+
+- Reduces login friction by 60% via social login
+- Enables enterprise SSO (required for Fortune 500 clients)
+- Improves security posture (SOC2 compliance)
+
+[Technical details follow...]
+```
+
+## Image Generation
+
+When documentation needs visuals (diagrams, illustrations, icons), use the `/sw-ui:image` skill:
+
+```
+"Generate a hero image for the authentication documentation"
+"Create an architecture diagram illustration for the API docs"
+```
+
+See `plugins/specweave-ui/skills/image-generation/SKILL.md` for SpecWeave brand colors and templates.

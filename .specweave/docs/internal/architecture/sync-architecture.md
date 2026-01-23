@@ -1,4 +1,105 @@
-# Sync Orchestration Architecture (v0.26.3+)
+# Sync Orchestration Architecture (v1.0.148)
+
+## Architecture Overview (v1.0.148)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    SPECWEAVE EXTERNAL SYNC ARCHITECTURE                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   AUTOMATIC SYNC (Claude Code Hooks)                  │   │
+│  ├──────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                       │   │
+│  │  PostToolUse Hook (when .specweave/increments/* edited)              │   │
+│  │  ├── metadata.json changed                                           │   │
+│  │  │   └── IF status = done/reopened                                   │   │
+│  │  │       └── IMMEDIATE SYNC ──────► project-bridge-handler           │   │
+│  │  │                                                                    │   │
+│  │  ├── tasks.md / spec.md changed                                      │   │
+│  │  │   └── Queue to pending.jsonl ──────┐                              │   │
+│  │  │                                     │                              │   │
+│  │  Stop Hook (Session End)               │                              │   │
+│  │  ├── stop-reflect.sh (learnings)       │                              │   │
+│  │  ├── stop-auto.sh (validation)         │                              │   │
+│  │  └── stop-sync.sh ◄────────────────────┘                              │   │
+│  │      └── BATCHED SYNC ──────► project-bridge-handler                  │   │
+│  │                                                                       │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   PROJECT BRIDGE (Universal Adapter)                  │   │
+│  ├──────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                       │   │
+│  │              ┌─────────────────────┐                                  │   │
+│  │              │  project-bridge.js  │                                  │   │
+│  │              │  ────────────────── │                                  │   │
+│  │              │  ProjectService     │                                  │   │
+│  │              │  ProjectEventBus    │                                  │   │
+│  │              └─────────┬───────────┘                                  │   │
+│  │                        │                                              │   │
+│  │          ┌─────────────┼─────────────┐                                │   │
+│  │          ▼             ▼             ▼                                │   │
+│  │     ┌────────┐   ┌─────────┐   ┌──────────┐                           │   │
+│  │     │ GitHub │   │  JIRA   │   │   ADO    │                           │   │
+│  │     │Adapter │   │ Adapter │   │ Adapter  │                           │   │
+│  │     └────┬───┘   └────┬────┘   └────┬─────┘                           │   │
+│  │          │            │             │                                 │   │
+│  └──────────┼────────────┼─────────────┼─────────────────────────────────┘   │
+│             │            │             │                                     │
+│             ▼            ▼             ▼                                     │
+│       ┌──────────┐ ┌──────────┐ ┌───────────────┐                            │
+│       │  GitHub  │ │   JIRA   │ │ Azure DevOps  │                            │
+│       │  Issues  │ │  Epics   │ │  Work Items   │                            │
+│       └──────────┘ └──────────┘ └───────────────┘                            │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   MANUAL COMMANDS (On-Demand)                         │   │
+│  ├──────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                       │   │
+│  │  /sw-github:sync <id>  ─────► GitHub Issues/Projects                  │   │
+│  │  /sw-jira:sync <id>    ─────► JIRA Epics/Stories                      │   │
+│  │  /sw-ado:sync <id>     ─────► ADO Work Items                          │   │
+│  │  /sw:sync-progress     ─────► ALL external tools                      │   │
+│  │                                                                       │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Files (v1.0.148)
+
+| File | Purpose |
+|------|---------|
+| `hooks/hooks.json` | Hook registration |
+| `hooks/v2/dispatchers/post-tool-use.sh` | PostToolUse dispatcher |
+| `hooks/v2/dispatchers/session-start.sh` | Session init + legacy cleanup |
+| `hooks/stop-sync.sh` | Stop hook - batched sync |
+| `hooks/v2/handlers/project-bridge-handler.sh` | Universal sync handler |
+| `hooks/v2/queue/enqueue.sh` | Queue events to pending.jsonl |
+| `scripts/cleanup-legacy-state.sh` | Removes old processor files on session start |
+| `.specweave/state/event-queue/pending.jsonl` | Pending events queue |
+
+### Migration (v1.0.148)
+
+On session start, `cleanup-legacy-state.sh` automatically removes:
+- `.processor.pid` - Old processor PID file
+- `.processor.lock.d` - Old lock directory
+- `*.event` files - Old event format (replaced by `pending.jsonl`)
+- Stale `.dedup-*` files older than 1 minute
+
+### Sync Timing
+
+| Event | Timing | Why |
+|-------|--------|-----|
+| `increment.done` | Immediate | User expects external tools updated NOW |
+| `increment.reopened` | Immediate | Critical status change |
+| `task.updated` | Batched (session end) | Too frequent, batch is efficient |
+| `spec.updated` | Batched (session end) | Can wait until session end |
+
+---
 
 ## How GitHub Issue Sync Works
 
@@ -137,6 +238,7 @@ npm run rebuild
 
 | Version | Change |
 |---------|--------|
+| v1.0.148 | Stop-sync.sh for batched sync at session end, immediate sync for done/reopened, no background processor |
 | v0.26.3 | Multi-location GitHub config detection (ADR-0137) |
 | v0.26.1 | Automatic US sync restored, smart throttle (60s) |
 | v0.25.2 | `SKIP_EXTERNAL_SYNC` guard at LivingDocsSync layer |

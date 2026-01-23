@@ -1,7 +1,13 @@
 # ADR-0022: GitHub Sync Verification Architecture
 
 **Date**: 2025-11-10
-**Status**: Accepted
+**Status**: Superseded by v1.0.148 hook architecture (see sync-architecture.md)
+
+> **Note (v1.0.148)**: This ADR describes the original post-increment-completion hook design.
+> The v1.0.148 architecture replaced this with:
+> - Immediate sync via `project-bridge-handler.sh` for done/reopened events
+> - Batched sync via `stop-sync.sh` at session end
+> - No background processor daemon
 
 ## Context
 

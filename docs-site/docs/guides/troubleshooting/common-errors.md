@@ -641,6 +641,41 @@ rm -f .specweave/state/*.lock
 rm -rf .specweave/state/.dedup-cache
 ```
 
+### Plugin commands not working
+
+**Cause**: Manually edited `~/.claude/plugins/installed_plugins.json` or corrupted plugin state.
+
+:::danger Never Edit installed_plugins.json
+**NEVER** manually edit `~/.claude/plugins/installed_plugins.json`. This file is managed by Claude Code and manual edits can cause:
+- Plugin commands to stop working
+- Skills not activating
+- Hooks not firing
+- Sync commands failing
+:::
+
+**Solution**: Use Claude CLI commands instead:
+```bash
+# Uninstall broken plugin
+claude plugin uninstall sw-github
+
+# Reinstall plugin
+claude plugin install sw-github@specweave
+
+# List installed plugins
+claude plugin list
+
+# If still broken, clear and reinstall
+claude plugin uninstall sw-github
+claude plugin install sw-github@specweave
+```
+
+**If all plugins broken**:
+```bash
+# Backup and reset (nuclear option)
+mv ~/.claude/plugins/installed_plugins.json ~/.claude/plugins/installed_plugins.json.bak
+# Then reinstall plugins as needed
+```
+
 ---
 
 ## Quick Fixes Summary
@@ -649,6 +684,7 @@ rm -rf .specweave/state/.dedup-cache
 |-------|-----------|
 | SpecWeave skills/commands broken | `specweave update` |
 | Auto mode stuck | `/sw:auto-status` then `/sw:cancel-auto` |
+| Plugin commands broken | `claude plugin uninstall/install` (NEVER edit installed_plugins.json) |
 | "command not found" | Install the tool |
 | "permission denied" | Use nvm or fix npm permissions |
 | "ERESOLVE" | `npm install --legacy-peer-deps` |
