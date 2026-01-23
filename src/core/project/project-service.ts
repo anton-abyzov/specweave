@@ -27,6 +27,9 @@ import { JiraProjectAdapter } from './adapters/jira-project-adapter.js';
 
 /**
  * Increment event types from hooks v2
+ *
+ * v1.0.144: Added spec.updated, task.updated, metadata.changed for universal
+ * external tool sync (GitHub/JIRA/ADO) on AC completion and task updates.
  */
 export type IncrementEventType =
   | 'increment.created'
@@ -34,7 +37,10 @@ export type IncrementEventType =
   | 'increment.archived'
   | 'increment.reopened'
   | 'user-story.completed'
-  | 'user-story.reopened';
+  | 'user-story.reopened'
+  | 'spec.updated'
+  | 'task.updated'
+  | 'metadata.changed';
 
 /**
  * Configuration for external tool adapters
@@ -324,33 +330,59 @@ export class ProjectService {
     }
 
     // Map increment events to project sync requests
+    // v1.0.144: All events now sync to ALL enabled external tools (GitHub/JIRA/ADO)
+    // for universal AC completion and task status updates.
     switch (eventType) {
       case 'increment.done':
-        // When increment completes, request sync to external tools
+        // When increment completes, request sync to ALL external tools
         await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
 
       case 'increment.created':
-        // New increment created - always sync to GitHub to create issues for User Stories
+        // New increment created - sync to ALL external tools to create issues
+        // v1.0.144: Changed from GitHub-only to ALL tools for universal sync
         // Note: increment.created fires when metadata.json is first written, which may be
-        // before spec.md has User Stories. The github-sync-handler will also trigger on
+        // before spec.md has User Stories. The handlers will also trigger on
         // spec.updated events to ensure issues are created after USs are defined.
-        await this.registry.requestSync(projectId, ['github']);
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
 
       case 'increment.archived':
-        // Archived increment - no immediate sync needed
+        // Archived increment - sync status to ALL external tools
+        // v1.0.144: Now syncs to close/archive external issues
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
 
       case 'increment.reopened':
-        // Reopened increment - sync status update
-        await this.registry.requestSync(projectId, ['github']);
+        // Reopened increment - sync status update to ALL tools
+        // v1.0.144: Changed from GitHub-only to ALL tools
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
 
       case 'user-story.completed':
       case 'user-story.reopened':
-        // User story changes - could trigger issue updates
-        // Currently handled by living-specs-handler directly
+        // User story changes - sync to ALL external tools
+        // v1.0.144: Now properly syncs US completion to JIRA/ADO, not just GitHub
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
+        break;
+
+      case 'spec.updated':
+        // Spec updated - sync AC status to ALL external tools
+        // v1.0.144: NEW - ensures AC checkbox updates propagate to JIRA/ADO
+        // This is critical for keeping external tool AC status in sync
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
+        break;
+
+      case 'task.updated':
+        // Task updated - sync task completion to ALL external tools
+        // v1.0.144: NEW - ensures task completion updates propagate to JIRA/ADO
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
+        break;
+
+      case 'metadata.changed':
+        // Metadata changed - sync to ALL external tools
+        // v1.0.144: NEW - ensures metadata changes propagate universally
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
     }
   }

@@ -14,6 +14,12 @@
  * - increment.reopened - Increment reopened
  * - user-story.completed - User story completed
  * - user-story.reopened - User story reopened
+ * - spec.updated - Spec file updated (AC status changes) - v1.0.144
+ * - task.updated - Task completion updated - v1.0.144
+ * - metadata.changed - Metadata changes - v1.0.144
+ *
+ * v1.0.144: All events now sync to ALL enabled external tools (GitHub/JIRA/ADO)
+ * for universal AC completion and task status updates.
  */
 
 import { ProjectService } from '../../../../dist/src/core/project/project-service.js';
