@@ -206,7 +206,7 @@ export interface SuccessCriterion {
   required: boolean; // Mandatory vs optional
   command?: string; // For custom_command/tests_pass/build_succeeds type
   threshold?: number; // For coverage-based criteria
-  model?: 'haiku' | 'sonnet'; // For llm_evaluate type (default: sonnet)
+  model?: 'haiku' | 'sonnet' | 'opus'; // For llm_evaluate type (default: opus)
 }
 
 /**

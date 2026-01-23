@@ -129,7 +129,7 @@ describe('LLM Plugin Detection', () => {
       const result = await detectPluginsViaLLM('Build a React dashboard with charts');
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-frontend');
+      expect(result.plugins).toContain('sw-frontend');
       expect(result.confidence).toBeGreaterThan(0.5);
       expect(result.durationMs).toBeLessThan(30000);
     }, 60000);
@@ -138,7 +138,7 @@ describe('LLM Plugin Detection', () => {
       const result = await detectPluginsViaLLM('Create a Node.js REST API with Express');
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-backend');
+      expect(result.plugins).toContain('sw-backend');
       expect(result.confidence).toBeGreaterThan(0.5);
     }, 60000);
 
@@ -148,9 +148,9 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-frontend');
-      expect(result.plugins).toContain('specweave-backend');
-      expect(result.plugins).toContain('specweave-testing');
+      expect(result.plugins).toContain('sw-frontend');
+      expect(result.plugins).toContain('sw-backend');
+      expect(result.plugins).toContain('sw-testing');
     }, 60000);
 
     it('should detect K8s plugins for Kubernetes prompt', async () => {
@@ -159,7 +159,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-kubernetes');
+      expect(result.plugins).toContain('sw-k8s');
     }, 60000);
 
     it('should detect infrastructure plugins for Terraform prompt', async () => {
@@ -168,7 +168,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-infrastructure');
+      expect(result.plugins).toContain('sw-infra');
     }, 60000);
 
     it('should detect payment plugins for Stripe prompt', async () => {
@@ -177,7 +177,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-payments');
+      expect(result.plugins).toContain('sw-payments');
     }, 60000);
 
     it('should detect testing plugins for TDD prompt', async () => {
@@ -186,7 +186,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-testing');
+      expect(result.plugins).toContain('sw-testing');
     }, 60000);
 
     it('should detect ML plugins for machine learning prompt', async () => {
@@ -195,7 +195,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-ml');
+      expect(result.plugins).toContain('sw-ml');
     }, 60000);
 
     it('should detect mobile plugins for React Native prompt', async () => {
@@ -204,7 +204,7 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-mobile');
+      expect(result.plugins).toContain('sw-mobile');
     }, 60000);
 
     it('should return empty plugins for unrelated prompt', async () => {
@@ -236,9 +236,9 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should NOT include frontend plugin - user explicitly wants CLI/backend only
-      expect(result.plugins).not.toContain('specweave-frontend');
+      expect(result.plugins).not.toContain('sw-frontend');
       // Should include backend for Node.js
-      expect(result.plugins).toContain('specweave-backend');
+      expect(result.plugins).toContain('sw-backend');
     }, 60000);
 
     it('should detect frontend when user wants Vue instead of React', async () => {
@@ -248,7 +248,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should STILL include frontend - Vue is frontend technology!
-      expect(result.plugins).toContain('specweave-frontend');
+      expect(result.plugins).toContain('sw-frontend');
     }, 60000);
 
     it('should detect mobile when user wants mobile instead of web', async () => {
@@ -258,7 +258,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should include mobile
-      expect(result.plugins).toContain('specweave-mobile');
+      expect(result.plugins).toContain('sw-mobile');
       // Frontend is optional here - React Native can be considered either way
     }, 60000);
 
@@ -269,7 +269,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should detect frontend (Vue is frontend)
-      expect(result.plugins).toContain('specweave-frontend');
+      expect(result.plugins).toContain('sw-frontend');
       expect(result.confidence).toBeGreaterThan(0.5);
     }, 60000);
 
@@ -280,7 +280,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Negative sentiment about React shouldn't exclude frontend domain
-      expect(result.plugins).toContain('specweave-frontend');
+      expect(result.plugins).toContain('sw-frontend');
     }, 60000);
 
     it('should detect backend only for terminal/server application', async () => {
@@ -289,8 +289,8 @@ describe('LLM Plugin Detection', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('specweave-backend');
-      expect(result.plugins).not.toContain('specweave-frontend');
+      expect(result.plugins).toContain('sw-backend');
+      expect(result.plugins).not.toContain('sw-frontend');
     }, 60000);
   });
 
@@ -402,7 +402,7 @@ describe('Hook Output Format', () => {
     // Hook output must be valid JSON with specific fields
     const hookOutput = {
       continue: true,
-      systemMessage: 'SpecWeave: Loaded specweave-frontend, specweave-backend plugins for your React + Node.js project.',
+      systemMessage: 'SpecWeave: Loaded sw-frontend, sw-backend plugins for your React + Node.js project.',
     };
 
     // Must be valid JSON
@@ -487,8 +487,8 @@ describe('Error Handling', () => {
   });
 
   it('should validate plugin names against known list', () => {
-    const unknownPlugin = 'specweave-unknown-plugin';
-    const knownPlugin = 'specweave-frontend';
+    const unknownPlugin = 'sw-unknown-plugin';
+    const knownPlugin = 'sw-frontend';
 
     expect(SPECWEAVE_PLUGINS.includes(unknownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(false);
     expect(SPECWEAVE_PLUGINS.includes(knownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(true);
@@ -497,35 +497,38 @@ describe('Error Handling', () => {
 
 describe('Plugin List Validation', () => {
   it('should have all expected core plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('specweave');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-frontend');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-backend');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-testing');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-mobile');
+    // Marketplace names use sw-* prefix
+    expect(SPECWEAVE_PLUGINS).toContain('sw');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-frontend');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-backend');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-testing');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-mobile');
   });
 
   it('should have all expected infrastructure plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-infrastructure');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-kubernetes');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-infra');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-k8s');
   });
 
   it('should have all expected integration plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-github');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-jira');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-ado');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-github');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-jira');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-ado');
   });
 
   it('should have all expected specialized plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-payments');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-ml');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-kafka');
-    expect(SPECWEAVE_PLUGINS).toContain('specweave-confluent');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-payments');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-ml');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-kafka');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-confluent');
   });
 
-  it('should use specweave-* prefix (not sw-*)', () => {
+  it('should use sw-* marketplace prefix (not specweave-*)', () => {
     for (const plugin of SPECWEAVE_PLUGINS) {
-      expect(plugin.startsWith('specweave')).toBe(true);
-      expect(plugin.startsWith('sw-')).toBe(false);
+      // All plugins either equal 'sw' or start with 'sw-'
+      expect(plugin === 'sw' || plugin.startsWith('sw-')).toBe(true);
+      // Should NOT use directory names (specweave-*)
+      expect(plugin.startsWith('specweave-')).toBe(false);
     }
   });
 });

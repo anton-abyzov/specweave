@@ -23,49 +23,50 @@ import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js
 /**
  * Available SpecWeave plugins for detection
  *
- * IMPORTANT: Plugin names use `specweave-*` prefix (not `sw-*`)
+ * IMPORTANT: Plugin names use marketplace short names `sw-*` (not directory names `specweave-*`)
+ * This matches the plugin names in marketplace.json and what `claude plugin install` expects.
  *
- * Note: Release, diagrams, and docs are now merged into CORE specweave plugin (v1.0.130+)
+ * Note: Release, diagrams, and docs are now merged into CORE sw plugin (v1.0.130+)
  * - sw:npm, sw:release skills are built-in
  * - mermaid, c4, architecture diagram skills are built-in
  * - docs-writer, docs-updater skills are built-in
  */
 export const SPECWEAVE_PLUGINS = [
   // Core (always loaded, contains release/diagrams/docs)
-  'specweave',
+  'sw',
 
   // Development domains
-  'specweave-frontend',      // React, Vue, Angular, Next.js, UI components
-  'specweave-backend',       // Node.js, Express, NestJS, APIs, databases
-  'specweave-testing',       // Jest, Vitest, Playwright, E2E, unit tests
-  'specweave-mobile',        // React Native, iOS, Android, Expo
+  'sw-frontend',      // React, Vue, Angular, Next.js, UI components
+  'sw-backend',       // Node.js, Express, NestJS, APIs, databases
+  'sw-testing',       // Jest, Vitest, Playwright, E2E, unit tests
+  'sw-mobile',        // React Native, iOS, Android, Expo
 
   // Infrastructure & DevOps
-  'specweave-infrastructure', // Terraform, AWS, Azure, GCP, Docker, CI/CD
-  'specweave-kubernetes',     // K8s, Helm, pods, deployments, EKS/AKS/GKE
+  'sw-infra',         // Terraform, AWS, Azure, GCP, Docker, CI/CD
+  'sw-k8s',           // K8s, Helm, pods, deployments, EKS/AKS/GKE
 
   // External tool integrations
-  'specweave-github',        // GitHub issues, PRs, Actions
-  'specweave-jira',          // Jira integration
-  'specweave-ado',           // Azure DevOps
+  'sw-github',        // GitHub issues, PRs, Actions
+  'sw-jira',          // Jira integration
+  'sw-ado',           // Azure DevOps
 
   // Specialized domains
-  'specweave-payments',      // Stripe, PayPal, checkout
-  'specweave-ml',            // Machine learning, PyTorch, TensorFlow
-  'specweave-kafka',         // Apache Kafka, event streaming
-  'specweave-confluent',     // Confluent Cloud, Schema Registry, ksqlDB
+  'sw-payments',      // Stripe, PayPal, checkout
+  'sw-ml',            // Machine learning, PyTorch, TensorFlow
+  'sw-kafka',         // Apache Kafka, event streaming
+  'sw-confluent',     // Confluent Cloud, Schema Registry, ksqlDB
 
   // Additional plugins (in marketplace but less commonly used)
-  'specweave-kafka-streams', // Kafka Streams specific
-  'specweave-n8n',           // n8n workflow automation
-  'specweave-figma',         // Figma design integration
-  'specweave-cost-optimizer', // Cloud cost optimization
-  'specweave-docs',          // Extended documentation
-  'specweave-diagrams',      // Extended diagram support (beyond core)
-  'specweave-release',       // Extended release management (beyond core)
-  'specweave-ui',            // UI automation
-  'specweave-router',        // Agent routing
-  'specweave-plugin-dev',    // Plugin development
+  'sw-kafka-streams', // Kafka Streams specific
+  'sw-n8n',           // n8n workflow automation
+  'sw-figma',         // Figma design integration
+  'sw-cost',           // Cloud cost optimization
+  'sw-docs',          // Extended documentation
+  'sw-diagrams',      // Extended diagram support (beyond core)
+  'sw-release',       // Extended release management (beyond core)
+  'sw-ui',            // UI automation
+  'sw-router',        // Agent routing
+  'sw-plugin-dev',    // Plugin development
 ] as const;
 
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
@@ -227,45 +228,61 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 function buildDetectionPrompt(): string {
   return `You are an intent detection system for SpecWeave, a spec-driven development framework.
 
+MANDATORY OUTPUT FORMAT - You MUST respond with this exact JSON structure (no markdown, no explanation):
+{
+  "plugins": ["sw-plugin-name"],
+  "confidence": 0.9,
+  "reasoning": "brief plugin reason",
+  "increment": {
+    "action": "new|reopen|small_fix|hotfix|none",
+    "confidence": 0.85,
+    "suggestedName": "feature-name-or-null",
+    "relatedKeyword": "keyword-or-null",
+    "reasoning": "brief increment reason"
+  }
+}
+
+CRITICAL: The "increment" object is REQUIRED in every response. Never omit it.
+
 You analyze user prompts to determine:
 1. Which plugins should be loaded
 2. Whether work should be tracked in an increment (spec-driven workflow)
 
 === PLUGIN DETECTION ===
 
-Available plugins (use EXACT names):
+Available plugins (use EXACT short names starting with "sw-"):
 
 CORE (always available, no need to return):
-- specweave: Core framework with built-in release, diagrams, docs skills
+- sw: Core framework with built-in release, diagrams, docs skills
 
 DEVELOPMENT DOMAINS:
-- specweave-frontend: React, Vue, Angular, Next.js, Svelte, Remix, Astro, UI components, CSS, Tailwind, frontend, web app, dashboard, SPA
-- specweave-backend: Node.js, Express, NestJS, Fastify, Hono, APIs, REST, GraphQL, databases, SQL, PostgreSQL, MySQL, MongoDB, Redis, backend, server, CLI tools, scripts
-- specweave-testing: Jest, Vitest, Playwright, Cypress, testing, E2E, unit tests, TDD, test-driven, integration tests, QA
-- specweave-mobile: React Native, iOS, Android, mobile apps, Expo, Flutter, Swift, Kotlin, native apps
+- sw-frontend: React, Vue, Angular, Next.js, Svelte, Remix, Astro, UI components, CSS, Tailwind, frontend, web app, dashboard, SPA
+- sw-backend: Node.js, Express, NestJS, Fastify, Hono, APIs, REST, GraphQL, databases, SQL, PostgreSQL, MySQL, MongoDB, Redis, backend, server, CLI tools, scripts
+- sw-testing: Jest, Vitest, Playwright, Cypress, testing, E2E, unit tests, TDD, test-driven, integration tests, QA
+- sw-mobile: React Native, iOS, Android, mobile apps, Expo, Flutter, Swift, Kotlin, native apps
 
 INFRASTRUCTURE & DEVOPS:
-- specweave-infrastructure: Terraform, Pulumi, AWS, Azure, GCP, Docker, CI/CD, CloudFormation, CDK, DevOps, serverless, Lambda
-- specweave-kubernetes: Kubernetes, K8s, Helm, pods, deployments, services, ingress, kubectl, EKS, AKS, GKE, GitOps
+- sw-infra: Terraform, Pulumi, AWS, Azure, GCP, Docker, CI/CD, CloudFormation, CDK, DevOps, serverless, Lambda
+- sw-k8s: Kubernetes, K8s, Helm, pods, deployments, services, ingress, kubectl, EKS, AKS, GKE, GitOps
 
 EXTERNAL INTEGRATIONS:
-- specweave-github: GitHub issues, PRs, Actions, workflows, GitHub sync
-- specweave-jira: Jira, epics, stories, sprints, Jira sync
-- specweave-ado: Azure DevOps, ADO, work items, pipelines, ADO sync
+- sw-github: GitHub issues, PRs, Actions, workflows, GitHub sync
+- sw-jira: Jira, epics, stories, sprints, Jira sync
+- sw-ado: Azure DevOps, ADO, work items, pipelines, ADO sync
 
 SPECIALIZED:
-- specweave-payments: Stripe, PayPal, payments, checkout, billing, subscriptions, invoices
-- specweave-ml: Machine learning, AI models, PyTorch, TensorFlow, training, inference, ML pipelines, data science
-- specweave-kafka: Apache Kafka, event streaming, topics, consumers, producers, MSK
-- specweave-confluent: Confluent Cloud, Schema Registry, ksqlDB, Kafka Connect
+- sw-payments: Stripe, PayPal, payments, checkout, billing, subscriptions, invoices
+- sw-ml: Machine learning, AI models, PyTorch, TensorFlow, training, inference, ML pipelines, data science
+- sw-kafka: Apache Kafka, event streaming, topics, consumers, producers, MSK
+- sw-confluent: Confluent Cloud, Schema Registry, ksqlDB, Kafka Connect
 
 PLUGIN RULES:
 1. Focus on WHAT THE USER WANTS TO BUILD, not what they mention negatively
-2. Negative mentions don't exclude domains ("I hate React but need a dashboard" → specweave-frontend)
+2. Negative mentions don't exclude domains ("I hate React but need a dashboard" → sw-frontend)
 3. Only include plugins ACTIVELY needed for the task
 4. Empty array is valid if no plugins needed (e.g., questions, chat)
 5. Maximum 5 plugins per response
-6. Do NOT include "specweave" - it's always loaded
+6. Do NOT include "sw" - it's always loaded
 
 === INCREMENT RECOMMENDATION ===
 
@@ -301,9 +318,11 @@ SIGNALS FOR "none":
 - General conversation, brainstorming
 - Unclear what user wants to accomplish
 
+CRITICAL: ALWAYS include BOTH "plugins" array AND "increment" object in your response. Never omit the increment field.
+
 Respond with ONLY valid JSON (no markdown, no explanation, no code blocks):
 {
-  "plugins": ["specweave-plugin-name"],
+  "plugins": ["sw-plugin-name"],
   "confidence": 0.9,
   "reasoning": "brief plugin reason",
   "increment": {

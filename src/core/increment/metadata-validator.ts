@@ -9,6 +9,7 @@
 
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
+import { execSync } from 'child_process';
 import { IncrementStatusDetector } from './increment-status.js';
 
 export interface MetadataValidationResult {
@@ -123,7 +124,6 @@ export class MetadataValidator {
 
       // Check if gh CLI is available
       try {
-        const { execSync } = require('child_process');
         execSync('gh --version', { stdio: 'ignore' });
 
         // Check issue state

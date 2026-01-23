@@ -617,8 +617,9 @@ async function installLazyMode(
   if (corePlugin) {
     spinner.start('Installing core plugin...');
 
+    // Use marketplace name 'sw' (not directory name 'specweave')
     const coreInstallResult = await cacheManager.installPlugins({
-      plugins: ['specweave'],
+      plugins: ['sw'],
       force: false,
     });
 
@@ -644,8 +645,9 @@ async function installLazyMode(
   if (routerPlugin) {
     spinner.start('Installing router skill...');
 
+    // Use marketplace name 'sw-router' (not directory name 'specweave-router')
     const installResult = await cacheManager.installPlugins({
-      plugins: ['specweave-router'],
+      plugins: ['sw-router'],
       force: false,
     });
 

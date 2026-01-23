@@ -16,6 +16,7 @@ import { ProfileManager } from '../../core/sync/profile-manager.js';
 import { ProjectContextManager } from '../../core/sync/project-context.js';
 import { SyncProfile } from '../../core/types/sync-profile.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 
 // ============================================================================
 // Migration Script
@@ -271,13 +272,11 @@ async function detectGitHubRepo(
   projectRoot: string
 ): Promise<{ owner: string; repo: string } | null> {
   try {
-    const { execFileNoThrow } = require('../../utils/execFileNoThrow.js');
-
     const result = await execFileNoThrow('git', ['remote', 'get-url', 'origin'], {
       cwd: projectRoot,
     });
 
-    if (result.status !== 0) {
+    if (!result.success) {
       return null;
     }
 

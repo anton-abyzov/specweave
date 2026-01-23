@@ -1,5 +1,6 @@
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
+import os from 'os';
 import chalk from 'chalk';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
@@ -98,7 +99,7 @@ async function listAllComponents(locale: any): Promise<void> {
 
 async function listInstalledComponents(locale: any): Promise<void> {
   const localBase = '.claude';
-  const globalBase = path.join(require('os').homedir(), '.claude');
+  const globalBase = path.join(os.homedir(), '.claude');
 
   let foundAny = false;
 
