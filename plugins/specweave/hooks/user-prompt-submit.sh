@@ -309,8 +309,14 @@ if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_L
           SUGGESTED_CMD="/sw:increment"
           [[ -n "$INCREMENT_NAME" ]] && SUGGESTED_CMD="/sw:increment \"$INCREMENT_NAME\""
 
+          # v1.0.144: Prepend autoload message if plugins are being loaded
+          AUTOLOAD_PREFIX=""
+          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+
+"
+
           # Build message with actual newlines - jq will escape them properly
-          MSG="💡 **Increment Suggestion**: This looks like a new feature or significant work.
+          MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a new feature or significant work.
 
 Consider creating an increment first for proper tracking:
 \`\`\`
@@ -331,7 +337,13 @@ $SUGGESTED_CMD
           SEARCH_HINT=""
           [[ -n "$INCREMENT_KEYWORD" ]] && SEARCH_HINT=" (look for: *$INCREMENT_KEYWORD*)"
 
-          MSG="💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.
+          # v1.0.144: Prepend autoload message if plugins are being loaded
+          AUTOLOAD_PREFIX=""
+          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+
+"
+
+          MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.
 
 Consider reopening the existing increment:
 \`\`\`
@@ -349,7 +361,13 @@ Consider reopening the existing increment:
 
         elif [[ "$INCREMENT_ACTION" == "hotfix" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
           # Suggest creating hotfix increment
-          MSG="🚨 **Hotfix Detected**: This appears to be an urgent production issue.
+          # v1.0.144: Prepend autoload message if plugins are being loaded
+          AUTOLOAD_PREFIX=""
+          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+
+"
+
+          MSG="${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: This appears to be an urgent production issue.
 
 Create a hotfix increment:
 \`\`\`
