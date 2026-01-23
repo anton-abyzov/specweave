@@ -604,28 +604,63 @@ async function installLazyMode(
     spinner.succeed(`Cached ${cacheResult.pluginsAffected} plugins`);
   }
 
-  // Step 2: Install ONLY the router skill
-  // Note: Plugin name in marketplace.json is 'sw-router', folder name is 'specweave-router'
+  // Step 2: Install router skill AND core plugin
+  // Both are essential for basic SpecWeave functionality:
+  // - Router: spawns specialized agents for tasks
+  // - Core (sw): provides /sw:increment, /sw:do, /sw:done, etc.
   const routerPlugin = allPlugins.find(p => p.name === 'sw-router');
+  const corePlugin = allPlugins.find(p => p.name === 'sw');
 
+  let installedCount = 0;
+
+  // Install core plugin first (provides fundamental commands)
+  if (corePlugin) {
+    spinner.start('Installing core plugin...');
+
+    const coreInstallResult = await cacheManager.installPlugins({
+      plugins: ['specweave'],
+      force: false,
+    });
+
+    if (coreInstallResult.success && coreInstallResult.pluginsAffected > 0) {
+      spinner.succeed('sw installed');
+      installedCount++;
+    } else {
+      // Fall back to CLI-based install
+      const cliResult = await installPluginsWithRetry([corePlugin], spinner);
+
+      if (cliResult.successCount > 0) {
+        installedCount++;
+      } else {
+        spinner.warn('Could not install core plugin');
+        console.log(chalk.yellow('   → Install manually: /plugin install sw@specweave'));
+      }
+    }
+  } else {
+    spinner.warn('Core plugin (sw) not found in marketplace');
+  }
+
+  // Install router skill
   if (routerPlugin) {
     spinner.start('Installing router skill...');
 
-    // Try cache-based install first
     const installResult = await cacheManager.installPlugins({
       plugins: ['specweave-router'],
       force: false,
     });
 
     if (installResult.success && installResult.pluginsAffected > 0) {
-      spinner.succeed('Router skill installed');
+      spinner.succeed('sw-router installed');
+      installedCount++;
     } else {
       // Fall back to CLI-based install
       const cliResult = await installPluginsWithRetry([routerPlugin], spinner);
 
-      if (cliResult.successCount === 0) {
+      if (cliResult.successCount > 0) {
+        installedCount++;
+      } else {
         spinner.warn('Could not install router skill');
-        console.log(chalk.yellow('   → Install manually: /plugin install specweave-router'));
+        console.log(chalk.yellow('   → Install manually: /plugin install sw-router@specweave'));
       }
     }
   } else {
@@ -641,8 +676,8 @@ async function installLazyMode(
   console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
   console.log('');
   console.log(chalk.cyan('How it works:'));
-  console.log(chalk.gray('   • Only the router skill (~500 tokens) is loaded initially'));
-  console.log(chalk.gray('   • Full plugins are loaded on-demand based on keywords'));
+  console.log(chalk.gray('   • Core plugin (sw) + router (~1K tokens) loaded initially'));
+  console.log(chalk.gray('   • Domain plugins loaded on-demand based on keywords'));
   console.log(chalk.gray('   • Claude Code hot-reloads skills within seconds'));
   console.log('');
   console.log(chalk.cyan('Trigger keywords:'));
@@ -659,9 +694,9 @@ async function installLazyMode(
   console.log('');
 
   return {
-    success: true,
-    successCount: routerPlugin ? 1 : 0,
-    failCount: 0,
+    success: installedCount > 0,
+    successCount: installedCount,
+    failCount: (corePlugin ? 1 : 0) + (routerPlugin ? 1 : 0) - installedCount,
     failedPlugins: [],
     marketplaceOnly: false,
   };
