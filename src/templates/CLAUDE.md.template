@@ -144,6 +144,67 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- /SECTION -->
 
+<!-- SECTION:tdd -->
+## TDD Mode (Test-Driven Development)
+
+**When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
+
+### TDD Workflow (MANDATORY when configured)
+
+```
+1. RED:     Write FAILING test first → verify it fails
+2. GREEN:   Write MINIMAL code to pass → no extra features
+3. REFACTOR: Improve code quality → keep tests green
+```
+
+### Check TDD Mode Before Implementation
+
+```bash
+# Check if TDD mode is enabled
+jq -r '.testing.defaultTestMode' .specweave/config.json
+# Returns: "TDD" | "test-first" | "test-after"
+```
+
+### TDD Commands
+
+| Command | Phase | Purpose |
+|---------|-------|---------|
+| `/sw:tdd-red` | RED | Write failing tests |
+| `/sw:tdd-green` | GREEN | Minimal implementation |
+| `/sw:tdd-refactor` | REFACTOR | Code quality improvement |
+| `/sw:tdd-cycle` | ALL | Full orchestrated workflow |
+
+### Enforcement Levels
+
+Set `testing.tddEnforcement` in config.json:
+
+| Level | Behavior |
+|-------|----------|
+| `strict` | **BLOCKS** task completion if RED not done before GREEN |
+| `warn` | Shows warning but allows continuation (default) |
+| `off` | No enforcement |
+
+### TDD Task Format
+
+When TDD is enabled, tasks include phase markers:
+
+```markdown
+### T-001: [RED] Write auth service tests
+**Depends On**: None
+**Status**: [ ] pending
+
+### T-002: [GREEN] Implement auth service
+**Depends On**: T-001
+**Status**: [ ] pending
+
+### T-003: [REFACTOR] Extract token utilities
+**Depends On**: T-002
+**Status**: [ ] pending
+```
+
+**Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
+<!-- /SECTION -->
+
 <!-- SECTION:api -->
 ## API Development (OpenAPI-First)
 
@@ -233,6 +294,11 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
 
 **Pattern**: IMPLEMENT → TEST → FAIL? → FIX → PASS → NEXT
+
+**TDD in Auto Mode**: If `testing.defaultTestMode: "TDD"` is configured:
+- Use `/sw:auto --tdd` for strict enforcement (ALL tests must pass)
+- Auto mode reads config and displays TDD banner
+- Follow RED → GREEN → REFACTOR order for task triplets
 
 **Pragmatic completion**: MUST (MVP, security, data integrity) | SHOULD (edge cases) | CAN SKIP (conflicts - ask user)
 
