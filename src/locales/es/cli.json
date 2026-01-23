@@ -31,7 +31,7 @@
   "increment": {
     "creating": "📝 Creando increment: {name}",
     "created": "✅ ¡Increment {id} creado exitosamente!",
-    "nextStepDo": "Siguiente: Ejecuta /specweave.do para comenzar la implementación",
+    "nextStepDo": "Siguiente: Ejecuta /sw:do para comenzar la implementación",
     "errors": {
       "incompleteFound": "¡No se puede crear un nuevo increment! Increments anteriores incompletos"
     }

@@ -1,6 +1,6 @@
-<!-- SW:META template="agents" version="1.0.142" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
+<!-- SW:META template="agents" version="1.0.143" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
 
-<!-- SW:SECTION:index version="1.0.142" -->
+<!-- SW:SECTION:index version="1.0.143" -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
@@ -14,7 +14,7 @@
 | Troubleshoot | `#troubleshooting` | Common issues |
 <!-- SW:END:index -->
 
-<!-- SW:SECTION:quickstart version="1.0.142" -->
+<!-- SW:SECTION:quickstart version="1.0.143" -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
@@ -23,7 +23,7 @@
 4. **Execute**: `/sw:do` to start implementation
 <!-- SW:END:quickstart -->
 
-<!-- SW:SECTION:rules version="1.0.142" -->
+<!-- SW:SECTION:rules version="1.0.143" -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -33,7 +33,7 @@
 4. ⛔ ALL reports/scripts/logs → increment subfolders (NEVER at root!)
 5. metadata.json MUST exist BEFORE spec.md can be created
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
-7. ⛔ EVERY User Story MUST have **Project**: field (v0.35.0+)
+7. ⛔ EVERY User Story MUST have **Project**: field
 8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
 ```
 
@@ -77,7 +77,7 @@
 ```
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:commands version="1.0.142" -->
+<!-- SW:SECTION:commands version="1.0.143" -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -101,12 +101,12 @@
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
-<!-- SW:SECTION:nonclaudetools version="1.0.142" -->
+<!-- SW:SECTION:nonclaudetools version="1.0.143" -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
 
-### Latest Features (v0.28+)
+### Latest Features
 
 SpecWeave v0.28+ introduces powerful automation that **works differently** in non-Claude tools:
 
@@ -117,8 +117,7 @@ SpecWeave v0.28+ introduces powerful automation that **works differently** in no
 | **Background Jobs** | Automatic with hooks | Monitor with `specweave jobs` CLI |
 | **EDA Hooks** | Auto-detect task completion | Manually update tasks.md + spec.md |
 
-### Background Jobs Workflow (NEW in v0.28)
-
+### Background Jobs Workflow 
 SpecWeave now runs heavy operations as **background jobs**:
 
 ```bash
@@ -256,8 +255,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 /sw-github:sync <increment-id>
 ```
 
-#### 5. Bidirectional Sync - PULL from External Tools (NEW in v0.28)
-```bash
+#### 5. Bidirectional Sync - PULL from External Tools ```bash
 # Claude hook: SessionStart (runs automatically)
 # For non-Claude tools, run manually to catch external changes:
 
@@ -276,8 +274,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # - After PM updates status in external tool
 ```
 
-#### 6. After Init on Brownfield Project (NEW in v0.28)
-```bash
+#### 6. After Init on Brownfield Project ```bash
 # SpecWeave automatically launches living-docs-builder job after init
 # For non-Claude tools, monitor it manually:
 
@@ -338,8 +335,7 @@ cat plugins/specweave/commands/increment.md
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Quick Reference: Session Start Routine (NEW in v0.28)
-
+### Quick Reference: Session Start Routine 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ START OF EVERY SESSION (FOR NON-CLAUDE TOOLS)               │
@@ -354,7 +350,7 @@ cat plugins/specweave/commands/increment.md
 **Without these manual steps, your work won't be tracked!**
 <!-- SW:END:nonclaudetools -->
 
-<!-- SW:SECTION:syncworkflow version="1.0.142" -->
+<!-- SW:SECTION:syncworkflow version="1.0.143" -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -436,7 +432,7 @@ TASK COMPLETED
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 <!-- SW:END:syncworkflow -->
 
-<!-- SW:SECTION:contextloading version="1.0.142" -->
+<!-- SW:SECTION:contextloading version="1.0.143" -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -456,7 +452,7 @@ Read only what's needed for the current task:
 4. Avoid loading entire documentation trees
 <!-- SW:END:contextloading -->
 
-<!-- SW:SECTION:structure version="1.0.142" -->
+<!-- SW:SECTION:structure version="1.0.143" -->
 ## Project Structure
 
 ```
@@ -477,7 +473,7 @@ Read only what's needed for the current task:
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:agents version="1.0.142" -->
+<!-- SW:SECTION:agents version="1.0.143" -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
@@ -485,7 +481,7 @@ Read only what's needed for the current task:
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 
-<!-- SW:SECTION:skills version="1.0.142" -->
+<!-- SW:SECTION:skills version="1.0.143" -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -535,7 +531,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 <!-- SW:END:skills -->
 
-<!-- SW:SECTION:taskformat version="1.0.142" -->
+<!-- SW:SECTION:taskformat version="1.0.143" -->
 ## Task Format
 
 ```markdown
@@ -549,7 +545,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:usformat version="1.0.142" -->
+<!-- SW:SECTION:usformat version="1.0.143" -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -583,7 +579,7 @@ specweave context projects
 ```
 <!-- SW:END:usformat -->
 
-<!-- SW:SECTION:workflows version="1.0.142" -->
+<!-- SW:SECTION:workflows version="1.0.143" -->
 ## Workflows
 
 ### Creating Increment
@@ -640,7 +636,7 @@ title: "Feature Title"
 4. GitHub issue closed (if enabled)
 <!-- SW:END:workflows -->
 
-<!-- SW:SECTION:plugincommands version="1.0.142" -->
+<!-- SW:SECTION:plugincommands version="1.0.143" -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -650,7 +646,7 @@ title: "Feature Title"
 | `/sw-ado:sync` | Azure DevOps |
 <!-- SW:END:plugincommands -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.142" -->
+<!-- SW:SECTION:troubleshooting version="1.0.143" -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -755,7 +751,7 @@ npx playwright test
 - Running `npx` instead of MCP tools (better anyway!)
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:docs version="1.0.142" -->
+<!-- SW:SECTION:docs version="1.0.143" -->
 ## Documentation
 
 | Resource | Purpose |

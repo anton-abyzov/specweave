@@ -15,7 +15,7 @@
     "projectSuccess": "Проект SpecWeave успешно создан!",
     "readyToBuild": "🚀 Готов к разработке с SpecWeave!",
     "nestedCdCommand": "cd {{path}}",
-    "nestedIncCommand": "/specweave.inc \"ваша-фича\"",
+    "nestedIncCommand": "/sw:increment \"ваша-фича\"",
     "pluginEnableLater": "Вы можете включить плагины позже командой: specweave plugin enable <имя>",
     "genericError": "Ошибка:",
     "errors": {
@@ -126,7 +126,7 @@
         "installGitHub": "/plugin install specweave-github",
         "installFrontend": "/plugin install specweave-frontend",
         "step4": "Начните разработку:",
-        "example": "\"/specweave:inc 'аутентификация пользователя'\"",
+        "example": "\"/sw:increment 'аутентификация пользователя'\"",
         "autoActivate": "Навыки и агенты активируются автоматически по контексту"
       },
       "cursor": {
@@ -259,7 +259,7 @@
   "increment": {
     "creating": "📝 Создание increment: {name}",
     "created": "✅ Increment {id} успешно создан!",
-    "nextStepDo": "Далее: Запустите /specweave.do для начала реализации",
+    "nextStepDo": "Далее: Запустите /sw:do для начала реализации",
     "errors": {
       "incompleteFound": "Невозможно создать новый increment! Предыдущие increment не завершены"
     }

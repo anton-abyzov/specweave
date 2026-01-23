@@ -432,7 +432,7 @@ async function printStartMessage(
   if (fs.existsSync(configPath)) {
     try {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      tddMode = config.testing?.defaultTestMode === 'tdd';
+      tddMode = config.testing?.defaultTestMode?.toUpperCase() === 'TDD';
       requireTests = config.auto?.requireTests === true;
     } catch {
       // Ignore

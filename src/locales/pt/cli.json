@@ -98,7 +98,7 @@
   "increment": {
     "creating": "📝 Creating increment: {name}",
     "created": "✅ Increment {id} created successfully!",
-    "nextStepDo": "Next: Run /specweave.do to start implementation",
+    "nextStepDo": "Next: Run /sw:do to start implementation",
     "errors": {
       "incompleteFound": "Cannot create new increment! Previous increments incomplete"
     }

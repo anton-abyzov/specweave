@@ -106,11 +106,14 @@ async function main(): Promise<void> {
     // Dynamically import the job launcher with path resolution
     const { launchCodebaseRescanJob } = await importJobLauncher(projectPath, log);
 
+    // v1.0.144: Changed from 'quick' to 'full' mode for comprehensive living docs update
+    // Full mode performs deep reconciliation: checks undocumented exports, missing code items,
+    // and signature mismatches between code and living docs
     const result = await launchCodebaseRescanJob({
       projectPath,
       closedIncrementId: incrementId,
       featureId,
-      depth: 'quick' // Use quick mode for automatic post-closure scan
+      depth: 'full'
     });
 
     log(`Job launched successfully: ${result.job.id}`);

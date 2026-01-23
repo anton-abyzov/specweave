@@ -72,8 +72,7 @@ async function main() {
       projectPath,
       closedIncrementId: incrementId,
       featureId,
-      depth: "quick"
-      // Use quick mode for automatic post-closure scan
+      depth: "full"
     });
     log(`Job launched successfully: ${result.job.id}`);
     log(`Background: ${result.isBackground}`);
