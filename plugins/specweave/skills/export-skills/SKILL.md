@@ -2,8 +2,6 @@
 name: export-skills
 description: Export SpecWeave skills to Agent Skills open standard format (agentskills.io). Converts Claude Code plugin skills to portable SKILL.md files compatible with GitHub Copilot, VS Code, Gemini CLI, Cursor, and other Agent Skills-compatible tools. Activates for export skills, agent skills, github skills, skills.md, agentskills, portable skills, convert skills, skill export, cross-platform skills.
 visibility: public
-invocableBy:
-  - user
 allowed-tools: Read, Write, Glob, Bash
 ---
 
