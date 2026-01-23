@@ -536,10 +536,9 @@ npm run migrate
 
 **Commands, skills, or hooks stopped working?**
 
-Run these two commands to recover from most issues:
+Run this command to recover from most issues:
 ```bash
-specweave refresh-marketplace   # Reinstall all plugins from GitHub
-specweave update-instructions   # Regenerate CLAUDE.md
+specweave update      # Full update: CLI + instructions + config + plugins
 ```
 
 **When to use:**
@@ -633,8 +632,7 @@ npx playwright test
 **Solution**:
 ```bash
 npm install -g specweave@latest
-specweave refresh-marketplace
-specweave update-instructions
+specweave update
 ```
 
 **Clear stale state:**
@@ -649,7 +647,7 @@ rm -rf .specweave/state/.dedup-cache
 
 | Error | Quick Fix |
 |-------|-----------|
-| SpecWeave skills/commands broken | `specweave refresh-marketplace && specweave update-instructions` |
+| SpecWeave skills/commands broken | `specweave update` |
 | Auto mode stuck | `/sw:auto-status` then `/sw:cancel-auto` |
 | "command not found" | Install the tool |
 | "permission denied" | Use nvm or fix npm permissions |
