@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.140" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.140" sections="header,start,autodetect,metarule,rules,workflow,reflect,skillmemories,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
 
 <!-- SW:SECTION:header version="1.0.140" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
@@ -99,6 +99,13 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
+
+<!-- SW:SECTION:skillmemories version="1.0.140" -->
+## Skill Memories
+
+<!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
+<!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
+<!-- SW:END:skillmemories -->
 
 <!-- SW:SECTION:context version="1.0.140" -->
 ## Living Docs Context
@@ -986,6 +993,34 @@ cat .specweave/config.json | grep -A5 '"ado"'
 - **Tests**: `.test.ts` files, `vi.fn()` (not jest), `os.tmpdir()` (not cwd)
 - **Filesystem**: Prefer native `fs` (fs-extra only in legacy utils)
 - **Config vs Secrets**: Config in `config.json`, secrets in `.env`
+
+### Plugin Naming Convention (`sw-*` vs `specweave-*`)
+
+**Two naming systems exist for plugins:**
+
+| System | Format | Example |
+|--------|--------|---------|
+| **Marketplace names** | `sw`, `sw-*` | `sw`, `sw-frontend`, `sw-github` |
+| **Directory names** | `specweave`, `specweave-*` | `specweave`, `specweave-frontend`, `specweave-github` |
+
+**Use MARKETPLACE names (`sw-*`) for:**
+- Claude CLI: `claude plugin install sw@specweave`
+- API inputs: `installPlugins(['sw', 'sw-github'])`
+- LLM responses: `detectPluginsViaLLM()` returns `['sw-frontend']`
+- `keyword-detector.ts` constants (PLUGIN_GROUPS, KEYWORD_PLUGIN_MAP)
+
+**Use DIRECTORY names (`specweave-*`) for:**
+- Filesystem paths: `~/.claude/plugins/marketplaces/specweave/plugins/specweave-frontend/`
+- Registry keys: `specweave-router@specweave` in `installed_plugins.json`
+- State file: `loadedPlugins: ['specweave', 'specweave-github']`
+- Test mocks: `createMockPlugin(path, 'specweave')`
+
+**Conversion functions** (in `cache-manager.ts`):
+```typescript
+marketplaceNameToDirectory('sw')          // → 'specweave'
+marketplaceNameToDirectory('sw-frontend') // → 'specweave-frontend'
+directoryToMarketplaceName('specweave')   // → 'sw'
+```
 
 ---
 

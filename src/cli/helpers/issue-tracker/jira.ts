@@ -15,6 +15,7 @@ import chalk from 'chalk';
 import { select, input, confirm, checkbox, password } from '@inquirer/prompts';
 import ora from 'ora';
 import * as path from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { getJiraAuth } from '../../../utils/auth-helpers.js';
 import {
   parseEnvFile,
@@ -852,10 +853,9 @@ export function createJiraProjectFolders(
   credentials: JiraCredentials
 ): void {
   const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
-  const fs = require('fs');
 
-  if (!fs.existsSync(specsDir)) {
-    fs.mkdirSync(specsDir, { recursive: true });
+  if (!existsSync(specsDir)) {
+    mkdirSync(specsDir, { recursive: true });
   }
 
   // Handle multi-project configuration (v0.33.0+)
@@ -867,8 +867,8 @@ export function createJiraProjectFolders(
       const projectDir = path.join(specsDir, projectKey);
 
       // Create project folder
-      if (!fs.existsSync(projectDir)) {
-        fs.mkdirSync(projectDir, { recursive: true });
+      if (!existsSync(projectDir)) {
+        mkdirSync(projectDir, { recursive: true });
         console.log(chalk.gray(`   Created: ${projectKey}/`));
       }
 
@@ -878,8 +878,8 @@ export function createJiraProjectFolders(
           const boardName = (board.name || `board-${board.id}`).toLowerCase().replace(/[^a-z0-9]/g, '-');
           const boardDir = path.join(projectDir, boardName);
 
-          if (!fs.existsSync(boardDir)) {
-            fs.mkdirSync(boardDir, { recursive: true });
+          if (!existsSync(boardDir)) {
+            mkdirSync(boardDir, { recursive: true });
             console.log(chalk.gray(`   Created: ${projectKey}/${boardName}/`));
           }
         }
@@ -898,8 +898,8 @@ export function createJiraProjectFolders(
       const sanitizedKey = projectKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
       const projectDir = path.join(specsDir, sanitizedKey);
 
-      if (!fs.existsSync(projectDir)) {
-        fs.mkdirSync(projectDir, { recursive: true });
+      if (!existsSync(projectDir)) {
+        mkdirSync(projectDir, { recursive: true });
         console.log(chalk.gray(`   Created: ${sanitizedKey}/`));
       }
     }
@@ -913,8 +913,8 @@ export function createJiraProjectFolders(
     const projectKey = credentials.project.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const projectDir = path.join(specsDir, projectKey);
 
-    if (!fs.existsSync(projectDir)) {
-      fs.mkdirSync(projectDir, { recursive: true });
+    if (!existsSync(projectDir)) {
+      mkdirSync(projectDir, { recursive: true });
       console.log(chalk.gray(`   Created: ${projectKey}/`));
     }
 

@@ -7,7 +7,7 @@
  * @module core/config/config-manager
  */
 
-import { promises as fs } from 'fs';
+import { promises as fs, readFileSync } from 'fs';
 import path from 'path';
 import {
   SpecWeaveConfig,
@@ -125,7 +125,6 @@ export class ConfigManager {
     }
 
     try {
-      const { readFileSync } = require('fs');
       const content = readFileSync(this.configPath, 'utf-8');
       let parsed: Record<string, unknown>;
       try {

@@ -7,6 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { PackageJsonCache, type PackageJsonContent } from '../../../utils/package-json-cache.js';
 
@@ -346,7 +347,6 @@ export class RepoScanner {
    */
   private getGitInfo(repoPath: string): { lastCommit: string; branch: string } {
     try {
-      const { execSync } = require('child_process');
       const lastCommit = execSync('git rev-parse HEAD', {
         cwd: repoPath,
         encoding: 'utf-8',

@@ -40,7 +40,7 @@ describe('Agent SDK Integration', () => {
         const result = detectSpecWeaveIntent(prompt);
         expect(result.detected).toBe(true);
         expect(result.confidence).toBeGreaterThanOrEqual(expectedMin);
-        expect(result.suggestedPlugins).toContain('specweave');
+        expect(result.suggestedPlugins).toContain('sw');
       }
     });
 
@@ -55,27 +55,27 @@ describe('Agent SDK Integration', () => {
         {
           prompt: 'Build a React dashboard with charts',
           expectedMin: 0.7,
-          expectedPlugins: ['specweave-frontend'],
+          expectedPlugins: ['sw-frontend'],
         },
         {
           prompt: 'Create a REST API with Express and PostgreSQL',
           expectedMin: 0.7,
-          expectedPlugins: ['specweave-backend'],
+          expectedPlugins: ['sw-backend'],
         },
         {
           prompt: 'Deploy to Kubernetes with Helm charts',
           expectedMin: 0.7,
-          expectedPlugins: ['specweave-k8s'],
+          expectedPlugins: ['sw-k8s'],
         },
         {
           prompt: 'Build an ML pipeline with PyTorch',
           expectedMin: 0.7,
-          expectedPlugins: ['specweave-ml'],
+          expectedPlugins: ['sw-ml'],
         },
         {
           prompt: 'Write E2E tests with Playwright',
           expectedMin: 0.7,
-          expectedPlugins: ['specweave-testing'],
+          expectedPlugins: ['sw-testing'],
         },
       ];
 
@@ -202,7 +202,7 @@ describe('Agent SDK Integration', () => {
 
       for (const prompt of frontendPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('specweave-frontend');
+        expect(result.suggestedPlugins).toContain('sw-frontend');
       }
     });
 
@@ -221,7 +221,7 @@ describe('Agent SDK Integration', () => {
 
       for (const prompt of backendPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('specweave-backend');
+        expect(result.suggestedPlugins).toContain('sw-backend');
       }
     });
 
@@ -240,7 +240,7 @@ describe('Agent SDK Integration', () => {
 
       for (const prompt of mlPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('specweave-ml');
+        expect(result.suggestedPlugins).toContain('sw-ml');
       }
     });
 
@@ -251,17 +251,17 @@ describe('Agent SDK Integration', () => {
       // "ai" should not match inside "mermaid"
       const mermaidPrompt = 'Create Mermaid architecture diagrams';
       const mermaidResult = detectSpecWeaveIntent(mermaidPrompt);
-      expect(mermaidResult.suggestedPlugins).not.toContain('specweave-ml');
+      expect(mermaidResult.suggestedPlugins).not.toContain('sw-ml');
 
       // "ui" should not match inside "fruit"
       const fruitPrompt = 'Build a fruit inventory system';
       const fruitResult = detectSpecWeaveIntent(fruitPrompt);
-      expect(fruitResult.suggestedPlugins).not.toContain('specweave-frontend');
+      expect(fruitResult.suggestedPlugins).not.toContain('sw-frontend');
 
       // "ml" should not match inside "html"
       const htmlPrompt = 'Parse HTML documents';
       const htmlResult = detectSpecWeaveIntent(htmlPrompt);
-      expect(htmlResult.suggestedPlugins).not.toContain('specweave-ml');
+      expect(htmlResult.suggestedPlugins).not.toContain('sw-ml');
     });
 
     /**
@@ -271,17 +271,17 @@ describe('Agent SDK Integration', () => {
       // Standalone "AI" should match
       const aiPrompt = 'Build an AI assistant';
       const aiResult = detectSpecWeaveIntent(aiPrompt);
-      expect(aiResult.suggestedPlugins).toContain('specweave-ml');
+      expect(aiResult.suggestedPlugins).toContain('sw-ml');
 
       // Standalone "UI" should match
       const uiPrompt = 'Design the UI components';
       const uiResult = detectSpecWeaveIntent(uiPrompt);
-      expect(uiResult.suggestedPlugins).toContain('specweave-frontend');
+      expect(uiResult.suggestedPlugins).toContain('sw-frontend');
 
       // Standalone "ML" should match
       const mlPrompt = 'Create ML pipeline';
       const mlResult = detectSpecWeaveIntent(mlPrompt);
-      expect(mlResult.suggestedPlugins).toContain('specweave-ml');
+      expect(mlResult.suggestedPlugins).toContain('sw-ml');
     });
   });
 
@@ -356,8 +356,8 @@ describe('Agent SDK Integration', () => {
       expect(result.matchedKeywords).toContain('react');
       expect(result.matchedKeywords).toContain('dashboard');
       expect(result.matchedKeywords).toContain('github');
-      expect(result.suggestedPlugins).toContain('specweave-frontend');
-      expect(result.suggestedPlugins).toContain('specweave-github');
+      expect(result.suggestedPlugins).toContain('sw-frontend');
+      expect(result.suggestedPlugins).toContain('sw-github');
     });
 
     it('should handle "Set up CI/CD pipeline with GitHub Actions and deploy to AWS"', () => {
@@ -366,8 +366,8 @@ describe('Agent SDK Integration', () => {
 
       expect(result.detected).toBe(true);
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-      expect(result.suggestedPlugins).toContain('specweave-infrastructure');
-      expect(result.suggestedPlugins).toContain('specweave-github');
+      expect(result.suggestedPlugins).toContain('sw-infra');
+      expect(result.suggestedPlugins).toContain('sw-github');
     });
 
     it('should handle "Create a payment checkout flow with Stripe webhooks"', () => {
@@ -378,7 +378,7 @@ describe('Agent SDK Integration', () => {
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
       expect(result.matchedKeywords).toContain('stripe');
       expect(result.matchedKeywords).toContain('checkout');
-      expect(result.suggestedPlugins).toContain('specweave-payments');
+      expect(result.suggestedPlugins).toContain('sw-payments');
     });
 
     it('should handle "Write comprehensive E2E tests with Playwright for the auth flow"', () => {
@@ -389,7 +389,7 @@ describe('Agent SDK Integration', () => {
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
       expect(result.matchedKeywords).toContain('e2e');
       expect(result.matchedKeywords).toContain('playwright');
-      expect(result.suggestedPlugins).toContain('specweave-testing');
+      expect(result.suggestedPlugins).toContain('sw-testing');
     });
 
     it('should handle "Build a mobile app with React Native and Expo"', () => {
@@ -398,7 +398,7 @@ describe('Agent SDK Integration', () => {
 
       expect(result.detected).toBe(true);
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-      expect(result.suggestedPlugins).toContain('specweave-mobile');
+      expect(result.suggestedPlugins).toContain('sw-mobile');
     });
 
     it('should handle complex multi-domain prompt with boosted confidence', () => {
@@ -410,11 +410,11 @@ describe('Agent SDK Integration', () => {
       // Multi-domain should boost confidence
       expect(result.confidence).toBeGreaterThanOrEqual(0.8);
       // Should suggest multiple plugins
-      expect(result.suggestedPlugins).toContain('specweave-frontend');
-      expect(result.suggestedPlugins).toContain('specweave-backend');
-      expect(result.suggestedPlugins).toContain('specweave-payments');
-      expect(result.suggestedPlugins).toContain('specweave-k8s');
-      expect(result.suggestedPlugins).toContain('specweave-infrastructure');
+      expect(result.suggestedPlugins).toContain('sw-frontend');
+      expect(result.suggestedPlugins).toContain('sw-backend');
+      expect(result.suggestedPlugins).toContain('sw-payments');
+      expect(result.suggestedPlugins).toContain('sw-k8s');
+      expect(result.suggestedPlugins).toContain('sw-infra');
     });
   });
 

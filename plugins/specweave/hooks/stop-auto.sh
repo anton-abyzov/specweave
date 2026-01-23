@@ -146,7 +146,7 @@ touch "$AUTO_SESSION_FILE" 2>/dev/null
 # ============================================================================
 
 HAS_CUSTOM_CRITERIA="false"
-LLM_EVAL_MODEL="sonnet"  # Default model for LLM evaluation
+LLM_EVAL_MODEL="opus"  # Default model for LLM evaluation (ultrathink)
 USER_GOAL=""
 SUCCESS_SUMMARY=""
 
@@ -493,7 +493,7 @@ validate_increment() {
         # Check if specweave CLI is available
         if command -v specweave >/dev/null 2>&1; then
             local eval_result
-            eval_result=$(cd "$PROJECT_ROOT" && timeout 60 specweave evaluate-completion "$inc_id" --model sonnet --silent 2>/dev/null)
+            eval_result=$(cd "$PROJECT_ROOT" && timeout 60 specweave evaluate-completion "$inc_id" --model opus --silent 2>/dev/null)
             local eval_exit=$?
 
             if [ "$eval_exit" -eq 0 ]; then

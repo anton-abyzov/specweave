@@ -8,6 +8,7 @@
 
 import { exec, execSync } from 'child_process';
 import { stat, mkdir, rmdir } from 'fs/promises';
+import { mkdirSync } from 'fs';
 import { Logger, consoleLogger } from './logger.js';
 
 export type Platform = 'darwin' | 'linux' | 'win32';
@@ -94,9 +95,8 @@ export function killProcess(pid: number, signal: string = 'SIGTERM'): void {
  * @returns true if lock acquired
  */
 export function acquireFileLock(lockPath: string): boolean {
-  const fs = require('fs');
   try {
-    fs.mkdirSync(lockPath, { recursive: false });
+    mkdirSync(lockPath, { recursive: false });
     return true;
   } catch (err: any) {
     if (err.code === 'EEXIST') {

@@ -144,7 +144,7 @@ if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LO
         # Graceful degradation: errors logged but don't block Claude
         (
           # T-014: Performance logging
-          START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          START_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || date +%s)000
           PROMPT_HASH=$(echo "$MATCHED_KEYWORDS" | md5sum 2>/dev/null | cut -c1-8 || echo "unknown")
 
           if command -v timeout >/dev/null 2>&1; then
@@ -155,7 +155,7 @@ if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LO
             EXIT_CODE=$?
           fi
 
-          END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          END_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || date +%s)000
           DURATION=$((END_TIME - START_TIME))
 
           if [[ "$EXIT_CODE" -eq 0 ]]; then
@@ -209,6 +209,13 @@ if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_L
         DETECT_OUTPUT=$(specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
       fi
 
+      # Extract JSON from output (skip debug log lines)
+      # The detect-intent CLI outputs debug logs to stdout before the JSON
+      # Use grep -A to extract from first '{' to end of output
+      if [[ -n "$DETECT_OUTPUT" ]]; then
+        DETECT_OUTPUT=$(echo "$DETECT_OUTPUT" | grep -A9999 '^{')
+      fi
+
       # Parse increment suggestion from JSON output
       if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
         INCREMENT_ACTION=$(echo "$DETECT_OUTPUT" | jq -r '.increment.action // "none"' 2>/dev/null)
@@ -217,15 +224,40 @@ if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_L
         INCREMENT_KEYWORD=$(echo "$DETECT_OUTPUT" | jq -r '.increment.relatedKeyword // ""' 2>/dev/null)
         INCREMENT_REASON=$(echo "$DETECT_OUTPUT" | jq -r '.increment.reasoning // ""' 2>/dev/null)
 
+        # Fallback: If LLM didn't return increment info but prompt looks like new work, suggest anyway
+        # This handles cases where LLM doesn't follow the output format consistently
+        if [[ "$INCREMENT_ACTION" == "none" ]] && [[ "$INCREMENT_CONFIDENCE" == "0" ]]; then
+          # Check if prompt has strong signals for new feature work
+          if echo "$PROMPT" | grep -qiE "(build|create|implement|develop|new feature|add feature)"; then
+            INCREMENT_ACTION="new"
+            INCREMENT_CONFIDENCE="0.75"
+            INCREMENT_REASON="Prompt contains feature-building keywords"
+            # Extract a suggested name from the prompt
+            INCREMENT_NAME=$(echo "$PROMPT" | grep -oiE "(build|create|implement|develop|add)[[:space:]]+(a[[:space:]]+)?(new[[:space:]]+)?[a-z]+" | tail -1 | sed 's/^[a-z]*[[:space:]]*a[[:space:]]*new[[:space:]]*//i; s/^[a-z]*[[:space:]]*//i' | tr ' ' '-')
+          fi
+        fi
+
         # Only show suggestion if confidence exceeds threshold and action is actionable
         if [[ "$INCREMENT_ACTION" == "new" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
           # Suggest creating new increment
           SUGGESTED_CMD="/sw:increment"
           [[ -n "$INCREMENT_NAME" ]] && SUGGESTED_CMD="/sw:increment \"$INCREMENT_NAME\""
 
-          cat << EOF
-{"decision":"approve","systemMessage":"💡 **Increment Suggestion**: This looks like a new feature or significant work.\\n\\nConsider creating an increment first for proper tracking:\\n\`\`\`\\n$SUGGESTED_CMD\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
-EOF
+          # Build message with actual newlines - jq will escape them properly
+          MSG="💡 **Increment Suggestion**: This looks like a new feature or significant work.
+
+Consider creating an increment first for proper tracking:
+\`\`\`
+$SUGGESTED_CMD
+\`\`\`
+
+*Reason: $INCREMENT_REASON*
+
+---
+
+*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
+          # Use jq -nc to construct compact JSON with properly escaped newlines
+          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
           exit 0
 
         elif [[ "$INCREMENT_ACTION" == "reopen" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
@@ -233,16 +265,37 @@ EOF
           SEARCH_HINT=""
           [[ -n "$INCREMENT_KEYWORD" ]] && SEARCH_HINT=" (look for: *$INCREMENT_KEYWORD*)"
 
-          cat << EOF
-{"decision":"approve","systemMessage":"💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.\\n\\nConsider reopening the existing increment:\\n\`\`\`\\n/sw:status  # Find the related increment\\n/sw:resume <id>  # Reopen it\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
-EOF
+          MSG="💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.
+
+Consider reopening the existing increment:
+\`\`\`
+/sw:status  # Find the related increment
+/sw:resume <id>  # Reopen it
+\`\`\`
+
+*Reason: $INCREMENT_REASON*
+
+---
+
+*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
+          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
           exit 0
 
         elif [[ "$INCREMENT_ACTION" == "hotfix" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
           # Suggest creating hotfix increment
-          cat << EOF
-{"decision":"approve","systemMessage":"🚨 **Hotfix Detected**: This appears to be an urgent production issue.\\n\\nCreate a hotfix increment:\\n\`\`\`\\n/sw:increment --type=hotfix \"$INCREMENT_NAME\"\\n\`\`\`\\n\\n*Reason: $INCREMENT_REASON*\\n\\n---\\n\\n*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"}
-EOF
+          MSG="🚨 **Hotfix Detected**: This appears to be an urgent production issue.
+
+Create a hotfix increment:
+\`\`\`
+/sw:increment --type=hotfix \"$INCREMENT_NAME\"
+\`\`\`
+
+*Reason: $INCREMENT_REASON*
+
+---
+
+*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
+          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
           exit 0
         fi
         # For "small_fix" or "none" - no suggestion, let prompt through

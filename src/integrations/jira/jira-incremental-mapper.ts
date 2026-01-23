@@ -15,6 +15,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
+import { IncrementNumberManager } from '../../core/increment/increment-utils.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -572,7 +573,6 @@ export class JiraIncrementalMapper {
     // UPDATED: Use centralized IncrementNumberManager to prevent gaps when increments are archived
     // This now scans ALL directories: main, _archive, _abandoned, _paused
     // PER-PROJECT COLLISION PREVENTION (v1.0.19+): Use project-scoped generation when targetProjectId is set
-    const { IncrementNumberManager } = require('../../core/increment/increment-utils.js');
     if (this.targetProjectId) {
       return IncrementNumberManager.getNextIncrementNumberForProject(this.projectRoot, this.targetProjectId);
     }

@@ -267,10 +267,10 @@ if command -v node >/dev/null 2>&1; then
 
         if [ -n "$frontmatter" ]; then
           # Try to parse with Node.js (if js-yaml is available)
-          if node -e "require('js-yaml')" 2>/dev/null; then
-            echo "$frontmatter" | node -e "
+          # Use --input-type=commonjs to handle ESM projects
+          if node --input-type=commonjs -e "require('js-yaml')" >/dev/null 2>&1; then
+            echo "$frontmatter" | node --input-type=commonjs -e "
               const yaml = require('js-yaml');
-              const fs = require('fs');
               let input = '';
               process.stdin.on('data', chunk => input += chunk);
               process.stdin.on('end', () => {

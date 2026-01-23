@@ -15,6 +15,7 @@ import { AdoClientV2 } from '../../../plugins/specweave-ado/lib/ado-client-v2.js
 import { SyncProfile } from '../../core/types/sync-profile.js';
 import path from 'path';
 import fs from 'fs/promises';
+import { readdirSync, readFileSync } from 'fs';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
 
@@ -187,7 +188,7 @@ function detectIncrementPath(): string | null {
   const incrementsDir = path.join(process.cwd(), '.specweave', 'increments');
 
   try {
-    const files = require('fs').readdirSync(incrementsDir);
+    const files = readdirSync(incrementsDir);
     const increments = files
       .filter((f: string) => f.match(/^\d{3,4}E?-/))
       .sort()
@@ -206,7 +207,7 @@ function detectIncrementPath(): string | null {
 function detectProvider(incrementPath: string): string | null {
   try {
     const metadataPath = path.join(incrementPath, 'metadata.json');
-    const metadata = JSON.parse(require('fs').readFileSync(metadataPath, 'utf-8'));
+    const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 
     if (metadata.github?.issue) return 'github';
     if (metadata.jira?.issueKey) return 'jira';

@@ -81,7 +81,7 @@ describe('Plugin Auto-Loading E2E Tests', () => {
 
         expect(result.detected).toBe(true);
         expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-        expect(result.suggestedPlugins).toContain('specweave-frontend');
+        expect(result.suggestedPlugins).toContain('sw-frontend');
       });
     });
 
@@ -91,7 +91,7 @@ describe('Plugin Auto-Loading E2E Tests', () => {
 
         expect(result.detected).toBe(true);
         expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-        expect(result.suggestedPlugins).toContain('specweave-backend');
+        expect(result.suggestedPlugins).toContain('sw-backend');
       });
     });
 
@@ -101,8 +101,8 @@ describe('Plugin Auto-Loading E2E Tests', () => {
 
         expect(result.detected).toBe(true);
         expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-        expect(result.suggestedPlugins).toContain('specweave-frontend');
-        expect(result.suggestedPlugins).toContain('specweave-backend');
+        expect(result.suggestedPlugins).toContain('sw-frontend');
+        expect(result.suggestedPlugins).toContain('sw-backend');
       });
     });
 
@@ -126,7 +126,7 @@ describe('Plugin Auto-Loading E2E Tests', () => {
       for (const prompt of prompts) {
         const result = detectSpecWeaveIntent(prompt);
         expect(result.detected).toBe(true);
-        expect(result.suggestedPlugins).toContain('specweave-frontend');
+        expect(result.suggestedPlugins).toContain('sw-frontend');
       }
     });
   });
@@ -134,17 +134,17 @@ describe('Plugin Auto-Loading E2E Tests', () => {
   describe('Plugin Suggestion Logic', () => {
     it('should suggest frontend plugin for React keywords', () => {
       const plugins = determinePlugins(['react'], 'build a react component');
-      expect(plugins).toContain('specweave-frontend');
+      expect(plugins).toContain('sw-frontend');
     });
 
     it('should suggest frontend plugin for NextJS keywords', () => {
       const plugins = determinePlugins(['nextjs'], 'create a next.js app');
-      expect(plugins).toContain('specweave-frontend');
+      expect(plugins).toContain('sw-frontend');
     });
 
     it('should suggest backend plugin for API keywords', () => {
       const plugins = determinePlugins(['api'], 'create an api endpoint');
-      expect(plugins).toContain('specweave-backend');
+      expect(plugins).toContain('sw-backend');
     });
 
     it('should suggest multiple plugins for complex prompts', () => {
@@ -152,18 +152,19 @@ describe('Plugin Auto-Loading E2E Tests', () => {
         ['react', 'api', 'database'],
         'build a react app with api and database'
       );
-      expect(plugins).toContain('specweave-frontend');
-      expect(plugins).toContain('specweave-backend');
+      expect(plugins).toContain('sw-frontend');
+      expect(plugins).toContain('sw-backend');
     });
 
     it('should suggest testing plugin for test keywords', () => {
       const plugins = determinePlugins(['playwright', 'e2e'], 'write e2e tests');
-      expect(plugins).toContain('specweave-testing');
+      expect(plugins).toContain('sw-testing');
     });
 
     it('should always include core specweave plugin', () => {
       const plugins = determinePlugins([], 'any prompt');
-      expect(plugins).toContain('specweave');
+      // Core plugin uses marketplace name 'sw'
+      expect(plugins).toContain('sw');
     });
   });
 
@@ -246,34 +247,34 @@ describe('Plugin Installation E2E Tests', () => {
 
   it('should install frontend plugin from marketplace', async () => {
     const result = await cacheManager.installPlugins({
-      plugins: ['specweave-frontend'],
+      plugins: ['sw-frontend'],
     });
 
     expect(result.success).toBe(true);
     expect(result.pluginsAffected).toBe(1);
-    expect(cacheManager.isPluginLoaded('specweave-frontend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
   });
 
   it('should install multiple plugins at once', async () => {
     const result = await cacheManager.installPlugins({
-      plugins: ['specweave-frontend', 'specweave-backend'],
+      plugins: ['sw-frontend', 'sw-backend'],
     });
 
     expect(result.success).toBe(true);
     expect(result.pluginsAffected).toBe(2);
-    expect(cacheManager.isPluginLoaded('specweave-frontend')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-backend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-backend')).toBe(true);
   });
 
   it('should skip already installed plugins (idempotent)', async () => {
     // First install
     await cacheManager.installPlugins({
-      plugins: ['specweave-frontend'],
+      plugins: ['sw-frontend'],
     });
 
     // Second install should be no-op
     const result = await cacheManager.installPlugins({
-      plugins: ['specweave-frontend'],
+      plugins: ['sw-frontend'],
     });
 
     expect(result.success).toBe(true);
@@ -283,12 +284,12 @@ describe('Plugin Installation E2E Tests', () => {
   it('should force reinstall with force option', async () => {
     // First install
     await cacheManager.installPlugins({
-      plugins: ['specweave-frontend'],
+      plugins: ['sw-frontend'],
     });
 
     // Force reinstall
     const result = await cacheManager.installPlugins({
-      plugins: ['specweave-frontend'],
+      plugins: ['sw-frontend'],
       force: true,
     });
 
@@ -298,10 +299,11 @@ describe('Plugin Installation E2E Tests', () => {
 
   it('should update state file after installation', async () => {
     await cacheManager.installPlugins({
-      plugins: ['specweave-frontend', 'specweave-backend'],
+      plugins: ['sw-frontend', 'sw-backend'],
     });
 
     const state = cacheManager.readState();
+    // State file stores directory names (specweave-*), not marketplace names (sw-*)
     expect(state.loadedPlugins).toContain('specweave-frontend');
     expect(state.loadedPlugins).toContain('specweave-backend');
   });
@@ -315,12 +317,13 @@ describe('Plugin Installation E2E Tests', () => {
     fs.mkdirSync(path.join(testSkillsDir, 'specweave-backend'), { recursive: true });
 
     const loaded = cacheManager.getLoadedPlugins();
+    // getLoadedPlugins returns directory names from registry
     expect(loaded).toContain('specweave-frontend');
     expect(loaded).toContain('specweave-backend');
   });
 
   it('should check plugin availability in marketplace', () => {
-    expect(cacheManager.isPluginAvailable('specweave-frontend')).toBe(true);
+    expect(cacheManager.isPluginAvailable('sw-frontend')).toBe(true);
     expect(cacheManager.isPluginAvailable('non-existent-plugin')).toBe(false);
   });
 });
@@ -340,7 +343,7 @@ describe('CLI Command Integration Tests', () => {
 
     const parsed = JSON.parse(result);
     expect(parsed.detected).toBe(true);
-    expect(parsed.plugins).toContain('specweave-frontend');
+    expect(parsed.plugins).toContain('sw-frontend');
   });
 
   it.skipIf(!cliExists)('detect-intent command should detect NextJS keywords', () => {
@@ -352,8 +355,8 @@ describe('CLI Command Integration Tests', () => {
 
     const parsed = JSON.parse(result);
     expect(parsed.detected).toBe(true);
-    expect(parsed.plugins).toContain('specweave-frontend');
-    expect(parsed.plugins).toContain('specweave-backend');
+    expect(parsed.plugins).toContain('sw-frontend');
+    expect(parsed.plugins).toContain('sw-backend');
   });
 
   it.skipIf(!cliExists)('detect-intent command should detect backend keywords', () => {
@@ -365,7 +368,7 @@ describe('CLI Command Integration Tests', () => {
 
     const parsed = JSON.parse(result);
     expect(parsed.detected).toBe(true);
-    expect(parsed.plugins).toContain('specweave-backend');
+    expect(parsed.plugins).toContain('sw-backend');
   });
 });
 
@@ -557,7 +560,8 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
     // Step 1: Detect intent from prompt
     const detection = detectSpecWeaveIntent(userPrompt);
     expect(detection.detected).toBe(true);
-    expect(detection.suggestedPlugins).toContain('specweave-frontend');
+    // suggestedPlugins uses marketplace names (sw-*)
+    expect(detection.suggestedPlugins).toContain('sw-frontend');
 
     // Step 2: Install suggested plugins
     const result = await cacheManager.installPlugins({
@@ -565,9 +569,9 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
     });
     expect(result.success).toBe(true);
 
-    // Step 3: Verify plugins are loaded
-    expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-frontend')).toBe(true);
+    // Step 3: Verify plugins are loaded (isPluginLoaded accepts both formats)
+    expect(cacheManager.isPluginLoaded('sw')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
   });
 
   it('should auto-load plugins based on NextJS + API prompt', async () => {
@@ -575,16 +579,17 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
 
     const detection = detectSpecWeaveIntent(userPrompt);
     expect(detection.detected).toBe(true);
-    expect(detection.suggestedPlugins).toContain('specweave-frontend');
-    expect(detection.suggestedPlugins).toContain('specweave-backend');
+    // suggestedPlugins uses marketplace names (sw-*)
+    expect(detection.suggestedPlugins).toContain('sw-frontend');
+    expect(detection.suggestedPlugins).toContain('sw-backend');
 
     const result = await cacheManager.installPlugins({
       plugins: detection.suggestedPlugins,
     });
     expect(result.success).toBe(true);
 
-    expect(cacheManager.isPluginLoaded('specweave-frontend')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-backend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-backend')).toBe(true);
   });
 
   it('should auto-load plugins based on testing prompt', async () => {
@@ -592,14 +597,15 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
 
     const detection = detectSpecWeaveIntent(userPrompt);
     expect(detection.detected).toBe(true);
-    expect(detection.suggestedPlugins).toContain('specweave-testing');
+    // suggestedPlugins uses marketplace names (sw-*)
+    expect(detection.suggestedPlugins).toContain('sw-testing');
 
     const result = await cacheManager.installPlugins({
       plugins: detection.suggestedPlugins,
     });
     expect(result.success).toBe(true);
 
-    expect(cacheManager.isPluginLoaded('specweave-testing')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-testing')).toBe(true);
   });
 
   it('should auto-load plugins based on full-stack prompt', async () => {
@@ -610,11 +616,11 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
     expect(detection.detected).toBe(true);
     expect(detection.confidence).toBeGreaterThanOrEqual(0.8);
 
-    // Should suggest multiple plugins
-    expect(detection.suggestedPlugins).toContain('specweave');
-    expect(detection.suggestedPlugins).toContain('specweave-frontend');
-    expect(detection.suggestedPlugins).toContain('specweave-backend');
-    expect(detection.suggestedPlugins).toContain('specweave-testing');
+    // Should suggest multiple plugins (marketplace names sw-*)
+    expect(detection.suggestedPlugins).toContain('sw');
+    expect(detection.suggestedPlugins).toContain('sw-frontend');
+    expect(detection.suggestedPlugins).toContain('sw-backend');
+    expect(detection.suggestedPlugins).toContain('sw-testing');
 
     const result = await cacheManager.installPlugins({
       plugins: detection.suggestedPlugins,
@@ -622,10 +628,10 @@ describe('End-to-End Plugin Auto-Load Simulation', () => {
     expect(result.success).toBe(true);
 
     // Verify all are loaded
-    expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-frontend')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-backend')).toBe(true);
-    expect(cacheManager.isPluginLoaded('specweave-testing')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-backend')).toBe(true);
+    expect(cacheManager.isPluginLoaded('sw-testing')).toBe(true);
   });
 
   it('should have correct plugin count after auto-load', async () => {

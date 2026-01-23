@@ -27,7 +27,7 @@ Extend auto mode to use LLM-based evaluation for determining when work is comple
 
 **Acceptance Criteria**:
 - [x] **AC-US2-01**: New CLI command `specweave evaluate-completion` evaluates increment completion
-- [x] **AC-US2-02**: Uses sonnet model for semantic evaluation (configurable)
+- [x] **AC-US2-02**: Uses opus model for semantic evaluation (configurable)
 - [x] **AC-US2-03**: Reuses Claude CLI spawn pattern from llm-plugin-detector.ts
 - [x] **AC-US2-04**: Returns structured JSON result with complete, reason, confidence, nextSteps
 - [x] **AC-US2-05**: Timeout handling (45s default) with graceful degradation
@@ -44,7 +44,7 @@ Extend auto mode to use LLM-based evaluation for determining when work is comple
 
 ## Technical Notes
 
-- Model selection: Sonnet for semantic evaluation (balance of speed/accuracy)
+- Model selection: Opus for semantic evaluation (ultrathink for deep understanding)
 - Haiku for simple criteria parsing at session start
 - Reuse `executeClaudeCli` and `getCleanEnv` from llm-plugin-detector.ts
 - Timeout: 45s for evaluation (longer than 30s plugin detection)

@@ -9,7 +9,7 @@
 
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
-import { spawn, exec } from 'child_process';
+import { spawn, exec, spawnSync } from 'child_process';
 import { promisify } from 'util';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
@@ -458,7 +458,7 @@ export class SkillValidator {
       if (command === 'npm') return true;
       if (command === 'node') return true;
 
-      const { status } = require('child_process').spawnSync('which', [command], {
+      const { status } = spawnSync('which', [command], {
         stdio: 'pipe',
       });
       return status === 0;

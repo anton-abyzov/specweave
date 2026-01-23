@@ -191,7 +191,7 @@ describe('PluginCacheManager', () => {
 
     it('should install specific plugins', async () => {
       const result = await cacheManager.installPlugins({
-        plugins: ['specweave', 'specweave-github'],
+        plugins: ['sw', 'specweave-github'],
       });
 
       expect(result.success).toBe(true);
@@ -216,11 +216,11 @@ describe('PluginCacheManager', () => {
 
     it('should skip already installed plugins', async () => {
       // First install
-      const firstResult = await cacheManager.installPlugins({ plugins: ['specweave'] });
+      const firstResult = await cacheManager.installPlugins({ plugins: ['sw'] });
       expect(firstResult.pluginsAffected).toBe(1);
 
       // Second install should skip (already in registry)
-      const result = await cacheManager.installPlugins({ plugins: ['specweave'] });
+      const result = await cacheManager.installPlugins({ plugins: ['sw'] });
 
       expect(result.success).toBe(true);
       // NOTE: With Strategy 3 removed, we only check registry.
@@ -230,12 +230,12 @@ describe('PluginCacheManager', () => {
 
     it('should reinstall with force option', async () => {
       // First install
-      const firstResult = await cacheManager.installPlugins({ plugins: ['specweave'] });
+      const firstResult = await cacheManager.installPlugins({ plugins: ['sw'] });
       expect(firstResult.pluginsAffected).toBe(1);
 
       // Force reinstall - should re-register in registry
       const result = await cacheManager.installPlugins({
-        plugins: ['specweave'],
+        plugins: ['sw'],
         force: true,
       });
 
@@ -247,7 +247,7 @@ describe('PluginCacheManager', () => {
     });
 
     it('should update state file after installation', async () => {
-      await cacheManager.installPlugins({ plugins: ['specweave'] });
+      await cacheManager.installPlugins({ plugins: ['sw'] });
 
       const state = cacheManager.readState();
       expect(state.loadedPlugins).toContain('specweave');
@@ -281,11 +281,11 @@ describe('PluginCacheManager', () => {
       };
       fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
 
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(true);
     });
 
     it('should return false for unregistered plugins', () => {
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
     });
   });
 
@@ -293,11 +293,11 @@ describe('PluginCacheManager', () => {
     it('should return true for cached plugins', () => {
       createMockPlugin(testMarketplacePath, 'specweave');
 
-      expect(cacheManager.isPluginCached('specweave')).toBe(true);
+      expect(cacheManager.isPluginCached('sw')).toBe(true);
     });
 
     it('should return false for non-cached plugins', () => {
-      expect(cacheManager.isPluginCached('specweave')).toBe(false);
+      expect(cacheManager.isPluginCached('sw')).toBe(false);
     });
   });
 
@@ -308,6 +308,7 @@ describe('PluginCacheManager', () => {
 
       const plugins = cacheManager.getCachedPlugins();
 
+      // Returns directory names from marketplace
       expect(plugins).toContain('specweave');
       expect(plugins).toContain('specweave-github');
       expect(plugins.length).toBe(2);
@@ -327,6 +328,7 @@ describe('PluginCacheManager', () => {
 
       const plugins = cacheManager.getCachedPlugins();
 
+      // Returns directory names from marketplace
       expect(plugins).toContain('specweave');
       expect(plugins).not.toContain('.hidden');
     });
@@ -358,6 +360,7 @@ describe('PluginCacheManager', () => {
 
       const plugins = cacheManager.getLoadedPlugins();
 
+      // Returns directory names from registry keys
       expect(plugins).toContain('specweave');
       expect(plugins).toContain('specweave-github');
     });
@@ -427,29 +430,29 @@ describe('PluginCacheManager', () => {
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(2);
       // Check registry instead of skills dir (Strategy 3 removed)
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
       expect(cacheManager.isPluginLoaded('specweave-github')).toBe(false);
       expect(cacheManager.isPluginLoaded('specweave-router')).toBe(true);
     });
 
     it('should unload specific plugins', async () => {
-      const result = await cacheManager.unloadPlugins(['specweave']);
+      const result = await cacheManager.unloadPlugins(['sw']);
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(1);
       // Check registry instead of skills dir (Strategy 3 removed)
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
       expect(cacheManager.isPluginLoaded('specweave-github')).toBe(true);
     });
 
     it('should update state after unload', async () => {
       // First, verify plugins are registered
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(true);
 
-      await cacheManager.unloadPlugins(['specweave']);
+      await cacheManager.unloadPlugins(['sw']);
 
       // Check both registry and state
-      expect(cacheManager.isPluginLoaded('specweave')).toBe(false);
+      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
       const state = cacheManager.readState();
       expect(state.loadedPlugins).not.toContain('specweave');
     });
@@ -463,6 +466,7 @@ describe('PluginCacheManager', () => {
       const sizes = cacheManager.getCacheSize();
 
       expect(sizes.total).toBeGreaterThan(0);
+      // getCacheSize returns directory names from marketplace
       expect(sizes.plugins['specweave']).toBeGreaterThan(0);
       expect(sizes.plugins['specweave-github']).toBeGreaterThan(0);
     });
@@ -487,6 +491,7 @@ describe('PluginCacheManager', () => {
     });
 
     it('should read existing state file', () => {
+      // State stores directory names (specweave-*), not marketplace names (sw-*)
       const testState: CacheState = {
         version: '1.0.0',
         lazyMode: true,
@@ -529,7 +534,7 @@ describe('PluginCacheManager', () => {
 
     it('should allow checking task status', async () => {
       const taskId = cacheManager.installPluginsBackground({
-        plugins: ['specweave'],
+        plugins: ['sw'],
       });
 
       // Initial status should be pending or running
@@ -543,6 +548,7 @@ describe('PluginCacheManager', () => {
       const finalStatus = cacheManager.checkInstallStatus(taskId);
       expect(finalStatus).not.toBeNull();
       expect(finalStatus!.status).toBe('completed');
+      // Tracks directory names internally
       expect(finalStatus!.installed).toContain('specweave');
     });
 
@@ -553,7 +559,7 @@ describe('PluginCacheManager', () => {
 
     it('should track progress during installation', async () => {
       const taskId = cacheManager.installPluginsBackground({
-        plugins: ['specweave', 'specweave-github'],
+        plugins: ['sw', 'specweave-github'],
       });
 
       // Wait for completion
