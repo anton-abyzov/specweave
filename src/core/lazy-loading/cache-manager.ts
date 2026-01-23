@@ -184,6 +184,55 @@ export const CACHE_PATHS = {
 } as const;
 
 /**
+ * Maps marketplace plugin names to directory names
+ *
+ * Marketplace uses short names (sw, sw-frontend) for CLI installation,
+ * but the actual directories use full names (specweave, specweave-frontend).
+ *
+ * @param marketplaceName - Plugin name from marketplace.json (e.g., 'sw', 'sw-frontend')
+ * @returns Directory name (e.g., 'specweave', 'specweave-frontend')
+ */
+export function marketplaceNameToDirectory(marketplaceName: string): string {
+  // Handle the core plugin special case
+  if (marketplaceName === 'sw') {
+    return 'specweave';
+  }
+  // Handle sw-* pattern → specweave-*
+  if (marketplaceName.startsWith('sw-')) {
+    return 'specweave-' + marketplaceName.slice(3);
+  }
+  // Already a directory name (specweave-*) - return as-is
+  if (marketplaceName.startsWith('specweave')) {
+    return marketplaceName;
+  }
+  // Unknown format - return as-is
+  return marketplaceName;
+}
+
+/**
+ * Maps directory names to marketplace plugin names
+ *
+ * @param directoryName - Plugin directory name (e.g., 'specweave', 'specweave-frontend')
+ * @returns Marketplace name (e.g., 'sw', 'sw-frontend')
+ */
+export function directoryToMarketplaceName(directoryName: string): string {
+  // Handle the core plugin special case
+  if (directoryName === 'specweave') {
+    return 'sw';
+  }
+  // Handle specweave-* pattern → sw-*
+  if (directoryName.startsWith('specweave-')) {
+    return 'sw-' + directoryName.slice(10);
+  }
+  // Already a marketplace name (sw-*) - return as-is
+  if (directoryName.startsWith('sw')) {
+    return directoryName;
+  }
+  // Unknown format - return as-is
+  return directoryName;
+}
+
+/**
  * Manages plugin caching and installation for lazy loading
  */
 export class PluginCacheManager {
@@ -346,11 +395,13 @@ export class PluginCacheManager {
       const failedPlugins: string[] = [];
 
       for (const pluginName of pluginsToInstall) {
-        const sourcePath = path.join(this.marketplacePath, pluginName);
+        // Convert marketplace name to directory name for file operations
+        const directoryName = marketplaceNameToDirectory(pluginName);
+        const sourcePath = path.join(this.marketplacePath, directoryName);
 
         // Check if source exists in marketplace
         if (!fs.existsSync(sourcePath)) {
-          logger.warn(`Plugin not in marketplace: ${pluginName}`);
+          logger.warn(`Plugin not in marketplace: ${pluginName} (dir: ${directoryName})`);
           continue;
         }
 
@@ -408,7 +459,10 @@ export class PluginCacheManager {
 
       // Update state file with detailed analytics
       await this.updateState((state) => {
-        const newlyLoaded = pluginsToInstall.filter((p) => this.isPluginRegistered(p));
+        // Store directory names in state (consistent with registry)
+        const newlyLoaded = pluginsToInstall
+          .filter((p) => this.isPluginRegistered(p))
+          .map((p) => marketplaceNameToDirectory(p));
         state.loadedPlugins = [...new Set([...state.loadedPlugins, ...newlyLoaded])];
         state.lastUpdated = new Date().toISOString();
         state.analytics.totalLoads++;
@@ -507,7 +561,7 @@ export class PluginCacheManager {
    * Install a plugin by directly updating Claude's registry file
    * Fallback method when CLI is unavailable (CI/CD, CLI not in PATH)
    *
-   * @param pluginName - Plugin name to install
+   * @param pluginName - Plugin name (marketplace or directory name)
    * @param sourcePath - Path to plugin source in marketplace
    * @returns true if installation succeeded
    */
@@ -530,8 +584,9 @@ export class PluginCacheManager {
         }
       }
 
-      // Create the plugin key (format: {pluginName}@specweave)
-      const pluginKey = `${pluginName}@specweave`;
+      // Registry uses directory names (e.g., specweave-router@specweave)
+      const directoryName = marketplaceNameToDirectory(pluginName);
+      const pluginKey = `${directoryName}@specweave`;
 
       // Skip if already in registry
       if (registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0) {
@@ -539,7 +594,8 @@ export class PluginCacheManager {
       }
 
       // Copy plugin to Claude's cache directory (use configurable path for testing)
-      const cacheDir = path.join(this.pluginCachePath, 'specweave', pluginName, '1.0.0');
+      // Cache path uses directory names: specweave/specweave-router/1.0.0
+      const cacheDir = path.join(this.pluginCachePath, 'specweave', directoryName, '1.0.0');
       if (!fs.existsSync(cacheDir)) {
         fs.mkdirSync(cacheDir, { recursive: true });
         await this.copyDirectory(sourcePath, cacheDir);
@@ -570,7 +626,7 @@ export class PluginCacheManager {
   /**
    * Check if a plugin is registered in Claude's registry
    *
-   * @param pluginName - Plugin name to check
+   * @param pluginName - Plugin name (marketplace or directory name)
    * @returns true if plugin is in the registry
    */
   private isPluginRegistered(pluginName: string): boolean {
@@ -580,7 +636,9 @@ export class PluginCacheManager {
       }
 
       const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
-      const pluginKey = `${pluginName}@specweave`;
+      // Registry uses directory names (e.g., specweave-router@specweave)
+      const directoryName = marketplaceNameToDirectory(pluginName);
+      const pluginKey = `${directoryName}@specweave`;
 
       return !!(registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0);
     } catch {
@@ -669,31 +727,33 @@ export class PluginCacheManager {
 
     for (let i = 0; i < plugins.length; i++) {
       const pluginName = plugins[i];
+      // Convert marketplace names (sw-*) to directory names (specweave-*)
+      const directoryName = marketplaceNameToDirectory(pluginName);
 
       try {
         // SIMPLIFIED: Read directly from marketplace (not intermediate cache)
-        const sourcePath = path.join(this.marketplacePath, pluginName);
-        const destPath = path.join(this.activePath, pluginName);
+        const sourcePath = path.join(this.marketplacePath, directoryName);
+        const destPath = path.join(this.activePath, directoryName);
 
         // Check if source exists in marketplace
         if (!fs.existsSync(sourcePath)) {
-          status.failed.push(pluginName);
+          status.failed.push(directoryName);
           continue;
         }
 
         // Skip if already installed (unless force)
         if (!force && fs.existsSync(destPath)) {
-          status.installed.push(pluginName);
+          status.installed.push(directoryName);
           status.progress = Math.round(((i + 1) / plugins.length) * 100);
           continue;
         }
 
         // Copy plugin
         await this.copyDirectory(sourcePath, destPath);
-        status.installed.push(pluginName);
+        status.installed.push(directoryName);
       } catch (error) {
-        status.failed.push(pluginName);
-        logger.warn(`Background install failed for ${pluginName}: ${error}`);
+        status.failed.push(directoryName);
+        logger.warn(`Background install failed for ${directoryName}: ${error}`);
       }
 
       status.progress = Math.round(((i + 1) / plugins.length) * 100);
@@ -701,6 +761,7 @@ export class PluginCacheManager {
 
     // Update state
     await this.updateState((state) => {
+      // status.installed already contains directory names (converted above)
       state.loadedPlugins = [...new Set([...state.loadedPlugins, ...status.installed])];
       state.lastUpdated = new Date().toISOString();
       state.analytics.totalLoads++;
@@ -763,7 +824,9 @@ export class PluginCacheManager {
    */
   isPluginCached(pluginName: string): boolean {
     // SIMPLIFIED: Check marketplace directly (no intermediate cache)
-    const pluginPath = path.join(this.marketplacePath, pluginName);
+    // Convert marketplace names (sw-*) to directory names (specweave-*)
+    const directoryName = marketplaceNameToDirectory(pluginName);
+    const pluginPath = path.join(this.marketplacePath, directoryName);
     return fs.existsSync(pluginPath);
   }
 
@@ -774,7 +837,9 @@ export class PluginCacheManager {
    * @returns True if plugin is available
    */
   isPluginAvailable(pluginName: string): boolean {
-    const pluginPath = path.join(this.marketplacePath, pluginName);
+    // Convert marketplace names (sw-*) to directory names (specweave-*)
+    const directoryName = marketplaceNameToDirectory(pluginName);
+    const pluginPath = path.join(this.marketplacePath, directoryName);
     return fs.existsSync(pluginPath);
   }
 
@@ -913,10 +978,15 @@ export class PluginCacheManager {
             expanded.push(pluginOrGroup);
           }
         }
-        pluginsToUnload = expanded.filter((p) => loadedPlugins.includes(p));
+        // Convert marketplace names to directory names for comparison
+        // (getLoadedPlugins returns directory names from registry)
+        pluginsToUnload = expanded
+          .map((p) => marketplaceNameToDirectory(p))
+          .filter((p) => loadedPlugins.includes(p));
       } else {
-        // Unload all except router
-        pluginsToUnload = loadedPlugins.filter((p) => p !== 'specweave-router');
+        // Unload all except router (convert to directory name for comparison)
+        const routerDirName = marketplaceNameToDirectory('sw-router');
+        pluginsToUnload = loadedPlugins.filter((p) => p !== routerDirName);
       }
 
       let unloadedCount = 0;
@@ -927,7 +997,9 @@ export class PluginCacheManager {
           const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
 
           for (const pluginName of pluginsToUnload) {
-            const pluginKey = `${pluginName}@specweave`;
+            // Registry uses directory names (e.g., specweave-router@specweave)
+            const directoryName = marketplaceNameToDirectory(pluginName);
+            const pluginKey = `${directoryName}@specweave`;
             if (registry.plugins[pluginKey]) {
               delete registry.plugins[pluginKey];
               unloadedCount++;

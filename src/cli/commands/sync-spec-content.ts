@@ -21,6 +21,7 @@ import { SyncProfile } from '../../core/types/sync-profile.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
 import path from 'path';
 import fs from 'fs/promises';
+import { readdirSync } from 'fs';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
 /**
@@ -218,7 +219,7 @@ function detectSpecPath(): string | null {
   const specsDir = path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs');
 
   try {
-    const files = require('fs').readdirSync(specsDir);
+    const files = readdirSync(specsDir);
     const specs = files
       .filter((f: string) => f.match(/^spec-\d+-.+\.md$/))
       .sort()

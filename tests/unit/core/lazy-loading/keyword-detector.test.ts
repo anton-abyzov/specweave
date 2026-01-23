@@ -261,58 +261,58 @@ describe('Keyword Detector', () => {
   describe('determinePlugins', () => {
     it('should always include core specweave plugin', () => {
       const result = determinePlugins([], '');
-      expect(result).toContain('specweave');
+      expect(result).toContain('sw');
     });
 
     it('should suggest jira plugin for jira-related keywords', () => {
       const result = determinePlugins(['jira sync'], 'sync with jira');
-      expect(result).toContain('specweave-jira');
+      expect(result).toContain('sw-jira');
     });
 
     it('should suggest github plugin for github-related keywords', () => {
       const result = determinePlugins(['github sync'], 'sync with github');
-      expect(result).toContain('specweave-github');
+      expect(result).toContain('sw-github');
     });
 
     it('should suggest ado plugin for azure devops keywords', () => {
       const result = determinePlugins(['ado sync'], 'sync with azure devops');
-      expect(result).toContain('specweave-ado');
+      expect(result).toContain('sw-ado');
     });
 
     it('should suggest frontend plugin for react/vue keywords', () => {
       const result = determinePlugins([], 'build a react component');
-      expect(result).toContain('specweave-frontend');
+      expect(result).toContain('sw-frontend');
     });
 
     it('should suggest backend plugin for api/database keywords', () => {
       const result = determinePlugins([], 'create an api endpoint with database');
-      expect(result).toContain('specweave-backend');
+      expect(result).toContain('sw-backend');
     });
 
     it('should suggest k8s plugin for kubernetes keywords', () => {
       const result = determinePlugins([], 'deploy to kubernetes');
-      expect(result).toContain('specweave-k8s');
+      expect(result).toContain('sw-k8s');
     });
 
     it('should suggest multiple plugins for complex prompts', () => {
       const result = determinePlugins([], 'build a react frontend with api backend and jira sync');
-      expect(result).toContain('specweave');
-      expect(result).toContain('specweave-frontend');
-      expect(result).toContain('specweave-backend');
-      expect(result).toContain('specweave-jira');
+      expect(result).toContain('sw');
+      expect(result).toContain('sw-frontend');
+      expect(result).toContain('sw-backend');
+      expect(result).toContain('sw-jira');
     });
 
     it('should suggest testing plugin for test keywords', () => {
       const result = determinePlugins([], 'write e2e tests with playwright');
-      expect(result).toContain('specweave-testing');
+      expect(result).toContain('sw-testing');
     });
 
     it('should route mermaid keywords to core (diagrams now in core)', () => {
-      // v1.0.130: Diagrams, docs, release moved to CORE specweave plugin
-      // No separate specweave-diagrams plugin needed
+      // v1.0.130: Diagrams, docs, release moved to CORE sw plugin
+      // No separate sw-diagrams plugin needed
       const result = determinePlugins([], 'create a mermaid diagram');
-      expect(result).toContain('specweave'); // Core handles diagrams
-      // specweave-diagrams is no longer suggested
+      expect(result).toContain('sw'); // Core handles diagrams
+      // sw-diagrams is no longer suggested
     });
   });
 
@@ -338,12 +338,12 @@ describe('Keyword Detector', () => {
   describe('getPluginsForGroup', () => {
     it('should return plugins for core group', () => {
       const plugins = getPluginsForGroup('core');
-      expect(plugins).toContain('specweave');
+      expect(plugins).toContain('sw');
     });
 
     it('should return plugins for github group', () => {
       const plugins = getPluginsForGroup('github');
-      expect(plugins).toContain('specweave-github');
+      expect(plugins).toContain('sw-github');
     });
 
     it('should return empty array for unknown group', () => {
@@ -362,10 +362,10 @@ describe('Keyword Detector', () => {
     it('should return all unique plugins', () => {
       const plugins = getAllPlugins();
       expect(plugins.length).toBeGreaterThan(0);
-      // Check for some expected plugins
-      expect(plugins).toContain('specweave');
-      expect(plugins).toContain('specweave-github');
-      expect(plugins).toContain('specweave-jira');
+      // Check for some expected plugins (using marketplace short names)
+      expect(plugins).toContain('sw');
+      expect(plugins).toContain('sw-github');
+      expect(plugins).toContain('sw-jira');
     });
 
     it('should not have duplicates', () => {

@@ -8,7 +8,7 @@
  * Model Selection:
  * - No LLM: tasks_complete, acs_satisfied (grep-based)
  * - Haiku: tests_pass, build_succeeds (binary checks)
- * - Sonnet: llm_evaluate, custom criteria (semantic understanding)
+ * - Opus: llm_evaluate, custom criteria (semantic understanding with ultrathink)
  *
  * @module core/auto/completion-evaluator
  */
@@ -42,7 +42,7 @@ export interface EvaluationContext {
 export interface EvaluationOptions {
   verbose?: boolean;
   timeout?: number; // ms, default 45000
-  model?: 'haiku' | 'sonnet'; // default: sonnet
+  model?: 'haiku' | 'sonnet' | 'opus'; // default: opus
   skipLLM?: boolean; // Skip LLM evaluation, use only grep-based
 }
 
@@ -285,7 +285,7 @@ Return ONLY valid JSON (no markdown, no explanation):
 async function evaluateViaLLM(
   criterion: SuccessCriterion,
   context: EvaluationContext,
-  model: 'haiku' | 'sonnet' = 'sonnet',
+  model: 'haiku' | 'sonnet' | 'opus' = 'opus',
   timeout: number = 45000
 ): Promise<CriterionEvaluationResult> {
   const startTime = performance.now();
@@ -372,7 +372,7 @@ async function evaluateCriterion(
       return evaluateViaLLM(
         criterion,
         context,
-        criterion.model || options.model || 'sonnet',
+        criterion.model || options.model || 'opus',
         options.timeout || 45000
       );
 

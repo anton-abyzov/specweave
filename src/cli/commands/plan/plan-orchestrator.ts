@@ -20,6 +20,7 @@ import { AgentInvoker } from './agent-invoker.js';
 import { IncrementStatus } from '../../../core/types/increment-metadata.js';
 import { MetadataManager } from '../../../core/increment/metadata-manager.js';
 import * as path from 'path';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
 
 export class PlanCommandOrchestrator {
   private projectRoot: string;
@@ -151,7 +152,6 @@ export class PlanCommandOrchestrator {
    * Write plan.md and tasks.md files
    */
   private async writeFiles(context: PlanPipelineContext): Promise<void> {
-    const fs = require('fs');
     const planPath = path.join(context.incrementPath, 'plan.md');
     const tasksPath = path.join(context.incrementPath, 'tasks.md');
 
@@ -164,8 +164,8 @@ export class PlanCommandOrchestrator {
     }
 
     try {
-      fs.writeFileSync(planPath, context.generatedPlanContent, 'utf-8');
-      fs.writeFileSync(tasksPath, context.generatedTasksContent, 'utf-8');
+      writeFileSync(planPath, context.generatedPlanContent, 'utf-8');
+      writeFileSync(tasksPath, context.generatedTasksContent, 'utf-8');
     } catch (error) {
       throw new Error(
         `Failed to write files: ${error instanceof Error ? error.message : String(error)}`
