@@ -210,10 +210,27 @@ See [GitHub Integration](/docs/academy/specweave-essentials/14-github-integratio
 
 | Command | Purpose |
 |---------|---------|
-| `specweave update` | **Full update**: CLI + instructions + config + plugins |
-| `specweave update --no-plugins` | Update without refreshing plugins |
-| `specweave refresh-marketplace` | Standalone plugins refresh |
 | `specweave init .` | Initialize project |
+| `specweave update` | **Full update**: CLI + plugins + instructions (use this first) |
+| `specweave update --no-plugins` | Update without refreshing plugins |
+| `specweave refresh-marketplace` | Plugin-only refresh (see note below) |
+
+:::info About `refresh-marketplace`
+Most users should use `specweave update`. The `refresh-marketplace` command exists for specific situations:
+
+**What it does beyond Claude Code's native auto-update:**
+- Fixes hook permissions (`chmod +x`) — Claude Code doesn't preserve executable bits
+- Manages lazy loading state (router-only installation)
+- Cleans up orphaned cache/skills directories
+- Updates instruction files (CLAUDE.md, AGENTS.md)
+
+**When to use it:**
+- Hooks stopped working after Claude Code update
+- Skills not activating despite being installed
+- Want to refresh plugins without updating CLI version
+
+**Note:** You can enable Claude Code's native marketplace auto-update via `/plugin` → Marketplaces → Enable auto-update. However, this doesn't fix hook permissions or manage SpecWeave-specific state.
+:::
 
 ---
 

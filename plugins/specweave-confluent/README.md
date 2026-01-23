@@ -42,10 +42,10 @@ Enterprise Kafka features including Schema Registry, ksqlDB stream processing, C
 
 ```bash
 # Via SpecWeave marketplace
-specweave plugin install specweave-confluent
+specweave plugin install sw-confluent
 
 # Or via Claude Code plugin system
-/plugin install specweave-confluent
+/plugin install sw-confluent@specweave
 ```
 
 ## Quick Start

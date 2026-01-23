@@ -81,7 +81,26 @@ fi
 - `warn`: Shows warning but allows continuation
 - `off`: No checks
 
-### 3. TDD Enforcement Guard Hook
+### 3. User Prompt Submit Hook (NEW - v1.0.148)
+
+**Reads**: Command flags, increment metadata, global config (in priority order)
+
+**Behavior**:
+- Runs BEFORE every user prompt is processed
+- Detects TDD mode from all sources (respecting priority)
+- **INJECTS TDD context into systemMessage** so Claude ALWAYS knows TDD status
+- Shows TDD banner with current mode, enforcement level, and source
+
+**Location**: `plugins/specweave/hooks/user-prompt-submit.sh`
+
+**Why This Matters**:
+- TDD context is injected into EVERY prompt, not just `/sw:do` or `/sw:auto`
+- Claude cannot "forget" about TDD mode mid-session
+- Works even for freeform prompts like "implement the login feature"
+
+**Log**: `~/.specweave/logs/tdd-enforcement.log`
+
+### 4. TDD Enforcement Guard Hook
 
 **Reads**: `testing.tddEnforcement`
 
@@ -150,23 +169,33 @@ Individual increments can override the global config via `metadata.json`:
 }
 ```
 
-**Priority order**:
-1. Increment `metadata.json` (highest)
-2. Increment `spec.md` frontmatter
-3. Global `config.json` (lowest)
+**Priority order** (highest to lowest):
+1. Command flag (`--tdd`, `--strict`, `--no-tdd`)
+2. Increment `metadata.json` (`testMode`, `tddMode`)
+3. Increment `spec.md` frontmatter (`tdd: true`)
+4. Global `config.json` (`testing.defaultTestMode`)
 
 ## Behavior Matrix
 
 | Config | Component | What Happens |
 |--------|-----------|--------------|
-| `defaultTestMode: "TDD"` | increment-planner | Uses TDD task template |
-| `defaultTestMode: "TDD"` | /sw:do | Shows TDD banner + **ENFORCES** order |
-| `defaultTestMode: "TDD"` | /sw:auto | TDD banner + **ENFORCES** order |
+| TDD enabled (any source) | **user-prompt-submit hook** | **INJECTS** TDD context into EVERY prompt (v1.0.148) |
+| `defaultTestMode: "TDD"` | increment-planner | Uses TDD task template with [RED]/[GREEN]/[REFACTOR] markers |
+| `defaultTestMode: "TDD"` | /sw:do | Shows TDD banner + **validates markers** + **ENFORCES** order |
+| `defaultTestMode: "TDD"` | /sw:auto | TDD banner + **validates markers** + **ENFORCES** order |
 | `defaultTestMode: "TDD"` | router | Suggests TDD workflow, shows phase |
-| `tddEnforcement: "strict"` | /sw:do | **BLOCKS** if GREEN before RED |
-| `tddEnforcement: "strict"` | /sw:auto | **BLOCKS** if GREEN before RED |
-| `tddEnforcement: "warn"` | /sw:do, /sw:auto | WARNING but allows |
+| `tddEnforcement: "strict"` | /sw:do | **BLOCKS** if no markers OR GREEN before RED |
+| `tddEnforcement: "strict"` | /sw:auto | **BLOCKS** if no markers OR GREEN before RED |
+| `tddEnforcement: "warn"` | /sw:do, /sw:auto | WARNING if no markers or out-of-order, allows continuation |
 | `tddEnforcement: "off"` | all | No TDD checks |
+
+### Marker Validation Matrix (NEW)
+
+| Situation | strict | warn | off |
+|-----------|--------|------|-----|
+| TDD enabled + markers exist | ✅ Enforce order | ✅ Enforce order | Skip |
+| TDD enabled + NO markers | ❌ BLOCK | ⚠️ WARN + skip enforcement | Skip |
+| TDD disabled | Skip all | Skip all | Skip all |
 
 ## Common Scenarios
 
@@ -207,6 +236,49 @@ Individual increments can override the global config via `metadata.json`:
 2. Violations show warning but work continues
 3. Team can learn TDD gradually without hard blocks
 
+### Scenario 2.5: TDD Enabled BUT Tasks Created Without `/sw:increment`
+
+**Configuration:**
+```json
+// config.json
+{
+  "testing": {
+    "defaultTestMode": "TDD",
+    "tddEnforcement": "strict"
+  }
+}
+```
+
+**User creates tasks manually or copies from non-TDD template:**
+```markdown
+### T-001: Setup authentication module
+### T-002: Implement login endpoint
+### T-003: Add logout functionality
+```
+
+**Expected behavior (STRICT):**
+1. `/sw:do` shows TDD banner
+2. Step 1.5.5 scans tasks.md for markers
+3. **FINDS 0 markers** → BLOCKS with error:
+   ```
+   ❌ TDD MARKER VALIDATION FAILED
+
+   TDD mode enabled but tasks.md has NO markers:
+     [RED]: 0, [GREEN]: 0, [REFACTOR]: 0
+
+   💡 Fix: Run /sw:increment to regenerate tasks
+   ```
+4. User must either regenerate tasks or change enforcement level
+
+**Expected behavior (WARN):**
+1. `/sw:do` shows TDD banner
+2. Step 1.5.5 scans tasks.md for markers
+3. **FINDS 0 markers** → Shows warning:
+   ```
+   ⚠️ TDD MARKERS MISSING - Enforcement bypassed
+   ```
+4. Proceeds without TDD order enforcement
+
 ### Scenario 3: Legacy Project (No TDD)
 
 ```json
@@ -238,6 +310,37 @@ Router checks TDD mode before routing and suggests `/sw:tdd-cycle` for new work.
 
 Step 1.6 in `/sw:do` validates TDD order before allowing task completion.
 
+## Fixed Issues (As of 2026-01-23 - Second Update)
+
+### Fixed 4: TDD Marker Validation ✅
+
+**Problem**: If user skipped `/sw:increment`, tasks.md had no `[RED]`, `[GREEN]`, `[REFACTOR]` markers, silently bypassing TDD enforcement.
+
+**Solution**: Added Step 1.5.5 (do.md) and Step 1.6a (auto.md) that validate TDD markers exist BEFORE allowing task execution when TDD mode is enabled.
+
+**Behavior**:
+- `strict` mode: BLOCKS if no markers found
+- `warn` mode: Shows warning but allows continuation
+- Guides user to regenerate tasks with `/sw:increment`
+
+### Fixed 5: Hook-Level TDD Context Injection ✅ (v1.0.148)
+
+**Problem**: TDD enforcement was "instructional" - it depended on Claude reading SKILL.md/command.md files. If Claude didn't read them carefully or user typed a freeform prompt, TDD could be ignored.
+
+**Solution**: Added TDD detection to `user-prompt-submit.sh` hook that injects TDD context into systemMessage for EVERY prompt.
+
+**How it works**:
+1. Hook runs BEFORE every prompt
+2. Detects TDD mode from: flags > increment metadata > global config
+3. If TDD enabled, injects context: "🔴 TDD MODE ACTIVE..."
+4. Claude receives this context with every prompt
+
+**Benefits**:
+- Claude ALWAYS knows TDD status - cannot "forget" mid-session
+- Works for freeform prompts like "implement login"
+- Priority order is always respected (flag > increment > global)
+- Logs to `~/.specweave/logs/tdd-enforcement.log`
+
 ## Remaining Gaps
 
 ### Gap 1: Pre-Commit Hook Enforcement
@@ -248,7 +351,7 @@ Step 1.6 in `/sw:do` validates TDD order before allowing task completion.
 ### Gap 2: `generateTDDTasks()` Not Integrated
 
 **Status**: Future work
-**Workaround**: Manually structure tasks in RED-GREEN-REFACTOR triplets
+**Workaround**: Use `/sw:increment` which reads config and selects TDD task template
 
 ## References
 

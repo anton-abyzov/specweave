@@ -1,14 +1,16 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.127 - True Auto Plugin Loading)
+# SpecWeave UserPromptSubmit Hook (v1.0.147 - Unified LLM Detection)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v1.0.127: AUTO-LOAD PLUGINS - Detect plugin-specific keywords and install in background
+# - v1.0.147: SYNC PLUGIN INSTALL - Plugins available for CURRENT prompt!
+#   * Replaced 20s async LLM detection with ~200ms sync `claude plugin install`
+#   * Claude Code hot-reload picks up plugins immediately
 #   * Keywords: react, vue, kubernetes, docker, terraform, github, jira, etc.
-#   * Runs in background (non-blocking)
 #   * Controlled by SPECWEAVE_DISABLE_AUTO_LOAD env var
+# - v1.0.127: (DEPRECATED) Background async plugin detection - too slow, plugins only for next prompt
 # - v1.0.106: CRITICAL FIX - Use approve+systemMessage for info commands (not block)
 #   * "block" erases command from context and stops execution
 #   * Info commands (/sw:progress, /sw:status, /sw:jobs, etc.) now use "approve"
@@ -86,264 +88,195 @@ if [[ -f "$CONFIG_PATH" ]]; then
   fi
 fi
 
-if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
-  # Check for plugin-specific keywords (broader than SpecWeave keywords)
-  # These trigger auto-install of relevant plugins
-  # v1.0.130: Expanded to cover ALL development domains
-  #
-  # DOMAINS COVERED:
-  # - Frontend: react, vue, angular, svelte, nextjs, nuxt, tailwind, dashboard, component, ui
-  # - Backend: api, rest, graphql, express, fastapi, django, nestjs, spring, database, sql, postgres, mongodb, redis
-  # - Testing: test, tdd, vitest, jest, playwright, cypress, e2e, coverage, qa
-  # - Infrastructure: docker, terraform, pulumi, aws, azure, gcp, deploy, ci/cd, prometheus, grafana
-  # - Kubernetes: kubernetes, k8s, helm, eks, aks, gke, argocd, gitops
-  # - Mobile: mobile, react native, expo, ios, android, flutter
-  # - ML/AI: ml, ai, machine learning, pytorch, tensorflow, mlops, llm, nlp
-  # - Payments: stripe, paypal, checkout, billing, subscription
-  # - Release: release, version, changelog, publish, semver
-  # - GitHub: github, pr, pull request, issues, actions
-  # - Kafka: kafka, event streaming, confluent, ksqldb
-  # - Diagrams: diagram, mermaid, c4, flowchart
-  # - Docs: documentation, docusaurus, readme
-  # - JIRA/ADO: jira, azure devops, work item
-  #
-  if echo "$PROMPT" | grep -qiE "(react|vue|angular|svelte|next\.?js|nuxt|tailwind|dashboard|component|frontend|api|rest|graphql|express|fastapi|django|nestjs|spring|backend|database|sql|postgres|mongodb|redis|prisma|test|tdd|vitest|jest|playwright|cypress|e2e|coverage|qa|docker|terraform|pulumi|aws|azure|gcp|deploy|ci.?cd|prometheus|grafana|kubernetes|k8s|helm|eks|aks|gke|argocd|gitops|mobile|react.?native|expo|ios|android|flutter|ml|ai|machine.?learning|pytorch|tensorflow|mlops|llm|nlp|stripe|paypal|checkout|billing|subscription|payment|release|version|changelog|publish|semver|github|pr|pull.?request|issues|actions|kafka|event.?streaming|confluent|ksqldb|diagram|mermaid|c4|flowchart|documentation|docusaurus|readme|jira|azure.?devops|work.?item)"; then
-    # Run detect-intent in background (non-blocking) with --install --silent
-    # This will auto-install relevant plugins based on the prompt
-    if command -v specweave >/dev/null 2>&1; then
-      # Setup lazy-loading log for graceful degradation (T-010)
-      LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
-      mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+# ==============================================================================
+# UNIFIED LLM DETECTION (v1.0.147) - ONE call for BOTH plugins AND increments
+# ==============================================================================
+# Single `specweave detect-intent` call returns:
+# - plugins: which plugins to install (for CURRENT prompt via hot-reload)
+# - increment: whether to suggest creating an increment
+#
+# WHEN NOT TO CREATE INCREMENT:
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ SKIP (LLM returns action: "none" or "small_fix")                           │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │ • Questions: "how do I", "what is", "explain", "why does"                  │
+# │ • Exploration: "show me", "find", "search for", "list"                     │
+# │ • Commands: "run tests", "build", "deploy", "commit"                       │
+# │ • Small fixes: "fix typo", "update version", "rename X"                    │
+# │ • Already in workflow: prompt starts with /sw:                              │
+# │ • Chat/greetings: "hello", "thanks", general conversation                  │
+# │ • Config tweaks: "change port", "update .env"                              │
+# │ • EXPLICIT OPT-OUT:                                                         │
+# │   - "don't create an increment", "no increment needed", "skip workflow"    │
+# │   - "just a quick fix", "without tracking", "no spec needed"               │
+# │   - "don't reopen", "leave it closed" (for completed increments)           │
+# │   - "I'll track it myself", "already in an increment"                      │
+# └─────────────────────────────────────────────────────────────────────────────┘
 
-      # T-012: Per-session cache to avoid redundant detection
-      # Hash the prompt and check if we've already processed similar keywords this session
-      PROMPT_CACHE_DIR="$HOME/.specweave/state/prompt-cache"
-      mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+# Initialize message variable
+AUTOLOAD_PLUGINS_MSG=""
 
-      # Extract matched keywords as cache key (simpler than full prompt hash)
-      # v1.0.130: Expanded to match all domain keywords
-      MATCHED_KEYWORDS=$(echo "$PROMPT" | grep -oiE "(react|vue|angular|svelte|nextjs|nuxt|tailwind|dashboard|frontend|api|graphql|express|fastapi|django|nestjs|spring|backend|database|postgres|mongodb|redis|test|tdd|vitest|jest|playwright|cypress|docker|terraform|aws|azure|gcp|kubernetes|k8s|helm|argocd|mobile|expo|ios|android|flutter|ml|ai|pytorch|tensorflow|mlops|llm|stripe|paypal|payment|release|changelog|github|kafka|confluent|diagram|mermaid|jira|ado)" | tr '[:upper:]' '[:lower:]' | sort -u | tr '\n' '-')
-      CACHE_FILE="$PROMPT_CACHE_DIR/${MATCHED_KEYWORDS}detected"
+# Only run if features are enabled and not disabled via env
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
+  if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] || [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
 
-      # Skip if these keywords were already processed (cache exists and is recent)
-      SHOULD_DETECT=true
-      if [[ -f "$CACHE_FILE" ]]; then
-        CACHE_AGE=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || stat -c%Y "$CACHE_FILE" 2>/dev/null || echo 0)))
-        # Per-session cache: 30 minutes (session duration)
-        if [[ "$CACHE_AGE" -lt 1800 ]]; then
-          SHOULD_DETECT=false
-        fi
-      fi
+    # Quick skip: already using /sw: commands (user is in workflow)
+    if ! echo "$PROMPT" | grep -qE "^[[:space:]]*/sw:"; then
 
-      if [[ "$SHOULD_DETECT" == "true" ]]; then
-        # Escape prompt for shell (replace quotes and special chars)
-        ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
+      # Check if specweave CLI is available
+      if command -v specweave >/dev/null 2>&1; then
+        # Setup logging
+        LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
+        mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
 
-        # v1.0.144: Map matched keywords to likely plugins for user feedback
-        # This is a fast local mapping (no LLM) for immediate visibility
-        SUGGESTED_PLUGINS=""
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(react|vue|angular|svelte|nextjs|nuxt|tailwind|dashboard|component|frontend|ui)"; then
-          SUGGESTED_PLUGINS="sw-frontend"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(api|graphql|express|fastapi|django|nestjs|spring|backend|database|postgres|mongodb|redis)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-backend"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(test|tdd|vitest|jest|playwright|cypress)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-testing"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(kubernetes|k8s|helm|argocd)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-k8s"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(docker|terraform|aws|azure|gcp)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-infra"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(github)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-github"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(jira)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-jira"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(ado|azure.?devops)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-ado"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(mobile|expo|ios|android|flutter)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-mobile"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(ml|ai|pytorch|tensorflow|mlops|llm)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-ml"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(kafka|confluent)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-kafka"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(stripe|paypal|payment)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-payments"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(release|changelog)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-release"
-        fi
-        if echo "$MATCHED_KEYWORDS" | grep -qiE "(diagram|mermaid)"; then
-          [[ -n "$SUGGESTED_PLUGINS" ]] && SUGGESTED_PLUGINS="$SUGGESTED_PLUGINS, "
-          SUGGESTED_PLUGINS="${SUGGESTED_PLUGINS}sw-diagrams"
+        # Per-session cache to avoid redundant LLM calls (30 min TTL)
+        PROMPT_CACHE_DIR="$HOME/.specweave/state/prompt-cache"
+        mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+        PROMPT_HASH=$(echo "$PROMPT" | md5sum 2>/dev/null | cut -c1-16 || md5 -qs "$PROMPT" 2>/dev/null | cut -c1-16 || echo "nohash")
+        CACHE_FILE="$PROMPT_CACHE_DIR/${PROMPT_HASH}.json"
+
+        DETECT_OUTPUT=""
+        SHOULD_CALL_LLM=true
+
+        # Check cache
+        if [[ -f "$CACHE_FILE" ]]; then
+          CACHE_AGE=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || stat -c%Y "$CACHE_FILE" 2>/dev/null || echo 0)))
+          if [[ "$CACHE_AGE" -lt 1800 ]]; then
+            DETECT_OUTPUT=$(cat "$CACHE_FILE" 2>/dev/null)
+            SHOULD_CALL_LLM=false
+            echo "[$(date -Iseconds)] detect-intent | cached=true | age=${CACHE_AGE}s" >> "$LAZY_LOAD_LOG"
+          fi
         fi
 
-        # Store suggested plugins for later feedback (if increment assist doesn't trigger)
-        # This variable will be checked after all early exits
-        AUTOLOAD_PLUGINS_MSG=""
-        if [[ -n "$SUGGESTED_PLUGINS" ]]; then
-          AUTOLOAD_PLUGINS_MSG="🔌 **Auto-loading plugins**: ${SUGGESTED_PLUGINS}\\n\\n*Detected from keywords: ${MATCHED_KEYWORDS%%-}*\\n\\n---\\n"
-        fi
+        # Call LLM if not cached
+        if [[ "$SHOULD_CALL_LLM" == "true" ]]; then
+          ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
+          START_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || echo $(($(date +%s) * 1000)))
 
-        # Run with timeout (10s max per T-011) and log errors for debugging
-        # T-011: Background timeout is 10s; hook itself returns immediately (<500ms)
-        # Graceful degradation: errors logged but don't block Claude
-        (
-          # T-014: Performance logging
-          START_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || date +%s)000
-          PROMPT_HASH=$(echo "$MATCHED_KEYWORDS" | md5sum 2>/dev/null | cut -c1-8 || echo "unknown")
-
+          # ONE LLM call for BOTH plugins and increment
           if command -v timeout >/dev/null 2>&1; then
-            timeout 10 specweave detect-intent "$ESCAPED_PROMPT" --install --silent >/dev/null 2>>"$LAZY_LOAD_LOG"
-            EXIT_CODE=$?
+            DETECT_OUTPUT=$(timeout 30 specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
           else
-            specweave detect-intent "$ESCAPED_PROMPT" --install --silent >/dev/null 2>>"$LAZY_LOAD_LOG"
-            EXIT_CODE=$?
+            DETECT_OUTPUT=$(specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
           fi
 
-          END_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || date +%s)000
+          END_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || echo $(($(date +%s) * 1000)))
           DURATION=$((END_TIME - START_TIME))
 
-          if [[ "$EXIT_CODE" -eq 0 ]]; then
-            touch "$CACHE_FILE"
-            echo "[$(date -Iseconds)] detect-intent success | duration=${DURATION}ms | keywords=$MATCHED_KEYWORDS | hash=$PROMPT_HASH" >> "$LAZY_LOAD_LOG"
-          else
-            echo "[$(date -Iseconds)] detect-intent failed (code=$EXIT_CODE) | duration=${DURATION}ms | prompt=${ESCAPED_PROMPT:0:50}..." >> "$LAZY_LOAD_LOG"
-          fi
-        ) &
-        disown 2>/dev/null
-      fi
-    fi
-  fi
-fi
-
-# ==============================================================================
-# INCREMENT ASSIST - SUGGEST NEW INCREMENT (v1.0.141)
-# ==============================================================================
-# Detect if user is starting new work and suggest creating an increment
-# This runs synchronously (~5-7s) to show suggestion BEFORE Claude responds
-#
-# Triggers on prompts that look like new work:
-# - "build X", "create X", "implement X", "add feature X", "develop X"
-# - "I want to build", "let's make", "we need to add"
-#
-# Does NOT trigger when:
-# - User is already using /sw: commands (already in workflow)
-# - Prompt is a question ("how do I", "what is", "explain")
-# - incrementAssist.enabled is false in config
-#
-# Output: systemMessage with suggestion to create increment
-
-# Only run if increment assist is enabled and not already using /sw: commands
-if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
-  # Check if prompt looks like new work (not already using /sw: or asking questions)
-  if ! echo "$PROMPT" | grep -qE "^[[:space:]]*/sw:" && \
-     ! echo "$PROMPT" | grep -qiE "^(how|what|where|when|why|explain|describe|tell me|can you|could you|would you|is there|are there)" && \
-     echo "$PROMPT" | grep -qiE "(build|create|implement|add|develop|make|design|set up|setup|start|begin|initialize|write|new feature|add feature|need to build|want to build|let's make|let's build|we need)"; then
-
-    # Check if specweave CLI is available
-    if command -v specweave >/dev/null 2>&1; then
-      # Escape prompt for shell
-      ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
-
-      # Run detect-intent synchronously to get increment suggestion
-      # Use shorter timeout (8s) since this blocks the response
-      DETECT_OUTPUT=""
-      if command -v timeout >/dev/null 2>&1; then
-        DETECT_OUTPUT=$(timeout 8 specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
-      else
-        DETECT_OUTPUT=$(specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
-      fi
-
-      # Extract JSON from output (skip debug log lines)
-      # The detect-intent CLI outputs debug logs to stdout before the JSON
-      # Use grep -A to extract from first '{' to end of output
-      if [[ -n "$DETECT_OUTPUT" ]]; then
-        DETECT_OUTPUT=$(echo "$DETECT_OUTPUT" | grep -A9999 '^{')
-      fi
-
-      # Parse increment suggestion from JSON output
-      if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
-        INCREMENT_ACTION=$(echo "$DETECT_OUTPUT" | jq -r '.increment.action // "none"' 2>/dev/null)
-        INCREMENT_CONFIDENCE=$(echo "$DETECT_OUTPUT" | jq -r '.increment.confidence // 0' 2>/dev/null)
-        INCREMENT_NAME=$(echo "$DETECT_OUTPUT" | jq -r '.increment.suggestedName // ""' 2>/dev/null)
-        INCREMENT_KEYWORD=$(echo "$DETECT_OUTPUT" | jq -r '.increment.relatedKeyword // ""' 2>/dev/null)
-        INCREMENT_REASON=$(echo "$DETECT_OUTPUT" | jq -r '.increment.reasoning // ""' 2>/dev/null)
-
-        # Fallback: If LLM didn't return increment info but prompt looks like new work, suggest anyway
-        # This handles cases where LLM doesn't follow the output format consistently
-        if [[ "$INCREMENT_ACTION" == "none" ]] && [[ "$INCREMENT_CONFIDENCE" == "0" ]]; then
-          # Check if prompt has strong signals for new feature work
-          if echo "$PROMPT" | grep -qiE "(build|create|implement|develop|new feature|add feature)"; then
-            INCREMENT_ACTION="new"
-            INCREMENT_CONFIDENCE="0.75"
-            INCREMENT_REASON="Prompt contains feature-building keywords"
-            # Extract a suggested name from the prompt
-            INCREMENT_NAME=$(echo "$PROMPT" | grep -oiE "(build|create|implement|develop|add)[[:space:]]+(a[[:space:]]+)?(new[[:space:]]+)?[a-z]+" | tail -1 | sed 's/^[a-z]*[[:space:]]*a[[:space:]]*new[[:space:]]*//i; s/^[a-z]*[[:space:]]*//i' | tr ' ' '-')
-          fi
+          # Cache result
+          [[ -n "$DETECT_OUTPUT" ]] && echo "$DETECT_OUTPUT" > "$CACHE_FILE" 2>/dev/null
+          echo "[$(date -Iseconds)] detect-intent | duration=${DURATION}ms | cached=false" >> "$LAZY_LOAD_LOG"
         fi
 
-        # Only show suggestion if confidence exceeds threshold and action is actionable
-        if [[ "$INCREMENT_ACTION" == "new" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
-          # Suggest creating new increment
-          SUGGESTED_CMD="/sw:increment"
-          [[ -n "$INCREMENT_NAME" ]] && SUGGESTED_CMD="/sw:increment \"$INCREMENT_NAME\""
+        # Parse JSON response (extract first JSON object)
+        if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
+          JSON_OUTPUT=$(echo "$DETECT_OUTPUT" | grep -E '^\{' | head -1)
 
-          # v1.0.144: Prepend autoload message if plugins are being loaded
-          AUTOLOAD_PREFIX=""
-          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+          if [[ -n "$JSON_OUTPUT" ]]; then
+            # ==================================================================
+            # PLUGIN INSTALLATION (from LLM response)
+            # ==================================================================
+            if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
+              DETECTED_PLUGINS=$(echo "$JSON_OUTPUT" | jq -r '.plugins[]?' 2>/dev/null | tr '\n' ' ')
+
+              if [[ -n "$DETECTED_PLUGINS" ]] && command -v claude >/dev/null 2>&1; then
+                PLUGINS_INSTALLED=""
+                PLUGINS_ALREADY=""
+
+                for plugin in $DETECTED_PLUGINS; do
+                  [[ -z "$plugin" ]] && continue
+
+                  # Sync install via claude CLI (triggers hot-reload)
+                  if command -v timeout >/dev/null 2>&1; then
+                    OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
+                  else
+                    OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                  fi
+
+                  if echo "$OUT" | grep -qi "already"; then
+                    [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                    PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                  elif echo "$OUT" | grep -qi "success"; then
+                    [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                    PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                  fi
+                done
+
+                # Build feedback message
+                if [[ -n "$PLUGINS_INSTALLED" ]]; then
+                  AUTOLOAD_PLUGINS_MSG="🔌 **Loaded plugins**: ${PLUGINS_INSTALLED}\\n"
+                elif [[ -n "$PLUGINS_ALREADY" ]]; then
+                  AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
+                fi
+                if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+                  LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
+                  [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
+                fi
+
+                echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
+              fi
+            fi
+
+            # ==================================================================
+            # INCREMENT SUGGESTION (from LLM response)
+            # ==================================================================
+            if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
+              INC_ACTION=$(echo "$JSON_OUTPUT" | jq -r '.increment.action // "none"' 2>/dev/null)
+              INC_CONF=$(echo "$JSON_OUTPUT" | jq -r '.increment.confidence // 0' 2>/dev/null)
+              INC_NAME=$(echo "$JSON_OUTPUT" | jq -r '.increment.suggestedName // empty' 2>/dev/null)
+              INC_REASON=$(echo "$JSON_OUTPUT" | jq -r '.increment.reasoning // empty' 2>/dev/null)
+              INC_KEYWORD=$(echo "$JSON_OUTPUT" | jq -r '.increment.relatedKeyword // empty' 2>/dev/null)
+
+              # Check confidence threshold
+              ABOVE=$(echo "$INC_CONF >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0)
+
+              if [[ "$ABOVE" == "1" ]]; then
+                AUTOLOAD_PREFIX=""
+                [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
 
 "
+                case "$INC_ACTION" in
+                  new)
+                    CMD="/sw:increment"
+                    [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
+                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
 
-          # Build message with actual newlines - jq will escape them properly
-          MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a new feature or significant work.
-
-Consider creating an increment first for proper tracking:
+Consider creating an increment first:
 \`\`\`
-$SUGGESTED_CMD
+$CMD
 \`\`\`
 
-*Reason: $INCREMENT_REASON*
+*Reason: $INC_REASON*
 
 ---
 
-*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
-          # Use jq -nc to construct compact JSON with properly escaped newlines
-          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
-          exit 0
+*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                    exit 0
+                    ;;
 
-        elif [[ "$INCREMENT_ACTION" == "reopen" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
-          # Suggest reopening existing increment
-          SEARCH_HINT=""
-          [[ -n "$INCREMENT_KEYWORD" ]] && SEARCH_HINT=" (look for: *$INCREMENT_KEYWORD*)"
+                  hotfix)
+                    CMD="/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\""
+                    MSG="${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
 
-          # v1.0.144: Prepend autoload message if plugins are being loaded
-          AUTOLOAD_PREFIX=""
-          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+Create a hotfix increment:
+\`\`\`
+$CMD
+\`\`\`
 
-"
+*Reason: $INC_REASON*
 
-          MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks related to previous work$SEARCH_HINT.
+---
+
+*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                    exit 0
+                    ;;
+
+                  reopen)
+                    HINT=""
+                    [[ -n "$INC_KEYWORD" ]] && HINT=" (look for: *$INC_KEYWORD*)"
+                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks related to previous work$HINT.
 
 Consider reopening the existing increment:
 \`\`\`
@@ -351,40 +284,129 @@ Consider reopening the existing increment:
 /sw:resume <id>  # Reopen it
 \`\`\`
 
-*Reason: $INCREMENT_REASON*
+*Reason: $INC_REASON*
 
 ---
 
-*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
-          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
-          exit 0
+*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                    exit 0
+                    ;;
+                esac
+              fi
+            fi
 
-        elif [[ "$INCREMENT_ACTION" == "hotfix" ]] && (( $(echo "$INCREMENT_CONFIDENCE >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
-          # Suggest creating hotfix increment
-          # v1.0.144: Prepend autoload message if plugins are being loaded
-          AUTOLOAD_PREFIX=""
-          [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
-
-"
-
-          MSG="${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: This appears to be an urgent production issue.
-
-Create a hotfix increment:
-\`\`\`
-/sw:increment --type=hotfix \"$INCREMENT_NAME\"
-\`\`\`
-
-*Reason: $INCREMENT_REASON*
-
----
-
-*Tip: Disable this suggestion with \`incrementAssist.enabled: false\` in config.json*"
-          jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
-          exit 0
+            # If plugins loaded but no increment suggestion, show just plugins
+            if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+              jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+              exit 0
+            fi
+          fi
         fi
-        # For "small_fix" or "none" - no suggestion, let prompt through
       fi
     fi
+  fi
+fi
+
+# ==============================================================================
+# TDD MODE CONTEXT INJECTION (v1.0.148) - Ensure Claude ALWAYS knows TDD status
+# ==============================================================================
+# Priority (highest to lowest):
+#   1. Command flag: --tdd or --strict in prompt
+#   2. Increment metadata: .specweave/increments/<active>/metadata.json
+#   3. Global config: .specweave/config.json
+#
+# When TDD is enabled, injects context into systemMessage so Claude:
+#   - Always knows to follow RED→GREEN→REFACTOR discipline
+#   - Uses /sw:tdd-cycle for guided workflow
+#   - Blocks or warns on out-of-order task completion (based on enforcement)
+
+TDD_MODE="off"
+TDD_ENFORCEMENT="warn"
+TDD_SOURCE=""
+TDD_MSG=""
+
+# Only check TDD if we're in a SpecWeave project
+if [[ -d ".specweave" ]]; then
+
+  # Step 1: Check global config (LOWEST priority)
+  if [[ -f ".specweave/config.json" ]] && command -v jq >/dev/null 2>&1; then
+    GLOBAL_TDD=$(jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/null)
+    GLOBAL_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' .specweave/config.json 2>/dev/null)
+    if [[ "$GLOBAL_TDD" == "TDD" || "$GLOBAL_TDD" == "tdd" ]]; then
+      TDD_MODE="TDD"
+      TDD_ENFORCEMENT="$GLOBAL_ENFORCEMENT"
+      TDD_SOURCE="global config"
+    fi
+  fi
+
+  # Step 2: Check active increment metadata (MEDIUM priority - overrides global)
+  ACTIVE_INCREMENT=""
+  for meta in .specweave/increments/*/metadata.json; do
+    [[ -f "$meta" ]] || continue
+    if jq -e '.status == "in-progress" or .status == "active"' "$meta" >/dev/null 2>&1; then
+      ACTIVE_INCREMENT="$meta"
+      break
+    fi
+  done
+
+  if [[ -n "$ACTIVE_INCREMENT" ]] && command -v jq >/dev/null 2>&1; then
+    INC_TDD=$(jq -r '.testMode // .tddMode // ""' "$ACTIVE_INCREMENT" 2>/dev/null)
+    INC_ENFORCEMENT=$(jq -r '.tddEnforcement // ""' "$ACTIVE_INCREMENT" 2>/dev/null)
+    if [[ "$INC_TDD" == "TDD" || "$INC_TDD" == "tdd" || "$INC_TDD" == "true" ]]; then
+      TDD_MODE="TDD"
+      [[ -n "$INC_ENFORCEMENT" ]] && TDD_ENFORCEMENT="$INC_ENFORCEMENT"
+      TDD_SOURCE="increment metadata"
+    elif [[ "$INC_TDD" == "test-after" || "$INC_TDD" == "false" ]]; then
+      # Increment explicitly disables TDD (overrides global)
+      TDD_MODE="off"
+      TDD_SOURCE="increment metadata (disabled)"
+    fi
+  fi
+
+  # Step 3: Check command flags in prompt (HIGHEST priority)
+  if echo "$PROMPT" | grep -qE '\-\-tdd|\-\-strict'; then
+    TDD_MODE="TDD"
+    TDD_ENFORCEMENT="strict"
+    TDD_SOURCE="command flag"
+  elif echo "$PROMPT" | grep -qE '\-\-no-tdd'; then
+    TDD_MODE="off"
+    TDD_SOURCE="command flag (disabled)"
+  fi
+
+  # Inject TDD context if enabled
+  if [[ "$TDD_MODE" == "TDD" ]]; then
+    ENFORCEMENT_DESC="warns but allows"
+    [[ "$TDD_ENFORCEMENT" == "strict" ]] && ENFORCEMENT_DESC="BLOCKS violations"
+
+    TDD_MSG="🔴 **TDD MODE ACTIVE** (source: ${TDD_SOURCE}, enforcement: ${TDD_ENFORCEMENT})
+
+**MANDATORY RED→GREEN→REFACTOR WORKFLOW:**
+1. **[RED]** Write failing test FIRST - verify it fails
+2. **[GREEN]** Write MINIMAL code to pass - no extra features
+3. **[REFACTOR]** Improve code quality - keep tests green
+
+**RULES:**
+- Cannot complete [GREEN] task before its [RED] counterpart
+- Cannot complete [REFACTOR] before [GREEN]
+- Enforcement: ${TDD_ENFORCEMENT} (${ENFORCEMENT_DESC})
+
+**COMMANDS:** \`/sw:tdd-cycle\` for guided workflow | \`/sw:tdd-red\`, \`/sw:tdd-green\`, \`/sw:tdd-refactor\` for phases
+
+---
+"
+
+    # Append to existing message or set as new
+    if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+      AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}${TDD_MSG}"
+    else
+      AUTOLOAD_PLUGINS_MSG="$TDD_MSG"
+    fi
+
+    # Log TDD activation
+    TDD_LOG="$HOME/.specweave/logs/tdd-enforcement.log"
+    mkdir -p "$(dirname "$TDD_LOG")" 2>/dev/null
+    echo "[$(date -Iseconds)] TDD_MODE=$TDD_MODE | enforcement=$TDD_ENFORCEMENT | source=$TDD_SOURCE" >> "$TDD_LOG" 2>/dev/null
   fi
 fi
 

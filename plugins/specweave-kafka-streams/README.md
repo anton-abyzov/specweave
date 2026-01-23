@@ -40,10 +40,10 @@ Stream processing with Java/Kotlin using Kafka Streams library - topology patter
 
 ```bash
 # Via SpecWeave marketplace
-specweave plugin install specweave-kafka-streams
+specweave plugin install sw-kafka-streams
 
 # Or via Claude Code plugin system
-/plugin install specweave-kafka-streams
+/plugin install sw-kafka-streams@specweave
 ```
 
 ## Quick Start

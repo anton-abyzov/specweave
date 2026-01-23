@@ -52,7 +52,7 @@ npx specweave init .
 
 **Manual** (if needed):
 ```bash
-/plugin install specweave-release
+/plugin install sw-release@specweave
 ```
 
 ## Quick Start

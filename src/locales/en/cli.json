@@ -130,8 +130,8 @@
         "step2": "Install SpecWeave core plugin (REQUIRED):",
         "installCore": "Run: /plugin install specweave",
         "step3": "Optional: Install additional plugins as needed:",
-        "installGitHub": "/plugin install specweave-github",
-        "installFrontend": "/plugin install specweave-frontend",
+        "installGitHub": "/plugin install sw-github@specweave",
+        "installFrontend": "/plugin install sw-frontend@specweave",
         "step4": "Start building:",
         "example": "\"/sw:increment 'user authentication'\"",
         "autoActivate": "Skills and agents auto-activate based on context"

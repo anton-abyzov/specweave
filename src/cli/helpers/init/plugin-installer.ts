@@ -240,8 +240,8 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
     console.log('');
     console.log(chalk.cyan('📦 Manual installation:'));
-    console.log(chalk.white('   /plugin install specweave'));
-    console.log(chalk.white('   /plugin install specweave-github'));
+    console.log(chalk.white('   /plugin install sw@specweave'));
+    console.log(chalk.white('   /plugin install sw-github@specweave'));
     console.log(chalk.white('   ...etc.'));
     console.log('');
 

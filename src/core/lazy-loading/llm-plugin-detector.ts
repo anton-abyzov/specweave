@@ -14,7 +14,6 @@
  */
 
 import { spawnSync, SpawnSyncReturns } from 'child_process';
-import * as path from 'path';
 import * as os from 'os';
 import { consoleLogger as logger } from '../../utils/logger.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
@@ -312,11 +311,19 @@ SIGNALS FOR "small_fix":
 - Single-file changes, documentation tweaks
 - "Just change...", "Simply update...", "Minor fix..."
 
-SIGNALS FOR "none":
+SIGNALS FOR "none" (DO NOT suggest increment):
 - Questions: "How do I...", "What is...", "Explain..."
 - Already using SpecWeave: "/sw:increment", "/sw:do", etc.
 - General conversation, brainstorming
 - Unclear what user wants to accomplish
+- EXPLICIT OPT-OUT phrases (user explicitly declines):
+  * "don't create an increment", "no increment needed", "without increment"
+  * "skip the workflow", "just do it directly", "no spec needed"
+  * "quick fix without tracking", "minor change only"
+  * "don't reopen", "leave it closed", "without reopening"
+  * "just a quick fix", "only change this", "simple tweak"
+  * "I'll handle the increment myself", "I'll track it later"
+  * "already in an increment", "working on existing increment"
 
 CRITICAL: ALWAYS include BOTH "plugins" array AND "increment" object in your response. Never omit the increment field.
 

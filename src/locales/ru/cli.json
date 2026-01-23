@@ -123,8 +123,8 @@
         "step2": "Установите основной плагин SpecWeave (ОБЯЗАТЕЛЬНО):",
         "installCore": "Выполните: /plugin install specweave",
         "step3": "Опционально: Установите дополнительные плагины по необходимости:",
-        "installGitHub": "/plugin install specweave-github",
-        "installFrontend": "/plugin install specweave-frontend",
+        "installGitHub": "/plugin install sw-github@specweave",
+        "installFrontend": "/plugin install sw-frontend@specweave",
         "step4": "Начните разработку:",
         "example": "\"/sw:increment 'аутентификация пользователя'\"",
         "autoActivate": "Навыки и агенты активируются автоматически по контексту"

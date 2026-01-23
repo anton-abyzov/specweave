@@ -117,10 +117,10 @@ npx specweave init my-project
 
 ```bash
 # Install plugin
-/plugin install specweave-jira
+/plugin install sw-jira@specweave
 
 # Verify hook registration
-cat ~/.claude/settings.json | grep specweave-jira
+cat ~/.claude/settings.json | grep sw-jira
 ```
 
 ---

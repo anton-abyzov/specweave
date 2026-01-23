@@ -931,6 +931,27 @@ specweave update
 - Updates config with new defaults
 - Refreshes marketplace plugins (24 plugins, 136 skills, 68 agents)
 
+### When to use `refresh-marketplace` instead
+
+Most users should use `specweave update`. The `refresh-marketplace` command exists for specific situations:
+
+```bash
+specweave refresh-marketplace
+```
+
+**What it does beyond Claude Code's native auto-update:**
+- Fixes hook permissions (`chmod +x`) — Claude Code doesn't preserve executable bits on shell scripts
+- Manages lazy loading state (router-only installation for token efficiency)
+- Cleans up orphaned cache/skills directories
+- Updates instruction files (CLAUDE.md, AGENTS.md)
+
+**When to use it:**
+- Hooks stopped working after Claude Code update (permission issue)
+- Skills not activating despite being installed
+- Want to refresh plugins without updating CLI version
+
+**Note:** You can enable Claude Code's native marketplace auto-update via `/plugin` → Marketplaces → Enable auto-update. However, native auto-update doesn't fix hook permissions or manage SpecWeave-specific state like lazy loading.
+
 ### Auto Mode Issues
 
 **Session stuck or not completing?**
@@ -962,7 +983,10 @@ npx playwright test
 ls -la .claude/skills/
 # Should see 17+ SpecWeave skills
 
-# If missing, reinstall:
+# If missing, first try full update:
+specweave update
+
+# If still not working (hook permissions issue):
 specweave refresh-marketplace
 ```
 
@@ -971,7 +995,10 @@ specweave refresh-marketplace
 ls -la .claude/commands/
 # Should see 22+ command files
 
-# If missing:
+# If missing, first try full update:
+specweave update
+
+# If still not working:
 specweave refresh-marketplace
 ```
 

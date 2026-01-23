@@ -390,12 +390,12 @@ SpecWeave plugins support **dual distribution**:
 
 1. **NPM Package** (SpecWeave CLI):
    - `npm install -g specweave`
-   - `specweave plugin install github`
+   - `specweave plugin install sw-github`
    - Works with ALL tools (Claude, Cursor, Copilot, Generic)
 
 2. **Claude Code Marketplace** (Native `/plugin`):
    - `/plugin marketplace add https://github.com/anton-abyzov/specweave`
-   - `/plugin install specweave-github`
+   - `/plugin install sw-github@specweave`
    - Best UX for Claude Code users (use HTTPS URL for public repos!)
 
 **Plugin Manifests** (both required):

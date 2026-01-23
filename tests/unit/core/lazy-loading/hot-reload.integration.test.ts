@@ -219,7 +219,7 @@ This is test content for verification.
 
       // Assert
       const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('specweave');
+      expect(state.loadedPlugins).toContain('sw');
       expect(state.loadedPlugins).toContain('specweave-github');
       expect(state.loadedPlugins).toContain('specweave-jira');
     });
@@ -288,7 +288,7 @@ This is test content for verification.
 
       // Verify state persisted
       const state = newManager.readState();
-      expect(state.loadedPlugins).toContain('specweave');
+      expect(state.loadedPlugins).toContain('sw');
     });
 
     it('should track lastUpdated timestamp', async () => {

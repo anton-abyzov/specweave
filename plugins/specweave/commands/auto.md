@@ -828,11 +828,12 @@ All reliability events logged to `.specweave/logs/auto-iterations.log`:
 
 **TDD mode can be configured at multiple levels with priority:**
 
-1. **Increment metadata.json** (highest priority)
-2. **Increment config.json**
-3. **spec.md frontmatter**
-4. **Session (`--tdd` flag)**
-5. **Global config.json** (lowest priority)
+1. **Command flag (`--tdd`, `--strict`)** (highest priority)
+2. **Increment metadata.json** (`.specweave/increments/<id>/metadata.json`)
+3. **spec.md frontmatter** (`tdd: true`)
+4. **Global config.json** (`testing.defaultTestMode: "TDD"`) (lowest priority)
+
+**Note:** Higher priority OVERRIDES lower. A flag always wins over config.
 
 **Example: Enable TDD for a specific increment:**
 
@@ -1522,6 +1523,86 @@ E2E Tests:
 ### Step 1.6: TDD Enforcement Check (when TDD mode enabled)
 
 **If TDD mode is detected (`--tdd` flag, config, or increment metadata), enforce TDD discipline!**
+
+#### Step 1.6a: TDD Marker Validation (CRITICAL!)
+
+**BEFORE checking TDD order, validate that tasks.md HAS TDD markers:**
+
+```bash
+INCREMENT_PATH=".specweave/increments/<id>"
+TASKS_FILE="$INCREMENT_PATH/tasks.md"
+
+# Count TDD markers
+RED_COUNT=$(grep -c '\[RED\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+GREEN_COUNT=$(grep -c '\[GREEN\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+REFACTOR_COUNT=$(grep -c '\[REFACTOR\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+TOTAL_MARKERS=$((RED_COUNT + GREEN_COUNT + REFACTOR_COUNT))
+
+echo "TDD Marker Check: RED=$RED_COUNT, GREEN=$GREEN_COUNT, REFACTOR=$REFACTOR_COUNT"
+```
+
+**If TDD_MODE == true BUT TOTAL_MARKERS == 0:**
+
+```
+⚠️  TDD MODE ENABLED BUT NO TDD MARKERS IN TASKS
+
+Your configuration has TDD mode enabled:
+  • --tdd flag: [yes/no]
+  • config.json: testing.defaultTestMode = "TDD"
+  • Enforcement level: [strict/warn/off]
+
+But tasks.md contains NO [RED], [GREEN], [REFACTOR] markers:
+  • [RED] markers found: 0
+  • [GREEN] markers found: 0
+  • [REFACTOR] markers found: 0
+
+⚠️  TDD ORDER ENFORCEMENT WILL BE BYPASSED!
+
+The enforcement checks for task markers to validate RED→GREEN→REFACTOR order.
+Without markers, tasks can be completed in ANY order - defeating TDD discipline.
+
+CAUSE: Tasks were likely created:
+  • Manually (without using /sw:increment)
+  • Before TDD mode was enabled in config
+  • By copying from a non-TDD template
+
+💡 FIX OPTIONS:
+
+1. (Recommended) Regenerate tasks with TDD structure:
+   /sw:increment "your-feature"
+   This will create proper RED→GREEN→REFACTOR triplets
+
+2. Add markers manually to existing tasks:
+   ### T-001: [RED] Write failing test for feature
+   ### T-002: [GREEN] Implement feature to pass test
+   ### T-003: [REFACTOR] Clean up feature code
+
+3. Disable TDD mode if not needed:
+   Set testing.defaultTestMode: "test-after" in config.json
+
+4. Continue without TDD enforcement (not recommended):
+   Set testing.tddEnforcement: "off" in config.json
+```
+
+**Behavior based on tddEnforcement:**
+
+| Enforcement | TDD Enabled + No Markers | Action |
+|-------------|--------------------------|--------|
+| `strict` | **BLOCKS** | ❌ Cannot proceed - fix tasks.md first |
+| `warn` | **WARNS** | ⚠️ Shows warning, continues without enforcement |
+| `off` | **Silent** | Skips all TDD checks |
+
+**Example (strict mode, no markers):**
+```
+❌ TDD MARKER VALIDATION FAILED (strict mode)
+
+Cannot start auto mode with TDD enabled but no task markers.
+Run /sw:increment to regenerate tasks with TDD structure.
+
+Or set tddEnforcement: "warn" to continue anyway.
+```
+
+#### Step 1.6b: TDD Mode Detection
 
 ```bash
 # Check TDD mode from multiple sources (priority order)

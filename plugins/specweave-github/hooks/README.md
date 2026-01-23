@@ -126,11 +126,11 @@ For testing or development:
 
 ```bash
 # Install plugin
-/plugin install specweave-github
+/plugin install sw-github@specweave
 
 # Verify hook registration
 cat ~/.claude/settings.json
-# Should show specweave-github hooks registered
+# Should show sw-github hooks registered
 ```
 
 ---

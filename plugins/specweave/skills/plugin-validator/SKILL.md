@@ -406,9 +406,9 @@ Should show:
 
 If you need specific plugins:
 ```
-/plugin install specweave-github
-/plugin install specweave-payments
-/plugin install specweave-frontend
+/plugin install sw-github@specweave
+/plugin install sw-payments@specweave
+/plugin install sw-frontend@specweave
 ```
 
 ## Summary
