@@ -211,10 +211,78 @@ increment-work-router (detects intent)
 - `/sw:do` - Resume active increment
 - `/sw:increment` - Create new increment
 - `/sw:status` - Check increment state (if needed)
+- `/sw:tdd-cycle` - TDD workflow (when TDD mode enabled)
 
 **Called By:**
 - Automatically when implementation intent detected
 - Works alongside `increment-planner` (planning) and `detector` (context checking)
+
+## TDD-Aware Routing (CRITICAL)
+
+**When routing to an active increment, check TDD mode first:**
+
+```bash
+# Check if increment uses TDD
+CONFIG_PATH=".specweave/config.json"
+METADATA_PATH=".specweave/increments/<id>/metadata.json"
+
+# Check global config
+TDD_MODE=$(cat "$CONFIG_PATH" | jq -r '.testing.defaultTestMode // "test-after"')
+
+# Check increment-specific override
+INCREMENT_TDD=$(cat "$METADATA_PATH" | jq -r '.testMode // ""')
+[[ -n "$INCREMENT_TDD" ]] && TDD_MODE="$INCREMENT_TDD"
+```
+
+**If TDD mode is enabled, modify routing behavior:**
+
+| Scenario | Without TDD | With TDD |
+|----------|-------------|----------|
+| "Implement X" (new feature) | → `/sw:do` | → Suggest `/sw:tdd-cycle` first |
+| "Let's continue" | → `/sw:do` | → Show TDD phase reminder + `/sw:do` |
+| "Add test for X" | → `/sw:do` | → Confirm starting RED phase |
+| "Fix the implementation" | → `/sw:do` | → Check if GREEN phase complete |
+
+**TDD-aware resume output:**
+
+```
+✅ Resuming increment 0031-user-authentication-system...
+
+🔴 TDD MODE ACTIVE
+
+Current TDD Status:
+├─ T-001: [RED] Write login test ✅ completed
+├─ T-002: [GREEN] Implement login ⏳ in progress
+└─ T-003: [REFACTOR] Clean up login ⏸️ blocked (waiting for GREEN)
+
+Current Phase: 🟢 GREEN - Making test pass
+
+💡 You're in the GREEN phase. Implement just enough to make T-001's test pass.
+   After GREEN completes, you can proceed to REFACTOR.
+
+[Proceeding with /sw:do...]
+```
+
+**TDD workflow suggestion (for new work):**
+
+```
+User: "Implement user registration"
+
+🔴 TDD MODE DETECTED
+
+This increment uses Test-Driven Development.
+
+For new features, I recommend using the TDD workflow:
+1. /sw:tdd-red "user registration" - Write failing test first
+2. /sw:tdd-green - Implement to pass the test
+3. /sw:tdd-refactor - Clean up the code
+
+Would you like to:
+1. Start TDD cycle (/sw:tdd-cycle) - Recommended
+2. Continue with regular /sw:do - Skip TDD guidance
+
+[1/2]:
+```
 
 ## Decision Matrix
 
