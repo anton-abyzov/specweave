@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.142] - 2026-01-22
+
+### 📝 Documentation
+
+- **Simplified CLAUDE.md template**: Reduced template size by removing redundant sections
+- **Updated documentation**: Refreshed quickstart, installation, and troubleshooting guides
+- **Cleaned up memory files**: Removed obsolete memory files from `.specweave/memory/`
+
+---
+
 ## [1.0.140] - 2026-01-21
 
 ### 🔧 Improvements
