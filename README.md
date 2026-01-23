@@ -174,8 +174,12 @@ Then:
 | **JIRA** | Epics, stories, status sync |
 | **Azure DevOps** | Work items, area paths |
 
+**Automatic sync**: When you close an increment (`/sw:done`), external tools update immediately. Task progress syncs at session end.
+
 ```bash
-/sw:sync-progress    # Push updates to connected tools
+/sw:sync-progress         # Manual: Push updates to ALL tools
+/sw-github:sync 0001      # Manual: Sync specific increment to GitHub
+/sw-jira:sync 0001        # Manual: Sync specific increment to JIRA
 ```
 
 ---

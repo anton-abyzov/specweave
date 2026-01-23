@@ -1,7 +1,7 @@
 #!/bin/bash
 # post-tool-use.sh - Single dispatcher for ALL PostToolUse events
 #
-# v1.0.43+: FULLY NON-BLOCKING - all hook errors become warnings
+# v1.0.148+: NEW ARCHITECTURE - No background processor
 #
 # CRITICAL DESIGN PRINCIPLE:
 #   - Tool operations ALWAYS succeed (Edit/Write never blocked by hooks)
@@ -9,15 +9,17 @@
 #   - Logs captured for debugging
 #   - Background processes for heavy work
 #
-# Architecture (EDA v2):
+# Architecture (v1.0.148 - Simplified):
 # - Detectors run asynchronously (don't block tool results)
-# - Detectors emit events to queue
-# - Handlers process events from queue
+# - CRITICAL events (increment.done/reopened) sync IMMEDIATELY
+# - Other events queued to pending.jsonl for stop-sync.sh (session end)
+# - NO background processor daemon
 #
 # Event flow:
 # 1. metadata.json change -> lifecycle-detector -> increment.* events
-# 2. tasks.md/spec.md change -> us-completion-detector -> user-story.* events
-# 3. Events queued -> processor routes to handlers
+#    - IF done/reopened: IMMEDIATE sync via project-bridge-handler
+#    - ELSE: queued for stop-sync.sh
+# 2. tasks.md/spec.md change -> queued for stop-sync.sh (batched at session end)
 #
 # Goal: Never crash Claude, always exit 0, warn on errors
 
@@ -30,7 +32,7 @@ set +e  # CRITICAL: Never exit on error
 # ============================================================================
 
 HOOK_NAME="post-tool-use"
-HOOK_VERSION="1.0.43"
+HOOK_VERSION="1.0.148"
 
 # ============================================================================
 # PROJECT ROOT DETECTION
@@ -264,6 +266,34 @@ case "$FILE_PATH" in
 
     # Update dashboard cache (background)
     safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "metadata"
+
+    # ========================================================================
+    # IMMEDIATE EXTERNAL SYNC for done/reopened (v1.0.148)
+    # ========================================================================
+    # Critical events sync IMMEDIATELY - user expects external tools updated
+    # Other events batched for session end (stop-sync.sh)
+    METADATA_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/metadata.json"
+    if [[ -f "$METADATA_FILE" ]]; then
+      CURRENT_STATUS=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' "$METADATA_FILE" | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+
+      if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]] || [[ "$CURRENT_STATUS" == "reopened" ]]; then
+        log_debug "IMMEDIATE SYNC: Status is $CURRENT_STATUS - syncing to external tools"
+        BRIDGE_HANDLER="$HOOK_DIR/handlers/project-bridge-handler.sh"
+        if [[ -f "$BRIDGE_HANDLER" ]]; then
+          # Run synchronously but with timeout to not block too long
+          (
+            if command -v gtimeout >/dev/null 2>&1; then
+              gtimeout 15 bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+            elif command -v timeout >/dev/null 2>&1; then
+              timeout 15 bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+            else
+              bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+            fi
+          )
+          log_debug "IMMEDIATE SYNC completed for $INC_ID"
+        fi
+      fi
+    fi
     ;;
 
   */.specweave/increments/*/tasks.md|*/.specweave/increments/*/spec.md)
@@ -322,30 +352,11 @@ case "$FILE_PATH" in
 esac
 
 # ============================================================================
-# ENSURE PROCESSOR IS RUNNING (non-blocking)
+# NO BACKGROUND PROCESSOR (v1.0.148)
 # ============================================================================
-
-PROCESSOR="$HOOK_DIR/queue/processor.sh"
-PID_FILE="$PROJECT_ROOT/.specweave/state/.processor.pid"
-
-# Quick check: if PID file exists and process running, skip
-if [[ -f "$PID_FILE" ]]; then
-  PROC_PID=$(cat "$PID_FILE" 2>/dev/null)
-  if [[ -n "$PROC_PID" ]] && kill -0 "$PROC_PID" 2>/dev/null; then
-    log_debug "Processor already running (PID: $PROC_PID)"
-    exit 0
-  fi
-fi
-
-# Start processor in background (non-blocking)
-if [[ -f "$PROCESSOR" ]]; then
-  log_debug "Starting event processor"
-  nohup bash "$PROCESSOR" > /dev/null 2>&1 &
-fi
-
-# ============================================================================
-# ALWAYS EXIT SUCCESS
-# ============================================================================
+# Events are now batched and processed by stop-sync.sh at session end.
+# Critical events (increment.done/reopened) sync immediately above.
+# This eliminates the need for a background processor daemon.
 
 log_debug "Dispatcher completed successfully"
 exit 0
