@@ -1,227 +1,171 @@
 /**
- * User Prompt Submit Hook - Plugin Auto-Loading Tests
+ * User Prompt Submit Hook - Plugin Auto-Loading Tests (v1.0.147+)
  *
- * Tests that the user-prompt-submit.sh hook correctly:
- * 1. Detects plugin-specific keywords in user prompts
- * 2. Maps keywords to the correct plugins
- * 3. Shows visible feedback (systemMessage) when plugins are being loaded
- * 4. Runs detect-intent in background for actual installation
+ * Tests that the user-prompt-submit.sh hook correctly implements
+ * LLM-BASED plugin detection (replaced keyword-based in v1.0.147).
  *
- * v1.0.144: Added visible feedback for plugin auto-loading
+ * The hook now:
+ * 1. Calls `specweave detect-intent` for unified LLM detection
+ * 2. Parses JSON response for plugins[] and increment{}
+ * 3. Runs `claude plugin install` SYNCHRONOUSLY for detected plugins
+ * 4. Shows increment suggestions based on LLM response
  *
  * Key verification:
- * - React/Vue/Angular prompts → sw-frontend
- * - API/database prompts → sw-backend
- * - Test/E2E prompts → sw-testing
- * - Kubernetes prompts → sw-k8s
- * - GitHub/JIRA/ADO prompts → corresponding sync plugins
+ * - LLM detection via `specweave detect-intent`
+ * - Synchronous plugin installation via `claude plugin install`
+ * - 30-minute caching to avoid redundant LLM calls
+ * - Config controls (pluginAutoLoad.enabled, incrementAssist.enabled)
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 
-describe('User Prompt Submit Hook - Plugin Auto-Loading', () => {
+describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', () => {
   const hookPath = path.join(
     process.cwd(),
     'plugins/specweave/hooks/user-prompt-submit.sh'
   );
 
-  describe('Keyword Detection Patterns', () => {
-    it('should have keyword detection regex for frontend frameworks', () => {
+  describe('LLM Detection Integration', () => {
+    it('should call specweave detect-intent for unified detection', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Check for frontend keywords in the grep regex
-      expect(hookContent).toContain('react');
-      expect(hookContent).toContain('vue');
-      expect(hookContent).toContain('angular');
-      expect(hookContent).toContain('svelte');
-      expect(hookContent).toContain('next');
-      expect(hookContent).toContain('dashboard');
-      expect(hookContent).toContain('component');
-      expect(hookContent).toContain('frontend');
+      // Should call detect-intent CLI
+      expect(hookContent).toContain('specweave detect-intent');
     });
 
-    it('should have keyword detection regex for backend technologies', () => {
+    it('should parse JSON response from detect-intent', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Check for backend keywords
-      expect(hookContent).toContain('api');
-      expect(hookContent).toContain('graphql');
-      expect(hookContent).toContain('express');
-      expect(hookContent).toContain('database');
-      expect(hookContent).toContain('postgres');
-      expect(hookContent).toContain('mongodb');
-      expect(hookContent).toContain('backend');
+      // Should use jq to parse JSON
+      expect(hookContent).toContain('jq');
+      expect(hookContent).toContain('.plugins');
+      expect(hookContent).toContain('.increment');
     });
 
-    it('should have keyword detection regex for testing frameworks', () => {
+    it('should extract plugins array from LLM response', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Check for testing keywords
-      expect(hookContent).toContain('test');
-      expect(hookContent).toContain('vitest');
-      expect(hookContent).toContain('jest');
-      expect(hookContent).toContain('playwright');
-      expect(hookContent).toContain('cypress');
-      expect(hookContent).toContain('e2e');
+      // Should extract plugins from JSON
+      expect(hookContent).toContain("jq -r '.plugins[]");
     });
 
-    it('should have keyword detection regex for infrastructure', () => {
+    it('should extract increment recommendation from LLM response', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Check for infra keywords
-      expect(hookContent).toContain('kubernetes');
-      expect(hookContent).toContain('k8s');
-      expect(hookContent).toContain('docker');
-      expect(hookContent).toContain('terraform');
-      expect(hookContent).toContain('aws');
-      expect(hookContent).toContain('azure');
-      expect(hookContent).toContain('gcp');
-    });
-
-    it('should have keyword detection regex for external tools', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Check for external tool keywords
-      expect(hookContent).toContain('github');
-      expect(hookContent).toContain('jira');
-      expect(hookContent).toContain('azure.?devops');
+      // Should extract increment action
+      expect(hookContent).toContain('.increment.action');
+      expect(hookContent).toContain('.increment.confidence');
     });
   });
 
-  describe('Plugin Mapping Logic', () => {
-    it('should map frontend keywords to sw-frontend plugin', () => {
+  describe('Synchronous Plugin Installation (v1.0.147)', () => {
+    it('should install plugins via claude plugin install', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Find the frontend mapping section
-      const frontendMapping = hookContent.match(
-        /if echo "\$MATCHED_KEYWORDS".*react.*vue.*angular.*then[\s\S]*?SUGGESTED_PLUGINS="sw-frontend"/
-      );
-      expect(frontendMapping).toBeTruthy();
+      // Should call claude plugin install
+      expect(hookContent).toContain('claude plugin install');
     });
 
-    it('should map backend keywords to sw-backend plugin', () => {
+    it('should use synchronous execution (not background)', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Find the backend mapping section
-      const backendMapping = hookContent.match(
-        /if echo "\$MATCHED_KEYWORDS".*api.*database.*then[\s\S]*?sw-backend/
-      );
-      expect(backendMapping).toBeTruthy();
+      // The plugin install should NOT be run in background
+      // (we removed & disown for sync execution)
+      // Check that we iterate over plugins synchronously
+      expect(hookContent).toContain('for plugin in $DETECTED_PLUGINS');
     });
 
-    it('should map testing keywords to sw-testing plugin', () => {
+    it('should track installed vs already-loaded plugins', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Find the testing mapping section
-      const testingMapping = hookContent.match(
-        /if echo "\$MATCHED_KEYWORDS".*test.*vitest.*jest.*then[\s\S]*?sw-testing/
-      );
-      expect(testingMapping).toBeTruthy();
-    });
-
-    it('should map kubernetes keywords to sw-k8s plugin', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Find the k8s mapping section
-      const k8sMapping = hookContent.match(
-        /if echo "\$MATCHED_KEYWORDS".*kubernetes.*k8s.*then[\s\S]*?sw-k8s/
-      );
-      expect(k8sMapping).toBeTruthy();
-    });
-
-    it('should map github keywords to sw-github plugin', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Find the github mapping section
-      expect(hookContent).toContain('sw-github');
-    });
-
-    it('should map jira keywords to sw-jira plugin', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Find the jira mapping section
-      expect(hookContent).toContain('sw-jira');
+      // Should track what was installed
+      expect(hookContent).toContain('PLUGINS_INSTALLED');
+      expect(hookContent).toContain('PLUGINS_ALREADY');
     });
   });
 
-  describe('Visible Feedback Mechanism (v1.0.144)', () => {
-    it('should set AUTOLOAD_PLUGINS_MSG when plugins are suggested', () => {
+  describe('Increment Suggestion Display', () => {
+    it('should handle "new" increment action', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should have case for "new" action
+      expect(hookContent).toContain('new)');
+      expect(hookContent).toContain('/sw:increment');
+    });
+
+    it('should handle "hotfix" increment action', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should have case for "hotfix" action
+      expect(hookContent).toContain('hotfix)');
+      expect(hookContent).toContain('--type=hotfix');
+    });
+
+    it('should handle "reopen" increment action', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should have case for "reopen" action
+      expect(hookContent).toContain('reopen)');
+      expect(hookContent).toContain('/sw:resume');
+    });
+
+    it('should respect incrementAssist.enabled config', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should check config for incrementAssist.enabled
+      expect(hookContent).toContain('INCREMENT_ASSIST_ENABLED');
+      expect(hookContent).toContain('incrementAssist.enabled');
+    });
+
+    it('should respect confidence threshold from config', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should have confidence threshold check
+      expect(hookContent).toContain('INCREMENT_CONFIDENCE_THRESHOLD');
+    });
+  });
+
+  describe('Visible Feedback Mechanism', () => {
+    it('should set AUTOLOAD_PLUGINS_MSG when plugins are loaded', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
       // Should have AUTOLOAD_PLUGINS_MSG variable
       expect(hookContent).toContain('AUTOLOAD_PLUGINS_MSG');
-
-      // Should construct message with plugin names
-      expect(hookContent).toContain('Auto-loading plugins');
     });
 
-    it('should include AUTOLOAD_PLUGINS_MSG in final output', () => {
+    it('should show "Loaded plugins" message for new installs', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should include autoload message in final output
-      expect(hookContent).toContain('FINAL_MESSAGE="$AUTOLOAD_PLUGINS_MSG"');
+      // Should show loaded plugins message
+      expect(hookContent).toContain('Loaded plugins');
     });
 
-    it('should show feedback even for non-SpecWeave prompts', () => {
+    it('should show "Using plugins" message for already-loaded', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should have special handling for non-SpecWeave prompts
-      const nonSpecWeaveSection = hookContent.match(
-        /if ! echo "\$PROMPT".*specweave[\s\S]*?AUTOLOAD_PLUGINS_MSG[\s\S]*?systemMessage/
-      );
-      expect(nonSpecWeaveSection).toBeTruthy();
+      // Should show using plugins message
+      expect(hookContent).toContain('Using plugins');
     });
 
-    it('should show feedback even for non-SpecWeave projects', () => {
+    it('should include LLM reasoning in output', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should have special handling for non-SpecWeave projects
-      const nonProjectSection = hookContent.match(
-        /if \[\[ ! -d "\$SPECWEAVE_DIR" \]\][\s\S]*?AUTOLOAD_PLUGINS_MSG[\s\S]*?systemMessage/
-      );
-      expect(nonProjectSection).toBeTruthy();
-    });
-  });
-
-  describe('Background Detection Execution', () => {
-    it('should run detect-intent in background (non-blocking)', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Should have background execution with & and disown
-      expect(hookContent).toContain('specweave detect-intent');
-      expect(hookContent).toContain('--install');
-      expect(hookContent).toContain('--silent');
-      expect(hookContent).toContain(') &');
-      expect(hookContent).toContain('disown');
-    });
-
-    it('should have timeout protection for background process', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Should have timeout wrapper
-      expect(hookContent).toContain('timeout 10');
-    });
-
-    it('should log to lazy-loading.log', () => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
-
-      // Should log to lazy-loading.log
-      expect(hookContent).toContain('LAZY_LOAD_LOG');
-      expect(hookContent).toContain('lazy-loading.log');
+      // Should extract and show reasoning
+      expect(hookContent).toContain('.reasoning');
+      expect(hookContent).toContain('LLM_REASON');
     });
   });
 
   describe('Per-Session Cache', () => {
-    it('should have per-session cache to avoid redundant detection', () => {
+    it('should have per-session cache to avoid redundant LLM calls', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
       // Should have cache mechanism
       expect(hookContent).toContain('PROMPT_CACHE_DIR');
       expect(hookContent).toContain('CACHE_FILE');
-      expect(hookContent).toContain('SHOULD_DETECT');
+      expect(hookContent).toContain('SHOULD_CALL_LLM');
     });
 
     it('should use 30-minute cache window', () => {
@@ -229,6 +173,14 @@ describe('User Prompt Submit Hook - Plugin Auto-Loading', () => {
 
       // Should have 30-minute (1800 seconds) cache
       expect(hookContent).toContain('1800');
+    });
+
+    it('should use prompt hash for cache key', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should hash prompt for cache key
+      expect(hookContent).toContain('PROMPT_HASH');
+      expect(hookContent).toMatch(/md5/);
     });
   });
 
@@ -247,56 +199,95 @@ describe('User Prompt Submit Hook - Plugin Auto-Loading', () => {
       // Should check env var
       expect(hookContent).toContain('SPECWEAVE_DISABLE_AUTO_LOAD');
     });
+
+    it('should respect SPECWEAVE_DISABLE_HOOKS env var', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should check env var
+      expect(hookContent).toContain('SPECWEAVE_DISABLE_HOOKS');
+    });
+  });
+
+  describe('Skip Conditions', () => {
+    it('should skip when prompt starts with /sw:', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should skip for /sw: commands (user already in workflow)
+      expect(hookContent).toContain('/sw:');
+      expect(hookContent).toMatch(/grep.*\/sw:/);
+    });
+  });
+
+  describe('Documentation of Skip Scenarios', () => {
+    it('should document when NOT to create increment', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should have documentation of skip scenarios
+      expect(hookContent).toContain('WHEN NOT TO CREATE INCREMENT');
+      expect(hookContent).toContain('Questions');
+      expect(hookContent).toContain('Exploration');
+      expect(hookContent).toContain('Commands');
+      expect(hookContent).toContain('Small fixes');
+    });
+
+    it('should document explicit opt-out phrases', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should document explicit opt-out
+      expect(hookContent).toContain('EXPLICIT OPT-OUT');
+    });
+  });
+
+  describe('Logging', () => {
+    it('should log to lazy-loading.log', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should log to lazy-loading.log
+      expect(hookContent).toContain('LAZY_LOAD_LOG');
+      expect(hookContent).toContain('lazy-loading.log');
+    });
+
+    it('should log detection duration', () => {
+      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+      // Should log timing info
+      expect(hookContent).toContain('duration');
+    });
   });
 });
 
-describe('Plugin Auto-Loading Keyword-Plugin Mapping Matrix', () => {
+describe('LLM Detection Response Handling', () => {
   const hookPath = path.join(
     process.cwd(),
     'plugins/specweave/hooks/user-prompt-submit.sh'
   );
 
-  // Define the expected keyword → plugin mappings
-  const KEYWORD_PLUGIN_MATRIX = [
-    // Frontend
-    { keywords: ['react', 'vue', 'angular', 'svelte', 'nextjs', 'dashboard', 'component', 'frontend'], plugin: 'sw-frontend' },
-    // Backend
-    { keywords: ['api', 'graphql', 'express', 'database', 'postgres', 'mongodb', 'backend'], plugin: 'sw-backend' },
-    // Testing
-    { keywords: ['test', 'vitest', 'jest', 'playwright', 'cypress'], plugin: 'sw-testing' },
-    // Kubernetes
-    { keywords: ['kubernetes', 'k8s', 'helm', 'argocd'], plugin: 'sw-k8s' },
-    // Infrastructure
-    { keywords: ['docker', 'terraform', 'aws', 'azure', 'gcp'], plugin: 'sw-infra' },
-    // External tools
-    { keywords: ['github'], plugin: 'sw-github' },
-    { keywords: ['jira'], plugin: 'sw-jira' },
-    { keywords: ['ado'], plugin: 'sw-ado' },
-    // Mobile
-    { keywords: ['mobile', 'expo', 'ios', 'android', 'flutter'], plugin: 'sw-mobile' },
-    // ML/AI
-    { keywords: ['ml', 'ai', 'pytorch', 'tensorflow', 'mlops', 'llm'], plugin: 'sw-ml' },
-    // Kafka
-    { keywords: ['kafka', 'confluent'], plugin: 'sw-kafka' },
-    // Payments
-    { keywords: ['stripe', 'paypal', 'payment'], plugin: 'sw-payments' },
-    // Release
-    { keywords: ['release', 'changelog'], plugin: 'sw-release' },
-    // Diagrams
-    { keywords: ['diagram', 'mermaid'], plugin: 'sw-diagrams' },
-  ];
+  it('should handle JSON output from detect-intent', () => {
+    const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-  it.each(KEYWORD_PLUGIN_MATRIX)(
-    'should map keywords %j to plugin $plugin',
-    ({ keywords, plugin }) => {
-      const hookContent = fs.readFileSync(hookPath, 'utf-8');
+    // Should parse JSON response
+    expect(hookContent).toContain('JSON_OUTPUT');
+    expect(hookContent).toContain('grep -E');
+  });
 
-      // Check that the plugin is mapped somewhere in the hook
-      expect(hookContent).toContain(plugin);
+  it('should handle multiple plugins in response', () => {
+    const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Check that at least one keyword from the group is in the mapping section
-      const hasKeyword = keywords.some(k => hookContent.includes(k));
-      expect(hasKeyword).toBe(true);
-    }
-  );
+    // Should iterate over plugins array
+    expect(hookContent).toContain('for plugin in');
+  });
+
+  it('should handle empty plugins array gracefully', () => {
+    const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+    // Should check if plugins were detected
+    expect(hookContent).toContain('-n "$DETECTED_PLUGINS"');
+  });
+
+  it('should use timeout for LLM call', () => {
+    const hookContent = fs.readFileSync(hookPath, 'utf-8');
+
+    // Should have timeout protection
+    expect(hookContent).toContain('timeout');
+  });
 });

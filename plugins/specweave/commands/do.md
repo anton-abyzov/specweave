@@ -278,6 +278,129 @@ fi
 - `testMode` is not "TDD"
 - Already showed banner in current session
 
+### Step 1.5.5: TDD Marker Validation (CRITICAL when TDD mode is enabled)
+
+**🚨 CRITICAL: When TDD mode is active, verify tasks.md has TDD markers!**
+
+This step MUST run BEFORE Step 1.6 enforcement to catch the case where TDD is enabled but tasks were NOT generated with `/sw:increment`.
+
+**Check for TDD markers in tasks.md:**
+
+```bash
+INCREMENT_PATH=".specweave/increments/<id>"
+TASKS_FILE="$INCREMENT_PATH/tasks.md"
+
+# Count TDD markers
+RED_COUNT=$(grep -c '\[RED\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+GREEN_COUNT=$(grep -c '\[GREEN\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+REFACTOR_COUNT=$(grep -c '\[REFACTOR\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+TOTAL_MARKERS=$((RED_COUNT + GREEN_COUNT + REFACTOR_COUNT))
+
+echo "TDD Markers found: RED=$RED_COUNT, GREEN=$GREEN_COUNT, REFACTOR=$REFACTOR_COUNT"
+```
+
+**If TDD mode is enabled BUT no markers found (TOTAL_MARKERS == 0):**
+
+```typescript
+function validateTDDMarkers(tasksContent: string, tddMode: string, tddEnforcement: string): void {
+  if (tddMode !== 'TDD') return; // Not TDD mode, skip
+
+  const hasRedMarkers = tasksContent.includes('[RED]');
+  const hasGreenMarkers = tasksContent.includes('[GREEN]');
+  const hasRefactorMarkers = tasksContent.includes('[REFACTOR]');
+
+  if (!hasRedMarkers && !hasGreenMarkers && !hasRefactorMarkers) {
+    // TDD mode enabled but NO markers in tasks.md!
+    const message = `
+⚠️  TDD MODE ENABLED BUT TASKS LACK TDD MARKERS
+
+Your config has TDD mode enabled:
+  testing.defaultTestMode: "TDD"
+
+But tasks.md has NO [RED], [GREEN], [REFACTOR] markers.
+
+This means TDD enforcement CANNOT work because:
+  • /sw:do checks task markers to enforce order
+  • Without markers, enforcement is silently bypassed
+
+CAUSE: Tasks were likely created manually or before TDD was enabled.
+
+FIX OPTIONS:
+  1. (Recommended) Regenerate tasks with /sw:increment
+     This will create proper RED→GREEN→REFACTOR triplets
+
+  2. Add markers manually to existing tasks:
+     ### T-001: [RED] Write failing test for feature X
+     ### T-002: [GREEN] Implement feature X to pass test
+     ### T-003: [REFACTOR] Clean up feature X code
+
+  3. Disable TDD mode:
+     Set testing.defaultTestMode: "test-after" in config.json
+`;
+
+    if (tddEnforcement === 'strict') {
+      console.error(message);
+      console.error('❌ BLOCKED: Cannot proceed without TDD markers in strict mode.');
+      console.error('   Fix tasks.md or change tddEnforcement to "warn".');
+      throw new Error('TDD_MARKERS_MISSING');
+    } else if (tddEnforcement === 'warn') {
+      console.warn(message);
+      console.warn('⚠️  Proceeding without TDD enforcement (warn mode)...');
+    }
+    // If tddEnforcement === 'off', silently continue
+  }
+}
+```
+
+**Enforcement behavior:**
+
+| tddEnforcement | TDD Enabled + No Markers | Behavior |
+|----------------|--------------------------|----------|
+| `strict` | **BLOCK** | ❌ "Cannot proceed without TDD markers. Run /sw:increment or add markers manually." |
+| `warn` (default) | **WARN but allow** | ⚠️ "TDD markers missing. Enforcement bypassed. Consider regenerating tasks." |
+| `off` | **No check** | Silent pass |
+
+**Example output (strict mode, no markers):**
+
+```
+❌ TDD MARKER VALIDATION FAILED
+
+TDD mode is enabled (testing.defaultTestMode: "TDD")
+But tasks.md has 0 TDD markers:
+  • [RED] markers: 0
+  • [GREEN] markers: 0
+  • [REFACTOR] markers: 0
+
+This means TDD discipline CANNOT be enforced!
+
+💡 To fix, choose one:
+   1. /sw:increment "feature-name"  ← Regenerate with TDD tasks
+   2. Add [RED]/[GREEN]/[REFACTOR] markers to task titles
+   3. Set tddEnforcement: "warn" to proceed anyway
+
+Blocked in strict mode. Fix markers or change enforcement level.
+```
+
+**Example output (warn mode, no markers):**
+
+```
+⚠️  TDD MARKERS MISSING
+
+TDD mode is enabled but tasks.md lacks [RED]/[GREEN]/[REFACTOR] markers.
+TDD enforcement is effectively DISABLED for this increment.
+
+💡 For proper TDD discipline, regenerate tasks: /sw:increment "feature"
+
+Proceeding without enforcement (warn mode)...
+```
+
+**When this validation passes:**
+- TDD mode not enabled → Skip (no validation needed)
+- TDD mode enabled + markers found → Pass (proceed to Step 1.6)
+- TDD mode enabled + no markers + strict → Block (user must fix)
+- TDD mode enabled + no markers + warn → Warn and proceed
+- TDD mode enabled + no markers + off → Silent pass
+
 ### Step 1.6: TDD Enforcement (MANDATORY when TDD mode is enabled)
 
 **🚨 CRITICAL: When TDD mode is active, enforce RED→GREEN→REFACTOR order!**

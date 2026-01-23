@@ -46,7 +46,7 @@ If automatic setup doesn't work (or folder not trusted):
 /plugin install specweave
 
 # 4. (Optional) Install other plugins as needed
-/plugin install specweave-github
+/plugin install sw-github@specweave
 
 # 5. Restart Claude Code
 ```

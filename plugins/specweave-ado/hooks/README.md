@@ -117,10 +117,10 @@ npx specweave init my-project
 
 ```bash
 # Install plugin
-/plugin install specweave-ado
+/plugin install sw-ado@specweave
 
 # Verify hook registration
-cat ~/.claude/settings.json | grep specweave-ado
+cat ~/.claude/settings.json | grep sw-ado
 ```
 
 ---

@@ -83,14 +83,14 @@ The plugin is automatically installed with SpecWeave. To verify installation:
 
 ```bash
 # List installed plugins
-claude plugin list --installed | grep specweave-mobile
+claude plugin list --installed | grep sw-mobile
 ```
 
 To reinstall or update:
 
 ```bash
 # Reinstall from marketplace
-claude plugin install specweave-mobile
+claude plugin install sw-mobile@specweave
 ```
 
 ## Usage
