@@ -66,16 +66,20 @@ fi
 
 ### 2. Do Command (`/sw:do`)
 
-**Reads**: `metadata.json:testMode` (per-increment override) or config
+**Reads**: `metadata.json:testMode` (per-increment override) or config, `testing.tddEnforcement`
 
 **Behavior**:
 - Displays TDD banner when TDD mode detected
 - Shows current phase (RED/GREEN/REFACTOR)
 - Suggests `/sw:tdd-cycle` for guided workflow
+- **ENFORCES** TDD order based on `tddEnforcement` level (Step 1.6)
 
-**Location**: `plugins/specweave/commands/do.md:228-280`
+**Location**: `plugins/specweave/commands/do.md:228-280` (banner), `277-370` (enforcement)
 
-**Does NOT**: Block task ordering violations (just shows info)
+**Enforcement**:
+- `strict`: BLOCKS completing [GREEN] before [RED], [REFACTOR] before [GREEN]
+- `warn`: Shows warning but allows continuation
+- `off`: No checks
 
 ### 3. TDD Enforcement Guard Hook
 
@@ -95,16 +99,21 @@ fi
 
 ### 4. Auto Mode (`/sw:auto`)
 
-**Reads**: `testing.defaultTestMode`
+**Reads**: `testing.defaultTestMode`, `testing.tddEnforcement`, command flags
 
 **Behavior**:
-- Sets internal `tddMode` flag
+- Sets internal `tddMode` flag from config/flags/increment metadata
 - Logs "TDD MODE ENABLED" banner
 - Adds `tests_pass` success criterion
+- **ENFORCES** TDD order during task execution (Step 1.6)
+- Shows TDD section in stop conditions banner
 
-**Known Gap**: Does NOT inject TDD workflow guidance or enforce task ordering
+**TDD enforcement sources** (priority):
+1. `--tdd` or `--strict` flag (highest)
+2. Increment `metadata.json:tddMode`
+3. Global `config.json:testing.defaultTestMode`
 
-**Location**: `src/cli/commands/auto.ts:435,512`
+**Location**: `src/cli/commands/auto.ts`, `plugins/specweave/commands/auto.md` (Step 1.6)
 
 ### 5. TDD Commands
 
@@ -117,13 +126,17 @@ fi
 
 TDD commands are explicit - they work regardless of config. They're shortcuts for TDD workflow.
 
-### 6. Router (`sw-router`)
+### 6. Router (`increment-work-router`)
 
-**Current**: Lists TDD in keywords, routes to `sw-testing:qa-engineer`
+**Reads**: `metadata.json:testMode`, `config.json:testing.defaultTestMode`
 
-**Gap**: Does NOT check config to suggest TDD workflow when TDD is configured
+**Behavior**:
+- Checks TDD mode before routing to active increment
+- When TDD enabled + new work: Suggests `/sw:tdd-cycle` workflow
+- When TDD enabled + resume: Shows TDD phase status and reminder
+- Displays current phase (RED/GREEN/REFACTOR) in resume output
 
-**Location**: `plugins/specweave-router/skills/router/SKILL.md:70-80`
+**Location**: `plugins/specweave/skills/increment-work-router/SKILL.md` (TDD-Aware Routing section)
 
 ## Per-Increment Override
 
@@ -147,11 +160,13 @@ Individual increments can override the global config via `metadata.json`:
 | Config | Component | What Happens |
 |--------|-----------|--------------|
 | `defaultTestMode: "TDD"` | increment-planner | Uses TDD task template |
-| `defaultTestMode: "TDD"` | /sw:do | Shows TDD banner |
-| `defaultTestMode: "TDD"` | /sw:auto | Logs TDD mode, adds test criterion |
-| `tddEnforcement: "strict"` | hook | BLOCKS if GREEN before RED |
-| `tddEnforcement: "warn"` | hook | WARNING only |
-| `tddEnforcement: "off"` | hook | No checks |
+| `defaultTestMode: "TDD"` | /sw:do | Shows TDD banner + **ENFORCES** order |
+| `defaultTestMode: "TDD"` | /sw:auto | TDD banner + **ENFORCES** order |
+| `defaultTestMode: "TDD"` | router | Suggests TDD workflow, shows phase |
+| `tddEnforcement: "strict"` | /sw:do | **BLOCKS** if GREEN before RED |
+| `tddEnforcement: "strict"` | /sw:auto | **BLOCKS** if GREEN before RED |
+| `tddEnforcement: "warn"` | /sw:do, /sw:auto | WARNING but allows |
+| `tddEnforcement: "off"` | all | No TDD checks |
 
 ## Common Scenarios
 
@@ -169,9 +184,11 @@ Individual increments can override the global config via `metadata.json`:
 
 **Expected behavior**:
 1. `/sw:increment` creates tasks with RED/GREEN/REFACTOR phases
-2. `/sw:do` shows TDD banner
-3. Attempting to complete GREEN before RED → BLOCKED
-4. Must write tests first, then implement
+2. `/sw:do` shows TDD banner AND checks enforcement at Step 1.6
+3. `/sw:auto` shows TDD section in stop conditions banner
+4. Router suggests `/sw:tdd-cycle` for new work
+5. Attempting to complete GREEN before RED → **BLOCKED** (strict mode)
+6. Must write tests first, then implement, then refactor
 
 ### Scenario 2: Gradual TDD Adoption
 
@@ -206,19 +223,32 @@ Individual increments can override the global config via `metadata.json`:
 2. No TDD banners or warnings
 3. Tests written after implementation (traditional)
 
-## Known Gaps and Workarounds
+## Fixed Issues (As of 2026-01-23)
 
-### Gap 1: Auto Mode Doesn't Enforce TDD Order
+### Fixed 1: Auto Mode Now Enforces TDD Order ✅
 
-**Workaround**: Use `/sw:auto --tdd` flag for explicit enforcement
+Auto mode Step 1.6 checks TDD mode and enforces RED→GREEN→REFACTOR order.
+Use `--tdd` flag for explicit strict enforcement, or configure globally.
 
-### Gap 2: Router Doesn't Suggest TDD Workflow
+### Fixed 2: Router Now Suggests TDD Workflow ✅
 
-**Workaround**: Explicitly use `/sw:tdd-cycle` when starting TDD work
+Router checks TDD mode before routing and suggests `/sw:tdd-cycle` for new work.
 
-### Gap 3: No Pre-Task Validation
+### Fixed 3: /sw:do Now Has Pre-Task Validation ✅
 
-**Workaround**: Check dependencies manually before starting tasks
+Step 1.6 in `/sw:do` validates TDD order before allowing task completion.
+
+## Remaining Gaps
+
+### Gap 1: Pre-Commit Hook Enforcement
+
+**Status**: Future work
+**Workaround**: Use `tddEnforcement: "strict"` for task-level blocking
+
+### Gap 2: `generateTDDTasks()` Not Integrated
+
+**Status**: Future work
+**Workaround**: Manually structure tasks in RED-GREEN-REFACTOR triplets
 
 ## References
 

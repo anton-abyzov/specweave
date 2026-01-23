@@ -1519,6 +1519,95 @@ E2E Tests:
 
 **DO NOT SKIP THIS STEP!** Users MUST see the EXACT tests that will determine success.
 
+### Step 1.6: TDD Enforcement Check (when TDD mode enabled)
+
+**If TDD mode is detected (`--tdd` flag, config, or increment metadata), enforce TDD discipline!**
+
+```bash
+# Check TDD mode from multiple sources (priority order)
+TDD_MODE=false
+TDD_ENFORCEMENT="warn"  # Default
+
+# 1. Check command-line flag (highest priority)
+if [[ "$*" == *"--tdd"* ]] || [[ "$*" == *"--strict"* ]]; then
+  TDD_MODE=true
+  TDD_ENFORCEMENT="strict"
+fi
+
+# 2. Check increment metadata
+if [[ -f "$INCREMENT_PATH/metadata.json" ]]; then
+  INC_TDD=$(jq -r '.tddMode // .testMode' "$INCREMENT_PATH/metadata.json" 2>/dev/null)
+  [[ "$INC_TDD" == "true" || "$INC_TDD" == "TDD" || "$INC_TDD" == "tdd" ]] && TDD_MODE=true
+fi
+
+# 3. Check global config
+if [[ -f ".specweave/config.json" ]]; then
+  GLOBAL_TDD=$(jq -r '.testing.defaultTestMode' ".specweave/config.json" 2>/dev/null)
+  [[ "$GLOBAL_TDD" == "TDD" || "$GLOBAL_TDD" == "tdd" ]] && TDD_MODE=true
+  # Check enforcement level
+  TDD_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' ".specweave/config.json" 2>/dev/null)
+fi
+```
+
+**If TDD_MODE == true, add TDD enforcement to stop conditions banner:**
+
+```
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  🔴 TDD MODE ACTIVE - RED→GREEN→REFACTOR ENFORCEMENT                         ║
+║                                                                               ║
+║  TDD Task Order Enforcement:                                                  ║
+║    Enforcement Level: [strict|warn|off]                                       ║
+║                                                                               ║
+║    [RED] tasks can be completed freely                                        ║
+║    [GREEN] tasks REQUIRE their [RED] counterpart completed first              ║
+║    [REFACTOR] tasks REQUIRE their [GREEN] counterpart completed first         ║
+║                                                                               ║
+║  ⚠️  strict mode: BLOCKS completion of out-of-order tasks                     ║
+║  ⚠️  warn mode: Shows warning but allows (not recommended)                    ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+```
+
+**TDD Enforcement during task execution:**
+
+```typescript
+// Before marking ANY [GREEN] or [REFACTOR] task complete:
+function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): void {
+  const phase = extractPhase(task.title); // [RED], [GREEN], [REFACTOR]
+  if (!phase || phase === 'RED') return; // RED can always proceed
+
+  const tripletBase = Math.floor((task.number - 1) / 3) * 3 + 1;
+
+  if (phase === 'GREEN') {
+    const redTask = allTasks.find(t => t.number === tripletBase && t.title.includes('[RED]'));
+    if (redTask && redTask.status !== 'completed') {
+      const msg = `TDD VIOLATION: Cannot complete ${task.id} [GREEN] before ${redTask.id} [RED]`;
+      if (enforcement === 'strict') {
+        throw new Error(msg); // BLOCKS completion
+      } else {
+        console.warn(`⚠️ ${msg}`); // Warns but allows
+      }
+    }
+  }
+
+  if (phase === 'REFACTOR') {
+    const greenTask = allTasks.find(t => t.number === tripletBase + 1 && t.title.includes('[GREEN]'));
+    if (greenTask && greenTask.status !== 'completed') {
+      const msg = `TDD VIOLATION: Cannot complete ${task.id} [REFACTOR] before ${greenTask.id} [GREEN]`;
+      if (enforcement === 'strict') {
+        throw new Error(msg); // BLOCKS completion
+      } else {
+        console.warn(`⚠️ ${msg}`); // Warns but allows
+      }
+    }
+  }
+}
+```
+
+**Best practice for TDD in auto mode:**
+1. Enable `--tdd` flag for strict enforcement: `/sw:auto --tdd 0001`
+2. Or set globally: `testing.defaultTestMode: "TDD"` + `testing.tddEnforcement: "strict"`
+3. Tasks should be grouped in triplets: T-001 [RED], T-002 [GREEN], T-003 [REFACTOR]
+
 ### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
 
 **When specweave auto signals increment creation needed:**

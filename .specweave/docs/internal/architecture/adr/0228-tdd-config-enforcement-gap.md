@@ -1,12 +1,15 @@
 # ADR-0228: TDD Configuration Enforcement Gap
 
 **Date**: 2026-01-23
-**Status**: Accepted
+**Status**: Implemented
 **Category**: Testing, Configuration
+**Updated**: 2026-01-23 - Implemented enforcement in commands
 
 ## Context
 
-SpecWeave supports TDD (Test-Driven Development) mode via `testing.defaultTestMode: "TDD"` in config.json. However, investigation reveals that while the configuration is **read** by various components, it is **not enforced** in practice.
+SpecWeave supports TDD (Test-Driven Development) mode via `testing.defaultTestMode: "TDD"` in config.json. Investigation revealed that while the configuration was **read** by various components, it was **not enforced** in practice.
+
+**This gap has been addressed** with enforcement added to `/sw:do`, `/sw:auto`, and the router skill.
 
 ### Current State
 
@@ -31,27 +34,35 @@ SpecWeave supports TDD (Test-Driven Development) mode via `testing.defaultTestMo
 | Enforcement hook | `hooks/v2/guards/tdd-enforcement-guard.sh` | ✅ Detects violations |
 | Banner display | `/sw:do` command | ✅ Shows TDD status |
 
-### What's BROKEN
+### What Was BROKEN (Now Fixed)
 
-| Issue | Location | Impact |
-|-------|----------|--------|
-| Default enforcement is "warn" | config.ts | Violations show warning but don't block |
-| `generateTDDTasks()` orphaned | `task-template-generator.ts` | Dynamic generator never called |
-| Auto mode reads but doesn't enforce | `auto.ts:435,512` | Just logs "TDD MODE ENABLED", no behavior change |
-| `/sw:do` doesn't block ordering | `do.md` | Can mark GREEN complete before RED |
-| Router not TDD-aware | `router/SKILL.md` | Doesn't route to TDD workflow |
+| Issue | Location | Status | Fix |
+|-------|----------|--------|-----|
+| Default enforcement is "warn" | config.ts | ⚠️ By design | Users must set `strict` for blocking |
+| `generateTDDTasks()` orphaned | `task-template-generator.ts` | 🔧 Future work | To be integrated |
+| Auto mode reads but doesn't enforce | `auto.md` | ✅ FIXED | Step 1.6 added TDD enforcement |
+| `/sw:do` doesn't block ordering | `do.md` | ✅ FIXED | Step 1.6 added TDD enforcement |
+| Router not TDD-aware | `router/SKILL.md` | ✅ FIXED | TDD-Aware Routing section added |
 
-### Root Cause
+### Implementation Details
 
-The TDD configuration is **advisory only**:
+**1. `/sw:do` command** (`do.md`):
+- Added Step 1.6: TDD Enforcement
+- Checks TDD mode from config and metadata
+- Enforces RED→GREEN→REFACTOR order based on `tddEnforcement` level
+- BLOCKS on `strict`, WARNS on `warn`
 
-```typescript
-// From auto.ts:435
-tddMode = config.testing?.defaultTestMode?.toUpperCase() === 'TDD';
+**2. `/sw:auto` command** (`auto.md`):
+- Added Step 1.6: TDD Enforcement Check
+- Reads TDD mode from flag, metadata, and global config
+- Adds TDD section to stop conditions banner
+- Includes enforcement code for task completion
 
-// At line 512 - ONLY USED FOR LOGGING:
-logger.info("🔴 TDD MODE ENABLED");  // That's it. No enforcement.
-```
+**3. Router skill** (`increment-work-router/SKILL.md`):
+- Added "TDD-Aware Routing" section
+- Checks TDD mode before routing
+- Suggests `/sw:tdd-cycle` for new work when TDD enabled
+- Shows TDD phase status when resuming
 
 ## Decision
 
@@ -92,11 +103,18 @@ Document the gap and establish TDD enforcement rules in CLAUDE.md and AGENTS.md 
 - TDD mode remains non-blocking by default
 - Users may expect automatic enforcement
 
+### Completed Work
+
+1. ✅ Added TDD enforcement to `/sw:do` command (Step 1.6)
+2. ✅ Added TDD enforcement to `/sw:auto` command (Step 1.6)
+3. ✅ Made router TDD-aware with TDD-Aware Routing section
+4. ✅ Removed `invocableBy` restriction from increment-planner skill
+
 ### Future Work
 
-1. Add TDD enforcement guard in user-prompt-submit.sh
-2. Update auto mode to inject TDD workflow when configured
-3. Make router TDD-aware to suggest `/sw:tdd-cycle` when appropriate
+1. Add TDD enforcement guard in user-prompt-submit.sh (for pre-commit blocking)
+2. Integrate `generateTDDTasks()` for automatic triplet task generation
+3. Add TDD progress tracking in status display
 
 ## References
 
