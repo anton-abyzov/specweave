@@ -69,7 +69,7 @@ export class FrontmatterUpdater {
    * CRITICAL: This is Layer 1 backfill for 3-layer idempotency
    * Must be called after GitHub issue creation to cache issue number
    *
-   * FIX (v1.0.20): Added atomic locking to prevent race conditions when
+   * FIX: Added atomic locking to prevent race conditions when
    * multiple agents update the same user story frontmatter concurrently.
    */
   async updateUserStoryFrontmatter(options: FrontmatterUpdateOptions): Promise<boolean> {

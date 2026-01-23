@@ -402,7 +402,7 @@ graph TB
 - **Accessibility**: WCAG compliance (screen readers)
 
 **SpecWeave Integration**
-- Tests embedded in `tasks.md` (v0.7.0+)
+- Tests embedded in `tasks.md`
 - BDD format: Given/When/Then
 - Coverage targets per task (80-90%)
 - `/specweave:validate-coverage` checks completeness

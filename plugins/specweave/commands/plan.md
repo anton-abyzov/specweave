@@ -40,7 +40,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
    - Increment is not COMPLETED/ABANDONED
    - plan.md/tasks.md don't exist (unless --force)
 
-   **Error Handling (v1.0.102+):**
+   **Error Handling:**
    ```typescript
    import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
 
@@ -113,7 +113,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 # Please specify: /sw:plan 0040
 ```
 
-## Self-Awareness Check (v1.0.102+)
+## Self-Awareness Check
 
 **🎯 OPTIONAL**: Detect if planning for SpecWeave framework increment.
 

@@ -9,7 +9,7 @@ SpecWeave provides explicit slash commands for reliable workflow execution.
 
 **NOTE**: Auto-detection of product descriptions is handled by the `increment-planner` skill. This skill provides command documentation and workflow guidance.
 
-## How SpecWeave Works (v0.1.9)
+## How SpecWeave Works
 
 **To use SpecWeave**: Type `/inc "Feature description"` to start
 
@@ -19,7 +19,7 @@ SpecWeave provides explicit slash commands for reliable workflow execution.
 - ✅ Progress tracking (`/progress` shows status anytime)
 - ✅ Natural flow (finish → start next, no overhead)
 
-## Available Slash Commands (v0.1.9)
+## Available Slash Commands
 
 ### Core Workflow Commands
 

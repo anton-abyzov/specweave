@@ -565,7 +565,7 @@ async function main(): Promise<void> {
         log(`  Tier: ${discovery.tier}`);
         log(`  Languages: ${discovery.techStack.languages.join(', ')}`);
 
-        // Log umbrella detection result (v0.31.0+)
+        // Log umbrella detection result
         if (discovery.umbrella?.isUmbrella) {
           log(`  UMBRELLA PROJECT DETECTED:`);
           log(`    Source: ${discovery.umbrella.source}`);
@@ -626,7 +626,7 @@ async function main(): Promise<void> {
 
       try {
         // Build repo list: umbrella projects have multiple, single-repo creates synthetic entry
-        // CRITICAL FIX (v1.0.12): discovery.umbrella only has childRepoCount, not childRepos array!
+        // CRITICAL FIX: discovery.umbrella only has childRepoCount, not childRepos array!
         // The actual childRepos array is stored in config.json umbrella section.
         // We need to load from config.json OR use discovery.modules (which ARE the child repos!)
         let repos: Array<{ name: string; path: string }> = [];
@@ -744,7 +744,7 @@ async function main(): Promise<void> {
       }
       // deep-native = all modules
 
-      // CRITICAL FIX (v1.0.12): For deep-native mode, increase file sampling!
+      // CRITICAL FIX: For deep-native mode, increase file sampling!
       // Default tier-based sampling (3 files for large codebases) is too shallow.
       // Deep analysis should sample 15-20 files per module for comprehensive coverage.
       const effectiveSamplingConfig = (analysisDepth === 'deep-native')

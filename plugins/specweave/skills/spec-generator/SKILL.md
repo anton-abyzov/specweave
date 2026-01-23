@@ -27,7 +27,7 @@ description: Generates comprehensive specifications (spec.md, plan.md, tasks.md 
 - **Bug Fix**: Problem statement, root cause, solution, impact analysis
 - **Refactoring**: Current state, proposed changes, benefits, migration plan
 
-**YAML Frontmatter** (v0.35.0+ simplified):
+**YAML Frontmatter**:
 ```yaml
 ---
 increment: 0001-feature-name
@@ -66,7 +66,7 @@ This is MANDATORY in BOTH single-project AND multi-project modes.
 ## User Stories & Acceptance Criteria
 
 <!--
-⛔ MANDATORY: **Project**: field on EVERY User Story (v0.35.0+)
+⛔ MANDATORY: **Project**: field on EVERY User Story
 - Single-project: Use config.project.name value
 - Multi-project: Use one of multiProject.projects keys
 NEVER generate a User Story without **Project**: field!
@@ -86,7 +86,7 @@ NEVER generate a User Story without **Project**: field!
 
 ---
 
-### MANDATORY STEP 0: Get Project Context FIRST (v0.34.0+ BLOCKING!)
+### MANDATORY STEP 0: Get Project Context FIRST
 
 **⛔ YOU CANNOT GENERATE spec.md UNTIL YOU COMPLETE THIS STEP!**
 
@@ -127,7 +127,7 @@ For 2-level:
 }
 ```
 
-**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION:**
 
 **RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
 ```
@@ -167,7 +167,7 @@ RESOLVED_BOARD = "digital-ops"     // from boardsByProject (2-level only)
 
 ---
 
-### Per-US Project Resolution (v0.33.0+ MANDATORY)
+### Per-US Project Resolution (MANDATORY)
 
 **🧠 USE CONTEXT API OUTPUT + LIVING DOCS TO RESOLVE PROJECT/BOARD:**
 
@@ -505,7 +505,7 @@ spec_generator:
 
 ---
 
-## 🔀 Multi-Project User Story Generation (v0.29.0+)
+## 🔀 Multi-Project User Story Generation
 
 **CRITICAL**: When umbrella/multi-project mode is detected, user stories MUST be generated per-project!
 
@@ -525,9 +525,9 @@ spec_generator:
 - Multiple project folders exist in `specs/` (e.g., `sw-app-fe/`, `sw-app-be/`, `sw-app-shared/`)
 - User prompt mentions: "3 repos", "frontend repo", "backend API", "shared library"
 
-### Per-User-Story Project Targeting (v0.33.0+ PREFERRED)
+### Per-User-Story Project Targeting (PREFERRED)
 
-**v0.33.0+ introduces per-US project targeting** - each user story specifies its target project inline:
+Each user story specifies its target project inline:
 
 ```markdown
 ## User Stories
@@ -668,8 +668,6 @@ With project-scoped stories:
 
 ---
 
-## Version History
+---
 
-- **v2.0.0** (0.29.0): Added multi-project user story generation support
-- **v1.0.0** (0.8.0): Initial release with flexible template system
-- Based on: Flexible Spec Generator (V2) - context-aware, non-rigid templates
+Based on: Flexible Spec Generator (V2) - context-aware, non-rigid templates

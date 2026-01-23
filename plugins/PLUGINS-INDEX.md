@@ -96,7 +96,7 @@
 
 ---
 
-## Deprecated Plugins (v1.0.130+)
+## Deprecated Plugins
 
 | Plugin | Merged Into | Notes |
 |--------|-------------|-------|

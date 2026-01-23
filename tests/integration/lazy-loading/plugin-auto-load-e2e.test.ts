@@ -877,3 +877,364 @@ This is a test skill for ${pluginName}.
 `
   );
 }
+
+/**
+ * CRITICAL INTEGRATION TEST: React Prompt → sw-frontend Installation
+ *
+ * This test suite verifies the COMPLETE flow from user prompt to plugin installation:
+ *
+ * FLOW:
+ * 1. User types: "Build a React dashboard with TypeScript"
+ * 2. Keyword detector identifies: "react" keyword
+ * 3. Plugin suggester returns: ['sw-frontend']
+ * 4. Cache manager installs: specweave-frontend plugin
+ * 5. Plugin is registered and available
+ *
+ * ROBUSTNESS:
+ * - Works in CI/CD environments (no Claude CLI dependency)
+ * - Uses isolated test directories (no pollution)
+ * - Cleans up after itself
+ * - Tests the ACTUAL functions, not mocked behavior
+ *
+ * This test prevents regression of the core auto-loading feature.
+ */
+describe('CRITICAL: React Prompt → sw-frontend Installation (Full E2E)', () => {
+  let testDir: string;
+  let testMarketplaceDir: string;
+  let testSkillsDir: string;
+  let testStateDir: string;
+  let cacheManager: PluginCacheManager;
+
+  beforeEach(() => {
+    // Create fully isolated test environment
+    testDir = path.join(
+      os.tmpdir(),
+      `specweave-react-frontend-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
+    testMarketplaceDir = path.join(testDir, 'marketplace');
+    testSkillsDir = path.join(testDir, 'skills');
+    testStateDir = path.join(testDir, 'state');
+
+    fs.mkdirSync(testMarketplaceDir, { recursive: true });
+    fs.mkdirSync(testSkillsDir, { recursive: true });
+    fs.mkdirSync(testStateDir, { recursive: true });
+
+    // Create the essential test plugins
+    createTestPlugin(testMarketplaceDir, 'specweave');
+    createTestPlugin(testMarketplaceDir, 'specweave-frontend');
+    createTestPlugin(testMarketplaceDir, 'specweave-backend');
+    createTestPlugin(testMarketplaceDir, 'specweave-testing');
+
+    // Initialize empty registry for isolated testing
+    const testRegistryPath = path.join(testStateDir, 'installed_plugins.json');
+    fs.writeFileSync(testRegistryPath, JSON.stringify({ version: 2, plugins: {} }));
+
+    // Initialize cache manager with isolated paths
+    cacheManager = new PluginCacheManager({
+      activePath: testSkillsDir,
+      marketplacePath: testMarketplaceDir,
+      statePath: path.join(testStateDir, 'plugins-loaded.json'),
+      registryPath: testRegistryPath,
+      pluginCachePath: path.join(testStateDir, 'cache'),
+    });
+  });
+
+  afterEach(() => {
+    if (testDir && fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  describe('Step 1: Keyword Detection', () => {
+    it('should detect "react" keyword in user prompt', () => {
+      const prompt = 'Build a React dashboard with TypeScript';
+      const result = detectSpecWeaveIntent(prompt);
+
+      expect(result.detected).toBe(true);
+      expect(result.matchedKeywords).toContain('react');
+      expect(result.confidence).toBeGreaterThanOrEqual(0.7);
+    });
+
+    it('should detect "React" case-insensitively', () => {
+      const prompts = [
+        'build a REACT app',
+        'Create a react component',
+        'Use ReactJS for the frontend',
+      ];
+
+      for (const prompt of prompts) {
+        const result = detectSpecWeaveIntent(prompt);
+        expect(result.detected).toBe(true);
+        expect(result.matchedKeywords).toContain('react');
+      }
+    });
+
+    it('should detect multiple frontend keywords for higher confidence', () => {
+      const prompt = 'Build a React dashboard with NextJS and TypeScript components';
+      const result = detectSpecWeaveIntent(prompt);
+
+      expect(result.detected).toBe(true);
+      expect(result.confidence).toBeGreaterThanOrEqual(0.8);
+      expect(result.matchedKeywords.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Step 2: Plugin Suggestion', () => {
+    it('should suggest sw-frontend for "react" keyword', () => {
+      const prompt = 'Build a React dashboard';
+      const result = detectSpecWeaveIntent(prompt);
+
+      expect(result.suggestedPlugins).toContain('sw-frontend');
+    });
+
+    it('should suggest sw-frontend for various frontend frameworks', () => {
+      const frameworkPrompts = [
+        { prompt: 'Build a React app', expected: 'sw-frontend' },
+        { prompt: 'Create a Vue component', expected: 'sw-frontend' },
+        { prompt: 'Use NextJS for the app', expected: 'sw-frontend' },
+        { prompt: 'Build Angular dashboard', expected: 'sw-frontend' },
+        { prompt: 'Create UI components', expected: 'sw-frontend' },
+      ];
+
+      for (const { prompt, expected } of frameworkPrompts) {
+        const result = detectSpecWeaveIntent(prompt);
+        expect(result.suggestedPlugins).toContain(expected);
+      }
+    });
+
+    it('should always include sw (core) in suggestions', () => {
+      const prompt = 'Build a React dashboard';
+      const result = detectSpecWeaveIntent(prompt);
+
+      expect(result.suggestedPlugins).toContain('sw');
+    });
+  });
+
+  describe('Step 3: Plugin Installation', () => {
+    it('should install sw-frontend plugin to skills directory', async () => {
+      const installResult = await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+
+      expect(installResult.success).toBe(true);
+      expect(installResult.pluginsAffected).toBe(1);
+    });
+
+    it('should mark plugin as loaded after installation', async () => {
+      await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+
+      expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+    });
+
+    it('should be idempotent - skip if already installed', async () => {
+      // First install
+      const result1 = await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+      expect(result1.pluginsAffected).toBe(1);
+
+      // Second install - should skip
+      const result2 = await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+      expect(result2.pluginsAffected).toBe(0);
+    });
+  });
+
+  describe('Step 4: Full Flow Integration', () => {
+    it('CRITICAL: React prompt should result in sw-frontend being installed', async () => {
+      // This is THE critical test - the full flow from prompt to installation
+
+      // Step 1: User prompt
+      const userPrompt = 'Build a React dashboard with user authentication and Material UI';
+
+      // Step 2: Detect intent from prompt
+      const detection = detectSpecWeaveIntent(userPrompt);
+
+      // Verify detection
+      expect(detection.detected).toBe(true);
+      expect(detection.suggestedPlugins).toContain('sw-frontend');
+
+      // Step 3: Install suggested plugins
+      const installResult = await cacheManager.installPlugins({
+        plugins: detection.suggestedPlugins,
+      });
+
+      // Verify installation succeeded
+      expect(installResult.success).toBe(true);
+
+      // Step 4: Verify sw-frontend is now loaded
+      expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+
+      // Step 5: Verify state was updated
+      const state = cacheManager.readState();
+      expect(state.loadedPlugins).toContain('specweave-frontend');
+    });
+
+    it('CRITICAL: Multiple frontend keywords should still install sw-frontend once', async () => {
+      const userPrompt = 'Build a React app with Vue components and NextJS routing';
+
+      const detection = detectSpecWeaveIntent(userPrompt);
+      expect(detection.suggestedPlugins).toContain('sw-frontend');
+
+      // sw-frontend should only appear once in suggestions
+      const frontendCount = detection.suggestedPlugins.filter(p => p === 'sw-frontend').length;
+      expect(frontendCount).toBe(1);
+
+      // Install and verify
+      const result = await cacheManager.installPlugins({
+        plugins: detection.suggestedPlugins,
+      });
+
+      expect(result.success).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+    });
+
+    it('CRITICAL: Full-stack prompt should install both frontend and backend', async () => {
+      const userPrompt = 'Build a React frontend with Express API backend and PostgreSQL database';
+
+      const detection = detectSpecWeaveIntent(userPrompt);
+
+      expect(detection.suggestedPlugins).toContain('sw-frontend');
+      expect(detection.suggestedPlugins).toContain('sw-backend');
+
+      const result = await cacheManager.installPlugins({
+        plugins: detection.suggestedPlugins,
+      });
+
+      expect(result.success).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw-backend')).toBe(true);
+    });
+  });
+
+  describe('Step 5: Error Handling', () => {
+    it('should handle missing marketplace gracefully', async () => {
+      // Create manager with non-existent marketplace
+      const badManager = new PluginCacheManager({
+        activePath: testSkillsDir,
+        marketplacePath: path.join(testDir, 'nonexistent-marketplace'),
+        statePath: path.join(testStateDir, 'plugins.json'),
+      });
+
+      const result = await badManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Marketplace not found');
+    });
+
+    it('should handle non-existent plugin gracefully', async () => {
+      const result = await cacheManager.installPlugins({
+        plugins: ['nonexistent-plugin'],
+      });
+
+      // Should handle gracefully without throwing
+      // Note: Implementation returns success=true with pluginsAffected=0
+      // because the plugin simply doesn't exist (not a failure)
+      expect(result.pluginsAffected).toBe(0);
+      expect(cacheManager.isPluginLoaded('nonexistent-plugin')).toBe(false);
+    });
+
+    it('should continue installing other plugins if one fails', async () => {
+      await cacheManager.installPlugins({
+        plugins: ['sw-frontend', 'nonexistent-plugin', 'sw-backend'],
+      });
+
+      // Should have partial success
+      // Frontend and backend should be installed despite nonexistent failing
+      expect(cacheManager.isPluginLoaded('sw-frontend')).toBe(true);
+      expect(cacheManager.isPluginLoaded('sw-backend')).toBe(true);
+    });
+  });
+
+  describe('Step 6: Analytics Tracking', () => {
+    it('should track plugin load in analytics', async () => {
+      await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+
+      const analytics = cacheManager.getAnalyticsSummary();
+
+      expect(analytics.totalLoads).toBeGreaterThan(0);
+      expect(analytics.loadedPlugins).toBeGreaterThan(0);
+    });
+
+    it('should record load in history', async () => {
+      await cacheManager.installPlugins({
+        plugins: ['sw-frontend'],
+      });
+
+      const analytics = cacheManager.getAnalyticsSummary();
+
+      expect(analytics.recentLoads.length).toBeGreaterThan(0);
+      // Most recent load should include sw-frontend (as specweave-frontend in directory name)
+      const lastLoad = analytics.recentLoads[analytics.recentLoads.length - 1];
+      expect(lastLoad.plugins).toContain('specweave-frontend');
+    });
+  });
+});
+
+/**
+ * REGRESSION TEST: Ensure keywords trigger correct plugins
+ *
+ * This test matrix verifies that specific keywords always trigger
+ * the expected plugins. If this test fails, it means the keyword
+ * detector configuration has regressed.
+ */
+describe('Keyword → Plugin Mapping Regression Tests', () => {
+  const KEYWORD_PLUGIN_MATRIX = [
+    // Frontend keywords → sw-frontend
+    { keyword: 'react', expectedPlugin: 'sw-frontend' },
+    { keyword: 'vue', expectedPlugin: 'sw-frontend' },
+    { keyword: 'angular', expectedPlugin: 'sw-frontend' },
+    { keyword: 'nextjs', expectedPlugin: 'sw-frontend' },
+    { keyword: 'next.js', expectedPlugin: 'sw-frontend' },
+    { keyword: 'component', expectedPlugin: 'sw-frontend' },
+    { keyword: 'ui', expectedPlugin: 'sw-frontend' },
+    { keyword: 'dashboard', expectedPlugin: 'sw-frontend' },
+    { keyword: 'tailwind', expectedPlugin: 'sw-frontend' },
+
+    // Backend keywords → sw-backend
+    { keyword: 'api', expectedPlugin: 'sw-backend' },
+    { keyword: 'express', expectedPlugin: 'sw-backend' },
+    { keyword: 'database', expectedPlugin: 'sw-backend' },
+    { keyword: 'postgresql', expectedPlugin: 'sw-backend' },
+    { keyword: 'nestjs', expectedPlugin: 'sw-backend' },
+    { keyword: 'graphql', expectedPlugin: 'sw-backend' },
+
+    // Testing keywords → sw-testing
+    { keyword: 'playwright', expectedPlugin: 'sw-testing' },
+    { keyword: 'vitest', expectedPlugin: 'sw-testing' },
+    { keyword: 'e2e', expectedPlugin: 'sw-testing' },
+
+    // Infrastructure keywords → sw-k8s or sw-infra
+    { keyword: 'kubernetes', expectedPlugin: 'sw-k8s' },
+    { keyword: 'k8s', expectedPlugin: 'sw-k8s' },
+    { keyword: 'terraform', expectedPlugin: 'sw-infra' },
+    { keyword: 'docker', expectedPlugin: 'sw-infra' },
+
+    // External sync keywords
+    { keyword: 'github sync', expectedPlugin: 'sw-github' },
+    { keyword: 'jira', expectedPlugin: 'sw-jira' },
+  ];
+
+  it.each(KEYWORD_PLUGIN_MATRIX)(
+    'keyword "$keyword" should suggest plugin "$expectedPlugin"',
+    ({ keyword, expectedPlugin }) => {
+      // Create a prompt containing the keyword
+      const prompt = `I need help with ${keyword} for this project`;
+
+      const result = detectSpecWeaveIntent(prompt);
+
+      // The keyword should be detected
+      expect(result.detected).toBe(true);
+
+      // The expected plugin should be suggested
+      expect(result.suggestedPlugins).toContain(expectedPlugin);
+    }
+  )
+});

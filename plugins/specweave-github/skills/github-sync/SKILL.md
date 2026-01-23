@@ -28,7 +28,7 @@ description: Two-way synchronization between SpecWeave specs and GitHub Projects
 
 ---
 
-## CORRECT Architecture (v0.17.0+)
+## CORRECT Architecture
 
 **CRITICAL**: SpecWeave syncs **SPECS** to GitHub, NOT increments!
 

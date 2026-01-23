@@ -21,7 +21,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 ---
 
-## LSP-Enhanced Analysis (DEFAULT - Claude Code 2.0.74+)
+## LSP-Enhanced Analysis (DEFAULT)
 
 **LSP is ENABLED BY DEFAULT** for all living docs operations. This dramatically improves documentation accuracy:
 
@@ -404,7 +404,7 @@ The job will:
 
 ---
 
-## Update Summary (v0.33.0+)
+## Update Summary
 
 After completion, you'll see a detailed summary showing:
 

@@ -50,7 +50,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ## Workflow
 
-### Step 0: Self-Awareness Check (v1.0.102+)
+### Step 0: Self-Awareness Check
 
 **🎯 OPTIONAL BUT RECOMMENDED**: Check if running in SpecWeave repository itself.
 
@@ -104,7 +104,7 @@ Contributors working on SpecWeave itself need different mindset than users build
    - Read `tasks.md` - Understand implementation steps
    - Read `tests.md` - Understand test strategy
 
-3. **🔄 Load Living Docs Context (NEW - v1.0.47+)**:
+3. **🔄 Load Living Docs Context**:
 
    **Optional but recommended**: Load relevant living documentation context.
 
@@ -175,7 +175,7 @@ Contributors working on SpecWeave itself need different mindset than users build
 
    **If TASK_COUNT <= 25**: Proceed to next step
 
-6. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
+6. **🚨 CRITICAL: Validate AC Presence**:
 
    **MANDATORY**: Run pre-increment-start validation hook to verify spec.md contains ACs.
 
@@ -225,7 +225,7 @@ Contributors working on SpecWeave itself need different mindset than users build
 🎯 Ready to execute!
 ```
 
-### Step 1.5: Check TDD Mode (v1.0.111+)
+### Step 1.5: Check TDD Mode
 
 **Read testMode from metadata.json:**
 

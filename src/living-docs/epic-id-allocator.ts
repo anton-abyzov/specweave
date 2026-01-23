@@ -4,7 +4,7 @@
  * Allocates EP-XXX IDs for external work items (ADO Capabilities, Strategic Themes)
  * based on creation date, attempting chronological insertion while preventing collisions.
  *
- * CRITICAL (v0.30.3): Epics are stored PER-PROJECT in {project}/_epics/ folders,
+ * CRITICAL: Epics are stored PER-PROJECT in {project}/_epics/ folders,
  * NOT at the root level. Each project has its own epic namespace.
  *
  * Features:
@@ -92,7 +92,7 @@ export interface EpicIdAllocatorOptions {
   globalCollisionDetection?: boolean;
 
   /**
-   * External container context for 2-level directory structure (v0.29.0+)
+   * External container context for 2-level directory structure
    */
   externalContainer?: ExternalContainerContext;
 
@@ -105,7 +105,7 @@ export interface EpicIdAllocatorOptions {
  *
  * Intelligently allocates Epic IDs with chronological placement.
  *
- * CRITICAL (v0.30.3): Epics are stored PER-PROJECT in {project}/_epics/ folders.
+ * CRITICAL: Epics are stored PER-PROJECT in {project}/_epics/ folders.
  * Structure: specs/{projectId}/_epics/EP-XXX/EPIC.md
  *
  * In umbrella/multi-repo setups, enable globalCollisionDetection
@@ -137,7 +137,7 @@ export class EpicIdAllocator {
     this.externalContainer = options?.externalContainer;
     this.logger = options?.logger ?? consoleLogger;
 
-    // CRITICAL (v0.30.4): Epics path uses 2-level structure with externalContainer
+    // CRITICAL: Epics path uses 2-level structure with externalContainer
     // - ADO/JIRA 2-level: specs/{containerId}/{projectId}/_epics/
     // - GitHub 1-level: specs/{projectId}/_epics/
     this.epicsPath = path.join(this.getBaseDirectory(), '_epics');
@@ -519,7 +519,7 @@ export class EpicIdAllocator {
     workItem: ExternalEpicItem,
     metadata: ExternalItemMetadata
   ): Promise<string> {
-    // CRITICAL (v0.30.3): Epics are PER-PROJECT: {project}/_epics/EP-XXX/
+    // CRITICAL: Epics are PER-PROJECT: {project}/_epics/EP-XXX/
     const epicPath = path.join(this.epicsPath, epId);
     await fs.ensureDir(epicPath);
 

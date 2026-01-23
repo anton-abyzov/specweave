@@ -313,21 +313,21 @@ Check YAML syntax:
 
 **To prevent future desyncs**:
 
-1. ✅ **Fixed in v0.23.0+**: Atomic transaction pattern in `metadata-manager.ts`
+1. ✅ **Atomic transaction pattern** in `metadata-manager.ts`
    - Updates spec.md FIRST, then metadata.json
    - If spec.md fails, metadata.json is never updated
    - No silent failures
 
-2. ✅ **Added in v0.23.0+**: Desync detection in `/sw:done`
+2. ✅ **Desync detection** in `/sw:done`
    - Validates before closing increment
    - Blocks closure if desync detected
 
-3. ✅ **Added in v0.23.0+**: Pre-commit hook validation
+3. ✅ **Pre-commit hook validation**
    - Scans for desyncs before commit
    - Blocks commit if desyncs found
    - Auto-fix option available
 
-4. ✅ **Added in v0.23.0+**: Comprehensive tests
+4. ✅ **Comprehensive tests**
    - Unit tests for DesyncDetector
    - Integration tests for status updates
    - E2E tests for recovery scenarios

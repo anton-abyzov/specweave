@@ -8,7 +8,7 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-# NOTE: project:/board: fields REMOVED per ADR-0140 (v0.35.0+)
+# NOTE: project:/board: fields REMOVED per ADR-0140
 # Project resolved from per-US **Project**: fields
 # Board resolved from per-US **Board**: fields (2-LEVEL ONLY!)
 multi_project: true

@@ -114,7 +114,7 @@ export class JiraMapper {
    * @param client - JiraClient instance
    * @param config - Configuration with domain from ConfigManager
    * @param projectRoot - Project root path
-   * @param targetProjectId - Target SpecWeave project ID for per-project collision prevention (v1.0.19+)
+   * @param targetProjectId - Target SpecWeave project ID for per-project collision prevention
    */
   constructor(
     client: JiraClient,
@@ -441,7 +441,7 @@ export class JiraMapper {
   private getNextIncrementId(): string {
     // UPDATED: Use centralized IncrementNumberManager to prevent gaps when increments are archived
     // This now scans ALL directories: main, _archive, _abandoned, _paused
-    // PER-PROJECT COLLISION PREVENTION (v1.0.19+): Use project-scoped generation when targetProjectId is set
+    // PER-PROJECT COLLISION PREVENTION: Use project-scoped generation when targetProjectId is set
     if (this.targetProjectId) {
       return IncrementNumberManager.getNextIncrementNumberForProject(this.projectRoot, this.targetProjectId);
     }

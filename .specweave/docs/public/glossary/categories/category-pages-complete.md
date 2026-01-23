@@ -137,7 +137,7 @@ Each category page follows the **EXACT structure** from `architecture.md`:
 ### Testing & Quality
 - TDD, BDD, unit/integration/E2E testing
 - Test pyramid in practice
-- Embedded tests in tasks.md (v0.7.0+)
+- Embedded tests in tasks.md
 - Real TDD workflow (Red → Green → Refactor)
 
 ### DevOps & Tools

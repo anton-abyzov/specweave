@@ -53,7 +53,7 @@ This is the **MOST CRITICAL** mapping. Never deviate from this 1:1 relationship.
 }
 ```
 
-**NOTE (v0.32.0+)**: Standardized to `external_sync.jira.*` for consistency with ADO (`external_sync.ado.*`).
+**NOTE**: Standardized to `external_sync.jira.*` for consistency with ADO (`external_sync.ado.*`).
 Legacy `external_ids.jira.*` is still supported for backwards compatibility.
 
 **Example**:

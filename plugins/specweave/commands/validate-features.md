@@ -7,7 +7,7 @@ description: Validate feature folder consistency across project folders. Detects
 
 Validates that feature folders in project directories (e.g., `specweave/FS-XXX/`) have proper structure.
 
-**Note (v5.0.0+)**: The `_features/` folder is OBSOLETE. Features live in `{project}/FS-XXX/`.
+**Note**: The `_features/` folder is OBSOLETE. Features live in `{project}/FS-XXX/`.
 If you find features in `_features/`, they should be migrated to the correct project folder.
 
 ---
@@ -197,7 +197,7 @@ Discrepancies found: 1
 1. Sync interrupted during feature creation
 2. Increment deleted without cleaning up living docs
 3. Manual editing of living docs structure
-4. Legacy `_features/` folders not yet migrated (v5.0.0+)
+4. Legacy `_features/` folders not yet migrated
 
 ---
 

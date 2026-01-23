@@ -21,7 +21,7 @@ These are the essential commands you'll use every day. Master these first!
 | `/sw:progress` | Check current progress | `/sw:progress` |
 | `/sw:status` | Show all increments status | `/sw:status` |
 
-### New! Reopen Functionality (v0.19.0)
+### Reopen Functionality
 
 | Command | Description | Example |
 |---------|-------------|---------|

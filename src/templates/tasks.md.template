@@ -147,7 +147,7 @@ Tasks are **grouped by User Story** for traceability:
 {{/TASKS}}
 {{/USER_STORIES}}
 
-## Validation Rules (v0.23.0)
+## Validation Rules
 
 Before closing this increment, the following MUST be true:
 
@@ -246,7 +246,7 @@ graph TD
 ## Notes
 
 **Important**:
-- This tasks.md uses **hierarchical structure grouped by User Story** (v0.23.0+)
+- This tasks.md uses **hierarchical structure grouped by User Story**
 - All tasks MUST link to parent US and ACs for traceability
 - Validation enforces 100% AC coverage before increment closure
 - Living docs sync automatically based on task-AC linkage

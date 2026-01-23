@@ -30,7 +30,7 @@ An **increment** = a complete feature with:
 
 > **When to skip plan.md**: Bug fixes, simple migrations, hotfixes, and straightforward tasks where spec.md already describes the approach.
 
-### spec.md Mandatory Fields (v0.31.0+)
+### spec.md Mandatory Fields
 
 **CRITICAL**: spec.md YAML frontmatter MUST include project (and board for 2-level structures):
 
@@ -55,7 +55,7 @@ board: digital-operations    # REQUIRED for 2-level
 
 **See**: [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md)
 
-### Increment Naming Convention (v0.6.0+)
+### Increment Naming Convention
 
 **CRITICAL RULE**: All increments MUST use descriptive names, not just numbers!
 
@@ -93,7 +93,7 @@ board: digital-operations    # REQUIRED for 2-level
             ↓ Creates COMPLETION-SUMMARY.md, archives
 ```
 
-### Increment Discipline (v0.6.0+)
+### Increment Discipline
 
 **THE IRON RULE**: Cannot start increment N+1 until increment N is DONE!
 
@@ -291,14 +291,14 @@ Hooks are shell scripts that fire automatically on SpecWeave events:
 **Fires**: After EVERY TodoWrite call
 **Purpose**: Notify when work completes
 
-**What it does** (v2.0):
+**What it does**:
 - ✅ Detects session end (inactivity-based, 15s threshold)
 - ✅ Plays notification sound (macOS/Linux/Windows)
 - ✅ Shows completion message
 - ✅ Logs to `.specweave/logs/hooks-debug.log`
 - ✅ Debounces duplicate fires (2s window)
 
-**What it does NOT do yet** (planned for v0.6.1):
+**What it does NOT do yet**:
 - ⏳ Update `tasks.md` completion status
 - ⏳ Sync living docs automatically
 - ⏳ Consolidate GitHub/Jira tasks
@@ -321,8 +321,8 @@ Solution: Track inactivity gaps between TodoWrite calls
   "hooks": {
     "post_task_completion": {
       "enabled": true,
-      "update_tasks_md": false,       // TODO: v0.6.1
-      "sync_living_docs": false,      // TODO: v0.6.1
+      "update_tasks_md": false,
+      "sync_living_docs": false,
       "play_sound": true,
       "show_message": true
     }
@@ -330,7 +330,7 @@ Solution: Track inactivity gaps between TodoWrite calls
 }
 ```
 
-### Manual Actions (Until v0.6.1)
+### Manual Actions
 
 Until hooks are fully automated, **YOU MUST**:
 - Update `CLAUDE.md` when structure changes
@@ -338,7 +338,7 @@ Until hooks are fully automated, **YOU MUST**:
 - Update `CHANGELOG.md` for API changes
 - Update `tasks.md` completion status manually (or use TodoWrite carefully)
 
-## Plugin Architecture (v0.4.0+)
+## Plugin Architecture
 
 ### Core vs. Plugin
 
@@ -356,12 +356,12 @@ Until hooks are fully automated, **YOU MUST**:
 
 ### Context Reduction
 
-**Before plugins** (v0.3.7):
+**Before plugins**:
 - Simple React app: 50K tokens (ALL 44 skills + 20 agents loaded)
 - Backend API: 50K tokens
 - ML pipeline: 50K tokens
 
-**After plugins** (v0.4.0+):
+**After plugins**:
 - Simple React app: Core + frontend-stack + github ≈ **16K tokens** (68% reduction!)
 - Backend API: Core + nodejs-backend + github ≈ **15K tokens** (70% reduction!)
 - ML pipeline: Core + ml-ops + github ≈ **18K tokens** (64% reduction!)
@@ -384,7 +384,7 @@ Until hooks are fully automated, **YOU MUST**:
    - Hook scans git diff for new dependencies
    - Suggests for next increment: "Detected Stripe. Enable payment-processing plugin?"
 
-### Hybrid Plugin System (v0.4.1)
+### Hybrid Plugin System
 
 SpecWeave plugins support **dual distribution**:
 
@@ -479,7 +479,7 @@ SpecWeave works with multiple AI coding assistants:
 **A**: Use `/sw:progress` or read `.specweave/increments/####/tasks.md`
 
 ### Q: Can I start a new increment before finishing the current one?
-**A**: NO! (v0.6.0+) The framework **blocks** you. Use `/sw:status` to check, `/sw:close` to close.
+**A**: NO! The framework **blocks** you. Use `/sw:status` to check, `/sw:close` to close.
 
 ### Q: Where do I edit skills/agents/commands?
 **A**: Edit in `src/` (source of truth), then run `npm run install:all` to sync to `.claude/`

@@ -81,7 +81,7 @@ This command implements the **LLM-as-Judge** pattern - an established AI/ML eval
 - `--quick` - Quick mode (default) - Fast assessment with core checks
 - `--pre` - Pre-implementation mode - Check before starting work
 - `--gate` - Quality gate mode - Comprehensive check before closing
-- `--full` - Full multi-agent mode (Phase 3, v0.9.0+)
+- `--full` - Full multi-agent mode (Phase 3)
 - `--ci` - CI mode - Exit 1 on FAIL (for automation)
 - `--no-ai` - Skip AI assessment - Rule-based validation only (free, fast)
 - `--export` - Export blockers/concerns to tasks.md

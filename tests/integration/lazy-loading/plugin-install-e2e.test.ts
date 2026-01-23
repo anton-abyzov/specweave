@@ -19,7 +19,6 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -27,8 +26,12 @@ import * as os from 'os';
 import { detectIntentCommand, type DetectIntentResult } from '../../../src/cli/commands/detect-intent.js';
 // Import cache clearing function to reset CLI detection state between tests
 import { clearCliCache } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
-// CRITICAL: Import getCleanEnv to prevent NODE_OPTIONS debug flags from breaking child processes
-import { getCleanEnv } from '../../test-utils/clean-env.js';
+// REFACTORED: Use SpecWeave's execFileNoThrowSync wrapper instead of raw spawnSync
+// The wrapper already handles:
+// - getCleanEnv() for debug mode compatibility
+// - shell: true on Windows for .cmd files
+// - Structured { success, exitCode, stdout, stderr } result
+import { execFileNoThrowSync } from '../../../src/utils/execFileNoThrow.js';
 
 // Test configuration
 const TEST_PLUGIN = 'specweave-frontend'; // Plugin to test install/uninstall
@@ -38,22 +41,32 @@ const CLAUDE_SKILLS_PATH = path.join(os.homedir(), '.claude', 'skills');
 
 /**
  * Check if Claude CLI is available
- * Uses shell: true on all platforms because claude is often a shell function
+ * Uses execFileNoThrowSync which handles clean env and cross-platform compatibility
  */
 function isClaudeCliAvailable(): boolean {
   try {
-    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-    // This is the UNIVERSAL SOLUTION that works in VSCode debug, terminal, CI/CD, etc.
-    const result = spawnSync('claude', ['--version'], {
-      encoding: 'utf8',
+    // execFileNoThrowSync internally calls getCleanEnv() and handles cross-platform issues
+    const result = execFileNoThrowSync('claude', ['--version'], {
       timeout: 10000,
-      shell: true, // CRITICAL: claude is a shell function on macOS/Linux
-      env: getCleanEnv(),
+      shell: true, // CRITICAL: claude is often a shell function on macOS/Linux
     });
-    return result.status === 0;
+    return result.success;
   } catch {
     return false;
   }
+}
+
+/**
+ * CRITICAL: Check CLI availability at MODULE LOAD TIME
+ *
+ * Vitest's it.skipIf() evaluates the condition when the file is loaded,
+ * NOT when beforeAll runs. So we must check CLI availability here,
+ * at the top level, before any describe blocks register tests.
+ */
+const CLI_AVAILABLE_AT_LOAD = isClaudeCliAvailable();
+if (!CLI_AVAILABLE_AT_LOAD) {
+  console.log('⚠️  Claude CLI not available - tests will be skipped');
+  console.log('   Install: npm install -g @anthropic-ai/claude-code');
 }
 
 /**
@@ -154,35 +167,29 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
 function enablePluginViaClaude(pluginName: string): { success: boolean; output: string } {
   try {
     const pluginKey = `${pluginName}@specweave`;
-    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-    const cleanEnv = getCleanEnv();
 
     // First try to enable (faster, works for already-installed plugins)
-    const enableResult = spawnSync('claude', ['plugin', 'enable', pluginKey], {
-      encoding: 'utf8',
+    const enableResult = execFileNoThrowSync('claude', ['plugin', 'enable', pluginKey], {
       timeout: 30000,
       shell: true,
-      env: cleanEnv,
     });
 
     const enableOutput = enableResult.stdout || enableResult.stderr || '';
 
     // Success if exit 0 OR if already enabled (exit 1 but message says "already enabled")
-    if (enableResult.status === 0 || enableOutput.includes('already enabled')) {
+    if (enableResult.success || enableOutput.includes('already enabled')) {
       return { success: true, output: enableOutput || 'Plugin enabled' };
     }
 
     // If enable fails (not already enabled), try install (for truly new plugins)
-    const installResult = spawnSync('claude', ['plugin', 'install', pluginKey], {
-      encoding: 'utf8',
+    const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
       shell: true,
-      env: cleanEnv,
     });
 
     const installOutput = installResult.stdout || installResult.stderr || '';
     return {
-      success: installResult.status === 0 || installOutput.includes('already'),
+      success: installResult.success || installOutput.includes('already'),
       output: installOutput,
     };
   } catch (error) {
@@ -201,15 +208,13 @@ function installPluginViaClaude(pluginName: string): { success: boolean; output:
     const shortName = PLUGIN_FOLDER_TO_SHORT[pluginName] || pluginName;
     const pluginKey = `${shortName}@specweave`;
 
-    const result = spawnSync('claude', ['plugin', 'install', pluginKey], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
       shell: true,
-      env: getCleanEnv(),
     });
     const output = result.stdout || result.stderr || '';
     return {
-      success: result.status === 0 || output.includes('already') || output.includes('registered'),
+      success: result.success || output.includes('already') || output.includes('registered'),
       output,
     };
   } catch (error) {
@@ -286,17 +291,12 @@ async function runDetectIntent(
  *   npx vitest run tests/integration/lazy-loading/plugin-install-e2e.test.ts -t "Direct CLI"
  */
 describe('Direct CLI Plugin Install Test', () => {
-  // CRITICAL: Clear cache and check CLI availability BEFORE tests run
-  // This prevents test pollution when running with other test files
-  let CLI_AVAILABLE = false;
+  // Use module-level CLI_AVAILABLE_AT_LOAD for it.skipIf() to work correctly
+  // (it.skipIf evaluates at registration time, not at runtime)
 
   beforeAll(() => {
     // Clear any stale cache from previous test files
     clearCliCache();
-    CLI_AVAILABLE = isClaudeCliAvailable();
-    if (!CLI_AVAILABLE) {
-      console.log('⚠️  Claude CLI not available - skipping Direct CLI tests');
-    }
   });
 
   /**
@@ -332,7 +332,7 @@ describe('Direct CLI Plugin Install Test', () => {
     }
   }
 
-  it.skipIf(!CLI_AVAILABLE)('should enable and disable plugin via claude CLI', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should enable and disable plugin via claude CLI', () => {
     // Find a disabled specweave plugin from the registry
     // NOTE: Two naming conventions exist in the wild:
     // - Legacy plugins may have long names like `specweave-backend@specweave`
@@ -342,24 +342,18 @@ describe('Direct CLI Plugin Install Test', () => {
 
     console.log('\n📦 Testing: claude plugin enable/disable ' + pluginKey);
 
-    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-    // This is the UNIVERSAL SOLUTION that works in VSCode debug, terminal, CI/CD, etc.
-    const cleanEnv = getCleanEnv();
-
     // Step 1: Enable the plugin
-    const enableResult = spawnSync('claude', ['plugin', 'enable', pluginKey], {
-      encoding: 'utf8',
+    const enableResult = execFileNoThrowSync('claude', ['plugin', 'enable', pluginKey], {
       timeout: 60000,
       shell: true, // Required for shell functions/aliases on all platforms
-      env: cleanEnv, // UNIVERSAL FIX: prevents debug mode interference
     });
 
-    console.log('   Enable exit code:', enableResult.status);
+    console.log('   Enable exit code:', enableResult.exitCode);
     console.log('   Enable output:', (enableResult.stdout || enableResult.stderr || '').substring(0, 300));
 
     // Step 2: Check if enable succeeded
     const enableOutput = (enableResult.stdout || '') + (enableResult.stderr || '');
-    const enableSuccess = enableResult.status === 0 ||
+    const enableSuccess = enableResult.success ||
       enableOutput.includes('enabled') ||
       enableOutput.includes('already');
 
@@ -376,14 +370,12 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   ✅ Plugin enabled successfully!\n');
 
     // Step 4: Disable the plugin (cleanup)
-    const disableResult = spawnSync('claude', ['plugin', 'disable', pluginKey], {
-      encoding: 'utf8',
+    const disableResult = execFileNoThrowSync('claude', ['plugin', 'disable', pluginKey], {
       timeout: 30000,
       shell: true,
-      env: cleanEnv, // UNIVERSAL FIX
     });
 
-    console.log('   Disable exit code:', disableResult.status);
+    console.log('   Disable exit code:', disableResult.exitCode);
     console.log('   Disable output:', (disableResult.stdout || disableResult.stderr || '').substring(0, 200));
 
     // Verify disable worked
@@ -396,28 +388,24 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   🧹 Plugin disabled (cleanup complete)\n');
   }, 90000);
 
-  it.skipIf(!CLI_AVAILABLE)('should install plugin from official Claude marketplace', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin from official Claude marketplace', () => {
     // Test with a plugin from the OFFICIAL Claude marketplace (not specweave)
     // This tests `claude plugin install` with a real working marketplace
     const pluginKey = 'code-simplifier@claude-plugins-official';
 
     console.log('\n📦 Testing: claude plugin install ' + pluginKey);
 
-    const cleanEnv = getCleanEnv();
-
-    const result = spawnSync('claude', ['plugin', 'install', pluginKey], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
       shell: true,
-      env: cleanEnv, // UNIVERSAL FIX: prevents debug mode interference
     });
 
-    console.log('   Exit code:', result.status);
+    console.log('   Exit code:', result.exitCode);
     console.log('   Output:', (result.stdout || result.stderr || '').substring(0, 300));
 
     // Should succeed (either installed fresh or already installed)
     const output = (result.stdout || '') + (result.stderr || '');
-    const success = result.status === 0 ||
+    const success = result.success ||
       output.includes('installed') ||
       output.includes('already') ||
       output.includes('enabled');
@@ -426,34 +414,35 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   ✅ Official marketplace plugin install worked!\n');
   }, 90000);
 
-  it.skipIf(!CLI_AVAILABLE)('should install and uninstall SpecWeave plugin using SHORT name', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install and uninstall SpecWeave plugin using SHORT name', () => {
     // Test the CORRECT way to install SpecWeave plugins:
     // Use SHORT name from marketplace.json (sw-testing), NOT folder name (specweave-testing)
+    //
+    // IMPORTANT: Claude CLI may register plugins with EITHER:
+    // - Short name: sw-testing@specweave (from marketplace.json "name" field)
+    // - Long name: specweave-testing@specweave (from source folder name)
+    // We need to check for BOTH in assertions
     const pluginKey = 'sw-testing@specweave';
+    const pluginShortName = 'sw-testing'; // Short name from marketplace
+    const pluginLongName = 'specweave-testing'; // Folder name (may also appear in registry)
 
     console.log('\n📦 Testing: Full install/uninstall cycle for ' + pluginKey);
 
-    const cleanEnv = getCleanEnv();
-
     // Step 1: Uninstall first (cleanup any previous state)
     console.log('   Step 1: Cleanup - uninstall if exists');
-    spawnSync('claude', ['plugin', 'uninstall', pluginKey], {
-      encoding: 'utf8',
+    execFileNoThrowSync('claude', ['plugin', 'uninstall', pluginKey], {
       timeout: 30000,
       shell: true,
-      env: cleanEnv,
     });
 
     // Step 2: Install the plugin using SHORT name
     console.log('   Step 2: Install plugin');
-    const installResult = spawnSync('claude', ['plugin', 'install', pluginKey], {
-      encoding: 'utf8',
+    const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
       shell: true,
-      env: cleanEnv,
     });
 
-    console.log('   Install exit code:', installResult.status);
+    console.log('   Install exit code:', installResult.exitCode);
     const installOutput = (installResult.stdout || '') + (installResult.stderr || '');
     console.log('   Install output:', installOutput.substring(0, 300));
 
@@ -464,102 +453,111 @@ describe('Direct CLI Plugin Install Test', () => {
       return; // Skip rest of test
     }
 
-    expect(installResult.status).toBe(0);
+    expect(installResult.exitCode).toBe(0);
     expect(installOutput).toContain('Successfully installed');
 
-    // Step 3: Verify plugin appears in list
-    console.log('   Step 3: Verify in plugin list');
-    const listResult = spawnSync('claude', ['plugin', 'list'], {
-      encoding: 'utf8',
+    // Step 3: Wait for Claude to register the plugin, then verify in list
+    console.log('   Step 3: Waiting 2s for plugin registration...');
+    const waitStart = Date.now();
+    while (Date.now() - waitStart < 2000) {
+      // Busy wait (sync test can't use setTimeout)
+    }
+
+    console.log('   Step 3b: Verify in plugin list');
+    const listResult = execFileNoThrowSync('claude', ['plugin', 'list'], {
       timeout: 15000,
       shell: true,
-      env: cleanEnv,
     });
 
-    expect(listResult.stdout).toContain(pluginKey);
+    console.log('   Plugin list output:', listResult.stdout?.substring(0, 500));
+
+    // Claude CLI may register with SHORT name (sw-testing) or LONG name (specweave-testing)
+    // Check for EITHER format - both are valid
+    const hasShortName = listResult.stdout?.includes(pluginShortName + '@specweave');
+    const hasLongName = listResult.stdout?.includes(pluginLongName + '@specweave');
+    console.log(`   Found short name (${pluginShortName}): ${hasShortName}`);
+    console.log(`   Found long name (${pluginLongName}): ${hasLongName}`);
+    expect(hasShortName || hasLongName).toBe(true);
     console.log('   ✅ Plugin appears in list');
 
-    // Step 4: Uninstall (cleanup)
+    // Step 4: Uninstall (cleanup) - try both names to ensure cleanup
     console.log('   Step 4: Uninstall plugin (cleanup)');
-    const uninstallResult = spawnSync('claude', ['plugin', 'uninstall', pluginKey], {
-      encoding: 'utf8',
+    // Uninstall whichever name is present
+    const uninstallKey = hasShortName ? pluginKey : `${pluginLongName}@specweave`;
+    const uninstallResult = execFileNoThrowSync('claude', ['plugin', 'uninstall', uninstallKey], {
       timeout: 30000,
       shell: true,
-      env: cleanEnv,
     });
 
-    console.log('   Uninstall exit code:', uninstallResult.status);
+    console.log('   Uninstall exit code:', uninstallResult.exitCode);
     const uninstallOutput = (uninstallResult.stdout || '') + (uninstallResult.stderr || '');
     console.log('   Uninstall output:', uninstallOutput.substring(0, 200));
 
-    expect(uninstallResult.status).toBe(0);
+    expect(uninstallResult.exitCode).toBe(0);
     expect(uninstallOutput).toContain('Successfully uninstalled');
+
+    // Step 5: Verify plugin is actually gone from list
+    console.log('   Step 5: Verify plugin removed from list');
+    const verifyResult = execFileNoThrowSync('claude', ['plugin', 'list'], {
+      timeout: 15000,
+      shell: true,
+    });
+    // Plugin should NOT appear in list after uninstall (check BOTH names)
+    const goneShort = !verifyResult.stdout?.includes(pluginShortName + '@specweave');
+    const goneLong = !verifyResult.stdout?.includes(pluginLongName + '@specweave');
+    expect(goneShort && goneLong).toBe(true);
+    console.log('   ✅ Plugin confirmed removed from list');
 
     console.log('   ✅ Full install/uninstall cycle completed!\n');
   }, 120000);
 
-  it.skipIf(!CLI_AVAILABLE)('should list installed plugins via claude plugin list', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should list installed plugins via claude plugin list', () => {
     console.log('\n📋 Testing: claude plugin list');
 
-    const cleanEnv = getCleanEnv();
-
-    const result = spawnSync('claude', ['plugin', 'list'], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
       timeout: 15000,
       shell: true,
-      env: cleanEnv, // UNIVERSAL FIX
     });
 
-    console.log('   Exit code:', result.status);
+    console.log('   Exit code:', result.exitCode);
     console.log('   Output (first 500 chars):');
     console.log('   ', result.stdout?.substring(0, 500).replace(/\n/g, '\n    '));
 
-    expect(result.status).toBe(0);
+    expect(result.success).toBe(true);
     expect(result.stdout).toContain('specweave');
 
     const pluginCount = (result.stdout.match(/@specweave/g) || []).length;
     console.log(`   Found ${pluginCount} SpecWeave plugins\n`);
   });
 
-  it.skipIf(!CLI_AVAILABLE)('should show plugin version via claude --version', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should show plugin version via claude --version', () => {
     console.log('\n🔍 Testing: claude --version');
 
-    const cleanEnv = getCleanEnv();
-
-    const result = spawnSync('claude', ['--version'], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('claude', ['--version'], {
       timeout: 10000,
       shell: true,
-      env: cleanEnv, // UNIVERSAL FIX
     });
 
     console.log('   Output:', result.stdout?.trim());
-    expect(result.status).toBe(0);
+    expect(result.success).toBe(true);
     expect(result.stdout).toBeTruthy();
   });
 });
 
 describe('Plugin Auto-Load E2E Integration', () => {
-  // CRITICAL: Clear cache and check CLI availability INSIDE beforeAll()
-  // This prevents test pollution when running with other test files
-  let CLI_AVAILABLE = false;
+  // Use module-level CLI_AVAILABLE_AT_LOAD for it.skipIf() to work correctly
 
   beforeAll(() => {
     // Clear any stale cache from previous test files
     clearCliCache();
-    CLI_AVAILABLE = isClaudeCliAvailable();
-    if (!CLI_AVAILABLE) {
-      console.log('⚠️  Claude CLI not available - skipping E2E tests');
-      console.log('   Install Claude CLI to run these tests: npm install -g @anthropic-ai/claude-code');
-    }
   });
 
   describe('Prerequisites', () => {
-    it.skipIf(!CLI_AVAILABLE)('should have Claude CLI installed', () => {
-      expect(CLI_AVAILABLE).toBe(true);
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should have Claude CLI installed', () => {
+      expect(CLI_AVAILABLE_AT_LOAD).toBe(true);
     });
 
-    it.skipIf(!CLI_AVAILABLE)('should have core plugins available', () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should have core plugins available', () => {
       // Check that specweave-router is registered (required for lazy loading)
       const routerRegistered = isPluginInstalled('specweave-router');
       const routerExists = isPluginInSkillsDir('specweave-router');
@@ -570,7 +568,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('LLM Detection Flow', () => {
-    it.skipIf(!CLI_AVAILABLE)('should detect frontend plugins for React prompt', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect frontend plugins for React prompt', async () => {
       const prompt = 'Build a React dashboard with TypeScript';
 
       const detection = await runDetectIntent(prompt);
@@ -585,7 +583,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000); // 30s timeout for LLM
 
-    it.skipIf(!CLI_AVAILABLE)('should detect backend plugins for API prompt', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect backend plugins for API prompt', async () => {
       const prompt = 'Create a REST API with Express and PostgreSQL';
 
       const detection = await runDetectIntent(prompt);
@@ -597,7 +595,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000);
 
-    it.skipIf(!CLI_AVAILABLE)('should detect testing plugins for test prompt', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect testing plugins for test prompt', async () => {
       const prompt = 'Write E2E tests with Playwright for the login flow';
 
       const detection = await runDetectIntent(prompt);
@@ -609,7 +607,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000);
 
-    it.skipIf(!CLI_AVAILABLE)('should return empty for non-dev prompt', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should return empty for non-dev prompt', async () => {
       const prompt = 'What is the weather today?';
 
       const detection = await runDetectIntent(prompt);
@@ -646,16 +644,13 @@ describe('Plugin Auto-Load E2E Integration', () => {
      * Helper to uninstall a plugin via Claude CLI
      */
     function uninstallPluginViaClaude(pluginKey: string): { success: boolean; output: string } {
-      const cleanEnv = getCleanEnv();
-      const result = spawnSync('claude', ['plugin', 'uninstall', pluginKey], {
-        encoding: 'utf8',
+      const result = execFileNoThrowSync('claude', ['plugin', 'uninstall', pluginKey], {
         timeout: 30000,
         shell: true,
-        env: cleanEnv,
       });
       const output = (result.stdout || '') + (result.stderr || '');
       return {
-        success: result.status === 0 || output.includes('not installed') || output.includes('Successfully'),
+        success: result.success || output.includes('not installed') || output.includes('Successfully'),
         output,
       };
     }
@@ -664,14 +659,11 @@ describe('Plugin Auto-Load E2E Integration', () => {
      * Helper to check if plugin is installed via Claude CLI
      */
     function isPluginInstalledViaCli(pluginKey: string): boolean {
-      const cleanEnv = getCleanEnv();
-      const result = spawnSync('claude', ['plugin', 'list'], {
-        encoding: 'utf8',
+      const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
         timeout: 15000,
         shell: true,
-        env: cleanEnv,
       });
-      return result.status === 0 && result.stdout?.includes(pluginKey);
+      return result.success && result.stdout?.includes(pluginKey);
     }
 
     /**
@@ -701,7 +693,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // SETUP: Just log - don't uninstall anything before test
     // We'll track what we install and clean up ONLY those
     beforeAll(() => {
-      if (!CLI_AVAILABLE) return;
+      if (!CLI_AVAILABLE_AT_LOAD) return;
       console.log('\n📋 E2E SETUP: Starting clean test - will track installed plugins for cleanup');
       pluginsInstalledByTest.clear();
     });
@@ -709,7 +701,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // TEARDOWN: Clean up ONLY plugins that THIS TEST installed
     // This is safe because we tracked exactly what we installed
     afterAll(() => {
-      if (!CLI_AVAILABLE) return;
+      if (!CLI_AVAILABLE_AT_LOAD) return;
 
       if (pluginsInstalledByTest.size === 0) {
         console.log('\n✨ E2E TEARDOWN: No plugins were installed by this test - nothing to clean up');
@@ -738,7 +730,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       console.log('   ✅ Cleanup complete');
     });
 
-    it.skipIf(!CLI_AVAILABLE)('should install plugin via detect-intent --install and VERIFY installation', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin via detect-intent --install and VERIFY installation', async () => {
       // Use React prompt which should detect specweave-frontend
       // This is the ONLY plugin this test will install
       const prompt = 'Build a React dashboard with TypeScript and Material UI';
@@ -814,7 +806,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 90000); // 90s timeout for LLM + install + verification
 
-    it.skipIf(!CLI_AVAILABLE)('should handle already-installed plugins gracefully', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should handle already-installed plugins gracefully', async () => {
       // Use same React prompt - if frontend plugin was installed in previous test,
       // this should report "already installed"
       const prompt = 'Create a Vue.js component for user profile';
@@ -846,7 +838,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('Direct Plugin Installation via Claude CLI', () => {
-    it.skipIf(!CLI_AVAILABLE)('should install plugin via claude plugin install', async () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin via claude plugin install', async () => {
       // Use Claude's native CLI: `claude plugin install sw-testing@specweave`
       const result = installPluginViaClaude(TEST_PLUGIN);
       expect(result.success).toBe(true);
@@ -862,7 +854,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(registered || exists).toBe(true);
     });
 
-    it.skipIf(!CLI_AVAILABLE)('should report plugin already installed on repeat install', () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should report plugin already installed on repeat install', () => {
       // Claude CLI gracefully handles already-installed plugins
       const result = installPluginViaClaude(TEST_PLUGIN);
 
@@ -885,7 +877,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // Tests that use Claude CLI directly (not through specweave)
     // Claude CLI has: enable, disable, install, uninstall, list
 
-    it.skipIf(!CLI_AVAILABLE)('should enable plugin via claude plugin enable', () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should enable plugin via claude plugin enable', () => {
       // Use Claude CLI directly to enable a plugin
       const result = enablePluginViaClaude(TEST_PLUGIN);
 
@@ -899,22 +891,19 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(enabled).toBe(true);
     });
 
-    it.skipIf(!CLI_AVAILABLE)('should list plugins via claude plugin list', () => {
-      // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-      const result = spawnSync('claude', ['plugin', 'list'], {
-        encoding: 'utf8',
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should list plugins via claude plugin list', () => {
+      const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
         timeout: 15000,
         shell: true,
-        env: getCleanEnv(),
       });
 
-      expect(result.status).toBe(0);
+      expect(result.success).toBe(true);
       expect(result.stdout).toContain('specweave');
 
       console.log(`📦 Found ${(result.stdout.match(/specweave/g) || []).length} specweave plugins`);
     });
 
-    it.skipIf(!CLI_AVAILABLE)('should show enabled plugins in settings.json', () => {
+    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should show enabled plugins in settings.json', () => {
       // Verify Claude's enabledPlugins tracking works
       if (!fs.existsSync(CLAUDE_SETTINGS_PATH)) {
         console.log('⚠️  settings.json not found, skipping');
@@ -939,16 +928,13 @@ describe('Plugin Auto-Load E2E Integration', () => {
 });
 
 describe('Config Toggle Tests', () => {
-  // CRITICAL: Clear cache and check CLI availability INSIDE beforeAll()
-  // This prevents test pollution when running with other test files
-  let CLI_AVAILABLE = false;
+  // Use module-level CLI_AVAILABLE_AT_LOAD for it.skipIf() to work correctly
   const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-config-test-${Date.now()}`);
   const TEST_CONFIG_PATH = path.join(TEST_PROJECT_DIR, '.specweave', 'config.json');
 
   beforeAll(() => {
     // Clear any stale cache from previous test files
     clearCliCache();
-    CLI_AVAILABLE = isClaudeCliAvailable();
     // Create test project with config
     fs.mkdirSync(path.join(TEST_PROJECT_DIR, '.specweave'), { recursive: true });
   });
@@ -962,7 +948,7 @@ describe('Config Toggle Tests', () => {
     }
   });
 
-  it.skipIf(!CLI_AVAILABLE)('should skip detection when pluginAutoLoad.enabled: false', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should skip detection when pluginAutoLoad.enabled: false', () => {
     // Write config with autoload disabled
     fs.writeFileSync(
       TEST_CONFIG_PATH,
@@ -979,13 +965,10 @@ describe('Config Toggle Tests', () => {
 
     // Run detect-intent from test project dir
     // Quote the prompt to prevent shell from splitting it into multiple arguments
-    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-    const result = spawnSync('npx', ['specweave', 'detect-intent', '"Build a React app"'], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('npx', ['specweave', 'detect-intent', '"Build a React app"'], {
       timeout: 10000,
       cwd: TEST_PROJECT_DIR,
       shell: true, // Use shell on all platforms for consistency
-      env: getCleanEnv(),
     });
 
     // Should return quickly with skipped: true
@@ -996,12 +979,12 @@ describe('Config Toggle Tests', () => {
         expect(parsed.plugins).toEqual([]);
       } catch {
         // If parsing fails, just check it didn't take long (no LLM call)
-        expect(result.status).toBeDefined();
+        expect(result.exitCode).toBeDefined();
       }
     }
   });
 
-  it.skipIf(!CLI_AVAILABLE)('should run detection when pluginAutoLoad.enabled: true', () => {
+  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should run detection when pluginAutoLoad.enabled: true', () => {
     // Write config with autoload enabled
     fs.writeFileSync(
       TEST_CONFIG_PATH,
@@ -1018,13 +1001,10 @@ describe('Config Toggle Tests', () => {
 
     // Run detect-intent from test project dir
     // Quote the prompt to prevent shell from splitting it into multiple arguments
-    // CRITICAL: Use getCleanEnv() to prevent NODE_OPTIONS debug flags from breaking child process
-    const result = spawnSync('npx', ['specweave', 'detect-intent', '"Build a React app"'], {
-      encoding: 'utf8',
+    const result = execFileNoThrowSync('npx', ['specweave', 'detect-intent', '"Build a React app"'], {
       timeout: 30000, // LLM takes time
       cwd: TEST_PROJECT_DIR,
       shell: true, // Use shell on all platforms for consistency
-      env: getCleanEnv(),
     });
 
     if (result.stdout) {

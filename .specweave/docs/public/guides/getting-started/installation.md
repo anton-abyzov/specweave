@@ -654,7 +654,7 @@ EOF
 
 ### Windows
 
-- ✅ Full support with v0.3.3+
+- ✅ Full support
 - ✅ UNC paths supported (e.g., `\\Mac\Home\...`)
 - ✅ Network drives supported
 - ⚠️ Hooks may require WSL or Git Bash

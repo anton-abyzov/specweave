@@ -86,7 +86,7 @@ graph TD
 
 ## BDD in SpecWeave
 
-SpecWeave uses **BDD format** for test plans in `tasks.md` (v0.7.0+):
+SpecWeave uses **BDD format** for test plans in `tasks.md`:
 
 ### Example Task with BDD
 

@@ -79,7 +79,7 @@ Loading entire specifications wastes tokens and money. SpecWeave uses:
 
 Four levels of testing ensure quality:
 1. Specification acceptance criteria (AC-IDs like AC-US1-01)
-2. Feature test strategy (embedded in tasks.md, v0.7.0+)
+2. Feature test strategy (embedded in tasks.md)
 3. Skill test cases (YAML)
 4. Code tests ([E2E](/docs/glossary/terms/e2e), unit, integration)
 

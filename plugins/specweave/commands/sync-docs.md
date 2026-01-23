@@ -24,7 +24,7 @@ Arguments provided: [user's arguments]
 - Check for increment ID: `0001`, `0002`, etc., or none (sync all - NEW DEFAULT)
 - Check for `--all` flag (explicit sync all)
 
-**NEW DEFAULT BEHAVIOR (v0.23.0+)**:
+**DEFAULT BEHAVIOR**:
 - **No arguments** → Sync all increments with spec.md (batch mode)
 - **Specific increment ID** → Sync that increment only
 - **`--all` flag** → Sync all increments (explicit)

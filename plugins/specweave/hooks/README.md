@@ -8,19 +8,19 @@
 ## Purpose
 
 Core hooks automate SpecWeave's fundamental workflows:
-- **Sound notifications** when tasks complete (v1.0.77+: plays when task marked `[x]` in tasks.md)
+- **Sound notifications** when tasks complete (plays when task marked `[x]` in tasks.md)
 - **Living docs sync** after task completion
 - **Translation** of non-English documentation
 - **Self-reflection** for AI-driven quality improvements
 - **Auto mode loops** for autonomous execution
 
-**Note**: External tool sync (GitHub, JIRA, Azure DevOps) has been moved to respective plugin hooks as of v0.13.0. See "Architecture Changes" section below.
+**Note**: External tool sync (GitHub, JIRA, Azure DevOps) has been moved to respective plugin hooks. See "Architecture Changes" section below.
 
 ---
 
 ## Available Hooks
 
-### 1. `user-prompt-submit.sh` ⭐ NEW (v0.13.0+)
+### 1. `user-prompt-submit.sh`
 **Triggers**: BEFORE user's command executes (prompt-based hook)
 
 **Actions** (Zero-Token Validation):
@@ -65,7 +65,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 
 **Sound**: Glass.aiff (or system equivalent)
 
-**Architecture Note** (v0.13.0+): External tool sync (GitHub, JIRA, ADO) has been **removed from this hook** and moved to respective plugin hooks:
+**Architecture Note**: External tool sync (GitHub, JIRA, ADO) has been **removed from this hook** and moved to respective plugin hooks:
 - `plugins/specweave-github/hooks/post-task-completion.sh`
 - `plugins/specweave-jira/hooks/post-task-completion.sh`
 - `plugins/specweave-ado/hooks/post-task-completion.sh`
@@ -148,7 +148,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 
 ---
 
-### 🔊 Task Completion Sound (v1.0.77+)
+### 🔊 Task Completion Sound
 
 **Triggers**: Automatically when any task is marked `[x]` in tasks.md
 
@@ -352,7 +352,7 @@ Logs are gitignored (in `.specweave/logs/`)
 
 ---
 
-## Architecture Changes (v0.13.0)
+## Architecture Changes
 
 ### What Changed
 
@@ -371,7 +371,7 @@ Logs are gitignored (in `.specweave/logs/`)
 
 ### Why This Change?
 
-**Problem (Before v0.13.0)**:
+**Problem (Before the change)**:
 ```
 Core hook (500+ lines)
 ├── Core concerns (sound, docs, translation)
@@ -386,7 +386,7 @@ Issues:
 ❌ Violates separation of concerns
 ```
 
-**Solution (v0.13.0+)**:
+**Solution (Current)**:
 ```
 Core hook (330 lines)           GitHub plugin hook (241 lines)
 ├── Core concerns only          ├── GitHub API calls
@@ -420,7 +420,7 @@ Benefits:
 
 ### Migration Guide
 
-**For existing projects** (v0.12.x → v0.13.0):
+**For existing projects**:
 
 **Option 1: Automatic (Recommended)**
 ```bash

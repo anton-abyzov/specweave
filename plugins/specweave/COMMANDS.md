@@ -12,7 +12,7 @@ All SpecWeave commands are namespaced for brownfield safety and follow a consist
 
 ## Command Naming Convention
 
-**All command files**: `{command-name}.md` (simplified in v0.34.0)
+**All command files**: `{command-name}.md`
 **YAML name field**: `{command-name}`
 **Invocation**: `/sw:{command-name}` (namespace prefix required)
 
@@ -38,7 +38,7 @@ All SpecWeave commands are namespaced for brownfield safety and follow a consist
 6. `progress.md` - Show increment progress → `/sw:progress`
 7. `validate.md` - Validate increment quality → `/sw:validate`
 8. `workflow.md` - Smart workflow navigator → `/sw:workflow`
-9. `context.md` - Load living docs context for LLM → `/sw:context` (NEW v1.0.47)
+9. `context.md` - Load living docs context for LLM → `/sw:context`
 
 ### Status & Reporting (5 commands)
 10. `status.md` - Show all increments overview → `/sw:status`
@@ -142,7 +142,7 @@ SpecWeave plugins provide additional namespaced commands:
 
 ## Removed/Deprecated Commands
 
-**Duplicates removed** (v0.7.0):
+**Duplicates removed**:
 - ❌ `inc.md` → Use `/sw:increment`
 
 **Deprecated commands**:
@@ -150,7 +150,7 @@ SpecWeave plugins provide additional namespaced commands:
 - ❌ `specweave-validate-coverage.md` → Use `/sw:check-tests`
 - ❌ `list-increments.md` → Use `/sw:status`
 
-**Removed in v1.0.47**:
+**Removed**:
 - ❌ `costs.md` - Cost tracking infrastructure not wired up
 
 ## Brownfield Safety

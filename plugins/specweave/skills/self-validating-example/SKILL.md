@@ -5,7 +5,7 @@ activation:
   - "create validated api"
   - "generate api with tests"
   - "self-validating endpoint"
-# NEW v2.1.0: Skill-level hooks for self-validation
+# Skill-level hooks for self-validation
 hooks:
   pre_tool_use:
     - validate: file_exists
