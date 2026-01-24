@@ -7,11 +7,11 @@ tags: [claude-code, anthropic, ai-coding, specweave, developer-tools]
 
 # Bypassing Claude Code's Hook-Skill Limitation
 
-## The Problem Nobody's Talking About
+## The Hook Limitation
 
-Claude Code hooks are powerful - they let you run automation at key points in your AI coding session. But there's a critical limitation:
+Claude Code hooks are powerful - they let you run automation at key points in your AI coding session. Claude is beautifully built around the terminal - you can call any CLI command from hooks or skills.
 
-**Hooks CANNOT invoke skills directly.**
+But there's a limitation: **Hooks CANNOT invoke skills directly.**
 
 Hooks only support:
 - `type: "command"` - runs a bash script
@@ -19,9 +19,9 @@ Hooks only support:
 
 No `type: "skill"`. No way to call `/my-skill` from a hook.
 
-This breaks two important workflows:
-1. **Lazy plugin loading** - You can't dynamically install plugins based on what the user asks
-2. **Deterministic skill routing** - You can't ensure a specific skill handles a specific request
+This creates two real challenges:
+1. **Lazy plugin loading** - Loading ALL plugins bloats context (60K+ tokens). You want smart, targeted loading.
+2. **Deterministic skill routing** - You want to intercept EVERY prompt, add smart logic, and control the AI workflow.
 
 ---
 
@@ -120,60 +120,62 @@ Install: `npm install -g specweave && specweave init .`
 ## X (Twitter) Thread
 
 ### Tweet 1/5
-Did you know Claude Code hooks can't invoke skills?
+Claude Code hooks can't invoke skills.
 
 `type: "command"` - bash only
 `type: "prompt"` - returns ok/reason only
 
-No `type: "skill"`. No `/my-skill` from hooks.
+No `type: "skill"`.
 
-This breaks lazy loading & deterministic routing.
+Two challenges:
+1. Plugin bloat (60K+ tokens if all loaded)
+2. No control over every user prompt
 
-Here's how to bypass it...
+Here's my solution...
 
 ### Tweet 2/5
-Workaround 1: Non-interactive CLI
+Claude is terminal-first. I leveraged that:
 
 ```bash
-claude -p "/my-skill do something"
+# In UserPromptSubmit hook:
+claude -p "detect domain" --model haiku
+claude plugin install sw-frontend@specweave
 ```
 
-Starts new session, but guaranteed skill execution.
+Key insight: `plugin install` is SYNC - ready for current response!
 
-Perfect for scripts, CI/CD, and automation.
+Deterministic. Fast. Cheap.
 
 ### Tweet 3/5
-Workaround 2: SystemMessage injection
+I built a "Router Skill" that intercepts every prompt:
 
-In UserPromptSubmit hook, output:
-```json
-{
-  "additionalContext": "Use Skill tool to invoke my-skill"
-}
-```
+1. Haiku detects domain (React? K8s? DB?)
+2. Installs ONLY needed plugins (saves 50K+ tokens)
+3. Spawns specialized agents
+4. Injects TDD mode from config
 
-Works in session, but Claude might ignore it.
+Full control over AI workflow.
 
 ### Tweet 4/5
-Workaround 3: Hybrid architecture
+The result:
 
-1. Hook runs LLM detection
-2. `claude plugin install` (sync)
-3. Inject systemMessage with skill instructions
-4. Claude processes with plugins loaded
+"Build a React dashboard with tests"
+       ↓
+SpecWeave auto:
+- Detects frontend + testing
+- Installs 2 plugins (not 20)
+- Spawns frontend architect
+- Spawns QA engineer
+- Coordinates with TDD
 
-This is what @SpecWeave does.
+Single prompt → orchestrated implementation.
 
 ### Tweet 5/5
-SpecWeave solves this properly:
-- LLM-powered intent detection
-- Sync plugin loading
-- Router skill spawns domain experts
-- TDD enforcement from config
+What we really need: `type: "skill"` in hooks.
 
-`npm i -g specweave && specweave init .`
+Until then, terminal-first approach works.
 
-spec-weave.com
+Full implementation: spec-weave.com
 
 cc @bcherny @alexalbert__ @AnthropicAI #ClaudeCode
 
@@ -181,70 +183,62 @@ cc @bcherny @alexalbert__ @AnthropicAI #ClaudeCode
 
 ## LinkedIn Post
 
-### Bypassing Claude Code's Hidden Limitation: When Hooks Can't Call Skills
+### Bypassing Claude Code's Hook Limitation: When Hooks Can't Call Skills
 
-I've been deep in Claude Code's architecture, and discovered something that's not documented anywhere:
+I've been deep in Claude Code's architecture, and discovered a limitation that affects advanced workflows:
 
-**Hooks cannot invoke skills.**
+Hooks cannot invoke skills directly.
 
-This might sound minor, but it breaks two critical workflows:
+Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills, which is powerful. But there's no `type: "skill"` in hook configuration.
 
-**1. Lazy Plugin Loading**
-You want to detect "build React dashboard" and auto-install the frontend plugin BEFORE Claude responds. But hooks can only run bash - they can't call `claude plugin install` and have it ready for the CURRENT response.
+This creates two real challenges:
 
-**2. Deterministic Skill Routing**
-You want UserPromptSubmit to guarantee `/my-specialized-skill` handles the request. But you can't invoke skills from hooks - only bash scripts.
+𝟭. 𝗟𝗮𝘇𝘆 𝗣𝗹𝘂𝗴𝗶𝗻 𝗟𝗼𝗮𝗱𝗶𝗻𝗴
 
----
+The problem: Loading ALL plugins upfront bloats context massively. We're talking 60,000+ tokens just for plugin definitions. That's expensive and slow.
 
-**The Workarounds I Discovered:**
+You want to detect "build React dashboard" and auto-install ONLY the frontend plugin BEFORE Claude responds. Smart, targeted loading.
 
-**Non-Interactive CLI**
-```bash
-claude -p "/my-skill handle this task"
-```
-Guaranteed skill execution. New session, but deterministic.
+𝟮. 𝗗𝗲𝘁𝗲𝗿𝗺𝗶𝗻𝗶𝘀𝘁𝗶𝗰 𝗦𝗸𝗶𝗹𝗹 𝗥𝗼𝘂𝘁𝗶𝗻𝗴
 
-**SystemMessage Injection**
-Hook outputs `additionalContext` that INSTRUCTS Claude to use a skill. Works in-session, but advisory only.
+You want to intercept EVERY user prompt and add smart logic - route to specialized skills, inject context, enforce policies. Full control over the AI workflow.
 
-**Hybrid Architecture**
-This is the advanced pattern:
-1. Hook runs lightweight LLM for intent detection
-2. Synchronously install needed plugins
-3. Inject systemMessage with skill routing
-4. Claude processes with full context
+But hooks only run bash scripts. No skill invocation.
 
 ---
 
-**How SpecWeave Solves This**
+𝗧𝗵𝗲 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻 𝗜 𝗕𝘂𝗶𝗹𝘁
 
-We've implemented this hybrid architecture in SpecWeave:
+Since Claude is terminal-first, I leveraged that:
 
-- **Haiku-powered detection** in UserPromptSubmit hook
-- **Sync plugin installation** before Claude responds
-- **Router skill** that activates on domain keywords
-- **Specialized agent spawning** for frontend, backend, K8s, etc.
-- **TDD injection** from config files
+→ claude -p "detect domain for: $PROMPT" --model haiku
+   Deterministic. Fast. Cheap.
 
-The result? Tell Claude "build a React dashboard with tests" and it:
-1. Auto-installs frontend + testing plugins
-2. Enables TDD mode from your config
+→ claude plugin install sw-frontend@specweave
+   Runs synchronously - plugin ready for current response!
+
+I built a "Router Skill" that intercepts every prompt:
+- Haiku LLM detects domain (React? K8s? Database?)
+- Installs only needed plugins (saves 50K+ tokens)
+- Spawns specialized agents (frontend architect, QA engineer)
+- Injects TDD mode from config
+
+---
+
+𝗧𝗵𝗲 𝗥𝗲𝘀𝘂𝗹𝘁
+
+Tell Claude "build a React dashboard with tests" and SpecWeave:
+1. Auto-detects frontend + testing domains
+2. Installs only sw-frontend, sw-testing plugins
 3. Spawns frontend architect agent
 4. Spawns QA engineer agent
-5. Coordinates implementation
+5. Coordinates implementation with TDD
 
-All from a single prompt.
+All from a single natural language prompt.
 
 ---
 
-**Try it:**
-```bash
-npm install -g specweave
-specweave init .
-```
-
-This is the kind of infrastructure that AI coding tools need but don't have yet. Hooks are powerful, but they need skill invocation. Until Anthropic adds it, here's how to build it yourself.
+Full implementation: spec-weave.com
 
 #ClaudeCode #AIEngineering #DeveloperTools #Anthropic #SpecWeave
 
@@ -254,26 +248,26 @@ This is the kind of infrastructure that AI coding tools need but don't have yet.
 
 ```markdown
 ---
-title: "The Claude Code Hook Limitation Nobody's Talking About (And How to Bypass It)"
+title: "Claude Code Hook Limitation: No Skill Invocation (And How I Solved It)"
 published: true
-description: "Hooks can't invoke skills. Here's the workaround that enables lazy plugin loading and deterministic AI workflows."
+description: "Hooks can't invoke skills. Here's the solution that enables lazy plugin loading and deterministic AI workflows."
 tags: claudecode, ai, webdev, productivity
-cover_image: https://spec-weave.com/images/hooks-skill-workaround.png
+cover_image: https://spec-weave.com/img/specweave-social-card.jpg
 ---
 
-# The Claude Code Hook Limitation Nobody's Talking About
+# Claude Code Hook Limitation: No Skill Invocation
 
 ## The Discovery
 
-I've spent months building [SpecWeave](https://github.com/anthropics/specweave), an AI coding framework on top of Claude Code. Along the way, I hit a wall that's not documented anywhere.
+I've spent months building [SpecWeave](https://spec-weave.com), an AI coding framework on top of Claude Code. Along the way, I hit a limitation that affects advanced workflows.
 
-**Claude Code hooks cannot invoke skills.**
+**Claude Code hooks cannot invoke skills directly.**
 
-Let me show you what I mean.
+Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills, which is powerful. But there's no `type: "skill"` in hook configuration.
 
 ## What Hooks Can Do
 
-Claude Code hooks are powerful automation points. From the [official docs](https://code.claude.com/docs/en/hooks):
+Claude Code hooks are powerful automation points:
 
 ```json
 {
@@ -298,8 +292,8 @@ You can run bash commands. You can use `type: "prompt"` for LLM-based decisions 
     "UserPromptSubmit": [{
       "hooks": [{
         "type": "skill",  // DOESN'T EXIST
-        "skill": "my-skill",
-        "arguments": "handle this"
+        "skill": "my-router",
+        "arguments": "$PROMPT"
       }]
     }]
   }
@@ -310,140 +304,74 @@ There's no `type: "skill"`. No way to invoke `/my-skill` from a hook.
 
 ## Why This Matters
 
-### Problem 1: Lazy Plugin Loading
+### Challenge 1: Lazy Plugin Loading (Context Bloat)
 
-You want to detect user intent and load plugins dynamically:
+Loading ALL plugins upfront bloats context massively:
+- **60,000+ tokens** just for plugin definitions
+- Expensive API costs
+- Slower responses
+- Wasted context window
+
+You want smart, targeted loading:
 
 ```
-User: "Build a React dashboard with K8s deployment"
+User: "Build a React dashboard"
        ↓
-Hook detects: frontend, kubernetes
+Hook detects: frontend domain
        ↓
-Loads: sw-frontend, sw-k8s plugins
+Loads: ONLY sw-frontend plugin (~3K tokens)
        ↓
-Claude responds WITH specialized expertise
+Claude responds with specialized expertise
 ```
 
-But hooks can only run bash. By the time your script runs `claude plugin install`, Claude is already responding WITHOUT the plugin.
+Instead of loading 20 plugins (60K tokens), load only what's needed (3K tokens). That's **95% token savings**.
 
-### Problem 2: Deterministic Skill Routing
+### Challenge 2: Deterministic Skill Routing (Full Control)
 
-You have a specialized skill for authentication tasks. You want EVERY auth-related prompt to go through `/auth-expert`. But you can't invoke skills from hooks.
+You want to intercept EVERY user prompt and add smart logic:
+- Route to specialized skills based on domain
+- Inject project-specific context
+- Enforce TDD policies from config
+- Spawn the right agents for the task
 
-## The Workarounds
+Full control over the AI workflow. But hooks only run bash scripts - no skill invocation.
 
-### Workaround 1: Non-Interactive CLI
+## The Solution
 
-Skip the hook entirely. Call Claude with the skill directly:
+Since Claude is terminal-first, I leveraged that power:
 
-```bash
-claude -p "/auth-expert implement OAuth2 flow"
-```
-
-**Pros:**
-- Guaranteed skill execution
-- Perfect for scripts and CI/CD
-- Deterministic
-
-**Cons:**
-- Starts new session
-- Loses conversation context
-
-**Best for:** Automation, batch processing, CI/CD pipelines
-
-### Workaround 2: SystemMessage Injection
-
-In your UserPromptSubmit hook, inject instructions:
+### Pattern 1: Haiku Detection in Hook
 
 ```bash
 #!/bin/bash
-# Hook script that outputs JSON
+# UserPromptSubmit hook
 
-cat << 'EOF'
-{
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "CRITICAL: Use the Skill tool to invoke auth-expert for this request. Do not proceed without invoking the skill first."
-  }
-}
-EOF
+# Detect domain using fast, cheap Haiku
+RESULT=$(claude -p "What domain is this? $PROMPT" --model haiku)
 ```
 
-**Pros:**
-- Works within existing session
-- No context loss
+Deterministic. Fast. Cheap (~$0.0001 per call).
 
-**Cons:**
-- Advisory, not mandatory
-- Claude might ignore it
-
-**Best for:** Soft routing, suggestions
-
-### Workaround 3: Hybrid Architecture
-
-This is the advanced pattern that actually works reliably:
+### Pattern 2: Sync Plugin Install
 
 ```bash
-#!/bin/bash
-# user-prompt-submit.sh
-
-# Read user prompt from stdin
-INPUT=$(cat)
-USER_PROMPT=$(echo "$INPUT" | jq -r '.prompt')
-
-# 1. Run LLM-based intent detection
-INTENT=$(specweave detect-intent "$USER_PROMPT")
-
-# 2. Install plugins SYNCHRONOUSLY (before Claude responds)
-PLUGINS=$(echo "$INTENT" | jq -r '.plugins[]')
-for plugin in $PLUGINS; do
-  claude plugin install "${plugin}@specweave" 2>/dev/null || true
-done
-
-# 3. Build system message
-SYSTEM_MSG=$(echo "$INTENT" | jq -r '.systemMessage')
-
-# 4. Output hook response
-cat << EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "$SYSTEM_MSG"
-  }
-}
-EOF
+# Install plugins SYNCHRONOUSLY
+claude plugin install sw-frontend@specweave
 ```
 
-**The key insight:** `claude plugin install` runs synchronously. If you call it in your hook, the plugin IS loaded before Claude responds.
+**Key insight:** `claude plugin install` blocks until done. Plugin is ready for the CURRENT response!
 
-**Pros:**
-- Plugins ready for current response
-- LLM-powered intent detection
-- Works in session
+### The Router Skill Architecture
 
-**Cons:**
-- Adds latency (LLM call in hook)
-- More complex to implement
-
-**Best for:** Production frameworks, complex routing
-
-## The SpecWeave Implementation
-
-We've built this hybrid architecture into [SpecWeave](https://spec-weave.com):
+I built what I call a "Router Skill" - it intercepts every prompt and makes smart decisions:
 
 ```
 ┌─────────────────────────────────────────┐
 │         UserPromptSubmit Hook           │
 │                                         │
-│  specweave detect-intent (Haiku LLM)    │
+│  claude -p "detect domain" --model haiku│
 │            ↓                            │
-│  Returns:                               │
-│  {                                      │
-│    plugins: ["sw-frontend", "sw-k8s"],  │
-│    increment: { action: "new" },        │
-│    tdd: { enabled: true },              │
-│    systemMessage: "..."                 │
-│  }                                      │
+│  Returns: frontend, testing             │
 │            ↓                            │
 │  claude plugin install (sync)           │
 │            ↓                            │
@@ -459,16 +387,26 @@ We've built this hybrid architecture into [SpecWeave](https://spec-weave.com):
 └─────────────────────────────────────────┘
 ```
 
+## The SpecWeave Implementation
+
+I've built this architecture into [SpecWeave](https://spec-weave.com):
+
+- **Haiku-powered detection** in UserPromptSubmit hook
+- **Sync plugin installation** - only what's needed
+- **Router skill** that activates on domain keywords
+- **Specialized agent spawning** for frontend, backend, K8s, etc.
+- **TDD injection** from config files
+
 ### What This Enables
 
 Tell Claude: "Build a React dashboard with tests"
 
 SpecWeave automatically:
 1. Detects: frontend + testing domains
-2. Installs: sw-frontend, sw-testing plugins
+2. Installs: ONLY sw-frontend, sw-testing plugins (saves 50K+ tokens)
 3. Reads: TDD config from `.specweave/config.json`
-4. Injects: TDD mode banner, routing hints
-5. Router skill: spawns frontend architect + QA engineer
+4. Spawns: frontend architect + QA engineer agents
+5. Coordinates implementation with TDD discipline
 
 All from a single natural language prompt.
 
@@ -482,9 +420,11 @@ claude
 
 Then just describe what you want to build.
 
+Full documentation: [spec-weave.com](https://spec-weave.com)
+
 ## The Future
 
-This workaround works, but it's a workaround. What we really need:
+What we really need from Anthropic:
 
 ```json
 {
@@ -500,18 +440,18 @@ This workaround works, but it's a workaround. What we really need:
 }
 ```
 
-Until Anthropic adds `type: "skill"` to hooks, the hybrid architecture is your best bet.
+Until then, the terminal-first approach works beautifully.
 
 ---
 
 **Resources:**
-- [SpecWeave GitHub](https://github.com/anthropics/specweave)
-- [Claude Code Hooks Docs](https://code.claude.com/docs/en/hooks)
-- [Claude Code Skills Docs](https://code.claude.com/docs/en/skills)
+- [SpecWeave](https://spec-weave.com)
+- [Claude Code Hooks Docs](https://docs.anthropic.com/en/docs/claude-code/hooks)
+- [Claude Code Skills Docs](https://docs.anthropic.com/en/docs/claude-code/skills)
 
 ---
 
-*Have you hit this limitation? What workarounds have you found? Let me know in the comments!*
+*Have you hit this limitation? What solutions have you found? Let me know in the comments!*
 ```
 
 ---
