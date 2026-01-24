@@ -30,6 +30,7 @@ import * as path from 'path';
 import {
   detectPluginsViaLLM,
   IncrementAction,
+  SkillRouting,
 } from '../../core/lazy-loading/llm-plugin-detector.js';
 import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
@@ -76,6 +77,9 @@ export interface DetectIntentResult {
   };
   /** Whether increment assist was skipped (config disabled) */
   incrementSkipped?: boolean;
+
+  /** Skill routing recommendation (v1.0.150+) */
+  routing?: SkillRouting;
 }
 
 /**
@@ -287,6 +291,23 @@ export async function detectIntentCommand(
     }
   }
 
+  // Process skill routing recommendation (v1.0.150+)
+  if (llmResult.routing && llmResult.routing.skills.length > 0) {
+    result.routing = llmResult.routing;
+
+    const primarySkill = llmResult.routing.skills.find(s => s.priority === 'primary');
+    const secondarySkills = llmResult.routing.skills.filter(s => s.priority === 'secondary');
+
+    logInfo('detect-intent', 'Skill routing recommendation', {
+      primarySkill: primarySkill?.fullName,
+      secondarySkills: secondarySkills.map(s => s.fullName),
+      suggestPlanMode: llmResult.routing.workflow.suggestPlanMode,
+      phases: llmResult.routing.workflow.phases,
+      confidence: llmResult.routing.confidence,
+      reasoning: llmResult.routing.reasoning,
+    });
+  }
+
   // Handle installation if requested
   // Note: No confidence threshold - if LLM says install, we install
   if (options.install && result.plugins.length > 0) {
@@ -344,6 +365,8 @@ export async function detectIntentCommand(
     reasoning: result.reasoning,
     incrementAction: result.increment?.action,
     incrementConfidence: result.increment?.confidence,
+    routingSkillCount: result.routing?.skills.length ?? 0,
+    routingPrimarySkill: result.routing?.skills.find(s => s.priority === 'primary')?.fullName,
   });
 
   return result;
