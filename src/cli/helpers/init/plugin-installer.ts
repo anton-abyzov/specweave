@@ -669,11 +669,7 @@ async function installLazyMode(
     spinner.warn('Router skill not found in marketplace');
   }
 
-  // Step 3: Update state to enable lazy mode
-  const state = cacheManager.readState();
-  state.lazyMode = true;
-
-  // Step 4: Show lazy loading explanation
+  // Step 3: Show lazy loading explanation
   console.log('');
   console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
   console.log('');
