@@ -374,44 +374,55 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 /**
  * Build the system prompt for plugin detection, increment recommendation, and skill routing
  *
- * v1.0.153: SIMPLIFIED prompt to avoid "prompt too long" errors with Haiku
- * Reduced from ~500 lines to ~100 lines while keeping essential functionality
+ * v1.0.155: STRICT MINIMAL detection - only detect explicitly mentioned technologies
+ * CRITICAL: Do NOT infer or assume plugins. Only detect when keywords are EXPLICITLY present.
  */
 function buildDetectionPrompt(): string {
-  return `Detect SpecWeave plugins and actions from user prompts. Respond with JSON only.
+  return `You are a STRICT plugin detector. Return ONLY plugins for technologies EXPLICITLY mentioned.
+
+CRITICAL RULES:
+1. ONLY return plugins when the EXACT technology keyword appears in the prompt
+2. Do NOT infer or assume. "React dashboard" = sw-frontend ONLY, NOT sw-backend or sw-testing
+3. Do NOT add "related" plugins. If user says "React + Stripe", return ONLY sw-frontend + sw-payments
+4. When in doubt, return FEWER plugins, not more
+5. NEVER return sw-testing unless user explicitly mentions "test", "TDD", "Playwright", "Jest"
+6. NEVER return sw-backend unless user explicitly mentions "API", "database", "Node.js", "Express"
+7. NEVER return sw-infra unless user explicitly mentions "Terraform", "Docker", "AWS", "CI/CD"
+8. NEVER return sw-ado unless user explicitly mentions "Azure DevOps", "ADO", "work items"
 
 OUTPUT FORMAT (JSON only, no markdown):
-{"plugins":[],"confidence":0.9,"reasoning":"brief","increment":{"action":"new|none|small_fix","confidence":0.8,"suggestedName":null,"reasoning":"brief"},"routing":{"skills":[],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.8,"reasoning":"brief"}}
+{"plugins":[],"confidence":0.9,"reasoning":"brief"}
 
-PLUGINS (return exact names):
-- sw-frontend: React, Vue, Angular, Next.js, dashboard, UI, CSS, frontend, component, web app
-- sw-backend: Node.js, Express, API, database, SQL, GraphQL, backend, server
-- sw-testing: test, TDD, Playwright, Jest, Vitest, E2E, QA
-- sw-payments: Stripe, PayPal, checkout, payment, billing, subscription
-- sw-infra: Terraform, AWS, Azure, Docker, CI/CD, serverless, Lambda
-- sw-k8s: Kubernetes, K8s, Helm, pods, deployment, EKS, AKS
-- sw-mobile: React Native, iOS, Android, mobile, Expo
-- sw-ml: ML, machine learning, PyTorch, TensorFlow, AI model
-- sw-kafka: Kafka, event streaming, topics, MSK
-- sw-github: GitHub issues, PRs, Actions
-- sw-jira: JIRA, epics, stories, sprints
-- sw-ado: Azure DevOps, work items, pipelines
+PLUGINS (return ONLY if keyword EXPLICITLY appears):
+- sw-frontend: ONLY if prompt contains: React, Vue, Angular, Next.js, dashboard, UI, CSS, frontend, component
+- sw-payments: ONLY if prompt contains: Stripe, PayPal, checkout, payment, billing, subscription
+- sw-backend: ONLY if prompt contains: Node.js, Express, API, database, SQL, GraphQL, backend, server
+- sw-testing: ONLY if prompt contains: test, TDD, Playwright, Jest, Vitest, E2E, QA
+- sw-infra: ONLY if prompt contains: Terraform, AWS, Azure (cloud), Docker, CI/CD, serverless
+- sw-k8s: ONLY if prompt contains: Kubernetes, K8s, Helm, pods, deployment
+- sw-mobile: ONLY if prompt contains: React Native, iOS, Android, mobile, Expo
+- sw-ml: ONLY if prompt contains: ML, machine learning, PyTorch, TensorFlow
+- sw-kafka: ONLY if prompt contains: Kafka, event streaming
+- sw-github: ONLY if prompt contains: GitHub issues, GitHub PR, GitHub Actions
+- sw-jira: ONLY if prompt contains: JIRA, epics, stories, sprints
+- sw-ado: ONLY if prompt contains: Azure DevOps, ADO, work items, pipelines
 
-INCREMENT ACTIONS:
-- "new": feature work, multi-file changes ("Build X", "Add Y", "Create Z")
-- "small_fix": typos, config tweaks, minor changes
-- "none": questions, chat, unclear intent, already using /sw: commands
+EXAMPLES:
 
-SKILL ROUTING (REQUIRED when plugins detected):
-- Plugin→skill mapping: sw-frontend→frontend-architect, sw-backend→database-optimizer, sw-testing→qa-engineer, sw-payments→payment-integration
-- fullName = "plugin:skill:skill" (e.g., "sw-frontend:frontend-architect:frontend-architect")
-- First plugin = primary, others = secondary
+"Build React dashboard with Stripe"
+{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React=frontend, Stripe=payments. No backend/testing/infra mentioned."}
 
-Example 1: "Build React dashboard with Stripe"
-{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React+Stripe","increment":{"action":"new","confidence":0.9,"suggestedName":"react-stripe-dashboard","reasoning":"Feature"},"routing":{"skills":[{"name":"frontend-architect","plugin":"sw-frontend","fullName":"sw-frontend:frontend-architect:frontend-architect","priority":"primary","invokeWhen":"after_increment","reason":"UI"},{"name":"payment-integration","plugin":"sw-payments","fullName":"sw-payments:payment-integration:payment-integration","priority":"secondary","invokeWhen":"after_increment","reason":"Payments"}],"workflow":{"suggestPlanMode":true,"phases":[]},"confidence":0.9,"reasoning":"Multi-domain"}}
+"Build a React app"
+{"plugins":["sw-frontend"],"confidence":0.95,"reasoning":"React=frontend only. No other tech mentioned."}
 
-Example 2: "How to use hooks?"
-{"plugins":[],"confidence":0.9,"reasoning":"Question","increment":{"action":"none","confidence":0.95,"reasoning":"No impl"},"routing":{"skills":[],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.5,"reasoning":"None"}}`;
+"Fix the bug in the login page"
+{"plugins":[],"confidence":0.9,"reasoning":"Bug fix, no specific tech mentioned."}
+
+"How to use hooks?"
+{"plugins":[],"confidence":0.9,"reasoning":"Question, no implementation needed."}
+
+"ultrathink" or debugging discussion
+{"plugins":[],"confidence":0.95,"reasoning":"Meta-discussion, not implementation."}`;
 }
 
 /**
@@ -629,9 +640,9 @@ User prompt to analyze:
 Which plugins should be loaded?`;
 
   try {
-    // Execute Claude CLI with Haiku for speed
+    // Execute Claude CLI with Sonnet for accuracy (v1.0.155: switched from Haiku to prevent over-detection)
     // Use --output-format json for faster response and --setting-sources user to skip project context
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', 'user'], timeout);
+    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'sonnet', '--output-format', 'json', '--setting-sources', 'user'], timeout);
 
     // Handle spawn errors - use keyword fallback (v1.0.153)
     if (result.error) {
@@ -743,7 +754,7 @@ Which plugins should be loaded?`;
 
     // Validate and filter plugins
     const rawPlugins = parsed.plugins || [];
-    const validPlugins = rawPlugins.filter((p): p is SpecWeavePlugin =>
+    let validPlugins = rawPlugins.filter((p): p is SpecWeavePlugin =>
       typeof p === 'string' && SPECWEAVE_PLUGINS.includes(p as SpecWeavePlugin)
     );
 
@@ -751,6 +762,21 @@ Which plugins should be loaded?`;
     if (validPlugins.length !== rawPlugins.length) {
       const invalid = rawPlugins.filter((p) => !SPECWEAVE_PLUGINS.includes(p as SpecWeavePlugin));
       logger.debug(`Filtered out invalid plugins: ${invalid.join(', ')}`);
+    }
+
+    // v1.0.155: STRICT MAX PLUGINS LIMIT to prevent over-detection
+    // If LLM returns more than 3 plugins, it's likely over-detecting - fall back to keywords
+    const MAX_PLUGINS_FROM_LLM = 3;
+    if (validPlugins.length > MAX_PLUGINS_FROM_LLM) {
+      logger.warn(`LLM returned ${validPlugins.length} plugins (>${MAX_PLUGINS_FROM_LLM}), likely over-detecting. Using keyword fallback.`);
+      return createKeywordFallbackResult(userPrompt, startTime, `LLM over-detected (${validPlugins.length} plugins)`);
+    }
+
+    // v1.0.155: CONFIDENCE THRESHOLD - reject low-confidence results
+    const confidence = typeof parsed.confidence === 'number' ? parsed.confidence : 0.5;
+    if (confidence < 0.8 && validPlugins.length > 1) {
+      logger.warn(`LLM confidence too low (${confidence}) for ${validPlugins.length} plugins. Using keyword fallback.`);
+      return createKeywordFallbackResult(userPrompt, startTime, `LLM confidence too low (${confidence})`);
     }
 
     // Parse increment recommendation (v1.0.141+)
