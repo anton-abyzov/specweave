@@ -862,12 +862,35 @@ program
 
 // Detect intent command - Hook helper for automatic plugin loading
 program
-  .command('detect-intent <prompt>')
+  .command('detect-intent [prompt]')
   .description('Detect SpecWeave intent from a prompt and optionally install plugins')
   .option('--install', 'Also install detected plugins after detection')
   .option('--silent', 'Silent mode - no stdout output (for hooks)')
-  .action(async (prompt, options) => {
+  .option('--file <path>', 'Read prompt from file instead of argument (avoids shell escaping issues)')
+  .action(async (promptArg, options) => {
     const { detectIntentCommand } = await import('../dist/src/cli/commands/detect-intent.js');
+    const fs = await import('fs');
+
+    // Read prompt from file if specified, otherwise use argument
+    let prompt = promptArg || '';
+    if (options.file) {
+      try {
+        prompt = fs.readFileSync(options.file, 'utf8').trim();
+      } catch (fileError) {
+        if (!options.silent) {
+          console.error(`Error reading file: ${fileError.message}`);
+        }
+        process.exit(1);
+      }
+    }
+
+    if (!prompt) {
+      if (!options.silent) {
+        console.error('Error: No prompt provided. Use positional argument or --file option.');
+      }
+      process.exit(1);
+    }
+
     const result = await detectIntentCommand(prompt, options);
     // Exit code: 0 if plugins detected, 1 if none
     process.exit(result.detected ? 0 : 1);
