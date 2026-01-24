@@ -403,15 +403,15 @@ INCREMENT ACTIONS:
 - "none": questions, chat, unclear intent, already using /sw: commands
 
 SKILL ROUTING (REQUIRED when plugins detected):
-- Map plugin to skill: sw-frontend→frontend-architect, sw-backend→database-optimizer, sw-testing→qa-engineer, sw-payments→payment-integration, sw-k8s→kubernetes-architect, sw-infra→devops
-- First plugin = "primary" skill, rest = "secondary"
-- invokeWhen: "after_increment" for features, "immediate" for simple tasks
-- fullName format: "plugin:skill:skill" (e.g., "sw-frontend:frontend-architect:frontend-architect")
+- Plugin→skill mapping: sw-frontend→frontend-architect, sw-backend→database-optimizer, sw-testing→qa-engineer, sw-payments→payment-integration
+- fullName = "plugin:skill:skill" (e.g., "sw-frontend:frontend-architect:frontend-architect")
+- First plugin = primary, others = secondary
 
-Examples:
-"Build React dashboard with Stripe" → {"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React+Stripe","increment":{"action":"new","confidence":0.9,"suggestedName":"react-stripe-dashboard","reasoning":"Multi-file feature"},"routing":{"skills":[{"name":"frontend-architect","plugin":"sw-frontend","fullName":"sw-frontend:frontend-architect:frontend-architect","priority":"primary","invokeWhen":"after_increment","reason":"React dashboard UI"},{"name":"payment-integration","plugin":"sw-payments","fullName":"sw-payments:payment-integration:payment-integration","priority":"secondary","invokeWhen":"after_increment","reason":"Stripe checkout"}],"workflow":{"suggestPlanMode":true,"phases":["plan","implement"]},"confidence":0.9,"reasoning":"Multi-domain task"}}
-"Fix typo in React" → {"plugins":["sw-frontend"],"confidence":0.9,"reasoning":"React fix","increment":{"action":"small_fix","confidence":0.95,"reasoning":"Minor change"},"routing":{"skills":[{"name":"frontend-architect","plugin":"sw-frontend","fullName":"sw-frontend:frontend-architect:frontend-architect","priority":"primary","invokeWhen":"immediate","reason":"Quick fix"}],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.8,"reasoning":"Simple task"}}
-"How do I use hooks?" → {"plugins":[],"confidence":0.9,"reasoning":"Question only","increment":{"action":"none","confidence":0.95,"reasoning":"No implementation"},"routing":{"skills":[],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.5,"reasoning":"No plugins needed"}}`;
+Example 1: "Build React dashboard with Stripe"
+{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React+Stripe","increment":{"action":"new","confidence":0.9,"suggestedName":"react-stripe-dashboard","reasoning":"Feature"},"routing":{"skills":[{"name":"frontend-architect","plugin":"sw-frontend","fullName":"sw-frontend:frontend-architect:frontend-architect","priority":"primary","invokeWhen":"after_increment","reason":"UI"},{"name":"payment-integration","plugin":"sw-payments","fullName":"sw-payments:payment-integration:payment-integration","priority":"secondary","invokeWhen":"after_increment","reason":"Payments"}],"workflow":{"suggestPlanMode":true,"phases":[]},"confidence":0.9,"reasoning":"Multi-domain"}}
+
+Example 2: "How to use hooks?"
+{"plugins":[],"confidence":0.9,"reasoning":"Question","increment":{"action":"none","confidence":0.95,"reasoning":"No impl"},"routing":{"skills":[],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.5,"reasoning":"None"}}`;
 }
 
 /**
