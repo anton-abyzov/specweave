@@ -232,7 +232,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
           # ONE LLM call for BOTH plugins and increment (using --file flag)
           if command -v timeout >/dev/null 2>&1; then
-            DETECT_OUTPUT=$(timeout 30 specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
+            DETECT_OUTPUT=$(timeout 20 specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           else
             DETECT_OUTPUT=$(specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           fi

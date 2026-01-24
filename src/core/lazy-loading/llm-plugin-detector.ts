@@ -586,7 +586,7 @@ function createKeywordFallbackResult(
  */
 export async function detectPluginsViaLLM(
   userPrompt: string,
-  timeout: number = 30000
+  timeout: number = 20000 // Reduced from 30s to allow time for keyword fallback + install
 ): Promise<LLMDetectionResult> {
   const startTime = performance.now();
 
