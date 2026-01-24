@@ -37,8 +37,9 @@ WRAPPER_VERSION="1.0.153"
 script_name=$(basename "${1:-}" 2>/dev/null)
 case "$script_name" in
   user-prompt-submit.sh)
-    # LLM-based plugin detection (~15s) + plugin installs (~4s) + buffer
-    HOOK_TIMEOUT="${HOOK_TIMEOUT_USER_PROMPT:-30}"
+    # LLM detection can timeout (30s) + keyword fallback + plugin installs (~10s)
+    # Total worst case: 30s LLM timeout + 10s installs + 5s buffer = 45s
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_USER_PROMPT:-45}"
     ;;
   session-start.sh)
     # Project detection may involve file scanning and optional LLM
