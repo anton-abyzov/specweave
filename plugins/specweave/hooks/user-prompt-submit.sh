@@ -88,52 +88,6 @@ if [[ -f "$CONFIG_PATH" ]]; then
   fi
 fi
 
-# ==============================================================================
-# v1.0.155: NEW PLUGIN WARNING HELPER
-# ==============================================================================
-# Checks if plugins were installed mid-session and returns a warning message.
-# Plugins installed after session start won't have their skills/agents available.
-
-check_new_plugins_warning() {
-  local installed_plugins="$1"
-  local session_file="${HOME}/.claude/session-plugins.json"
-  local warning=""
-
-  [[ -z "$installed_plugins" ]] && return
-  [[ ! -f "$session_file" ]] && return
-
-  # Get plugins that were installed at session start
-  local session_start_plugins
-  session_start_plugins=$(jq -r '.plugins // ""' "$session_file" 2>/dev/null)
-
-  # Check each newly installed plugin
-  local new_plugins=""
-  for plugin in $(echo "$installed_plugins" | tr ',' ' '); do
-    local plugin_clean
-    plugin_clean=$(echo "$plugin" | xargs)  # Trim whitespace
-    [[ -z "$plugin_clean" ]] && continue
-
-    # Check if plugin was NOT in session start list
-    if ! echo "$session_start_plugins" | grep -q "$plugin_clean"; then
-      [[ -n "$new_plugins" ]] && new_plugins="$new_plugins, "
-      new_plugins="${new_plugins}${plugin_clean}"
-    fi
-  done
-
-  if [[ -n "$new_plugins" ]]; then
-    warning="\\n\\n⚠️ **NEW PLUGINS INSTALLED MID-SESSION**: ${new_plugins}\\n\\n"
-    warning="${warning}**CRITICAL**: Skills/agents from these plugins are NOT available in this session.\\n"
-    warning="${warning}Claude Code only discovers skills at session start.\\n\\n"
-    warning="${warning}**YOU MUST**:\\n"
-    warning="${warning}1. ✅ Do PLANNING only (use /sw:increment to create spec, tasks)\\n"
-    warning="${warning}2. ❌ Do NOT attempt implementation (Task tool agents WILL FAIL)\\n"
-    warning="${warning}3. 🔄 Tell user to open a NEW Claude Code session for implementation\\n\\n"
-    warning="${warning}**PLANNING AVAILABLE**: /sw:increment, /sw:plan, sw:pm, sw:architect skills\\n"
-    warning="${warning}**NOT AVAILABLE**: Frontend/Backend/Payment agents (need new session)"
-  fi
-
-  echo "$warning"
-}
 
 # ==============================================================================
 # KEYWORD-BASED PLUGIN DETECTION FALLBACK (v1.0.153)
@@ -333,14 +287,10 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                 # Build feedback message
                 if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                  AUTOLOAD_PLUGINS_MSG="🔌 **Loaded plugins**: ${PLUGINS_INSTALLED}\\n"
-
-                  # v1.0.155: Check if any installed plugins are new to this session
-                  NEW_PLUGINS_WARNING=$(check_new_plugins_warning "$PLUGINS_INSTALLED")
-                  if [[ -n "$NEW_PLUGINS_WARNING" ]]; then
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}${NEW_PLUGINS_WARNING}"
-                    echo "[$(date -Iseconds)] new-plugins-mid-session | plugins=${PLUGINS_INSTALLED}" >> "$LAZY_LOAD_LOG"
-                  fi
+                  # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
+                  AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed**: ${PLUGINS_INSTALLED}\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
                 elif [[ -n "$PLUGINS_ALREADY" ]]; then
                   AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
                 fi
@@ -671,14 +621,10 @@ Consider reopening the existing increment:
 
               # Build feedback message (keyword fallback)
               if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                AUTOLOAD_PLUGINS_MSG="🔌 **Loaded plugins** (keyword match): ${PLUGINS_INSTALLED}\\n"
-
-                # v1.0.155: Check if any installed plugins are new to this session
-                NEW_PLUGINS_WARNING=$(check_new_plugins_warning "$PLUGINS_INSTALLED")
-                if [[ -n "$NEW_PLUGINS_WARNING" ]]; then
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}${NEW_PLUGINS_WARNING}"
-                  echo "[$(date -Iseconds)] new-plugins-mid-session | plugins=${PLUGINS_INSTALLED}" >> "$LAZY_LOAD_LOG"
-                fi
+                # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
+                AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed** (keyword match): ${PLUGINS_INSTALLED}\\n"
+                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
+                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
               elif [[ -n "$PLUGINS_ALREADY" ]]; then
                 AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins** (keyword match): ${PLUGINS_ALREADY}\\n"
               fi
