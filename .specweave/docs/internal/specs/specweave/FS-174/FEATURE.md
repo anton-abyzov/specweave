@@ -1,36 +1,39 @@
 ---
 id: FS-174
-title: "Test React Component"
+title: "Router Brain Orchestrator"
 type: feature
-status: planning
+status: active
 priority: P1
-created: 2026-01-23
-lastUpdated: 2026-01-23
-tldr: "Create a simple React component for testing purposes."
-complexity: low
+created: 2025-01-23
+lastUpdated: 2026-01-24
+tldr: "Transform the SpecWeave router into a true 'brain' that orchestrates every user prompt through intelligent skill routing, plugin management, and workflow guidance."
+complexity: high
 stakeholder_relevant: true
 ---
 
-# Test React Component
+# Router Brain Orchestrator
 
 ## TL;DR
 
-**What**: Create a simple React component for testing purposes.
-**Status**: planning | **Priority**: P1
-**User Stories**: 1
+**What**: Transform the SpecWeave router into a true "brain" that orchestrates every user prompt through intelligent skill routing, plugin management, and workflow guidance.
+**Status**: active | **Priority**: P1
+**User Stories**: 4
 
-![Test React Component illustration](assets/feature-fs-174.jpg)
+![Router Brain Orchestrator illustration](assets/feature-fs-174.jpg)
 
 ## Overview
 
-Create a simple React component for testing purposes.
+Transform the SpecWeave router into a true "brain" that orchestrates every user prompt through intelligent skill routing, plugin management, and workflow guidance.
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0174-test-react-component](../../../../increments/0174-test-react-component/spec.md) | ⏳ planning | 2026-01-23 |
+| [0174-router-brain-orchestrator](../../../../increments/0174-router-brain-orchestrator/spec.md) | ⏳ active | 2025-01-23 |
 
 ## User Stories
 
-- [US-001: Button Component](./us-001-button-component.md)
+- [US-001: Skill Routing Detection](./us-001-skill-routing-detection.md)
+- [US-002: Workflow Sequencing](./us-002-workflow-sequencing.md)
+- [US-003: Multi-Skill Coordination](./us-003-multi-skill-coordination.md)
+- [US-004: Brain Message Injection](./us-004-brain-message-injection.md)
