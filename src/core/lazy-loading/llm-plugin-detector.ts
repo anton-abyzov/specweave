@@ -218,6 +218,82 @@ export interface PluginInstallResult {
 let cachedCliStatus: ReturnType<typeof detectClaudeCli> | null = null;
 
 /**
+ * Keyword-based plugin detection fallback (v1.0.153)
+ *
+ * Fast, reliable detection when LLM is unavailable or fails.
+ * Uses simple regex matching against known keywords.
+ *
+ * @param prompt - User prompt to analyze
+ * @returns Array of plugin names to install
+ */
+export function detectPluginsByKeywords(prompt: string): SpecWeavePlugin[] {
+  const plugins: SpecWeavePlugin[] = [];
+
+  // Frontend
+  if (/react|vue|angular|next\.?js|svelte|remix|astro|dashboard|frontend|component|ui\b|css|tailwind|spa|web.?app/i.test(prompt)) {
+    plugins.push('sw-frontend');
+  }
+
+  // Backend
+  if (/node\.?js|express|nest\.?js|fastify|hono|backend|server|\bapi\b|rest|graphql|database|sql|postgres|mysql|mongodb|redis|cli.?tool/i.test(prompt)) {
+    plugins.push('sw-backend');
+  }
+
+  // Testing
+  if (/\btest|tdd|playwright|cypress|jest|vitest|e2e|unit.?test|integration.?test|\bqa\b|quality/i.test(prompt)) {
+    plugins.push('sw-testing');
+  }
+
+  // Payments
+  if (/stripe|paypal|payment|checkout|billing|subscription|invoice|e-?commerce/i.test(prompt)) {
+    plugins.push('sw-payments');
+  }
+
+  // Infrastructure
+  if (/terraform|pulumi|\baws\b|azure|gcp|docker|ci\/?cd|cloudformation|cdk|devops|serverless|lambda/i.test(prompt)) {
+    plugins.push('sw-infra');
+  }
+
+  // Kubernetes
+  if (/kubernetes|k8s|helm|\bpod|deployment|ingress|kubectl|eks|aks|gke|gitops/i.test(prompt)) {
+    plugins.push('sw-k8s');
+  }
+
+  // Mobile
+  if (/react.?native|ios|android|mobile|expo|flutter|swift|kotlin|native.?app/i.test(prompt)) {
+    plugins.push('sw-mobile');
+  }
+
+  // ML
+  if (/machine.?learning|\bml\b|ai.?model|pytorch|tensorflow|training|inference|data.?science/i.test(prompt)) {
+    plugins.push('sw-ml');
+  }
+
+  // Kafka
+  if (/kafka|event.?streaming|msk|consumer|producer|\btopic/i.test(prompt)) {
+    plugins.push('sw-kafka');
+  }
+
+  // GitHub (be specific to avoid false positives)
+  if (/github.?issue|github.?pr|github.?action|github.?sync/i.test(prompt)) {
+    plugins.push('sw-github');
+  }
+
+  // JIRA
+  if (/\bjira|epic|story|sprint|jira.?sync/i.test(prompt)) {
+    plugins.push('sw-jira');
+  }
+
+  // Azure DevOps
+  if (/azure.?devops|\bado\b|work.?item|pipeline|ado.?sync/i.test(prompt)) {
+    plugins.push('sw-ado');
+  }
+
+  // Limit to max 5 plugins
+  return plugins.slice(0, 5);
+}
+
+/**
  * Clear the cached CLI status (useful for testing)
  */
 export function clearCliCache(): void {
@@ -298,237 +374,42 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 /**
  * Build the system prompt for plugin detection, increment recommendation, and skill routing
  *
- * This prompt handles THREE tasks in a single LLM call for efficiency:
- * 1. Plugin detection - which SpecWeave plugins are needed
- * 2. Increment recommendation - should work be tracked in an increment
- * 3. Skill routing - which skills to invoke and in what order (v1.0.150+)
+ * v1.0.153: SIMPLIFIED prompt to avoid "prompt too long" errors with Haiku
+ * Reduced from ~500 lines to ~100 lines while keeping essential functionality
  */
 function buildDetectionPrompt(): string {
-  return `You are an intent detection system for SpecWeave, a spec-driven development framework.
+  return `Detect SpecWeave plugins and actions from user prompts. Respond with JSON only.
 
-MANDATORY OUTPUT FORMAT - You MUST respond with this exact JSON structure (no markdown, no explanation):
-{
-  "plugins": ["sw-plugin-name"],
-  "confidence": 0.9,
-  "reasoning": "brief plugin reason",
-  "increment": {
-    "action": "new|reopen|small_fix|hotfix|none",
-    "confidence": 0.85,
-    "suggestedName": "feature-name-or-null",
-    "relatedKeyword": "keyword-or-null",
-    "reasoning": "brief increment reason"
-  },
-  "routing": {
-    "skills": [
-      {
-        "name": "skill-name",
-        "plugin": "sw-plugin",
-        "fullName": "sw-plugin:skill-name",
-        "priority": "primary|secondary",
-        "invokeWhen": "immediate|after_increment|after_planning|with_primary|after_primary",
-        "reason": "brief reason"
-      }
-    ],
-    "workflow": {
-      "suggestPlanMode": false,
-      "phases": ["phase1", "phase2"]
-    },
-    "confidence": 0.85,
-    "reasoning": "brief routing reason"
-  }
-}
+OUTPUT FORMAT (JSON only, no markdown):
+{"plugins":[],"confidence":0.9,"reasoning":"brief","increment":{"action":"new|none|small_fix","confidence":0.8,"suggestedName":null,"reasoning":"brief"},"routing":{"skills":[],"workflow":{"suggestPlanMode":false,"phases":[]},"confidence":0.8,"reasoning":"brief"}}
 
-CRITICAL: ALL three objects (plugins array, increment, routing) are REQUIRED in every response.
-
-You analyze user prompts to determine:
-1. Which plugins should be loaded
-2. Whether work should be tracked in an increment
-3. Which skills to invoke and in what order
-
-=== PLUGIN DETECTION ===
-
-Available plugins (use EXACT short names starting with "sw-"):
-
-CORE (always available, no need to return):
-- sw: Core framework with built-in release, diagrams, docs skills
-
-DEVELOPMENT DOMAINS:
-- sw-frontend: React, Vue, Angular, Next.js, Svelte, Remix, Astro, UI components, CSS, Tailwind, frontend, web app, dashboard, SPA
-- sw-backend: Node.js, Express, NestJS, Fastify, Hono, APIs, REST, GraphQL, databases, SQL, PostgreSQL, MySQL, MongoDB, Redis, backend, server, CLI tools, scripts
-- sw-testing: Jest, Vitest, Playwright, Cypress, testing, E2E, unit tests, TDD, test-driven, integration tests, QA
-- sw-mobile: React Native, iOS, Android, mobile apps, Expo, Flutter, Swift, Kotlin, native apps
-
-INFRASTRUCTURE & DEVOPS:
-- sw-infra: Terraform, Pulumi, AWS, Azure, GCP, Docker, CI/CD, CloudFormation, CDK, DevOps, serverless, Lambda
-- sw-k8s: Kubernetes, K8s, Helm, pods, deployments, services, ingress, kubectl, EKS, AKS, GKE, GitOps
-
-EXTERNAL INTEGRATIONS:
-- sw-github: GitHub issues, PRs, Actions, workflows, GitHub sync
-- sw-jira: Jira, epics, stories, sprints, Jira sync
-- sw-ado: Azure DevOps, ADO, work items, pipelines, ADO sync
-
-SPECIALIZED:
-- sw-payments: Stripe, PayPal, payments, checkout, billing, subscriptions, invoices
-- sw-ml: Machine learning, AI models, PyTorch, TensorFlow, training, inference, ML pipelines, data science
-- sw-kafka: Apache Kafka, event streaming, topics, consumers, producers, MSK
-- sw-confluent: Confluent Cloud, Schema Registry, ksqlDB, Kafka Connect
-
-PLUGIN RULES:
-1. Focus on WHAT THE USER WANTS TO BUILD, not what they mention negatively
-2. Negative mentions don't exclude domains ("I hate React but need a dashboard" → sw-frontend)
-3. Only include plugins ACTIVELY needed for the task
-4. Empty array is valid if no plugins needed (e.g., questions, chat)
-5. Maximum 5 plugins per response
-6. Do NOT include "sw" - it's always loaded
-
-=== INCREMENT RECOMMENDATION ===
-
-Determine if the user's work should be tracked in a SpecWeave increment.
+PLUGINS (return exact names):
+- sw-frontend: React, Vue, Angular, Next.js, dashboard, UI, CSS, frontend, component, web app
+- sw-backend: Node.js, Express, API, database, SQL, GraphQL, backend, server
+- sw-testing: test, TDD, Playwright, Jest, Vitest, E2E, QA
+- sw-payments: Stripe, PayPal, checkout, payment, billing, subscription
+- sw-infra: Terraform, AWS, Azure, Docker, CI/CD, serverless, Lambda
+- sw-k8s: Kubernetes, K8s, Helm, pods, deployment, EKS, AKS
+- sw-mobile: React Native, iOS, Android, mobile, Expo
+- sw-ml: ML, machine learning, PyTorch, TensorFlow, AI model
+- sw-kafka: Kafka, event streaming, topics, MSK
+- sw-github: GitHub issues, PRs, Actions
+- sw-jira: JIRA, epics, stories, sprints
+- sw-ado: Azure DevOps, work items, pipelines
 
 INCREMENT ACTIONS:
-- "new": Create NEW increment for: new features, multi-file changes, significant functionality, architectural work
-- "reopen": Reopen EXISTING increment for: fixes to recently built features, "X is broken", continuation of previous work
-- "small_fix": NO increment needed for: typos, single-line fixes, config tweaks, minor adjustments, quick changes
-- "hotfix": Urgent production bug, needs increment with --type=hotfix
-- "none": No recommendation for: questions, general chat, unclear intent, already using /sw: commands
+- "new": feature work, multi-file changes ("Build X", "Add Y", "Create Z")
+- "small_fix": typos, config tweaks, minor changes
+- "none": questions, chat, unclear intent, already using /sw: commands
 
-SIGNALS FOR "new":
-- "Build X", "Add feature Y", "Implement Z", "Create new..."
-- Multi-component work (frontend + backend + tests)
-- New user stories or acceptance criteria needed
-- "Let's add...", "I want to build...", "We need..."
+SKILL ROUTING (if plugins detected):
+- Map plugin to skill: sw-frontend→frontend-architect, sw-backend→database-optimizer, sw-testing→qa-engineer, sw-payments→payment-integration, etc.
+- One "primary" skill, others "secondary"
+- invokeWhen: "after_increment" for features, "immediate" for simple tasks
 
-SIGNALS FOR "reopen":
-- "The X we built is broken", "X feature has a bug"
-- "Fix the login issue" (when login was recently built)
-- References to previous work: "that authentication thing", "the dashboard we made"
-- Regression fixes in existing functionality
-
-SIGNALS FOR "small_fix":
-- "Fix typo", "Update config", "Quick change", "Adjust X", "Rename Y"
-- Single-file changes, documentation tweaks
-- "Just change...", "Simply update...", "Minor fix..."
-
-SIGNALS FOR "none" (DO NOT suggest increment):
-- Questions: "How do I...", "What is...", "Explain..."
-- Already using SpecWeave: "/sw:increment", "/sw:do", etc.
-- General conversation, brainstorming
-- Unclear what user wants to accomplish
-- EXPLICIT OPT-OUT phrases (user explicitly declines):
-  * "don't create an increment", "no increment needed", "without increment"
-  * "skip the workflow", "just do it directly", "no spec needed"
-  * "quick fix without tracking", "minor change only"
-  * "don't reopen", "leave it closed", "without reopening"
-  * "just a quick fix", "only change this", "simple tweak"
-  * "I'll handle the increment myself", "I'll track it later"
-  * "already in an increment", "working on existing increment"
-
-=== SKILL ROUTING (v1.0.150+) ===
-
-Determine which skills to invoke and in what order.
-
-SKILL ROUTING MATRIX (plugin → skill):
-| Plugin | Skill | Triggers |
-|--------|-------|----------|
-| sw-frontend | frontend-architect | React, Vue, component, UI, dashboard, CSS |
-| sw-backend | database-optimizer | API, database, server, Node, SQL, GraphQL |
-| sw-testing | qa-engineer | test, TDD, E2E, Playwright, Jest, QA |
-| sw-k8s | kubernetes-architect | K8s, pods, deployment, helm, GitOps |
-| sw-infra | devops | Terraform, AWS, Docker, CI/CD, Lambda |
-| sw-mobile | mobile-architect | React Native, iOS, Android, Expo |
-| sw-payments | payment-integration | Stripe, checkout, billing, subscription |
-| sw-ml | ml-engineer | ML, model, training, PyTorch, TensorFlow |
-| sw-kafka | kafka-architect | Kafka, streaming, topics, events |
-| sw-github | github-manager | GitHub, issues, PRs, Actions |
-| sw-jira | jira-manager | JIRA, epics, stories, sprints |
-| sw-ado | ado-manager | Azure DevOps, work items, pipelines |
-
-INVOKE TIMING:
-- "immediate": Simple tasks, no increment needed, just invoke skill now
-- "after_increment": Feature work - create increment first, then invoke
-- "after_planning": Complex/architectural tasks - use plan mode first
-- "with_primary": Supporting skill, invoke alongside primary (parallel)
-- "after_primary": Sequential dependency, invoke after primary completes
-
-PRIORITY RULES:
-1. Only ONE skill can be "primary" - the main domain of the task
-2. Other skills are "secondary"
-3. TDD MODE SPECIAL RULE: If TDD/testing mentioned, sw-testing:qa-engineer becomes PRIMARY
-   - This ensures tests are written BEFORE implementation (RED-GREEN-REFACTOR)
-   - Domain skill (frontend, backend, etc.) becomes secondary with "with_primary" timing
-
-WORKFLOW PHASES:
-- "create_increment": User should create increment first
-- "enter_plan_mode": Complex task needs planning first
-- "invoke_skills": Activate the recommended skills
-- "implement": Do the actual implementation
-- "implement_with_tdd": Implementation following TDD discipline
-
-SUGGEST PLAN MODE WHEN:
-- Architectural decisions needed
-- Multiple components/services affected
-- Unclear requirements that need clarification
-- Major refactoring
-
-ROUTING EXAMPLES:
-
-Example 1: "Create a React dashboard"
-→ plugins: ["sw-frontend"]
-→ increment.action: "new"
-→ routing.skills: [{ name: "frontend-architect", plugin: "sw-frontend", priority: "primary", invokeWhen: "after_increment" }]
-→ routing.workflow.phases: ["create_increment", "invoke_skills", "implement"]
-
-Example 2: "Build React component with TDD"
-→ plugins: ["sw-frontend", "sw-testing"]
-→ increment.action: "new"
-→ routing.skills: [
-    { name: "qa-engineer", plugin: "sw-testing", priority: "primary", invokeWhen: "after_increment", reason: "TDD requires tests first" },
-    { name: "frontend-architect", plugin: "sw-frontend", priority: "secondary", invokeWhen: "with_primary", reason: "Component design" }
-  ]
-→ routing.workflow.phases: ["create_increment", "invoke_skills", "implement_with_tdd"]
-
-Example 3: "Quick question about React hooks"
-→ plugins: []
-→ increment.action: "none"
-→ routing.skills: []
-→ routing.workflow.phases: []
-
-CRITICAL: ALWAYS include ALL three objects in your response:
-1. "plugins" array (can be empty)
-2. "increment" object (required)
-3. "routing" object (required, skills array can be empty for questions)
-
-Respond with ONLY valid JSON (no markdown, no explanation, no code blocks):
-{
-  "plugins": ["sw-plugin-name"],
-  "confidence": 0.9,
-  "reasoning": "brief plugin reason",
-  "increment": {
-    "action": "new|reopen|small_fix|hotfix|none",
-    "confidence": 0.85,
-    "suggestedName": "feature-name-for-new-only",
-    "relatedKeyword": "keyword-for-reopen-only",
-    "reasoning": "brief increment reason"
-  },
-  "routing": {
-    "skills": [
-      {
-        "name": "skill-name",
-        "plugin": "sw-plugin",
-        "fullName": "sw-plugin:skill-name",
-        "priority": "primary",
-        "invokeWhen": "after_increment",
-        "reason": "brief reason"
-      }
-    ],
-    "workflow": {
-      "suggestPlanMode": false,
-      "phases": ["create_increment", "invoke_skills", "implement"]
-    },
-    "confidence": 0.85,
-    "reasoning": "brief routing reason"
-  }
-}`;
+Examples:
+"Build React dashboard with Stripe" → {"plugins":["sw-frontend","sw-payments"],"increment":{"action":"new","suggestedName":"react-stripe-dashboard"}}
+"How do I use hooks?" → {"plugins":[],"increment":{"action":"none"}}`;
 }
 
 /**
@@ -659,6 +540,44 @@ function executeViaInteractiveShell(
 }
 
 /**
+ * Create a fallback result using keyword detection (v1.0.153)
+ *
+ * When LLM detection fails, we fall back to keyword-based detection
+ * to ensure users still get some plugins loaded.
+ *
+ * @param userPrompt - The original user prompt
+ * @param startTime - Start time for duration calculation
+ * @param error - Error message from failed LLM detection
+ * @returns Detection result with keyword-detected plugins or empty
+ */
+function createKeywordFallbackResult(
+  userPrompt: string,
+  startTime: number,
+  error?: string
+): LLMDetectionResult {
+  const keywordPlugins = detectPluginsByKeywords(userPrompt);
+
+  if (keywordPlugins.length > 0) {
+    logger.info(`Keyword fallback detected plugins: ${keywordPlugins.join(', ')} (LLM error: ${error || 'unknown'})`);
+    return {
+      success: true,
+      plugins: keywordPlugins,
+      confidence: 0.7, // Lower confidence for keyword-based detection
+      reasoning: `Detected via keyword matching (LLM failed: ${error || 'unknown'})`,
+      durationMs: performance.now() - startTime,
+    };
+  }
+
+  return {
+    success: false,
+    plugins: [],
+    confidence: 0,
+    error,
+    durationMs: performance.now() - startTime,
+  };
+}
+
+/**
  * Detect plugins needed for a user prompt using Claude LLM
  *
  * @param userPrompt - The user's prompt to analyze
@@ -674,7 +593,21 @@ export async function detectPluginsViaLLM(
   // Check CLI availability first
   const cliStatus = isClaudeCliAvailable();
   if (!cliStatus.available) {
-    logger.debug('Claude CLI not available for LLM detection');
+    logger.debug('Claude CLI not available for LLM detection, using keyword fallback');
+
+    // Fall back to keyword detection (v1.0.153)
+    const keywordPlugins = detectPluginsByKeywords(userPrompt);
+    if (keywordPlugins.length > 0) {
+      logger.info(`Keyword fallback detected plugins: ${keywordPlugins.join(', ')}`);
+      return {
+        success: true,
+        plugins: keywordPlugins,
+        confidence: 0.7, // Lower confidence for keyword-based detection
+        reasoning: 'Detected via keyword matching (Claude CLI unavailable)',
+        durationMs: performance.now() - startTime,
+      };
+    }
+
     return {
       success: false,
       plugins: [],
@@ -697,75 +630,45 @@ Which plugins should be loaded?`;
     // Execute Claude CLI with Haiku for speed
     const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku'], timeout);
 
-    // Handle spawn errors
+    // Handle spawn errors - use keyword fallback (v1.0.153)
     if (result.error) {
       const errorMsg = result.error.message || String(result.error);
 
       // Timeout error
       if (errorMsg.includes('ETIMEDOUT') || errorMsg.includes('TIMEOUT')) {
-        return {
-          success: false,
-          plugins: [],
-          confidence: 0,
-          error: `Detection timed out after ${timeout}ms`,
-          durationMs: performance.now() - startTime,
-        };
+        return createKeywordFallbackResult(userPrompt, startTime, `Detection timed out after ${timeout}ms`);
       }
 
-      return {
-        success: false,
-        plugins: [],
-        confidence: 0,
-        error: `Claude CLI error: ${errorMsg}`,
-        durationMs: performance.now() - startTime,
-      };
+      return createKeywordFallbackResult(userPrompt, startTime, `Claude CLI error: ${errorMsg}`);
     }
 
-    // Handle non-zero exit
+    // Handle non-zero exit - use keyword fallback (v1.0.153)
     if (result.status !== 0) {
-      // Check for common errors
       const stderr = result.stderr || '';
+      const stdout = result.stdout || '';
 
+      // Check for specific errors
       if (stderr.includes('authentication') || stderr.includes('API key')) {
-        return {
-          success: false,
-          plugins: [],
-          confidence: 0,
-          error: 'Claude CLI authentication error. Run: claude login',
-          durationMs: performance.now() - startTime,
-        };
+        return createKeywordFallbackResult(userPrompt, startTime, 'Claude CLI authentication error. Run: claude login');
       }
 
       if (stderr.includes('rate limit')) {
-        return {
-          success: false,
-          plugins: [],
-          confidence: 0,
-          error: 'Rate limit exceeded. Try again later.',
-          durationMs: performance.now() - startTime,
-        };
+        return createKeywordFallbackResult(userPrompt, startTime, 'Rate limit exceeded. Try again later.');
       }
 
-      return {
-        success: false,
-        plugins: [],
-        confidence: 0,
-        error: `Claude CLI exited with code ${result.status}: ${stderr || result.stdout}`,
-        durationMs: performance.now() - startTime,
-      };
+      // Prompt too long - common with Haiku
+      if (stderr.includes('too long') || stdout.includes('too long')) {
+        return createKeywordFallbackResult(userPrompt, startTime, 'Prompt too long for Haiku model');
+      }
+
+      return createKeywordFallbackResult(userPrompt, startTime, `Claude CLI exited with code ${result.status}: ${stderr || stdout}`);
     }
 
     // Parse the response
     const output = (result.stdout || '').trim();
 
     if (!output) {
-      return {
-        success: false,
-        plugins: [],
-        confidence: 0,
-        error: 'Empty response from Claude CLI',
-        durationMs: performance.now() - startTime,
-      };
+      return createKeywordFallbackResult(userPrompt, startTime, 'Empty response from Claude CLI');
     }
 
     // Try to extract JSON from the response (handle markdown code blocks)
@@ -779,15 +682,10 @@ Which plugins should be loaded?`;
 
     // Find JSON object in the string
     const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+    // Use keyword fallback if no JSON found (v1.0.153)
     if (!jsonMatch) {
       logger.debug(`Invalid LLM response format: ${output.slice(0, 200)}`);
-      return {
-        success: false,
-        plugins: [],
-        confidence: 0,
-        error: `Invalid response format (no JSON found)`,
-        durationMs: performance.now() - startTime,
-      };
+      return createKeywordFallbackResult(userPrompt, startTime, 'Invalid response format (no JSON found)');
     }
 
 
@@ -824,13 +722,7 @@ Which plugins should be loaded?`;
       parsed = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
       logger.debug(`JSON parse error: ${parseError}`);
-      return {
-        success: false,
-        plugins: [],
-        confidence: 0,
-        error: `Failed to parse response JSON`,
-        durationMs: performance.now() - startTime,
-      };
+      return createKeywordFallbackResult(userPrompt, startTime, 'Failed to parse response JSON');
     }
 
     // Validate and filter plugins
@@ -937,13 +829,8 @@ Which plugins should be loaded?`;
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`LLM detection failed: ${errorMsg}`);
 
-    return {
-      success: false,
-      plugins: [],
-      confidence: 0,
-      error: `Detection failed: ${errorMsg}`,
-      durationMs: performance.now() - startTime,
-    };
+    // Use keyword fallback on any exception (v1.0.153)
+    return createKeywordFallbackResult(userPrompt, startTime, `Detection failed: ${errorMsg}`);
   }
 }
 

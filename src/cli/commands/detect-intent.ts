@@ -42,6 +42,8 @@ export interface DetectIntentOptions {
   silent?: boolean;
   /** Output format - json or text */
   json?: boolean;
+  /** Read prompt from file instead of argument (avoids shell escaping issues) */
+  file?: string;
 }
 
 export interface DetectIntentResult {
@@ -380,12 +382,34 @@ export function createDetectIntentCommand(): Command {
 
   cmd
     .description('Detect SpecWeave intent from a prompt using LLM and optionally install plugins')
-    .argument('<prompt>', 'User prompt text to analyze')
+    .argument('[prompt]', 'User prompt text to analyze (optional if --file is used)')
     .option('--install', 'Also install detected plugins after detection')
     .option('--silent', 'Silent mode - no stdout output (for hooks)')
     .option('--json', 'Output as JSON (default when not silent)')
-    .action(async (prompt: string, options: DetectIntentOptions) => {
+    .option('--file <path>', 'Read prompt from file instead of argument (avoids shell escaping issues)')
+    .action(async (promptArg: string | undefined, options: DetectIntentOptions) => {
       try {
+        // Read prompt from file if specified, otherwise use argument
+        let prompt = promptArg || '';
+        if (options.file) {
+          try {
+            prompt = fs.readFileSync(options.file, 'utf8').trim();
+          } catch (fileError) {
+            const err = fileError instanceof Error ? fileError : new Error(String(fileError));
+            if (!options.silent) {
+              console.error(chalk.red(`Error reading file: ${err.message}`));
+            }
+            process.exit(1);
+          }
+        }
+
+        if (!prompt) {
+          if (!options.silent) {
+            console.error(chalk.red('Error: No prompt provided. Use positional argument or --file option.'));
+          }
+          process.exit(1);
+        }
+
         const result = await detectIntentCommand(prompt, options);
 
         // Exit code: 0 if plugins detected, 1 if none
@@ -415,25 +439,41 @@ export async function main(): Promise<void> {
   let prompt = '';
   let install = false;
   let silent = false;
+  let file = '';
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--install') {
       install = true;
     } else if (args[i] === '--silent') {
       silent = true;
+    } else if (args[i] === '--file' && i + 1 < args.length) {
+      file = args[++i];
     } else if (!args[i].startsWith('--')) {
       prompt = args[i];
     }
   }
 
+  // Read prompt from file if specified
+  if (file) {
+    try {
+      prompt = fs.readFileSync(file, 'utf8').trim();
+    } catch (fileError) {
+      if (!silent) {
+        console.error(`Error reading file: ${fileError instanceof Error ? fileError.message : String(fileError)}`);
+      }
+      process.exit(1);
+    }
+  }
+
   if (!prompt) {
     if (!silent) {
-      console.error('Usage: specweave detect-intent <prompt> [--install] [--silent]');
+      console.error('Usage: specweave detect-intent <prompt> [--install] [--silent] [--file <path>]');
       console.error('');
       console.error('Examples:');
       console.error('  specweave detect-intent "release npm version"');
       console.error('  specweave detect-intent "deploy to kubernetes" --install');
       console.error('  specweave detect-intent "create react component" --install --silent');
+      console.error('  specweave detect-intent --file /tmp/prompt.txt --silent');
       console.error('');
       console.error('Configuration:');
       console.error('  Set lazyLoading.llmDetection: false in .specweave/config.json to disable.');
