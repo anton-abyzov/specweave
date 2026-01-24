@@ -15,9 +15,62 @@
 
 import { spawnSync, SpawnSyncReturns } from 'child_process';
 import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
+
+/**
+ * Plugin auto-load configuration from .specweave/config.json
+ */
+export interface PluginAutoLoadConfig {
+  /** Whether auto-loading is enabled at all */
+  enabled: boolean;
+  /** If true, only suggest plugins without installing them */
+  suggestOnly: boolean;
+}
+
+/**
+ * Read plugin auto-load configuration from .specweave/config.json
+ *
+ * @returns Config object with enabled/suggestOnly flags
+ */
+export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
+  // Default: enabled, not suggest-only (original behavior)
+  const defaultConfig: PluginAutoLoadConfig = {
+    enabled: true,
+    suggestOnly: false,
+  };
+
+  // Check env var override first
+  if (process.env.SPECWEAVE_DISABLE_AUTO_LOAD === '1') {
+    logger.debug('[readPluginAutoLoadConfig] Auto-load disabled via SPECWEAVE_DISABLE_AUTO_LOAD=1');
+    return { enabled: false, suggestOnly: true };
+  }
+
+  // Try to read from config file
+  const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+  try {
+    if (fs.existsSync(configPath)) {
+      const content = fs.readFileSync(configPath, 'utf8');
+      const config = JSON.parse(content);
+
+      if (config.pluginAutoLoad) {
+        const result = {
+          enabled: config.pluginAutoLoad.enabled !== false, // default true
+          suggestOnly: config.pluginAutoLoad.suggestOnly === true, // default false
+        };
+        logger.debug(`[readPluginAutoLoadConfig] Config: enabled=${result.enabled}, suggestOnly=${result.suggestOnly}`);
+        return result;
+      }
+    }
+  } catch (error) {
+    logger.debug(`[readPluginAutoLoadConfig] Error reading config: ${error}`);
+  }
+
+  return defaultConfig;
+}
 
 /**
  * Available SpecWeave plugins for detection
@@ -896,7 +949,11 @@ export async function installPluginsViaCli(
 }
 
 /**
- * Full pipeline: detect plugins from prompt and install them
+ * Full pipeline: detect plugins from prompt and optionally install them
+ *
+ * Respects .specweave/config.json pluginAutoLoad settings:
+ * - enabled: false → skip detection entirely
+ * - suggestOnly: true → detect but don't install, return suggestions
  *
  * @param userPrompt - The user's prompt
  * @returns Detection and installation results
@@ -904,7 +961,26 @@ export async function installPluginsViaCli(
 export async function detectAndInstallPlugins(userPrompt: string): Promise<{
   detection: LLMDetectionResult;
   installations: PluginInstallResult[];
+  suggestOnly?: boolean;
 }> {
+  // Check config first
+  const config = readPluginAutoLoadConfig();
+
+  // If auto-load is completely disabled, skip detection
+  if (!config.enabled) {
+    logger.debug('[detectAndInstallPlugins] Auto-load disabled in config, skipping detection');
+    return {
+      detection: {
+        success: true,
+        plugins: [],
+        confidence: 1.0,
+        reasoning: 'Plugin auto-load disabled in config',
+        durationMs: 0,
+      },
+      installations: [],
+    };
+  }
+
   // Step 1: Detect needed plugins
   const detection = await detectPluginsViaLLM(userPrompt);
 
@@ -915,7 +991,17 @@ export async function detectAndInstallPlugins(userPrompt: string): Promise<{
     };
   }
 
-  // Step 2: Install detected plugins
+  // Step 2: If suggestOnly mode, DON'T install - just return suggestions
+  if (config.suggestOnly) {
+    logger.info(`[detectAndInstallPlugins] Suggest-only mode: detected ${detection.plugins.join(', ')}`);
+    return {
+      detection,
+      installations: [],
+      suggestOnly: true,
+    };
+  }
+
+  // Step 3: Install detected plugins (original behavior)
   const installations = await installPluginsViaCli(detection.plugins);
 
   return {
@@ -933,8 +1019,9 @@ export async function detectAndInstallPlugins(userPrompt: string): Promise<{
 export function formatHookOutput(result: {
   detection: LLMDetectionResult;
   installations: PluginInstallResult[];
+  suggestOnly?: boolean;
 }): string {
-  const { detection, installations } = result;
+  const { detection, installations, suggestOnly } = result;
 
   // Always continue (don't block Claude Code)
   const output: { continue: boolean; systemMessage?: string } = {
@@ -952,6 +1039,17 @@ Plugin auto-loading is disabled. Install Claude CLI to enable automatic plugin d
     }
     // Don't show message for other errors (silent degradation)
   } else if (detection.plugins.length > 0) {
+    // SUGGEST-ONLY MODE: Show which plugins would help, but don't install
+    if (suggestOnly) {
+      const pluginList = detection.plugins.join(', ');
+      output.systemMessage = `SpecWeave: Plugins that may help: ${pluginList}
+
+To install: claude plugin install <plugin>@specweave
+After installing, restart Claude Code session to use new plugins.`;
+      return JSON.stringify(output);
+    }
+
+    // NORMAL MODE: Show what was installed
     const installed = installations.filter((i) => i.success && !i.alreadyInstalled);
     const alreadyInstalled = installations.filter((i) => i.alreadyInstalled);
     const failed = installations.filter((i) => !i.success);
