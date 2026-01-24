@@ -89,6 +89,80 @@ if [[ -f "$CONFIG_PATH" ]]; then
 fi
 
 # ==============================================================================
+# KEYWORD-BASED PLUGIN DETECTION FALLBACK (v1.0.153)
+# ==============================================================================
+# Fast, reliable keyword matching when LLM detection fails or is disabled.
+# This provides immediate value even when the LLM is unavailable.
+
+detect_plugins_by_keywords() {
+  local prompt="$1"
+  local plugins=""
+
+  # Frontend plugins
+  if echo "$prompt" | grep -qiE "(react|vue|angular|next\.?js|svelte|remix|astro|dashboard|frontend|component|UI|CSS|tailwind|SPA|web.?app)"; then
+    plugins="${plugins}sw-frontend "
+  fi
+
+  # Backend plugins
+  if echo "$prompt" | grep -qiE "(node\.?js|express|nest\.?js|fastify|hono|backend|server|API|REST|graphql|database|SQL|postgres|mysql|mongodb|redis|CLI.?tool)"; then
+    plugins="${plugins}sw-backend "
+  fi
+
+  # Testing plugins
+  if echo "$prompt" | grep -qiE "(test|TDD|playwright|cypress|jest|vitest|E2E|unit.?test|integration.?test|QA|quality)"; then
+    plugins="${plugins}sw-testing "
+  fi
+
+  # Payments plugins
+  if echo "$prompt" | grep -qiE "(stripe|paypal|payment|checkout|billing|subscription|invoice|e-?commerce)"; then
+    plugins="${plugins}sw-payments "
+  fi
+
+  # Infrastructure plugins
+  if echo "$prompt" | grep -qiE "(terraform|pulumi|AWS|azure|GCP|docker|CI/?CD|cloudformation|CDK|devops|serverless|lambda)"; then
+    plugins="${plugins}sw-infra "
+  fi
+
+  # Kubernetes plugins
+  if echo "$prompt" | grep -qiE "(kubernetes|k8s|helm|pod|deployment|ingress|kubectl|EKS|AKS|GKE|gitops)"; then
+    plugins="${plugins}sw-k8s "
+  fi
+
+  # Mobile plugins
+  if echo "$prompt" | grep -qiE "(react.?native|iOS|android|mobile|expo|flutter|swift|kotlin|native.?app)"; then
+    plugins="${plugins}sw-mobile "
+  fi
+
+  # ML plugins
+  if echo "$prompt" | grep -qiE "(machine.?learning|ML|AI.?model|pytorch|tensorflow|training|inference|data.?science)"; then
+    plugins="${plugins}sw-ml "
+  fi
+
+  # Kafka plugins
+  if echo "$prompt" | grep -qiE "(kafka|event.?streaming|MSK|consumer|producer|topic)"; then
+    plugins="${plugins}sw-kafka "
+  fi
+
+  # GitHub plugins
+  if echo "$prompt" | grep -qiE "(github.?issue|github.?PR|github.?action|github.?sync)"; then
+    plugins="${plugins}sw-github "
+  fi
+
+  # JIRA plugins
+  if echo "$prompt" | grep -qiE "(jira|epic|story|sprint|jira.?sync)"; then
+    plugins="${plugins}sw-jira "
+  fi
+
+  # Azure DevOps plugins
+  if echo "$prompt" | grep -qiE "(azure.?devops|ADO|work.?item|pipeline|ADO.?sync)"; then
+    plugins="${plugins}sw-ado "
+  fi
+
+  # Return unique plugins (trim trailing space)
+  echo "$plugins" | xargs
+}
+
+# ==============================================================================
 # UNIFIED LLM DETECTION (v1.0.147) - ONE call for BOTH plugins AND increments
 # ==============================================================================
 # Single `specweave detect-intent` call returns:
@@ -150,15 +224,21 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
         # Call LLM if not cached
         if [[ "$SHOULD_CALL_LLM" == "true" ]]; then
-          ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
           START_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || echo $(($(date +%s) * 1000)))
 
-          # ONE LLM call for BOTH plugins and increment
+          # Write prompt to temp file to avoid all escaping issues (v1.0.153)
+          PROMPT_TMP_FILE=$(mktemp 2>/dev/null || echo "/tmp/specweave-prompt-$$")
+          printf '%s' "$PROMPT" > "$PROMPT_TMP_FILE"
+
+          # ONE LLM call for BOTH plugins and increment (using --file flag)
           if command -v timeout >/dev/null 2>&1; then
-            DETECT_OUTPUT=$(timeout 30 specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
+            DETECT_OUTPUT=$(timeout 30 specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           else
-            DETECT_OUTPUT=$(specweave detect-intent "$ESCAPED_PROMPT" 2>/dev/null)
+            DETECT_OUTPUT=$(specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           fi
+
+          # Clean up temp file
+          rm -f "$PROMPT_TMP_FILE" 2>/dev/null
 
           END_TIME=$(perl -MTime::HiRes=time -e 'printf "%.0f", time*1000' 2>/dev/null || echo $(($(date +%s) * 1000)))
           DURATION=$((END_TIME - START_TIME))
@@ -169,6 +249,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
         fi
 
         # Parse JSON response (extract complete JSON object from multi-line output)
+        LLM_DETECTION_FAILED=false
         if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
           # Extract JSON using awk: from first { to last } (handles multi-line JSON)
           JSON_OUTPUT=$(echo "$DETECT_OUTPUT" | awk '/^\{/{found=1} found{print} /^\}/{if(found) exit}')
@@ -437,6 +518,60 @@ Consider reopening the existing increment:
             if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
               jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
               exit 0
+            fi
+          else
+            # JSON_OUTPUT was empty - LLM detection failed
+            LLM_DETECTION_FAILED=true
+            echo "[$(date -Iseconds)] LLM detection failed | reason=empty_json_output" >> "$LAZY_LOAD_LOG"
+          fi
+        else
+          # DETECT_OUTPUT was empty or jq not available
+          LLM_DETECTION_FAILED=true
+          echo "[$(date -Iseconds)] LLM detection failed | reason=empty_detect_output_or_no_jq" >> "$LAZY_LOAD_LOG"
+        fi
+
+        # ==================================================================
+        # KEYWORD FALLBACK (v1.0.153) - When LLM fails or returns no plugins
+        # ==================================================================
+        # If LLM detection failed or returned empty plugins, use keyword matching
+        if [[ "$LLM_DETECTION_FAILED" == "true" ]] || [[ -z "$DETECTED_PLUGINS" ]]; then
+          KEYWORD_PLUGINS=$(detect_plugins_by_keywords "$PROMPT")
+
+          if [[ -n "$KEYWORD_PLUGINS" ]]; then
+            echo "[$(date -Iseconds)] keyword-fallback | plugins=${KEYWORD_PLUGINS} | reason=llm_failed_or_empty" >> "$LAZY_LOAD_LOG"
+
+            # Install keyword-detected plugins
+            if command -v claude >/dev/null 2>&1; then
+              PLUGINS_INSTALLED=""
+              PLUGINS_ALREADY=""
+
+              for plugin in $KEYWORD_PLUGINS; do
+                [[ -z "$plugin" ]] && continue
+
+                # Sync install via claude CLI (triggers hot-reload)
+                if command -v timeout >/dev/null 2>&1; then
+                  OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
+                else
+                  OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                fi
+
+                if echo "$OUT" | grep -qi "already"; then
+                  [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                  PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                elif echo "$OUT" | grep -qi "success"; then
+                  [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                  PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                fi
+              done
+
+              # Build feedback message (keyword fallback)
+              if [[ -n "$PLUGINS_INSTALLED" ]]; then
+                AUTOLOAD_PLUGINS_MSG="🔌 **Loaded plugins** (keyword match): ${PLUGINS_INSTALLED}\\n"
+              elif [[ -n "$PLUGINS_ALREADY" ]]; then
+                AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins** (keyword match): ${PLUGINS_ALREADY}\\n"
+              fi
+
+              echo "[$(date -Iseconds)] keyword-fallback-install | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
             fi
           fi
         fi
