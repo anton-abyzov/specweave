@@ -630,7 +630,8 @@ Which plugins should be loaded?`;
 
   try {
     // Execute Claude CLI with Haiku for speed
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku'], timeout);
+    // Use --output-format json for faster response and --setting-sources user to skip project context
+    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', 'user'], timeout);
 
     // Handle spawn errors - use keyword fallback (v1.0.153)
     if (result.error) {
@@ -667,10 +668,23 @@ Which plugins should be loaded?`;
     }
 
     // Parse the response
-    const output = (result.stdout || '').trim();
+    let output = (result.stdout || '').trim();
 
     if (!output) {
       return createKeywordFallbackResult(userPrompt, startTime, 'Empty response from Claude CLI');
+    }
+
+    // Handle --output-format json wrapper (v1.0.155)
+    // The response is wrapped in: {"type":"result","result":"...actual response..."}
+    try {
+      const wrapper = JSON.parse(output);
+      if (wrapper.type === 'result' && wrapper.result) {
+        output = wrapper.result;
+        logger.debug(`Extracted result from JSON wrapper, duration_ms: ${wrapper.duration_ms}`);
+      }
+    } catch {
+      // Not a JSON wrapper, use raw output
+      logger.debug('Output is not JSON wrapper, using raw output');
     }
 
     // Try to extract JSON from the response (handle markdown code blocks)
