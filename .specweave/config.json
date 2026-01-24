@@ -4,6 +4,10 @@
     "name": "specweave",
     "version": "0.1.0"
   },
+  "pluginAutoLoad": {
+    "enabled": true,
+    "suggestOnly": false
+  },
   "multiProject": {
     "enabled": false
   },

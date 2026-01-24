@@ -117,9 +117,25 @@ fi
 # === AUTO-LOAD PLUGINS BASED ON PROJECT TYPE (v1.0.127 - Increment 0172) ===
 # Detect project type (React, Express, K8s, etc.) and pre-install relevant plugins
 # Runs in background to not block session start
-# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+# Controlled by:
+#   - SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+#   - pluginAutoLoad.enabled in .specweave/config.json
+#   - pluginAutoLoad.suggestOnly in .specweave/config.json (v1.0.158)
 
-if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]]; then
+# Check config for pluginAutoLoad settings (v1.0.158)
+PLUGIN_AUTOLOAD_ENABLED=true
+PLUGIN_SUGGEST_ONLY=false
+CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
+if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+  AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
+  [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
+
+  SUGGEST_VALUE=$(jq -r '.pluginAutoLoad.suggestOnly // false' "$CONFIG_PATH" 2>/dev/null)
+  [[ "$SUGGEST_VALUE" == "true" ]] && PLUGIN_SUGGEST_ONLY=true
+fi
+
+# Skip auto-load if disabled via env or config, OR if suggestOnly mode
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "$PLUGIN_SUGGEST_ONLY" != "true" ]]; then
   if command -v specweave >/dev/null 2>&1; then
     # Setup lazy-loading log for graceful degradation (T-010)
     LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"

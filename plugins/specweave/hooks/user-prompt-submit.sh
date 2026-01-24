@@ -62,8 +62,9 @@ fi
 #
 # When both disabled: NO detection, NO LLM calls, fastest response time (~5-7s saved)
 
-# Check config for pluginAutoLoad.enabled and incrementAssist.enabled settings
+# Check config for pluginAutoLoad.enabled, suggestOnly and incrementAssist.enabled settings
 PLUGIN_AUTOLOAD_ENABLED=true
+PLUGIN_SUGGEST_ONLY=false
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
 CONFIG_PATH=".specweave/config.json"
@@ -71,6 +72,10 @@ if [[ -f "$CONFIG_PATH" ]]; then
   if command -v jq >/dev/null 2>&1; then
     AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
     [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
+
+    # Check suggestOnly mode (v1.0.158)
+    SUGGEST_VALUE=$(jq -r '.pluginAutoLoad.suggestOnly // false' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$SUGGEST_VALUE" == "true" ]] && PLUGIN_SUGGEST_ONLY=true
 
     INCREMENT_VALUE=$(jq -r '.incrementAssist.enabled // true' "$CONFIG_PATH" 2>/dev/null)
     [[ "$INCREMENT_VALUE" == "false" ]] && INCREMENT_ASSIST_ENABLED=false
@@ -81,6 +86,10 @@ if [[ -f "$CONFIG_PATH" ]]; then
     # Fallback: grep for explicit false settings
     if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -q '"enabled"[[:space:]]*:[[:space:]]*false' "$CONFIG_PATH" 2>/dev/null; then
       PLUGIN_AUTOLOAD_ENABLED=false
+    fi
+    # Fallback: grep for suggestOnly
+    if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null | grep -q '"suggestOnly"[[:space:]]*:[[:space:]]*true'; then
+      PLUGIN_SUGGEST_ONLY=true
     fi
     if grep -q '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*false'; then
       INCREMENT_ASSIST_ENABLED=false
@@ -257,49 +266,61 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
           if [[ -n "$JSON_OUTPUT" ]]; then
             # ==================================================================
-            # PLUGIN INSTALLATION (from LLM response)
+            # PLUGIN INSTALLATION/SUGGESTION (from LLM response)
             # ==================================================================
             if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
               DETECTED_PLUGINS=$(echo "$JSON_OUTPUT" | jq -r '.plugins[]?' 2>/dev/null | tr '\n' ' ')
 
-              if [[ -n "$DETECTED_PLUGINS" ]] && command -v claude >/dev/null 2>&1; then
-                PLUGINS_INSTALLED=""
-                PLUGINS_ALREADY=""
-
-                for plugin in $DETECTED_PLUGINS; do
-                  [[ -z "$plugin" ]] && continue
-
-                  # Sync install via claude CLI (triggers hot-reload)
-                  if command -v timeout >/dev/null 2>&1; then
-                    OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
-                  else
-                    OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
-                  fi
-
-                  if echo "$OUT" | grep -qi "already"; then
-                    [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                    PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                  elif echo "$OUT" | grep -qi "success"; then
-                    [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                    PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                  fi
-                done
-
-                # Build feedback message
-                if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                  # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
-                  AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed**: ${PLUGINS_INSTALLED}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
-                elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                  AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
-                fi
-                if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+              if [[ -n "$DETECTED_PLUGINS" ]]; then
+                # v1.0.158: SUGGEST-ONLY MODE - Don't install, just inform user
+                if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
+                  PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
+                  AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`claude plugin install <plugin>@specweave\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
                   [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
-                fi
+                  echo "[$(date -Iseconds)] plugins | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
+                elif command -v claude >/dev/null 2>&1; then
+                  # NORMAL MODE - Actually install plugins
+                  PLUGINS_INSTALLED=""
+                  PLUGINS_ALREADY=""
 
-                echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
+                  for plugin in $DETECTED_PLUGINS; do
+                    [[ -z "$plugin" ]] && continue
+
+                    # Sync install via claude CLI (triggers hot-reload)
+                    if command -v timeout >/dev/null 2>&1; then
+                      OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
+                    else
+                      OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                    fi
+
+                    if echo "$OUT" | grep -qi "already"; then
+                      [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                      PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                    elif echo "$OUT" | grep -qi "success"; then
+                      [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                      PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                    fi
+                  done
+
+                  # Build feedback message
+                  if [[ -n "$PLUGINS_INSTALLED" ]]; then
+                    # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
+                    AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed**: ${PLUGINS_INSTALLED}\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
+                  elif [[ -n "$PLUGINS_ALREADY" ]]; then
+                    AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
+                  fi
+                  if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+                    LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
+                    [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
+                  fi
+
+                  echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
+                fi
               fi
             fi
 
@@ -589,47 +610,57 @@ Consider reopening the existing increment:
         # KEYWORD FALLBACK (v1.0.153) - When LLM fails or returns no plugins
         # ==================================================================
         # If LLM detection failed or returned empty plugins, use keyword matching
-        if [[ "$LLM_DETECTION_FAILED" == "true" ]] || [[ -z "$DETECTED_PLUGINS" ]]; then
-          KEYWORD_PLUGINS=$(detect_plugins_by_keywords "$PROMPT")
+        # v1.0.158: Respect PLUGIN_AUTOLOAD_ENABLED and PLUGIN_SUGGEST_ONLY
+        if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
+          if [[ "$LLM_DETECTION_FAILED" == "true" ]] || [[ -z "$DETECTED_PLUGINS" ]]; then
+            KEYWORD_PLUGINS=$(detect_plugins_by_keywords "$PROMPT")
 
-          if [[ -n "$KEYWORD_PLUGINS" ]]; then
-            echo "[$(date -Iseconds)] keyword-fallback | plugins=${KEYWORD_PLUGINS} | reason=llm_failed_or_empty" >> "$LAZY_LOAD_LOG"
+            if [[ -n "$KEYWORD_PLUGINS" ]]; then
+              echo "[$(date -Iseconds)] keyword-fallback | plugins=${KEYWORD_PLUGINS} | reason=llm_failed_or_empty" >> "$LAZY_LOAD_LOG"
 
-            # Install keyword-detected plugins
-            if command -v claude >/dev/null 2>&1; then
-              PLUGINS_INSTALLED=""
-              PLUGINS_ALREADY=""
+              # v1.0.158: SUGGEST-ONLY MODE - Don't install, just inform user
+              if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
+                PLUGIN_LIST=$(echo "$KEYWORD_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
+                AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins** (keyword match): ${PLUGIN_LIST}\\n"
+                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`claude plugin install <plugin>@specweave\`\\n"
+                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
+                echo "[$(date -Iseconds)] keyword-fallback | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
+              elif command -v claude >/dev/null 2>&1; then
+                # NORMAL MODE - Actually install plugins
+                PLUGINS_INSTALLED=""
+                PLUGINS_ALREADY=""
 
-              for plugin in $KEYWORD_PLUGINS; do
-                [[ -z "$plugin" ]] && continue
+                for plugin in $KEYWORD_PLUGINS; do
+                  [[ -z "$plugin" ]] && continue
 
-                # Sync install via claude CLI (triggers hot-reload)
-                if command -v timeout >/dev/null 2>&1; then
-                  OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
-                else
-                  OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                  # Sync install via claude CLI (triggers hot-reload)
+                  if command -v timeout >/dev/null 2>&1; then
+                    OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
+                  else
+                    OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                  fi
+
+                  if echo "$OUT" | grep -qi "already"; then
+                    [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                    PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                  elif echo "$OUT" | grep -qi "success"; then
+                    [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                    PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                  fi
+                done
+
+                # Build feedback message (keyword fallback)
+                if [[ -n "$PLUGINS_INSTALLED" ]]; then
+                  # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
+                  AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed** (keyword match): ${PLUGINS_INSTALLED}\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
+                elif [[ -n "$PLUGINS_ALREADY" ]]; then
+                  AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins** (keyword match): ${PLUGINS_ALREADY}\\n"
                 fi
 
-                if echo "$OUT" | grep -qi "already"; then
-                  [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                  PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                elif echo "$OUT" | grep -qi "success"; then
-                  [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                  PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                fi
-              done
-
-              # Build feedback message (keyword fallback)
-              if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
-                AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed** (keyword match): ${PLUGINS_INSTALLED}\\n"
-                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
-                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
-              elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins** (keyword match): ${PLUGINS_ALREADY}\\n"
+                echo "[$(date -Iseconds)] keyword-fallback-install | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
               fi
-
-              echo "[$(date -Iseconds)] keyword-fallback-install | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
             fi
           fi
         fi
