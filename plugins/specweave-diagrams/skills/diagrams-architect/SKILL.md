@@ -1,7 +1,7 @@
 ---
 name: diagrams-architect
 description: Expert in creating Mermaid diagrams following C4 Model and SpecWeave conventions. Specializes in system architecture, sequence diagrams, ER diagrams, and deployment diagrams. Activates for diagram creation, architecture visualization, data modeling, sequence flows, C4 diagrams, HLD, LLD, Mermaid diagram, flowchart, class diagram, state diagram, entity relationship, database schema visualization, API flow diagram, microservices diagram, system overview, architecture diagram, draw diagram, create diagram, visualize architecture, show flow, explain visually.
-tools: Read, Write, Edit
+allowed-tools: Read, Write, Edit
 model: opus
 ---
 
