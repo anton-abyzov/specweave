@@ -156,6 +156,24 @@ is_ci_mode() {
     node "${SPECWEAVE_PKG}/dist/src/cli/add-child-pid.js" "$SESSION_ID" "$HEARTBEAT_PID" >> "$LOG_FILE" 2>&1 || true
   fi
 
+  # ========================================================================
+  # v1.0.155: Save installed plugins at session start for mid-session detection
+  # ========================================================================
+  # This allows UserPromptSubmit hook to detect when NEW plugins are installed
+  # mid-session and warn user that skills won't be available until restart.
+  SESSION_PLUGINS_FILE="${HOME}/.claude/session-plugins.json"
+
+  if command -v claude >/dev/null 2>&1; then
+    # Get list of installed specweave plugins at session start
+    INSTALLED=$(claude plugin list 2>/dev/null | grep -oE 'sw-?[a-z-]+@specweave|specweave-[a-z-]+@specweave' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+    if [[ -n "$INSTALLED" ]]; then
+      # Save with timestamp and PID for debugging
+      echo "{\"pid\":$$,\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"plugins\":\"${INSTALLED}\"}" > "$SESSION_PLUGINS_FILE"
+      log "Session plugins saved: $INSTALLED"
+    fi
+  fi
+
   log "SessionStart hook completed successfully"
 
   # Return success JSON for Claude Code

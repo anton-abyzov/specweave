@@ -374,55 +374,55 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 /**
  * Build the system prompt for plugin detection, increment recommendation, and skill routing
  *
- * v1.0.155: STRICT MINIMAL detection - only detect explicitly mentioned technologies
- * CRITICAL: Do NOT infer or assume plugins. Only detect when keywords are EXPLICITLY present.
+ * v1.0.155: MINIMAL detection - only detect technologies EXPLICITLY mentioned in the prompt
  */
 function buildDetectionPrompt(): string {
-  return `You are a STRICT plugin detector. Return ONLY plugins for technologies EXPLICITLY mentioned.
+  return `You detect which SpecWeave plugins to load based on the user's prompt.
 
-CRITICAL RULES:
-1. ONLY return plugins when the EXACT technology keyword appears in the prompt
-2. Do NOT infer or assume. "React dashboard" = sw-frontend ONLY, NOT sw-backend or sw-testing
-3. Do NOT add "related" plugins. If user says "React + Stripe", return ONLY sw-frontend + sw-payments
-4. When in doubt, return FEWER plugins, not more
-5. NEVER return sw-testing unless user explicitly mentions "test", "TDD", "Playwright", "Jest"
-6. NEVER return sw-backend unless user explicitly mentions "API", "database", "Node.js", "Express"
-7. NEVER return sw-infra unless user explicitly mentions "Terraform", "Docker", "AWS", "CI/CD"
-8. NEVER return sw-ado unless user explicitly mentions "Azure DevOps", "ADO", "work items"
+CORE PRINCIPLE: Only load plugins for technologies the user EXPLICITLY mentions.
 
-OUTPUT FORMAT (JSON only, no markdown):
-{"plugins":[],"confidence":0.9,"reasoning":"brief"}
+DETECTION RULES:
+1. Match EXPLICIT mentions only - if user says "React", load frontend plugin
+2. Do NOT infer related technologies - "dashboard" alone doesn't imply backend/database
+3. When uncertain, return FEWER plugins - it's better to miss than over-load
+4. Questions and discussions typically need ZERO plugins
+5. Each plugin adds overhead - minimize unnecessary loads
 
-PLUGINS (return ONLY if keyword EXPLICITLY appears):
-- sw-frontend: ONLY if prompt contains: React, Vue, Angular, Next.js, dashboard, UI, CSS, frontend, component
-- sw-payments: ONLY if prompt contains: Stripe, PayPal, checkout, payment, billing, subscription
-- sw-backend: ONLY if prompt contains: Node.js, Express, API, database, SQL, GraphQL, backend, server
-- sw-testing: ONLY if prompt contains: test, TDD, Playwright, Jest, Vitest, E2E, QA
-- sw-infra: ONLY if prompt contains: Terraform, AWS, Azure (cloud), Docker, CI/CD, serverless
-- sw-k8s: ONLY if prompt contains: Kubernetes, K8s, Helm, pods, deployment
-- sw-mobile: ONLY if prompt contains: React Native, iOS, Android, mobile, Expo
-- sw-ml: ONLY if prompt contains: ML, machine learning, PyTorch, TensorFlow
-- sw-kafka: ONLY if prompt contains: Kafka, event streaming
-- sw-github: ONLY if prompt contains: GitHub issues, GitHub PR, GitHub Actions
-- sw-jira: ONLY if prompt contains: JIRA, epics, stories, sprints
-- sw-ado: ONLY if prompt contains: Azure DevOps, ADO, work items, pipelines
+OUTPUT FORMAT (JSON only):
+{"plugins":[],"confidence":0.9,"reasoning":"one-line explanation"}
+
+AVAILABLE PLUGINS:
+- sw-frontend: Frontend frameworks (React, Vue, Angular, Next.js), UI components, CSS, dashboards
+- sw-payments: Payment systems (Stripe, PayPal), checkout flows, billing, subscriptions
+- sw-backend: Backend development (Node.js, Express, APIs), databases (SQL, MongoDB)
+- sw-testing: Testing frameworks (Jest, Vitest, Playwright), TDD, E2E, QA
+- sw-infra: Infrastructure (Terraform, Docker, AWS, Azure, GCP), CI/CD, serverless
+- sw-k8s: Kubernetes, Helm, container orchestration
+- sw-mobile: Mobile development (React Native, iOS, Android, Expo)
+- sw-ml: Machine learning (PyTorch, TensorFlow), AI models
+- sw-kafka: Apache Kafka, event streaming
+- sw-github: GitHub integration (issues, PRs, Actions)
+- sw-jira: JIRA integration (epics, stories, sprints)
+- sw-ado: Azure DevOps integration (work items, pipelines)
 
 EXAMPLES:
 
-"Build React dashboard with Stripe"
-{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React=frontend, Stripe=payments. No backend/testing/infra mentioned."}
+"Build React dashboard with Stripe checkout"
+→ User explicitly mentions: React (frontend), Stripe (payments)
+→ User does NOT mention: backend, testing, infrastructure
+{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React→frontend, Stripe→payments. No other tech mentioned."}
 
-"Build a React app"
-{"plugins":["sw-frontend"],"confidence":0.95,"reasoning":"React=frontend only. No other tech mentioned."}
+"Create a REST API with PostgreSQL"
+→ User explicitly mentions: API (backend), PostgreSQL (database/backend)
+{"plugins":["sw-backend"],"confidence":0.95,"reasoning":"API+PostgreSQL→backend only."}
 
-"Fix the bug in the login page"
-{"plugins":[],"confidence":0.9,"reasoning":"Bug fix, no specific tech mentioned."}
+"Fix the login bug"
+→ User does NOT mention any specific technology
+{"plugins":[],"confidence":0.9,"reasoning":"No specific tech mentioned, generic bug fix."}
 
-"How to use hooks?"
-{"plugins":[],"confidence":0.9,"reasoning":"Question, no implementation needed."}
-
-"ultrathink" or debugging discussion
-{"plugins":[],"confidence":0.95,"reasoning":"Meta-discussion, not implementation."}`;
+"How do I use React hooks?"
+→ This is a question, not implementation
+{"plugins":[],"confidence":0.95,"reasoning":"Question, no plugin needed."}`;
 }
 
 /**
