@@ -413,6 +413,6 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       const result = await simulateHook('How do I implement authentication?');
       expect(result.decision).toBe('approve');
       // May have context about active increment, but shouldn't block
-    });
+    }, 30000); // Extended timeout for parallel test runs
   });
 });

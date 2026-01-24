@@ -218,82 +218,6 @@ export interface PluginInstallResult {
 let cachedCliStatus: ReturnType<typeof detectClaudeCli> | null = null;
 
 /**
- * Keyword-based plugin detection fallback (v1.0.153)
- *
- * Fast, reliable detection when LLM is unavailable or fails.
- * Uses simple regex matching against known keywords.
- *
- * @param prompt - User prompt to analyze
- * @returns Array of plugin names to install
- */
-export function detectPluginsByKeywords(prompt: string): SpecWeavePlugin[] {
-  const plugins: SpecWeavePlugin[] = [];
-
-  // Frontend
-  if (/react|vue|angular|next\.?js|svelte|remix|astro|dashboard|frontend|component|ui\b|css|tailwind|spa|web.?app/i.test(prompt)) {
-    plugins.push('sw-frontend');
-  }
-
-  // Backend
-  if (/node\.?js|express|nest\.?js|fastify|hono|backend|server|\bapi\b|rest|graphql|database|sql|postgres|mysql|mongodb|redis|cli.?tool/i.test(prompt)) {
-    plugins.push('sw-backend');
-  }
-
-  // Testing
-  if (/\btest|tdd|playwright|cypress|jest|vitest|e2e|unit.?test|integration.?test|\bqa\b|quality/i.test(prompt)) {
-    plugins.push('sw-testing');
-  }
-
-  // Payments
-  if (/stripe|paypal|payment|checkout|billing|subscription|invoice|e-?commerce/i.test(prompt)) {
-    plugins.push('sw-payments');
-  }
-
-  // Infrastructure
-  if (/terraform|pulumi|\baws\b|azure|gcp|docker|ci\/?cd|cloudformation|cdk|devops|serverless|lambda/i.test(prompt)) {
-    plugins.push('sw-infra');
-  }
-
-  // Kubernetes
-  if (/kubernetes|k8s|helm|\bpod|deployment|ingress|kubectl|eks|aks|gke|gitops/i.test(prompt)) {
-    plugins.push('sw-k8s');
-  }
-
-  // Mobile
-  if (/react.?native|ios|android|mobile|expo|flutter|swift|kotlin|native.?app/i.test(prompt)) {
-    plugins.push('sw-mobile');
-  }
-
-  // ML
-  if (/machine.?learning|\bml\b|ai.?model|pytorch|tensorflow|training|inference|data.?science/i.test(prompt)) {
-    plugins.push('sw-ml');
-  }
-
-  // Kafka
-  if (/kafka|event.?streaming|msk|consumer|producer|\btopic/i.test(prompt)) {
-    plugins.push('sw-kafka');
-  }
-
-  // GitHub (be specific to avoid false positives)
-  if (/github.?issue|github.?pr|github.?action|github.?sync/i.test(prompt)) {
-    plugins.push('sw-github');
-  }
-
-  // JIRA
-  if (/\bjira|epic|story|sprint|jira.?sync/i.test(prompt)) {
-    plugins.push('sw-jira');
-  }
-
-  // Azure DevOps
-  if (/azure.?devops|\bado\b|work.?item|pipeline|ado.?sync/i.test(prompt)) {
-    plugins.push('sw-ado');
-  }
-
-  // Limit to max 5 plugins
-  return plugins.slice(0, 5);
-}
-
-/**
  * Clear the cached CLI status (useful for testing)
  */
 export function clearCliCache(): void {
@@ -437,7 +361,13 @@ EXAMPLES:
 {"plugins":[],"confidence":0.9,"reasoning":"No specific tech mentioned, generic bug fix."}
 
 "How do I use React hooks?"
-{"plugins":[],"confidence":0.95,"reasoning":"Question, no plugin needed."}`;
+{"plugins":[],"confidence":0.95,"reasoning":"Question, no plugin needed."}
+
+"Why was sw-mobile installed? I only asked for React dashboard"
+{"plugins":[],"confidence":1.0,"reasoning":"Meta-question about plugins, NOT a request to build. NEVER trigger plugins from questions about plugins."}
+
+"Investigate why the plugin detection is broken"
+{"plugins":[],"confidence":1.0,"reasoning":"Investigation/debugging task, not building. ZERO plugins needed."}`;
 }
 
 /**
@@ -568,34 +498,20 @@ function executeViaInteractiveShell(
 }
 
 /**
- * Create a fallback result using keyword detection (v1.0.153)
+ * Create a failure result when LLM detection fails (v1.0.157)
  *
- * When LLM detection fails, we fall back to keyword-based detection
- * to ensure users still get some plugins loaded.
+ * v1.0.157: Keyword fallback REMOVED - if LLM fails, return ZERO plugins.
+ * This is safer than guessing wrong (which caused over-detection bugs).
  *
- * @param userPrompt - The original user prompt
  * @param startTime - Start time for duration calculation
  * @param error - Error message from failed LLM detection
- * @returns Detection result with keyword-detected plugins or empty
+ * @returns Detection result with empty plugins
  */
-function createKeywordFallbackResult(
-  userPrompt: string,
+function createFailureResult(
   startTime: number,
   error?: string
 ): LLMDetectionResult {
-  const keywordPlugins = detectPluginsByKeywords(userPrompt);
-
-  if (keywordPlugins.length > 0) {
-    logger.info(`Keyword fallback detected plugins: ${keywordPlugins.join(', ')} (LLM error: ${error || 'unknown'})`);
-    return {
-      success: true,
-      plugins: keywordPlugins,
-      confidence: 0.7, // Lower confidence for keyword-based detection
-      reasoning: `Detected via keyword matching (LLM failed: ${error || 'unknown'})`,
-      durationMs: performance.now() - startTime,
-    };
-  }
-
+  logger.warn(`LLM detection failed: ${error || 'unknown'} - returning empty plugins (no fallback)`);
   return {
     success: false,
     plugins: [],
@@ -614,28 +530,16 @@ function createKeywordFallbackResult(
  */
 export async function detectPluginsViaLLM(
   userPrompt: string,
-  timeout: number = 20000 // Reduced from 30s to allow time for keyword fallback + install
+  timeout: number = 20000
 ): Promise<LLMDetectionResult> {
   const startTime = performance.now();
 
   // Check CLI availability first
   const cliStatus = isClaudeCliAvailable();
   if (!cliStatus.available) {
-    logger.debug('Claude CLI not available for LLM detection, using keyword fallback');
-
-    // Fall back to keyword detection (v1.0.153)
-    const keywordPlugins = detectPluginsByKeywords(userPrompt);
-    if (keywordPlugins.length > 0) {
-      logger.info(`Keyword fallback detected plugins: ${keywordPlugins.join(', ')}`);
-      return {
-        success: true,
-        plugins: keywordPlugins,
-        confidence: 0.7, // Lower confidence for keyword-based detection
-        reasoning: 'Detected via keyword matching (Claude CLI unavailable)',
-        durationMs: performance.now() - startTime,
-      };
-    }
-
+    // v1.0.157: No keyword fallback - if CLI unavailable, return empty plugins
+    // This is safer than guessing wrong (which caused over-detection bugs)
+    logger.warn('Claude CLI not available for LLM detection - returning empty plugins (no fallback)');
     return {
       success: false,
       plugins: [],
@@ -659,45 +563,45 @@ Which plugins should be loaded?`;
     // Use --output-format json for faster response and --setting-sources user to skip project context
     const result = executeClaudeCli(['-p', fullPrompt, '--model', 'opus', '--output-format', 'json', '--setting-sources', 'user'], timeout);
 
-    // Handle spawn errors - use keyword fallback (v1.0.153)
+    // Handle spawn errors - return failure (v1.0.157 - no fallback)
     if (result.error) {
       const errorMsg = result.error.message || String(result.error);
 
       // Timeout error
       if (errorMsg.includes('ETIMEDOUT') || errorMsg.includes('TIMEOUT')) {
-        return createKeywordFallbackResult(userPrompt, startTime, `Detection timed out after ${timeout}ms`);
+        return createFailureResult(startTime, `Detection timed out after ${timeout}ms`);
       }
 
-      return createKeywordFallbackResult(userPrompt, startTime, `Claude CLI error: ${errorMsg}`);
+      return createFailureResult(startTime, `Claude CLI error: ${errorMsg}`);
     }
 
-    // Handle non-zero exit - use keyword fallback (v1.0.153)
+    // Handle non-zero exit - return failure (v1.0.157 - no fallback)
     if (result.status !== 0) {
       const stderr = result.stderr || '';
       const stdout = result.stdout || '';
 
       // Check for specific errors
       if (stderr.includes('authentication') || stderr.includes('API key')) {
-        return createKeywordFallbackResult(userPrompt, startTime, 'Claude CLI authentication error. Run: claude login');
+        return createFailureResult(startTime, 'Claude CLI authentication error. Run: claude login');
       }
 
       if (stderr.includes('rate limit')) {
-        return createKeywordFallbackResult(userPrompt, startTime, 'Rate limit exceeded. Try again later.');
+        return createFailureResult(startTime, 'Rate limit exceeded. Try again later.');
       }
 
       // Prompt too long - common with Haiku
       if (stderr.includes('too long') || stdout.includes('too long')) {
-        return createKeywordFallbackResult(userPrompt, startTime, 'Prompt too long for Haiku model');
+        return createFailureResult(startTime, 'Prompt too long for Haiku model');
       }
 
-      return createKeywordFallbackResult(userPrompt, startTime, `Claude CLI exited with code ${result.status}: ${stderr || stdout}`);
+      return createFailureResult(startTime, `Claude CLI exited with code ${result.status}: ${stderr || stdout}`);
     }
 
     // Parse the response
     let output = (result.stdout || '').trim();
 
     if (!output) {
-      return createKeywordFallbackResult(userPrompt, startTime, 'Empty response from Claude CLI');
+      return createFailureResult(startTime, 'Empty response from Claude CLI');
     }
 
     // Handle --output-format json wrapper (v1.0.155)
@@ -727,7 +631,7 @@ Which plugins should be loaded?`;
     // Use keyword fallback if no JSON found (v1.0.153)
     if (!jsonMatch) {
       logger.debug(`Invalid LLM response format: ${output.slice(0, 200)}`);
-      return createKeywordFallbackResult(userPrompt, startTime, 'Invalid response format (no JSON found)');
+      return createFailureResult(startTime, 'Invalid response format (no JSON found)');
     }
 
 
@@ -764,7 +668,7 @@ Which plugins should be loaded?`;
       parsed = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
       logger.debug(`JSON parse error: ${parseError}`);
-      return createKeywordFallbackResult(userPrompt, startTime, 'Failed to parse response JSON');
+      return createFailureResult(startTime, 'Failed to parse response JSON');
     }
 
     // Validate and filter plugins
@@ -875,7 +779,7 @@ Which plugins should be loaded?`;
     logger.error(`LLM detection failed: ${errorMsg}`);
 
     // Use keyword fallback on any exception (v1.0.153)
-    return createKeywordFallbackResult(userPrompt, startTime, `Detection failed: ${errorMsg}`);
+    return createFailureResult(startTime, `Detection failed: ${errorMsg}`);
   }
 }
 
