@@ -300,6 +300,11 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
             fi
 
             # ==================================================================
+            # EXTRACT ROUTING INFO EARLY (v1.0.155 - needed for agent directives)
+            # ==================================================================
+            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills | length // 0' 2>/dev/null)
+
+            # ==================================================================
             # INCREMENT SUGGESTION (from LLM response)
             # ==================================================================
             if [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
@@ -317,6 +322,32 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
 
 "
+                # Build agent spawn directive if routing skills available (v1.0.155)
+                AGENT_DIRECTIVE=""
+                if [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
+                  PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
+                  PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
+                  PRIMARY_REASON=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .reason // empty' 2>/dev/null | head -1)
+                  if [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]]; then
+                    AGENT_TYPE="${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME}"
+                    AGENT_DIRECTIVE="
+
+---
+
+### 🚀 Then SPAWN Specialized Agent
+
+**After creating increment, use Task tool:**
+\\\`\\\`\\\`typescript
+Task({
+  subagent_type: \\\"${AGENT_TYPE}\\\",
+  prompt: \\\"Implement the feature...\\\",
+  description: \\\"${PRIMARY_REASON:-Implementation}\\\"
+})
+\\\`\\\`\\\`
+*Specialized agents produce better code than direct implementation.*"
+                  fi
+                fi
+
                 case "$INC_ACTION" in
                   new)
                     CMD="/sw:increment"
@@ -328,7 +359,7 @@ Consider creating an increment first:
 $CMD
 \`\`\`
 
-*Reason: $INC_REASON*
+*Reason: $INC_REASON*${AGENT_DIRECTIVE}
 
 ---
 
