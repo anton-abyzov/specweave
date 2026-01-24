@@ -135,11 +135,11 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
       expect(hookContent).toContain('AUTOLOAD_PLUGINS_MSG');
     });
 
-    it('should show "Loaded plugins" message for new installs', () => {
+    it('should show "Plugins installed" message for new installs', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should show loaded plugins message
-      expect(hookContent).toContain('Loaded plugins');
+      // Should show installed plugins message (v1.0.155: format changed)
+      expect(hookContent).toContain('Plugins installed');
     });
 
     it('should show "Using plugins" message for already-loaded', () => {

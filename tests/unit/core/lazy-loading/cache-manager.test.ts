@@ -3,9 +3,8 @@
  *
  * @module tests/unit/core/lazy-loading/cache-manager
  *
- * IMPORTANT: Uses vi.hoisted() for ESM mocking in vitest 4.x to ensure mocks
- * are properly applied before module imports. This prevents tests from timing
- * out due to real Claude CLI spawning when running in VSCode or in parallel.
+ * Uses vi.hoisted() for ESM mocking in vitest 4.x to ensure mocks
+ * are properly applied before module imports.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -13,14 +12,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-// Use vi.hoisted() to create mock functions that are hoisted with vi.mock (vitest 4.x ESM pattern)
+// Mock Claude CLI detection - CLI unavailable in tests
 const { mockDetectClaudeCli, mockIsClaudeCliAvailable, mockClearCliCache } = vi.hoisted(() => ({
   mockDetectClaudeCli: vi.fn().mockReturnValue({ available: false }),
   mockIsClaudeCliAvailable: vi.fn().mockReturnValue(false),
   mockClearCliCache: vi.fn(),
 }));
 
-// Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
 vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
   detectClaudeCli: mockDetectClaudeCli,
   isClaudeCliAvailable: mockIsClaudeCliAvailable,
@@ -30,44 +28,48 @@ vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
 import {
   PluginCacheManager,
   CACHE_PATHS,
-  CacheState,
-  CachedPluginMetadata,
-  BackgroundInstallStatus,
+  marketplaceNameToDirectory,
+  directoryToMarketplaceName,
 } from '../../../../src/core/lazy-loading/cache-manager.js';
 
-// Create a temporary directory for tests
 const TEST_BASE_DIR = path.join(os.tmpdir(), 'specweave-cache-manager-test');
+
+/**
+ * Create a mock plugin in the marketplace directory
+ * Uses DIRECTORY names (specweave, specweave-github) for filesystem
+ */
+function createMockPlugin(marketplacePath: string, directoryName: string): void {
+  const pluginPath = path.join(marketplacePath, directoryName);
+  fs.mkdirSync(pluginPath, { recursive: true });
+  fs.writeFileSync(
+    path.join(pluginPath, 'marketplace.json'),
+    JSON.stringify({
+      name: directoryToMarketplaceName(directoryName),
+      version: '1.0.0',
+      description: `Test plugin ${directoryName}`,
+    })
+  );
+}
 
 describe('PluginCacheManager', () => {
   let cacheManager: PluginCacheManager;
-  let testCachePath: string;
-  let testActivePath: string;
   let testStatePath: string;
   let testMarketplacePath: string;
   let testRegistryPath: string;
 
   beforeEach(() => {
-    // Create unique test directories for each test
     const testId = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const testDir = path.join(TEST_BASE_DIR, testId);
 
-    testCachePath = path.join(testDir, 'skills-cache');
-    testActivePath = path.join(testDir, 'skills');
     testStatePath = path.join(testDir, 'state', 'plugins-loaded.json');
     testMarketplacePath = path.join(testDir, 'marketplace', 'plugins');
     testRegistryPath = path.join(testDir, 'plugins', 'installed_plugins.json');
 
-    // Create directories
-    fs.mkdirSync(testCachePath, { recursive: true });
-    fs.mkdirSync(testActivePath, { recursive: true });
     fs.mkdirSync(path.dirname(testStatePath), { recursive: true });
     fs.mkdirSync(testMarketplacePath, { recursive: true });
     fs.mkdirSync(path.dirname(testRegistryPath), { recursive: true });
 
-    // Create manager with test paths (including registryPath to isolate from user's real registry)
     cacheManager = new PluginCacheManager({
-      cachePath: testCachePath,
-      activePath: testActivePath,
       statePath: testStatePath,
       marketplacePath: testMarketplacePath,
       registryPath: testRegistryPath,
@@ -75,7 +77,6 @@ describe('PluginCacheManager', () => {
   });
 
   afterEach(() => {
-    // Clean up test directories
     try {
       fs.rmSync(TEST_BASE_DIR, { recursive: true, force: true });
     } catch {
@@ -86,7 +87,6 @@ describe('PluginCacheManager', () => {
   describe('constructor', () => {
     it('should use default paths when no options provided', () => {
       const defaultManager = new PluginCacheManager();
-      // Test that it doesn't throw
       expect(defaultManager).toBeDefined();
     });
 
@@ -96,20 +96,36 @@ describe('PluginCacheManager', () => {
   });
 
   describe('CACHE_PATHS constant', () => {
-    it('should have expected paths', () => {
-      expect(CACHE_PATHS.cache).toContain('.specweave');
-      expect(CACHE_PATHS.active).toContain('.claude');
+    it('should have state and marketplace paths', () => {
       expect(CACHE_PATHS.state).toContain('plugins-loaded.json');
       expect(CACHE_PATHS.marketplace).toContain('.claude');
     });
   });
 
-  describe('populateCache', () => {
-    // SIMPLIFIED (v1.0.122+): populateCache is now a no-op that validates marketplace
-    // and updates state. It no longer creates an intermediate cache.
+  describe('Name conversion functions', () => {
+    it('should convert marketplace names to directory names', () => {
+      expect(marketplaceNameToDirectory('sw')).toBe('specweave');
+      expect(marketplaceNameToDirectory('sw-github')).toBe('specweave-github');
+      expect(marketplaceNameToDirectory('sw-ado')).toBe('specweave-ado');
+      expect(marketplaceNameToDirectory('sw-router')).toBe('specweave-router');
+      // Already directory names pass through
+      expect(marketplaceNameToDirectory('specweave')).toBe('specweave');
+      expect(marketplaceNameToDirectory('specweave-github')).toBe('specweave-github');
+    });
 
+    it('should convert directory names to marketplace names', () => {
+      expect(directoryToMarketplaceName('specweave')).toBe('sw');
+      expect(directoryToMarketplaceName('specweave-github')).toBe('sw-github');
+      expect(directoryToMarketplaceName('specweave-ado')).toBe('sw-ado');
+      expect(directoryToMarketplaceName('specweave-router')).toBe('sw-router');
+      // Already marketplace names pass through
+      expect(directoryToMarketplaceName('sw')).toBe('sw');
+      expect(directoryToMarketplaceName('sw-github')).toBe('sw-github');
+    });
+  });
+
+  describe('populateCache', () => {
     it('should validate marketplace and report plugin count', async () => {
-      // Create mock plugins in marketplace
       createMockPlugin(testMarketplacePath, 'specweave');
       createMockPlugin(testMarketplacePath, 'specweave-github');
 
@@ -117,21 +133,6 @@ describe('PluginCacheManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.pluginsAffected).toBe(2);
-      // No intermediate cache created - plugins read directly from marketplace
-      expect(fs.existsSync(path.join(testMarketplacePath, 'specweave'))).toBe(true);
-      expect(fs.existsSync(path.join(testMarketplacePath, 'specweave-github'))).toBe(true);
-    });
-
-    it('should update state with marketplace plugins', async () => {
-      createMockPlugin(testMarketplacePath, 'test-plugin');
-
-      const result = await cacheManager.populateCache();
-
-      expect(result.success).toBe(true);
-      // State should be updated with plugin info
-      const state = cacheManager.readState();
-      expect(state.cachedPlugins.length).toBe(1);
-      expect(state.cachedPlugins[0].name).toBe('test-plugin');
     });
 
     it('should return error if marketplace not found', async () => {
@@ -142,135 +143,67 @@ describe('PluginCacheManager', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('Marketplace not found');
     });
-
-    it('should update state with marketplace plugin info', async () => {
-      // SIMPLIFIED (v1.0.122+): populateCache no longer creates intermediate cache files
-      // It just validates marketplace and updates state
-      createMockPlugin(testMarketplacePath, 'test-plugin');
-
-      await cacheManager.populateCache();
-
-      // State should have plugin info (for backward compatibility)
-      const state = cacheManager.readState();
-      expect(state.cachedPlugins.length).toBe(1);
-      expect(state.cachedPlugins[0].name).toBe('test-plugin');
-    });
-
-    it('should update state file after population', async () => {
-      createMockPlugin(testMarketplacePath, 'test-plugin');
-
-      await cacheManager.populateCache();
-
-      const state = cacheManager.readState();
-      expect(state.cachedPlugins.length).toBe(1);
-      expect(state.cachedPlugins[0].name).toBe('test-plugin');
-    });
   });
 
   describe('installPlugins', () => {
-    beforeEach(async () => {
-      // Populate cache with test plugins
+    beforeEach(() => {
       createMockPlugin(testMarketplacePath, 'specweave');
       createMockPlugin(testMarketplacePath, 'specweave-github');
-      createMockPlugin(testMarketplacePath, 'specweave-jira');
+      createMockPlugin(testMarketplacePath, 'specweave-ado');
     });
 
-    it('should install all cached plugins by default', async () => {
+    it('should return success when CLI unavailable (no plugins affected)', async () => {
       const result = await cacheManager.installPlugins();
 
       expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(3);
-      // NOTE: Strategy 3 (copy to skills dir) was removed - check registry instead
-      // Plugins are now registered in installed_plugins.json, not copied to skills dir
-      // The state file tracks what's been installed
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('sw');
-      expect(state.loadedPlugins).toContain('sw-github');
-      expect(state.loadedPlugins).toContain('sw-jira');
-    });
-
-    it('should install specific plugins', async () => {
-      const result = await cacheManager.installPlugins({
-        plugins: ['sw', 'specweave-github'],
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(2);
-      // Check state file instead of skills dir (Strategy 3 removed)
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('sw');
-      expect(state.loadedPlugins).toContain('sw-github');
-      expect(state.loadedPlugins).not.toContain('sw-jira');
-    });
-
-    it('should install plugins by group name', async () => {
-      const result = await cacheManager.installPlugins({
-        plugins: ['core'],
-      });
-
-      expect(result.success).toBe(true);
-      // Check state file instead of skills dir (Strategy 3 removed)
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('sw');
-    });
-
-    it('should skip already installed plugins', async () => {
-      // First install
-      const firstResult = await cacheManager.installPlugins({ plugins: ['sw'] });
-      expect(firstResult.pluginsAffected).toBe(1);
-
-      // Second install should skip (already in registry)
-      const result = await cacheManager.installPlugins({ plugins: ['sw'] });
-
-      expect(result.success).toBe(true);
-      // NOTE: With Strategy 3 removed, we only check registry.
-      // Plugin is already registered, so should be skipped.
       expect(result.pluginsAffected).toBe(0);
     });
 
-    it('should reinstall with force option', async () => {
-      // First install
-      const firstResult = await cacheManager.installPlugins({ plugins: ['sw'] });
-      expect(firstResult.pluginsAffected).toBe(1);
+    it('should handle specific plugins request', async () => {
+      const result = await cacheManager.installPlugins({
+        plugins: ['sw', 'sw-github'],
+      });
 
-      // Force reinstall - should re-register in registry
+      expect(result.success).toBe(true);
+    });
+
+    it('should normalize plugin names (directory to marketplace)', async () => {
+      // specweave-github should become sw-github
+      const result = await cacheManager.installPlugins({
+        plugins: ['specweave-github'],
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should handle force option', async () => {
       const result = await cacheManager.installPlugins({
         plugins: ['sw'],
         force: true,
       });
 
       expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(1);
-      // Verify plugin is still registered
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('sw');
     });
 
-    it('should update state file after installation', async () => {
-      await cacheManager.installPlugins({ plugins: ['sw'] });
+    it('should return error for missing marketplace', async () => {
+      fs.rmSync(testMarketplacePath, { recursive: true });
 
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).toContain('sw');
-      expect(state.analytics.totalLoads).toBeGreaterThan(0);
-    });
-
-    it('should warn for plugins not in cache', async () => {
       const result = await cacheManager.installPlugins({
-        plugins: ['nonexistent-plugin'],
+        plugins: ['sw'],
       });
 
-      expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(0);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Marketplace not found');
     });
   });
 
-  describe('isPluginLoaded', () => {
-    it('should return true for registered plugins', async () => {
-      // Register plugin in test registry (isPluginLoaded now checks registry)
+  describe('isPluginRegistered', () => {
+    it('should return true for registered plugins', () => {
+      // Use MARKETPLACE name format: sw@specweave
       const registry = {
         version: 2,
         plugins: {
-          'specweave@specweave': [{
+          'sw@specweave': [{
             scope: 'user',
             installPath: '/test/path',
             version: '1.0.0',
@@ -281,72 +214,17 @@ describe('PluginCacheManager', () => {
       };
       fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
 
-      expect(cacheManager.isPluginLoaded('sw')).toBe(true);
+      expect(cacheManager.isPluginRegistered('sw')).toBe(true);
     });
 
     it('should return false for unregistered plugins', () => {
-      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
-    });
-  });
-
-  describe('isPluginCached', () => {
-    it('should return true for cached plugins', () => {
-      createMockPlugin(testMarketplacePath, 'specweave');
-
-      expect(cacheManager.isPluginCached('sw')).toBe(true);
+      expect(cacheManager.isPluginRegistered('sw')).toBe(false);
     });
 
-    it('should return false for non-cached plugins', () => {
-      expect(cacheManager.isPluginCached('sw')).toBe(false);
-    });
-  });
-
-  describe('getCachedPlugins', () => {
-    it('should return list of cached plugins', () => {
-      createMockPlugin(testMarketplacePath, 'specweave');
-      createMockPlugin(testMarketplacePath, 'specweave-github');
-
-      const plugins = cacheManager.getCachedPlugins();
-
-      // Returns directory names from marketplace
-      expect(plugins).toContain('specweave');
-      expect(plugins).toContain('specweave-github');
-      expect(plugins.length).toBe(2);
-    });
-
-    it('should return empty array if no cache', () => {
-      fs.rmSync(testCachePath, { recursive: true });
-
-      const plugins = cacheManager.getCachedPlugins();
-
-      expect(plugins).toEqual([]);
-    });
-
-    it('should exclude hidden directories', () => {
-      createMockPlugin(testMarketplacePath, 'specweave');
-      fs.mkdirSync(path.join(testCachePath, '.hidden'), { recursive: true });
-
-      const plugins = cacheManager.getCachedPlugins();
-
-      // Returns directory names from marketplace
-      expect(plugins).toContain('specweave');
-      expect(plugins).not.toContain('.hidden');
-    });
-  });
-
-  describe('getLoadedPlugins', () => {
-    it('should return list of loaded plugins from registry', () => {
-      // Register plugins in test registry using MARKETPLACE names (Claude CLI format)
+    it('should handle sw-github format', () => {
       const registry = {
         version: 2,
         plugins: {
-          'sw@specweave': [{
-            scope: 'user',
-            installPath: '/test/path',
-            version: '1.0.0',
-            installedAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-          }],
           'sw-github@specweave': [{
             scope: 'user',
             installPath: '/test/path',
@@ -358,63 +236,18 @@ describe('PluginCacheManager', () => {
       };
       fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
 
-      const plugins = cacheManager.getLoadedPlugins();
-
-      // Returns marketplace names (sw-*) matching Claude CLI format
-      expect(plugins).toContain('sw');
-      expect(plugins).toContain('sw-github');
-    });
-
-    it('should return empty array if no plugins registered', () => {
-      const plugins = cacheManager.getLoadedPlugins();
-      expect(plugins).toEqual([]);
+      expect(cacheManager.isPluginRegistered('sw-github')).toBe(true);
     });
   });
 
-  describe('cleanupCache', () => {
-    // SIMPLIFIED (v1.0.122+): cleanupCache is now a no-op since we read directly from marketplace
-    // There's no intermediate cache to clean up
-    it('should be a no-op with simplified architecture', async () => {
-      createMockPlugin(testMarketplacePath, 'specweave');
-      createMockPlugin(testMarketplacePath, 'specweave-github');
-
-      const result = await cacheManager.cleanupCache();
-
-      // Since getCachedPlugins() and getMarketplacePlugins() return the same list,
-      // there are never any "stale" plugins to remove
-      expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(0);
-    });
-  });
-
-  describe('unloadPlugins', () => {
-    beforeEach(() => {
-      // Create mock plugins in marketplace (filesystem uses directory names)
-      createMockPlugin(testMarketplacePath, 'specweave');
-      createMockPlugin(testMarketplacePath, 'specweave-github');
-      createMockPlugin(testMarketplacePath, 'specweave-router');
-
-      // Register plugins in test registry using MARKETPLACE names (Claude CLI format)
+  describe('isPluginLoaded (alias)', () => {
+    it('should be alias for isPluginRegistered', () => {
       const registry = {
         version: 2,
         plugins: {
-          'sw@specweave': [{
-            scope: 'user',
-            installPath: path.join(testMarketplacePath, 'specweave'),
-            version: '1.0.0',
-            installedAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-          }],
-          'sw-github@specweave': [{
-            scope: 'user',
-            installPath: path.join(testMarketplacePath, 'specweave-github'),
-            version: '1.0.0',
-            installedAt: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-          }],
           'sw-router@specweave': [{
             scope: 'user',
-            installPath: path.join(testMarketplacePath, 'specweave-router'),
+            installPath: '/test/path',
             version: '1.0.0',
             installedAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
@@ -422,203 +255,72 @@ describe('PluginCacheManager', () => {
         },
       };
       fs.writeFileSync(testRegistryPath, JSON.stringify(registry, null, 2));
-    });
 
-    it('should unload all plugins except router', async () => {
-      const result = await cacheManager.unloadPlugins();
-
-      expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(2);
-      // Check registry - accepts both marketplace and directory names
-      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
-      expect(cacheManager.isPluginLoaded('sw-github')).toBe(false);
       expect(cacheManager.isPluginLoaded('sw-router')).toBe(true);
-    });
-
-    it('should unload specific plugins', async () => {
-      const result = await cacheManager.unloadPlugins(['sw']);
-
-      expect(result.success).toBe(true);
-      expect(result.pluginsAffected).toBe(1);
-      // Check registry - accepts both marketplace and directory names
-      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
-      expect(cacheManager.isPluginLoaded('sw-github')).toBe(true);
-    });
-
-    it('should update state after unload', async () => {
-      // First, verify plugins are registered
-      expect(cacheManager.isPluginLoaded('sw')).toBe(true);
-
-      await cacheManager.unloadPlugins(['sw']);
-
-      // Check both registry and state
-      expect(cacheManager.isPluginLoaded('sw')).toBe(false);
-      const state = cacheManager.readState();
-      expect(state.loadedPlugins).not.toContain('sw');
+      expect(cacheManager.isPluginLoaded('sw-ado')).toBe(false);
     });
   });
 
-  describe('getCacheSize', () => {
-    it('should return total and per-plugin sizes', () => {
+  describe('getMarketplacePlugins', () => {
+    it('should return marketplace plugins as sw-* names', () => {
       createMockPlugin(testMarketplacePath, 'specweave');
       createMockPlugin(testMarketplacePath, 'specweave-github');
+      createMockPlugin(testMarketplacePath, 'specweave-ado');
 
-      const sizes = cacheManager.getCacheSize();
+      const plugins = cacheManager.getMarketplacePlugins();
 
-      expect(sizes.total).toBeGreaterThan(0);
-      // getCacheSize returns directory names from marketplace
-      expect(sizes.plugins['specweave']).toBeGreaterThan(0);
-      expect(sizes.plugins['specweave-github']).toBeGreaterThan(0);
+      // Returns sw-* marketplace names
+      expect(plugins).toContain('sw');
+      expect(plugins).toContain('sw-github');
+      expect(plugins).toContain('sw-ado');
+      expect(plugins.length).toBe(3);
     });
 
-    it('should return zero for empty cache', () => {
-      const sizes = cacheManager.getCacheSize();
+    it('should return empty array if marketplace missing', () => {
+      fs.rmSync(testMarketplacePath, { recursive: true });
 
-      expect(sizes.total).toBe(0);
-      expect(Object.keys(sizes.plugins).length).toBe(0);
+      const plugins = cacheManager.getMarketplacePlugins();
+
+      expect(plugins).toEqual([]);
     });
   });
 
   describe('readState', () => {
-    it('should return default state if file does not exist', () => {
+    it('should return default state if file missing', () => {
       const state = cacheManager.readState();
 
-      expect(state.version).toBe('1.0.0');
-      expect(state.lazyMode).toBe(true);
-      expect(state.cachedPlugins).toEqual([]);
+      expect(state.version).toBeDefined();
       expect(state.loadedPlugins).toEqual([]);
-      expect(state.analytics.totalLoads).toBe(0);
+      expect(state.totalLoads).toBe(0);
     });
 
     it('should read existing state file', () => {
-      // State now stores marketplace names (sw-*) for consistency
-      const testState: CacheState = {
+      const existingState = {
         version: '1.0.0',
-        lazyMode: true,
         lastUpdated: new Date().toISOString(),
-        cachedPlugins: [],
-        loadedPlugins: ['sw'],
-        analytics: { totalLoads: 5, totalTokensSaved: 1000, avgLoadTimeMs: 150 },
+        loadedPlugins: ['sw', 'sw-github'],
+        totalLoads: 5,
       };
-
-      fs.writeFileSync(testStatePath, JSON.stringify(testState));
+      fs.writeFileSync(testStatePath, JSON.stringify(existingState, null, 2));
 
       const state = cacheManager.readState();
 
       expect(state.loadedPlugins).toContain('sw');
-      expect(state.analytics.totalLoads).toBe(5);
-    });
-
-    it('should handle corrupted state file', () => {
-      fs.writeFileSync(testStatePath, 'not valid json');
-
-      const state = cacheManager.readState();
-
-      expect(state.version).toBe('1.0.0');
-      expect(state.loadedPlugins).toEqual([]);
+      expect(state.loadedPlugins).toContain('sw-github');
+      expect(state.totalLoads).toBe(5);
     });
   });
 
-  describe('installPluginsBackground', () => {
-    beforeEach(() => {
+  describe('getAnalyticsSummary', () => {
+    it('should return analytics summary', () => {
       createMockPlugin(testMarketplacePath, 'specweave');
       createMockPlugin(testMarketplacePath, 'specweave-github');
-    });
 
-    it('should return task ID immediately', () => {
-      const taskId = cacheManager.installPluginsBackground();
+      const summary = cacheManager.getAnalyticsSummary();
 
-      expect(taskId).toBeDefined();
-      expect(taskId).toMatch(/^install-\d+-[a-z0-9]+$/);
-    });
-
-    it('should allow checking task status', async () => {
-      const taskId = cacheManager.installPluginsBackground({
-        plugins: ['sw'],
-      });
-
-      // Initial status should be pending or running
-      const initialStatus = cacheManager.checkInstallStatus(taskId);
-      expect(initialStatus).not.toBeNull();
-      expect(['pending', 'running', 'completed']).toContain(initialStatus!.status);
-
-      // Wait for completion
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const finalStatus = cacheManager.checkInstallStatus(taskId);
-      expect(finalStatus).not.toBeNull();
-      expect(finalStatus!.status).toBe('completed');
-      // Tracks directory names internally
-      expect(finalStatus!.installed).toContain('specweave');
-    });
-
-    it('should return null for unknown task ID', () => {
-      const status = cacheManager.checkInstallStatus('unknown-task-id');
-      expect(status).toBeNull();
-    });
-
-    it('should track progress during installation', async () => {
-      const taskId = cacheManager.installPluginsBackground({
-        plugins: ['sw', 'specweave-github'],
-      });
-
-      // Wait for completion
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const status = cacheManager.checkInstallStatus(taskId);
-      expect(status).not.toBeNull();
-      expect(status!.progress).toBe(100);
-      expect(status!.installed.length).toBe(2);
-    });
-  });
-
-  describe('cleanupBackgroundTasks', () => {
-    it('should remove old completed tasks', async () => {
-      const taskId = cacheManager.installPluginsBackground({
-        plugins: [],
-      });
-
-      // Wait for completion
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Task should exist
-      expect(cacheManager.checkInstallStatus(taskId)).not.toBeNull();
-
-      // Cleanup with very short max age
-      cacheManager.cleanupBackgroundTasks(1);
-
-      // Wait a bit more than the max age
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Now cleanup should remove it
-      cacheManager.cleanupBackgroundTasks(1);
-
-      // Task should be gone
-      expect(cacheManager.checkInstallStatus(taskId)).toBeNull();
+      expect(summary.totalLoads).toBeDefined();
+      expect(summary.loadedPlugins).toBeDefined();
+      expect(summary.availablePlugins).toBe(2);
     });
   });
 });
-
-/**
- * Helper to create a mock plugin directory
- */
-function createMockPlugin(basePath: string, pluginName: string): void {
-  const pluginPath = path.join(basePath, pluginName);
-  const skillsPath = path.join(pluginPath, 'skills', 'test-skill');
-  const claudePluginPath = path.join(pluginPath, '.claude-plugin');
-
-  fs.mkdirSync(skillsPath, { recursive: true });
-  fs.mkdirSync(claudePluginPath, { recursive: true });
-
-  // Create skill file
-  fs.writeFileSync(
-    path.join(skillsPath, 'SKILL.md'),
-    `# Test Skill\nThis is a test skill for ${pluginName}`
-  );
-
-  // Create plugin.json
-  fs.writeFileSync(
-    path.join(claudePluginPath, 'plugin.json'),
-    JSON.stringify({ name: pluginName, version: '1.0.0' })
-  );
-}

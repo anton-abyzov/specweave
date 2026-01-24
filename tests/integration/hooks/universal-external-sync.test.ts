@@ -19,12 +19,14 @@ import * as path from 'path';
 
 describe('Universal External Sync Architecture', () => {
   describe('processor.sh Event Routing', () => {
+    // NOTE: processor.sh was removed in v1.0.155 - these tests are skipped
     const processorPath = path.join(
       process.cwd(),
       'plugins/specweave/hooks/v2/queue/processor.sh'
     );
+    const processorExists = fs.existsSync(processorPath);
 
-    it('should route task.updated to project-bridge-handler', () => {
+    it.skipIf(!processorExists)('should route task.updated to project-bridge-handler', () => {
       const content = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the task.updated case block
@@ -41,7 +43,7 @@ describe('Universal External Sync Architecture', () => {
       expect(taskUpdatedBlock).toContain('ac-validation-handler.sh');
     });
 
-    it('should route spec.updated to project-bridge-handler', () => {
+    it.skipIf(!processorExists)('should route spec.updated to project-bridge-handler', () => {
       const content = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the spec.updated case block
@@ -56,7 +58,7 @@ describe('Universal External Sync Architecture', () => {
       expect(specUpdatedBlock).toContain('github-sync-handler.sh');
     });
 
-    it('should route metadata.changed to project-bridge-handler', () => {
+    it.skipIf(!processorExists)('should route metadata.changed to project-bridge-handler', () => {
       const content = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the metadata.changed case block
@@ -69,7 +71,7 @@ describe('Universal External Sync Architecture', () => {
       expect(metadataBlock).toContain('project-bridge-handler.sh');
     });
 
-    it('should document universal external tool sync in comments', () => {
+    it.skipIf(!processorExists)('should document universal external tool sync in comments', () => {
       const content = fs.readFileSync(processorPath, 'utf-8');
 
       // Should have comment about ALL external tools
