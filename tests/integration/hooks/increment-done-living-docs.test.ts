@@ -31,12 +31,16 @@ describe('Increment Completion Living Docs Trigger', () => {
   });
 
   describe('processor.sh Event Routing', () => {
-    it('should NOT route task.updated to living-docs-handler', () => {
+    // NOTE: processor.sh was removed in v1.0.155 - hook architecture simplified
+    // These tests are skipped when the file doesn't exist
+    const processorPath = path.join(
+      process.cwd(),
+      'plugins/specweave/hooks/v2/queue/processor.sh'
+    );
+    const processorExists = fs.existsSync(processorPath);
+
+    it.skipIf(!processorExists)('should NOT route task.updated to living-docs-handler', () => {
       // Read processor.sh and verify task.updated does NOT call living-docs-handler
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the task.updated case block
@@ -56,11 +60,7 @@ describe('Increment Completion Living Docs Trigger', () => {
       expect(taskUpdatedBlock).toContain('project-bridge-handler.sh');
     });
 
-    it('should NOT route spec.updated to living-docs-handler', () => {
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
+    it.skipIf(!processorExists)('should NOT route spec.updated to living-docs-handler', () => {
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the spec.updated case block
@@ -80,11 +80,7 @@ describe('Increment Completion Living Docs Trigger', () => {
       expect(specUpdatedBlock).toContain('project-bridge-handler.sh');
     });
 
-    it('should route increment.done to living-specs-handler', () => {
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
+    it.skipIf(!processorExists)('should route increment.done to living-specs-handler', () => {
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Find the increment lifecycle events case block
@@ -99,11 +95,7 @@ describe('Increment Completion Living Docs Trigger', () => {
       expect(incLifecycleBlock).toContain('living-specs-handler.sh');
     });
 
-    it('should have correct comment about living docs only on increment.done', () => {
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
+    it.skipIf(!processorExists)('should have correct comment about living docs only on increment.done', () => {
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Should have comment explaining the change (v1.0.144)
@@ -201,11 +193,14 @@ describe('Increment Completion Living Docs Trigger', () => {
   });
 
   describe('Event Routing Comments', () => {
-    it('should document that task.updated does not trigger living docs', () => {
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
+    // NOTE: processor.sh was removed in v1.0.155 - these tests are skipped
+    const processorPath = path.join(
+      process.cwd(),
+      'plugins/specweave/hooks/v2/queue/processor.sh'
+    );
+    const processorExists = fs.existsSync(processorPath);
+
+    it.skipIf(!processorExists)('should document that task.updated does not trigger living docs', () => {
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Should have routing comments section with task.updated
@@ -219,11 +214,7 @@ describe('Increment Completion Living Docs Trigger', () => {
       expect(taskCommentLine![0]).not.toContain('living-docs-handler');
     });
 
-    it('should document that spec.updated does not trigger living docs', () => {
-      const processorPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/v2/queue/processor.sh'
-      );
+    it.skipIf(!processorExists)('should document that spec.updated does not trigger living docs', () => {
       const processorContent = fs.readFileSync(processorPath, 'utf-8');
 
       // Should have routing comments section with spec.updated
