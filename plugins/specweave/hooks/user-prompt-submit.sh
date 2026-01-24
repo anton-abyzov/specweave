@@ -470,31 +470,51 @@ Consider reopening the existing increment:
                 STEP_NUM=$((STEP_NUM + 1))
               fi
 
-              # Step: Activate skills (if any)
+              # Step: SPAWN AGENTS (v1.0.155 - Task tool directive)
               if [[ -n "$PRIMARY_SKILL" ]]; then
-                BRAIN_MSG+="### Step ${STEP_NUM}: Activate Skills\\n"
-                BRAIN_MSG+="**Primary**: \`${PRIMARY_SKILL}\`"
-                [[ -n "$PRIMARY_REASON" ]] && BRAIN_MSG+=" - *${PRIMARY_REASON}*"
-                BRAIN_MSG+="\\n"
+                BRAIN_MSG+="### Step ${STEP_NUM}: 🚀 SPAWN SPECIALIZED AGENTS\\n\\n"
 
-                if [[ -n "$SECONDARY_SKILLS" ]]; then
-                  BRAIN_MSG+="**Supporting**: ${SECONDARY_SKILLS}\\n"
+                # Build agent subagent_type from skill info
+                # Format: plugin:skill:skill (e.g., sw-frontend:frontend-architect:frontend-architect)
+                PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
+                PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
+
+                if [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]]; then
+                  AGENT_TYPE="${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME}"
+
+                  BRAIN_MSG+="**⚠️ MANDATORY: Use Task tool to spawn agent for implementation**\\n\\n"
+                  BRAIN_MSG+="\\\`\\\`\\\`typescript\\n"
+                  BRAIN_MSG+="Task({\\n"
+                  BRAIN_MSG+="  subagent_type: \\\"${AGENT_TYPE}\\\",\\n"
+                  BRAIN_MSG+="  prompt: \\\"Implement [describe task]...\\\",\\n"
+                  BRAIN_MSG+="  description: \\\"[short description]\\\"\\n"
+                  BRAIN_MSG+="})\\n"
+                  BRAIN_MSG+="\\\`\\\`\\\`\\n\\n"
+
+                  BRAIN_MSG+="**Why**: Specialized agents have deep domain knowledge and produce better code than direct implementation.\\n\\n"
+                  [[ -n "$PRIMARY_REASON" ]] && BRAIN_MSG+="**Agent expertise**: *${PRIMARY_REASON}*\\n\\n"
                 fi
 
-                BRAIN_MSG+="\\n**Invoke via**:\\n"
-                BRAIN_MSG+="- Skill tool: \\\`/${PRIMARY_SKILL}\\\`\\n"
-                BRAIN_MSG+="- Or mention keywords in your response\\n\\n"
+                # Add secondary agents if present
+                if [[ -n "$SECONDARY_SKILLS" ]]; then
+                  BRAIN_MSG+="**Additional agents available**:\\n"
+                  # Parse each secondary skill
+                  echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "secondary") | "\(.plugin):\(.name):\(.name)"' 2>/dev/null | while read -r sec_agent; do
+                    [[ -n "$sec_agent" ]] && BRAIN_MSG+="- \`${sec_agent}\`\\n"
+                  done
+                  BRAIN_MSG+="\\n"
+                fi
 
                 # Add invoke timing hint
                 case "$PRIMARY_INVOKE" in
                   immediate)
-                    BRAIN_MSG+="*Invoke NOW - simple task, no increment needed*\\n\\n"
+                    BRAIN_MSG+="**Timing**: Spawn agent NOW - task is self-contained\\n\\n"
                     ;;
                   after_increment)
-                    BRAIN_MSG+="*Invoke AFTER creating increment*\\n\\n"
+                    BRAIN_MSG+="**Timing**: Spawn agent AFTER creating increment\\n\\n"
                     ;;
                   after_planning)
-                    BRAIN_MSG+="*Invoke AFTER plan approval - complex task*\\n\\n"
+                    BRAIN_MSG+="**Timing**: Enter plan mode first, THEN spawn agent\\n\\n"
                     ;;
                 esac
 
