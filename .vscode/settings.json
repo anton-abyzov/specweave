@@ -1,0 +1,47 @@
+{
+    "files.autoSave": "off", // Automatically saves files after a delay
+    "editor.minimap.enabled": false, // Disables the minimap
+    "editor.wordWrap": "off", // Enables word wrapping
+    "files.exclude": {
+        // Hides unnecessary files from the file explorer
+        "**/.DS_Store": true,
+        "**/node_modules": true
+    },
+    "editor.tabSize": 2, // Sets tab size to 2 spaces
+    "editor.formatOnSave": false, // Automatically formats code on save{
+    "terminal.integrated.profiles.windows": {
+        "cmd": {
+            "path": "C:\\Windows\\System32\\cmd.exe"
+        },
+        "powershell": {
+            "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.profiles.linux": {
+        "GitHub CLI": {
+            "path": "/usr/bin/gh"
+        },
+        "Default Shell": {
+            "path": "/bin/bash"
+        }
+    },
+    "terminal.integrated.profiles.osx": {
+        "GitHub CLI": {
+            "path": "/usr/local/bin/gh"
+        },
+        "Default Shell": {
+            "path": "/bin/bash"
+        }
+    },
+    "terminal.integrated.defaultProfileCondition": {
+        "profiles": {
+            "GitHub CLI": "exists(/usr/bin/gh) || exists(/usr/local/bin/gh) || exists(C:\\Program Files\\Git\\bin\\bash.exe)"
+        },
+        "fallbacks": {
+            "windows": "PowerShell",
+            "linux": "Default Shell",
+            "osx": "Default Shell"
+        }
+    }
+}
