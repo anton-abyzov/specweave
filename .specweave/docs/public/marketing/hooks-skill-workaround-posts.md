@@ -129,30 +129,34 @@ No `type: "skill"`.
 
 Two challenges:
 1. Plugin bloat (60K+ tokens if all loaded)
-2. No control over every user prompt
+2. No way to intercept every prompt with smart logic
 
 Here's my solution...
 
 ### Tweet 2/5
-Claude is terminal-first. I leveraged that:
+Since Claude is terminal-first, a hook can spawn a process:
 
 ```bash
-# In UserPromptSubmit hook:
-claude -p "detect domain" --model haiku
+# UserPromptSubmit hook spawns:
+claude -p "What plugins for: $PROMPT" --model haiku
 claude plugin install sw-frontend@specweave
 ```
 
-Key insight: `plugin install` is SYNC - ready for current response!
-
-Deterministic. Fast. Cheap.
+Key: `plugin install` is SYNC - ready for current response!
 
 ### Tweet 3/5
-I built a "Router Skill" that intercepts every prompt:
+To invoke a skill from hook:
 
-1. Haiku detects domain (React? K8s? DB?)
-2. Installs ONLY needed plugins (saves 50K+ tokens)
-3. Spawns specialized agents
-4. Injects TDD mode from config
+```bash
+claude -p "/skill args"
+```
+
+Deterministic. The skill WILL execute.
+
+I built a "Router" that intercepts every prompt:
+- Haiku detects domain
+- Installs needed plugins
+- Spawns specialized agents
 
 Full control over AI workflow.
 
@@ -161,19 +165,19 @@ The result:
 
 "Build a React dashboard with tests"
        ↓
-SpecWeave auto:
-- Detects frontend + testing
+Router intercepts → spawns:
+- Haiku detects: frontend + testing
 - Installs 2 plugins (not 20)
-- Spawns frontend architect
-- Spawns QA engineer
-- Coordinates with TDD
+- Frontend architect agent
+- QA engineer agent
+- TDD mode from config
 
 Single prompt → orchestrated implementation.
 
 ### Tweet 5/5
 What we really need: `type: "skill"` in hooks.
 
-Until then, terminal-first approach works.
+Until then, terminal-first spawning works.
 
 Full implementation: spec-weave.com
 
@@ -189,52 +193,57 @@ I've been deep in Claude Code's architecture, and discovered a limitation that a
 
 Hooks cannot invoke skills directly.
 
-Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills, which is powerful. But there's no `type: "skill"` in hook configuration.
+Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills. But there's no `type: "skill"` in hook configuration.
 
 This creates two real challenges:
 
 𝟭. 𝗟𝗮𝘇𝘆 𝗣𝗹𝘂𝗴𝗶𝗻 𝗟𝗼𝗮𝗱𝗶𝗻𝗴
 
-The problem: Loading ALL plugins upfront bloats context massively. We're talking 60,000+ tokens just for plugin definitions. That's expensive and slow.
+Loading ALL plugins upfront bloats context massively - 60,000+ tokens just for plugin definitions. Expensive. Slow.
 
-You want to detect "build React dashboard" and auto-install ONLY the frontend plugin BEFORE Claude responds. Smart, targeted loading.
+You want smart, targeted loading: detect "React dashboard" → install ONLY the frontend plugin.
 
-𝟮. 𝗗𝗲𝘁𝗲𝗿𝗺𝗶𝗻𝗶𝘀𝘁𝗶𝗰 𝗦𝗸𝗶𝗹𝗹 𝗥𝗼𝘂𝘁𝗶𝗻𝗴
+𝟮. 𝗜𝗻𝘁𝗲𝗿𝗰𝗲𝗽𝘁 𝗘𝘃𝗲𝗿𝘆 𝗣𝗿𝗼𝗺𝗽𝘁
 
 You want to intercept EVERY user prompt and add smart logic - route to specialized skills, inject context, enforce policies. Full control over the AI workflow.
 
-But hooks only run bash scripts. No skill invocation.
-
 ---
 
-𝗧𝗵𝗲 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻 𝗜 𝗕𝘂𝗶𝗹𝘁
+𝗧𝗵𝗲 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻
 
-Since Claude is terminal-first, I leveraged that:
+Since Claude is terminal-first, a hook can spawn a process:
 
-→ claude -p "detect domain for: $PROMPT" --model haiku
-   Deterministic. Fast. Cheap.
+→ UserPromptSubmit hook spawns:
+   claude -p "What plugins for: $PROMPT" --model haiku
+   claude plugin install sw-frontend@specweave
 
-→ claude plugin install sw-frontend@specweave
-   Runs synchronously - plugin ready for current response!
+Key insight: plugin install is SYNC - ready for current response!
 
-I built a "Router Skill" that intercepts every prompt:
-- Haiku LLM detects domain (React? K8s? Database?)
+→ To invoke a skill from hook:
+   claude -p "/skill args"
+
+Deterministic. The skill WILL execute.
+
+I built a "Router" that intercepts every prompt:
+- Haiku detects domain (React? K8s? Database?)
 - Installs only needed plugins (saves 50K+ tokens)
-- Spawns specialized agents (frontend architect, QA engineer)
+- Spawns specialized agents
 - Injects TDD mode from config
 
 ---
 
 𝗧𝗵𝗲 𝗥𝗲𝘀𝘂𝗹𝘁
 
-Tell Claude "build a React dashboard with tests" and SpecWeave:
-1. Auto-detects frontend + testing domains
-2. Installs only sw-frontend, sw-testing plugins
-3. Spawns frontend architect agent
-4. Spawns QA engineer agent
-5. Coordinates implementation with TDD
+"Build a React dashboard with tests"
+       ↓
+Router intercepts → spawns:
+1. Haiku detects frontend + testing
+2. Installs 2 plugins (not 20)
+3. Frontend architect agent
+4. QA engineer agent
+5. TDD coordination
 
-All from a single natural language prompt.
+Single prompt → orchestrated implementation.
 
 ---
 
@@ -338,50 +347,54 @@ Full control over the AI workflow. But hooks only run bash scripts - no skill in
 
 ## The Solution
 
-Since Claude is terminal-first, I leveraged that power:
+Since Claude is terminal-first, a hook can spawn a process. This is the key insight!
 
-### Pattern 1: Haiku Detection in Hook
+### Pattern 1: Intercept Every Prompt
 
 ```bash
 #!/bin/bash
-# UserPromptSubmit hook
+# UserPromptSubmit hook spawns:
 
 # Detect domain using fast, cheap Haiku
-RESULT=$(claude -p "What domain is this? $PROMPT" --model haiku)
-```
+claude -p "What plugins for: $PROMPT" --model haiku
 
-Deterministic. Fast. Cheap (~$0.0001 per call).
-
-### Pattern 2: Sync Plugin Install
-
-```bash
 # Install plugins SYNCHRONOUSLY
 claude plugin install sw-frontend@specweave
 ```
 
 **Key insight:** `claude plugin install` blocks until done. Plugin is ready for the CURRENT response!
 
-### The Router Skill Architecture
+### Pattern 2: Invoke Skills from Hooks
 
-I built what I call a "Router Skill" - it intercepts every prompt and makes smart decisions:
+To invoke a skill deterministically from a hook:
+
+```bash
+claude -p "/skill args"
+```
+
+The skill WILL execute. Deterministic. Guaranteed.
+
+### The Router Architecture
+
+I built what I call a "Router" - it intercepts every prompt and makes smart decisions:
 
 ```
 ┌─────────────────────────────────────────┐
-│         UserPromptSubmit Hook           │
+│    UserPromptSubmit Hook (spawns)       │
 │                                         │
-│  claude -p "detect domain" --model haiku│
+│  claude -p "What plugins?" --model haiku│
 │            ↓                            │
 │  Returns: frontend, testing             │
 │            ↓                            │
-│  claude plugin install (sync)           │
+│  claude plugin install (SYNC!)          │
 │            ↓                            │
-│  additionalContext injection            │
+│  claude -p "/router $PROMPT"            │
 └─────────────────────────────────────────┘
               ↓
 ┌─────────────────────────────────────────┐
 │     Claude Processes (with plugins)     │
 │                                         │
-│  Router skill auto-activates            │
+│  Router intercepts every prompt         │
 │  Spawns specialized agents              │
 │  TDD mode enforced from config          │
 └─────────────────────────────────────────┘
@@ -391,24 +404,25 @@ I built what I call a "Router Skill" - it intercepts every prompt and makes smar
 
 I've built this architecture into [SpecWeave](https://spec-weave.com):
 
-- **Haiku-powered detection** in UserPromptSubmit hook
-- **Sync plugin installation** - only what's needed
-- **Router skill** that activates on domain keywords
-- **Specialized agent spawning** for frontend, backend, K8s, etc.
+- **Hook spawns processes** - terminal-first approach
+- **Haiku detection** - fast, cheap domain detection
+- **Sync plugin install** - ready for current response
+- **Router** that intercepts every prompt
+- **Specialized agents** for frontend, backend, K8s, etc.
 - **TDD injection** from config files
 
 ### What This Enables
 
-Tell Claude: "Build a React dashboard with tests"
+"Build a React dashboard with tests"
+       ↓
+Router intercepts → spawns:
+1. Haiku detects: frontend + testing
+2. Installs 2 plugins (not 20) - saves 50K+ tokens
+3. Frontend architect agent
+4. QA engineer agent
+5. TDD coordination from config
 
-SpecWeave automatically:
-1. Detects: frontend + testing domains
-2. Installs: ONLY sw-frontend, sw-testing plugins (saves 50K+ tokens)
-3. Reads: TDD config from `.specweave/config.json`
-4. Spawns: frontend architect + QA engineer agents
-5. Coordinates implementation with TDD discipline
-
-All from a single natural language prompt.
+Single prompt → orchestrated implementation.
 
 ## Try It
 
