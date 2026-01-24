@@ -1,6 +1,7 @@
 #!/bin/bash
 # fail-fast-wrapper.sh - Non-blocking timeout wrapper for hooks
 #
+# v1.0.153: Hook-specific timeouts (user-prompt-submit: 30s for LLM detection)
 # v1.0.102+: Cross-platform support (Linux, macOS, BSD, Windows Git Bash)
 #
 # CRITICAL DESIGN PRINCIPLE:
@@ -20,7 +21,30 @@
 set +e  # CRITICAL: Never exit on error
 
 HOOK_TIMEOUT="${HOOK_TIMEOUT:-5}"
-WRAPPER_VERSION="1.0.102"
+WRAPPER_VERSION="1.0.153"
+
+# ============================================================================
+# HOOK-SPECIFIC TIMEOUT OVERRIDES (v1.0.153)
+# ============================================================================
+# Some hooks require longer timeouts due to LLM calls or network operations.
+# user-prompt-submit.sh: LLM-based detect-intent (~15s) + plugin installs (~4s)
+# Override defaults here while keeping fast timeouts for simple hooks.
+#
+# Environment overrides (if you need custom values):
+#   HOOK_TIMEOUT_USER_PROMPT - timeout for user-prompt-submit (default: 30)
+#   HOOK_TIMEOUT_SESSION_START - timeout for session-start (default: 20)
+
+script_name=$(basename "${1:-}" 2>/dev/null)
+case "$script_name" in
+  user-prompt-submit.sh)
+    # LLM-based plugin detection (~15s) + plugin installs (~4s) + buffer
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_USER_PROMPT:-30}"
+    ;;
+  session-start.sh)
+    # Project detection may involve file scanning and optional LLM
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_SESSION_START:-20}"
+    ;;
+esac
 
 # ============================================================================
 # PROJECT ROOT DETECTION (for logging) - CRITICAL: must NOT fallback to pwd!
