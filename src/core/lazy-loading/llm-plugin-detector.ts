@@ -379,49 +379,64 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 function buildDetectionPrompt(): string {
   return `You detect which SpecWeave plugins to load based on the user's prompt.
 
-CORE PRINCIPLE: Only load plugins for technologies the user EXPLICITLY mentions.
+DETECTION PRINCIPLE: Load plugins for technologies that are NECESSARY for the task.
 
-DETECTION RULES:
-1. Match EXPLICIT mentions only - if user says "React", load frontend plugin
-2. Do NOT infer related technologies - "dashboard" alone doesn't imply backend/database
-3. When uncertain, return FEWER plugins - it's better to miss than over-load
-4. Questions and discussions typically need ZERO plugins
-5. Each plugin adds overhead - minimize unnecessary loads
+WHAT TO LOAD:
+1. EXPLICIT technologies - user says "React" → load sw-frontend
+2. NECESSARILY IMPLIED - "dashboard" implies backend (dashboards need APIs to fetch data)
+3. PAYMENT FLOWS - checkout, billing, subscriptions always need sw-payments
+
+WHAT NOT TO LOAD:
+1. OPTIONAL/CHOICE - infrastructure is a CHOICE (user might use Vercel, Cloudflare, AWS)
+2. TESTING - unless user explicitly mentions TDD, tests, QA, or Playwright/Jest
+3. INTEGRATIONS - sw-github/sw-jira/sw-ado only when explicitly mentioned
+4. Questions/discussions - typically need ZERO plugins
 
 OUTPUT FORMAT (JSON only):
 {"plugins":[],"confidence":0.9,"reasoning":"one-line explanation"}
 
 AVAILABLE PLUGINS:
-- sw-frontend: Frontend frameworks (React, Vue, Angular, Next.js), UI components, CSS, dashboards
-- sw-payments: Payment systems (Stripe, PayPal), checkout flows, billing, subscriptions
-- sw-backend: Backend development (Node.js, Express, APIs), databases (SQL, MongoDB)
-- sw-testing: Testing frameworks (Jest, Vitest, Playwright), TDD, E2E, QA
-- sw-infra: Infrastructure (Terraform, Docker, AWS, Azure, GCP), CI/CD, serverless
-- sw-k8s: Kubernetes, Helm, container orchestration
-- sw-mobile: Mobile development (React Native, iOS, Android, Expo)
-- sw-ml: Machine learning (PyTorch, TensorFlow), AI models
-- sw-kafka: Apache Kafka, event streaming
-- sw-github: GitHub integration (issues, PRs, Actions)
-- sw-jira: JIRA integration (epics, stories, sprints)
-- sw-ado: Azure DevOps integration (work items, pipelines)
+- sw-frontend: Frontend (React, Vue, Angular, Next.js, UI, dashboards, components)
+- sw-backend: Backend (APIs, databases, Node.js, Express, PostgreSQL, MongoDB)
+- sw-payments: Payments (Stripe, PayPal, checkout, billing, subscriptions)
+- sw-testing: Testing (Jest, Vitest, Playwright, TDD, E2E) - ONLY if explicit
+- sw-infra: Infrastructure (Terraform, Docker, AWS, K8s) - ONLY if explicit
+- sw-k8s: Kubernetes (only when K8s/Helm explicitly mentioned)
+- sw-mobile: Mobile (React Native, iOS, Android) - ONLY if explicit
+- sw-ml: ML/AI (PyTorch, TensorFlow) - ONLY if explicit
+- sw-kafka: Kafka/streaming - ONLY if explicit
+- sw-github: GitHub integration - ONLY if explicitly mentioned
+- sw-jira: JIRA integration - ONLY if explicitly mentioned
+- sw-ado: Azure DevOps - ONLY if explicitly mentioned
 
 EXAMPLES:
 
 "Build React dashboard with Stripe checkout"
-→ User explicitly mentions: React (frontend), Stripe (payments)
-→ User does NOT mention: backend, testing, infrastructure
-{"plugins":["sw-frontend","sw-payments"],"confidence":0.95,"reasoning":"React→frontend, Stripe→payments. No other tech mentioned."}
+→ React → sw-frontend (explicit)
+→ Dashboard → sw-backend (dashboards need APIs to fetch/display data)
+→ Stripe checkout → sw-payments (explicit)
+→ Infrastructure? NO - user didn't specify, could be Vercel/Cloudflare/anything
+{"plugins":["sw-frontend","sw-backend","sw-payments"],"confidence":0.95,"reasoning":"React+dashboard→frontend+backend, Stripe→payments. Infra not specified."}
 
 "Create a REST API with PostgreSQL"
-→ User explicitly mentions: API (backend), PostgreSQL (database/backend)
+→ API + PostgreSQL → sw-backend only
 {"plugins":["sw-backend"],"confidence":0.95,"reasoning":"API+PostgreSQL→backend only."}
 
+"Build e-commerce site with admin panel"
+→ Site → sw-frontend (explicit)
+→ Admin panel → sw-backend (admin panels need data management)
+→ E-commerce often has payments, but not explicit here - don't assume
+{"plugins":["sw-frontend","sw-backend"],"confidence":0.9,"reasoning":"E-commerce site+admin→frontend+backend. Payments not mentioned."}
+
+"Deploy my app to Kubernetes with Terraform"
+→ K8s → sw-k8s (explicit)
+→ Terraform → sw-infra (explicit)
+{"plugins":["sw-k8s","sw-infra"],"confidence":0.95,"reasoning":"K8s+Terraform explicitly mentioned."}
+
 "Fix the login bug"
-→ User does NOT mention any specific technology
 {"plugins":[],"confidence":0.9,"reasoning":"No specific tech mentioned, generic bug fix."}
 
 "How do I use React hooks?"
-→ This is a question, not implementation
 {"plugins":[],"confidence":0.95,"reasoning":"Question, no plugin needed."}`;
 }
 
@@ -640,9 +655,9 @@ User prompt to analyze:
 Which plugins should be loaded?`;
 
   try {
-    // Execute Claude CLI with Sonnet for accuracy (v1.0.155: switched from Haiku to prevent over-detection)
+    // Execute Claude CLI with Opus for maximum accuracy (v1.0.156: Opus understands necessary implications)
     // Use --output-format json for faster response and --setting-sources user to skip project context
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'sonnet', '--output-format', 'json', '--setting-sources', 'user'], timeout);
+    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'opus', '--output-format', 'json', '--setting-sources', 'user'], timeout);
 
     // Handle spawn errors - use keyword fallback (v1.0.153)
     if (result.error) {
@@ -764,20 +779,8 @@ Which plugins should be loaded?`;
       logger.debug(`Filtered out invalid plugins: ${invalid.join(', ')}`);
     }
 
-    // v1.0.155: STRICT MAX PLUGINS LIMIT to prevent over-detection
-    // If LLM returns more than 3 plugins, it's likely over-detecting - fall back to keywords
-    const MAX_PLUGINS_FROM_LLM = 3;
-    if (validPlugins.length > MAX_PLUGINS_FROM_LLM) {
-      logger.warn(`LLM returned ${validPlugins.length} plugins (>${MAX_PLUGINS_FROM_LLM}), likely over-detecting. Using keyword fallback.`);
-      return createKeywordFallbackResult(userPrompt, startTime, `LLM over-detected (${validPlugins.length} plugins)`);
-    }
-
-    // v1.0.155: CONFIDENCE THRESHOLD - reject low-confidence results
-    const confidence = typeof parsed.confidence === 'number' ? parsed.confidence : 0.5;
-    if (confidence < 0.8 && validPlugins.length > 1) {
-      logger.warn(`LLM confidence too low (${confidence}) for ${validPlugins.length} plugins. Using keyword fallback.`);
-      return createKeywordFallbackResult(userPrompt, startTime, `LLM confidence too low (${confidence})`);
-    }
+    // v1.0.156: Trust Opus model - no arbitrary limits, no keyword fallback
+    // Opus understands NECESSARY implications (dashboard → backend) vs OPTIONAL (→ infra)
 
     // Parse increment recommendation (v1.0.141+)
     let incrementRecommendation: IncrementRecommendation | undefined;
