@@ -19,7 +19,7 @@ Hooks only support:
 
 No `type: "skill"`. No way to call `/my-skill` from a hook.
 
-This creates two real challenges:
+There are 2 pain points:
 1. **Lazy plugin loading** - Loading ALL plugins bloats context (60K+ tokens). You want smart, targeted loading.
 2. **Deterministic skill routing** - You want to intercept EVERY prompt, add smart logic, and control the AI workflow.
 
@@ -127,7 +127,7 @@ Claude Code hooks can't invoke skills.
 
 No `type: "skill"`.
 
-Two challenges:
+2 pain points:
 1. Plugin bloat (60K+ tokens if all loaded)
 2. No way to intercept every prompt with smart logic
 
@@ -185,6 +185,40 @@ cc @bcherny @alexalbert__ @AnthropicAI #ClaudeCode
 
 ---
 
+## Threads Post (threads.net)
+
+### Post 1/3
+Claude Code hooks can't invoke skills directly.
+
+2 pain points I hit while building SpecWeave:
+
+1. Plugin bloat - loading ALL plugins = 60K+ tokens wasted
+2. No way to intercept every prompt with smart routing
+
+But Claude is terminal-first. So a hook can spawn a process...
+
+### Post 2/3
+The solution:
+
+→ Lazy loading: `claude -p "detect domain" --model haiku` then `claude plugin install` (it's SYNC!)
+
+→ Skill invocation: `claude -p "/skill args"` - deterministic, guaranteed execution
+
+I built a Router that intercepts every prompt, detects domain, installs only needed plugins.
+
+### Post 3/3
+The result:
+
+"Build a React dashboard with tests"
+↓
+Router intercepts → Haiku detects frontend + testing → installs 2 plugins (not 20) → spawns specialized agents → TDD mode from config
+
+Single prompt → orchestrated implementation.
+
+Full implementation: spec-weave.com
+
+---
+
 ## LinkedIn Post
 
 ### Bypassing Claude Code's Hook Limitation: When Hooks Can't Call Skills
@@ -193,9 +227,9 @@ I've been deep in Claude Code's architecture, and discovered a limitation that a
 
 Hooks cannot invoke skills directly.
 
-Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills. But there's no `type: "skill"` in hook configuration.
+Claude Code is beautifully built around the terminal - you can call any CLI command from hooks or skills.
 
-This creates two real challenges:
+But there are 2 pain points:
 
 𝟭. 𝗟𝗮𝘇𝘆 𝗣𝗹𝘂𝗴𝗶𝗻 𝗟𝗼𝗮𝗱𝗶𝗻𝗴
 
@@ -203,7 +237,7 @@ Loading ALL plugins upfront bloats context massively - 60,000+ tokens just for p
 
 You want smart, targeted loading: detect "React dashboard" → install ONLY the frontend plugin.
 
-𝟮. 𝗜𝗻𝘁𝗲𝗿𝗰𝗲𝗽𝘁 𝗘𝘃𝗲𝗿𝘆 𝗣𝗿𝗼𝗺𝗽𝘁
+𝟮. 𝗔 𝗛𝗼𝗼𝗸 𝗰𝗮𝗻'𝘁 𝗰𝗮𝗹𝗹 𝗮 𝗦𝗸𝗶𝗹𝗹 𝗱𝗶𝗿𝗲𝗰𝘁𝗹𝘆
 
 You want to intercept EVERY user prompt and add smart logic - route to specialized skills, inject context, enforce policies. Full control over the AI workflow.
 
@@ -228,7 +262,7 @@ I built a "Router" that intercepts every prompt:
 - Haiku detects domain (React? K8s? Database?)
 - Installs only needed plugins (saves 50K+ tokens)
 - Spawns specialized agents
-- Injects TDD mode from config
+- Uses TDD mode if enabled in a config
 
 ---
 
@@ -247,7 +281,7 @@ Single prompt → orchestrated implementation.
 
 ---
 
-Full implementation: spec-weave.com
+Full implementation is available in my open-source Spec-Driven solution for enterprises called SpecWeave: spec-weave.com
 
 #ClaudeCode #AIEngineering #DeveloperTools #Anthropic #SpecWeave
 
@@ -257,14 +291,14 @@ Full implementation: spec-weave.com
 
 ```markdown
 ---
-title: "Claude Code Hook Limitation: No Skill Invocation (And How I Solved It)"
+title: "Claude Code Hook Limitations: No Skill Invocation & Lazy Plugin Loading (And How I Solved It)"
 published: true
 description: "Hooks can't invoke skills. Here's the solution that enables lazy plugin loading and deterministic AI workflows."
 tags: claudecode, ai, webdev, productivity
 cover_image: https://spec-weave.com/img/specweave-social-card.jpg
 ---
 
-# Claude Code Hook Limitation: No Skill Invocation
+# Claude Code Hook Limitations: No Skill Invocation & Lazy Plugin Loading
 
 ## The Discovery
 
@@ -460,7 +494,7 @@ Until then, the terminal-first approach works beautifully.
 
 **Resources:**
 - [SpecWeave](https://spec-weave.com)
-- [Claude Code Hooks Docs](https://docs.anthropic.com/en/docs/claude-code/hooks)
+- [Claude Code Hooks Docs](https://code.claude.com/docs/en/hooks) - Official documentation explaining the hooks system
 - [Claude Code Skills Docs](https://docs.anthropic.com/en/docs/claude-code/skills)
 
 ---

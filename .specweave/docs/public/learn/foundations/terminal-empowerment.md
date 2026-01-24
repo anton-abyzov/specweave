@@ -125,3 +125,10 @@ git commit -m "message"
 > "The terminal doesn't make things complicated. It makes the complexity visible. And visible complexity is manageable complexity."
 
 The GUI hides what's happening. The terminal shows you. That's not harder - that's **empowering**.
+
+---
+
+## Learn More
+
+- [Claude Code Hooks](https://code.claude.com/docs/en/hooks) - Official documentation on Claude Code's hook system for automation
+- [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills) - Skills and commands reference

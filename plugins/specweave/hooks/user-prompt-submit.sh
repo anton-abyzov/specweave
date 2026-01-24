@@ -168,9 +168,10 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
           echo "[$(date -Iseconds)] detect-intent | duration=${DURATION}ms | cached=false" >> "$LAZY_LOAD_LOG"
         fi
 
-        # Parse JSON response (extract first JSON object)
+        # Parse JSON response (extract complete JSON object from multi-line output)
         if [[ -n "$DETECT_OUTPUT" ]] && command -v jq >/dev/null 2>&1; then
-          JSON_OUTPUT=$(echo "$DETECT_OUTPUT" | grep -E '^\{' | head -1)
+          # Extract JSON using awk: from first { to last } (handles multi-line JSON)
+          JSON_OUTPUT=$(echo "$DETECT_OUTPUT" | awk '/^\{/{found=1} found{print} /^\}/{if(found) exit}')
 
           if [[ -n "$JSON_OUTPUT" ]]; then
             # ==================================================================
@@ -296,7 +297,143 @@ Consider reopening the existing increment:
               fi
             fi
 
-            # If plugins loaded but no increment suggestion, show just plugins
+            # ==================================================================
+            # SKILL ROUTING (from LLM response) - v1.0.150+
+            # ==================================================================
+            # Extract skill routing for brain message
+            ROUTING_SKILLS_COUNT=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills | length // 0' 2>/dev/null)
+            ROUTING_MSG=""
+
+            if [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
+              # Extract primary skill
+              PRIMARY_SKILL=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .fullName // empty' 2>/dev/null | head -1)
+              PRIMARY_INVOKE=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .invokeWhen // "after_increment"' 2>/dev/null | head -1)
+              PRIMARY_REASON=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .reason // empty' 2>/dev/null | head -1)
+
+              # Extract secondary skills
+              SECONDARY_SKILLS=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "secondary") | .fullName' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+
+              # Extract workflow info
+              SUGGEST_PLAN=$(echo "$JSON_OUTPUT" | jq -r '.routing.workflow.suggestPlanMode // false' 2>/dev/null)
+              WORKFLOW_PHASES=$(echo "$JSON_OUTPUT" | jq -r '.routing.workflow.phases[]?' 2>/dev/null | tr '\n' ' ')
+              ROUTING_REASON=$(echo "$JSON_OUTPUT" | jq -r '.routing.reasoning // empty' 2>/dev/null)
+
+              echo "[$(date -Iseconds)] routing | primary=${PRIMARY_SKILL:-none} | secondary=${SECONDARY_SKILLS:-none} | invokeWhen=${PRIMARY_INVOKE}" >> "$LAZY_LOAD_LOG"
+            fi
+
+            # ==================================================================
+            # BUILD BRAIN MESSAGE (combining all analysis)
+            # ==================================================================
+            # Only show brain message if we have meaningful routing info
+            if [[ "$ROUTING_SKILLS_COUNT" -gt 0 || -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+              BRAIN_MSG=""
+
+              # Header
+              BRAIN_MSG="# 🧠 Router Brain Active\\n\\n"
+
+              # Analysis summary table
+              BRAIN_MSG+="## Analysis\\n"
+              BRAIN_MSG+="| Aspect | Decision |\\n"
+              BRAIN_MSG+="|--------|----------|\\n"
+
+              # Plugins row
+              if [[ -n "$PLUGINS_INSTALLED" ]]; then
+                BRAIN_MSG+="| Plugins | ✅ Loaded: ${PLUGINS_INSTALLED} |\\n"
+              elif [[ -n "$PLUGINS_ALREADY" ]]; then
+                BRAIN_MSG+="| Plugins | ✅ Using: ${PLUGINS_ALREADY} |\\n"
+              fi
+
+              # Increment row
+              if [[ "$INC_ACTION" == "new" || "$INC_ACTION" == "hotfix" ]]; then
+                BRAIN_MSG+="| Increment | 📋 Create: \\\"${INC_NAME:-new-feature}\\\" |\\n"
+              elif [[ "$INC_ACTION" == "reopen" ]]; then
+                BRAIN_MSG+="| Increment | 🔄 Reopen existing |\\n"
+              fi
+
+              # Primary skill row
+              if [[ -n "$PRIMARY_SKILL" ]]; then
+                BRAIN_MSG+="| Primary Skill | \`${PRIMARY_SKILL}\` |\\n"
+              fi
+
+              # Secondary skills row
+              if [[ -n "$SECONDARY_SKILLS" ]]; then
+                BRAIN_MSG+="| Supporting | ${SECONDARY_SKILLS} |\\n"
+              fi
+
+              BRAIN_MSG+="\\n"
+
+              # Workflow section
+              BRAIN_MSG+="## Workflow\\n\\n"
+
+              STEP_NUM=1
+
+              # Step: Create increment (if needed)
+              if [[ "$INC_ACTION" == "new" ]]; then
+                CMD="/sw:increment"
+                [[ -n "$INC_NAME" ]] && CMD="/sw:increment \\\"$INC_NAME\\\""
+                BRAIN_MSG+="### Step ${STEP_NUM}: Create Increment\\n"
+                BRAIN_MSG+="\\\`\\\`\\\`\\n${CMD}\\n\\\`\\\`\\\`\\n"
+                BRAIN_MSG+="*${INC_REASON:-Tracks this feature work with specs}*\\n\\n"
+                STEP_NUM=$((STEP_NUM + 1))
+              elif [[ "$INC_ACTION" == "hotfix" ]]; then
+                CMD="/sw:increment --type=hotfix \\\"${INC_NAME:-urgent-fix}\\\""
+                BRAIN_MSG+="### Step ${STEP_NUM}: Create Hotfix Increment\\n"
+                BRAIN_MSG+="\\\`\\\`\\\`\\n${CMD}\\n\\\`\\\`\\\`\\n"
+                BRAIN_MSG+="*${INC_REASON:-Urgent production issue}*\\n\\n"
+                STEP_NUM=$((STEP_NUM + 1))
+              elif [[ "$INC_ACTION" == "reopen" ]]; then
+                BRAIN_MSG+="### Step ${STEP_NUM}: Find & Reopen Increment\\n"
+                BRAIN_MSG+="\\\`\\\`\\\`\\n/sw:status  # Find related increment\\n/sw:resume <id>\\n\\\`\\\`\\\`\\n"
+                [[ -n "$INC_KEYWORD" ]] && BRAIN_MSG+="*Look for: ${INC_KEYWORD}*\\n"
+                BRAIN_MSG+="\\n"
+                STEP_NUM=$((STEP_NUM + 1))
+              fi
+
+              # Step: Activate skills (if any)
+              if [[ -n "$PRIMARY_SKILL" ]]; then
+                BRAIN_MSG+="### Step ${STEP_NUM}: Activate Skills\\n"
+                BRAIN_MSG+="**Primary**: \`${PRIMARY_SKILL}\`"
+                [[ -n "$PRIMARY_REASON" ]] && BRAIN_MSG+=" - *${PRIMARY_REASON}*"
+                BRAIN_MSG+="\\n"
+
+                if [[ -n "$SECONDARY_SKILLS" ]]; then
+                  BRAIN_MSG+="**Supporting**: ${SECONDARY_SKILLS}\\n"
+                fi
+
+                BRAIN_MSG+="\\n**Invoke via**:\\n"
+                BRAIN_MSG+="- Skill tool: \\\`/${PRIMARY_SKILL}\\\`\\n"
+                BRAIN_MSG+="- Or mention keywords in your response\\n\\n"
+
+                # Add invoke timing hint
+                case "$PRIMARY_INVOKE" in
+                  immediate)
+                    BRAIN_MSG+="*Invoke NOW - simple task, no increment needed*\\n\\n"
+                    ;;
+                  after_increment)
+                    BRAIN_MSG+="*Invoke AFTER creating increment*\\n\\n"
+                    ;;
+                  after_planning)
+                    BRAIN_MSG+="*Invoke AFTER plan approval - complex task*\\n\\n"
+                    ;;
+                esac
+
+                STEP_NUM=$((STEP_NUM + 1))
+              fi
+
+              # Add plan mode suggestion if recommended
+              if [[ "$SUGGEST_PLAN" == "true" ]]; then
+                BRAIN_MSG+="### 💡 Suggestion: Use Plan Mode\\n"
+                BRAIN_MSG+="This task appears complex. Consider entering plan mode first.\\n\\n"
+              fi
+
+              # Footer
+              BRAIN_MSG+="---\\n*Router Brain v1.0.150*"
+
+              jq -nc --arg msg "$BRAIN_MSG" '{"decision":"approve","systemMessage":$msg}'
+              exit 0
+            fi
+
+            # If plugins loaded but no routing, show just plugins (fallback)
             if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
               jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
               exit 0

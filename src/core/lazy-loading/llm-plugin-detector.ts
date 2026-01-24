@@ -112,6 +112,81 @@ export interface IncrementRecommendation {
 }
 
 /**
+ * When to invoke a skill in the workflow
+ *
+ * - 'immediate': Invoke right away (simple tasks, no increment needed)
+ * - 'after_increment': Create increment first, then invoke
+ * - 'after_planning': Use plan mode first, get approval, then invoke
+ * - 'with_primary': Invoke alongside primary skill (parallel)
+ * - 'after_primary': Invoke after primary skill completes (sequential)
+ */
+export type SkillInvokeTiming =
+  | 'immediate'
+  | 'after_increment'
+  | 'after_planning'
+  | 'with_primary'
+  | 'after_primary';
+
+/**
+ * Priority level for skills
+ *
+ * - 'primary': Main skill for the task (only one)
+ * - 'secondary': Supporting skill (can be multiple)
+ */
+export type SkillPriority = 'primary' | 'secondary';
+
+/**
+ * Information about a skill to invoke
+ */
+export interface SkillInfo {
+  /** Skill name (e.g., "frontend-architect") */
+  name: string;
+
+  /** Plugin that provides this skill (e.g., "sw-frontend") */
+  plugin: string;
+
+  /** Full qualified name for invocation (e.g., "sw-frontend:frontend-architect") */
+  fullName: string;
+
+  /** Priority level */
+  priority: SkillPriority;
+
+  /** When to invoke this skill in the workflow */
+  invokeWhen: SkillInvokeTiming;
+
+  /** Brief reason why this skill is recommended */
+  reason: string;
+}
+
+/**
+ * Workflow information for skill orchestration
+ */
+export interface WorkflowInfo {
+  /** Whether to suggest entering plan mode first */
+  suggestPlanMode: boolean;
+
+  /** Ordered phases of the workflow */
+  phases: string[];
+}
+
+/**
+ * Skill routing recommendation from LLM analysis
+ */
+export interface SkillRouting {
+  /** Skills to invoke, in priority order */
+  skills: SkillInfo[];
+
+  /** Workflow information */
+  workflow: WorkflowInfo;
+
+  /** Confidence score (0-1) for routing decision */
+  confidence: number;
+
+  /** Brief explanation of routing decision */
+  reasoning: string;
+}
+
+/**
  * Result of LLM-based plugin detection
  */
 export interface LLMDetectionResult {
@@ -124,6 +199,9 @@ export interface LLMDetectionResult {
 
   /** Increment recommendation (v1.0.141+) */
   increment?: IncrementRecommendation;
+
+  /** Skill routing recommendation (v1.0.150+) */
+  routing?: SkillRouting;
 }
 
 /**
@@ -218,11 +296,12 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 }
 
 /**
- * Build the system prompt for plugin detection and increment recommendation
+ * Build the system prompt for plugin detection, increment recommendation, and skill routing
  *
- * This prompt handles TWO tasks in a single LLM call for efficiency:
+ * This prompt handles THREE tasks in a single LLM call for efficiency:
  * 1. Plugin detection - which SpecWeave plugins are needed
  * 2. Increment recommendation - should work be tracked in an increment
+ * 3. Skill routing - which skills to invoke and in what order (v1.0.150+)
  */
 function buildDetectionPrompt(): string {
   return `You are an intent detection system for SpecWeave, a spec-driven development framework.
@@ -238,14 +317,33 @@ MANDATORY OUTPUT FORMAT - You MUST respond with this exact JSON structure (no ma
     "suggestedName": "feature-name-or-null",
     "relatedKeyword": "keyword-or-null",
     "reasoning": "brief increment reason"
+  },
+  "routing": {
+    "skills": [
+      {
+        "name": "skill-name",
+        "plugin": "sw-plugin",
+        "fullName": "sw-plugin:skill-name",
+        "priority": "primary|secondary",
+        "invokeWhen": "immediate|after_increment|after_planning|with_primary|after_primary",
+        "reason": "brief reason"
+      }
+    ],
+    "workflow": {
+      "suggestPlanMode": false,
+      "phases": ["phase1", "phase2"]
+    },
+    "confidence": 0.85,
+    "reasoning": "brief routing reason"
   }
 }
 
-CRITICAL: The "increment" object is REQUIRED in every response. Never omit it.
+CRITICAL: ALL three objects (plugins array, increment, routing) are REQUIRED in every response.
 
 You analyze user prompts to determine:
 1. Which plugins should be loaded
-2. Whether work should be tracked in an increment (spec-driven workflow)
+2. Whether work should be tracked in an increment
+3. Which skills to invoke and in what order
 
 === PLUGIN DETECTION ===
 
@@ -325,7 +423,80 @@ SIGNALS FOR "none" (DO NOT suggest increment):
   * "I'll handle the increment myself", "I'll track it later"
   * "already in an increment", "working on existing increment"
 
-CRITICAL: ALWAYS include BOTH "plugins" array AND "increment" object in your response. Never omit the increment field.
+=== SKILL ROUTING (v1.0.150+) ===
+
+Determine which skills to invoke and in what order.
+
+SKILL ROUTING MATRIX (plugin → skill):
+| Plugin | Skill | Triggers |
+|--------|-------|----------|
+| sw-frontend | frontend-architect | React, Vue, component, UI, dashboard, CSS |
+| sw-backend | database-optimizer | API, database, server, Node, SQL, GraphQL |
+| sw-testing | qa-engineer | test, TDD, E2E, Playwright, Jest, QA |
+| sw-k8s | kubernetes-architect | K8s, pods, deployment, helm, GitOps |
+| sw-infra | devops | Terraform, AWS, Docker, CI/CD, Lambda |
+| sw-mobile | mobile-architect | React Native, iOS, Android, Expo |
+| sw-payments | payment-integration | Stripe, checkout, billing, subscription |
+| sw-ml | ml-engineer | ML, model, training, PyTorch, TensorFlow |
+| sw-kafka | kafka-architect | Kafka, streaming, topics, events |
+| sw-github | github-manager | GitHub, issues, PRs, Actions |
+| sw-jira | jira-manager | JIRA, epics, stories, sprints |
+| sw-ado | ado-manager | Azure DevOps, work items, pipelines |
+
+INVOKE TIMING:
+- "immediate": Simple tasks, no increment needed, just invoke skill now
+- "after_increment": Feature work - create increment first, then invoke
+- "after_planning": Complex/architectural tasks - use plan mode first
+- "with_primary": Supporting skill, invoke alongside primary (parallel)
+- "after_primary": Sequential dependency, invoke after primary completes
+
+PRIORITY RULES:
+1. Only ONE skill can be "primary" - the main domain of the task
+2. Other skills are "secondary"
+3. TDD MODE SPECIAL RULE: If TDD/testing mentioned, sw-testing:qa-engineer becomes PRIMARY
+   - This ensures tests are written BEFORE implementation (RED-GREEN-REFACTOR)
+   - Domain skill (frontend, backend, etc.) becomes secondary with "with_primary" timing
+
+WORKFLOW PHASES:
+- "create_increment": User should create increment first
+- "enter_plan_mode": Complex task needs planning first
+- "invoke_skills": Activate the recommended skills
+- "implement": Do the actual implementation
+- "implement_with_tdd": Implementation following TDD discipline
+
+SUGGEST PLAN MODE WHEN:
+- Architectural decisions needed
+- Multiple components/services affected
+- Unclear requirements that need clarification
+- Major refactoring
+
+ROUTING EXAMPLES:
+
+Example 1: "Create a React dashboard"
+→ plugins: ["sw-frontend"]
+→ increment.action: "new"
+→ routing.skills: [{ name: "frontend-architect", plugin: "sw-frontend", priority: "primary", invokeWhen: "after_increment" }]
+→ routing.workflow.phases: ["create_increment", "invoke_skills", "implement"]
+
+Example 2: "Build React component with TDD"
+→ plugins: ["sw-frontend", "sw-testing"]
+→ increment.action: "new"
+→ routing.skills: [
+    { name: "qa-engineer", plugin: "sw-testing", priority: "primary", invokeWhen: "after_increment", reason: "TDD requires tests first" },
+    { name: "frontend-architect", plugin: "sw-frontend", priority: "secondary", invokeWhen: "with_primary", reason: "Component design" }
+  ]
+→ routing.workflow.phases: ["create_increment", "invoke_skills", "implement_with_tdd"]
+
+Example 3: "Quick question about React hooks"
+→ plugins: []
+→ increment.action: "none"
+→ routing.skills: []
+→ routing.workflow.phases: []
+
+CRITICAL: ALWAYS include ALL three objects in your response:
+1. "plugins" array (can be empty)
+2. "increment" object (required)
+3. "routing" object (required, skills array can be empty for questions)
 
 Respond with ONLY valid JSON (no markdown, no explanation, no code blocks):
 {
@@ -338,6 +509,24 @@ Respond with ONLY valid JSON (no markdown, no explanation, no code blocks):
     "suggestedName": "feature-name-for-new-only",
     "relatedKeyword": "keyword-for-reopen-only",
     "reasoning": "brief increment reason"
+  },
+  "routing": {
+    "skills": [
+      {
+        "name": "skill-name",
+        "plugin": "sw-plugin",
+        "fullName": "sw-plugin:skill-name",
+        "priority": "primary",
+        "invokeWhen": "after_increment",
+        "reason": "brief reason"
+      }
+    ],
+    "workflow": {
+      "suggestPlanMode": false,
+      "phases": ["create_increment", "invoke_skills", "implement"]
+    },
+    "confidence": 0.85,
+    "reasoning": "brief routing reason"
   }
 }`;
 }
@@ -601,6 +790,7 @@ Which plugins should be loaded?`;
       };
     }
 
+
     // Parse JSON
     let parsed: {
       plugins?: string[];
@@ -611,6 +801,22 @@ Which plugins should be loaded?`;
         confidence?: number;
         suggestedName?: string;
         relatedKeyword?: string;
+        reasoning?: string;
+      };
+      routing?: {
+        skills?: Array<{
+          name?: string;
+          plugin?: string;
+          fullName?: string;
+          priority?: string;
+          invokeWhen?: string;
+          reason?: string;
+        }>;
+        workflow?: {
+          suggestPlanMode?: boolean;
+          phases?: string[];
+        };
+        confidence?: number;
         reasoning?: string;
       };
     };
@@ -659,6 +865,65 @@ Which plugins should be loaded?`;
       }
     }
 
+    // Parse skill routing recommendation (v1.0.150+)
+    let skillRouting: SkillRouting | undefined;
+    if (parsed.routing && parsed.routing.skills) {
+      const validTimings: SkillInvokeTiming[] = ['immediate', 'after_increment', 'after_planning', 'with_primary', 'after_primary'];
+      const validPriorities: SkillPriority[] = ['primary', 'secondary'];
+
+      // Validate and filter skills
+      const validSkills: SkillInfo[] = [];
+      for (const skill of parsed.routing.skills) {
+        // Validate required fields
+        if (!skill.name || !skill.plugin || !skill.fullName) {
+          logger.debug(`Skipping skill with missing required fields: ${JSON.stringify(skill)}`);
+          continue;
+        }
+
+        // Validate plugin name
+        if (!SPECWEAVE_PLUGINS.includes(skill.plugin as SpecWeavePlugin)) {
+          logger.debug(`Skipping skill with invalid plugin: ${skill.plugin}`);
+          continue;
+        }
+
+        // Validate and default timing
+        const invokeWhen = validTimings.includes(skill.invokeWhen as SkillInvokeTiming)
+          ? (skill.invokeWhen as SkillInvokeTiming)
+          : 'after_increment';
+
+        // Validate and default priority
+        const priority = validPriorities.includes(skill.priority as SkillPriority)
+          ? (skill.priority as SkillPriority)
+          : 'secondary';
+
+        validSkills.push({
+          name: skill.name,
+          plugin: skill.plugin,
+          fullName: skill.fullName,
+          priority,
+          invokeWhen,
+          reason: skill.reason || 'No reason provided',
+        });
+      }
+
+      if (validSkills.length > 0) {
+        skillRouting = {
+          skills: validSkills,
+          workflow: {
+            suggestPlanMode: parsed.routing.workflow?.suggestPlanMode ?? false,
+            phases: parsed.routing.workflow?.phases ?? [],
+          },
+          confidence: typeof parsed.routing.confidence === 'number' ? parsed.routing.confidence : 0.5,
+          reasoning: parsed.routing.reasoning || 'No reasoning provided',
+        };
+
+        // Log routing decision
+        const primarySkill = validSkills.find(s => s.priority === 'primary');
+        const secondarySkills = validSkills.filter(s => s.priority === 'secondary');
+        logger.debug(`Skill routing: primary=${primarySkill?.fullName || 'none'}, secondary=[${secondarySkills.map(s => s.fullName).join(', ')}]`);
+      }
+    }
+
     return {
       success: true,
       plugins: validPlugins,
@@ -666,6 +931,7 @@ Which plugins should be loaded?`;
       reasoning: parsed.reasoning,
       durationMs: performance.now() - startTime,
       increment: incrementRecommendation,
+      routing: skillRouting,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);

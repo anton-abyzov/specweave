@@ -173,6 +173,8 @@ By the end, you'll understand:
 - Why hooks can't call skills and how to work around it
 - The lazy loading pattern that saves 60,000 tokens
 
+The official hooks documentation at code.claude.com/docs/en/hooks explains the system well - but there are limitations they don't highlight. I'll show you those.
+
 Let's dive in."
 
 ---
@@ -226,5 +228,9 @@ But under the surface, there's a powerful system:
 - Plugins that loaded 60K tokens when 3K would do
 
 This documentation captures everything we learned - so you can skip the painful parts and go straight to building.
+
+**Official References:**
+- [Claude Code Hooks](https://code.claude.com/docs/en/hooks) - The official hooks system documentation
+- [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills) - Skills and commands reference
 
 ---
