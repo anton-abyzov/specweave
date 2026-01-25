@@ -5,7 +5,7 @@
     "version": "0.1.0"
   },
   "pluginAutoLoad": {
-    "enabled": false,
+    "enabled": true,
     "suggestOnly": false
   },
   "multiProject": {
