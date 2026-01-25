@@ -124,6 +124,82 @@ export const SPECWEAVE_PLUGINS = [
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
 
 /**
+ * Official Claude Code plugins (from claude-plugins-official marketplace)
+ *
+ * v1.0.159: Consolidated plugin detection - detect-intent handles BOTH SW and official plugins
+ *
+ * NOTE: Excludes plugins that collide with SpecWeave:
+ * - github@claude-plugins-official → use sw-github instead
+ * - stripe@claude-plugins-official → use sw-payments instead
+ */
+export const OFFICIAL_PLUGINS = [
+  // LSP (Language Server Protocol) - language-specific code intelligence
+  'csharp-lsp',       // C#, .NET, ASP.NET, Blazor
+  'gopls-lsp',        // Go, Golang
+  'jdtls-lsp',        // Java, Spring, Maven, Gradle
+  'kotlin-lsp',       // Kotlin
+  'php-lsp',          // PHP, Laravel, Symfony
+  'lua-lsp',          // Lua, Neovim
+  'clangd-lsp',       // C, C++
+
+  // Core/Required
+  'context7',         // Documentation lookup (useful for any coding)
+  'playwright',       // Browser automation, E2E testing
+
+  // Service Integrations (no SW equivalent)
+  'firebase',         // Firebase, Firestore
+  'gitlab',           // GitLab, GitLab CI
+  'linear',           // Linear issues
+  'asana',            // Asana tasks
+  'slack',            // Slack bots/apps
+  'supabase',         // Supabase
+
+  // Framework-specific
+  'laravel-boost',    // Laravel (PHP)
+
+  // Development Tools
+  'code-review',      // Code review
+  'commit-commands',  // Git commit workflows
+  'hookify',          // Git hooks
+] as const;
+
+export type OfficialPlugin = (typeof OFFICIAL_PLUGINS)[number];
+
+/**
+ * All valid plugins (both SpecWeave and Official)
+ */
+export const ALL_VALID_PLUGINS = [...SPECWEAVE_PLUGINS, ...OFFICIAL_PLUGINS] as const;
+export type ValidPlugin = SpecWeavePlugin | OfficialPlugin;
+
+/**
+ * Check if a plugin is a SpecWeave plugin (installed from @specweave)
+ */
+export function isSpecWeavePlugin(plugin: string): plugin is SpecWeavePlugin {
+  return SPECWEAVE_PLUGINS.includes(plugin as SpecWeavePlugin);
+}
+
+/**
+ * Check if a plugin is an official plugin (installed from @claude-plugins-official)
+ */
+export function isOfficialPlugin(plugin: string): plugin is OfficialPlugin {
+  return OFFICIAL_PLUGINS.includes(plugin as OfficialPlugin);
+}
+
+/**
+ * Get the marketplace name for a plugin
+ * SW plugins: @specweave, Official plugins: @claude-plugins-official
+ */
+export function getPluginMarketplace(plugin: string): string {
+  if (isSpecWeavePlugin(plugin)) {
+    return 'specweave';
+  }
+  if (isOfficialPlugin(plugin)) {
+    return 'claude-plugins-official';
+  }
+  return 'unknown';
+}
+
+/**
  * Result of Claude CLI availability check
  */
 export interface ClaudeCliStatus {
@@ -241,10 +317,12 @@ export interface SkillRouting {
 
 /**
  * Result of LLM-based plugin detection
+ *
+ * v1.0.159: plugins now includes both SpecWeave (sw-*) and official plugins
  */
 export interface LLMDetectionResult {
   success: boolean;
-  plugins: SpecWeavePlugin[];
+  plugins: ValidPlugin[];
   confidence: number;
   reasoning?: string;
   error?: string;
@@ -354,73 +432,101 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
  * v1.0.155: MINIMAL detection - only detect technologies EXPLICITLY mentioned in the prompt
  */
 function buildDetectionPrompt(): string {
-  return `You detect which SpecWeave plugins to load based on the user's prompt.
+  return `You detect which plugins to load based on the user's prompt.
+Return BOTH SpecWeave (sw-*) AND official (claude-plugins-official) plugins.
 
-DETECTION PRINCIPLE: Load plugins for technologies that are NECESSARY for the task.
+⚠️ PRIORITY: SpecWeave plugins OVERRIDE official for these services:
+- GitHub → sw-github (NOT github@claude-plugins-official)
+- Stripe/payments → sw-payments (NOT stripe@claude-plugins-official)
+- JIRA → sw-jira | Azure DevOps → sw-ado
 
-WHAT TO LOAD:
-1. EXPLICIT technologies - user says "React" → load sw-frontend
-2. NECESSARILY IMPLIED - "dashboard" implies backend (dashboards need APIs to fetch data)
-3. PAYMENT FLOWS - checkout, billing, subscriptions always need sw-payments
-
-WHAT NOT TO LOAD:
-1. OPTIONAL/CHOICE - infrastructure is a CHOICE (user might use Vercel, Cloudflare, AWS)
-2. TESTING - unless user explicitly mentions TDD, tests, QA, or Playwright/Jest
-3. INTEGRATIONS - sw-github/sw-jira/sw-ado only when explicitly mentioned
-4. Questions/discussions - typically need ZERO plugins
+DETECTION RULES:
+1. EXPLICIT tech - user says "React" → sw-frontend, ".NET" → sw-backend + csharp-lsp
+2. IMPLIED - "dashboard" needs API → sw-backend
+3. LSP - language-specific code intelligence (C#→csharp-lsp, Go→gopls-lsp, etc.)
+4. Questions/discussions → ZERO plugins
 
 OUTPUT FORMAT (JSON only):
-{"plugins":[],"confidence":0.9,"reasoning":"one-line explanation"}
+{"plugins":["sw-frontend","context7"],"confidence":0.9,"reasoning":"one-line"}
 
-AVAILABLE PLUGINS:
-- sw-frontend: Frontend (React, Vue, Angular, Next.js, UI, dashboards, components)
-- sw-backend: Backend (APIs, databases, Node.js, Express, PostgreSQL, MongoDB)
-- sw-payments: Payments (Stripe, PayPal, checkout, billing, subscriptions)
-- sw-testing: Testing (Jest, Vitest, Playwright, TDD, E2E) - ONLY if explicit
-- sw-infra: Infrastructure (Terraform, Docker, AWS, K8s) - ONLY if explicit
-- sw-k8s: Kubernetes (only when K8s/Helm explicitly mentioned)
-- sw-mobile: Mobile (React Native, iOS, Android) - ONLY if explicit
-- sw-ml: ML/AI (PyTorch, TensorFlow) - ONLY if explicit
-- sw-kafka: Kafka/streaming - ONLY if explicit
-- sw-github: GitHub integration - ONLY if explicitly mentioned
-- sw-jira: JIRA integration - ONLY if explicitly mentioned
-- sw-ado: Azure DevOps - ONLY if explicitly mentioned
+═══════════════════════════════════════════════════════════════
+SPECWEAVE PLUGINS (sw-*@specweave) - PRIORITY for overlapping services
+═══════════════════════════════════════════════════════════════
 
-EXAMPLES:
+sw-frontend: React, Vue, Angular, Next.js, Svelte, UI, dashboard, components, Tailwind
+sw-backend: API, REST, GraphQL, .NET, C#, Node.js, Express, FastAPI, Django, Spring Boot, Go, PostgreSQL, MongoDB
+sw-payments: Stripe, PayPal, checkout, billing, subscriptions (USE THIS instead of stripe@official)
+sw-testing: TDD, Jest, Vitest, Playwright, Cypress, E2E (ONLY if explicit)
+sw-infra: Terraform, Docker, AWS, CI/CD, CloudFormation (ONLY if explicit)
+sw-k8s: Kubernetes, Helm, EKS, AKS, GKE (ONLY if explicit)
+sw-mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
+sw-ml: ML, PyTorch, TensorFlow, LLM, MLOps (ONLY if explicit)
+sw-kafka: Kafka, event streaming, MSK (ONLY if explicit)
+sw-confluent: Confluent Cloud, Schema Registry, ksqlDB (ONLY if explicit)
+sw-github: GitHub issues, PRs, Actions, sync (USE THIS instead of github@official)
+sw-jira: JIRA, Atlassian (ONLY if explicit)
+sw-ado: Azure DevOps, work items (ONLY if explicit)
 
-"Build React dashboard with Stripe checkout"
-→ React → sw-frontend (explicit)
-→ Dashboard → sw-backend (dashboards need APIs to fetch/display data)
-→ Stripe checkout → sw-payments (explicit)
-→ Infrastructure? NO - user didn't specify, could be Vercel/Cloudflare/anything
-{"plugins":["sw-frontend","sw-backend","sw-payments"],"confidence":0.95,"reasoning":"React+dashboard→frontend+backend, Stripe→payments. Infra not specified."}
+═══════════════════════════════════════════════════════════════
+OFFICIAL PLUGINS (@claude-plugins-official) - Use when NO SW equivalent
+═══════════════════════════════════════════════════════════════
 
-"Create a REST API with PostgreSQL"
-→ API + PostgreSQL → sw-backend only
-{"plugins":["sw-backend"],"confidence":0.95,"reasoning":"API+PostgreSQL→backend only."}
+LSP (Language Server Protocol) - Add for language-specific code intelligence:
+  csharp-lsp: C#, .NET, ASP.NET, Blazor, Entity Framework
+  gopls-lsp: Go, Golang
+  jdtls-lsp: Java, Spring, Maven, Gradle
+  kotlin-lsp: Kotlin, Android Kotlin
+  php-lsp: PHP, Laravel, Symfony
+  lua-lsp: Lua, Neovim plugins
+  clangd-lsp: C, C++, embedded
 
-"Build e-commerce site with admin panel"
-→ Site → sw-frontend (explicit)
-→ Admin panel → sw-backend (admin panels need data management)
-→ E-commerce often has payments, but not explicit here - don't assume
-{"plugins":["sw-frontend","sw-backend"],"confidence":0.9,"reasoning":"E-commerce site+admin→frontend+backend. Payments not mentioned."}
+Core/Required:
+  context7: Documentation lookup (add for ANY coding task)
+  playwright: Browser automation (add when E2E/browser testing mentioned)
 
-"Deploy my app to Kubernetes with Terraform"
-→ K8s → sw-k8s (explicit)
-→ Terraform → sw-infra (explicit)
-{"plugins":["sw-k8s","sw-infra"],"confidence":0.95,"reasoning":"K8s+Terraform explicitly mentioned."}
+Service Integrations (NO SW equivalent - use these):
+  firebase: Firebase, Firestore, Firebase Auth
+  gitlab: GitLab, GitLab CI/CD pipelines
+  linear: Linear issues, Linear project management
+  asana: Asana tasks, Asana projects
+  slack: Slack bots, Slack apps, Slack webhooks
+  supabase: Supabase, Supabase Auth, Supabase DB
+
+Framework-specific:
+  laravel-boost: Laravel (PHP framework)
+
+Development Tools:
+  code-review: Code review, PR review
+  commit-commands: Git commit workflows
+  hookify: Git hooks, pre-commit hooks
+
+═══════════════════════════════════════════════════════════════
+EXAMPLES
+═══════════════════════════════════════════════════════════════
+
+"Create React dashboard with Stripe checkout and .NET backend"
+{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments, context7 for docs"}
+
+"Build Go microservice with PostgreSQL"
+{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp, context7 for docs"}
+
+"Create Laravel app with Supabase"
+{"plugins":["sw-backend","laravel-boost","supabase","php-lsp","context7"],"confidence":0.95,"reasoning":"Laravel→laravel-boost+php-lsp, Supabase→supabase"}
+
+"Deploy to Kubernetes with Terraform"
+{"plugins":["sw-k8s","sw-infra","context7"],"confidence":0.95,"reasoning":"K8s+Terraform explicit"}
 
 "Fix the login bug"
-{"plugins":[],"confidence":0.9,"reasoning":"No specific tech mentioned, generic bug fix."}
+{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix, no specific tech"}
 
 "How do I use React hooks?"
-{"plugins":[],"confidence":0.95,"reasoning":"Question, no plugin needed."}
+{"plugins":[],"confidence":0.95,"reasoning":"Question only, no plugin needed"}
 
-"Why was sw-mobile installed? I only asked for React dashboard"
-{"plugins":[],"confidence":1.0,"reasoning":"Meta-question about plugins, NOT a request to build. NEVER trigger plugins from questions about plugins."}
+"Sync issues to GitHub"
+{"plugins":["sw-github"],"confidence":0.95,"reasoning":"GitHub→sw-github (priority over official)"}
 
-"Investigate why the plugin detection is broken"
-{"plugins":[],"confidence":1.0,"reasoning":"Investigation/debugging task, not building. ZERO plugins needed."}`;
+"Set up Firebase auth with React"
+{"plugins":["sw-frontend","firebase","context7"],"confidence":0.95,"reasoning":"React→frontend, Firebase→firebase (no SW equivalent)"}`;
 }
 
 /**
@@ -583,7 +689,7 @@ function createFailureResult(
  */
 export async function detectPluginsViaLLM(
   userPrompt: string,
-  timeout: number = 20000
+  timeout: number = 45000 // v1.0.159: Increased from 20s to account for CLI startup + haiku API time
 ): Promise<LLMDetectionResult> {
   const startTime = performance.now();
 
@@ -614,7 +720,9 @@ Which plugins should be loaded?`;
   try {
     // Execute Claude CLI with Opus for maximum accuracy (v1.0.156: Opus understands necessary implications)
     // Use --output-format json for faster response and --setting-sources user to skip project context
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'opus', '--output-format', 'json', '--setting-sources', 'user'], timeout);
+    // v1.0.159: Use haiku for fast detection (5-7s vs 30+s for opus)
+    // The comprehensive prompt provides enough context for accurate detection
+    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', 'user'], timeout);
 
     // Handle spawn errors - return failure (v1.0.157 - no fallback)
     if (result.error) {
@@ -724,15 +832,15 @@ Which plugins should be loaded?`;
       return createFailureResult(startTime, 'Failed to parse response JSON');
     }
 
-    // Validate and filter plugins
+    // Validate and filter plugins (v1.0.159: accept both SW and official plugins)
     const rawPlugins = parsed.plugins || [];
-    let validPlugins = rawPlugins.filter((p): p is SpecWeavePlugin =>
-      typeof p === 'string' && SPECWEAVE_PLUGINS.includes(p as SpecWeavePlugin)
+    let validPlugins = rawPlugins.filter((p): p is ValidPlugin =>
+      typeof p === 'string' && (ALL_VALID_PLUGINS as readonly string[]).includes(p)
     );
 
     // Log if we filtered out invalid plugins
     if (validPlugins.length !== rawPlugins.length) {
-      const invalid = rawPlugins.filter((p) => !SPECWEAVE_PLUGINS.includes(p as SpecWeavePlugin));
+      const invalid = rawPlugins.filter((p) => !(ALL_VALID_PLUGINS as readonly string[]).includes(p));
       logger.debug(`Filtered out invalid plugins: ${invalid.join(', ')}`);
     }
 
@@ -850,8 +958,11 @@ export async function installPluginViaCli(
   pluginName: string,
   timeout: number = 30000
 ): Promise<PluginInstallResult> {
-  // Validate plugin name
-  if (!SPECWEAVE_PLUGINS.includes(pluginName as SpecWeavePlugin)) {
+  // v1.0.159: Validate against both SW and official plugins
+  const isSW = isSpecWeavePlugin(pluginName);
+  const isOfficial = isOfficialPlugin(pluginName);
+
+  if (!isSW && !isOfficial) {
     return {
       success: false,
       plugin: pluginName,
@@ -869,8 +980,12 @@ export async function installPluginViaCli(
     };
   }
 
+  // Determine marketplace: sw-* → @specweave, others → @claude-plugins-official
+  const marketplace = isSW ? 'specweave' : 'claude-plugins-official';
+  const fullPluginName = `${pluginName}@${marketplace}`;
+
   try {
-    const result = executeClaudeCli(['plugin', 'install', pluginName], timeout);
+    const result = executeClaudeCli(['plugin', 'install', fullPluginName], timeout);
 
     // Handle spawn errors
     if (result.error) {
