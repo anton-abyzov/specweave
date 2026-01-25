@@ -134,15 +134,38 @@ const PLUGIN_FOLDER_TO_SHORT = {
 };
 ```
 
+## Cache Directory Structure
+
+The installed plugin cache uses marketplace names in registry but stores files with specific paths:
+
+```
+~/.claude/plugins/
+├── installed_plugins.json           # Uses: sw-frontend@specweave
+└── cache/
+    └── specweave/                   # Marketplace name
+        └── sw-frontend/             # Plugin short name (not specweave-frontend!)
+            └── 1.0.0/               # Version
+                └── hooks/           # Plugin files
+```
+
+**Important**: The cache directory uses `sw-frontend`, not `specweave-frontend`. This is different from the marketplace source directory.
+
+| Location | Name Format | Example |
+|----------|-------------|---------|
+| Registry key | `sw-*@specweave` | `sw-frontend@specweave` |
+| Cache path | `specweave/sw-*/version/` | `cache/specweave/sw-frontend/1.0.0/` |
+| Marketplace source | `specweave-*` | `marketplaces/specweave/plugins/specweave-frontend/` |
+
 ## Key Rules
 
 1. **Registry keys**: Always use `sw-*@specweave` format
-2. **Filesystem**: Always use `specweave-*` format
-3. **API calls**: Always use `sw-*` format
-4. **Use conversion functions** when crossing between contexts
+2. **Cache paths**: Use `sw-*` (short name) under `specweave/` directory
+3. **Marketplace source**: Use `specweave-*` format
+4. **API calls**: Always use `sw-*` format
+5. **Use conversion functions** when crossing between contexts
 
 ## Related
 
-- [Plugin Auto-Loading](../guides/plugin-auto-loading.md)
-- [Cache Manager](../api/cache-manager.md)
+- [Plugin Management Guide](../guides/plugin-management.md)
+- [Plugin Auto-Reinstall Issues](./plugin-auto-reinstall.md)
 - [VSCode Debug Child Processes](./vscode-debug-child-processes.md)

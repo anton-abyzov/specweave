@@ -114,88 +114,17 @@ if [[ -f "$REBUILD_SCRIPT" ]]; then
   fi
 fi
 
-# === AUTO-LOAD PLUGINS BASED ON PROJECT TYPE (v1.0.127 - Increment 0172) ===
-# Detect project type (React, Express, K8s, etc.) and pre-install relevant plugins
-# Runs in background to not block session start
-# Controlled by:
-#   - SPECWEAVE_DISABLE_AUTO_LOAD environment variable
-#   - pluginAutoLoad.enabled in .specweave/config.json
-#   - pluginAutoLoad.suggestOnly in .specweave/config.json (v1.0.158)
-
-# Check config for pluginAutoLoad settings (v1.0.158)
-PLUGIN_AUTOLOAD_ENABLED=true
-PLUGIN_SUGGEST_ONLY=false
-CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
-if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
-  AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
-  [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
-
-  SUGGEST_VALUE=$(jq -r '.pluginAutoLoad.suggestOnly // false' "$CONFIG_PATH" 2>/dev/null)
-  [[ "$SUGGEST_VALUE" == "true" ]] && PLUGIN_SUGGEST_ONLY=true
-fi
-
-# Skip auto-load if disabled via env or config, OR if suggestOnly mode
-if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "$PLUGIN_SUGGEST_ONLY" != "true" ]]; then
-  if command -v specweave >/dev/null 2>&1; then
-    # Setup lazy-loading log for graceful degradation (T-010)
-    LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
-    mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
-
-    # T-012: Check project detection cache (1 hour TTL)
-    # Cache avoids redundant project detection on every session start
-    AUTO_LOAD_CACHE="$HOME/.specweave/state/auto-load-cache.json"
-    CACHE_TTL_SECONDS=3600  # 1 hour
-    SHOULD_DETECT=true
-
-    if [[ -f "$AUTO_LOAD_CACHE" ]] && command -v jq >/dev/null 2>&1; then
-      CACHED_PATH=$(jq -r '.projectPath // ""' "$AUTO_LOAD_CACHE" 2>/dev/null)
-      CACHED_TIME=$(jq -r '.timestamp // 0' "$AUTO_LOAD_CACHE" 2>/dev/null)
-      CURRENT_TIME=$(date +%s)
-
-      # Skip detection if same project and cache is fresh
-      if [[ "$CACHED_PATH" == "$PROJECT_ROOT" ]]; then
-        CACHE_AGE=$((CURRENT_TIME - CACHED_TIME))
-        if [[ "$CACHE_AGE" -lt "$CACHE_TTL_SECONDS" ]]; then
-          SHOULD_DETECT=false
-          echo "[$(date -Iseconds)] Cache hit: skipping project detection (age: ${CACHE_AGE}s)" >> "$LAZY_LOAD_LOG"
-        fi
-      fi
-    fi
-
-    if [[ "$SHOULD_DETECT" == "true" ]]; then
-      # Run detect-project in background with --install --silent
-      # This will analyze project files (package.json, Dockerfile, etc.) and install relevant plugins
-      # T-011: Background timeout is 15s; hook itself returns immediately (<3000ms)
-      # Graceful degradation: errors logged but don't block Claude session start
-      (
-        mkdir -p "$(dirname "$AUTO_LOAD_CACHE")" 2>/dev/null
-
-        # T-014: Performance logging
-        START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
-        PROJECT_NAME=$(basename "$PROJECT_ROOT")
-
-        if command -v timeout >/dev/null 2>&1; then
-          timeout 15 specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
-          EXIT_CODE=$?
-        else
-          specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
-          EXIT_CODE=$?
-        fi
-
-        END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
-        DURATION=$((END_TIME - START_TIME))
-
-        if [[ "$EXIT_CODE" -eq 0 ]]; then
-          echo "{\"projectPath\":\"$PROJECT_ROOT\",\"timestamp\":$(date +%s)}" > "$AUTO_LOAD_CACHE"
-          echo "[$(date -Iseconds)] detect-project success | duration=${DURATION}ms | project=$PROJECT_NAME" >> "$LAZY_LOAD_LOG"
-        else
-          echo "[$(date -Iseconds)] detect-project failed (code=$EXIT_CODE) | duration=${DURATION}ms | path=$PROJECT_ROOT" >> "$LAZY_LOAD_LOG"
-        fi
-      ) &
-      disown 2>/dev/null
-    fi
-  fi
-fi
+# === AUTO-LOAD PLUGINS REMOVED (v1.0.159) ===
+# Project-file-based detection (specweave detect-project) was removed.
+#
+# REASON: Users want plugins installed ONLY when LLM determines they need them
+# for a specific BUILD task, not based on project file scanning.
+#
+# Plugin auto-loading now happens ONLY in user-prompt-submit.sh via LLM detection.
+# When user submits a prompt like "Build React dashboard", the LLM analyzes
+# the request and installs relevant plugins (sw-frontend, etc.)
+#
+# To install plugins manually: claude plugin install sw-frontend@specweave
 
 # === LEGACY STATE CLEANUP (v1.0.148) ===
 # Clean up old processor state files on session start

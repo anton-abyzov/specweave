@@ -99,78 +99,14 @@ fi
 
 
 # ==============================================================================
-# KEYWORD-BASED PLUGIN DETECTION FALLBACK (v1.0.153)
+# KEYWORD-BASED PLUGIN DETECTION REMOVED (v1.0.159)
 # ==============================================================================
-# Fast, reliable keyword matching when LLM detection fails or is disabled.
-# This provides immediate value even when the LLM is unavailable.
-
-detect_plugins_by_keywords() {
-  local prompt="$1"
-  local plugins=""
-
-  # Frontend plugins
-  if echo "$prompt" | grep -qiE "(react|vue|angular|next\.?js|svelte|remix|astro|dashboard|frontend|component|UI|CSS|tailwind|SPA|web.?app)"; then
-    plugins="${plugins}sw-frontend "
-  fi
-
-  # Backend plugins
-  if echo "$prompt" | grep -qiE "(node\.?js|express|nest\.?js|fastify|hono|backend|server|API|REST|graphql|database|SQL|postgres|mysql|mongodb|redis|CLI.?tool)"; then
-    plugins="${plugins}sw-backend "
-  fi
-
-  # Testing plugins
-  if echo "$prompt" | grep -qiE "(test|TDD|playwright|cypress|jest|vitest|E2E|unit.?test|integration.?test|QA|quality)"; then
-    plugins="${plugins}sw-testing "
-  fi
-
-  # Payments plugins
-  if echo "$prompt" | grep -qiE "(stripe|paypal|payment|checkout|billing|subscription|invoice|e-?commerce)"; then
-    plugins="${plugins}sw-payments "
-  fi
-
-  # Infrastructure plugins
-  if echo "$prompt" | grep -qiE "(terraform|pulumi|AWS|azure|GCP|docker|CI/?CD|cloudformation|CDK|devops|serverless|lambda)"; then
-    plugins="${plugins}sw-infra "
-  fi
-
-  # Kubernetes plugins
-  if echo "$prompt" | grep -qiE "(kubernetes|k8s|helm|pod|deployment|ingress|kubectl|EKS|AKS|GKE|gitops)"; then
-    plugins="${plugins}sw-k8s "
-  fi
-
-  # Mobile plugins
-  if echo "$prompt" | grep -qiE "(react.?native|iOS|android|mobile|expo|flutter|swift|kotlin|native.?app)"; then
-    plugins="${plugins}sw-mobile "
-  fi
-
-  # ML plugins
-  if echo "$prompt" | grep -qiE "(machine.?learning|ML|AI.?model|pytorch|tensorflow|training|inference|data.?science)"; then
-    plugins="${plugins}sw-ml "
-  fi
-
-  # Kafka plugins
-  if echo "$prompt" | grep -qiE "(kafka|event.?streaming|MSK|consumer|producer|topic)"; then
-    plugins="${plugins}sw-kafka "
-  fi
-
-  # GitHub plugins
-  if echo "$prompt" | grep -qiE "(github.?issue|github.?PR|github.?action|github.?sync)"; then
-    plugins="${plugins}sw-github "
-  fi
-
-  # JIRA plugins
-  if echo "$prompt" | grep -qiE "(jira|epic|story|sprint|jira.?sync)"; then
-    plugins="${plugins}sw-jira "
-  fi
-
-  # Azure DevOps plugins
-  if echo "$prompt" | grep -qiE "(azure.?devops|ADO|work.?item|pipeline|ADO.?sync)"; then
-    plugins="${plugins}sw-ado "
-  fi
-
-  # Return unique plugins (trim trailing space)
-  echo "$plugins" | xargs
-}
+# Keyword fallback was removed because it was too aggressive.
+# Example: "run tests" would install sw-testing even for simple test runs.
+#
+# Plugin detection now happens ONLY via LLM analysis (specweave detect-intent).
+# The LLM understands user INTENT - it only recommends plugins when user
+# explicitly asks to BUILD/IMPLEMENT something, not for questions or discussions.
 
 # ==============================================================================
 # UNIFIED LLM DETECTION (v1.0.147) - ONE call for BOTH plugins AND increments
@@ -607,63 +543,14 @@ Consider reopening the existing increment:
         fi
 
         # ==================================================================
-        # KEYWORD FALLBACK (v1.0.153) - When LLM fails or returns no plugins
+        # KEYWORD FALLBACK REMOVED (v1.0.159)
         # ==================================================================
-        # If LLM detection failed or returned empty plugins, use keyword matching
-        # v1.0.158: Respect PLUGIN_AUTOLOAD_ENABLED and PLUGIN_SUGGEST_ONLY
-        if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
-          if [[ "$LLM_DETECTION_FAILED" == "true" ]] || [[ -z "$DETECTED_PLUGINS" ]]; then
-            KEYWORD_PLUGINS=$(detect_plugins_by_keywords "$PROMPT")
-
-            if [[ -n "$KEYWORD_PLUGINS" ]]; then
-              echo "[$(date -Iseconds)] keyword-fallback | plugins=${KEYWORD_PLUGINS} | reason=llm_failed_or_empty" >> "$LAZY_LOAD_LOG"
-
-              # v1.0.158: SUGGEST-ONLY MODE - Don't install, just inform user
-              if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
-                PLUGIN_LIST=$(echo "$KEYWORD_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
-                AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins** (keyword match): ${PLUGIN_LIST}\\n"
-                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`claude plugin install <plugin>@specweave\`\\n"
-                AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
-                echo "[$(date -Iseconds)] keyword-fallback | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
-              elif command -v claude >/dev/null 2>&1; then
-                # NORMAL MODE - Actually install plugins
-                PLUGINS_INSTALLED=""
-                PLUGINS_ALREADY=""
-
-                for plugin in $KEYWORD_PLUGINS; do
-                  [[ -z "$plugin" ]] && continue
-
-                  # Sync install via claude CLI (triggers hot-reload)
-                  if command -v timeout >/dev/null 2>&1; then
-                    OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
-                  else
-                    OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
-                  fi
-
-                  if echo "$OUT" | grep -qi "already"; then
-                    [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                    PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                  elif echo "$OUT" | grep -qi "success"; then
-                    [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                    PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                  fi
-                done
-
-                # Build feedback message (keyword fallback)
-                if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                  # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
-                  AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed** (keyword match): ${PLUGINS_INSTALLED}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
-                elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                  AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins** (keyword match): ${PLUGINS_ALREADY}\\n"
-                fi
-
-                echo "[$(date -Iseconds)] keyword-fallback-install | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
-              fi
-            fi
-          fi
-        fi
+        # Keyword fallback was too aggressive - it matched "test" for simple
+        # test runs, "database" for any database mention, etc.
+        #
+        # Now we ONLY use LLM-based detection. If LLM returns empty,
+        # no plugins are installed. This is intentional - user can
+        # manually install with: claude plugin install sw-frontend@specweave
       fi
     fi
   fi

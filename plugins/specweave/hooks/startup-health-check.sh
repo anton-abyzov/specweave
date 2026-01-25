@@ -71,10 +71,13 @@ if [ ! -d "$PLUGINS_SUBDIR" ]; then
         if claude plugin marketplace add anton-abyzov/specweave 2>&1 | tee -a "$HEALTH_LOG"; then
             log "SUCCESS: Marketplace re-cloned"
 
-            # Reinstall core plugins silently
-            for plugin in sw sw-github sw-testing; do
-                claude plugin install "$plugin" 2>/dev/null && log "Installed: $plugin"
-            done
+            # === REMOVED (v1.0.159) ===
+            # Automatic plugin installation removed.
+            # REASON: Users want to control which plugins are installed.
+            # Plugin installation should be manual via `claude plugin install sw@specweave`
+            # or via LLM detection in user-prompt-submit.sh when user explicitly requests
+            # to BUILD/IMPLEMENT something requiring specialized skills.
+            log "NOTE: Plugins NOT auto-installed. Use: claude plugin install sw@specweave"
         else
             log "FAILED: Could not re-clone marketplace"
         fi
