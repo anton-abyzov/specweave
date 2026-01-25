@@ -312,14 +312,37 @@ case "$FILE_PATH" in
       fi
 
       # ========================================================================
-      # TDD ENFORCEMENT (v1.0.105+): Warn on TDD discipline violations
+      # TDD ENFORCEMENT (v1.0.160+): Enforce TDD discipline
       # ========================================================================
       # When tasks.md is edited in TDD mode, check for violations
-      # WARNING-ONLY: educates users, never blocks
+      # v1.0.160: In STRICT mode, runs synchronously and shows blocking warning
       TDD_GUARD="$HOOK_DIR/guards/tdd-enforcement-guard.sh"
       if [[ -f "$TDD_GUARD" ]]; then
-        log_debug "Running TDD enforcement guard"
-        safe_run_background "$TDD_GUARD" "tdd-enforcement" "$PROJECT_ROOT" "$FILE_PATH" "Edit"
+        # Check if strict TDD enforcement is enabled
+        TDD_STRICT=false
+        CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+        if [[ -f "$CONFIG_FILE" ]] && command -v jq >/dev/null 2>&1; then
+          TDD_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' "$CONFIG_FILE" 2>/dev/null)
+          [[ "$TDD_ENFORCEMENT" == "strict" ]] && TDD_STRICT=true
+        fi
+
+        if [[ "$TDD_STRICT" == "true" ]]; then
+          log_debug "Running TDD enforcement guard (STRICT - synchronous)"
+          # Run synchronously and capture output for strict mode
+          TDD_OUTPUT=$(bash "$TDD_GUARD" "$PROJECT_ROOT" "$FILE_PATH" "Edit" 2>&1)
+          TDD_EXIT=$?
+          if [[ $TDD_EXIT -ne 0 ]]; then
+            # Show blocking warning to user
+            echo ""
+            echo "  ⚠️  TDD STRICT MODE VIOLATION DETECTED"
+            echo "$TDD_OUTPUT" | head -20
+            echo ""
+            log_debug "TDD violation detected (exit code: $TDD_EXIT)"
+          fi
+        else
+          log_debug "Running TDD enforcement guard (warn mode - background)"
+          safe_run_background "$TDD_GUARD" "tdd-enforcement" "$PROJECT_ROOT" "$FILE_PATH" "Edit"
+        fi
       fi
 
       # Play completion sound if task was marked complete (v1.0.77+)

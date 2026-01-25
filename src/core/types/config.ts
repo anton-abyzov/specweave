@@ -551,6 +551,23 @@ export interface IncrementAssistConfig {
    * @default 0.7
    */
   confidenceThreshold?: number;
+
+  /**
+   * Make increment creation MANDATORY for feature work (v1.0.160+)
+   *
+   * When true: High-confidence feature detection uses blocking language,
+   * telling Claude it MUST create an increment before implementing.
+   * This enforces spec-driven development discipline.
+   *
+   * When false (default): Uses advisory language ("consider creating"),
+   * allowing Claude to proceed without increment if appropriate.
+   *
+   * Note: Even when false, confidence >= 0.85 triggers mandatory mode
+   * since very high confidence indicates clear feature work.
+   *
+   * @default false
+   */
+  mandatory?: boolean;
 }
 
 /**
@@ -757,5 +774,6 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     suggestNewIncrement: true,  // Suggest /sw:increment for new features
     suggestReopen: true,        // Suggest reopening related increments
     confidenceThreshold: 0.7,   // Only show suggestions above 70% confidence
+    mandatory: false,           // v1.0.160+: When true, forces increment creation for features
   },
 };
