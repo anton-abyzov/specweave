@@ -501,32 +501,57 @@ Development Tools:
   hookify: Git hooks, pre-commit hooks
 
 ═══════════════════════════════════════════════════════════════
-EXAMPLES
+INCREMENT RECOMMENDATION (v1.0.160)
+═══════════════════════════════════════════════════════════════
+
+ALSO analyze if user should create/reopen a SpecWeave increment.
+
+"increment" field with:
+- action: "new" | "reopen" | "small_fix" | "hotfix" | "none"
+- confidence: 0.0-1.0
+- suggestedName: kebab-case name (for "new")
+- reasoning: brief explanation
+
+WHEN TO USE EACH ACTION:
+┌─────────────┬─────────────────────────────────────────────────────────────┐
+│ new         │ Multi-file feature, significant implementation, new func   │
+│ hotfix      │ "urgent", "production bug", "critical fix"                 │
+│ reopen      │ "fix the X feature", work related to recent increment      │
+│ small_fix   │ Typo, config tweak, single-line fix, version bump          │
+│ none        │ Questions, exploration, "how do I", general chat           │
+└─────────────┴─────────────────────────────────────────────────────────────┘
+
+EXPLICIT OPT-OUT → action: "none":
+- "don't create an increment", "no increment needed", "skip workflow"
+- "just a quick fix", "without tracking", "already tracking"
+
+═══════════════════════════════════════════════════════════════
+EXAMPLES (with increment field)
 ═══════════════════════════════════════════════════════════════
 
 "Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments, context7 for docs"}
+{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component feature requiring spec-driven tracking"}}
 
 "Build Go microservice with PostgreSQL"
-{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp, context7 for docs"}
-
-"Create Laravel app with Supabase"
-{"plugins":["sw-backend","laravel-boost","supabase","php-lsp","context7"],"confidence":0.95,"reasoning":"Laravel→laravel-boost+php-lsp, Supabase→supabase"}
-
-"Deploy to Kubernetes with Terraform"
-{"plugins":["sw-k8s","sw-infra","context7"],"confidence":0.95,"reasoning":"K8s+Terraform explicit"}
+{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp","increment":{"action":"new","confidence":0.9,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation"}}
 
 "Fix the login bug"
-{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix, no specific tech"}
+{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"small_fix","confidence":0.85,"reasoning":"Bug fix, likely single-file change"}}
+
+"The auth feature is broken again"
+{"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
 
 "How do I use React hooks?"
-{"plugins":[],"confidence":0.95,"reasoning":"Question only, no plugin needed"}
+{"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"reasoning":"Question, no implementation"}}
 
-"Sync issues to GitHub"
-{"plugins":["sw-github"],"confidence":0.95,"reasoning":"GitHub→sw-github (priority over official)"}
+"Update the package version to 2.0"
+{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.95,"reasoning":"Config/version change, no feature work"}}
 
-"Set up Firebase auth with React"
-{"plugins":["sw-frontend","firebase","context7"],"confidence":0.95,"reasoning":"React→frontend, Firebase→firebase (no SW equivalent)"}`;
+"Urgent: production checkout is failing"
+{"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention"}}
+
+"Just fix the typo in README, don't track it"
+{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"reasoning":"User explicitly opted out of tracking"}}`;
 }
 
 /**
