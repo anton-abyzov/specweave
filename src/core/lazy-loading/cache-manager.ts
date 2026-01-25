@@ -17,6 +17,7 @@ import { consoleLogger as logger } from '../../utils/logger.js';
 import { getAllPlugins, getPluginsForGroup } from './keyword-detector.js';
 import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
+import { isOfficialPlugin, isSpecWeavePlugin } from './llm-plugin-detector.js';
 
 /**
  * Claude plugin registry entry format
@@ -201,11 +202,21 @@ export class PluginCacheManager {
       let installedCount = 0;
 
       for (const pluginName of pluginsToInstall) {
-        const directoryName = marketplaceNameToDirectory(pluginName);
-        const sourcePath = path.join(this.marketplacePath, directoryName);
+        // v1.0.159: Handle both SpecWeave and official plugins
+        const isOfficial = isOfficialPlugin(pluginName);
+        const isSW = isSpecWeavePlugin(pluginName);
 
-        if (!fs.existsSync(sourcePath)) {
-          logger.warn(`Plugin not in marketplace: ${pluginName}`);
+        // Only check local existence for SpecWeave plugins (official plugins are in different marketplace)
+        if (isSW) {
+          const directoryName = marketplaceNameToDirectory(pluginName);
+          const sourcePath = path.join(this.marketplacePath, directoryName);
+
+          if (!fs.existsSync(sourcePath)) {
+            logger.warn(`Plugin not in marketplace: ${pluginName}`);
+            continue;
+          }
+        } else if (!isOfficial) {
+          logger.warn(`Unknown plugin (not SW or official): ${pluginName}`);
           continue;
         }
 
@@ -219,9 +230,12 @@ export class PluginCacheManager {
 
         // ONLY use Claude CLI - NEVER manipulate registry directly
         if (useCliInstall) {
-          installed = await this.installPluginViaCli(pluginName);
+          // v1.0.159: Install from correct marketplace
+          const marketplace = isSW ? 'specweave' : 'claude-plugins-official';
+          installed = await this.installPluginViaCli(pluginName, marketplace);
         } else {
-          logger.warn(`Cannot install ${pluginName}: Claude CLI not available. Run 'claude plugin install ${pluginName}@specweave' manually.`);
+          const marketplace = isSW ? 'specweave' : 'claude-plugins-official';
+          logger.warn(`Cannot install ${pluginName}: Claude CLI not available. Run 'claude plugin install ${pluginName}@${marketplace}' manually.`);
         }
 
         if (installed) installedCount++;
@@ -249,17 +263,18 @@ export class PluginCacheManager {
 
   /**
    * Install plugin via Claude CLI
+   * v1.0.159: Now supports both specweave and claude-plugins-official marketplaces
    */
-  private async installPluginViaCli(pluginName: string): Promise<boolean> {
+  private async installPluginViaCli(pluginName: string, marketplace: string = 'specweave'): Promise<boolean> {
     try {
-      // CRITICAL: Use correct format - pluginName@specweave (e.g., sw-github@specweave)
-      const pluginKey = `${pluginName}@specweave`;
+      // CRITICAL: Use correct format - pluginName@marketplace
+      const pluginKey = `${pluginName}@${marketplace}`;
       const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
         timeout: 30000,
       });
 
       if (result.success) {
-        logger.debug(`Installed via CLI: ${pluginName}`);
+        logger.debug(`Installed via CLI: ${pluginName} from @${marketplace}`);
         return true;
       }
 
@@ -280,14 +295,17 @@ export class PluginCacheManager {
 
   /**
    * Check if plugin is registered
+   * v1.0.159: Checks both specweave and claude-plugins-official marketplaces
    */
   isPluginRegistered(pluginName: string): boolean {
     if (!fs.existsSync(this.registryPath)) return false;
 
     try {
       const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
-      const registryKey = `${pluginName}@specweave`;
-      return !!registry.plugins[registryKey]?.length;
+      // Check both marketplaces
+      const swKey = `${pluginName}@specweave`;
+      const officialKey = `${pluginName}@claude-plugins-official`;
+      return !!registry.plugins[swKey]?.length || !!registry.plugins[officialKey]?.length;
     } catch {
       return false;
     }
