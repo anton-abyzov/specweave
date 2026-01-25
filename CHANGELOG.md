@@ -4,6 +4,124 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.162] - 2026-01-25
+
+### ✨ Features
+
+- **Increment Template Creator API**: New programmatic API for creating increment templates
+  - `createIncrementTemplates()` function creates proper template files with markers
+  - Templates require PM/Architect skills to complete (prevents bypassing skill system)
+  - `isTemplateFile()` function detects incomplete templates
+  - `validateSpecCompletion()` validates template completion status
+  - TDD-aware templates: generates RED-GREEN-REFACTOR triplets when TDD mode enabled
+  - Full test coverage with 34 unit and integration tests
+
+### 🔧 Improvements
+
+- **SKILL.md documentation**: Updated increment-planner skill with template creator API usage
+- **Version tracking**: Fixed duplicate version bump commits
+
+---
+
+## [1.0.161] - 2026-01-25
+
+### 🧹 Maintenance
+
+- **Cleanup**: Removed garbage temp files from repository
+- **Documentation**: Updated specweave config
+
+---
+
+## [1.0.160] - 2026-01-24
+
+### 🐛 Bug Fixes
+
+- **refresh-marketplace**: Removed obsolete routerPlugin references that caused errors
+
+---
+
+## [1.0.159] - 2026-01-24
+
+### ✨ Features
+
+- **Plugin detection**: Improved hook dispatching and plugin detection flow
+- **Official plugins**: Support for claude-plugins-official marketplace
+- **Performance**: Added `--setting-sources ""` optimization for faster CLI calls
+
+### 🐛 Bug Fixes
+
+- **cache-manager**: Support official plugins from claude-plugins-official
+- **hooks**: Install official plugins from correct marketplace
+
+---
+
+## [1.0.158] - 2026-01-24
+
+### ✨ Features
+
+- **Hook resilience**: Improved hook dispatching reliability
+- **Plugin management**: Added plugin management documentation
+
+---
+
+## [1.0.157] - 2026-01-24
+
+### 🔧 Improvements
+
+- **Agents to skills**: Converted agents to skills structure across plugins
+- **E2E tests**: Made tests robust to parallel execution
+
+---
+
+## [1.0.155] - 2026-01-23
+
+### ✨ Features
+
+- **Opus model for detection**: Use Opus model with NECESSARY vs OPTIONAL plugin detection
+- **Mid-session plugin warning**: Detect mid-session plugin installs and warn about unavailable skills
+- **Agent spawn directives**: Include agent spawn directive in increment suggestion
+
+### 🐛 Bug Fixes
+
+- **Plugin detection**: Prevent plugin over-detection with strict LLM rules
+- **LLM detection**: Use --output-format json for faster detection
+- **Detection timeout**: Simplify detection prompt to avoid Haiku timeout
+
+---
+
+## [1.0.154] - 2026-01-23
+
+### 🔧 Improvements
+
+- **Hooks and plugin detector**: Updated for better reliability
+
+---
+
+## [1.0.153] - 2026-01-23
+
+### 🐛 Bug Fixes
+
+- **Intent detection**: Updated intent detection and plugin loading
+
+---
+
+## [1.0.152] - 2026-01-23
+
+### 🔧 Improvements
+
+- **Documentation**: Updated docs and hooks wrapper
+
+---
+
+## [1.0.151] - 2026-01-23
+
+### 🔧 Improvements
+
+- **Router brain**: Updated router brain orchestrator
+- **Marketing**: Updated marketing docs with hook process spawning and skill invocation
+
+---
+
 ## [1.0.150] - 2026-01-23
 
 ### 🧹 Maintenance
@@ -17,8 +135,10 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [1.0.145] - 2026-01-23
 
-### Changes
-- TODO: Describe your changes here
+### 🔧 Improvements
+
+- **Plugin system**: Various plugin system improvements and fixes
+- **Documentation**: Minor documentation updates
 
 ---
 

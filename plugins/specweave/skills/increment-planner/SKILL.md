@@ -190,6 +190,87 @@ Every increment MUST have `metadata.json` or:
 
 **NO separate tests.md** - tests embedded in tasks.md
 
+### 5. USE TEMPLATE CREATOR API - MANDATORY (v1.0.162+)
+
+**🚨 CRITICAL: You MUST use the `createIncrementTemplates()` API to create increment files!**
+
+**⛔ FORBIDDEN: Writing spec.md, plan.md, or tasks.md content directly via Write tool!**
+
+The template creator ensures:
+- Files contain proper template markers that require PM/Architect completion
+- Validation hooks can detect incomplete templates
+- The skill system is NOT bypassed
+
+**✅ CORRECT - Use the API via Bash:**
+```bash
+# Create templates programmatically
+node -e "
+const { createIncrementTemplates } = require('./dist/src/core/increment/template-creator.js');
+createIncrementTemplates({
+  incrementId: '0001-feature-name',
+  title: 'Feature Title',
+  description: 'Brief description',
+  projectId: 'my-project',
+  projectRoot: process.cwd()
+}).then(result => {
+  if (result.success) {
+    console.log('✅ Templates created:', result.createdFiles.join(', '));
+    console.log('\\n📋 Next steps:');
+    result.nextSteps.forEach(step => console.log('  •', step));
+  } else {
+    console.error('❌ Error:', result.error);
+  }
+});
+"
+```
+
+**❌ FORBIDDEN - DO NOT DO THIS:**
+```typescript
+// ❌ WRONG: Writing full content directly
+Write({
+  file_path: '/path/to/spec.md',
+  content: `
+    ## User Stories
+    ### US-001: Login Feature
+    **As a** user, I want to login...
+    // ... full content ...
+  `
+});
+
+// ❌ WRONG: Bypassing template creation
+fs.writeFileSync('spec.md', fullSpecContent);
+```
+
+**Why this is enforced:**
+1. Templates contain markers that REQUIRE PM/Architect skill completion
+2. `isTemplateFile()` function validates templates haven't been bypassed
+3. `validateSpecCompletion()` ensures proper workflow was followed
+4. Hooks can detect and BLOCK improperly created files
+
+**Template Markers (must be present in templates):**
+- `[Story Title]` - Unfilled user story titles
+- `[user type]` - Unfilled user types
+- `[goal]` - Unfilled goals
+- `[benefit]` - Unfilled benefits
+- `[Specific, testable criterion]` - Unfilled acceptance criteria
+- `TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS` - Warning comment
+
+**Validation API:**
+```typescript
+import { isTemplateFile, validateSpecCompletion } from './src/core/increment/template-creator.js';
+
+// Check if file is still a template
+const isTemplate = isTemplateFile('/path/to/spec.md');
+// true = needs PM/Architect completion
+// false = properly completed
+
+// Validate completion
+const { isComplete, issues } = validateSpecCompletion('/path/to/spec.md');
+if (!isComplete) {
+  console.log('Issues:', issues);
+}
+```
+
 ---
 
 ## Workflow (Safe, Self-Contained)
@@ -953,10 +1034,88 @@ node plugins/specweave/skills/increment-planner/scripts/feature-utils.js check-i
 # If exists: STOP and inform user
 ```
 
-### STEP 3: Create Directory Structure
+### STEP 3: Create Increment via Template Creator API (MANDATORY)
+
+**🚨 CRITICAL: You MUST use the `createIncrementTemplates()` API!**
+
+**⛔ DO NOT use Write tool to create spec.md, plan.md, or tasks.md!**
+
+The template creator automatically:
+1. Creates the increment directory
+2. Creates metadata.json with proper config values
+3. Creates spec.md TEMPLATE with markers
+4. Creates plan.md TEMPLATE with markers
+5. Creates tasks.md TEMPLATE with markers
+6. Returns next steps for PM/Architect completion
+
+**Run via Bash tool:**
 
 ```bash
-mkdir -p .specweave/increments/0021-feature-name
+# Use the template creator CLI
+npx ts-node -e "
+import { createIncrementTemplates } from './src/core/increment/template-creator.js';
+
+(async () => {
+  const result = await createIncrementTemplates({
+    incrementId: '0021-feature-name',
+    title: 'Feature Title',
+    description: 'Brief description of the feature',
+    projectId: 'PROJECT_ID_FROM_STEP_0B',  // ← From specweave context projects
+    boardId: 'BOARD_ID_IF_2_LEVEL',        // ← Only for 2-level structures
+    type: 'feature',                        // feature, hotfix, bug, etc.
+    priority: 'P1',
+    projectRoot: process.cwd()
+  });
+
+  if (result.success) {
+    console.log('✅ Increment templates created!');
+    console.log('');
+    console.log('Created files:');
+    result.createdFiles.forEach(f => console.log('  •', f));
+    console.log('');
+    console.log('📋 Next steps (MUST be done in MAIN conversation):');
+    result.nextSteps.forEach(step => console.log('  •', step));
+  } else {
+    console.error('❌ Error:', result.error);
+    process.exit(1);
+  }
+})();
+"
+```
+
+**Alternative: Use specweave CLI (if available):**
+
+```bash
+specweave create-increment \
+  --id "0021-feature-name" \
+  --title "Feature Title" \
+  --description "Brief description" \
+  --project "my-project" \
+  --type feature \
+  --priority P1
+```
+
+**What the Template Creator Does:**
+
+1. **Validates increment ID** - Checks for duplicates, validates format
+2. **Creates metadata.json** - Reads testMode/coverageTarget from config
+3. **Creates spec.md TEMPLATE** - Contains markers like `[Story Title]`, `[user type]`
+4. **Creates plan.md TEMPLATE** - Contains markers like `[Component 1]`
+5. **Creates tasks.md TEMPLATE** - Contains markers like `[User Story Title]`
+6. **Returns next steps** - Guidance for PM/Architect completion
+
+**Template Validation:**
+
+After creation, you can verify templates are correct:
+
+```bash
+# Check if file is still a template (needs completion)
+npx ts-node -e "
+import { isTemplateFile } from './src/core/increment/template-creator.js';
+const specPath = '.specweave/increments/0021-feature-name/spec.md';
+console.log('Is template:', isTemplateFile(specPath));
+// Should be: true (needs PM skill to complete)
+"
 ```
 
 **⚠️ CRITICAL: Increment Folder Structure Rules**
@@ -977,191 +1136,24 @@ mkdir -p .specweave/increments/0021-feature-name
 └── backups/     # Backup files
 ```
 
-### STEP 4: Create metadata.json FIRST (MANDATORY - CRITICAL ORDER!)
+### STEP 4: (REMOVED - Now handled by Template Creator in STEP 3)
 
-**🚨 CRITICAL: metadata.json MUST be created BEFORE spec.md!**
+**NOTE**: STEP 4, 5, 6, 7 are now OBSOLETE. The `createIncrementTemplates()` API in STEP 3 handles ALL file creation:
+- metadata.json (with proper config values)
+- spec.md (with template markers)
+- plan.md (with template markers)
+- tasks.md (with template markers, TDD-aware)
 
-The `metadata-json-guard.sh` hook BLOCKS spec.md creation if metadata.json doesn't exist.
-This prevents broken increments that lack proper tracking.
+**Structure Level Rules (handled automatically by template creator):**
 
-**IMPORTANT**: Read `testMode` and `coverageTarget` from `.specweave/config.json`:
+| Level | Project Field | Board Field | Example |
+|-------|---------------|-------------|---------|
+| 1-level | Required | NOT ALLOWED | `**Project**: my-app` |
+| 2-level | Required | Required | `**Project**: corp` + `**Board**: frontend` |
 
-```bash
-# Read config to get defaultTestMode and defaultCoverageTarget
-cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"'
-cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80'
-```
+The template creator uses the `boardId` parameter to determine structure level.
 
-Create `.specweave/increments/0021-feature-name/metadata.json`:
-
-```json
-{
-  "id": "0021-feature-name",
-  "status": "planned",
-  "type": "feature",
-  "priority": "P1",
-  "created": "2025-11-24T12:00:00Z",
-  "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'test-after'>",
-  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 80>,
-  "feature_id": null,
-  "epic_id": null,
-  "externalLinks": {}
-}
-```
-
-**Use Write tool to create this file IMMEDIATELY after creating directory.**
-
-**Example Logic**:
-```javascript
-// Read config
-const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
-const testMode = config?.testing?.defaultTestMode || 'test-after';
-const coverageTarget = config?.testing?.defaultCoverageTarget || 80;
-
-// Create metadata with config values
-const metadata = {
-  id: "0021-feature-name",
-  status: "planned",
-  type: "feature",
-  priority: "P1",
-  created: new Date().toISOString(),
-  lastActivity: new Date().toISOString(),
-  testMode: testMode,  // ← FROM CONFIG!
-  coverageTarget: coverageTarget,  // ← FROM CONFIG!
-  feature_id: null,
-  epic_id: null,
-  externalLinks: {}
-};
-```
-
-### STEP 5: Create spec.md Template
-
-**⚠️ This step REQUIRES metadata.json to exist (created in STEP 4)!**
-
-Create `.specweave/increments/0021-feature-name/spec.md`:
-
-**⚠️ CRITICAL: You MUST have PROJECT_ID (and BOARD_ID for 2-level) from STEP 0B before proceeding!**
-
-**⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
-
-#### 5A: 1-Level Structure (GitHub, Single Project, Multi-Repo without ADO/JIRA)
-
-**USE THIS WHEN**: `specweave context projects` returns `level: 1`
-
-**Examples of 1-level**:
-- GitHub sync profiles (each repo = project)
-- Single project mode
-- Umbrella repos WITHOUT multiple teams
-
-**Template Rules for 1-level:**
-- Each User Story has `**Project**:` field
-- **NO `**Board**:` field** - GitHub doesn't have boards!
-- User story IDs: `US-001`, `US-002` (or `US-API-001`, `US-WEB-001` for multi-repo)
-- AC-IDs: `AC-US1-01` (or `AC-API-US1-01` for multi-repo)
-
-**Example 1-level spec.md:**
-```markdown
-### US-API-001: Create Auth API
-**Project**: sw-content-repurposer-api
-
-**As a** frontend, I want auth endpoints...
-
-**Acceptance Criteria**:
-- [ ] **AC-API-US1-01**: POST /auth/login returns JWT
-```
-
-**⚠️ CRITICAL: Do NOT add `**Board**:` for 1-level structures!**
-
-#### 5B: 2-Level Structure (ADO Area Paths, JIRA Boards, Multi-Team Umbrella)
-
-**USE THIS WHEN**: `specweave context projects` returns `level: 2`
-
-**Examples of 2-level**:
-- ADO with `areaPathMapping`
-- JIRA with multiple `boardMapping.boards`
-- Umbrella repos with multiple teams
-
-**Template Rules for 2-level:**
-- Each User Story has BOTH `**Project**:` AND `**Board**:` fields
-- User story IDs: `US-FE-001`, `US-BE-001` (with project prefix)
-- AC-IDs: `AC-FE-US1-01`, `AC-BE-US1-01` (with project prefix)
-
-**Example 2-level spec.md:**
-```markdown
-### US-FE-001: Create Login Form
-**Project**: acme-corp
-**Board**: frontend-team
-
-**As a** user, I want a login form...
-
-**Acceptance Criteria**:
-- [ ] **AC-FE-US1-01**: Login form displays email/password fields
-```
-
-**Key Rules for spec.md (per ADR-0140):**
-1. **`project:` field REMOVED from YAML frontmatter** - now resolved from per-US fields
-2. **`board:` field REMOVED from YAML frontmatter** (2-level) - now in per-US fields
-3. **Each User Story MUST have `**Project**:` field** - source of truth for project
-4. **Each User Story (2-level ONLY) MUST have `**Board**:` field** - source of truth for board
-
-**⚠️ VALIDATION RULES:**
-```
-✅ 1-level: **Project**: required, NO **Board**:
-✅ 2-level: **Project**: AND **Board**: both required
-❌ FORBIDDEN: **Board**: on 1-level structure → hook will BLOCK
-❌ FORBIDDEN: Missing **Board**: on 2-level → sync will fail
-❌ FORBIDDEN: Unresolved placeholders like {{PROJECT_ID}}
-```
-
-### STEP 6: Create plan.md Template (OPTIONAL)
-
-Create `.specweave/increments/0021-feature-name/plan.md`:
-
-**Template File**: `templates/plan.md`
-
-Replace `{{FEATURE_TITLE}}` placeholder. plan.md is OPTIONAL - create only for complex features with architecture decisions.
-
-### STEP 7: Create tasks.md Template
-
-Create `.specweave/increments/0021-feature-name/tasks.md`:
-
-**⚠️ IMPORTANT: Use the correct template based on STEP 0A testMode detection!**
-
-#### 7-TDD: TDD Mode Template (testMode: "TDD")
-
-**Template File**: `templates/tasks-tdd-single-project.md`
-
-Use this when `$TASK_TEMPLATE = "tasks-tdd-single-project.md"` (set in STEP 0A).
-
-This template generates tasks in RED-GREEN-REFACTOR triplets:
-- T-001 [RED]: Write failing test
-- T-002 [GREEN]: Implement to pass test (depends on T-001)
-- T-003 [REFACTOR]: Improve code quality (depends on T-002)
-
-**Dependency markers are CRITICAL** - they enable TDD enforcement hooks.
-
-#### 7A: Single-Project Template (Standard)
-
-**Template File**: `templates/tasks-single-project.md`
-
-Use this when `testMode != "TDD"` (default for most user projects).
-Replace `{{FEATURE_TITLE}}` placeholder.
-
-#### 7B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
-
-**Template File**: `templates/tasks-multi-project.md`
-
-Replace placeholders: `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}`
-
-**Key Rules for Multi-Project tasks.md:**
-1. **Tasks MUST reference project-scoped user stories**: `US-FE-001`, `US-BE-001`
-2. **Tasks MUST reference project-scoped ACs**: `AC-FE-US1-01`, `AC-BE-US1-01`
-3. **Group tasks by project/phase** (Shared first, then BE, then FE)
-4. **Test file paths MUST include project folder**: `sw-app-be/tests/`, `sw-app-fe/tests/`
-5. **Dependencies between projects should be explicit**
-
-### STEP 8: Guide User to Complete Planning
+### STEP 5: Guide User to Complete Planning
 
 **Output this guidance to user**:
 
@@ -1193,7 +1185,7 @@ Replace placeholders: `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID
 
 **DO NOT invoke Task() tool to spawn agents from this skill!**
 
-### STEP 9: Trigger Living Docs & External Tool Sync
+### STEP 6: Trigger Living Docs & External Tool Sync
 
 **🔄 CRITICAL: After increment files are created, trigger sync to living docs AND external tools!**
 
