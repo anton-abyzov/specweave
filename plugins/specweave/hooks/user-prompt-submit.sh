@@ -318,11 +318,40 @@ Task({
                   fi
                 fi
 
+                # v1.0.160: Check if mandatory increment creation is enabled
+                INCREMENT_MANDATORY=false
+                if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+                  MANDATORY_VALUE=$(jq -r '.incrementAssist.mandatory // false' "$CONFIG_PATH" 2>/dev/null)
+                  [[ "$MANDATORY_VALUE" == "true" ]] && INCREMENT_MANDATORY=true
+                fi
+
                 case "$INC_ACTION" in
                   new)
                     CMD="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
-                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
+
+                    # v1.0.160: MANDATORY mode - stronger directive + block decision
+                    if [[ "$INCREMENT_MANDATORY" == "true" ]] || (( $(echo "$INC_CONF >= 0.85" | bc -l 2>/dev/null || echo 0) )); then
+                      MSG="${AUTOLOAD_PREFIX}🚫 **MANDATORY: Create Increment First**
+
+This is a feature/implementation request. SpecWeave requires creating an increment BEFORE implementation.
+
+**YOU MUST RUN THIS COMMAND NOW:**
+\`\`\`
+$CMD
+\`\`\`
+
+⚠️ **DO NOT skip this step.** Do NOT proceed with implementation without an increment.
+
+*Detection: ${INC_REASON}* (confidence: ${INC_CONF})${AGENT_DIRECTIVE}
+
+---
+
+*Configure: \`incrementAssist.mandatory: false\` to make this advisory*"
+                      jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                      exit 0
+                    else
+                      MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
 
 Consider creating an increment first:
 \`\`\`
@@ -334,8 +363,9 @@ $CMD
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
-                    exit 0
+                      jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                      exit 0
+                    fi
                     ;;
 
                   hotfix)
@@ -636,22 +666,38 @@ if [[ -d ".specweave" ]]; then
     ENFORCEMENT_DESC="warns but allows"
     [[ "$TDD_ENFORCEMENT" == "strict" ]] && ENFORCEMENT_DESC="BLOCKS violations"
 
-    TDD_MSG="🔴 **TDD MODE ACTIVE** (source: ${TDD_SOURCE}, enforcement: ${TDD_ENFORCEMENT})
+    # v1.0.160: STRICT TDD adds mandatory blocking directive
+    if [[ "$TDD_ENFORCEMENT" == "strict" ]]; then
+      TDD_MSG="🚫 **STRICT TDD MODE - MANDATORY ENFORCEMENT**
 
-**MANDATORY RED→GREEN→REFACTOR WORKFLOW:**
-1. **[RED]** Write failing test FIRST - verify it fails
-2. **[GREEN]** Write MINIMAL code to pass - no extra features
-3. **[REFACTOR]** Improve code quality - keep tests green
+⚠️ **YOU MUST FOLLOW RED→GREEN→REFACTOR OR YOUR CHANGES WILL BE REJECTED**
 
-**RULES:**
-- Cannot complete [GREEN] task before its [RED] counterpart
-- Cannot complete [REFACTOR] before [GREEN]
-- Enforcement: ${TDD_ENFORCEMENT} (${ENFORCEMENT_DESC})
+**MANDATORY WORKFLOW (NO EXCEPTIONS):**
+1. **[RED]** Write failing test FIRST → Run test → Verify it FAILS
+2. **[GREEN]** Write MINIMAL code to pass → Run test → Verify it PASSES
+3. **[REFACTOR]** Improve code quality → Tests must stay green
+
+**STRICT RULES - VIOLATIONS ARE BLOCKED:**
+- ❌ CANNOT write implementation before test exists
+- ❌ CANNOT mark [GREEN] task complete before [RED] is done
+- ❌ CANNOT skip the test-failure verification step
+- ❌ CANNOT implement features without corresponding tests
+
+**BEFORE ANY IMPLEMENTATION:**
+1. Find or create the [RED] test task
+2. Write the test
+3. Run the test and confirm it FAILS
+4. Only THEN proceed to [GREEN] implementation
+
+**COMMANDS:** Use \`/sw:tdd-cycle\` for guided workflow
+
+---
 
 **COMMANDS:** \`/sw:tdd-cycle\` for guided workflow | \`/sw:tdd-red\`, \`/sw:tdd-green\`, \`/sw:tdd-refactor\` for phases
 
 ---
 "
+    fi
 
     # Append to existing message or set as new
     if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
