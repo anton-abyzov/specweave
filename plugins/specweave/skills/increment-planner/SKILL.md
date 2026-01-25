@@ -12,7 +12,9 @@ model: opus
 
 **Self-contained increment planning that works in ANY user project after `specweave init`.**
 
-**Usage**: Either call `/sw:increment` command (recommended) or invoke this skill directly via `Skill({ skill: "increment-planner" })`.
+**Usage**: Either call `/sw:increment` command (recommended) or invoke this skill directly via `Skill({ skill: "sw:increment-planner" })`.
+
+> **IMPORTANT**: The skill name MUST include the `sw:` prefix since it's in the `specweave` plugin (marketplace name: `sw`). Using just `increment-planner` without the prefix will fail with "Unknown skill".
 
 ---
 

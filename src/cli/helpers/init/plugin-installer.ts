@@ -26,7 +26,7 @@ const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_RE
 export interface PluginInstallOptions {
   dirname: string;
   forceRefresh?: boolean;
-  /** Install only router skill (lazy mode) - default true */
+  /** Lazy mode (default true) - install only core plugin, load others on-demand */
   lazyMode?: boolean;
 }
 
@@ -45,8 +45,9 @@ export interface PluginInstallResult {
 /**
  * Install SpecWeave plugins via Claude CLI
  *
- * By default (lazyMode=true), only the router skill is installed.
- * Full plugins are cached for on-demand loading based on keywords.
+ * By default (lazyMode=true), only the core plugin (sw) is installed.
+ * Other plugins are loaded on-demand based on keywords detected by
+ * the detect-intent command in the user-prompt-submit hook.
  *
  * With lazyMode=false, all plugins are installed (legacy behavior).
  *
@@ -577,12 +578,15 @@ function getPluginVersion(pluginName: string): string {
 }
 
 /**
- * Install in lazy mode - router skill only, cache the rest
+ * Install in lazy mode - core plugin only, load others on-demand
  *
  * This function:
  * 1. Populates the skills cache from marketplace
- * 2. Installs ONLY the router skill to active directory
- * 3. Other plugins are loaded on-demand based on keywords
+ * 2. Installs ONLY the core plugin (sw) providing /sw:increment, /sw:do, etc.
+ * 3. Other plugins are loaded on-demand via detect-intent (user-prompt-submit hook)
+ *
+ * NOTE: sw-router is OBSOLETE as of v1.0.160. The detect-intent command
+ * in user-prompt-submit.sh now handles plugin detection via LLM.
  */
 async function installLazyMode(
   allPlugins: Array<{ name: string }>,
@@ -604,11 +608,9 @@ async function installLazyMode(
     spinner.succeed(`Cached ${cacheResult.pluginsAffected} plugins`);
   }
 
-  // Step 2: Install router skill AND core plugin
-  // Both are essential for basic SpecWeave functionality:
-  // - Router: spawns specialized agents for tasks
-  // - Core (sw): provides /sw:increment, /sw:do, /sw:done, etc.
-  const routerPlugin = allPlugins.find(p => p.name === 'sw-router');
+  // Step 2: Install core plugin only
+  // Core (sw) provides /sw:increment, /sw:do, /sw:done, etc.
+  // NOTE: sw-router is OBSOLETE - detect-intent now handles plugin detection
   const corePlugin = allPlugins.find(p => p.name === 'sw');
 
   let installedCount = 0;
@@ -641,41 +643,13 @@ async function installLazyMode(
     spinner.warn('Core plugin (sw) not found in marketplace');
   }
 
-  // Install router skill
-  if (routerPlugin) {
-    spinner.start('Installing router skill...');
-
-    // Use marketplace name 'sw-router' (not directory name 'specweave-router')
-    const installResult = await cacheManager.installPlugins({
-      plugins: ['sw-router'],
-      force: false,
-    });
-
-    if (installResult.success && installResult.pluginsAffected > 0) {
-      spinner.succeed('sw-router installed');
-      installedCount++;
-    } else {
-      // Fall back to CLI-based install
-      const cliResult = await installPluginsWithRetry([routerPlugin], spinner);
-
-      if (cliResult.successCount > 0) {
-        installedCount++;
-      } else {
-        spinner.warn('Could not install router skill');
-        console.log(chalk.yellow('   → Install manually: /plugin install sw-router@specweave'));
-      }
-    }
-  } else {
-    spinner.warn('Router skill not found in marketplace');
-  }
-
   // Step 3: Show lazy loading explanation
   console.log('');
   console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
   console.log('');
   console.log(chalk.cyan('How it works:'));
-  console.log(chalk.gray('   • Core plugin (sw) + router (~1K tokens) loaded initially'));
-  console.log(chalk.gray('   • Domain plugins loaded on-demand based on keywords'));
+  console.log(chalk.gray('   • Core plugin (sw) loaded initially (~3K tokens)'));
+  console.log(chalk.gray('   • Domain plugins detected & loaded on-demand via LLM'));
   console.log(chalk.gray('   • Claude Code hot-reloads skills within seconds'));
   console.log('');
   console.log(chalk.cyan('Trigger keywords:'));
@@ -694,7 +668,7 @@ async function installLazyMode(
   return {
     success: installedCount > 0,
     successCount: installedCount,
-    failCount: (corePlugin ? 1 : 0) + (routerPlugin ? 1 : 0) - installedCount,
+    failCount: (corePlugin ? 1 : 0) - installedCount,
     failedPlugins: [],
     marketplaceOnly: false,
   };

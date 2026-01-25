@@ -4,25 +4,26 @@
  *
  * Automates the complete marketplace refresh process with LAZY LOADING support:
  * 1. Updates or adds marketplace (GitHub or local)
- * 2. Installs router plugin only (default) OR all plugins (--all)
+ * 2. Installs core plugin (sw) only (default) OR all plugins (--all)
  * 3. Populates lazy loading cache for on-demand plugin loading
  * 4. Merges skill memories (preserves user learnings)
  * 5. Updates instruction files (CLAUDE.md, AGENTS.md)
  *
- * LAZY LOADING (default - v1.0.122+):
- *   - Installs only `specweave-router` plugin (~500 tokens)
- *   - Other plugins load on-demand directly from marketplace
+ * LAZY LOADING (default - v1.0.160+):
+ *   - Installs only core `sw` plugin (~3K tokens)
+ *   - Other plugins detected & loaded on-demand via LLM (detect-intent)
  *   - No intermediate cache needed (marketplace IS the cache!)
  *   - Result: ~5K tokens at startup instead of ~60K (90% savings!)
+ *   - NOTE: sw-router is OBSOLETE - detect-intent handles plugin detection
  *
  * MINIMAL MODE (--minimal):
  *   - Removes specweave marketplace entirely
- *   - Installs only core plugins (sw, sw-router)
+ *   - Installs only core plugin (sw)
  *   - Clean /plugin output (only shows installed plugins)
  *   - Tradeoff: Lazy loading disabled (use --all to reinstall all)
  *
  * Usage:
- *   specweave refresh-marketplace           # Lazy mode (default) - router only
+ *   specweave refresh-marketplace           # Lazy mode (default) - core only
  *   specweave refresh-marketplace --all     # Legacy mode - install all plugins
  *   specweave refresh-marketplace --minimal # Minimal mode - clean /plugin output
  *   specweave refresh-marketplace --local   # Use local dev version
@@ -586,7 +587,7 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
 
   console.log(chalk.yellow('⚠️  Minimal mode:'));
   console.log(chalk.gray('   • Removes specweave marketplace entirely'));
-  console.log(chalk.gray('   • Installs only core plugins (sw, sw-router)'));
+  console.log(chalk.gray('   • Installs only core plugin (sw)'));
   console.log(chalk.gray('   • /plugin will show only installed plugins'));
   console.log(chalk.gray('   • Lazy loading will NOT work (use --all to reload)\n'));
 
@@ -714,8 +715,8 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
     process.exit(1);
   }
 
-  // Install core plugins
-  const corePlugins = ['sw', 'sw-router'];
+  // Install core plugin only (sw-router is obsolete as of v1.0.160)
+  const corePlugins = ['sw'];
   let installedCount = 0;
 
   for (const plugin of corePlugins) {
@@ -778,7 +779,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   if (lazyMode) {
     console.log(chalk.cyan('🚀 Lazy loading mode (default):'));
-    console.log(chalk.gray('   • Install only router plugin (~500 tokens)'));
+    console.log(chalk.gray('   • Install only core plugin (~500 tokens)'));
     console.log(chalk.gray('   • Other plugins cached for on-demand loading'));
     console.log(chalk.gray('   • Use --all flag to install all plugins'));
     console.log(chalk.gray('   • Use --minimal flag for clean /plugin output (no lazy loading)\n'));
@@ -912,10 +913,9 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   const results: PluginResult[] = [];
 
   if (lazyMode) {
-    // LAZY MODE: Install only router plugin
-    // Note: Plugin name in marketplace.json is 'sw-router', folder name is 'specweave-router'
-    const routerPlugin = 'sw-router';
-    const corePlugins = ['sw', 'sw-router']; // Plugins to keep in lazy mode
+    // LAZY MODE: Install only core plugin (sw)
+    // NOTE: sw-router is OBSOLETE as of v1.0.160 - detect-intent handles plugin detection
+    const corePlugins = ['sw']; // Only core plugin kept in lazy mode
 
     // Step 3a: Uninstall non-core plugins to match fresh install state
     console.log(chalk.yellow('⚙️  Step 3a: Cleaning up non-core plugins...'));
@@ -943,7 +943,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     // Also clean up ~/.claude/skills/ directory for non-core plugins
     // (claude plugin uninstall may not always clean this up)
     const skillsDir = path.join(os.homedir(), '.claude', 'skills');
-    const coreSkillDirs = ['specweave', 'specweave-router']; // Folder names to keep
+    const coreSkillDirs = ['specweave']; // Only core plugin folder kept
 
     if (fs.existsSync(skillsDir)) {
       const skillDirs = fs.readdirSync(skillsDir).filter(name => {
@@ -972,7 +972,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     // CRITICAL: Also clean up ~/.claude/plugins/cache/specweave/ for non-core plugins
     // This is where Claude Code discovers plugins from, even if not "installed"
     const pluginCacheDir = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
-    const corePluginCacheDirs = ['sw', 'sw-router']; // Cache folder names to keep
+    const corePluginCacheDirs = ['sw']; // Only core plugin cache kept
 
     if (fs.existsSync(pluginCacheDir)) {
       const cacheDirs = fs.readdirSync(pluginCacheDir).filter(name => {
@@ -1004,7 +1004,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
     // Also clean up settings.json enabledPlugins for non-core specweave plugins
     const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
-    const coreEnabledPlugins = ['sw@specweave', 'sw-router@specweave'];
+    const coreEnabledPlugins = ['sw@specweave']; // Only core plugin enabled
 
     if (fs.existsSync(settingsPath)) {
       try {
@@ -1073,29 +1073,20 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
       console.log(chalk.green(`✓ No non-core plugins to disable\n`));
     }
 
-    // Step 3c: Install router
-    console.log(chalk.yellow(`⚙️  Step 3c: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));
+    // Step 3c: Install core plugin only (sw-router is obsolete - detect-intent handles routing)
+    console.log(chalk.yellow(`⚙️  Step 3c: Installing core plugin only${forceMode ? ' + force' : ''}...\n`));
 
-    if (plugins.includes(routerPlugin)) {
-      console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${routerPlugin}...`));
-      const result = installPlugin(routerPlugin, forceMode);
-      results.push(result);
+    const corePlugin = 'sw'; // Marketplace name for core specweave plugin
+    console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${corePlugin}...`));
+    const result = installPlugin(corePlugin, forceMode);
+    results.push(result);
 
-      if (result.success) {
-        console.log(chalk.green(`  ✓ ${routerPlugin} installed`));
-      } else {
-        console.log(chalk.red(`  ✗ ${routerPlugin} failed`));
-        if (options.verbose && result.error) {
-          console.log(chalk.gray(`    ${result.error}`));
-        }
-      }
+    if (result.success) {
+      console.log(chalk.green(`  ✓ ${corePlugin} (core) installed`));
     } else {
-      // Fallback: install core specweave plugin if router not found
-      console.log(chalk.yellow(`  ⚠ Router plugin not found, installing core specweave...`));
-      const result = installPlugin('specweave', forceMode);
-      results.push(result);
-      if (result.success) {
-        console.log(chalk.green(`  ✓ specweave (core) installed`));
+      console.log(chalk.red(`  ✗ ${corePlugin} failed`));
+      if (options.verbose && result.error) {
+        console.log(chalk.gray(`    ${result.error}`));
       }
     }
 
@@ -1105,12 +1096,12 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
     console.log(`  Total plugins available: ${plugins.length}`);
-    console.log(chalk.green(`  Installed now: 1 (router only)`));
+    console.log(chalk.green(`  Installed now: 1 (core only)`));
     console.log(chalk.cyan(`  Cached for on-demand: ${plugins.length - 1}`));
     console.log('');
     console.log(chalk.green('  💡 Token savings:'));
     console.log(chalk.gray(`     Before: ~60,000 tokens (all plugins)`));
-    console.log(chalk.gray(`     After:  ~500 tokens (router only)`));
+    console.log(chalk.gray(`     After:  ~500 tokens (core only)`));
     console.log(chalk.green(`     Saved:  ~59,500 tokens (99% reduction!)`));
 
   } else {

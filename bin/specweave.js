@@ -204,6 +204,7 @@ program
 program
   .command('init [project-name]')
   .description('Initialize a new SpecWeave project')
+  .option('-n, --name <name>', 'Project name (alternative to positional argument)')
   .option('-t, --template <type>', 'Project template (saas, api, fullstack)', 'saas')
   .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
   .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
@@ -213,9 +214,16 @@ program
   .option('--no-living-docs', 'Skip living docs builder setup')
   .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
   .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
+  .option('--non-interactive', 'Alias for --quick (skip all prompts)')
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/src/cli/commands/init.js');
-    await initCommand(projectName, options);
+    // Support --name as alternative to positional argument
+    const resolvedName = projectName || options.name;
+    // Support --non-interactive as alias for --quick
+    if (options.nonInteractive) {
+      options.quick = true;
+    }
+    await initCommand(resolvedName, options);
   });
 
 // Increment commands (TODO: Implement in future versions)

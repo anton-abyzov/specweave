@@ -1,6 +1,6 @@
-<!-- SW:META template="claude" version="1.0.158" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.159" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.158" -->
+<!-- SW:SECTION:header version="1.0.159" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -58,17 +58,17 @@ plugins/specweave/
 **Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
 <!-- SW:END:claude-code-concepts -->
 
-<!-- SW:SECTION:start version="1.0.158" -->
+<!-- SW:SECTION:start version="1.0.159" -->
 ## Getting Started
 
-**Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
+**Initial increment**: `XXXX-project-setup` (auto-created by `specweave init`, where XXXX is next available ID)
 
 **Options**:
-1. **Start fresh**: `rm -rf .specweave/increments/0001-project-setup` → `/sw:increment "your-feature"`
+1. **Start fresh**: Delete the project-setup increment → `/sw:increment "your-feature"`
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.158" -->
+<!-- SW:SECTION:autodetect version="1.0.159" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -78,7 +78,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.158" -->
+<!-- SW:SECTION:metarule version="1.0.159" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -89,18 +89,18 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.158" -->
+<!-- SW:SECTION:rules version="1.0.159" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
-3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
+3. **Unique IDs**: IDs MUST be unique across BOTH active AND _archive folders. Use `IncrementNumberManager.getNextIncrementNumber()` which scans all directories.
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.158" -->
+<!-- SW:SECTION:workflow version="1.0.159" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -120,7 +120,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.158" -->
+<!-- SW:SECTION:reflect version="1.0.159" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -133,7 +133,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-<!-- SW:SECTION:context version="1.0.158" -->
+<!-- SW:SECTION:context version="1.0.159" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -141,7 +141,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.158" -->
+<!-- SW:SECTION:structure version="1.0.159" -->
 ## Structure
 
 ```
@@ -156,7 +156,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.158" -->
+<!-- SW:SECTION:taskformat version="1.0.159" -->
 ## Task Format
 
 ```markdown
@@ -166,7 +166,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.158" -->
+<!-- SW:SECTION:secrets version="1.0.159" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -180,7 +180,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.158" -->
+<!-- SW:SECTION:syncing version="1.0.159" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -190,7 +190,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.158" -->
+<!-- SW:SECTION:testing version="1.0.159" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -202,10 +202,21 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.158" -->
+<!-- SW:SECTION:tdd version="1.0.159" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
+
+### Settings Confusion Alert
+
+**These are DIFFERENT settings:**
+
+| Setting | Purpose | NOT the same as |
+|---------|---------|-----------------|
+| `testing.defaultTestMode: "TDD"` | **TDD WORKFLOW** - RED-GREEN-REFACTOR discipline | `auto.requireTests` |
+| `auto.requireTests: true` | **COMPLETION GATE** - Tests must pass to close | TDD mode |
+
+`auto.requireTests: false` does NOT mean TDD is disabled - check `testing.defaultTestMode`!
 
 ### TDD Workflow (MANDATORY when configured)
 
@@ -263,7 +274,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.158" -->
+<!-- SW:SECTION:api version="1.0.159" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -271,13 +282,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.158" -->
+<!-- SW:SECTION:limits version="1.0.159" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.158" -->
+<!-- SW:SECTION:troubleshooting version="1.0.159" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -293,7 +304,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.158" -->
+<!-- SW:SECTION:lazyloading version="1.0.159" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -307,7 +318,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.158" -->
+<!-- SW:SECTION:principles version="1.0.159" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -316,7 +327,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.158" -->
+<!-- SW:SECTION:linking version="1.0.159" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -324,7 +335,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.158" -->
+<!-- SW:SECTION:mcp version="1.0.159" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -346,7 +357,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.158" -->
+<!-- SW:SECTION:auto version="1.0.159" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -363,7 +374,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.158" -->
+<!-- SW:SECTION:docs version="1.0.159" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
@@ -505,6 +516,30 @@ claude -p "Say hello" --model haiku --setting-sources ""
 
 **Files using this pattern:**
 - `src/core/lazy-loading/llm-plugin-detector.ts` - Plugin detection via CLI
+
+### 10. Increment ID Collision Prevention (v1.0.160)
+
+**⚠️ Increment IDs MUST be unique across BOTH active AND _archive folders!**
+
+**Root Cause**: Archived increments retain their IDs (e.g., `0001-core-framework` in `_archive/`). Creating a new increment with the same base number causes structural violations.
+
+**Symptoms:**
+- Two increments with same number (e.g., `0001-project-setup` active + `0001-core-framework` archived)
+- GitHub sync confusion (which 0001 is which?)
+- Feature ID collisions in living docs
+
+**Solution - ALWAYS use IncrementNumberManager:**
+```typescript
+// ✅ CORRECT: Scans all folders (active, _archive, _abandoned, _paused)
+const nextId = IncrementNumberManager.getNextIncrementNumber(projectRoot);
+
+// ❌ WRONG: Hardcoding IDs
+const incrementId = '0001-project-setup';  // May collide with archived!
+```
+
+**Files using this pattern:**
+- `src/core/increment/increment-utils.ts` - `getAllIncrementNumbers()` scans all directories
+- `src/cli/helpers/init/initial-increment-generator.ts` - Uses IncrementNumberManager (fixed v1.0.160)
 
 ---
 

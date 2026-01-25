@@ -8,17 +8,6 @@
   },
   "plugins": [
     {
-      "name": "sw-router",
-      "description": "ACTIVE router - spawns specialized agents for React/frontend (sw-frontend), GitHub (sw-github), TDD/testing (sw-testing), K8s/DevOps (sw-infra), ML/AI (sw-ml), mobile (sw-mobile), payments (sw-payments). MANDATORY agent spawning for domain tasks.",
-      "source": "./plugins/specweave-router",
-      "category": "development",
-      "version": "1.0.1",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw",
       "description": "SpecWeave framework - increment lifecycle, living docs, PM-led planning",
       "source": "./plugins/specweave",
