@@ -62,7 +62,7 @@ echo "🔌 Test 3: Plugin Structure"
 echo "----------------------------"
 test_command "plugins/specweave/ exists" "test -d $PROJECT_ROOT/plugins/specweave"
 test_command "plugins/specweave/skills/ exists" "test -d $PROJECT_ROOT/plugins/specweave/skills"
-test_command "plugins/specweave/agents/ exists" "test -d $PROJECT_ROOT/plugins/specweave/agents"
+# NOTE: Agents are implemented as skills with context: fork (no separate agents/ directory)
 test_command "plugins/specweave/commands/ exists" "test -d $PROJECT_ROOT/plugins/specweave/commands"
 echo ""
 
