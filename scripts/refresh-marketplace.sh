@@ -242,17 +242,17 @@ echo ""
 
 # Step 3: Install plugins (LAZY or ALL mode)
 if [ "$LAZY_MODE" = true ]; then
-  # LAZY MODE: Install core + router plugins (essential pair)
-  echo -e "${YELLOW}⚙️  Step 3: Installing essential plugins (lazy mode)...${NC}"
+  # LAZY MODE: Install core plugin only (sw-router is OBSOLETE as of v1.0.160)
+  echo -e "${YELLOW}⚙️  Step 3: Installing core plugin (lazy mode)...${NC}"
   echo ""
 
   CORE_PLUGIN="sw"          # Core SpecWeave commands (/sw:increment, /sw:do, /sw:done)
-  ROUTER_PLUGIN="sw-router"  # Agent routing for dev tasks
+  # NOTE: sw-router is OBSOLETE - detect-intent now handles plugin detection via LLM
   SUCCESS_COUNT=0
   FAIL_COUNT=0
   FAILED_PLUGINS=()
 
-  # 1. Install CORE plugin (provides /sw:increment, /sw:do, /sw:done etc.)
+  # Install CORE plugin (provides /sw:increment, /sw:do, /sw:done etc.)
   echo -e "${BLUE}  Installing $CORE_PLUGIN (core commands)...${NC}"
   if claude plugin install "$CORE_PLUGIN" 2>&1 | grep -q "Successfully installed\|already installed"; then
     echo -e "${GREEN}  ✓ $CORE_PLUGIN installed${NC}"
@@ -262,21 +262,6 @@ if [ "$LAZY_MODE" = true ]; then
     ((FAIL_COUNT++))
     FAILED_PLUGINS+=("$CORE_PLUGIN")
   fi
-
-  # 2. Install ROUTER plugin (provides agent spawning for dev tasks)
-  if echo "$PLUGINS" | grep -q "$ROUTER_PLUGIN"; then
-    echo -e "${BLUE}  Installing $ROUTER_PLUGIN (agent routing)...${NC}"
-    if claude plugin install "$ROUTER_PLUGIN" 2>&1 | grep -q "Successfully installed\|already installed"; then
-      echo -e "${GREEN}  ✓ $ROUTER_PLUGIN installed${NC}"
-      ((SUCCESS_COUNT++))
-    else
-      echo -e "${RED}  ✗ $ROUTER_PLUGIN failed${NC}"
-      ((FAIL_COUNT++))
-      FAILED_PLUGINS+=("$ROUTER_PLUGIN")
-    fi
-  else
-    echo -e "${YELLOW}  ⚠ Router plugin not found in marketplace (optional)${NC}"
-  fi
   echo ""
 
   # Lazy mode summary
@@ -285,23 +270,22 @@ if [ "$LAZY_MODE" = true ]; then
   echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo -e "  Total plugins available: ${PLUGIN_COUNT}"
-  echo -e "  ${GREEN}Installed now: ${SUCCESS_COUNT} (core + router)${NC}"
+  echo -e "  ${GREEN}Installed now: ${SUCCESS_COUNT} (core only)${NC}"
   echo -e "  ${BLUE}Available for on-demand: $((PLUGIN_COUNT - SUCCESS_COUNT))${NC}"
   echo ""
   echo -e "${GREEN}  💡 Token savings:${NC}"
   echo -e "${BLUE}     Before: ~60,000 tokens (all 24 plugins)${NC}"
-  echo -e "${BLUE}     After:  ~3,000 tokens (core + router)${NC}"
+  echo -e "${BLUE}     After:  ~3,000 tokens (core only)${NC}"
   echo -e "${GREEN}     Saved:  ~57,000 tokens (95% reduction!)${NC}"
   echo ""
   echo -e "${BLUE}  📚 What's installed:${NC}"
   echo -e "${BLUE}     • sw (core): /sw:increment, /sw:do, /sw:done${NC}"
-  echo -e "${BLUE}     • sw-router: Agent spawning for dev tasks${NC}"
   echo ""
   echo -e "${BLUE}  📚 How lazy loading works:${NC}"
-  echo -e "${BLUE}     • Router detects keywords in your prompts${NC}"
-  echo -e "${BLUE}     • Spawns specialized agents for the task${NC}"
-  echo -e "${BLUE}     • \"React dashboard\" → sw-frontend agent${NC}"
-  echo -e "${BLUE}     • \"GitHub sync\" → sw-github agent${NC}"
+  echo -e "${BLUE}     • detect-intent analyzes prompts via LLM${NC}"
+  echo -e "${BLUE}     • Installs needed plugins automatically${NC}"
+  echo -e "${BLUE}     • \"React dashboard\" → sw-frontend installed${NC}"
+  echo -e "${BLUE}     • \"GitHub sync\" → sw-github installed${NC}"
 
 else
   # ALL MODE: Install all plugins (legacy behavior)
@@ -421,9 +405,9 @@ echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo -e "  1. Restart Claude Code for changes to take effect"
 if [ "$LAZY_MODE" = true ]; then
-  echo -e "  2. Run ${YELLOW}/plugin${NC} to verify sw + sw-router loaded"
+  echo -e "  2. Run ${YELLOW}/plugin${NC} to verify sw core plugin loaded"
   echo -e "  3. Test: ${YELLOW}/sw:increment \"test feature\"${NC} (from core)"
-  echo -e "  4. Test: \"Build React dashboard\" → should spawn sw-frontend agent"
+  echo -e "  4. Test: \"Build React dashboard\" → detect-intent installs sw-frontend"
   echo -e "  5. Manual install: ${YELLOW}claude plugin install sw@specweave${NC}"
   echo -e "${BLUE}     Available: sw, sw-frontend, sw-github, sw-jira, sw-ml, sw-infra${NC}"
 else
