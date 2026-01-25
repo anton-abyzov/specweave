@@ -789,7 +789,7 @@ Which plugins should be loaded?`;
 
     // Find JSON object in the string
     const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    // Use keyword fallback if no JSON found (v1.0.153)
+    // v1.0.157+: Return failure if no JSON (no keyword fallback - LLM-only detection)
     if (!jsonMatch) {
       logger.debug(`Invalid LLM response format: ${output.slice(0, 200)}`);
       return createFailureResult(startTime, 'Invalid response format (no JSON found)');
@@ -939,7 +939,7 @@ Which plugins should be loaded?`;
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`LLM detection failed: ${errorMsg}`);
 
-    // Use keyword fallback on any exception (v1.0.153)
+    // v1.0.157+: Return failure on exception (no keyword fallback - LLM-only detection)
     return createFailureResult(startTime, `Detection failed: ${errorMsg}`);
   }
 }
