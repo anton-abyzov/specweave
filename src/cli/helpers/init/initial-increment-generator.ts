@@ -1,8 +1,12 @@
 /**
  * Initial Increment Generator
  *
- * Automatically creates increment 0001-project-setup during `specweave init`
+ * Automatically creates increment XXXX-project-setup during `specweave init`
  * so users have a valid starting point to work from.
+ *
+ * CRITICAL FIX (v1.0.160): Uses IncrementNumberManager.getNextIncrementNumber()
+ * to prevent ID collision with archived increments. Previously hardcoded to 0001
+ * which caused duplicate ID violations when 0001 existed in _archive.
  *
  * Part of: Empty increments folder fix (2025-11-19)
  */
@@ -11,6 +15,7 @@ import * as fs from '../../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus, IncrementType, IncrementMetadata } from '../../../core/types/increment-metadata.js';
 import { MetadataManager } from '../../../core/increment/metadata-manager.js';
+import { IncrementNumberManager } from '../../../core/increment/increment-utils.js';
 import {
   detectMultiProjectMode,
   type MultiProjectDetectionResult,
@@ -25,19 +30,25 @@ export interface InitialIncrementOptions {
 }
 
 /**
- * Generate initial increment (0001-project-setup) during init
+ * Generate initial increment (XXXX-project-setup) during init
  *
  * Creates:
- * - .specweave/increments/0001-project-setup/
+ * - .specweave/increments/XXXX-project-setup/ (where XXXX is next available ID)
  * - spec.md (basic project setup requirements)
  * - plan.md (placeholder for implementation plan)
  * - tasks.md (initial setup tasks)
  * - metadata.json (ACTIVE status)
+ *
+ * Note: Uses IncrementNumberManager to get the next available ID,
+ * preventing collision with archived increments.
  */
 export async function generateInitialIncrement(options: InitialIncrementOptions): Promise<string> {
   const { projectPath, projectName, techStack, language = 'en' } = options;
 
-  const incrementId = '0001-project-setup';
+  // CRITICAL FIX (v1.0.160): Use IncrementNumberManager to get next available ID
+  // This prevents ID collision with archived increments (e.g., 0001-core-framework in _archive)
+  const nextNumber = IncrementNumberManager.getNextIncrementNumber(projectPath);
+  const incrementId = `${nextNumber}-project-setup`;
   const incrementPath = path.join(projectPath, '.specweave', 'increments', incrementId);
 
   // Read config to get testMode and coverageTarget defaults
@@ -78,15 +89,15 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
   MetadataManager.write(incrementId, metadata, projectPath);
 
   // Generate spec.md (now allowed - metadata.json exists)
-  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget, multiProjectDetection);
+  const specContent = generateSpecMd(incrementId, projectName, techStack, testMode, coverageTarget, multiProjectDetection);
   fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent, 'utf-8');
 
   // Generate plan.md
-  const planContent = generatePlanMd(projectName);
+  const planContent = generatePlanMd(incrementId, projectName);
   fs.writeFileSync(path.join(incrementPath, 'plan.md'), planContent, 'utf-8');
 
   // Generate tasks.md
-  const tasksContent = generateTasksMd(projectName, techStack);
+  const tasksContent = generateTasksMd(incrementId, projectName, techStack);
   fs.writeFileSync(path.join(incrementPath, 'tasks.md'), tasksContent, 'utf-8');
 
   return incrementId;
@@ -96,6 +107,7 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
  * Generate spec.md content
  */
 function generateSpecMd(
+  incrementId: string,
   projectName: string,
   techStack: string | undefined,
   testMode: 'TDD' | 'test-after' | 'manual',
@@ -110,7 +122,7 @@ function generateSpecMd(
   const projects = multiProjectDetection?.projects ?? [];
 
   // Generate frontmatter based on multi-project mode
-  const frontmatter = generateFrontmatter(testMode, coverageTarget, isMultiProject, projects);
+  const frontmatter = generateFrontmatter(incrementId, testMode, coverageTarget, isMultiProject, projects);
 
   // Generate user stories based on multi-project mode
   const userStoriesSection = isMultiProject && projects.length > 0
@@ -159,7 +171,7 @@ Everything else goes in subfolders:
 - \`docs/\` - Additional documentation
 
 You can also delete this increment if you prefer to start fresh:
-- Delete \`.specweave/increments/0001-project-setup/\`
+- Delete \`.specweave/increments/${incrementId}/\`
 - Create your first real increment with \`/sw:increment "my-feature"\`
 `;
 }
@@ -168,6 +180,7 @@ You can also delete this increment if you prefer to start fresh:
  * Generate YAML frontmatter for spec.md
  */
 function generateFrontmatter(
+  incrementId: string,
   testMode: 'TDD' | 'test-after' | 'manual',
   coverageTarget: number,
   isMultiProject: boolean,
@@ -176,7 +189,7 @@ function generateFrontmatter(
   const date = new Date().toISOString().split('T')[0];
 
   let yaml = `---
-increment: 0001-project-setup
+increment: ${incrementId}
 title: "Project Setup"
 type: feature
 priority: P0
@@ -288,9 +301,9 @@ function generateMultiProjectUserStories(projects: DetectedProject[]): string {
 /**
  * Generate plan.md content
  */
-function generatePlanMd(projectName: string): string {
+function generatePlanMd(incrementId: string, projectName: string): string {
   return `---
-increment: 0001-project-setup
+increment: ${incrementId}
 generated: ${new Date().toISOString()}
 ---
 
@@ -344,13 +357,13 @@ This is a placeholder plan created by \`specweave init\`.
 /**
  * Generate tasks.md content
  */
-function generateTasksMd(projectName: string, techStack?: string): string {
+function generateTasksMd(incrementId: string, projectName: string, techStack?: string): string {
   const techStackNote = techStack
     ? `\n**Tech Stack**: ${techStack}`
     : '';
 
   return `---
-increment: 0001-project-setup
+increment: ${incrementId}
 total_tasks: 1
 completed_tasks: 1
 ---
@@ -379,7 +392,7 @@ Ran \`specweave init\` to create project structure, install plugins, and configu
 1. ✅ Created .specweave/ directory with increments, docs folders
 2. ✅ Generated CLAUDE.md and AGENTS.md instruction files
 3. ✅ Initialized git repository
-4. ✅ Created this initial increment (0001-project-setup)
+4. ✅ Created this initial increment (${incrementId})
 
 **Test Plan**:
 - **Manual**: Verify \`/sw:status\` shows active increment
@@ -398,7 +411,7 @@ This initial increment is now **COMPLETE**. You have two options:
 ### Option 1: Start Fresh (Recommended)
 Delete this increment and create your first real feature:
 \`\`\`bash
-rm -rf .specweave/increments/0001-project-setup
+rm -rf .specweave/increments/${incrementId}
 /sw:increment "your-first-feature"
 \`\`\`
 

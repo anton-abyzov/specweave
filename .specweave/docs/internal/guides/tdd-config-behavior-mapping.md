@@ -1,11 +1,97 @@
 # TDD Configuration to Behavior Mapping
 
-**Last Updated**: 2026-01-23
+**Last Updated**: 2026-01-25
 **Related ADR**: [ADR-0228: TDD Configuration Enforcement Gap](../architecture/adr/0228-tdd-config-enforcement-gap.md)
 
 ## Overview
 
 This document maps TDD configuration settings to actual runtime behavior. Use this to understand what happens when you configure TDD mode.
+
+---
+
+## CRITICAL: Settings Confusion Clarification
+
+**These are TWO DIFFERENT settings with DIFFERENT purposes:**
+
+| Setting | Location | Type | Purpose |
+|---------|----------|------|---------|
+| `testing.defaultTestMode` | `testing` section | `"TDD"` \| `"test-first"` \| `"test-after"` | **TDD WORKFLOW MODE** - How tasks are structured and ordered |
+| `auto.requireTests` | `auto` section | Boolean | **COMPLETION GATE** - Whether tests must pass before auto-close |
+
+### `testing.defaultTestMode: "TDD"` (TDD Workflow)
+
+**What it does:**
+- Tasks generated as `[RED]` → `[GREEN]` → `[REFACTOR]` triplets
+- TDD discipline enforced (write tests FIRST)
+- Phase markers in tasks.md: `[RED]`, `[GREEN]`, `[REFACTOR]`
+- Dependency links between phases (GREEN depends on RED)
+- `/sw:do` and `/sw:auto` check order enforcement
+
+**Example config:**
+```json
+{
+  "testing": {
+    "defaultTestMode": "TDD",
+    "tddEnforcement": "strict"
+  }
+}
+```
+
+### `auto.requireTests` (Completion Gate)
+
+**What it does:**
+- In AUTO mode, tests MUST pass before task is marked complete
+- Does NOT change task structure
+- Does NOT enforce TDD order
+- Simply: "run tests before done" - nothing more
+
+**Example config:**
+```json
+{
+  "auto": {
+    "enabled": true,
+    "requireTests": true
+  }
+}
+```
+
+### Common Confusion
+
+```json
+// ❌ THIS IS NOT TDD MODE!
+{
+  "auto": {
+    "requireTests": false
+  }
+}
+// This just means tests don't need to pass for auto-close
+
+// ✅ THIS IS TDD MODE:
+{
+  "testing": {
+    "defaultTestMode": "TDD",
+    "tddEnforcement": "strict"
+  }
+}
+```
+
+### Combined Usage
+
+You can use BOTH settings together:
+
+```json
+{
+  "testing": {
+    "defaultTestMode": "TDD",      // TDD workflow (RED-GREEN-REFACTOR)
+    "tddEnforcement": "strict"
+  },
+  "auto": {
+    "requireTests": true           // Also require tests pass before auto-close
+  }
+}
+```
+
+---
 
 ## Configuration Location
 
@@ -352,6 +438,28 @@ Step 1.6 in `/sw:do` validates TDD order before allowing task completion.
 
 **Status**: Future work
 **Workaround**: Use `/sw:increment` which reads config and selects TDD task template
+
+### Gap 3: `TestMode` Type Duplication
+
+**Status**: Technical debt to fix
+**Issue**: The `TestMode` type is duplicated in 4 different files:
+
+```
+src/core/types/config.ts:152    export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
+src/core/tdd/types.ts:10        export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
+src/core/qa/coverage-validator.ts:21  export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
+src/cli/helpers/init/types.ts:133     export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
+```
+
+**Risk**: If one definition is updated, others may become out of sync.
+
+**Recommended Fix**:
+1. Designate `src/core/types/config.ts` as the canonical source
+2. Update other files to import from there:
+   ```typescript
+   import type { TestMode } from '../types/config.js';
+   ```
+3. Create a refactoring increment to consolidate
 
 ## References
 

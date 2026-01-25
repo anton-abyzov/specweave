@@ -252,10 +252,17 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                   # Build feedback message
                   if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                    # v1.0.155: Simple warning - Claude Code limitation, skills not available until new session
-                    AUTOLOAD_PLUGINS_MSG="🔌 **Plugins installed**: ${PLUGINS_INSTALLED}\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️ **NOTE**: Skills/agents from these plugins won't be available until you start a NEW Claude Code session.\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Tell the user to restart Claude Code to use ${PLUGINS_INSTALLED} skills.\\n"
+                    # v1.0.160: EMPHATIC restart warning - Claude MUST show this to user prominently!
+                    AUTOLOAD_PLUGINS_MSG="\\n════════════════════════════════════════════════════════════\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️  **PLUGINS INSTALLED - RESTART REQUIRED**\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}✅ Installed: ${PLUGINS_INSTALLED}\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**CRITICAL**: Skills/agents from these plugins are NOT available in this session!\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}📋 To use these plugins:\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   1. Start a NEW Claude Code session (Cmd+Shift+P → 'Claude: New Session')\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   2. Copy-paste your original prompt into the new session\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**INSTRUCTION TO CLAUDE**: You MUST display the above restart warning to the user IMMEDIATELY and prominently. Do NOT continue with the task until the user has restarted.\\n"
                   elif [[ -n "$PLUGINS_ALREADY" ]]; then
                     AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
                   fi
