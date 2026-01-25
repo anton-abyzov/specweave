@@ -109,7 +109,9 @@ if [ -f "$PENDING_FILE" ] && [ -s "$PENDING_FILE" ]; then
 fi
 
 # Process old-style .event files (migration path)
-for event_file in "$QUEUE_DIR"/*.event 2>/dev/null; do
+# Use nullglob to handle empty glob (no matching files)
+shopt -s nullglob
+for event_file in "$QUEUE_DIR"/*.event; do
     [ ! -f "$event_file" ] && continue
 
     # Extract increment ID from event
@@ -125,6 +127,7 @@ for event_file in "$QUEUE_DIR"/*.event 2>/dev/null; do
     # Mark for cleanup
     echo "$event_file" >> "$PROCESSED_FILE"
 done
+shopt -u nullglob  # Restore default glob behavior
 
 # ============================================================================
 # SYNC EACH INCREMENT (batched, deduplicated)
