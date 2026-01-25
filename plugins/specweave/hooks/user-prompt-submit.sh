@@ -178,8 +178,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
           # ONE LLM call for BOTH plugins and increment (using --file flag)
           if command -v timeout >/dev/null 2>&1; then
-            # v1.0.159: Increased timeout from 20s to 45s for haiku model + CLI startup time
-          DETECT_OUTPUT=$(timeout 45 specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
+            # v1.0.159: Reduced timeout to 15s with --setting-sources "" optimization
+            DETECT_OUTPUT=$(timeout 15 specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           else
             DETECT_OUTPUT=$(specweave detect-intent --file "$PROMPT_TMP_FILE" 2>/dev/null)
           fi

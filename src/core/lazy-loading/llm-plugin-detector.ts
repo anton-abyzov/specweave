@@ -689,7 +689,7 @@ function createFailureResult(
  */
 export async function detectPluginsViaLLM(
   userPrompt: string,
-  timeout: number = 45000 // v1.0.159: Increased from 20s to account for CLI startup + haiku API time
+  timeout: number = 15000 // v1.0.159: Reduced to 15s with --setting-sources "" optimization (CLI starts in <1s)
 ): Promise<LLMDetectionResult> {
   const startTime = performance.now();
 
@@ -718,11 +718,11 @@ User prompt to analyze:
 Which plugins should be loaded?`;
 
   try {
-    // Execute Claude CLI with Opus for maximum accuracy (v1.0.156: Opus understands necessary implications)
-    // Use --output-format json for faster response and --setting-sources user to skip project context
-    // v1.0.159: Use haiku for fast detection (5-7s vs 30+s for opus)
-    // The comprehensive prompt provides enough context for accurate detection
-    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', 'user'], timeout);
+    // Execute Claude CLI with haiku for fast detection
+    // v1.0.159: Use --setting-sources "" (empty) to skip ALL settings loading
+    // This reduces startup from ~50s to <1s by avoiding context cache loading
+    // The comprehensive prompt already contains all needed plugin knowledge
+    const result = executeClaudeCli(['-p', fullPrompt, '--model', 'haiku', '--output-format', 'json', '--setting-sources', ''], timeout);
 
     // Handle spawn errors - return failure (v1.0.157 - no fallback)
     if (result.error) {
