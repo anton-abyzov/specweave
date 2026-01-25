@@ -585,61 +585,52 @@ Task({
 })
 ```
 
-### ⚠️ MANDATORY Agent Usage Rules (v1.0.155)
+### ⚠️ Specialized Skills (v1.0.159)
 
-**When implementing code in these domains, you MUST spawn the specialized agent via Task tool:**
+**Domain skills auto-activate on keywords OR can be explicitly invoked via Skill tool:**
 
-| If task involves... | You MUST use | subagent_type |
-|---------------------|--------------|---------------|
-| React, Vue, Next.js, frontend | Task tool | `sw-frontend:frontend-architect:frontend-architect` |
-| Stripe, payments, checkout | Task tool | `sw-payments:payment-integration:payment-integration` |
-| Kubernetes, Helm, K8s | Task tool | `sw-k8s:kubernetes-architect:kubernetes-architect` |
-| Terraform, AWS, Docker | Task tool | `sw-infra:devops:devops` |
-| Database optimization | Task tool | `sw-backend:database-optimizer:database-optimizer` |
-| Playwright, Vitest, E2E tests | Task tool | `sw-testing:qa-engineer:qa-engineer` |
-| React Native, mobile | Task tool | `sw-mobile:mobile-architect:mobile-architect` |
-| ML, PyTorch, TensorFlow | Task tool | `sw-ml:ml-engineer:ml-engineer` |
+| Domain | Keywords That Activate | Explicit Invocation |
+|--------|------------------------|---------------------|
+| React, Vue, Next.js, frontend | "React", "frontend", "dashboard UI" | `/sw-frontend:frontend-architect` |
+| Stripe, payments, checkout | "Stripe", "payments", "checkout" | `/sw-payments:payment-integration` |
+| Kubernetes, Helm, K8s | "Kubernetes", "K8s", "Helm" | `/sw-k8s:kubernetes-architect` |
+| Terraform, AWS, Docker | "Terraform", "AWS", "infrastructure" | `/sw-infra:devops` |
+| Database optimization | "database", "SQL optimization" | `/sw-backend:database-optimizer` |
+| Playwright, E2E tests | "E2E", "Playwright", "QA" | `/sw-testing:qa-engineer` |
+| React Native, mobile | "React Native", "mobile app" | `/sw-mobile:mobile-architect` |
+| ML, PyTorch, TensorFlow | "ML", "machine learning" | `/sw-ml:ml-engineer` |
 
-**Why MANDATORY?**
-- Agents have deep domain knowledge and best practices
-- Agents produce higher quality, more maintainable code
-- Direct implementation without agents = suboptimal results
+**How Skills Work:**
+- Skills with `context: fork` run in isolated context (like subagents)
+- Auto-activate when Claude detects keywords in your prompt
+- OR explicitly invoke via Skill tool: `Skill({ skill: "sw-frontend:frontend-architect" })`
 
-**Example - You MUST do this:**
-```typescript
-// User asks: "Build React dashboard with Stripe"
-// You MUST spawn these agents:
-
-Task({
-  subagent_type: "sw-frontend:frontend-architect:frontend-architect",
-  prompt: "Build dashboard UI with sidebar, products page, orders page...",
-  description: "Dashboard UI"
-})
-
-Task({
-  subagent_type: "sw-payments:payment-integration:payment-integration",
-  prompt: "Build Stripe checkout with webhooks, success/cancel pages...",
-  description: "Stripe integration"
-})
+**Example - Skills auto-activate:**
+```
+User: "Build React dashboard with Stripe checkout"
+       ↓
+Claude detects: "React", "dashboard" → loads sw-frontend:frontend-architect
+Claude detects: "Stripe", "checkout" → loads sw-payments:payment-integration
+       ↓
+Skills provide specialized expertise automatically
 ```
 
-**NEVER do this:**
+**Explicit invocation (when auto-activation doesn't trigger):**
 ```typescript
-// ❌ WRONG: Direct implementation without agents
-Write({ file_path: "app/api/checkout/route.ts", content: "..." })
+Skill({ skill: "sw-frontend:frontend-architect", args: "Build dashboard with sidebar" })
+Skill({ skill: "sw-payments:payment-integration", args: "Stripe checkout flow" })
 ```
 
 ### When to Use What
 
-| Scenario | Use | Why |
-|----------|-----|-----|
+| Scenario | Approach | How |
+|----------|----------|-----|
 | Architecture decisions | Skills (auto) | Keywords trigger automatically |
 | Code review, security | Skills (auto) | Keywords trigger automatically |
-| **Implementation work** | **Agents (Task)** | **MANDATORY for quality** |
-| Complex K8s/infra | Agents (Task) | Needs isolated context |
-| Frontend architecture | Agents (Task) | Specialized plugin |
-| ML pipelines | Agents (Task) | Specialized plugin |
+| Implementation work | Skills (auto/explicit) | Auto-activates OR use Skill tool |
 | External syncs | Commands | Use `/sw-github:sync` etc. |
+| General exploration | Task tool | `subagent_type: "Explore"` |
+| Complex planning | Task tool | `subagent_type: "Plan"` |
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 

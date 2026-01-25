@@ -226,11 +226,19 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
+                    # v1.0.159: Determine marketplace based on plugin name
+                    # sw-* plugins → @specweave, others → @claude-plugins-official
+                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
+                      MARKETPLACE="specweave"
+                    else
+                      MARKETPLACE="claude-plugins-official"
+                    fi
+
                     # Sync install via claude CLI (triggers hot-reload)
                     if command -v timeout >/dev/null 2>&1; then
-                      OUT=$(timeout 5 claude plugin install "${plugin}@specweave" 2>&1) || true
+                      OUT=$(timeout 5 claude plugin install "${plugin}@${MARKETPLACE}" 2>&1) || true
                     else
-                      OUT=$(claude plugin install "${plugin}@specweave" 2>&1) || true
+                      OUT=$(claude plugin install "${plugin}@${MARKETPLACE}" 2>&1) || true
                     fi
 
                     if echo "$OUT" | grep -qi "already"; then
