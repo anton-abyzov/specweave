@@ -154,6 +154,19 @@ output_approve_with_context "$message"
 
 - **ADR-0049**: Claude Code Hook Schema Correction (PostToolUse hooks)
 - **File**: `plugins/specweave/hooks/user-prompt-submit.sh`
+- **E2E Tests**: `tests/integration/hooks/user-prompt-submit-additionalcontext-e2e.test.ts`
+
+---
+
+## Test Coverage
+
+E2E tests added in v1.0.167 verify:
+- JSON output format compliance with Claude Code schema
+- `hookSpecificOutput.additionalContext` used (NOT `systemMessage`)
+- Dynamic context generation (TDD mode, WIP limits, external folders)
+- Edge cases (special chars, long prompts, JSON-like content)
+
+Run tests: `npx vitest run tests/integration/hooks/user-prompt-submit-additionalcontext-e2e.test.ts`
 
 ---
 
@@ -162,3 +175,4 @@ output_approve_with_context "$message"
 1. **Always verify hook output format** against official Claude Code documentation
 2. **Test hook output end-to-end** - not just that it runs, but that Claude sees the content
 3. **Different hook events have different output schemas** - don't assume they're the same
+4. **Add E2E tests for dynamic hook output** - static tests (checking file contains strings) don't catch runtime issues
