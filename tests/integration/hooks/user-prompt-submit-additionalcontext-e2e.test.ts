@@ -12,72 +12,80 @@
  * @see ADR-0230 (UserPromptSubmit Hook additionalContext Fix)
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { execSync, spawnSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { spawnSync } from 'child_process';
+import path from 'path';
+import os from 'os';
+import * as fs from '../../../src/utils/fs-native.js';
+import { getCleanEnv } from '../../test-utils/clean-env.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+import { IncrementFactory } from '../test-utils/increment-factory.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
   const hookPath = path.join(
-    process.cwd(),
+    projectRoot,
     'plugins/specweave/hooks/user-prompt-submit.sh'
   );
 
   // Test directory for isolated execution
-  let testDir: string;
-  let originalCwd: string;
+  let testRoot: string;
+  let testCounter = 0;
 
-  beforeAll(() => {
-    originalCwd = process.cwd();
+  beforeEach(async () => {
+    testCounter++;
+    testRoot = path.join(
+      os.tmpdir(),
+      `hook-additionalcontext-e2e-${Date.now()}-${testCounter}-${Math.random().toString(36).substring(7)}`
+    );
 
     // Create isolated test directory with .specweave structure
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-hook-e2e-'));
-
-    // Create minimal .specweave structure
-    fs.mkdirSync(path.join(testDir, '.specweave', 'increments'), { recursive: true });
-    fs.mkdirSync(path.join(testDir, '.specweave', 'state'), { recursive: true });
-    fs.mkdirSync(path.join(testDir, '.specweave', 'logs'), { recursive: true });
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'increments'));
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'state'));
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'logs'));
 
     // Create minimal config.json
-    fs.writeFileSync(
-      path.join(testDir, '.specweave', 'config.json'),
-      JSON.stringify({
+    await fs.writeJSON(
+      path.join(testRoot, '.specweave', 'config.json'),
+      {
         pluginAutoLoad: { enabled: false }, // Disable LLM calls for test speed
         incrementAssist: { enabled: false },
         testing: { defaultTestMode: 'test-after' }
-      }, null, 2)
+      },
+      { spaces: 2 }
     );
+
+    // Mock process.cwd() to return testRoot for code under test
+    vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
   });
 
-  afterAll(() => {
-    process.chdir(originalCwd);
+  afterEach(async () => {
+    vi.restoreAllMocks();
     // Cleanup test directory
-    if (testDir && fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
+    if (testRoot && await fs.pathExists(testRoot)) {
+      await fs.remove(testRoot);
     }
   });
 
   /**
    * Helper: Execute hook with given prompt and return parsed output
+   * Uses getCleanEnv() to prevent debugger interference (VSCode, CI/CD)
    */
-  function executeHook(prompt: string, options: { cwd?: string; env?: Record<string, string> } = {}): {
+  function executeHook(prompt: string, options: { env?: Record<string, string> } = {}): {
     raw: string;
     parsed: unknown;
     exitCode: number;
   } {
-    const cwd = options.cwd || testDir;
+    // CRITICAL: Use getCleanEnv() to remove NODE_OPTIONS debugger flags
     const env = {
-      ...process.env,
+      ...getCleanEnv(),
       SPECWEAVE_DISABLE_AUTO_LOAD: '1', // Disable LLM detection
       SPECWEAVE_DISABLE_HOOKS: '0',
+      PWD: testRoot,
       ...options.env
     };
-
-    // Clean debugger env vars (VSCode debug mode fix)
-    delete env.NODE_OPTIONS;
-    delete env.NODE_INSPECT;
-    delete env.VSCODE_INSPECTOR_OPTIONS;
 
     const input = JSON.stringify({ prompt });
 
@@ -85,7 +93,7 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       const result = spawnSync('bash', [hookPath], {
         input,
         encoding: 'utf8',
-        cwd,
+        cwd: testRoot,
         env,
         timeout: 10000
       });
@@ -104,12 +112,34 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
         parsed,
         exitCode: result.status ?? -1
       };
-    } catch (error) {
+    } catch {
       return {
         raw: '',
         parsed: null,
         exitCode: -1
       };
+    }
+  }
+
+  /**
+   * Helper: Clean up all increments in test directory
+   */
+  async function cleanupIncrements(): Promise<void> {
+    const incrementsDir = path.join(testRoot, '.specweave', 'increments');
+    if (await fs.pathExists(incrementsDir)) {
+      const entries = await fs.readdir(incrementsDir);
+      for (const entry of entries) {
+        const entryPath = path.join(incrementsDir, entry);
+        const stat = await fs.stat(entryPath);
+        if (stat.isDirectory()) {
+          await fs.remove(entryPath);
+        }
+      }
+    }
+    // Also clear status cache
+    const statusCache = path.join(testRoot, '.specweave', 'state', 'status-line.json');
+    if (await fs.pathExists(statusCache)) {
+      await fs.remove(statusCache);
     }
   }
 
@@ -131,23 +161,18 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       });
     });
 
-    it('should use hookSpecificOutput wrapper for context injection', () => {
+    it('should use hookSpecificOutput wrapper for context injection', async () => {
       // Create an active increment to trigger context injection
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0001-test-feature');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0001-test-feature', status: 'active', type: 'feature' })
-      );
-      fs.writeFileSync(
-        path.join(incrementDir, 'tasks.md'),
-        '### T-001: Test task\n**Status**: [ ] pending'
-      );
+      await IncrementFactory.create(testRoot, '0001-test-feature', {
+        status: 'active',
+        title: 'Test Feature'
+      });
 
       // Create status-line.json cache
-      fs.writeFileSync(
-        path.join(testDir, '.specweave', 'state', 'status-line.json'),
-        JSON.stringify({ current: { total: 1, completed: 0 } })
+      await fs.writeJSON(
+        path.join(testRoot, '.specweave', 'state', 'status-line.json'),
+        { current: { total: 1, completed: 0 } },
+        { spaces: 2 }
       );
 
       const result = executeHook('/sw:status');
@@ -173,23 +198,19 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
   });
 
   describe('Dynamic Context Generation', () => {
-    it('should dynamically include active increment in context', () => {
-      // Setup active increment
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0002-dynamic-test');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0002-dynamic-test', status: 'active', type: 'feature' })
-      );
-      fs.writeFileSync(
-        path.join(incrementDir, 'tasks.md'),
-        '### T-001: First\n**Status**: [x] completed\n### T-002: Second\n**Status**: [ ] pending'
-      );
+    it('should dynamically include active increment in context', async () => {
+      // Setup active increment using IncrementFactory
+      await IncrementFactory.create(testRoot, '0002-dynamic-test', {
+        status: 'active',
+        title: 'Dynamic Test',
+        tasksComplete: false
+      });
 
       // Create status cache
-      fs.writeFileSync(
-        path.join(testDir, '.specweave', 'state', 'status-line.json'),
-        JSON.stringify({ current: { total: 2, completed: 1, acsTotal: 4, acsCompleted: 2 } })
+      await fs.writeJSON(
+        path.join(testRoot, '.specweave', 'state', 'status-line.json'),
+        { current: { total: 2, completed: 1, acsTotal: 4, acsCompleted: 2 } },
+        { spaces: 2 }
       );
 
       const result = executeHook('implement the feature');
@@ -205,18 +226,19 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       }
     });
 
-    it('should include TDD context when TDD mode is enabled', () => {
+    it('should include TDD context when TDD mode is enabled', async () => {
       // Enable TDD mode in config
-      fs.writeFileSync(
-        path.join(testDir, '.specweave', 'config.json'),
-        JSON.stringify({
+      await fs.writeJSON(
+        path.join(testRoot, '.specweave', 'config.json'),
+        {
           pluginAutoLoad: { enabled: false },
           incrementAssist: { enabled: false },
           testing: {
             defaultTestMode: 'TDD',
             tddEnforcement: 'strict'
           }
-        }, null, 2)
+        },
+        { spaces: 2 }
       );
 
       const result = executeHook('implement the feature');
@@ -229,28 +251,16 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       if (additionalContext) {
         expect(additionalContext).toMatch(/TDD|RED.*GREEN.*REFACTOR/i);
       }
-
-      // Restore config
-      fs.writeFileSync(
-        path.join(testDir, '.specweave', 'config.json'),
-        JSON.stringify({
-          pluginAutoLoad: { enabled: false },
-          incrementAssist: { enabled: false },
-          testing: { defaultTestMode: 'test-after' }
-        }, null, 2)
-      );
     });
   });
 
   describe('Claude Code Schema Compliance', () => {
-    it('should produce output matching Claude Code UserPromptSubmit schema', () => {
+    it('should produce output matching Claude Code UserPromptSubmit schema', async () => {
       // Setup increment for context
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0003-schema-test');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0003-schema-test', status: 'active', type: 'feature' })
-      );
+      await IncrementFactory.create(testRoot, '0003-schema-test', {
+        status: 'active',
+        title: 'Schema Test'
+      });
 
       const result = executeHook('/sw:progress');
 
@@ -274,18 +284,12 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       expect(isValidSimpleApprove || isValidBlock || isValidContextInjection).toBe(true);
     });
 
-    it('should properly escape special characters in additionalContext', () => {
-      // Create increment with special characters in name
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0004-special-chars');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0004-special-chars', status: 'active', type: 'feature' })
-      );
-      fs.writeFileSync(
-        path.join(incrementDir, 'tasks.md'),
-        '### T-001: Handle "quotes" and \\backslashes\n**Status**: [ ] pending'
-      );
+    it('should properly escape special characters in additionalContext', async () => {
+      // Create increment with special characters in title
+      await IncrementFactory.create(testRoot, '0004-special-chars', {
+        status: 'active',
+        title: 'Handle "quotes" and \\backslashes'
+      });
 
       const result = executeHook('/sw:status');
 
@@ -310,25 +314,26 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
   });
 
   describe('WIP Limit Context Injection', () => {
-    it('should inject WIP warning when creating increment at limit', () => {
+    it('should inject WIP warning when creating increment at limit', async () => {
       // Create multiple active increments to hit WIP limit
-      for (let i = 1; i <= 2; i++) {
-        const dir = path.join(testDir, '.specweave', 'increments', `000${i}-wip-test-${i}`);
-        fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(
-          path.join(dir, 'metadata.json'),
-          JSON.stringify({ id: `000${i}-wip-test-${i}`, status: 'active', type: 'feature' })
-        );
-      }
+      await IncrementFactory.create(testRoot, '0001-wip-test-1', {
+        status: 'active',
+        title: 'WIP Test 1'
+      });
+      await IncrementFactory.create(testRoot, '0002-wip-test-2', {
+        status: 'active',
+        title: 'WIP Test 2'
+      });
 
       // Set WIP limit to 1 in config
-      fs.writeFileSync(
-        path.join(testDir, '.specweave', 'config.json'),
-        JSON.stringify({
+      await fs.writeJSON(
+        path.join(testRoot, '.specweave', 'config.json'),
+        {
           pluginAutoLoad: { enabled: false },
           incrementAssist: { enabled: false },
           limits: { maxActiveIncrements: 1, hardCap: 3 }
-        }, null, 2)
+        },
+        { spaces: 2 }
       );
 
       const result = executeHook('/sw:increment "new feature"');
@@ -341,38 +346,15 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
       if (additionalContext) {
         expect(additionalContext).toMatch(/WIP|active increment/i);
       }
-
-      // Cleanup
-      for (let i = 1; i <= 2; i++) {
-        const dir = path.join(testDir, '.specweave', 'increments', `000${i}-wip-test-${i}`);
-        if (fs.existsSync(dir)) {
-          fs.rmSync(dir, { recursive: true, force: true });
-        }
-      }
     });
   });
 
   describe('External Folder Detection', () => {
-    it('should inject warning when external folder detected in prompt', () => {
+    it('should inject warning when external folder detected in prompt', async () => {
       // Clean up any leftover increments from previous tests
-      const incrementsDir = path.join(testDir, '.specweave', 'increments');
-      if (fs.existsSync(incrementsDir)) {
-        for (const entry of fs.readdirSync(incrementsDir)) {
-          const entryPath = path.join(incrementsDir, entry);
-          if (fs.statSync(entryPath).isDirectory()) {
-            fs.rmSync(entryPath, { recursive: true, force: true });
-          }
-        }
-      }
-
-      // Also clear the status cache
-      const statusCache = path.join(testDir, '.specweave', 'state', 'status-line.json');
-      if (fs.existsSync(statusCache)) {
-        fs.unlinkSync(statusCache);
-      }
+      await cleanupIncrements();
 
       // Use prompt that matches the regex pattern: (in|to|at|create)[[:space:]]+(~/|/Users/|...)
-      // Pattern expects direct "in ~/..." or "create ~/..." format
       const result = executeHook('create in ~/Projects/external-folder');
 
       expect(result.exitCode).toBe(0);
@@ -412,24 +394,13 @@ describe('UserPromptSubmit Hook - additionalContext E2E Integration', () => {
     });
   });
 
-  describe('Deep JSON Structure Validation (LOW priority fixes)', () => {
-    it('should produce syntactically valid JSON with complex content', () => {
-      // Create increment with complex content
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0010-json-test');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0010-json-test', status: 'active', type: 'feature' })
-      );
-      fs.writeFileSync(
-        path.join(incrementDir, 'tasks.md'),
-        `### T-001: Complex task with "quotes" and 'apostrophes'
-**Status**: [ ] pending
-Description includes:
-- Backslashes: \\path\\to\\file
-- Unicode: 日本語 émojis 🎉
-- Newlines and tabs`
-      );
+  describe('Deep JSON Structure Validation', () => {
+    it('should produce syntactically valid JSON with complex content', async () => {
+      // Create increment with complex content using IncrementFactory
+      await IncrementFactory.create(testRoot, '0010-json-test', {
+        status: 'active',
+        title: 'Complex task with "quotes" and émojis 🎉'
+      });
 
       const result = executeHook('/sw:status');
 
@@ -437,9 +408,6 @@ Description includes:
 
       // Must be valid JSON despite complex content
       expect(() => JSON.parse(result.raw)).not.toThrow();
-
-      // Cleanup
-      fs.rmSync(incrementDir, { recursive: true, force: true });
     });
 
     it('should handle empty prompts gracefully', () => {
@@ -467,14 +435,12 @@ Description includes:
       expect(() => JSON.parse(result.raw)).not.toThrow();
     });
 
-    it('should validate hookSpecificOutput structure when present', () => {
+    it('should validate hookSpecificOutput structure when present', async () => {
       // Create active increment to trigger context
-      const incrementDir = path.join(testDir, '.specweave', 'increments', '0011-struct-test');
-      fs.mkdirSync(incrementDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incrementDir, 'metadata.json'),
-        JSON.stringify({ id: '0011-struct-test', status: 'active', type: 'feature' })
-      );
+      await IncrementFactory.create(testRoot, '0011-struct-test', {
+        status: 'active',
+        title: 'Structure Test'
+      });
 
       const result = executeHook('/sw:progress');
 
@@ -498,9 +464,6 @@ Description includes:
           }
         }
       }
-
-      // Cleanup
-      fs.rmSync(incrementDir, { recursive: true, force: true });
     });
   });
 });
