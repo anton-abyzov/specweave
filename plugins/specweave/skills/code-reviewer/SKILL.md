@@ -1,19 +1,6 @@
 ---
 name: code-reviewer
-description: >-
-  Elite code review expert for comprehensive quality, security, and performance analysis. Use when
-  reviewing pull requests, code changes, or entire modules for quality issues. Use when conducting
-  security reviews to find vulnerabilities like OWASP Top 10 issues. Use when analyzing code for
-  performance bottlenecks, N+1 queries, or memory leaks. Use when checking adherence to SOLID
-  principles, clean code practices, or team coding standards. Use when running static analysis
-  with tools like SonarQube, CodeQL, Semgrep, or ESLint. Use when scanning dependencies for
-  vulnerabilities with npm audit, Snyk, or Dependabot. Use when reviewing database queries,
-  caching implementations, or API design patterns. Use when assessing test coverage, test quality,
-  or TDD compliance. Use when evaluating error handling, logging, or observability implementation.
-  Use when reviewing infrastructure code, Kubernetes manifests, or CI/CD pipelines. Use when the
-  user says "review my code", "check this PR", "code review", "security review", "is this code
-  good", or "find issues in this code". Provides structured feedback organized by severity with
-  specific actionable recommendations.
+description: Elite code review expert for quality, security, and maintainability analysis with AI-assisted review techniques. Use for PR reviews, security vulnerability detection, or code quality assessment. Covers static analysis, performance patterns, and best practices enforcement.
 model: opus
 ---
 

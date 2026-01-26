@@ -1,6 +1,6 @@
 ---
 name: tdd-workflow
-description: Test-Driven Development workflow coordinator. Detects TDD intent and offers guided red-green-refactor cycle. Activates for TDD, test-driven, red-green-refactor, write tests first, test-first development, Kent Beck, TDD cycle.
+description: Test-Driven Development discovery hub that detects TDD intent and guides the red-green-refactor cycle. Use when wanting to write tests first, implement TDD workflow, or learn test-first development practices. Routes to appropriate TDD commands (/sw:tdd-red, /sw:tdd-green, /sw:tdd-refactor).
 ---
 
 # TDD Workflow - Discovery & Coordination Skill

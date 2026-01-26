@@ -83,7 +83,7 @@ describe('CacheMetadataManager', () => {
         lastUpdated: '2026-01-07T20:00:00Z',
         checksums: {
           'scripts/reflect.sh': 'sha256-abc123',
-          'hooks/stop-dispatcher.sh': 'sha256-def456'
+          'hooks/stop-auto.sh': 'sha256-def456'
         }
       };
 

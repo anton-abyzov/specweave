@@ -1,6 +1,6 @@
 ---
 name: living-docs-navigator
-description: Navigate and load project living documentation for context. Provides a table of contents for specs, ADRs, architecture docs, and operations runbooks. Use when implementing features, making design decisions, or needing project context. Keywords - living docs, context, ADR, architecture, specs, documentation, project knowledge.
+description: Navigate and load project living documentation for context from .specweave/docs/internal/. Use when implementing features and needing project context, referencing ADRs for design decisions, or accessing specs and architecture docs. Provides table of contents for all documentation types.
 ---
 
 # Living Docs Navigator

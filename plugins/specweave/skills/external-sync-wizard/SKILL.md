@@ -1,6 +1,6 @@
 ---
 name: external-sync-wizard
-description: Expert guide for setting up bidirectional synchronization between SpecWeave and external tools (GitHub Issues, Jira Epics, Azure DevOps Work Items). Provides interactive setup wizards with sync direction options (bidirectional, export-only, import-only, manual). Activates for GitHub sync, Jira integration, Azure DevOps, ADO, external tool setup, issue tracking sync, sync configuration, bidirectional sync, import issues, export increments, sync direction, GitHub issues, Jira epics, work items, project management tools.
+description: Expert guide for setting up bidirectional sync between SpecWeave and GitHub Issues, JIRA, or Azure DevOps. Use when configuring external tool integration, mapping fields between systems, or troubleshooting sync issues. Covers webhook setup, authentication, and conflict resolution strategies.
 ---
 
 # External Sync Wizard Expert

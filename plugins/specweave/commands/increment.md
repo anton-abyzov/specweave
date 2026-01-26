@@ -1,6 +1,6 @@
 ---
 name: sw:increment
-description: Plan new Product Increment - PM-led process with pre-flight checks, WIP enforcement, and auto-closure.
+description: Plan new Product Increment. Use when starting new features, hotfixes, or development work that needs specification.
 hooks:
   PreToolUse:
     - matcher: Write

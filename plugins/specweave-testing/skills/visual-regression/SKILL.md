@@ -1,6 +1,6 @@
 ---
 name: visual-regression
-description: Visual regression testing expert using Playwright snapshots, Percy, Chromatic, BackstopJS, and pixel-diff analysis. Covers baseline management, responsive testing, cross-browser visual testing, component visual testing, and CI integration. Activates for visual regression, screenshot testing, visual diff, Percy, Chromatic, BackstopJS, pixel comparison, snapshot testing, visual testing, CSS regression, UI looks different, layout changed, style regression, component looks wrong, responsive breakpoints, cross-browser differences, screenshot comparison, baseline update, approve changes, Storybook visual tests, design QA, pixel perfect, UI drift, visual bugs.
+description: Visual regression testing expert. Use when implementing visual testing, detecting CSS regressions, or managing screenshot baselines.
 ---
 
 # Visual Regression Testing Skill

@@ -1,6 +1,6 @@
 ---
 name: type-design-analyzer
-description: Type Design Analyzer - Evaluates type quality across encapsulation, invariant expression, usefulness, and enforcement. Based on Anthropic's official type-design-analyzer. Activates for type review, type design, type quality, invariants, encapsulation review, type safety, TypeScript types, type analysis, improve types, type architecture.
+description: Analyze TypeScript type design quality. Use when reviewing types, checking invariants, or strengthening type safety.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

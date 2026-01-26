@@ -139,7 +139,7 @@ has_reflection_signals() {
 }
 
 # Queue reflection for async processing
-# Following Ralph plugin best practice: Don't spawn background processes in hooks
+# Best practice: Don't spawn background processes in hooks
 # Instead, queue work and let external processor handle it (session-start hook or cron)
 queue_reflection() {
     local transcript="$1"
@@ -281,7 +281,7 @@ main() {
     # Queue reflection for async processing (don't block session exit)
     if queue_reflection "$TRANSCRIPT_PATH"; then
         # Return approve with systemMessage to notify user about reflection
-        # This message will be captured by stop-dispatcher.sh and shown to user
+        # This message will be shown to user via Claude Code's hook system
         local reflect_msg="
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 🧠 REFLECT: Learning signals detected                                       │

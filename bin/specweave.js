@@ -448,11 +448,11 @@ program
     console.log(statusLine);
   });
 
-// Auto mode commands - Autonomous execution with Pure Ralph Wiggum pattern (v3.0)
+// Auto mode commands - Autonomous execution with stop hook feedback loop (v3.0)
 // No session files. No complex state. Just: "Are there active increments?"
 program
   .command('auto [incrementIds...]')
-  .description('Start autonomous execution (Pure Ralph pattern - no session files)')
+  .description('Start autonomous execution (stop hook feedback loop)')
   .option('--dry-run', 'Preview without activating')
   .option('--all-backlog', 'Activate all backlog items')
   .option('--reset', 'Clean up any stale state files')

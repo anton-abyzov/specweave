@@ -32,20 +32,20 @@ estimated_effort: "3-4 weeks"
 - Only `/sw:cancel-auto` is a new command (to opt-out of running session)
 - Use `--manual` flag to opt-OUT of auto behavior (not `--auto` to opt-in)
 
-**Inspiration**: Adapted from Ralph Wiggum plugin architecture but fully integrated with SpecWeave's spec-driven workflow, living docs, and external tool sync.
+**Inspiration**: Using a stop hook feedback loop pattern, fully integrated with SpecWeave's spec-driven workflow, living docs, and external tool sync.
 
 ---
 
-## LLM Judge Evaluation Summary (Ralph Wiggum Alignment)
+## LLM Judge Evaluation Summary (Stop Hook Feedback Loop)
 
 **Overall Score: 4.3/5.0 - PASS**
 
 | Dimension | Score | Assessment |
 |-----------|-------|------------|
-| Conceptual Alignment | 4.5/5 | Stop Hook feedback loop matches Ralph pattern ✅ |
+| Conceptual Alignment | 4.5/5 | Stop Hook feedback loop pattern ✅ |
 | Stop Hook Implementation | 5.0/5 | Perfect - `stop_hook_active` flag, block/approve ✅ |
 | Completion Detection | 4.0/5 | Dual mechanism (tasks.md + completion tag) |
-| Safety Mechanisms | 5.0/5 | Exceeds Ralph with `maxIterations` + human gates ✅ |
+| Safety Mechanisms | 5.0/5 | Exceeds baseline with `maxIterations` + human gates ✅ |
 | Simplicity | 2.5/5 | Enterprise features add justified complexity |
 | Integration Value | 4.0/5 | Workflow integration adds genuine value |
 
@@ -55,7 +55,7 @@ estimated_effort: "3-4 weeks"
 - Completion detection: `<auto-complete>DONE</auto-complete>` + tasks.md ✅
 - `stop_hook_active` flag prevents infinite loops ✅
 
-**Recommendation from Judge**: Add `--simple` mode for "pure Ralph" behavior (skip session state, queues, circuit breakers). This is captured in AC-US7-11 below.
+**Recommendation from Judge**: Add `--simple` mode (skip session state, queues, circuit breakers). This is captured in AC-US7-11 below.
 
 ---
 
@@ -193,7 +193,7 @@ estimated_effort: "3-4 weeks"
 - [x] **AC-US7-08**: All commands respect existing PM validation gates (tasks, tests, docs)
 - [x] **AC-US7-09**: All commands update tasks.md and spec.md checkboxes via existing Edit operations
 - [x] **AC-US7-10**: When no auto session active, commands behave as before (backwards compatible)
-- [x] **AC-US7-11**: `--simple` flag for pure Ralph behavior: just loop + tasks.md completion + max iterations (no session state, queues, circuit breakers)
+- [x] **AC-US7-11**: `--simple` flag for simple mode: just loop + tasks.md completion + max iterations (no session state, queues, circuit breakers)
 
 ---
 
@@ -399,15 +399,15 @@ sys.exit(0)  # Allow stop
 
 ## Technical Architecture
 
-### Ralph Wiggum to SpecWeave Mapping
+### Stop Hook Pattern Mapping
 
-| Ralph Wiggum Pattern | SpecWeave Implementation |
-|---------------------|--------------------------|
+| Pattern | SpecWeave Implementation |
+|---------|--------------------------|
 | `while :; do cat PROMPT.md \| claude ; done` | Stop Hook with `{"decision": "block"}` |
 | `--completion-promise "string"` | `<auto-complete>DONE</auto-complete>` + tasks.md `[x]` |
 | `--max-iterations N` | `auto.maxIterations: 100` in config.json |
-| Stop hook blocks exit | Same: Stop Hook returns `{"decision": "block", "reason": "..."}` |
-| `stop_hook_active` prevents loops | Same: Check `hook_input.stop_hook_active` flag |
+| Stop hook blocks exit | Stop Hook returns `{"decision": "block", "reason": "..."}` |
+| `stop_hook_active` prevents loops | Check `hook_input.stop_hook_active` flag |
 | Simple prompt re-feeding | Re-feed with iteration context in `systemMessage` |
 
 ### Stop Hook Integration

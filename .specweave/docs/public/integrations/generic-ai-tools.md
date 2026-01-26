@@ -238,9 +238,9 @@ When you complete a task, output the updated tasks.md content with [x] for compl
 
 ---
 
-## Autonomous Mode (Ralph Loop) for Any AI
+## Autonomous Mode (Stop Hook Feedback Loop) for Any AI
 
-The "Ralph Loop" pattern enables autonomous task completion:
+The stop hook feedback loop pattern enables autonomous task completion:
 
 ### Python Implementation
 
@@ -310,7 +310,7 @@ autonomous_loop(".specweave/increments/0001-feature/tasks.md")
 
 ```bash
 #!/bin/bash
-# ralph-loop.sh - Autonomous task completion
+# auto-loop.sh - Autonomous task completion
 
 TASKS_FILE=".specweave/increments/0001-feature/tasks.md"
 MAX_ITER=100
@@ -440,4 +440,4 @@ Description of what needs to be done.
 
 - [SpecWeave Documentation](https://spec-weave.com)
 - [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Ralph Loop Pattern](https://spec-weave.com/docs/patterns/ralph-loop)
+- [Auto Mode Documentation](https://spec-weave.com/docs/commands/auto)

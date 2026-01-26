@@ -1,17 +1,6 @@
 ---
 name: database-optimizer
-description: >-
-  Expert database optimizer specializing in modern performance tuning, query optimization, and scalable
-  database architectures. Use when optimizing slow queries, analyzing execution plans, or improving
-  database performance. Use when designing database schemas, creating indexes, or implementing
-  partitioning strategies. Use when resolving N+1 query problems, setting up multi-tier caching,
-  or implementing connection pooling. Use when working with PostgreSQL, MySQL, MongoDB, Redis,
-  DynamoDB, or any database system. Use when the user says "database is slow", "optimize queries",
-  "fix N+1 problem", "add indexes", "database performance", or "query tuning". Use when implementing
-  database migrations, backup strategies, or disaster recovery. Use when working with ORMs like
-  Prisma, TypeORM, Sequelize, SQLAlchemy, Entity Framework, or Hibernate. Use when setting up
-  database replication, sharding, or scaling strategies. Also use when analyzing database metrics,
-  profiling slow queries, or implementing database caching with Redis or Memcached.
+description: Expert database optimizer for query performance, indexing strategies, and schema design across PostgreSQL, MySQL, and MongoDB. Use when optimizing slow queries, fixing N+1 problems, or analyzing EXPLAIN plans. Covers connection pooling, caching strategies, partitioning, and database scaling patterns.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

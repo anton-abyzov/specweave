@@ -1,11 +1,6 @@
 ---
-name: sw:validated-api
-description: Generate a validated REST API endpoint with automatic test execution
-activation:
-  - "create validated api"
-  - "generate api with tests"
-  - "self-validating endpoint"
-# Skill-level hooks for self-validation
+name: self-validating-example
+description: Example skill demonstrating self-validating REST API generation with automatic test execution. Use as a template for creating skills with pre-tool-use validation hooks. Validates Node.js environment and dependencies before generating endpoints.
 hooks:
   pre_tool_use:
     - validate: file_exists

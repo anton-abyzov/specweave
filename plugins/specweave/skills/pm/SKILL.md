@@ -1,6 +1,6 @@
 ---
 name: pm
-description: Product Manager expertise for creating product requirements, user stories, specifications, and roadmaps. Guides spec-driven development with phased approach (Research → Spec → Plan → Validate). Activates for: product, pm, product manager, product planning, requirements, user stories, PRD, product spec, feature specification, roadmap, MVP planning, MVP, acceptance criteria, story mapping, backlog grooming, prioritization, RICE, MoSCoW, product strategy, create spec, write requirements, plan feature, product management, stakeholder requirements, business case, product vision, OKRs, KPIs, epic breakdown, sprint planning, story points, definition of done, product discovery, customer interview, competitive analysis, market research, build app, create app, make app, new feature, plan feature, design feature, web app, mobile app, calculator app, beautiful app, I need an app, I want to build.
+description: Product Manager for spec-driven development with SpecWeave conventions. Use when writing user stories, defining acceptance criteria, planning MVPs, or prioritizing features. Creates specs with proper AC-IDs, manages requirements, and maintains product roadmaps.
 allowed-tools: Read, Write, Grep, Glob
 context: fork
 model: opus

@@ -1,6 +1,6 @@
 ---
 name: docs-updater
-description: Updates living documentation during implementation. Syncs task completion to docs, changes [DRAFT] to [COMPLETE], maintains bidirectional links. Activates for update docs, sync documentation, mark complete, documentation updates, living docs sync.
+description: Living documentation updater that syncs implementation progress to product docs. Use when updating docs after task completion, changing DRAFT status to published, or ensuring documentation reflects current implementation state.
 ---
 
 # Documentation Updater
@@ -18,18 +18,18 @@ Updates product documentation (.specweave/docs/) based on implementation progres
 
 1. **Reads task requirements** - Understands what was implemented from tasks.md
 2. **Updates living docs** - Modifies `.specweave/docs/` files with actual implementation
-3. **Status tracking** - Changes `[DRAFT]` ’ `[COMPLETE]` on doc sections
+3. **Status tracking** - Changes `[DRAFT]` ï¿½ `[COMPLETE]` on doc sections
 4. **Bidirectional links** - Maintains links between docs and increments
 5. **Format adaptation** - Matches existing doc structure (features/ or modules/)
 
 ## Workflow
 
 ```
-1. Read tasks.md ’ Find documentation tasks
-2. Read implementation ’ Understand what changed
-3. Update docs ’ Add real code examples, endpoints, configs
-4. Mark complete ’ Change [DRAFT] to [COMPLETE]
-5. Verify links ’ Ensure increment ” doc references work
+1. Read tasks.md ï¿½ Find documentation tasks
+2. Read implementation ï¿½ Understand what changed
+3. Update docs ï¿½ Add real code examples, endpoints, configs
+4. Mark complete ï¿½ Change [DRAFT] to [COMPLETE]
+5. Verify links ï¿½ Ensure increment ï¿½ doc references work
 ```
 
 ## Example

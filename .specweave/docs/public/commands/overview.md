@@ -94,7 +94,7 @@ graph LR
 
 **What it does**:
 - 🤖 Continuous execution until all tasks complete
-- 🔄 Stop hook prevents exit (Ralph Wiggum pattern)
+- 🔄 Stop hook prevents exit (feedback loop pattern)
 - 🧪 Self-healing test loop (max 3 attempts)
 - 📊 Self-assessment scoring (pauses on low confidence)
 - ⚡ Auto-execute with credentials (no manual steps)

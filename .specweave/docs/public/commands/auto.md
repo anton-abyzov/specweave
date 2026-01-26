@@ -6,7 +6,7 @@ sidebar_position: 10
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
 
-Auto mode enables continuous autonomous execution until all tasks are complete. It uses the Ralph Wiggum pattern (stop hook feedback loop) to keep Claude working until completion.
+Auto mode enables continuous autonomous execution until all tasks are complete. It uses a stop hook feedback loop to keep Claude working until completion.
 
 ## Usage
 
@@ -25,7 +25,7 @@ Auto mode enables continuous autonomous execution until all tasks are complete. 
 |--------|-------------|---------|
 | `--max-iterations N` | Maximum iterations before stopping | 100 |
 | `--max-hours N` | Maximum hours to run | None |
-| `--simple` | Pure Ralph mode (minimal context) | false |
+| `--simple` | Simple mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
@@ -87,7 +87,7 @@ prompt
 # Time limit
 /sw:auto --max-hours 8
 
-# Simple/Ralph mode (minimal context)
+# Simple mode (minimal context)
 /sw:auto --simple
 
 # Preview only
@@ -180,7 +180,7 @@ The session ends when ANY of these occur:
 
 ## Simple Mode (--simple)
 
-Pure Ralph Wiggum behavior:
+Pure stop hook loop behavior:
 - Minimal context in re-feed prompt
 - No session state UI
 - No queue management

@@ -87,8 +87,36 @@ When enabled, creates/updates `.specweave/state/reflect-config.json`:
 
 ## Execution
 
+**CRITICAL: This is a SIMPLE command. NO Glob, NO parallel tool calls needed.**
+
 When this command is invoked:
 
-1. **Create state file** `.specweave/state/reflect-config.json` with `autoReflect: true`
-2. **Confirm enabled** with configuration summary
-3. **Stop hook** will now analyze sessions on exit
+1. **Read existing config** (ONE tool call):
+   ```
+   Read .specweave/state/reflect-config.json
+   ```
+   (If file doesn't exist, that's fine - create fresh)
+
+2. **Write updated config** (ONE tool call - WAIT for step 1):
+   ```json
+   {
+     "enabled": true,
+     "autoReflect": true,
+     "enabledAt": "2026-01-26T12:00:00Z",
+     "confidenceThreshold": "medium",
+     "maxLearningsPerSession": 10,
+     "gitCommit": false,
+     "gitPush": false
+   }
+   ```
+   Write to `.specweave/state/reflect-config.json`
+
+3. **Display confirmation** (NO tool call - just output text):
+   ```
+   ✅ Auto-reflection ENABLED
+
+   Stop hook will analyze sessions on exit.
+   Use /sw:reflect-off to disable.
+   ```
+
+**WARNING**: Do NOT use Glob to scan directories - this command only writes ONE file.

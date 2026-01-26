@@ -1,6 +1,6 @@
 ---
 name: progress-sync
-description: Comprehensive progress synchronization expert. Explains when and how to use /sw:sync-progress for multi-system sync (tasks → docs → external tools). AUTO-CREATES missing external issues. Activates for sync progress, update progress, sync everything, sync all systems, sync to GitHub, sync to JIRA, how to sync, progress synchronization, multi-system sync, create github issue, no github issue linked.
+description: Comprehensive progress synchronization expert for multi-system sync (tasks.md → living docs → GitHub/JIRA/ADO). Use when syncing progress across systems, creating missing external issues, or understanding /sw:sync-progress command. AUTO-CREATES missing issues when external links are absent.
 ---
 
 # Progress Sync Expert

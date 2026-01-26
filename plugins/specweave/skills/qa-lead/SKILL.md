@@ -1,18 +1,6 @@
 ---
 name: qa-lead
-description: >-
-  QA lead expert for test strategy, automation, and comprehensive quality assurance. Use when
-  creating test plans or defining testing strategies for features and user stories. Use when
-  writing unit tests, integration tests, or end-to-end tests with Playwright, Jest, Vitest,
-  or Cypress. Use when implementing test-driven development (TDD) or behavior-driven development
-  (BDD) workflows. Use when setting up quality gates or coverage thresholds in CI pipelines.
-  Use when mapping test cases to acceptance criteria or creating test coverage matrices. Use when
-  writing test fixtures, mocks, stubs, or spies for isolated testing. Use when configuring
-  beforeEach, afterEach, or test setup and teardown routines. Use when generating coverage reports
-  or analyzing test results. Use when planning regression testing, smoke tests, or exploratory
-  testing sessions. Use when the user says "write tests", "create test suite", "test coverage",
-  "QA strategy", or "quality assurance". Creates test files ONE AT A TIME to prevent context
-  overflow with large test suites.
+description: QA lead for comprehensive test strategy, automation frameworks, and quality gates. Use when creating test plans, designing test suites, or setting up E2E/integration testing. Covers web, mobile, and API testing with Playwright, Jest, and test coverage requirements.
 allowed-tools: Read, Write, Edit, Bash
 context: fork
 ---

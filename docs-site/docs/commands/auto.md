@@ -99,7 +99,7 @@ Labels appear directly in your conversation, giving you complete visibility into
 
 ## How It Works
 
-Auto mode implements the **Ralph Wiggum pattern** - it continuously asks "Am I done yet?" after each task.
+Auto mode implements a **stop hook feedback loop** - it continuously checks "Am I done yet?" after each task.
 
 ### The Execution Loop
 

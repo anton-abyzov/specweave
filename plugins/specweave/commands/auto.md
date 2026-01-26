@@ -1,6 +1,6 @@
 ---
 name: sw:auto
-description: Start autonomous execution session with stop hook integration. Works until all tasks complete or max iterations reached. Uses Ralph Wiggum pattern with SpecWeave workflow integration. Activates for: auto, autonomous, auto mode, ship while sleeping.
+description: Start autonomous execution with stop hook feedback loop. Works until all tasks complete or max iterations reached. Use when you want continuous unattended execution.
 argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 allowed-tools: ["Bash(specweave auto *)"]
 ---
@@ -52,7 +52,7 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 |--------|-------------|---------|
 | `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** |
 | `--max-hours N` | Maximum hours to run | **600 hours** (25 days) |
-| `--simple` | Pure Ralph mode (minimal context) | false |
+| `--simple` | Simple mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
@@ -70,7 +70,7 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 | **`--cmd "<command>"`** | Custom command must pass before completion | None |
 
 :::warning Iteration limits are SAFETY NETS
-The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Per the Ralph Wiggum pattern, completion should be detected through **external verification** (test results), not self-assessment.
+The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Completion should be detected through **external verification** (test results), not self-assessment.
 
 **IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
 :::
@@ -490,7 +490,7 @@ prompt
 # Time limit
 /sw:auto --max-hours 8
 
-# Simple/Ralph mode
+# Simple mode (minimal context)
 /sw:auto --simple
 
 # Preview only
@@ -574,7 +574,7 @@ The session ends when ANY of these occur:
 
 ## Simple Mode (--simple)
 
-Pure Ralph Wiggum behavior:
+Pure stop hook loop behavior:
 - Minimal context in re-feed prompt
 - No session state UI
 - No queue management
@@ -1139,7 +1139,7 @@ See: `plugins/specweave/skills/auto-execute/SKILL.md` for full details.
 
 ---
 
-## 🎯 Self-Assessment Scoring (Ralph-Loop Pattern)
+## 🎯 Self-Assessment Scoring (Auto-Loop Pattern)
 
 **Auto mode uses self-assessment scoring to guide continuation decisions:**
 
@@ -1222,7 +1222,7 @@ fi
 **Auto mode MUST run tests after completing testable tasks in a self-healing loop:**
 
 ```bash
-# Test execution loop (Ralph Loop pattern)
+# Test execution loop (stop hook pattern)
 MAX_ATTEMPTS=3
 ATTEMPT=0
 

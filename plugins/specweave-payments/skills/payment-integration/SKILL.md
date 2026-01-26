@@ -1,18 +1,6 @@
 ---
 name: payment-integration
-description: >-
-  Master skill for integrating Stripe, PayPal, and other payment processors with secure, reliable
-  payment flows. Use when implementing payment processing in web or mobile applications, setting up
-  checkout flows, or building subscription billing systems. Use when integrating Stripe Checkout,
-  Payment Intents, or Stripe Elements. Use when implementing webhooks for payment_intent.succeeded,
-  checkout.session.completed, or subscription events. Use when the user says "implement payments",
-  "add Stripe", "integrate PayPal", "create checkout", "subscription billing", "accept credit cards",
-  or "payment processing". Use when implementing dual confirmation patterns with webhook plus frontend
-  verification. Use when handling 100% promo codes, idempotent payment confirmation, or browser close
-  scenarios. Use when working with Stripe Connect for marketplace payments. Use when implementing
-  Apple Pay, Google Pay, ACH, or SEPA payment methods. Use when handling refunds, disputes, or
-  chargebacks. Also use when implementing PCI-compliant payment forms, managing customer payment
-  methods, or building secure checkout experiences.
+description: Integrate Stripe, PayPal, and payment processors for checkout flows, subscriptions, and webhook handling. Use when implementing payment processing, building checkout pages, or handling payment webhooks. Covers Stripe Connect marketplace patterns, dual confirmation (webhook + frontend), and idempotent payment operations.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

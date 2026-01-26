@@ -1,19 +1,6 @@
 ---
 name: security
-description: >-
-  Security engineer and application security expert for comprehensive vulnerability assessment.
-  Use when performing threat modeling using STRIDE methodology or reviewing security architecture.
-  Use when conducting security audits, penetration testing, or vulnerability assessments on code.
-  Use when checking for OWASP Top 10 vulnerabilities like SQL injection, XSS, CSRF, or broken
-  access control. Use when reviewing authentication security including JWT tokens, session
-  management, OAuth, or MFA implementation. Use when assessing encryption practices, secrets
-  management, or key rotation policies. Use when configuring security headers like CSP, HSTS,
-  or X-Frame-Options. Use when auditing for compliance with GDPR, HIPAA, PCI-DSS, or SOC 2
-  requirements. Use when reviewing input validation, sanitization, or parameterized queries.
-  Use when assessing password hashing with bcrypt or argon2, or rate limiting for brute force
-  protection. Use when the user says "is this secure", "security review", "find vulnerabilities",
-  "threat model", or "security audit". Use when scanning dependencies for CVEs or reviewing
-  infrastructure security configurations.
+description: Security engineer for vulnerability assessment, penetration testing guidance, and secure code review. Use for OWASP Top 10 checks, threat modeling, or security architecture review. Covers authentication flaws, injection vulnerabilities, access control, and compliance requirements.
 allowed-tools: Read, Bash, Grep
 context: fork
 ---

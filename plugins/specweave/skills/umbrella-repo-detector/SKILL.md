@@ -1,6 +1,6 @@
 ---
 name: umbrella-repo-detector
-description: Detects multi-repo architecture from user prompts and guides setup. Activates for: multiple repos, 3 repos, frontend repo, backend repo, shared library repo, monorepo services, microservices, separate repos, FE/BE/Shared, multi-repo architecture, independent repos.
+description: Detects multi-repo architecture patterns (frontend/backend/shared) from user prompts and guides umbrella setup. Use when working with multiple repositories, microservices architecture, or projects with separate FE/BE/Shared libraries. Helps configure SpecWeave for multi-repo coordination.
 ---
 
 # Umbrella Multi-Repo Architecture Detector
