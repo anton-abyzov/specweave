@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.167 - Fix Plugin Restart Warning)
+# SpecWeave UserPromptSubmit Hook (v1.0.169 - Direct Skill Invocation)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.169: DIRECT SKILL INVOCATION - Call sw:increment-planner directly (not wrapper)
+#   * Skips 2-level indirection (hook → sw:increment command → sw:increment-planner skill)
+#   * Passes FULL user prompt as args (not just extracted name)
+#   * Uses <system><rules> tags (Claude-trained) instead of custom <mandatory_instruction>
+#   * More concise, imperative instruction text
 # - v1.0.167: FIX PLUGIN RESTART WARNING - Use `claude plugin list` BEFORE install
 #   * Claude CLI always outputs "Successfully installed" even when already installed
 #   * Now calls `claude plugin list` once to get current plugins, then checks against that
@@ -386,6 +391,11 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               # v1.0.168: LLM decides if mandatory (not config-based)
               INC_MANDATORY=$(echo "$JSON_OUTPUT" | jq -r '.increment.mandatory // false' 2>/dev/null)
 
+              # v1.0.168: Parse skill invocation recommendation
+              SKILL_INVOCATION=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.skill // empty' 2>/dev/null)
+              SKILL_REASON=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.reason // empty' 2>/dev/null)
+              SKILL_MANDATORY=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.mandatory // false' 2>/dev/null)
+
               # Check confidence threshold
               ABOVE=$(echo "$INC_CONF >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0)
 
@@ -398,7 +408,42 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 "
                 # Build agent spawn directive if routing skills available (v1.0.155)
                 AGENT_DIRECTIVE=""
-                if [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
+                # v1.0.168: Skill invocation directive (takes precedence over routing)
+                if [[ -n "$SKILL_INVOCATION" ]]; then
+                  if [[ "$SKILL_MANDATORY" == "true" ]]; then
+                    AGENT_DIRECTIVE="
+
+---
+
+<skill_invocation_required>
+### 🎯 MANDATORY: Use ${SKILL_INVOCATION} Skill
+
+You MUST invoke this skill for this task. Do NOT implement directly without using this skill.
+
+**Invoke NOW using Skill tool:**
+\\\`\\\`\\\`typescript
+Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
+\\\`\\\`\\\`
+
+**Why this skill is required:**
+${SKILL_REASON:-This skill provides specialized support for your task.}
+
+⚠️ **Do NOT skip this** - the skill has domain expertise needed for quality implementation.
+</skill_invocation_required>"
+                  else
+                    AGENT_DIRECTIVE="
+
+---
+
+### 💡 Recommended: Use ${SKILL_INVOCATION} Skill
+
+Consider invoking this skill for better results:
+\\\`\\\`\\\`typescript
+Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
+\\\`\\\`\\\`
+*${SKILL_REASON:-This skill provides specialized support for your task.}*"
+                  fi
+                elif [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
                   PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
                   PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
                   PRIMARY_REASON=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .reason // empty' 2>/dev/null | head -1)
@@ -427,54 +472,46 @@ Task({
                     CMD="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
 
-                    # v1.0.168: LLM decides if mandatory (not config-based)
+                    # v1.0.169: Call sw:increment-planner DIRECTLY (not wrapper)
+                    # Pass FULL user prompt so skill can extract all context
                     # INC_MANDATORY comes from detect-intent LLM response
                     if [[ "$INC_MANDATORY" == "true" ]]; then
-                      MSG="${AUTOLOAD_PREFIX}<mandatory_instruction>
-## STOP - ACTION REQUIRED BEFORE PROCEEDING
+                      # Escape the full prompt for JSON embedding
+                      # Use printf to handle special chars, then escape for nested JSON
+                      ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
 
-You MUST invoke the Skill tool IMMEDIATELY. Do NOT write code, do NOT create files, do NOT proceed with implementation.
+                      MSG="${AUTOLOAD_PREFIX}<system>
+<rules>
+BLOCKING RULE: Your FIRST action MUST be invoking the Skill tool. No exceptions.
+</rules>
+</system>
 
-### Required Action (Non-Negotiable)
-Invoke this skill NOW using the Skill tool:
+**REQUIRED**: Invoke skill tool NOW:
+
 \\\`\\\`\\\`
-Skill({ skill: \"sw:increment\", args: \"${INC_NAME:-feature}\" })
+Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT}\" })
 \\\`\\\`\\\`
 
-Or if using slash command:
-\\\`\\\`\\\`
-$CMD
-\\\`\\\`\\\`
+This is a feature request (confidence: ${INC_CONF}). SpecWeave workflow requires increment planning BEFORE implementation.
 
-### Why This Is Mandatory
-- This is a feature/implementation request (confidence: ${INC_CONF})
-- SpecWeave workflow requires increment creation BEFORE any implementation
-- Skipping this step violates project workflow rules
-- Detection reason: ${INC_REASON}
-
-### What You Must Do
-1. **FIRST**: Invoke the Skill tool with skill=\"sw:increment\"
-2. **WAIT**: Let the increment planning complete
-3. **THEN**: Proceed with implementation tasks
-
-### What You Must NOT Do
-- ❌ Do NOT write any implementation code yet
-- ❌ Do NOT create any files yet
-- ❌ Do NOT skip this step
-- ❌ Do NOT just acknowledge and proceed with implementation
-</mandatory_instruction>${AGENT_DIRECTIVE}
+Do NOT: write code, create files, or analyze the request first.
+Do: Call the Skill tool immediately as your first action.${AGENT_DIRECTIVE}
 
 ---
-*LLM determined this is mandatory (confidence: ${INC_CONF})*"
+*Detection: ${INC_REASON}*"
                       output_approve_with_context "$MSG"
                       exit 0
                     else
+                      # v1.0.169: Also suggest direct skill call for non-mandatory
+                      ESCAPED_PROMPT_SUGGEST=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
                       MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
 
 Consider creating an increment first:
 \`\`\`
-$CMD
+Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SUGGEST}\" })
 \`\`\`
+
+Or via command: \`$CMD\`
 
 *Reason: $INC_REASON*${AGENT_DIRECTIVE}
 
@@ -487,13 +524,16 @@ $CMD
                     ;;
 
                   hotfix)
-                    CMD="/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\""
+                    # v1.0.169: Direct skill call for hotfix too
+                    ESCAPED_PROMPT_HOTFIX=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
                     MSG="${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
 
 Create a hotfix increment:
 \`\`\`
-$CMD
+Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix ${ESCAPED_PROMPT_HOTFIX}\" })
 \`\`\`
+
+Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
 
 *Reason: $INC_REASON*
 
