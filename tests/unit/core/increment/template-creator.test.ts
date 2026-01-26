@@ -221,91 +221,32 @@ describe('template-creator', () => {
       expect(result.error).toContain('DUPLICATE');
     });
 
-    it('should add TDD note when testMode is TDD', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-test-feature',
-        title: 'Test Feature',
-        description: 'A test feature description',
-        projectId: 'test-project',
-        testMode: 'TDD',
-        projectRoot: tempDir,
-      });
-
-      const tasksPath = path.join(incrementsPath, '0001-test-feature', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
-
-      // Must indicate TDD mode is active
-      expect(content).toContain('TDD MODE ACTIVE');
-      expect(content).toContain('RED-GREEN-REFACTOR');
-    });
-
-    it('should generate TDD tasks with RED-GREEN-REFACTOR triplets', async () => {
+    /**
+     * TDD is an EXECUTION practice, not a PLANNING practice.
+     * Planning ALWAYS generates standard templates.
+     * TDD discipline is enforced at execution time via /sw:tdd-* commands.
+     */
+    it('should store TDD testMode in metadata but use standard tasks template', async () => {
       await createIncrementTemplates({
         incrementId: '0001-tdd-feature',
         title: 'TDD Feature',
-        description: 'Testing TDD template generation',
+        description: 'Testing TDD mode handling',
         projectId: 'test-project',
         testMode: 'TDD',
         projectRoot: tempDir,
       });
 
+      // metadata.json should store testMode for execution-time reference
+      const metadataPath = path.join(incrementsPath, '0001-tdd-feature', 'metadata.json');
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      expect(metadata.testMode).toBe('TDD');
+
+      // But tasks.md should ALWAYS use standard template
+      // TDD discipline is enforced at EXECUTION time, not planning time
       const tasksPath = path.join(incrementsPath, '0001-tdd-feature', 'tasks.md');
       const content = fs.readFileSync(tasksPath, 'utf-8');
 
-      // CRITICAL: TDD template must have TDD Contract section
-      expect(content).toContain('## TDD Contract');
-
-      // CRITICAL: Must have phase markers
-      expect(content).toContain('[RED]');
-      expect(content).toContain('[GREEN]');
-      expect(content).toContain('[REFACTOR]');
-
-      // CRITICAL: Must have dependency markers for enforcement
-      expect(content).toContain('**Depends On**:');
-
-      // Must explain TDD discipline
-      expect(content).toContain('Write failing test FIRST');
-      expect(content).toContain('Minimal code to pass test');
-    });
-
-    it('should include Phase markers in TDD task titles', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-tdd-test',
-        title: 'TDD Test',
-        description: 'Testing phase markers',
-        projectId: 'test-project',
-        testMode: 'TDD',
-        projectRoot: tempDir,
-      });
-
-      const tasksPath = path.join(incrementsPath, '0001-tdd-test', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
-
-      // Task titles must include phase markers
-      expect(content).toMatch(/### T-001: \[RED\]/);
-      expect(content).toMatch(/### T-002: \[GREEN\]/);
-      expect(content).toMatch(/### T-003: \[REFACTOR\]/);
-
-      // Phase field in task metadata
-      expect(content).toContain('**Phase**: RED');
-      expect(content).toContain('**Phase**: GREEN');
-      expect(content).toContain('**Phase**: REFACTOR');
-    });
-
-    it('should use standard template when testMode is test-after', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-standard-feature',
-        title: 'Standard Feature',
-        description: 'Testing standard template',
-        projectId: 'test-project',
-        testMode: 'test-after',
-        projectRoot: tempDir,
-      });
-
-      const tasksPath = path.join(incrementsPath, '0001-standard-feature', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
-
-      // Should NOT have TDD-specific sections
+      // Should NOT have TDD-specific sections (TDD is execution-time)
       expect(content).not.toContain('## TDD Contract');
       expect(content).not.toContain('TDD MODE ACTIVE');
       expect(content).not.toContain('[RED]');
@@ -316,42 +257,49 @@ describe('template-creator', () => {
       expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
     });
 
-    it('should handle lowercase tdd testMode', async () => {
-      await createIncrementTemplates({
-        incrementId: '0001-lowercase-tdd',
-        title: 'Lowercase TDD',
-        description: 'Testing lowercase tdd',
-        projectId: 'test-project',
-        testMode: 'tdd',
-        projectRoot: tempDir,
-      });
+    it('should use standard template regardless of testMode setting', async () => {
+      // Test with various testMode values - all should produce standard templates
+      const testModes = ['TDD', 'tdd', 'Tdd', 'test-after', 'test-first', undefined];
 
-      const tasksPath = path.join(incrementsPath, '0001-lowercase-tdd', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
+      for (let i = 0; i < testModes.length; i++) {
+        const testMode = testModes[i];
+        const incrementId = `000${i + 1}-testmode-${testMode || 'undefined'}`;
 
-      // Should still use TDD template
-      expect(content).toContain('## TDD Contract');
-      expect(content).toContain('TDD MODE ACTIVE');
+        await createIncrementTemplates({
+          incrementId,
+          title: `TestMode ${testMode}`,
+          description: 'Testing testMode handling',
+          projectId: 'test-project',
+          testMode: testMode as string,
+          projectRoot: tempDir,
+        });
+
+        const tasksPath = path.join(incrementsPath, incrementId, 'tasks.md');
+        const content = fs.readFileSync(tasksPath, 'utf-8');
+
+        // ALL testModes should produce standard template
+        expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL');
+        expect(content).not.toContain('## TDD Contract');
+        expect(content).not.toContain('TDD MODE ACTIVE');
+      }
     });
 
-    it('should handle mixed case TDD testMode (case-insensitive)', async () => {
+    it('should preserve testMode in metadata for execution-time use', async () => {
       await createIncrementTemplates({
-        incrementId: '0001-mixed-case-tdd',
-        title: 'Mixed Case TDD',
-        description: 'Testing mixed case Tdd',
+        incrementId: '0001-preserve-mode',
+        title: 'Preserve Mode',
+        description: 'Testing testMode preservation',
         projectId: 'test-project',
-        testMode: 'Tdd', // Mixed case
+        testMode: 'TDD',
         projectRoot: tempDir,
       });
 
-      const tasksPath = path.join(incrementsPath, '0001-mixed-case-tdd', 'tasks.md');
-      const content = fs.readFileSync(tasksPath, 'utf-8');
+      const metadataPath = path.join(incrementsPath, '0001-preserve-mode', 'metadata.json');
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
 
-      // Should still use TDD template
-      expect(content).toContain('## TDD Contract');
-      expect(content).toContain('[RED]');
-      expect(content).toContain('[GREEN]');
-      expect(content).toContain('[REFACTOR]');
+      // testMode should be preserved in metadata for execution commands
+      // (e.g., /sw:do --tdd reads this to enforce TDD discipline)
+      expect(metadata.testMode).toBe('TDD');
     });
   });
 
