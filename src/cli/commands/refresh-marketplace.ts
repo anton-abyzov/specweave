@@ -41,7 +41,7 @@ import os from 'os';
 import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
 import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
 import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js';
-import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
+// PluginCacheManager removed - using direct CLI calls (simplified v1.0.165)
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
 
@@ -1268,30 +1268,18 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 4: Verify marketplace ready for lazy loading
+  // Step 5: Verify marketplace ready for lazy loading
   console.log(chalk.yellow('📦 Step 5: Verifying marketplace for lazy loading...'));
 
   try {
-    const cacheManager = new PluginCacheManager({
-      marketplacePath: path.join(marketplacePath, 'plugins'),
-    });
-
-    // SIMPLIFIED (v1.0.122+): No intermediate cache needed!
-    // Plugins load directly from marketplace (~/.claude/plugins/marketplaces/specweave/plugins/)
-    const cacheResult = await cacheManager.populateCache();
-
-    if (cacheResult.success) {
-      console.log(chalk.green(`✓ ${cacheResult.pluginsAffected} plugins ready for on-demand loading`));
+    const pluginsPath = path.join(marketplacePath, 'plugins');
+    if (fs.existsSync(pluginsPath)) {
+      const pluginDirs = fs.readdirSync(pluginsPath)
+        .filter(name => fs.statSync(path.join(pluginsPath, name)).isDirectory());
+      console.log(chalk.green(`✓ ${pluginDirs.length} plugins ready for on-demand loading`));
       console.log(chalk.gray(`  Marketplace: ~/.claude/plugins/marketplaces/specweave/plugins/`));
-      console.log(chalk.gray(`  No intermediate cache needed (loads directly from marketplace)`));
-      if (options.verbose) {
-        console.log(chalk.gray(`  Duration: ${cacheResult.durationMs.toFixed(0)}ms`));
-      }
     } else {
-      console.log(chalk.yellow('⚠ Marketplace verification failed'));
-      if (options.verbose && cacheResult.error) {
-        console.log(chalk.gray(`  ${cacheResult.error}`));
-      }
+      console.log(chalk.yellow('⚠ Marketplace plugins directory not found'));
     }
   } catch (error) {
     console.log(chalk.yellow('⚠ Could not verify marketplace'));

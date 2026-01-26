@@ -2,7 +2,7 @@
 increment: 0175-plugin-session-restart-warning
 title: "Plugin Session Restart Warning"
 priority: P1
-status: ready_for_review
+status: completed
 created: 2026-01-25
 dependencies: []
 structure: user-stories
