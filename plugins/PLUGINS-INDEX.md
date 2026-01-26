@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 23 | **Last Updated**: 2026-01-19
+**Total Plugins**: 23 | **Last Updated**: 2026-01-26
 
 ---
 
@@ -19,7 +19,7 @@
 
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
-| **specweave** | increment, feature, plan, spec, tasks, TDD, PM, architect | Core framework. Planning, specs, TDD, living docs. |
+| **specweave** | increment, feature, plan, spec, tasks, TDD, PM, architect, image, generate image, illustration, icon, logo, banner, mockup | Core framework. Planning, specs, TDD, living docs, image generation. |
 
 ## Integration Plugins
 
@@ -100,7 +100,7 @@
 
 | Plugin | Merged Into | Notes |
 |--------|-------------|-------|
-| ~~specweave-ui~~ | specweave-testing | Browser automation, UI inspection, visual regression now in testing |
+| ~~specweave-ui~~ | specweave-testing, specweave | Browser automation, UI inspection, visual regression now in testing. Image generation moved to core specweave. |
 | ~~specweave-release~~ | specweave (core) | `/sw:npm` now in core |
 | ~~specweave-diagrams~~ | specweave (core) | Mermaid, C4 diagrams now in core |
 | ~~specweave-docs~~ | specweave (core) | Documentation skills now in core |
@@ -121,6 +121,8 @@
 | "ML pipeline" | `specweave-ml` |
 | "Write E2E tests" | `specweave-testing` |
 | "Create release" | `specweave-release` |
+| "Generate an image" | `specweave` |
+| "Create hero image" | `specweave` |
 
 ---
 

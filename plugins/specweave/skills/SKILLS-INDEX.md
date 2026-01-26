@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight skill manifest for lazy loading. Load SKILL.md only when triggers match.
 
-**Total Skills**: 30 | **Last Updated**: 2026-01-13
+**Total Skills**: 31 | **Last Updated**: 2026-01-26
 
 ---
 
@@ -75,6 +75,12 @@
 | **compliance-architecture** | compliance, HIPAA, SOC2, SOC 2, GDPR, PCI-DSS, regulatory, healthcare data, payment card, audit, security standards | `skills/compliance-architecture/SKILL.md` |
 | **service-connect** | connect database, supabase connection, cloudflare workers, wrangler, postgres connection, mongodb atlas, redis cache, MCP setup, service integration, connection failed, IPv6, database setup | `skills/service-connect/SKILL.md` |
 
+### Creative & Media
+
+| Skill | Triggers | Location |
+|-------|----------|----------|
+| **image-generation** | image, images, generate image, create image, picture, illustration, icon, logo, hero image, banner, background, placeholder, mockup, avatar, thumbnail, splash screen, app icon, website image, landing page, UI image, design asset, Pollinations, AI image, text-to-image, FLUX, empty state illustration, feature graphic | `skills/image-generation/SKILL.md` |
+
 ---
 
 ## Quick Lookup Table
@@ -97,6 +103,8 @@
 | "TypeScript/Python code navigation" | `lsp-integration` |
 | "Connect to Supabase/DB" | `service-connect` |
 | "Connection failed" | `service-connect` |
+| "Generate an image" / "Create illustration" | `image-generation` |
+| "Hero image" / "App icon" / "Mockup" | `image-generation` |
 
 ---
 

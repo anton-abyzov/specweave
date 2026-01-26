@@ -438,6 +438,5 @@ https://image.pollinations.ai/prompt/branching%20flowchart%20paths%20made%20of%2
 
 - **frontend-design**: For UI/UX design patterns
 - **browser-automation**: For screenshot capture
-- **visual-regression**: For image comparison testing
 - **docusaurus**: For documentation site setup
 - **technical-writing**: For documentation content
