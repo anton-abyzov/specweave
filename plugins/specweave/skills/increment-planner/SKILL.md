@@ -4,6 +4,12 @@ description: Creates comprehensive implementation plans for ANY type of SpecWeav
 visibility: public
 context: fork
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/spec-template-enforcement-guard.sh
 ---
 
 # Increment Planner Skill
@@ -200,6 +206,13 @@ The template creator ensures:
 - Files contain proper template markers that require PM/Architect completion
 - Validation hooks can detect incomplete templates
 - The skill system is NOT bypassed
+
+**🚫 ENFORCEMENT (v1.0.167+): `spec-template-enforcement-guard.sh` will BLOCK direct writes!**
+
+If you attempt to Write full user story content directly to spec.md:
+- The guard hook detects content without template markers
+- Write operation is BLOCKED with error message
+- You MUST use the template API first, then PM skill completes it
 
 **✅ CORRECT - Use the API via Bash:**
 ```bash

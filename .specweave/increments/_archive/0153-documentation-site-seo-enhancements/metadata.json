@@ -1,0 +1,15 @@
+{
+  "id": "0153-documentation-site-seo-enhancements",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-04T21:00:00Z",
+  "completedAt": "2026-01-25T00:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "updated": "2026-01-25T00:00:00Z",
+  "notes": "All 31 SEO tasks complete: Schema.org structured data, robots.txt, WebP images, preconnect hints, blog SEO templates, noindex for archive pages, broken links fixed, Algolia docs created."
+}
