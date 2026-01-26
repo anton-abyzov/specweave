@@ -199,7 +199,7 @@ dependencies:
 
 ## Image Generation
 
-When documentation needs visuals (diagrams, illustrations, icons), use the `/sw-ui:image` skill:
+When documentation needs visuals (diagrams, illustrations, icons), use the `/sw:image-generation` skill:
 
 ```
 "Generate a hero image for the authentication documentation"
