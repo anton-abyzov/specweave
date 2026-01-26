@@ -1,10 +1,11 @@
 {
   "id": "0175-plugin-session-restart-warning",
-  "status": "ready_for_review",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2026-01-25T19:00:00Z",
-  "lastActivity": "2026-01-25T23:30:00Z",
+  "lastActivity": "2026-01-25T23:45:00Z",
+  "completedAt": "2026-01-25T23:45:00Z",
   "testMode": "TDD",
   "coverageTarget": 90,
   "feature_id": null,

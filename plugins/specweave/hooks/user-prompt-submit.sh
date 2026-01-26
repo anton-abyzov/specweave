@@ -11,7 +11,11 @@
 #   * Keywords: react, vue, kubernetes, docker, terraform, github, jira, etc.
 #   * Controlled by SPECWEAVE_DISABLE_AUTO_LOAD env var
 # - v1.0.127: (DEPRECATED) Background async plugin detection - too slow, plugins only for next prompt
-# - v1.0.106: CRITICAL FIX - Use approve+systemMessage for info commands (not block)
+# - v1.0.166: CRITICAL FIX - Use hookSpecificOutput.additionalContext (NOT systemMessage!)
+#   * Claude Code ignores systemMessage field in UserPromptSubmit hooks
+#   * Use {"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}
+#   * See: https://docs.claude.com/en/docs/claude-code/hooks
+# - v1.0.106: Use approve decision for info commands (not block)
 #   * "block" erases command from context and stops execution
 #   * Info commands (/sw:progress, /sw:status, /sw:jobs, etc.) now use "approve"
 #   * Validation errors (task limit) still use "block" correctly
@@ -29,7 +33,8 @@
 # ARCHITECTURE:
 # - Both CLI and VSCode: Uses "block" decision with "reason" field to display output and stop execution
 # - Scripts execute in hook - NO LLM involvement for instant commands
-# - systemMessage only works in Stop hooks (not UserPromptSubmit), so we use block uniformly
+# - Use hookSpecificOutput.additionalContext for UserPromptSubmit (systemMessage is ignored!)
+# - See output_approve_with_context() helper function
 
 set +e
 
@@ -97,6 +102,31 @@ if [[ -f "$CONFIG_PATH" ]]; then
   fi
 fi
 
+# ==============================================================================
+# HELPER FUNCTIONS (must be defined before use)
+# ==============================================================================
+
+# Helper: Escape output for JSON (handles newlines, quotes, backslashes)
+escape_json_early() {
+  local input="$1"
+  if command -v jq >/dev/null 2>&1; then
+    printf '%s' "$input" | jq -Rs '.' | sed 's/^"//; s/"$//'
+  else
+    # Fallback: basic escaping without jq
+    printf '%s' "$input" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
+  fi
+}
+
+# Helper: Output approve response with context (Claude Code hook format v1.0.166)
+# CRITICAL: systemMessage is NOT a valid field for UserPromptSubmit hooks!
+# Use hookSpecificOutput.additionalContext instead.
+# See: https://docs.claude.com/en/docs/claude-code/hooks
+output_approve_with_context() {
+  local context="$1"
+  local escaped
+  escaped=$(escape_json_early "$context")
+  printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$escaped"
+}
 
 # ==============================================================================
 # KEYWORD-BASED PLUGIN DETECTION REMOVED (v1.0.159)
@@ -135,6 +165,34 @@ fi
 
 # Initialize message variable
 AUTOLOAD_PLUGINS_MSG=""
+
+# ==============================================================================
+# EXTERNAL FOLDER DETECTION (v1.0.166) - Quick recommendation
+# ==============================================================================
+# If user wants to create project in EXTERNAL folder, recommend new session
+EXTERNAL_FOLDER_DETECTED=""
+if echo "$PROMPT" | grep -qiE "(in|to|at|create)[[:space:]]+(external[[:space:]]+folder|separate[[:space:]]+folder|new[[:space:]]+folder|~/|/Users/|/home/|/tmp/|outside[[:space:]]+(this|current|the)[[:space:]]+project)"; then
+  # Extract the target path if mentioned
+  TARGET_PATH=$(echo "$PROMPT" | grep -oE "~/[a-zA-Z0-9_/-]+" | head -1)
+  [[ -z "$TARGET_PATH" ]] && TARGET_PATH=$(echo "$PROMPT" | grep -oE "/Users/[a-zA-Z0-9_/-]+" | head -1)
+  [[ -z "$TARGET_PATH" ]] && TARGET_PATH=$(echo "$PROMPT" | grep -oE "/home/[a-zA-Z0-9_/-]+" | head -1)
+
+  EXTERNAL_FOLDER_DETECTED="📁 **EXTERNAL PROJECT DETECTED**
+
+You're requesting work in a folder outside this project.
+${TARGET_PATH:+Target: $TARGET_PATH}
+
+💡 **Recommended**: Start a NEW Claude Code session in that folder:
+   1. Open terminal: \`cd ${TARGET_PATH:-<target-folder>}\`
+   2. Start Claude Code: \`claude\`
+   3. Run \`specweave init\` to set up SpecWeave there
+
+This ensures plugins and context are properly scoped to the new project.
+
+---
+
+"
+fi
 
 # Only run if features are enabled and not disabled via env
 if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
@@ -252,15 +310,25 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                   # Build feedback message
                   if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                    # v1.0.160: EMPHATIC restart warning - Claude MUST show this to user prominently!
+                    # v1.0.166: EMPHATIC restart warning with copy-paste prompt
+                    # Truncate prompt for display (max 500 chars to avoid bloat)
+                    PROMPT_DISPLAY="${PROMPT:0:500}"
+                    [[ ${#PROMPT} -gt 500 ]] && PROMPT_DISPLAY="${PROMPT_DISPLAY}..."
+                    # Escape for JSON/markdown
+                    PROMPT_DISPLAY=$(echo "$PROMPT_DISPLAY" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g')
+
                     AUTOLOAD_PLUGINS_MSG="\\n════════════════════════════════════════════════════════════\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}⚠️  **PLUGINS INSTALLED - RESTART REQUIRED**\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════\\n\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}✅ Installed: ${PLUGINS_INSTALLED}\\n\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**CRITICAL**: Skills/agents from these plugins are NOT available in this session!\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}📋 To use these plugins:\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   1. Start a NEW Claude Code session (Cmd+Shift+P → 'Claude: New Session')\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   2. Copy-paste your original prompt into the new session\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}📋 **Next steps:**\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   1. Start a NEW Claude Code session\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}      • VSCode: Cmd+Shift+P → 'Claude: New Session'\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}      • CLI: Exit and run \\\`claude\\\` again\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}   2. Paste your prompt (provided below)\\n\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}📋 **Your prompt (copy this):**\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}\\\`\\\`\\\`\\n${PROMPT_DISPLAY}\\n\\\`\\\`\\\`\\n\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════\\n\\n"
                     AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**INSTRUCTION TO CLAUDE**: You MUST display the above restart warning to the user IMMEDIATELY and prominently. Do NOT continue with the task until the user has restarted.\\n"
                   elif [[ -n "$PLUGINS_ALREADY" ]]; then
@@ -296,7 +364,9 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
               if [[ "$ABOVE" == "1" ]]; then
                 AUTOLOAD_PREFIX=""
-                [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PLUGINS_MSG}
+                # v1.0.166: Prepend external folder warning if detected
+                [[ -n "$EXTERNAL_FOLDER_DETECTED" ]] && AUTOLOAD_PREFIX="${EXTERNAL_FOLDER_DETECTED}"
+                [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${AUTOLOAD_PLUGINS_MSG}
 
 "
                 # Build agent spawn directive if routing skills available (v1.0.155)
@@ -355,7 +425,7 @@ $CMD
 ---
 
 *Configure: \`incrementAssist.mandatory: false\` to make this advisory*"
-                      jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                      output_approve_with_context "$MSG"
                       exit 0
                     else
                       MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
@@ -370,7 +440,7 @@ $CMD
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                      jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                      output_approve_with_context "$MSG"
                       exit 0
                     fi
                     ;;
@@ -389,7 +459,7 @@ $CMD
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                    output_approve_with_context "$MSG"
                     exit 0
                     ;;
 
@@ -409,7 +479,7 @@ Consider reopening the existing increment:
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    jq -nc --arg msg "$MSG" '{"decision":"approve","systemMessage":$msg}'
+                    output_approve_with_context "$MSG"
                     exit 0
                     ;;
                 esac
@@ -568,13 +638,13 @@ Consider reopening the existing increment:
               # Footer
               BRAIN_MSG+="---\\n*Router Brain v1.0.150*"
 
-              jq -nc --arg msg "$BRAIN_MSG" '{"decision":"approve","systemMessage":$msg}'
+              output_approve_with_context "$BRAIN_MSG"
               exit 0
             fi
 
             # If plugins loaded but no routing, show just plugins (fallback)
             if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
-              jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+              output_approve_with_context "$AUTOLOAD_PLUGINS_MSG"
               exit 0
             fi
           else
@@ -727,7 +797,7 @@ fi
 if ! echo "$PROMPT" | grep -qE "(specweave|/sw:|increment|add|create|implement|build|develop)"; then
   if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
     # Show plugin loading feedback even for non-SpecWeave prompts
-    jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+    output_approve_with_context "$AUTOLOAD_PLUGINS_MSG"
   else
     echo '{"decision":"approve"}'
   fi
@@ -743,7 +813,7 @@ SPECWEAVE_DIR=".specweave"
 if [[ ! -d "$SPECWEAVE_DIR" ]]; then
   if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
     # Show plugin loading feedback even for non-SpecWeave projects
-    jq -nc --arg msg "$AUTOLOAD_PLUGINS_MSG" '{"decision":"approve","systemMessage":$msg}'
+    output_approve_with_context "$AUTOLOAD_PLUGINS_MSG"
   else
     echo '{"decision":"approve"}'
   fi
@@ -767,6 +837,9 @@ escape_json() {
   # We strip the surrounding quotes since we add them in the printf
   printf '%s' "$input" | jq -Rs '.' | sed 's/^"//; s/"$//'
 }
+
+# NOTE: output_approve_with_context() is defined earlier in the file (line ~105)
+# It uses hookSpecificOutput.additionalContext (NOT systemMessage!)
 
 # Helper: Check if running in VSCode extension
 # VSCode sets CLAUDE_CODE_ENTRYPOINT=claude-vscode
@@ -810,11 +883,9 @@ if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
     OUTPUT="❌ No jobs script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -831,11 +902,9 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
     OUTPUT="❌ No progress script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -852,11 +921,9 @@ if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
     OUTPUT="❌ No status script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -871,11 +938,9 @@ if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
     OUTPUT="❌ No workflow script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -890,11 +955,9 @@ if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
     OUTPUT="❌ No costs script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -909,11 +972,9 @@ if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
     OUTPUT="❌ No analytics script available"
   fi
 
-  # Unified response for both CLI and VSCode (v1.0.106)
-  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
-  # "block" erases the command from context; we want to show info and continue
-  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+  # Unified response for both CLI and VSCode (v1.0.166)
+  # Uses additionalContext (NOT systemMessage) to inject output into Claude's context
+  output_approve_with_context "$OUTPUT"
   exit 0
 fi
 
@@ -1098,9 +1159,9 @@ if echo "$PROMPT" | grep -qE "^/sw:increment"; then
     WIP_MSG="⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\\n\\nYou have ${ACTIVE_COUNT} active increments (configured maximum: ${HARD_CAP})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /sw:done <id>\\n  2️⃣  Pause an increment: /sw:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."
     # Prepend project context if available
     if [[ -n "$PROJECT_CONTEXT" ]]; then
-      printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
+      output_approve_with_context "${PROJECT_CONTEXT}${WIP_MSG}"
     else
-      printf '{"decision":"approve","systemMessage":"%s"}\n' "$WIP_MSG"
+      output_approve_with_context "$WIP_MSG"
     fi
     exit 0
   fi
@@ -1110,16 +1171,16 @@ if echo "$PROMPT" | grep -qE "^/sw:increment"; then
     WIP_MSG="⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\\n\\nYou have ${ACTIVE_COUNT} active increment(s) (recommended limit: ${SOFT_LIMIT})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/sw:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
     # Prepend project context if available
     if [[ -n "$PROJECT_CONTEXT" ]]; then
-      printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
+      output_approve_with_context "${PROJECT_CONTEXT}${WIP_MSG}"
     else
-      printf '{"decision":"approve","systemMessage":"%s"}\n' "$WIP_MSG"
+      output_approve_with_context "$WIP_MSG"
     fi
     exit 0
   fi
 
   # No WIP limit warning, but we may have project context to inject
   if [[ -n "$PROJECT_CONTEXT" ]]; then
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$PROJECT_CONTEXT"
+    output_approve_with_context "$PROJECT_CONTEXT"
     exit 0
   fi
 fi
@@ -1165,7 +1226,7 @@ if [[ -n "$ACTIVE_INCREMENT" ]] && echo "$PROMPT" | grep -qE "/(specweave:)?(syn
   if [[ -f "$SPEC_FILE" ]] && [[ -f "$PLAN_FILE" ]]; then
     # Check if spec is newer than plan (indicates spec changes need sync)
     if [[ -n $(find "$SPEC_FILE" -newer "$PLAN_FILE" 2>/dev/null) ]]; then
-      printf '{"decision":"approve","systemMessage":"⚠️ Spec changes detected in %s\\n\\nspec.md has been modified after plan.md.\\nConsider running /sw:sync-docs to update living documentation."}\n' "$ACTIVE_INCREMENT"
+      output_approve_with_context "⚠️ Spec changes detected in ${ACTIVE_INCREMENT}\n\nspec.md has been modified after plan.md.\nConsider running /sw:sync-docs to update living documentation."
       exit 0
     fi
   fi
@@ -1276,9 +1337,7 @@ if [[ -n "$CONTEXT" ]]; then
 fi
 
 if [[ -n "$FINAL_MESSAGE" ]]; then
-  # Escape for JSON (newlines, quotes)
-  FINAL_MESSAGE_ESCAPED=$(echo "$FINAL_MESSAGE" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
-  printf '{"decision":"approve","systemMessage":"%s"}\n' "$FINAL_MESSAGE_ESCAPED"
+  output_approve_with_context "$FINAL_MESSAGE"
 else
   echo '{"decision":"approve"}'
 fi

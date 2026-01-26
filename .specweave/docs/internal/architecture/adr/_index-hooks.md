@@ -5,7 +5,7 @@ title: "🪝 Hooks & Events"
 
 # 🪝 Hooks & Events
 
-**12** documents in this category.
+**13** documents in this category.
 
 ## Documents
 
@@ -21,6 +21,7 @@ title: "🪝 Hooks & Events"
 - [Comprehensive Crash Prevention Rules](./0157-comprehensive-crash-prevention.md) *(12/3/2025)*
 - [n8n Kafka Integration Approach](./0169-n8n-kafka-integration-approach.md) *(12/3/2025)*
 - [Resilient Hook Execution Pattern](./0189-resilient-hook-execution.md) *(12/3/2025)*
+- [UserPromptSubmit Hook additionalContext Fix](./0230-userpromptsubmit-hook-additionalcontext-fix.md) *(1/25/2026)*
 
 ---
 [← Back to Categories](./_categories.md)
