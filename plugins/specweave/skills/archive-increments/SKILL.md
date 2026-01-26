@@ -1,6 +1,6 @@
 ---
 name: archive-increments
-description: Intelligent increment archiving expert. Analyzes increment age, status, and activity to recommend archiving strategy. Keeps workspace clean while preserving history. Activates for archive increments, clean workspace, too many increments, archive old, archive completed, preserve history, _archive folder.
+description: Intelligent increment archiving expert that analyzes age, status, and activity to recommend archiving. Use when workspace has too many increments, cleaning up completed work, or organizing the _archive folder. Follows the 10-10-10 rule for workspace organization.
 ---
 
 # Increment Archive Manager

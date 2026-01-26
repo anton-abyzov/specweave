@@ -11,7 +11,7 @@
 Currently, `/sw:living-docs` runs as a **detached background process** that:
 - Spawns once, completes all phases (A-H), then exits
 - Doesn't integrate with auto mode's stop hook mechanism
-- Can't be controlled by the Ralph Wiggum auto-execution loop
+- Can't be controlled by the auto-execution loop
 
 **User Request**: Make living docs updates run in "auto mode" where they:
 1. Run continuously for extended periods (hours/days)
@@ -49,7 +49,7 @@ Currently, `/sw:living-docs` runs as a **detached background process** that:
 ❌ ISSUES:
 - No integration with auto mode's stop hook
 - Runs to completion then exits (one-shot)
-- Can't be controlled by Ralph Wiggum loop
+- Can't be controlled by auto mode loop
 - Doesn't participate in auto mode's iteration tracking
 ```
 
@@ -81,7 +81,7 @@ Currently, `/sw:living-docs` runs as a **detached background process** that:
 └─────────────────────────────────────────────────────────────┘
 
 ✅ BENEFITS:
-- Integrates with auto mode's Ralph Wiggum loop
+- Integrates with auto mode's feedback loop
 - Respects stop hooks for controlled execution
 - Incremental progress across iterations
 - Can run for extended periods (days/weeks)
@@ -411,7 +411,7 @@ EOF
 ### Positive
 
 1. **Long-running docs updates** - Can run for days/weeks with checkpoints
-2. **Auto mode integration** - Living docs participates in Ralph Wiggum loop
+2. **Auto mode integration** - Living docs participates in auto mode loop
 3. **Controlled execution** - Stop hook prevents runaway processes
 4. **Incremental progress** - Users see phase-by-phase updates
 5. **Resume capability** - Interrupt and resume without losing work
@@ -434,7 +434,7 @@ EOF
 
 - [stop-auto.sh](../../../../../../plugins/specweave/hooks/stop-auto.sh) - Auto mode stop hook
 - [living-docs.md](../../../../../../plugins/specweave/commands/living-docs.md) - Living docs command docs
-- [ADR-0042](./0042-ralph-wiggum-auto-execution.md) - Ralph Wiggum auto execution pattern
+- [Auto Mode Documentation](../../../../../../plugins/specweave/commands/auto.md) - Auto execution pattern
 - [job-launcher.ts](../../../../../../src/core/background/job-launcher.ts) - Background job system
 
 ---

@@ -7,7 +7,7 @@
 
 ## Decision
 
-Redesign the autonomous execution engine with a modular architecture inspired by the Ralph Wiggum plugin, featuring session state management, circuit breakers, human gates, and test gates.
+Redesign the autonomous execution engine with a modular architecture featuring session state management, circuit breakers, human gates, and test gates using a stop hook feedback loop pattern.
 
 ## Context
 

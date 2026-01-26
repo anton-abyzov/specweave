@@ -59,7 +59,7 @@ describe.skip('Stop Hook Integration (UNIMPLEMENTED: SessionStateManager module 
   });
 
   describe('stop_hook_active flag', () => {
-    it('should still evaluate completion when stop_hook_active is true (Ralph Wiggum pattern)', () => {
+    it('should still evaluate completion when stop_hook_active is true (feedback loop pattern)', () => {
       // Create a session with incomplete tasks
       const manager = new SessionStateManager(tempDir);
       const session = manager.createSession({ incrementQueue: ['0001-test'] });

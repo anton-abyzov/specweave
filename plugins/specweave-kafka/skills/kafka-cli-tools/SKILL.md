@@ -1,6 +1,6 @@
 ---
 name: kafka-cli-tools
-description: Expert knowledge of Kafka CLI tools (kcat, kcli, kaf, kafkactl). Auto-activates on keywords kcat, kafkacat, kcli, kaf, kafkactl, kafka cli, kafka command line, produce message, consume topic, list topics, kafka metadata. Provides command examples, installation guides, and tool comparisons.
+description: Kafka CLI tools expert for kcat, kafkactl, and native Kafka commands. Use when producing/consuming messages from command line, listing topics, or troubleshooting Kafka with CLI tools.
 ---
 
 # Kafka CLI Tools Expert

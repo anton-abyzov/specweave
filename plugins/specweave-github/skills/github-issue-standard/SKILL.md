@@ -1,6 +1,6 @@
 ---
 name: github-issue-standard
-description: Standard format for ALL GitHub issues created by SpecWeave. Ensures checkable acceptance criteria, task connections, working links, and consistent metadata. Activates for create GitHub issue, sync to GitHub, format GitHub issue, standardize issue.
+description: Mandatory format standard for ALL GitHub issues created by SpecWeave with checkable acceptance criteria and proper metadata. Use when creating GitHub issues, formatting issue content, or ensuring consistent issue structure. Covers user stories, epics, features, and increments.
 ---
 
 # GitHub Issue Standard - Universal Format

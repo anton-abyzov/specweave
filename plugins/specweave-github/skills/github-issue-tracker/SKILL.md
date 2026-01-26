@@ -1,6 +1,6 @@
 ---
 name: github-issue-tracker
-description: Task-level GitHub issue tracking for SpecWeave increments. Provides fine-grained progress tracking via issue comments, task checklists, and labels. Enables team collaboration on individual tasks. Activates for task tracking, GitHub comments, issue updates, task progress, team collaboration, granular tracking.
+description: Task-level GitHub issue tracking for fine-grained progress visibility via comments, checklists, and labels. Use when tracking detailed task progress in GitHub, managing team collaboration on specific tasks, or tracking blocking issues. Enables per-task updates and discussions.
 ---
 
 # GitHub Issue Tracker - Task-Level Progress Tracking

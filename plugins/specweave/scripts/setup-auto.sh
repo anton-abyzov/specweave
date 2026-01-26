@@ -6,7 +6,7 @@
 # Options:
 #   --max-iterations N   Maximum iterations (default: 100)
 #   --max-hours N        Maximum hours to run (default: none)
-#   --simple             Simple/Ralph mode (minimal context)
+#   --simple             Simple mode (minimal context)
 #   --dry-run            Show what would happen without creating session
 #   --increments A,B,C   Explicit increment queue
 #   --all-backlog        Process all backlog items
@@ -29,7 +29,7 @@ set -e
 
 # Defaults - v2.3 enhanced for ultra-long sessions
 # IMPORTANT: Iteration limits are safety nets, NOT primary completion criteria
-# Primary completion = tests passing + tasks complete (Ralph Wiggum pattern)
+# Primary completion = tests passing + tasks complete (stop hook feedback loop)
 # NOTE: Stop hook runs PER AGENT - each spawned subagent gets its own hook invocation
 MAX_ITERATIONS=2500     # 5x increase from 500 for ultra-long sessions
 MAX_HOURS="600"         # 25 days default (5x increase from 120 hours)

@@ -1,6 +1,6 @@
 ---
 name: reflective-reviewer
-description: Self-reflection specialist that analyzes completed work for quality issues, security vulnerabilities, and improvement opportunities. Performs comprehensive code review covering OWASP Top 10, best practices, testing gaps, performance, and technical debt. Activates after task completion to provide constructive feedback and catch issues early before code review. Activates for self-reflection, code review, quality assessment, security review, OWASP check, best practices review, testing gaps, performance review, technical debt, lessons learned, what went well, what could improve, post-task analysis, code quality, reflection.
+description: Self-reflection specialist that analyzes completed work for quality issues, security vulnerabilities, and improvement opportunities. Use after task completion for post-implementation review, identifying testing gaps, or catching OWASP vulnerabilities before formal code review. Covers technical debt assessment and lessons learned analysis.
 allowed-tools: Read, Grep, Glob
 ---
 

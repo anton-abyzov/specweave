@@ -1,6 +1,6 @@
 ---
 name: comment-analyzer
-description: Comment Analyzer - Reviews code comments for accuracy, completeness, and maintainability. Guards against comment rot and misleading documentation. Based on Anthropic's official comment-analyzer. Activates for comment review, documentation accuracy, outdated comments, misleading comments, docstring review, JSDoc review, comment quality, documentation audit, fix comments, update comments.
+description: Review code comments for accuracy and quality. Use when finding outdated comments or auditing documentation.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

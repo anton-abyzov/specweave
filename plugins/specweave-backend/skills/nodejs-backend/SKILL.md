@@ -1,17 +1,6 @@
 ---
 name: nodejs-backend
-description: >-
-  Node.js and TypeScript backend developer for Express.js, Fastify, and NestJS APIs. Use when creating
-  a Node.js API, building an Express server, implementing REST endpoints, or setting up a backend
-  project. Use when working with Prisma, TypeORM, Sequelize, Mongoose, Drizzle, or any Node.js ORM.
-  Use when implementing authentication with JWT, Passport, or session-based auth. Use when implementing
-  authorization, role-based access control, or API security. Use when the user says "create API",
-  "build backend", "implement endpoint", "Express server", "NestJS", "Node.js backend", or "REST API".
-  Use when working with middleware, request validation with Zod or Joi, error handling, or logging.
-  Use when implementing background jobs with Bull or BullMQ, real-time features with Socket.io or
-  WebSockets, or scheduled tasks with node-cron. Use when setting up database connections, running
-  migrations, or implementing CRUD operations. Also use when optimizing Node.js performance, handling
-  file uploads with Multer, or implementing API rate limiting and caching with Redis.
+description: Node.js/TypeScript backend developer for Express, Fastify, and NestJS. Use when building Node.js APIs, REST endpoints, or backend services.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---

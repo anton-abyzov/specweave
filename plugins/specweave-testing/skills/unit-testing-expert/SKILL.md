@@ -1,6 +1,6 @@
 ---
 name: unit-testing-expert
-description: Comprehensive unit testing expertise covering Vitest, Jest, test-driven development (TDD), mocking strategies, test coverage, snapshot testing, test architecture, testing patterns, dependency injection, test doubles (mocks, stubs, spies, fakes), async testing, error handling tests, parametric testing, test organization, code coverage analysis, mutation testing, and production-grade unit testing best practices. Activates for unit testing, vitest, jest, test-driven development, TDD, red-green-refactor, mocking, stubbing, spying, test doubles, test coverage, snapshot testing, test architecture, dependency injection, async testing, test patterns, code coverage, mutation testing, test isolation, test fixtures, AAA pattern, given-when-then, test organization, testing best practices, vi.fn, vi.mock, vi.spyOn, describe, it, expect, beforeEach, afterEach.
+description: Unit testing expert for Vitest and Jest. Use when writing unit tests, implementing mocking, or setting up test coverage.
 ---
 
 # Unit Testing Expert

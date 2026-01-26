@@ -1,6 +1,6 @@
 ---
 name: ado-sync
-description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Activates ONLY when user asks questions about Azure DevOps integration or needs help configuring ADO sync. Does NOT activate for slash commands. For syncing, use /sw-ado:sync command instead.
+description: Help and guidance for Azure DevOps synchronization with SpecWeave increments. Use when asking how to set up ADO sync, configure credentials, or troubleshoot integration issues. For actual syncing, use /sw-ado:sync command.
 ---
 
 # Azure DevOps Sync Skill

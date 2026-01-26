@@ -1,5 +1,5 @@
 /**
- * Tests for Cancel Auto CLI Command (Ralph Wiggum Pattern)
+ * Tests for Cancel Auto CLI Command
  *
  * Verifies the simplified cancel-auto implementation:
  * - Just removes auto-mode.json flag
@@ -13,7 +13,7 @@ import * as os from 'os';
 
 // We need to import the handler separately to test it
 // The command itself uses readline which is hard to test
-describe('Cancel Auto Command (Ralph Wiggum Pattern)', () => {
+describe('Cancel Auto Command', () => {
   let tempDir: string;
   let stateDir: string;
 

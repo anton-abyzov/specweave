@@ -324,17 +324,21 @@ Each skill's MEMORY.md follows this structure:
 
 ## Execution
 
+**CRITICAL: Execute steps SEQUENTIALLY. Wait for each tool call to complete before the next.**
+**DO NOT make parallel tool calls - this causes API concurrency errors.**
+
 When this command is invoked:
 
-1. **Scan conversation** for correction, approval, and complaint signals
+1. **Scan conversation** for correction, approval, and complaint signals (NO tool calls - analyze in context)
 2. **Transform each signal** into an actionable learning (see Quality Rules below)
 3. **Validate** each learning against quality checklist
 4. **REJECT** low-quality extractions (truncated, questions, gibberish)
 5. **Match to skills** based on category and keywords
-6. **Show preview** of proposed changes
-7. **Save to MEMORY.md** files on approval
-8. **Git commit** if configured
-9. **Show confirmation** with learning summary
+6. **Show preview** of proposed changes (output to user - NO tool call)
+7. **Read existing MEMORY.md** (ONE Read tool call, wait for result)
+8. **Save to MEMORY.md** files on approval (ONE Write tool call per file, sequential)
+9. **Git commit** if configured (ONE Bash call)
+10. **Show confirmation** with learning summary (output to user - NO tool call)
 
 ## ⚠️ CRITICAL: Quality Rules
 

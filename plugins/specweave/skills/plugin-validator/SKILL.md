@@ -1,6 +1,6 @@
 ---
 name: plugin-validator
-description: Validates SpecWeave plugin installation when EXPLICITLY requested by user. Ensures marketplace registered, core plugin installed, and context-specific plugins available. ONLY activates for explicit validation requests - does NOT auto-activate for workflow commands to avoid false positives. Activates ONLY for plugin validation, environment setup, validate plugins, check plugins, specweave init, fresh setup, marketplace registration.
+description: Validates SpecWeave plugin installation when EXPLICITLY requested by user. Use for checking if plugins are installed correctly, validating marketplace registration, or troubleshooting missing plugins. Only triggers on explicit requests to avoid false positives during normal workflow.
 allowed-tools: Read, Bash, Grep
 ---
 

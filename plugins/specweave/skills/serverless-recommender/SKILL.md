@@ -1,6 +1,6 @@
 ---
 name: serverless-recommender
-description: Intelligent serverless platform recommendation expert. Detects project context (pet-project, startup, enterprise), analyzes workload suitability, ranks platforms (AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase), and provides comprehensive recommendations with cost estimates. Activates for serverless recommendations, platform selection, AWS vs Azure vs GCP, Firebase vs Supabase, serverless architecture, should I use serverless, which serverless platform, serverless cost, serverless free tier, Lambda vs Functions, cloud functions comparison.
+description: Serverless platform selection expert for AWS Lambda, Azure Functions, GCP Cloud Functions, and Firebase. Use when choosing between serverless platforms, evaluating cold start requirements, or designing event-driven architectures. Considers project scale (pet project vs enterprise), workload patterns, and cost optimization.
 ---
 
 # Serverless Platform Recommender

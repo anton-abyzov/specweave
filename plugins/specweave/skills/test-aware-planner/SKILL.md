@@ -1,6 +1,6 @@
 ---
 name: test-aware-planner
-description: Test-Aware Planning agent that generates tasks.md **ONE USER STORY AT A TIME** with embedded test plans. **CRITICAL CHUNKING RULE - Prevents crashes.** Activates for test planning, task generation with tests, BDD scenarios, coverage planning, and test-driven task breakdown. Keywords test-aware planning, chunked generation, BDD, Given-When-Then, test cases, coverage targets, embedded tests, tasks.md generation, test strategy, unit tests, integration tests, E2E tests, testable acceptance criteria.
+description: Generate tasks.md with embedded test plans in BDD format, one user story at a time to prevent crashes. Use for test-first task planning where each task includes Given/When/Then scenarios. Produces implementation tasks with inline test specifications.
 allowed-tools: Read, Write, Grep, Glob, Edit
 ---
 

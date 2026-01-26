@@ -1,6 +1,6 @@
 ---
 name: multi-project-spec-mapper
-description: Intelligent multi-project specification splitting and organization. Analyzes user stories to map them to correct projects (FE, BE, MOBILE, INFRA) based on content, tech stack, and component architecture. Creates project-specific folder structure and splits monolithic specs. Activates for multi-project JIRA/GitHub setups, brownfield projects with multiple teams, microservices architecture. Keywords: multi-project, project mapping, spec splitting, JIRA projects, multiple projects, microservices, FE/BE/MOBILE split, intelligent classification.
+description: Intelligent multi-project specification splitting that maps user stories to correct projects (FE, BE, MOBILE, INFRA). Use when working with multiple JIRA/GitHub projects, microservices architecture, or brownfield projects with multiple teams. Analyzes content and tech stack for automatic classification.
 ---
 
 # Multi-Project Spec Mapper - Intelligent Project Organization

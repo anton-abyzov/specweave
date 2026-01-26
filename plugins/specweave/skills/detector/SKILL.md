@@ -1,6 +1,6 @@
 ---
 name: detector
-description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. Explains available slash commands and workflow. Keywords slash commands, /sw:increment, /increment, /sw:do, /sw:progress, /sw:validate, /sw:done, specweave commands, workflow help, specweave folder.
+description: Detects SpecWeave context and provides workflow documentation for available commands. Use when learning SpecWeave commands, understanding available slash commands (/sw:increment, /sw:do, /sw:progress, /sw:done), or getting workflow guidance. Explains command syntax and recommended workflow patterns.
 ---
 
 # SpecWeave - Smart Workflow Documentation

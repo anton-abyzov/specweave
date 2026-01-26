@@ -1,6 +1,6 @@
 ---
 name: code-standards-analyzer
-description: Coding standards discovery and documentation expert. Analyzes codebase to detect naming conventions, patterns, anti-patterns, and best practices. Generates or updates coding standards documentation in .specweave/docs/internal/governance/. Detects ESLint/Prettier configs, analyzes TypeScript/JavaScript patterns, finds security issues, and creates evidence-based standards with confidence levels. Activates for analyze coding standards, discover conventions, code style analysis, detect patterns, coding guidelines, what are the standards, code quality check, naming conventions, linting rules, best practices analysis, standards audit, code review standards, detect anti-patterns.
+description: Generate and maintain coding standards documentation from existing codebase patterns. Use when creating STANDARDS.md files, onboarding new developers, or documenting team conventions. Evidence-based approach - standards reflect reality, not aspirations.
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 

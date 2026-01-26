@@ -50,7 +50,26 @@ To check status: /sw:reflect-status
 
 ## Execution
 
+**CRITICAL: This is a SIMPLE command. NO Glob, NO parallel tool calls needed.**
+
 When this command is invoked:
 
-1. **Update state file** `.specweave/state/reflect-config.json` with `autoReflect: false`
-2. **Confirm disabled** with status message
+1. **Read existing config** (ONE tool call):
+   ```
+   Read .specweave/state/reflect-config.json
+   ```
+   (If file doesn't exist, create with autoReflect: false)
+
+2. **Write updated config** (ONE tool call - WAIT for step 1):
+   Update `autoReflect` to `false`, preserve other fields.
+   Write to `.specweave/state/reflect-config.json`
+
+3. **Display confirmation** (NO tool call - just output text):
+   ```
+   ❌ Auto-reflection DISABLED
+
+   Manual /sw:reflect still works.
+   Use /sw:reflect-on to re-enable.
+   ```
+
+**WARNING**: Do NOT use Glob to scan directories - this command only writes ONE file.

@@ -1,6 +1,6 @@
 ---
 name: kafka-iac-deployment
-description: Infrastructure as Code (IaC) deployment expert for Apache Kafka. Guides Terraform deployments across Apache Kafka (KRaft mode), AWS MSK, Azure Event Hubs. Activates for terraform, iac, infrastructure as code, deploy kafka, provision kafka, aws msk, azure event hubs, kafka infrastructure, terraform modules, cloud deployment, kafka deployment automation.
+description: Terraform deployment expert for Apache Kafka, AWS MSK, and Azure Event Hubs. Use when provisioning Kafka infrastructure with IaC, comparing managed vs self-hosted platforms, or automating cluster deployments.
 ---
 
 # Kafka Infrastructure as Code (IaC) Deployment

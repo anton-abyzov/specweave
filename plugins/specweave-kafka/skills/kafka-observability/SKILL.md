@@ -1,6 +1,6 @@
 ---
 name: kafka-observability
-description: Kafka monitoring and observability expert. Guides Prometheus + Grafana setup, JMX metrics, alerting rules, and dashboard configuration. Activates for kafka monitoring, prometheus, grafana, kafka metrics, jmx exporter, kafka observability, monitoring setup, kafka dashboards, alerting, kafka performance monitoring, metrics collection.
+description: Kafka monitoring and observability expert for Prometheus, Grafana, and JMX metrics. Use when setting up Kafka monitoring, configuring alerting rules, or building performance dashboards.
 ---
 
 # Kafka Monitoring & Observability

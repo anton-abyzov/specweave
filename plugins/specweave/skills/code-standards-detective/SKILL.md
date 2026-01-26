@@ -1,6 +1,6 @@
 ---
 name: code-standards-detective
-description: Coding standards discovery agent. Performs deep analysis of codebase to detect naming conventions, import patterns, function characteristics, type usage, error handling, and anti-patterns. Generates evidence-based coding standards documentation with statistical confidence levels and real code examples. Parses ESLint, Prettier, TypeScript configs. Detects security issues and maintainability concerns. Activates for coding standards, code conventions, naming conventions, style guide, code analysis, detect patterns, import patterns, function patterns, type patterns, error handling patterns, anti-patterns, eslint config, prettier config, typescript config, code style, code quality rules, project conventions, consistency check, coding guidelines.
+description: Deep codebase analysis to discover actual coding standards through statistical evidence. Use when analyzing naming conventions, import patterns, or detecting anti-patterns in existing code. Provides evidence-based detection of how the codebase actually works (not aspirations).
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

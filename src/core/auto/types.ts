@@ -1,5 +1,5 @@
 /**
- * Auto Types (Simplified - Ralph Wiggum Pattern)
+ * Auto Types (Simplified - Stop Hook Feedback Loop)
  *
  * Core principle: The increment's metadata.json status IS the state.
  * No complex session management needed.

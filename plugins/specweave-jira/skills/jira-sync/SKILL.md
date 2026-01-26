@@ -1,6 +1,6 @@
 ---
 name: jira-sync
-description: Sync SpecWeave increments with JIRA epics/stories. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Activates ONLY when user asks questions about JIRA integration or needs help configuring JIRA sync. Does NOT activate for slash commands. For syncing, use /sw-jira:sync command instead. Coordinates with jira-mapper agent.
+description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use /sw-jira:sync command instead.
 allowed-tools: Read, Write, Edit, Task, Bash
 ---
 

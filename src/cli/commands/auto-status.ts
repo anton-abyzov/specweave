@@ -1,5 +1,5 @@
 /**
- * Auto Status CLI Command (Simplified - Ralph Wiggum Pattern)
+ * Auto Status CLI Command (Simplified)
  *
  * Shows auto mode status by checking the flag file and counting active increments.
  * The increment metadata.json IS the source of truth.

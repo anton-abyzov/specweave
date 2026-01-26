@@ -1,6 +1,6 @@
 ---
 name: user-story-updater
-description: Updates GitHub issues for user stories with proper ACs and tasks. Activates for update user story issue, fix GitHub issue format, add checkable ACs, refresh user story issue, sync user story to GitHub.
+description: Updates GitHub issues for user stories with checkable acceptance criteria and task connections. Use when fixing GitHub issue format, adding checkable ACs to existing issues, or refreshing user story issue content from specs.
 model: opus
 context: fork
 ---

@@ -1,6 +1,6 @@
 ---
 name: increment-planner
-description: Creates SpecWeave increments (feature, hotfix, bug, refactor, experiment). Activates for increment planning, feature planning, hotfix, bug investigation, change request, refactor, POC, create increment, new product, MVP, app development.
+description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Use when starting new features, hotfixes, bugs, or any development work that needs specification and task breakdown. Creates spec.md, plan.md, tasks.md with proper AC-IDs and living docs integration.
 visibility: public
 context: fork
 model: opus

@@ -19,7 +19,7 @@ Analyzed **9 official Anthropic plugins** and integrated their best practices in
 | 4 | `pr-review-toolkit` | 6 specialized PR review agents | ✅ Integrated (4 agents) |
 | 5 | `frontend-design` | Bold UI aesthetics | ✅ Integrated |
 | 6 | `feature-dev` | 7-phase feature workflow | ✅ Integrated |
-| 7 | `ralph-loop` | Autonomous iteration patterns | ✅ Integrated |
+| 7 | `auto-loop` | Autonomous iteration patterns | ✅ Integrated |
 | 8 | `commit-commands` | Smart commit/PR workflow | Already in `/sw:save` |
 | 9 | `hookify` | User-defined behavioral hooks | N/A (SpecWeave has hooks system) |
 
@@ -123,9 +123,9 @@ Key features:
 - Refinement areas (complexity, redundancy, naming)
 - Balance check before changes
 
-### 9. `ralph-loop-guide` (specweave core)
-**Location**: `plugins/specweave/skills/ralph-loop-guide/SKILL.md`
-**Based on**: Anthropic's `ralph-loop` plugin
+### 9. `auto-loop-guide` (specweave core)
+**Location**: `plugins/specweave/commands/auto.md`
+**Based on**: Anthropic's stop hook pattern
 **Purpose**: Guidelines for effective autonomous iteration
 
 Key features:
@@ -183,8 +183,8 @@ From `frontend-design`: Reject generic AI aesthetics, embrace distinctive choice
 ### 7. 7-Phase Feature Workflow
 From `feature-dev`: Discovery → Explore → Clarify → Design → Implement → Review → Summary
 
-### 8. Ralph Loop Completion Criteria
-From `ralph-loop`: Clear completion signals, incremental phases, safety limits.
+### 8. Auto Loop Completion Criteria
+From auto mode: Clear completion signals, incremental phases, safety limits.
 
 ---
 
@@ -212,7 +212,7 @@ From `ralph-loop`: Clear completion signals, incremental phases, safety limits.
 | `code-explorer/AGENT.md` | Agent | ~220 |
 | `security-patterns/SKILL.md` | Skill | ~150 |
 | `code-simplifier/SKILL.md` | Skill | ~180 |
-| `ralph-loop-guide/SKILL.md` | Skill | ~280 |
+| `auto-mode-guide` | Command | ~280 |
 | `feature-dev.md` | Command | ~200 |
 | **Total** | | ~2,320 |
 
@@ -268,4 +268,4 @@ The `security-patterns` skill auto-activates when writing code that matches dang
 
 - [Anthropic Claude Plugins Official](https://github.com/anthropics/claude-plugins-official)
 - [Frontend Aesthetics Cookbook](https://github.com/anthropics/claude-cookbooks/blob/main/coding/prompting_for_frontend_aesthetics.ipynb)
-- [Ralph Loop Pattern](https://x.com/bcherny/status/2004916410687050167)
+- [Auto Mode Documentation](../../../../../../plugins/specweave/commands/auto.md)

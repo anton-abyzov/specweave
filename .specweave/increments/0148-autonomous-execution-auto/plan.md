@@ -521,4 +521,4 @@ None required - using existing Node.js and TypeScript stack.
 
 - [ADR-0175: Workflow Orchestration](../.specweave/docs/internal/architecture/adr/0175-workflow-orchestration-architecture.md)
 - [ADR-0177: Autonomous Mode Safety](../.specweave/docs/internal/architecture/adr/0177-autonomous-mode-safety.md)
-- [Ralph Wiggum Plugin](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ralph-wiggum)
+- [Auto Mode Documentation](../../../../../../plugins/specweave/commands/auto.md)

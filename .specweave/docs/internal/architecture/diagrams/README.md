@@ -50,7 +50,7 @@ This folder contains comprehensive Mermaid diagrams for SpecWeave architecture. 
 |---------|-------------|----------|
 | **Increment Creation** | /sw:increment command flow with agents | `flows/increment-creation-flow.mmd` |
 | **Task Completion** | Event-driven AC sync and status transitions | `flows/task-completion-flow.mmd` |
-| **Auto Mode** | Ralph Wiggum pattern with stop hooks | `flows/auto-mode-flow.mmd` |
+| **Auto Mode** | Stop hook feedback loop pattern | `flows/auto-mode-flow.mmd` |
 
 ### State Diagrams
 

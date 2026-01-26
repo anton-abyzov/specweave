@@ -9,7 +9,7 @@ Learn how to use SpecWeave's autonomous execution mode (`/sw:auto`) to work hand
 
 ## Overview
 
-Auto mode enables continuous autonomous execution using Claude Code's Stop Hook integration. It implements the "Ralph Wiggum pattern" - a feedback loop that prevents Claude from exiting until work is complete.
+Auto mode enables continuous autonomous execution using Claude Code's Stop Hook integration. It implements a feedback loop that prevents Claude from exiting until work is complete.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐

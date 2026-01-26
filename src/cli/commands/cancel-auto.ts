@@ -1,5 +1,5 @@
 /**
- * Cancel Auto CLI Command (Simplified - Ralph Wiggum Pattern)
+ * Cancel Auto CLI Command (Simplified)
  *
  * Just removes the auto-mode flag. That's it.
  * The stop hook will then approve exit on next attempt.

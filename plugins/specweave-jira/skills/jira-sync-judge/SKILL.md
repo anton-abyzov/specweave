@@ -1,6 +1,6 @@
 ---
 name: jira-sync-judge
-description: LLM Judge for verifying JIRA synchronization correctness, conflict resolution, and lifecycle management. Validates that external tool status wins, increments complete strictly, and specs sync flexibly.
+description: LLM Judge for verifying JIRA synchronization correctness and conflict resolution. Use when auditing sync results, validating status transitions, or troubleshooting sync conflicts. Ensures external tool status wins and proper increment lifecycle management.
 allowed-tools: Read, Grep, Bash
 model: opus
 context: fork

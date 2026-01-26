@@ -1,6 +1,6 @@
 ---
 name: security-patterns
-description: Security Pattern Detector - Real-time detection of dangerous coding patterns during file edits. Based on Anthropic's official security-guidance hook. Activates proactively when writing code. Warns about command injection, XSS, unsafe deserialization, dynamic code execution.
+description: Real-time security pattern detector based on Anthropic's official security-guidance plugin. Use proactively when writing code to detect command injection, XSS, unsafe deserialization, and dynamic code execution risks. Identifies dangerous patterns BEFORE they're committed.
 allowed-tools: Read, Grep, Glob
 ---
 

@@ -1,17 +1,6 @@
 ---
 name: pci-compliance
-description: >-
-  Implement PCI DSS compliance requirements for secure handling of payment card data. Use when
-  building payment processing systems that handle credit card information or need PCI certification.
-  Use when implementing tokenization to reduce PCI scope, encrypting cardholder data, or setting up
-  secure card storage. Use when preparing for PCI audits, completing SAQ questionnaires, or working
-  with QSA assessors. Use when the user says "implement PCI compliance", "secure payment handling",
-  "reduce PCI scope", "tokenize card data", "encrypt card numbers", or "prepare for PCI audit". Use
-  when implementing Stripe Elements, PayPal hosted fields, or other hosted payment solutions to
-  minimize PCI burden. Use when configuring TLS, implementing access controls, or setting up audit
-  logging for cardholder data environment. Use when understanding PCI requirements like never storing
-  CVV, masking PAN display, or implementing key management. Also use when implementing 3D Secure,
-  Strong Customer Authentication, or network segmentation for payment systems.
+description: PCI DSS compliance expert for secure payment card handling and audit preparation. Use when implementing card tokenization, encrypting payment data, or preparing for PCI compliance audits. Covers SAQ levels, data minimization, access control, and audit logging requirements.
 ---
 
 # PCI Compliance

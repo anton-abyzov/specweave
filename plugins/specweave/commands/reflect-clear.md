@@ -94,10 +94,13 @@ Type 'yes' to confirm: yes
 
 ## Execution
 
+**CRITICAL: Execute steps SEQUENTIALLY. Wait for each tool call to complete before the next.**
+**DO NOT make parallel tool calls - this causes API concurrency errors.**
+
 When this command is invoked:
 
-1. **Parse arguments** for learning ID, skill, or age filter
-2. **Find matching learnings** in MEMORY.md files
-3. **Show confirmation** with what will be deleted
-4. **Remove learnings** from MEMORY.md files
-5. **Git commit** if configured
+1. **Parse arguments** for learning ID, skill, or age filter (NO tool call - parse from prompt)
+2. **Read MEMORY.md file(s)** to find matching learnings (ONE Read per file, sequential)
+3. **Show confirmation** with what will be deleted (output to user - NO tool call)
+4. **Write updated MEMORY.md** files on confirmation (ONE Write per file, sequential)
+5. **Git commit** if configured (ONE Bash call)

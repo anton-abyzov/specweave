@@ -1,6 +1,6 @@
 ---
 name: code-simplifier
-description: Code Simplifier - Refines code for clarity, consistency, and maintainability while preserving exact functionality. Based on Anthropic's official code-simplifier. Focuses on recently modified code unless instructed otherwise. Activates for simplify code, clean up code, refactor for clarity, reduce complexity, improve readability.
+description: Code refinement expert that improves clarity, consistency, and maintainability while preserving exact functionality. Use when simplifying complex code, cleaning up recently modified files, or refactoring for readability. Based on Anthropic's official code-simplifier pattern - never alters WHAT code does, only HOW.
 allowed-tools: Read, Edit, Glob, Grep
 ---
 

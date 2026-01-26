@@ -1,6 +1,6 @@
 ---
 name: service-connect
-description: Smart external service connection orchestrator. Automatically detects and uses optimal connection method (MCP > REST API > CLI > Direct). Handles Supabase, Cloudflare, PostgreSQL, MongoDB, Redis, AWS, Vercel. Activates for: connect to database, supabase connection, cloudflare workers, wrangler, postgres connection, mongodb atlas, redis cache, database setup, service integration, MCP setup.
+description: Smart external service connection orchestrator that automatically selects optimal connection method (MCP → REST API → SDK → CLI → Direct). Use when connecting to Supabase, Cloudflare, PostgreSQL, MongoDB, Redis, or AWS services. Follows path of least resistance to avoid connection issues.
 ---
 
 # Service Connection Orchestrator

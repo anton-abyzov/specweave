@@ -12,7 +12,7 @@ Living docs can now run in **auto mode** with chunked execution, enabling long-r
 - Run for hours/days across multiple iterations
 - Respect Claude Code stop hooks for controlled execution
 - Save checkpoints after each phase for safe interruption/resume
-- Integrate seamlessly with the Ralph Wiggum auto-execution loop
+- Integrate seamlessly with the auto-execution loop
 
 ---
 

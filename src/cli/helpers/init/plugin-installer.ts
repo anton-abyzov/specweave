@@ -62,26 +62,10 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
   const claudeStatus = detectClaudeCli();
 
   if (!claudeStatus.available) {
-    // Claude CLI NOT working - but we can still register the marketplace!
-    // CRITICAL FIX (v1.0.64): Register marketplace via direct file write even without CLI
-    // This ensures the marketplace appears in Claude Code's /plugin UI
-    spinner.start('Registering SpecWeave marketplace...');
-    const fallbackResult = await registerMarketplaceFallback();
-
-    if (fallbackResult.success) {
-      spinner.succeed('SpecWeave marketplace registered');
-      console.log(chalk.green('   ✓ Marketplace ready for Claude Code'));
-      console.log('');
-      console.log(chalk.cyan('📦 Next: Install plugins inside Claude Code:'));
-      console.log(chalk.white('   /plugin install sw'));
-      console.log(chalk.gray('   (Or use Marketplaces tab → specweave)'));
-      console.log('');
-
-      // Return partial success - marketplace registered but plugins not installed
-      return { success: true, successCount: 0, failCount: 0, failedPlugins: [], marketplaceOnly: true };
-    }
-
-    // Fallback also failed - show original diagnostics
+    // Claude CLI NOT working - cannot install plugins
+    // Note: v1.0.170+ removed the fallback that wrote directly to known_marketplaces.json
+    // because Claude CLI is now bundled with Claude Code and should always be available.
+    // If it's not, show clear diagnostics so user can fix the underlying issue.
     const diagnostic = getClaudeCliDiagnostic(claudeStatus);
     const suggestions = getClaudeCliSuggestions(claudeStatus);
 
@@ -424,74 +408,6 @@ function enableMarketplaceAutoUpdate(spinner: ReturnType<typeof ora>): void {
     if (process.env.DEBUG) {
       console.log(chalk.gray(`   → Could not enable auto-update: ${error instanceof Error ? error.message : String(error)}`));
     }
-  }
-}
-
-/**
- * Register SpecWeave marketplace by directly writing to known_marketplaces.json
- *
- * CRITICAL FIX (v1.0.64): This is the fallback when Claude CLI is not available.
- * It directly writes to ~/.claude/plugins/known_marketplaces.json which is the
- * file Claude Code reads to populate the Marketplaces tab in /plugin UI.
- *
- * This approach:
- * 1. Works even without Claude CLI installed
- * 2. Works when running from npm's specweave package (not just Claude Code)
- * 3. Ensures the marketplace appears in Claude Code's UI immediately
- *
- * Note: The marketplace content (plugins) will be downloaded by Claude Code
- * when the user first accesses it from the UI.
- */
-async function registerMarketplaceFallback(): Promise<{ success: boolean; error?: string }> {
-  const claudeDir = path.join(os.homedir(), '.claude');
-  const pluginsDir = path.join(claudeDir, 'plugins');
-  const knownMarketplacesPath = path.join(pluginsDir, 'known_marketplaces.json');
-
-  try {
-    // Ensure ~/.claude/plugins directory exists
-    if (!fs.existsSync(pluginsDir)) {
-      fs.mkdirSync(pluginsDir, { recursive: true });
-    }
-
-    // Read existing known_marketplaces.json or create empty object
-    let config: Record<string, unknown> = {};
-    if (fs.existsSync(knownMarketplacesPath)) {
-      try {
-        const content = fs.readFileSync(knownMarketplacesPath, 'utf-8');
-        config = JSON.parse(content);
-      } catch {
-        // File exists but invalid JSON - start fresh
-        config = {};
-      }
-    }
-
-    // Check if specweave is already registered
-    if (config.specweave) {
-      // Already registered - just ensure auto-update is enabled
-      if (typeof config.specweave === 'object' && config.specweave !== null) {
-        (config.specweave as Record<string, unknown>).autoUpdate = true;
-      }
-    } else {
-      // Register specweave marketplace
-      // This matches the format Claude Code expects
-      config.specweave = {
-        source: {
-          source: 'github',
-          repo: SPECWEAVE_MARKETPLACE_REPO
-        },
-        installLocation: path.join(pluginsDir, 'marketplaces', 'specweave'),
-        lastUpdated: new Date().toISOString(),
-        autoUpdate: true
-      };
-    }
-
-    // Write updated config
-    fs.writeFileSync(knownMarketplacesPath, JSON.stringify(config, null, 2));
-
-    return { success: true };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return { success: false, error: errorMessage };
   }
 }
 

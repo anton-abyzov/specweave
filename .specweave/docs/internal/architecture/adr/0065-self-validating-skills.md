@@ -300,4 +300,4 @@ In `.specweave/config.json`:
 
 - Claude Code Changelog v2.1.0: Hooks support for skills
 - ADR-0045: Hook Architecture
-- Ralph Loop Pattern: Self-healing iteration
+- Stop Hook Feedback Loop Pattern: Self-healing iteration

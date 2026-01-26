@@ -1,17 +1,6 @@
 ---
 name: code-explorer
-description: >-
-  Code Explorer for deep codebase analysis by tracing feature implementations across architecture
-  layers. Use when exploring an existing codebase, understanding how a feature is implemented, or
-  mapping dependencies between modules. Use when the user asks "how does this work", "where is this
-  defined", "find all usages", "trace the execution flow", or "explain the architecture". Use when
-  investigating legacy code, reverse engineering implementations, or documenting code flows. Use
-  when finding entry points, tracing function calls, mapping imports, or understanding component
-  relationships. Use when the user wants to understand existing code rather than write new code.
-  Use when debugging issues by tracing execution paths or identifying where behavior originates.
-  Use when reviewing code architecture, analyzing coupling between modules, or documenting system
-  structure. Also use when answering questions like "what does this function do", "why was this
-  implemented this way", "which files import this module", or "show me the data flow".
+description: Deep codebase analysis expert that traces feature implementations across architecture layers. Use when exploring how a feature works, understanding data flow, or mapping module dependencies. Identifies entry points, traces call chains, and creates dependency maps from UI to database.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

@@ -153,7 +153,7 @@ specweave status
 
 3. **Auto Mode** (4 hours)
    - Read: `src/core/auto/session-manager.ts`
-   - Read: `plugins/specweave/hooks/stop-dispatcher.sh`
+   - Read: `plugins/specweave/hooks/stop-auto.sh`
    - Study: Autonomous execution loop
    - Exercise: Run `/sw:auto` on a test increment
 
@@ -471,11 +471,11 @@ External Tool (GitHub Issue / JIRA Story / ADO Work Item)
        └─ Check: All tasks complete?
        └─ If done: EXIT LOOP
 
-5. Stop Hook Dispatcher
-   └─ plugins/specweave/hooks/stop-dispatcher.sh
-   └─ Route: reflect or auto hook
+5. Stop Hook Chain (hooks.json)
+   └─ stop-reflect.sh → stop-auto.sh → stop-sync.sh
+   └─ Each hook runs independently
 
-6. Hook: stop-reflect (if session ended)
+6. Hook: stop-reflect (always runs)
    └─ plugins/specweave/hooks/stop-reflect.sh
    └─ Extract: Learnings from session
    └─ Save: To memory files
@@ -499,9 +499,9 @@ External Tool (GitHub Issue / JIRA Story / ADO Work Item)
 - `src/core/auto/task-queue.ts` - Task management
 - `src/core/auto/test-gate.ts` - Test validation
 - `src/core/auto/human-gate.ts` - Sensitive operation blocking
-- `plugins/specweave/hooks/stop-dispatcher.sh` - Stop hook routing
 - `plugins/specweave/hooks/stop-reflect.sh` - Reflection hook
-- `plugins/specweave/hooks/stop-auto.sh` - Continuation hook
+- `plugins/specweave/hooks/stop-auto.sh` - Auto mode continuation hook
+- `plugins/specweave/hooks/stop-sync.sh` - Sync hook
 
 **Diagram**: [diagrams/flows/auto-mode-flow.mmd](architecture/diagrams/flows/auto-mode-flow.mmd)
 

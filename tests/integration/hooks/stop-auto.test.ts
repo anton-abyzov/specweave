@@ -1,7 +1,7 @@
 /**
  * Tests for stop-auto.sh hook - the heart of autonomous execution
  *
- * This hook implements the Ralph Wiggum pattern with comprehensive testing validation.
+ * This hook implements the stop hook feedback loop with comprehensive testing validation.
  * It's critical for auto mode to work correctly across all platforms.
  *
  * Test coverage:
