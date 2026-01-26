@@ -201,29 +201,9 @@ Then:
 | `specweave init .` | Initialize project |
 | `specweave update` | **Full update**: CLI + plugins + instructions |
 
-### Troubleshooting Commands
+### Troubleshooting
 
-| Command | When to Use |
-|---------|-------------|
-| `specweave update` | **Use this first** - fixes 98% of issues |
-| `specweave refresh-marketplace` | Plugin-only refresh (see below) |
-
-#### About `refresh-marketplace`
-
-Most users should use `specweave update`. The `refresh-marketplace` command exists for specific situations:
-
-**What it does beyond native Claude Code auto-update:**
-- Fixes hook permissions (`chmod +x`) - Claude Code doesn't preserve executable bits
-- Manages lazy loading state (router-only installation)
-- Cleans up orphaned cache/skills directories
-- Updates instruction files (CLAUDE.md, AGENTS.md)
-
-**When to use it:**
-- Hooks stopped working after Claude Code update
-- Skills not activating despite being installed
-- Want to refresh plugins without updating CLI version
-
-**Note:** Claude Code can auto-update marketplaces (enable via `/plugin` → Marketplaces → Enable auto-update), but it doesn't fix hook permissions or manage SpecWeave-specific state.
+Run `specweave update` - this fixes 98% of issues (updates CLI, plugins, and instructions).
 
 ---
 
