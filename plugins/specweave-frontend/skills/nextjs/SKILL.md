@@ -1,6 +1,19 @@
 ---
 name: nextjs
-description: Expert in Next.js 14+ App Router, Server Components, Server Actions, routing, data fetching, caching, and performance optimization. Activates for Next.js, Next, App Router, Server Components, RSC, Next.js 14, SSR, SSG, ISR, metadata, SEO.
+description: >-
+  Expert in Next.js 14+ App Router, Server Components, Server Actions, and modern Next.js patterns.
+  Use when creating a Next.js application, building pages with the App Router, or implementing
+  Server Components. Use when working with Server Actions, form handling, or data mutations. Use
+  when implementing routing with dynamic routes, parallel routes, or intercepting routes. Use when
+  adding authentication with NextAuth or implementing protected routes with middleware. Use when
+  the user says "create Next.js app", "build Next.js page", "implement Server Component", "add
+  Server Action", "Next.js routing", or "deploy to Vercel". Use when implementing data fetching
+  with fetch in Server Components, ISR, or on-demand revalidation. Use when optimizing images with
+  next/image, fonts with next/font, or implementing SEO with generateMetadata. Use when adding
+  loading states with loading.tsx, error handling with error.tsx, or not-found pages. Use when
+  working with Suspense, streaming, or partial prerendering. Use when implementing
+  internationalization with next-intl. Also use when configuring next.config.js, middleware.ts, or
+  deploying to Vercel with edge functions.
 ---
 
 # Next.js Expert

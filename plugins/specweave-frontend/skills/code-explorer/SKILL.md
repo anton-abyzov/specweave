@@ -1,6 +1,17 @@
 ---
 name: code-explorer
-description: Code Explorer - Deep codebase analysis by tracing feature implementation across architecture layers. Based on Anthropic's official code-explorer. Activates for how does this work, trace execution, find implementation, understand codebase, where is this defined, follow the code, code flow, execution path, find entry point.
+description: >-
+  Code Explorer for deep codebase analysis by tracing feature implementations across architecture
+  layers. Use when exploring an existing codebase, understanding how a feature is implemented, or
+  mapping dependencies between modules. Use when the user asks "how does this work", "where is this
+  defined", "find all usages", "trace the execution flow", or "explain the architecture". Use when
+  investigating legacy code, reverse engineering implementations, or documenting code flows. Use
+  when finding entry points, tracing function calls, mapping imports, or understanding component
+  relationships. Use when the user wants to understand existing code rather than write new code.
+  Use when debugging issues by tracing execution paths or identifying where behavior originates.
+  Use when reviewing code architecture, analyzing coupling between modules, or documenting system
+  structure. Also use when answering questions like "what does this function do", "why was this
+  implemented this way", "which files import this module", or "show me the data flow".
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

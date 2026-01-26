@@ -1,6 +1,19 @@
 ---
 name: frontend
-description: Expert frontend developer for React, Vue, Angular, and modern web development. Covers components, hooks, state management, routing, forms, TypeScript, performance optimization, and best practices. Activates for frontend, front-end, React, Vue, Angular, JavaScript, TypeScript, hooks, components, state management, frontend development, page design, UI styling, CSS, Tailwind, make pretty, beautiful, beautiful app, beautiful ui, beautiful website, sleek, modern ui, UI/UX, web page, landing page, form design, button styling, responsive design, mobile-first, flexbox, grid layout, animations, transitions, hover effects, dark mode, light mode, color scheme, typography, spacing, shadows, borders, rounded corners, gradient, glassmorphism, neumorphism, web app, calculator, dashboard, admin panel.
+description: >-
+  Expert frontend developer for React, Vue, Angular, and modern web development. Use when creating
+  React components, building Vue applications, or implementing Angular features. Use when working
+  with hooks like useState, useEffect, useContext, or custom hooks. Use when implementing state
+  management with Redux, Zustand, Pinia, or React Query. Use when setting up routing with React
+  Router, Vue Router, or Angular Router. Use when building forms with React Hook Form, Formik, or
+  Vee-Validate. Use when the user says "create component", "build React app", "implement Vue page",
+  "add routing", "state management", or "form validation". Use when working with TypeScript in
+  frontend projects. Use when implementing responsive layouts, CSS animations, or Framer Motion.
+  Use when building UI components like modals, dropdowns, tables, or navigation menus. Use when
+  working with TailwindCSS, styled-components, CSS Modules, or any CSS framework. Use when fetching
+  data with Axios, fetch, or GraphQL. Use when optimizing performance, implementing code splitting,
+  or lazy loading components. Also use when testing with Vitest, Jest, React Testing Library, or
+  Playwright.
 ---
 
 # Frontend Development Expert

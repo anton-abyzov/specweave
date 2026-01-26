@@ -1,6 +1,19 @@
 ---
 name: infrastructure
-description: Generates Infrastructure-as-Code ONE LAYER AT A TIME (Compute → Database → Storage → Monitoring) to prevent crashes. Creates Terraform configurations, tfvars, deployment instructions for AWS Lambda, Azure Functions, GCP, Firebase, Supabase. **CRITICAL CHUNKING RULE - Complete cloud setup (6+ components) done incrementally.** Activates for infrastructure, Terraform, IaC, infrastructure as code, AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase, serverless, CloudFormation, Pulumi, CDK, tfvars, terraform modules, terraform state, remote backend, S3 backend, IAM roles, IAM policies, security groups, VPC terraform, RDS terraform, DynamoDB terraform, S3 bucket, CloudWatch, SNS, SQS, API Gateway terraform, Lambda layers, environment variables, secrets manager.
+description: >-
+  Infrastructure-as-Code specialist for production-ready cloud deployments. Use when creating
+  Terraform configurations, CloudFormation templates, or Pulumi infrastructure definitions.
+  Use when deploying serverless applications with AWS Lambda, Azure Functions, or GCP Cloud
+  Functions. Use when setting up Firebase hosting, Supabase backends, or managed database
+  services. Use when configuring IAM roles, policies, security groups, or VPC networking.
+  Use when creating S3 buckets, DynamoDB tables, RDS instances, or other AWS resources. Use when
+  setting up API Gateway, CloudWatch monitoring, SNS notifications, or SQS queues. Use when
+  managing Terraform state with remote backends or organizing Terraform modules. Use when
+  creating environment-specific tfvars for dev, staging, and production deployments. Use when
+  configuring secrets management with AWS Secrets Manager or other vault solutions. Use when
+  the user says "set up infrastructure", "Terraform for", "deploy to AWS", "serverless setup",
+  or "IaC configuration". Generates infrastructure ONE LAYER AT A TIME (Compute, Database,
+  Storage, Monitoring) to prevent context overflow.
 allowed-tools: Read, Write, Edit, Bash
 ---
 

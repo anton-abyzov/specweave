@@ -1,6 +1,18 @@
 ---
 name: performance
-description: Performance engineering expert for optimization, profiling, benchmarking, and scalability. Analyzes performance bottlenecks, optimizes database queries, improves frontend performance, reduces bundle size, implements caching strategies, optimizes algorithms, and ensures system scalability. Activates for performance, optimization, slow, latency, profiling, benchmark, scalability, caching, Redis cache, CDN, bundle size, code splitting, lazy loading, database optimization, query optimization, N+1 problem, indexing, algorithm complexity, Big O, memory leak, CPU usage, load testing, stress testing, performance metrics, Core Web Vitals, LCP, FID, CLS, TTFB.
+description: >-
+  Performance engineering expert for optimization, profiling, and scalability analysis. Use when
+  analyzing performance bottlenecks or profiling slow application code. Use when optimizing
+  database queries, resolving N+1 problems, or adding database indexes. Use when improving
+  frontend performance with bundle size reduction, code splitting, or lazy loading. Use when
+  implementing caching strategies with Redis, CDN configuration, or application-level caching.
+  Use when measuring Core Web Vitals like LCP, FID, CLS, or TTFB for web applications. Use when
+  conducting load testing, stress testing, or establishing performance baselines. Use when
+  analyzing algorithm complexity, Big O notation, or optimizing computational efficiency. Use when
+  investigating memory leaks, CPU usage spikes, or resource consumption issues. Use when planning
+  scalability improvements or evaluating system throughput capacity. Use when the user says
+  "slow performance", "optimize this", "why is it slow", "improve latency", "reduce bundle size",
+  or "caching strategy". Analyzes ONE optimization area at a time to provide focused improvements.
 allowed-tools: Read, Bash, Grep
 ---
 

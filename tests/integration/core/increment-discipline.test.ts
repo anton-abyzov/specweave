@@ -119,6 +119,24 @@ describe('Increment Discipline Enforcement (E2E)', () => {
   }
 
   /**
+   * Helper: Normalize hook output to test-friendly format
+   * v1.0.166+ changed hook output format:
+   * - OLD: {"decision":"approve", "systemMessage":"..."}
+   * - NEW: {"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}
+   */
+  function normalizeHookOutput(rawOutput: any): { decision: string; reason?: string; systemMessage?: string } {
+    // New v1.0.166+ format: hookSpecificOutput means approved with context
+    if (rawOutput.hookSpecificOutput) {
+      return {
+        decision: 'approve',
+        systemMessage: rawOutput.hookSpecificOutput.additionalContext,
+      };
+    }
+    // Old format or simple approve/block
+    return rawOutput;
+  }
+
+  /**
    * Helper: Simulate hook execution
    */
   async function simulateHook(prompt: string): Promise<{ decision: string; reason?: string; systemMessage?: string }> {
@@ -140,11 +158,11 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       // Clean up temp file
       await fs.remove(tempInput);
 
-      return JSON.parse(output.trim());
+      return normalizeHookOutput(JSON.parse(output.trim()));
     } catch (error: any) {
       // Hook blocked with exit(0), output is in stdout
       if (error.stdout) {
-        return JSON.parse(error.stdout.trim());
+        return normalizeHookOutput(JSON.parse(error.stdout.trim()));
       }
       throw error;
     }

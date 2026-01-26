@@ -1,6 +1,19 @@
 ---
 name: design-system-architect
-description: Expert in building scalable design systems with Atomic Design, design tokens, theming, and component libraries. Activates for design system, design tokens, atomic design, component library, design patterns, theming, brand consistency, UI library, Storybook, design system architecture, make it sleeky, premium design, modern aesthetic, beautiful UI, redesign, UI overhaul, improve design, visual refresh, sleek look, polished design, professional appearance, design refresh, modernize UI, elegant design, clean design, minimalist design, luxury aesthetic, high-end design, corporate design, brand design, visual identity.
+description: >-
+  Expert in building scalable design systems with Atomic Design, design tokens, theming, and
+  component libraries. Use when creating a design system, building a component library, or
+  implementing design tokens with Style Dictionary. Use when setting up Storybook for component
+  documentation and visual testing. Use when implementing theming with dark mode, light mode, or
+  multi-brand support. Use when working with Atomic Design patterns including atoms, molecules, and
+  organisms. Use when the user says "create design system", "build component library", "implement
+  design tokens", "setup Storybook", "add dark mode", or "design system architecture". Use when
+  creating reusable UI components with proper accessibility and WCAG compliance. Use when working
+  with Radix UI, Headless UI, shadcn/ui, or building custom headless components. Use when
+  implementing CSS variables, Tailwind theming, or styled-components themes. Use when publishing
+  component packages to npm or managing design system versions with Changesets. Use when integrating
+  Figma tokens or syncing design variables. Also use when making UI more polished, implementing
+  visual consistency, or creating premium aesthetic designs.
 ---
 
 # Design System Architect

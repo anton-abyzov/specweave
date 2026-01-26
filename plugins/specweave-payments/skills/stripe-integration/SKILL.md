@@ -1,6 +1,17 @@
 ---
 name: stripe-integration
-description: Implement Stripe payment processing for robust, PCI-compliant payment flows including checkout, subscriptions, webhooks, Stripe Connect, and marketplace payments. Use when integrating Stripe payments, building subscription systems, implementing secure checkout flows, or setting up marketplace/platform payments with Connect. Activates for Stripe, payment, checkout, subscription, webhook, Connect, Direct Charge, Destination Charge, platform payments, marketplace, promo code, coupon, discount, idempotency, payment verification, checkout session, payment intent, refund, dispute, billing, SaaS billing, recurring payment, one-time payment, card payment, ACH, SEPA, Apple Pay, Google Pay.
+description: >-
+  Implement Stripe payment processing for robust, PCI-compliant payment flows. Use when integrating
+  Stripe payments, implementing checkout sessions, creating payment intents, or handling Stripe
+  webhooks. Use when building subscription billing, recurring payments, or SaaS billing systems.
+  Use when implementing Stripe Connect for marketplace or platform payments. Use when creating
+  checkout flows, payment forms, or buy buttons. Use when handling refunds, disputes, or customer
+  management. Use when the user says "add Stripe", "implement payments", "create checkout",
+  "integrate Stripe", "accept credit cards", "payment processing", "subscription billing", or
+  "Stripe webhook". Use when working with Stripe API, Stripe SDK, @stripe/stripe-js, Payment
+  Element, Checkout Session, or stripe-node. Use when implementing Apple Pay, Google Pay, ACH,
+  SEPA, or any payment method through Stripe. Also use when handling payment_intent.succeeded,
+  checkout.session.completed events, or implementing idempotent payment processing.
 ---
 
 # Stripe Integration

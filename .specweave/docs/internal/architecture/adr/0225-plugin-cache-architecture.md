@@ -180,5 +180,4 @@ specweave refresh-marketplace --force
 ## Related Documentation
 
 - [PLUGINS-INDEX.md](../../../../plugins/PLUGINS-INDEX.md) - Plugin catalog
-- [SKILLS-INDEX.md](../../../../plugins/specweave/skills/SKILLS-INDEX.md) - Skill triggers
 - [Troubleshooting](../../../troubleshooting/README.md) - Common issues

@@ -593,7 +593,7 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
 
   describe('Lazy Mode (Default) - installs sw core plugin only', () => {
     it('should install CORE plugin (sw) during lazy mode init', async () => {
-      // This test verifies the implementation calls installPlugins with 'sw'
+      // This test verifies the implementation installs sw via essentialPlugins array
       // by checking the source code for the expected behavior
 
       const sourceFile = path.join(
@@ -604,16 +604,14 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify lazy mode installs core plugin
-        expect(content).toContain("const corePlugin = allPlugins.find(p => p.name === 'sw')");
-        expect(content).toContain("plugins: ['sw']");
-
-        // Verify the comment explains WHY core is essential
-        expect(content).toContain('Core (sw) provides /sw:increment, /sw:do, /sw:done');
+        // Verify lazy mode installs core plugin via essentialPlugins (v1.0.170+ pattern)
+        expect(content).toContain("name: 'sw'");
+        expect(content).toContain("marketplace: 'specweave'");
+        expect(content).toContain('Core SpecWeave framework');
       }
     });
 
-    it('should document that sw-router is OBSOLETE as of v1.0.160', async () => {
+    it('should use detect-intent for on-demand plugin loading', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -622,10 +620,9 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify sw-router obsolescence is documented
-        expect(content).toContain('sw-router is OBSOLETE');
-        expect(content).toContain('v1.0.160');
+        // Verify detect-intent hook is documented for on-demand loading (v1.0.160+)
         expect(content).toContain('detect-intent');
+        expect(content).toContain('on-demand');
       }
     });
 

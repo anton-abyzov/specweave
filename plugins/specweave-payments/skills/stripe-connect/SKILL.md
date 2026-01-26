@@ -1,6 +1,17 @@
 ---
 name: stripe-connect
-description: Implement Stripe Connect for marketplace and platform payments. Handles Direct Charge, Destination Charge, and Separate Charges & Transfers patterns. Covers Connect webhook setup, onboarding flows, payout management, and platform fees. Activates for Stripe Connect, marketplace payments, platform payments, Direct Charge, Destination Charge, connected account, onboarding, Express account, Standard account, Custom account, platform fee, application fee, transfer, payout, account.updated, Connect webhook, multi-party payments, seller payments, vendor payments, service provider payments, two-sided marketplace, booking platform, gig economy, rental platform.
+description: >-
+  Implement Stripe Connect for marketplace and platform payments with multi-party payment flows. Use
+  when building a marketplace where sellers receive payments, implementing platform payments with fees,
+  or onboarding vendors to your platform. Use when choosing between Direct Charge, Destination Charge,
+  or Separate Charges and Transfers patterns. Use when setting up Connect webhooks to handle
+  checkout.session.completed events for Direct Charge. Use when the user says "implement Stripe Connect",
+  "create marketplace payments", "build platform payments", "add seller onboarding", "split payments",
+  or "implement multi-party payments". Use when creating connected accounts with Express, Standard, or
+  Custom account types. Use when implementing application fees, platform commission, or revenue sharing.
+  Use when handling payouts to connected accounts, managing payout schedules, or implementing instant
+  payouts. Use when working with account capabilities, identity verification, or KYC compliance. Also
+  use when handling Connect-specific webhooks like account.updated, payout.paid, or transfer.created.
 ---
 
 # Stripe Connect Integration
