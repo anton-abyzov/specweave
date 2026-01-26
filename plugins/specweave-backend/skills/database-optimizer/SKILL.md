@@ -1,6 +1,17 @@
 ---
 name: database-optimizer
-description: Expert database optimizer specializing in modern performance tuning, query optimization, and scalable architectures. Masters advanced indexing, N+1 resolution, multi-tier caching, partitioning strategies, and cloud database optimization. Handles complex query analysis, migration strategies, and performance monitoring. Activates for database, db, backend, data, database optimization, slow query, query performance, SQL optimization, index optimization, explain analyze, query plan, N+1 problem, database scaling, read replicas, sharding, partitioning, PostgreSQL tuning, PostgreSQL, MySQL tuning, MySQL, MongoDB optimization, MongoDB, Redis caching, Redis, database migration, schema design, normalization, denormalization, foreign keys, constraints, transactions, deadlocks, connection pooling, database monitoring, slow logs, query profiling, database is slow, queries are slow, database takes too long, optimize database, speed up database, fix slow database, database bottleneck, why is my database slow, improve database performance, database latency, high database load, database CPU high, database memory, vacuum, analyze table, create index, drop index, composite index, covering index, partial index, full table scan, sequential scan, index scan, bitmap scan, hash join, nested loop, merge join, query timeout, lock wait, row lock, table lock, database backup, point in time recovery, PITR, database restore, database replication, master slave, primary replica, failover, database HA, high availability database, RDS, Aurora, Cloud SQL, Supabase database, PlanetScale, Neon database, Prisma optimization, Prisma, TypeORM optimization, TypeORM, Sequelize optimization, Sequelize, raw SQL vs ORM, api database, web app database.
+description: >-
+  Expert database optimizer specializing in modern performance tuning, query optimization, and scalable
+  database architectures. Use when optimizing slow queries, analyzing execution plans, or improving
+  database performance. Use when designing database schemas, creating indexes, or implementing
+  partitioning strategies. Use when resolving N+1 query problems, setting up multi-tier caching,
+  or implementing connection pooling. Use when working with PostgreSQL, MySQL, MongoDB, Redis,
+  DynamoDB, or any database system. Use when the user says "database is slow", "optimize queries",
+  "fix N+1 problem", "add indexes", "database performance", or "query tuning". Use when implementing
+  database migrations, backup strategies, or disaster recovery. Use when working with ORMs like
+  Prisma, TypeORM, Sequelize, SQLAlchemy, Entity Framework, or Hibernate. Use when setting up
+  database replication, sharding, or scaling strategies. Also use when analyzing database metrics,
+  profiling slow queries, or implementing database caching with Redis or Memcached.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

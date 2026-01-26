@@ -1,6 +1,17 @@
 ---
 name: billing-automation
-description: Build automated billing systems for recurring payments, invoicing, subscription lifecycle, and dunning management. Use when implementing subscription billing, automating invoicing, or managing recurring payment systems.
+description: >-
+  Build automated billing systems for recurring payments, invoicing, subscription lifecycle, and dunning
+  management. Use when implementing SaaS subscription billing, automating invoice generation, or managing
+  failed payment recovery. Use when calculating prorated charges for plan changes, handling mid-cycle
+  upgrades or downgrades, or managing billing anchors. Use when implementing usage-based or metered
+  billing, tiered pricing models, or seat-based pricing. Use when the user says "implement billing
+  system", "create subscription billing", "build recurring payments", "add dunning management", "handle
+  prorations", or "automate invoicing". Use when integrating Stripe Billing, Stripe Invoicing, or Stripe
+  Tax. Use when handling subscription lifecycle events like trials, renewals, cancellations, or pausing.
+  Use when implementing tax calculation for VAT, GST, or sales tax. Use when building customer billing
+  portals, payment method management, or billing history. Also use when tracking MRR, ARR, or implementing
+  billing analytics and revenue reports.
 ---
 
 # Billing Automation

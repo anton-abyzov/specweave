@@ -193,11 +193,11 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // MANDATORY message should be present
+      // SKILL FIRST message should be present (v1.0.170+ format)
       expect(additionalContext).toBeTruthy();
-      expect(additionalContext).toContain('mandatory_instruction');
-      expect(additionalContext).toContain('STOP');
-      expect(additionalContext).toContain('ACTION REQUIRED');
+      expect(additionalContext).toContain('SKILL FIRST');
+      expect(additionalContext).toContain('sw:increment-planner');
+      expect(additionalContext).toContain('Feature request');
     });
 
     it('should include Skill tool invocation syntax in MANDATORY message', async () => {
@@ -222,7 +222,7 @@ exit 1
       expect(additionalContext).toContain('sw:increment');
     });
 
-    it('should include explicit DO NOT instructions', async () => {
+    it('should include explicit ordering instructions', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -239,12 +239,12 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should include explicit prohibitions
-      expect(additionalContext).toContain('Do NOT');
-      expect(additionalContext).toContain('Must NOT'); // "What You Must NOT Do" section
+      // Should include explicit ordering (v1.0.170+ format)
+      expect(additionalContext).toContain('Order matters');
+      expect(additionalContext).toContain('Call Skill tool FIRST');
     });
 
-    it('should NOT generate MANDATORY when LLM says mandatory: false', async () => {
+    it('should NOT generate SKILL FIRST when LLM says mandatory: false', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -261,13 +261,13 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should NOT have mandatory instruction (low confidence)
+      // Should NOT have SKILL FIRST instruction (low confidence)
       if (additionalContext) {
-        expect(additionalContext).not.toContain('mandatory_instruction');
+        expect(additionalContext).not.toContain('SKILL FIRST');
       }
     });
 
-    it('should NOT generate MANDATORY for questions', async () => {
+    it('should NOT generate SKILL FIRST for questions', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -285,15 +285,15 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should not have mandatory instruction for questions
+      // Should not have SKILL FIRST instruction for questions
       if (additionalContext) {
-        expect(additionalContext).not.toContain('mandatory_instruction');
+        expect(additionalContext).not.toContain('SKILL FIRST');
       }
     });
   });
 
   describe('MANDATORY Message Format - Claude Compliance', () => {
-    it('should use XML-like tags for structured instructions', async () => {
+    it('should use structured markdown format for instructions', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -310,9 +310,10 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Claude is trained to follow XML-like tags
-      expect(additionalContext).toContain('<mandatory_instruction>');
-      expect(additionalContext).toContain('</mandatory_instruction>');
+      // v1.0.170+ uses structured markdown format with ASCII box
+      expect(additionalContext).toContain('═');  // ASCII box border
+      expect(additionalContext).toContain('**Your FIRST tool call must be:**');
+      expect(additionalContext).toContain('Skill(');
     });
 
     it('should include confidence score for transparency', async () => {
@@ -336,7 +337,7 @@ exit 1
       expect(additionalContext).toContain('0.89');
     });
 
-    it('should include suggested increment name', async () => {
+    it('should include reasoning in the detection section', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -353,8 +354,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should include the suggested name
-      expect(additionalContext).toContain('stripe-integration');
+      // Should include detection reason (v1.0.170+ format)
+      expect(additionalContext).toContain('**Reason**:');
+      expect(additionalContext).toContain('Payment integration');
     });
   });
 
@@ -376,8 +378,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      expect(additionalContext).toContain('mandatory_instruction');
-      expect(additionalContext).toContain('fullstack-app');
+      // v1.0.170+ format includes SKILL FIRST instruction
+      expect(additionalContext).toContain('SKILL FIRST');
+      expect(additionalContext).toContain('Multi-file');
     });
 
     it('should detect external folder project creation', async () => {

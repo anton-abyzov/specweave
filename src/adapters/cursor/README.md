@@ -33,32 +33,30 @@ This is **meta-documentation** - teaching the AI how to behave!
 
 ### 🔍 Progressive Disclosure
 
-SpecWeave now includes **SKILLS-INDEX.md** - enabling Cursor to efficiently discover and use all 35+ skills!
+Cursor can discover SpecWeave skills by scanning SKILL.md frontmatter directly.
 
 **How it works**:
-1. Read `.claude/skills/SKILLS-INDEX.md` (referenced in AGENTS.md)
-2. Match task to activation keywords (e.g., "feature planning" → increment-planner)
+1. Scan `.claude/skills/*/SKILL.md` files for frontmatter (name + description)
+2. Match task to activation keywords in description (e.g., "feature planning" → increment-planner)
 3. Load specific SKILL.md when relevant
 4. Follow proven workflows
 
 **Benefits**:
-- ✅ **90% token savings** (5k vs 50k tokens - load only what you need)
-- ✅ **Full skill access** - All 35+ skills now efficiently accessible!
+- ✅ **Token efficient** - Load only matching skills
+- ✅ **Full skill access** - All 35+ skills accessible via frontmatter scan
 - ✅ **Consistent output** - Follow SpecWeave best practices every time
 
 **Example**:
 ```markdown
-# From AGENTS.md, Cursor learns about:
-.claude/skills/SKILLS-INDEX.md  # Single-file skill reference
-
 # When user asks: "Plan a new feature for auth"
-# 1. Read SKILLS-INDEX.md → Find "increment-planner" (matches "feature planning")
-# 2. Load .claude/skills/increment-planner/SKILL.md
-# 3. Follow the increment planning workflow
+# 1. Scan .claude/skills/*/SKILL.md frontmatter
+# 2. Find "increment-planner" (description contains "Activates for: feature planning")
+# 3. Load .claude/skills/increment-planner/SKILL.md
+# 4. Follow the increment planning workflow
 # Result: Proper spec.md, plan.md, tasks.md creation
 ```
 
-**Note**: While Claude Code activates skills automatically, Cursor simulates this by following the progressive disclosure pattern documented in AGENTS.md.
+**Note**: While Claude Code activates skills automatically, Cursor simulates this by scanning SKILL.md frontmatter for activation keywords.
 
 ### .cursorrules (Workflow Instructions)
 - **What**: Complete workflow guide for SpecWeave

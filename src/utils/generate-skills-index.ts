@@ -1,6 +1,11 @@
 /**
  * Skills Index Generator
  *
+ * @deprecated SKILLS-INDEX.md is no longer used. Skills are discovered via
+ * SKILL.md frontmatter directly (each skill has name + description with
+ * activation keywords). This file is kept for potential CI/CD use but is
+ * not part of the active workflow.
+ *
  * Generates SKILLS-INDEX.md from all SKILL.md files
  * Simulates Claude Code's progressive disclosure for non-native tools
  *
