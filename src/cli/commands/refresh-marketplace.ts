@@ -715,21 +715,18 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
     process.exit(1);
   }
 
-  // Install core plugin only (sw-router is obsolete as of v1.0.160)
-  const corePlugins = ['sw'];
+  // Install core plugin (sw-router is obsolete as of v1.0.160)
+  console.log(chalk.blue(`  Installing sw@specweave...`));
+  const swResult = installPlugin('sw', forceMode);
   let installedCount = 0;
 
-  for (const plugin of corePlugins) {
-    console.log(chalk.blue(`  Installing ${plugin}...`));
-    const result = installPlugin(plugin, forceMode);
-    if (result.success) {
-      installedCount++;
-      console.log(chalk.green(`  ✓ ${plugin} installed`));
-    } else {
-      console.log(chalk.red(`  ✗ ${plugin} failed`));
-      if (options.verbose) {
-        console.log(chalk.gray(`    ${result.error}`));
-      }
+  if (swResult.success) {
+    installedCount++;
+    console.log(chalk.green(`  ✓ sw@specweave installed`));
+  } else {
+    console.log(chalk.red(`  ✗ sw@specweave failed`));
+    if (options.verbose) {
+      console.log(chalk.gray(`    ${swResult.error}`));
     }
   }
 
@@ -739,12 +736,48 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
     console.log(chalk.gray('  ✓ Marketplace removed after installation'));
   }
 
+  // Step 5: Install essential plugins from claude-plugins-official
+  console.log('');
+  console.log(chalk.yellow('📥 Step 5: Installing essential official plugins...'));
+
+  const officialPlugins = ['context7', 'playwright'];
+  let officialInstalledCount = 0;
+
+  for (const pluginName of officialPlugins) {
+    console.log(chalk.blue(`  Installing ${pluginName}@claude-plugins-official...`));
+    const installResult = runCommand('claude', [
+      'plugin',
+      'install',
+      `${pluginName}@claude-plugins-official`,
+    ], true);
+
+    if (installResult.success) {
+      console.log(chalk.green(`  ✓ ${pluginName}@claude-plugins-official installed`));
+      officialInstalledCount++;
+    } else {
+      if (installResult.output?.includes('already')) {
+        console.log(chalk.gray(`  ✓ ${pluginName}@claude-plugins-official (already installed)`));
+        officialInstalledCount++;
+      } else {
+        console.log(chalk.yellow(`  ⚠ ${pluginName}@claude-plugins-official failed`));
+        if (options.verbose) {
+          console.log(chalk.gray(`    ${installResult.output}`));
+        }
+      }
+    }
+  }
+
   console.log('');
   console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.green.bold('  ✓ MINIMAL MODE COMPLETE'));
   console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
-  console.log(`  Installed: ${installedCount} core plugin(s)`);
+  console.log(chalk.cyan('  Installed plugins:'));
+  console.log(chalk.gray('     • sw@specweave              - Core framework'));
+  console.log(chalk.gray('     • context7@claude-plugins-official - Documentation context'));
+  console.log(chalk.gray('     • playwright@claude-plugins-official - Browser automation'));
+  console.log('');
+  console.log(`  Total: ${installedCount + officialInstalledCount} plugin(s)`);
   console.log(chalk.cyan('  /plugin will now show only installed plugins\n'));
 
   console.log(chalk.yellow('⚠️  Note: Lazy loading is disabled in minimal mode'));
@@ -1073,20 +1106,52 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
       console.log(chalk.green(`✓ No non-core plugins to disable\n`));
     }
 
-    // Step 3c: Install core plugin only (sw-router is obsolete - detect-intent handles routing)
-    console.log(chalk.yellow(`⚙️  Step 3c: Installing core plugin only${forceMode ? ' + force' : ''}...\n`));
+    // Step 3c: Install core plugin (sw-router is obsolete - detect-intent handles routing)
+    console.log(chalk.yellow(`⚙️  Step 3c: Installing core plugin${forceMode ? ' + force' : ''}...\n`));
 
     const corePlugin = 'sw'; // Marketplace name for core specweave plugin
-    console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${corePlugin}...`));
+    console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${corePlugin}@specweave...`));
     const result = installPlugin(corePlugin, forceMode);
     results.push(result);
 
     if (result.success) {
-      console.log(chalk.green(`  ✓ ${corePlugin} (core) installed`));
+      console.log(chalk.green(`  ✓ ${corePlugin}@specweave installed`));
     } else {
-      console.log(chalk.red(`  ✗ ${corePlugin} failed`));
+      console.log(chalk.red(`  ✗ ${corePlugin}@specweave failed`));
       if (options.verbose && result.error) {
         console.log(chalk.gray(`    ${result.error}`));
+      }
+    }
+
+    // Step 3d: Install essential plugins from claude-plugins-official marketplace
+    console.log('');
+    console.log(chalk.yellow('⚙️  Step 3d: Installing essential official plugins...\n'));
+
+    const officialPlugins = ['context7', 'playwright'];
+    let officialInstalledCount = 0;
+
+    for (const pluginName of officialPlugins) {
+      console.log(chalk.blue(`  Installing ${pluginName}@claude-plugins-official...`));
+      const installResult = runCommand('claude', [
+        'plugin',
+        'install',
+        `${pluginName}@claude-plugins-official`,
+      ], true);
+
+      if (installResult.success) {
+        console.log(chalk.green(`  ✓ ${pluginName}@claude-plugins-official installed`));
+        officialInstalledCount++;
+      } else {
+        // Check if already installed
+        if (installResult.output?.includes('already')) {
+          console.log(chalk.gray(`  ✓ ${pluginName}@claude-plugins-official (already installed)`));
+          officialInstalledCount++;
+        } else {
+          console.log(chalk.yellow(`  ⚠ ${pluginName}@claude-plugins-official failed`));
+          if (options.verbose) {
+            console.log(chalk.gray(`    ${installResult.output}`));
+          }
+        }
       }
     }
 
@@ -1095,14 +1160,19 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.blue.bold('  Lazy Loading Summary'));
     console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
-    console.log(`  Total plugins available: ${plugins.length}`);
-    console.log(chalk.green(`  Installed now: 1 (core only)`));
+    console.log(chalk.cyan('  Installed (always loaded):'));
+    console.log(chalk.gray('     • sw@specweave              - Core framework'));
+    console.log(chalk.gray('     • context7@claude-plugins-official - Documentation context'));
+    console.log(chalk.gray('     • playwright@claude-plugins-official - Browser automation'));
+    console.log('');
+    console.log(`  Total SpecWeave plugins available: ${plugins.length}`);
+    console.log(chalk.green(`  Core installed: 1 + ${officialInstalledCount} official`));
     console.log(chalk.cyan(`  Cached for on-demand: ${plugins.length - 1}`));
     console.log('');
     console.log(chalk.green('  💡 Token savings:'));
     console.log(chalk.gray(`     Before: ~60,000 tokens (all plugins)`));
-    console.log(chalk.gray(`     After:  ~500 tokens (core only)`));
-    console.log(chalk.green(`     Saved:  ~59,500 tokens (99% reduction!)`));
+    console.log(chalk.gray(`     After:  ~3,000 tokens (core + official)`));
+    console.log(chalk.green(`     Saved:  ~57,000 tokens (95% reduction!)`));
 
   } else {
     // LEGACY MODE: Install all plugins
