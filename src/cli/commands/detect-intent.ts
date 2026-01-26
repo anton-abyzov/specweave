@@ -64,12 +64,14 @@ export interface DetectIntentResult {
   /** Whether LLM detection was skipped (config disabled) */
   skipped?: boolean;
 
-  /** Increment recommendation (v1.0.141+) */
+  /** Increment recommendation (v1.0.141+, v1.0.168: added mandatory) */
   increment?: {
     /** Recommended action: new, reopen, small_fix, hotfix, none */
     action: IncrementAction;
     /** Confidence score (0-1) */
     confidence: number;
+    /** Whether increment creation is mandatory (LLM decides) */
+    mandatory: boolean;
     /** Suggested increment name (for 'new' action) */
     suggestedName?: string;
     /** Related keyword for reopening (for 'reopen' action) */
@@ -273,6 +275,7 @@ export async function detectIntentCommand(
       result.increment = {
         action: llmResult.increment.action,
         confidence: llmResult.increment.confidence,
+        mandatory: llmResult.increment.mandatory,
         suggestedName: llmResult.increment.suggestedName,
         relatedKeyword: llmResult.increment.relatedKeyword,
         reasoning: llmResult.increment.reasoning,
@@ -281,6 +284,7 @@ export async function detectIntentCommand(
       logInfo('detect-intent', 'Increment recommendation', {
         action: llmResult.increment.action,
         confidence: llmResult.increment.confidence,
+        mandatory: llmResult.increment.mandatory,
         suggestedName: llmResult.increment.suggestedName,
         reasoning: llmResult.increment.reasoning,
       });

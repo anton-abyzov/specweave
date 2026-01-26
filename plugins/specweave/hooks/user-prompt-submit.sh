@@ -383,6 +383,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               INC_NAME=$(echo "$JSON_OUTPUT" | jq -r '.increment.suggestedName // empty' 2>/dev/null)
               INC_REASON=$(echo "$JSON_OUTPUT" | jq -r '.increment.reasoning // empty' 2>/dev/null)
               INC_KEYWORD=$(echo "$JSON_OUTPUT" | jq -r '.increment.relatedKeyword // empty' 2>/dev/null)
+              # v1.0.168: LLM decides if mandatory (not config-based)
+              INC_MANDATORY=$(echo "$JSON_OUTPUT" | jq -r '.increment.mandatory // false' 2>/dev/null)
 
               # Check confidence threshold
               ABOVE=$(echo "$INC_CONF >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0)
@@ -420,36 +422,50 @@ Task({
                   fi
                 fi
 
-                # v1.0.160: Check if mandatory increment creation is enabled
-                INCREMENT_MANDATORY=false
-                if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
-                  MANDATORY_VALUE=$(jq -r '.incrementAssist.mandatory // false' "$CONFIG_PATH" 2>/dev/null)
-                  [[ "$MANDATORY_VALUE" == "true" ]] && INCREMENT_MANDATORY=true
-                fi
-
                 case "$INC_ACTION" in
                   new)
                     CMD="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
 
-                    # v1.0.160: MANDATORY mode - stronger directive + block decision
-                    if [[ "$INCREMENT_MANDATORY" == "true" ]] || (( $(echo "$INC_CONF >= 0.85" | bc -l 2>/dev/null || echo 0) )); then
-                      MSG="${AUTOLOAD_PREFIX}🚫 **MANDATORY: Create Increment First**
+                    # v1.0.168: LLM decides if mandatory (not config-based)
+                    # INC_MANDATORY comes from detect-intent LLM response
+                    if [[ "$INC_MANDATORY" == "true" ]]; then
+                      MSG="${AUTOLOAD_PREFIX}<mandatory_instruction>
+## STOP - ACTION REQUIRED BEFORE PROCEEDING
 
-This is a feature/implementation request. SpecWeave requires creating an increment BEFORE implementation.
+You MUST invoke the Skill tool IMMEDIATELY. Do NOT write code, do NOT create files, do NOT proceed with implementation.
 
-**YOU MUST RUN THIS COMMAND NOW:**
-\`\`\`
+### Required Action (Non-Negotiable)
+Invoke this skill NOW using the Skill tool:
+\\\`\\\`\\\`
+Skill({ skill: \"sw:increment\", args: \"${INC_NAME:-feature}\" })
+\\\`\\\`\\\`
+
+Or if using slash command:
+\\\`\\\`\\\`
 $CMD
-\`\`\`
+\\\`\\\`\\\`
 
-⚠️ **DO NOT skip this step.** Do NOT proceed with implementation without an increment.
+### Why This Is Mandatory
+- This is a feature/implementation request (confidence: ${INC_CONF})
+- SpecWeave workflow requires increment creation BEFORE any implementation
+- Skipping this step violates project workflow rules
+- Detection reason: ${INC_REASON}
 
-*Detection: ${INC_REASON}* (confidence: ${INC_CONF})${AGENT_DIRECTIVE}
+### What You Must Do
+1. **FIRST**: Invoke the Skill tool with skill=\"sw:increment\"
+2. **WAIT**: Let the increment planning complete
+3. **THEN**: Proceed with implementation tasks
+
+### What You Must NOT Do
+- ❌ Do NOT write any implementation code yet
+- ❌ Do NOT create any files yet
+- ❌ Do NOT skip this step
+- ❌ Do NOT just acknowledge and proceed with implementation
+</mandatory_instruction>${AGENT_DIRECTIVE}
 
 ---
-
-*Configure: \`incrementAssist.mandatory: false\` to make this advisory*"
+*LLM determined this is mandatory (confidence: ${INC_CONF})*"
                       output_approve_with_context "$MSG"
                       exit 0
                     else
