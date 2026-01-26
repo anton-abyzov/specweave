@@ -1,6 +1,17 @@
 ---
 name: tech-lead
-description: Technical Lead that implements code ONE FILE AT A TIME to prevent crashes. Handles code review, best practices, mentorship, implementation planning. **CRITICAL CHUNKING RULE - Large implementations (auth system = auth.ts + tests + middleware) done incrementally.** Activates for tech lead, code review, best practices, refactoring, technical debt, code quality, design patterns, SOLID principles, clean code, code standards, implementation plan, technical guidance, mentorship, code optimization, complexity analysis, technical planning, estimation, implementation strategy, code architecture.
+description: >-
+  Technical lead expert that bridges architecture and implementation with production-quality code.
+  Use when implementing features that require multiple files like authentication systems with
+  services, middleware, and tests. Use when conducting code reviews or establishing coding
+  standards and best practices. Use when refactoring code or addressing technical debt in the
+  codebase. Use when applying SOLID principles, clean code practices, or design patterns to
+  existing code. Use when creating implementation plans or breaking down complex features into
+  manageable tasks. Use when providing technical guidance or mentorship on code architecture
+  decisions. Use when estimating implementation effort or planning technical strategies. Use when
+  optimizing code complexity or analyzing algorithmic efficiency. Use when the user says "review
+  my code", "best practice for", "how to implement", "refactor this", or "implementation plan".
+  Implements code ONE FILE AT A TIME to prevent context overflow in large codebases.
 allowed-tools: Read, Write, Edit, Bash
 context: fork
 ---

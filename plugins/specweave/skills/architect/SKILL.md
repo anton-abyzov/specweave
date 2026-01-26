@@ -1,6 +1,18 @@
 ---
 name: architect
-description: System Architect and technical design expert. Creates system architecture, technical specifications, Architecture Decision Records (ADRs), component designs, API contracts, data models, and deployment architectures. Handles design patterns, scalability planning, technology stack decisions, microservices architecture, event-driven systems, CQRS, domain-driven design. Activates for architect, architecture, system design, technical design, api, backend, frontend, fullstack, ADR, architecture decision record, design patterns, microservices, API design, data model, database schema, scalability, performance architecture, technology stack, tech stack selection, distributed systems, event-driven, CQRS, DDD, domain model, component architecture, integration patterns, CAP theorem, consistency, availability, partition tolerance, how should I design, how to architect, what architecture, best architecture for, system architecture for, design the system, plan the architecture, architecture review, architecture decision, which technology, which framework, which database, monolith vs microservices, when to use microservices, service boundaries, bounded context, aggregate root, repository pattern, factory pattern, singleton pattern, observer pattern, strategy pattern, adapter pattern, facade pattern, decorator pattern, dependency injection, inversion of control, clean architecture, hexagonal architecture, onion architecture, layered architecture, vertical slice, modular monolith, event sourcing, saga pattern, outbox pattern, two phase commit, eventual consistency, strong consistency, read model, write model, command query separation, API gateway, service discovery, circuit breaker, bulkhead pattern, retry pattern, timeout pattern, rate limiting architecture, caching architecture, CDN architecture, multi-tenant architecture, SaaS architecture, B2B architecture, B2C architecture, marketplace architecture, e-commerce architecture, social media architecture, real-time architecture, WebSocket architecture, pub/sub architecture, message queue architecture, Kafka architecture, RabbitMQ architecture, Redis architecture.
+description: >-
+  System architect and technical design expert for enterprise-grade systems. Use when designing
+  system architecture, creating technical specifications, or writing Architecture Decision Records
+  (ADRs). Use when planning database schemas, API contracts, data models, or service boundaries.
+  Use when making technology stack decisions or evaluating frameworks and databases. Use when
+  designing microservices architecture, event-driven systems, or CQRS and domain-driven design
+  patterns. Use when the user asks about distributed systems, scalability planning, or component
+  architecture. Use when reviewing architectural decisions or choosing between monolith and
+  microservices. Use when implementing design patterns like repository, factory, adapter, facade,
+  or dependency injection. Use when planning clean architecture, hexagonal architecture, or
+  modular monolith approaches. Use when designing real-time systems, message queues, or pub/sub
+  architectures with Kafka, RabbitMQ, or Redis. Use when the user says "how should I design",
+  "what architecture for", "create ADR", "system design", or "plan the architecture".
 allowed-tools: Read, Write, Edit
 context: fork
 model: opus

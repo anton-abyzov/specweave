@@ -4,7 +4,7 @@
 
 | Name | Type | Description | Location |
 |------|------|-------------|----------|
-| generateSkillsIndex | function | Scans SKILL.md files and generates SKILLS-INDEX.md for progressive disclosure pattern | generate-skills-index.ts |
+| generateSkillsIndex | function | **DEPRECATED** - Was used for SKILLS-INDEX.md generation. Skills now discovered via SKILL.md frontmatter directly. | generate-skills-index.ts |
 | SessionRegistry | class | Central tracking for Claude Code sessions with atomic file operations, locking, and corruption recovery | session-registry.ts |
 | detectStructureLevel | function | Detects 1-level or 2-level folder structure from config (ADO area paths, JIRA boards, umbrella teams) | structure-level-detector.ts |
 | ProjectResolver | class | Smart resolution of project/board for user stories using keyword matching and cross-cutting detection | project-resolver.ts |

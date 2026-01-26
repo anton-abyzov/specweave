@@ -1,6 +1,17 @@
 ---
 name: frontend-architect
-description: Expert frontend architect for React, Next.js, Vue, and Angular. Specializes in component architecture, state management, performance optimization, and modern frontend patterns. Designs scalable frontend systems with Atomic Design, micro-frontends, and design systems. Activates for frontend, front-end, frontend architecture, React design, component design, UI architecture, page layout, web design, site redesign, make it sleeky, premium aesthetic, beautiful, beautiful app, beautiful website, beautiful ui, modern UI, landing page design, hero section, responsive layout, mobile-first design, dark mode, light theme, CSS architecture, Tailwind setup, styled-components, design system, visual refresh, UI overhaul, website redesign, improve design, make it pretty, elegant UI, professional look, clean interface, build a website, create website, make a website, build web app, create web app, web app, calculator, calculator app, SPA, single page application, PWA, progressive web app, dashboard UI, admin panel, admin dashboard, create dashboard, build dashboard, data visualization UI, charts UI, tables UI, forms UI, build forms, create forms, authentication UI, login page, signup page, profile page, settings page, user interface, UX design, wireframe to code, Figma to code, design to code, mockup to code, pixel perfect, responsive design, mobile responsive, tablet responsive, breakpoints, media queries, CSS Grid, Flexbox layout, component library, UI kit, button styles, input styles, card component, modal component, dropdown component, navigation menu, sidebar, header design, footer design, breadcrumbs, pagination UI, skeleton loading, loading states, error states, empty states, toast notifications, alert components, badge components, avatar components, icon system, typography system, color system, spacing system, animation design, micro-interactions, hover effects, transition effects, scroll animations, parallax effects, lazy loading UI, infinite scroll, virtual scrolling, accessibility, WCAG, a11y, keyboard navigation, screen reader, focus management, ARIA labels, semantic HTML, SEO friendly, meta tags, Open Graph, structured data.
+description: >-
+  Expert frontend architect for React, Next.js, Vue, and Angular. Use when creating a React app,
+  building a frontend project, implementing React components, or setting up a new Vite/Next.js project.
+  Use when you need to create a dashboard, build a web application, implement UI components, or
+  design component architecture. Use when working with TailwindCSS, styled-components, or any CSS
+  framework. Use when implementing state management with Redux, Zustand, or React Query. Use when
+  setting up routing with react-router-dom. Use when creating forms, tables, charts, or data
+  visualization components. Use when building authentication UI like login pages or signup forms.
+  Use when implementing responsive design, dark mode, or accessibility features. Use when the user
+  says "create React", "build frontend", "implement UI", "make it beautiful", "create dashboard",
+  "build web app", "design components", or asks about frontend architecture patterns. Also use when
+  implementing TypeScript frontend code, setting up Vite, or working with JSX/TSX files.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
