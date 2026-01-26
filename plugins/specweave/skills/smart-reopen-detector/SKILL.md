@@ -1,7 +1,6 @@
 ---
 name: smart-reopen-detector
-description: |
-  Detects when user reports issues with recently completed work and suggests reopening relevant tasks, user stories, or increments. Auto-activates on keywords: not working, broken, bug, issue, problem, failing, error, crash, regression, still broken, incorrect, missing, wrong. Scans active and recently completed (7 days) work to find related items. Provides smart suggestions with relevance scoring.
+description: Detects when user reports issues with recently completed work and suggests reopening relevant tasks or increments. Use when reporting bugs, regressions, or problems with recently finished features. Scans completed work from last 7 days and provides relevance-scored suggestions while checking WIP limits.
 ---
 
 # Smart Reopen Detector

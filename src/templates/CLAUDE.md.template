@@ -481,7 +481,7 @@ Implementation notes here.
 
 ### Autonomous Mode Without Claude Code
 
-For non-Claude AI tools, implement the "Ralph Loop" pattern:
+For non-Claude AI tools, implement the stop hook feedback loop pattern:
 
 ```bash
 # Pseudo-code for any AI tool with API access

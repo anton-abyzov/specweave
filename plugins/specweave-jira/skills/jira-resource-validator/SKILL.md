@@ -1,6 +1,6 @@
 ---
 name: jira-resource-validator
-description: Validates Jira projects and boards exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. For boards, accepts either IDs (validates existence) or names (creates boards and updates .env with IDs). NEW - Per-project configuration support - JIRA_BOARDS_{ProjectKey} for hierarchical board organization across multiple projects. Activates for jira setup, jira validation, jira configuration, missing jira project, missing jira boards, jira .env setup, per-project boards.
+description: Validates JIRA projects and boards exist, auto-creates missing resources. Use when setting up JIRA integration, validating .env configuration, or troubleshooting missing projects/boards. Supports per-project board configuration with JIRA_BOARDS_{ProjectKey} pattern.
 allowed-tools: Read, Bash, Write, Edit
 ---
 

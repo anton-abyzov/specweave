@@ -1,17 +1,6 @@
 ---
 name: paypal-integration
-description: >-
-  Integrate PayPal payment processing with Express Checkout, Smart Buttons, subscriptions, and refund
-  management. Use when adding PayPal as a payment option, implementing PayPal checkout flows, or
-  setting up PayPal recurring billing. Use when handling PayPal webhooks, IPN notifications, or
-  payment verification. Use when processing PayPal refunds, managing disputes, or handling chargebacks.
-  Use when the user says "implement PayPal", "add PayPal payments", "integrate PayPal", "PayPal
-  checkout", "PayPal subscriptions", or "PayPal buttons". Use when working with PayPal REST API,
-  PayPal JavaScript SDK, or PayPal Orders API v2. Use when implementing PayPal vault for saved
-  payment methods, guest checkout, or PayPal credit options. Use when setting up PayPal sandbox
-  testing or migrating to PayPal live environment. Use when supporting international payments with
-  PayPal currency conversion. Also use when implementing PayPal Venmo integration, Pay Later options,
-  or PayPal for Marketplaces.
+description: PayPal payment integration for Express Checkout, subscriptions, and IPN webhooks. Use when adding PayPal as payment option, implementing PayPal recurring billing, or handling PayPal refunds and disputes. Covers Smart Payment Buttons, order capture, and subscription plan management.
 ---
 
 # PayPal Integration

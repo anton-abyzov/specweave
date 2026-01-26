@@ -1,17 +1,6 @@
 ---
 name: dotnet-backend
-description: >-
-  .NET/C# backend developer for ASP.NET Core APIs with Entity Framework Core. Use when creating a
-  .NET project, building a C# backend, implementing ASP.NET Core API endpoints, or running dotnet
-  commands like dotnet new webapi or dotnet build. Use when creating REST APIs, minimal APIs, Web
-  APIs, or gRPC services. Use when working with Entity Framework Core, DbContext, migrations, or
-  database operations. Use when implementing authentication with ASP.NET Core Identity or JWT tokens.
-  Use when creating models, services, controllers, or middleware. Use when the user says "create .NET
-  API", "build C# backend", "implement endpoint", "dotnet new", "ASP.NET Core", or mentions C#, .NET,
-  EF Core, or Web API. Use when setting up Program.cs, appsettings.json, or NuGet packages. Use when
-  implementing background services with IHostedService, real-time features with SignalR, or working
-  with SQL Server, PostgreSQL, SQLite, or MySQL in .NET. Also use when implementing webhook endpoints,
-  CRUD operations, repository pattern, or dependency injection in C#.
+description: .NET/C# backend developer for ASP.NET Core 8+ APIs with Entity Framework Core and enterprise patterns. Use when building C# backends, implementing REST/gRPC APIs, or working with SQL Server/PostgreSQL. Covers JWT authentication, dependency injection, background services, and Minimal APIs.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---

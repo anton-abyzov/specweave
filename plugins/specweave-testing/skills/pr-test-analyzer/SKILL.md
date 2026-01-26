@@ -1,6 +1,6 @@
 ---
 name: pr-test-analyzer
-description: PR Test Coverage Analyzer - Evaluates test completeness focusing on behavioral verification, not metrics chasing. Based on Anthropic's official pr-test-analyzer. Activates for PR test coverage, test coverage review, missing tests, test gaps, edge case coverage, regression prevention, test quality, are tests complete, check test coverage, review tests, test analysis.
+description: PR test coverage analyzer. Use when reviewing PR tests, finding missing tests, or checking edge case coverage.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

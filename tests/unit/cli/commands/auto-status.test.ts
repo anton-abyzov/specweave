@@ -1,5 +1,5 @@
 /**
- * Tests for Auto Status CLI Command (Ralph Wiggum Pattern)
+ * Tests for Auto Status CLI Command
  *
  * Verifies the simplified auto-status implementation:
  * - Reads auto-mode.json flag
@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-describe('Auto Status Command (Ralph Wiggum Pattern)', () => {
+describe('Auto Status Command', () => {
   let tempDir: string;
   let incrementsDir: string;
   let stateDir: string;

@@ -9,7 +9,7 @@
 
 The Auto module provides autonomous execution capabilities for SpecWeave. It enables continuous, unattended execution of tasks until all increments are completed, with built-in safety mechanisms including human gates, circuit breakers, and test gates.
 
-Inspired by the Ralph Wiggum plugin architecture, this module is fully integrated with SpecWeave's spec-driven workflow, living docs, and external tool synchronization.
+Using a stop hook feedback loop pattern, this module is fully integrated with SpecWeave's spec-driven workflow, living docs, and external tool synchronization.
 
 ## Architecture
 
@@ -253,7 +253,7 @@ Session completes when:
 
 ## Simple Mode
 
-When `simple: true`, the session operates in "pure Ralph mode":
+When `simple: true`, the session operates in simple mode:
 - No session state persistence
 - No queues or circuit breakers
 - Direct execution loop

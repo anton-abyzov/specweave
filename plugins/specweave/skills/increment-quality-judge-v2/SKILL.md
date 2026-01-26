@@ -1,6 +1,6 @@
 ---
 name: increment-quality-judge-v2
-description: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /sw:qa command.
+description: AI-powered quality assessment using LLM-as-Judge pattern with BMAD risk scoring and formal gate decisions. Use for evaluating increment specs, assessing task completeness, or making quality gate decisions (PASS/CONCERNS/FAIL). Chain-of-thought reasoning ensures transparent evaluation.
 allowed-tools: Read, Grep, Glob
 ---
 

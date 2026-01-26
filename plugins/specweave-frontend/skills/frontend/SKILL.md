@@ -1,19 +1,6 @@
 ---
 name: frontend
-description: >-
-  Expert frontend developer for React, Vue, Angular, and modern web development. Use when creating
-  React components, building Vue applications, or implementing Angular features. Use when working
-  with hooks like useState, useEffect, useContext, or custom hooks. Use when implementing state
-  management with Redux, Zustand, Pinia, or React Query. Use when setting up routing with React
-  Router, Vue Router, or Angular Router. Use when building forms with React Hook Form, Formik, or
-  Vee-Validate. Use when the user says "create component", "build React app", "implement Vue page",
-  "add routing", "state management", or "form validation". Use when working with TypeScript in
-  frontend projects. Use when implementing responsive layouts, CSS animations, or Framer Motion.
-  Use when building UI components like modals, dropdowns, tables, or navigation menus. Use when
-  working with TailwindCSS, styled-components, CSS Modules, or any CSS framework. Use when fetching
-  data with Axios, fetch, or GraphQL. Use when optimizing performance, implementing code splitting,
-  or lazy loading components. Also use when testing with Vitest, Jest, React Testing Library, or
-  Playwright.
+description: Expert frontend developer for React, Vue, Angular, and modern JavaScript/TypeScript. Use when creating components, implementing hooks, handling state management, or building responsive web interfaces. Covers React 18+ features, custom hooks, form handling, and accessibility best practices.
 ---
 
 # Frontend Development Expert

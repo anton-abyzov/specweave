@@ -1,6 +1,6 @@
 ---
 name: reflect
-description: Self-improving AI memory system that learns from sessions. Stores learnings in skill-specific MEMORY.md files. Supports cross-platform Claude Code and non-Claude environments. Smart merging preserves user learnings during marketplace updates. Activates for reflect, remember, learn from session, memory, self-improvement, AI memory, correction patterns, skill learning, persistent memory.
+description: Self-improving AI memory system that persists learnings across sessions in skill-specific MEMORY.md files. Use when capturing corrections, remembering user preferences, or extracting patterns from successful implementations. Enables continual learning without starting from zero each conversation.
 ---
 
 # Self-Improving Skills (Reflect)

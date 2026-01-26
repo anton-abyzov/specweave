@@ -153,13 +153,22 @@ The reflect system detects patterns in your messages. Here are examples of phras
 
 ## Execution
 
+**CRITICAL: Execute steps SEQUENTIALLY. Wait for each tool call to complete before the next.**
+
 When this command is invoked:
 
-1. **Read reflection config** from `.specweave/state/reflect-config.json`
-2. **Scan memory directories**:
-   - Project: `.specweave/memory/*.md`
-   - Global: `~/.specweave/memory/*.md`
-3. **For each memory file**:
+1. **Read reflection config** (ONE tool call):
+   ```
+   Read .specweave/state/reflect-config.json
+   ```
+
+2. **Scan memory directories** (ONE Glob call - WAIT for step 1):
+   ```
+   Glob .specweave/memory/*.md
+   ```
+   (Do NOT run parallel Glob calls)
+
+3. **For each memory file found** (Read sequentially, one at a time):
    - Count total learnings (lines starting with `- ` or `- ✗→✓`)
    - Get last modified timestamp
    - Calculate percentage of total learnings

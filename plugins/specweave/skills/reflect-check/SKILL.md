@@ -1,3 +1,9 @@
+---
+name: reflect-check
+description: Diagnostic tool for validating SpecWeave reflection system health and troubleshooting issues. Use when reflection seems stuck, learnings aren't being captured, or MEMORY.md files aren't updating. Checks configuration, permissions, and system state.
+allowed-tools: Read, Bash
+---
+
 # Reflect Health Check
 
 **Version**: 1.0.0

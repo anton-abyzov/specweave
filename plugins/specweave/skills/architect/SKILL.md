@@ -1,18 +1,6 @@
 ---
 name: architect
-description: >-
-  System architect and technical design expert for enterprise-grade systems. Use when designing
-  system architecture, creating technical specifications, or writing Architecture Decision Records
-  (ADRs). Use when planning database schemas, API contracts, data models, or service boundaries.
-  Use when making technology stack decisions or evaluating frameworks and databases. Use when
-  designing microservices architecture, event-driven systems, or CQRS and domain-driven design
-  patterns. Use when the user asks about distributed systems, scalability planning, or component
-  architecture. Use when reviewing architectural decisions or choosing between monolith and
-  microservices. Use when implementing design patterns like repository, factory, adapter, facade,
-  or dependency injection. Use when planning clean architecture, hexagonal architecture, or
-  modular monolith approaches. Use when designing real-time systems, message queues, or pub/sub
-  architectures with Kafka, RabbitMQ, or Redis. Use when the user says "how should I design",
-  "what architecture for", "create ADR", "system design", or "plan the architecture".
+description: System architect for scalable, maintainable technical designs and architectural decisions. Use when designing system architecture, writing ADRs (Architecture Decision Records), or planning microservices and database structures. Covers trade-off analysis, component diagrams, and technology selection.
 allowed-tools: Read, Write, Edit
 context: fork
 model: opus

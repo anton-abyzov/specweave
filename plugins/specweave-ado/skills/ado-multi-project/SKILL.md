@@ -1,6 +1,6 @@
 ---
 name: ado-multi-project
-description: Expert at organizing specs and splitting tasks across multiple Azure DevOps projects. Handles project-per-team, area-path-based, and team-based architectures. Intelligently maps increments and specs to correct projects based on content analysis. Activates for multi-project Azure DevOps setups, task splitting, spec organization, team allocation, cross-project coordination.
+description: Organize specs and tasks across multiple Azure DevOps projects with intelligent content-based mapping. Use when working with project-per-team, area-path-based, or team-based ADO architectures. Handles cross-project coordination and folder structure organization.
 allowed-tools: Read, Write, Edit, Glob
 ---
 
