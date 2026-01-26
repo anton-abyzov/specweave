@@ -1,6 +1,6 @@
 ---
 increment: 0175-plugin-session-restart-warning
-status: ready_for_review
+status: completed
 testMode: TDD
 coverageTarget: 90
 phases:

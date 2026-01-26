@@ -578,131 +578,75 @@ function getPluginVersion(pluginName: string): string {
 }
 
 /**
- * Install in lazy mode - core plugin only, load others on-demand
+ * Install in lazy mode - essential plugins only, load others on-demand
  *
- * This function:
- * 1. Populates the skills cache from marketplace
- * 2. Installs ONLY the core plugin (sw) providing /sw:increment, /sw:do, etc.
- * 3. Other plugins are loaded on-demand via detect-intent (user-prompt-submit hook)
+ * Installs:
+ * - sw@specweave (core SpecWeave framework)
+ * - context7@claude-plugins-official (documentation context)
+ * - playwright@claude-plugins-official (browser automation)
  *
- * NOTE: sw-router is OBSOLETE as of v1.0.160. The detect-intent command
- * in user-prompt-submit.sh now handles plugin detection via LLM.
+ * Other SpecWeave plugins are loaded on-demand via detect-intent hook.
  */
 async function installLazyMode(
   allPlugins: Array<{ name: string }>,
   spinner: ReturnType<typeof ora>,
-  dirname: string
+  _dirname: string
 ): Promise<PluginInstallResult> {
-  // Import cache manager dynamically to avoid circular deps
-  const { PluginCacheManager } = await import('../../../core/lazy-loading/cache-manager.js');
-  const cacheManager = new PluginCacheManager();
-
-  // Step 1: Populate skills cache from marketplace
-  spinner.start('Populating skills cache...');
-  const cacheResult = await cacheManager.populateCache();
-
-  if (!cacheResult.success) {
-    spinner.warn(`Cache population failed: ${cacheResult.error}`);
-    // Fall back to installing router only via CLI
-  } else {
-    spinner.succeed(`Cached ${cacheResult.pluginsAffected} plugins`);
-  }
-
-  // Step 2: Install core plugin (sw) from specweave marketplace
-  // Core (sw) provides /sw:increment, /sw:do, /sw:done, etc.
-  // NOTE: sw-router is OBSOLETE - detect-intent now handles plugin detection
-  const corePlugin = allPlugins.find(p => p.name === 'sw');
+  // Essential plugins to install
+  const essentialPlugins = [
+    { name: 'sw', marketplace: 'specweave', description: 'Core SpecWeave framework' },
+    { name: 'context7', marketplace: 'claude-plugins-official', description: 'Documentation context' },
+    { name: 'playwright', marketplace: 'claude-plugins-official', description: 'Browser automation' },
+  ];
 
   let installedCount = 0;
+  const failedPlugins: string[] = [];
 
-  // Install core plugin first (provides fundamental commands)
-  if (corePlugin) {
-    spinner.start('Installing core plugin (sw)...');
+  spinner.start('Installing essential plugins...');
+  spinner.stop();
 
-    // Use marketplace name 'sw' (not directory name 'specweave')
-    const coreInstallResult = await cacheManager.installPlugins({
-      plugins: ['sw'],
-      force: false,
-    });
+  for (const plugin of essentialPlugins) {
+    const pluginKey = `${plugin.name}@${plugin.marketplace}`;
+    console.log(chalk.blue(`  Installing ${pluginKey}...`));
 
-    if (coreInstallResult.success && coreInstallResult.pluginsAffected > 0) {
-      spinner.succeed('sw@specweave installed');
+    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey]);
+
+    if (result.success) {
+      console.log(chalk.green(`  ✓ ${pluginKey} installed`));
+      installedCount++;
+    } else if (result.stderr?.includes('already') || result.stdout?.includes('already')) {
+      console.log(chalk.gray(`  ✓ ${pluginKey} (already installed)`));
       installedCount++;
     } else {
-      // Fall back to CLI-based install
-      const cliResult = await installPluginsWithRetry([corePlugin], spinner);
-
-      if (cliResult.successCount > 0) {
-        installedCount++;
-      } else {
-        spinner.warn('Could not install core plugin');
-        console.log(chalk.yellow('   → Install manually: /plugin install sw@specweave'));
-      }
-    }
-  } else {
-    spinner.warn('Core plugin (sw) not found in marketplace');
-  }
-
-  // Step 2b: Install essential plugins from claude-plugins-official marketplace
-  // These provide important capabilities that complement SpecWeave
-  const officialPlugins = ['context7', 'playwright'];
-
-  spinner.start('Installing essential official plugins...');
-
-  for (const pluginName of officialPlugins) {
-    const installResult = execFileNoThrowSync('claude', [
-      'plugin',
-      'install',
-      `${pluginName}@claude-plugins-official`,
-    ]);
-
-    if (installResult.success) {
-      console.log(chalk.green(`   ✓ ${pluginName}@claude-plugins-official installed`));
-      installedCount++;
-    } else {
-      // Check if already installed
-      if (installResult.stderr?.includes('already') || installResult.stdout?.includes('already')) {
-        console.log(chalk.gray(`   ✓ ${pluginName}@claude-plugins-official (already installed)`));
-        installedCount++;
-      } else {
-        console.log(chalk.yellow(`   ⚠ ${pluginName}@claude-plugins-official failed`));
-        console.log(chalk.gray(`     → Install manually: claude plugin install ${pluginName}@claude-plugins-official`));
-      }
+      console.log(chalk.yellow(`  ⚠ ${pluginKey} failed`));
+      console.log(chalk.gray(`    → Install manually: claude plugin install ${pluginKey}`));
+      failedPlugins.push(plugin.name);
     }
   }
 
-  spinner.succeed('Essential plugins installed');
+  spinner.succeed(`Installed ${installedCount}/${essentialPlugins.length} essential plugins`);
 
-  // Step 3: Show lazy loading explanation
+  // Show summary
   console.log('');
   console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
   console.log('');
   console.log(chalk.cyan('Installed plugins:'));
-  console.log(chalk.gray('   • sw@specweave              - Core SpecWeave framework'));
-  console.log(chalk.gray('   • context7@claude-plugins-official - Documentation context'));
-  console.log(chalk.gray('   • playwright@claude-plugins-official - Browser automation'));
+  for (const plugin of essentialPlugins) {
+    console.log(chalk.gray(`   • ${plugin.name}@${plugin.marketplace} - ${plugin.description}`));
+  }
   console.log('');
-  console.log(chalk.cyan('How lazy loading works:'));
-  console.log(chalk.gray('   • Core plugins loaded initially'));
-  console.log(chalk.gray('   • Domain plugins detected & loaded on-demand via LLM'));
-  console.log(chalk.gray('   • Claude Code hot-reloads skills within seconds'));
+  console.log(chalk.cyan('On-demand plugins (loaded via keywords):'));
+  console.log(chalk.gray('   • "GitHub sync" → sw-github'));
+  console.log(chalk.gray('   • "JIRA" → sw-jira'));
+  console.log(chalk.gray('   • "Kubernetes" → sw-k8s'));
+  console.log(chalk.gray('   • "React/frontend" → sw-frontend'));
   console.log('');
-  console.log(chalk.cyan('Trigger keywords for on-demand plugins:'));
-  console.log(chalk.gray('   • "GitHub sync" → loads sw-github'));
-  console.log(chalk.gray('   • "JIRA" → loads sw-jira'));
-  console.log(chalk.gray('   • "Kubernetes" → loads sw-k8s'));
-  console.log(chalk.gray('   • "React", "frontend" → loads sw-frontend'));
-  console.log(chalk.gray('   • ...and more'));
-  console.log('');
-
-  // Total expected: 1 (sw) + 2 (official) = 3
-  const expectedPlugins = 1 + officialPlugins.length;
 
   return {
     success: installedCount > 0,
     successCount: installedCount,
-    failCount: expectedPlugins - installedCount,
-    failedPlugins: [],
+    failCount: essentialPlugins.length - installedCount,
+    failedPlugins,
     marketplaceOnly: false,
   };
 }
