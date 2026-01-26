@@ -230,6 +230,9 @@ export interface IncrementRecommendation {
   /** Confidence score (0-1) for this recommendation */
   confidence: number;
 
+  /** Whether increment creation is MANDATORY (LLM decides, not config) */
+  mandatory: boolean;
+
   /** Suggested increment name (for 'new' action) */
   suggestedName?: string;
 
@@ -501,7 +504,7 @@ Development Tools:
   hookify: Git hooks, pre-commit hooks
 
 ═══════════════════════════════════════════════════════════════
-INCREMENT RECOMMENDATION (v1.0.160)
+INCREMENT RECOMMENDATION (v1.0.168 - LLM decides mandatory)
 ═══════════════════════════════════════════════════════════════
 
 ALSO analyze if user should create/reopen a SpecWeave increment.
@@ -509,6 +512,7 @@ ALSO analyze if user should create/reopen a SpecWeave increment.
 "increment" field with:
 - action: "new" | "reopen" | "small_fix" | "hotfix" | "none"
 - confidence: 0.0-1.0
+- mandatory: true/false (YOU decide - not config-based!)
 - suggestedName: kebab-case name (for "new")
 - reasoning: brief explanation
 
@@ -521,37 +525,50 @@ WHEN TO USE EACH ACTION:
 │ none        │ Questions, exploration, "how do I", general chat           │
 └─────────────┴─────────────────────────────────────────────────────────────┘
 
+WHEN mandatory: true (Claude MUST create increment before implementing):
+- Multi-file feature work (React + API + Database)
+- Full-stack implementation requests
+- New feature spanning multiple components
+- Significant architectural changes
+- confidence >= 0.85 AND action = "new"
+
+WHEN mandatory: false (suggestion only):
+- Single-file fixes
+- Small improvements
+- User explicitly opted out
+- Low confidence
+
 EXPLICIT OPT-OUT → action: "none":
 - "don't create an increment", "no increment needed", "skip workflow"
 - "just a quick fix", "without tracking", "already tracking"
 
 ═══════════════════════════════════════════════════════════════
-EXAMPLES (with increment field)
+EXAMPLES (with increment field + mandatory)
 ═══════════════════════════════════════════════════════════════
 
 "Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component feature requiring spec-driven tracking"}}
+{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
 
 "Build Go microservice with PostgreSQL"
-{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp","increment":{"action":"new","confidence":0.9,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation"}}
+{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
 
 "Fix the login bug"
-{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"small_fix","confidence":0.85,"reasoning":"Bug fix, likely single-file change"}}
+{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"small_fix","confidence":0.85,"mandatory":false,"reasoning":"Bug fix, likely single-file change"}}
 
 "The auth feature is broken again"
-{"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
+{"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
 
 "How do I use React hooks?"
-{"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"reasoning":"Question, no implementation"}}
+{"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Question, no implementation"}}
 
 "Update the package version to 2.0"
-{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.95,"reasoning":"Config/version change, no feature work"}}
+{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.95,"mandatory":false,"reasoning":"Config/version change, no feature work"}}
 
 "Urgent: production checkout is failing"
-{"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention"}}
+{"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention - MANDATORY"}}
 
 "Just fix the typo in README, don't track it"
-{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"reasoning":"User explicitly opted out of tracking"}}`;
+{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"User explicitly opted out of tracking"}}`;
 }
 
 /**
@@ -829,6 +846,7 @@ Which plugins should be loaded?`;
       increment?: {
         action?: string;
         confidence?: number;
+        mandatory?: boolean;
         suggestedName?: string;
         relatedKeyword?: string;
         reasoning?: string;
@@ -872,21 +890,26 @@ Which plugins should be loaded?`;
     // v1.0.156: Trust Opus model - no arbitrary limits, no keyword fallback
     // Opus understands NECESSARY implications (dashboard → backend) vs OPTIONAL (→ infra)
 
-    // Parse increment recommendation (v1.0.141+)
+    // Parse increment recommendation (v1.0.141+, v1.0.168: added mandatory field)
     let incrementRecommendation: IncrementRecommendation | undefined;
     if (parsed.increment) {
       const validActions: IncrementAction[] = ['new', 'reopen', 'small_fix', 'hotfix', 'none'];
       const action = parsed.increment.action as IncrementAction;
 
       if (validActions.includes(action)) {
+        // v1.0.168: LLM decides if increment is mandatory (not config-based)
+        const isMandatory = parsed.increment.mandatory === true ||
+          (action === 'new' && typeof parsed.increment.confidence === 'number' && parsed.increment.confidence >= 0.85);
+
         incrementRecommendation = {
           action,
           confidence: typeof parsed.increment.confidence === 'number' ? parsed.increment.confidence : 0.5,
+          mandatory: isMandatory,
           suggestedName: parsed.increment.suggestedName,
           relatedKeyword: parsed.increment.relatedKeyword,
           reasoning: parsed.increment.reasoning || 'No reasoning provided',
         };
-        logger.debug(`Increment recommendation: ${action} (confidence: ${incrementRecommendation.confidence})`);
+        logger.debug(`Increment recommendation: ${action} (confidence: ${incrementRecommendation.confidence}, mandatory: ${isMandatory})`);
       } else {
         logger.debug(`Invalid increment action: ${parsed.increment.action}`);
       }
