@@ -292,7 +292,6 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 | spec.md write blocked | Use template API first, then PM skill completes it |
-| Source code blocked (strict mode) | Only with `mandatory: true`; disable in config or create increment |
 <!-- SW:END:troubleshooting -->
 
 <!-- SW:SECTION:lazyloading version="1.0.167" -->
