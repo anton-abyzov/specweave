@@ -1,6 +1,6 @@
 ---
 name: kafka-kubernetes
-description: Kubernetes deployment expert for Apache Kafka. Guides K8s deployments using Helm charts, operators (Strimzi, Confluent), StatefulSets, and production best practices. Activates for kubernetes, k8s, helm, kafka on kubernetes, strimzi, confluent operator, kafka operator, statefulset, kafka helm chart, k8s deployment, kubernetes kafka, deploy kafka to k8s.
+description: Kubernetes deployment expert for Apache Kafka using Helm, Strimzi, and Confluent operators. Use when deploying Kafka on K8s, configuring StatefulSets, or choosing between Kafka operators for production.
 ---
 
 # Kafka on Kubernetes Deployment

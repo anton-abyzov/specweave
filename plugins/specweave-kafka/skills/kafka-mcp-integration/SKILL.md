@@ -1,6 +1,6 @@
 ---
 name: kafka-mcp-integration
-description: MCP server integration for Kafka operations. Auto-activates on keywords kafka mcp, mcp server, mcp configure, mcp setup, kanapuli, tuannvm, confluent mcp, kafka integration. Provides configuration examples and connection guidance for all 4 MCP servers.
+description: MCP server integration for Kafka operations with Claude Desktop and SpecWeave. Use when configuring Kafka MCP servers, connecting Claude to Kafka topics, or choosing between MCP implementations.
 ---
 
 # Kafka MCP Server Integration

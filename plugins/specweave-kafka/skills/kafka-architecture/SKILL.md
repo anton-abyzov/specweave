@@ -1,6 +1,6 @@
 ---
 name: kafka-architecture
-description: Expert knowledge of Apache Kafka architecture, cluster design, capacity planning, partitioning strategies, replication, and high availability. Auto-activates on keywords kafka architecture, cluster sizing, partition strategy, replication factor, kafka ha, kafka scalability, broker count, topic design, kafka performance, kafka capacity planning.
+description: Apache Kafka architecture expert for cluster design, capacity planning, and high availability. Use when designing Kafka clusters, choosing partition strategies, or sizing brokers for production workloads.
 ---
 
 # Kafka Architecture & Design Expert

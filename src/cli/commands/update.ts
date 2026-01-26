@@ -202,6 +202,15 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 2.6: Migrate reflect-config.json to enable autoReflect by default (v1.0.173+)
+  // Projects initialized before v1.0.96 may have autoReflect: false
+  if (isSpecWeaveProject && !options.check) {
+    const reflectMigrated = migrateReflectConfig(projectPath, options.verbose);
+    if (reflectMigrated) {
+      console.log(chalk.green(`  ✓ Enabled autoReflect in reflect-config.json (self-improving AI)`));
+    }
+  }
+
   // Step 3: Validate project health (quick checks)
   if (isSpecWeaveProject && !options.check) {
     spinner.start('Validating project health...');
@@ -610,6 +619,82 @@ async function selfUpdateSpecWeave(
       updated: false,
       error: `Self-update failed: ${error.message || error}`,
     };
+  }
+}
+
+/**
+ * Migrate reflect-config.json to enable autoReflect by default
+ * Projects initialized before v1.0.96 may have autoReflect: false or missing
+ *
+ * @param projectPath - Path to the project root
+ * @param verbose - Show detailed output
+ * @returns true if migration was performed
+ */
+function migrateReflectConfig(projectPath: string, verbose?: boolean): boolean {
+  const reflectConfigPath = path.join(projectPath, '.specweave', 'state', 'reflect-config.json');
+
+  // Create state directory if missing
+  const stateDir = path.join(projectPath, '.specweave', 'state');
+  if (!fs.existsSync(stateDir)) {
+    fs.mkdirSync(stateDir, { recursive: true });
+  }
+
+  // If reflect-config.json doesn't exist, create it with defaults
+  if (!fs.existsSync(reflectConfigPath)) {
+    const defaultConfig = {
+      enabled: true,
+      autoReflect: true,
+      enabledAt: new Date().toISOString(),
+      confidenceThreshold: 'medium',
+      maxLearningsPerSession: 10,
+      gitCommit: false,
+      gitPush: false,
+    };
+    fs.writeFileSync(reflectConfigPath, JSON.stringify(defaultConfig, null, 2));
+    if (verbose) {
+      console.log(chalk.gray(`    Created reflect-config.json with autoReflect: true`));
+    }
+    return true;
+  }
+
+  // If it exists, check if autoReflect needs to be enabled
+  try {
+    const config = JSON.parse(fs.readFileSync(reflectConfigPath, 'utf-8'));
+
+    // Only migrate if autoReflect is explicitly false or missing
+    if (config.autoReflect === false || config.autoReflect === undefined) {
+      config.autoReflect = true;
+
+      // Also ensure other defaults are present
+      if (config.enabled === undefined) config.enabled = true;
+      if (config.confidenceThreshold === undefined) config.confidenceThreshold = 'medium';
+      if (config.maxLearningsPerSession === undefined) config.maxLearningsPerSession = 10;
+
+      fs.writeFileSync(reflectConfigPath, JSON.stringify(config, null, 2));
+      if (verbose) {
+        console.log(chalk.gray(`    Updated reflect-config.json: autoReflect: false → true`));
+      }
+      return true;
+    }
+
+    // autoReflect is already true, no migration needed
+    return false;
+  } catch (error) {
+    // If parsing fails, recreate with defaults
+    if (verbose) {
+      console.log(chalk.yellow(`    ⚠ reflect-config.json was invalid, recreating with defaults`));
+    }
+    const defaultConfig = {
+      enabled: true,
+      autoReflect: true,
+      enabledAt: new Date().toISOString(),
+      confidenceThreshold: 'medium',
+      maxLearningsPerSession: 10,
+      gitCommit: false,
+      gitPush: false,
+    };
+    fs.writeFileSync(reflectConfigPath, JSON.stringify(defaultConfig, null, 2));
+    return true;
   }
 }
 

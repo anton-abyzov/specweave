@@ -1,17 +1,6 @@
 ---
 name: frontend-architect
-description: >-
-  Expert frontend architect for React, Next.js, Vue, and Angular. Use when creating a React app,
-  building a frontend project, implementing React components, or setting up a new Vite/Next.js project.
-  Use when you need to create a dashboard, build a web application, implement UI components, or
-  design component architecture. Use when working with TailwindCSS, styled-components, or any CSS
-  framework. Use when implementing state management with Redux, Zustand, or React Query. Use when
-  setting up routing with react-router-dom. Use when creating forms, tables, charts, or data
-  visualization components. Use when building authentication UI like login pages or signup forms.
-  Use when implementing responsive design, dark mode, or accessibility features. Use when the user
-  says "create React", "build frontend", "implement UI", "make it beautiful", "create dashboard",
-  "build web app", "design components", or asks about frontend architecture patterns. Also use when
-  implementing TypeScript frontend code, setting up Vite, or working with JSX/TSX files.
+description: Expert frontend architect for React, Next.js, Vue, and Angular with Atomic Design and state management patterns. Use when designing component architecture, building dashboards, or implementing complex frontend features. Covers TanStack Query, Zustand/Redux, routing strategies, and performance optimization.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

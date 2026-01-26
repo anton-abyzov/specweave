@@ -511,7 +511,7 @@ See diagrams: [diagrams/flows/increment-creation-flow.mmd](diagrams/flows/increm
 
 **Location**: `src/core/auto/`, `src/cli/commands/auto.ts`
 
-**Purpose**: Continuous autonomous execution of tasks until completion (Ralph Wiggum pattern)
+**Purpose**: Continuous autonomous execution of tasks until completion (stop hook feedback loop)
 
 **Architecture**:
 ```
@@ -547,10 +547,10 @@ Stop Hook Dispatcher:
 - `CostEstimator` - Tracks token spend per task
 - `CircuitBreaker` - Stops after 3 consecutive failures
 
-**Stop Hook System** (New in v1.0.109):
-- `stop-dispatcher.sh` - Routes to `reflect` or `auto` hooks
+**Stop Hook Chain** (defined in hooks.json):
 - `stop-reflect.sh` - Runs session reflection (learning extraction)
-- `stop-auto.sh` - Decides whether to continue or stop
+- `stop-auto.sh` - Decides whether to continue or stop auto mode
+- `stop-sync.sh` - Syncs pending changes to external tools
 - Prevents infinite loops via iteration count checks
 
 **MVP Paths** (Auto-execution focus):
@@ -673,7 +673,7 @@ See: [diagrams/flows/increment-creation-flow.mmd](diagrams/flows/increment-creat
 
 See: [diagrams/flows/task-completion-flow.mmd](diagrams/flows/task-completion-flow.mmd)
 
-### Auto Mode Flow (Ralph Wiggum Pattern)
+### Auto Mode Flow (Stop Hook Feedback Loop)
 
 See: [diagrams/flows/auto-mode-flow.mmd](diagrams/flows/auto-mode-flow.mmd)
 

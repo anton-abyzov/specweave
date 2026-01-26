@@ -1,6 +1,6 @@
 ---
 name: ado-mapper
-description: Expert in bidirectional conversion between SpecWeave increments and Azure DevOps (ADO) Epics/Features/User Stories/Tasks. Handles export (increment → ADO), import (ADO → increment), and bidirectional sync with conflict resolution. Activates for ADO sync, Azure DevOps sync, work item creation, import from ADO.
+description: Bidirectional conversion between SpecWeave increments and Azure DevOps work items. Use when exporting increments to ADO epics, importing ADO epics as increments, or resolving sync conflicts. Handles Epic/Feature/User Story/Task hierarchy mapping.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---

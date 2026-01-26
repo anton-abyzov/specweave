@@ -230,7 +230,7 @@ echo ""
 echo "Session ID: $SESSION_ID"
 echo "Duration: $DURATION"
 echo "Iteration: $ITERATION / $MAX_ITERATIONS"
-[ "$SIMPLE" = "true" ] && echo "Mode: Simple (Ralph)"
+[ "$SIMPLE" = "true" ] && echo "Mode: Simple"
 echo ""
 
 # Progress bar

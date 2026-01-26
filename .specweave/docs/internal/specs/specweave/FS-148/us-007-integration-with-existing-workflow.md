@@ -26,7 +26,7 @@ project: specweave
 - [x] **AC-US7-08**: All commands respect existing PM validation gates (tasks, tests, docs)
 - [x] **AC-US7-09**: All commands update tasks.md and spec.md checkboxes via existing Edit operations
 - [x] **AC-US7-10**: When no auto session active, commands behave as before (backwards compatible)
-- [x] **AC-US7-11**: `--simple` flag for pure Ralph behavior: just loop + tasks.md completion + max iterations (no session state, queues, circuit breakers)
+- [x] **AC-US7-11**: `--simple` flag for simple mode: just loop + tasks.md completion + max iterations (no session state, queues, circuit breakers)
 
 ---
 

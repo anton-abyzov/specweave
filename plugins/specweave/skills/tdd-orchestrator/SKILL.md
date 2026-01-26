@@ -1,6 +1,6 @@
 ---
 name: tdd-orchestrator
-description: Master TDD orchestrator specializing in red-green-refactor discipline, multi-agent workflow coordination, and comprehensive test-driven development practices. Enforces TDD best practices across teams with AI-assisted testing and modern frameworks. Activates for TDD, test-driven development, test driven, red-green-refactor, write tests first, test first, failing test, make test pass, refactor with tests, Kent Beck, TDD cycle, outside-in TDD, inside-out TDD, London style TDD, Chicago style TDD, test doubles, mocking TDD, test isolation, test pyramid, unit tests TDD, integration tests TDD, acceptance tests, ATDD, specification by example, executable specifications, tests first, with tdd, using tdd, tdd approach, tdd workflow, tdd mode.
+description: Master TDD orchestrator for strict red-green-refactor discipline and multi-agent test-driven workflows. Use when implementing TDD across complex features, coordinating test and implementation agents, or enforcing TDD cycle discipline. Covers modern TDD practices, test isolation, and quality gates.
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

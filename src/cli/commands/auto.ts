@@ -1,5 +1,5 @@
 /**
- * Auto Mode CLI Command (v3.0 - Pure Ralph Wiggum Pattern)
+ * Auto Mode CLI Command (v3.0 - Stop Hook Feedback Loop)
  *
  * PHILOSOPHY: No session files. No state management.
  * The stop hook simply checks: "Are there active increments?"
@@ -51,7 +51,7 @@ export interface AutoCommandOptions {
 
 export function createAutoCommand(): Command {
   const cmd = new Command('auto')
-    .description('Start autonomous execution (Ralph Wiggum pattern)')
+    .description('Start autonomous execution (stop hook feedback loop)')
     .argument('[incrementIds...]', 'Increment IDs to activate (e.g., 0001, 0001-feature)')
     .option('--dry-run', 'Preview without activating')
     .option('--all-backlog', 'Activate all backlog items')

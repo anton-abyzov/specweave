@@ -1,6 +1,6 @@
 ---
 name: context-loader
-description: Explains how SpecWeave achieves context efficiency through Claude's native progressive disclosure mechanism and sub-agent parallelization. Skills load only when relevant, sub-agents isolate context. Activates when users ask about context loading, token usage, or how SpecWeave scales. Keywords: context loading, progressive disclosure, token efficiency, sub-agents, context management.
+description: Explains how SpecWeave achieves context efficiency through Claude's native progressive disclosure and sub-agent parallelization. Use when asking about token usage, context management, or how SpecWeave scales with large projects. Leverages Claude's built-in mechanisms without custom caching.
 ---
 
 # Context Management in SpecWeave

@@ -242,9 +242,9 @@ plugin-name/
 | `sync-living-docs` | Increment creation | Update living documentation |
 | `reflection` | Session end | Extract learnings to memory |
 | `git-diff-analyzer` | Git commit | Analyze code changes |
-| `stop-dispatcher` | Auto mode stop | Route to reflect or auto hooks |
-| `stop-reflect` | Auto session end | Run reflection (learning extraction) |
-| `stop-auto` | Auto mode iteration | Decide continue or stop |
+| `stop-reflect` | Session end | Run reflection (learning extraction) |
+| `stop-auto` | Auto mode | Decide continue or stop |
+| `stop-sync` | Session end | Sync pending changes |
 
 ### Hook Execution
 

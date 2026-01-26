@@ -52,7 +52,7 @@ Commands using the `!` inline execution pattern:
 
 Require the `allowed-tools` pattern to match the EXPANDED command path, not the literal variable.
 
-**Recent Fix**: Anthropic fixed this for Ralph Wiggum on 2026-01-06
+**Recent Fix**: Anthropic fixed this on 2026-01-06
 **Commit**: [c2022d36](https://github.com/anthropics/claude-code/commit/c2022d3698c2ed89a5d9ca4a724571d2819057a5)
 
 ---
@@ -139,7 +139,7 @@ If you were using Claude Code before late December 2025, the command worked beca
 
 ## Related Issues
 
-- GitHub Issue #16398: Ralph permission check fails
+- GitHub Issue #16398: Auto mode permission check fails
 - GitHub PR #16522: Add :* to allowed-tools pattern to permit arguments
 
 ---

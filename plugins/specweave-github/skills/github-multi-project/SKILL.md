@@ -1,6 +1,6 @@
 ---
 name: github-multi-project
-description: Expert at organizing specs and splitting tasks across multiple GitHub repositories. Handles monorepo, polyrepo, and parent repo architectures. Activates for multi-project GitHub setups, task splitting, spec organization, team allocation, cross-repo coordination.
+description: Expert at organizing specs and splitting tasks across multiple GitHub repositories for monorepo, polyrepo, and parent repo architectures. Use when managing specs across multiple repos, coordinating cross-repo work, or allocating tasks to different teams/repositories.
 ---
 
 # GitHub Multi-Project Management Skill

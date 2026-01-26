@@ -1,6 +1,6 @@
 ---
 name: kafka-architect
-description: Kafka architecture and design specialist. Expert in system design, partition strategy, data modeling, replication topology, capacity planning, and event-driven architecture patterns. Activates for Kafka, Apache Kafka, Kafka architecture, topic design, partition strategy, consumer groups, producer config, Kafka Connect, Kafka Streams, event streaming, message broker, pub/sub, event-driven architecture, EDA, event sourcing, CQRS with Kafka, Kafka cluster, Zookeeper, KRaft, replication factor, ISR, broker config, retention policy, compaction, exactly-once semantics, at-least-once, offset management, lag monitoring, Kafka security, SASL, SSL Kafka.
+description: Kafka architecture specialist for event-driven systems, partition strategies, and data modeling. Use when designing Kafka topics, planning consumer groups, or implementing event sourcing and CQRS patterns.
 model: opus
 context: fork
 ---

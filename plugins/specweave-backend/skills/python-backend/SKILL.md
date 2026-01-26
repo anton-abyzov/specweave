@@ -1,18 +1,6 @@
 ---
 name: python-backend
-description: >-
-  Python backend developer for FastAPI, Django, and Flask APIs. Use when creating a Python API,
-  building a FastAPI application, implementing Django REST endpoints, or setting up a Flask server.
-  Use when working with SQLAlchemy, Django ORM, Tortoise ORM, or any Python database ORM. Use when
-  implementing Pydantic validation, data models, or schema validation. Use when implementing
-  authentication with JWT, OAuth, or session-based auth in Python. Use when the user says "create
-  Python API", "build FastAPI", "Django backend", "Flask server", "Python REST API", or "implement
-  endpoint". Use when working with async Python, asyncio, or ASGI servers like Uvicorn. Use when
-  implementing background tasks with Celery, RQ, or Dramatiq. Use when processing data with pandas,
-  numpy, or polars. Use when integrating machine learning models, running inference, or serving
-  predictions. Use when working with PostgreSQL, MySQL, MongoDB, or Redis in Python. Also use when
-  writing pytest tests, implementing logging with structlog or loguru, or setting up CI/CD for
-  Python applications.
+description: Python backend developer for FastAPI, Django, and Flask. Use when building Python APIs, REST endpoints, or data processing services.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---

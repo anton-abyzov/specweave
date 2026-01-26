@@ -1,6 +1,6 @@
 ---
 name: e2e-playwright
-description: Comprehensive Playwright end-to-end testing expertise covering browser automation, cross-browser testing, visual regression, API testing, mobile emulation, accessibility testing, test architecture, page object models, fixtures, parallel execution, CI/CD integration, debugging strategies, and production-grade E2E test patterns. Activates for playwright, e2e testing, end-to-end testing, browser automation, cross-browser testing, visual testing, screenshot testing, API testing, mobile testing, accessibility testing, test fixtures, page object model, POM, test architecture, parallel testing, playwright config, trace viewer, codegen, test debugging, flaky tests, CI integration, playwright best practices.
+description: Playwright end-to-end testing expert. Use when writing E2E tests, browser automation, or debugging flaky tests.
 ---
 
 # E2E Playwright Testing Expert

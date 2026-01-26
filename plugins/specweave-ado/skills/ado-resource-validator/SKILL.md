@@ -1,6 +1,6 @@
 ---
 name: ado-resource-validator
-description: Validates Azure DevOps projects and resources exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. Supports multiple projects for project-per-team strategy, area paths for area-path-based strategy, and teams for team-based strategy. NEW - Per-project configuration support - AZURE_DEVOPS_AREA_PATHS_{ProjectName} and AZURE_DEVOPS_TEAMS_{ProjectName} for hierarchical organization. Activates for ado setup, ado validation, ado configuration, missing ado project, azure devops .env setup, per-project area paths, per-project teams.
+description: Validates Azure DevOps projects, area paths, and teams exist with auto-creation of missing resources. Use when setting up ADO integration, configuring .env variables, or troubleshooting missing project errors. Supports project-per-team, area-path-based, and team-based strategies.
 allowed-tools: Read, Bash, Write, Edit
 ---
 

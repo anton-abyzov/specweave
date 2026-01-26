@@ -1,6 +1,6 @@
 ---
 name: increment-work-router
-description: Smart work continuation system that detects implementation intent and routes to active increment or creates new one. Activates for implement, complete, build, add, develop, work on, continue, resume, finish, fix, resolve, address, let's implement, let's build, start working, begin implementation, add feature, create feature.
+description: Smart work continuation system that detects implementation intent and routes appropriately. Use when saying "implement X", "continue working", "build feature", or "resume increment". Checks active increments, relevance matching, and TDD mode to route to /sw:do or /sw:increment automatically.
 ---
 
 # Increment Work Router - Smart Work Continuation

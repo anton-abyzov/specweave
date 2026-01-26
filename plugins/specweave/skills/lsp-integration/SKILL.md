@@ -1,6 +1,6 @@
 ---
 name: lsp-integration
-description: LSP (Language Server Protocol) integration expert. Provides semantic code understanding using language servers for TypeScript, JavaScript, Python, Go, Rust, and more. Handles code navigation (go to definition, find references), symbol search, hover information, diagnostics, refactoring. 100x faster than grep for code exploration. Activates for LSP, language server, TypeScript, JavaScript, Python, Go, Rust, Java, C#, code navigation, go to definition, find references, find all references, hover type, type information, symbol search, document symbols, workspace symbols, diagnostics, code errors, type errors, refactoring, rename symbol, code actions, auto import, semantic analysis, code intelligence, intellisense, autocomplete context, type inference.
+description: LSP (Language Server Protocol) expert for 100x faster semantic code understanding than text-based grep. Use when navigating large codebases, finding symbol definitions and references, or exploring type hierarchies. Supports TypeScript, Python, Go, Rust, and other LSP-enabled languages.
 allowed-tools: Read, Bash, Glob, Grep
 ---
 

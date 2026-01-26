@@ -1,6 +1,6 @@
 ---
 name: silent-failure-hunter
-description: Silent Failure Hunter - Identifies hidden error handling issues, inadequate catch blocks, and inappropriate fallback behavior. Based on Anthropic's official silent-failure-hunter. Activates for error handling review, silent failures, catch block review, error swallowing, hidden errors, exception handling, try catch review, error logging, failure detection, find silent errors.
+description: Find silent failures and error swallowing in code. Use when reviewing error handling or auditing catch blocks.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus
 context: fork

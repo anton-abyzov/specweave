@@ -1,6 +1,6 @@
 ---
 name: tdd-expert
-description: Test-Driven Development (TDD) expertise covering red-green-refactor cycle, behavior-driven development, test-first design, refactoring with confidence, TDD best practices, TDD workflow, unit testing strategies, mock-driven development, test doubles, TDD patterns, SOLID principles through testing, emergent design, incremental development, TDD anti-patterns, and production-grade TDD practices. Activates for TDD, test-driven development, red-green-refactor, test-first, behavior-driven, BDD, refactoring, test doubles, mock-driven, test design, SOLID principles, emergent design, incremental development, TDD workflow, TDD best practices, TDD patterns, Kent Beck, Robert Martin, Uncle Bob, test-first design.
+description: Test-Driven Development expert. Use when implementing TDD workflow, red-green-refactor, or writing tests first.
 ---
 
 # Test-Driven Development (TDD) Expert

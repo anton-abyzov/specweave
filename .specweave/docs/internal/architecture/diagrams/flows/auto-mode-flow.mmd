@@ -1,27 +1,27 @@
 sequenceDiagram
     autonumber
-    title Auto Mode Flow (Ralph Wiggum Pattern)
+    title Auto Mode Flow (Stop Hook Feedback Loop)
 
     actor Developer
     participant CLI as specweave CLI
-    participant State as auto-session.json
+    participant State as auto-mode.json
     participant Claude as Claude Code
-    participant StopHook as stop-dispatcher.sh
     participant Reflect as stop-reflect.sh
-    participant AutoHook as stop-auto-simple.sh
+    participant AutoHook as stop-auto.sh
+    participant Sync as stop-sync.sh
     participant Tasks as tasks.md
     participant Meta as MetadataManager
 
-    Developer->>CLI: specweave auto 0042 --tdd
+    Developer->>CLI: /sw:auto
 
-    CLI->>State: Create auto-session.json
-    Note over State: status: running<br/>incrementIds: ["0042"]<br/>maxIterations: 2500
+    CLI->>State: Create auto-mode.json
+    Note over State: active: true<br/>maxTurns: 20
 
-    CLI->>Claude: Start session with auto-system-prompt
+    CLI->>Claude: Start session with auto prompt
 
-    Note over Claude: Ralph Wiggum Pattern: Simple loop
+    Note over Claude: Stop Hook Feedback Loop
 
-    loop While tasks remain and iterations < max
+    loop While tasks remain and turns < max
         Claude->>Tasks: Read tasks.md
         Tasks-->>Claude: Find next [ ] pending task
 
@@ -31,35 +31,26 @@ sequenceDiagram
 
             Note over Claude: Session naturally ends
 
-            Claude->>StopHook: Stop hook triggered
-            activate StopHook
-
-            StopHook->>Reflect: Run reflect hook (always)
+            Claude->>Reflect: Stop hook 1: reflect
             activate Reflect
             Reflect->>Reflect: Extract learnings from session
-            Reflect->>Reflect: Save to memory (async)
-            Reflect-->>StopHook: decision: approve
+            Reflect->>Reflect: Queue for async processing
+            Reflect-->>Claude: decision: approve
             deactivate Reflect
 
-            StopHook->>State: Check if auto session active
-            State-->>StopHook: status: running
-
-            StopHook->>AutoHook: Run auto hook
+            Claude->>AutoHook: Stop hook 2: auto
             activate AutoHook
 
             AutoHook->>Tasks: Check remaining tasks
             Tasks-->>AutoHook: 3 tasks remaining
 
-            AutoHook->>State: Update iteration count
-            State-->>AutoHook: iteration: 5
+            AutoHook->>State: Update turn count
+            State-->>AutoHook: turn: 5
 
             AutoHook->>AutoHook: Build continuation prompt
 
-            AutoHook-->>StopHook: decision: block<br/>systemMessage: Continue with next task
+            AutoHook-->>Claude: decision: block<br/>systemMessage: Continue with next task
             deactivate AutoHook
-
-            StopHook-->>Claude: block - continue session
-            deactivate StopHook
 
             Note over Claude: Session continues (not terminated)
 
@@ -69,23 +60,20 @@ sequenceDiagram
 
             Note over Claude: Session ends
 
-            Claude->>StopHook: Stop hook triggered
-            activate StopHook
+            Claude->>Reflect: Stop hook 1: reflect
+            Reflect-->>Claude: approve (learnings queued)
 
-            StopHook->>Reflect: Run reflect hook
-            Reflect-->>StopHook: approve (learnings saved)
-
-            StopHook->>AutoHook: Run auto hook
+            Claude->>AutoHook: Stop hook 2: auto
             activate AutoHook
             AutoHook->>Tasks: Check remaining tasks
             Tasks-->>AutoHook: 0 tasks remaining
 
-            AutoHook->>State: Update status: completed
-            AutoHook-->>StopHook: decision: approve<br/>reason: All tasks complete
+            AutoHook->>State: Mark session inactive
+            AutoHook-->>Claude: decision: approve<br/>reason: All tasks complete
             deactivate AutoHook
 
-            StopHook-->>Claude: approve - session ends
-            deactivate StopHook
+            Claude->>Sync: Stop hook 3: sync
+            Sync-->>Claude: approve (changes synced)
 
             Claude-->>Developer: Auto session complete
         end

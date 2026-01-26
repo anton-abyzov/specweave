@@ -14,7 +14,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { handleAutoCommand, AutoCommandOptions } from '../../../../src/cli/commands/auto.js';
 
-describe('Auto Command (Ralph Wiggum Pattern)', () => {
+describe('Auto Command (Stop Hook Feedback Loop)', () => {
   let tempDir: string;
   let incrementsDir: string;
   let stateDir: string;
