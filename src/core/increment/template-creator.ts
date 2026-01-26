@@ -494,163 +494,32 @@ This will activate the Architect skill which will:
 
 /**
  * Generate tasks.md template content.
- * Uses TDD template structure when testMode is 'TDD' (case-insensitive).
+ *
+ * IMPORTANT: TDD is an EXECUTION practice, NOT a planning practice.
+ * Tasks.md templates are ALWAYS standard format during planning.
+ * TDD discipline (RED-GREEN-REFACTOR) is enforced during task execution
+ * via /sw:tdd-cycle, /sw:tdd-red, /sw:tdd-green, /sw:tdd-refactor commands.
+ *
+ * The testMode setting in config.json determines execution behavior, not template format.
  */
 function generateTasksTemplate(options: {
   title: string;
   testMode: string;
 }): string {
-  const { title, testMode } = options;
+  const { title } = options;
 
-  // Use TDD template structure when TDD mode is enabled (case-insensitive)
-  if (testMode?.toLowerCase() === 'tdd') {
-    return generateTddTasksTemplate(title);
-  }
-
+  // ALWAYS use standard templates during planning
+  // TDD is enforced at EXECUTION time via /sw:tdd-* commands
   return generateStandardTasksTemplate(title);
 }
 
 /**
- * Generate TDD-specific tasks template with RED-GREEN-REFACTOR triplets.
- */
-function generateTddTasksTemplate(title: string): string {
-  return `# Tasks: ${title}
-
-<!--
-====================================================================
-  TDD TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL
-====================================================================
-
-This is a TDD TEMPLATE created by increment-planner.
-DO NOT manually fill in the tasks below.
-
-⛔ TDD MODE ACTIVE - Tasks MUST follow RED-GREEN-REFACTOR discipline!
-
-To complete this task list, run:
-  Tell Claude: "Create TDD tasks for increment [ID]"
-
-This will activate the test-aware planner which will:
-- Generate RED-GREEN-REFACTOR triplets for each feature
-- Add proper **Depends On** markers for enforcement
-- Include test plans in BDD format
-- Set [RED], [GREEN], [REFACTOR] phase markers
-
-====================================================================
--->
-
-## TDD Contract
-
-**⛔ This increment uses TDD mode. For EVERY feature:**
-
-1. **[RED]**: Write failing test FIRST (test MUST fail)
-2. **[GREEN]**: Minimal code to pass test (no over-engineering)
-3. **[REFACTOR]**: Clean up while keeping tests green
-
-**CRITICAL**:
-- Complete [RED] tasks BEFORE their [GREEN] counterpart!
-- Complete [GREEN] tasks BEFORE their [REFACTOR] counterpart!
-- Hooks will WARN if order is violated!
-
----
-
-## Task Notation
-
-- \`[T-###]\`: Task ID
-- \`[RED]\`: Write failing test first
-- \`[GREEN]\`: Make test pass with minimal code
-- \`[REFACTOR]\`: Improve code quality, keep tests green
-- \`[ ]\`: Not started
-- \`[x]\`: Completed
-- Model hints: haiku (simple), opus (default)
-
----
-
-## Phase 1: [Phase Name] (TDD)
-
-### T-001: [RED] Write failing test for [Feature]
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
-**Phase**: RED
-**Model**: opus
-
-**Description**:
-Write a failing test that defines the expected behavior for [Feature].
-The test MUST fail initially (red) to prove it's testing real behavior.
-
-**Test File**: \`tests/unit/[module]/[feature].test.ts\`
-
-**Test Plan**:
-- **Given**: [precondition]
-- **When**: [action]
-- **Then**: Test FAILS with clear assertion message
-
----
-
-### T-002: [GREEN] Implement [Feature]
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
-**Phase**: GREEN
-**Model**: opus
-**Depends On**: T-001 [RED] MUST be completed first
-
-**Description**:
-Write the MINIMAL code necessary to make T-001's test pass.
-Do not over-engineer. Hardcoded values acceptable at this stage.
-
-**Test Plan**:
-- **Given**: T-001 test exists and fails
-- **When**: Implement minimal code, run tests
-- **Then**: Test PASSES (green)
-
----
-
-### T-003: [REFACTOR] Improve [Feature] code quality
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
-**Phase**: REFACTOR
-**Model**: haiku
-**Depends On**: T-002 [GREEN] MUST be completed first
-
-**Description**:
-Improve the code from T-002 without changing behavior.
-Extract methods, remove duplication, improve naming.
-
-**Test Plan**:
-- **Given**: T-001 test passes
-- **When**: Refactor code, run tests
-- **Then**: Test STILL passes (green)
-
----
-
-## Phase 2: [Phase Name] (TDD)
-
-### T-004: [RED] Write failing test for [Feature]
-**User Story**: US-002
-**Satisfies ACs**: AC-US2-01
-**Status**: [ ] pending
-**Phase**: RED
-**Model**: opus
-
-[Continue RED-GREEN-REFACTOR triplet pattern...]
-
----
-
-## Summary
-
-| Phase | RED | GREEN | REFACTOR |
-|-------|-----|-------|----------|
-| [Phase 1] | T-001 | T-002 | T-003 |
-| [Phase 2] | T-004 | T-005 | T-006 |
-
-**TDD Discipline**: RED → GREEN → REFACTOR (never skip steps!)
-`;
-}
-
-/**
- * Generate standard (non-TDD) tasks template.
+ * Generate standard tasks template.
+ *
+ * NOTE: TDD-specific task generation was removed from planning phase.
+ * TDD discipline (RED-GREEN-REFACTOR triplets) is applied at EXECUTION time
+ * via the /sw:tdd-cycle, /sw:tdd-red, /sw:tdd-green, /sw:tdd-refactor commands.
+ * See plugins/specweave/commands/tdd-*.md for TDD execution workflow.
  */
 function generateStandardTasksTemplate(title: string): string {
   return `# Tasks: ${title}
