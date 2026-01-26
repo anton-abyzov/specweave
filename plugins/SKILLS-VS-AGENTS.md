@@ -101,13 +101,20 @@ All run in isolated context without polluting the main conversation.
 
 **What happens:**
 1. Claude detects keywords: "React", "dashboard", "Stripe", "checkout"
-2. Skills auto-activate:
+2. Skills auto-activate (primary mechanism):
    - `sw-frontend:frontend-architect` (React, dashboard)
    - `sw-payments:payment-integration` (Stripe, checkout)
 3. Each skill runs in isolated context (`context: fork`)
 4. Results return to main conversation
 
-**No Task tool calls needed!** Skills activate automatically.
+**Two invocation methods** (per [official docs](https://code.claude.com/docs/en/skills)):
+1. **Auto-activation** (primary): Keywords in skill description trigger automatic loading
+2. **Explicit invocation** (fallback): Use Skill tool or `/skill-name` when auto-activation doesn't trigger
+
+```typescript
+// If auto-activation didn't work, explicitly invoke:
+Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
+```
 
 ## Migration Complete
 
@@ -144,7 +151,11 @@ plugins/specweave-frontend/
 **A:** Claude Code expects flat files (`agents/<name>.md`), but SpecWeave had subfolder structure (`agents/<name>/AGENT.md`). Skills don't have this limitation.
 
 ### Q: How do I invoke a skill explicitly?
-**A:** Use `/plugin:skill-name`, e.g., `/sw-frontend:frontend-architect`. But usually just describe what you need - skills auto-activate on keywords.
+**A:** Two ways:
+1. **User**: Type `/sw-frontend:frontend-architect` in chat
+2. **Claude**: Use `Skill({ skill: "sw-frontend:frontend-architect" })` when auto-activation didn't trigger
+
+Usually just describe what you need - skills auto-activate on keywords. Use explicit invocation as fallback.
 
 ### Q: What about parallel execution?
 **A:** Built-in subagents can run in parallel via multiple Task tool calls. Skills with `context: fork` also run in isolated contexts, so multiple can activate without conflict.
