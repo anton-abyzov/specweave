@@ -342,11 +342,11 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should NOT contain skill invocation directive
+      // Should NOT contain specific skill invocation directive
       if (additionalContext) {
         expect(additionalContext).not.toContain('skill_invocation_required');
-        // But should still contain increment info
-        expect(additionalContext).toContain('mandatory_instruction');
+        // But should still contain increment planning info (v1.0.170+ uses SKILL FIRST)
+        expect(additionalContext).toContain('SKILL FIRST');
       }
     });
 

@@ -1,6 +1,18 @@
 ---
 name: payment-integration
-description: Integrate Stripe, PayPal, and payment processors. Handles checkout flows, subscriptions, webhooks, Stripe Connect, and PCI compliance. Activates for payments, Stripe, PayPal, checkout, billing, subscriptions, recurring payments, payment processing, credit card, debit card, payment gateway, webhook, payment intent, customer portal, invoice, refund, dispute, chargeback, PCI compliance, 3D Secure, SCA, payment methods, Apple Pay, Google Pay, ACH, SEPA, pricing tables, metered billing, usage-based billing, trial period, coupon codes, discounts, promo code, 100% off, free checkout, add payments, implement payments, accept payments, take payments, collect payments, charge users, charge customers, monetize, make money, SaaS billing, subscription model, monthly billing, annual billing, pay per use, freemium, premium plan, pro plan, enterprise plan, pricing page, pricing tiers, upgrade plan, downgrade plan, cancel subscription, pause subscription, resume subscription, failed payment, payment failed, card declined, retry payment, dunning, past due, payment reminder, receipt email, invoice email, tax calculation, sales tax, VAT, Stripe Tax, payment link, buy button, donate button, tip jar, one-time payment, recurring payment, installments, payment schedule, split payment, marketplace payments, Stripe Connect, Direct Charge, Destination Charge, connected account, platform fees, transfer, payout, balance, Stripe dashboard, test mode, live mode, test cards, Stripe CLI, stripe listen, webhook signature, idempotency key, idempotent, Stripe Elements, Payment Element, Card Element, Stripe.js, server-side confirmation, client-side confirmation, payment verification, verify payment, dual confirmation, inventory management, slot booking, WebBrowser payment, Expo payment, React Native payment, checkout session, checkout session completed, connect webhook.
+description: >-
+  Master skill for integrating Stripe, PayPal, and other payment processors with secure, reliable
+  payment flows. Use when implementing payment processing in web or mobile applications, setting up
+  checkout flows, or building subscription billing systems. Use when integrating Stripe Checkout,
+  Payment Intents, or Stripe Elements. Use when implementing webhooks for payment_intent.succeeded,
+  checkout.session.completed, or subscription events. Use when the user says "implement payments",
+  "add Stripe", "integrate PayPal", "create checkout", "subscription billing", "accept credit cards",
+  or "payment processing". Use when implementing dual confirmation patterns with webhook plus frontend
+  verification. Use when handling 100% promo codes, idempotent payment confirmation, or browser close
+  scenarios. Use when working with Stripe Connect for marketplace payments. Use when implementing
+  Apple Pay, Google Pay, ACH, or SEPA payment methods. Use when handling refunds, disputes, or
+  chargebacks. Also use when implementing PCI-compliant payment forms, managing customer payment
+  methods, or building secure checkout experiences.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

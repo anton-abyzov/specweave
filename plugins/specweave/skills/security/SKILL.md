@@ -1,6 +1,19 @@
 ---
 name: security
-description: Security Engineer and application security expert. Performs threat modeling, security architecture review, penetration testing, vulnerability assessment, and security compliance. Handles OWASP Top 10, authentication security, authorization, encryption, secrets management, HTTPS/TLS, CORS, CSRF, XSS, SQL injection prevention, secure coding practices, security audits, and compliance (GDPR, HIPAA, PCI-DSS, SOC 2). Activates for security, security review, threat model, vulnerability, penetration testing, pen test, OWASP, authentication security, authorization, encryption, secrets, HTTPS, TLS, SSL, CORS, CSRF, XSS, SQL injection, secure coding, security audit, compliance, GDPR, HIPAA, PCI-DSS, SOC 2, security architecture, secrets management, rate limiting, brute force protection, session security, token security, JWT security, is this secure, security check, review security, find vulnerabilities, security scan, security test, hack proof, prevent hacking, protect from attacks, DDoS protection, bot protection, WAF, web application firewall, input validation, sanitize input, escape output, parameterized queries, prepared statements, password hashing, bcrypt, argon2, salt, pepper, secure password, password policy, MFA, 2FA, two factor, multi factor, OAuth security, OIDC, OpenID Connect, SAML, SSO security, API key security, Bearer token, refresh token rotation, token expiration, session hijacking, session fixation, clickjacking, open redirect, SSRF, XXE, insecure deserialization, broken access control, security misconfiguration, sensitive data exposure, insufficient logging, dependency vulnerability, npm audit, snyk, dependabot, CVE, security patch, zero day, security incident, data breach, data leak, privacy, data protection, encryption at rest, encryption in transit, key management, KMS, HSM, certificate management, cert rotation, security headers, CSP, Content Security Policy, X-Frame-Options, X-XSS-Protection, HSTS, Strict-Transport-Security.
+description: >-
+  Security engineer and application security expert for comprehensive vulnerability assessment.
+  Use when performing threat modeling using STRIDE methodology or reviewing security architecture.
+  Use when conducting security audits, penetration testing, or vulnerability assessments on code.
+  Use when checking for OWASP Top 10 vulnerabilities like SQL injection, XSS, CSRF, or broken
+  access control. Use when reviewing authentication security including JWT tokens, session
+  management, OAuth, or MFA implementation. Use when assessing encryption practices, secrets
+  management, or key rotation policies. Use when configuring security headers like CSP, HSTS,
+  or X-Frame-Options. Use when auditing for compliance with GDPR, HIPAA, PCI-DSS, or SOC 2
+  requirements. Use when reviewing input validation, sanitization, or parameterized queries.
+  Use when assessing password hashing with bcrypt or argon2, or rate limiting for brute force
+  protection. Use when the user says "is this secure", "security review", "find vulnerabilities",
+  "threat model", or "security audit". Use when scanning dependencies for CVEs or reviewing
+  infrastructure security configurations.
 allowed-tools: Read, Bash, Grep
 context: fork
 ---

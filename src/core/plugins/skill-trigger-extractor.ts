@@ -103,17 +103,40 @@ export class SkillTriggerExtractor {
   /**
    * Extract description from YAML frontmatter
    *
+   * Handles both single-line and multi-line YAML formats:
+   * - Single: description: Some text here
+   * - Multi-line: description: >-
+   *               First line
+   *               Second line continues
+   *
    * @param content - File content
    * @returns Description string
    */
   private extractDescription(content: string): string {
     const frontmatterMatch = content.match(/^---\n([\s\S]+?)\n---/);
-    if (frontmatterMatch) {
-      const descMatch = frontmatterMatch[1].match(/description:\s*(.+)/);
-      if (descMatch) {
-        return descMatch[1].trim();
-      }
+    if (!frontmatterMatch) {
+      return '';
     }
+
+    const frontmatter = frontmatterMatch[1];
+
+    // Check for multi-line YAML string (>- or |-)
+    const multiLineMatch = frontmatter.match(/description:\s*>-?\s*\n((?:\s{2,}.+\n?)+)/);
+    if (multiLineMatch) {
+      // Extract indented lines and join them
+      const lines = multiLineMatch[1]
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      return lines.join(' ').trim();
+    }
+
+    // Single-line description
+    const singleLineMatch = frontmatter.match(/description:\s*([^>\n|].+)/);
+    if (singleLineMatch) {
+      return singleLineMatch[1].trim();
+    }
+
     return '';
   }
 
@@ -353,11 +376,12 @@ export class SkillTriggerExtractor {
       // Mobile
       /\bReact Native\b/gi, /\bExpo\b/gi, /\biOS\b/gi, /\bAndroid\b/gi,
       /\bSwift\b/gi, /\bKotlin\b/gi, /\bFlutter\b/gi,
-      // Frontend
-      /\bReact\b/gi, /\bVue\.?js\b/gi, /\bAngular\b/gi, /\bNext\.?js\b/gi,
+      // Frontend (NOTE: patterns like /Vue(\.?js)?/ match "Vue", "Vue.js", "Vuejs")
+      /\bReact\b/gi, /\bVue(\.?js)?\b/gi, /\bAngular\b/gi, /\bNext(\.?js)?\b/gi,
       /\bNuxt\b/gi, /\bSvelte\b/gi, /\bTailwind\b/gi, /\bCSS\b/gi,
+      /\bVuex\b/gi, /\bPinia\b/gi, /\bNgRx\b/gi,
       // Backend
-      /\bNode\.?js\b/gi, /\bExpress\b/gi, /\bNestJS\b/gi, /\bFastify\b/gi,
+      /\bNode(\.?js)?\b/gi, /\bExpress\b/gi, /\bNestJS\b/gi, /\bFastify\b/gi,
       /\bDjango\b/gi, /\bFlask\b/gi, /\bFastAPI\b/gi,
       /\bSpring Boot\b/gi, /\b\.NET\b/gi, /\bASP\.NET\b/gi,
       /\bRuby on Rails\b/gi, /\bRails\b/gi, /\bLaravel\b/gi,

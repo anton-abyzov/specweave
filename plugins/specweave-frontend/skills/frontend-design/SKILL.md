@@ -1,6 +1,18 @@
 ---
 name: frontend-design
-description: Frontend Design Expert - Creates polished, production-ready UIs with bold aesthetic choices, distinctive typography, color schemes, and animations. Based on Anthropic's official frontend-design plugin. Activates for UI design, beautiful website, modern UI, aesthetic, premium design, landing page, hero section, visual design, make it pretty, sleek design, professional UI.
+description: >-
+  Frontend Design Expert for creating polished, production-ready UIs with bold aesthetic choices
+  and premium visual identity. Use when the user wants to make their UI more beautiful, improve
+  visual design, or create a modern aesthetic. Use when implementing CSS styling, animations with
+  Framer Motion or GSAP, or visual effects. Use when the user says "make it beautiful", "improve
+  the design", "add animations", "create a landing page", or "polish the UI". Use when working
+  with TailwindCSS, styled-components, CSS Modules, or any CSS approach for styling. Use when
+  designing color schemes, typography systems, or spacing scales. Use when creating responsive
+  layouts, implementing dark mode, or building themed components. Use when designing dashboards,
+  landing pages, forms, cards, buttons, or navigation. Use when applying modern design trends like
+  glassmorphism, gradients, or smooth transitions. Use when the user describes wanting their UI to
+  be sleek, modern, elegant, minimal, premium, or professional. Also use when implementing
+  accessibility in visual design or creating inclusive user interfaces.
 allowed-tools: Read, Write, Edit, Glob, Grep
 model: opus
 context: fork

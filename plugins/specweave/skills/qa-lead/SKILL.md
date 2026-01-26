@@ -1,6 +1,18 @@
 ---
 name: qa-lead
-description: QA Lead that creates test suites ONE FILE AT A TIME to prevent crashes. Handles test plans, test cases, testing strategies, quality gates. **CRITICAL CHUNKING RULE - Large test suites (15 files) done incrementally.** Activates for QA, quality assurance, testing, test strategy, test plan, test cases, unit tests, integration tests, E2E tests, end-to-end testing, Playwright, Jest, Mocha, Cypress, test automation, test coverage, regression, test-driven development, TDD, BDD, behavior-driven development, quality gates, acceptance criteria, test data, test scenarios, smoke tests, sanity tests, exploratory testing, write tests, create test suite, test file, spec file, describe block, it block, expect assertions, mock functions, test doubles, stubs, spies, test fixtures, setup teardown, beforeEach, afterEach, test report, coverage report.
+description: >-
+  QA lead expert for test strategy, automation, and comprehensive quality assurance. Use when
+  creating test plans or defining testing strategies for features and user stories. Use when
+  writing unit tests, integration tests, or end-to-end tests with Playwright, Jest, Vitest,
+  or Cypress. Use when implementing test-driven development (TDD) or behavior-driven development
+  (BDD) workflows. Use when setting up quality gates or coverage thresholds in CI pipelines.
+  Use when mapping test cases to acceptance criteria or creating test coverage matrices. Use when
+  writing test fixtures, mocks, stubs, or spies for isolated testing. Use when configuring
+  beforeEach, afterEach, or test setup and teardown routines. Use when generating coverage reports
+  or analyzing test results. Use when planning regression testing, smoke tests, or exploratory
+  testing sessions. Use when the user says "write tests", "create test suite", "test coverage",
+  "QA strategy", or "quality assurance". Creates test files ONE AT A TIME to prevent context
+  overflow with large test suites.
 allowed-tools: Read, Write, Edit, Bash
 context: fork
 ---

@@ -1,6 +1,17 @@
 ---
 name: nodejs-backend
-description: Node.js/TypeScript backend developer. Builds Express.js, Fastify, NestJS APIs with Prisma ORM, TypeORM, Mongoose. Implements REST APIs, GraphQL, authentication (JWT, session, OAuth), authorization, database operations, background jobs, WebSockets, real-time features, API validation, error handling, middleware. Activates for: backend, back-end, api, server, Node.js, NodeJS, Express, Fastify, NestJS, TypeScript backend, TypeScript, API, REST API, GraphQL, Prisma, TypeORM, Mongoose, MongoDB, PostgreSQL with Node, PostgreSQL, MySQL with Node, MySQL, authentication backend, JWT, passport.js, bcrypt, async/await, promises, middleware, error handling, validation, Zod, class-validator, background jobs, Bull, BullMQ, Redis, WebSocket, Socket.io, real-time, web app backend, calculator backend, build api, create api.
+description: >-
+  Node.js and TypeScript backend developer for Express.js, Fastify, and NestJS APIs. Use when creating
+  a Node.js API, building an Express server, implementing REST endpoints, or setting up a backend
+  project. Use when working with Prisma, TypeORM, Sequelize, Mongoose, Drizzle, or any Node.js ORM.
+  Use when implementing authentication with JWT, Passport, or session-based auth. Use when implementing
+  authorization, role-based access control, or API security. Use when the user says "create API",
+  "build backend", "implement endpoint", "Express server", "NestJS", "Node.js backend", or "REST API".
+  Use when working with middleware, request validation with Zod or Joi, error handling, or logging.
+  Use when implementing background jobs with Bull or BullMQ, real-time features with Socket.io or
+  WebSockets, or scheduled tasks with node-cron. Use when setting up database connections, running
+  migrations, or implementing CRUD operations. Also use when optimizing Node.js performance, handling
+  file uploads with Multer, or implementing API rate limiting and caching with Redis.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---
