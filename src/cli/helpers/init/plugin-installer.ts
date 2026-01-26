@@ -608,7 +608,7 @@ async function installLazyMode(
     spinner.succeed(`Cached ${cacheResult.pluginsAffected} plugins`);
   }
 
-  // Step 2: Install core plugin only
+  // Step 2: Install core plugin (sw) from specweave marketplace
   // Core (sw) provides /sw:increment, /sw:do, /sw:done, etc.
   // NOTE: sw-router is OBSOLETE - detect-intent now handles plugin detection
   const corePlugin = allPlugins.find(p => p.name === 'sw');
@@ -617,7 +617,7 @@ async function installLazyMode(
 
   // Install core plugin first (provides fundamental commands)
   if (corePlugin) {
-    spinner.start('Installing core plugin...');
+    spinner.start('Installing core plugin (sw)...');
 
     // Use marketplace name 'sw' (not directory name 'specweave')
     const coreInstallResult = await cacheManager.installPlugins({
@@ -626,7 +626,7 @@ async function installLazyMode(
     });
 
     if (coreInstallResult.success && coreInstallResult.pluginsAffected > 0) {
-      spinner.succeed('sw installed');
+      spinner.succeed('sw@specweave installed');
       installedCount++;
     } else {
       // Fall back to CLI-based install
@@ -643,32 +643,65 @@ async function installLazyMode(
     spinner.warn('Core plugin (sw) not found in marketplace');
   }
 
+  // Step 2b: Install essential plugins from claude-plugins-official marketplace
+  // These provide important capabilities that complement SpecWeave
+  const officialPlugins = ['context7', 'playwright'];
+
+  spinner.start('Installing essential official plugins...');
+
+  for (const pluginName of officialPlugins) {
+    const installResult = execFileNoThrowSync('claude', [
+      'plugin',
+      'install',
+      `${pluginName}@claude-plugins-official`,
+    ]);
+
+    if (installResult.success) {
+      console.log(chalk.green(`   ✓ ${pluginName}@claude-plugins-official installed`));
+      installedCount++;
+    } else {
+      // Check if already installed
+      if (installResult.stderr?.includes('already') || installResult.stdout?.includes('already')) {
+        console.log(chalk.gray(`   ✓ ${pluginName}@claude-plugins-official (already installed)`));
+        installedCount++;
+      } else {
+        console.log(chalk.yellow(`   ⚠ ${pluginName}@claude-plugins-official failed`));
+        console.log(chalk.gray(`     → Install manually: claude plugin install ${pluginName}@claude-plugins-official`));
+      }
+    }
+  }
+
+  spinner.succeed('Essential plugins installed');
+
   // Step 3: Show lazy loading explanation
   console.log('');
   console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
   console.log('');
-  console.log(chalk.cyan('How it works:'));
-  console.log(chalk.gray('   • Core plugin (sw) loaded initially (~3K tokens)'));
+  console.log(chalk.cyan('Installed plugins:'));
+  console.log(chalk.gray('   • sw@specweave              - Core SpecWeave framework'));
+  console.log(chalk.gray('   • context7@claude-plugins-official - Documentation context'));
+  console.log(chalk.gray('   • playwright@claude-plugins-official - Browser automation'));
+  console.log('');
+  console.log(chalk.cyan('How lazy loading works:'));
+  console.log(chalk.gray('   • Core plugins loaded initially'));
   console.log(chalk.gray('   • Domain plugins detected & loaded on-demand via LLM'));
   console.log(chalk.gray('   • Claude Code hot-reloads skills within seconds'));
   console.log('');
-  console.log(chalk.cyan('Trigger keywords:'));
-  console.log(chalk.gray('   • "GitHub sync" → loads specweave-github'));
-  console.log(chalk.gray('   • "JIRA" → loads specweave-jira'));
-  console.log(chalk.gray('   • "Kubernetes" → loads specweave-k8s'));
-  console.log(chalk.gray('   • "React", "frontend" → loads specweave-frontend'));
+  console.log(chalk.cyan('Trigger keywords for on-demand plugins:'));
+  console.log(chalk.gray('   • "GitHub sync" → loads sw-github'));
+  console.log(chalk.gray('   • "JIRA" → loads sw-jira'));
+  console.log(chalk.gray('   • "Kubernetes" → loads sw-k8s'));
+  console.log(chalk.gray('   • "React", "frontend" → loads sw-frontend'));
   console.log(chalk.gray('   • ...and more'));
   console.log('');
-  console.log(chalk.cyan('Manual installation (Claude CLI):'));
-  console.log(chalk.gray('   claude plugin install sw@specweave         # Core framework'));
-  console.log(chalk.gray('   claude plugin install sw-github@specweave  # GitHub integration'));
-  console.log(chalk.gray('   claude plugin list                         # Check installed'));
-  console.log('');
+
+  // Total expected: 1 (sw) + 2 (official) = 3
+  const expectedPlugins = 1 + officialPlugins.length;
 
   return {
     success: installedCount > 0,
     successCount: installedCount,
-    failCount: (corePlugin ? 1 : 0) - installedCount,
+    failCount: expectedPlugins - installedCount,
     failedPlugins: [],
     marketplaceOnly: false,
   };
