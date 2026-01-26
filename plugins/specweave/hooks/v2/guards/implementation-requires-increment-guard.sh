@@ -1,25 +1,25 @@
 #!/bin/bash
-# implementation-requires-increment-guard.sh - Blocks source code writes without active increment
+# implementation-requires-increment-guard.sh - Optional guard for strict increment enforcement
 #
 # PURPOSE:
-# Enforces that implementation work (writing source code files) requires an
-# active SpecWeave increment. This prevents developers from bypassing the
-# spec-driven workflow.
+# When ENABLED, enforces that implementation work requires an active increment.
+# This is OPT-IN - disabled by default to allow quick fixes.
 #
-# WHEN THIS GUARD BLOCKS:
+# TO ENABLE (strict mode):
+# In .specweave/config.json:
+#   { "incrementAssist": { "mandatory": true } }
+#
+# WHEN THIS GUARD BLOCKS (only if mandatory: true):
 # - Writing to source code files (*.ts, *.js, *.tsx, *.jsx, *.py, *.cs, etc.)
 # - NO active increment exists
 # - The file is NOT in .specweave/ directory
 #
-# WHEN THIS GUARD ALLOWS:
-# - File is in .specweave/ directory (increment files themselves)
+# WHEN THIS GUARD ALWAYS ALLOWS:
+# - incrementAssist.mandatory is NOT set to true (default behavior)
+# - File is in .specweave/ directory
 # - File is a config/doc file (.md, .json, .yaml, etc.)
-# - An active increment exists (any status except completed/abandoned)
-# - incrementAssist.mandatory is set to false in config
+# - An active increment exists
 # - SPECWEAVE_BYPASS_INCREMENT_GUARD env var is set
-#
-# This is the ENFORCEMENT layer that the detect-intent LLM suggestion was missing.
-# detect-intent SUGGESTS, this guard ENFORCES.
 #
 # @since 1.0.167
 
@@ -50,15 +50,23 @@ if [[ ! -d ".specweave" ]]; then
   exit 0
 fi
 
-# Check if incrementAssist.mandatory is explicitly false
+# Check if incrementAssist.mandatory is explicitly TRUE (opt-in enforcement)
+# Default is FALSE - allow quick fixes without increment
 CONFIG_PATH=".specweave/config.json"
+MANDATORY="false"
 if [[ -f "$CONFIG_PATH" ]]; then
-  MANDATORY=$(jq -r '.incrementAssist.mandatory // true' "$CONFIG_PATH" 2>/dev/null)
-  if [[ "$MANDATORY" == "false" ]]; then
-    echo '{"decision":"allow"}'
-    exit 0
-  fi
+  MANDATORY=$(jq -r '.incrementAssist.mandatory // false' "$CONFIG_PATH" 2>/dev/null)
 fi
+
+# If not mandatory mode, allow everything
+if [[ "$MANDATORY" != "true" ]]; then
+  echo '{"decision":"allow"}'
+  exit 0
+fi
+
+# ============================================================================
+# STRICT MODE ENABLED - Check for active increment
+# ============================================================================
 
 # Always allow writes to .specweave/ directory (increment management)
 if [[ "$FILE_PATH" == *".specweave/"* ]]; then
@@ -95,39 +103,20 @@ if [[ -n "$ACTIVE_INCREMENT" ]]; then
   exit 0
 fi
 
-# NO ACTIVE INCREMENT - BLOCK with guidance
-REASON="⛔ **IMPLEMENTATION REQUIRES INCREMENT**
+# NO ACTIVE INCREMENT in STRICT MODE - BLOCK with guidance
+REASON="⛔ **STRICT MODE: Increment Required**
 
-You're attempting to write source code without an active SpecWeave increment.
+You have \`incrementAssist.mandatory: true\` enabled.
 
-**Why This is Blocked:**
-- SpecWeave enforces spec-driven development
-- Implementation work must be tracked in an increment
-- This ensures specs, plans, and tasks exist before coding
+**To proceed, either:**
 
-**To Proceed:**
+1. **Create an increment:**
+   \`/sw:increment \"feature-name\"\`
 
-1. **Create an increment first:**
-\`\`\`
-/sw:increment \"feature-name\"
-\`\`\`
+2. **Disable strict mode** in .specweave/config.json:
+   \`{ \"incrementAssist\": { \"mandatory\": false } }\`
 
-2. **Or resume an existing one:**
-\`\`\`
-/sw:status          # Find increments
-/sw:resume <id>     # Resume one
-\`\`\`
-
-3. **For quick fixes (bypass):**
-\`\`\`
-# In config.json, set:
-{ \"incrementAssist\": { \"mandatory\": false } }
-\`\`\`
-
-**File blocked:** \`${FILE_PATH}\`
-
----
-*This guard ensures all implementation is tracked via increments.*"
+**File:** \`${FILE_PATH}\`"
 
 # Escape the reason for JSON
 REASON_ESCAPED=$(echo "$REASON" | jq -Rs .)
