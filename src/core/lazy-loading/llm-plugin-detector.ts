@@ -319,6 +319,22 @@ export interface SkillRouting {
 }
 
 /**
+ * Skill invocation recommendation from LLM analysis (v1.0.168)
+ *
+ * Tells Claude which skill to invoke for the task
+ */
+export interface SkillInvocation {
+  /** Full skill name (e.g., "csharp-lsp:csharp-lsp", "sw-ml:ml-engineer") */
+  skill: string;
+
+  /** Why this skill should be used */
+  reason: string;
+
+  /** Whether Claude MUST use this skill */
+  mandatory: boolean;
+}
+
+/**
  * Result of LLM-based plugin detection
  *
  * v1.0.159: plugins now includes both SpecWeave (sw-*) and official plugins
@@ -336,6 +352,9 @@ export interface LLMDetectionResult {
 
   /** Skill routing recommendation (v1.0.150+) */
   routing?: SkillRouting;
+
+  /** Skill invocation recommendation (v1.0.168) */
+  skillInvocation?: SkillInvocation;
 }
 
 /**
@@ -568,7 +587,47 @@ EXAMPLES (with increment field + mandatory)
 {"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention - MANDATORY"}}
 
 "Just fix the typo in README, don't track it"
-{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"User explicitly opted out of tracking"}}`;
+{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"User explicitly opted out of tracking"}}
+
+═══════════════════════════════════════════════════════════════
+SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
+═══════════════════════════════════════════════════════════════
+
+ALSO specify which skills Claude SHOULD invoke for this task.
+
+"skillInvocation" field with:
+- skill: full skill name (e.g., "csharp-lsp:csharp-lsp", "sw-ml:ml-engineer")
+- reason: why this skill should be used
+- mandatory: true if Claude MUST use this skill, false if optional
+
+SKILL INVOCATION RULES:
+┌──────────────────────┬──────────────────────────────────────────────────┐
+│ LSP Skills           │ MANDATORY for language-specific code             │
+│ (csharp-lsp, etc.)   │ "Use csharp-lsp skill for .NET code intelligence"│
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ Domain Skills        │ MANDATORY for specialized work                   │
+│ (sw-ml:ml-engineer)  │ "Use ml-engineer skill for model training"       │
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ Architecture Skills  │ Recommended for design decisions                 │
+│ (sw-frontend:arch)   │ "Consider frontend-architect for component design│
+└──────────────────────┴──────────────────────────────────────────────────┘
+
+WHEN TO MAKE SKILL MANDATORY:
+- LSP plugins detected → corresponding LSP skill is MANDATORY
+- ML/AI work → sw-ml:ml-engineer is MANDATORY
+- Payment integration → sw-payments:stripe-integration is MANDATORY
+- Complex architecture → relevant architect skill is recommended
+
+SKILL EXAMPLES:
+
+"Build .NET API with Entity Framework"
+{"plugins":["sw-backend","csharp-lsp","context7"],"confidence":0.95,"reasoning":".NET→backend+csharp-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"csharp-lsp:csharp-lsp","reason":"Use C# LSP for .NET code intelligence, type checking, and Entity Framework support","mandatory":true}}
+
+"Train a machine learning model for image classification"
+{"plugins":["sw-ml","context7"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
+
+"Implement Stripe checkout flow"
+{"plugins":["sw-payments","sw-frontend","context7"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}`;
 }
 
 /**
@@ -867,6 +926,11 @@ Which plugins should be loaded?`;
         confidence?: number;
         reasoning?: string;
       };
+      skillInvocation?: {
+        skill?: string;
+        reason?: string;
+        mandatory?: boolean;
+      };
     };
     try {
       parsed = JSON.parse(jsonMatch[0]);
@@ -974,6 +1038,17 @@ Which plugins should be loaded?`;
       }
     }
 
+    // Parse skill invocation recommendation (v1.0.168)
+    let skillInvocation: SkillInvocation | undefined;
+    if (parsed.skillInvocation && parsed.skillInvocation.skill) {
+      skillInvocation = {
+        skill: parsed.skillInvocation.skill,
+        reason: parsed.skillInvocation.reason || 'Use this skill for specialized support',
+        mandatory: parsed.skillInvocation.mandatory === true,
+      };
+      logger.debug(`Skill invocation: ${skillInvocation.skill} (mandatory: ${skillInvocation.mandatory})`);
+    }
+
     return {
       success: true,
       plugins: validPlugins,
@@ -982,6 +1057,7 @@ Which plugins should be loaded?`;
       durationMs: performance.now() - startTime,
       increment: incrementRecommendation,
       routing: skillRouting,
+      skillInvocation,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
