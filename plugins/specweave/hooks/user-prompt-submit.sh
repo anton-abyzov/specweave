@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.147 - Unified LLM Detection)
+# SpecWeave UserPromptSubmit Hook (v1.0.167 - Fix Plugin Restart Warning)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.167: FIX PLUGIN RESTART WARNING - Use `claude plugin list` BEFORE install
+#   * Claude CLI always outputs "Successfully installed" even when already installed
+#   * Now calls `claude plugin list` once to get current plugins, then checks against that
+#   * Skips install for already-installed plugins (faster + no false restart warnings)
+#   * Only shows restart warning for TRULY new plugin installs
 # - v1.0.147: SYNC PLUGIN INSTALL - Plugins available for CURRENT prompt!
 #   * Replaced 20s async LLM detection with ~200ms sync `claude plugin install`
 #   * Claude Code hot-reload picks up plugins immediately
@@ -281,6 +286,16 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   PLUGINS_INSTALLED=""
                   PLUGINS_ALREADY=""
 
+                  # v1.0.167: Get list of already-installed plugins ONCE via `claude plugin list`
+                  # This is more reliable than parsing internal JSON files
+                  # Format: "sw-frontend@specweave", "context7@claude-plugins-official", etc.
+                  CURRENT_PLUGINS=""
+                  if command -v timeout >/dev/null 2>&1; then
+                    CURRENT_PLUGINS=$(timeout 5 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                  else
+                    CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                  fi
+
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
@@ -292,19 +307,29 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                       MARKETPLACE="claude-plugins-official"
                     fi
 
-                    # Sync install via claude CLI (triggers hot-reload)
-                    if command -v timeout >/dev/null 2>&1; then
-                      OUT=$(timeout 5 claude plugin install "${plugin}@${MARKETPLACE}" 2>&1) || true
-                    else
-                      OUT=$(claude plugin install "${plugin}@${MARKETPLACE}" 2>&1) || true
+                    # v1.0.167: Check if plugin is ALREADY installed (from cached list)
+                    FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
+                    ALREADY_INSTALLED=false
+                    if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
+                      ALREADY_INSTALLED=true
                     fi
 
-                    if echo "$OUT" | grep -qi "already"; then
+                    if [[ "$ALREADY_INSTALLED" == "true" ]]; then
+                      # Plugin already installed - no need to call install, just track it
                       [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                       PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                    elif echo "$OUT" | grep -qi "success"; then
-                      [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                      PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                    else
+                      # Plugin not installed - install it
+                      if command -v timeout >/dev/null 2>&1; then
+                        OUT=$(timeout 5 claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
+                      else
+                        OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
+                      fi
+
+                      if echo "$OUT" | grep -qi "success"; then
+                        [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                        PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                      fi
                     fi
                   done
 
