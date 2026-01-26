@@ -124,6 +124,15 @@ This gives the skill its own context window while still being invocable as `/inc
 
 ## Invoking Skills
 
+Per [official Anthropic documentation](https://code.claude.com/docs/en/skills):
+
+> "Claude uses skills when relevant, or you can invoke one directly with `/skill-name`."
+
+### Two Invocation Mechanisms
+
+1. **Auto-Activation (Primary)**: Skills auto-activate when their description keywords match your request
+2. **Explicit Invocation (Fallback)**: Use `/skill-name` or Skill tool when auto-activation doesn't trigger
+
 ### Explicit Invocation (User Types Command)
 
 ```bash
@@ -140,6 +149,15 @@ Just describe what you need - Claude loads the relevant skill:
 "Design the authentication architecture"  # → architect skill
 "Help me plan this product feature"       # → PM skill
 "Review my code for security issues"      # → security skill
+```
+
+### Fallback: Skill Tool (When Auto-Activation Fails)
+
+If a skill didn't auto-activate, Claude can explicitly invoke it:
+
+```typescript
+// Skill didn't auto-load? Invoke explicitly:
+Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
 ```
 
 ### Via Task Tool (Agents)

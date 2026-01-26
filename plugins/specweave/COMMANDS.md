@@ -131,7 +131,7 @@ SpecWeave plugins provide additional namespaced commands:
 | **Docs** | `/sw-docs:*` | init, generate, build, view, validate, organize |
 | **Frontend** | `/sw-frontend:*` | component-generate, design-system-init, frontend-scaffold |
 | **Backend** | `/sw-backend:*` | api-scaffold, crud-generate, migration-generate |
-| **Kubernetes** | `/sw-kubernetes:*` | cluster-setup, deployment-generate, helm-scaffold |
+| **Kubernetes** | `/sw-k8s:*` | cluster-setup, deployment-generate, helm-scaffold |
 | **Testing** | `/sw-testing:*` | e2e-setup, test-coverage, test-generate, test-init |
 | **Infrastructure** | `/sw-infra:*` | monitor-setup, slo-implement |
 | **Kafka** | `/sw-kafka:*` | deploy, dev-env, monitor-setup, mcp-configure |

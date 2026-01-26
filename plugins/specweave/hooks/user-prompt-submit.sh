@@ -496,41 +496,20 @@ Task({
                       ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
 
                       MSG="${AUTOLOAD_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
-║  🎯 MANDATORY SKILL INVOCATION - INCREMENT REQUIRED BEFORE IMPLEMENTATION     ║
+║  🎯 SKILL FIRST - Call Skill tool BEFORE implementation                      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
-<system>
-<rules>
-BLOCKING RULE: Your FIRST action MUST be invoking the Skill tool. No exceptions.
-</rules>
-</system>
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  ⛔ YOU ARE BLOCKED FROM THE FOLLOWING ACTIONS:                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  ❌ Write tool      - BLOCKED (cannot create files)                          │
-│  ❌ Edit tool       - BLOCKED (cannot modify files)                          │
-│  ❌ Bash tool       - BLOCKED (no implementation commands)                   │
-│  ❌ Exploring code  - BLOCKED (no 'let me first understand')                 │
-│  ❌ Planning        - BLOCKED (skill does the planning)                      │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  ✅ YOUR ONLY ALLOWED ACTION (do this NOW):                                  │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  Call the Skill tool EXACTLY as shown below. Nothing else first.             │
-└──────────────────────────────────────────────────────────────────────────────┘
-
+**Your FIRST tool call must be:**
 \\\`\\\`\\\`
 Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"${ESCAPED_PROMPT}\\\" })
 \\\`\\\`\\\`
 
-**Detection**: Feature request (confidence: ${INC_CONF})
-**Reason**: ${INC_REASON}
+**Order matters:**
+1. ✅ Call Skill tool FIRST (as shown above)
+2. ✅ THEN proceed with implementation normally
 
-════════════════════════════════════════════════════════════════════════════════
-**Claude: Your FIRST tool call MUST be Skill. Not Read. Not Glob. Not Bash. Skill.**
-════════════════════════════════════════════════════════════════════════════════${AGENT_DIRECTIVE}"
+**Detection**: Feature request (confidence: ${INC_CONF})
+**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}"
                       output_approve_with_context "$MSG"
                       exit 0
                     else

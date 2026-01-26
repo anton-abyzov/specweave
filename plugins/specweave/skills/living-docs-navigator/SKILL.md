@@ -241,7 +241,7 @@ graph TD
 ```
 
 ### AI-Generated Illustrations
-Use the `/sw-ui:image` skill for professional visuals:
+Use the `/sw:image-generation` skill for professional visuals:
 ```
 "Generate an architecture diagram illustration for the API docs"
 "Create a feature illustration for the living docs"
@@ -255,5 +255,5 @@ Brand colors: Purple #7c3aed, Light purple #a78bfa
 
 - **stakeholder-docs**: Generate executive-friendly views
 - **docs-writer**: Create detailed documentation
-- **image-generation**: Add visuals via `/sw-ui:image`
+- **image-generation**: Add visuals via `/sw:image-generation`
 - **docusaurus**: Preview docs as website via `/sw-docs:view`
