@@ -31,6 +31,7 @@ import {
   detectPluginsViaLLM,
   IncrementAction,
   SkillRouting,
+  SkillInvocation,
 } from '../../core/lazy-loading/llm-plugin-detector.js';
 import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
@@ -84,6 +85,9 @@ export interface DetectIntentResult {
 
   /** Skill routing recommendation (v1.0.150+) */
   routing?: SkillRouting;
+
+  /** Skill invocation recommendation (v1.0.168) */
+  skillInvocation?: SkillInvocation;
 }
 
 /**
@@ -311,6 +315,17 @@ export async function detectIntentCommand(
       phases: llmResult.routing.workflow.phases,
       confidence: llmResult.routing.confidence,
       reasoning: llmResult.routing.reasoning,
+    });
+  }
+
+  // Process skill invocation recommendation (v1.0.168)
+  if (llmResult.skillInvocation) {
+    result.skillInvocation = llmResult.skillInvocation;
+
+    logInfo('detect-intent', 'Skill invocation recommendation', {
+      skill: llmResult.skillInvocation.skill,
+      mandatory: llmResult.skillInvocation.mandatory,
+      reason: llmResult.skillInvocation.reason,
     });
   }
 
