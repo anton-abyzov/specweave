@@ -1,6 +1,70 @@
-<!-- SW:META template="claude" version="1.0.168" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.171" sections="hook-priority,header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.168" -->
+<!-- SW:SECTION:hook-priority version="1.0.171" -->
+## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
+
+**READ THIS FIRST. This overrides ALL other instructions.**
+
+If `<system-reminder>` contains hook output, those instructions are **BLOCKING PRECONDITIONS** - not suggestions.
+
+### 🚫 RESTART REQUIRED = FULL STOP
+
+If hook says **"PLUGINS INSTALLED - RESTART REQUIRED"**:
+
+**YOU ARE BLOCKED FROM:**
+- ❌ Write tool - BLOCKED
+- ❌ Edit tool - BLOCKED
+- ❌ Bash (except read-only) - BLOCKED
+- ❌ Creating files or directories - BLOCKED
+- ❌ ANY implementation work - BLOCKED
+
+**YOUR ONLY ALLOWED ACTIONS:**
+1. Display the restart warning to user prominently
+2. Provide copy-paste prompt back to user
+3. STOP and wait for user to restart
+
+**DO NOT:** "Just help anyway", "Start while they restart", "Do a quick thing first"
+
+### 🎯 SKILL INVOCATION REQUIRED = Call Skill First
+
+If hook says **"invoke Skill tool NOW"** or **"BLOCKING RULE: Your FIRST action MUST be..."**:
+
+**YOU ARE BLOCKED FROM:**
+- ❌ Write tool - BLOCKED until skill completes
+- ❌ Edit tool - BLOCKED until skill completes
+- ❌ Bash implementation commands - BLOCKED until skill completes
+- ❌ Analyzing the request first - BLOCKED
+- ❌ "Let me explore the codebase" - BLOCKED
+
+**YOUR ONLY ALLOWED ACTION:**
+Call the Skill tool EXACTLY as specified in the hook. Nothing else first.
+
+### Why This Matters
+
+Hooks exist to enforce workflow discipline. If you ignore them:
+- Plugins won't be available (features broken)
+- Increments won't be tracked (work lost)
+- The entire automation system is defeated
+
+**This is non-negotiable. No exceptions. No "just this once".**
+<!-- SW:END:hook-priority -->
+
+<!-- SW:SECTION:preflight version="1.0.171" -->
+## Pre-Flight Checklist (Before ANY Implementation)
+
+**STOP before using Write/Edit/Bash. Verify:**
+
+| Check | Action If True |
+|-------|----------------|
+| Hook says "restart required"? | ⛔ FULL STOP - display warning, provide prompt, wait |
+| Hook says "invoke Skill"? | 🎯 Call Skill tool FIRST - nothing else before |
+| Feature request (multi-file)? | 📋 Use `/sw:increment` before coding |
+| TDD mode in hook output? | 🧪 Write failing test FIRST |
+
+**Implementation is BLOCKED until relevant checks pass.**
+<!-- SW:END:preflight -->
+
+<!-- SW:SECTION:header version="1.0.170" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -58,7 +122,7 @@ plugins/specweave/
 **Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
 <!-- SW:END:claude-code-concepts -->
 
-<!-- SW:SECTION:start version="1.0.168" -->
+<!-- SW:SECTION:start version="1.0.170" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -68,7 +132,7 @@ plugins/specweave/
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.168" -->
+<!-- SW:SECTION:autodetect version="1.0.170" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -78,7 +142,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.168" -->
+<!-- SW:SECTION:metarule version="1.0.170" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -89,7 +153,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.168" -->
+<!-- SW:SECTION:rules version="1.0.170" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -100,7 +164,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.168" -->
+<!-- SW:SECTION:workflow version="1.0.170" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -120,7 +184,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.168" -->
+<!-- SW:SECTION:reflect version="1.0.170" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -133,7 +197,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-<!-- SW:SECTION:context version="1.0.168" -->
+<!-- SW:SECTION:context version="1.0.170" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -141,7 +205,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.168" -->
+<!-- SW:SECTION:structure version="1.0.170" -->
 ## Structure
 
 ```
@@ -156,7 +220,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.168" -->
+<!-- SW:SECTION:taskformat version="1.0.170" -->
 ## Task Format
 
 ```markdown
@@ -166,7 +230,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.168" -->
+<!-- SW:SECTION:secrets version="1.0.170" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -180,7 +244,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.168" -->
+<!-- SW:SECTION:syncing version="1.0.170" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -190,7 +254,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.168" -->
+<!-- SW:SECTION:testing version="1.0.170" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -202,7 +266,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.168" -->
+<!-- SW:SECTION:tdd version="1.0.170" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -263,7 +327,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.168" -->
+<!-- SW:SECTION:api version="1.0.170" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -271,13 +335,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.168" -->
+<!-- SW:SECTION:limits version="1.0.170" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.168" -->
+<!-- SW:SECTION:troubleshooting version="1.0.170" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -293,7 +357,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.168" -->
+<!-- SW:SECTION:lazyloading version="1.0.170" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -307,7 +371,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.168" -->
+<!-- SW:SECTION:principles version="1.0.170" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -316,7 +380,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.168" -->
+<!-- SW:SECTION:linking version="1.0.170" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -324,7 +388,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.168" -->
+<!-- SW:SECTION:mcp version="1.0.170" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -346,7 +410,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.168" -->
+<!-- SW:SECTION:auto version="1.0.170" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -363,7 +427,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.168" -->
+<!-- SW:SECTION:docs version="1.0.170" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
