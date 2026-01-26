@@ -40,9 +40,9 @@ echo "Build auth system with OAuth" | claude -p "/sw:increment"
 **Pros**: Simple, deterministic
 **Cons**: Starts new session, loses context
 
-### Workaround 2: SystemMessage Injection
+### Workaround 2: Context Injection via `additionalContext`
 
-In your `UserPromptSubmit` hook, inject a systemMessage that INSTRUCTS Claude to use a skill:
+In your `UserPromptSubmit` hook, inject context that INSTRUCTS Claude to use a skill:
 
 ```json
 {
@@ -53,8 +53,12 @@ In your `UserPromptSubmit` hook, inject a systemMessage that INSTRUCTS Claude to
 }
 ```
 
+**CRITICAL**: Do NOT use `systemMessage` - that field does not exist for UserPromptSubmit hooks and will be silently ignored! Always use `additionalContext` within the `hookSpecificOutput` wrapper.
+
 **Pros**: Works within existing session
 **Cons**: Claude might ignore it (it's advisory, not mandatory)
+
+**Reference**: [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks)
 
 ### Workaround 3: Hybrid Hook Architecture
 
@@ -72,12 +76,12 @@ echo "$RESULT" | jq -r '.plugins[]' | while read plugin; do
   claude plugin install "$plugin@specweave" 2>/dev/null
 done
 
-# 3. Output context injection
+# 3. Output context injection (MUST use additionalContext, not systemMessage!)
 cat << EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "$(echo $RESULT | jq -r '.systemMessage')"
+    "additionalContext": "$(echo $RESULT | jq -r '.context')"
   }
 }
 EOF
@@ -98,7 +102,7 @@ Returns: { plugins, increment, tdd, routing }
        ↓
 claude plugin install (sync)
        ↓
-systemMessage injection
+additionalContext injection
        ↓
 Claude processes → Router skill activates → Specialized agents spawn
 ```

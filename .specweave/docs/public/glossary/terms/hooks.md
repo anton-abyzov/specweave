@@ -200,6 +200,61 @@ rm -f .specweave/state/.hook-*
 
 ---
 
+## Claude Code Hook Output Format
+
+**CRITICAL**: Different hook events require different output formats!
+
+### UserPromptSubmit / SessionStart
+
+Use `additionalContext` to inject context into Claude:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": "Context to inject..."
+  }
+}
+```
+
+**Common Mistake**: Using `systemMessage` instead of `additionalContext` - this field does NOT exist for UserPromptSubmit hooks and will be silently ignored!
+
+### PreToolUse (Guards/Validators)
+
+Use `decision` to allow or block tool execution:
+
+```json
+{
+  "decision": "allow",
+  "reason": "Validation passed"
+}
+```
+
+Or to block:
+
+```json
+{
+  "decision": "block",
+  "reason": "Dangerous operation detected"
+}
+```
+
+### PostToolUse
+
+Use `continue` to signal completion:
+
+```json
+{
+  "continue": true
+}
+```
+
+### Official Documentation
+
+See [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks) for complete hook schema reference.
+
+---
+
 ## Related Terms
 
 - [Living Docs](/docs/glossary/terms/living-docs)
