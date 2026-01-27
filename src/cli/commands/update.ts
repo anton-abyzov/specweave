@@ -33,6 +33,7 @@ import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { migrateOldMemoryFiles } from '../../core/reflection/index.js';
+import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
@@ -182,6 +183,19 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
           console.log(chalk.gray(`    - ${file}`));
         });
       }
+    }
+  }
+
+  // Step 2.4: Cleanup orphaned global plugin state (v1.0.176)
+  // This is GLOBAL cleanup (~/.specweave/state/plugins-loaded.json), runs even outside SpecWeave projects
+  if (!options.check) {
+    try {
+      const pluginStateCleaned = cleanupGlobalPluginState();
+      if (pluginStateCleaned) {
+        console.log(chalk.green(`  ✓ Cleaned orphaned plugin cache data (cachedPlugins removed)`));
+      }
+    } catch {
+      // Silently ignore cleanup errors
     }
   }
 
