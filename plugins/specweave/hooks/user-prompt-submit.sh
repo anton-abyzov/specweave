@@ -1,20 +1,28 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.169 - Direct Skill Invocation)
+# SpecWeave UserPromptSubmit Hook (v1.0.175 - Reliable Plugin Detection)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.175: CRITICAL FIX - Use installed_plugins.json as SOURCE OF TRUTH
+#   * Reads ~/.claude/plugins/installed_plugins.json directly (eliminates false restart warnings)
+#   * `claude plugin list` can have timing/buffering issues → unreliable for detection
+#   * Primary: check_plugin_installed_from_json() using jq (fast, accurate)
+#   * Fallback: `claude plugin list` only if jq unavailable
+#   * Post-install verification: re-checks registry after install to confirm success
+#   * Increased timeouts: 5s → 10s for CLI operations (reduces timing issues)
+#   * Guard against false positives: if install says "success" but not in registry → treat as already installed
 # - v1.0.169: DIRECT SKILL INVOCATION - Call sw:increment-planner directly (not wrapper)
 #   * Skips 2-level indirection (hook → sw:increment command → sw:increment-planner skill)
 #   * Passes FULL user prompt as args (not just extracted name)
 #   * Uses <system><rules> tags (Claude-trained) instead of custom <mandatory_instruction>
 #   * More concise, imperative instruction text
-# - v1.0.167: FIX PLUGIN RESTART WARNING - Use `claude plugin list` BEFORE install
+# - v1.0.167: FIX PLUGIN RESTART WARNING - Use `claude plugin list` BEFORE install (DEPRECATED - had timing issues)
 #   * Claude CLI always outputs "Successfully installed" even when already installed
-#   * Now calls `claude plugin list` once to get current plugins, then checks against that
-#   * Skips install for already-installed plugins (faster + no false restart warnings)
-#   * Only shows restart warning for TRULY new plugin installs
+#   * Called `claude plugin list` once to get current plugins, then checked against that
+#   * Skipped install for already-installed plugins (faster + no false restart warnings)
+#   * ISSUE: `claude plugin list` output unreliable → false positives → fixed in v1.0.175
 # - v1.0.147: SYNC PLUGIN INSTALL - Plugins available for CURRENT prompt!
 #   * Replaced 20s async LLM detection with ~200ms sync `claude plugin install`
 #   * Claude Code hot-reload picks up plugins immediately
@@ -136,6 +144,36 @@ output_approve_with_context() {
   local escaped
   escaped=$(escape_json_early "$context")
   printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$escaped"
+}
+
+# Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
+# This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
+# Args: $1=plugin name (e.g., "sw-frontend"), $2=marketplace (e.g., "specweave")
+# Returns: 0 if installed, 1 if not installed
+check_plugin_installed_from_json() {
+  local plugin="$1"
+  local marketplace="$2"
+  local registry_path="${HOME}/.claude/plugins/installed_plugins.json"
+
+  # File must exist
+  [[ ! -f "$registry_path" ]] && return 1
+
+  # Must have jq for reliable JSON parsing
+  if ! command -v jq >/dev/null 2>&1; then
+    return 1  # Fallback to CLI check if jq not available
+  fi
+
+  # Check if plugin exists in registry
+  # Format: {"plugins": {"sw-frontend@specweave": [...], ...}}
+  local full_name="${plugin}@${marketplace}"
+  local has_plugin
+  has_plugin=$(jq -r --arg key "$full_name" '.plugins[$key] // null' "$registry_path" 2>/dev/null)
+
+  if [[ "$has_plugin" != "null" ]] && [[ -n "$has_plugin" ]]; then
+    return 0  # Installed
+  else
+    return 1  # Not installed
+  fi
 }
 
 # ==============================================================================
@@ -291,16 +329,6 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   PLUGINS_INSTALLED=""
                   PLUGINS_ALREADY=""
 
-                  # v1.0.167: Get list of already-installed plugins ONCE via `claude plugin list`
-                  # This is more reliable than parsing internal JSON files
-                  # Format: "sw-frontend@specweave", "context7@claude-plugins-official", etc.
-                  CURRENT_PLUGINS=""
-                  if command -v timeout >/dev/null 2>&1; then
-                    CURRENT_PLUGINS=$(timeout 5 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                  else
-                    CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                  fi
-
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
@@ -312,11 +340,28 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                       MARKETPLACE="claude-plugins-official"
                     fi
 
-                    # v1.0.167: Check if plugin is ALREADY installed (from cached list)
+                    # v1.0.175: Check if plugin is ALREADY installed (SOURCE OF TRUTH)
+                    # Primary: Check installed_plugins.json (reliable, fast, no timing issues)
+                    # Fallback: Check `claude plugin list` if jq not available
                     FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
                     ALREADY_INSTALLED=false
-                    if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
+
+                    # Try JSON registry first (most reliable)
+                    if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
                       ALREADY_INSTALLED=true
+                    else
+                      # Fallback to CLI check (if jq not available or registry file missing)
+                      # Give it a longer timeout (10s) to reduce timing issues
+                      CURRENT_PLUGINS=""
+                      if command -v timeout >/dev/null 2>&1; then
+                        CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                      else
+                        CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                      fi
+
+                      if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
+                        ALREADY_INSTALLED=true
+                      fi
                     fi
 
                     if [[ "$ALREADY_INSTALLED" == "true" ]]; then
@@ -325,15 +370,26 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                       PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                     else
                       # Plugin not installed - install it
+                      # Use longer timeout (10s) to ensure installation completes
                       if command -v timeout >/dev/null 2>&1; then
-                        OUT=$(timeout 5 claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
+                        OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
                       else
                         OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
                       fi
 
-                      if echo "$OUT" | grep -qi "success"; then
-                        [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                        PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                      # Only mark as installed if we see "success" or "installed" in output
+                      if echo "$OUT" | grep -qiE "(success|installed)"; then
+                        # Double-check: verify it actually got installed
+                        # Re-check the registry to confirm (guard against false positives)
+                        sleep 0.5  # Brief delay for registry to update
+                        if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                          [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                          PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                        else
+                          # Install claimed success but plugin not in registry - treat as already installed
+                          [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                          PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                        fi
                       fi
                     fi
                   done
