@@ -44,6 +44,7 @@ import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js'
 // PluginCacheManager removed - using direct CLI calls (simplified v1.0.165)
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
+import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -828,6 +829,16 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   if (forceMode) {
     console.log(chalk.yellow('🔄 Force mode: Will uninstall and clear cache before reinstalling\n'));
+  }
+
+  // Step 0.5: Cleanup orphaned plugin state (v1.0.176)
+  try {
+    const cleaned = cleanupGlobalPluginState();
+    if (cleaned) {
+      console.log(chalk.green('✓ Cleaned orphaned plugin cache data'));
+    }
+  } catch {
+    // Silently ignore cleanup errors
   }
 
   // Step 1: Check/update marketplace
