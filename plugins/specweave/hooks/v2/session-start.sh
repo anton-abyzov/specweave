@@ -156,6 +156,16 @@ is_ci_mode() {
     node "${SPECWEAVE_PKG}/dist/src/cli/add-child-pid.js" "$SESSION_ID" "$HEARTBEAT_PID" >> "$LOG_FILE" 2>&1 || true
   fi
 
+  # Start LSP language server detection in background (v1.0.179)
+  # This checks if language servers are installed and writes results to state file
+  # user-prompt-submit.sh will read this and show a one-time warning if servers missing
+  LSP_CHECK_SCRIPT="${SPECWEAVE_PKG}/plugins/specweave/scripts/lsp-check.sh"
+  if [[ -x "$LSP_CHECK_SCRIPT" ]]; then
+    nohup bash "$LSP_CHECK_SCRIPT" "$PROJECT_ROOT" \
+      >> "${PROJECT_ROOT}/.specweave/logs/lsp-check.log" 2>&1 &
+    log "LSP check started in background"
+  fi
+
   log "SessionStart hook completed successfully"
 
   # Return success JSON for Claude Code

@@ -109,7 +109,8 @@ Skill({ skill: "sw-backend:dotnet-backend", args: "Build API for increment XXXX"
 | plan.md with Node.js | `sw-backend:nodejs-backend` | Express/Fastify patterns |
 | plan.md with Stripe | `sw-payments:stripe-integration` | Payment flows, webhooks |
 | plan.md with K8s | `sw-k8s:kubernetes-architect` | Deployment patterns |
-| **After code generated** | `sw:lsp-integration` | Code quality validation |
+
+**Note**: LSP plugins (csharp-lsp, typescript-lsp) work AUTOMATICALLY when editing code - no invocation needed.
 
 **DO NOT** just say "frontend team will implement" - **INVOKE the skill explicitly!**
 

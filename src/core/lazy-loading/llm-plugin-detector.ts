@@ -322,9 +322,10 @@ export interface SkillRouting {
  * Skill invocation recommendation from LLM analysis (v1.0.168)
  *
  * Tells Claude which skill to invoke for the task
+ * NOTE: LSP plugins (csharp-lsp, typescript-lsp) are NOT skills - they work automatically!
  */
 export interface SkillInvocation {
-  /** Full skill name (e.g., "csharp-lsp:csharp-lsp", "sw-ml:ml-engineer") */
+  /** Full skill name (e.g., "sw-ml:ml-engineer", "sw-payments:stripe-integration") */
   skill: string;
 
   /** Why this skill should be used */
@@ -596,32 +597,38 @@ SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
 ALSO specify which skills Claude SHOULD invoke for this task.
 
 "skillInvocation" field with:
-- skill: full skill name (e.g., "csharp-lsp:csharp-lsp", "sw-ml:ml-engineer")
+- skill: full skill name (e.g., "sw-ml:ml-engineer", "sw-payments:stripe-integration")
 - reason: why this skill should be used
 - mandatory: true if Claude MUST use this skill, false if optional
 
+⚠️ IMPORTANT: LSP plugins (csharp-lsp, typescript-lsp, etc.) are NOT skills!
+They work AUTOMATICALLY when editing code files - do NOT include them in skillInvocation.
+
 SKILL INVOCATION RULES:
 ┌──────────────────────┬──────────────────────────────────────────────────┐
-│ LSP Skills           │ MANDATORY for language-specific code             │
-│ (csharp-lsp, etc.)   │ "Use csharp-lsp skill for .NET code intelligence"│
-├──────────────────────┼──────────────────────────────────────────────────┤
 │ Domain Skills        │ MANDATORY for specialized work                   │
-│ (sw-ml:ml-engineer)  │ "Use ml-engineer skill for model training"       │
+│ (sw-backend, sw-ml)  │ "Use dotnet-backend skill for .NET patterns"     │
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ Payment Skills       │ MANDATORY for payment integration                │
+│ (sw-payments)        │ "Use stripe-integration for Stripe patterns"     │
 ├──────────────────────┼──────────────────────────────────────────────────┤
 │ Architecture Skills  │ Recommended for design decisions                 │
 │ (sw-frontend:arch)   │ "Consider frontend-architect for component design│
 └──────────────────────┴──────────────────────────────────────────────────┘
 
 WHEN TO MAKE SKILL MANDATORY:
-- LSP plugins detected → corresponding LSP skill is MANDATORY
+- .NET/C# work → sw-backend:dotnet-backend is MANDATORY (LSP auto-activates)
 - ML/AI work → sw-ml:ml-engineer is MANDATORY
 - Payment integration → sw-payments:stripe-integration is MANDATORY
 - Complex architecture → relevant architect skill is recommended
 
+NOTE: LSP plugins provide AUTOMATIC code intelligence. Claude should use
+findReferences, goToDefinition, etc. but these aren't skills to invoke.
+
 SKILL EXAMPLES:
 
 "Build .NET API with Entity Framework"
-{"plugins":["sw-backend","csharp-lsp","context7"],"confidence":0.95,"reasoning":".NET→backend+csharp-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"csharp-lsp:csharp-lsp","reason":"Use C# LSP for .NET code intelligence, type checking, and Entity Framework support","mandatory":true}}
+{"plugins":["sw-backend","csharp-lsp","context7"],"confidence":0.95,"reasoning":".NET→backend+csharp-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
 
 "Train a machine learning model for image classification"
 {"plugins":["sw-ml","context7"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
