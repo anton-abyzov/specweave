@@ -1,6 +1,6 @@
 ---
 name: native-modules
-description: Expert in React Native native modules with New Architecture, Turbo Modules with Codegen, Fabric renderer, JSI (JavaScript Interface), New Architecture migration, bridging JavaScript and native code, iOS Swift modules, Android Kotlin modules, expo config plugins. IMPORTANT - Use Context7 for version-specific APIs. Activates for native module, native code, bridge, turbo module, JSI, fabric, autolinking, custom native module, ios module, android module, swift, kotlin, objective-c, java native code, codegen, new architecture.
+description: React Native native modules with New Architecture, Turbo Modules, JSI, and Codegen. Use for bridging JS to Swift/Kotlin native code.
 ---
 
 # Native Modules Expert (New Architecture)

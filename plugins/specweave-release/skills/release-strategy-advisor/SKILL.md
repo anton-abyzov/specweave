@@ -1,6 +1,6 @@
 ---
 name: release-strategy-advisor
-description: Expert in analyzing and recommending release strategies for software projects. Detects existing release patterns in brownfield projects (git tags, CI/CD workflows, changelogs, version files). Suggests optimal strategies based on architecture (single-repo, multi-repo, monorepo, microservices), team size, deployment frequency, and dependencies. Creates comprehensive release-strategy.md in living docs (.specweave/docs/internal/delivery/ or projects/{id}/delivery/). Activates for release strategy, versioning strategy, multi-repo releases, monorepo versioning, semantic versioning, coordinated releases, independent releases, release planning, version alignment, brownfield release analysis, deployment strategy, CI/CD release, how to version, release best practices.
+description: Release strategy advisor - detects brownfield patterns (tags, CI/CD, changelogs), recommends versioning strategy based on architecture. Creates release-strategy.md.
 ---
 
 # Release Strategy Advisor

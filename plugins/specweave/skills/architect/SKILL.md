@@ -91,6 +91,28 @@ What did we choose?
 - **Backend Architecture**: `sw-backend:database-optimizer` agent for database design
 - **Infrastructure**: `sw-infra:devops` agent for deployment architecture
 
+## ⚠️ MANDATORY: Skill Chaining
+
+**After completing plan.md, you MUST invoke domain skills based on tech stack:**
+
+```typescript
+// After writing plan.md, ALWAYS invoke relevant domain skills:
+Skill({ skill: "sw-frontend:frontend-architect", args: "Implement UI for increment XXXX" })
+Skill({ skill: "sw-backend:dotnet-backend", args: "Build API for increment XXXX" })
+// ... for each technology in the stack
+```
+
+| Your Output | Next Skill to Invoke | Why |
+|-------------|---------------------|-----|
+| plan.md with React/Vue/Angular | `sw-frontend:frontend-architect` | UI patterns, component design |
+| plan.md with .NET/C# | `sw-backend:dotnet-backend` | API patterns, EF Core |
+| plan.md with Node.js | `sw-backend:nodejs-backend` | Express/Fastify patterns |
+| plan.md with Stripe | `sw-payments:stripe-integration` | Payment flows, webhooks |
+| plan.md with K8s | `sw-k8s:kubernetes-architect` | Deployment patterns |
+| **After code generated** | `sw:lsp-integration` | Code quality validation |
+
+**DO NOT** just say "frontend team will implement" - **INVOKE the skill explicitly!**
+
 ## Peer Skills (Not Delegated - Work in Parallel)
 
 - **PM skill**: Handles product requirements (WHAT to build). Architect handles technical design (HOW).

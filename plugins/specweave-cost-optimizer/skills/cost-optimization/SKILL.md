@@ -1,6 +1,6 @@
 ---
 name: cost-optimization
-description: Expert cloud cost optimization strategies for AWS, Azure, GCP, and serverless platforms. Covers FinOps principles, right-sizing, reserved instances, savings plans, spot instances, storage optimization, database cost reduction, serverless cost modeling, budget management, cost allocation, chargeback models, and continuous cost optimization. Activates for cost optimization, cloud costs, reduce costs, save money, finops, cost analysis, budget overrun, expensive cloud bill, cost savings, reserved instances, spot instances, savings plans, right-sizing, cost allocation tags, chargeback, showback.
+description: FinOps expert for AWS/Azure/GCP cost optimization - right-sizing, reserved instances, savings plans, spot instances. Use for reducing cloud costs.
 ---
 
 # Cloud Cost Optimization Expert

@@ -1,6 +1,6 @@
 ---
 name: rc-manager
-description: Manages Release Candidate (RC) workflows including pre-release tagging, RC lifecycle (alpha/beta/rc), testing validation, RC promotion to production, rollback procedures, and channel-based releases. Handles RC versioning (v1.0.0-rc.1, v1.0.0-beta.1), tracks RC testing status, coordinates RC across multiple repositories, manages canary/blue-green deployments. Activates for release candidate, RC, pre-release, beta release, alpha release, canary release, rc workflow, promote rc, rc testing, staging release, pre-production.
+description: Release Candidate (RC) workflow manager - pre-release tagging, alpha/beta/rc lifecycle, testing validation, production promotion.
 ---
 
 # Release Candidate Manager
