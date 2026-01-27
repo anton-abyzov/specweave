@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.174" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.175" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
@@ -50,7 +50,7 @@ Hooks exist to enforce workflow discipline. If you ignore them:
 **This is non-negotiable. No exceptions. No "just this once".**
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.174" -->
+<!-- SW:SECTION:header version="1.0.175" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -108,7 +108,7 @@ plugins/specweave/
 **Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
 <!-- SW:END:claude-code-concepts -->
 
-<!-- SW:SECTION:start version="1.0.174" -->
+<!-- SW:SECTION:start version="1.0.175" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -118,7 +118,7 @@ plugins/specweave/
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.174" -->
+<!-- SW:SECTION:autodetect version="1.0.175" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -128,7 +128,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.174" -->
+<!-- SW:SECTION:metarule version="1.0.175" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -139,18 +139,19 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.174" -->
+<!-- SW:SECTION:rules version="1.0.175" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
-3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
+3. **🚨 Unique IDs**: Check ALL folders (active, `_archive`, `_abandoned`, `_paused`, external `E` suffix): `find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
+7. **✅ Skills**: ALWAYS use domain skills (PM, Architect, LSP, sw-frontend, sw-backend, sw-payments)
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.174" -->
+<!-- SW:SECTION:workflow version="1.0.175" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -170,7 +171,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.174" -->
+<!-- SW:SECTION:reflect version="1.0.175" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -183,7 +184,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 <!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-<!-- SW:SECTION:context version="1.0.174" -->
+<!-- SW:SECTION:context version="1.0.175" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -191,7 +192,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.174" -->
+<!-- SW:SECTION:structure version="1.0.175" -->
 ## Structure
 
 ```
@@ -206,7 +207,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.174" -->
+<!-- SW:SECTION:taskformat version="1.0.175" -->
 ## Task Format
 
 ```markdown
@@ -216,7 +217,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.174" -->
+<!-- SW:SECTION:secrets version="1.0.175" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -230,7 +231,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.174" -->
+<!-- SW:SECTION:syncing version="1.0.175" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -240,7 +241,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.174" -->
+<!-- SW:SECTION:testing version="1.0.175" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -252,7 +253,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.174" -->
+<!-- SW:SECTION:tdd version="1.0.175" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -313,7 +314,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.174" -->
+<!-- SW:SECTION:api version="1.0.175" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -321,13 +322,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.174" -->
+<!-- SW:SECTION:limits version="1.0.175" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.174" -->
+<!-- SW:SECTION:troubleshooting version="1.0.175" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -343,7 +344,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.174" -->
+<!-- SW:SECTION:lazyloading version="1.0.175" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -357,7 +358,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.174" -->
+<!-- SW:SECTION:principles version="1.0.175" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -366,7 +367,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.174" -->
+<!-- SW:SECTION:linking version="1.0.175" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -374,7 +375,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.174" -->
+<!-- SW:SECTION:mcp version="1.0.175" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -396,7 +397,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.174" -->
+<!-- SW:SECTION:auto version="1.0.175" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -413,7 +414,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.174" -->
+<!-- SW:SECTION:docs version="1.0.175" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
@@ -484,9 +485,26 @@ User Stories need `**Project**: my-project` field for external sync. Each US = O
 
 **Parallel agents + large files = CRASH** (context shared). Process files ONE BY ONE.
 
-### 7. Skills Agents
+### 7. Skills Best Practices
 
-Skills spawning content-generating agents = CRASH (context explosion).
+**ALWAYS use skills when available!** Skills provide specialized expertise and are designed to be used extensively.
+
+**During Planning:**
+- Use `/sw:pm` or PM skill for specification refinement
+- Use `/sw:architect` or Architect skill for architecture design
+- Skills can invoke other skills - this is encouraged!
+
+**During Implementation:**
+- Use `sw-frontend:*` skills for React/Vue/Angular work
+- Use `sw-backend:*` skills for .NET/Node/Python APIs
+- Use `sw-payments:stripe-integration` for Stripe
+- Use `csharp-lsp` for C# code quality (CRITICAL - always use LSP!)
+- Use language-specific LSP skills whenever available
+
+**Pattern:**
+```
+/sw:increment → PM skill → Architect skill → Implementation skills → LSP validation
+```
 
 ### 8. NODE_OPTIONS and VSCode Debug Mode
 
@@ -558,21 +576,39 @@ claude -p "Say hello" --model haiku --setting-sources ""
 
 ### 10. Increment ID Collision Prevention (v1.0.160)
 
-**⚠️ Increment IDs MUST be unique across BOTH active AND _archive folders!**
+**🚨 CRITICAL: Increment IDs MUST be unique across ALL folders!**
 
-**Root Cause**: Archived increments retain their IDs (e.g., `0001-core-framework` in `_archive/`). Creating a new increment with the same base number causes structural violations.
+**Check these locations BEFORE creating an increment:**
+- Active: `.specweave/increments/NNNN-*`
+- Archived: `.specweave/increments/_archive/NNNN-*`
+- Abandoned: `.specweave/increments/_abandoned/NNNN-*`
+- Paused: `.specweave/increments/_paused/NNNN-*`
+- **External**: `.specweave/increments/NNNNE-*` (imported items with E suffix)
 
-**Symptoms:**
-- Two increments with same number (e.g., `0001-project-setup` active + `0001-core-framework` archived)
+**Manual Check (if creating increments manually):**
+```bash
+# Find all existing increment IDs
+find .specweave/increments -maxdepth 2 -type d -name "[0-9][0-9][0-9][0-9]*" | \
+  grep -oE '[0-9]{4}E?' | sort -u
+
+# Example output:
+# 0001       ← archived
+# 0002       ← active
+# 0123E      ← external imported
+# Next safe ID: 0003
+```
+
+**Root Cause**: Archived/external increments retain their IDs. Creating a new increment with the same number causes:
 - GitHub sync confusion (which 0001 is which?)
 - Feature ID collisions in living docs
+- Database integrity violations
 
 **Solution - ALWAYS use IncrementNumberManager:**
 ```typescript
-// ✅ CORRECT: Scans all folders (active, _archive, _abandoned, _paused)
+// ✅ CORRECT: Scans ALL folders (active, _archive, _abandoned, _paused, external)
 const nextId = IncrementNumberManager.getNextIncrementNumber(projectRoot);
 
-// ❌ WRONG: Hardcoding IDs
+// ❌ WRONG: Only checking active folder
 const incrementId = '0001-project-setup';  // May collide with archived!
 ```
 
@@ -641,8 +677,14 @@ If NOT → invoke via Skill tool as fallback
 
 ### Plugin Skills Reference
 
-| Domain | Skill Name | Auto-Activates On |
-|--------|------------|-------------------|
+**⚠️ These are EXAMPLES - use ANY skill that matches the task!**
+
+New plugins add more skills. Custom user skills are equally valid. To discover all available skills: `/plugin list` or ask "What skills are available?"
+
+**Common Skills (non-exhaustive):**
+
+| Domain | Example Skill | Auto-Activates On |
+|--------|--------------|-------------------|
 | **Frontend** | `sw-frontend:frontend-architect` | React, Vue, Next.js, dashboard, UI |
 | **Backend .NET** | `sw-backend:dotnet-backend` | .NET, C#, ASP.NET, EF Core, Web API |
 | **Database** | `sw-backend:database-optimizer` | SQL, database, query optimization |
@@ -655,6 +697,12 @@ If NOT → invoke via Skill tool as fallback
 | **Architecture** | `sw:architect` | architecture, system design, ADR |
 | **Security** | `sw:security` | security, OWASP, vulnerabilities |
 | **TDD** | `sw:tdd-orchestrator` | TDD, test-driven, red-green-refactor |
+| **LSP** | `csharp-lsp`, `typescript-lsp`, etc. | After code generation (always!) |
+
+**Plus any skills from:**
+- Newly installed plugins
+- Custom user skills in `.claude/skills/`
+- Project-specific skills
 
 ### Usage Pattern
 
@@ -690,9 +738,13 @@ If skills don't auto-activate:
 | Domain work (React, .NET, Stripe) | Let auto-activate, Skill tool if not |
 | Architecture, security review | Usually auto-activates on keywords |
 | Hook says "SKILL FIRST" | **Always** use Skill tool explicitly |
+| **Code quality (LSP)** | **ALWAYS invoke after code generation** (csharp-lsp, typescript-lsp, etc.) |
+| Increment planning | Use PM/Architect skills for spec/plan refinement |
 | External syncs | Commands: `/sw-github:sync` |
 | Codebase exploration | Task tool: `subagent_type: "Explore"` |
 | Complex planning | Task tool: `subagent_type: "Plan"` |
+
+**CRITICAL**: LSP skills (csharp-lsp, typescript-lsp, python-lsp) should be invoked after ANY code generation to validate quality, detect issues, and ensure best practices.
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 
@@ -879,8 +931,10 @@ npm run rebuild
 | File ops | Write/Edit/Read tools ONLY (never Bash heredoc/echo) |
 | Source of truth | tasks.md + spec.md (update immediately) |
 | Completion | `/sw:done` only (NEVER edit metadata.json directly) |
+| **Skills** | **ALWAYS use when available** (PM, Architect, LSP, domain skills) |
+| **LSP** | **MANDATORY after code generation** (csharp-lsp, typescript-lsp, etc.) |
 | Increment root | ONLY 4 files: spec.md, plan.md, tasks.md, metadata.json |
-| Increment IDs | Start from 0001 (NEVER 0000), check uniqueness first |
+| Increment IDs | 🚨 Check ALL folders: `find .specweave/increments -maxdepth 2 -name "[0-9]*" \| grep -oE '[0-9]{4}E?'` |
 | Reports/logs | Always to `reports/`, `logs/` subfolders |
 | Multi-repo | Clone to `repositories/` (never project root) |
 | Secrets | Check `.env` first, never display values (`grep -q`) |
