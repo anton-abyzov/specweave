@@ -24,6 +24,7 @@ export {
   handleReflectStop,
   formatReflectResult,
   migrateOldMemoryFiles,
+  cleanupDeprecatedMemoryDirectory,
   readReflectConfig,
   DEFAULT_REFLECT_CONFIG,
   type ReflectConfig,
