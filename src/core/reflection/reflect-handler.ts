@@ -340,7 +340,62 @@ function generateSkillMemoriesSection(memories: Map<string, string[]>): string {
 }
 
 /**
+ * Find the USER's Skill Memories section (NOT the template section)
+ *
+ * Template sections are inside <!-- SW:SECTION:* --> markers and get overwritten
+ * by instruction updates. We need to find/create a section OUTSIDE these markers.
+ */
+function findUserSkillMemoriesSection(content: string): {
+  found: boolean;
+  startIndex: number;
+  endIndex: number;
+  sectionContent: string;
+} {
+  // Find all ## Skill Memories occurrences
+  const regex = /## Skill Memories/g;
+  let match;
+  const positions: number[] = [];
+
+  while ((match = regex.exec(content)) !== null) {
+    positions.push(match.index);
+  }
+
+  // For each position, check if it's inside a template section
+  for (const pos of positions) {
+    // Look backwards for <!-- SW:SECTION: marker
+    const beforeContent = content.slice(0, pos);
+    const lastSectionStart = beforeContent.lastIndexOf('<!-- SW:SECTION:');
+    const lastSectionEnd = beforeContent.lastIndexOf('<!-- SW:END:');
+
+    // If there's a section start AFTER the last section end, we're inside a template
+    if (lastSectionStart > lastSectionEnd) {
+      // This is inside a template section, skip it
+      continue;
+    }
+
+    // This is a user section (not inside template markers)
+    // Find where this section ends
+    const afterContent = content.slice(pos);
+    const sectionEndMatch = afterContent.match(/\n(?=## |\n---|\n<!-- SW:SECTION:|$)/);
+    const endOffset = sectionEndMatch ? sectionEndMatch.index! : afterContent.length;
+
+    return {
+      found: true,
+      startIndex: pos,
+      endIndex: pos + endOffset,
+      sectionContent: content.slice(pos, pos + endOffset),
+    };
+  }
+
+  return { found: false, startIndex: -1, endIndex: -1, sectionContent: '' };
+}
+
+/**
  * Update CLAUDE.md with new learnings
+ *
+ * IMPORTANT: Writes to the USER's section, not the template section.
+ * Template sections (inside <!-- SW:SECTION: --> markers) are overwritten
+ * by instruction updates, so we must write elsewhere.
  */
 function updateClaudeMd(
   claudeMdPath: string,
@@ -348,8 +403,13 @@ function updateClaudeMd(
 ): { added: number; skipped: number } {
   let content = fs.readFileSync(claudeMdPath, 'utf-8');
 
-  // Parse existing memories
-  const existingMemories = parseSkillMemories(content);
+  // Find user's section (not template)
+  const userSection = findUserSkillMemoriesSection(content);
+
+  // Parse existing memories from user section only
+  const existingMemories = userSection.found
+    ? parseSkillMemories(userSection.sectionContent)
+    : new Map<string, string[]>();
 
   let added = 0;
   let skipped = 0;
@@ -376,21 +436,32 @@ function updateClaudeMd(
   // Generate new section content
   const newSectionContent = generateSkillMemoriesSection(existingMemories);
 
-  // Find and replace existing section, or add new section
-  const existingSectionMatch = content.match(/## Skill Memories\s*\n[\s\S]*?(?=\n## |\n---|\n<!-- SW:|$)/);
-
-  if (existingSectionMatch) {
-    // Replace existing section
-    content = content.replace(existingSectionMatch[0], newSectionContent.trimEnd());
+  if (userSection.found) {
+    // Replace user's existing section
+    content =
+      content.slice(0, userSection.startIndex) +
+      newSectionContent.trimEnd() +
+      content.slice(userSection.endIndex);
   } else {
-    // Add new section before the first <!-- SW: section marker or at the end
-    const insertMatch = content.match(/\n---\s*\n<!-- ↓ ORIGINAL ↓ -->/);
-    if (insertMatch) {
-      // Insert before the "original" section divider
-      content = content.replace(insertMatch[0], `\n${newSectionContent}\n${insertMatch[0]}`);
+    // No user section found - create one after the template section
+    // Look for <!-- SW:END:reflect --> marker
+    const reflectEndMatch = content.match(/<!-- SW:END:reflect -->\s*\n/);
+    if (reflectEndMatch) {
+      const insertPos = reflectEndMatch.index! + reflectEndMatch[0].length;
+      content =
+        content.slice(0, insertPos) +
+        '\n' +
+        newSectionContent +
+        '\n' +
+        content.slice(insertPos);
     } else {
-      // Append at end
-      content = content.trimEnd() + '\n\n' + newSectionContent;
+      // Fallback: insert before "original" section or append at end
+      const insertMatch = content.match(/\n---\s*\n<!-- ↓ ORIGINAL ↓ -->/);
+      if (insertMatch) {
+        content = content.replace(insertMatch[0], `\n${newSectionContent}\n${insertMatch[0]}`);
+      } else {
+        content = content.trimEnd() + '\n\n' + newSectionContent;
+      }
     }
   }
 
@@ -578,6 +649,56 @@ export function formatReflectResult(result: ReflectResult): string {
 }
 
 /**
+ * Extract learnings from old memory file content (supports multiple formats)
+ *
+ * Supported formats:
+ * 1. LRN format: `**Learning**: content`
+ * 2. Arrow format: `- → content` or `- -> content`
+ * 3. Simple bullet: `- content` (only if it looks like a learning, not a header)
+ */
+function extractLearningsFromOldFormat(content: string): string[] {
+  const learnings: string[] = [];
+
+  // Format 1: **Learning**: content (LRN-XXXXXXXX format)
+  const lrnMatches = content.matchAll(/\*\*Learning\*\*:\s*(.+)/g);
+  for (const match of lrnMatches) {
+    const learning = match[1].trim();
+    if (learning.length > 5) {
+      learnings.push(learning);
+    }
+  }
+
+  // Format 2: - → content or - -> content (arrow format)
+  const arrowMatches = content.matchAll(/^-\s*(?:→|->)+\s*(.+)$/gm);
+  for (const match of arrowMatches) {
+    const learning = match[1].trim();
+    if (learning.length > 5) {
+      learnings.push(learning);
+    }
+  }
+
+  // Format 3: Simple bullets (only if content looks like a learning rule)
+  // Skip headers, metadata lines, and very short content
+  const bulletMatches = content.matchAll(/^-\s+(?!→|->)(.+)$/gm);
+  for (const match of bulletMatches) {
+    const learning = match[1].trim();
+    // Only include if it looks like an actual learning (not metadata)
+    if (
+      learning.length > 10 &&
+      !learning.startsWith('#') &&
+      !learning.startsWith('>') &&
+      !learning.toLowerCase().includes('project-specific') &&
+      !learning.toLowerCase().includes('max ') &&
+      !learning.toLowerCase().includes('auto-deduplicated')
+    ) {
+      learnings.push(learning);
+    }
+  }
+
+  return learnings;
+}
+
+/**
  * Migrate old memory files to CLAUDE.md
  *
  * This migrates content from:
@@ -585,18 +706,14 @@ export function formatReflectResult(result: ReflectResult): string {
  * - ~/.specweave/memory/*.md
  *
  * Into the CLAUDE.md Skill Memories section.
+ *
+ * IMPORTANT: Always cleans up the deprecated memory directories,
+ * even if no learnings were migrated (best-effort migration).
  */
 export function migrateOldMemoryFiles(projectRoot: string): { migrated: number; deleted: string[] } {
   const result = { migrated: 0, deleted: [] as string[] };
 
-  // Find CLAUDE.md
-  const claudeMdPath = findClaudeMd(projectRoot);
-  if (!claudeMdPath) {
-    logger.warn('[reflect] CLAUDE.md not found, skipping migration');
-    return result;
-  }
-
-  // Directories to check
+  // Directories to check (always clean these up)
   const memoryDirs = [
     path.join(projectRoot, '.specweave', 'memory'),
   ];
@@ -606,6 +723,9 @@ export function migrateOldMemoryFiles(projectRoot: string): { migrated: number; 
   if (homeDir) {
     memoryDirs.push(path.join(homeDir, '.specweave', 'memory'));
   }
+
+  // Find CLAUDE.md (optional - we still clean up even if not found)
+  const claudeMdPath = findClaudeMd(projectRoot);
 
   const learningsToMigrate: SkillLearning[] = [];
 
@@ -621,32 +741,32 @@ export function migrateOldMemoryFiles(projectRoot: string): { migrated: number; 
       try {
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Extract learnings from old format
-        // Pattern: #### LRN-XXXXXXXX-XXXX (Confidence)
-        // **Learning**: content
-        const learningMatches = content.matchAll(/\*\*Learning\*\*:\s*(.+)/g);
+        // Extract learnings using multi-format parser
+        const extractedLearnings = extractLearningsFromOldFormat(content);
 
-        for (const match of learningMatches) {
+        for (const learning of extractedLearnings) {
           learningsToMigrate.push({
             skill: skillName,
-            learning: match[1].trim(),
+            learning,
           });
         }
 
-        // Mark for deletion
+        // Always mark for deletion (deprecated directory)
         result.deleted.push(filePath);
       } catch {
-        // Ignore read errors
+        // Still mark for deletion even if read fails
+        result.deleted.push(filePath);
       }
     }
   }
 
-  if (learningsToMigrate.length > 0) {
+  // Migrate learnings to CLAUDE.md if available
+  if (learningsToMigrate.length > 0 && claudeMdPath) {
     const writeResult = updateClaudeMd(claudeMdPath, learningsToMigrate);
     result.migrated = writeResult.added;
   }
 
-  // Delete old files
+  // Delete old files (always, regardless of migration success)
   for (const filePath of result.deleted) {
     try {
       fs.unlinkSync(filePath);
@@ -656,18 +776,76 @@ export function migrateOldMemoryFiles(projectRoot: string): { migrated: number; 
     }
   }
 
-  // Try to remove empty directories
+  // Remove directories (even if not empty - force cleanup of deprecated location)
   for (const memoryDir of memoryDirs) {
     try {
-      const remaining = fs.readdirSync(memoryDir);
-      if (remaining.length === 0) {
+      if (fs.existsSync(memoryDir)) {
+        // Remove any remaining files first
+        const remaining = fs.readdirSync(memoryDir);
+        for (const file of remaining) {
+          try {
+            fs.unlinkSync(path.join(memoryDir, file));
+          } catch {
+            // Ignore individual file delete errors
+          }
+        }
+        // Then remove the directory
         fs.rmdirSync(memoryDir);
-        logger.debug(`[reflect] Removed empty memory directory: ${memoryDir}`);
+        logger.debug(`[reflect] Removed deprecated memory directory: ${memoryDir}`);
       }
     } catch {
-      // Ignore errors
+      // Ignore directory removal errors
     }
   }
 
   return result;
+}
+
+/**
+ * Force cleanup of deprecated .specweave/memory/ directory
+ *
+ * This is a simpler, more aggressive cleanup that doesn't attempt migration.
+ * Use this when you just want to ensure the deprecated directory is gone.
+ *
+ * @param projectRoot - Project root path
+ * @returns Number of files/directories removed
+ */
+export function cleanupDeprecatedMemoryDirectory(projectRoot: string): number {
+  let cleaned = 0;
+
+  const memoryDirs = [
+    path.join(projectRoot, '.specweave', 'memory'),
+  ];
+
+  // Add global memory if it exists
+  const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+  if (homeDir) {
+    memoryDirs.push(path.join(homeDir, '.specweave', 'memory'));
+  }
+
+  for (const memoryDir of memoryDirs) {
+    if (!fs.existsSync(memoryDir)) continue;
+
+    try {
+      // Remove all files in the directory
+      const files = fs.readdirSync(memoryDir);
+      for (const file of files) {
+        try {
+          fs.unlinkSync(path.join(memoryDir, file));
+          cleaned++;
+        } catch {
+          // Ignore individual file errors
+        }
+      }
+
+      // Remove the directory itself
+      fs.rmdirSync(memoryDir);
+      cleaned++;
+      logger.debug(`[reflect] Removed deprecated memory directory: ${memoryDir}`);
+    } catch {
+      // Ignore directory errors
+    }
+  }
+
+  return cleaned;
 }
