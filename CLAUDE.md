@@ -144,11 +144,10 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
-3. **🚨 Unique IDs**: Check ALL folders (active, `_archive`, `_abandoned`, `_paused`, external `E` suffix): `find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u`
+3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
-7. **✅ Skills**: ALWAYS use domain skills (PM, Architect, LSP, sw-frontend, sw-backend, sw-payments)
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.175" -->
@@ -182,7 +181,9 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ## Skill Memories
 
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
-<!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
+
+### Logging
+- **2026-01-27**: // Do NOT verify immediately - show dialog instead
 
 <!-- SW:SECTION:context version="1.0.175" -->
 ## Context

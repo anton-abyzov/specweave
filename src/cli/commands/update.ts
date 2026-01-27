@@ -32,7 +32,7 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
-import { migrateOldMemoryFiles } from '../../core/reflection/index.js';
+import { migrateOldMemoryFiles, cleanupDeprecatedMemoryDirectory } from '../../core/reflection/index.js';
 import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 
 interface UpdateOptions {
@@ -200,18 +200,32 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   }
 
   // Step 2.5: Migrate old memory files to CLAUDE.md (reflect v2.0)
+  // The .specweave/memory/ directory is DEPRECATED - all learnings now go to CLAUDE.md
   if (isSpecWeaveProject && !options.check) {
     try {
       const migrationResult = migrateOldMemoryFiles(projectPath);
       if (migrationResult.migrated > 0) {
         console.log(chalk.green(`  ✓ Migrated ${migrationResult.migrated} learning(s) from old memory files to CLAUDE.md`));
-        if (migrationResult.deleted.length > 0 && options.verbose) {
-          console.log(chalk.gray(`    Removed ${migrationResult.deleted.length} old memory file(s)`));
+      }
+      if (migrationResult.deleted.length > 0) {
+        console.log(chalk.green(`  ✓ Cleaned up ${migrationResult.deleted.length} deprecated memory file(s)`));
+        if (options.verbose) {
+          migrationResult.deleted.forEach(f => console.log(chalk.gray(`    - ${f}`)));
         }
       }
     } catch (error) {
+      // Migration failed, but still try to cleanup the deprecated directory
       if (options.verbose) {
-        console.log(chalk.yellow(`  ⚠ Memory migration skipped: ${error}`));
+        console.log(chalk.yellow(`  ⚠ Memory migration failed: ${error}`));
+      }
+      // Fallback: force cleanup of deprecated directory
+      try {
+        const cleaned = cleanupDeprecatedMemoryDirectory(projectPath);
+        if (cleaned > 0) {
+          console.log(chalk.green(`  ✓ Cleaned up deprecated .specweave/memory/ directory`));
+        }
+      } catch {
+        // Silently ignore cleanup errors
       }
     }
   }
