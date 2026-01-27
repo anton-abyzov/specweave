@@ -1,6 +1,6 @@
 ---
 name: performance-optimization
-description: Expert in React Native 0.83+ performance optimization including Hermes V1, React 19.2 concurrent features, Intersection Observer, Web Performance APIs, bundle size reduction, memory management, rendering optimization, FlashList, expo-image v2, memoization, lazy loading, code splitting. Activates for performance, slow app, lag, memory leak, bundle size, optimization, flatlist performance, re-render, fps, jank, startup time, app size, hermes, concurrent rendering.
+description: React Native performance with Hermes V1, FlashList, expo-image v2, concurrent rendering. Use for slow app, memory leaks, or FPS issues.
 ---
 
 # Performance Optimization Expert (RN 0.83+)

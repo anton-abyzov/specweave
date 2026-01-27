@@ -1,6 +1,6 @@
 ---
 name: marketplace-publishing
-description: Expert Claude Code marketplace publishing covering npm publishing, GitHub releases, semantic versioning, plugin packaging, README documentation, CHANGELOG management, marketplace submission, and plugin distribution. Activates for publish plugin, npm publish, marketplace, release plugin, semantic versioning, semver, plugin distribution, publish to npm, github release.
+description: Claude Code marketplace publishing - npm publish, GitHub releases, semantic versioning, plugin packaging. Use when publishing plugins.
 ---
 
 # Marketplace Publishing Expert

@@ -1,6 +1,6 @@
 ---
 name: aws-cost-expert
-description: Deep AWS cost optimization expertise covering EC2 Reserved Instances, Savings Plans, Spot Instances, Lambda cost optimization, S3 lifecycle policies, RDS Reserved Instances, Cost Explorer, AWS Budgets, Trusted Advisor, Compute Optimizer, Cost Anomaly Detection, and AWS-specific FinOps best practices. Activates for AWS costs, AWS pricing, EC2 costs, Lambda costs, S3 costs, RDS costs, AWS savings plans, AWS reserved instances, AWS spot instances, AWS cost explorer, AWS budgets, reduce AWS bill.
+description: AWS cost optimization - EC2 Reserved Instances, Savings Plans, Spot, Lambda optimization, Cost Explorer, Trusted Advisor.
 ---
 
 # AWS Cost Optimization Expert

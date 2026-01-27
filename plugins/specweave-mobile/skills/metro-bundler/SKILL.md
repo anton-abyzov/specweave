@@ -1,6 +1,6 @@
 ---
 name: metro-bundler
-description: Expert in Metro bundler configuration, optimization, troubleshooting, caching strategies, custom transformers, asset management, source maps, bundling performance. Activates for metro, metro bundler, metro.config.js, bundler, bundle, cache, transformer, asset resolver, metro cache, bundling error, unable to resolve module, port 8081.
+description: Metro bundler configuration, optimization, and troubleshooting. Use for bundle errors, "unable to resolve module", or caching issues.
 ---
 
 # Metro Bundler Expert

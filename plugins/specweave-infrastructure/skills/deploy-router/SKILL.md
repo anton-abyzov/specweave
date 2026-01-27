@@ -1,6 +1,6 @@
 ---
 name: deploy-router
-description: Smart deployment platform router for Vercel vs Cloudflare vs GitHub Pages. Analyzes project structure, framework, SEO needs, runtime requirements, AND repository visibility (private/public). Routes to Cloudflare for private repos (GitHub Pages requires paid plan), Vercel for dynamic SEO, GitHub Pages only for public repos. Activates for deploy, vercel vs cloudflare, where to deploy, cloudflare workers, cloudflare pages, vercel deployment, edge deployment, SSR deployment, static site deployment, which hosting, deployment recommendation, github pages, private repo deployment.
+description: Deployment platform router - Vercel vs Cloudflare vs GitHub Pages. Analyzes framework, SEO needs, repo visibility. Use for "where to deploy" decisions.
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
