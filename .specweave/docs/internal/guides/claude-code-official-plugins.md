@@ -2,7 +2,9 @@
 
 **Purpose**: Comprehensive guide to official Claude Code plugins that enhance SpecWeave skills and workflows.
 
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-27
+
+**Official Repository**: https://github.com/anthropics/claude-plugins-official
 
 ---
 
@@ -21,15 +23,32 @@ Claude Code provides an official plugin ecosystem at [github.com/anthropics/clau
 
 **Installation**: Use `/plugin` command in Claude Code, or browse the Discover tab.
 
+## ⚠️ CRITICAL: Understanding Plugin Types
+
+Claude Code has TWO fundamentally different plugin types:
+
+| Plugin Type | Has SKILL.md | How to Use | Example |
+|-------------|--------------|------------|---------|
+| **Skill plugins** | ✅ Yes | `/skill-name` or `Skill({ skill: "name" })` | frontend-design, code-review |
+| **LSP plugins** | ❌ No | **AUTOMATIC** - activates on file extension | csharp-lsp, typescript-lsp |
+
+**LSP plugins are NOT skills!** You cannot invoke them via `/csharp-lsp` or `Skill({ skill: "csharp-lsp" })`. They work transparently when editing code files.
+
 ## Plugin Categories
 
-1. **LSP Plugins** - Language Server Protocol for code intelligence
-2. **Developer Tools** - Code review, safety rails, UI design
-3. **External Integrations** - Third-party service connections
+1. **LSP Plugins** - Language Server Protocol for code intelligence (AUTOMATIC)
+2. **Developer Tools** - Code review, safety rails, UI design (invocable skills)
+3. **External Integrations** - Third-party service connections (MCP servers)
 
 ---
 
-## LSP Plugins (Language Intelligence)
+## LSP Plugins (Language Intelligence) - AUTOMATIC
+
+**⚠️ LSP plugins work AUTOMATICALLY when editing code files. They are NOT skills!**
+
+You cannot invoke LSP plugins - they activate based on file extension:
+- Edit `.cs` file → `csharp-lsp` automatically provides code intelligence
+- Edit `.ts` file → `typescript-lsp` automatically provides type checking
 
 Language Server Protocol plugins provide semantic code understanding: go-to-definition, find-references, diagnostics, hover information, and refactoring support.
 
@@ -49,19 +68,19 @@ Language Server Protocol plugins provide semantic code understanding: go-to-defi
 | **clangd-lsp** | C, C++ | `.c`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, `.hxx` | `brew install llvm` |
 | **lua-lsp** | Lua | `.lua` | `brew install lua-language-server` |
 
-### LSP Mapping to SpecWeave Skills
+### How LSP Works with SpecWeave Skills
 
-| SpecWeave Skill/Agent | Primary LSP | Secondary LSP | Use Case |
-|-----------------------|-------------|---------------|----------|
-| `sw-mobile:mobile-architect` | `typescript-lsp` | `swift-lsp`, `kotlin-lsp` | React Native + native modules |
-| `sw-mobile:native-modules` | `swift-lsp`, `kotlin-lsp` | - | Turbo Modules, JSI |
-| `sw-frontend:frontend-architect` | `typescript-lsp` | - | React, Vue, Angular, Next.js |
-| `sw-backend:database-optimizer` | `gopls-lsp` | `pyright-lsp`, `jdtls-lsp` | Backend services |
-| `sw-infra:devops` | `gopls-lsp` | `pyright-lsp` | Terraform, Pulumi, scripts |
-| `sw-ml:ml-engineer` | `pyright-lsp` | - | Python ML pipelines |
-| `sw-ml:data-scientist` | `pyright-lsp` | - | Pandas, numpy, notebooks |
-| `sw-kafka:kafka-architect` | `jdtls-lsp` | `gopls-lsp` | Kafka clients (Java/Go) |
-| `sw-k8s:kubernetes-architect` | `gopls-lsp` | `pyright-lsp` | K8s operators, controllers |
+When you use a SpecWeave skill and edit code files, LSP activates **automatically**:
+
+| SpecWeave Skill/Agent | Files You Edit | LSP Auto-Activates |
+|-----------------------|----------------|---------------------|
+| `sw-mobile:mobile-architect` | `.swift`, `.kt`, `.ts` | swift-lsp, kotlin-lsp, typescript-lsp |
+| `sw-frontend:frontend-architect` | `.ts`, `.tsx` | typescript-lsp |
+| `sw-backend:dotnet-backend` | `.cs` | csharp-lsp |
+| `sw-backend:nodejs-backend` | `.ts`, `.js` | typescript-lsp |
+| `sw-ml:ml-engineer` | `.py` | pyright-lsp |
+| `sw-infra:devops` | `.go`, `.py` | gopls-lsp, pyright-lsp |
+| `sw-k8s:kubernetes-architect` | `.go`, `.py` | gopls-lsp, pyright-lsp |
 
 ### LSP Best Practices
 
@@ -69,6 +88,13 @@ Language Server Protocol plugins provide semantic code understanding: go-to-defi
 2. **Use `goToDefinition` instead of grep** - 100x faster, semantically accurate
 3. **Check `getDiagnostics` after edits** - Catch type errors immediately
 4. **Use `documentSymbol` for file structure** - Navigate large files quickly
+
+### How to Verify LSP is Working
+
+LSP works transparently - you don't invoke it. To verify:
+1. Edit a code file (e.g., `.cs`, `.ts`)
+2. Claude Code automatically has access to type information, references, definitions
+3. No `/command` or `Skill()` call needed
 
 ---
 

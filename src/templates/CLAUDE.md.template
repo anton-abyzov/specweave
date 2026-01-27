@@ -78,11 +78,13 @@ IMPLEMENTATION PHASE:
   - Stripe → sw-payments:stripe-integration
   - Database → sw-backend:database-optimizer
 
-POST-IMPLEMENTATION (RECOMMENDED):
-  After writing code → Use sw:lsp-integration for code quality
-  - LSP plugins (csharp-lsp, typescript-lsp) run AUTOMATICALLY
-  - Use findReferences before refactoring
-  - Use diagnostics to catch type errors
+CODE INTELLIGENCE (AUTOMATIC - no invocation needed):
+  LSP plugins work AUTOMATICALLY when editing code files:
+  - .cs files → csharp-lsp activates
+  - .ts/.tsx files → typescript-lsp activates
+  - .py files → pyright-lsp activates
+
+  ⚠️ LSP plugins are NOT skills - they cannot be invoked!
 ```
 
 ### Why Auto-Activation May Not Trigger
@@ -109,18 +111,17 @@ Skill(sw:increment-planner)           → Plan the increment
 Skill(sw-frontend:frontend-architect) → React dashboard patterns
 Skill(sw-payments:stripe-integration) → Stripe checkout flow
 Skill(sw-backend:dotnet-backend)      → .NET API patterns
-[After writing code] → Skill(sw:lsp-integration) → Use LSP for validation
+[LSP works automatically when editing .cs, .ts, .tsx files]
 ```
 
-**Note on LSP**: LSP plugins (csharp-lsp, typescript-lsp) provide AUTOMATIC code intelligence.
-Use `sw:lsp-integration` skill for guidance on findReferences, goToDefinition, diagnostics.
+**Note on LSP**: LSP plugins (csharp-lsp, typescript-lsp) work AUTOMATICALLY when editing code - no invocation needed. Install language servers first (see https://spec-weave.com/docs/guides/lsp-integration).
 
 ### Skill Usage Checklist
 
 Before marking implementation complete, verify:
 - [ ] Used planning skills (PM, Architect) if complex feature
 - [ ] Used domain skills for each tech in the stack
-- [ ] Used LSP skill after code generation
+- [ ] LSP is working (automatic - verify by editing code files)
 - [ ] Invoked skills explicitly if auto-activation didn't trigger
 <!-- /SECTION -->
 

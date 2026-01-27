@@ -2,6 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2026-01-10
+**Updated**: 2026-01-27 (clarified LSP plugins are NOT skills)
 **Decision Makers**: SpecWeave Core Team
 **Category**: Integration
 
@@ -18,6 +19,30 @@ Currently, SpecWeave skills operate independently without leveraging these offic
 - Safety rails via hookify
 - Faster codebase search via Greptile for large repos
 - Platform-specific integrations (Vercel for frontend, Stripe for payments)
+
+## ⚠️ CRITICAL: LSP Plugins vs Skills
+
+**LSP plugins are NOT skills!** They are a fundamentally different plugin type:
+
+| Plugin Type | Has SKILL.md | How to Use | Example |
+|-------------|--------------|------------|---------|
+| **Skill plugins** | ✅ Yes | `/skill-name` or `Skill({ skill: "name" })` | sw:pm, frontend-design |
+| **LSP plugins** | ❌ No | **AUTOMATIC** - activates on file extension | csharp-lsp, typescript-lsp |
+
+LSP plugins use `lspServers` configuration in `marketplace.json`, NOT `skills/` folders:
+```json
+{
+  "name": "csharp-lsp",
+  "lspServers": {
+    "csharp-ls": {
+      "command": "csharp-ls",
+      "extensionToLanguage": { ".cs": "csharp" }
+    }
+  }
+}
+```
+
+**You CANNOT invoke LSP plugins** - they work transparently when editing code files.
 
 ## Decision
 
@@ -51,17 +76,30 @@ Since Claude Code lacks plugin introspection APIs, SpecWeave skills should:
 
 ### Plugin Mappings
 
-#### LSP Plugins (Language Intelligence)
+#### LSP Plugins (Language Intelligence) - AUTOMATIC
 
-| SpecWeave Skill/Agent | Recommended LSP | Benefit |
-|-----------------------|-----------------|---------|
-| `sw-mobile:mobile-architect` | `swift-lsp`, `kotlin-lsp` | Native iOS/Android code intelligence |
-| `sw-mobile:native-modules` | `swift-lsp`, `kotlin-lsp` | Turbo Module/JSI development |
-| `sw-frontend:frontend-architect` | `typescript-lsp` | React/Vue/Angular intelligence |
-| `sw-backend:database-optimizer` | `pyright-lsp`, `gopls-lsp`, `jdtls-lsp` | Backend language support |
-| `sw-infra:devops` | `gopls-lsp`, `pyright-lsp` | IaC and automation scripts |
-| `sw-ml:ml-engineer` | `pyright-lsp` | Python ML code intelligence |
-| `sw-kafka:kafka-architect` | `jdtls-lsp`, `gopls-lsp` | Kafka client development |
+**LSP plugins work AUTOMATICALLY** when editing code files. No invocation needed.
+
+| File Extension | LSP Plugin Activated | What It Provides |
+|----------------|---------------------|------------------|
+| `.cs` | `csharp-lsp` | C# type checking, references, definitions |
+| `.ts`, `.tsx`, `.js`, `.jsx` | `typescript-lsp` | TypeScript/JS intelligence |
+| `.py`, `.pyi` | `pyright-lsp` | Python type hints, diagnostics |
+| `.go` | `gopls-lsp` | Go code intelligence |
+| `.rs` | `rust-analyzer-lsp` | Rust analysis |
+| `.java` | `jdtls-lsp` | Java language server |
+| `.swift` | `swift-lsp` | Swift/iOS code intelligence |
+| `.kt`, `.kts` | `kotlin-lsp` | Kotlin language server |
+
+**Relevant SpecWeave skills benefit from LSP automatically:**
+
+| SpecWeave Skill/Agent | Files Edited | LSP Automatically Activates |
+|-----------------------|--------------|------------------------------|
+| `sw-mobile:mobile-architect` | `.swift`, `.kt` | swift-lsp, kotlin-lsp |
+| `sw-frontend:frontend-architect` | `.ts`, `.tsx` | typescript-lsp |
+| `sw-backend:dotnet-backend` | `.cs` | csharp-lsp |
+| `sw-backend:nodejs-backend` | `.ts`, `.js` | typescript-lsp |
+| `sw-ml:ml-engineer` | `.py` | pyright-lsp |
 
 #### Developer Tools
 

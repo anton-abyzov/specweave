@@ -283,23 +283,28 @@ SpecWeave provides built-in hooks for:
 
 **Skills SHOULD be used extensively!** They provide specialized expertise and are designed to work together.
 
-### Always Use LSP Skills After Code Generation
+### LSP: Automatic Code Intelligence (100x Faster)
 
-```bash
-# After generating C# code
-# LSP skills auto-validate:
-- Code quality issues
-- Potential bugs
-- Best practices violations
-- Performance concerns
-- Security issues
+**⚠️ LSP plugins are NOT skills!** They work AUTOMATICALLY when editing code files:
+
+| File Extension | LSP Activates | What You Get |
+|----------------|---------------|--------------|
+| `.cs` | csharp-lsp | C# type checking, references |
+| `.ts`, `.tsx` | typescript-lsp | TypeScript intelligence |
+| `.py` | pyright-lsp | Python type hints |
+| `.go` | gopls-lsp | Go code intelligence |
+
+**To trigger LSP operations** (vs text search), explicitly request them:
+```
+✅ "Use findReferences to find all usages of AppDbContext"
+✅ "Use goToDefinition to find where PaymentService is defined"
+❌ "Find where this is used" (may use Grep instead)
 ```
 
-Available LSP skills:
-- `csharp-lsp` - C#/.NET validation
-- `typescript-lsp` - TypeScript validation
-- `python-lsp` - Python validation
-- `go-lsp` - Go validation
+**Why LSP matters for large codebases** (100+ repos, living docs):
+- findReferences: ~500 tokens vs ~15K tokens with Grep (30x savings)
+- goToDefinition: ~200 tokens vs ~8K tokens (40x savings)
+- Semantic accuracy: catches aliased imports, re-exports
 
 ### Skills Work Together
 
@@ -308,7 +313,7 @@ Available LSP skills:
 /sw:increment → pm skill → architect skill
 
 # Implementation chain
-Spec complete → sw-frontend/backend skills → LSP validation
+Spec complete → sw-frontend/backend skills → LSP automatic
 
 # Payment integration
 Stripe work → sw-payments:stripe-integration (auto-activates)

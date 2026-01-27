@@ -8,6 +8,53 @@ description: LSP is enabled by default for enterprise documentation and codebase
 
 Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. **USE LSP ACTIVELY** - it's 100x faster and more accurate than grep for semantic code understanding.
 
+## Understanding the LSP Ecosystem
+
+**Two components work together:**
+
+| Component | What It Is | How It Works |
+|-----------|------------|--------------|
+| **LSP Tool** | Claude Code's built-in operations (`goToDefinition`, `findReferences`, etc.) | Always available when language server is installed |
+| **LSP Plugins** | Configuration for language servers from [official marketplace](https://github.com/anthropics/claude-plugins-official) | Work **AUTOMATICALLY** when editing code files |
+
+### How LSP Plugins Work (AUTOMATIC)
+
+LSP plugins (e.g., `csharp-lsp`, `typescript-lsp`) activate **automatically** based on file extension:
+
+```
+Edit .cs file → csharp-lsp activates → Type info, references, diagnostics available
+Edit .ts file → typescript-lsp activates → TypeScript intelligence available
+Edit .py file → pyright-lsp activates → Python type hints available
+```
+
+**You don't invoke LSP plugins** - they work transparently in the background.
+
+## Why LSP is a Key SpecWeave Feature
+
+### Token & Cost Efficiency (100x savings)
+
+```
+SCENARIO: "Find all usages of calculateTax() across codebase"
+
+WITHOUT LSP:                          WITH LSP:
+├── Grep for pattern (~45s)           ├── findReferences (~50ms)
+├── Read 10-15 files (~10K tokens)    ├── Returns exact locations (~500 bytes)
+├── Parse context manually            ├── Includes types & signatures
+├── May miss aliased imports          ├── Catches ALL usages semantically
+└── Total: ~45s, 10K+ tokens          └── Total: ~50ms, ~500 tokens
+```
+
+**Result**: 100x faster, 20x fewer tokens, semantically accurate.
+
+### When LSP Saves You Money
+
+| Operation | Without LSP | With LSP | Savings |
+|-----------|-------------|----------|---------|
+| Find all references | Read ~15 files (15K tokens) | LSP query (500 tokens) | 30x |
+| Check type errors | Build + parse output (5K) | getDiagnostics (1K) | 5x |
+| Navigate to definition | Grep + verify (8K) | goToDefinition (200) | 40x |
+| Map module structure | Read entire file (10K) | documentSymbol (1K) | 10x |
+
 ## Smart LSP Integration (ADR-0222)
 
 **LSP is EXEMPT from the "Code First, Tools Second" rule** (ADR-0140) because:
@@ -40,6 +87,73 @@ Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. 
 | Code quality | `getDiagnostics` | "Use getDiagnostics on this file to check for issues" |
 
 **ALWAYS use findReferences before any refactoring operation.**
+
+## Real-World Scenarios: When LSP Gets Used
+
+### During SpecWeave Increment Implementation
+
+| Phase | What Happens | LSP Involvement |
+|-------|--------------|-----------------|
+| **Planning** (`/sw:pm`, `/sw:architect`) | Analyzing existing codebase | LSP maps dependencies, types |
+| **Implementation** (`/sw:do`) | Writing code | LSP provides diagnostics automatically |
+| **Refactoring** | Changing existing code | `findReferences` before ANY change |
+| **Code Review** | Verifying changes | `getDiagnostics` to catch errors |
+| **Living Docs** (`/sw:living-docs`) | Generating documentation | LSP extracts accurate API signatures |
+
+### Scenario 1: Renaming a Function
+
+```
+User: "Rename calculateTax to computeTax"
+
+WITHOUT LSP:
+1. Grep for "calculateTax" (finds text matches)
+2. Read each file to verify it's the right function
+3. May miss: re-exports, dynamic imports, interface implementations
+4. Risk: Breaking changes not caught
+
+WITH LSP:
+1. findReferences("calculateTax") → Exact list of ALL usages
+2. Rename with confidence
+3. getDiagnostics() → Verify no type errors
+4. Zero risk of missing usages
+```
+
+### Scenario 2: Understanding Unfamiliar Code
+
+```
+User: "How does the PaymentService work?"
+
+WITHOUT LSP:
+1. Grep for "PaymentService"
+2. Read the class file (~500 lines)
+3. Grep for imports to find dependencies
+4. Read dependency files
+5. Total: ~15K tokens, ~2 minutes
+
+WITH LSP:
+1. documentSymbol(PaymentService) → All methods, properties
+2. hover(processPayment) → Type signature + JSDoc
+3. findReferences(PaymentService) → Where it's used
+4. Total: ~2K tokens, ~5 seconds
+```
+
+### Scenario 3: Adding a Feature to Existing Code
+
+```
+User: "Add logging to all database operations"
+
+WITHOUT LSP:
+1. Grep for "database" patterns
+2. Read each file to understand context
+3. Manually identify all DB operations
+4. Risk: Missing some operations
+
+WITH LSP:
+1. findReferences(DatabaseService) → All usages
+2. documentSymbol(DatabaseService) → All methods
+3. getDiagnostics() after changes → Catch type errors
+4. Complete coverage, type-safe changes
+```
 
 ## LSP Operations
 
