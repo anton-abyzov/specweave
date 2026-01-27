@@ -1,6 +1,6 @@
 ---
 name: mobile-debugging
-description: Expert in debugging React Native and Expo mobile applications. Covers React DevTools, Flipper, Chrome DevTools, network debugging, crash analysis, error boundaries, debugging native modules, remote debugging, breakpoints, console logging strategies. Activates for debugging mobile app, react native debugging, flipper, devtools, breakpoints, crash, error, remote debugging, network request debugging, console.log, debugger, react native debugger.
+description: React Native debugging with Flipper, React DevTools, and crash analysis. Use for mobile app debugging or network request issues.
 ---
 
 # Mobile Debugging Expert

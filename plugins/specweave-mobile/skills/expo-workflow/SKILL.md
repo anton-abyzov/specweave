@@ -1,6 +1,6 @@
 ---
 name: expo-workflow
-description: Expert in Expo SDK 54+ development workflows, EAS Build, EAS Update, native tabs, Expo Router v6, expo-video, expo-audio, dev clients, expo-cli commands, app configuration, and deployment strategies. Activates for expo, expo go, eas build, eas update, expo config, app.json, eas.json, expo dev client, expo prebuild, expo eject, over-the-air updates, expo doctor, expo install, managed workflow, bare workflow, expo router, native tabs, liquid glass.
+description: Expo SDK 54+ workflows, EAS Build/Update, Expo Router v6, native tabs. Use for Expo development or OTA update strategies.
 ---
 
 # Expo Workflow Expert (SDK 54+)

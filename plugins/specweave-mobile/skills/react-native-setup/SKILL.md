@@ -1,6 +1,6 @@
 ---
 name: react-native-setup
-description: Expert in React Native 0.83+ and Expo SDK 54+ environment setup. Helps with Node.js 20+, Xcode 16.1+, Android Studio, watchman, CocoaPods, EAS Build, simulators, emulators, and troubleshooting. Activates for environment setup, installation issues, xcode setup, android studio, simulators, emulators, react-native init, expo init, development environment, SDK configuration, EAS Build, development builds.
+description: React Native 0.83+ and Expo SDK 54+ environment setup. Xcode, Android Studio, CocoaPods, EAS Build troubleshooting.
 ---
 
 # React Native Setup Expert (2025)

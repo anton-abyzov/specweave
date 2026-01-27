@@ -1,6 +1,6 @@
 ---
 name: device-testing
-description: Expert in React Native testing strategies including unit tests with Jest, integration tests, E2E tests with Detox, component testing with React Native Testing Library, snapshot testing, mocking native modules, testing on simulators and real devices. Activates for testing, jest, detox, e2e, unit test, integration test, component test, test runner, mock, snapshot test, testing library, react native testing library, test automation.
+description: React Native testing with Jest, Detox E2E, and React Native Testing Library. Use for mobile test strategies or native module mocking.
 ---
 
 # Device Testing Expert
