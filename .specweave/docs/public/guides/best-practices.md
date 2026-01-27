@@ -279,6 +279,54 @@ SpecWeave provides built-in hooks for:
 - Syncing to external tools (GitHub/JIRA)
 - Living docs maintenance
 
+## Skills: Your AI Expert Panel
+
+**Skills SHOULD be used extensively!** They provide specialized expertise and are designed to work together.
+
+### Always Use LSP Skills After Code Generation
+
+```bash
+# After generating C# code
+# LSP skills auto-validate:
+- Code quality issues
+- Potential bugs
+- Best practices violations
+- Performance concerns
+- Security issues
+```
+
+Available LSP skills:
+- `csharp-lsp` - C#/.NET validation
+- `typescript-lsp` - TypeScript validation
+- `python-lsp` - Python validation
+- `go-lsp` - Go validation
+
+### Skills Work Together
+
+```markdown
+# Planning chain
+/sw:increment → pm skill → architect skill
+
+# Implementation chain
+Spec complete → sw-frontend/backend skills → LSP validation
+
+# Payment integration
+Stripe work → sw-payments:stripe-integration (auto-activates)
+
+# Kubernetes deployment
+K8s work → sw-k8s:kubernetes-architect (auto-activates)
+```
+
+### When Skills Auto-Activate
+
+Skills trigger on keywords in their descriptions:
+- "React dashboard" → `sw-frontend:frontend-architect`
+- ".NET API" → `sw-backend:dotnet-backend`
+- "Stripe checkout" → `sw-payments:stripe-integration`
+- "database optimization" → `sw-backend:database-optimizer`
+
+**If a skill doesn't auto-activate**, invoke it explicitly with `Skill()` tool.
+
 ## Common Failure Patterns (Avoid These!)
 
 | Problem | Cause | Fix |
