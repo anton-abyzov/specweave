@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.175 - Reliable Plugin Detection)
+# SpecWeave UserPromptSubmit Hook (v1.0.177 - Skill Chaining Reminder)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.177: SKILL CHAINING REMINDER - Add explicit guidance in SKILL FIRST message
+#   * "SKILL FIRST" does NOT mean "only one skill"
+#   * Shows domain skills to use after sw:increment-planner
+#   * Points to CLAUDE.md "MANDATORY: Skill Chaining" section
 # - v1.0.175: CRITICAL FIX - Use installed_plugins.json as SOURCE OF TRUTH
 #   * Reads ~/.claude/plugins/installed_plugins.json directly (eliminates false restart warnings)
 #   * `claude plugin list` can have timing/buffering issues → unreliable for detection
@@ -565,7 +569,19 @@ Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"${ESCAPED_PROMPT}\\\" })
 2. ✅ THEN proceed with implementation normally
 
 **Detection**: Feature request (confidence: ${INC_CONF})
-**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}"
+**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}
+
+---
+
+⚠️ **SKILL CHAINING REQUIRED** - \\\"SKILL FIRST\\\" does NOT mean \\\"only one skill\\\"!
+
+After sw:increment-planner, ALSO invoke domain skills for your tech stack:
+- React/Vue/Angular → \\\`sw-frontend:frontend-architect\\\`
+- .NET/C# → \\\`sw-backend:dotnet-backend\\\`
+- Stripe → \\\`sw-payments:stripe-integration\\\`
+- After code → LSP skills for validation
+
+See CLAUDE.md section \\\"MANDATORY: Skill Chaining\\\" for full pattern."
                       output_approve_with_context "$MSG"
                       exit 0
                     else

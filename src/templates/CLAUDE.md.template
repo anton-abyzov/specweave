@@ -58,6 +58,72 @@ plugins/specweave/
 **Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
 <!-- /SECTION -->
 
+<!-- SECTION:skill-chaining required -->
+## ⚠️ MANDATORY: Skill Chaining During Implementation
+
+**Skills are NOT "one and done".** You MUST use multiple skills throughout implementation.
+
+### The Pattern (FOLLOW THIS)
+
+```
+PLANNING PHASE:
+  Hook says "SKILL FIRST" → Call sw:increment-planner
+  Then ALSO invoke: sw:pm (specs), sw:architect (design)
+
+IMPLEMENTATION PHASE:
+  For each domain, invoke the relevant skill:
+  - React/Vue/Angular → sw-frontend:frontend-architect
+  - .NET/C# → sw-backend:dotnet-backend
+  - Node.js → sw-backend:nodejs-backend
+  - Stripe → sw-payments:stripe-integration
+  - Database → sw-backend:database-optimizer
+
+POST-IMPLEMENTATION (RECOMMENDED):
+  After writing code → Use sw:lsp-integration for code quality
+  - LSP plugins (csharp-lsp, typescript-lsp) run AUTOMATICALLY
+  - Use findReferences before refactoring
+  - Use diagnostics to catch type errors
+```
+
+### Why Auto-Activation May Not Trigger
+
+Per [official Claude Code docs](https://code.claude.com/docs/en/skills):
+1. Description keywords don't match user's exact phrasing
+2. Character budget exceeded (15K default, many skills loaded)
+3. Multi-domain requests dilute keyword matching
+
+**Solution**: When auto-activation fails, EXPLICITLY invoke with `Skill({ skill: "name" })`
+
+### Example: Multi-Domain Request
+
+User says: "Create React dashboard with Stripe checkout and .NET backend"
+
+**WRONG** (what I did before):
+```
+Skill(sw:increment-planner) → Implement everything directly
+```
+
+**CORRECT** (what I should do):
+```
+Skill(sw:increment-planner)           → Plan the increment
+Skill(sw-frontend:frontend-architect) → React dashboard patterns
+Skill(sw-payments:stripe-integration) → Stripe checkout flow
+Skill(sw-backend:dotnet-backend)      → .NET API patterns
+[After writing code] → Skill(sw:lsp-integration) → Use LSP for validation
+```
+
+**Note on LSP**: LSP plugins (csharp-lsp, typescript-lsp) provide AUTOMATIC code intelligence.
+Use `sw:lsp-integration` skill for guidance on findReferences, goToDefinition, diagnostics.
+
+### Skill Usage Checklist
+
+Before marking implementation complete, verify:
+- [ ] Used planning skills (PM, Architect) if complex feature
+- [ ] Used domain skills for each tech in the stack
+- [ ] Used LSP skill after code generation
+- [ ] Invoked skills explicitly if auto-activation didn't trigger
+<!-- /SECTION -->
+
 <!-- SECTION:start -->
 ## Getting Started
 
