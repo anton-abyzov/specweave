@@ -129,7 +129,7 @@ Skill({ skill: "sw-frontend:frontend-architect" }) // React patterns
 Skill({ skill: "sw-backend:dotnet-backend" })     // .NET patterns
 Skill({ skill: "sw-payments:stripe-integration" }) // Stripe patterns
 // After code generation:
-Skill({ skill: "sw:lsp-integration" })            // Code quality validation
+// LSP works AUTOMATICALLY - use "findReferences" and "goToDefinition" for code quality
 ```
 
 ## Recommended Values

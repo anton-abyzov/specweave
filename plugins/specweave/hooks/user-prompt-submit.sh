@@ -246,6 +246,43 @@ This ensures plugins and context are properly scoped to the new project.
 "
 fi
 
+# ==============================================================================
+# LSP LANGUAGE SERVER CHECK (v1.0.179) - One-time warning for missing servers
+# ==============================================================================
+# Reads results from background lsp-check.sh (spawned by session-start.sh)
+# Shows warning ONCE per session if language servers are missing
+LSP_WARNING_MSG=""
+LSP_STATE_FILE=".specweave/state/lsp-check.json"
+if [[ -f "$LSP_STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
+  LSP_STATUS=$(jq -r '.status // "ok"' "$LSP_STATE_FILE" 2>/dev/null)
+  LSP_WARNED=$(jq -r '.warned // false' "$LSP_STATE_FILE" 2>/dev/null)
+
+  if [[ "$LSP_STATUS" == "missing" ]] && [[ "$LSP_WARNED" != "true" ]]; then
+    # Build warning message from missing servers
+    MISSING_SERVERS=$(jq -r '.missing[] | "- **\(.language)**: `\(.install)`"' "$LSP_STATE_FILE" 2>/dev/null)
+
+    if [[ -n "$MISSING_SERVERS" ]]; then
+      LSP_WARNING_MSG="⚡ **LSP: Install language servers for 100x faster code intelligence**
+
+The following language servers are not installed:
+$MISSING_SERVERS
+
+LSP provides semantic code understanding (findReferences, goToDefinition, diagnostics).
+Without it, Claude uses text search which is slower and less accurate.
+
+📖 Guide: https://spec-weave.com/docs/guides/lsp-integration
+
+---
+
+"
+      # Mark as warned so we don't show again this session
+      # Use a temp file to avoid jq in-place issues
+      TMP_FILE=$(mktemp)
+      jq '.warned = true' "$LSP_STATE_FILE" > "$TMP_FILE" 2>/dev/null && mv "$TMP_FILE" "$LSP_STATE_FILE" 2>/dev/null
+    fi
+  fi
+fi
+
 # Only run if features are enabled and not disabled via env
 if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
   if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] || [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
@@ -478,6 +515,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 AUTOLOAD_PREFIX=""
                 # v1.0.166: Prepend external folder warning if detected
                 [[ -n "$EXTERNAL_FOLDER_DETECTED" ]] && AUTOLOAD_PREFIX="${EXTERNAL_FOLDER_DETECTED}"
+                # v1.0.179: Prepend LSP warning if language servers missing
+                [[ -n "$LSP_WARNING_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${LSP_WARNING_MSG}"
                 [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${AUTOLOAD_PLUGINS_MSG}
 
 "
@@ -579,7 +618,7 @@ After sw:increment-planner, ALSO invoke domain skills for your tech stack:
 - React/Vue/Angular → \\\`sw-frontend:frontend-architect\\\`
 - .NET/C# → \\\`sw-backend:dotnet-backend\\\`
 - Stripe → \\\`sw-payments:stripe-integration\\\`
-- After code → LSP skills for validation
+- After code → LSP works automatically (use findReferences, goToDefinition)
 
 See CLAUDE.md section \\\"MANDATORY: Skill Chaining\\\" for full pattern."
                       output_approve_with_context "$MSG"
