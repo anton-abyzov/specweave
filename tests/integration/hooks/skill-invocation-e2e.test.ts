@@ -215,8 +215,8 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'csharp-lsp:csharp-lsp',
-          reason: 'C# development requires language server support',
+          skill: 'sw-backend:dotnet-backend',
+          reason: '.NET development requires backend skill for patterns and best practices',
           mandatory: true
         }
       });
@@ -225,9 +225,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should include explicit Skill tool syntax
+      // Should include explicit Skill tool syntax (note: LSP plugins work automatically, not as skills)
       expect(additionalContext).toContain('Skill({');
-      expect(additionalContext).toContain('csharp-lsp:csharp-lsp');
+      expect(additionalContext).toContain('sw-backend:dotnet-backend');
     });
 
     it('should include MANDATORY label and "Do NOT skip" warning', async () => {

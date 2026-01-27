@@ -101,10 +101,10 @@ describe('Template Validation Tests', () => {
       expect(claudeContent).toContain('## ⚠️ MANDATORY: Skill Chaining During Implementation');
     });
 
-    test('should explain skill chaining pattern with planning, implementation, and post-implementation phases', () => {
+    test('should explain skill chaining pattern with planning, implementation, and code intelligence phases', () => {
       expect(claudeContent).toContain('PLANNING PHASE');
       expect(claudeContent).toContain('IMPLEMENTATION PHASE');
-      expect(claudeContent).toContain('POST-IMPLEMENTATION');
+      expect(claudeContent).toContain('CODE INTELLIGENCE');
     });
 
     test('should warn that SKILL FIRST does not mean only one skill', () => {
@@ -130,9 +130,9 @@ describe('Template Validation Tests', () => {
     });
 
     test('should document LSP integration correctly', () => {
-      // LSP plugins run automatically, sw:lsp-integration skill provides guidance
+      // LSP plugins run automatically - no skill invocation needed
       expect(claudeContent).toMatch(/LSP plugins.*AUTOMATIC/i);
-      expect(claudeContent).toContain('sw:lsp-integration');
+      expect(claudeContent).toMatch(/LSP plugins are NOT skills/i);
     });
   });
 

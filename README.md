@@ -108,6 +108,27 @@ Your project root stays clean. No scattered markdown files.
 
 Agents auto-activate based on context. Mention "security" → security expertise loads.
 
+### LSP Integration (100x Faster Code Understanding)
+
+SpecWeave leverages **Language Server Protocol** for semantic code intelligence:
+
+| Operation | Without LSP | With LSP |
+|-----------|-------------|----------|
+| Find all references | Grep + read 15 files (~10K tokens) | Semantic query (~500 tokens) |
+| Check type errors | Build + parse output (~5K tokens) | getDiagnostics (~1K tokens) |
+| Navigate to definition | Grep + verify (~8K tokens) | goToDefinition (~200 tokens) |
+
+**LSP plugins work automatically** when editing code. Edit a `.cs` file → `csharp-lsp` activates. Edit `.ts` → `typescript-lsp` activates. No configuration needed.
+
+```bash
+# Install language servers for your stack
+npm install -g typescript-language-server typescript  # TypeScript
+pip install pyright                                    # Python
+dotnet tool install -g csharp-ls                      # C#
+```
+
+**[Full LSP Guide →](https://spec-weave.com/docs/guides/lsp-integration)**
+
 ---
 
 ## Install
