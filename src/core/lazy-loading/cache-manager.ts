@@ -359,10 +359,11 @@ export class PluginCacheManager {
 
   /**
    * Read state file
+   * v1.0.176: Explicitly picks only known fields to strip orphaned data (e.g., old cachedPlugins)
    */
   readState(): CacheState {
     const defaultState: CacheState = {
-      version: '1.0.157',
+      version: '1.0.176',
       lastUpdated: new Date().toISOString(),
       loadedPlugins: [],
       totalLoads: 0,
@@ -371,7 +372,14 @@ export class PluginCacheManager {
     if (!fs.existsSync(this.statePath)) return defaultState;
 
     try {
-      return { ...defaultState, ...JSON.parse(fs.readFileSync(this.statePath, 'utf8')) };
+      const raw = JSON.parse(fs.readFileSync(this.statePath, 'utf8'));
+      // CRITICAL: Only pick known fields to avoid preserving orphaned data (cachedPlugins, etc.)
+      return {
+        version: raw.version ?? defaultState.version,
+        lastUpdated: raw.lastUpdated ?? defaultState.lastUpdated,
+        loadedPlugins: Array.isArray(raw.loadedPlugins) ? raw.loadedPlugins : defaultState.loadedPlugins,
+        totalLoads: typeof raw.totalLoads === 'number' ? raw.totalLoads : defaultState.totalLoads,
+      };
     } catch {
       return defaultState;
     }
@@ -392,4 +400,53 @@ export class PluginCacheManager {
       availablePlugins: this.getMarketplacePlugins().length,
     };
   }
+
+  /**
+   * Clean up orphaned data from state file (v1.0.176)
+   * Removes cachedPlugins and other legacy fields, normalizes plugin names to sw-* format
+   * @returns true if cleanup was performed
+   */
+  cleanupOrphanedState(): boolean {
+    if (!fs.existsSync(this.statePath)) return false;
+
+    try {
+      const rawContent = fs.readFileSync(this.statePath, 'utf8');
+      const raw = JSON.parse(rawContent);
+
+      // Check if cleanup is needed
+      const hasOrphanedData = 'cachedPlugins' in raw || 'pluginStats' in raw || 'cacheVersion' in raw || 'lazyMode' in raw;
+      const hasWrongNames = Array.isArray(raw.loadedPlugins) &&
+        raw.loadedPlugins.some((p: string) => p.startsWith('specweave-'));
+      const hasDuplicates = Array.isArray(raw.loadedPlugins) &&
+        raw.loadedPlugins.length !== new Set(raw.loadedPlugins.map((p: string) =>
+          p.startsWith('specweave-') ? 'sw-' + p.slice(10) : p.startsWith('specweave') ? 'sw' : p
+        )).size;
+
+      if (!hasOrphanedData && !hasWrongNames && !hasDuplicates) {
+        return false;
+      }
+
+      // Read clean state (strips orphaned data) and normalize plugin names
+      const cleanState = this.readState();
+      cleanState.loadedPlugins = [...new Set(cleanState.loadedPlugins.map(directoryToMarketplaceName))];
+      cleanState.version = '1.0.176';
+
+      fs.writeFileSync(this.statePath, JSON.stringify(cleanState, null, 2));
+      logger.debug(`Cleaned orphaned data from plugins-loaded.json`);
+      return true;
+    } catch (error) {
+      logger.debug(`Failed to cleanup state: ${error}`);
+      return false;
+    }
+  }
+}
+
+/**
+ * Clean up global plugins-loaded.json state file
+ * Call this during specweave update/refresh-marketplace
+ * @returns true if cleanup was performed
+ */
+export function cleanupGlobalPluginState(): boolean {
+  const manager = new PluginCacheManager();
+  return manager.cleanupOrphanedState();
 }
