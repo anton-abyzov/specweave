@@ -1,6 +1,6 @@
 ---
 name: version-aligner
-description: Aligns versions across multiple repositories according to release strategy (lockstep, independent, umbrella). Handles semantic versioning constraints, detects version conflicts, suggests version bumps based on conventional commits, validates cross-repo compatibility, manages version matrices for umbrella releases. Activates for version alignment, align versions, version sync, semver, version conflicts, version bump, version compatibility, cross-repo versions, umbrella version matrix, lockstep versioning.
+description: Multi-repo version alignment - lockstep/independent/umbrella strategies, semver constraints, version conflict detection.
 ---
 
 # Version Aligner

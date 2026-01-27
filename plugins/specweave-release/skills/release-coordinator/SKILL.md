@@ -1,6 +1,6 @@
 ---
 name: release-coordinator
-description: Coordinates multi-repository releases with dependency management, release order orchestration, and cross-repo validation. Handles coordinated releases (lockstep versioning), independent releases, and umbrella versioning. Creates release increments spanning multiple repositories, manages release dependencies (repo A must release before B), generates comprehensive release plans, validates pre-release checks across all repos. Activates for coordinate releases, multi-repo release, release dependencies, release order, cross-repo release, synchronized release, orchestrate release, release planning, multi-service release, coordinated deployment.
+description: Multi-repo release coordination - dependency management, release order orchestration, cross-repo validation. Use for synchronized multi-service releases.
 ---
 
 # Release Coordinator

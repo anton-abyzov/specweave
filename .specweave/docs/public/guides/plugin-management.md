@@ -257,6 +257,56 @@ Example output:
 [2026-01-25T00:10:36] plugins | installed=sw-frontend,sw-backend | already=none
 ```
 
+## Character Budget & When to Disable Plugins
+
+### Understanding the 15K Character Limit
+
+Claude Code has a **15,000 character default budget** for skill descriptions. When too many plugins are loaded, skills get truncated and auto-activation becomes unreliable.
+
+**Check total description size:**
+```bash
+find ~/.claude/plugins/cache -name "SKILL.md" -exec grep -h "^description:" {} \; 2>/dev/null | wc -c
+```
+
+**Increase budget if needed:**
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
+```
+
+### Recommended Plugin Sets by Project Type
+
+| Project Type | Plugins | ~Description Chars |
+|--------------|---------|-------------------|
+| **Core only** | sw | ~5,000 |
+| **Web dev** | sw + frontend + backend | ~12,000 |
+| **Full stack** | sw + frontend + backend + infra + testing | ~20,000 |
+| **Mobile** | sw + mobile + payments | ~10,000 |
+| **Everything** | All 24 plugins | ~56,000 (never fits!) |
+
+### Disabling Unused Plugins
+
+**Disable plugins not needed for current project:**
+```bash
+claude plugin disable sw-ml@specweave        # If not doing ML
+claude plugin disable sw-kafka@specweave     # If not using Kafka
+claude plugin disable sw-kubernetes@specweave # If not using K8s
+claude plugin disable sw-mobile@specweave    # If not building mobile
+```
+
+### For Multi-Domain Requests
+
+For "React + .NET + Stripe" type requests, auto-activation is unreliable. Use explicit invocation:
+
+```typescript
+// More reliable than auto-activation
+Skill({ skill: "sw-frontend:frontend-architect" })
+Skill({ skill: "sw-backend:dotnet-backend" })
+Skill({ skill: "sw-payments:stripe-integration" })
+```
+
+See [Skill Truncation Troubleshooting](../troubleshooting/skill-truncation-budget.md) for details.
+
 ## Best Practices
 
 ### Minimal Installation

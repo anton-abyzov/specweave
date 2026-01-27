@@ -58,8 +58,24 @@ This skill uses phased loading to prevent context bloat. Load only what you need
 
 1. **User describes feature** → Read `phases/01-research.md`
 2. **Requirements clear** → Read `phases/02-spec-creation.md` + `templates/spec-template.md`
-3. **Spec written** → Coordinate with architect for plan.md
+3. **Spec written** → **INVOKE ARCHITECT SKILL** (see below)
 4. **Plan ready** → Read `phases/03-validation.md`
+
+## ⚠️ MANDATORY: Skill Chaining
+
+**After completing spec.md, you MUST invoke the Architect skill:**
+
+```typescript
+// After writing spec.md, ALWAYS invoke:
+Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX" })
+```
+
+| Your Output | Next Skill to Invoke | Why |
+|-------------|---------------------|-----|
+| spec.md complete | `sw:architect` | Creates plan.md with ADRs |
+| Multi-domain request | Domain skills | `sw-frontend:*`, `sw-backend:*` |
+
+**DO NOT** just say "coordinate with architect" - **INVOKE the skill explicitly!**
 
 ## Token Budget Per Response
 

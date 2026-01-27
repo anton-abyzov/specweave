@@ -1,6 +1,6 @@
 ---
 name: stakeholder-docs
-description: Generate executive-friendly documentation views from technical living docs. Creates business summaries, progress dashboards, feature status reports, and non-technical overviews. Activates for stakeholder, executive summary, business view, non-technical, management report, progress dashboard, business impact, ROI, feature status, quarterly report, executive overview, business metrics, KPI dashboard, status report, project status, feature progress, delivery status, release summary, business documentation, non-technical summary, leadership update, board report, investor update, customer facing docs, sales documentation.
+description: Executive documentation from technical living docs - business summaries, progress dashboards, feature status reports. Use for stakeholder communication.
 allowed-tools:
   - Read
   - Write

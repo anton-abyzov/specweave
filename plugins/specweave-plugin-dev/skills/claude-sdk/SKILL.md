@@ -1,6 +1,6 @@
 ---
 name: claude-sdk
-description: Expert knowledge of Claude Code SDK, API, tools (Read, Write, Edit, Bash, Grep, Glob), agent tools (Task, Skill, SlashCommand), plugin hooks, MCP integration, and Claude Code extension development. Activates for claude sdk, claude api, claude tools, Read tool, Write tool, Edit tool, Task tool, Skill tool, claude hooks, MCP, claude code api.
+description: Claude Code SDK - tools (Read, Write, Edit, Bash), agent tools (Task, Skill), hooks, and MCP integration. Use for Claude Code extension development.
 ---
 
 # Claude SDK Expert
