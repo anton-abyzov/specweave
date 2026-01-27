@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.175" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.177" sections="header,skill-chaining,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
@@ -25,20 +25,24 @@ If hook says **"PLUGINS INSTALLED - RESTART REQUIRED"**:
 
 **DO NOT:** "Just help anyway", "Start while they restart", "Do a quick thing first"
 
-### 🎯 SKILL FIRST = Call Skill Before Implementation
+### 🎯 SKILL FIRST = Start With This Skill, Then Use MORE
 
 If hook says **"SKILL FIRST"** or shows a Skill tool call to make:
 
 **ORDER MATTERS:**
 1. ✅ Call the Skill tool FIRST (exactly as shown in hook)
-2. ✅ THEN proceed with implementation normally
+2. ✅ THEN invoke ADDITIONAL domain skills for each technology
+3. ✅ THEN proceed with implementation
+4. ✅ AFTER code generation, invoke LSP skills for validation
 
-**DO NOT start with:**
-- ❌ "Let me first explore the codebase..."
-- ❌ Writing files before calling Skill
-- ❌ Extensive analysis before calling Skill
+**"SKILL FIRST" does NOT mean "only use one skill"!**
 
-**The skill handles planning. Call it first, then you're free to implement.**
+**DO NOT:**
+- ❌ Call one skill and then implement everything directly
+- ❌ Skip domain skills (sw-frontend, sw-backend, sw-payments)
+- ❌ Skip LSP validation after writing code
+
+**See "MANDATORY: Skill Chaining" section below for the full pattern.**
 
 ### Why This Matters
 
@@ -50,7 +54,7 @@ Hooks exist to enforce workflow discipline. If you ignore them:
 **This is non-negotiable. No exceptions. No "just this once".**
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.175" -->
+<!-- SW:SECTION:header version="1.0.176" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -108,7 +112,73 @@ plugins/specweave/
 **Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
 <!-- SW:END:claude-code-concepts -->
 
-<!-- SW:SECTION:start version="1.0.175" -->
+<!-- SW:SECTION:skill-chaining version="1.0.177" -->
+## ⚠️ MANDATORY: Skill Chaining During Implementation
+
+**Skills are NOT "one and done".** You MUST use multiple skills throughout implementation.
+
+### The Pattern (FOLLOW THIS)
+
+```
+PLANNING PHASE:
+  Hook says "SKILL FIRST" → Call sw:increment-planner
+  Then ALSO invoke: sw:pm (specs), sw:architect (design)
+
+IMPLEMENTATION PHASE:
+  For each domain, invoke the relevant skill:
+  - React/Vue/Angular → sw-frontend:frontend-architect
+  - .NET/C# → sw-backend:dotnet-backend
+  - Node.js → sw-backend:nodejs-backend
+  - Stripe → sw-payments:stripe-integration
+  - Database → sw-backend:database-optimizer
+
+POST-IMPLEMENTATION (RECOMMENDED):
+  After writing code → Use sw:lsp-integration for code quality
+  - LSP plugins (csharp-lsp, typescript-lsp) run AUTOMATICALLY
+  - Use findReferences before refactoring
+  - Use diagnostics to catch type errors
+```
+
+### Why Auto-Activation May Not Trigger
+
+Per [official Claude Code docs](https://code.claude.com/docs/en/skills):
+1. Description keywords don't match user's exact phrasing
+2. Character budget exceeded (15K default, many skills loaded)
+3. Multi-domain requests dilute keyword matching
+
+**Solution**: When auto-activation fails, EXPLICITLY invoke with `Skill({ skill: "name" })`
+
+### Example: Multi-Domain Request
+
+User says: "Create React dashboard with Stripe checkout and .NET backend"
+
+**WRONG** (what I did before):
+```
+Skill(sw:increment-planner) → Implement everything directly
+```
+
+**CORRECT** (what I should do):
+```
+Skill(sw:increment-planner)           → Plan the increment
+Skill(sw-frontend:frontend-architect) → React dashboard patterns
+Skill(sw-payments:stripe-integration) → Stripe checkout flow
+Skill(sw-backend:dotnet-backend)      → .NET API patterns
+[After writing code] → Skill(sw:lsp-integration) → Use LSP for validation
+```
+
+**Note on LSP**: LSP plugins (csharp-lsp, typescript-lsp) provide AUTOMATIC code intelligence.
+Use `sw:lsp-integration` skill for guidance on findReferences, goToDefinition, diagnostics.
+
+### Skill Usage Checklist
+
+Before marking implementation complete, verify:
+- [ ] Used planning skills (PM, Architect) if complex feature
+- [ ] Used domain skills for each tech in the stack
+- [ ] Used LSP skill after code generation
+- [ ] Invoked skills explicitly if auto-activation didn't trigger
+<!-- SW:END:skill-chaining -->
+
+<!-- SW:SECTION:start version="1.0.176" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -118,7 +188,7 @@ plugins/specweave/
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.175" -->
+<!-- SW:SECTION:autodetect version="1.0.176" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -128,7 +198,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.175" -->
+<!-- SW:SECTION:metarule version="1.0.176" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -139,7 +209,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.175" -->
+<!-- SW:SECTION:rules version="1.0.176" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -150,7 +220,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.175" -->
+<!-- SW:SECTION:workflow version="1.0.176" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -170,7 +240,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.175" -->
+<!-- SW:SECTION:reflect version="1.0.176" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -185,7 +255,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ### Logging
 - **2026-01-27**: // Do NOT verify immediately - show dialog instead
 
-<!-- SW:SECTION:context version="1.0.175" -->
+<!-- SW:SECTION:context version="1.0.176" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -193,7 +263,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.175" -->
+<!-- SW:SECTION:structure version="1.0.176" -->
 ## Structure
 
 ```
@@ -208,7 +278,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.175" -->
+<!-- SW:SECTION:taskformat version="1.0.176" -->
 ## Task Format
 
 ```markdown
@@ -218,7 +288,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.175" -->
+<!-- SW:SECTION:secrets version="1.0.176" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -232,7 +302,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.175" -->
+<!-- SW:SECTION:syncing version="1.0.176" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -242,7 +312,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.175" -->
+<!-- SW:SECTION:testing version="1.0.176" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -254,7 +324,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.175" -->
+<!-- SW:SECTION:tdd version="1.0.176" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -315,7 +385,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.175" -->
+<!-- SW:SECTION:api version="1.0.176" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -323,13 +393,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.175" -->
+<!-- SW:SECTION:limits version="1.0.176" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.175" -->
+<!-- SW:SECTION:troubleshooting version="1.0.176" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -345,7 +415,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.175" -->
+<!-- SW:SECTION:lazyloading version="1.0.176" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -359,7 +429,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.175" -->
+<!-- SW:SECTION:principles version="1.0.176" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -368,7 +438,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.175" -->
+<!-- SW:SECTION:linking version="1.0.176" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -376,7 +446,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.175" -->
+<!-- SW:SECTION:mcp version="1.0.176" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -398,7 +468,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.175" -->
+<!-- SW:SECTION:auto version="1.0.176" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -415,7 +485,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.175" -->
+<!-- SW:SECTION:docs version="1.0.176" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)

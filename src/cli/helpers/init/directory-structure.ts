@@ -43,11 +43,11 @@ export async function createDirectoryStructure(
   options?: { projectName?: string; scanExistingDocs?: boolean }
 ): Promise<void> {
   // Core directories (created first for immediate availability)
+  // NOTE: .specweave/memory/ is DEPRECATED (v2.0) - learnings now go to CLAUDE.md
   const coreDirectories = [
     '.specweave/increments',
     '.specweave/cache',
     '.specweave/state',
-    '.specweave/memory',  // For category-based learnings (reflect feature)
     '.specweave/logs/reflect',  // For reflection logs
   ];
 

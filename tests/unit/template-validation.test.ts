@@ -95,6 +95,45 @@ describe('Template Validation Tests', () => {
       // Emergency rule is part of Rules section
       expect(claudeContent).toMatch(/Emergency.*emergency mode/);
     });
+
+    test('should contain Skill Chaining section', () => {
+      // v1.0.177: MANDATORY skill chaining guidance
+      expect(claudeContent).toContain('## ⚠️ MANDATORY: Skill Chaining During Implementation');
+    });
+
+    test('should explain skill chaining pattern with planning, implementation, and post-implementation phases', () => {
+      expect(claudeContent).toContain('PLANNING PHASE');
+      expect(claudeContent).toContain('IMPLEMENTATION PHASE');
+      expect(claudeContent).toContain('POST-IMPLEMENTATION');
+    });
+
+    test('should warn that SKILL FIRST does not mean only one skill', () => {
+      expect(claudeContent).toMatch(/Skills are NOT.*one and done/);
+    });
+
+    test('should mention domain skills for different tech stacks', () => {
+      expect(claudeContent).toContain('sw-frontend:frontend-architect');
+      expect(claudeContent).toContain('sw-backend:dotnet-backend');
+      expect(claudeContent).toContain('sw-payments:stripe-integration');
+    });
+
+    test('should include skill usage checklist', () => {
+      expect(claudeContent).toContain('### Skill Usage Checklist');
+      expect(claudeContent).toMatch(/Used planning skills.*PM.*Architect/);
+      expect(claudeContent).toMatch(/Used domain skills/);
+    });
+
+    test('should explain why auto-activation may not trigger', () => {
+      expect(claudeContent).toContain('### Why Auto-Activation May Not Trigger');
+      expect(claudeContent).toMatch(/Description keywords.*match/);
+      expect(claudeContent).toMatch(/Character budget exceeded/);
+    });
+
+    test('should document LSP integration correctly', () => {
+      // LSP plugins run automatically, sw:lsp-integration skill provides guidance
+      expect(claudeContent).toMatch(/LSP plugins.*AUTOMATIC/i);
+      expect(claudeContent).toContain('sw:lsp-integration');
+    });
   });
 
   describe('AGENTS.md.template', () => {
