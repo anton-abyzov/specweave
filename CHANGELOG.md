@@ -4,6 +4,48 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.177] - 2026-01-27
+
+### 🔧 Improvements
+
+- **Skill chaining guidance**: Enhanced CLAUDE.md with mandatory skill chaining patterns
+- **Template validation**: Added tests for CLAUDE.md template structure
+- **Hook improvements**: Updated user-prompt-submit hook for better skill guidance
+
+---
+
+## [1.0.176] - 2026-01-27
+
+### ✨ Features
+
+- **Reflection system**: Enhanced reflection system for skill memories
+
+---
+
+## [1.0.175] - 2026-01-27
+
+### 🔧 Improvements
+
+- **Skills guidance**: Fixed skills guidance and increment ID safety documentation
+
+---
+
+## [1.0.174] - 2026-01-27
+
+### ✨ Features
+
+- **Plugin state cleanup**: Added plugin state cleanup to refresh/update commands
+
+---
+
+## [1.0.163] - 2026-01-26
+
+### 🔧 Improvements
+
+- **Documentation updates**: Various improvements to skill documentation
+
+---
+
 ## [1.0.162] - 2026-01-25
 
 ### ✨ Features
