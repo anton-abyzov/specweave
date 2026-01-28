@@ -283,6 +283,35 @@ Without it, Claude uses text search which is slower and less accurate.
   fi
 fi
 
+# ==============================================================================
+# EXPLICIT LSP REQUEST DETECTION (v1.0.181)
+# ==============================================================================
+# Detects when users explicitly ask to "use LSP" for tasks like "find references"
+# and explains that LSP in Claude Code provides background enhancement, not explicit tools.
+LSP_EXPLICIT_REQUEST_MSG=""
+if echo "$PROMPT" | grep -qiE "(use|with|via)[[:space:]]+(the[[:space:]]+)?LSP|LSP[[:space:]]+(find|get|show|goto|hover|definition|references|implementations)"; then
+  LSP_EXPLICIT_REQUEST_MSG="💡 **About LSP in Claude Code**
+
+LSP (Language Server Protocol) works **automatically in the background** when I edit code - it's not an explicit tool I can call.
+
+**What I CAN do for you:**
+- \`Grep { pattern: \"YourSymbol\" }\` - Find all occurrences of a symbol
+- \`Grep { pattern: \"class YourClass\" }\` - Find class definitions
+- Read files to understand code structure and relationships
+
+**For true LSP features (Find References, Go to Definition):**
+- Use your IDE: **F12** (Go to Definition) or **Shift+F12** (Find References)
+- These work instantly with full semantic understanding
+
+**How LSP helps me:**
+- When I **edit** code files, LSP provides type info and diagnostics
+- This helps me write better code, but it's transparent (no explicit tool)
+
+---
+
+"
+fi
+
 # Only run if features are enabled and not disabled via env
 if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
   if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] || [[ "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
@@ -517,6 +546,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 [[ -n "$EXTERNAL_FOLDER_DETECTED" ]] && AUTOLOAD_PREFIX="${EXTERNAL_FOLDER_DETECTED}"
                 # v1.0.179: Prepend LSP warning if language servers missing
                 [[ -n "$LSP_WARNING_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${LSP_WARNING_MSG}"
+                # v1.0.180: Prepend explicit LSP request explanation
+                [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${LSP_EXPLICIT_REQUEST_MSG}"
                 [[ -n "$AUTOLOAD_PLUGINS_MSG" ]] && AUTOLOAD_PREFIX="${AUTOLOAD_PREFIX}${AUTOLOAD_PLUGINS_MSG}
 
 "
@@ -1532,6 +1563,11 @@ FINAL_MESSAGE=""
 # Add plugin auto-loading message if set (from earlier keyword detection)
 if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
   FINAL_MESSAGE="$AUTOLOAD_PLUGINS_MSG"
+fi
+
+# v1.0.180: Add explicit LSP request explanation if detected
+if [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_EXPLICIT_REQUEST_MSG}"
 fi
 
 # Add context if available
