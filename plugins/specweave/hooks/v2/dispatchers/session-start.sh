@@ -1,8 +1,11 @@
 #!/bin/bash
-# session-start.sh - Session initialization with auto plugin loading
-# Ultra-fast, non-blocking
+# session-start.sh - Session initialization dispatcher (ACTIVE HOOK)
+#
+# ✅ This is the ACTIVE session-start hook (configured in hooks.json)
+# Ultra-fast, non-blocking startup for every Claude Code session
 #
 # v1.0.127: AUTO-LOAD PLUGINS based on project type (React, Express, K8s, etc.)
+# v1.0.180: LSP language server check (detects missing binaries)
 #
 # Claude Code 2.1.2+ Enhancement:
 # - Reads agent_type from SessionStart input for agent-specific initialization
@@ -136,6 +139,18 @@ fi
 # Check for due scheduled jobs (non-blocking)
 if [[ -f "$SCHEDULER_STARTUP" ]]; then
   bash "$SCHEDULER_STARTUP" 2>/dev/null || true
+fi
+
+# === LSP LANGUAGE SERVER CHECK (v1.0.180) ===
+# Spawn lsp-check.sh in background to detect missing language server binaries
+# Results written to .specweave/state/lsp-check.json for user-prompt-submit to read
+# Shows one-time warning if language servers are missing (e.g., csharp-ls, typescript-language-server)
+LSP_CHECK_SCRIPT="$SCRIPTS_DIR/lsp-check.sh"
+if [[ -x "$LSP_CHECK_SCRIPT" ]] || [[ -f "$LSP_CHECK_SCRIPT" ]]; then
+  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+  nohup bash "$LSP_CHECK_SCRIPT" "$PROJECT_ROOT" \
+    >> "$PROJECT_ROOT/.specweave/logs/lsp-check.log" 2>&1 &
+  disown 2>/dev/null
 fi
 
 # Session watchdog REMOVED (ADR-0224)

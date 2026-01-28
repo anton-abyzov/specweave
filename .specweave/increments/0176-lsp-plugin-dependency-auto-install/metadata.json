@@ -1,0 +1,11 @@
+{
+  "id": "0176-lsp-plugin-dependency-auto-install",
+  "title": "LSP Plugin Dependency Auto-Install",
+  "type": "feature",
+  "status": "completed",
+  "testMode": "TDD",
+  "tddEnforcement": "strict",
+  "created": "2026-01-28T12:00:00Z",
+  "completed": "2026-01-28T13:22:00Z",
+  "project": "specweave"
+}

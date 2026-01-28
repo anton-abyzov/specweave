@@ -37,7 +37,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 ## Arguments
 
 - `<increment-id>`: Optional. Increment ID (e.g., "001", "0001", "1", "0042")
-  - If omitted, finds the active in-progress increment automatically
+  - If omitted, **MUST auto-select best candidate** (see Step 0.5 below)
   - **Smart resume**: Automatically starts from next incomplete task
 
 - `--model <tier>`: Optional. Override model selection for all tasks
@@ -49,6 +49,90 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 ---
 
 ## Workflow
+
+### Step 0.5: Smart Increment Auto-Selection (MANDATORY when no ID provided)
+
+**🎯 CRITICAL: When user runs `/sw:do` without increment ID, you MUST auto-select the best candidate.**
+
+**DO NOT** ask the user for an increment ID. **DO NOT** fail with "increment ID required". Instead:
+
+1. **Scan for candidates** in this priority order:
+
+   ```bash
+   # Priority 1: in-progress (resume work)
+   IN_PROGRESS=$(find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status": "in-progress"' {} \; 2>/dev/null | head -1)
+
+   # Priority 2: planned (start next work)
+   PLANNED=$(find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status": "planned"' {} \; 2>/dev/null | head -1)
+
+   # Priority 3: ready_for_review with incomplete tasks (needs finishing)
+   READY=$(find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status": "ready_for_review"' {} \; 2>/dev/null)
+
+   # Priority 4: backlog with tasks (can start)
+   BACKLOG=$(find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status": "backlog"' {} \; 2>/dev/null)
+   ```
+
+2. **For each candidate**, check if it has incomplete tasks:
+
+   ```bash
+   # Count incomplete tasks in tasks.md
+   INCOMPLETE=$(grep -c '^\- \[ \]' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo "0")
+   # Also check ### T-XXX format
+   INCOMPLETE_ALT=$(grep -c '^\[.\] pending' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo "0")
+   ```
+
+3. **Select the best candidate**:
+   - If `in-progress` increment exists → use it
+   - Else if `planned` increment exists → use it
+   - Else if `ready_for_review` with incomplete tasks → use it
+   - Else if `backlog` increment exists with incomplete tasks → use it (and change status to in-progress)
+
+4. **If candidate found, display selection and continue**:
+
+   ```
+   🎯 Auto-selected increment: 0162-lsp-skill-integration
+
+   Status: backlog → in-progress (auto-promoted)
+   Tasks: 0/28 completed (0%)
+   Priority: P1
+   Type: refactor
+
+   Proceeding with execution...
+   ```
+
+5. **If NO candidates found (all done), show insights and ask user**:
+
+   ```
+   ✅ All increments completed!
+
+   📊 Quick Status:
+   ┌─────────────────────────────────────────────────────────────┐
+   │  Active: 0 | Backlog: 0 | Completed: 47 | Archived: 125    │
+   │  Last completed: 0167-comprehensive-code-review (2 days ago) │
+   └─────────────────────────────────────────────────────────────┘
+
+   🔮 Recent completions:
+      • 0175-plugin-session-restart-warning (completed 1 day ago)
+      • 0174-router-brain-orchestrator (ready_for_review)
+      • 0167-comprehensive-code-review (ready_for_review)
+
+   💡 What would you like to do?
+
+   Options:
+     A) Create new increment: /sw:increment "feature name"
+     B) Close ready_for_review: /sw:done 0174
+     C) Resume from backlog: /sw:resume 0162
+     D) View full status: /sw:status
+
+   Your choice? [A/B/C/D or type feature name]: _
+   ```
+
+**Why This Matters**:
+- Users shouldn't need to remember increment IDs
+- `/sw:do` should "just work" like `/sw:auto`
+- Smart selection saves context switches
+
+---
 
 ### Step 0: Self-Awareness Check
 
@@ -89,6 +173,8 @@ Contributors working on SpecWeave itself need different mindset than users build
 ---
 
 ### Step 1: Load Context
+
+**Prerequisite**: Increment ID is now available (either from user input or auto-selected in Step 0.5).
 
 1. **Find increment directory**:
    - **Normalize increment ID**:
