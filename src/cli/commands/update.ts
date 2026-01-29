@@ -35,6 +35,7 @@ import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { migrateOldMemoryFiles, cleanupDeprecatedMemoryDirectory } from '../../core/reflection/index.js';
 import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 import { ensureLspSettingsOnUpdate } from '../helpers/init/claude-settings-lsp.js';
+import { setupLspEnvVar, isEnvVarConfigured, getShellConfigPath, detectShell } from '../helpers/init/shell-config.js';
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
@@ -252,6 +253,34 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       // Non-fatal - LSP is optional
       if (options.verbose) {
         console.log(chalk.yellow(`  ⚠ LSP settings check skipped`));
+      }
+    }
+  }
+
+  // Step 2.8: Ensure ENABLE_LSP_TOOL env var in shell config (v1.0.191+)
+  // Projects initialized before v1.0.191 may not have the env var configured
+  if (!options.check) {
+    try {
+      const shell = detectShell();
+      const configPath = getShellConfigPath(shell, process.platform);
+
+      if (!isEnvVarConfigured(configPath, 'ENABLE_LSP_TOOL')) {
+        const result = setupLspEnvVar();
+        if (result.success && !result.alreadyConfigured) {
+          console.log(chalk.green(`  ✓ LSP enabled: Added ${result.exportSyntax} to ${result.configPath}`));
+          console.log(chalk.yellow(`    ⚠ Restart your terminal for LSP to take effect`));
+        } else if (result.success && result.alreadyConfigured) {
+          if (options.verbose) {
+            console.log(chalk.green(`  ✓ LSP env var already configured in ${result.configPath}`));
+          }
+        }
+      } else if (options.verbose) {
+        console.log(chalk.green(`  ✓ ENABLE_LSP_TOOL already in shell config`));
+      }
+    } catch {
+      // Non-fatal - shell config is optional
+      if (options.verbose) {
+        console.log(chalk.yellow(`  ⚠ LSP shell config check skipped`));
       }
     }
   }
