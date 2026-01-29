@@ -6,5 +6,24 @@
       "Bash"
     ],
     "defaultMode": "bypassPermissions"
+  },
+  "lspServers": {
+    "vtsls": {
+      "command": "typescript-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "extensionToLanguage": {
+        ".ts": "typescript",
+        ".tsx": "typescriptreact",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".cjs": "javascript"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "./plugins/specweave-lsp": true
   }
 }

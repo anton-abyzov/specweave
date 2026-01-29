@@ -868,6 +868,31 @@ program
     });
   });
 
+// Doctor command - Comprehensive health check
+program
+  .command('doctor')
+  .description('Run comprehensive health check on SpecWeave project')
+  .option('--verbose', 'Show detailed output for each check')
+  .option('--json', 'Output as JSON')
+  .option('--quick', 'Skip slow checks (network, hook execution)')
+  .option('--skip-external', 'Skip external tool connectivity checks')
+  .option('--fix', 'Run suggested fix command if issues found')
+  .action(async (options) => {
+    const { doctor } = await import('../dist/src/cli/commands/doctor.js');
+    const report = await doctor(process.cwd(), {
+      verbose: options.verbose,
+      json: options.json,
+      quick: options.quick,
+      skipExternal: options.skipExternal,
+      fix: options.fix,
+    });
+
+    // Exit with appropriate code (failures = 1)
+    if (report.summary.failures > 0) {
+      process.exit(1);
+    }
+  });
+
 // Detect intent command - Hook helper for automatic plugin loading
 program
   .command('detect-intent [prompt]')
