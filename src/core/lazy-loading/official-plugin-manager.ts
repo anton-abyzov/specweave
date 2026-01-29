@@ -36,6 +36,24 @@ export const OFFICIAL_PLUGIN_MAP: Record<string, string> = {
   // ============================================================================
   // LSP PLUGINS (Language Server Protocol for code intelligence)
   // ============================================================================
+
+  // TypeScript/JavaScript (most common - uses typescript-language-server)
+  'typescript': 'typescript-lsp',
+  'ts': 'typescript-lsp',
+  'javascript': 'typescript-lsp',
+  'js': 'typescript-lsp',
+  'react': 'typescript-lsp',
+  'nextjs': 'typescript-lsp',
+  'next.js': 'typescript-lsp',
+  'vue': 'typescript-lsp',
+  'angular': 'typescript-lsp',
+  'svelte': 'typescript-lsp',
+  'node': 'typescript-lsp',
+  'nodejs': 'typescript-lsp',
+  'express': 'typescript-lsp',
+  'nestjs': 'typescript-lsp',
+
+  // C#/.NET
   'csharp': 'csharp-lsp',
   'c#': 'csharp-lsp',
   '.net': 'csharp-lsp',
