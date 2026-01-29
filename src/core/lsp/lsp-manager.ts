@@ -7,7 +7,16 @@
  * @module core/lsp/lsp-manager
  */
 
-import { LSPClient, LSPServerConfig, detectLSPServers, LSPDefinitionResult, LSPReferencesResult } from './lsp-client.js';
+import {
+  LSPClient,
+  LSPServerConfig,
+  detectLSPServers,
+  LSPDefinitionResult,
+  LSPReferencesResult,
+  LSPHoverResult,
+  LSPDocumentSymbolsResult,
+  LSPWorkspaceSymbolsResult,
+} from './lsp-client.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import * as path from 'path';
 
@@ -138,12 +147,70 @@ export class LSPManager {
   }
 
   /**
-   * Find all symbols in a file (for living docs extraction)
+   * Get hover information using LSP
+   */
+  async hover(
+    filePath: string,
+    line: number,
+    character: number
+  ): Promise<LSPHoverResult | null> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const client = this.getClientForFile(filePath);
+    if (!client) {
+      logger.debug(`No LSP client available for ${filePath}`);
+      return null;
+    }
+
+    return await client.hover(filePath, line, character);
+  }
+
+  /**
+   * Get document symbols using LSP
+   */
+  async documentSymbols(filePath: string): Promise<LSPDocumentSymbolsResult | null> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const client = this.getClientForFile(filePath);
+    if (!client) {
+      logger.debug(`No LSP client available for ${filePath}`);
+      return null;
+    }
+
+    return await client.documentSymbols(filePath);
+  }
+
+  /**
+   * Search workspace symbols using LSP
+   */
+  async workspaceSymbols(query: string): Promise<LSPWorkspaceSymbolsResult | null> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    // Use first available client for workspace symbol search
+    const client = this.clients.values().next().value;
+    if (!client) {
+      logger.debug('No LSP clients available for workspace symbol search');
+      return null;
+    }
+
+    return await client.workspaceSymbols(query);
+  }
+
+  /**
+   * Find all symbols in a file (legacy method for living docs extraction)
    */
   async findSymbols(filePath: string): Promise<string[]> {
-    // This would use textDocument/documentSymbol in a full implementation
-    // For now, return empty array to indicate LSP not used
-    return [];
+    const result = await this.documentSymbols(filePath);
+    if (!result || !result.success) {
+      return [];
+    }
+    return result.symbols.map((s) => s.name);
   }
 
   /**

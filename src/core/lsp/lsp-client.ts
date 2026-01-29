@@ -35,6 +35,32 @@ export interface LSPReferencesResult {
   success: boolean;
 }
 
+export interface LSPHoverResult {
+  contents: string;
+  range?: {
+    start: LSPPosition;
+    end: LSPPosition;
+  };
+  success: boolean;
+}
+
+export interface LSPSymbolInformation {
+  name: string;
+  kind: number;
+  location: LSPLocation;
+  containerName?: string;
+}
+
+export interface LSPDocumentSymbolsResult {
+  symbols: LSPSymbolInformation[];
+  success: boolean;
+}
+
+export interface LSPWorkspaceSymbolsResult {
+  symbols: LSPSymbolInformation[];
+  success: boolean;
+}
+
 /** Empty location for failed operations */
 const EMPTY_LOCATION: LSPLocation = {
   uri: '',
@@ -69,15 +95,47 @@ export class LSPClient {
     try {
       logger.debug(`Starting LSP server: ${this.config.command} ${this.config.args.join(' ')}`);
 
-      this.serverProcess = spawn(this.config.command, this.config.args, {
-        cwd: this.config.rootPath,
-        stdio: ['pipe', 'pipe', 'pipe']
+      // Use a promise to handle spawn errors properly
+      const spawnPromise = new Promise<ChildProcess>((resolve, reject) => {
+        const proc = spawn(this.config.command, this.config.args, {
+          cwd: this.config.rootPath,
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+
+        // Handle spawn error (e.g., command not found)
+        proc.on('error', (err) => {
+          reject(err);
+        });
+
+        // Give it a moment to either error or succeed
+        setTimeout(() => {
+          if (proc.pid) {
+            resolve(proc);
+          }
+        }, 100);
       });
+
+      try {
+        this.serverProcess = await Promise.race([
+          spawnPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Spawn timeout')), 5000)
+          )
+        ]);
+      } catch (spawnError) {
+        logger.error(`Failed to spawn LSP server: ${spawnError}`);
+        return false;
+      }
 
       if (!this.serverProcess || !this.serverProcess.stdout || !this.serverProcess.stdin) {
         logger.error('Failed to create LSP server process');
         return false;
       }
+
+      // Handle process errors after spawn
+      this.serverProcess.on('error', (err) => {
+        logger.error(`LSP server error: ${err}`);
+      });
 
       // Handle stdout
       this.serverProcess.stdout.on('data', (data: Buffer) => {
@@ -292,10 +350,132 @@ export class LSPClient {
   }
 
   /**
+   * Get hover information for a symbol at given position
+   */
+  async hover(filePath: string, line: number, character: number): Promise<LSPHoverResult> {
+    if (!this.initialized) {
+      return { contents: '', success: false };
+    }
+
+    try {
+      const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
+      this.openDocument(filePath, uri);
+
+      const result = await this.sendRequest('textDocument/hover', {
+        textDocument: { uri },
+        position: { line, character }
+      });
+
+      if (!result) {
+        return { contents: '', success: false };
+      }
+
+      // Extract contents from hover result
+      let contents = '';
+      if (typeof result.contents === 'string') {
+        contents = result.contents;
+      } else if (Array.isArray(result.contents)) {
+        contents = result.contents.map((c: any) =>
+          typeof c === 'string' ? c : c.value || ''
+        ).join('\n');
+      } else if (result.contents.value) {
+        contents = result.contents.value;
+      }
+
+      return { contents, range: result.range, success: true };
+    } catch (error) {
+      logger.error(`hover failed: ${error}`);
+      return { contents: '', success: false };
+    }
+  }
+
+  /**
+   * Get all symbols in a document
+   */
+  async documentSymbols(filePath: string): Promise<LSPDocumentSymbolsResult> {
+    if (!this.initialized) {
+      return { symbols: [], success: false };
+    }
+
+    try {
+      const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
+      this.openDocument(filePath, uri);
+
+      const result = await this.sendRequest('textDocument/documentSymbol', {
+        textDocument: { uri }
+      });
+
+      if (!result || !Array.isArray(result)) {
+        return { symbols: [], success: false };
+      }
+
+      // Convert to LSPSymbolInformation format (handle both flat and hierarchical responses)
+      const symbols = this.flattenSymbols(result, uri);
+      return { symbols, success: true };
+    } catch (error) {
+      logger.error(`documentSymbols failed: ${error}`);
+      return { symbols: [], success: false };
+    }
+  }
+
+  /**
+   * Flatten hierarchical document symbols into flat list
+   */
+  private flattenSymbols(symbols: any[], uri: string, containerName?: string): LSPSymbolInformation[] {
+    const result: LSPSymbolInformation[] = [];
+
+    for (const symbol of symbols) {
+      const location = symbol.location || {
+        uri,
+        range: symbol.range || symbol.selectionRange
+      };
+
+      result.push({
+        name: symbol.name,
+        kind: symbol.kind,
+        location,
+        containerName
+      });
+
+      // Recurse into children if present (DocumentSymbol format)
+      if (symbol.children && Array.isArray(symbol.children)) {
+        result.push(...this.flattenSymbols(symbol.children, uri, symbol.name));
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Search for symbols across workspace
+   */
+  async workspaceSymbols(query: string): Promise<LSPWorkspaceSymbolsResult> {
+    if (!this.initialized) {
+      return { symbols: [], success: false };
+    }
+
+    try {
+      const result = await this.sendRequest('workspace/symbol', {
+        query
+      });
+
+      if (!result || !Array.isArray(result)) {
+        return { symbols: [], success: false };
+      }
+
+      return { symbols: result, success: true };
+    } catch (error) {
+      logger.error(`workspaceSymbols failed: ${error}`);
+      return { symbols: [], success: false };
+    }
+  }
+
+  /**
    * Open a document in the LSP server
    */
   private openDocument(filePath: string, uri: string): void {
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const absolutePath = path.resolve(this.config.rootPath, filePath);
+    const fileContent = fs.readFileSync(absolutePath, 'utf-8');
     this.sendNotification('textDocument/didOpen', {
       textDocument: { uri, languageId: this.getLanguageId(filePath), version: 1, text: fileContent }
     });
