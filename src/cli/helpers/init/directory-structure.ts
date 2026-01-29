@@ -15,6 +15,7 @@ import type { TestMode } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
+import { ensureClaudeSettingsWithLsp } from './claude-settings-lsp.js';
 import {
   LivingDocsScaffold,
   scanExistingDocs,
@@ -329,6 +330,16 @@ export async function copyTemplates(
   const gitattributesTemplate = path.join(templatesDir, '.gitattributes.template');
   if (fs.existsSync(gitattributesTemplate)) {
     fs.copyFileSync(gitattributesTemplate, path.join(targetDir, '.gitattributes'));
+  }
+
+  // Auto-configure LSP in .claude/settings.json (v1.0.184+)
+  // Detects project tech stack and adds appropriate LSP servers
+  try {
+    await ensureClaudeSettingsWithLsp(targetDir);
+    console.log(chalk.green('   ✓ LSP auto-configured in .claude/settings.json'));
+  } catch {
+    // Non-fatal - LSP is optional
+    console.log(chalk.yellow('   ⚠ LSP auto-configuration skipped'));
   }
 }
 
