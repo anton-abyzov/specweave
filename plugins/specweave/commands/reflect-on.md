@@ -28,52 +28,33 @@ Enables automatic session analysis via the stop hook:
       ↓
 5. Reflect automatically analyzes transcript
       ↓
-6. Learnings extracted and saved to MEMORY.md files
+6. Learnings extracted and saved to CLAUDE.md Skill Memories
       ↓
-7. Git commit (if configured)
-      ↓
-8. "🧠 Learned from session" notification shown
+7. "Learned from session" notification shown
 ```
 
 ## Output
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧠 REFLECT: Automatic Mode Enabled
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Auto-reflection ENABLED
 
-✅ Auto-reflection is now ENABLED
+Stop hook will analyze sessions on exit.
+Learnings will be saved to CLAUDE.md Skill Memories section.
 
-When enabled:
-  • Stop hook analyzes session on exit
-  • Corrections and approvals are extracted
-  • Learnings saved to skill MEMORY.md files
-  • Git commit created (if configured)
-
-Configuration:
-  • Confidence threshold: medium
-  • Max learnings per session: 10
-  • Git commit: enabled
-  • Git push: disabled
-
-To disable: /sw:reflect-off
-To check status: /sw:reflect-status
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Use /sw:reflect-off to disable.
 ```
 
 ## Configuration
 
-When enabled, creates/updates `.specweave/state/reflect-config.json`:
+Auto-reflection is controlled by `.specweave/config.json`:
 
 ```json
 {
-  "enabled": true,
-  "autoReflect": true,
-  "enabledAt": "2026-01-05T10:30:00Z",
-  "confidenceThreshold": "medium",
-  "maxLearningsPerSession": 10,
-  "gitCommit": true,
-  "gitPush": false
+  "reflect": {
+    "enabled": true,
+    "model": "haiku",
+    "maxLearningsPerSession": 3
+  }
 }
 ```
 
@@ -87,36 +68,8 @@ When enabled, creates/updates `.specweave/state/reflect-config.json`:
 
 ## Execution
 
-**CRITICAL: This is a SIMPLE command. NO Glob, NO parallel tool calls needed.**
-
 When this command is invoked:
 
-1. **Read existing config** (ONE tool call):
-   ```
-   Read .specweave/state/reflect-config.json
-   ```
-   (If file doesn't exist, that's fine - create fresh)
-
-2. **Write updated config** (ONE tool call - WAIT for step 1):
-   ```json
-   {
-     "enabled": true,
-     "autoReflect": true,
-     "enabledAt": "2026-01-26T12:00:00Z",
-     "confidenceThreshold": "medium",
-     "maxLearningsPerSession": 10,
-     "gitCommit": false,
-     "gitPush": false
-   }
-   ```
-   Write to `.specweave/state/reflect-config.json`
-
-3. **Display confirmation** (NO tool call - just output text):
-   ```
-   ✅ Auto-reflection ENABLED
-
-   Stop hook will analyze sessions on exit.
-   Use /sw:reflect-off to disable.
-   ```
-
-**WARNING**: Do NOT use Glob to scan directories - this command only writes ONE file.
+1. **Read existing config** from `.specweave/config.json`
+2. **Update config** to set `reflect.enabled: true`
+3. **Display confirmation** message
