@@ -1,0 +1,10 @@
+{
+  "name": "specweave-lsp",
+  "version": "1.0.0",
+  "description": "Auto-configured LSP servers for code intelligence (go-to-definition, find-references, hover)",
+  "author": {
+    "name": "SpecWeave",
+    "url": "https://spec-weave.com"
+  },
+  "keywords": ["lsp", "typescript", "python", "code-intelligence"]
+}
