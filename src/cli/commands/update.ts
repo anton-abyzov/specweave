@@ -34,6 +34,7 @@ import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { migrateOldMemoryFiles, cleanupDeprecatedMemoryDirectory } from '../../core/reflection/index.js';
 import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
+import { ensureLspSettingsOnUpdate } from '../helpers/init/claude-settings-lsp.js';
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
@@ -236,6 +237,22 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     const reflectMigrated = migrateReflectConfig(projectPath, options.verbose);
     if (reflectMigrated) {
       console.log(chalk.green(`  ✓ Enabled autoReflect in reflect-config.json (self-improving AI)`));
+    }
+  }
+
+  // Step 2.7: Ensure LSP settings in .claude/settings.json (v1.0.184+)
+  // Projects initialized before v1.0.184 may not have lspServers configured
+  if (!options.check) {
+    try {
+      await ensureLspSettingsOnUpdate(projectPath);
+      if (options.verbose) {
+        console.log(chalk.green(`  ✓ LSP settings verified in .claude/settings.json`));
+      }
+    } catch {
+      // Non-fatal - LSP is optional
+      if (options.verbose) {
+        console.log(chalk.yellow(`  ⚠ LSP settings check skipped`));
+      }
     }
   }
 
