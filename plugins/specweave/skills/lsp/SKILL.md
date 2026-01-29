@@ -1,10 +1,9 @@
 ---
 name: lsp
 description: >
-  Code intelligence via LSP - find references, go to definition, hover type info, list symbols.
-  Activates on: "LSP", "findReferences", "find all references", "go to definition",
-  "where is X defined", "show type of", "list symbols", "search symbols", "what uses", "who calls".
-  Works with TypeScript, Python, C#, Go, Rust. Falls back to grep if LSP unavailable.
+  MANDATORY: When user says "LSP", "findReferences", "find references", "go to definition",
+  "where defined", "show type", "list symbols", "what uses", or "who calls" - YOU MUST use
+  specweave lsp commands via Bash (NOT grep). This skill provides the commands to use.
 ---
 
 # LSP Code Intelligence
