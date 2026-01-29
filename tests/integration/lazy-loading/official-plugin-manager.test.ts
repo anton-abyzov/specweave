@@ -40,6 +40,29 @@ describe('Official Plugin Manager Constants', () => {
     expect(REQUIRED_PLUGINS.length).toBe(2);
   });
 
+  it('should have plugin map for TypeScript/JavaScript (most common language)', () => {
+    // TypeScript/JavaScript - T-001 [RED] test for 0177-lsp-integration-fixes
+    // Core keywords
+    expect(OFFICIAL_PLUGIN_MAP['typescript']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['ts']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['javascript']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['js']).toBe('typescript-lsp');
+
+    // Frameworks
+    expect(OFFICIAL_PLUGIN_MAP['react']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['nextjs']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['next.js']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['vue']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['angular']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['svelte']).toBe('typescript-lsp');
+
+    // Runtime/Backend
+    expect(OFFICIAL_PLUGIN_MAP['node']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['nodejs']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['express']).toBe('typescript-lsp');
+    expect(OFFICIAL_PLUGIN_MAP['nestjs']).toBe('typescript-lsp');
+  });
+
   it('should have plugin map for LSP languages', () => {
     // C#/.NET
     expect(OFFICIAL_PLUGIN_MAP['csharp']).toBe('csharp-lsp');

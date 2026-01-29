@@ -1,0 +1,13 @@
+{
+  "id": "0177-lsp-integration-fixes",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-29T04:49:28.020Z",
+  "lastActivity": "2026-01-29T04:49:28.021Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
