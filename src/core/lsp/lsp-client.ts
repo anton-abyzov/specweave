@@ -262,13 +262,13 @@ export class LSPClient {
 
       this.serverProcess.stdin.write(message);
 
-      // Timeout after 10 seconds
+      // Timeout after 30 seconds (heavy operations like findReferences need more time)
       setTimeout(() => {
         if (this.responseHandlers.has(id)) {
           this.responseHandlers.delete(id);
           reject(new Error('LSP request timeout'));
         }
-      }, 10000);
+      }, 30000);
     });
   }
 
@@ -301,7 +301,7 @@ export class LSPClient {
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
-      this.openDocument(filePath, uri);
+      await this.openDocument(filePath, uri);
 
       const result = await this.sendRequest('textDocument/definition', {
         textDocument: { uri },
@@ -330,7 +330,7 @@ export class LSPClient {
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
-      this.openDocument(filePath, uri);
+      await this.openDocument(filePath, uri);
 
       const result = await this.sendRequest('textDocument/references', {
         textDocument: { uri },
@@ -359,7 +359,7 @@ export class LSPClient {
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
-      this.openDocument(filePath, uri);
+      await this.openDocument(filePath, uri);
 
       const result = await this.sendRequest('textDocument/hover', {
         textDocument: { uri },
@@ -399,7 +399,7 @@ export class LSPClient {
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
-      this.openDocument(filePath, uri);
+      await this.openDocument(filePath, uri);
 
       const result = await this.sendRequest('textDocument/documentSymbol', {
         textDocument: { uri }
@@ -472,13 +472,16 @@ export class LSPClient {
 
   /**
    * Open a document in the LSP server
+   * Returns a promise that resolves after a brief delay to allow server processing
    */
-  private openDocument(filePath: string, uri: string): void {
+  private async openDocument(filePath: string, uri: string): Promise<void> {
     const absolutePath = path.resolve(this.config.rootPath, filePath);
     const fileContent = fs.readFileSync(absolutePath, 'utf-8');
     this.sendNotification('textDocument/didOpen', {
       textDocument: { uri, languageId: this.getLanguageId(filePath), version: 1, text: fileContent }
     });
+    // Give the LSP server time to parse the document
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   /**
