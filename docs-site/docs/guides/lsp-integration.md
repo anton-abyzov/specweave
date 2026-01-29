@@ -1,12 +1,36 @@
 ---
 sidebar_position: 5
 title: LSP Integration
-description: LSP is enabled by default for enterprise documentation and codebase analysis
+description: Enable LSP tools for 900x faster code navigation and semantic understanding
 ---
 
 # LSP Integration Guide
 
-Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. **USE LSP ACTIVELY** - it's 100x faster and more accurate than grep for semantic code understanding.
+Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. LSP is **900x faster** than grep for semantic code understanding.
+
+:::warning ENABLE_LSP_TOOL Required
+**LSP tools require explicit enablement!** Without this, you won't have access to `findReferences`, `goToDefinition`, etc.
+
+```bash
+# Enable for single session
+ENABLE_LSP_TOOL=1 claude
+
+# Enable permanently (add to your shell profile)
+export ENABLE_LSP_TOOL=1
+```
+:::
+
+## Prerequisites
+
+To use LSP in Claude Code, you need **THREE things**:
+
+| Requirement | How to Get It | Verify |
+|-------------|---------------|--------|
+| **1. Claude Code 2.0.74+** | `npm update -g @anthropic-ai/claude-code` | `claude --version` |
+| **2. ENABLE_LSP_TOOL=1** | Add to shell profile | `echo $ENABLE_LSP_TOOL` |
+| **3. Language server binary** | Install per language (see below) | `which typescript-language-server` |
+
+**Missing any of these = LSP won't work.**
 
 ## Understanding the LSP Ecosystem
 
@@ -14,12 +38,12 @@ Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. 
 
 | Component | What It Is | How It Works |
 |-----------|------------|--------------|
-| **LSP Tool** | Claude Code's built-in operations (`goToDefinition`, `findReferences`, etc.) | Always available when language server is installed |
-| **LSP Plugins** | Configuration for language servers from [official marketplace](https://github.com/anthropics/claude-plugins-official) | Work **AUTOMATICALLY** when editing code files |
+| **LSP Tool** | Claude Code's built-in operations (`goToDefinition`, `findReferences`, etc.) | Requires `ENABLE_LSP_TOOL=1` + language server installed |
+| **LSP Plugins** | Configuration for language servers from [official marketplace](https://github.com/anthropics/claude-plugins-official) | Configure which binary to use |
 
-### How LSP Plugins Work (AUTOMATIC)
+### How LSP Plugins Work
 
-LSP plugins (e.g., `csharp-lsp`, `typescript-lsp`) activate **automatically** based on file extension:
+LSP plugins (e.g., `csharp-lsp`, `typescript-lsp`) configure which language server binary to use:
 
 ```
 Edit .cs file → csharp-lsp activates → Type info, references, diagnostics available
@@ -328,19 +352,63 @@ Pre-built LSP plugins are available for:
 
 ## Troubleshooting
 
-### LSP Not Working
+### LSP Tools Not Available to Claude
+
+**Most common issue**: Claude can't use `findReferences`, `goToDefinition`, etc.
+
+**Checklist:**
 
 ```bash
-# Check if language server is installed
-which typescript-language-server
-which pyright-langserver
-which gopls
+# 1. Check ENABLE_LSP_TOOL is set
+echo $ENABLE_LSP_TOOL  # Should output "1" or "true"
 
-# Verify Claude Code version
+# 2. Check Claude Code version
 claude --version  # Should be 2.0.74+
 
-# Enable LSP tool
-export ENABLE_LSP_TOOL=true
+# 3. Check language server binary exists
+which typescript-language-server  # TypeScript
+which csharp-ls                   # C#
+which pyright-langserver          # Python
+which gopls                       # Go
+```
+
+**Fix:**
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+export ENABLE_LSP_TOOL=1
+```
+
+### Plugin "Enabled" But Not Working
+
+**Symptom**: `/plugin list` shows LSP plugin as enabled, but no LSP functionality.
+
+**Cause**: Plugin is registered but binary isn't installed.
+
+**Fix:**
+```bash
+# Install the language server binary
+npm i -g typescript-language-server typescript  # TypeScript
+dotnet tool install -g csharp-ls                # C#
+pip install pyright                             # Python
+go install golang.org/x/tools/gopls@latest      # Go
+```
+
+### Binary Installed But No LSP
+
+**Symptom**: Language server binary exists, but LSP doesn't work.
+
+**Cause**: Plugin not installed OR `ENABLE_LSP_TOOL` not set.
+
+**Fix:**
+```bash
+# 1. Install the plugin
+claude plugin install typescript-lsp@claude-plugins-official
+
+# 2. Ensure ENABLE_LSP_TOOL is set
+export ENABLE_LSP_TOOL=1
+
+# 3. Restart Claude Code
 ```
 
 ### Slow LSP Response
