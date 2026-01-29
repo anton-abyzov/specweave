@@ -649,6 +649,51 @@ program
     await cacheCommand(options);
   });
 
+// LSP command - Code intelligence operations
+const lspCmd = program
+  .command('lsp')
+  .description('LSP code intelligence (refs, def, hover, symbols, search)');
+
+lspCmd
+  .command('refs <file> <symbol>')
+  .description('Find all references to a symbol')
+  .action(async (file, symbol) => {
+    const { handleLspRefs } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspRefs(process.cwd(), file, symbol);
+  });
+
+lspCmd
+  .command('def <file> <symbol>')
+  .description('Go to definition of a symbol')
+  .action(async (file, symbol) => {
+    const { handleLspDef } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspDef(process.cwd(), file, symbol);
+  });
+
+lspCmd
+  .command('hover <file> <symbol>')
+  .description('Get type information for a symbol')
+  .action(async (file, symbol) => {
+    const { handleLspHover } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspHover(process.cwd(), file, symbol);
+  });
+
+lspCmd
+  .command('symbols <file>')
+  .description('List all symbols in a file')
+  .action(async (file) => {
+    const { handleLspSymbols } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspSymbols(process.cwd(), file);
+  });
+
+lspCmd
+  .command('search <query>')
+  .description('Search for symbols in workspace')
+  .action(async (query) => {
+    const { handleLspSearch } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspSearch(process.cwd(), query);
+  });
+
 // Commits command - Display last 2 git commits
 program
   .command('commits')

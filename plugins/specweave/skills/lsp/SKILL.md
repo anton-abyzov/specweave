@@ -1,180 +1,141 @@
 ---
 name: lsp
-description: Direct LSP (Language Server Protocol) code intelligence for any language. Use for findReferences, goToDefinition, hover, and symbol search. Works with TypeScript, Python, C#, Go, Rust. Bypasses Claude Code's built-in LSP (which has known bugs).
+description: >
+  Code intelligence via LSP - find references, go to definition, hover type info, list symbols.
+  Activates on: "find all references", "go to definition", "where is X defined",
+  "show type of", "list symbols", "search symbols", "what uses", "who calls".
+  Works with TypeScript, Python, C#, Go, Rust. Falls back to grep if LSP unavailable.
 ---
 
-# SpecWeave LSP Skill
+# LSP Code Intelligence
 
-Direct access to Language Server Protocol features for code intelligence.
+Use SpecWeave's LSP CLI for semantic code navigation and analysis.
 
-## When to Use This Skill
+## How to Use (IMPORTANT)
 
-Use this skill when the user asks for:
-- "Find all references to X"
-- "Go to definition of X"
-- "Where is X defined?"
-- "Show me the type of X"
-- "List symbols in file X"
-- "Search for symbol X in workspace"
+**Use Bash tool with `specweave lsp` commands:**
 
-## Implementation
+```bash
+# Find all references to a symbol
+specweave lsp refs <file> <symbol>
 
-This skill uses the existing SpecWeave LSP infrastructure:
-- `src/core/lsp/lsp-client.ts` - Low-level JSON-RPC client
-- `src/core/lsp/lsp-manager.ts` - Multi-language manager
+# Go to definition
+specweave lsp def <file> <symbol>
 
-### Usage Pattern
+# Get type information (hover)
+specweave lsp hover <file> <symbol>
 
-```typescript
-import { getGlobalLSPManager, shutdownGlobalLSPManager } from 'src/core/lsp/lsp-manager.js';
+# List all symbols in a file
+specweave lsp symbols <file>
 
-// Get the LSP manager (auto-initializes)
-const lspManager = getGlobalLSPManager(projectRoot);
+# Search workspace for symbols
+specweave lsp search <query>
+```
 
-// Find references
-const refs = await lspManager.findReferences('src/file.ts', line, character);
+## Command Reference
 
-// Go to definition
-const def = await lspManager.goToDefinition('src/file.ts', line, character);
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `lsp refs` | Find all usages of a symbol | `specweave lsp refs src/api.ts handleRequest` |
+| `lsp def` | Navigate to symbol definition | `specweave lsp def src/utils.ts formatDate` |
+| `lsp hover` | Get type signature and docs | `specweave lsp hover src/models.ts User` |
+| `lsp symbols` | List all symbols in file | `specweave lsp symbols src/index.ts` |
+| `lsp search` | Find symbols across workspace | `specweave lsp search Controller` |
 
-// Get hover info (types, docs)
-const hover = await lspManager.hover('src/file.ts', line, character);
+## When to Use LSP vs Grep
 
-// List symbols in file
-const symbols = await lspManager.documentSymbols('src/file.ts');
+| Task | Use LSP | Use Grep |
+|------|---------|----------|
+| Find function usages | ✅ `lsp refs` | ❌ |
+| Navigate to definition | ✅ `lsp def` | ❌ |
+| Get type information | ✅ `lsp hover` | ❌ |
+| Search text patterns | ❌ | ✅ `Grep tool` |
+| Find in comments | ❌ | ✅ `Grep tool` |
+| Case-insensitive search | ❌ | ✅ `Grep -i` |
 
-// Search workspace for symbol
-const wsSymbols = await lspManager.workspaceSymbols('MyClass');
+**Rule of thumb**: Use LSP for symbols, Grep for text patterns.
 
-// Cleanup when done
-await shutdownGlobalLSPManager();
+## Examples
+
+### Example 1: Find All References Before Refactoring
+
+User: "Find all references to handleAutoCommand"
+
+```bash
+specweave lsp refs src/cli/commands/auto.ts handleAutoCommand
+```
+
+Output:
+```
+References to 'handleAutoCommand':
+
+  bin/specweave.js:473:1
+  bin/specweave.js:474:1
+  src/cli/commands/auto.ts:82:5
+  src/cli/commands/auto.ts:96:24
+
+Total: 4 references
+```
+
+### Example 2: Go to Definition
+
+User: "Where is processArgs defined?"
+
+```bash
+specweave lsp def src/cli/commands/auto.ts processArgs
+```
+
+### Example 3: Get Type Information
+
+User: "What's the type signature of handleAutoCommand?"
+
+```bash
+specweave lsp hover src/cli/commands/auto.ts handleAutoCommand
+```
+
+### Example 4: List All Exports
+
+User: "What functions are exported from lsp.ts?"
+
+```bash
+specweave lsp symbols src/cli/commands/lsp.ts
+```
+
+### Example 5: Search Workspace
+
+User: "Find all Command classes"
+
+```bash
+specweave lsp search Command
 ```
 
 ## Supported Languages
 
-| Language | Server | Detection |
-|----------|--------|-----------|
-| TypeScript/JavaScript | `typescript-language-server` | `tsconfig.json`, `package.json` |
-| Python | `pyright-langserver` or `pylsp` | `requirements.txt`, `pyproject.toml` |
+| Language | Server Required | Auto-detected by |
+|----------|-----------------|------------------|
+| TypeScript/JS | `typescript-language-server` | `tsconfig.json`, `package.json` |
+| Python | `pyright` or `pylsp` | `requirements.txt`, `pyproject.toml` |
 | C#/.NET | `csharp-ls` | `*.csproj`, `*.sln` |
 | Go | `gopls` | `go.mod` |
 | Rust | `rust-analyzer` | `Cargo.toml` |
 
-## Position Calculation
+## Fallback Behavior
 
-LSP positions are 0-indexed:
-- `line`: 0-based line number (first line = 0)
-- `character`: 0-based character offset
-
-To find a symbol position:
-1. Read the file
-2. Count lines (0-indexed)
-3. Find character offset within the line (0-indexed)
-
-## Response Formats
-
-### findReferences
-
-```typescript
-{
-  locations: [
-    {
-      uri: 'file:///path/to/file.ts',
-      range: {
-        start: { line: 10, character: 5 },
-        end: { line: 10, character: 15 }
-      }
-    }
-  ],
-  success: true
-}
-```
-
-### goToDefinition
-
-```typescript
-{
-  location: {
-    uri: 'file:///path/to/definition.ts',
-    range: {
-      start: { line: 5, character: 0 },
-      end: { line: 5, character: 20 }
-    }
-  },
-  success: true
-}
-```
-
-### hover
-
-```typescript
-{
-  contents: '(method) MyClass.myMethod(): void',
-  range: { start: {...}, end: {...} },
-  success: true
-}
-```
-
-### documentSymbols
-
-```typescript
-{
-  symbols: [
-    {
-      name: 'MyClass',
-      kind: 5, // Class
-      location: {...},
-      containerName: undefined
-    },
-    {
-      name: 'myMethod',
-      kind: 6, // Method
-      location: {...},
-      containerName: 'MyClass'
-    }
-  ],
-  success: true
-}
-```
-
-## Symbol Kinds
-
-| Kind | Name |
-|------|------|
-| 1 | File |
-| 2 | Module |
-| 3 | Namespace |
-| 4 | Package |
-| 5 | Class |
-| 6 | Method |
-| 7 | Property |
-| 8 | Field |
-| 9 | Constructor |
-| 10 | Enum |
-| 11 | Interface |
-| 12 | Function |
-| 13 | Variable |
-| 14 | Constant |
-| 15 | String |
-| 16 | Number |
-| 17 | Boolean |
-| 18 | Array |
+If LSP is unavailable (server not installed, timeout, etc.):
+1. Commands automatically fall back to grep-based search
+2. Results show "(grep fallback)" in output
+3. Still functional, but less precise for symbol resolution
 
 ## Requirements
 
 Language servers must be installed globally:
 
 ```bash
-# TypeScript
+# TypeScript (most common)
 npm install -g typescript-language-server typescript
 
 # Python
 pip install pyright
-# or
-pip install python-lsp-server
-
-# C#
-dotnet tool install -g csharp-ls
 
 # Go
 go install golang.org/x/tools/gopls@latest
@@ -183,23 +144,32 @@ go install golang.org/x/tools/gopls@latest
 rustup component add rust-analyzer
 ```
 
-## Fallback Behavior
+## Decision Tree for Claude
 
-If LSP is not available for a file type:
-1. The manager returns `null`
-2. Fall back to grep-based search
-3. Results are less precise but still useful
+```
+User asks about code navigation?
+│
+├─ "Find references to X" or "What uses X" or "Who calls X"
+│   └─ Use: specweave lsp refs <file> <symbol>
+│
+├─ "Go to definition" or "Where is X defined"
+│   └─ Use: specweave lsp def <file> <symbol>
+│
+├─ "What type is X" or "Show signature of X"
+│   └─ Use: specweave lsp hover <file> <symbol>
+│
+├─ "List symbols in file" or "What's exported"
+│   └─ Use: specweave lsp symbols <file>
+│
+├─ "Find symbol X in workspace" or "Search for X"
+│   └─ Use: specweave lsp search <query>
+│
+└─ Text search, patterns, comments
+    └─ Use: Grep tool (not LSP)
+```
 
-## Example: Find All References
+## Why This Exists
 
-User: "Find all references to handleAutoCommand in src/cli/commands/auto.ts"
-
-Steps:
-1. Identify file: `src/cli/commands/auto.ts`
-2. Find symbol position (read file, locate `handleAutoCommand`)
-3. Call `lspManager.findReferences('src/cli/commands/auto.ts', line, char)`
-4. Format and display results
-
-## Why This Skill Exists
-
-Claude Code's built-in LSP has known bugs (GitHub Issues #15148, #16291, #20050). This skill provides direct access to language servers via JSON-RPC, bypassing Claude Code's broken infrastructure.
+Claude Code's built-in LSP has known bugs (GitHub Issues #15148, #16291, #20050).
+This skill provides direct access to language servers via SpecWeave's CLI,
+bypassing the broken infrastructure.
