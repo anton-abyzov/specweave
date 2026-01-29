@@ -61,6 +61,7 @@ import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-clon
 import {
   collectLivingDocsInputs,
 } from '../helpers/init/living-docs-preflight.js';
+import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -803,6 +804,64 @@ export async function initCommand(
       console.log('');
       console.log(chalk.yellow('  ℹ Not a git repository - git hooks not installed'));
       console.log(chalk.gray('    Run: git init && specweave install-hooks'));
+    }
+
+    // LSP Environment Variable Setup (v1.0.191)
+    // Only for Claude tool in interactive mode - LSP enhances code intelligence
+    const isQuickMode = options.quick || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+    if (toolName === 'claude' && !isQuickMode) {
+      console.log('');
+      console.log(chalk.cyan('━━━ LSP Support ━━━'));
+      console.log('');
+      console.log(chalk.gray('  LSP (Language Server Protocol) enables advanced code intelligence:'));
+      console.log(chalk.gray('   • Find references across your codebase'));
+      console.log(chalk.gray('   • Go to definition'));
+      console.log(chalk.gray('   • Type information and diagnostics'));
+      console.log('');
+
+      const shouldEnableLsp = await confirm({
+        message: 'Enable LSP support? (Adds ENABLE_LSP_TOOL=1 to your shell config)',
+        default: true
+      });
+
+      if (shouldEnableLsp) {
+        const result = setupLspEnvVar();
+
+        if (result.success) {
+          if (result.alreadyConfigured) {
+            console.log(chalk.green('  ✓ LSP already configured in ' + result.configPath));
+          } else {
+            console.log(chalk.green('  ✓ Added to ' + result.configPath + ':'));
+            console.log(chalk.gray('    ' + result.exportSyntax));
+            console.log('');
+            console.log(chalk.yellow('  ⚠ Restart your terminal for LSP to take effect'));
+          }
+
+          // Also add LSP config to project config.json
+          const configPath = path.join(targetDir, '.specweave', 'config.json');
+          if (fs.existsSync(configPath)) {
+            try {
+              const config = await fs.readJson(configPath);
+              config.lsp = {
+                enabled: true,
+                autoInstallPlugins: true,
+                marketplace: 'boostvolt/claude-code-lsps'
+              };
+              await fs.writeJson(configPath, config, { spaces: 2 });
+              console.log(chalk.gray('  ✓ LSP config added to .specweave/config.json'));
+            } catch {
+              // Non-critical, continue
+            }
+          }
+        } else {
+          console.log(chalk.yellow('  ⚠ Could not auto-configure LSP: ' + result.error));
+          console.log(chalk.gray('    Manual setup: Add this to your shell config (~/.zshrc or ~/.bashrc):'));
+          console.log(chalk.white('    ' + result.exportSyntax));
+        }
+      } else {
+        console.log(chalk.gray('  Skipped. Enable later by adding to your shell config:'));
+        console.log(chalk.white('    export ENABLE_LSP_TOOL=1'));
+      }
     }
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);

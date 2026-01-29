@@ -1,12 +1,12 @@
 ---
 name: reflect-check
-description: Diagnostic tool for validating SpecWeave reflection system health and troubleshooting issues. Use when reflection seems stuck, learnings aren't being captured, or MEMORY.md files aren't updating. Checks configuration, permissions, and system state.
+description: Diagnostic tool for validating SpecWeave reflection system health and troubleshooting issues. Use when reflection seems stuck, learnings aren't being captured, or CLAUDE.md Skill Memories aren't updating. Checks configuration, permissions, and system state.
 allowed-tools: Read, Bash
 ---
 
 # Reflect Health Check
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Category**: Diagnostics
 **Status**: Active
 
@@ -21,7 +21,6 @@ Diagnostic command to validate reflection system health and troubleshoot issues.
 - `reflect check`
 - `check reflect`
 - `reflection health`
-- `reflect status`
 - `reflect diagnostics`
 
 **Natural language**:
@@ -35,61 +34,42 @@ Diagnostic command to validate reflection system health and troubleshoot issues.
 
 Runs comprehensive health checks on the reflection system:
 
-1. **Config validation**: Checks reflect-config.json exists and is valid
-2. **Script syntax**: Validates reflect.sh has no syntax errors
-3. **Recent activity**: Shows last 10 reflection attempts
-4. **Memory status**: Lists memory files and learning counts
-5. **Hook status**: Verifies stop-reflect.sh is working
-6. **Pre-flight checks**: Runs same checks as stop-reflect.sh
+1. **Config validation**: Checks `.specweave/config.json` reflect settings
+2. **CLAUDE.md check**: Verifies Skill Memories section exists
+3. **Recent activity**: Shows learnings in CLAUDE.md
+4. **Hook status**: Verifies reflection hooks are working
 
 ## Execution
 
-When activated:
+When activated, check these items in order:
 
-```bash
-# Run health check
-bash plugins/specweave/scripts/reflect-check.sh
-```
-
-Returns formatted health report with:
-- ✅ Green checkmarks for passing checks
-- ❌ Red X for failing checks
-- 📊 Status information
-- 💡 Suggestions for fixes
+1. Read `.specweave/config.json` for reflect configuration
+2. Read `CLAUDE.md` for Skill Memories section
+3. Count learnings per skill category
+4. Report any issues found
 
 ## Output Format
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 REFLECT HEALTH CHECK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REFLECT HEALTH CHECK
 
-✅ Configuration
-   Auto-reflect: ON
-   Max learnings: 10
-   Confidence: medium
+Configuration
+   Reflection:      Enabled
+   Model:           haiku
+   Max/session:     3
 
-✅ Script Syntax
-   reflect.sh: Valid
+CLAUDE.md Status
+   Skill Memories:  Found
+   Total learnings: 5 across 3 skills
 
-✅ Dependencies
-   jq: Found
-   bash: 5.2.26
+   - devops: 1 learning
+   - frontend: 2 learnings
+   - general: 2 learnings
 
-📊 Recent Activity (last 10 attempts)
-   2026-01-07 08:00: Pre-flight checks passed
-   2026-01-07 07:30: No signals detected
-   ...
+Last modified: 2026-01-29
 
-📚 Memory Status
-   general.md: 4 learnings
-   testing.md: 3 learnings
-   git.md: 2 learnings
-
-💡 RECOMMENDATIONS
+RECOMMENDATIONS
    - None - system healthy
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## When to Use
@@ -102,13 +82,12 @@ Returns formatted health report with:
 
 ## Success Criteria
 
-- All checks pass (green checkmarks)
-- Recent activity shows successful reflections
-- Memory files are being updated
+- Config exists with reflect enabled
+- CLAUDE.md has Skill Memories section
+- Learnings are being added
 - Clear actionable recommendations if issues found
 
 ## Related
 
 - `/sw:reflect` - Manual reflection
 - `/sw:reflect-status` - Show config and stats
-- `stop-reflect.sh` - Auto-reflection hook

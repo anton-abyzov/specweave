@@ -1,11 +1,11 @@
 ---
 name: sw:reflect
-description: Analyze current session and extract learnings to skill memory files. Enables self-improving AI that learns from corrections and patterns. Activates for reflect, remember, learn from session, extract learnings.
+description: Analyze current session and extract learnings to CLAUDE.md Skill Memories. Enables self-improving AI that learns from corrections and patterns. Activates for reflect, remember, learn from session, extract learnings.
 ---
 
 # Reflect Command
 
-**Analyze session and extract learnings to skill memory files.**
+**Analyze session and extract learnings to CLAUDE.md Skill Memories section.**
 
 ## Usage
 
@@ -13,300 +13,95 @@ description: Analyze current session and extract learnings to skill memory files
 # Reflect on current session (analyzes all signals)
 /sw:reflect
 
-# Reflect on specific skill only
-/sw:reflect --skill frontend
-
 # Reflect with focus prompt
 /sw:reflect "Focus on the API patterns we discussed"
-
-# Dry run - show what would be learned without saving
-/sw:reflect --dry-run
-
-# Clear specific learning
-/sw:reflect-clear --learning LRN-2026-01-05-001
 ```
-
-## Arguments
-
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `--skill <name>` | Only extract learnings for this skill | All relevant |
-| `--dry-run` | Show learnings without saving | false |
-| `--confidence <level>` | Minimum confidence: high, medium, low | medium |
-| `--max <n>` | Maximum learnings to extract | 10 |
-| `<focus>` | Natural language focus for extraction | All signals |
 
 ## How It Works
 
-### Step 1: Signal Detection (ENHANCED v4.1)
+### Step 1: Signal Detection
 
-Scans conversation for signals and **captures FULL context**:
-
-**⚠️ CRITICAL: Context Must Include the PROBLEM, Not Just the Fix**
-
-When a user explains a problem like:
-```
-User: "When I use voice control, it always gives me 'command not recognized'"
-```
-
-You MUST capture:
-- **CONTEXT**: "When using voice control with skill commands" (the circumstance)
-- **LEARNING**: "Voice dictation can mangle command syntax - type commands or use clipboard" (the fix)
-- **SKILL**: If a skill name is mentioned (e.g., "the detector skill"), route to that skill
-
-**DO NOT** store just: `"always command not recognized"` ← This loses all meaning!
-
----
+Scans conversation for learnable signals:
 
 **Corrections (High Confidence)**
 ```
 User: "No, don't use that button. Use our <Button variant='primary'>"
-      → Detected: CORRECTION
-      → Context: User corrected button component usage in settings page
       → Learning: Always use Button component with variant='primary' from design system
-      → Confidence: high
+      → Skill: frontend
 ```
 
-**Problem Reports (High Confidence) - NEW!**
+**Problem Reports (High Confidence)**
 ```
-User: "The detector skill doesn't recognize commands when I use voice input"
-      → Detected: PROBLEM REPORT
-      → Context: Voice dictation causes command parsing issues
-      → Learning: Voice input mangles command syntax - recommend typing or clipboard
-      → Skill: detector (explicit skill name detected!)
-      → Confidence: high
+User: "Voice control doesn't recognize commands"
+      → Learning: Voice dictation mangles slash commands - type manually or paste
+      → Skill: general
 ```
 
 **Approvals (Medium Confidence)**
 ```
 User: "Perfect! That's exactly how our API should look."
-      → Detected: APPROVAL
-      → Context: User approved API response structure pattern
       → Learning: Continue using API pattern with status, data, error fields
-      → Confidence: medium
+      → Skill: backend
 ```
 
-### Step 2: Learning Extraction
+### Step 2: LLM Extraction
 
-Each detected signal is structured with FULL context:
+Uses Claude Haiku to extract SpecWeave-specific learnings:
 
-```json
-{
-  "id": "LRN-2026-01-05-001",
-  "type": "correction",
-  "confidence": "high",
-  "content": "Always use <Button variant='primary'> for primary actions from design system",
-  "context": "User corrected button component usage when implementing settings page",
-  "triggers": ["button", "primary", "action", "component"],
-  "skill": "frontend",
-  "source": "session:2026-01-05"
+```typescript
+interface SkillLearning {
+  skill: string;    // e.g., "frontend", "devops", "general"
+  learning: string; // The actual learning content
 }
 ```
 
-**Note**: The `context` field captures WHY and WHEN, not just WHAT.
+### Step 3: Write to CLAUDE.md
 
-### Step 3: Skill Matching
-
-Learnings are matched to relevant skills:
-
-| Category | Skill | Memory File |
-|----------|-------|-------------|
-| component-usage | frontend | ~/.claude/skills/frontend/MEMORY.md |
-| api-patterns | backend | ~/.claude/skills/backend/MEMORY.md |
-| testing | qa | ~/.claude/skills/qa/MEMORY.md |
-| deployment | devops | ~/.claude/skills/devops/MEMORY.md |
-
-### Step 4: Memory Update
-
-Updates skill MEMORY.md files:
+Updates the `## Skill Memories` section in CLAUDE.md:
 
 ```markdown
-# Frontend Skill Memory
+## Skill Memories
 
-## Learned Patterns (Auto-Generated)
+### Frontend
+- **2026-01-05**: Always use Button component with variant='primary' from design system
 
-### Component Usage
-
-#### LRN-2026-01-05-001 (High Confidence)
-**Context**: User corrected button component usage
-**Learning**: Always use `<Button variant='primary'>` for primary actions
-**Triggers**: button, primary, action
-**Added**: 2026-01-05
-```
-
-### Step 5: Review & Approval
-
-Before saving, shows proposed changes:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧠 REFLECT: Learnings Detected
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 SIGNALS DETECTED:
-  • Corrections: 2
-  • Approvals: 1
-  • Total learnings: 3
-
-📝 PROPOSED CHANGES:
-
-1. [HIGH] frontend/MEMORY.md
-   + LRN-001: Always use Button component with variant='primary'
-   Category: component-usage
-   Triggers: button, primary, action
-
-2. [HIGH] testing/MEMORY.md
-   + LRN-002: Use storageState for Playwright auth
-   Category: e2e-testing
-   Triggers: playwright, auth, login
-
-3. [MEDIUM] api/MEMORY.md
-   + LRN-003: Return 404 for missing resources (not 500)
-   Category: error-handling
-   Triggers: api, error, 404
-
-💾 COMMIT MESSAGE:
-   "learn: Extract 3 learnings from session (2 corrections, 1 approval)"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Options:
-  [Y] Accept and save
-  [N] Cancel
-  [E] Edit learnings
-  [V] View details
-```
-
-### Step 6: Git Commit (Optional)
-
-If git integration enabled:
-
-```bash
-git add ~/.claude/skills/*/MEMORY.md
-git commit -m "learn: Extract 3 learnings from session (2 corrections, 1 approval)"
-git push  # If autoPush enabled
+### Backend
+- **2026-01-05**: Return 404 for missing resources (not 500)
 ```
 
 ## Configuration
 
-### Project Config (`.specweave/config.json`)
+In `.specweave/config.json`:
 
 ```json
 {
   "reflect": {
     "enabled": true,
-    "autoReflect": false,
-    "confidenceThreshold": "medium",
-    "maxLearningsPerSession": 10,
-    "skillsPath": ".specweave/skills",
-    "gitCommit": true,
-    "gitPush": false,
-    "categories": [
-      "component-usage",
-      "api-patterns",
-      "testing",
-      "deployment",
-      "security",
-      "database"
-    ]
+    "model": "haiku",
+    "maxLearningsPerSession": 3
   }
 }
 ```
 
-### Global Config (`~/.claude/settings.json`)
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `enabled` | `true` | Master switch for reflection |
+| `model` | `"haiku"` | LLM model for extraction |
+| `maxLearningsPerSession` | `3` | Limit per session |
 
-```json
-{
-  "reflect": {
-    "globalSkillsPath": "~/.claude/skills",
-    "retentionDays": 90
-  }
-}
-```
+## Skill Categories
 
-## Examples
+Learnings are routed to these skills:
 
-### Basic Reflection
-
-```bash
-/sw:reflect
-```
-
-Output:
-```
-🧠 Analyzing session for learnings...
-
-Detected:
-  ✅ Correction: Button component usage → frontend/MEMORY.md
-  ✅ Correction: API error handling → api/MEMORY.md
-  ⚠️ Approval: Query pattern → database/MEMORY.md (medium confidence)
-
-Saved 3 learnings to skill memory files.
-Commit: learn: Extract 3 learnings from session
-```
-
-### Skill-Specific Reflection
-
-```bash
-/sw:reflect --skill testing
-```
-
-Output:
-```
-🧠 Analyzing session for testing-related learnings...
-
-Detected:
-  ✅ Correction: Playwright auth pattern → testing/MEMORY.md
-
-Saved 1 learning to testing skill.
-```
-
-### Dry Run
-
-```bash
-/sw:reflect --dry-run
-```
-
-Output:
-```
-🧠 DRY RUN - Showing what would be learned:
-
-1. [HIGH] frontend/MEMORY.md
-   + Always use Button component with variant='primary'
-
-2. [MEDIUM] api/MEMORY.md
-   + Return 404 for missing resources
-
-No changes saved (dry run mode).
-```
-
-## Memory File Format
-
-Each skill's MEMORY.md follows this structure:
-
-```markdown
-# [Skill Name] Memory
-
-> Auto-generated by SpecWeave Reflect. Do not edit manually.
-> Last updated: 2026-01-05T10:30:00Z
-
-## Learned Patterns
-
-### [Category]
-
-#### LRN-YYYY-MM-DD-NNN (Confidence)
-**Context**: What triggered this learning
-**Learning**: The actual pattern/rule to follow
-**Triggers**: keyword1, keyword2, keyword3
-**Added**: YYYY-MM-DD
-**Source**: session:session-id
-
----
-
-### [Another Category]
-
-[More learnings...]
-```
+| Skill | What it covers |
+|-------|---------------|
+| `mobile` | React Native, Expo, iOS, Android |
+| `frontend` | React, Vue, Next.js, UI components |
+| `backend` | APIs, Node.js, .NET, databases |
+| `testing` | Vitest, Jest, Playwright, E2E |
+| `devops` | CI/CD, Docker, deployments |
+| `architect` | System design, ADRs, patterns |
+| `general` | Fallback for general SpecWeave learnings |
 
 ## Related Commands
 
@@ -317,53 +112,21 @@ Each skill's MEMORY.md follows this structure:
 | `/sw:reflect-status` | Show reflection configuration |
 | `/sw:reflect-clear` | Remove specific learnings |
 
-## Related Skills
-
-- **reflect** - Full skill documentation
-- **context-loader** - How skills are loaded progressively
-
-## Execution
-
-**CRITICAL: Execute steps SEQUENTIALLY. Wait for each tool call to complete before the next.**
-**DO NOT make parallel tool calls - this causes API concurrency errors.**
-
-When this command is invoked:
-
-1. **Scan conversation** for correction, approval, and complaint signals (NO tool calls - analyze in context)
-2. **Transform each signal** into an actionable learning (see Quality Rules below)
-3. **Validate** each learning against quality checklist
-4. **REJECT** low-quality extractions (truncated, questions, gibberish)
-5. **Match to skills** based on category and keywords
-6. **Show preview** of proposed changes (output to user - NO tool call)
-7. **Read existing MEMORY.md** (ONE Read tool call, wait for result)
-8. **Save to MEMORY.md** files on approval (ONE Write tool call per file, sequential)
-9. **Git commit** if configured (ONE Bash call)
-10. **Show confirmation** with learning summary (output to user - NO tool call)
-
-## ⚠️ CRITICAL: Quality Rules
+## Quality Rules
 
 **NEVER store user input verbatim. ALWAYS synthesize into actionable rules.**
 
-### Learning Quality Checklist (MUST PASS ALL)
+### Learning Quality Checklist
 
-Before storing ANY learning, verify it passes ALL checks:
+Before storing ANY learning:
 
 | Check | Requirement | Example Failure |
 |-------|-------------|-----------------|
-| Complete | Full sentence, not truncated | `"eplicilty how to g"` ❌ |
-| Actionable | Contains DO/DON'T/USE/AVOID | `"Where should I deploy?"` ❌ |
-| Specific | Names tools, patterns, concepts | `"always command not recognized"` ❌ |
-| Standalone | Understandable without context | `"user pojrect based on specweave"` ❌ |
-| Not a Question | Must be a statement | `"Where should I deploy?"` ❌ |
-| Transformed | Complaints → Solutions | Raw symptom without fix ❌ |
-
-### Transformation Requirements
-
-| User Signal | WRONG Extraction | CORRECT Extraction |
-|-------------|------------------|-------------------|
-| "it gives 'command not recognized'" | `command not recognized` | `Voice dictation mangles slash commands - type manually or paste` |
-| "don't use jest.fn()" | `don't use jest.fn()` | `Use vi.fn() not jest.fn() with Vitest framework` |
-| "Perfect!" (after Claude showed pattern) | `Perfect!` | `{The actual pattern that was approved}` |
+| Complete | Full sentence, not truncated | `"eplicilty how to g"` |
+| Actionable | Contains DO/DON'T/USE/AVOID | `"Where should I deploy?"` |
+| Specific | Names tools, patterns, concepts | `"always command not recognized"` |
+| Standalone | Understandable without context | `"user pojrect"` |
+| Not a Question | Must be a statement | `"Where should I deploy?"` |
 
 ### What to REJECT (Never Store)
 

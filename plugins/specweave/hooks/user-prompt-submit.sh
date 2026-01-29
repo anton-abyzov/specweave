@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.177 - Skill Chaining Reminder)
+# SpecWeave UserPromptSubmit Hook (v1.0.191 - LSP Project Config)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
@@ -280,6 +280,103 @@ Without it, Claude uses text search which is slower and less accurate.
       TMP_FILE=$(mktemp)
       jq '.warned = true' "$LSP_STATE_FILE" > "$TMP_FILE" 2>/dev/null && mv "$TMP_FILE" "$LSP_STATE_FILE" 2>/dev/null
     fi
+  fi
+fi
+
+# ==============================================================================
+# LSP PROJECT CONFIG (v1.0.191) - Project-level LSP configuration
+# ==============================================================================
+# Reads LSP settings from .specweave/config.json instead of requiring env vars
+# Config schema:
+#   lsp.enabled: true/false - Enable LSP features for this project
+#   lsp.autoInstallPlugins: true/false - Auto-install marketplace and plugins
+#   lsp.marketplace: "boostvolt/claude-code-lsps" - Which marketplace to use
+#   lsp.plugins.typescript: "vtsls" - TypeScript LSP plugin
+#   lsp.plugins.python: "pyright" - Python LSP plugin
+
+LSP_CONFIG_ENABLED="false"
+LSP_AUTO_INSTALL="false"
+LSP_MARKETPLACE="boostvolt/claude-code-lsps"
+LSP_MARKETPLACE_URL="https://github.com/boostvolt/claude-code-lsps"
+LSP_ENV_WARNED="false"
+
+if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+  LSP_CONFIG_ENABLED=$(jq -r '.lsp.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+  LSP_AUTO_INSTALL=$(jq -r '.lsp.autoInstallPlugins // false' "$CONFIG_PATH" 2>/dev/null)
+  LSP_MARKETPLACE=$(jq -r '.lsp.marketplace // "boostvolt/claude-code-lsps"' "$CONFIG_PATH" 2>/dev/null)
+fi
+
+# Check for LSP request keywords (find references, go to definition, etc.)
+LSP_REQUEST_DETECTED="false"
+if echo "$PROMPT" | grep -qiE "(find|get|show)[[:space:]]+(all[[:space:]]+)?references|go[[:space:]]?to[[:space:]]?definition|goto[[:space:]]?definition|LSP|findReferences|goToDefinition|hover|documentSymbol|workspaceSymbol"; then
+  LSP_REQUEST_DETECTED="true"
+fi
+
+# LSP environment variable check - warn once if config enabled but env var missing
+LSP_ENV_SETUP_MSG=""
+LSP_ENV_STATE_FILE=".specweave/state/lsp-env-warned.flag"
+if [[ "$LSP_CONFIG_ENABLED" == "true" ]] && [[ -z "${ENABLE_LSP_TOOL:-}" ]]; then
+  if [[ ! -f "$LSP_ENV_STATE_FILE" ]]; then
+    LSP_ENV_SETUP_MSG="⚠️ **LSP Setup Required**
+
+LSP is enabled in your project config (\`.specweave/config.json\`) but the required environment variable is not set.
+
+**One-time setup** - add to \`~/.zshrc\` or \`~/.bashrc\`:
+\`\`\`bash
+export ENABLE_LSP_TOOL=1
+\`\`\`
+
+Then restart your terminal and Claude Code.
+
+---
+
+"
+    # Mark as warned
+    mkdir -p "$(dirname "$LSP_ENV_STATE_FILE")" 2>/dev/null
+    touch "$LSP_ENV_STATE_FILE" 2>/dev/null
+  fi
+fi
+
+# Auto-install marketplace and plugins when LSP is requested
+LSP_INSTALL_MSG=""
+if [[ "$LSP_REQUEST_DETECTED" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
+  # Check if marketplace is already installed
+  MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/claude-code-lsps"
+  if [[ ! -d "$MARKETPLACE_DIR" ]] && command -v claude >/dev/null 2>&1; then
+    # Install the marketplace
+    if timeout 15 claude plugin marketplace add "$LSP_MARKETPLACE_URL" >/dev/null 2>&1; then
+      LSP_INSTALL_MSG="✅ **LSP marketplace installed**: \`$LSP_MARKETPLACE\`
+"
+    fi
+  fi
+
+  # Auto-install TypeScript LSP plugin (vtsls) for .ts/.tsx files
+  if echo "$PROMPT" | grep -qiE "\.tsx?|typescript|react|vue|angular|node"; then
+    VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+    if [[ "$VTSLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+      if timeout 15 claude plugin install vtsls@claude-code-lsps >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **TypeScript LSP installed**: \`vtsls@claude-code-lsps\`
+"
+      fi
+    fi
+  fi
+
+  # Auto-install Python LSP plugin (pyright) for .py files
+  if echo "$PROMPT" | grep -qiE "\.py|python|django|flask|fastapi"; then
+    PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+    if [[ "$PYRIGHT_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+      if timeout 15 claude plugin install pyright@claude-code-lsps >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\`
+"
+      fi
+    fi
+  fi
+
+  if [[ -n "$LSP_INSTALL_MSG" ]]; then
+    LSP_INSTALL_MSG="${LSP_INSTALL_MSG}
+---
+
+"
   fi
 fi
 
@@ -1563,6 +1660,16 @@ FINAL_MESSAGE=""
 # Add plugin auto-loading message if set (from earlier keyword detection)
 if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
   FINAL_MESSAGE="$AUTOLOAD_PLUGINS_MSG"
+fi
+
+# v1.0.191: Add LSP environment setup warning if needed
+if [[ -n "$LSP_ENV_SETUP_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_ENV_SETUP_MSG}"
+fi
+
+# v1.0.191: Add LSP marketplace/plugin installation message if installed
+if [[ -n "$LSP_INSTALL_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_INSTALL_MSG}"
 fi
 
 # v1.0.180: Add explicit LSP request explanation if detected

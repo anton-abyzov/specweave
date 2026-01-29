@@ -1,60 +1,32 @@
 ---
 name: sw:reflect-clear
-description: Clear specific learnings from skill memory files. Activates for reflect clear, clear learning, remove learning, delete memory.
+description: Clear specific learnings from CLAUDE.md Skill Memories section. Activates for reflect clear, clear learning, remove learning, delete memory.
 ---
 
 # Reflect Clear Command
 
-**Remove specific learnings from skill memory files.**
+**Remove specific learnings from CLAUDE.md Skill Memories section.**
 
 ## Usage
 
 ```bash
-# Clear specific learning by ID
-/sw:reflect-clear --learning LRN-2026-01-05-001
-
 # Clear all learnings for a skill
 /sw:reflect-clear --skill frontend
 
-# Clear all learnings older than N days
-/sw:reflect-clear --older-than 90
-
 # Clear all learnings (with confirmation)
 /sw:reflect-clear --all
-
-# Dry run
-/sw:reflect-clear --skill frontend --dry-run
 ```
 
 ## Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `--learning <id>` | Clear specific learning by ID |
 | `--skill <name>` | Clear all learnings for skill |
-| `--older-than <days>` | Clear learnings older than N days |
 | `--all` | Clear ALL learnings (requires confirmation) |
-| `--dry-run` | Show what would be cleared |
 
 ## Examples
 
-### Clear Specific Learning
-
-```bash
-/sw:reflect-clear --learning LRN-2026-01-05-001
-```
-
-Output:
-```
-🗑️ Clearing learning LRN-2026-01-05-001...
-
-Removed from frontend/MEMORY.md:
-  - "Always use Button component with variant='primary'"
-
-✅ Learning cleared.
-```
-
-### Clear Skill Memory
+### Clear Skill Learnings
 
 ```bash
 /sw:reflect-clear --skill frontend
@@ -62,45 +34,50 @@ Removed from frontend/MEMORY.md:
 
 Output:
 ```
-🗑️ Clear all learnings for 'frontend' skill?
+Clearing learnings for 'frontend' skill...
 
-This will remove 23 learnings from:
-  ~/.claude/skills/frontend/MEMORY.md
+This will remove 3 learnings from CLAUDE.md:
+  - "Always use Button component with variant='primary'"
+  - "Use shadcn/ui for all UI components"
+  - "Prefer Vercel over Cloudflare for this project"
 
 Type 'yes' to confirm: yes
 
-✅ Cleared 23 learnings from frontend skill.
+Cleared 3 learnings from frontend skill.
 ```
 
-### Clear Old Learnings
+### Clear All Learnings
 
 ```bash
-/sw:reflect-clear --older-than 90
+/sw:reflect-clear --all
 ```
 
 Output:
 ```
-🗑️ Clearing learnings older than 90 days...
+Clear ALL learnings from CLAUDE.md?
 
-Found 7 learnings to remove:
-  - frontend: 3 learnings
-  - backend: 2 learnings
-  - testing: 2 learnings
+This will remove 12 learnings across all skills:
+  - frontend: 3
+  - backend: 4
+  - devops: 2
+  - general: 3
 
 Type 'yes' to confirm: yes
 
-✅ Cleared 7 old learnings.
+Cleared 12 learnings.
 ```
+
+## How It Works
+
+1. Reads CLAUDE.md to find the `## Skill Memories` section
+2. Shows matching learnings for confirmation
+3. On approval, removes the learnings
+4. Writes updated CLAUDE.md
 
 ## Execution
 
-**CRITICAL: Execute steps SEQUENTIALLY. Wait for each tool call to complete before the next.**
-**DO NOT make parallel tool calls - this causes API concurrency errors.**
-
 When this command is invoked:
 
-1. **Parse arguments** for learning ID, skill, or age filter (NO tool call - parse from prompt)
-2. **Read MEMORY.md file(s)** to find matching learnings (ONE Read per file, sequential)
-3. **Show confirmation** with what will be deleted (output to user - NO tool call)
-4. **Write updated MEMORY.md** files on confirmation (ONE Write per file, sequential)
-5. **Git commit** if configured (ONE Bash call)
+1. **Read CLAUDE.md** to find Skill Memories section
+2. **Show confirmation** with what will be deleted
+3. **Edit CLAUDE.md** to remove matching learnings on confirmation

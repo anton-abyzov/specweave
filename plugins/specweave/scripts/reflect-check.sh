@@ -1,8 +1,8 @@
 #!/bin/bash
-# reflect-check.sh - Reflection System Health Check
+# reflect-check.sh - Reflection System Health Check (v3.0)
 #
 # Diagnostic tool to validate reflection system health and troubleshoot issues.
-# Runs the same pre-flight checks as stop-reflect.sh hook.
+# Checks TypeScript implementation and CLAUDE.md Skill Memories section.
 #
 # Usage: bash reflect-check.sh
 
@@ -13,12 +13,10 @@ set +e  # Don't exit on errors - we want to report all issues
 # ============================================================================
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
-STATE_DIR="$PROJECT_ROOT/.specweave/state"
-REFLECT_CONFIG="$STATE_DIR/reflect-config.json"
+CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+CLAUDE_MD="$PROJECT_ROOT/CLAUDE.md"
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs/reflect"
-MEMORY_DIR="$PROJECT_ROOT/.specweave/memory"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REFLECT_SCRIPT="$SCRIPT_DIR/reflect.sh"
 HOOK_SCRIPT="$SCRIPT_DIR/../hooks/stop-reflect.sh"
 
 # Colors for output (fallback if tput unavailable or no TERM)
@@ -72,7 +70,7 @@ add_recommendation() {
 
 main() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "${BLUE}🔍 REFLECT HEALTH CHECK${RESET}"
+    echo "${BLUE}🔍 REFLECT HEALTH CHECK (v3.0)${RESET}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 
@@ -82,55 +80,36 @@ main() {
 
     echo "${BLUE}📋 Configuration${RESET}"
 
-    if [ -f "$REFLECT_CONFIG" ]; then
-        if jq empty "$REFLECT_CONFIG" 2>/dev/null; then
+    if [ -f "$CONFIG_FILE" ]; then
+        if jq empty "$CONFIG_FILE" 2>/dev/null; then
             check_result "pass" "Config file found and valid"
 
-            local auto=$(jq -r '.autoReflect // false' "$REFLECT_CONFIG" 2>/dev/null)
-            local enabled=$(jq -r '.enabled // true' "$REFLECT_CONFIG" 2>/dev/null)
-            local max=$(jq -r '.maxLearningsPerSession // 10' "$REFLECT_CONFIG" 2>/dev/null)
-            local conf=$(jq -r '.confidenceThreshold // "medium"' "$REFLECT_CONFIG" 2>/dev/null)
+            local enabled=$(jq -r '.reflect.enabled // true' "$CONFIG_FILE" 2>/dev/null)
+            local model=$(jq -r '.reflect.model // "haiku"' "$CONFIG_FILE" 2>/dev/null)
+            local max=$(jq -r '.reflect.maxLearningsPerSession // 3' "$CONFIG_FILE" 2>/dev/null)
 
-            check_result "info" "Auto-reflect: $auto"
             check_result "info" "Enabled: $enabled"
+            check_result "info" "Model: $model"
             check_result "info" "Max learnings/session: $max"
-            check_result "info" "Confidence threshold: $conf"
 
-            if [ "$auto" = "false" ]; then
-                add_recommendation "Auto-reflect is OFF. Run '/sw:reflect-on' to enable automatic learning."
+            if [ "$enabled" = "false" ]; then
+                add_recommendation "Reflection is disabled. Set reflect.enabled: true in config."
             fi
         else
             check_result "fail" "Config file exists but has invalid JSON"
-            add_recommendation "Fix config file: $REFLECT_CONFIG"
+            add_recommendation "Fix config file: $CONFIG_FILE"
         fi
     else
-        check_result "fail" "Config file not found"
-        add_recommendation "Run '/sw:reflect-on' to initialize reflection system"
+        check_result "warn" "Config file not found (using defaults)"
     fi
 
     echo ""
 
     # ========================================
-    # CHECK 2: Script Syntax
+    # CHECK 2: Hook Validation
     # ========================================
 
-    echo "${BLUE}📝 Script Validation${RESET}"
-
-    if [ -f "$REFLECT_SCRIPT" ]; then
-        if bash -n "$REFLECT_SCRIPT" 2>/dev/null; then
-            check_result "pass" "reflect.sh syntax valid"
-        else
-            check_result "fail" "reflect.sh has syntax errors"
-            local errors=$(bash -n "$REFLECT_SCRIPT" 2>&1)
-            echo "   ${RED}Errors:${RESET}"
-            echo "$errors" | head -5 | sed 's/^/   /'
-            add_recommendation "Fix syntax errors in $REFLECT_SCRIPT"
-            add_recommendation "Check for unresolved merge conflicts (<<<<<, =====, >>>>>)"
-        fi
-    else
-        check_result "fail" "reflect.sh not found"
-        add_recommendation "Script missing at: $REFLECT_SCRIPT"
-    fi
+    echo "${BLUE}📝 Hook Validation${RESET}"
 
     if [ -f "$HOOK_SCRIPT" ]; then
         if bash -n "$HOOK_SCRIPT" 2>/dev/null; then
@@ -140,20 +119,17 @@ main() {
             add_recommendation "Fix syntax errors in $HOOK_SCRIPT"
         fi
     else
-        check_result "warn" "stop-reflect.sh hook not found"
+        check_result "fail" "stop-reflect.sh hook not found"
+        add_recommendation "Hook missing at: $HOOK_SCRIPT"
     fi
 
-    # Check cached marketplace version
-    local cached_script="$HOME/.claude/plugins/cache/specweave/sw/1.0.0/hooks/../scripts/reflect.sh"
-    if [ -f "$cached_script" ]; then
-        if bash -n "$cached_script" 2>/dev/null; then
-            check_result "pass" "Cached marketplace version valid"
-        else
-            check_result "warn" "Cached marketplace version has syntax errors"
-            add_recommendation "Restart Claude Code to refresh marketplace cache"
-        fi
+    # Check specweave CLI
+    if command -v specweave >/dev/null 2>&1; then
+        local version=$(specweave --version 2>/dev/null || echo "unknown")
+        check_result "pass" "specweave CLI found" "$version"
     else
-        check_result "info" "Cached version not found (will be loaded on next restart)"
+        check_result "warn" "specweave CLI not found (reflection may not work)"
+        add_recommendation "Install specweave: npm install -g specweave"
     fi
 
     echo ""
@@ -172,13 +148,6 @@ main() {
         add_recommendation "Install jq: brew install jq (macOS) or apt install jq (Linux)"
     fi
 
-    if command -v bash >/dev/null 2>&1; then
-        local bash_version=$(bash --version 2>/dev/null | head -1)
-        check_result "pass" "bash found" "$bash_version"
-    else
-        check_result "fail" "bash not found"
-    fi
-
     echo ""
 
     # ========================================
@@ -188,99 +157,59 @@ main() {
     echo "${BLUE}📊 Recent Activity${RESET}"
 
     if [ -f "$LOGS_DIR/reflect.log" ]; then
-        local recent=$(tail -10 "$LOGS_DIR/reflect.log" 2>/dev/null)
+        local recent=$(tail -5 "$LOGS_DIR/reflect.log" 2>/dev/null)
         if [ -n "$recent" ]; then
             check_result "pass" "Found recent reflection activity"
             echo ""
-            echo "   ${BLUE}Last 10 log entries:${RESET}"
-            echo "$recent" | while IFS= read -r line; do
-                local level=$(echo "$line" | jq -r '.lvl // "info"' 2>/dev/null || echo "info")
-                local msg=$(echo "$line" | jq -r '.msg // ""' 2>/dev/null || echo "$line")
-                local ts=$(echo "$line" | jq -r '.ts // ""' 2>/dev/null || echo "")
-
-                case "$level" in
-                    error) echo "   ${RED}[$ts] ERROR: $msg${RESET}" ;;
-                    warn)  echo "   ${YELLOW}[$ts] WARN: $msg${RESET}" ;;
-                    *)     echo "   [$ts] $msg" ;;
-                esac
-            done
+            echo "   ${BLUE}Last 5 log entries:${RESET}"
+            echo "$recent" | sed 's/^/   /'
         else
             check_result "warn" "Log file exists but is empty"
         fi
     else
         check_result "warn" "No reflection log found"
-        add_recommendation "Reflection may not have run yet. Trigger it with '/sw:reflect'."
-    fi
-
-    if [ -f "$LOGS_DIR/auto-reflect.log" ]; then
-        # Check if marketplace cache is fresh (refreshed today)
-        local cached_script="$HOME/.claude/plugins/cache/specweave/sw/1.0.0/hooks/../scripts/reflect.sh"
-        local cache_is_fresh=false
-
-        if [ -f "$cached_script" ]; then
-            # Check if cached script was modified in last hour (indicates recent refresh)
-            if find "$cached_script" -mmin -60 2>/dev/null | grep -q .; then
-                cache_is_fresh=true
-            fi
-        fi
-
-        # Check for errors in the log
-        local all_errors=$(grep -i "syntax error" "$LOGS_DIR/auto-reflect.log" 2>/dev/null | tail -3)
-
-        if [ -n "$all_errors" ]; then
-            if [ "$cache_is_fresh" = "true" ]; then
-                echo ""
-                echo "   ${YELLOW}ℹ️  Historical errors (before marketplace refresh):${RESET}"
-                echo "$all_errors" | sed 's/^/   /' | head -1
-                echo "   ${GREEN}✓ Marketplace cache refreshed - errors should not recur${RESET}"
-            else
-                echo ""
-                echo "   ${RED}⚠️  Syntax errors in auto-reflect.log:${RESET}"
-                echo "$all_errors" | sed 's/^/   /'
-                add_recommendation "Errors detected. Run 'bash scripts/refresh-marketplace.sh --github' to update cache"
-                add_recommendation "Restart Claude Code after marketplace refresh"
-            fi
-        fi
+        add_recommendation "Reflection may not have run yet."
     fi
 
     echo ""
 
     # ========================================
-    # CHECK 5: Memory Status
+    # CHECK 5: CLAUDE.md Skill Memories
     # ========================================
 
-    echo "${BLUE}📚 Memory Status${RESET}"
+    echo "${BLUE}📚 Skill Memories (CLAUDE.md)${RESET}"
 
-    if [ -d "$MEMORY_DIR" ]; then
-        local total_rules=0
-        local file_count=0
+    if [ -f "$CLAUDE_MD" ]; then
+        if grep -q "## Skill Memories" "$CLAUDE_MD" 2>/dev/null; then
+            check_result "pass" "Skill Memories section found in CLAUDE.md"
 
-        for f in "$MEMORY_DIR"/*.md; do
-            if [ -f "$f" ]; then
-                local name=$(basename "$f" .md)
-                local count=$(grep -c "^- " "$f" 2>/dev/null || echo 0)
-                count=$(echo "$count" | tr -d '\n' | tr -d ' ')  # Remove whitespace
+            # Count learnings per skill
+            local total=0
+            local in_section=false
 
-                if [ "$count" -gt 0 ] 2>/dev/null; then
-                    check_result "info" "$name.md: $count learnings"
-                else
-                    check_result "info" "$name.md: 0 learnings (empty)"
+            while IFS= read -r line; do
+                if echo "$line" | grep -q "^## Skill Memories"; then
+                    in_section=true
+                elif [ "$in_section" = true ] && echo "$line" | grep -q "^## "; then
+                    break
+                elif [ "$in_section" = true ] && echo "$line" | grep -q "^### "; then
+                    local skill=$(echo "$line" | sed 's/^### //')
+                    local count=$(grep -c "^- \*\*" "$CLAUDE_MD" 2>/dev/null || echo "0")
+                    check_result "info" "$skill: $(echo "$count" | head -1) learnings"
+                elif [ "$in_section" = true ] && echo "$line" | grep -q "^- \*\*"; then
+                    total=$((total + 1))
                 fi
+            done < "$CLAUDE_MD"
 
-                total_rules=$((total_rules + count))
-                file_count=$((file_count + 1))
-            fi
-        done
-
-        echo ""
-        check_result "info" "Total: $total_rules learnings across $file_count files"
-
-        if [ "$total_rules" -eq 0 ]; then
-            add_recommendation "No learnings captured yet. Create a learning with user corrections."
+            echo ""
+            check_result "info" "Total learnings: $total"
+        else
+            check_result "warn" "No Skill Memories section found in CLAUDE.md"
+            add_recommendation "Skill Memories section will be created on first reflection"
         fi
     else
-        check_result "warn" "Memory directory not found"
-        add_recommendation "Memory directory will be created on first reflection"
+        check_result "fail" "CLAUDE.md not found"
+        add_recommendation "Create CLAUDE.md or run specweave init"
     fi
 
     echo ""
