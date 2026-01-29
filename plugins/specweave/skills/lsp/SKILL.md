@@ -2,8 +2,8 @@
 name: lsp
 description: >
   Code intelligence via LSP - find references, go to definition, hover type info, list symbols.
-  Activates on: "find all references", "go to definition", "where is X defined",
-  "show type of", "list symbols", "search symbols", "what uses", "who calls".
+  Activates on: "LSP", "findReferences", "find all references", "go to definition",
+  "where is X defined", "show type of", "list symbols", "search symbols", "what uses", "who calls".
   Works with TypeScript, Python, C#, Go, Rust. Falls back to grep if LSP unavailable.
 ---
 
@@ -11,7 +11,24 @@ description: >
 
 Use SpecWeave's LSP CLI for semantic code navigation and analysis.
 
-## How to Use (IMPORTANT)
+## IMPORTANT: File Path Required
+
+**If the user does NOT specify a file path, you MUST first find the file:**
+
+```bash
+# Step 1: Find which file(s) contain the symbol
+grep -rn --include="*.ts" "function symbolName\|class symbolName" .
+
+# Step 2: Then use LSP on the found file
+specweave lsp refs <found-file> <symbol>
+```
+
+**Example:**
+User says: "Find references to sayHello"
+1. First: `grep -rn --include="*.ts" "function sayHello" .` → finds `src/utils.ts`
+2. Then: `specweave lsp refs src/utils.ts sayHello`
+
+## How to Use
 
 **Use Bash tool with `specweave lsp` commands:**
 
