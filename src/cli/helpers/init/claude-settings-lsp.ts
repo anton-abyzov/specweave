@@ -1,16 +1,23 @@
 /**
- * Claude Code LSP Settings Auto-Configuration
+ * Claude Code LSP Plugin Auto-Configuration
  *
- * Automatically configures LSP servers in .claude/settings.json during
- * `specweave init` and `specweave update`.
+ * Automatically installs a local LSP plugin during `specweave init` and
+ * `specweave update` to enable code intelligence features like:
+ * - Go to Definition
+ * - Find References
+ * - Hover information
  *
- * This removes the need for users to manually set ENABLE_LSP_TOOL=1 or
- * configure LSP servers - it's all done automatically based on detected
- * project tech stack.
+ * This creates a local plugin at `.claude/plugins/specweave-lsp/` with
+ * proper `.lsp.json` configuration, which is the correct way to enable
+ * LSP in Claude Code (not via settings.json directly).
  */
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * LSP Server Configuration
@@ -189,18 +196,52 @@ export function buildLspServersConfig(techStack: string[]): Record<string, LspSe
 }
 
 /**
- * Ensure .claude/settings.json exists and has lspServers configured
+ * Install local LSP plugin to .claude/plugins/specweave-lsp/
  *
- * Called during `specweave init` to set up LSP automatically.
+ * This is the correct way to enable LSP in Claude Code - via a plugin
+ * with .lsp.json, not via settings.json directly.
  */
-export async function ensureClaudeSettingsWithLsp(projectDir: string): Promise<void> {
-  const claudeDir = path.join(projectDir, '.claude');
-  const settingsPath = path.join(claudeDir, 'settings.json');
+export async function installLocalLspPlugin(projectDir: string): Promise<boolean> {
+  const pluginDir = path.join(projectDir, '.claude', 'plugins', 'specweave-lsp');
+  const pluginJsonPath = path.join(pluginDir, '.claude-plugin', 'plugin.json');
+  const lspJsonPath = path.join(pluginDir, '.lsp.json');
 
-  // Ensure .claude directory exists
-  if (!fs.existsSync(claudeDir)) {
-    fs.mkdirSync(claudeDir, { recursive: true });
+  // Skip if plugin already exists
+  if (fs.existsSync(pluginJsonPath) && fs.existsSync(lspJsonPath)) {
+    return false;
   }
+
+  // Detect tech stack
+  const techStack = detectTechStack(projectDir);
+  const lspServers = buildLspServersConfig(techStack);
+
+  // Create plugin directory structure
+  fs.mkdirSync(path.join(pluginDir, '.claude-plugin'), { recursive: true });
+
+  // Write plugin.json
+  const pluginJson = {
+    name: 'specweave-lsp',
+    version: '1.0.0',
+    description: 'Auto-configured LSP servers for code intelligence',
+    author: {
+      name: 'SpecWeave',
+      url: 'https://spec-weave.com',
+    },
+    keywords: ['lsp', 'code-intelligence'],
+  };
+  fs.writeFileSync(pluginJsonPath, JSON.stringify(pluginJson, null, 2) + '\n');
+
+  // Write .lsp.json with detected servers
+  fs.writeFileSync(lspJsonPath, JSON.stringify(lspServers, null, 2) + '\n');
+
+  return true;
+}
+
+/**
+ * Enable the local LSP plugin in settings.json
+ */
+export async function enableLspPluginInSettings(projectDir: string): Promise<void> {
+  const settingsPath = path.join(projectDir, '.claude', 'settings.json');
 
   // Read existing settings or create new
   let settings: Record<string, unknown> = {};
@@ -208,35 +249,57 @@ export async function ensureClaudeSettingsWithLsp(projectDir: string): Promise<v
     try {
       settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     } catch {
-      // Invalid JSON, start fresh but preserve the file
       settings = {};
     }
   }
 
-  // Don't overwrite existing lspServers configuration
-  if (settings.lspServers) {
-    return;
-  }
+  // Ensure .claude directory exists
+  fs.mkdirSync(path.join(projectDir, '.claude'), { recursive: true });
 
-  // Detect tech stack
-  const techStack = detectTechStack(projectDir);
+  // Add plugin to enabledPlugins if not already there
+  const enabledPlugins = (settings.enabledPlugins || {}) as Record<string, boolean>;
 
-  // Build LSP configuration
-  const lspServers = buildLspServersConfig(techStack);
+  // Enable the local plugin (path-based plugin)
+  enabledPlugins['./plugins/specweave-lsp'] = true;
 
-  // Merge with existing settings
-  settings.lspServers = lspServers;
+  settings.enabledPlugins = enabledPlugins;
 
   // Write back
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
 }
 
 /**
- * Ensure LSP settings exist during `specweave update`
+ * Ensure LSP is configured during `specweave init`
  *
- * Adds lspServers if missing, preserves existing configuration.
+ * Creates a local LSP plugin and enables it in settings.json.
+ */
+export async function ensureClaudeSettingsWithLsp(projectDir: string): Promise<void> {
+  // Install the local LSP plugin
+  const installed = await installLocalLspPlugin(projectDir);
+
+  // Enable it in settings.json
+  await enableLspPluginInSettings(projectDir);
+
+  // For backwards compatibility, also add lspServers to settings.json
+  // (in case future Claude Code versions support this)
+  const settingsPath = path.join(projectDir, '.claude', 'settings.json');
+  if (fs.existsSync(settingsPath)) {
+    try {
+      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+      if (!settings.lspServers) {
+        const techStack = detectTechStack(projectDir);
+        settings.lspServers = buildLspServersConfig(techStack);
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+}
+
+/**
+ * Ensure LSP settings exist during `specweave update`
  */
 export async function ensureLspSettingsOnUpdate(projectDir: string): Promise<void> {
-  // Same logic as init - only adds if missing
   await ensureClaudeSettingsWithLsp(projectDir);
 }

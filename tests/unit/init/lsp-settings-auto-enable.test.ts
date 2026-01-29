@@ -1,10 +1,11 @@
 /**
  * Unit Tests for LSP Auto-Enable Feature
  *
- * Tests that LSP configuration is automatically added to .claude/settings.json
+ * Tests that LSP configuration is automatically set up via a local plugin
  * during `specweave init` and `specweave update`.
  *
- * TDD Red Phase: These tests should FAIL initially.
+ * The correct approach is to create a plugin at .claude/plugins/specweave-lsp/
+ * with .lsp.json, NOT to put lspServers directly in settings.json.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -37,13 +38,17 @@ describe('LSP Auto-Enable Feature', () => {
       // Execute
       await ensureClaudeSettingsWithLsp(tempDir);
 
-      // Verify
+      // Verify settings.json has lspServers (for backwards compat)
       const settingsPath = path.join(tempDir, '.claude', 'settings.json');
       expect(fs.existsSync(settingsPath)).toBe(true);
 
       const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
       expect(settings.lspServers).toBeDefined();
       expect(settings.lspServers.vtsls).toBeDefined();
+
+      // Also verify plugin was created (the correct approach)
+      const pluginPath = path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json');
+      expect(fs.existsSync(pluginPath)).toBe(true);
     });
 
     it('should add lspServers to existing .claude/settings.json without overwriting permissions', async () => {
@@ -80,6 +85,10 @@ describe('LSP Auto-Enable Feature', () => {
 
       // Should add lspServers
       expect(settings.lspServers).toBeDefined();
+
+      // Should enable plugin
+      expect(settings.enabledPlugins).toBeDefined();
+      expect(settings.enabledPlugins['./plugins/specweave-lsp']).toBe(true);
     });
 
     it('should not overwrite existing lspServers configuration', async () => {
@@ -128,13 +137,13 @@ describe('LSP Auto-Enable Feature', () => {
       // Execute
       await ensureClaudeSettingsWithLsp(tempDir);
 
-      // Verify
-      const settings = JSON.parse(
-        fs.readFileSync(path.join(tempDir, '.claude', 'settings.json'), 'utf-8')
+      // Verify in plugin .lsp.json
+      const lspJson = JSON.parse(
+        fs.readFileSync(path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json'), 'utf-8')
       );
 
-      expect(settings.lspServers.vtsls).toBeDefined();
-      expect(settings.lspServers.vtsls.extensionToLanguage['.ts']).toBe('typescript');
+      expect(lspJson.vtsls).toBeDefined();
+      expect(lspJson.vtsls.extensionToLanguage['.ts']).toBe('typescript');
     });
 
     it('should detect Python project and include pyright', async () => {
@@ -149,13 +158,13 @@ describe('LSP Auto-Enable Feature', () => {
       // Execute
       await ensureClaudeSettingsWithLsp(tempDir);
 
-      // Verify
-      const settings = JSON.parse(
-        fs.readFileSync(path.join(tempDir, '.claude', 'settings.json'), 'utf-8')
+      // Verify in plugin .lsp.json
+      const lspJson = JSON.parse(
+        fs.readFileSync(path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json'), 'utf-8')
       );
 
-      expect(settings.lspServers.pyright).toBeDefined();
-      expect(settings.lspServers.pyright.extensionToLanguage['.py']).toBe('python');
+      expect(lspJson.pyright).toBeDefined();
+      expect(lspJson.pyright.extensionToLanguage['.py']).toBe('python');
     });
   });
 
