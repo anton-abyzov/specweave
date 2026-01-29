@@ -526,6 +526,8 @@ Ask me when you need help with:
 - **JSI bindings for synchronous native calls**
 - **Expo config plugins for native configuration**
 - **Interop layer for legacy Bridge modules**
+- **Native listener lifecycle (singleton patterns for IAP, push, deep links)**
+- **Debugging silent failures in async native events**
 
 ## Essential Commands
 
@@ -754,6 +756,120 @@ export function getCalendarModule() {
   return NativeModules.CalendarModule;
 }
 ```
+
+### 7. Native Singleton Listeners (App-Lifetime)
+
+**CRITICAL**: Some native listeners must persist for the app's entire lifetime. **Never** clean them up in `useEffect` cleanup.
+
+**Why This Matters**
+
+Native platform events often arrive asynchronously from system UI (payment sheets, biometric dialogs, push notifications). The component that initiated the flow may unmount while system UI is visible, but events arrive AFTER the system UI dismisses. If the listener is cleaned up, events are silently lost.
+
+**The Rule**
+
+| Listener Type | Cleanup on Unmount? | Reason |
+|--------------|---------------------|--------|
+| iOS StoreKit (`setPurchaseListener`) | **NEVER** | Events arrive after payment sheet dismisses |
+| Google Play Billing listener | **NEVER** | Same async flow as iOS |
+| Push notification handlers | **NEVER** | Can arrive at any time |
+| Deep link listeners | **NEVER** | App may be backgrounded during navigation |
+| Biometric auth callbacks | **NEVER** | System UI dialog is external |
+| **JavaScript event subscriptions** | ✅ OK | React lifecycle managed, no native async |
+
+**Implementation Pattern - Singleton Service**
+
+```typescript
+// services/IAPService.ts - Singleton, initialized once
+class IAPService {
+  private static initialized = false;
+
+  static async initialize() {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    // Native listener - NEVER disconnected
+    await InAppPurchases.connectAsync();
+    InAppPurchases.setPurchaseListener(({ responseCode, results }) => {
+      if (responseCode === IAPResponseCode.OK && results) {
+        results.forEach(purchase => this.processPurchase(purchase));
+      }
+    });
+  }
+
+  private static async processPurchase(purchase: InAppPurchase) {
+    // Validate receipt, unlock content, finish transaction
+    await finishTransactionAsync(purchase, true);
+  }
+
+  // DO NOT add a disconnect method!
+  // The native listener must persist for app lifetime
+}
+```
+
+```typescript
+// App.tsx - Initialize once at app root
+export default function App() {
+  useEffect(() => {
+    IAPService.initialize();
+    // NO cleanup return - this is intentional!
+  }, []);
+
+  return <RootNavigator />;
+}
+```
+
+```typescript
+// screens/PurchaseScreen.tsx - Component can have JS subscriptions
+function PurchaseScreen() {
+  useEffect(() => {
+    // JS-level subscription - OK to cleanup
+    const subscription = purchaseEvents.subscribe(handleLocalUI);
+    return () => subscription.unsubscribe(); // ✅ OK - JS level only
+  }, []);
+
+  const handleBuy = async () => {
+    // Initiates native purchase flow
+    // Component may unmount while payment sheet is visible
+    // But IAPService singleton still receives the event
+    await InAppPurchases.purchaseItemAsync('premium_upgrade');
+  };
+}
+```
+
+**Common Mistake - DO NOT DO THIS**
+
+```typescript
+// ❌ WRONG - Listener cleaned up, purchase events lost!
+function BrokenPurchaseScreen() {
+  useEffect(() => {
+    InAppPurchases.connectAsync();
+    InAppPurchases.setPurchaseListener(handlePurchase);
+
+    return () => {
+      InAppPurchases.disconnectAsync(); // 💥 BUG!
+      // User completes purchase in payment sheet
+      // Component unmounts during navigation
+      // Event arrives but listener is gone
+      // Purchase succeeds but app never knows!
+    };
+  }, []);
+}
+```
+
+**Debugging Silent Failures**
+
+If purchases succeed (user charged) but app doesn't respond:
+1. Check if `setPurchaseListener` is in a component that might unmount
+2. Verify listener is set at app root, not in purchase screen
+3. Add logging in the singleton to confirm events arrive
+4. Test scenario: Start purchase → navigate away → complete purchase
+
+**Applies To**
+- `expo-in-app-purchases` / `react-native-iap`
+- `expo-notifications` / `react-native-push-notification`
+- `expo-linking` / Deep link handlers
+- `expo-local-authentication` / Biometric callbacks
+- Any native module with async system UI
 
 ## Integration with SpecWeave
 
