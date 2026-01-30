@@ -165,6 +165,11 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
+7. **⛔ Numbered folder collisions**: Before creating `docs/NN-*` folders, CHECK existing prefixes:
+   ```bash
+   ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort -u
+   ```
+   Use next available number. **NEVER create duplicate prefixes.**
 <!-- /SECTION -->
 
 <!-- SECTION:workflow required -->
