@@ -7,10 +7,10 @@
 # FEATURES:
 # - v1.0.192: LSP AUTO-INSTALL ON PROJECT DETECTION - Critical fix for LSP plugin installation
 #   * Previously: LSP plugins only installed when user explicitly asked for "find references"
-#   * Now: LSP plugins auto-installed when working on TS/Py/Go projects
-#   * Project detection: tsconfig.json, package.json, requirements.txt, go.mod, etc.
-#   * Prompt detection: mentions of typescript, react, python, django, golang, etc.
-#   * Added Go support: gopls@claude-code-lsps for Go projects
+#   * Now: LSP plugins auto-installed when working on TS/Py/Rust projects
+#   * Project detection: tsconfig.json, package.json, requirements.txt, Cargo.toml, etc.
+#   * Prompt detection: mentions of typescript, react, python, django, rust, etc.
+#   * Supported: vtsls (TS), pyright (Python), rust-analyzer (Rust)
 #   * Key insight: Users shouldn't need to know about LSP to benefit from it
 # - v1.0.177: SKILL CHAINING REMINDER - Add explicit guidance in SKILL FIRST message
 #   * "SKILL FIRST" does NOT mean "only one skill"
@@ -323,14 +323,18 @@ fi
 # LSP PROJECT LANGUAGE DETECTION (v1.0.192) - Auto-detect project languages
 # ==============================================================================
 # Detects project languages from file system to auto-install LSP plugins
-# This triggers LSP plugin installation REGARDLESS of explicit LSP requests
+# LAZY LOADING: Only installs when project/prompt actually needs that language
+# Available plugins in boostvolt/claude-code-lsps marketplace:
+#   - vtsls: TypeScript/JavaScript (most common)
+#   - pyright: Python
+#   - rust-analyzer: Rust
 # Key insight: User working on TS project should get LSP without asking for it
 LSP_PROJECT_NEEDS_TS="false"
 LSP_PROJECT_NEEDS_PY="false"
-LSP_PROJECT_NEEDS_GO="false"
+LSP_PROJECT_NEEDS_RUST="false"
 LSP_PROMPT_NEEDS_TS="false"
 LSP_PROMPT_NEEDS_PY="false"
-LSP_PROMPT_NEEDS_GO="false"
+LSP_PROMPT_NEEDS_RUST="false"
 
 # Detect TypeScript/JavaScript project from file system
 # Check for: tsconfig.json, package.json with typescript, *.ts/*.tsx files
@@ -360,14 +364,14 @@ if [[ "$LSP_PROJECT_NEEDS_PY" != "true" ]]; then
   fi
 fi
 
-# Detect Go project from file system
-# Check for: go.mod, go.sum, *.go files
-if [[ -f "go.mod" ]] || [[ -f "go.sum" ]]; then
-  LSP_PROJECT_NEEDS_GO="true"
+# Detect Rust project from file system
+# Check for: Cargo.toml, Cargo.lock, *.rs files
+if [[ -f "Cargo.toml" ]] || [[ -f "Cargo.lock" ]]; then
+  LSP_PROJECT_NEEDS_RUST="true"
 fi
-if [[ "$LSP_PROJECT_NEEDS_GO" != "true" ]]; then
-  if ls *.go 2>/dev/null | head -1 | grep -q .; then
-    LSP_PROJECT_NEEDS_GO="true"
+if [[ "$LSP_PROJECT_NEEDS_RUST" != "true" ]]; then
+  if ls *.rs src/*.rs 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_RUST="true"
   fi
 fi
 
@@ -381,9 +385,9 @@ if echo "$PROMPT" | grep -qiE "\.py|python|django|flask|fastapi|pytorch|tensorfl
   LSP_PROMPT_NEEDS_PY="true"
 fi
 
-# Detect from prompt keywords (Go/Golang)
-if echo "$PROMPT" | grep -qiE "\.go|golang|go[[:space:]]+(module|build|run|test)|gin|fiber|echo"; then
-  LSP_PROMPT_NEEDS_GO="true"
+# Detect from prompt keywords (Rust/Cargo)
+if echo "$PROMPT" | grep -qiE "\.rs|rust|cargo|rustc|tokio|actix|axum"; then
+  LSP_PROMPT_NEEDS_RUST="true"
 fi
 
 # LSP environment variable check - warn once if config enabled but env var missing
@@ -416,9 +420,9 @@ fi
 # ==============================================================================
 # Triggers on ANY of:
 #   - Explicit LSP request (findReferences, goToDefinition, etc.)
-#   - Project language detection (tsconfig.json, package.json, requirements.txt, go.mod)
+#   - Project language detection (tsconfig.json, package.json, requirements.txt, Cargo.toml)
 #   - Prompt language detection (mentions typescript, react, python, django, etc.)
-# This ensures LSP plugins are installed when working on TS/Py/Go projects
+# This ensures LSP plugins are installed when working on TS/Py/Rust projects
 # WITHOUT requiring user to explicitly ask for "find references"
 LSP_INSTALL_MSG=""
 LSP_NEEDS_INSTALL="false"
@@ -427,7 +431,7 @@ LSP_NEEDS_INSTALL="false"
 if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]] || \
-   [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+   [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
   LSP_NEEDS_INSTALL="true"
 fi
 
@@ -464,12 +468,12 @@ if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; 
     fi
   fi
 
-  # Auto-install Go LSP plugin (gopls) when Go project/prompt detected
-  if [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
-    GOPLS_INSTALLED=$(jq -r '."gopls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-    if [[ "$GOPLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install gopls@claude-code-lsps >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Go LSP installed**: \`gopls@claude-code-lsps\`
+  # Auto-install Rust LSP plugin (rust-analyzer) when Rust project/prompt detected
+  if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+    RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+    if [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+      if timeout 15 claude plugin install rust-analyzer@claude-code-lsps >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Rust LSP installed**: \`rust-analyzer@claude-code-lsps\`
 "
       fi
     fi

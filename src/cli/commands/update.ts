@@ -319,6 +319,15 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 2.9: Ensure LSP config in .specweave/config.json (v1.0.193+)
+  // Projects initialized before v1.0.193 may not have the lsp section
+  if (isSpecWeaveProject && !options.check) {
+    const lspMigrated = migrateLspConfig(projectPath, options.verbose);
+    if (lspMigrated) {
+      console.log(chalk.green(`  ✓ Added LSP config to config.json (enabled by default)`));
+    }
+  }
+
   // Step 3: Validate project health (quick checks)
   if (isSpecWeaveProject && !options.check) {
     spinner.start('Validating project health...');
@@ -803,6 +812,50 @@ function migrateReflectConfig(projectPath: string, verbose?: boolean): boolean {
     };
     fs.writeFileSync(reflectConfigPath, JSON.stringify(defaultConfig, null, 2));
     return true;
+  }
+}
+
+/**
+ * Migrate config.json to add LSP section if missing (v1.0.193+)
+ * Projects initialized before v1.0.193 may not have the lsp section
+ *
+ * @param projectPath - Path to the project root
+ * @param verbose - Show detailed output
+ * @returns true if migration was performed
+ */
+function migrateLspConfig(projectPath: string, verbose?: boolean): boolean {
+  const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+  if (!fs.existsSync(configPath)) {
+    return false;
+  }
+
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Only migrate if lsp section is missing
+    if (!config.lsp) {
+      config.lsp = {
+        enabled: true,
+        autoInstallPlugins: true,
+        marketplace: 'boostvolt/claude-code-lsps',
+      };
+
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+      if (verbose) {
+        console.log(chalk.gray(`    Added lsp section to config.json`));
+      }
+      return true;
+    }
+
+    // lsp section already exists, no migration needed
+    return false;
+  } catch (error) {
+    // If parsing fails, don't modify
+    if (verbose) {
+      console.log(chalk.yellow(`    ⚠ Could not migrate LSP config: ${error}`));
+    }
+    return false;
   }
 }
 
