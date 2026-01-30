@@ -203,31 +203,65 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
   // Step 2.5: Migrate old memory files to CLAUDE.md (reflect v2.0)
   // The .specweave/memory/ directory is DEPRECATED - all learnings now go to CLAUDE.md
-  if (isSpecWeaveProject && !options.check) {
-    try {
-      const migrationResult = migrateOldMemoryFiles(projectPath);
-      if (migrationResult.migrated > 0) {
-        console.log(chalk.green(`  ✓ Migrated ${migrationResult.migrated} learning(s) from old memory files to CLAUDE.md`));
-      }
-      if (migrationResult.deleted.length > 0) {
-        console.log(chalk.green(`  ✓ Cleaned up ${migrationResult.deleted.length} deprecated memory file(s)`));
+  if (isSpecWeaveProject) {
+    const memoryDir = path.join(projectPath, '.specweave', 'memory');
+    const memoryExists = fs.existsSync(memoryDir);
+
+    if (options.check) {
+      // Dry-run mode: show what WOULD happen
+      if (memoryExists) {
+        const files = fs.readdirSync(memoryDir);
+        console.log(chalk.yellow(`  ⚠️  Deprecated .specweave/memory/ found (${files.length} file(s) will be cleaned)`));
         if (options.verbose) {
-          migrationResult.deleted.forEach(f => console.log(chalk.gray(`    - ${f}`)));
+          files.forEach(f => console.log(chalk.gray(`    - ${f}`)));
         }
       }
-    } catch (error) {
-      // Migration failed, but still try to cleanup the deprecated directory
-      if (options.verbose) {
-        console.log(chalk.yellow(`  ⚠ Memory migration failed: ${error}`));
+    } else {
+      // Actual cleanup
+      if (memoryExists) {
+        if (options.verbose) {
+          console.log(chalk.gray(`  Checking deprecated memory directory: ${memoryDir}`));
+        }
       }
-      // Fallback: force cleanup of deprecated directory
+
       try {
-        const cleaned = cleanupDeprecatedMemoryDirectory(projectPath);
-        if (cleaned > 0) {
-          console.log(chalk.green(`  ✓ Cleaned up deprecated .specweave/memory/ directory`));
+        const migrationResult = migrateOldMemoryFiles(projectPath);
+        if (migrationResult.migrated > 0) {
+          console.log(chalk.green(`  ✓ Migrated ${migrationResult.migrated} learning(s) from old memory files to CLAUDE.md`));
         }
-      } catch {
-        // Silently ignore cleanup errors
+        if (migrationResult.deleted.length > 0) {
+          console.log(chalk.green(`  ✓ Cleaned up ${migrationResult.deleted.length} deprecated memory file(s)`));
+          if (options.verbose) {
+            migrationResult.deleted.forEach(f => console.log(chalk.gray(`    - ${f}`)));
+          }
+        }
+        // ALWAYS show status if memory dir existed but nothing was reported
+        // This catches edge cases where migration silently fails
+        if (memoryExists && migrationResult.migrated === 0 && migrationResult.deleted.length === 0) {
+          // Directory existed but nothing was migrated/deleted - force cleanup
+          const cleaned = cleanupDeprecatedMemoryDirectory(projectPath);
+          if (cleaned > 0) {
+            console.log(chalk.green(`  ✓ Force-cleaned deprecated .specweave/memory/ directory`));
+          } else if (fs.existsSync(memoryDir)) {
+            // STILL exists after cleanup attempt - warn user
+            console.log(chalk.yellow(`  ⚠ .specweave/memory/ exists but could not be removed (check permissions)`));
+            result.warnings.push(`Deprecated memory directory could not be removed: ${memoryDir}`);
+          }
+        }
+      } catch (error) {
+        // Migration failed, but still try to cleanup the deprecated directory
+        if (options.verbose) {
+          console.log(chalk.yellow(`  ⚠ Memory migration failed: ${error}`));
+        }
+        // Fallback: force cleanup of deprecated directory
+        try {
+          const cleaned = cleanupDeprecatedMemoryDirectory(projectPath);
+          if (cleaned > 0) {
+            console.log(chalk.green(`  ✓ Cleaned up deprecated .specweave/memory/ directory`));
+          }
+        } catch {
+          // Silently ignore cleanup errors
+        }
       }
     }
   }
