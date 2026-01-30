@@ -1,10 +1,17 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.191 - LSP Project Config)
+# SpecWeave UserPromptSubmit Hook (v1.0.192 - LSP Auto-Install on Project Detection)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.192: LSP AUTO-INSTALL ON PROJECT DETECTION - Critical fix for LSP plugin installation
+#   * Previously: LSP plugins only installed when user explicitly asked for "find references"
+#   * Now: LSP plugins auto-installed when working on TS/Py/Go projects
+#   * Project detection: tsconfig.json, package.json, requirements.txt, go.mod, etc.
+#   * Prompt detection: mentions of typescript, react, python, django, golang, etc.
+#   * Added Go support: gopls@claude-code-lsps for Go projects
+#   * Key insight: Users shouldn't need to know about LSP to benefit from it
 # - v1.0.177: SKILL CHAINING REMINDER - Add explicit guidance in SKILL FIRST message
 #   * "SKILL FIRST" does NOT mean "only one skill"
 #   * Shows domain skills to use after sw:increment-planner
@@ -284,7 +291,7 @@ Without it, Claude uses text search which is slower and less accurate.
 fi
 
 # ==============================================================================
-# LSP PROJECT CONFIG (v1.0.191) - Project-level LSP configuration
+# LSP PROJECT CONFIG (v1.0.192) - Project-level LSP configuration
 # ==============================================================================
 # Reads LSP settings from .specweave/config.json instead of requiring env vars
 # Config schema:
@@ -312,6 +319,73 @@ if echo "$PROMPT" | grep -qiE "(find|get|show)[[:space:]]+(all[[:space:]]+)?refe
   LSP_REQUEST_DETECTED="true"
 fi
 
+# ==============================================================================
+# LSP PROJECT LANGUAGE DETECTION (v1.0.192) - Auto-detect project languages
+# ==============================================================================
+# Detects project languages from file system to auto-install LSP plugins
+# This triggers LSP plugin installation REGARDLESS of explicit LSP requests
+# Key insight: User working on TS project should get LSP without asking for it
+LSP_PROJECT_NEEDS_TS="false"
+LSP_PROJECT_NEEDS_PY="false"
+LSP_PROJECT_NEEDS_GO="false"
+LSP_PROMPT_NEEDS_TS="false"
+LSP_PROMPT_NEEDS_PY="false"
+LSP_PROMPT_NEEDS_GO="false"
+
+# Detect TypeScript/JavaScript project from file system
+# Check for: tsconfig.json, package.json with typescript, *.ts/*.tsx files
+if [[ -f "tsconfig.json" ]] || [[ -f "tsconfig.base.json" ]] || [[ -f "jsconfig.json" ]]; then
+  LSP_PROJECT_NEEDS_TS="true"
+elif [[ -f "package.json" ]]; then
+  # Check if package.json mentions typescript
+  if grep -qE '"typescript"|"@types/|"tsx"|"ts-node"' package.json 2>/dev/null; then
+    LSP_PROJECT_NEEDS_TS="true"
+  fi
+fi
+# Also check for .ts/.tsx files in src/ or root (fast check, max 1 level deep)
+if [[ "$LSP_PROJECT_NEEDS_TS" != "true" ]]; then
+  if ls *.ts *.tsx src/*.ts src/*.tsx 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_TS="true"
+  fi
+fi
+
+# Detect Python project from file system
+# Check for: requirements.txt, pyproject.toml, setup.py, *.py files
+if [[ -f "requirements.txt" ]] || [[ -f "pyproject.toml" ]] || [[ -f "setup.py" ]] || [[ -f "Pipfile" ]]; then
+  LSP_PROJECT_NEEDS_PY="true"
+fi
+if [[ "$LSP_PROJECT_NEEDS_PY" != "true" ]]; then
+  if ls *.py src/*.py 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_PY="true"
+  fi
+fi
+
+# Detect Go project from file system
+# Check for: go.mod, go.sum, *.go files
+if [[ -f "go.mod" ]] || [[ -f "go.sum" ]]; then
+  LSP_PROJECT_NEEDS_GO="true"
+fi
+if [[ "$LSP_PROJECT_NEEDS_GO" != "true" ]]; then
+  if ls *.go 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_GO="true"
+  fi
+fi
+
+# Detect from prompt keywords (TypeScript/React/Vue/Angular/Node)
+if echo "$PROMPT" | grep -qiE "\.tsx?|typescript|react|vue|angular|next\.?js|node\.?js|express|nestjs"; then
+  LSP_PROMPT_NEEDS_TS="true"
+fi
+
+# Detect from prompt keywords (Python/Django/Flask/FastAPI)
+if echo "$PROMPT" | grep -qiE "\.py|python|django|flask|fastapi|pytorch|tensorflow|pandas|numpy"; then
+  LSP_PROMPT_NEEDS_PY="true"
+fi
+
+# Detect from prompt keywords (Go/Golang)
+if echo "$PROMPT" | grep -qiE "\.go|golang|go[[:space:]]+(module|build|run|test)|gin|fiber|echo"; then
+  LSP_PROMPT_NEEDS_GO="true"
+fi
+
 # LSP environment variable check - warn once if config enabled but env var missing
 LSP_ENV_SETUP_MSG=""
 LSP_ENV_STATE_FILE=".specweave/state/lsp-env-warned.flag"
@@ -337,9 +411,27 @@ Then restart your terminal and Claude Code.
   fi
 fi
 
-# Auto-install marketplace and plugins when LSP is requested
+# ==============================================================================
+# LSP AUTO-INSTALL (v1.0.192) - Install LSP plugins based on project/prompt detection
+# ==============================================================================
+# Triggers on ANY of:
+#   - Explicit LSP request (findReferences, goToDefinition, etc.)
+#   - Project language detection (tsconfig.json, package.json, requirements.txt, go.mod)
+#   - Prompt language detection (mentions typescript, react, python, django, etc.)
+# This ensures LSP plugins are installed when working on TS/Py/Go projects
+# WITHOUT requiring user to explicitly ask for "find references"
 LSP_INSTALL_MSG=""
-if [[ "$LSP_REQUEST_DETECTED" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
+LSP_NEEDS_INSTALL="false"
+
+# Check if ANY language detection triggered
+if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+  LSP_NEEDS_INSTALL="true"
+fi
+
+if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
   # Check if marketplace is already installed
   MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/claude-code-lsps"
   if [[ ! -d "$MARKETPLACE_DIR" ]] && command -v claude >/dev/null 2>&1; then
@@ -350,8 +442,8 @@ if [[ "$LSP_REQUEST_DETECTED" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]
     fi
   fi
 
-  # Auto-install TypeScript LSP plugin (vtsls) for .ts/.tsx files
-  if echo "$PROMPT" | grep -qiE "\.tsx?|typescript|react|vue|angular|node"; then
+  # Auto-install TypeScript LSP plugin (vtsls) when TypeScript project/prompt detected
+  if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
     VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
     if [[ "$VTSLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
       if timeout 15 claude plugin install vtsls@claude-code-lsps >/dev/null 2>&1; then
@@ -361,12 +453,23 @@ if [[ "$LSP_REQUEST_DETECTED" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]
     fi
   fi
 
-  # Auto-install Python LSP plugin (pyright) for .py files
-  if echo "$PROMPT" | grep -qiE "\.py|python|django|flask|fastapi"; then
+  # Auto-install Python LSP plugin (pyright) when Python project/prompt detected
+  if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
     PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
     if [[ "$PYRIGHT_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
       if timeout 15 claude plugin install pyright@claude-code-lsps >/dev/null 2>&1; then
         LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\`
+"
+      fi
+    fi
+  fi
+
+  # Auto-install Go LSP plugin (gopls) when Go project/prompt detected
+  if [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+    GOPLS_INSTALLED=$(jq -r '."gopls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+    if [[ "$GOPLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+      if timeout 15 claude plugin install gopls@claude-code-lsps >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Go LSP installed**: \`gopls@claude-code-lsps\`
 "
       fi
     fi
