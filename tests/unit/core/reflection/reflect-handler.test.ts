@@ -337,5 +337,45 @@ describe('reflect-handler', () => {
       // Verify memory directory was removed
       expect(fs.existsSync(memoryDir)).toBe(false);
     });
+
+    it('ALWAYS removes memory directory even WITHOUT CLAUDE.md (generic cleanup)', () => {
+      // NO CLAUDE.md - this is the edge case
+      // The deprecated directory should STILL be removed
+
+      const memoryDir = path.join(projectRoot, '.specweave', 'memory');
+      fs.mkdirSync(memoryDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(memoryDir, 'general.md'),
+        '- → All tests pass locally\n- → Run tests on localhost\n'
+      );
+      fs.writeFileSync(
+        path.join(memoryDir, 'testing.md'),
+        '# Testing Rules\n> Project-specific patterns\n'
+      );
+
+      const result = migrateOldMemoryFiles(projectRoot);
+
+      // Even without CLAUDE.md, the deprecated directory should be GONE
+      expect(fs.existsSync(memoryDir)).toBe(false);
+      // Files should be marked as deleted
+      expect(result.deleted.length).toBeGreaterThan(0);
+    });
+
+    it('removes memory directory with non-standard files', () => {
+      // Create CLAUDE.md
+      fs.writeFileSync(path.join(projectRoot, 'CLAUDE.md'), '# Project\n');
+
+      // Create memory directory with mixed files (md and non-md)
+      const memoryDir = path.join(projectRoot, '.specweave', 'memory');
+      fs.mkdirSync(memoryDir, { recursive: true });
+      fs.writeFileSync(path.join(memoryDir, 'general.md'), 'content');
+      fs.writeFileSync(path.join(memoryDir, 'cache.json'), '{}'); // Non-md file
+      fs.writeFileSync(path.join(memoryDir, '.DS_Store'), ''); // Hidden file
+
+      migrateOldMemoryFiles(projectRoot);
+
+      // ALL files and directory should be removed
+      expect(fs.existsSync(memoryDir)).toBe(false);
+    });
   });
 });
