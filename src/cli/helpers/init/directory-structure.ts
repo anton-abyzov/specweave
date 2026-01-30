@@ -407,6 +407,13 @@ export function createConfigFile(
       requireJudgeLLM: false,   // Require LLM judge validation
       skipQualityGates: false,  // Skip quality gates (not recommended)
     },
+    // LSP configuration (v1.0.193+)
+    // Enables language server integration for code intelligence
+    lsp: {
+      enabled: true,
+      autoInstallPlugins: true,
+      marketplace: 'boostvolt/claude-code-lsps',  // Official plugins are broken (Issue #15148)
+    },
   };
 
   // Add testing configuration if provided
