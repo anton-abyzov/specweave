@@ -12,10 +12,22 @@
 # v1.0.181 - REFACTOR: Extracted language configs to maintainable data structure
 # v1.0.182 - Add plugin verification: check both binary AND Claude plugin installation
 #            Detects gap: binary present but plugin missing (AC-US4-01, AC-US4-02, AC-US4-03)
+# v1.0.195 - Check ENABLE_LSP_TOOL env var; use boostvolt/claude-code-lsps marketplace
+#            (Official @claude-plugins-official LSP plugins are broken - Issue #15148)
 
 set +e  # CRITICAL: Never use set -e in background workers
 
 PROJECT_ROOT="$1"
+
+# ============================================================================
+# LSP ENVIRONMENT CHECK (v1.0.195)
+# ============================================================================
+# ENABLE_LSP_TOOL must be set for Claude Code LSP plugins to work
+# Without this env var, LSP plugins are useless even if installed
+LSP_ENV_READY="false"
+if [[ -n "${ENABLE_LSP_TOOL:-}" ]]; then
+  LSP_ENV_READY="true"
+fi
 
 if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
   exit 0  # Not a SpecWeave project
@@ -44,19 +56,26 @@ INSTALLED_PLUGINS_FILE="${CLAUDE_HOME}/plugins/installed_plugins.json"
 #   - extensions: comma-separated file extensions (e.g., "ts,tsx,js,jsx")
 #   - binaries: colon-separated binaries to check (any match = installed)
 #   - install_command: command to install the language server BINARY
-#   - plugin_name: Claude plugin name for LSP (e.g., typescript-lsp)
+#   - plugin_name: Claude plugin name for LSP (from boostvolt/claude-code-lsps marketplace)
+#
+# NOTE (v1.0.195): We use boostvolt/claude-code-lsps marketplace, NOT @claude-plugins-official
+# The official marketplace LSP plugins are broken (only contain README files)
+# See: https://github.com/anthropics/claude-code/issues/15148
 #
 # To add a new language, just add a line to this array:
 LANGUAGE_CONFIGS=(
-  "TypeScript|ts,tsx,js,jsx|typescript-language-server|npm install -g typescript-language-server typescript|typescript-lsp"
-  "Python|py|pyright-langserver:pylsp|pip install pyright|python-lsp"
+  "TypeScript|ts,tsx,js,jsx|typescript-language-server|npm install -g typescript-language-server typescript|vtsls"
+  "Python|py|pyright-langserver:pylsp|pip install pyright|pyright"
   "C#|cs|csharp-ls:omnisharp|dotnet tool install -g csharp-ls|csharp-lsp"
-  "Go|go|gopls|go install golang.org/x/tools/gopls@latest|go-lsp"
-  "Rust|rs|rust-analyzer|rustup component add rust-analyzer|rust-lsp"
-  "Java|java|jdtls|brew install jdtls (requires JDK 17+)|java-lsp"
-  "PHP|php|intelephense|npm install -g intelephense|php-lsp"
-  "Ruby|rb|solargraph|gem install solargraph|ruby-lsp"
+  "Go|go|gopls|go install golang.org/x/tools/gopls@latest|gopls"
+  "Rust|rs|rust-analyzer|rustup component add rust-analyzer|rust-analyzer"
+  "Java|java|jdtls|brew install jdtls (requires JDK 17+)|jdtls"
+  "PHP|php|intelephense|npm install -g intelephense|intelephense"
+  "Ruby|rb|solargraph|gem install solargraph|solargraph"
 )
+
+# Marketplace for LSP plugins (boostvolt, NOT claude-plugins-official)
+LSP_MARKETPLACE="claude-code-lsps"
 
 # =============================================================================
 # UTILITY FUNCTIONS
@@ -187,6 +206,8 @@ if [[ ${#MISSING_SERVERS[@]} -eq 0 ]]; then
   "status": "ok",
   "missing": [],
   "warned": false,
+  "lspEnvReady": ${LSP_ENV_READY},
+  "lspMarketplace": "$LSP_MARKETPLACE",
   "stats": {
     "totalLanguages": $TOTAL_LANGS,
     "checkedLanguages": $CHECKED_LANGS,
@@ -205,8 +226,8 @@ else
     # Parse the pipe-separated values
     IFS='|' read -r LANG TYPE BINARY_CMD PLUGIN_NAME <<< "$server"
 
-    # Build plugin install command: claude plugin install X@claude-plugins-official
-    PLUGIN_CMD="claude plugin install ${PLUGIN_NAME}@claude-plugins-official"
+    # Build plugin install command: claude plugin install X@claude-code-lsps (working marketplace)
+    PLUGIN_CMD="claude plugin install ${PLUGIN_NAME}@${LSP_MARKETPLACE}"
 
     # Build human-readable message based on issue type
     if [[ "$TYPE" == "missing_binary" ]]; then
@@ -228,6 +249,8 @@ else
   "status": "missing",
   "missing": [$MISSING_JSON],
   "warned": false,
+  "lspEnvReady": ${LSP_ENV_READY},
+  "lspMarketplace": "$LSP_MARKETPLACE",
   "stats": {
     "totalLanguages": $TOTAL_LANGS,
     "checkedLanguages": $CHECKED_LANGS,

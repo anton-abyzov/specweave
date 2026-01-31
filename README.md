@@ -96,6 +96,21 @@ Everything stays organized in `.specweave/`:
 
 Your project root stays clean. No scattered markdown files.
 
+### Deep Interview Mode (NEW)
+
+For complex features, enable **Deep Interview Mode** during init. Claude asks 40+ questions about architecture, integrations, UI/UX, and tradeoffs before creating specifications:
+
+```
+Deep Interview Mode
+
+For big features, Claude can ask 40+ questions about architecture,
+integrations, UI/UX, and tradeoffs before creating specifications.
+
+Enable Deep Interview Mode? [y/N]
+```
+
+Inspired by [Thariq's workflow](https://x.com/trq212/status/2005315275026260309) (Claude Code creator): *"For big features Claude might ask me 40+ questions and I end up with a much more detailed spec."*
+
 ### 15+ AI Agents Working Together
 
 | Agent | Role |

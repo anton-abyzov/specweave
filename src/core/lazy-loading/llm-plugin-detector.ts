@@ -127,20 +127,21 @@ export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
  * Official Claude Code plugins (from claude-plugins-official marketplace)
  *
  * v1.0.159: Consolidated plugin detection - detect-intent handles BOTH SW and official plugins
+ * v1.0.195: REMOVED broken LSP plugins (see GitHub Issue #15148)
  *
  * NOTE: Excludes plugins that collide with SpecWeave:
  * - github@claude-plugins-official → use sw-github instead
  * - stripe@claude-plugins-official → use sw-payments instead
+ *
+ * NOTE: LSP plugins from @claude-plugins-official are BROKEN and excluded:
+ * - csharp-lsp, gopls-lsp, jdtls-lsp, kotlin-lsp, php-lsp, lua-lsp, clangd-lsp
+ * - These plugins only contain README.md files with no actual LSP configuration
+ * - See: https://github.com/anthropics/claude-code/issues/15148
+ * - Use boostvolt/claude-code-lsps marketplace instead for working LSP plugins
  */
 export const OFFICIAL_PLUGINS = [
-  // LSP (Language Server Protocol) - language-specific code intelligence
-  'csharp-lsp',       // C#, .NET, ASP.NET, Blazor
-  'gopls-lsp',        // Go, Golang
-  'jdtls-lsp',        // Java, Spring, Maven, Gradle
-  'kotlin-lsp',       // Kotlin
-  'php-lsp',          // PHP, Laravel, Symfony
-  'lua-lsp',          // Lua, Neovim
-  'clangd-lsp',       // C, C++
+  // NOTE: LSP plugins REMOVED - they're broken in @claude-plugins-official
+  // Use boostvolt/claude-code-lsps marketplace + ENABLE_LSP_TOOL=1 instead
 
   // Core/Required
   'context7',         // Documentation lookup (useful for any coding)
@@ -464,10 +465,10 @@ Return BOTH SpecWeave (sw-*) AND official (claude-plugins-official) plugins.
 - JIRA → sw-jira | Azure DevOps → sw-ado
 
 DETECTION RULES:
-1. EXPLICIT tech - user says "React" → sw-frontend, ".NET" → sw-backend + csharp-lsp
+1. EXPLICIT tech - user says "React" → sw-frontend, ".NET" → sw-backend
 2. IMPLIED - "dashboard" needs API → sw-backend
-3. LSP - language-specific code intelligence (C#→csharp-lsp, Go→gopls-lsp, etc.)
-4. Questions/discussions → ZERO plugins
+3. Questions/discussions → ZERO plugins
+4. ⚠️ NEVER suggest LSP plugins (*-lsp) - they are BROKEN in official marketplace
 
 OUTPUT FORMAT (JSON only):
 {"plugins":["sw-frontend","context7"],"confidence":0.9,"reasoning":"one-line"}
@@ -494,14 +495,10 @@ sw-ado: Azure DevOps, work items (ONLY if explicit)
 OFFICIAL PLUGINS (@claude-plugins-official) - Use when NO SW equivalent
 ═══════════════════════════════════════════════════════════════
 
-LSP (Language Server Protocol) - Add for language-specific code intelligence:
-  csharp-lsp: C#, .NET, ASP.NET, Blazor, Entity Framework
-  gopls-lsp: Go, Golang
-  jdtls-lsp: Java, Spring, Maven, Gradle
-  kotlin-lsp: Kotlin, Android Kotlin
-  php-lsp: PHP, Laravel, Symfony
-  lua-lsp: Lua, Neovim plugins
-  clangd-lsp: C, C++, embedded
+⚠️ DO NOT SUGGEST LSP PLUGINS (*-lsp) - THEY ARE BROKEN!
+The official marketplace LSP plugins (csharp-lsp, gopls-lsp, etc.) only contain
+README files with no actual configuration. See GitHub Issue #15148.
+LSP is handled separately via boostvolt/claude-code-lsps marketplace.
 
 Core/Required:
   context7: Documentation lookup (add for ANY coding task)
@@ -567,10 +564,10 @@ EXAMPLES (with increment field + mandatory)
 ═══════════════════════════════════════════════════════════════
 
 "Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["sw-frontend","sw-backend","sw-payments","csharp-lsp","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend+csharp-lsp, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
+{"plugins":["sw-frontend","sw-backend","sw-payments","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
 
 "Build Go microservice with PostgreSQL"
-{"plugins":["sw-backend","gopls-lsp","context7"],"confidence":0.95,"reasoning":"Go→backend+gopls-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
+{"plugins":["sw-backend","context7"],"confidence":0.95,"reasoning":"Go→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
 
 "Fix the login bug"
 {"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"small_fix","confidence":0.85,"mandatory":false,"reasoning":"Bug fix, likely single-file change"}}
@@ -601,8 +598,8 @@ ALSO specify which skills Claude SHOULD invoke for this task.
 - reason: why this skill should be used
 - mandatory: true if Claude MUST use this skill, false if optional
 
-⚠️ IMPORTANT: LSP plugins (csharp-lsp, typescript-lsp, etc.) are NOT skills!
-They work AUTOMATICALLY when editing code files - do NOT include them in skillInvocation.
+⚠️ IMPORTANT: DO NOT suggest *-lsp plugins - they are BROKEN in official marketplace!
+LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
 
 SKILL INVOCATION RULES:
 ┌──────────────────────┬──────────────────────────────────────────────────┐
@@ -617,18 +614,18 @@ SKILL INVOCATION RULES:
 └──────────────────────┴──────────────────────────────────────────────────┘
 
 WHEN TO MAKE SKILL MANDATORY:
-- .NET/C# work → sw-backend:dotnet-backend is MANDATORY (LSP auto-activates)
+- .NET/C# work → sw-backend:dotnet-backend is MANDATORY
 - ML/AI work → sw-ml:ml-engineer is MANDATORY
 - Payment integration → sw-payments:stripe-integration is MANDATORY
 - Complex architecture → relevant architect skill is recommended
 
-NOTE: LSP plugins provide AUTOMATIC code intelligence. Claude should use
-findReferences, goToDefinition, etc. but these aren't skills to invoke.
+NOTE: LSP is handled separately (boostvolt/claude-code-lsps marketplace).
+DO NOT include any *-lsp plugins in your response.
 
 SKILL EXAMPLES:
 
 "Build .NET API with Entity Framework"
-{"plugins":["sw-backend","csharp-lsp","context7"],"confidence":0.95,"reasoning":".NET→backend+csharp-lsp","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
+{"plugins":["sw-backend","context7"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
 
 "Train a machine learning model for image classification"
 {"plugins":["sw-ml","context7"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}

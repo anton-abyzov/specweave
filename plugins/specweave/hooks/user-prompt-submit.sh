@@ -101,6 +101,7 @@ PLUGIN_AUTOLOAD_ENABLED=true
 PLUGIN_SUGGEST_ONLY=false
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
+DEEP_INTERVIEW_ENABLED=false
 CONFIG_PATH=".specweave/config.json"
 if [[ -f "$CONFIG_PATH" ]]; then
   if command -v jq >/dev/null 2>&1; then
@@ -116,6 +117,10 @@ if [[ -f "$CONFIG_PATH" ]]; then
 
     THRESHOLD_VALUE=$(jq -r '.incrementAssist.confidenceThreshold // 0.7' "$CONFIG_PATH" 2>/dev/null)
     [[ "$THRESHOLD_VALUE" =~ ^[0-9.]+$ ]] && INCREMENT_CONFIDENCE_THRESHOLD="$THRESHOLD_VALUE"
+
+    # Deep Interview Mode detection (v1.0.195)
+    DEEP_INTERVIEW_VALUE=$(jq -r '.planning.deepInterview.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$DEEP_INTERVIEW_VALUE" == "true" ]] && DEEP_INTERVIEW_ENABLED=true
   else
     # Fallback: grep for explicit false settings
     if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -q '"enabled"[[:space:]]*:[[:space:]]*false' "$CONFIG_PATH" 2>/dev/null; then
@@ -127,6 +132,10 @@ if [[ -f "$CONFIG_PATH" ]]; then
     fi
     if grep -q '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*false'; then
       INCREMENT_ASSIST_ENABLED=false
+    fi
+    # Fallback: grep for deep interview mode
+    if grep -q '"deepInterview"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"deepInterview"' "$CONFIG_PATH" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*true'; then
+      DEEP_INTERVIEW_ENABLED=true
     fi
   fi
 fi
@@ -433,6 +442,15 @@ if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
   LSP_NEEDS_INSTALL="true"
+fi
+
+if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
+  # CRITICAL: Skip LSP plugin installation if ENABLE_LSP_TOOL is not set (v1.0.195)
+  # Installing plugins without this env var is useless - they won't work
+  if [[ -z "${ENABLE_LSP_TOOL:-}" ]]; then
+    # Don't install - just show the setup message (already handled by LSP_ENV_SETUP_MSG)
+    LSP_NEEDS_INSTALL="false"
+  fi
 fi
 
 if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
@@ -829,6 +847,24 @@ Task({
                       # Use printf to handle special chars, then escape for nested JSON
                       ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
 
+                      # Build deep interview mode reminder if enabled (v1.0.195)
+                      DEEP_INTERVIEW_MSG=""
+                      if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
+                        DEEP_INTERVIEW_MSG="
+
+🎤 **DEEP INTERVIEW MODE ENABLED**
+Before creating spec.md, you MUST ask thorough questions about:
+- Architecture & system design patterns
+- External integrations (APIs, databases, auth)
+- UI/UX concerns and tradeoffs
+- Performance & scalability requirements
+- Security considerations
+- Edge cases & error handling
+
+Continue interviewing until requirements are crystal clear (10-40+ questions for big features).
+"
+                      fi
+
                       MSG="${AUTOLOAD_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
 ║  🎯 SKILL FIRST - Call Skill tool BEFORE implementation                      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -843,7 +879,7 @@ Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"${ESCAPED_PROMPT}\\\" })
 2. ✅ THEN proceed with implementation normally
 
 **Detection**: Feature request (confidence: ${INC_CONF})
-**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}
+**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}${DEEP_INTERVIEW_MSG}
 
 ---
 

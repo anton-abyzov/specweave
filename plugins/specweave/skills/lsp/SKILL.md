@@ -186,6 +186,24 @@ User asks about code navigation?
 
 ## Why This Exists
 
-Claude Code's built-in LSP has known bugs (GitHub Issues #15148, #16291, #20050).
-This skill provides direct access to language servers via SpecWeave's CLI,
-bypassing the broken infrastructure.
+**This is SpecWeave's OWN LSP CLI - separate from Claude Code's native LSP!**
+
+| System | What It Is | Requires ENABLE_LSP_TOOL? |
+|--------|------------|---------------------------|
+| **SpecWeave LSP CLI** (this skill) | Commands like `specweave lsp refs/def/hover` | **NO** - works standalone |
+| **Claude Code Native LSP** | Background code intelligence via plugins | **YES** - requires env var |
+
+### SpecWeave LSP CLI (This Skill)
+- Uses `specweave lsp` commands via Bash
+- Directly calls language servers (typescript-language-server, pyright, etc.)
+- Works independently of Claude Code's plugin system
+- Falls back to grep if language server unavailable
+
+### Claude Code Native LSP (Separate)
+- Requires `export ENABLE_LSP_TOOL=1` in shell config
+- Requires working LSP plugins from `boostvolt/claude-code-lsps` marketplace
+- Official marketplace plugins (`@claude-plugins-official`) are broken (Issue #15148)
+- Provides background enhancement when editing code
+
+**Bottom line**: Use this skill's commands (`specweave lsp refs/def/hover`) - they work
+without any additional setup beyond having the language server installed.

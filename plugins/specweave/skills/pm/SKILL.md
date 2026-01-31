@@ -18,10 +18,25 @@ This skill uses phased loading to prevent context bloat. Load only what you need
 
 | Phase | When to Load | File |
 |-------|--------------|------|
+| Deep Interview | **CHECK FIRST!** If enabled in config | `phases/00-deep-interview.md` |
 | Research | Gathering requirements | `phases/01-research.md` |
 | Spec Creation | Writing spec.md | `phases/02-spec-creation.md` |
 | Validation | Final quality check | `phases/03-validation.md` |
 | Templates | Need spec template | `templates/spec-template.md` |
+
+## Deep Interview Mode Check (MANDATORY)
+
+**Before starting any spec work, check if Deep Interview Mode is enabled:**
+
+```bash
+# Check config - if true, you MUST do extensive interviewing first
+jq -r '.planning.deepInterview.enabled // false' .specweave/config.json
+```
+
+If `true`:
+1. Load `phases/00-deep-interview.md`
+2. Ask 10-40+ questions covering architecture, integrations, UI/UX, performance, security, edge cases
+3. Only proceed to Research phase after thorough interview
 
 ## Core Principles
 
@@ -56,6 +71,7 @@ This skill uses phased loading to prevent context bloat. Load only what you need
 
 ## Workflow
 
+0. **Check Deep Interview Mode** → If enabled, load `phases/00-deep-interview.md` and interview FIRST
 1. **User describes feature** → Read `phases/01-research.md`
 2. **Requirements clear** → Read `phases/02-spec-creation.md` + `templates/spec-template.md`
 3. **Spec written** → **INVOKE ARCHITECT SKILL** (see below)

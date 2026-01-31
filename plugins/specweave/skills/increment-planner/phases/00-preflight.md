@@ -57,6 +57,34 @@ fi
 - `testMode` - For metadata.json
 - `coverageTarget` - For metadata.json
 
+## STEP 0B: Deep Interview Mode Detection (v1.0.195+)
+
+**Run this command:**
+```bash
+deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
+minQuestions=$(jq -r '.planning.deepInterview.minQuestions // 10' .specweave/config.json 2>/dev/null)
+
+if [ "$deepInterview" = "true" ]; then
+  echo "DEEP INTERVIEW MODE ACTIVE"
+  echo "Minimum questions: $minQuestions"
+  echo ""
+  echo "BEFORE creating spec, you MUST:"
+  echo "1. Ask thorough questions about architecture, integrations, UI/UX"
+  echo "2. Cover: performance, security, edge cases"
+  echo "3. Continue until requirements are crystal clear"
+  echo ""
+  echo "Load PM skill phases/00-deep-interview.md for question templates"
+fi
+```
+
+**If Deep Interview Mode is enabled:**
+1. Store `DEEP_INTERVIEW=true` for workflow
+2. Load PM skill's `phases/00-deep-interview.md`
+3. Conduct thorough interview BEFORE proceeding to STEP 1
+4. Only continue after interview summary is complete
+
 ## Next Phase
 
-After pre-flight passes, load `phases/01-project-context.md` for project selection.
+After pre-flight passes:
+- If `DEEP_INTERVIEW=true` → Conduct interview first
+- Then load `phases/01-project-context.md` for project selection
