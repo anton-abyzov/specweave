@@ -7,6 +7,67 @@ description: SMART save - auto-generates commit messages, handles git pull/merge
 
 **SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/sw:save` and it figures out what to do!
 
+## ⚠️ MANDATORY: Nested Repository Scanning (SpecWeave-Specific)
+
+**THIS IS NOT OPTIONAL.** Before ANY git operations, you MUST scan for nested repositories:
+
+### Step 1: ALWAYS Scan for Nested Repos First
+
+```bash
+# MANDATORY: Execute this BEFORE anything else
+echo "🔍 Scanning for nested repositories..."
+
+# Priority folders for SpecWeave projects
+NESTED_REPOS=()
+for dir in repositories packages services apps libs; do
+  if [ -d "$dir" ]; then
+    for repo in "$dir"/*/; do
+      if [ -d "${repo}.git" ]; then
+        NESTED_REPOS+=("${repo%/}")
+        echo "  📁 Found: ${repo%/}"
+      fi
+    done
+  fi
+done
+
+# Also include parent project if it has .git
+if [ -d ".git" ]; then
+  echo "  📁 Found: . (parent project)"
+fi
+```
+
+### Step 2: Report What Was Found
+
+```markdown
+📡 **Repository Scan Results:**
+
+| Repository | Path | Status |
+|------------|------|--------|
+| parent-project | . | ✅ Has changes |
+| frontend | repositories/frontend | ✅ Has changes |
+| backend | repositories/backend | ⏭️ No changes |
+| shared-lib | repositories/shared-lib | ✅ Has changes |
+
+**Total:** 4 repos found, 3 with changes
+```
+
+### Why This Matters
+
+SpecWeave projects often use the `repositories/` folder for multi-repo setups. **NEVER** assume single-repo mode without explicitly checking for nested repos first.
+
+**Common SpecWeave project structure:**
+```
+my-project/
+├── .specweave/           # SpecWeave config
+├── repositories/         # ← ALWAYS check this folder!
+│   ├── frontend/.git     # Nested repo
+│   ├── backend/.git      # Nested repo
+│   └── shared/.git       # Nested repo
+└── .git                  # Parent repo
+```
+
+---
+
 ## TL;DR - Just Works!
 
 ```bash
@@ -27,22 +88,62 @@ description: SMART save - auto-generates commit messages, handles git pull/merge
 
 ## What This Command Does (In Order)
 
-1. **Detect repos** - Uses smart detection (see below)
-2. **Pre-flight check** - Check remote status BEFORE anything else
-3. **Smart sync** - Auto-pull/rebase if behind remote (with stash if needed)
-4. **Auto-commit message** - Generate from changes if not provided
-5. **Push** - Push to remote with auto-retry on recoverable errors
-6. **Report** - Show what was done
+### ⚠️ EXECUTION ORDER IS MANDATORY
 
-### Repository Detection (Auto-Discovery)
+1. **🔍 SCAN FOR NESTED REPOS (ALWAYS FIRST!)**
+   - Check `repositories/`, `packages/`, `services/`, `apps/`, `libs/`
+   - Find ALL `.git` directories up to 4 levels deep
+   - Include parent project if it has `.git`
+   - **NEVER skip this step even for "simple" projects!**
+
+2. **📊 Report discovered repos** - Show table of all repos found with their status
+
+3. **🔍 Pre-flight check** - Check remote status for EACH repo BEFORE anything else
+
+4. **🔄 Smart sync** - Auto-pull/rebase if behind remote (with stash if needed)
+
+5. **📝 Auto-commit message** - Generate from changes if not provided
+
+6. **🚀 Push** - Push to remote with auto-retry on recoverable errors
+
+7. **✅ Report** - Show summary of what was done across ALL repos
+
+### Repository Detection (MANDATORY Auto-Discovery)
+
+**⚠️ THIS IS NOT OPTIONAL. ALWAYS RUN THESE CHECKS:**
 
 The `/sw:save` command uses a **three-tier detection strategy**:
 
 1. **Umbrella Config (priority)** - If `umbrella.childRepos` is configured in `.specweave/config.json`, uses that list
-2. **Git-Scan Fallback (auto-discovery)** - Automatically scans for nested `.git` directories (up to 3 levels deep)
-   - Discovers repos in `repositories/`, `packages/`, `services/`, etc.
+2. **🔴 Git-Scan (ALWAYS RUN THIS!)** - Scan for nested `.git` directories (up to 4 levels deep)
+   - **MUST check**: `repositories/`, `packages/`, `services/`, `apps/`, `libs/`
    - Works for microservices architectures without explicit configuration
+   - **NEVER assume no nested repos without scanning first!**
 3. **Parent Project** - Always includes the root project if it has `.git`
+
+### 🔴 MANDATORY: Execute These Commands FIRST
+
+```bash
+# Step 0: ALWAYS run this before ANY git operations!
+echo "🔍 Scanning for repositories..."
+
+# Check for nested repos in standard SpecWeave folders
+for folder in repositories packages services apps libs; do
+  if [ -d "$folder" ]; then
+    echo "  Checking $folder/..."
+    for repo in "$folder"/*/; do
+      if [ -d "${repo}.git" ]; then
+        echo "  ✅ Found repo: ${repo%/}"
+      fi
+    done
+  fi
+done
+
+# Check parent project
+if [ -d ".git" ]; then
+  echo "  ✅ Found repo: . (parent project)"
+fi
+```
 
 #### Git-Scan Algorithm (CRITICAL for Microservices)
 

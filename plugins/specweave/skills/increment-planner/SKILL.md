@@ -53,8 +53,14 @@ Load phases as needed to reduce context:
 ## Workflow Overview
 
 ```
-STEP 0: Pre-flight (TDD mode, multi-project)
+STEP 0: Pre-flight (TDD mode, multi-project, Deep Interview)
         → Load phases/00-preflight.md
+        → CHECK: Deep Interview Mode enabled?
+
+STEP 0.5: Deep Interview (if enabled)
+        → PM skill loads phases/00-deep-interview.md
+        → Ask 10-40+ questions about architecture, integrations, etc.
+        → Continue until all categories covered
 
 STEP 1: Project Context (resolve project/board)
         → Load phases/01-project-context.md
@@ -64,6 +70,26 @@ STEP 2: Create Increment (via Template API)
 
 STEP 3: Guide User (complete in main conversation)
 ```
+
+## Deep Interview Mode Detection (STEP 0.5)
+
+**Check during pre-flight:**
+
+```bash
+# Detect deep interview mode
+deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
+
+if [ "$deepInterview" = "true" ]; then
+  echo "DEEP INTERVIEW MODE: Conduct thorough questioning before spec creation"
+  echo "Categories: architecture, integrations, ui-ux, performance, security, edge-cases"
+fi
+```
+
+**If Deep Interview Mode is enabled:**
+1. Delegate to PM skill with interview phase
+2. Ask minimum 10 questions (40+ for large features)
+3. Cover all configured categories
+4. Only proceed to STEP 1 after interview complete
 
 ## Critical Rules
 

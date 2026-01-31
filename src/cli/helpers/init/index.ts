@@ -138,3 +138,10 @@ export {
   type TechCategory,
   type TechStackDetection,
 } from './gitignore-generator.js';
+
+// Deep interview mode configuration (v1.0.195+)
+export {
+  promptDeepInterviewConfig,
+  updateConfigWithDeepInterview,
+  type DeepInterviewConfigResult,
+} from './deep-interview-config.js';

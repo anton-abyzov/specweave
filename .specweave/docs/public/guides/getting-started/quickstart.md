@@ -68,6 +68,31 @@ Use explicit commands for full control:
 
 **Perfect for production features and team projects.**
 
+### Option C: Deep Interview Mode (v1.0.195+)
+
+For complex features, enable **Deep Interview Mode** during `specweave init`:
+
+```
+Deep Interview Mode
+
+For big features, Claude can ask 40+ questions about architecture,
+integrations, UI/UX, and tradeoffs before creating specifications.
+
+Enable Deep Interview Mode? [y/N]
+```
+
+When enabled, Claude asks 10-40+ questions covering:
+- Architecture & system design patterns
+- External integrations (APIs, databases, auth)
+- UI/UX concerns and tradeoffs
+- Performance & scalability requirements
+- Security considerations
+- Edge cases & error handling
+
+**Perfect for complex features where upfront planning saves time.**
+
+See [Deep Interview Mode Guide](../deep-interview-mode.md) for details.
+
 ---
 
 ## What You Get

@@ -197,6 +197,33 @@ dependencies:
 [Technical details follow...]
 ```
 
+## Numbered Docs Folders (Collision Prevention)
+
+When creating numbered documentation folders (e.g., `docs/01-platform/`):
+
+**BEFORE creating any `docs/NN-*` folder:**
+
+```bash
+# Check for existing numbered prefixes
+ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort -u
+
+# Detect collisions (duplicates)
+ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort | uniq -d
+```
+
+**Rules:**
+1. Each numeric prefix (01, 02, ..., 98) can only be used ONCE
+2. 99 is reserved for `99-archive`
+3. Find the next available number before creating
+4. If collision detected, renumber the new folder
+
+**Example:**
+```
+# Existing: 01-platform, 02-architecture, 04-deployment
+# Next available: 03 (gap) or 05 (sequential)
+# WRONG: Creating 04-workflows (collision with 04-deployment!)
+```
+
 ## Image Generation
 
 When documentation needs visuals (diagrams, illustrations, icons), use the `/sw:image-generation` skill:
