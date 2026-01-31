@@ -30,6 +30,7 @@ import {
   clearCliCache,
   getCliStatus,
   SPECWEAVE_PLUGINS,
+  OFFICIAL_PLUGINS,
   type LLMDetectionResult,
 } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
 import { detectClaudeCli } from '../../../src/utils/claude-cli-detector.js';
@@ -598,6 +599,32 @@ describe('Plugin List Validation', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-mobile');
   });
 
+  // ============================================================================
+  // GAP #1 TEST: OFFICIAL_PLUGINS should NOT include broken LSP plugins
+  // See: https://github.com/anthropics/claude-code/issues/15148
+  // Official marketplace LSP plugins only contain README files (no config)
+  // ============================================================================
+  it('should NOT include broken LSP plugins from claude-plugins-official', () => {
+    // These LSP plugins are BROKEN in @claude-plugins-official
+    // They only contain README.md files, no actual config
+    const brokenLspPlugins = [
+      'csharp-lsp',
+      'gopls-lsp',
+      'jdtls-lsp',
+      'kotlin-lsp',
+      'php-lsp',
+      'lua-lsp',
+      'clangd-lsp',
+      'typescript-lsp', // If it exists
+      'pyright-lsp',    // If it exists
+      'rust-analyzer-lsp', // If it exists
+    ];
+
+    for (const brokenPlugin of brokenLspPlugins) {
+      expect(OFFICIAL_PLUGINS).not.toContain(brokenPlugin);
+    }
+  });
+
   it('should have all expected infrastructure plugins', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-infra');
     expect(SPECWEAVE_PLUGINS).toContain('sw-k8s');
@@ -623,5 +650,79 @@ describe('Plugin List Validation', () => {
       // Should NOT use directory names (specweave-*)
       expect(plugin.startsWith('specweave-')).toBe(false);
     }
+  });
+});
+
+// ============================================================================
+// GAP #5 TEST: LLM detection should NOT suggest broken LSP plugins
+// ============================================================================
+describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
+  // CRITICAL: Clear cache BEFORE checking CLI availability to prevent test pollution
+  clearCliCache();
+  const cliStatus = isClaudeCliAvailable();
+  const describeIfCli = cliStatus.available ? describe : describe.skip;
+
+  beforeEach(() => {
+    clearCliCache();
+  });
+
+  describeIfCli('With Claude CLI Available', () => {
+    it('should NOT return csharp-lsp for .NET prompt', async () => {
+      const result = await detectPluginsViaLLM('Build a .NET API with Entity Framework');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      // Should have sw-backend (for .NET)
+      expect(result.plugins).toContain('sw-backend');
+      // Should NOT have broken csharp-lsp from official marketplace
+      expect(result.plugins).not.toContain('csharp-lsp');
+    }, 60000);
+
+    it('should NOT return gopls-lsp for Go prompt', async () => {
+      const result = await detectPluginsViaLLM('Build a Go microservice with Gin');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      // Should have sw-backend (for Go)
+      expect(result.plugins).toContain('sw-backend');
+      // Should NOT have broken gopls-lsp from official marketplace
+      expect(result.plugins).not.toContain('gopls-lsp');
+    }, 60000);
+
+    it('should NOT return any *-lsp plugins from official marketplace', async () => {
+      const result = await detectPluginsViaLLM(
+        'Build a full-stack app with C#, Go, Java, PHP, and Lua'
+      );
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+
+      // Should NOT return ANY broken LSP plugins
+      const brokenLspPlugins = [
+        'csharp-lsp',
+        'gopls-lsp',
+        'jdtls-lsp',
+        'kotlin-lsp',
+        'php-lsp',
+        'lua-lsp',
+        'clangd-lsp',
+      ];
+
+      for (const brokenPlugin of brokenLspPlugins) {
+        expect(result.plugins).not.toContain(brokenPlugin);
+      }
+    }, 60000);
   });
 });

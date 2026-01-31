@@ -52,6 +52,8 @@ import {
   createConfigFile,
   showNextSteps,
   installGitHooks,
+  promptDeepInterviewConfig,
+  updateConfigWithDeepInterview,
   WIZARD_BACK,
   logGoingBack,
 } from '../helpers/init/index.js';
@@ -656,8 +658,8 @@ export async function initCommand(
     // Multi-project folders
     await createMultiProjectFolders(targetDir);
 
-    // Wizard loop: External import → Living Docs → Testing → Translation
-    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'translation' | 'done';
+    // Wizard loop: External import → Living Docs → Testing → Deep Interview → Translation
+    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'deep-interview' | 'translation' | 'done';
     let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
 
     while (wizardStep !== 'done') {
@@ -739,6 +741,23 @@ export async function initCommand(
 
           updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
         }
+        wizardStep = 'deep-interview';
+        continue;
+      }
+
+      // STEP: Deep Interview Mode Configuration (v1.0.195+)
+      if (wizardStep === 'deep-interview') {
+        if (!isCI && !continueExisting) {
+          const deepInterviewResult = await promptDeepInterviewConfig(language);
+
+          if (deepInterviewResult.goBack === WIZARD_BACK) {
+            logGoingBack(language);
+            wizardStep = 'testing';
+            continue;
+          }
+
+          updateConfigWithDeepInterview(targetDir, deepInterviewResult.enabled, language);
+        }
         wizardStep = 'translation';
         continue;
       }
@@ -750,7 +769,7 @@ export async function initCommand(
 
           if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
             logGoingBack(language);
-            wizardStep = 'testing';
+            wizardStep = 'deep-interview';
             continue;
           }
 

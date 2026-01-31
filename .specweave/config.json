@@ -89,5 +89,10 @@
       "incrementSpecs": false
     },
     "keepEnglishOriginals": false
+  },
+  "lsp": {
+    "enabled": true,
+    "autoInstallPlugins": true,
+    "marketplace": "boostvolt/claude-code-lsps"
   }
 }

@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.192" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.194" sections="header,start,autodetect,metarule,rules,workflow,save-nested-repos,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
@@ -53,7 +53,7 @@ Hooks exist to enforce workflow discipline. If you ignore them:
 **This is non-negotiable. No exceptions. No "just this once".**
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.192" -->
+<!-- SW:SECTION:header version="1.0.194" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -244,7 +244,7 @@ The official `typescript-lsp@claude-plugins-official` and similar plugins:
 
 Use `boostvolt/claude-code-lsps` until official plugins are fixed.
 
-<!-- SW:SECTION:start version="1.0.192" -->
+<!-- SW:SECTION:start version="1.0.194" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -254,7 +254,7 @@ Use `boostvolt/claude-code-lsps` until official plugins are fixed.
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.192" -->
+<!-- SW:SECTION:autodetect version="1.0.194" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -264,7 +264,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.192" -->
+<!-- SW:SECTION:metarule version="1.0.194" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -275,7 +275,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.192" -->
+<!-- SW:SECTION:rules version="1.0.194" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -291,7 +291,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
    Use next available number. **NEVER create duplicate prefixes.**
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.192" -->
+<!-- SW:SECTION:workflow version="1.0.194" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -311,7 +311,33 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.192" -->
+<!-- SW:SECTION:save-nested-repos version="1.0.194" -->
+## /sw:save - Nested Repository Scanning (MANDATORY)
+
+**⚠️ ALWAYS scan for nested repositories BEFORE any git operations:**
+
+```bash
+# MANDATORY first step - check for nested repos
+for folder in repositories packages services apps libs; do
+  [ -d "$folder" ] && find "$folder" -maxdepth 2 -name ".git" -type d
+done
+```
+
+**Common SpecWeave structure:**
+```
+project/
+├── .specweave/
+├── repositories/        # ← ALWAYS check this!
+│   ├── frontend/.git
+│   ├── backend/.git
+│   └── shared/.git
+└── .git                 # Parent repo
+```
+
+**NEVER assume single-repo mode without scanning first!**
+<!-- SW:END:save-nested-repos -->
+
+<!-- SW:SECTION:reflect version="1.0.194" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -332,7 +358,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ### General
 - **2026-01-29**: Always check for credentials FIRST (presence only - never display values)
 
-<!-- SW:SECTION:context version="1.0.192" -->
+<!-- SW:SECTION:context version="1.0.194" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -340,7 +366,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.192" -->
+<!-- SW:SECTION:structure version="1.0.194" -->
 ## Structure
 
 ```
@@ -355,7 +381,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.192" -->
+<!-- SW:SECTION:taskformat version="1.0.194" -->
 ## Task Format
 
 ```markdown
@@ -365,7 +391,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.192" -->
+<!-- SW:SECTION:secrets version="1.0.194" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -379,7 +405,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.192" -->
+<!-- SW:SECTION:syncing version="1.0.194" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -389,7 +415,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.192" -->
+<!-- SW:SECTION:testing version="1.0.194" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -401,7 +427,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.192" -->
+<!-- SW:SECTION:tdd version="1.0.194" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -462,7 +488,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.192" -->
+<!-- SW:SECTION:api version="1.0.194" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -470,13 +496,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.192" -->
+<!-- SW:SECTION:limits version="1.0.194" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.192" -->
+<!-- SW:SECTION:troubleshooting version="1.0.194" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -490,9 +516,10 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | GitHub sync issues | Check config: `sync.github.enabled`, `canUpdateExternalItems` |
 | Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
 | Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
+| Docs folder collisions | Check: `ls docs/ \| grep -E '^[0-9]{2}-' \| cut -d'-' -f1 \| sort \| uniq -d` |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.192" -->
+<!-- SW:SECTION:lazyloading version="1.0.194" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -506,7 +533,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.192" -->
+<!-- SW:SECTION:principles version="1.0.194" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -515,7 +542,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.192" -->
+<!-- SW:SECTION:linking version="1.0.194" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -523,7 +550,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.192" -->
+<!-- SW:SECTION:mcp version="1.0.194" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -545,7 +572,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.192" -->
+<!-- SW:SECTION:auto version="1.0.194" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -562,7 +589,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.192" -->
+<!-- SW:SECTION:docs version="1.0.194" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
