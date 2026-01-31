@@ -1,12 +1,14 @@
 #!/bin/bash
 # pre-tool-use.sh - Dispatcher for PreToolUse guards
 #
-# Routes to spec-template-enforcement-guard for spec.md writes.
-# This ensures skill usage when creating specifications.
+# Routes to appropriate guards based on tool type:
+# - Write: spec-template-enforcement-guard for spec.md
+# - Edit: status-completion-guard for metadata.json protection
 #
 # Returns: {"decision":"allow"} or {"decision":"block","reason":"..."}
 #
 # @since 1.0.167
+# @updated 1.0.196 - Added status-completion-guard for Edit operations
 
 set -e
 
@@ -26,27 +28,50 @@ GUARDS_DIR="$PLUGIN_ROOT/hooks/v2/guards"
 # Extract tool info
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // .toolName // ""')
 
-# Only process Write tool (spec.md enforcement)
-if [[ "$TOOL_NAME" != "Write" ]]; then
+# ============================================================================
+# Edit Tool Guards
+# ============================================================================
+
+if [[ "$TOOL_NAME" == "Edit" ]]; then
+  # Status Completion Guard - Prevents direct status changes to "completed"
+  # RULE: Use /sw:done or /sw:auto instead of direct metadata.json edits
+  STATUS_GUARD="$GUARDS_DIR/status-completion-guard.sh"
+  if [[ -x "$STATUS_GUARD" ]]; then
+    STATUS_RESULT=$(echo "$INPUT" | "$STATUS_GUARD" 2>/dev/null || echo '{"decision":"allow"}')
+    STATUS_DECISION=$(echo "$STATUS_RESULT" | jq -r '.decision // "allow"')
+
+    if [[ "$STATUS_DECISION" == "block" ]]; then
+      echo "$STATUS_RESULT"
+      exit 0
+    fi
+  fi
+
   echo '{"decision":"allow"}'
   exit 0
 fi
 
 # ============================================================================
-# Spec Template Enforcement Guard
-# Enforces template-first workflow for spec.md (skill usage)
+# Write Tool Guards
 # ============================================================================
 
-SPEC_GUARD="$GUARDS_DIR/spec-template-enforcement-guard.sh"
-if [[ -x "$SPEC_GUARD" ]]; then
-  SPEC_RESULT=$(echo "$INPUT" | "$SPEC_GUARD" 2>/dev/null || echo '{"decision":"allow"}')
-  SPEC_DECISION=$(echo "$SPEC_RESULT" | jq -r '.decision // "allow"')
+if [[ "$TOOL_NAME" == "Write" ]]; then
+  # Spec Template Enforcement Guard
+  # Enforces template-first workflow for spec.md (skill usage)
+  SPEC_GUARD="$GUARDS_DIR/spec-template-enforcement-guard.sh"
+  if [[ -x "$SPEC_GUARD" ]]; then
+    SPEC_RESULT=$(echo "$INPUT" | "$SPEC_GUARD" 2>/dev/null || echo '{"decision":"allow"}')
+    SPEC_DECISION=$(echo "$SPEC_RESULT" | jq -r '.decision // "allow"')
 
-  if [[ "$SPEC_DECISION" == "block" ]]; then
-    echo "$SPEC_RESULT"
-    exit 0
+    if [[ "$SPEC_DECISION" == "block" ]]; then
+      echo "$SPEC_RESULT"
+      exit 0
+    fi
   fi
+
+  echo '{"decision":"allow"}'
+  exit 0
 fi
 
+# Allow all other tools
 echo '{"decision":"allow"}'
 exit 0

@@ -297,3 +297,15 @@ All 4 repos will be committed and pushed with a single `/sw:save` command!
 3. **User stories MUST have project prefix** - Never generate generic `US-001` in multi-repo mode
 4. **Cross-project stories get special handling** - Tagged and linked across repos
 5. **Use `/sw:save`** - Single command to save changes across all repos
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/umbrella-repo-detector.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

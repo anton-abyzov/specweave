@@ -74,3 +74,15 @@ test('TC-001: Valid Login Flow', async ({ page }) => {
 - **Each test file**: 600-800 tokens
 
 **NEVER exceed 2000 tokens per response!**
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/qa-lead.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

@@ -151,3 +151,15 @@ Skill({ skill: "sw:increment-planner", args: "--description=\"Add auth\"" })
 ```
 
 > **NOTE**: Use `sw:` prefix! Plain `increment-planner` fails.
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/increment-planner.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

@@ -539,3 +539,15 @@ When approving closure, summarize what was delivered:
 ---
 
 **Remember**: I'm here to ensure quality, not to block progress. If an increment isn't ready, I'll tell you exactly what needs fixing and how long it will take. My goal is to ship high-quality increments that deliver real value.
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/pm-closure-validation.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

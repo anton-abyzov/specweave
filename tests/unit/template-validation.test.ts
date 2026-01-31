@@ -130,9 +130,10 @@ describe('Template Validation Tests', () => {
     });
 
     test('should document LSP integration correctly', () => {
-      // LSP plugins run automatically - no skill invocation needed
-      expect(claudeContent).toMatch(/LSP plugins.*AUTOMATIC/i);
-      expect(claudeContent).toMatch(/LSP plugins are NOT skills/i);
+      // LSP requires explicit setup (not automatic)
+      // Template should clarify that LSP is different from skills
+      expect(claudeContent).toMatch(/LSP.*REQUIRES.*SETUP/i);
+      expect(claudeContent).toMatch(/LSP.*operations.*goToDefinition|findReferences/i);
     });
   });
 

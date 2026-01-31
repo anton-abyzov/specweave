@@ -94,5 +94,19 @@
     "enabled": true,
     "autoInstallPlugins": true,
     "marketplace": "boostvolt/claude-code-lsps"
+  },
+  "planning": {
+    "deepInterview": {
+      "enabled": true,
+      "minQuestions": 10,
+      "categories": [
+        "architecture",
+        "integrations",
+        "ui-ux",
+        "performance",
+        "security",
+        "edge-cases"
+      ]
+    }
   }
 }

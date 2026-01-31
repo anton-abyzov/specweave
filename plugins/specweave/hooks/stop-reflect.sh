@@ -59,6 +59,30 @@ cleanup_session_state() {
     rm -f "$STATE_DIR/.current-agent-type" 2>/dev/null || true
 }
 
+# Cross-platform timeout function
+# macOS doesn't have GNU timeout - needs gtimeout (coreutils) or perl fallback
+run_with_timeout() {
+    local timeout_sec="$1"
+    shift
+
+    # Try gtimeout first (macOS with coreutils: brew install coreutils)
+    if command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$timeout_sec" "$@"
+        return $?
+    fi
+
+    # Try GNU timeout (Linux, or macOS with coreutils in PATH)
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$timeout_sec" "$@"
+        return $?
+    fi
+
+    # Perl fallback (available on all macOS/Linux by default)
+    # alarm() sends SIGALRM after N seconds, which terminates the exec'd process
+    perl -e 'alarm shift; exec @ARGV' "$timeout_sec" "$@"
+    return $?
+}
+
 # Run reflection using TypeScript implementation
 run_reflection() {
     local transcript="$1"
@@ -88,7 +112,7 @@ run_reflection() {
     if command -v specweave >/dev/null 2>&1; then
         (
             cd "$PROJECT_ROOT"
-            timeout 60 specweave reflect-stop "$transcript" --silent >> "$LOGS_DIR/auto-reflect.log" 2>&1
+            run_with_timeout 60 specweave reflect-stop "$transcript" --silent >> "$LOGS_DIR/auto-reflect.log" 2>&1
             local result=$?
 
             if [ $result -eq 0 ]; then

@@ -471,3 +471,15 @@ We're proposing a shift from our current monolithic architecture to microservice
 ## Version History
 
 - **v1.0.0** (2025-11-21): Initial release, extracted from PM agent for better modularity
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/roadmap-planner.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

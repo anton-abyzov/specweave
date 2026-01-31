@@ -1,0 +1,18 @@
+{
+  "id": "0179-project-scoped-plugin-installation",
+  "title": "Project-Scoped Plugin Installation Support",
+  "type": "feature",
+  "status": "completed",
+  "priority": "high",
+  "created": "2026-01-31T12:00:00Z",
+  "updated": "2026-01-31T11:35:00.000Z",
+  "completedAt": "2026-01-31T11:35:00.000Z",
+  "lastActivity": "2026-01-31T12:00:00Z",
+  "tags": [
+    "plugins",
+    "configuration",
+    "developer-experience"
+  ],
+  "externalLinks": {},
+  "author": "claude"
+}

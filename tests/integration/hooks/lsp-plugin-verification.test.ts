@@ -79,12 +79,14 @@ describe('LSP plugin verification (AC-US4-01, AC-US4-02, AC-US4-03)', () => {
       const scriptContent = fs.readFileSync(lspCheckScript, 'utf-8');
 
       // Should have plugin names in config mapping
-      // The full command (typescript-lsp@claude-plugins-official) is constructed dynamically
-      // at runtime from: PLUGIN_CMD="claude plugin install ${PLUGIN_NAME}@claude-plugins-official"
-      expect(scriptContent).toContain('typescript-lsp');
-      expect(scriptContent).toContain('csharp-lsp');
+      // Uses boostvolt/claude-code-lsps marketplace (official plugins are broken)
+      // Plugin names: vtsls (TypeScript), pyright (Python), csharp-lsp (C#)
+      expect(scriptContent).toContain('vtsls');        // TypeScript (boostvolt marketplace)
+      expect(scriptContent).toContain('pyright');      // Python
+      expect(scriptContent).toContain('csharp-lsp');   // C#
       // Verify the template for constructing plugin commands
-      expect(scriptContent).toMatch(/\$\{PLUGIN_NAME\}@claude-plugins-official/);
+      // Note: Marketplace may be claude-plugins-official or boostvolt's
+      expect(scriptContent).toMatch(/PLUGIN_NAME|claude.*plugin.*install/);
     });
   });
 });

@@ -565,8 +565,18 @@ Business Value Delivered:
 
 PM Approval: ✅ APPROVED for closure
 
+**🔐 CRITICAL: Create marker file before status change**
+Before updating metadata.json to "completed" status, you MUST create the marker file:
+```bash
+mkdir -p .specweave/state && touch .specweave/state/.sw-done-in-progress
+```
+This marker allows the status-completion-guard hook to permit the change.
+After closure is complete, remove the marker file.
+
 Closing increment 0001-user-authentication...
+  ✓ Created marker file (.sw-done-in-progress)
   ✓ Updated status: in-progress → completed
+  ✓ Removed marker file
   ✓ Set completion date: 2025-10-28
   ✓ Generated completion report
   ✓ Updated backlog (4 P3 tasks moved)
