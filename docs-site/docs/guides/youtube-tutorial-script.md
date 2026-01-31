@@ -822,6 +822,25 @@ specweave init .
 
 > "The init wizard sets up your project structure. It works with greenfield AND brownfield projects."
 
+**[HIGHLIGHT: Deep Interview Mode prompt in init wizard]**
+
+> "Here's a new feature that's a game-changer — Deep Interview Mode. During init, you'll see this prompt:"
+
+```
+Deep Interview Mode
+
+For big features, Claude can ask 40+ questions about architecture,
+integrations, UI/UX, and tradeoffs before creating specifications.
+
+Enable Deep Interview Mode? [y/N]
+```
+
+> "When enabled, before creating ANY spec, Claude conducts a thorough interview. Architecture decisions, external integrations, UI/UX concerns, performance requirements, security considerations, edge cases. 10 to 40+ questions depending on feature complexity.
+>
+> This is inspired by Thariq — the creator of Claude Code himself — who shared that for big features, Claude asks him 40+ questions and he ends up with a much more detailed spec that he feels in control of.
+>
+> Want to feel in control of your specs? Enable Deep Interview Mode."
+
 **[TERMINAL: Natural language approach]**
 
 > "For a brand new project, just describe what you want:"

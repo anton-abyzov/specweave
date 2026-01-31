@@ -22,6 +22,23 @@ This skill uses phased loading. Load only what you need:
 | ADR Creation | Writing architecture decisions | `phases/02-adr-creation.md` |
 | Diagrams | Creating system diagrams | `phases/03-diagrams.md` |
 
+## Deep Interview Mode (CHECK FIRST!)
+
+**Before architecture work, check if Deep Interview Mode is enabled:**
+
+```bash
+jq -r '.planning.deepInterview.enabled // false' .specweave/config.json
+```
+
+If `true`, ask thorough technical questions BEFORE creating ADRs:
+- System design patterns and tradeoffs
+- Integration points and external dependencies
+- Scalability and performance requirements
+- Security architecture considerations
+- Technology selection rationale
+
+The PM skill handles the full interview (see `pm/phases/00-deep-interview.md`), but as Architect you should probe deeper on technical aspects when your skill is invoked directly.
+
 ## Core Principles
 
 1. **Chunked Responses**: ONE ADR per response (max 2000 tokens)
