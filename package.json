@@ -88,7 +88,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
+    "@anthropic-ai/sdk": "^0.72.1",
     "@inquirer/prompts": "^8.1.0",
     "@octokit/rest": "^22.0.1",
     "@types/handlebars": "^4.0.40",
