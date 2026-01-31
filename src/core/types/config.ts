@@ -496,6 +496,74 @@ export interface PluginAutoLoadConfig {
 }
 
 /**
+ * Deep Interview Mode Configuration (v1.0.195+)
+ *
+ * Controls extensive upfront questioning during increment planning.
+ * Inspired by Thariq's workflow where Claude asks 40+ questions about
+ * architecture, integrations, UI/UX, and tradeoffs before creating specs.
+ *
+ * When enabled, PM and Architect skills will conduct thorough interviews
+ * covering all configured categories before generating specifications.
+ */
+export interface DeepInterviewConfig {
+  /**
+   * Enable deep interview mode
+   *
+   * When true: Claude asks extensive questions about architecture, integrations,
+   * UI/UX concerns, performance, security, and edge cases before creating specs.
+   *
+   * When false (default): Standard spec creation flow without extensive questioning.
+   *
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Minimum number of questions to ask before proceeding
+   *
+   * For small features, may ask fewer questions. For big features (40+ questions).
+   * This is a soft minimum - Claude will ask more if needed for clarity.
+   *
+   * @default 10
+   */
+  minQuestions?: number;
+
+  /**
+   * Question categories to cover during interview
+   *
+   * Each category represents an area to explore before spec creation.
+   * Claude will ensure all enabled categories are addressed.
+   *
+   * Available categories:
+   * - 'architecture': System design, patterns, components
+   * - 'integrations': External services, APIs, databases
+   * - 'ui-ux': User interface, experience, accessibility
+   * - 'performance': Scalability, caching, optimization
+   * - 'security': Auth, authorization, data protection
+   * - 'edge-cases': Error handling, failure modes, edge scenarios
+   *
+   * @default ['architecture', 'integrations', 'ui-ux', 'performance', 'security', 'edge-cases']
+   */
+  categories?: Array<'architecture' | 'integrations' | 'ui-ux' | 'performance' | 'security' | 'edge-cases'>;
+}
+
+/**
+ * Planning Configuration (v1.0.195+)
+ *
+ * Controls how increment planning and specification creation works.
+ * Includes settings for deep interview mode and other planning behaviors.
+ */
+export interface PlanningConfig {
+  /**
+   * Deep interview mode configuration
+   *
+   * When enabled, triggers extensive questioning about architecture,
+   * integrations, and tradeoffs before creating increment specifications.
+   */
+  deepInterview?: DeepInterviewConfig;
+}
+
+/**
  * Increment Assist Configuration (v1.0.141+)
  *
  * Controls intelligent increment creation suggestions.
@@ -644,6 +712,9 @@ export interface SpecweaveConfig {
   /** Increment assist configuration (v1.0.141+) */
   incrementAssist?: IncrementAssistConfig;
 
+  /** Planning configuration including deep interview mode (v1.0.195+) */
+  planning?: PlanningConfig;
+
   /** Allow additional properties */
   [key: string]: any;
 }
@@ -775,5 +846,19 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     suggestReopen: true,        // Suggest reopening related increments
     confidenceThreshold: 0.7,   // Only show suggestions above 70% confidence
     mandatory: false,           // v1.0.160+: When true, forces increment creation for features
+  },
+  planning: {
+    deepInterview: {
+      enabled: false,           // v1.0.195+: Opt-in deep interview mode (40+ questions)
+      minQuestions: 10,         // Minimum questions before proceeding
+      categories: [             // Categories to cover during interview
+        'architecture',
+        'integrations',
+        'ui-ux',
+        'performance',
+        'security',
+        'edge-cases',
+      ],
+    },
   },
 };
