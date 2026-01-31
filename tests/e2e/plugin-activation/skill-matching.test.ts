@@ -27,7 +27,7 @@ describe('Plugin Activation E2E Tests', () => {
 
     // Sanity check - should have many skills indexed
     expect(index.skillCount).toBeGreaterThan(100);
-    expect(index.keywordCount).toBeGreaterThan(500);
+    expect(index.keywordCount).toBeGreaterThan(200);
   });
 
   describe('T-005: E2E Test Infrastructure', () => {

@@ -305,6 +305,11 @@ export class SkillTriggerExtractor {
       /\bcalculator\b/gi, /\bchat\b/gi, /\be-commerce\b/gi, /\becommerce\b/gi,
       /\bmarketplace\b/gi, /\bblog\b/gi, /\bCMS\b/gi, /\bCRM\b/gi,
       /\bSaaS\b/gi, /\bB2B\b/gi, /\bB2C\b/gi,
+      // ML/AI
+      /\bmachine learning\b/gi, /\bML\b/g, /\bmodel training\b/gi,
+      /\bproduction ML\b/gi, /\bML pipelines?\b/gi, /\bdeep learning\b/gi,
+      /\bartificial intelligence\b/gi, /\bAI\b/g, /\bneural networks?\b/gi,
+      /\bdata science\b/gi, /\bMLOps\b/gi,
       // LSP & Code Intelligence
       /\bLSP\b/gi, /\blanguage server\b/gi, /\bgo to definition\b/gi,
       /\bfind references\b/gi, /\bcode navigation\b/gi, /\bhover type\b/gi,
