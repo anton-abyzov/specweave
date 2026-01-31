@@ -608,3 +608,15 @@ When experimenting or testing:
 ---
 
 **Remember**: SpecWeave is your local source of truth. External tools are mirrors. Sync is about keeping mirrors up-to-date, not managing dual sources of truth.
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/external-sync-wizard.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+
