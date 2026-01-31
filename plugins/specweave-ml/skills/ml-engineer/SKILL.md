@@ -1,6 +1,6 @@
 ---
 name: ml-engineer
-description: ML system builder enforcing best practices - baseline comparison, cross-validation, experiment tracking, explainability (SHAP/LIME). Use for ML pipelines, model training, production ML.
+description: Machine learning system builder enforcing best practices - baseline comparison, cross-validation, experiment tracking, explainability (SHAP/LIME). Use when building ML pipelines, model training, or production ML systems.
 model: opus
 context: fork
 ---
