@@ -425,7 +425,7 @@ Then restart your terminal and Claude Code.
 fi
 
 # ==============================================================================
-# LSP AUTO-INSTALL (v1.0.192) - Install LSP plugins based on project/prompt detection
+# LSP AUTO-INSTALL (v1.0.196) - Install LSP plugins with PROJECT SCOPE
 # ==============================================================================
 # Triggers on ANY of:
 #   - Explicit LSP request (findReferences, goToDefinition, etc.)
@@ -433,8 +433,23 @@ fi
 #   - Prompt language detection (mentions typescript, react, python, django, etc.)
 # This ensures LSP plugins are installed when working on TS/Py/Rust projects
 # WITHOUT requiring user to explicitly ask for "find references"
+#
+# v1.0.196: LSP plugins now install with PROJECT SCOPE by default
+#   - Reads plugins.scope.lspScope from config (default: "project")
+#   - Project scope keeps LSP plugins specific to the project
+#   - Avoids polluting global plugin list with project-specific language support
 LSP_INSTALL_MSG=""
 LSP_NEEDS_INSTALL="false"
+
+# Read LSP scope from config.json (v1.0.196)
+# Default: "project" - LSP plugins should be project-scoped
+LSP_PLUGIN_SCOPE="project"
+if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+  SCOPE_VALUE=$(jq -r '.plugins.scope.lspScope // "project"' "$CONFIG_PATH" 2>/dev/null)
+  if [[ "$SCOPE_VALUE" == "user" ]] || [[ "$SCOPE_VALUE" == "project" ]] || [[ "$SCOPE_VALUE" == "local" ]]; then
+    LSP_PLUGIN_SCOPE="$SCOPE_VALUE"
+  fi
+fi
 
 # Check if ANY language detection triggered
 if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
@@ -465,33 +480,36 @@ if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; 
   fi
 
   # Auto-install TypeScript LSP plugin (vtsls) when TypeScript project/prompt detected
+  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
   if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
     VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
     if [[ "$VTSLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install vtsls@claude-code-lsps >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **TypeScript LSP installed**: \`vtsls@claude-code-lsps\`
+      if timeout 15 claude plugin install vtsls@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **TypeScript LSP installed**: \`vtsls@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
 "
       fi
     fi
   fi
 
   # Auto-install Python LSP plugin (pyright) when Python project/prompt detected
+  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
   if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
     PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
     if [[ "$PYRIGHT_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install pyright@claude-code-lsps >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\`
+      if timeout 15 claude plugin install pyright@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
 "
       fi
     fi
   fi
 
   # Auto-install Rust LSP plugin (rust-analyzer) when Rust project/prompt detected
+  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
   if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
     RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
     if [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install rust-analyzer@claude-code-lsps >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Rust LSP installed**: \`rust-analyzer@claude-code-lsps\`
+      if timeout 15 claude plugin install rust-analyzer@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Rust LSP installed**: \`rust-analyzer@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
 "
       fi
     fi

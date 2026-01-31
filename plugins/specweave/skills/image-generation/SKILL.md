@@ -440,3 +440,15 @@ https://image.pollinations.ai/prompt/branching%20flowchart%20paths%20made%20of%2
 - **browser-automation**: For screenshot capture
 - **docusaurus**: For documentation site setup
 - **technical-writing**: For documentation content
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/image-generation.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

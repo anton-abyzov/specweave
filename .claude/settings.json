@@ -7,6 +7,10 @@
     ],
     "defaultMode": "bypassPermissions"
   },
+  "enabledPlugins": {
+    "./plugins/specweave-lsp": true,
+    "clangd@claude-code-lsps": true
+  },
   "lspServers": {
     "vtsls": {
       "command": "typescript-language-server",
@@ -22,8 +26,5 @@
         ".cjs": "javascript"
       }
     }
-  },
-  "enabledPlugins": {
-    "./plugins/specweave-lsp": true
   }
 }

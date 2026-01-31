@@ -1,9 +1,11 @@
 /**
  * Reflect Handler - Simplified reflection system
  *
- * ARCHITECTURE SIMPLIFICATION (v2.0):
- * - All learnings go to CLAUDE.md (single source of truth)
- * - Organized by skill name under "## Skill Memories" section
+ * ARCHITECTURE (v3.0):
+ * - Learnings go to BOTH:
+ *   1. CLAUDE.md Skill Memories section (general visibility)
+ *   2. .specweave/skill-memories/{skill}.md (skill-specific context)
+ * - Organized by skill name
  * - Always uses LLM for extraction (no quick signal check)
  * - User can disable via config
  *
@@ -23,6 +25,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runClaudeCli, parseJsonFromOutput, type ClaudeModel } from '../../utils/claude-cli-runner.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
+import { writeSkillMemories } from './skill-memories.js';
 
 /**
  * Configuration for reflection
@@ -588,6 +591,18 @@ export async function handleReflectStop(
   result.written.learningsAdded = writeResult.added;
   result.written.learningsSkippedDuplicate = writeResult.skipped;
   result.written.claudeMdPath = claudeMdPath;
+
+  // Also write to skill-specific memory files
+  // This ensures learnings are visible when skills load
+  try {
+    const skillMemoryResult = writeSkillMemories(projectRoot, learningsToWrite);
+    logger.debug(
+      `[reflect] Wrote ${skillMemoryResult.written} skill memory files, skipped ${skillMemoryResult.skipped} duplicates`
+    );
+  } catch (err) {
+    // Non-fatal - continue even if skill memory write fails
+    logger.warn(`[reflect] Failed to write skill memories: ${err}`);
+  }
 
   result.durationMs = performance.now() - startTime;
 

@@ -366,3 +366,15 @@ When recommending platforms, I:
 ---
 
 **Remember**: I base all recommendations on your specific context, workload patterns, and requirements. There's no one-size-fits-all answer - the best platform depends on your situation!
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/serverless-recommender.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+

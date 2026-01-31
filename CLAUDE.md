@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.194" sections="header,start,autodetect,metarule,rules,workflow,save-nested-repos,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.195" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
@@ -53,7 +53,7 @@ Hooks exist to enforce workflow discipline. If you ignore them:
 **This is non-negotiable. No exceptions. No "just this once".**
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.194" -->
+<!-- SW:SECTION:header version="1.0.195" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -244,7 +244,55 @@ The official `typescript-lsp@claude-plugins-official` and similar plugins:
 
 Use `boostvolt/claude-code-lsps` until official plugins are fixed.
 
-<!-- SW:SECTION:start version="1.0.194" -->
+## Plugin Installation Scopes (Claude Code 2.1.3+)
+
+Claude Code supports three installation scopes for plugins:
+
+| Scope | Settings File | Use Case |
+|-------|---------------|----------|
+| **User** | `~/.claude/settings.json` | Personal plugins across ALL projects (default) |
+| **Project** | `.claude/settings.json` | Team plugins, shared via git |
+| **Local** | `.claude/settings.local.json` | Project-specific, gitignored |
+
+### When to Use Each Scope
+
+- **User scope** (default): Plugins useful everywhere (context7, playwright)
+- **Project scope**: Language-specific LSP plugins, team tools
+- **Local scope**: Personal experimental plugins, not shared
+
+### Installing with Scope
+
+```bash
+# User scope (default)
+claude plugin install context7@claude-plugins-official
+
+# Project scope - shared with team via git
+claude plugin install vtsls@claude-code-lsps --scope project
+
+# Local scope - just you, gitignored
+claude plugin install my-plugin@marketplace --scope local
+```
+
+### SpecWeave Auto-Installation Scopes
+
+SpecWeave's `user-prompt-submit.sh` hook auto-installs LSP plugins with **project scope** by default:
+
+```json
+// .specweave/config.json
+{
+  "plugins": {
+    "scope": {
+      "defaultScope": "user",
+      "lspScope": "project",        // LSP plugins → project scope
+      "specweaveScope": "user"      // sw-* plugins → user scope
+    }
+  }
+}
+```
+
+**Reference**: [Official Docs](https://code.claude.com/docs/en/discover-plugins#install-plugins) | [Settings Scopes](https://code.claude.com/docs/en/settings#configuration-scopes)
+
+<!-- SW:SECTION:start version="1.0.195" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -254,7 +302,7 @@ Use `boostvolt/claude-code-lsps` until official plugins are fixed.
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.194" -->
+<!-- SW:SECTION:autodetect version="1.0.195" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -264,7 +312,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.194" -->
+<!-- SW:SECTION:metarule version="1.0.195" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -275,7 +323,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.194" -->
+<!-- SW:SECTION:rules version="1.0.195" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -291,7 +339,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
    Use next available number. **NEVER create duplicate prefixes.**
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.194" -->
+<!-- SW:SECTION:workflow version="1.0.195" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -337,7 +385,7 @@ project/
 **NEVER assume single-repo mode without scanning first!**
 <!-- SW:END:save-nested-repos -->
 
-<!-- SW:SECTION:reflect version="1.0.194" -->
+<!-- SW:SECTION:reflect version="1.0.195" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -358,7 +406,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ### General
 - **2026-01-29**: Always check for credentials FIRST (presence only - never display values)
 
-<!-- SW:SECTION:context version="1.0.194" -->
+<!-- SW:SECTION:context version="1.0.195" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -366,7 +414,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.194" -->
+<!-- SW:SECTION:structure version="1.0.195" -->
 ## Structure
 
 ```
@@ -381,7 +429,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.194" -->
+<!-- SW:SECTION:taskformat version="1.0.195" -->
 ## Task Format
 
 ```markdown
@@ -391,7 +439,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.194" -->
+<!-- SW:SECTION:secrets version="1.0.195" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -405,7 +453,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.194" -->
+<!-- SW:SECTION:syncing version="1.0.195" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -415,7 +463,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.194" -->
+<!-- SW:SECTION:testing version="1.0.195" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -427,7 +475,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.194" -->
+<!-- SW:SECTION:tdd version="1.0.195" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -488,7 +536,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.194" -->
+<!-- SW:SECTION:api version="1.0.195" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -496,13 +544,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.194" -->
+<!-- SW:SECTION:limits version="1.0.195" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.194" -->
+<!-- SW:SECTION:troubleshooting version="1.0.195" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -519,7 +567,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Docs folder collisions | Check: `ls docs/ \| grep -E '^[0-9]{2}-' \| cut -d'-' -f1 \| sort \| uniq -d` |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.194" -->
+<!-- SW:SECTION:lazyloading version="1.0.195" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -533,7 +581,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.194" -->
+<!-- SW:SECTION:principles version="1.0.195" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -542,7 +590,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.194" -->
+<!-- SW:SECTION:linking version="1.0.195" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -550,7 +598,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.194" -->
+<!-- SW:SECTION:mcp version="1.0.195" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -572,7 +620,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.194" -->
+<!-- SW:SECTION:auto version="1.0.195" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -589,7 +637,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.194" -->
+<!-- SW:SECTION:docs version="1.0.195" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)

@@ -376,3 +376,15 @@ tdd:
 ---
 
 **Keywords**: TDD, test-driven development, red-green-refactor, test-first, Kent Beck, TDD cycle, property-based testing, mutation testing, refactoring, test discipline
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+# Check if skill memory exists for this skill
+cat .specweave/skill-memories/tdd-workflow.md 2>/dev/null || echo "No project learnings yet"
+```
+
+Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
+
