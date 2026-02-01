@@ -141,16 +141,33 @@ if [[ -f "$SCHEDULER_STARTUP" ]]; then
   bash "$SCHEDULER_STARTUP" 2>/dev/null || true
 fi
 
-# === LSP LANGUAGE SERVER CHECK (v1.0.180) ===
-# Spawn lsp-check.sh in background to detect missing language server binaries
-# Results written to .specweave/state/lsp-check.json for user-prompt-submit to read
-# Shows one-time warning if language servers are missing (e.g., csharp-ls, typescript-language-server)
-LSP_CHECK_SCRIPT="$SCRIPTS_DIR/lsp-check.sh"
-if [[ -x "$LSP_CHECK_SCRIPT" ]] || [[ -f "$LSP_CHECK_SCRIPT" ]]; then
-  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
-  nohup bash "$LSP_CHECK_SCRIPT" "$PROJECT_ROOT" \
-    >> "$PROJECT_ROOT/.specweave/logs/lsp-check.log" 2>&1 &
-  disown 2>/dev/null
+# === LSP OPERATIONS (v1.0.197) ===
+# LSP check and warm-up ONLY run if user has explicitly enabled LSP via ENABLE_LSP_TOOL=1
+# This avoids wasted background work for users who don't use LSP features
+#
+# Why gate on ENABLE_LSP_TOOL:
+# 1. LSP requires explicit setup (language server binaries, Claude plugins)
+# 2. Not all users need semantic code intelligence
+# 3. Background processes consume resources
+# 4. LSP warm-up is triggered on-demand when user prompt contains LSP keywords
+#
+# To enable: Add "export ENABLE_LSP_TOOL=1" to ~/.zshrc or ~/.bashrc
+if [[ -n "${ENABLE_LSP_TOOL:-}" ]]; then
+  # === LSP LANGUAGE SERVER CHECK ===
+  # Verify language server binaries are installed for dominant project languages
+  LSP_CHECK_SCRIPT="$SCRIPTS_DIR/lsp-check.sh"
+  if [[ -x "$LSP_CHECK_SCRIPT" ]] || [[ -f "$LSP_CHECK_SCRIPT" ]]; then
+    mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+    nohup bash "$LSP_CHECK_SCRIPT" "$PROJECT_ROOT" \
+      >> "$PROJECT_ROOT/.specweave/logs/lsp-check.log" 2>&1 &
+    disown 2>/dev/null
+  fi
+
+  # NOTE: LSP warm-up is NOT done here on session start
+  # Instead, it's triggered lazily by user-prompt-submit.sh when:
+  # 1. User prompt contains LSP keywords ("find references", "go to definition", etc.)
+  # 2. AND warm-up hasn't been done yet this session
+  # This avoids warming up LSP for sessions that never use it
 fi
 
 # Session watchdog REMOVED (ADR-0224)

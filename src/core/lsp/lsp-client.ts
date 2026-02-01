@@ -83,6 +83,10 @@ export class LSPClient {
   private initialized = false;
   private responseHandlers: Map<number, (response: any) => void> = new Map();
   private buffer = '';
+  /** Track opened documents to avoid redundant didOpen + 500ms delays */
+  private openedDocuments: Set<string> = new Set();
+  /** Track if workspace has been indexed (first query triggers this) */
+  private workspaceIndexed = false;
 
   constructor(config: LSPServerConfig) {
     this.config = config;
@@ -176,6 +180,106 @@ export class LSPClient {
       logger.error(`Failed to initialize LSP: ${error}`);
       return false;
     }
+  }
+
+  /**
+   * Warm up the LSP server by triggering workspace indexing
+   * This prevents the first real query from timing out
+   * v1.0.197: Added for session-start warm-up
+   */
+  async warmup(entryFiles?: string[]): Promise<boolean> {
+    if (!this.initialized) {
+      logger.warn('Cannot warm up - LSP not initialized');
+      return false;
+    }
+
+    try {
+      logger.info('Starting LSP warm-up (workspace indexing)...');
+      const startTime = Date.now();
+
+      // 1. First, open at least one file to establish project context
+      // TypeScript language server requires a document to be open before workspace queries work
+      const filesToOpen = entryFiles && entryFiles.length > 0
+        ? entryFiles.slice(0, 5)
+        : this.findDefaultEntryFiles();
+
+      for (const filePath of filesToOpen) {
+        try {
+          const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
+          await this.openDocument(filePath, uri);
+          logger.debug(`Warm-up: opened ${filePath}`);
+        } catch {
+          // Ignore individual file errors during warm-up
+        }
+      }
+
+      // 2. Now trigger workspace indexing with empty symbol query
+      // This forces the language server to scan and index all files
+      try {
+        await this.sendRequest('workspace/symbol', { query: '' });
+        this.workspaceIndexed = true;
+      } catch (symbolError) {
+        // Workspace symbol may fail but files are still indexed via didOpen
+        logger.debug(`Workspace symbol failed (non-critical): ${symbolError}`);
+        this.workspaceIndexed = true; // Files are open, good enough
+      }
+
+      const elapsed = Date.now() - startTime;
+      logger.info(`LSP warm-up completed in ${elapsed}ms`);
+      return true;
+
+    } catch (error) {
+      logger.warn(`LSP warm-up failed (will retry on first query): ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Find default entry files for warm-up when none specified
+   */
+  private findDefaultEntryFiles(): string[] {
+    const candidates = [
+      'src/index.ts',
+      'src/main.ts',
+      'src/app.ts',
+      'index.ts',
+      'main.ts',
+      'tsconfig.json', // Opening this helps TS server find the project
+    ];
+
+    const found: string[] = [];
+    for (const candidate of candidates) {
+      const fullPath = path.resolve(this.config.rootPath, candidate);
+      if (fs.existsSync(fullPath) && candidate.endsWith('.ts')) {
+        found.push(candidate);
+        if (found.length >= 3) break; // Max 3 files
+      }
+    }
+
+    // Fallback: find any .ts file in src/
+    if (found.length === 0) {
+      try {
+        const srcDir = path.join(this.config.rootPath, 'src');
+        if (fs.existsSync(srcDir)) {
+          const files = fs.readdirSync(srcDir)
+            .filter(f => f.endsWith('.ts'))
+            .slice(0, 3)
+            .map(f => `src/${f}`);
+          found.push(...files);
+        }
+      } catch {
+        // Ignore errors
+      }
+    }
+
+    return found;
+  }
+
+  /**
+   * Check if workspace has been indexed
+   */
+  isWarmedUp(): boolean {
+    return this.workspaceIndexed;
   }
 
   /**
@@ -472,16 +576,40 @@ export class LSPClient {
 
   /**
    * Open a document in the LSP server
-   * Returns a promise that resolves after a brief delay to allow server processing
+   * Tracks already-opened documents to avoid redundant 500ms delays
+   * v1.0.197: Performance fix - skip delay for already-open documents
    */
   private async openDocument(filePath: string, uri: string): Promise<void> {
+    // Skip if document already opened (avoid redundant 500ms delay)
+    if (this.openedDocuments.has(uri)) {
+      return;
+    }
+
     const absolutePath = path.resolve(this.config.rootPath, filePath);
     const fileContent = fs.readFileSync(absolutePath, 'utf-8');
     this.sendNotification('textDocument/didOpen', {
       textDocument: { uri, languageId: this.getLanguageId(filePath), version: 1, text: fileContent }
     });
-    // Give the LSP server time to parse the document
+
+    // Track as opened
+    this.openedDocuments.add(uri);
+
+    // Give the LSP server time to parse the document (only for first open)
     await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  /**
+   * Close a document in the LSP server
+   * v1.0.197: Added to prevent memory leaks
+   */
+  private closeDocument(uri: string): void {
+    if (!this.openedDocuments.has(uri)) {
+      return;
+    }
+    this.sendNotification('textDocument/didClose', {
+      textDocument: { uri }
+    });
+    this.openedDocuments.delete(uri);
   }
 
   /**
@@ -505,11 +633,17 @@ export class LSPClient {
 
   /**
    * Shutdown and cleanup LSP server
+   * v1.0.197: Now properly closes all open documents to prevent memory leaks
    */
   async shutdown(): Promise<void> {
     if (!this.initialized) return;
 
     try {
+      // Close all open documents first
+      for (const uri of this.openedDocuments) {
+        this.closeDocument(uri);
+      }
+
       await this.sendRequest('shutdown', {});
       this.sendNotification('exit', {});
     } catch (error) {
@@ -522,6 +656,8 @@ export class LSPClient {
     }
 
     this.initialized = false;
+    this.openedDocuments.clear();
+    this.workspaceIndexed = false;
     logger.info('LSP server stopped');
   }
 }

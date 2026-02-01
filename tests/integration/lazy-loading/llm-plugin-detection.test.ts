@@ -654,6 +654,121 @@ describe('Plugin List Validation', () => {
 });
 
 // ============================================================================
+// LSP DETECTION TESTS (v1.0.198+)
+// Unified LLM detection now includes LSP operation recommendation
+// ============================================================================
+describe('LLM Detection LSP Recommendation', () => {
+  // CRITICAL: Clear cache BEFORE checking CLI availability to prevent test pollution
+  clearCliCache();
+  const cliStatus = isClaudeCliAvailable();
+  const describeIfCli = cliStatus.available ? describe : describe.skip;
+
+  beforeEach(() => {
+    clearCliCache();
+  });
+
+  describeIfCli('With Claude CLI Available', () => {
+    it('should return lsp.needed=true for "find references" prompt', async () => {
+      const result = await detectPluginsViaLLM('Find all references to the handleRequest function');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      // NEW: LSP field should exist and indicate LSP is needed
+      expect(result.lsp).toBeDefined();
+      expect(result.lsp?.needed).toBe(true);
+      expect(result.lsp?.operation).toBe('references');
+    }, 60000);
+
+    it('should return lsp.needed=true for "go to definition" prompt', async () => {
+      const result = await detectPluginsViaLLM('Go to the definition of UserService class');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.lsp).toBeDefined();
+      expect(result.lsp?.needed).toBe(true);
+      expect(result.lsp?.operation).toBe('definition');
+    }, 60000);
+
+    it('should return lsp.needed=true for "show type" or "hover" prompt', async () => {
+      const result = await detectPluginsViaLLM('What is the type signature of processData?');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.lsp).toBeDefined();
+      expect(result.lsp?.needed).toBe(true);
+      expect(result.lsp?.operation).toBe('hover');
+    }, 60000);
+
+    it('should return lsp.needed=true for "list symbols" prompt', async () => {
+      const result = await detectPluginsViaLLM('List all exported symbols in src/api/users.ts');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.lsp).toBeDefined();
+      expect(result.lsp?.needed).toBe(true);
+      expect(result.lsp?.operation).toBe('symbols');
+    }, 60000);
+
+    it('should detect language from prompt context', async () => {
+      const result = await detectPluginsViaLLM('Find all references to handleRequest in the TypeScript codebase');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.lsp?.language).toBe('typescript');
+    }, 60000);
+
+    it('should return lsp.needed=false for non-LSP prompts', async () => {
+      const result = await detectPluginsViaLLM('Build a React dashboard with charts');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      // LSP should either be undefined or have needed=false
+      if (result.lsp) {
+        expect(result.lsp.needed).toBe(false);
+      }
+    }, 60000);
+
+    it('should indicate warmupRequired when workspace not indexed', async () => {
+      const result = await detectPluginsViaLLM('Find all usages of AuthService class');
+
+      if (!result.success) {
+        console.log(`⚠️  LLM detection failed: ${result.error || 'unknown'} - skipping`);
+        return;
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.lsp).toBeDefined();
+      // warmupRequired should be a boolean
+      expect(typeof result.lsp?.warmupRequired).toBe('boolean');
+    }, 60000);
+  });
+});
+
+// ============================================================================
 // GAP #5 TEST: LLM detection should NOT suggest broken LSP plugins
 // ============================================================================
 describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
