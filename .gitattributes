@@ -33,3 +33,12 @@
 *.zip binary
 *.tar.gz binary
 *.tgz binary
+
+# SpecWeave Multi-Developer Merge Strategies
+# metadata.json: Use union merge (combine both sides, manual resolve on conflict)
+# This reduces conflicts when multiple developers update increment status
+.specweave/increments/*/metadata.json merge=union
+
+# Lock files: Always use local version (current developer's state wins)
+.specweave/increments/**/package-lock.json merge=ours
+.specweave/increments/**/yarn.lock merge=ours

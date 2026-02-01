@@ -9,12 +9,40 @@ Check config before proceeding with spec creation:
 ```bash
 # Check if deep interview mode is enabled
 deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
+enforcement=$(jq -r '.planning.deepInterview.enforcement // "advisory"' .specweave/config.json 2>/dev/null)
 
 if [ "$deepInterview" = "true" ]; then
   echo "DEEP INTERVIEW MODE ACTIVE"
-  echo "You MUST ask thorough questions before creating spec.md"
+  echo "Enforcement: $enforcement"
+  if [ "$enforcement" = "strict" ]; then
+    echo "⚠️ STRICT MODE: spec.md BLOCKED until all categories covered!"
+  fi
 fi
 ```
+
+## Strict Enforcement (v1.0.198+)
+
+When `enforcement: "strict"` is configured, spec.md creation is BLOCKED by `interview-enforcement-guard.sh` until all categories are marked as covered.
+
+**To track category completion:**
+
+1. **Initialize interview state** (done by increment-planner):
+   ```bash
+   mkdir -p .specweave/state
+   echo '{"incrementId":"XXXX-name","startedAt":"'$(date -Iseconds)'","coveredCategories":{}}' > .specweave/state/interview-XXXX-name.json
+   ```
+
+2. **Mark categories as covered** after discussing each:
+   ```bash
+   # Mark a category as covered with summary
+   jq '.coveredCategories.architecture = {"coveredAt": "'$(date -Iseconds)'", "summary": "Microservices with event-driven communication"}' \
+     .specweave/state/interview-XXXX-name.json > tmp && mv tmp .specweave/state/interview-XXXX-name.json
+   ```
+
+3. **Check progress**:
+   ```bash
+   jq '.coveredCategories | keys' .specweave/state/interview-XXXX-name.json
+   ```
 
 ## Interview Categories
 
@@ -159,6 +187,26 @@ Only proceed to `phases/01-research.md` when:
 - [ ] User has confirmed understanding is correct
 - [ ] No major ambiguities remain
 - [ ] Integration dependencies are documented
+
+**For Strict Mode:** All categories must be marked in interview state file before spec.md can be written.
+
+## Marking Categories Complete
+
+After discussing each category, mark it as covered. Use natural language - Claude will update the state file:
+
+```
+Mark architecture covered: [Microservices with Redis cache, PostgreSQL for persistence]
+Mark integrations covered: [Stripe for payments, SendGrid for email, Auth0 for auth]
+Mark ui-ux covered: [Dashboard with real-time updates, toast notifications for errors]
+Mark performance covered: [< 200ms response time, Redis caching, lazy loading]
+Mark security covered: [JWT with refresh tokens, RBAC for permissions, HTTPS only]
+Mark edge-cases covered: [Retry with exponential backoff, idempotency keys for payments]
+```
+
+**Or use structured command:**
+```bash
+specweave interview mark-covered XXXX-name architecture "Microservices with event-driven arch"
+```
 
 ## Output
 

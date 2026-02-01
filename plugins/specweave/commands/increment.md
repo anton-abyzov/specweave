@@ -6,6 +6,8 @@ hooks:
     - matcher: Write
       hooks:
         - type: command
+          command: bash plugins/specweave/hooks/v2/guards/interview-enforcement-guard.sh
+        - type: command
           command: bash plugins/specweave/hooks/v2/guards/spec-template-enforcement-guard.sh
   PostToolUse:
     - matcher: Write

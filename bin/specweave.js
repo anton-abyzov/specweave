@@ -367,6 +367,30 @@ program
     await statusCommand(options);
   });
 
+// Interview command - Manage Deep Interview Mode state
+const interviewCmd = program
+  .command('interview <action> [increment-id] [category] [summary]')
+  .description('Manage Deep Interview Mode for increment planning')
+  .action(async (action, incrementId, category, summary) => {
+    const { interviewCommand } = await import('../dist/src/cli/commands/interview.js');
+    await interviewCommand(action, incrementId, category, summary);
+  });
+
+interviewCmd.addHelpText('after', `
+Actions:
+  start <increment-id>                    Start interview tracking
+  mark-covered <id> <category> [summary]  Mark category as covered
+  status [increment-id]                   Show interview status
+  clear <increment-id>                    Clear interview state
+
+Categories: architecture, integrations, ui-ux, performance, security, edge-cases
+
+Examples:
+  specweave interview start 0021-auth-feature
+  specweave interview mark-covered 0021-auth-feature architecture "Microservices with Redis"
+  specweave interview status 0021-auth-feature
+`);
+
 // Logs command - View hook execution logs
 program
   .command('logs')

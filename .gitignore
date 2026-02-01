@@ -55,6 +55,12 @@ api_keys.json
 .specweave/logs/
 .specweave/docs-site-internal/
 
+# SpecWeave developer-local config (multi-developer support)
+# Each developer can have their own config.local.json for:
+#   - developerId: 2-char ID for multi-dev increment naming
+#   - preferences: personal settings that shouldn't affect team
+.specweave/config.local.json
+
 # SpecWeave runtime state (auto mode, hooks, sessions)
 # This directory contains:
 #   - auto-session.json       # Active /sw:auto session state

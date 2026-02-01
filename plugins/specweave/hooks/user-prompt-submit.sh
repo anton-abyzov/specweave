@@ -647,6 +647,18 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   PLUGINS_INSTALLED=""
                   PLUGINS_ALREADY=""
 
+                  # v1.0.198: Read plugin scope configuration
+                  # context7, playwright, specweave → user scope (global)
+                  # All others → project scope by default
+                  SPECWEAVE_PLUGIN_SCOPE="user"
+                  DEFAULT_PLUGIN_SCOPE="project"
+                  if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+                    SCOPE_VAL=$(jq -r '.plugins.scope.specweaveScope // "user"' "$CONFIG_PATH" 2>/dev/null)
+                    [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && SPECWEAVE_PLUGIN_SCOPE="$SCOPE_VAL"
+                    SCOPE_VAL=$(jq -r '.plugins.scope.defaultScope // "project"' "$CONFIG_PATH" 2>/dev/null)
+                    [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && DEFAULT_PLUGIN_SCOPE="$SCOPE_VAL"
+                  fi
+
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
@@ -654,8 +666,13 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                     # sw-* plugins → @specweave, others → @claude-plugins-official
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
                       MARKETPLACE="specweave"
+                      PLUGIN_SCOPE="$SPECWEAVE_PLUGIN_SCOPE"
+                    elif [[ "$plugin" == "context7" ]] || [[ "$plugin" == "playwright" ]]; then
+                      MARKETPLACE="claude-plugins-official"
+                      PLUGIN_SCOPE="user"  # These are always global
                     else
                       MARKETPLACE="claude-plugins-official"
+                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
                     fi
 
                     # v1.0.175: Check if plugin is ALREADY installed (SOURCE OF TRUTH)
@@ -687,12 +704,13 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                       [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                       PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                     else
-                      # Plugin not installed - install it
+                      # Plugin not installed - install it with appropriate scope
+                      # v1.0.198: Apply scope based on plugin type
                       # Use longer timeout (10s) to ensure installation completes
                       if command -v timeout >/dev/null 2>&1; then
-                        OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
+                        OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
                       else
-                        OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" 2>&1) || true
+                        OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
                       fi
 
                       # Only mark as installed if we see "success" or "installed" in output
