@@ -976,6 +976,54 @@ Consider reopening the existing increment:
                     ;;
                 esac
               fi
+
+              # ==================================================================
+              # SKILL-ONLY INVOCATION (v1.0.196)
+              # Handle skill invocation when NO increment is suggested but LLM
+              # recommends a skill (e.g., LSP skill for "find references" prompts)
+              # ==================================================================
+              if [[ "$ABOVE" != "1" && -n "$SKILL_INVOCATION" ]]; then
+                # Build prefix messages
+                SKILL_ONLY_PREFIX=""
+                [[ -n "$LSP_WARNING_MSG" ]] && SKILL_ONLY_PREFIX="${LSP_WARNING_MSG}"
+                [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]] && SKILL_ONLY_PREFIX="${SKILL_ONLY_PREFIX}${LSP_EXPLICIT_REQUEST_MSG}"
+
+                if [[ "$SKILL_MANDATORY" == "true" ]]; then
+                  MSG="${SKILL_ONLY_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
+║  🎯 SKILL REQUIRED - This task needs specialized skill support               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+<skill_invocation_required>
+### 🎯 MANDATORY: Use ${SKILL_INVOCATION} Skill
+
+You MUST use this skill for this task. Do NOT proceed without loading it first.
+
+**Invoke NOW using Skill tool:**
+\\\`\\\`\\\`typescript
+Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
+\\\`\\\`\\\`
+
+**Why this skill is required:**
+${SKILL_REASON:-This skill provides specialized support for your task.}
+
+⚠️ **Do NOT skip this** - the skill has domain expertise needed for this operation.
+</skill_invocation_required>"
+                  output_approve_with_context "$MSG"
+                  exit 0
+                else
+                  # Non-mandatory skill recommendation
+                  MSG="${SKILL_ONLY_PREFIX}💡 **Skill Recommended**: Consider using a specialized skill.
+
+Use \\\`${SKILL_INVOCATION}\\\` for better results:
+\\\`\\\`\\\`typescript
+Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
+\\\`\\\`\\\`
+
+*${SKILL_REASON:-This skill provides specialized support for your task.}*"
+                  output_approve_with_context "$MSG"
+                  exit 0
+                fi
+              fi
             fi
 
             # ==================================================================
