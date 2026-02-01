@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.196" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.197" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
@@ -53,7 +53,7 @@ Hooks exist to enforce workflow discipline. If you ignore them:
 **This is non-negotiable. No exceptions. No "just this once".**
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.196" -->
+<!-- SW:SECTION:header version="1.0.197" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -131,31 +131,16 @@ IMPLEMENTATION PHASE:
   - Stripe → sw-payments:stripe-integration
   - Database → sw-backend:database-optimizer
 
-CODE INTELLIGENCE (LSP - REQUIRES SETUP):
-  ⚠️ LSP does NOT work automatically - it requires explicit setup!
-
-  **Setup steps:**
-  1. Enable: `export ENABLE_LSP_TOOL=1` (add to ~/.zshrc or ~/.bashrc)
-  2. Add marketplace: `/plugin marketplace add boostvolt/claude-code-lsps`
-  3. Install plugin: `/plugin install vtsls@claude-code-lsps` (TypeScript)
-
-  **Note:** Official marketplace LSP plugins are broken (Issue #15148).
-  Use `boostvolt/claude-code-lsps` instead.
-
-  **Available LSP operations:** goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol
+CODE INTELLIGENCE (LSP):
+  ⚠️ Requires setup - see "LSP Setup" section below
 ```
 
-### Understanding LSP vs Skills
+### Skills vs LSP Plugins
 
-**CRITICAL DISTINCTION** - Two different plugin types:
-
-| Type | Has SKILL.md | How to Use | Example |
-|------|--------------|------------|---------|
-| **Skill plugins** | ✅ Yes | `/skill-name` or `Skill({ skill: "name" })` | sw:pm, sw:architect |
-| **LSP plugins** | ❌ No | Requires `ENABLE_LSP_TOOL=1` + working plugin | vtsls, pyright |
-
-**⚠️ Official marketplace LSP plugins are broken** ([Issue #15148](https://github.com/anthropics/claude-code/issues/15148)).
-Use `boostvolt/claude-code-lsps` marketplace instead.
+| Type | Has SKILL.md | How to Use |
+|------|--------------|------------|
+| **Skill plugins** | ✅ Yes | `/skill-name` or `Skill({ skill: "name" })` |
+| **LSP plugins** | ❌ No | See "LSP Setup" section below |
 
 ### Why Auto-Activation May Not Trigger
 
@@ -189,7 +174,7 @@ Skill(sw-backend:dotnet-backend)      → .NET API patterns
 Before marking implementation complete, verify:
 - [ ] Used planning skills (PM, Architect) if complex feature
 - [ ] Used domain skills for each tech in the stack
-- [ ] LSP configured if needed (requires `ENABLE_LSP_TOOL=1` + plugin setup)
+- [ ] LSP configured if needed (see LSP Setup section below)
 - [ ] Invoked skills explicitly if auto-activation didn't trigger
 <!-- SW:END:skill-chaining -->
 
@@ -292,7 +277,7 @@ SpecWeave's `user-prompt-submit.sh` hook auto-installs LSP plugins with **projec
 
 **Reference**: [Official Docs](https://code.claude.com/docs/en/discover-plugins#install-plugins) | [Settings Scopes](https://code.claude.com/docs/en/settings#configuration-scopes)
 
-<!-- SW:SECTION:start version="1.0.196" -->
+<!-- SW:SECTION:start version="1.0.197" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -302,7 +287,7 @@ SpecWeave's `user-prompt-submit.sh` hook auto-installs LSP plugins with **projec
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.196" -->
+<!-- SW:SECTION:autodetect version="1.0.197" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -312,7 +297,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.196" -->
+<!-- SW:SECTION:metarule version="1.0.197" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -323,7 +308,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.196" -->
+<!-- SW:SECTION:rules version="1.0.197" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -339,7 +324,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
    Use next available number. **NEVER create duplicate prefixes.**
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.196" -->
+<!-- SW:SECTION:workflow version="1.0.197" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -353,6 +338,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
+| `/sw:reconcile` | Fix ID collisions after merge (multi-dev) |
 | `/sw-github:sync` | GitHub sync |
 | `/sw-jira:sync` | Jira sync |
 
@@ -385,28 +371,32 @@ project/
 **NEVER assume single-repo mode without scanning first!**
 <!-- SW:END:save-nested-repos -->
 
-<!-- SW:SECTION:reflect version="1.0.196" -->
+<!-- SW:SECTION:reflect version="1.0.197" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
 
 **Disable**: Set `"reflect": { "enabled": false }` in `.specweave/config.json`
+
+### Devops
+- **2026-01-29**: LSP requires setup (see "LSP Setup" section)
+
+### Logging
+- **2026-01-29**: Do NOT verify immediately - show dialog instead
+
+### General
+- **2026-01-29**: Always check for credentials FIRST (presence only - never display values)
 <!-- SW:END:reflect -->
+
 
 ## Skill Memories
 
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 
-### Devops
-- **2026-01-29**: LSP requires ENABLE_LSP_TOOL=1 env var + boostvolt/claude-code-lsps marketplace (official plugins broken)
+### Pm
+- **2026-02-01**: Enable interview process during increment creation for SpecWeave projects
 
-### Logging
-- **2026-01-29**: // Do NOT verify immediately - show dialog instead
-
-### General
-- **2026-01-29**: Always check for credentials FIRST (presence only - never display values)
-
-<!-- SW:SECTION:context version="1.0.196" -->
+<!-- SW:SECTION:context version="1.0.197" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -414,7 +404,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.196" -->
+<!-- SW:SECTION:structure version="1.0.197" -->
 ## Structure
 
 ```
@@ -429,7 +419,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.196" -->
+<!-- SW:SECTION:taskformat version="1.0.197" -->
 ## Task Format
 
 ```markdown
@@ -439,7 +429,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.196" -->
+<!-- SW:SECTION:secrets version="1.0.197" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -453,7 +443,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.196" -->
+<!-- SW:SECTION:syncing version="1.0.197" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -463,7 +453,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.196" -->
+<!-- SW:SECTION:testing version="1.0.197" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -475,7 +465,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.196" -->
+<!-- SW:SECTION:tdd version="1.0.197" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -536,7 +526,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.196" -->
+<!-- SW:SECTION:api version="1.0.197" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -544,13 +534,72 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.196" -->
+<!-- SW:SECTION:limits version="1.0.197" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.196" -->
+<!-- SW:SECTION:multidev version="1.0.197" -->
+## Multi-Developer Workflows
+
+**For teams with 2+ developers working on same project.**
+
+### How It Works
+
+1. **Each developer works on their branch** - create increments freely
+2. **Merge to main** - git handles folder merges naturally
+3. **Run `/sw:reconcile` after merge** - fixes any ID collisions
+
+### Post-Merge Reconciliation
+
+When two developers create increments with same ID (e.g., both create `0001E-feature` from JIRA import):
+
+```bash
+# After merging branches to main
+/sw:reconcile
+
+# What it does:
+# 1. Scans ALL increment folders (active, _archive, _abandoned, _paused)
+# 2. Detects ID collisions (same base number in multiple folders)
+# 3. Uses file modification dates to determine chronological order
+# 4. Renumbers "later" increments to next available IDs
+# 5. Updates metadata.json, living docs references, and sync links
+```
+
+### Example Scenario
+
+```
+Branch A creates: 0001E-auth-feature (closed, synced to JIRA)
+Branch B creates: 0001E-payment-feature (closed, synced to JIRA)
+
+After merge to main:
+.specweave/increments/
+├── 0001E-auth-feature/      # From branch A (modified Jan 15)
+└── 0001E-payment-feature/   # From branch B (modified Jan 20) ← COLLISION
+
+After /sw:reconcile:
+.specweave/increments/
+├── 0001E-auth-feature/      # Kept as 0001E (earlier)
+└── 0002E-payment-feature/   # Renumbered to 0002E (later)
+```
+
+### Merge Conflict Strategy
+
+| File | Strategy | Notes |
+|------|----------|-------|
+| `spec.md`, `tasks.md` | Manual merge | Essential content |
+| `metadata.json` | Union merge | Auto via `.gitattributes` |
+| `.specweave/state/*` | Gitignored | Local state, no conflicts |
+
+### Best Practices
+
+1. **Different increment names** - even with same ID, different names merge fine
+2. **Run `/sw:reconcile` after merge** - always, to catch any ID collisions
+3. **Commit reconcile results** - the renumbering is a git commit
+<!-- SW:END:multidev -->
+
+<!-- SW:SECTION:troubleshooting version="1.0.197" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -567,7 +616,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Docs folder collisions | Check: `ls docs/ \| grep -E '^[0-9]{2}-' \| cut -d'-' -f1 \| sort \| uniq -d` |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.196" -->
+<!-- SW:SECTION:lazyloading version="1.0.197" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -581,7 +630,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.196" -->
+<!-- SW:SECTION:principles version="1.0.197" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -590,7 +639,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.196" -->
+<!-- SW:SECTION:linking version="1.0.197" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -598,7 +647,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.196" -->
+<!-- SW:SECTION:mcp version="1.0.197" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -620,7 +669,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.196" -->
+<!-- SW:SECTION:auto version="1.0.197" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -637,7 +686,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.196" -->
+<!-- SW:SECTION:docs version="1.0.197" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
@@ -722,11 +771,7 @@ User Stories need `**Project**: my-project` field for external sync. Each US = O
 - Use `sw-backend:*` skills for .NET/Node/Python APIs
 - Use `sw-payments:stripe-integration` for Stripe
 
-**Code Intelligence (LSP - REQUIRES SETUP):**
-- LSP requires `ENABLE_LSP_TOOL=1` environment variable
-- Official marketplace plugins are broken ([Issue #15148](https://github.com/anthropics/claude-code/issues/15148))
-- Use `boostvolt/claude-code-lsps` marketplace instead
-- Operations: goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol
+**Code Intelligence (LSP):** See "LSP Setup" section above for configuration requirements.
 
 **Pattern:**
 ```
@@ -967,13 +1012,11 @@ If skills don't auto-activate:
 | Domain work (React, .NET, Stripe) | Let auto-activate, Skill tool if not |
 | Architecture, security review | Usually auto-activates on keywords |
 | Hook says "SKILL FIRST" | **Always** use Skill tool explicitly |
-| **Code intelligence (LSP)** | Requires setup: `ENABLE_LSP_TOOL=1` + `boostvolt/claude-code-lsps` |
+| **Code intelligence (LSP)** | See "LSP Setup" section |
 | Increment planning | Use PM/Architect skills for spec/plan refinement |
 | External syncs | Commands: `/sw-github:sync` |
 | Codebase exploration | Task tool: `subagent_type: "Explore"` |
 | Complex planning | Task tool: `subagent_type: "Plan"` |
-
-**IMPORTANT**: LSP requires explicit setup. Set `ENABLE_LSP_TOOL=1` and use `boostvolt/claude-code-lsps` marketplace (official plugins are broken). Once configured, LSP provides: goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol.
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 
@@ -1161,7 +1204,7 @@ npm run rebuild
 | Source of truth | tasks.md + spec.md (update immediately) |
 | Completion | `/sw:done` only (NEVER edit metadata.json directly) |
 | **Skills** | **ALWAYS use when available** (PM, Architect, domain skills) |
-| **LSP** | Requires `ENABLE_LSP_TOOL=1` + `boostvolt/claude-code-lsps` (official plugins broken) |
+| **LSP** | See "LSP Setup" section (requires explicit setup) |
 | Increment root | ONLY 4 files: spec.md, plan.md, tasks.md, metadata.json |
 | Increment IDs | 🚨 Check ALL folders: `find .specweave/increments -maxdepth 2 -name "[0-9]*" \| grep -oE '[0-9]{4}E?'` |
 | Reports/logs | Always to `reports/`, `logs/` subfolders |

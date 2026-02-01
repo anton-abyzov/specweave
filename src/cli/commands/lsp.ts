@@ -100,6 +100,14 @@ export async function handleLspRefs(
     const lspManager = getGlobalLSPManager(projectRoot);
     await lspManager.initialize();
 
+    // CRITICAL FIX: Warmup before query to ensure workspace is indexed
+    // Each CLI call is a fresh process, so we must warmup every time
+    // This adds 10-30s on cold start but ensures real LSP (not grep fallback)
+    if (!lspManager.isWarmedUp()) {
+      console.log('🔥 Indexing workspace for semantic analysis (first-time, 10-30s)...');
+      await lspManager.warmup();
+    }
+
     const result = await lspManager.findReferences(resolvedPath, position.line, position.character);
 
     if (result && result.success && result.locations.length > 0) {
@@ -170,6 +178,12 @@ export async function handleLspDef(
     const lspManager = getGlobalLSPManager(projectRoot);
     await lspManager.initialize();
 
+    // Warmup before query to ensure workspace is indexed
+    if (!lspManager.isWarmedUp()) {
+      console.log('🔥 Indexing workspace for semantic analysis...');
+      await lspManager.warmup();
+    }
+
     const result = await lspManager.goToDefinition(resolvedPath, position.line, position.character);
 
     if (result && result.success && result.location) {
@@ -212,6 +226,12 @@ export async function handleLspHover(
   try {
     const lspManager = getGlobalLSPManager(projectRoot);
     await lspManager.initialize();
+
+    // Warmup before query to ensure workspace is indexed
+    if (!lspManager.isWarmedUp()) {
+      console.log('🔥 Indexing workspace for semantic analysis...');
+      await lspManager.warmup();
+    }
 
     const result = await lspManager.hover(resolvedPath, position.line, position.character);
 
@@ -272,6 +292,12 @@ export async function handleLspSymbols(projectRoot: string, filePath: string): P
   try {
     const lspManager = getGlobalLSPManager(projectRoot);
     await lspManager.initialize();
+
+    // Warmup before query to ensure workspace is indexed
+    if (!lspManager.isWarmedUp()) {
+      console.log('🔥 Indexing workspace for semantic analysis...');
+      await lspManager.warmup();
+    }
 
     const result = await lspManager.documentSymbols(resolvedPath);
 
@@ -336,6 +362,12 @@ export async function handleLspSearch(projectRoot: string, query: string): Promi
   try {
     const lspManager = getGlobalLSPManager(projectRoot);
     await lspManager.initialize();
+
+    // Warmup before query to ensure workspace is indexed
+    if (!lspManager.isWarmedUp()) {
+      console.log('🔥 Indexing workspace for semantic analysis...');
+      await lspManager.warmup();
+    }
 
     const result = await lspManager.workspaceSymbols(query);
 
