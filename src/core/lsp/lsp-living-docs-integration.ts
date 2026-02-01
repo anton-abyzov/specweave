@@ -26,24 +26,52 @@ export interface CodeAnalysisResult {
   analysisTimeMs: number;
 }
 
+export interface LSPLivingDocsAnalyzerOptions {
+  /** Skip LSP initialization entirely - use grep-only mode */
+  skipLSP?: boolean;
+  /** Timeout for initialization in ms (default: 5000) */
+  initTimeoutMs?: number;
+}
+
 /**
  * Analyze code files using LSP (with grep fallback)
  */
 export class LSPLivingDocsAnalyzer {
   private lspManager: LSPManager | null = null;
   private projectRoot: string;
+  private options: LSPLivingDocsAnalyzerOptions;
+  private initializationAttempted = false;
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, options: LSPLivingDocsAnalyzerOptions = {}) {
     this.projectRoot = projectRoot;
+    this.options = {
+      skipLSP: options.skipLSP ?? false,
+      initTimeoutMs: options.initTimeoutMs ?? 5000,
+    };
   }
 
   /**
-   * Initialize LSP manager
+   * Initialize LSP manager (with timeout protection)
    */
   async initialize(): Promise<void> {
+    // Skip if already attempted or skipLSP is set
+    if (this.initializationAttempted) return;
+    this.initializationAttempted = true;
+
+    if (this.options.skipLSP) {
+      logger.info('LSP skipped by configuration, using grep-based analysis');
+      return;
+    }
+
     try {
       this.lspManager = new LSPManager({ projectRoot: this.projectRoot });
-      await this.lspManager.initialize();
+
+      // Wrap initialization with timeout
+      const timeoutPromise = new Promise<void>((_, reject) => {
+        setTimeout(() => reject(new Error('LSP initialization timeout')), this.options.initTimeoutMs);
+      });
+
+      await Promise.race([this.lspManager.initialize(), timeoutPromise]);
 
       const stats = this.lspManager.getStatistics();
       if (stats.clientCount > 0) {
@@ -54,6 +82,14 @@ export class LSPLivingDocsAnalyzer {
       }
     } catch (error) {
       logger.warn(`Failed to initialize LSP: ${error}`);
+      // Clean up on failure
+      if (this.lspManager) {
+        try {
+          await this.lspManager.shutdown();
+        } catch {
+          // Ignore shutdown errors
+        }
+      }
       this.lspManager = null;
     }
   }
@@ -63,7 +99,11 @@ export class LSPLivingDocsAnalyzer {
    */
   async analyzeFiles(files: string[]): Promise<CodeAnalysisResult> {
     const startTime = Date.now();
-    if (!this.lspManager) await this.initialize();
+
+    // Initialize LSP if not skipped and not yet attempted
+    if (!this.options.skipLSP && !this.initializationAttempted) {
+      await this.initialize();
+    }
 
     const allResults = await Promise.all(files.map(file => this.analyzeFile(file)));
     const symbols = allResults.flatMap(r => r.symbols);
@@ -144,12 +184,25 @@ export class LSPLivingDocsAnalyzer {
   }
 
   /**
-   * Shutdown LSP manager
+   * Shutdown LSP manager (with timeout protection)
    */
   async shutdown(): Promise<void> {
     if (this.lspManager) {
-      await this.lspManager.shutdown();
-      this.lspManager = null;
+      try {
+        // Wrap shutdown with 3s timeout to prevent hanging
+        const timeoutPromise = new Promise<void>((resolve) => {
+          setTimeout(() => {
+            logger.warn('LSP shutdown timed out, forcing cleanup');
+            resolve();
+          }, 3000);
+        });
+
+        await Promise.race([this.lspManager.shutdown(), timeoutPromise]);
+      } catch (error) {
+        logger.warn(`LSP shutdown error: ${error}`);
+      } finally {
+        this.lspManager = null;
+      }
     }
   }
 }
