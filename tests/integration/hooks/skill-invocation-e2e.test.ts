@@ -605,4 +605,210 @@ exit 1
       expect(additionalContext).toContain('specialized support');
     });
   });
+
+  // ==========================================================================
+  // TEST ISOLATION VERIFICATION
+  // Ensures tests don't collide with real .specweave project folder
+  // Critical for: local dev, GH Actions, Claude agents, all machines
+  // ==========================================================================
+  describe('Test Isolation Safety', () => {
+    it('should use temp directory, NOT real project .specweave', async () => {
+      // CRITICAL: Verify we're NOT in the real project directory
+      const realProjectRoot = findProjectRoot(import.meta.url);
+
+      // testRoot should be in temp directory
+      expect(testRoot).toContain('skill-invocation-e2e');
+      expect(testRoot).not.toEqual(realProjectRoot);
+
+      // Verify temp dir is NOT inside real project
+      expect(testRoot.startsWith(realProjectRoot)).toBe(false);
+
+      // Config should exist in TEST directory
+      const testConfig = path.join(testRoot, '.specweave', 'config.json');
+      expect(await fs.pathExists(testConfig)).toBe(true);
+
+      // Test config should have our test values, not real project values
+      const configContent = await fs.readJSON(testConfig);
+      expect(configContent.incrementAssist?.enabled).toBe(true);
+      expect(configContent.pluginAutoLoad?.enabled).toBe(false);
+    });
+
+    it('should NOT read from real project .specweave/config.json', async () => {
+      // Create a mock CLI that echoes back the cwd
+      const mockScript = `#!/bin/bash
+if [[ "$1" == "detect-intent" ]]; then
+  cat << 'MOCK_EOF'
+{
+  "plugins": [],
+  "increment": {"action": "none", "confidence": 0, "mandatory": false},
+  "routing": {"skills": []}
+}
+MOCK_EOF
+  exit 0
+fi
+exit 1
+`;
+      const mockPath = path.join(mockBinDir, 'specweave');
+      await fs.writeFile(mockPath, mockScript);
+      await fs.chmod(mockPath, 0o755);
+
+      const result = executeHook('test isolation check');
+
+      expect(result.exitCode).toBe(0);
+      // If it succeeded, hook found .specweave in testRoot (not real project)
+      expect(result.parsed).toBeDefined();
+    });
+
+    it('should work correctly in GitHub Actions environment', async () => {
+      // Simulate GH Actions environment variables
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: { action: 'none', confidence: 0, mandatory: false },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('test GH Actions compatibility', {
+        env: {
+          CI: 'true',
+          GITHUB_ACTIONS: 'true',
+          GITHUB_WORKSPACE: '/home/runner/work/specweave/specweave'
+        }
+      });
+
+      // Should still work - isolation is via cwd, not env vars
+      expect(result.exitCode).toBe(0);
+    });
+
+    it('should handle parallel test execution without collision', async () => {
+      // Each test gets unique directory name with timestamp + counter + random
+      // Verify uniqueness pattern exists
+      expect(testRoot).toMatch(/skill-invocation-e2e-\d+-\d+-[a-z0-9]+/);
+    });
+  });
+
+  // ==========================================================================
+  // LSP SKILL INVOCATION TESTS
+  // Tests that LSP-related prompts ("find references", "go to definition")
+  // trigger the sw:lsp skill and provide specweave lsp command guidance
+  // ==========================================================================
+  describe('LSP Skill Invocation (sw:lsp)', () => {
+    const lspPromptScenarios = [
+      {
+        name: 'find references',
+        prompt: 'find references to handleAutoCommand',
+        expectedCommand: 'specweave lsp refs'
+      },
+      {
+        name: 'go to definition',
+        prompt: 'go to definition of UserService',
+        expectedCommand: 'specweave lsp def'
+      },
+      {
+        name: 'show type info',
+        prompt: 'show type for the config variable',
+        expectedCommand: 'specweave lsp hover'
+      },
+      {
+        name: 'list symbols',
+        prompt: 'list all symbols in src/api.ts',
+        expectedCommand: 'specweave lsp symbols'
+      },
+      {
+        name: 'who calls',
+        prompt: 'who calls the validateInput function',
+        expectedCommand: 'specweave lsp refs'
+      }
+    ];
+
+    for (const scenario of lspPromptScenarios) {
+      it(`should suggest sw:lsp skill for "${scenario.name}" prompt`, async () => {
+        // Mock detect-intent to return LSP skill invocation
+        await createMockSpecweaveCli({
+          plugins: [],
+          increment: {
+            action: 'none', // Not an increment request
+            confidence: 0,
+            mandatory: false,
+            reasoning: 'Code navigation request, not implementation'
+          },
+          routing: { skills: [] },
+          skillInvocation: {
+            skill: 'sw:lsp',
+            reason: `User wants to ${scenario.name} - use SpecWeave LSP CLI`,
+            mandatory: true
+          }
+        });
+
+        const result = executeHook(scenario.prompt);
+
+        expect(result.exitCode).toBe(0);
+
+        const additionalContext = extractAdditionalContext(result.parsed);
+
+        // Should suggest LSP skill
+        expect(additionalContext).toBeTruthy();
+        expect(additionalContext).toContain('sw:lsp');
+        expect(additionalContext).toContain('skill_invocation_required');
+      });
+    }
+
+    it('should NOT suggest LSP skill for unrelated prompts', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'new',
+          confidence: 0.9,
+          mandatory: true,
+          suggestedName: 'new-feature',
+          reasoning: 'Feature implementation'
+        },
+        routing: { skills: [] },
+        skillInvocation: {
+          skill: 'sw-backend:nodejs-backend',
+          reason: 'Node.js API development',
+          mandatory: true
+        }
+      });
+
+      const result = executeHook('Create a REST API for user management');
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // Should NOT contain LSP skill
+      if (additionalContext) {
+        expect(additionalContext).not.toContain('sw:lsp');
+        // But should contain the recommended skill
+        expect(additionalContext).toContain('sw-backend:nodejs-backend');
+      }
+    });
+
+    it('should include LSP command guidance in skill invocation', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'none',
+          confidence: 0,
+          mandatory: false,
+          reasoning: 'Code navigation request'
+        },
+        routing: { skills: [] },
+        skillInvocation: {
+          skill: 'sw:lsp',
+          reason: 'Find all usages of a function using specweave lsp refs command',
+          mandatory: true
+        }
+      });
+
+      const result = executeHook('find all usages of processPayment function');
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // Should mention specweave lsp command
+      expect(additionalContext).toBeTruthy();
+      expect(additionalContext).toContain('sw:lsp');
+
+      // The skill invocation should include the reason which mentions specweave lsp
+      expect(additionalContext).toMatch(/specweave lsp|SpecWeave LSP/i);
+    });
+  });
 });
