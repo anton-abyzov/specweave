@@ -4,12 +4,14 @@
  * Manages multiple LSP clients and provides unified interface for semantic analysis.
  * Automatically detects and initializes appropriate language servers.
  *
+ * For TypeScript projects, uses TsServerClient (direct tsserver protocol) instead
+ * of typescript-language-server, which has issues with large projects (>500 files).
+ *
  * @module core/lsp/lsp-manager
  */
 
 import {
   LSPClient,
-  LSPServerConfig,
   detectLSPServers,
   LSPDefinitionResult,
   LSPReferencesResult,
@@ -17,8 +19,23 @@ import {
   LSPDocumentSymbolsResult,
   LSPWorkspaceSymbolsResult,
 } from './lsp-client.js';
+import { TsServerClient } from './tsserver-client.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import * as path from 'path';
+import * as fs from 'fs';
+
+/** Common interface for both LSP and TsServer clients */
+interface CodeIntelligenceClient {
+  initialize(): Promise<boolean>;
+  warmup(entryFiles?: string[]): Promise<boolean>;
+  isWarmedUp(): boolean;
+  goToDefinition(filePath: string, line: number, character: number): Promise<LSPDefinitionResult>;
+  findReferences(filePath: string, line: number, character: number): Promise<LSPReferencesResult>;
+  hover(filePath: string, line: number, character: number): Promise<LSPHoverResult>;
+  documentSymbols(filePath: string): Promise<LSPDocumentSymbolsResult>;
+  workspaceSymbols(query: string): Promise<LSPWorkspaceSymbolsResult>;
+  shutdown(): Promise<void>;
+}
 
 export interface LSPManagerOptions {
   projectRoot: string;
@@ -29,7 +46,7 @@ export interface LSPManagerOptions {
  * Manages LSP clients for multiple languages
  */
 export class LSPManager {
-  private clients: Map<string, LSPClient> = new Map();
+  private clients: Map<string, CodeIntelligenceClient> = new Map();
   private projectRoot: string;
   private initialized = false;
 
@@ -39,40 +56,69 @@ export class LSPManager {
 
   /**
    * Initialize all available LSP servers
+   * For TypeScript, uses TsServerClient (direct protocol) instead of
+   * typescript-language-server which has issues with large projects.
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
     try {
-      const servers = await detectLSPServers(this.projectRoot);
-
-      if (servers.length === 0) {
-        logger.info('No LSP servers found. Semantic analysis will use grep fallback.');
-        this.initialized = true;
-        return;
-      }
-
-      logger.info(`Found ${servers.length} LSP server(s)`);
-
-      for (const config of servers) {
-        const client = new LSPClient(config);
-        const success = await client.initialize();
-
+      // Check for TypeScript project first - use TsServerClient directly
+      const hasTypeScript = this.hasTypeScriptProject();
+      if (hasTypeScript) {
+        logger.debug('TypeScript project detected, using direct tsserver client');
+        const tsClient = new TsServerClient(this.projectRoot);
+        const success = await tsClient.initialize();
         if (success) {
-          const lang = this.getLanguageFromCommand(config.command);
-          this.clients.set(lang, client);
-          logger.info(`LSP client for ${lang} initialized`);
+          this.clients.set('typescript', tsClient);
+          logger.info('TsServer client for typescript initialized');
         } else {
-          logger.warn(`Failed to initialize LSP for ${config.command}`);
+          logger.warn('Failed to initialize TsServer client');
         }
       }
 
-      this.initialized = true;
+      // Detect and initialize other LSP servers (Python, Go, etc.)
+      const servers = await detectLSPServers(this.projectRoot);
+      const nonTsServers = servers.filter(
+        (s) => !s.command.includes('typescript')
+      );
 
+      if (nonTsServers.length > 0) {
+        logger.info(`Found ${nonTsServers.length} additional LSP server(s)`);
+
+        for (const config of nonTsServers) {
+          const client = new LSPClient(config);
+          const success = await client.initialize();
+
+          if (success) {
+            const lang = this.getLanguageFromCommand(config.command);
+            this.clients.set(lang, client);
+            logger.info(`LSP client for ${lang} initialized`);
+          } else {
+            logger.warn(`Failed to initialize LSP for ${config.command}`);
+          }
+        }
+      }
+
+      if (this.clients.size === 0) {
+        logger.info('No code intelligence clients available. Semantic analysis will use grep fallback.');
+      }
+
+      this.initialized = true;
     } catch (error) {
       logger.error(`LSP initialization failed: ${error}`);
       this.initialized = true; // Continue without LSP
     }
+  }
+
+  /**
+   * Check if project has TypeScript configuration
+   */
+  private hasTypeScriptProject(): boolean {
+    return (
+      fs.existsSync(path.join(this.projectRoot, 'tsconfig.json')) ||
+      fs.existsSync(path.join(this.projectRoot, 'package.json'))
+    );
   }
 
   /**
@@ -87,9 +133,9 @@ export class LSPManager {
   }
 
   /**
-   * Get LSP client for a file
+   * Get code intelligence client for a file
    */
-  private getClientForFile(filePath: string): LSPClient | null {
+  private getClientForFile(filePath: string): CodeIntelligenceClient | null {
     const ext = path.extname(filePath);
     const langMap: Record<string, string> = {
       '.ts': 'typescript',
@@ -98,7 +144,7 @@ export class LSPManager {
       '.jsx': 'typescript',
       '.py': 'python',
       '.go': 'go',
-      '.rs': 'rust'
+      '.rs': 'rust',
     };
 
     const lang = langMap[ext];

@@ -76,12 +76,20 @@ STEP 3: Guide User (complete in main conversation)
 **Check during pre-flight:**
 
 ```bash
-# Detect deep interview mode
+# Detect deep interview mode and enforcement level
 deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
+enforcement=$(jq -r '.planning.deepInterview.enforcement // "advisory"' .specweave/config.json 2>/dev/null)
 
 if [ "$deepInterview" = "true" ]; then
   echo "DEEP INTERVIEW MODE: Conduct thorough questioning before spec creation"
+  echo "Enforcement: $enforcement"
   echo "Categories: architecture, integrations, ui-ux, performance, security, edge-cases"
+
+  if [ "$enforcement" = "strict" ]; then
+    echo ""
+    echo "⚠️ STRICT MODE: spec.md BLOCKED until all categories marked covered!"
+    echo "Use: specweave interview mark-covered <id> <category> \"summary\""
+  fi
 fi
 ```
 
@@ -90,6 +98,12 @@ fi
 2. Ask minimum 10 questions (40+ for large features)
 3. Cover all configured categories
 4. Only proceed to STEP 1 after interview complete
+
+**Strict Mode (v1.0.198+):**
+- `enforcement: "strict"` blocks spec.md creation until all categories are covered
+- Initialize tracking: `specweave interview start <increment-id>`
+- Mark categories: `specweave interview mark-covered <id> architecture "summary"`
+- Check progress: `specweave interview status <id>`
 
 ## Critical Rules
 
