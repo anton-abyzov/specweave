@@ -337,9 +337,40 @@ export interface SkillInvocation {
 }
 
 /**
+ * LSP operation types for code intelligence
+ */
+export type LspOperation = 'references' | 'definition' | 'hover' | 'symbols' | null;
+
+/**
+ * Supported languages for LSP operations
+ */
+export type LspLanguage = 'typescript' | 'python' | 'rust' | 'go' | 'csharp' | 'java' | null;
+
+/**
+ * LSP recommendation from LLM analysis (v1.0.198+)
+ *
+ * Part of unified intent detection - LLM decides if LSP operations are needed
+ * for the current prompt, eliminating the need for separate LSP detection.
+ */
+export interface LspRecommendation {
+  /** Whether LSP operation is needed for this prompt */
+  needed: boolean;
+
+  /** The specific LSP operation to perform */
+  operation: LspOperation;
+
+  /** The detected programming language (for server selection) */
+  language: LspLanguage;
+
+  /** Whether workspace warm-up is required before the operation */
+  warmupRequired: boolean;
+}
+
+/**
  * Result of LLM-based plugin detection
  *
  * v1.0.159: plugins now includes both SpecWeave (sw-*) and official plugins
+ * v1.0.198: Added lsp field for unified LSP detection
  */
 export interface LLMDetectionResult {
   success: boolean;
@@ -357,6 +388,9 @@ export interface LLMDetectionResult {
 
   /** Skill invocation recommendation (v1.0.168) */
   skillInvocation?: SkillInvocation;
+
+  /** LSP operation recommendation (v1.0.198+) */
+  lsp?: LspRecommendation;
 }
 
 /**
@@ -631,7 +665,56 @@ SKILL EXAMPLES:
 {"plugins":["sw-ml","context7"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
 
 "Implement Stripe checkout flow"
-{"plugins":["sw-payments","sw-frontend","context7"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}`;
+{"plugins":["sw-payments","sw-frontend","context7"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}
+
+═══════════════════════════════════════════════════════════════
+LSP OPERATION DETECTION (v1.0.198 - unified detection)
+═══════════════════════════════════════════════════════════════
+
+ALSO analyze if the prompt requires LSP (Language Server Protocol) operations.
+
+"lsp" field with:
+- needed: true if user wants code intelligence (references, definition, etc.)
+- operation: "references" | "definition" | "hover" | "symbols" | null
+- language: "typescript" | "python" | "rust" | "go" | "csharp" | "java" | null
+- warmupRequired: true (always true - session state unknown)
+
+WHEN lsp.needed = true:
+┌──────────────────────┬──────────────────────────────────────────────────┐
+│ "find references"    │ operation: "references"                          │
+│ "who calls", "usages"│                                                  │
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ "go to definition"   │ operation: "definition"                          │
+│ "where defined"      │                                                  │
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ "show type", "hover" │ operation: "hover"                               │
+│ "type signature"     │                                                  │
+├──────────────────────┼──────────────────────────────────────────────────┤
+│ "list symbols"       │ operation: "symbols"                             │
+│ "exports", "functions│                                                  │
+└──────────────────────┴──────────────────────────────────────────────────┘
+
+WHEN lsp.needed = false (default):
+- Building features, writing code, fixing bugs (no LSP keywords)
+- General questions, discussions
+- If NO LSP operation keywords, omit lsp field entirely
+
+LSP EXAMPLES:
+
+"Find all references to handleRequest function"
+{"plugins":[],"confidence":0.95,"reasoning":"Code navigation","lsp":{"needed":true,"operation":"references","language":"typescript","warmupRequired":true}}
+
+"Go to the definition of UserService"
+{"plugins":[],"confidence":0.95,"reasoning":"Code navigation","lsp":{"needed":true,"operation":"definition","language":null,"warmupRequired":true}}
+
+"What is the type of processData?"
+{"plugins":[],"confidence":0.95,"reasoning":"Type inspection","lsp":{"needed":true,"operation":"hover","language":null,"warmupRequired":true}}
+
+"List all exports in src/api/users.ts"
+{"plugins":[],"confidence":0.95,"reasoning":"Symbol listing","lsp":{"needed":true,"operation":"symbols","language":"typescript","warmupRequired":true}}
+
+"Build a React dashboard" (NO LSP needed)
+{"plugins":["sw-frontend","context7"],"confidence":0.95,"reasoning":"React development"}`;
 }
 
 /**
@@ -935,6 +1018,12 @@ Which plugins should be loaded?`;
         reason?: string;
         mandatory?: boolean;
       };
+      lsp?: {
+        needed?: boolean;
+        operation?: string;
+        language?: string;
+        warmupRequired?: boolean;
+      };
     };
     try {
       parsed = JSON.parse(jsonMatch[0]);
@@ -1053,6 +1142,30 @@ Which plugins should be loaded?`;
       logger.debug(`Skill invocation: ${skillInvocation.skill} (mandatory: ${skillInvocation.mandatory})`);
     }
 
+    // Parse LSP recommendation (v1.0.198+)
+    let lspRecommendation: LspRecommendation | undefined;
+    if (parsed.lsp && parsed.lsp.needed === true) {
+      const validOperations: LspOperation[] = ['references', 'definition', 'hover', 'symbols', null];
+      const validLanguages: LspLanguage[] = ['typescript', 'python', 'rust', 'go', 'csharp', 'java', null];
+
+      const operation = validOperations.includes(parsed.lsp.operation as LspOperation)
+        ? (parsed.lsp.operation as LspOperation)
+        : null;
+
+      const language = validLanguages.includes(parsed.lsp.language as LspLanguage)
+        ? (parsed.lsp.language as LspLanguage)
+        : null;
+
+      lspRecommendation = {
+        needed: true,
+        operation,
+        language,
+        warmupRequired: parsed.lsp.warmupRequired !== false, // Default to true
+      };
+
+      logger.debug(`LSP recommendation: operation=${operation}, language=${language}, warmupRequired=${lspRecommendation.warmupRequired}`);
+    }
+
     return {
       success: true,
       plugins: validPlugins,
@@ -1062,6 +1175,7 @@ Which plugins should be loaded?`;
       increment: incrementRecommendation,
       routing: skillRouting,
       skillInvocation,
+      lsp: lspRecommendation,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);

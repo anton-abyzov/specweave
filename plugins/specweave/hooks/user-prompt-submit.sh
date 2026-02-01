@@ -1,10 +1,16 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.192 - LSP Auto-Install on Project Detection)
+# SpecWeave UserPromptSubmit Hook (v1.0.198 - Unified LLM LSP Detection)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.198: UNIFIED LLM LSP DETECTION - LLM decides if LSP is needed (replaces grep patterns)
+#   * Single detect-intent call now returns: plugins + increment + skills + LSP recommendation
+#   * LLM-based detection understands context ("find references to X" vs general coding)
+#   * Returns: lsp.needed, lsp.operation (references/definition/hover/symbols), lsp.language
+#   * Grep-based detection kept as fallback if LLM detection not available
+#   * Key insight: LLM can distinguish "find references" request from "build feature" request
 # - v1.0.192: LSP AUTO-INSTALL ON PROJECT DETECTION - Critical fix for LSP plugin installation
 #   * Previously: LSP plugins only installed when user explicitly asked for "find references"
 #   * Now: LSP plugins auto-installed when working on TS/Py/Rust projects
@@ -323,6 +329,8 @@ if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
 fi
 
 # Check for LSP request keywords (find references, go to definition, etc.)
+# v1.0.198: This is now a FALLBACK - LLM detection (lsp.needed field) takes precedence
+# The LLM-based detection in detect-intent is more accurate and understands context
 LSP_REQUEST_DETECTED="false"
 if echo "$PROMPT" | grep -qiE "(find|get|show)[[:space:]]+(all[[:space:]]+)?references|go[[:space:]]?to[[:space:]]?definition|goto[[:space:]]?definition|LSP|findReferences|goToDefinition|hover|documentSymbol|workspaceSymbol"; then
   LSP_REQUEST_DETECTED="true"
@@ -776,6 +784,23 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               SKILL_INVOCATION=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.skill // empty' 2>/dev/null)
               SKILL_REASON=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.reason // empty' 2>/dev/null)
               SKILL_MANDATORY=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.mandatory // false' 2>/dev/null)
+
+              # v1.0.198: Parse LSP recommendation from unified LLM detection
+              LSP_LLM_NEEDED=$(echo "$JSON_OUTPUT" | jq -r '.lsp.needed // false' 2>/dev/null)
+              LSP_LLM_OPERATION=$(echo "$JSON_OUTPUT" | jq -r '.lsp.operation // empty' 2>/dev/null)
+              LSP_LLM_LANGUAGE=$(echo "$JSON_OUTPUT" | jq -r '.lsp.language // empty' 2>/dev/null)
+              LSP_LLM_WARMUP=$(echo "$JSON_OUTPUT" | jq -r '.lsp.warmupRequired // false' 2>/dev/null)
+
+              # Override grep-based detection with LLM decision
+              if [[ "$LSP_LLM_NEEDED" == "true" ]]; then
+                LSP_REQUEST_DETECTED="true"
+                # Use LLM language detection to supplement project detection
+                case "$LSP_LLM_LANGUAGE" in
+                  typescript) LSP_PROMPT_NEEDS_TS="true" ;;
+                  python) LSP_PROMPT_NEEDS_PY="true" ;;
+                  rust) LSP_PROMPT_NEEDS_RUST="true" ;;
+                esac
+              fi
 
               # Check confidence threshold
               ABOVE=$(echo "$INC_CONF >= $INCREMENT_CONFIDENCE_THRESHOLD" | bc -l 2>/dev/null || echo 0)

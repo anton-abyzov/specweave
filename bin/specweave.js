@@ -694,6 +694,23 @@ lspCmd
     await handleLspSearch(process.cwd(), query);
   });
 
+lspCmd
+  .command('warmup [files...]')
+  .description('Warm up LSP by pre-indexing workspace (run on session start)')
+  .option('--quiet', 'Suppress output')
+  .action(async (files, options) => {
+    const { handleLspWarmup } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspWarmup(process.cwd(), files, options.quiet ?? false);
+  });
+
+lspCmd
+  .command('status')
+  .description('Show LSP status and warm-up state')
+  .action(async () => {
+    const { handleLspStatus } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspStatus(process.cwd());
+  });
+
 // Commits command - Display last 2 git commits
 program
   .command('commits')

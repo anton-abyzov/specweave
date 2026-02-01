@@ -482,5 +482,136 @@ export function createLspCommand(): Command {
       await handleLspSearch(projectRoot, query);
     });
 
+  // specweave lsp warmup [files...]
+  lsp
+    .command('warmup [files...]')
+    .description('Warm up LSP by pre-indexing workspace (run on session start)')
+    .option('--quiet', 'Suppress output')
+    .action(async (files: string[], options: { quiet?: boolean }) => {
+      const projectRoot = process.cwd();
+      await handleLspWarmup(projectRoot, files, options.quiet ?? false);
+    });
+
+  // specweave lsp status
+  lsp
+    .command('status')
+    .description('Show LSP status and warm-up state')
+    .action(async () => {
+      const projectRoot = process.cwd();
+      await handleLspStatus(projectRoot);
+    });
+
   return lsp;
+}
+
+/**
+ * Warm up LSP by pre-indexing the workspace
+ * v1.0.197: Added for session-start integration
+ */
+export async function handleLspWarmup(
+  projectRoot: string,
+  entryFiles: string[],
+  quiet: boolean
+): Promise<void> {
+  const startTime = Date.now();
+
+  if (!quiet) {
+    console.log('Starting LSP warm-up (workspace indexing)...\n');
+  }
+
+  try {
+    const lspManager = getGlobalLSPManager(projectRoot);
+    await lspManager.initialize();
+
+    const result = await lspManager.warmup(entryFiles.length > 0 ? entryFiles : undefined);
+
+    const elapsed = Date.now() - startTime;
+
+    if (!quiet) {
+      if (result.warmedUp.length > 0) {
+        console.log(`✅ Warmed up: ${result.warmedUp.join(', ')}`);
+      }
+      if (result.failed.length > 0) {
+        console.log(`⚠️ Failed: ${result.failed.join(', ')}`);
+      }
+      console.log(`\nWarm-up completed in ${elapsed}ms`);
+    }
+
+    // Write status file for session-start.sh to read
+    const stateDir = path.join(projectRoot, '.specweave/state');
+    const stateFile = path.join(stateDir, 'lsp-warmup.json');
+    fs.mkdirSync(stateDir, { recursive: true });
+    fs.writeFileSync(stateFile, JSON.stringify({
+      status: result.success ? 'ready' : 'partial',
+      warmedUp: result.warmedUp,
+      failed: result.failed,
+      elapsedMs: elapsed,
+      timestamp: new Date().toISOString()
+    }, null, 2));
+
+    // Keep server running for subsequent queries (don't shutdown)
+    // await shutdownGlobalLSPManager();
+
+  } catch (error) {
+    if (!quiet) {
+      console.error(`Warm-up failed: ${error}`);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * Show LSP status
+ */
+export async function handleLspStatus(projectRoot: string): Promise<void> {
+  try {
+    // Read warm-up state
+    const stateFile = path.join(projectRoot, '.specweave/state/lsp-warmup.json');
+    let warmupState = null;
+    if (fs.existsSync(stateFile)) {
+      warmupState = JSON.parse(fs.readFileSync(stateFile, 'utf-8'));
+    }
+
+    // Read check state
+    const checkFile = path.join(projectRoot, '.specweave/state/lsp-check.json');
+    let checkState = null;
+    if (fs.existsSync(checkFile)) {
+      checkState = JSON.parse(fs.readFileSync(checkFile, 'utf-8'));
+    }
+
+    console.log('LSP Status:\n');
+
+    // Binary/plugin check status
+    if (checkState) {
+      console.log(`📋 LSP Check: ${checkState.status === 'ok' ? '✅ All servers available' : '⚠️ Some servers missing'}`);
+      console.log(`   Languages detected: ${checkState.stats?.checkedLanguages || 0}`);
+      console.log(`   LSP env ready: ${checkState.lspEnvReady ? 'yes' : 'no (set ENABLE_LSP_TOOL=1)'}`);
+      if (checkState.missing && checkState.missing.length > 0) {
+        console.log(`   Missing:`);
+        for (const m of checkState.missing) {
+          console.log(`     - ${m.language}: ${m.message}`);
+        }
+      }
+    } else {
+      console.log('📋 LSP Check: not run yet (will run on next session start)');
+    }
+
+    console.log('');
+
+    // Warm-up status
+    if (warmupState) {
+      console.log(`🔥 Warm-up: ${warmupState.status === 'ready' ? '✅ Ready' : '⏳ ' + warmupState.status}`);
+      if (warmupState.warmedUp && warmupState.warmedUp.length > 0) {
+        console.log(`   Indexed: ${warmupState.warmedUp.join(', ')}`);
+      }
+      if (warmupState.elapsedMs) {
+        console.log(`   Time: ${warmupState.elapsedMs}ms`);
+      }
+    } else {
+      console.log('🔥 Warm-up: not run yet (run `specweave lsp warmup`)');
+    }
+
+  } catch (error) {
+    console.error(`Failed to get status: ${error}`);
+  }
 }

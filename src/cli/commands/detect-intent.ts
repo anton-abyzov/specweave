@@ -32,6 +32,7 @@ import {
   IncrementAction,
   SkillRouting,
   SkillInvocation,
+  LspRecommendation,
 } from '../../core/lazy-loading/llm-plugin-detector.js';
 import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
@@ -88,6 +89,9 @@ export interface DetectIntentResult {
 
   /** Skill invocation recommendation (v1.0.168) */
   skillInvocation?: SkillInvocation;
+
+  /** LSP operation recommendation (v1.0.198+) */
+  lsp?: LspRecommendation;
 }
 
 /**
@@ -329,6 +333,18 @@ export async function detectIntentCommand(
     });
   }
 
+  // Process LSP recommendation (v1.0.198+)
+  if (llmResult.lsp) {
+    result.lsp = llmResult.lsp;
+
+    logInfo('detect-intent', 'LSP operation recommendation', {
+      needed: llmResult.lsp.needed,
+      operation: llmResult.lsp.operation,
+      language: llmResult.lsp.language,
+      warmupRequired: llmResult.lsp.warmupRequired,
+    });
+  }
+
   // Handle installation if requested
   // Note: No confidence threshold - if LLM says install, we install
   if (options.install && result.plugins.length > 0) {
@@ -388,6 +404,9 @@ export async function detectIntentCommand(
     incrementConfidence: result.increment?.confidence,
     routingSkillCount: result.routing?.skills.length ?? 0,
     routingPrimarySkill: result.routing?.skills.find(s => s.priority === 'primary')?.fullName,
+    lspNeeded: result.lsp?.needed,
+    lspOperation: result.lsp?.operation,
+    lspLanguage: result.lsp?.language,
   });
 
   return result;

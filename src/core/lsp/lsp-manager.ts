@@ -234,6 +234,53 @@ export class LSPManager {
       clientCount: this.clients.size
     };
   }
+
+  /**
+   * Warm up all LSP clients by triggering workspace indexing
+   * This should be called on session start to prevent timeout on first query
+   * v1.0.197: Added for session-start warm-up integration
+   *
+   * @param entryFiles Optional list of key project files to pre-open
+   */
+  async warmup(entryFiles?: string[]): Promise<{ success: boolean; warmedUp: string[]; failed: string[] }> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const warmedUp: string[] = [];
+    const failed: string[] = [];
+
+    for (const [lang, client] of this.clients) {
+      try {
+        const success = await client.warmup(entryFiles);
+        if (success) {
+          warmedUp.push(lang);
+        } else {
+          failed.push(lang);
+        }
+      } catch (error) {
+        logger.warn(`Warmup failed for ${lang}: ${error}`);
+        failed.push(lang);
+      }
+    }
+
+    return {
+      success: failed.length === 0,
+      warmedUp,
+      failed
+    };
+  }
+
+  /**
+   * Check if all clients are warmed up
+   */
+  isWarmedUp(): boolean {
+    if (this.clients.size === 0) return true;
+    for (const client of this.clients.values()) {
+      if (!client.isWarmedUp()) return false;
+    }
+    return true;
+  }
 }
 
 /**
