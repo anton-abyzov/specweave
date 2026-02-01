@@ -98,6 +98,7 @@
   "planning": {
     "deepInterview": {
       "enabled": true,
+      "enforcement": "strict",
       "minQuestions": 10,
       "categories": [
         "architecture",

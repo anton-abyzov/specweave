@@ -143,23 +143,41 @@ export class LSPClient {
 
       // Handle stdout
       this.serverProcess.stdout.on('data', (data: Buffer) => {
-        this.handleServerMessage(data.toString());
+        const str = data.toString();
+        logger.debug(`LSP stdout (${str.length} bytes)`);
+        this.handleServerMessage(str);
       });
 
-      // Handle stderr
+      // Handle stderr - log all output from TS server
       this.serverProcess.stderr?.on('data', (data: Buffer) => {
-        logger.debug(`LSP stderr: ${data.toString()}`);
+        const str = data.toString();
+        // Log stderr at info level so it's always visible
+        console.error(`[LSP stderr] ${str}`);
       });
 
-      // Send initialize request
+      // Send initialize request with proper workspace configuration
+      // TypeScript Language Server requires workspaceFolders to find tsconfig.json
+      const rootUri = `file://${this.config.rootPath}`;
       const initializeResult = await this.sendRequest('initialize', {
         processId: process.pid,
-        rootUri: `file://${this.config.rootPath}`,
+        rootPath: this.config.rootPath, // Deprecated but needed by some servers
+        rootUri,
+        workspaceFolders: [
+          {
+            uri: rootUri,
+            name: path.basename(this.config.rootPath)
+          }
+        ],
         capabilities: {
           textDocument: {
             definition: { dynamicRegistration: true },
             references: { dynamicRegistration: true },
-            hover: { dynamicRegistration: true }
+            hover: { dynamicRegistration: true },
+            documentSymbol: { dynamicRegistration: true }
+          },
+          workspace: {
+            workspaceFolders: true,
+            symbol: { dynamicRegistration: true }
           }
         }
       });
@@ -203,25 +221,50 @@ export class LSPClient {
         ? entryFiles.slice(0, 5)
         : this.findDefaultEntryFiles();
 
+      logger.debug(`Warm-up: will open ${filesToOpen.length} files: ${filesToOpen.join(', ')}`);
+
+      if (filesToOpen.length === 0) {
+        logger.warn('Warm-up: No TypeScript files found to open!');
+        return false;
+      }
+
+      let firstOpenedUri: string | null = null;
       for (const filePath of filesToOpen) {
         try {
           const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
           await this.openDocument(filePath, uri);
+          if (!firstOpenedUri) firstOpenedUri = uri;
           logger.debug(`Warm-up: opened ${filePath}`);
-        } catch {
-          // Ignore individual file errors during warm-up
+        } catch (err) {
+          logger.debug(`Warm-up: failed to open ${filePath}: ${err}`);
         }
       }
 
-      // 2. Now trigger workspace indexing with empty symbol query
-      // This forces the language server to scan and index all files
-      try {
-        await this.sendRequest('workspace/symbol', { query: '' });
-        this.workspaceIndexed = true;
-      } catch (symbolError) {
-        // Workspace symbol may fail but files are still indexed via didOpen
-        logger.debug(`Workspace symbol failed (non-critical): ${symbolError}`);
-        this.workspaceIndexed = true; // Files are open, good enough
+      // 2. Verify project is loaded by sending a hover request on first file
+      // This is more reliable than workspace/symbol which requires full project loading
+      if (firstOpenedUri) {
+        try {
+          // Send hover at position (0, 0) - just to trigger project loading
+          const hoverResult = await this.sendRequest('textDocument/hover', {
+            textDocument: { uri: firstOpenedUri },
+            position: { line: 0, character: 0 }
+          });
+          // If we get here, project is loaded (even if hover returns null)
+          this.workspaceIndexed = true;
+          logger.debug('Warm-up: hover request succeeded, project is loaded');
+        } catch (hoverError) {
+          logger.debug(`Warm-up: hover request failed: ${hoverError}`);
+          // Try workspace/symbol as fallback
+          try {
+            await this.sendRequest('workspace/symbol', { query: '' });
+            this.workspaceIndexed = true;
+          } catch {
+            // Even if both fail, mark as indexed since files are open
+            this.workspaceIndexed = true;
+          }
+        }
+      } else {
+        this.workspaceIndexed = true; // No files to verify, assume OK
       }
 
       const elapsed = Date.now() - startTime;
@@ -236,6 +279,7 @@ export class LSPClient {
 
   /**
    * Find default entry files for warm-up when none specified
+   * Searches common patterns and falls back to recursive search
    */
   private findDefaultEntryFiles(): string[] {
     const candidates = [
@@ -244,28 +288,46 @@ export class LSPClient {
       'src/app.ts',
       'index.ts',
       'main.ts',
-      'tsconfig.json', // Opening this helps TS server find the project
+      // Common subdirectory patterns
+      'src/cli/index.ts',
+      'src/core/index.ts',
+      'src/lib/index.ts',
     ];
 
     const found: string[] = [];
     for (const candidate of candidates) {
       const fullPath = path.resolve(this.config.rootPath, candidate);
-      if (fs.existsSync(fullPath) && candidate.endsWith('.ts')) {
+      if (fs.existsSync(fullPath)) {
         found.push(candidate);
         if (found.length >= 3) break; // Max 3 files
       }
     }
 
-    // Fallback: find any .ts file in src/
+    // Fallback: find .ts files in src/ subdirectories (not just root)
     if (found.length === 0) {
       try {
         const srcDir = path.join(this.config.rootPath, 'src');
         if (fs.existsSync(srcDir)) {
-          const files = fs.readdirSync(srcDir)
-            .filter(f => f.endsWith('.ts'))
-            .slice(0, 3)
-            .map(f => `src/${f}`);
-          found.push(...files);
+          // Check first-level subdirectories
+          const subdirs = fs.readdirSync(srcDir)
+            .filter(d => {
+              const fullPath = path.join(srcDir, d);
+              return fs.statSync(fullPath).isDirectory();
+            })
+            .slice(0, 5); // Check first 5 subdirs
+
+          for (const subdir of subdirs) {
+            const subPath = path.join(srcDir, subdir);
+            const files = fs.readdirSync(subPath)
+              .filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts') && !f.endsWith('.spec.ts'))
+              .slice(0, 2);
+
+            for (const file of files) {
+              found.push(`src/${subdir}/${file}`);
+              if (found.length >= 3) break;
+            }
+            if (found.length >= 3) break;
+          }
         }
       } catch {
         // Ignore errors
@@ -315,6 +377,7 @@ export class LSPClient {
 
       try {
         const message = JSON.parse(messageContent);
+        logger.debug(`LSP received: ${message.method || `response id=${message.id}`}`);
         this.handleMessage(message);
       } catch (error) {
         logger.error(`Failed to parse LSP message: ${error}`);
@@ -334,6 +397,9 @@ export class LSPClient {
       }
     }
   }
+
+  /** Track timeouts so we can clear them on response */
+  private timeouts: Map<number, ReturnType<typeof setTimeout>> = new Map();
 
   /**
    * Send request to LSP server
@@ -356,7 +422,16 @@ export class LSPClient {
       const content = JSON.stringify(request);
       const message = `Content-Length: ${content.length}\r\n\r\n${content}`;
 
+      logger.debug(`LSP request id=${id} method=${method}`);
+
+      // Wrap handler to clear timeout on success
       this.responseHandlers.set(id, (response) => {
+        const timeout = this.timeouts.get(id);
+        if (timeout) {
+          clearTimeout(timeout);
+          this.timeouts.delete(id);
+        }
+        logger.debug(`LSP response id=${id} received`);
         if (response.error) {
           reject(new Error(response.error.message));
         } else {
@@ -364,15 +439,20 @@ export class LSPClient {
         }
       });
 
-      this.serverProcess.stdin.write(message);
+      // Write and ensure flush
+      const written = this.serverProcess.stdin.write(message);
+      logger.debug(`LSP request id=${id} written=${written}, pending handlers: ${this.responseHandlers.size}`);
 
-      // Timeout after 30 seconds (heavy operations like findReferences need more time)
-      setTimeout(() => {
+      // Timeout after 60 seconds - store so we can clear on success
+      const timeout = setTimeout(() => {
         if (this.responseHandlers.has(id)) {
           this.responseHandlers.delete(id);
+          this.timeouts.delete(id);
+          logger.debug(`LSP request id=${id} timed out after 60s`);
           reject(new Error('LSP request timeout'));
         }
-      }, 30000);
+      }, 60000);
+      this.timeouts.set(id, timeout);
     });
   }
 
@@ -594,8 +674,10 @@ export class LSPClient {
     // Track as opened
     this.openedDocuments.add(uri);
 
-    // Give the LSP server time to parse the document (only for first open)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Give the LSP server time to parse the document AND load the project
+    // TypeScript needs more time to find tsconfig.json and create project
+    // 500ms was too short - increased to 2000ms for reliable project loading
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   /**
@@ -638,13 +720,21 @@ export class LSPClient {
   async shutdown(): Promise<void> {
     if (!this.initialized) return;
 
+    // Clear all pending timeouts first to avoid keeping process alive
+    for (const timeout of this.timeouts.values()) {
+      clearTimeout(timeout);
+    }
+    this.timeouts.clear();
+    this.responseHandlers.clear();
+
     try {
       // Close all open documents first
       for (const uri of this.openedDocuments) {
         this.closeDocument(uri);
       }
 
-      await this.sendRequest('shutdown', {});
+      // Send shutdown without timeout handling (we already cleared them)
+      this.sendNotification('shutdown', {});
       this.sendNotification('exit', {});
     } catch (error) {
       logger.error(`LSP shutdown failed: ${error}`);

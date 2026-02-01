@@ -62,11 +62,20 @@ fi
 **Run this command:**
 ```bash
 deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
+enforcement=$(jq -r '.planning.deepInterview.enforcement // "advisory"' .specweave/config.json 2>/dev/null)
 minQuestions=$(jq -r '.planning.deepInterview.minQuestions // 10' .specweave/config.json 2>/dev/null)
 
 if [ "$deepInterview" = "true" ]; then
   echo "DEEP INTERVIEW MODE ACTIVE"
+  echo "Enforcement: $enforcement"
   echo "Minimum questions: $minQuestions"
+  echo ""
+
+  if [ "$enforcement" = "strict" ]; then
+    echo "⚠️ STRICT MODE: spec.md BLOCKED until ALL categories covered!"
+    echo "Categories: architecture, integrations, ui-ux, performance, security, edge-cases"
+  fi
+
   echo ""
   echo "BEFORE creating spec, you MUST:"
   echo "1. Ask thorough questions about architecture, integrations, UI/UX"
@@ -83,8 +92,39 @@ fi
 3. Conduct thorough interview BEFORE proceeding to STEP 1
 4. Only continue after interview summary is complete
 
+## STEP 0C: Initialize Interview State (Strict Mode Only)
+
+**If strict enforcement is enabled, initialize interview tracking:**
+
+```bash
+# After increment ID is known, initialize interview state
+if [ "$enforcement" = "strict" ]; then
+  INCREMENT_ID="XXXX-name"  # Replace with actual increment ID
+  mkdir -p .specweave/state
+
+  # Create interview state file
+  cat > ".specweave/state/interview-${INCREMENT_ID}.json" << EOF
+{
+  "incrementId": "${INCREMENT_ID}",
+  "startedAt": "$(date -Iseconds)",
+  "coveredCategories": {}
+}
+EOF
+
+  echo "✅ Interview tracking initialized for ${INCREMENT_ID}"
+  echo "Mark categories as you cover them:"
+  echo "  specweave interview mark-covered ${INCREMENT_ID} architecture \"summary\""
+fi
+```
+
+**Or use CLI:**
+```bash
+specweave interview start XXXX-name
+```
+
 ## Next Phase
 
 After pre-flight passes:
 - If `DEEP_INTERVIEW=true` → Conduct interview first
+- If `enforcement=strict` → Initialize interview state
 - Then load `phases/01-project-context.md` for project selection
