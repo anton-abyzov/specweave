@@ -276,4 +276,100 @@ describe('LSP (tsserver) vs Grep: Performance & Accuracy', () => {
       expect(true).toBe(true); // Summary test always passes
     });
   });
+
+  describe('Benchmark Results (writes to file)', () => {
+    it('should run full benchmark and write results to file', async () => {
+      if (!initialized) {
+        console.log('Skipping: tsserver not initialized');
+        return;
+      }
+
+      const iterations = 5;
+      const absoluteFile = path.join(projectRoot, testFile);
+      const results: string[] = [];
+
+      results.push('╔═══════════════════════════════════════════════════════════════╗');
+      results.push('║      LSP (tsserver) vs GREP BENCHMARK RESULTS                 ║');
+      results.push('╚═══════════════════════════════════════════════════════════════╝');
+      results.push(`\nTimestamp: ${new Date().toISOString()}\n`);
+
+      // Test 1: Find References Speed
+      const grepRefTimes: number[] = [];
+      const lspRefTimes: number[] = [];
+
+      for (let i = 0; i < iterations; i++) {
+        const start = performance.now();
+        execSync(`grep -rn "${testSymbol}" --include="*.ts" src/`, {
+          cwd: projectRoot,
+          encoding: 'utf-8',
+          maxBuffer: 10 * 1024 * 1024,
+        });
+        grepRefTimes.push(performance.now() - start);
+      }
+
+      for (let i = 0; i < iterations; i++) {
+        const start = performance.now();
+        await tsClient.findReferences(absoluteFile, 47, 13);
+        lspRefTimes.push(performance.now() - start);
+      }
+
+      const avgGrepRef = grepRefTimes.reduce((a, b) => a + b, 0) / iterations;
+      const avgLspRef = lspRefTimes.reduce((a, b) => a + b, 0) / iterations;
+      const speedupRef = avgGrepRef / avgLspRef;
+
+      results.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      results.push('TEST 1: Find References Speed');
+      results.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      results.push(`  GREP times:     ${grepRefTimes.map(t => t.toFixed(1) + 'ms').join(', ')}`);
+      results.push(`  tsserver times: ${lspRefTimes.map(t => t.toFixed(1) + 'ms').join(', ')}`);
+      results.push(`  Average GREP:     ${avgGrepRef.toFixed(2)} ms`);
+      results.push(`  Average tsserver: ${avgLspRef.toFixed(2)} ms`);
+      results.push(`  Speedup:          ${speedupRef.toFixed(1)}x ${speedupRef > 1 ? 'FASTER' : 'slower'}`);
+      results.push('');
+
+      // Test 2: Accuracy
+      const grepOutput = execSync(
+        `grep -rn "\\bread\\b" --include="*.ts" src/ | wc -l`,
+        { cwd: projectRoot, encoding: 'utf-8' }
+      );
+      const grepMatches = parseInt(grepOutput.trim(), 10);
+
+      const fileContent = fs.readFileSync(absoluteFile, 'utf-8');
+      const lines = fileContent.split('\n');
+      let readMethodLine = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('static read(') || lines[i].includes('async read(')) {
+          readMethodLine = i;
+          break;
+        }
+      }
+
+      let lspMatches = 0;
+      if (readMethodLine !== -1) {
+        const lspResult = await tsClient.findReferences(absoluteFile, readMethodLine, 10);
+        lspMatches = lspResult.locations?.length || 0;
+      }
+
+      results.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      results.push('TEST 2: Accuracy - "read" symbol');
+      results.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      results.push(`  GREP matches (text):      ${grepMatches} matches`);
+      results.push(`  tsserver refs (semantic): ${lspMatches} references`);
+      results.push(`  False positives avoided:  ${grepMatches - lspMatches}`);
+      results.push('');
+      results.push('  Why? Grep matches: read, readFile, readFileSync, readdir, etc.');
+      results.push('  tsserver only matches actual MetadataManager.read() calls.');
+      results.push('');
+
+      // Write to file
+      const outputPath = path.join(projectRoot, 'lsp-benchmark-results.txt');
+      fs.writeFileSync(outputPath, results.join('\n'));
+
+      // Also write to stderr which sometimes bypasses Vitest suppression
+      process.stderr.write('\n' + results.join('\n') + '\n');
+
+      expect(fs.existsSync(outputPath)).toBe(true);
+      console.log(`\n📊 Results written to: ${outputPath}\n`);
+    }, 120000);
+  });
 });

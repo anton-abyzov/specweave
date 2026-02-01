@@ -602,6 +602,43 @@ ls .claude/hooks/
 
 > "The Claude Code team ships updates weekly. These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
 
+### 7.5 Claude Code Global Settings - Explanatory and Thinking
+
+**[SCREEN: Show ~/.claude/settings.json in editor]**
+
+> "Quick pro tip that most people miss — Claude Code has global settings that dramatically change how Claude communicates with you."
+
+**[TERMINAL: Show settings file location]**
+
+```bash
+# Open your global Claude Code settings
+cat ~/.claude/settings.json
+```
+
+> "Two settings I recommend enabling:
+>
+> **Explanatory mode** — Claude explains what it's doing and why. Instead of silently editing files, it tells you: 'I'm updating the auth service to add JWT validation because...'
+>
+> **Thinking mode** — Shows Claude's reasoning process. You see the chain of thought — what options it considered, why it chose one approach over another.
+>
+> Both are disabled by default. Enable them in your global settings:"
+
+**[TERMINAL: Show settings configuration]**
+
+```json
+// ~/.claude/settings.json
+{
+  "preferences": {
+    "verboseResponses": true,
+    "showThinking": true
+  }
+}
+```
+
+> "Why does this matter? **Learning**. When you see Claude's reasoning, you learn faster. You understand not just WHAT it built, but WHY.
+>
+> For experienced developers — you might disable these after a while. But when learning SpecWeave, or any new codebase? Keep them on. The transparency is invaluable."
+
 ### 8. Anthropic Defines Industry Standards
 
 **[SCREEN: Show agentskills.io homepage]**
