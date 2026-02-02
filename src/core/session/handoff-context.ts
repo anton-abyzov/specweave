@@ -270,13 +270,7 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'streaming',
     },
   ],
-  'sw-router': [
-    {
-      name: 'sw-router',
-      description: 'Smart plugin detection and routing',
-      category: 'core',
-    },
-  ],
+  // NOTE: sw-router REMOVED v1.0.204 - detect-intent now handles routing
 };
 
 // ============================================================================

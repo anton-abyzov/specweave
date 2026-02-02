@@ -56,7 +56,7 @@ export async function skillMatchCommand(options: SkillMatchOptions): Promise<voi
     console.log(chalk.yellow('⚠️  No skills matched this prompt\n'));
     console.log(chalk.gray('Tips:'));
     console.log(chalk.gray('  - Try using more specific keywords'));
-    console.log(chalk.gray('  - Check /sw:plugin-status to see available skills'));
+    console.log(chalk.gray('  - Run: claude plugin list to see available plugins'));
     console.log(chalk.gray('  - Run: specweave refresh-marketplace to update index\n'));
     return;
   }

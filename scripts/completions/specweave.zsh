@@ -76,7 +76,6 @@ commands=(
     'migrate-memory:Migrate legacy memory files'
     'load-plugins:Load plugin groups (lazy loading)'
     'unload-plugins:Unload plugin groups'
-    'plugin-status:Show plugin status'
     'save:Smart save with auto-sync'
 )
 
@@ -120,11 +119,6 @@ _specweave() {
                             _describe -t plugin_groups 'plugin groups' plugin_groups
                             ;;
                     esac
-                    ;;
-                plugin-status)
-                    _arguments \
-                        '--verbose[Show detailed information]' \
-                        '--help[Show help]'
                     ;;
                 init)
                     _arguments \

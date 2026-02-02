@@ -57,7 +57,8 @@ The cleanup tool removes plugin references that:
 
 1. **Don't exist in marketplace.json** anymore
 2. **Are in the known removed plugins list**:
-   - `sw-tooling` (removed 2025-12-11, functionality moved to `sw-plugin-dev`)
+   - `sw-tooling` (removed 2025-12-11, functionality moved to core `/sw:skill`)
+   - `sw-plugin-dev` (removed 2026-02-02, functionality moved to core `/sw:skill`)
 
 ## Files Modified
 
