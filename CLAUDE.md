@@ -232,14 +232,8 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 - **2026-02-02**: Enable interview process during increment creation for SpecWeave projects
 
 ### General
-- **2026-02-02**: User wants comprehensive codebase analysis to identify unused/obsolete commands and skills using multiple parallel agents (up to 40 subagents)
-- **2026-02-02**: User prefers detailed investigation and leaderboard reporting on command/skill usage patterns and deletion candidates
-- **2026-02-02**: "Use subagents" phrase triggers safe parallelization - documented in CLAUDE.md with full guidance
-- **2026-02-02**: User prefers comprehensive codebase analysis with multiple parallel agents (up to 40 subagents) for identifying unused/obsolete skills and commands
-- **2026-02-02**: User wants leaderboard-style output showing least-used commands/skills as candidates for deletion or removal
-- **2026-02-02**: User wants comprehensive codebase analysis to identify least-used commands/skills as candidates for deletion/removal - prefers large-scale investigation work with multiple parallel agents
-- **2026-02-02**: User wants comprehensive codebase analysis using multiple parallel agents (up to 40) to identify obsolete or least-used commands and skills for removal
-- **2026-02-02**: User expects detailed investigation work and leaderboard-style ranking of command/skill usage patterns
+- **2026-02-02**: Use subagents liberally for codebase analysis - up to 10+ concurrent for large-scale exploration
+- **2026-02-02**: Prefer leaderboard-style reporting when analyzing usage patterns or identifying deletion candidates
 
 <!-- SW:SECTION:context version="1.0.202" -->
 ## Context
