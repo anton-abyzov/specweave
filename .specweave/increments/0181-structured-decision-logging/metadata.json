@@ -1,0 +1,13 @@
+{
+  "id": "0181-structured-decision-logging",
+  "title": "Structured Decision Logging for Hook Debugging",
+  "status": "active",
+  "priority": "P1",
+  "created": "2026-02-02",
+  "updated": "2026-02-02",
+  "lastActivity": "2026-02-02T18:20:00.000Z",
+  "type": "feature",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "tags": ["hooks", "debugging", "logging", "observability"]
+}
