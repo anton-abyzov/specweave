@@ -19,6 +19,25 @@ import * as fs from '../../../../src/utils/fs-native.js';
 import { ReconcileManager, createReconcileManager } from '../../../../src/core/increment/reconcile-manager.js';
 import type { ReconcileOptions, IncrementInfo, Collision, ReconcileResult } from '../../../../src/core/increment/reconcile-manager.js';
 
+// Hoisted mock control - allows tests to inject errors into fs.renameSync
+const { mockRenameError } = vi.hoisted(() => ({
+  mockRenameError: { pathPattern: null as string | null, errorMessage: null as string | null }
+}));
+
+// Mock native 'fs' module to allow controlled error injection
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    renameSync: (oldPath: string, newPath: string) => {
+      if (mockRenameError.pathPattern && String(oldPath).includes(mockRenameError.pathPattern)) {
+        throw new Error(mockRenameError.errorMessage || 'EACCES: permission denied, rename');
+      }
+      return actual.renameSync(oldPath, newPath);
+    }
+  };
+});
+
 // Use os.tmpdir() to prevent deletion of project .specweave/
 const createTestRoot = () => path.join(
   os.tmpdir(),
@@ -342,27 +361,23 @@ title: "Test Increment"
       await createTestIncrement(incrementsDir, '0001-winner', { lastActivity: older.toISOString() });
       await createTestIncrement(archiveDir, '0001-loser', { lastActivity: now.toISOString() });
 
-      // Make the loser folder read-only to simulate rename failure (Unix only)
-      if (process.platform !== 'win32') {
-        await fs.chmod(path.join(archiveDir, '0001-loser'), 0o444);
-      }
+      // Configure mock to throw error when renaming the loser folder
+      // This works cross-platform via vi.mock hoisting (no chmod needed)
+      mockRenameError.pathPattern = '0001-loser';
+      mockRenameError.errorMessage = 'EACCES: permission denied, rename';
 
-      // Act
-      const manager = createReconcileManager(testRoot);
-      const result = await manager.reconcile({ dryRun: false });
+      try {
+        // Act
+        const manager = createReconcileManager(testRoot);
+        const result = await manager.reconcile({ dryRun: false });
 
-      // Assert: Error should be captured (on Unix)
-      if (process.platform !== 'win32') {
+        // Assert: Error should be captured
         expect(result.errors.length).toBeGreaterThan(0);
-      }
-
-      // Cleanup: Restore permissions
-      if (process.platform !== 'win32') {
-        try {
-          await fs.chmod(path.join(archiveDir, '0001-loser'), 0o755);
-        } catch {
-          // Ignore if cleanup fails
-        }
+        expect(result.errors[0]).toContain('EACCES');
+      } finally {
+        // Cleanup: Reset mock state for other tests
+        mockRenameError.pathPattern = null;
+        mockRenameError.errorMessage = null;
       }
     });
   });
