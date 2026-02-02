@@ -533,6 +533,24 @@ export function createLspCommand(): Command {
       await handleLspStatus(projectRoot);
     });
 
+  // specweave lsp setup - Multi-repo language scanning with user prompts
+  lsp
+    .command('setup')
+    .description('Scan project for languages and interactively install LSP plugins')
+    .option('-n, --max <number>', 'Maximum number of languages to suggest', '5')
+    .option('--min-files <number>', 'Minimum file count to consider a language', '5')
+    .option('--dry-run', 'Show what would be installed without installing')
+    .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
+    .action(async (options: { max: string; minFiles: string; dryRun?: boolean; scope: string }) => {
+      const projectRoot = process.cwd();
+      await handleLspSetup(projectRoot, {
+        maxLanguages: parseInt(options.max, 10),
+        minFileCount: parseInt(options.minFiles, 10),
+        dryRun: options.dryRun ?? false,
+        scope: options.scope as 'user' | 'project' | 'local',
+      });
+    });
+
   return lsp;
 }
 
@@ -645,5 +663,578 @@ export async function handleLspStatus(projectRoot: string): Promise<void> {
 
   } catch (error) {
     console.error(`Failed to get status: ${error}`);
+  }
+}
+
+// ============================================================================
+// LSP SETUP - Multi-repo Language Scanning (v1.0.203)
+// ============================================================================
+
+/**
+ * Language to LSP plugin mapping
+ * Uses boostvolt/claude-code-lsps marketplace
+ */
+/**
+ * Language to LSP plugin mapping
+ * 22 languages supported (matching boostvolt/claude-code-lsps marketplace)
+ */
+export const LANGUAGE_TO_LSP_PLUGIN: Record<string, string> = {
+  // Original 8 languages
+  TypeScript: 'vtsls',
+  Python: 'pyright',
+  'C#': 'csharp-lsp',
+  Go: 'gopls',
+  Rust: 'rust-analyzer',
+  Java: 'jdtls',
+  PHP: 'intelephense',
+  Ruby: 'solargraph',
+  // NEW: 14 additional languages from boostvolt/claude-code-lsps
+  Bash: 'bash-language-server',
+  'C/C++': 'clangd',
+  Clojure: 'clojure-lsp',
+  Dart: 'dart-analyzer',
+  Elixir: 'elixir-ls',
+  Kotlin: 'kotlin-lsp',
+  Lua: 'lua-language-server',
+  Swift: 'sourcekit-lsp',
+  Terraform: 'terraform-ls',
+  YAML: 'yaml-language-server',
+  Zig: 'zls',
+  OCaml: 'ocaml-lsp',
+  Nix: 'nixd',
+  Gleam: 'gleam',
+};
+
+/**
+ * Language configuration for detection
+ */
+interface LanguageConfig {
+  name: string;
+  extensions: string[];
+  binaryInstallCommand: string;
+  plugin: string;
+}
+
+const LANGUAGE_CONFIGS: LanguageConfig[] = [
+  {
+    name: 'TypeScript',
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'],
+    binaryInstallCommand: 'npm install -g typescript-language-server typescript',
+    plugin: 'vtsls',
+  },
+  {
+    name: 'Python',
+    extensions: ['.py', '.pyw'],
+    binaryInstallCommand: 'pip install pyright',
+    plugin: 'pyright',
+  },
+  {
+    name: 'C#',
+    extensions: ['.cs'],
+    binaryInstallCommand: 'dotnet tool install -g csharp-ls',
+    plugin: 'csharp-lsp',
+  },
+  {
+    name: 'Go',
+    extensions: ['.go'],
+    binaryInstallCommand: 'go install golang.org/x/tools/gopls@latest',
+    plugin: 'gopls',
+  },
+  {
+    name: 'Rust',
+    extensions: ['.rs'],
+    binaryInstallCommand: 'rustup component add rust-analyzer',
+    plugin: 'rust-analyzer',
+  },
+  {
+    name: 'Java',
+    extensions: ['.java'],
+    binaryInstallCommand: 'Download from https://download.eclipse.org/jdtls/ (or: brew install jdtls)',
+    plugin: 'jdtls',
+  },
+  {
+    name: 'PHP',
+    extensions: ['.php'],
+    binaryInstallCommand: 'npm install -g intelephense',
+    plugin: 'intelephense',
+  },
+  {
+    name: 'Ruby',
+    extensions: ['.rb'],
+    binaryInstallCommand: 'gem install solargraph',
+    plugin: 'solargraph',
+  },
+  // NEW: 14 additional languages from boostvolt/claude-code-lsps
+  {
+    name: 'Bash',
+    extensions: ['.sh', '.bash', '.zsh', '.ksh'],
+    binaryInstallCommand: 'npm install -g bash-language-server',
+    plugin: 'bash-language-server',
+  },
+  {
+    name: 'C/C++',
+    extensions: ['.c', '.h', '.cpp', '.hpp', '.cc', '.cxx', '.hxx', '.m', '.mm'],
+    binaryInstallCommand: 'apt install clangd (Linux) | brew install llvm (macOS) | choco install llvm (Windows)',
+    plugin: 'clangd',
+  },
+  {
+    name: 'Clojure',
+    extensions: ['.clj', '.cljs', '.cljc', '.edn'],
+    binaryInstallCommand: 'Download from https://clojure-lsp.io/installation/ (or: brew install clojure-lsp)',
+    plugin: 'clojure-lsp',
+  },
+  {
+    name: 'Dart',
+    extensions: ['.dart'],
+    binaryInstallCommand: 'Bundled with Dart SDK: https://dart.dev/get-dart (or: brew install dart)',
+    plugin: 'dart-analyzer',
+  },
+  {
+    name: 'Elixir',
+    extensions: ['.ex', '.exs'],
+    binaryInstallCommand: 'Download from https://github.com/elixir-lsp/elixir-ls/releases (or: brew install elixir-ls)',
+    plugin: 'elixir-ls',
+  },
+  {
+    name: 'Kotlin',
+    extensions: ['.kt', '.kts'],
+    binaryInstallCommand: 'Download from https://github.com/fwcd/kotlin-language-server/releases (or: brew install kotlin-language-server)',
+    plugin: 'kotlin-lsp',
+  },
+  {
+    name: 'Lua',
+    extensions: ['.lua'],
+    binaryInstallCommand: 'Download from https://github.com/LuaLS/lua-language-server/releases (or: brew install lua-language-server)',
+    plugin: 'lua-language-server',
+  },
+  {
+    name: 'Swift',
+    extensions: ['.swift'],
+    binaryInstallCommand: 'Bundled with Swift toolchain: https://swift.org/download/ (macOS: xcode-select --install)',
+    plugin: 'sourcekit-lsp',
+  },
+  {
+    name: 'Terraform',
+    extensions: ['.tf', '.tfvars'],
+    binaryInstallCommand: 'Download from https://releases.hashicorp.com/terraform-ls/ (or: brew install hashicorp/tap/terraform-ls)',
+    plugin: 'terraform-ls',
+  },
+  {
+    name: 'YAML',
+    extensions: ['.yaml', '.yml'],
+    binaryInstallCommand: 'npm install -g yaml-language-server',
+    plugin: 'yaml-language-server',
+  },
+  {
+    name: 'Zig',
+    extensions: ['.zig', '.zon'],
+    binaryInstallCommand: 'Download from https://github.com/zigtools/zls/releases (or: brew install zls)',
+    plugin: 'zls',
+  },
+  {
+    name: 'OCaml',
+    extensions: ['.ml', '.mli'],
+    binaryInstallCommand: 'opam install ocaml-lsp-server',
+    plugin: 'ocaml-lsp',
+  },
+  {
+    name: 'Nix',
+    extensions: ['.nix'],
+    binaryInstallCommand: 'nix profile install nixpkgs#nixd',
+    plugin: 'nixd',
+  },
+  {
+    name: 'Gleam',
+    extensions: ['.gleam'],
+    binaryInstallCommand: 'Download from https://gleam.run/getting-started/installing/ (or: brew install gleam)',
+    plugin: 'gleam',
+  },
+];
+
+/**
+ * Directories to exclude from scanning
+ */
+const EXCLUDED_DIRS = [
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  'out',
+  'target',
+  '.next',
+  '.nuxt',
+  'coverage',
+  '__pycache__',
+  '.venv',
+  'venv',
+  'vendor',
+  'bin',
+  'obj',
+];
+
+/**
+ * Directories that typically contain nested repositories
+ */
+const REPO_CONTAINER_DIRS = ['repositories', 'packages', 'services', 'apps', 'libs', 'modules'];
+
+/**
+ * Information about a detected language
+ */
+export interface LanguageInfo {
+  name: string;
+  fileCount: number;
+  plugin: string;
+  binaryInstallCommand: string;
+  pluginInstallCommand: string;
+  foundInRepos: string[];
+}
+
+/**
+ * Result of scanning languages across repositories
+ */
+export interface LanguageScanResult {
+  success: boolean;
+  languages: LanguageInfo[];
+  reposScanned: string[];
+  totalFiles: number;
+  error?: string;
+}
+
+/**
+ * Options for language scanning
+ */
+export interface ScanOptions {
+  maxLanguages?: number;
+  minFileCount?: number;
+  maxDepth?: number;
+}
+
+/**
+ * Scan for languages across a project and its nested repositories
+ *
+ * @param projectRoot - Root directory to scan
+ * @param options - Scan options
+ * @returns Language scan results
+ */
+export async function scanLanguagesAcrossRepos(
+  projectRoot: string,
+  options: ScanOptions = {}
+): Promise<LanguageScanResult> {
+  const { maxLanguages, minFileCount = 0, maxDepth = 10 } = options;
+
+  const languageCounts: Map<string, { count: number; repos: Set<string> }> = new Map();
+  const reposScanned: string[] = [];
+
+  // Initialize counts for all languages
+  for (const config of LANGUAGE_CONFIGS) {
+    languageCounts.set(config.name, { count: 0, repos: new Set() });
+  }
+
+  // Build set of directories to exclude from root scan
+  // (they'll be scanned separately as nested repos)
+  const rootExcludeDirs = new Set([...EXCLUDED_DIRS, ...REPO_CONTAINER_DIRS]);
+
+  try {
+    // Scan main project directory (excluding repo container dirs)
+    await scanDirectory(projectRoot, projectRoot, languageCounts, maxDepth, 'root', 0, rootExcludeDirs);
+    reposScanned.push('root');
+
+    // Scan nested repository containers
+    for (const containerDir of REPO_CONTAINER_DIRS) {
+      const containerPath = path.join(projectRoot, containerDir);
+
+      if (fs.existsSync(containerPath) && fs.statSync(containerPath).isDirectory()) {
+        const entries = fs.readdirSync(containerPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (entry.isDirectory() && !EXCLUDED_DIRS.includes(entry.name)) {
+            const repoPath = path.join(containerPath, entry.name);
+            // Nested repos use standard excluded dirs (not repo containers)
+            await scanDirectory(repoPath, projectRoot, languageCounts, maxDepth, entry.name, 0, new Set(EXCLUDED_DIRS));
+            reposScanned.push(entry.name);
+          }
+        }
+      }
+    }
+
+    // Build results
+    const languages: LanguageInfo[] = [];
+    let totalFiles = 0;
+
+    for (const config of LANGUAGE_CONFIGS) {
+      const data = languageCounts.get(config.name);
+      if (data && data.count >= minFileCount) {
+        totalFiles += data.count;
+
+        if (data.count > 0) {
+          languages.push({
+            name: config.name,
+            fileCount: data.count,
+            plugin: config.plugin,
+            binaryInstallCommand: config.binaryInstallCommand,
+            pluginInstallCommand: `claude plugin install ${config.plugin}@claude-code-lsps`,
+            foundInRepos: Array.from(data.repos),
+          });
+        }
+      }
+    }
+
+    // Sort by file count (descending)
+    languages.sort((a, b) => b.fileCount - a.fileCount);
+
+    // Limit to max languages if specified
+    const finalLanguages = maxLanguages ? languages.slice(0, maxLanguages) : languages;
+
+    return {
+      success: true,
+      languages: finalLanguages,
+      reposScanned: [...new Set(reposScanned)],
+      totalFiles,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      languages: [],
+      reposScanned,
+      totalFiles: 0,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * Recursively scan a directory for language files
+ */
+async function scanDirectory(
+  dirPath: string,
+  projectRoot: string,
+  counts: Map<string, { count: number; repos: Set<string> }>,
+  maxDepth: number,
+  repoName: string,
+  currentDepth: number = 0,
+  excludeDirs: Set<string> = new Set(EXCLUDED_DIRS)
+): Promise<void> {
+  if (currentDepth > maxDepth) return;
+
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+
+      if (entry.isDirectory()) {
+        // Skip excluded directories
+        if (excludeDirs.has(entry.name)) continue;
+
+        // Recurse into subdirectories
+        await scanDirectory(fullPath, projectRoot, counts, maxDepth, repoName, currentDepth + 1, excludeDirs);
+      } else if (entry.isFile()) {
+        // Check file extension against language configs
+        const ext = path.extname(entry.name).toLowerCase();
+
+        for (const config of LANGUAGE_CONFIGS) {
+          if (config.extensions.includes(ext)) {
+            const data = counts.get(config.name);
+            if (data) {
+              data.count++;
+              data.repos.add(repoName);
+            }
+            break; // File can only belong to one language
+          }
+        }
+      }
+    }
+  } catch {
+    // Directory read error - skip silently
+  }
+}
+
+// ============================================================================
+// LSP SETUP - Interactive Plugin Installation (v1.0.203)
+// ============================================================================
+
+interface SetupOptions {
+  maxLanguages: number;
+  minFileCount: number;
+  dryRun: boolean;
+  scope: 'user' | 'project' | 'local';
+}
+
+/**
+ * Interactive LSP setup - scans project and prompts user for plugin installation
+ */
+export async function handleLspSetup(projectRoot: string, options: SetupOptions): Promise<void> {
+  const { maxLanguages, minFileCount, dryRun, scope } = options;
+
+  console.log('🔍 Scanning project for languages...\n');
+
+  // Check ENABLE_LSP_TOOL env var
+  const lspEnvEnabled = Boolean(process.env.ENABLE_LSP_TOOL);
+  if (!lspEnvEnabled) {
+    console.log('⚠️  ENABLE_LSP_TOOL environment variable is not set.');
+    console.log('   LSP plugins require this to be enabled in your shell profile.\n');
+    console.log('   Add to ~/.zshrc or ~/.bashrc:');
+    console.log('   export ENABLE_LSP_TOOL=1\n');
+  }
+
+  // Scan for languages
+  const result = await scanLanguagesAcrossRepos(projectRoot, {
+    maxLanguages,
+    minFileCount,
+  });
+
+  if (!result.success) {
+    console.error(`❌ Scan failed: ${result.error}`);
+    return;
+  }
+
+  if (result.languages.length === 0) {
+    console.log('No supported languages detected with enough files.');
+    console.log(`(Minimum file count: ${minFileCount})`);
+    return;
+  }
+
+  // Display scan results
+  console.log('📊 Languages detected:\n');
+  console.log('   Language        Files   Found In');
+  console.log('   ─────────────────────────────────────────────');
+
+  for (const lang of result.languages) {
+    const name = lang.name.padEnd(15);
+    const files = String(lang.fileCount).padStart(5);
+    const repos = lang.foundInRepos.slice(0, 3).join(', ') + (lang.foundInRepos.length > 3 ? '...' : '');
+    console.log(`   ${name} ${files}   ${repos}`);
+  }
+
+  console.log(`\n   Total: ${result.totalFiles} files across ${result.reposScanned.length} locations\n`);
+
+  // Show implications
+  console.log('📋 Before installing LSP plugins, please note:\n');
+  console.log('   1. 🔄 Claude Code RESTART REQUIRED after installation');
+  console.log('   2. ⏱️  Startup time may increase slightly (LSP server initialization)');
+  console.log('   3. 💾 Plugins install to:', getScopeDescription(scope));
+  console.log('   4. 🔧 Language server BINARIES must be installed separately\n');
+
+  if (dryRun) {
+    console.log('🔍 DRY RUN - Would install:\n');
+    for (const lang of result.languages) {
+      console.log(`   ${lang.name}:`);
+      console.log(`     Plugin:  claude plugin install ${lang.plugin}@claude-code-lsps --scope ${scope}`);
+      console.log(`     Binary:  ${lang.binaryInstallCommand}\n`);
+    }
+    return;
+  }
+
+  // Interactive selection using @inquirer/prompts
+  const { checkbox, confirm } = await import('@inquirer/prompts');
+
+  // Ask which languages to install
+  const selectedLanguages = await checkbox({
+    message: 'Select languages to install LSP plugins for:',
+    choices: result.languages.map((lang) => ({
+      name: `${lang.name} (${lang.fileCount} files) - ${lang.plugin}`,
+      value: lang.name,
+      checked: true, // Pre-select all
+    })),
+  });
+
+  if (selectedLanguages.length === 0) {
+    console.log('\n❌ No languages selected. Setup cancelled.');
+    return;
+  }
+
+  // Confirmation
+  const confirmed = await confirm({
+    message: `Install ${selectedLanguages.length} LSP plugin(s)? (Requires restart after)`,
+    default: true,
+  });
+
+  if (!confirmed) {
+    console.log('\n❌ Setup cancelled.');
+    return;
+  }
+
+  // Install selected plugins
+  console.log('\n📦 Installing LSP plugins...\n');
+
+  const selectedLangs = result.languages.filter((l) => selectedLanguages.includes(l.name));
+  const { spawnSync } = await import('child_process');
+
+  const installed: string[] = [];
+  const failed: string[] = [];
+  const binaryCommands: string[] = [];
+
+  for (const lang of selectedLangs) {
+    console.log(`   Installing ${lang.plugin}@claude-code-lsps...`);
+
+    const installResult = spawnSync('claude', ['plugin', 'install', `${lang.plugin}@claude-code-lsps`, '--scope', scope], {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    });
+
+    if (installResult.status === 0) {
+      console.log(`   ✅ ${lang.name} plugin installed`);
+      installed.push(lang.name);
+      binaryCommands.push(lang.binaryInstallCommand);
+    } else {
+      console.log(`   ❌ ${lang.name} plugin failed: ${installResult.stderr || 'Unknown error'}`);
+      failed.push(lang.name);
+    }
+  }
+
+  // Summary
+  console.log('\n📋 Installation Summary:\n');
+
+  if (installed.length > 0) {
+    console.log(`   ✅ Installed: ${installed.join(', ')}`);
+  }
+
+  if (failed.length > 0) {
+    console.log(`   ❌ Failed: ${failed.join(', ')}`);
+  }
+
+  // Binary installation reminders
+  if (binaryCommands.length > 0) {
+    console.log('\n🔧 Language Server Binaries (install manually):\n');
+    for (let i = 0; i < installed.length; i++) {
+      console.log(`   ${installed[i]}: ${binaryCommands[i]}`);
+    }
+  }
+
+  // Final reminder
+  console.log('\n⚠️  IMPORTANT: Restart Claude Code for changes to take effect!');
+
+  // Write setup state for hooks
+  const stateDir = path.join(projectRoot, '.specweave/state');
+  const stateFile = path.join(stateDir, 'lsp-setup.json');
+  fs.mkdirSync(stateDir, { recursive: true });
+  fs.writeFileSync(
+    stateFile,
+    JSON.stringify(
+      {
+        timestamp: new Date().toISOString(),
+        scannedLanguages: result.languages.map((l) => l.name),
+        installedPlugins: installed,
+        failedPlugins: failed,
+        scope,
+        requiresRestart: installed.length > 0,
+      },
+      null,
+      2
+    )
+  );
+}
+
+/**
+ * Get human-readable description of installation scope
+ */
+function getScopeDescription(scope: 'user' | 'project' | 'local'): string {
+  switch (scope) {
+    case 'user':
+      return '~/.claude/settings.json (all projects)';
+    case 'project':
+      return '.claude/settings.json (shared via git)';
+    case 'local':
+      return '.claude/settings.local.json (gitignored)';
   }
 }

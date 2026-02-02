@@ -116,9 +116,9 @@ export const SPECWEAVE_PLUGINS = [
   'sw-docs',          // Extended documentation
   'sw-diagrams',      // Extended diagram support (beyond core)
   'sw-release',       // Extended release management (beyond core)
-  'sw-ui',            // UI automation
-  'sw-plugin-dev',    // Plugin development
-  // NOTE: sw-router is OBSOLETE as of v1.0.160 - detect-intent now handles routing
+  // NOTE: sw-ui REMOVED v1.0.204 - merged into sw-testing
+  // NOTE: sw-router REMOVED v1.0.160 - detect-intent now handles routing
+  // NOTE: sw-plugin-dev REMOVED v1.0.203 - /sw:skill now in core
 ] as const;
 
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];

@@ -1,6 +1,6 @@
 ---
 name: tdd-orchestrator
-description: Master TDD orchestrator for strict red-green-refactor discipline and multi-agent test-driven workflows. Use when implementing TDD across complex features, coordinating test and implementation agents, or enforcing TDD cycle discipline. Covers modern TDD practices, test isolation, and quality gates.
+description: Master TDD orchestrator for strict red-green-refactor discipline, multi-agent test-driven workflows, and TDD intent detection. Use when implementing TDD across complex features, coordinating test and implementation agents, enforcing TDD cycle discipline, or wanting to write tests first. Covers modern TDD practices, test isolation, quality gates, and TDD education.
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
@@ -8,7 +8,18 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 
 ## Overview
 
-You are an expert TDD orchestrator specializing in comprehensive test-driven development coordination, modern TDD practices, and multi-agent workflow management.
+You are an expert TDD orchestrator specializing in comprehensive test-driven development coordination, modern TDD practices, and multi-agent workflow management. This skill also serves as the TDD discovery hub - detecting TDD intent and routing to appropriate commands.
+
+## When to Activate
+
+**Automatic activation when user mentions**:
+- "implement with TDD"
+- "use test-driven development"
+- "red-green-refactor"
+- "write tests first"
+- "test-first approach"
+- "Kent Beck style"
+- "TDD discipline"
 
 ## Progressive Disclosure
 
@@ -41,26 +52,43 @@ Load phases as needed:
 - **Classic TDD (Chicago)**: State-based testing, real collaborators
 - **London School (Mockist)**: Interaction-based, test doubles
 
-### Red Phase Guidelines
+### Red Phase Guidelines 🔴
 
 - Write test FIRST (should fail)
 - Ensure test fails for the right reason
+- Write the simplest test that fails
+- Test should compile but fail on assertion
+- Focus on WHAT, not HOW
+- One test at a time
 - Max 10-15 tests per response
 - Ask before moving to Green Phase
 
-### Green Phase Guidelines
+### Green Phase Guidelines 🟢
 
 - Write MINIMAL code to pass tests
+- Embrace "fake it till you make it"
+- Hardcoded values acceptable initially
+- Get to green FAST
 - One implementation file per response
 - Verify tests pass before continuing
 - Ask before moving to Refactor Phase
 
-### Refactor Phase Guidelines
+### Refactor Phase Guidelines 🔵
 
 - Refactor while keeping tests green
-- Extract helpers, optimize, clean up
+- Improve code structure
+- Extract methods, remove duplication
 - One refactoring pass per response
+- Commit after each refactor
 - Ask before starting new cycle
+
+### TDD Anti-Patterns to Avoid
+
+- ❌ Writing implementation before test
+- ❌ Writing multiple tests before implementation
+- ❌ Over-engineering in GREEN phase
+- ❌ Refactoring without tests passing
+- ❌ Skipping refactor phase
 
 ## Workflow
 
@@ -88,6 +116,70 @@ Load phases as needed:
 5. ♻️ Refactor: Clean up
 6. 🟢 Run tests: Still passing
 ```
+
+## Integration with SpecWeave
+
+**In Increment Workflow**:
+```
+/sw:inc "Authentication feature" → spec.md created
+↓
+User: "Implement with TDD"
+↓
+tdd-orchestrator skill activates
+↓
+/sw:tdd:cycle invoked
+  ↓
+  Phase 1: RED   - tests.md updated with failing tests
+  Phase 2: GREEN - tasks.md implementation
+  Phase 3: REFACTOR - code improvements
+↓
+Increment tasks completed with TDD discipline
+```
+
+## Commands Reference
+
+### Full Cycle
+- `/sw:tdd:cycle` - Complete red-green-refactor orchestration
+
+### Individual Phases
+- `/sw:tdd:red` - RED phase only (write failing test)
+- `/sw:tdd:green` - GREEN phase only (make test pass)
+- `/sw:tdd:refactor` - REFACTOR phase only (improve code)
+
+### When to Use Each
+
+**Use /sw:tdd:cycle when**:
+- ✅ Starting new feature from scratch
+- ✅ Learning TDD or teaching team
+- ✅ Want enforced discipline (gates)
+- ✅ Working in increment-based workflow
+
+**Use individual commands when**:
+- ✅ Already in middle of TDD cycle
+- ✅ Need to repeat a phase (e.g., multiple refactors)
+- ✅ Want finer control over cycle
+- ✅ Integrating with other workflows
+
+## Configuration
+
+**Optional**: Customize TDD preferences in `.specweave/config.yaml`:
+
+```yaml
+tdd:
+  default_workflow: "cycle"  # Options: "cycle", "agent", "manual"
+  auto_activate: true         # Auto-offer TDD on new features
+  gates_enabled: true         # Enforce phase gates in cycle mode
+  mutation_testing: false     # Enable mutation testing (requires setup)
+```
+
+## Related Skills & Commands
+
+**Commands**:
+- `/sw:tdd:cycle` - Full red-green-refactor orchestration
+- `/sw:tdd:red`, `/sw:tdd:green`, `/sw:tdd:refactor` - Individual phases
+
+**Skills**:
+- `qa-lead` - Test strategy overlaps with TDD principles
 
 ## Project-Specific Learnings
 

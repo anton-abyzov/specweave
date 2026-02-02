@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.198 - Unified LLM LSP Detection)
+# SpecWeave UserPromptSubmit Hook (v1.0.201 - LSP CLI Fallback Instructions)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
+#   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
+#   analysis. Key fix: "find references" now gets semantic refs, not text matches!
 # - v1.0.198: UNIFIED LLM LSP DETECTION - LLM decides if LSP is needed (replaces grep patterns)
 #   * Single detect-intent call now returns: plugins + increment + skills + LSP recommendation
 #   * LLM-based detection understands context ("find references to X" vs general coding)
@@ -500,6 +503,68 @@ if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
   LSP_NEEDS_INSTALL="true"
 fi
 
+# ==============================================================================
+# LSP SETUP SUGGESTION (v1.0.203) - Suggest setup instead of auto-installing
+# ==============================================================================
+# When languages are detected but auto-install is disabled, suggest running
+# specweave lsp setup which does multi-repo scanning and asks user approval
+LSP_SETUP_SUGGESTION_MSG=""
+LSP_SETUP_STATE_FILE=".specweave/state/lsp-setup-suggested.flag"
+
+if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" != "true" ]]; then
+  # Check if we've already suggested setup in this session
+  if [[ ! -f "$LSP_SETUP_STATE_FILE" ]] && [[ -n "${ENABLE_LSP_TOOL:-}" ]]; then
+    # Build list of detected languages
+    DETECTED_LANGS=""
+    if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
+      DETECTED_LANGS="TypeScript"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
+      [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
+      DETECTED_LANGS="${DETECTED_LANGS}Python"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+      [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
+      DETECTED_LANGS="${DETECTED_LANGS}Rust"
+    fi
+
+    # Check if plugins are missing
+    MISSING_PLUGINS="false"
+    if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
+      VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$VTSLS_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
+      PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$PYRIGHT_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+      RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+    fi
+
+    if [[ "$MISSING_PLUGINS" == "true" ]] && [[ -n "$DETECTED_LANGS" ]]; then
+      LSP_SETUP_SUGGESTION_MSG="💡 **LSP Setup Available**
+
+Detected languages: **${DETECTED_LANGS}**
+
+For enhanced code intelligence (find references, go to definition, hover), run:
+\`\`\`bash
+specweave lsp setup
+\`\`\`
+
+This will scan your project (including nested repos) and let you choose which LSP plugins to install.
+
+---
+
+"
+      # Mark as suggested
+      mkdir -p "$(dirname "$LSP_SETUP_STATE_FILE")" 2>/dev/null
+      touch "$LSP_SETUP_STATE_FILE" 2>/dev/null
+    fi
+  fi
+fi
+
 if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
   # CRITICAL: Skip LSP plugin installation if ENABLE_LSP_TOOL is not set (v1.0.195)
   # Installing plugins without this env var is useless - they won't work
@@ -569,24 +634,44 @@ fi
 # ==============================================================================
 # Detects when users explicitly ask to "use LSP" for tasks like "find references"
 # and explains that LSP in Claude Code provides background enhancement, not explicit tools.
+# v1.0.201: SEMANTIC LSP VIA CLI FALLBACK
+# When user asks for LSP features (find references, go to definition, etc.),
+# instruct Claude to use `specweave lsp` commands which provide REAL semantic analysis
+# via TsServerClient - NOT grep text matching!
 LSP_EXPLICIT_REQUEST_MSG=""
-if echo "$PROMPT" | grep -qiE "(use|with|via)[[:space:]]+(the[[:space:]]+)?LSP|LSP[[:space:]]+(find|get|show|goto|hover|definition|references|implementations)"; then
-  LSP_EXPLICIT_REQUEST_MSG="💡 **About LSP in Claude Code**
+if echo "$PROMPT" | grep -qiE "(use|with|via)[[:space:]]+(the[[:space:]]+)?LSP|LSP[[:space:]]+(find|get|show|goto|hover|definition|references|implementations)|(find|get|show)[[:space:]]+(all[[:space:]]+)?references|go[[:space:]]?to[[:space:]]?definition|where[[:space:]]+(is|are).*defined|what[[:space:]]+(uses|calls)|who[[:space:]]+(uses|calls)"; then
+  LSP_EXPLICIT_REQUEST_MSG="🎯 **LSP Semantic Analysis Available**
 
-LSP (Language Server Protocol) works **automatically in the background** when I edit code - it's not an explicit tool I can call.
+For **semantic code intelligence** (not text matching), use the SpecWeave LSP CLI:
 
-**What I CAN do for you:**
-- \`Grep { pattern: \"YourSymbol\" }\` - Find all occurrences of a symbol
-- \`Grep { pattern: \"class YourClass\" }\` - Find class definitions
-- Read files to understand code structure and relationships
+\`\`\`bash
+# Find all SEMANTIC references to a symbol (not grep!)
+specweave lsp refs <file> <symbol>
 
-**For true LSP features (Find References, Go to Definition):**
-- Use your IDE: **F12** (Go to Definition) or **Shift+F12** (Find References)
-- These work instantly with full semantic understanding
+# Go to definition
+specweave lsp def <file> <symbol>
 
-**How LSP helps me:**
-- When I **edit** code files, LSP provides type info and diagnostics
-- This helps me write better code, but it's transparent (no explicit tool)
+# Get type information (hover)
+specweave lsp hover <file> <symbol>
+
+# List all symbols in a file
+specweave lsp symbols <file>
+
+# Search workspace for symbols
+specweave lsp search <query>
+\`\`\`
+
+**Example for this request:**
+\`\`\`bash
+# First find which file contains the symbol
+grep -rn --include=\"*.ts\" \"class SymbolName\" src/
+
+# Then use LSP for semantic references
+specweave lsp refs <found-file> <symbol-name>
+\`\`\`
+
+⚠️ **Do NOT use Grep for \"find references\"** - Grep finds TEXT matches (including comments, strings, docs).
+LSP finds SEMANTIC references (actual code usages only).
 
 ---
 
@@ -1416,7 +1501,17 @@ if [[ -d ".specweave" ]]; then
 "
     fi
 
-    # Append to existing message or set as new
+    # v1.0.201: Include LSP instructions BEFORE TDD message
+    # This ensures LSP guidance is included in ALL early exits
+    if [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]]; then
+      if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
+        AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}${LSP_EXPLICIT_REQUEST_MSG}"
+      else
+        AUTOLOAD_PLUGINS_MSG="$LSP_EXPLICIT_REQUEST_MSG"
+      fi
+    fi
+
+    # Append TDD message
     if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
       AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}${TDD_MSG}"
     else
@@ -1979,6 +2074,11 @@ fi
 # v1.0.191: Add LSP marketplace/plugin installation message if installed
 if [[ -n "$LSP_INSTALL_MSG" ]]; then
   FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_INSTALL_MSG}"
+fi
+
+# v1.0.203: Add LSP setup suggestion if languages detected but plugins not installed
+if [[ -n "$LSP_SETUP_SUGGESTION_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_SETUP_SUGGESTION_MSG}"
 fi
 
 # v1.0.180: Add explicit LSP request explanation if detected
