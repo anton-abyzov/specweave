@@ -29,7 +29,7 @@ Plugin 'sw-tooling' not found in marketplace 'specweave'
 
 **Root cause**:
 - `sw-tooling` plugin was removed from `marketplace.json`
-- Functionality moved to `sw-plugin-dev`
+- Functionality moved to core SpecWeave (now `/sw:skill` command)
 - User's settings still had `"sw-tooling@specweave": true`
 
 ### Why This Happens
@@ -68,7 +68,8 @@ export async function cleanupStalePlugins(
 **Known removed plugins**:
 ```typescript
 const REMOVED_PLUGINS = new Set([
-  'sw-tooling', // Removed 2025-12-11 (→ sw-plugin-dev)
+  'sw-tooling',    // Removed 2025-12-11 (→ core /sw:skill)
+  'sw-plugin-dev', // Removed 2026-02-02 (→ core /sw:skill)
 ]);
 ```
 

@@ -753,42 +753,166 @@ export class LSPClient {
 }
 
 /**
+ * LSP Server Configuration Registry
+ * Defines how to detect and launch each language server.
+ *
+ * Supported: TypeScript, Python, Go, Rust, Java, C#, Kotlin, Swift, PHP, Ruby
+ */
+interface LSPServerDefinition {
+  name: string;
+  projectFiles: string[];  // Files that indicate this language is used
+  commands: Array<{ cmd: string; args: string[] }>;  // Servers to try in order
+}
+
+const LSP_SERVERS: LSPServerDefinition[] = [
+  // 1. TypeScript/JavaScript (NOTE: TsServerClient is preferred, this is fallback)
+  {
+    name: 'typescript',
+    projectFiles: ['tsconfig.json', 'jsconfig.json', 'package.json'],
+    commands: [
+      { cmd: 'typescript-language-server', args: ['--stdio'] },
+    ],
+  },
+  // 2. Python - pyright preferred over pylsp (faster, better types)
+  {
+    name: 'python',
+    projectFiles: ['pyproject.toml', 'setup.py', 'requirements.txt', 'Pipfile', 'setup.cfg'],
+    commands: [
+      { cmd: 'pyright-langserver', args: ['--stdio'] },
+      { cmd: 'pylsp', args: [] },
+    ],
+  },
+  // 3. Go
+  {
+    name: 'go',
+    projectFiles: ['go.mod', 'go.sum'],
+    commands: [
+      { cmd: 'gopls', args: ['serve'] },
+    ],
+  },
+  // 4. Rust
+  {
+    name: 'rust',
+    projectFiles: ['Cargo.toml', 'Cargo.lock'],
+    commands: [
+      { cmd: 'rust-analyzer', args: [] },
+    ],
+  },
+  // 5. Java
+  {
+    name: 'java',
+    projectFiles: ['pom.xml', 'build.gradle', 'build.gradle.kts', 'settings.gradle'],
+    commands: [
+      { cmd: 'jdtls', args: [] },
+    ],
+  },
+  // 6. C# / .NET
+  {
+    name: 'csharp',
+    projectFiles: ['*.csproj', '*.sln', 'Directory.Build.props'],
+    commands: [
+      { cmd: 'csharp-ls', args: [] },
+      { cmd: 'OmniSharp', args: ['-lsp'] },
+    ],
+  },
+  // 7. Kotlin
+  {
+    name: 'kotlin',
+    projectFiles: ['build.gradle.kts', '*.kt'],
+    commands: [
+      { cmd: 'kotlin-language-server', args: [] },
+    ],
+  },
+  // 8. Swift
+  {
+    name: 'swift',
+    projectFiles: ['Package.swift', '*.xcodeproj', '*.xcworkspace'],
+    commands: [
+      { cmd: 'sourcekit-lsp', args: [] },
+    ],
+  },
+  // 9. PHP
+  {
+    name: 'php',
+    projectFiles: ['composer.json', 'composer.lock', '*.php'],
+    commands: [
+      { cmd: 'intelephense', args: ['--stdio'] },
+      { cmd: 'phpactor', args: ['language-server'] },
+    ],
+  },
+  // 10. Ruby
+  {
+    name: 'ruby',
+    projectFiles: ['Gemfile', 'Gemfile.lock', '*.gemspec'],
+    commands: [
+      { cmd: 'solargraph', args: ['stdio'] },
+    ],
+  },
+];
+
+/**
+ * Check if a command is available in PATH
+ */
+async function isCommandAvailable(command: string): Promise<boolean> {
+  try {
+    const { execSync } = await import('child_process');
+    const whichCmd = process.platform === 'win32' ? 'where' : 'which';
+    execSync(`${whichCmd} ${command}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if project has any of the specified files (supports glob patterns)
+ */
+function hasProjectFiles(projectRoot: string, patterns: string[]): boolean {
+  for (const pattern of patterns) {
+    if (pattern.includes('*')) {
+      // Glob pattern - check if any matching files exist
+      const dir = fs.readdirSync(projectRoot).filter(f =>
+        f.match(new RegExp(pattern.replace('*', '.*')))
+      );
+      if (dir.length > 0) return true;
+    } else {
+      // Exact file
+      if (fs.existsSync(path.join(projectRoot, pattern))) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Detect available LSP servers for a project
+ *
+ * Supports 10 languages: TypeScript, Python, Go, Rust, Java, C#, Kotlin, Swift, PHP, Ruby
+ * For each language, tries multiple server implementations in priority order.
  */
 export async function detectLSPServers(projectRoot: string): Promise<LSPServerConfig[]> {
   const servers: LSPServerConfig[] = [];
 
-  // Check for TypeScript/JavaScript
-  if (fs.existsSync(path.join(projectRoot, 'tsconfig.json')) ||
-      fs.existsSync(path.join(projectRoot, 'package.json'))) {
-    try {
-      // Check if typescript-language-server is available
-      const { execSync } = await import('child_process');
-      execSync('which typescript-language-server', { stdio: 'ignore' });
-      servers.push({
-        command: 'typescript-language-server',
-        args: ['--stdio'],
-        rootPath: projectRoot
-      });
-    } catch {
-      logger.debug('typescript-language-server not found');
+  for (const serverDef of LSP_SERVERS) {
+    // Check if project uses this language
+    if (!hasProjectFiles(projectRoot, serverDef.projectFiles)) {
+      continue;
     }
-  }
 
-  // Check for Python
-  if (fs.existsSync(path.join(projectRoot, 'setup.py')) ||
-      fs.existsSync(path.join(projectRoot, 'pyproject.toml')) ||
-      fs.existsSync(path.join(projectRoot, 'requirements.txt'))) {
-    try {
-      const { execSync } = await import('child_process');
-      execSync('which pylsp', { stdio: 'ignore' });
-      servers.push({
-        command: 'pylsp',
-        args: [],
-        rootPath: projectRoot
-      });
-    } catch {
-      logger.debug('pylsp not found');
+    // Try each command in priority order
+    for (const { cmd, args } of serverDef.commands) {
+      if (await isCommandAvailable(cmd)) {
+        servers.push({
+          command: cmd,
+          args,
+          rootPath: projectRoot,
+        });
+        logger.debug(`Found ${serverDef.name} LSP server: ${cmd}`);
+        break; // Use first available
+      }
+    }
+
+    if (!servers.find(s => s.command.includes(serverDef.name))) {
+      logger.debug(`No LSP server found for ${serverDef.name}`);
     }
   }
 

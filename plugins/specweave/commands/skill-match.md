@@ -71,5 +71,5 @@ Recommendation: kubernetes-architect is the best match for this prompt.
 
 ## See Also
 
-- `/sw:plugin-status` - Show all loaded plugins
+- `claude plugin list` - Show all installed plugins
 - `specweave refresh-marketplace` - Update skill trigger index

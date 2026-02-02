@@ -123,28 +123,68 @@ export class LSPManager {
 
   /**
    * Get language from LSP command
+   * Supports 10 languages: TypeScript, Python, Go, Rust, Java, C#, Kotlin, Swift, PHP, Ruby
    */
   private getLanguageFromCommand(command: string): string {
+    // TypeScript
     if (command.includes('typescript')) return 'typescript';
+    // Python
     if (command.includes('pylsp') || command.includes('pyright')) return 'python';
+    // Go
     if (command.includes('gopls')) return 'go';
+    // Rust
     if (command.includes('rust-analyzer')) return 'rust';
+    // Java
+    if (command.includes('jdtls')) return 'java';
+    // C#
+    if (command.includes('csharp-ls') || command.includes('OmniSharp')) return 'csharp';
+    // Kotlin
+    if (command.includes('kotlin-language-server')) return 'kotlin';
+    // Swift
+    if (command.includes('sourcekit-lsp')) return 'swift';
+    // PHP
+    if (command.includes('intelephense') || command.includes('phpactor')) return 'php';
+    // Ruby
+    if (command.includes('solargraph')) return 'ruby';
     return 'unknown';
   }
 
   /**
    * Get code intelligence client for a file
+   * Maps file extensions to language clients
    */
   private getClientForFile(filePath: string): CodeIntelligenceClient | null {
     const ext = path.extname(filePath);
     const langMap: Record<string, string> = {
+      // TypeScript/JavaScript
       '.ts': 'typescript',
       '.tsx': 'typescript',
       '.js': 'typescript',
       '.jsx': 'typescript',
+      '.mjs': 'typescript',
+      '.cjs': 'typescript',
+      // Python
       '.py': 'python',
+      '.pyw': 'python',
+      '.pyi': 'python',
+      // Go
       '.go': 'go',
+      // Rust
       '.rs': 'rust',
+      // Java
+      '.java': 'java',
+      // C#
+      '.cs': 'csharp',
+      // Kotlin
+      '.kt': 'kotlin',
+      '.kts': 'kotlin',
+      // Swift
+      '.swift': 'swift',
+      // PHP
+      '.php': 'php',
+      // Ruby
+      '.rb': 'ruby',
+      '.rake': 'ruby',
     };
 
     const lang = langMap[ext];

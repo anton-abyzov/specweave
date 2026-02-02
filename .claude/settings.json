@@ -8,7 +8,8 @@
     "defaultMode": "bypassPermissions"
   },
   "enabledPlugins": {
-    "./plugins/specweave-lsp": true
+    "./plugins/specweave-lsp": true,
+    "vtsls@claude-code-lsps": true
   },
   "lspServers": {
     "vtsls": {

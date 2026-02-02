@@ -735,6 +735,23 @@ lspCmd
     await handleLspStatus(process.cwd());
   });
 
+lspCmd
+  .command('setup')
+  .description('Scan project for languages and interactively install LSP plugins (22 languages)')
+  .option('-n, --max <number>', 'Maximum number of languages to suggest', '5')
+  .option('--min-files <number>', 'Minimum file count to consider a language', '5')
+  .option('--dry-run', 'Show what would be installed without installing')
+  .option('--scope <scope>', 'Installation scope: user, project, local', 'project')
+  .action(async (options) => {
+    const { handleLspSetup } = await import('../dist/src/cli/commands/lsp.js');
+    await handleLspSetup(process.cwd(), {
+      maxLanguages: parseInt(options.max, 10),
+      minFileCount: parseInt(options.minFiles, 10),
+      dryRun: options.dryRun ?? false,
+      scope: options.scope,
+    });
+  });
+
 // Commits command - Display last 2 git commits
 program
   .command('commits')

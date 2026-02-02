@@ -91,7 +91,6 @@ EXTRA_PLUGINS=(
     "sw-figma"
     "sw-n8n"
     "sw-cost"
-    "sw-plugin-dev"
 )
 
 for plugin in "${EXTRA_PLUGINS[@]}"; do

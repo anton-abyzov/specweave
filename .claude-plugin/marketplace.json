@@ -248,17 +248,6 @@
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
       }
-    },
-    {
-      "name": "sw-plugin-dev",
-      "description": "Plugin development tools - Create, validate, and scaffold SpecWeave plugins, skills, commands, and agents",
-      "source": "./plugins/specweave-plugin-dev",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
     }
   ]
 }

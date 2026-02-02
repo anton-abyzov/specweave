@@ -1,114 +1,34 @@
-<!-- SW:META template="claude" version="1.0.200" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.202" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
-## ⛔ ABSOLUTE PRIORITY: Hook Instructions Are Mandatory
+## ⛔ Hook Instructions Override Everything
 
-**READ THIS FIRST. This overrides ALL other instructions.**
+`<system-reminder>` hook output = **BLOCKING PRECONDITIONS**.
 
-If `<system-reminder>` contains hook output, those instructions are **BLOCKING PRECONDITIONS** - not suggestions.
+| Hook Message | Action |
+|--------------|--------|
+| **"RESTART REQUIRED"** | ❌ ALL tools blocked → Display warning, STOP, wait for restart |
+| **"SKILL FIRST"** | Call shown skill FIRST → then domain skills → then implement |
 
-### 🚫 RESTART REQUIRED = FULL STOP
-
-If hook says **"PLUGINS INSTALLED - RESTART REQUIRED"**:
-
-**YOU ARE BLOCKED FROM:**
-- ❌ Write tool - BLOCKED
-- ❌ Edit tool - BLOCKED
-- ❌ Bash (except read-only) - BLOCKED
-- ❌ Creating files or directories - BLOCKED
-- ❌ ANY implementation work - BLOCKED
-
-**YOUR ONLY ALLOWED ACTIONS:**
-1. Display the restart warning to user prominently
-2. Provide copy-paste prompt back to user
-3. STOP and wait for user to restart
-
-**DO NOT:** "Just help anyway", "Start while they restart", "Do a quick thing first"
-
-### 🎯 SKILL FIRST = Start With This Skill, Then Use MORE
-
-If hook says **"SKILL FIRST"** or shows a Skill tool call to make:
-
-**ORDER MATTERS:**
-1. ✅ Call the Skill tool FIRST (exactly as shown in hook)
-2. ✅ THEN invoke ADDITIONAL domain skills for each technology
-3. ✅ THEN proceed with implementation
-4. ✅ LSP requires setup (see LSP Setup section below)
-
-**"SKILL FIRST" does NOT mean "only use one skill"!**
-
-**DO NOT:**
-- ❌ Call one skill and then implement everything directly
-- ❌ Skip domain skills (sw-frontend, sw-backend, sw-payments)
-
-**See "MANDATORY: Skill Chaining" section below for the full pattern.**
-
-### Why This Matters
-
-Hooks exist to enforce workflow discipline. If you ignore them:
-- Plugins won't be available (features broken)
-- Increments won't be tracked (work lost)
-- The entire automation system is defeated
-
-**This is non-negotiable. No exceptions. No "just this once".**
+**SKILL FIRST ≠ only one skill.** Chain: hook skill → `sw-frontend:*` / `sw-backend:*` / etc → implement.
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.200" -->
+<!-- SW:SECTION:header version="1.0.202" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
 <!-- SW:SECTION:claude-code-concepts version="1.0.150" -->
-## Claude Code Concepts (2.1.3+)
+## Claude Code Concepts
 
-**Skills and slash commands are now unified.** Both file formats create the same `/name` command:
-- `.claude/commands/review.md` → `/review`
-- `.claude/skills/review/SKILL.md` → `/review`
+| Concept | How to Use |
+|---------|------------|
+| **Skills** | `/skill-name` or auto-invoke via keywords |
+| **Plugins** | `claude plugin install sw@specweave` |
+| **Subagents** | Append "use subagents" for parallel work |
 
-### Core Concepts
-
-| Concept | What It Is | How to Use |
-|---------|------------|------------|
-| **Skills** | Reusable instructions in SKILL.md | `/skill-name` or auto-invoke via keywords |
-| **Plugins** | Packages with skills, agents, hooks | `claude plugin install sw@specweave` |
-| **Agents** | Isolated subagents with own context | Task tool or `context: fork` in skill |
-
-### Skill Invocation Control (Frontmatter)
-
-| Frontmatter | User Can Invoke | Claude Can Invoke | Use Case |
-|-------------|-----------------|-------------------|----------|
-| (default) | Yes | Yes | Most skills |
-| `disable-model-invocation: true` | Yes | **No** | Workflows with side effects (`/deploy`) |
-| `user-invocable: false` | **No** | Yes | Background knowledge |
-
-### SpecWeave Skill Organization
-
-```
-plugins/specweave/
-├── commands/          # User-invocable workflows (have hooks)
-│   ├── do.md          # → /sw:do (execute tasks)
-│   ├── done.md        # → /sw:done (close increment)
-│   └── status.md      # → /sw:status
-└── skills/            # Auto-activating expertise (keyword-triggered)
-    ├── architect/     # → activates on "architecture", "system design"
-    ├── pm/            # → activates on "product", "requirements", "MVP"
-    └── tech-lead/     # → activates on "code review", "best practices"
-```
-
-### Quick Examples
-
-```bash
-# Explicit invocation (user types command)
-/sw:do                              # Execute tasks
-/sw:increment "auth feature"        # Plan increment
-
-# Auto-activation (Claude detects keywords, loads skill)
-"Design the auth architecture"      # → architect skill
-"Help me plan this product"         # → PM skill
-```
-
-### Key Insight
-
-**Old "commands" are just skills with `disable-model-invocation: true`** - they only respond to explicit `/name` invocation, not keyword detection.
+**Skill invocation control** (frontmatter):
+- `disable-model-invocation: true` → User only (side effects like `/deploy`)
+- `user-invocable: false` → Claude only (background knowledge)
 <!-- SW:END:claude-code-concepts -->
 
 <!-- SW:SECTION:skill-chaining version="1.0.179" -->
@@ -132,7 +52,7 @@ IMPLEMENTATION PHASE:
   - Database → sw-backend:database-optimizer
 
 CODE INTELLIGENCE (LSP):
-  ⚠️ Requires setup - see "LSP Setup" section below
+  Use `specweave lsp refs/def/hover` (native LSP broken in v2.1.0+)
 ```
 
 ### Skills vs LSP Plugins
@@ -140,7 +60,7 @@ CODE INTELLIGENCE (LSP):
 | Type | Has SKILL.md | How to Use |
 |------|--------------|------------|
 | **Skill plugins** | ✅ Yes | `/skill-name` or `Skill({ skill: "name" })` |
-| **LSP plugins** | ❌ No | See "LSP Setup" section below |
+| **LSP plugins** | ❌ No | Native LSP broken in v2.1.0+, use `specweave lsp` CLI |
 
 ### Why Auto-Activation May Not Trigger
 
@@ -166,7 +86,7 @@ Skill(sw:increment-planner)           → Plan the increment
 Skill(sw-frontend:frontend-architect) → React dashboard patterns
 Skill(sw-payments:stripe-integration) → Stripe checkout flow
 Skill(sw-backend:dotnet-backend)      → .NET API patterns
-[LSP available if configured - see LSP Setup section]
+[Use specweave lsp CLI for code intelligence]
 ```
 
 ### Skill Usage Checklist
@@ -174,110 +94,36 @@ Skill(sw-backend:dotnet-backend)      → .NET API patterns
 Before marking implementation complete, verify:
 - [ ] Used planning skills (PM, Architect) if complex feature
 - [ ] Used domain skills for each tech in the stack
-- [ ] LSP configured if needed (see LSP Setup section below)
 - [ ] Invoked skills explicitly if auto-activation didn't trigger
 <!-- SW:END:skill-chaining -->
 
-## LSP Setup (Code Intelligence)
+## LSP (Code Intelligence)
 
-**⚠️ LSP does NOT work automatically - requires explicit setup!**
-
-### Prerequisites
-
-1. **Enable LSP tool** (add to `~/.zshrc` or `~/.bashrc`):
-   ```bash
-   export ENABLE_LSP_TOOL=1
-   ```
-
-2. **Install working marketplace** (official plugins are broken - [Issue #15148](https://github.com/anthropics/claude-code/issues/15148)):
-   ```
-   /plugin marketplace add boostvolt/claude-code-lsps
-   ```
-
-3. **Install language plugins**:
-   ```
-   /plugin install vtsls@claude-code-lsps        # TypeScript/JavaScript
-   /plugin install pyright@claude-code-lsps      # Python
-   /plugin install gopls@claude-code-lsps        # Go
-   ```
-
-4. **Install language server binaries** (system-level):
-   ```bash
-   npm install -g typescript-language-server typescript  # TypeScript
-   pip install pyright                                   # Python
-   go install golang.org/x/tools/gopls@latest           # Go
-   ```
-
-5. **Restart Claude Code**
-
-### Available LSP Operations
-
-| Operation | Description |
-|-----------|-------------|
-| `goToDefinition` | Navigate to symbol definition |
-| `findReferences` | Find all usages of a symbol |
-| `hover` | Show type info and documentation |
-| `documentSymbol` | List symbols in current file |
-| `workspaceSymbol` | Search symbols across project |
-
-### Why Official Plugins Don't Work
-
-The official `typescript-lsp@claude-plugins-official` and similar plugins:
-- Only contain README.md files (no config)
-- `lspServers` configuration is never extracted from marketplace.json
-- LSP manager initializes with 0 servers
-
-Use `boostvolt/claude-code-lsps` until official plugins are fixed.
-
-## Plugin Installation Scopes (Claude Code 2.1.3+)
-
-Claude Code supports three installation scopes for plugins:
-
-| Scope | Settings File | Use Case |
-|-------|---------------|----------|
-| **User** | `~/.claude/settings.json` | Personal plugins across ALL projects (default) |
-| **Project** | `.claude/settings.json` | Team plugins, shared via git |
-| **Local** | `.claude/settings.local.json` | Project-specific, gitignored |
-
-### When to Use Each Scope
-
-- **User scope** (default): Plugins useful everywhere (context7, playwright)
-- **Project scope**: Language-specific LSP plugins, team tools
-- **Local scope**: Personal experimental plugins, not shared
-
-### Installing with Scope
+**Native LSP broken in v2.1.0+** ([#17468](https://github.com/anthropics/claude-code/issues/17468)). Use SpecWeave CLI:
 
 ```bash
-# User scope (default)
-claude plugin install context7@claude-plugins-official
-
-# Project scope - shared with team via git
-claude plugin install vtsls@claude-code-lsps --scope project
-
-# Local scope - just you, gitignored
-claude plugin install my-plugin@marketplace --scope local
+specweave lsp refs src/file.ts SymbolName    # Find references
+specweave lsp def src/file.ts SymbolName     # Go to definition
+specweave lsp hover src/file.ts 42 10        # Type info at line:col
 ```
 
-### SpecWeave Auto-Installation Scopes
+Hook auto-detects "find references" requests and injects CLI instructions.
 
-SpecWeave's `user-prompt-submit.sh` hook auto-installs LSP plugins with **project scope** by default:
+## Plugin Scopes
 
-```json
-// .specweave/config.json
-{
-  "plugins": {
-    "scope": {
-      "defaultScope": "user",
-      "lspScope": "project",        // LSP plugins → project scope
-      "specweaveScope": "user"      // sw-* plugins → user scope
-    }
-  }
-}
+| Scope | Use |
+|-------|-----|
+| **User** (default) | Personal plugins, all projects |
+| **Project** | Team plugins, shared via git |
+| **Local** | Gitignored, personal experiments |
+
+```bash
+claude plugin install sw@specweave --scope project  # Team-shared
 ```
 
-**Reference**: [Official Docs](https://code.claude.com/docs/en/discover-plugins#install-plugins) | [Settings Scopes](https://code.claude.com/docs/en/settings#configuration-scopes)
+SpecWeave auto-installs: LSP → project scope, sw-* → user scope.
 
-<!-- SW:SECTION:start version="1.0.200" -->
+<!-- SW:SECTION:start version="1.0.202" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -287,7 +133,7 @@ SpecWeave's `user-prompt-submit.sh` hook auto-installs LSP plugins with **projec
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.200" -->
+<!-- SW:SECTION:autodetect version="1.0.202" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -297,7 +143,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.200" -->
+<!-- SW:SECTION:metarule version="1.0.202" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -308,7 +154,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.200" -->
+<!-- SW:SECTION:rules version="1.0.202" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
@@ -324,7 +170,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
    Use next available number. **NEVER create duplicate prefixes.**
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.200" -->
+<!-- SW:SECTION:workflow version="1.0.202" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -370,7 +216,7 @@ project/
 **NEVER assume single-repo mode without scanning first!**
 <!-- SW:END:save-nested-repos -->
 
-<!-- SW:SECTION:reflect version="1.0.200" -->
+<!-- SW:SECTION:reflect version="1.0.202" -->
 ## Skill Memories
 
 SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
@@ -383,9 +229,19 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
 
 ### Pm
-- **2026-02-01**: Enable interview process during increment creation for SpecWeave projects
+- **2026-02-02**: Enable interview process during increment creation for SpecWeave projects
 
-<!-- SW:SECTION:context version="1.0.200" -->
+### General
+- **2026-02-02**: User wants comprehensive codebase analysis to identify unused/obsolete commands and skills using multiple parallel agents (up to 40 subagents)
+- **2026-02-02**: User prefers detailed investigation and leaderboard reporting on command/skill usage patterns and deletion candidates
+- **2026-02-02**: "Use subagents" phrase triggers safe parallelization - documented in CLAUDE.md with full guidance
+- **2026-02-02**: User prefers comprehensive codebase analysis with multiple parallel agents (up to 40 subagents) for identifying unused/obsolete skills and commands
+- **2026-02-02**: User wants leaderboard-style output showing least-used commands/skills as candidates for deletion or removal
+- **2026-02-02**: User wants comprehensive codebase analysis to identify least-used commands/skills as candidates for deletion/removal - prefers large-scale investigation work with multiple parallel agents
+- **2026-02-02**: User wants comprehensive codebase analysis using multiple parallel agents (up to 40) to identify obsolete or least-used commands and skills for removal
+- **2026-02-02**: User expects detailed investigation work and leaderboard-style ranking of command/skill usage patterns
+
+<!-- SW:SECTION:context version="1.0.202" -->
 ## Context
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
@@ -393,7 +249,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.200" -->
+<!-- SW:SECTION:structure version="1.0.202" -->
 ## Structure
 
 ```
@@ -408,7 +264,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 **Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.200" -->
+<!-- SW:SECTION:taskformat version="1.0.202" -->
 ## Task Format
 
 ```markdown
@@ -418,7 +274,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.200" -->
+<!-- SW:SECTION:secrets version="1.0.202" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -432,7 +288,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.200" -->
+<!-- SW:SECTION:syncing version="1.0.202" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
@@ -442,7 +298,7 @@ gh auth status
 **Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.200" -->
+<!-- SW:SECTION:testing version="1.0.202" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -454,7 +310,7 @@ vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.200" -->
+<!-- SW:SECTION:tdd version="1.0.202" -->
 ## TDD Mode (Test-Driven Development)
 
 **When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
@@ -515,7 +371,7 @@ When TDD is enabled, tasks include phase markers:
 **Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.200" -->
+<!-- SW:SECTION:api version="1.0.202" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
@@ -523,13 +379,13 @@ When TDD is enabled, tasks include phase markers:
 Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.200" -->
+<!-- SW:SECTION:limits version="1.0.202" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.200" -->
+<!-- SW:SECTION:troubleshooting version="1.0.202" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -546,7 +402,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Docs folder collisions | Check: `ls docs/ \| grep -E '^[0-9]{2}-' \| cut -d'-' -f1 \| sort \| uniq -d` |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.200" -->
+<!-- SW:SECTION:lazyloading version="1.0.202" -->
 ## Plugin Auto-Loading
 
 Plugins load automatically based on project type and keywords. Manual install if needed:
@@ -560,7 +416,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.200" -->
+<!-- SW:SECTION:principles version="1.0.202" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -569,7 +425,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 4. **Traceable**: All work → specs → ACs
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.200" -->
+<!-- SW:SECTION:linking version="1.0.202" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -577,7 +433,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.200" -->
+<!-- SW:SECTION:mcp version="1.0.202" -->
 ## External Services
 
 **Priority**: CLI tools first (simpler) → MCP for complex integrations
@@ -599,7 +455,7 @@ claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server
 MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.200" -->
+<!-- SW:SECTION:auto version="1.0.202" -->
 ## Auto Mode
 
 **Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
@@ -616,7 +472,7 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 **STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.200" -->
+<!-- SW:SECTION:docs version="1.0.202" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
@@ -683,9 +539,32 @@ User Stories need `**Project**: my-project` field for external sync. Each US = O
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`
 
-### 6. Parallel Agents
+### 6. Subagent Parallelization ("use subagents")
 
-**Parallel agents + large files = CRASH** (context shared). Process files ONE BY ONE.
+**The phrase "use subagents" is a SAFE parallelization trigger.** Append it to requests to distribute work.
+
+**How it works** (per Boris Cherny, Claude Code creator):
+- Claude spawns isolated subagents (up to 10 concurrent)
+- Each subagent has its own context (~20K tokens overhead each)
+- Main context stays clean and focused
+- Subagents handle complexity, return results
+
+**When to use "use subagents":**
+```
+✅ "Find all unused exports in src/ - use subagents"
+✅ "Analyze each module for security issues - use subagents"
+✅ "Search for deprecated patterns across the codebase - use subagents"
+✅ "Review these 15 files for code quality - use subagents"
+```
+
+**Best for:**
+- Codebase exploration/discovery (read-only analysis)
+- Multi-file searches and pattern detection
+- Batch validation and quality checks
+- Large-scale refactoring analysis
+- Parallel code reviews
+
+**Constraint**: Subagents don't receive full CLAUDE.md context - use for compartmentalized tasks.
 
 ### 7. Skills Best Practices
 
@@ -701,293 +580,49 @@ User Stories need `**Project**: my-project` field for external sync. Each US = O
 - Use `sw-backend:*` skills for .NET/Node/Python APIs
 - Use `sw-payments:stripe-integration` for Stripe
 
-**Code Intelligence (LSP):** See "LSP Setup" section above for configuration requirements.
+**Code Intelligence (LSP):** Use `specweave lsp` CLI (native LSP broken in CC v2.1.0+).
 
 **Pattern:**
 ```
 /sw:increment → PM skill → Architect skill → Implementation skills
-(LSP available if configured)
+(Use specweave lsp refs/def for code intelligence)
 ```
 
-### 8. NODE_OPTIONS and VSCode Debug Mode
+### 8. NODE_OPTIONS in Debug Mode
 
-**⚠️ When spawning child processes (like `claude CLI`), they fail in VSCode Debug mode!**
-
-**Root Cause**: VSCode debugger sets `NODE_OPTIONS` with inspector flags (`--inspect-brk`). These get inherited by child processes, causing them to try to attach to the debugger and fail with exit code 1.
-
-**Symptoms:**
-- Tests pass with "Run Test" but fail with "Debug Test"
-- Spawned processes exit with code 1 and empty stdout/stderr
-- `spawnSync` or `execFileSync` calls fail silently
-
-**Solution - Strip debugger env vars before spawning (works on ALL platforms + CI/CD):**
+Child processes fail in VSCode Debug mode due to inherited `NODE_OPTIONS`. **Strip before spawning:**
 ```typescript
-function getCleanEnv(): NodeJS.ProcessEnv {
-  const cleanEnv = { ...process.env };
-  // Debugger flags (VSCode, WebStorm, IntelliJ)
-  delete cleanEnv.NODE_OPTIONS;
-  delete cleanEnv.NODE_INSPECT;
-  delete cleanEnv.NODE_INSPECT_RESUME_ON_START;
-  // Coverage/instrumentation (CI/CD pipelines)
-  delete cleanEnv.NODE_V8_COVERAGE;
-  delete cleanEnv.VSCODE_INSPECTOR_OPTIONS;
-  return cleanEnv;
-}
-
-// Use in spawn calls:
-const result = spawnSync('claude', ['--version'], {
-  encoding: 'utf8',
-  env: getCleanEnv(),  // ← CRITICAL for debug mode + CI/CD
-});
+const cleanEnv = { ...process.env };
+delete cleanEnv.NODE_OPTIONS;
+delete cleanEnv.NODE_V8_COVERAGE;
+spawnSync('claude', ['--version'], { env: cleanEnv });
 ```
+See: `src/utils/claude-cli-detector.ts`
 
-**Files using this pattern:**
-- `src/utils/claude-cli-detector.ts` - All child process spawning
-- `tests/integration/lazy-loading/claude-cli-detection.test.ts` - Test utilities
+### 9. Fast Claude CLI Calls
 
-**See:** `.specweave/docs/public/troubleshooting/vscode-debug-child-processes.md`
-
-### 9. Fast Claude CLI Calls (--setting-sources "")
-
-**⚠️ When spawning `claude -p` for programmatic use, loading settings causes ~50s startup!**
-
-**Root Cause**: Claude CLI loads user/project settings which includes context caching (~30K tokens). For simple prompt-response calls (like plugin detection), this is unnecessary overhead.
-
-**Symptoms:**
-- `claude -p "prompt"` takes 50+ seconds
-- `duration_ms` much higher than `duration_api_ms` in JSON output
-- Timeouts in detect-intent and similar automation
-
-**Solution - Use `--setting-sources ""` (empty string):**
+For headless `claude -p` calls, skip settings loading (~50s → <1s):
 ```bash
-# SLOW (~50s): Loads all settings + context cache
-claude -p "Say hello" --model haiku
-
-# FAST (<1s startup): Skips all settings loading
-claude -p "Say hello" --model haiku --setting-sources ""
+claude -p "prompt" --model haiku --setting-sources ""
 ```
 
-**When to use:**
-- ✅ Plugin detection (detect-intent)
-- ✅ Simple classification tasks
-- ✅ Any headless `claude -p` automation
-- ❌ Interactive sessions (need settings)
-- ❌ Tasks that need project context
+### 10. Increment ID Collision Prevention
 
-**Files using this pattern:**
-- `src/core/lazy-loading/llm-plugin-detector.ts` - Plugin detection via CLI
-
-### 10. Increment ID Collision Prevention (v1.0.160)
-
-**🚨 CRITICAL: Increment IDs MUST be unique across ALL folders!**
-
-**Check these locations BEFORE creating an increment:**
-- Active: `.specweave/increments/NNNN-*`
-- Archived: `.specweave/increments/_archive/NNNN-*`
-- Abandoned: `.specweave/increments/_abandoned/NNNN-*`
-- Paused: `.specweave/increments/_paused/NNNN-*`
-- **External**: `.specweave/increments/NNNNE-*` (imported items with E suffix)
-
-**Manual Check (if creating increments manually):**
+**IDs must be unique across ALL folders** (active, _archive, _abandoned, _paused, external).
 ```bash
-# Find all existing increment IDs
-find .specweave/increments -maxdepth 2 -type d -name "[0-9][0-9][0-9][0-9]*" | \
-  grep -oE '[0-9]{4}E?' | sort -u
-
-# Example output:
-# 0001       ← archived
-# 0002       ← active
-# 0123E      ← external imported
-# Next safe ID: 0003
+find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u
 ```
+**Always use `IncrementNumberManager.getNextIncrementNumber()`** - never hardcode IDs.
 
-**Root Cause**: Archived/external increments retain their IDs. Creating a new increment with the same number causes:
-- GitHub sync confusion (which 0001 is which?)
-- Feature ID collisions in living docs
-- Database integrity violations
+### 11. Hook Output Format
 
-**Solution - ALWAYS use IncrementNumberManager:**
-```typescript
-// ✅ CORRECT: Scans ALL folders (active, _archive, _abandoned, _paused, external)
-const nextId = IncrementNumberManager.getNextIncrementNumber(projectRoot);
+| Event | Format |
+|-------|--------|
+| UserPromptSubmit/SessionStart | `{"hookSpecificOutput":{"hookEventName":"...","additionalContext":"..."}}` |
+| PreToolUse | `{"decision":"allow"}` or `{"decision":"block","reason":"..."}` |
+| PostToolUse | `{"continue":true}` |
 
-// ❌ WRONG: Only checking active folder
-const incrementId = '0001-project-setup';  // May collide with archived!
-```
-
-**Files using this pattern:**
-- `src/core/increment/increment-utils.ts` - `getAllIncrementNumbers()` scans all directories
-- `src/cli/helpers/init/initial-increment-generator.ts` - Uses IncrementNumberManager (fixed v1.0.160)
-
-### 11. Claude Code Hook Output Format (v1.0.166)
-
-**⚠️ Different hook events require DIFFERENT output formats!**
-
-| Hook Event | Correct Output | Wrong (Ignored) |
-|------------|----------------|-----------------|
-| UserPromptSubmit | `{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}` | `{"systemMessage":"..."}` |
-| SessionStart | `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}` | `{"systemMessage":"..."}` |
-| PreToolUse | `{"decision":"allow"}` or `{"decision":"block","reason":"..."}` | - |
-| PostToolUse | `{"continue":true}` | - |
-
-**Common Mistake**: Using `systemMessage` for UserPromptSubmit hooks - this field does NOT exist and content is silently ignored!
-
-**Helper function** (in `user-prompt-submit.sh`):
-```bash
-output_approve_with_context() {
-  local context="$1"
-  printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$(escape_json "$context")"
-}
-```
-
-**See**: [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks) | ADR-0230
-
----
-
-## Skills vs Agents (Official Claude Code Behavior)
-
-**Per [official Anthropic documentation](https://code.claude.com/docs/en/skills):**
-
-> "Claude uses skills when relevant, or you can invoke one directly with `/skill-name`."
-
-### How Skills Work (Two Mechanisms)
-
-**1. Auto-Activation (Primary)**: Skills auto-activate when their description keywords match user's request.
-**2. Explicit Invocation (Fallback)**: Use Skill tool when auto-activation doesn't trigger.
-
-```
-User: "Create a React dashboard with Stripe checkout"
-      ↓
-Auto-activation checks skill descriptions for:
-  - "React", "dashboard" → sw-frontend:frontend-architect
-  - "Stripe", "checkout" → sw-payments:stripe-integration
-      ↓
-If skills load automatically → great!
-If NOT → invoke via Skill tool as fallback
-```
-
-### When to Use Skill Tool Explicitly
-
-**Use Skill tool when:**
-- Auto-activation didn't trigger (skill didn't load)
-- You need a specific skill immediately
-- Hook instructions say "SKILL FIRST"
-- Complex multi-domain requests (invoke multiple skills)
-
-**Don't force Skill tool when:**
-- Skill already auto-activated (descriptions matched)
-- Simple requests that don't need specialized expertise
-
-### Plugin Skills Reference
-
-**⚠️ These are EXAMPLES - use ANY skill that matches the task!**
-
-New plugins add more skills. Custom user skills are equally valid. To discover all available skills: `/plugin list` or ask "What skills are available?"
-
-**Common Skills (non-exhaustive):**
-
-| Domain | Example Skill | Auto-Activates On |
-|--------|--------------|-------------------|
-| **Frontend** | `sw-frontend:frontend-architect` | React, Vue, Next.js, dashboard, UI |
-| **Backend .NET** | `sw-backend:dotnet-backend` | .NET, C#, ASP.NET, EF Core, Web API |
-| **Database** | `sw-backend:database-optimizer` | SQL, database, query optimization |
-| **Payments** | `sw-payments:stripe-integration` | Stripe, checkout, payment, subscription |
-| **Kubernetes** | `sw-k8s:kubernetes-architect` | K8s, EKS, AKS, GKE, pods, helm |
-| **DevOps** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
-| **Mobile** | `sw-mobile:mobile-architect` | React Native, iOS, Android |
-| **Testing** | `sw-testing:qa-engineer` | E2E, Playwright, Vitest, Jest |
-| **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, PyTorch |
-| **Architecture** | `sw:architect` | architecture, system design, ADR |
-| **Security** | `sw:security` | security, OWASP, vulnerabilities |
-| **TDD** | `sw:tdd-orchestrator` | TDD, test-driven, red-green-refactor |
-
-**Note:** LSP requires separate setup (`ENABLE_LSP_TOOL=1` + plugin installation). Official marketplace LSP plugins are currently broken - use `boostvolt/claude-code-lsps` instead.
-
-**Plus any skills from:**
-- Newly installed plugins
-- Custom user skills in `.claude/skills/`
-- Project-specific skills
-
-### Usage Pattern
-
-```typescript
-// Scenario 1: Auto-activation works (most cases)
-// User says: "Design the auth architecture"
-// → sw:architect auto-loads via keyword "architecture"
-// → Just respond with architectural guidance
-
-// Scenario 2: Auto-activation didn't trigger
-// User says: "Build .NET API" but skill didn't load
-// → Explicitly invoke:
-Skill({ skill: "sw-backend:dotnet-backend", args: "Build API..." })
-
-// Scenario 3: Multi-domain request (invoke both)
-// User says: "React dashboard with Stripe"
-Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
-Skill({ skill: "sw-payments:stripe-integration", args: "Stripe" })
-```
-
-### Troubleshooting Auto-Activation
-
-If skills don't auto-activate:
-1. Check skill description includes keywords user would naturally say
-2. Verify skill appears in `/plugin list`
-3. Try rephrasing request to match description
-4. **Fallback**: Invoke directly with `Skill({ skill: "name" })`
-
-### When to Use What
-
-| Scenario | Approach |
-|----------|----------|
-| Domain work (React, .NET, Stripe) | Let auto-activate, Skill tool if not |
-| Architecture, security review | Usually auto-activates on keywords |
-| Hook says "SKILL FIRST" | **Always** use Skill tool explicitly |
-| **Code intelligence (LSP)** | See "LSP Setup" section |
-| Increment planning | Use PM/Architect skills for spec/plan refinement |
-| External syncs | Commands: `/sw-github:sync` |
-| Codebase exploration | Task tool: `subagent_type: "Explore"` |
-| Complex planning | Task tool: `subagent_type: "Plan"` |
-
-**Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
-
----
-
-## Secrets & Service Integration Check (MANDATORY)
-
-**BEFORE using CLI tools that require authentication (gh, jira, az, etc.), ALWAYS check for existing configuration:**
-
-1. **Check `.env` file** for tokens/credentials:
-   ```bash
-   # Look for relevant tokens before running CLI commands (presence only!)
-   grep -qE "(GITHUB_TOKEN|GH_TOKEN|JIRA_|AZURE_DEVOPS_|ADO_)" .env 2>/dev/null && echo "Credentials found"
-   ```
-
-2. **Check `.specweave/config.json`** for service configuration:
-   ```bash
-   # Check sync configuration
-   cat .specweave/config.json | grep -A 10 '"sync"'
-   ```
-
-3. **Check project-specific config files**:
-   - `.github/` for GitHub Actions secrets references
-   - `package.json` for repository URLs
-   - `.specweave/config.json` for external tool settings
-
-**Common patterns**:
-```bash
-# GitHub - check if already authenticated
-gh auth status
-
-# JIRA - check configured domain (presence only - never display values!)
-grep -q JIRA .env && echo "JIRA config in .env"
-cat .specweave/config.json | grep -A5 '"jira"'
-
-# Azure DevOps - check org/project (presence only!)
-grep -qE "(ADO_|AZURE_DEVOPS)" .env && echo "ADO config in .env"
-cat .specweave/config.json | grep -A5 '"ado"'
-```
-
-**Rule**: NEVER assume CLI tools are unconfigured. Check first, then use existing credentials.
+⚠️ `systemMessage` doesn't exist - content silently ignored!
 
 ---
 
@@ -1031,62 +666,13 @@ directoryToMarketplaceName('specweave')   // → 'sw'
 
 ## Key Formats
 
-### Task Format
-```markdown
-### T-001: Task Title
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [x] completed
-```
+| Format | Pattern |
+|--------|---------|
+| GitHub Issue | `[FS-XXX][US-YYY] User Story Title` |
+| ADR | `XXXX-decision-title.md` (no `adr-` prefix) |
+| External Increment | `0111E-*` (E suffix for imported) |
 
-### spec.md Format
-```markdown
----
-increment: 0001-feature-name
-title: "Feature Title"
----
-### US-001: Feature Name
-**Project**: my-project
-**As a** user, I want...
-```
-
-### GitHub Issue Format
-**ONLY**: `[FS-XXX][US-YYY] User Story Title`
-
-### ADR Naming
-**Format**: `XXXX-decision-title.md` (4-digit, NO `adr-` prefix)
-**Location**: `.specweave/docs/internal/architecture/adr/`
-
-### External Increment E-Suffix
-```
-✅ 0111E-dora-metrics-fix (external GitHub issue)
-❌ 0111-dora-metrics-fix  (missing E suffix for external)
-```
-
----
-
-## Commands
-
-```bash
-# Core workflow
-/sw:increment "feature"    # Plan new increment
-/sw:do                     # Execute tasks
-/sw:auto                   # Autonomous execution
-/sw:done 0002              # Close (validates gates)
-/sw:progress               # Show status
-/sw:next                   # Smart transition (auto-close + suggest)
-
-# Quality & validation
-/sw:validate 0001          # Validate increment
-/sw:qa 0001                # Quality assessment
-/sw:judge-llm 0001         # LLM-as-Judge validation
-
-# Status & sync
-/sw:status                 # All increments overview
-/sw:sync-progress          # Full sync
-/sw:context "auth"         # Load living docs context
-/sw:save                   # Smart git commit & push
-```
+Task format → see `## Task Format` section above.
 
 ---
 
@@ -1134,7 +720,8 @@ npm run rebuild
 | Source of truth | tasks.md + spec.md (update immediately) |
 | Completion | `/sw:done` only (NEVER edit metadata.json directly) |
 | **Skills** | **ALWAYS use when available** (PM, Architect, domain skills) |
-| **LSP** | See "LSP Setup" section (requires explicit setup) |
+| **LSP** | Use `specweave lsp refs/def/hover` (native LSP broken in v2.1.0+) |
+| **Parallelization** | Append "use subagents" for batch/exploration tasks |
 | Increment root | ONLY 4 files: spec.md, plan.md, tasks.md, metadata.json |
 | Increment IDs | 🚨 Check ALL folders: `find .specweave/increments -maxdepth 2 -name "[0-9]*" \| grep -oE '[0-9]{4}E?'` |
 | Reports/logs | Always to `reports/`, `logs/` subfolders |

@@ -127,24 +127,38 @@ const KNOWN_SKILLS = [
 
 /**
  * Build the LLM prompt for extracting skill learnings
+ *
+ * v1.0.198: Stricter extraction - only high-signal learnings that will
+ * genuinely improve future skill behavior. Prefer fewer, high-quality
+ * learnings over many low-quality ones.
  */
 function buildExtractionPrompt(transcript: string): string {
-  return `You are analyzing a Claude Code session transcript to extract SpecWeave-specific learnings.
+  return `You are analyzing a Claude Code session transcript to extract ONLY high-value learnings.
 
-WHAT TO EXTRACT:
-1. **Skill-specific learnings**: How to improve a SpecWeave skill's behavior for this user/project
-   - Examples: "mobile: Run expo tests on localhost:8081 for this project"
-   - Examples: "frontend: Prefer Vercel over Cloudflare even with Remix"
-   - Examples: "architect: Skip ADR proposals for hotfix increments"
+CRITICAL: Be VERY selective. Most sessions have 0-1 learnings worth saving. Only extract if:
+1. User EXPLICITLY corrected Claude's behavior ("No, don't X", "Wrong, do Y instead")
+2. User stated a PERMANENT preference ("Always X", "Never Y", "For this project...")
+3. Learning will CHANGE how a skill behaves in FUTURE sessions
 
-2. **Workflow preferences**: How the user prefers to use SpecWeave
-   - Examples: "general: User prefers /sw:auto to run tests first"
-   - Examples: "general: Always use small increments (max 5 tasks)"
+WHAT TO EXTRACT (only if HIGH confidence it's reusable):
+1. **User corrections**: Claude did X, user said "No, do Y instead"
+   - Example: "pm: Enable interview process during increment creation" (user corrected workflow)
+   - Example: "architect: Skip ADR for hotfixes" (user said don't create ADRs for hotfixes)
 
-WHAT NOT TO EXTRACT:
-- Generic coding advice ("use TypeScript strict mode", "prefer hooks")
-- Implementation details unrelated to SpecWeave workflow
+2. **Explicit project preferences**: User stated how THIS PROJECT differs
+   - Example: "testing: Run E2E on port 8081" (project-specific config)
+   - Example: "frontend: Use Tailwind, not styled-components" (tech choice for project)
+
+3. **Workflow corrections**: User corrected SpecWeave command usage
+   - Example: "general: Run /sw:validate before /sw:done" (workflow preference)
+
+WHAT NOT TO EXTRACT (be strict!):
+- Generic coding advice (TypeScript patterns, React hooks, etc.)
 - One-time fixes that won't recur
+- Implementation details (specific file paths, variable names)
+- Things Claude did correctly (no correction = no learning)
+- Vague feedback ("good job", "that works") - these are NOT learnings
+- Standard best practices that any developer would know
 
 SKILL CATEGORIES (use these exact names):
 mobile, frontend, backend, testing, infrastructure, kubernetes, architect,
@@ -152,21 +166,18 @@ tech-lead, qa-lead, security, docs-writer, performance, tdd-orchestrator,
 pm, devops, payments, ml, kafka, confluent, github, jira, ado, release,
 diagrams, general
 
-SIGNALS TO LOOK FOR:
-- User corrections: "No, don't do X", "Wrong, use Y instead"
-- Explicit preferences: "Always do X", "Never do Y"
-- Workflow feedback: "That's exactly right", "Perfect!"
-- Technical preferences: "For this project, prefer X"
+IMPORTANCE TEST: Before including a learning, ask:
+"Will this CHANGE how Claude behaves in a FUTURE session with this skill?"
+If NO → don't include it.
 
 Respond with ONLY valid JSON (no markdown, no explanation):
 {
   "skillLearnings": [
-    { "skill": "mobile", "learning": "Run expo tests on localhost:8081" },
-    { "skill": "general", "learning": "User prefers small increments (max 5 tasks)" }
+    { "skill": "pm", "learning": "Enable interview process during increment creation" }
   ]
 }
 
-If no SpecWeave-specific learnings found, return: {"skillLearnings": []}
+If NO high-value learnings found (most sessions), return: {"skillLearnings": []}
 
 === SESSION TRANSCRIPT ===
 ${transcript.slice(0, 8000)}

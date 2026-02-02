@@ -872,6 +872,52 @@ export async function initCommand(
               // Non-critical, continue
             }
           }
+
+          // Offer to scan for languages and install LSP plugins (v1.0.203)
+          console.log('');
+          const runLspSetup = await confirm({
+            message: 'Scan project for languages and install LSP plugins now?',
+            default: true
+          });
+
+          if (runLspSetup) {
+            console.log('');
+            console.log(chalk.cyan('  Running language scan...'));
+            try {
+              const { scanLanguagesAcrossRepos } = await import('./lsp.js');
+              const scanResult = await scanLanguagesAcrossRepos(targetDir, { maxLanguages: 5, minFileCount: 5 });
+
+              if (scanResult.success && scanResult.languages.length > 0) {
+                console.log(chalk.gray(`  Found ${scanResult.languages.length} languages across ${scanResult.reposScanned.length} locations`));
+                console.log('');
+                console.log(chalk.cyan('  Run after restart to install LSP plugins:'));
+                console.log(chalk.white('    specweave lsp setup'));
+                console.log('');
+                console.log(chalk.gray('  Or run directly now (will need restart after):'));
+                const installNow = await confirm({
+                  message: 'Install LSP plugins now?',
+                  default: false
+                });
+
+                if (installNow) {
+                  const { handleLspSetup } = await import('./lsp.js');
+                  await handleLspSetup(targetDir, {
+                    maxLanguages: 5,
+                    minFileCount: 5,
+                    dryRun: false,
+                    scope: 'project'
+                  });
+                }
+              } else {
+                console.log(chalk.gray('  No supported languages detected (or not enough files)'));
+              }
+            } catch (scanError) {
+              console.log(chalk.yellow(`  ⚠ Language scan failed: ${scanError instanceof Error ? scanError.message : 'Unknown error'}`));
+              console.log(chalk.gray('    Run manually later: specweave lsp setup'));
+            }
+          } else {
+            console.log(chalk.gray('  Run later: specweave lsp setup'));
+          }
         } else {
           console.log(chalk.yellow('  ⚠ Could not auto-configure LSP: ' + result.error));
           console.log(chalk.gray('    Manual setup: Add this to your shell config (~/.zshrc or ~/.bashrc):'));

@@ -22,7 +22,7 @@ _specweave_completions() {
     local plugin_groups="core github jira ado frontend backend infra ml kafka confluent mobile payments release testing diagrams all"
 
     # Main commands
-    local main_commands="init install list pause resume abandon archive status progress status-line logs auto auto-status cancel-auto update-instructions check-discipline revert-wip-limit qa validate-plugins validate-jira jobs living-docs cache commits sync-scheduled sync-progress docs context enable-multiproject switch-project refresh-marketplace cache-status cache-refresh export-skills set-sync-target migrate-memory load-plugins unload-plugins plugin-status save"
+    local main_commands="init install list pause resume abandon archive status progress status-line logs auto auto-status cancel-auto update-instructions check-discipline revert-wip-limit qa validate-plugins validate-jira jobs living-docs cache commits sync-scheduled sync-progress docs context enable-multiproject switch-project refresh-marketplace cache-status cache-refresh export-skills set-sync-target migrate-memory load-plugins unload-plugins save"
 
     case "${prev}" in
         specweave)
@@ -35,10 +35,6 @@ _specweave_completions() {
             ;;
         unload-plugins)
             COMPREPLY=( $(compgen -W "${plugin_groups} --no-keep-router --verbose --dry-run --list-groups --help" -- "${cur}") )
-            return 0
-            ;;
-        plugin-status)
-            COMPREPLY=( $(compgen -W "--verbose --help" -- "${cur}") )
             return 0
             ;;
         init)
@@ -87,9 +83,6 @@ _specweave_completions() {
                 ;;
             unload-plugins)
                 COMPREPLY=( $(compgen -W "--no-keep-router --verbose --dry-run --list-groups --help" -- "${cur}") )
-                ;;
-            plugin-status)
-                COMPREPLY=( $(compgen -W "--verbose --help" -- "${cur}") )
                 ;;
             *)
                 COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
