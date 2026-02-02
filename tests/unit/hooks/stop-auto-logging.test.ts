@@ -190,24 +190,22 @@ describe('stop-auto.sh structured logging', () => {
       // When: stop-auto.sh executes
       const result = runStopAuto();
 
-      // Debug: Log stdout/stderr if test fails
-      if (result.status !== 0) {
-        console.log('Stop-auto stderr:', result.stderr);
-      }
-
       // Then: Decision log entry has turn.current=5, turn.max=20
       const entries = readDecisionLog();
-
-      expect(entries.length).toBeGreaterThan(0);
+      expect(entries.length, `No entries in log. stdout: ${result.stdout.substring(0, 300)}`).toBeGreaterThan(0);
 
       const lastEntry = entries[entries.length - 1] as {
         hook: string;
+        decision: string;
         context: {
           turn?: { current: number; max: number };
         };
       };
+
+      // The entry should be a block decision with context
       expect(lastEntry.hook).toBe('stop-auto');
-      expect(lastEntry.context.turn).toBeDefined();
+      expect(lastEntry.decision, `Entry: ${JSON.stringify(lastEntry)}`).toBe('block');
+      expect(lastEntry.context.turn, `Context missing turn. Entry: ${JSON.stringify(lastEntry)}`).toBeDefined();
       expect(lastEntry.context.turn?.current).toBe(5);
       expect(lastEntry.context.turn?.max).toBe(20);
     });
