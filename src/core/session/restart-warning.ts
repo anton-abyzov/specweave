@@ -106,7 +106,7 @@ const PLUGIN_DESCRIPTIONS: Record<string, string> = {
   'sw-payments': 'Payments - Stripe, PayPal, checkout flows',
   'sw-diagrams': 'Diagrams - Mermaid, C4, architecture diagrams',
   'sw-release': 'Release Management - Versioning, changelog',
-  'sw-router': 'Smart Router - Automatic plugin detection',
+  // NOTE: sw-router REMOVED v1.0.204 - detect-intent now handles routing
   'sw-confluent': 'Confluent Cloud - Kafka, Schema Registry, ksqlDB',
   'sw-kafka': 'Apache Kafka - Event streaming, topics',
 };

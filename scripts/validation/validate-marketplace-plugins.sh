@@ -155,7 +155,6 @@ map_plugin_to_dir() {
         sw-ui) echo "specweave-ui" ;;
         sw-docs) echo "specweave-docs" ;;
         sw-cost) echo "specweave-cost-optimizer" ;;
-        sw-plugin-dev) echo "specweave-plugin-dev" ;;
         *) echo "$plugin_name" ;;  # Default: use as-is
     esac
 }

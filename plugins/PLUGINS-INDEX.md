@@ -91,7 +91,6 @@
 
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
-| **specweave-plugin-dev** | create plugin, plugin development | Plugin development guide |
 | **specweave-tooling** | tooling, skill create, agent create | SpecWeave tooling |
 
 ---

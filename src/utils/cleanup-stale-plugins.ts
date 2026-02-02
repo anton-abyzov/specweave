@@ -19,7 +19,8 @@ import chalk from 'chalk';
  * Add plugins here when they are removed from marketplace.json
  */
 const REMOVED_PLUGINS = new Set([
-  'sw-tooling', // Removed 2025-12-11 (functionality moved to sw-plugin-dev)
+  'sw-tooling',    // Removed 2025-12-11 (functionality moved to core /sw:skill)
+  'sw-plugin-dev', // Removed 2026-02-02 (functionality moved to core /sw:skill)
 ]);
 
 /**

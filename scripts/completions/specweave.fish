@@ -8,7 +8,7 @@
 set -l plugin_groups core github jira ado frontend backend infra ml kafka confluent mobile payments release testing diagrams all
 
 # Main commands
-set -l commands init install list pause resume abandon archive status progress status-line logs auto auto-status cancel-auto update-instructions check-discipline revert-wip-limit qa validate-plugins validate-jira jobs living-docs cache commits sync-scheduled sync-progress docs context enable-multiproject switch-project refresh-marketplace cache-status cache-refresh export-skills set-sync-target migrate-memory load-plugins unload-plugins plugin-status save
+set -l commands init install list pause resume abandon archive status progress status-line logs auto auto-status cancel-auto update-instructions check-discipline revert-wip-limit qa validate-plugins validate-jira jobs living-docs cache commits sync-scheduled sync-progress docs context enable-multiproject switch-project refresh-marketplace cache-status cache-refresh export-skills set-sync-target migrate-memory load-plugins unload-plugins save
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -24,7 +24,6 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a docs -d 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a refresh-marketplace -d "Refresh marketplace plugins"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a load-plugins -d "Load plugin groups (lazy loading)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a unload-plugins -d "Unload plugin groups"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a plugin-status -d "Show plugin status"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a save -d "Smart save with auto-sync"
 
 # load-plugins subcommand
@@ -40,9 +39,6 @@ complete -c specweave -n "__fish_seen_subcommand_from unload-plugins" -l no-keep
 complete -c specweave -n "__fish_seen_subcommand_from unload-plugins" -l verbose -s v -d "Show detailed output"
 complete -c specweave -n "__fish_seen_subcommand_from unload-plugins" -l dry-run -d "Preview without unloading"
 complete -c specweave -n "__fish_seen_subcommand_from unload-plugins" -l list-groups -d "Show available groups"
-
-# plugin-status subcommand
-complete -c specweave -n "__fish_seen_subcommand_from plugin-status" -l verbose -s v -d "Show detailed information"
 
 # init subcommand
 complete -c specweave -n "__fish_seen_subcommand_from init" -l template -s t -a "saas api fullstack" -d "Project template"
