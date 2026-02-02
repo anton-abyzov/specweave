@@ -398,7 +398,7 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.202" -->
+<!-- SW:SECTION:troubleshooting version="1.0.203" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -406,13 +406,9 @@ Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 | Skills/commands missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-marketplace` |
 | Out of sync | `/sw:sync-tasks` |
-| Find increment | `/sw:status` |
-| Root polluted | Move to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| GitHub sync issues | Check config: `sync.github.enabled`, `canUpdateExternalItems` |
 | Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
-| Marketplace shows 0 | Normal with auto-load; `/plugin list` shows actual |
-| Docs folder collisions | Check: `ls docs/ \| grep -E '^[0-9]{2}-' \| cut -d'-' -f1 \| sort \| uniq -d` |
+| Session stuck | Kill + `rm -f .specweave/state/*.lock` + restart |
 <!-- SW:END:troubleshooting -->
 
 <!-- SW:SECTION:lazyloading version="1.0.202" -->
