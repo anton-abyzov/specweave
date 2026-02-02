@@ -143,11 +143,27 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.202" -->
-## Meta-Rule: Think-Before-Act
+<!-- SW:SECTION:metarule version="1.0.203" -->
+## Workflow Orchestration
 
+### 1. Plan Mode Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, **STOP and re-plan** - don't keep pushing
+- Write detailed specs upfront to reduce ambiguity
+
+### 2. Subagent Strategy
+- Use subagents liberally to keep main context clean
+- Offload research, exploration, and parallel analysis to subagents
+- One task per subagent for focused execution
+- Append "use subagents" to requests for safe parallelization
+
+### 3. Verification Before Done
+- Never mark a task complete without proving it works
+- Ask yourself: **"Would a staff engineer approve this?"**
+- Run tests, check logs, demonstrate correctness
+
+### 4. Think-Before-Act (Dependencies)
 **Satisfy dependencies BEFORE dependent operations.**
-
 ```
 ❌ node script.js → Error → npm run build
 ✅ npm run build → node script.js → Success
@@ -159,7 +175,10 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
-3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
+3. **Unique IDs**: Check ALL folders (active, archive, abandoned):
+   ```bash
+   find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+   ```
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
 6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
@@ -410,13 +429,20 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
 **Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.202" -->
+<!-- SW:SECTION:principles version="1.0.203" -->
 ## Principles
 
+### SpecWeave Principles
 1. **Spec-first**: `/sw:increment` before coding
 2. **Docs = truth**: Specs guide implementation
 3. **Incremental**: Small, validated increments
 4. **Traceable**: All work → specs → ACs
+
+### Core Principles (Quality)
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Demand Elegance**: For non-trivial changes, pause and ask "is there a more elegant way?" - but skip this for simple, obvious fixes (don't over-engineer).
 <!-- SW:END:principles -->
 
 <!-- SW:SECTION:linking version="1.0.202" -->
