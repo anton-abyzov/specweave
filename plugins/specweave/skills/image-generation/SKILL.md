@@ -1,24 +1,425 @@
 ---
 name: image-generation
-description: AI image generation using Pollinations.ai - FREE with no API key required. Use when generating hero images, icons, logos, illustrations, mockups, or any visual assets for websites and apps. Covers product shots, avatars, placeholders, and social media images with professional quality.
+description: AI image generation using Pollinations.ai with Stable Horde fallback - FREE with no API key required. Use when generating hero images, icons, logos, illustrations, mockups, or any visual assets for websites and apps. Covers product shots, avatars, placeholders, and social media images with professional quality.
 allowed-tools:
   - Read
   - Write
   - WebFetch
+  - Bash
 context: fork
 model: opus
 ---
 
 # AI Image Generation Skill
 
-Expert in generating professional-quality images using Pollinations.ai - a FREE, open-source AI image generation platform requiring NO API keys.
+Expert in generating professional-quality images using multi-provider resilience: **Pollinations.ai** (primary) with **Stable Horde** (fallback) - both FREE, no API keys required.
+
+## ⚠️ CRITICAL: Health Check First (MANDATORY)
+
+**BEFORE generating any image, ALWAYS run this CONTENT-BASED health check:**
+
+⚠️ **WARNING**: HTTP 200 status is NOT sufficient! Pollinations may return 200 but with error text instead of image data. **ALWAYS verify the response is actually an image.**
+
+```bash
+# ROBUST health check - verifies actual image content (not just HTTP status)
+TEMP_FILE=$(mktemp)
+curl -s -L -o "$TEMP_FILE" --max-time 10 "https://image.pollinations.ai/prompt/blue%20square?width=64&height=64&nologo=true"
+CONTENT_TYPE=$(file -b "$TEMP_FILE" | head -c 10)
+
+if [[ "$CONTENT_TYPE" == "PNG image" ]] || [[ "$CONTENT_TYPE" == "JPEG image" ]]; then
+    echo "✅ HEALTHY - Use Pollinations"
+else
+    echo "❌ BROKEN - Use Stable Horde (got: $CONTENT_TYPE)"
+    cat "$TEMP_FILE"  # Show error message
+fi
+rm -f "$TEMP_FILE"
+```
+
+### Decision Tree Based on CONTENT (Not Just Status)
+
+| Content Check | Meaning | Action |
+|---------------|---------|--------|
+| `PNG image data` | ✅ Healthy | Use Pollinations.ai |
+| `JPEG image data` | ✅ Healthy | Use Pollinations.ai |
+| `ASCII text` | ❌ Service error (502/503 in body) | **→ Use Stable Horde** |
+| `HTML document` | ❌ Error page | **→ Use Stable Horde** |
+| Empty/timeout | ❌ Network error | **→ Use Stable Horde** |
+
+### Automated Provider Selection Script (ROBUST VERSION)
+
+```bash
+#!/bin/bash
+# save as: check-image-api.sh
+# IMPORTANT: This checks CONTENT, not just HTTP status!
+
+TEMP_FILE=$(mktemp)
+curl -s -L -o "$TEMP_FILE" --max-time 15 \
+  "https://image.pollinations.ai/prompt/test%20square?width=64&height=64&nologo=true" 2>/dev/null
+
+CONTENT_TYPE=$(file -b "$TEMP_FILE" 2>/dev/null | cut -d',' -f1)
+rm -f "$TEMP_FILE"
+
+if [[ "$CONTENT_TYPE" == "PNG image data" ]] || [[ "$CONTENT_TYPE" == "JPEG image data" ]]; then
+    echo "PROVIDER=pollinations"
+    echo "STATUS=healthy"
+else
+    echo "PROVIDER=stablehorde"
+    echo "REASON=Pollinations returned '$CONTENT_TYPE' instead of image"
+fi
+```
+
+### Why HTTP 200 Is Misleading
+
+Pollinations.ai uses Cloudflare CDN. When the origin server is down:
+- Cloudflare returns **HTTP 200** (edge responds)
+- But the BODY contains: `502 Bad Gateway - Unable to reach the origin service`
+- This is why **content-based checking is mandatory**
+
+---
+
+## 🚨 NEVER GET STUCK Protocol (Claude Code Behavior)
+
+**This section defines how Claude Code should behave to NEVER get stuck on image generation.**
+
+### Rule 1: Always Set Timeouts
+
+```bash
+# ALWAYS use --max-time flag (15-30 seconds max)
+curl --max-time 15 "https://image.pollinations.ai/prompt/..."
+
+# NEVER use curl without timeout (can hang forever)
+curl "https://image.pollinations.ai/prompt/..."  # ❌ WRONG - can hang
+```
+
+### Rule 2: Fail Fast, Switch Immediately
+
+If ANY of these occur, **immediately switch to Stable Horde**:
+- Timeout (>15 seconds)
+- Non-image response (ASCII text, HTML)
+- HTTP 4xx/5xx errors
+- API Error 400 "Could not process image"
+
+**DO NOT:**
+- ❌ Retry more than once
+- ❌ Wait indefinitely
+- ❌ Keep trying the same failing provider
+
+### Rule 3: Check Before Acting
+
+**ALWAYS run health check BEFORE attempting image generation:**
+
+```bash
+# Quick pre-flight check (5 second max)
+TEMP=$(mktemp)
+timeout 5 curl -s -o "$TEMP" "https://image.pollinations.ai/prompt/test?width=64&height=64" 2>/dev/null
+if file "$TEMP" | grep -q "image"; then
+    echo "Provider ready"
+else
+    echo "Provider down - use Stable Horde"
+fi
+rm -f "$TEMP"
+```
+
+### Rule 4: Structured Error Handling
+
+When image generation fails, follow this exact flow:
+
+```
+1. Try Pollinations (timeout: 15s)
+   ├── Success (image data) → Done ✅
+   └── Failure (any error) → Step 2
+
+2. Try Stable Horde (timeout: 120s for full job)
+   ├── Success → Done ✅
+   └── Failure → Step 3
+
+3. Report failure and STOP
+   └── Tell user: "Image generation unavailable. Both Pollinations.ai and Stable Horde are down."
+   └── DO NOT keep retrying
+```
+
+### Rule 5: Exit Conditions (MANDATORY)
+
+Claude Code MUST exit the image generation attempt when:
+
+| Condition | Action | Max Attempts |
+|-----------|--------|--------------|
+| Timeout | Switch provider | 1 |
+| HTTP 5xx | Switch provider | 1 |
+| "Could not process image" | Switch provider | 1 |
+| Non-image response | Switch provider | 1 |
+| Both providers fail | **STOP and report** | 0 |
+
+### Example: Non-Blocking Image Generation
+
+```typescript
+async function generateImageNonBlocking(prompt: string): Promise<string | null> {
+  const TIMEOUT_MS = 15000;
+
+  // Try Pollinations first
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+    const response = await fetch(
+      `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeoutId);
+
+    const contentType = response.headers.get('content-type');
+    if (contentType?.startsWith('image/')) {
+      return await response.blob().then(b => URL.createObjectURL(b));
+    }
+    // Not an image - fall through to Stable Horde
+  } catch (e) {
+    console.log('Pollinations failed, trying Stable Horde');
+  }
+
+  // Try Stable Horde
+  try {
+    return await generateViaStableHorde(prompt);
+  } catch (e) {
+    console.error('Both providers failed');
+    return null; // STOP - don't keep retrying
+  }
+}
+```
+
+### Claude API "Could Not Process Image" Error
+
+When you see this error:
+```
+API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Could not process image"}}
+```
+
+**This means Claude's vision API cannot process the image.** Solutions:
+1. The image file may be corrupted or incomplete (502 error in disguise)
+2. The image format is unsupported
+3. The image URL returned an error page, not actual image data
+
+**Action:** Do NOT retry with Claude's Read tool. Instead:
+1. Download the image with curl first
+2. Verify it's actually an image: `file downloaded.png`
+3. If not an image → use Stable Horde fallback
 
 ## Quick Reference
 
-**Generate any image instantly:**
+### Primary: Pollinations.ai (when healthy)
 ```
 https://image.pollinations.ai/prompt/YOUR_PROMPT_HERE
 ```
+
+### Fallback: Stable Horde (when Pollinations is down)
+```
+POST https://stablehorde.net/api/v2/generate/async
+Content-Type: application/json
+
+{"prompt": "YOUR_PROMPT_HERE", "params": {"width": 512, "height": 512}}
+```
+
+---
+
+## Stable Horde Fallback API (FREE, No API Key)
+
+When Pollinations.ai returns 5xx errors, use Stable Horde - a community-powered, 100% free alternative.
+
+### Why Stable Horde Works
+
+- ✅ No API key required (anonymous mode)
+- ✅ No rate limits for reasonable usage
+- ✅ High-quality Stable Diffusion models
+- ✅ Community-powered (crowdsourced GPUs)
+- ⏱️ Generation time: 30-120 seconds (varies by queue)
+
+### Step 1: Submit Generation Request
+
+```bash
+curl -X POST "https://stablehorde.net/api/v2/generate/async" \
+  -H "Content-Type: application/json" \
+  -H "apikey: 0000000000" \
+  -d '{
+    "prompt": "a majestic mountain landscape, professional photography, 8k, detailed",
+    "params": {
+      "width": 512,
+      "height": 512,
+      "steps": 30,
+      "cfg_scale": 7.5,
+      "sampler_name": "k_euler_a"
+    },
+    "nsfw": false,
+    "censor_nsfw": true,
+    "models": ["stable_diffusion"]
+  }'
+```
+
+**Response:**
+```json
+{
+  "id": "abc123-def456-ghi789",
+  "kudos": 10
+}
+```
+
+### Step 2: Poll for Completion
+
+```bash
+# Poll every 5 seconds until done
+curl -s "https://stablehorde.net/api/v2/generate/check/abc123-def456-ghi789"
+```
+
+**Response when processing:**
+```json
+{
+  "done": false,
+  "wait_time": 45,
+  "queue_position": 3,
+  "processing": 1
+}
+```
+
+**Response when complete:**
+```json
+{
+  "done": true,
+  "generations": [
+    {
+      "img": "base64_encoded_image_data...",
+      "seed": "12345",
+      "worker_id": "worker-abc",
+      "model": "stable_diffusion"
+    }
+  ]
+}
+```
+
+### Step 3: Save the Image
+
+```bash
+# Extract and save base64 image
+curl -s "https://stablehorde.net/api/v2/generate/status/abc123-def456-ghi789" | \
+  jq -r '.generations[0].img' | base64 -d > output.png
+```
+
+### Complete Node.js Example with Fallback
+
+```typescript
+import https from 'https';
+import fs from 'fs';
+
+interface ImageOptions {
+  prompt: string;
+  width?: number;
+  height?: number;
+  outputPath: string;
+}
+
+// Health check for Pollinations
+async function checkPollinationsHealth(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = https.get(
+      'https://image.pollinations.ai/prompt/health?width=64&height=64',
+      { timeout: 3000 },
+      (res) => resolve(res.statusCode === 200)
+    );
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
+}
+
+// Generate via Pollinations (primary)
+async function generatePollinations(options: ImageOptions): Promise<string> {
+  const { prompt, width = 1024, height = 1024, outputPath } = options;
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true`;
+
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`Pollinations returned ${res.statusCode}`));
+        return;
+      }
+      const file = fs.createWriteStream(outputPath);
+      res.pipe(file);
+      file.on('finish', () => { file.close(); resolve(outputPath); });
+    }).on('error', reject);
+  });
+}
+
+// Generate via Stable Horde (fallback)
+async function generateStableHorde(options: ImageOptions): Promise<string> {
+  const { prompt, width = 512, height = 512, outputPath } = options;
+
+  // Step 1: Submit job
+  const jobId = await submitHordeJob(prompt, width, height);
+  console.log(`Stable Horde job submitted: ${jobId}`);
+
+  // Step 2: Poll until done
+  let done = false;
+  let imageData: string | null = null;
+
+  while (!done) {
+    await new Promise(r => setTimeout(r, 5000)); // Wait 5s
+    const status = await checkHordeStatus(jobId);
+    console.log(`Queue position: ${status.queue_position}, Wait: ${status.wait_time}s`);
+
+    if (status.done) {
+      done = true;
+      imageData = status.generations[0]?.img;
+    }
+  }
+
+  // Step 3: Save image
+  if (imageData) {
+    fs.writeFileSync(outputPath, Buffer.from(imageData, 'base64'));
+    return outputPath;
+  }
+  throw new Error('No image generated');
+}
+
+// Main function with automatic fallback
+async function generateImage(options: ImageOptions): Promise<string> {
+  console.log('Checking Pollinations.ai health...');
+  const pollinationsHealthy = await checkPollinationsHealth();
+
+  if (pollinationsHealthy) {
+    console.log('✅ Pollinations healthy, using primary provider');
+    try {
+      return await generatePollinations(options);
+    } catch (err) {
+      console.log('⚠️ Pollinations failed, falling back to Stable Horde');
+      return await generateStableHorde(options);
+    }
+  } else {
+    console.log('❌ Pollinations down (502/503), using Stable Horde fallback');
+    return await generateStableHorde(options);
+  }
+}
+
+// Usage
+generateImage({
+  prompt: 'a futuristic city at sunset, cyberpunk, neon lights, 8k',
+  width: 1024,
+  height: 1024,
+  outputPath: './generated-image.png'
+}).then(path => console.log(`Image saved to: ${path}`));
+```
+
+### Stable Horde Parameters Reference
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `width` | 64-1024 (multiples of 64) | 512 | Image width |
+| `height` | 64-1024 (multiples of 64) | 512 | Image height |
+| `steps` | 1-150 | 30 | Diffusion steps |
+| `cfg_scale` | 1-30 | 7.5 | Prompt adherence |
+| `sampler_name` | k_euler_a, k_dpm_2, etc. | k_euler_a | Sampling method |
+| `models` | ["stable_diffusion", "SDXL 1.0"] | auto | Model selection |
+
+### Stable Horde Web UI Alternative
+
+If you prefer a visual interface: **[ArtBot](https://tinybots.net/artbot)** - free web UI for Stable Horde.
+
+---
 
 ## When This Skill Activates
 
@@ -343,15 +744,101 @@ async function getOrGenerateImage(prompt: string, options: ImageOptions) {
 
 ## Troubleshooting
 
+### HTTP Error Codes & Solutions
+
+| Error Code | Provider | Meaning | Solution |
+|------------|----------|---------|----------|
+| `200` | Both | ✅ Success | Image generated |
+| `400` | Both | Bad Request | Fix prompt (invalid characters, too long) |
+| `429` | Pollinations | Rate Limited | Wait 15s or switch to Stable Horde |
+| `500` | Both | Internal Error | Retry once, then switch provider |
+| `502` | Pollinations | **Bad Gateway** | **→ Use Stable Horde immediately** |
+| `503` | Both | Service Unavailable | **→ Use Stable Horde immediately** |
+| `504` | Pollinations | Gateway Timeout | **→ Use Stable Horde immediately** |
+| `000` | Both | Network/DNS Error | Check internet, try Stable Horde |
+
+### Common Issues & Fixes
+
 | Issue | Solution |
 |-------|----------|
-| Slow generation | Use `turbo` model for faster results |
+| **Claude Code stuck** | Run health check first, use fallback on 5xx |
+| Slow generation | Use `turbo` model (Pollinations) or reduce steps (Horde) |
 | Poor quality | Add quality modifiers, use `flux` or `flux-realism` |
 | Wrong style | Specify style explicitly: "photograph", "illustration" |
 | Watermark appears | Add `nologo=true` parameter |
 | Inconsistent results | Use same `seed` parameter |
-| Rate limited | Wait 15s between requests or register for higher limits |
+| Rate limited | Wait 15s or use Stable Horde (no rate limits) |
 | Image not loading | URL-encode the prompt properly |
+| Stable Horde slow | Normal: 30-120s queue time, be patient |
+| Base64 decode fails | Ensure you're getting the full `img` field |
+
+### Quick Diagnostic Script (Content-Based)
+
+```bash
+#!/bin/bash
+# diagnose-image-api.sh - Run this when image generation fails
+# IMPORTANT: Uses CONTENT checking, not just HTTP status!
+
+echo "=== Image API Diagnostics (Content-Based) ==="
+
+# Test Pollinations with actual image download
+echo -n "1. Pollinations.ai: "
+TEMP_FILE=$(mktemp)
+curl -s -L -o "$TEMP_FILE" --max-time 15 \
+  "https://image.pollinations.ai/prompt/diagnostic%20test?width=64&height=64&nologo=true" 2>/dev/null
+P_CONTENT=$(file -b "$TEMP_FILE" 2>/dev/null | cut -d',' -f1)
+
+if [[ "$P_CONTENT" == "PNG image data" ]] || [[ "$P_CONTENT" == "JPEG image data" ]]; then
+    echo "✅ HEALTHY (returns actual images)"
+    P_HEALTHY=true
+elif [[ "$P_CONTENT" == "ASCII text" ]]; then
+    echo "❌ BROKEN (returns error text: $(head -c 50 "$TEMP_FILE"))"
+    P_HEALTHY=false
+elif [[ -z "$P_CONTENT" ]]; then
+    echo "❌ TIMEOUT or empty response"
+    P_HEALTHY=false
+else
+    echo "⚠️ UNKNOWN ($P_CONTENT)"
+    P_HEALTHY=false
+fi
+rm -f "$TEMP_FILE"
+
+# Test Stable Horde API
+echo -n "2. Stable Horde: "
+H_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 \
+  "https://stablehorde.net/api/v2/status/heartbeat" 2>/dev/null || echo "TIMEOUT")
+if [[ "$H_STATUS" == "200" ]]; then
+    echo "✅ HEALTHY (API responding)"
+    H_HEALTHY=true
+else
+    echo "❌ ISSUE ($H_STATUS)"
+    H_HEALTHY=false
+fi
+
+# Test internet
+echo -n "3. Internet: "
+I_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 "https://google.com" 2>/dev/null || echo "TIMEOUT")
+if [[ "$I_STATUS" == "200" || "$I_STATUS" == "301" ]]; then
+    echo "✅ OK"
+else
+    echo "❌ NO INTERNET"
+fi
+
+echo ""
+echo "=== Recommendation ==="
+if [[ "$P_HEALTHY" == "true" ]]; then
+    echo "✅ Use: Pollinations.ai (primary) - working normally"
+elif [[ "$H_HEALTHY" == "true" ]]; then
+    echo "🔄 Use: Stable Horde (fallback) - Pollinations is currently down"
+    echo ""
+    echo "Stable Horde usage:"
+    echo "  1. POST to https://stablehorde.net/api/v2/generate/async"
+    echo "  2. Poll https://stablehorde.net/api/v2/generate/check/{id}"
+    echo "  3. Get result from https://stablehorde.net/api/v2/generate/status/{id}"
+else
+    echo "❌ Both services unavailable. Check internet connection."
+fi
+```
 
 ## Integration with Frontend Design
 
