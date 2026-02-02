@@ -23,6 +23,8 @@
 | Section | Search For | Purpose |
 |---------|------------|---------|
 | Rules | `#essential-rules` | Critical rules, file organization |
+| **Orchestration** | `#workflow-orchestration` | **Plan Mode, Subagents, Verification** |
+| **Principles** | `#core-principles` | **Quality: Simplicity, No Laziness** |
 | Commands | `#commands` | All SpecWeave commands |
 | **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
 | **User Story** | `#user-story-format` | **CRITICAL: Project/Board fields** |
@@ -100,6 +102,171 @@
 
 ---
 
+<!-- SECTION:orchestration required -->
+## Workflow Orchestration {#workflow-orchestration}
+
+**Claude Code has built-in orchestration features. Non-Claude tools must implement these manually.**
+
+### 1. Plan Mode Default
+
+**Claude Code**: Has `EnterPlanMode` tool that automatically enters planning state for complex tasks.
+
+**Non-Claude Tools - Manual Planning Protocol:**
+```
+BEFORE implementing ANY non-trivial task (3+ steps):
+
+1. STOP - Don't start coding immediately
+2. Create `.specweave/increments/XXXX-feature/plan.md`
+3. List all steps required
+4. Identify dependencies between steps
+5. Note architectural decisions needed
+6. GET USER APPROVAL before implementing
+
+If something goes sideways during implementation:
+→ STOP and re-plan (don't keep pushing)
+→ Update plan.md with revised approach
+→ Get approval again if scope changed
+```
+
+**Planning Template (plan.md):**
+```markdown
+# Plan: Feature Name
+
+## Approach
+[High-level approach description]
+
+## Steps
+1. [ ] Step one
+2. [ ] Step two (depends on: #1)
+3. [ ] Step three
+
+## Risks/Decisions
+- [ ] Decision: [question needing user input]
+- Risk: [potential issue and mitigation]
+
+## Approval
+- [ ] User approved this plan
+```
+
+### 2. Subagent Strategy (Parallel Execution)
+
+**Claude Code**: Can spawn subagents with `Task` tool for parallel work.
+
+**Non-Claude Tools - Manual Parallelization:**
+```
+For large exploration/analysis tasks:
+
+Option A: Sequential Breakdown
+1. Split work into independent chunks
+2. Process one chunk at a time
+3. Aggregate results
+
+Option B: Parallel Prompts (Cursor/Copilot)
+1. Open multiple chat sessions
+2. Give each session one focused task
+3. Combine outputs manually
+
+Best practices:
+- One task per "subagent" (focused execution)
+- Keep analysis/exploration separate from implementation
+- Use checklists to track parallel workstreams
+```
+
+**When to use parallel approach:**
+- Codebase exploration (search multiple areas)
+- Multi-file analysis (review patterns across modules)
+- Batch validation (check multiple files for issues)
+- Large-scale refactoring analysis
+
+### 3. Verification Before Done
+
+**Claude Code**: PostToolUse hooks validate completion automatically.
+
+**Non-Claude Tools - Manual Verification Checklist:**
+```
+⛔ NEVER mark a task complete without proving it works!
+
+Before marking ANY task as [x] completed:
+
+□ Code compiles/builds successfully
+□ Tests pass (run: npm test, pytest, etc.)
+□ Manual verification performed (if applicable)
+□ Acceptance criteria actually satisfied (re-read AC)
+□ No console errors in browser (for frontend)
+□ API returns expected responses (for backend)
+
+Ask yourself: "Would a staff engineer approve this?"
+
+If answer is NO → task is NOT complete
+```
+
+**Verification Commands by Stack:**
+```bash
+# JavaScript/TypeScript
+npm run build && npm test
+
+# Python
+pytest && mypy .
+
+# .NET
+dotnet build && dotnet test
+
+# General
+git diff  # Review what actually changed
+```
+
+### 4. Think-Before-Act (Dependencies)
+
+**Satisfy dependencies BEFORE dependent operations.**
+
+```
+❌ Wrong: node script.js → Error → npm run build
+✅ Correct: npm run build → node script.js → Success
+
+❌ Wrong: Import module → Error → Install package
+✅ Correct: npm install package → Import module → Success
+```
+
+**Dependency Detection Questions:**
+1. Does this require a build step first?
+2. Are all imports/packages installed?
+3. Does this depend on another file being created?
+4. Is there a database migration needed?
+5. Are environment variables configured?
+<!-- /SECTION -->
+
+---
+
+<!-- SECTION:principles required -->
+## Core Principles (Quality) {#core-principles}
+
+### Simplicity First
+- Write the simplest code that solves the problem
+- Avoid over-engineering and premature optimization
+- One function = one responsibility
+- If you can delete code and tests still pass, delete it
+
+### No Laziness
+- Don't leave TODO comments for "later"
+- Don't skip error handling because "it probably won't fail"
+- Don't copy-paste without understanding
+- Test edge cases, not just happy paths
+
+### Minimal Impact
+- Change only what's necessary for the task
+- Don't refactor adjacent code unless asked
+- Keep PRs focused and reviewable
+- Preserve existing patterns unless improving them is the task
+
+### Demand Elegance (Balanced)
+- Code should be readable by humans first
+- Names should reveal intent
+- BUT: Don't over-abstract for hypothetical futures
+- Pragmatic > Perfect
+<!-- /SECTION -->
+
+---
+
 <!-- SECTION:commands required -->
 ## Commands Reference {#commands}
 
@@ -129,7 +296,21 @@
 <!-- SECTION:nonclaudetools required -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
-**CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
+**CRITICAL**: Claude Code has automatic hooks and orchestration. Other tools DO NOT.
+
+> **See also**: [Workflow Orchestration](#workflow-orchestration) for Plan Mode, Subagent Strategy, and Verification protocols.
+
+### Built-in vs Manual - Complete Comparison
+
+| Capability | Claude Code | Non-Claude Tools |
+|------------|-------------|------------------|
+| **Plan Mode** | `EnterPlanMode` tool (automatic) | Manual: Create plan.md, get approval |
+| **Subagents** | `Task` tool spawns parallel agents | Manual: Split work, parallel prompts |
+| **Verification** | PostToolUse hooks validate | Manual: Run tests, check checklist |
+| **Hooks** | Auto-run on events | YOU must mimic (see below) |
+| **Task sync** | Automatic AC updates | Manual: Edit tasks.md + spec.md |
+| **Commands** | Slash syntax works | Read command .md, follow manually |
+| **Skills** | Auto-activate on keywords | Read SKILL.md, follow workflow |
 
 ### Latest Features
 

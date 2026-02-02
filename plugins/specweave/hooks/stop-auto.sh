@@ -27,9 +27,35 @@
 
 set +e  # Don't exit on errors
 
+# Capture start time for duration tracking (macOS doesn't support %N, fallback to seconds only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    _START_TIME_MS=$(($(date +%s) * 1000))
+else
+    _START_TIME_MS=$(($(date +%s) * 1000 + $(date +%N 2>/dev/null | cut -c1-3 || echo "0")))
+fi
+
 # Read stdin (Claude Code passes context here)
 INPUT=$(cat)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+
+# ============================================================================
+# SOURCE STRUCTURED DECISION LOGGING
+# ============================================================================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/log-decision.sh" ]; then
+    source "$SCRIPT_DIR/log-decision.sh"
+fi
+
+# Helper to calculate duration in ms (macOS-compatible)
+_get_duration_ms() {
+    local end_time_ms
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        end_time_ms=$(($(date +%s) * 1000))
+    else
+        end_time_ms=$(($(date +%s) * 1000 + $(date +%N 2>/dev/null | cut -c1-3 || echo "0")))
+    fi
+    echo $((end_time_ms - _START_TIME_MS))
+}
 
 # ============================================================================
 # LOGGING
@@ -46,7 +72,17 @@ log() {
 # SILENT APPROVE - Normal sessions get NO output
 # ============================================================================
 silent_approve() {
-    log "APPROVE: $1"
+    local reason="$1"
+    local reason_code="${2:-session_inactive}"
+    local context_json="${3:-"{}"}"
+
+    log "APPROVE: $reason"
+
+    # Log structured decision if log_decision function is available
+    if type log_decision &>/dev/null; then
+        log_decision "stop-auto" "approve" "$reason_code" "$reason" "$context_json" "$(_get_duration_ms)"
+    fi
+
     echo '{"decision":"approve"}'
     exit 0
 }
@@ -60,8 +96,8 @@ INCREMENTS_DIR="$SPECWEAVE_DIR/increments"
 CONFIG_FILE="$SPECWEAVE_DIR/config.json"
 
 # Not a SpecWeave project - silent approve
-[ ! -d "$SPECWEAVE_DIR" ] && silent_approve "Not a SpecWeave project"
-[ ! -d "$INCREMENTS_DIR" ] && silent_approve "No increments directory"
+[ ! -d "$SPECWEAVE_DIR" ] && silent_approve "Not a SpecWeave project" "not_specweave_project" "{}"
+[ ! -d "$INCREMENTS_DIR" ] && silent_approve "No increments directory" "no_increments_dir" "{}"
 
 # ============================================================================
 # STATE DIRECTORY (MUST be defined BEFORE AUTO_SESSION_FILE check)
@@ -101,7 +137,7 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 # Auto mode disabled in config - silent approve
-[ "$AUTO_ENABLED" != "true" ] && silent_approve "Auto mode disabled in config"
+[ "$AUTO_ENABLED" != "true" ] && silent_approve "Auto mode disabled in config" "auto_disabled" "{}"
 
 # ============================================================================
 # CHECK FOR AUTO MODE SESSION - Only block if explicitly activated
@@ -112,7 +148,7 @@ AUTO_SESSION_FILE="$STATE_DIR/auto-mode.json"
 
 # If no auto-mode.json exists, auto mode was never started this session
 if [ ! -f "$AUTO_SESSION_FILE" ]; then
-    silent_approve "Auto mode not activated (no session file)"
+    silent_approve "Auto mode not activated (no session file)" "session_inactive" '{"sessionActive":false}'
 fi
 
 # STALENESS CHECK: If session file is older than 30 minutes, it's stale
@@ -129,13 +165,13 @@ if [ "$SESSION_AGE" -gt "$MAX_SESSION_AGE" ]; then
     rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null  # Also clear turn counter
-    silent_approve "Stale auto-mode session cleared (inactive for ${SESSION_AGE}s)"
+    silent_approve "Stale auto-mode session cleared (inactive for ${SESSION_AGE}s)" "session_stale" "$(jq -n --argjson age "$SESSION_AGE" --argjson maxAge "$MAX_SESSION_AGE" '{sessionAge:$age,maxSessionAge:$maxAge}')"
 fi
 
 # Check if session is actually active
 AUTO_SESSION_ACTIVE=$(jq -r '.active // false' "$AUTO_SESSION_FILE" 2>/dev/null || echo "false")
 if [ "$AUTO_SESSION_ACTIVE" != "true" ]; then
-    silent_approve "Auto mode session not active"
+    silent_approve "Auto mode session not active" "session_inactive" '{"sessionActive":false}'
 fi
 
 # Update session file mtime to keep it fresh (touch it)
@@ -235,6 +271,20 @@ This is a safety mechanism to prevent runaway sessions.
    Current limit: $MAX_TURNS turns
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+    # Log structured decision for turn limit
+    if type log_decision &>/dev/null; then
+        _turn_context=$(jq -n \
+            --argjson turnCurrent "$CURRENT_TURN" \
+            --argjson turnMax "$MAX_TURNS" \
+            --arg activeIncs "${ACTIVE_INCS:-none}" \
+            '{
+                sessionActive: true,
+                turn: {current: $turnCurrent, max: $turnMax},
+                increments: {active: ($activeIncs | split(", "))}
+            }')
+        log_decision "stop-auto" "approve" "turn_limit" "Turn limit reached: $CURRENT_TURN/$MAX_TURNS turns" "$_turn_context" "$(_get_duration_ms)"
+    fi
+
     jq -n \
         --arg decision "approve" \
         --arg reason "Turn limit reached: $CURRENT_TURN/$MAX_TURNS turns" \
@@ -255,7 +305,7 @@ if [ -f "$DEDUP_FILE" ]; then
     LAST_FIRE=$(cat "$DEDUP_FILE" 2>/dev/null || echo "0")
     ELAPSED=$((NOW - LAST_FIRE))
     [ "$ELAPSED" -gt 3600 ] && rm -f "$DEDUP_FILE" 2>/dev/null
-    [ "$ELAPSED" -lt "$DEDUP_WINDOW" ] && silent_approve "Deduplicated (${ELAPSED}s < ${DEDUP_WINDOW}s)"
+    [ "$ELAPSED" -lt "$DEDUP_WINDOW" ] && silent_approve "Deduplicated (${ELAPSED}s < ${DEDUP_WINDOW}s)" "deduplicated" "$(jq -n --argjson elapsed "$ELAPSED" --argjson window "$DEDUP_WINDOW" '{elapsed:$elapsed,dedupWindow:$window}')"
 fi
 
 mkdir -p "$STATE_DIR" 2>/dev/null
@@ -738,11 +788,22 @@ if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; the
     clear_retry_counter
     clear_auto_session  # Clear session marker - work is done!
 
+    # Build context for logging
+    _complete_context=$(jq -n \
+        --argjson turnCurrent "$CURRENT_TURN" \
+        --argjson turnMax "$MAX_TURNS" \
+        --argjson closedCount "$CLOSED_COUNT" \
+        '{
+            sessionActive: false,
+            turn: {current: $turnCurrent, max: $turnMax},
+            closedIncrements: $closedCount
+        }')
+
     if [ "$CLOSED_COUNT" -gt 0 ]; then
         log "APPROVE: Auto-closed $CLOSED_COUNT increment(s), all work complete"
-        silent_approve "Auto-closed $CLOSED_COUNT increment(s)"
+        silent_approve "Auto-closed $CLOSED_COUNT increment(s)" "all_complete" "$_complete_context"
     else
-        silent_approve "No active increments"
+        silent_approve "No active increments" "all_complete" "$_complete_context"
     fi
 fi
 
@@ -761,6 +822,16 @@ if [ "$INCOMPLETE_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; th
     clear_auto_session  # Clear session marker - work is done!
 
     log "APPROVE: All tasks complete in active increments (manual close pending)"
+
+    # Log structured decision
+    if type log_decision &>/dev/null; then
+        _work_complete_context=$(jq -n \
+            --argjson turnCurrent "$CURRENT_TURN" \
+            --argjson turnMax "$MAX_TURNS" \
+            --arg readyToClose "$READY_TO_CLOSE" \
+            '{sessionActive: false, turn: {current: $turnCurrent, max: $turnMax}, increments: {active: [], readyToClose: ($readyToClose | split(" ") | map(select(length > 0)))}}')
+        log_decision "stop-auto" "approve" "work_complete" "All tasks complete - increments ready for manual close" "$_work_complete_context" "$(_get_duration_ms)"
+    fi
 
     # Show message about manual close needed
     CLOSE_MSG="
@@ -1010,6 +1081,18 @@ if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
     clear_retry_counter
     clear_auto_session  # End auto mode on circuit breaker
 
+    # Log structured decision
+    if type log_decision &>/dev/null; then
+        _circuit_context=$(jq -n \
+            --argjson turnCurrent "$CURRENT_TURN" \
+            --argjson turnMax "$MAX_TURNS" \
+            --argjson retryCurrent "$CURRENT_RETRY" \
+            --argjson retryMax "$MAX_RETRIES_BEFORE_ESCALATE" \
+            --arg activeIncs "$REMAINING_INCS" \
+            '{sessionActive: false, turn: {current: $turnCurrent, max: $turnMax}, retry: {current: $retryCurrent, max: $retryMax, stuck: true}, increments: {active: ($activeIncs | split(", ") | map(select(length > 0)))}}')
+        log_decision "stop-auto" "approve" "retry_limit" "Stuck session: $CURRENT_RETRY retries on same incomplete work" "$_circuit_context" "$(_get_duration_ms)"
+    fi
+
     jq -n \
         --arg decision "approve" \
         --arg reason "Stuck session: $CURRENT_RETRY retries on same incomplete work" \
@@ -1127,6 +1210,45 @@ MSG="$MSG
 Current status: $pending_count pending task(s), $open_acs open AC(s)
 Next command to run: $NEXT_COMMAND
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Log structured decision before blocking
+if type log_decision &>/dev/null; then
+    # Get previous reasons from retry file
+    _prev_reasons_json="[]"
+    if [ -f "$RETRY_FILE" ] && [ -s "$RETRY_FILE" ]; then
+        _tmp_reasons=$(jq -c '.reasons // []' "$RETRY_FILE" 2>/dev/null)
+        [ -n "$_tmp_reasons" ] && _prev_reasons_json="$_tmp_reasons"
+    fi
+
+    # Build blocked increments array
+    _blocked_json="[]"
+    if [ -n "$FIRST_INC" ]; then
+        _blocked_json=$(jq -n \
+            --arg id "$FIRST_INC" \
+            --argjson tasksPending "$pending_count" \
+            --argjson acsOpen "$open_acs" \
+            --arg reason "$SUCCESS_CRITERIA" \
+            '[{id: $id, tasksPending: $tasksPending, acsOpen: $acsOpen, reason: $reason}]')
+    fi
+
+    # Pre-compute stuck value (avoid subshell in jq args)
+    _stuck_val="false"
+    [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ] && _stuck_val="true"
+
+    # Build full context JSON
+    _block_context=$(jq -n \
+        --argjson turnCurrent "$CURRENT_TURN" \
+        --argjson turnMax "$MAX_TURNS" \
+        --argjson retryCurrent "$CURRENT_RETRY" \
+        --argjson retryMax "$MAX_RETRIES_BEFORE_ESCALATE" \
+        --argjson stuck "$_stuck_val" \
+        --arg activeIncs "$REMAINING_INCS" \
+        --argjson blocked "$_blocked_json" \
+        --argjson previousReasons "$_prev_reasons_json" \
+        '{sessionActive: true, turn: {current: $turnCurrent, max: $turnMax}, retry: {current: $retryCurrent, max: $retryMax, stuck: $stuck}, increments: {active: ($activeIncs | split(", ") | map(select(length > 0))), blocked: $blocked}, previousReasons: $previousReasons}')
+
+    log_decision "stop-auto" "block" "work_remaining" "$SUCCESS_CRITERIA" "$_block_context" "$(_get_duration_ms)"
+fi
 
 jq -n \
     --arg decision "block" \

@@ -14,7 +14,7 @@
 ### T-001: [RED] Write failing tests for log-decision.sh
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test Plan**:
@@ -39,7 +39,7 @@
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-03
 **Depends On**: T-001
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Implementation**:
@@ -86,7 +86,7 @@
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
 **Depends On**: T-002
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test Plan**:

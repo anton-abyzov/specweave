@@ -29,10 +29,12 @@ describe('log-decision.sh', () => {
     const { hookName, decision, reasonCode, reason, contextJson = '{}', durationMs = 100 } = params;
 
     // Create a test script that sources log-decision.sh and calls log_decision
+    // Note: contextJson needs to be properly escaped for shell
+    const escapedContext = contextJson.replace(/'/g, "'\\''");
     const testScript = `
       source "${hookPath}"
-      PROJECT_ROOT="${tempDir}"
-      log_decision "${hookName}" "${decision}" "${reasonCode}" "${reason}" '${contextJson}' ${durationMs}
+      export PROJECT_ROOT="${tempDir}"
+      log_decision "${hookName}" "${decision}" "${reasonCode}" "${reason}" '${escapedContext}' ${durationMs}
     `;
 
     const result = spawnSync('bash', ['-c', testScript], {
