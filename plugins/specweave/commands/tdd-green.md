@@ -11,7 +11,7 @@ Implement minimal code to make failing tests pass in TDD green phase:
 
 ## Implementation Process
 
-Use Task tool with subagent_type="unit-testing::test-automator" to implement minimal passing code.
+Use Task tool with subagent_type="general-purpose" to implement minimal passing code.
 
 Prompt: "Implement MINIMAL code to make these failing tests pass: $ARGUMENTS. Follow TDD green phase principles:
 

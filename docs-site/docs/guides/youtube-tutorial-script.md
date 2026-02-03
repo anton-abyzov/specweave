@@ -412,13 +412,13 @@ User: "Write API documentation"
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**[TERMINAL: Show agent spawn example]**
+**[TERMINAL: Show skill invocation example]**
 
 ```bash
-# Spawn Kubernetes agent for complex manifest generation
-Task({
-  subagent_type: "sw-k8s:kubernetes-architect",
-  prompt: "Generate K8s manifests for 3-tier app with Istio service mesh"
+# Invoke Kubernetes skill for complex manifest generation
+Skill({
+  skill: "sw-k8s:kubernetes-architect",
+  args: "Generate K8s manifests for 3-tier app with Istio service mesh"
 })
 ```
 

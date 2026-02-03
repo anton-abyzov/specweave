@@ -1,5 +1,5 @@
 ---
-name: sw-infra:monitor-setup
+name: monitor-setup
 description: Set up comprehensive monitoring and observability with Prometheus, Grafana, distributed tracing, and log aggregation
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: sw-ado:sync
+name: sync
 description: Two-way sync between SpecWeave increment and Azure DevOps work item (push & pull by default)
 ---
 
@@ -115,12 +115,10 @@ console.log(`  Organization: ${organization}`);
 console.log(`  Project: ${project}`);
 ```
 
-### 3. Invoke ADO Manager Agent
+### 3. Invoke ADO Manager Skill
 
 ```
-Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
-
-Prompt: "{direction} sync for increment {increment-id} with ADO.
+Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "{direction} sync for increment {increment-id} with ADO.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems={canUpdateExternal}

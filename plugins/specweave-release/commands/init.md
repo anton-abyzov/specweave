@@ -1,5 +1,5 @@
 ---
-name: sw-release:init
+name: init
 description: Initialize or analyze release strategy for the project. For new projects, recommends optimal release approach based on architecture, team size, and deployment frequency. For brownfield projects, detects existing release patterns from git history, CI/CD configs, and package managers, then documents the strategy. Creates release-strategy.md in living docs with comprehensive release process documentation.
 ---
 

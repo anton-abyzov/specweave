@@ -1,5 +1,5 @@
 ---
-name: sw-ado:status
+name: status
 description: Check Azure DevOps sync status for increment
 ---
 
@@ -20,11 +20,9 @@ When user runs this command, invoke `ado-manager` agent to:
 3. Display: ID, URL, state, completion %, last sync time
 4. Check for sync issues
 
-**Agent Invocation**:
+**Skill Invocation**:
 ```
-Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
-
-Prompt: "Check ADO sync status for increment 0005-payment-integration.
+Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Check ADO sync status for increment 0005-payment-integration.
 
 Steps:
 1. Read increment-metadata.json

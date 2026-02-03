@@ -1,5 +1,5 @@
 ---
-name: sw-release:align
+name: align
 description: Align versions across multiple repositories according to release strategy. Analyzes conventional commits to suggest version bumps, detects version conflicts, validates cross-repo compatibility, and executes version alignment (updates package.json, creates git tags, updates changelogs). Supports lockstep, independent, and umbrella versioning strategies.
 ---
 

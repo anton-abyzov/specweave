@@ -1,5 +1,5 @@
 ---
-name: sw-jira:cleanup-duplicates
+name: cleanup-duplicates
 description: Clean up duplicate JIRA issues for a Feature. Finds issues with duplicate titles and closes all except the first created issue.
 justification: |
   CRITICAL INCIDENT RESPONSE TOOL - DO NOT DELETE!

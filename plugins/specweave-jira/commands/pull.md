@@ -1,5 +1,5 @@
 ---
-name: sw-jira:pull
+name: pull
 description: Pull latest changes from Jira (like git pull). Imports status, priority, sprint, and comments.
 ---
 
@@ -74,9 +74,7 @@ if (!jiraIssueKey) {
 ### 2. Fetch and Apply
 
 ```
-Use Task tool with subagent_type: "specweave-jira:jira-manager:jira-manager"
-
-Prompt: "Pull changes from Jira for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Pull changes from Jira for increment {increment-id}.
 
 Issue: {jiraIssueKey}
 

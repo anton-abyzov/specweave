@@ -1,5 +1,5 @@
 ---
-name: sw-release:platform
+name: platform
 description: "Coordinate multi-repo platform releases with synchronized versioning, RC workflow, and GitFlow integration. Usage: /sw-release:platform create|promote|status"
 ---
 
