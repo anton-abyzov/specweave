@@ -73,6 +73,33 @@ const config: Config = {
         href: 'https://fonts.gstatic.com',
       },
     },
+    // Additional favicon links for broad compatibility (Apple, Android, etc.)
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        sizes: '192x192',
+        href: '/img/favicon-192x192.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
+    },
   ],
 
   // GitHub pages config (for edit links)
