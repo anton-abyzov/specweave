@@ -131,7 +131,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/specweave-social-card.jpg',
+    image: 'img/specweave-og-card.jpg',
 
     // Twitter/X Card meta tags (explicit for better compatibility)
     metadata: [
@@ -140,11 +140,11 @@ const config: Config = {
       { name: 'twitter:creator', content: '@aabyzov' },
       { name: 'twitter:title', content: 'SpecWeave - AI That Remembers Everything You Build' },
       { name: 'twitter:description', content: 'Ship features while you sleep. Spec-driven development with Claude Code.' },
-      { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-social-card.jpg' },
+      { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-og-card.jpg' },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: 'SpecWeave - AI That Remembers Everything You Build' },
       { property: 'og:description', content: 'Ship features while you sleep. Spec-driven development with Claude Code.' },
-      { property: 'og:image', content: 'https://spec-weave.com/img/specweave-social-card.jpg' },
+      { property: 'og:image', content: 'https://spec-weave.com/img/specweave-og-card.jpg' },
     ],
 
     // Color mode configuration
