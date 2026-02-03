@@ -954,8 +954,6 @@ program
 program
   .command('refresh-marketplace')
   .description('Refresh SpecWeave marketplace (lazy mode by default - router only)')
-  .option('--local', 'Use local development version (ONLY for active dev)')
-  .option('--github', 'Pull latest from GitHub (default, recommended)')
   .option('--all', 'Install ALL plugins (legacy mode, ~60K tokens)')
   .option('--minimal', 'Remove marketplace, install only core plugins (clean /plugin output, no lazy loading)')
   .option('-f, --force', 'Force reinstall all plugins (clears cache, ensures fresh copy)')
@@ -1214,7 +1212,6 @@ program.on('--help', () => {
   console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 tokens)');
   console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K tokens)');
   console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
-  console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
   console.log('  $ specweave update                          # Update CLI + instructions + config');
   console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
   console.log('  $ specweave update --no-self                # Skip CLI update, only project files');

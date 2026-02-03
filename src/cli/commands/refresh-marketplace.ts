@@ -3,35 +3,29 @@
  * Refresh SpecWeave Marketplace
  *
  * Automates the complete marketplace refresh process with LAZY LOADING support:
- * 1. Updates or adds marketplace (GitHub or local)
+ * 1. Updates or adds marketplace from GitHub
  * 2. Installs core plugin (sw) only (default) OR all plugins (--all)
  * 3. Populates lazy loading cache for on-demand plugin loading
- * 4. Merges skill memories (preserves user learnings)
- * 5. Updates instruction files (CLAUDE.md, AGENTS.md)
+ * 4. Updates instruction files (CLAUDE.md, AGENTS.md)
  *
- * LAZY LOADING (default - v1.0.160+):
+ * LAZY LOADING (default):
  *   - Installs only core `sw` plugin (~3K tokens)
- *   - Other plugins detected & loaded on-demand via LLM (detect-intent)
- *   - No intermediate cache needed (marketplace IS the cache!)
+ *   - Other plugins loaded on-demand via keyword detection
  *   - Result: ~5K tokens at startup instead of ~60K (90% savings!)
- *   - NOTE: sw-router is OBSOLETE - detect-intent handles plugin detection
  *
  * MINIMAL MODE (--minimal):
  *   - Removes specweave marketplace entirely
  *   - Installs only core plugin (sw)
  *   - Clean /plugin output (only shows installed plugins)
- *   - Tradeoff: Lazy loading disabled (use --all to reinstall all)
  *
  * Usage:
  *   specweave refresh-marketplace           # Lazy mode (default) - core only
  *   specweave refresh-marketplace --all     # Legacy mode - install all plugins
  *   specweave refresh-marketplace --minimal # Minimal mode - clean /plugin output
- *   specweave refresh-marketplace --local   # Use local dev version
- *   specweave refresh-marketplace --github  # Use GitHub version (default)
+ *   specweave refresh-marketplace --force   # Force reinstall (clear cache)
  *
  * @since 1.0.60
- * @updated 1.0.122 - Added lazy loading support
- * @updated 1.0.138 - Added minimal mode for clean /plugin output
+ * @updated 1.0.208 - Simplified to GitHub-only source
  */
 
 import chalk from 'chalk';
@@ -51,14 +45,11 @@ const MARKETPLACE_NAME = 'specweave';
 const GITHUB_REPO = 'anton-abyzov/specweave';
 
 interface RefreshOptions {
-  local?: boolean;
-  github?: boolean;
   verbose?: boolean;
   force?: boolean;
-  /** Install ALL plugins (legacy mode). Default: false (lazy loading - router only) */
+  /** Install ALL plugins (legacy mode). Default: false (lazy loading - core only) */
   all?: boolean;
-  /** Minimal mode: Remove marketplace entirely, install only core plugins directly.
-   * Results in clean /plugin output but disables lazy loading. */
+  /** Minimal mode: Remove marketplace entirely, install only core plugins directly. */
   minimal?: boolean;
 }
 
@@ -105,25 +96,6 @@ function getMarketplaceInstallPath(): string | null {
     const content = fs.readFileSync(knownMarketplacesPath, 'utf8');
     const data = JSON.parse(content);
     return data[MARKETPLACE_NAME]?.installLocation || null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Get the current source type of the marketplace (github or directory/local)
- */
-function getMarketplaceSourceType(): 'github' | 'directory' | null {
-  const knownMarketplacesPath = path.join(os.homedir(), '.claude/plugins/known_marketplaces.json');
-
-  if (!fs.existsSync(knownMarketplacesPath)) {
-    return null;
-  }
-
-  try {
-    const content = fs.readFileSync(knownMarketplacesPath, 'utf8');
-    const data = JSON.parse(content);
-    return data[MARKETPLACE_NAME]?.source?.source || null;
   } catch {
     return null;
   }
@@ -817,37 +789,29 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     return;
   }
 
-  // Determine mode - GitHub is default per CLAUDE.md rules
-  const sourceMode = options.local ? 'local' : 'github';
   const forceMode = options.force ?? false;
-  // LAZY LOADING (v1.0.122+): Default to lazy mode (router only), use --all for legacy
   const lazyMode = !(options.all ?? false);
 
   const modeLabel = lazyMode ? 'lazy' : 'all plugins';
 
   console.log(chalk.blue.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.blue.bold(`  SpecWeave Marketplace Refresh`));
-  console.log(chalk.blue.bold(`  Source: ${sourceMode} | Mode: ${modeLabel}${forceMode ? ' | FORCE' : ''}`));
+  console.log(chalk.blue.bold(`  Mode: ${modeLabel}${forceMode ? ' | FORCE' : ''}`));
   console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
   if (lazyMode) {
     console.log(chalk.cyan('🚀 Lazy loading mode (default):'));
     console.log(chalk.gray('   • Install only core plugin (~500 tokens)'));
-    console.log(chalk.gray('   • Other plugins cached for on-demand loading'));
-    console.log(chalk.gray('   • Use --all flag to install all plugins'));
-    console.log(chalk.gray('   • Use --minimal flag for clean /plugin output (no lazy loading)\n'));
+    console.log(chalk.gray('   • Other plugins loaded on-demand'));
+    console.log(chalk.gray('   • Use --all flag to install all plugins\n'));
   } else {
     console.log(chalk.yellow('⚠️  All plugins mode (legacy):'));
-    console.log(chalk.gray('   • Installing all 24 plugins (~60K tokens)'));
+    console.log(chalk.gray('   • Installing all plugins (~60K tokens)'));
     console.log(chalk.gray('   • Consider using lazy mode (default) for better performance\n'));
   }
 
-  if (sourceMode === 'local') {
-    console.log(chalk.yellow('⚠️  Local source - use only for active development!\n'));
-  }
-
   if (forceMode) {
-    console.log(chalk.yellow('🔄 Force mode: Will uninstall and clear cache before reinstalling\n'));
+    console.log(chalk.yellow('🔄 Force mode: Will clear cache before reinstalling\n'));
   }
 
   // Step 0.5: Cleanup orphaned plugin state (v1.0.176)
@@ -860,114 +824,34 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     // Silently ignore cleanup errors
   }
 
-  // Step 1: Check/update marketplace
+  // Step 1: Check/update marketplace from GitHub
   console.log(chalk.yellow('📥 Step 1: Checking marketplace status...'));
 
   const marketplaceExists = checkMarketplaceExists();
 
-  // Check current marketplace source to detect if we need to switch
-  const currentSourceType = getMarketplaceSourceType();
-  const needsSourceSwitch = marketplaceExists && (
-    (sourceMode === 'local' && currentSourceType === 'github') ||
-    (sourceMode === 'github' && currentSourceType === 'directory')
-  );
-
-  if (marketplaceExists && sourceMode !== 'local' && !needsSourceSwitch) {
-    // GitHub mode with existing GitHub marketplace: just update
-    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' already registered (GitHub source)`));
-    console.log(chalk.blue('📥 Updating marketplace from source...'));
+  if (marketplaceExists) {
+    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' registered`));
+    console.log(chalk.blue('📥 Updating from GitHub...'));
 
     const updateResult = runCommand('claude', ['plugin', 'marketplace', 'update', MARKETPLACE_NAME], true);
 
     if (updateResult.success || updateResult.output.includes('Updated')) {
-      console.log(chalk.green('✓ Marketplace updated successfully'));
+      console.log(chalk.green('✓ Marketplace updated'));
     } else {
       console.log(chalk.red('✗ Failed to update marketplace'));
       console.log(chalk.gray(updateResult.output));
       process.exit(1);
     }
-  } else if (needsSourceSwitch && sourceMode === 'github') {
-    // Switching from local to GitHub: remove and re-add from GitHub
-    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' exists but switching to GitHub source...`));
+  } else {
+    console.log(chalk.blue('Marketplace not found - adding from GitHub...'));
 
-    // Remove existing marketplace
-    const removeResult = removeMarketplace(MARKETPLACE_NAME);
-    if (!removeResult.success && !removeResult.output.includes('not found')) {
-      console.log(chalk.yellow('⚠ Could not remove existing marketplace, trying to re-add anyway...'));
-    }
-
-    // Re-add from GitHub
     const addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO];
-    console.log(chalk.blue(`Adding from GitHub: ${GITHUB_REPO}`));
-
     const addResult = runCommand('claude', addArgs, true);
 
     if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
       console.log(chalk.green('✓ GitHub marketplace added'));
     } else {
-      console.log(chalk.red('✗ Failed to add GitHub marketplace'));
-      console.log(chalk.gray(addResult.output));
-      process.exit(1);
-    }
-  } else if (marketplaceExists && sourceMode === 'local') {
-    // Local mode with existing marketplace: re-add from local to switch source
-    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' exists but switching to local source...`));
-
-    // Remove existing marketplace
-    const removeResult = removeMarketplace(MARKETPLACE_NAME);
-    if (!removeResult.success && !removeResult.output.includes('not found')) {
-      console.log(chalk.yellow('⚠ Could not remove existing marketplace, trying to re-add anyway...'));
-    }
-
-    // Re-add from local
-    const localPath = process.cwd();
-    const marketplaceJsonPath = path.join(localPath, '.claude-plugin/marketplace.json');
-
-    if (!fs.existsSync(marketplaceJsonPath)) {
-      console.log(chalk.red(`✗ Error: marketplace.json not found at ${localPath}`));
-      console.log(chalk.yellow('  Make sure you are in the SpecWeave repository root.'));
-      process.exit(1);
-    }
-
-    const addArgs = ['plugin', 'marketplace', 'add', localPath];
-    console.log(chalk.blue(`Adding from local development: ${localPath}`));
-
-    const addResult = runCommand('claude', addArgs, true);
-
-    if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
-      console.log(chalk.green('✓ Local marketplace added'));
-    } else {
-      console.log(chalk.red('✗ Failed to add local marketplace'));
-      console.log(chalk.gray(addResult.output));
-      process.exit(1);
-    }
-  } else {
-    console.log(chalk.blue('Marketplace not found - adding it now...'));
-
-    let addArgs: string[];
-    if (sourceMode === 'local') {
-      const localPath = process.cwd();
-      const marketplaceJsonPath = path.join(localPath, '.claude-plugin/marketplace.json');
-
-      if (!fs.existsSync(marketplaceJsonPath)) {
-        console.log(chalk.red(`✗ Error: marketplace.json not found at ${localPath}`));
-        console.log(chalk.yellow('  Make sure you are in the SpecWeave repository root.'));
-        process.exit(1);
-      }
-
-      addArgs = ['plugin', 'marketplace', 'add', localPath];
-      console.log(chalk.blue(`Using local development version: ${localPath}`));
-    } else {
-      addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO];
-      console.log(chalk.blue(`Adding from GitHub: ${GITHUB_REPO}`));
-    }
-
-    const addResult = runCommand('claude', addArgs, true);
-
-    if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
-      console.log(chalk.green(`✓ ${sourceMode === 'local' ? 'Local' : 'GitHub'} marketplace added`));
-    } else {
-      console.log(chalk.red(`✗ Failed to add ${sourceMode} marketplace`));
+      console.log(chalk.red('✗ Failed to add marketplace'));
       console.log(chalk.gray(addResult.output));
       process.exit(1);
     }
