@@ -1,7 +1,7 @@
 ---
 name: resume
 description: Resume a paused or backlog increment
-usage: /sw:resume <increment-id>
+argument-hint: [increment-id]
 ---
 
 # Resume Increment Command

@@ -1,7 +1,7 @@
 ---
 name: backlog
 description: Move an increment to backlog (planned but not ready to start)
-usage: /sw:backlog <increment-id> --reason="<reason>"
+argument-hint: [increment-id] --reason="reason"
 ---
 
 # Backlog Increment Command

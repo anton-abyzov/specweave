@@ -1,7 +1,7 @@
 ---
 name: status
 description: Show increment status overview with rich details (active, backlog, paused, completed, abandoned)
-usage: /sw:status [--active|--backlog|--paused|--completed|--abandoned|--stale]
+argument-hint: [--active|--backlog|--paused|--completed|--abandoned]
 ---
 
 # Increment Status

@@ -1,13 +1,7 @@
 ---
 name: skill-match
 description: Test a prompt against skill triggers to see what would match
-trigger: /sw:skill-match
-category: debugging
-arguments:
-  - name: prompt
-    description: The prompt to test
-    required: true
-    type: string
+argument-hint: [prompt]
 ---
 
 # Skill Match Command
