@@ -4,6 +4,25 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.208] - 2026-02-02
+
+### 🔧 Improvements
+
+- **Plugin structure**: Migrated skills to commands directory structure for cleaner organization
+- **Cache invalidator**: Simplified cache invalidation logic
+- **Test improvements**: Updated tests for new plugin structure
+
+---
+
+## [1.0.204] - 2026-02-02
+
+### 🔧 Improvements
+
+- **Decision logging**: Enhanced structured decision logging
+- **Plugin cache**: Improved cache invalidation
+
+---
+
 ## [1.0.177] - 2026-01-27
 
 ### 🔧 Improvements
