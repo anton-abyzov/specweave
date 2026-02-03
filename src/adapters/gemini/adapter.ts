@@ -178,18 +178,13 @@ gemini "Create a new feature following SpecWeave structure"
 gemini "Following the PM role in AGENTS.md, create requirements for payments"
 \`\`\`
 
-CONTEXT LOADING (70%+ Token Savings):
+CONTEXT LOADING:
 
-CRITICAL: Tell Gemini to read context-manifest.yaml first!
+Load spec.md, plan.md, and tasks.md from your increment folder.
 
 \`\`\`bash
-gemini "Read context-manifest.yaml from increment 0001, load only those files, then implement task T001"
+gemini "Read spec.md, plan.md, tasks.md from increment 0001, then implement task T001"
 \`\`\`
-
-**Why this matters**:
-- Gemini has 1M token context window
-- But loading everything wastes tokens
-- Context manifests = precise, efficient loading
 
 FEATURES:
 

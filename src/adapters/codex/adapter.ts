@@ -194,18 +194,17 @@ codex "Following the PM role in AGENTS.md, create requirements for payments"
 2. Reference it: "Following AGENTS.md, create increment for..."
 3. Download or copy-paste generated files
 
-CONTEXT LOADING (70%+ Token Savings):
+CONTEXT LOADING:
 
-CRITICAL: Tell Codex to read context-manifest.yaml first!
+Load spec.md, plan.md, and tasks.md from your increment folder.
 
 \`\`\`bash
 # CLI:
-codex "Read context-manifest.yaml from increment 0001, load only those files, then implement task T001"
+codex "Read spec.md, plan.md, tasks.md from increment 0001, then implement task T001"
 
 # Web:
-# 1. Upload context-manifest.yaml
-# 2. Upload only files listed in manifest
-# 3. Request task implementation
+# 1. Upload spec.md, plan.md, tasks.md from increment folder
+# 2. Request task implementation
 \`\`\`
 
 FEATURES:

@@ -42,14 +42,13 @@ When `@docs` is used, Cursor should load:
 **Don't load everything!**
 
 If working on specific module (e.g., authentication):
-1. Check context-manifest.yaml
-2. Load ONLY auth-related docs:
-   ```
-   .specweave/docs/internal/architecture/auth/
-   ├── design.md
-   ├── adr/0005-auth-method.md
-   └── diagrams/auth-flow.mmd
-   ```
+Load ONLY auth-related docs:
+```
+.specweave/docs/internal/architecture/auth/
+├── design.md
+├── adr/0005-auth-method.md
+└── diagrams/auth-flow.mmd
+```
 
 ## Example Workflow
 

@@ -62,8 +62,28 @@ resolve_specweave_package() {
   specweave_bin="$(which specweave 2>/dev/null)"
   if [[ -n "$specweave_bin" ]]; then
     # Handle symlinks (npm link, volta, etc.)
+    # Use portable symlink resolution (macOS doesn't have readlink -f)
     local real_bin
-    real_bin="$(readlink -f "$specweave_bin" 2>/dev/null || echo "$specweave_bin")"
+    if command -v realpath >/dev/null 2>&1; then
+      real_bin="$(realpath "$specweave_bin" 2>/dev/null || echo "$specweave_bin")"
+    elif command -v greadlink >/dev/null 2>&1; then
+      real_bin="$(greadlink -f "$specweave_bin" 2>/dev/null || echo "$specweave_bin")"
+    elif [[ "$(uname)" == "Darwin" ]]; then
+      # macOS fallback: resolve symlink chain manually
+      real_bin="$specweave_bin"
+      while [[ -L "$real_bin" ]]; do
+        local link_target
+        link_target="$(readlink "$real_bin")"
+        if [[ "$link_target" == /* ]]; then
+          real_bin="$link_target"
+        else
+          real_bin="$(dirname "$real_bin")/$link_target"
+        fi
+      done
+      real_bin="$(cd "$(dirname "$real_bin")" && pwd)/$(basename "$real_bin")"
+    else
+      real_bin="$(readlink -f "$specweave_bin" 2>/dev/null || echo "$specweave_bin")"
+    fi
     local bin_dir="$(dirname "$real_bin")"
     local pkg_dir="$(cd "$bin_dir/.." 2>/dev/null && pwd)"
     if [[ -d "$pkg_dir/dist/src/cli" ]]; then

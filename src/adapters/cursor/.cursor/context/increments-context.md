@@ -8,7 +8,6 @@ Quick access to the current increment's:
 - spec.md (WHAT and WHY)
 - plan.md (HOW)
 - tasks.md (implementation steps)
-- context-manifest.yaml (what context to load)
 
 ## Usage
 
@@ -27,8 +26,7 @@ When `@increments` is used, Cursor should load:
    .specweave/increments/####-feature-name/
    ├── spec.md
    ├── plan.md
-   ├── tasks.md
-   └── context-manifest.yaml
+   └── tasks.md
    ```
 
 2. **How to find current increment**:
@@ -41,24 +39,9 @@ When `@increments` is used, Cursor should load:
    ```
 
 3. **Load order**:
-   - context-manifest.yaml (to know what else to load)
    - spec.md (business requirements)
    - plan.md (technical design)
    - tasks.md (current task status)
-
-## Context Manifest Critical
-
-**ALWAYS read context-manifest.yaml first!**
-
-It tells you which additional files to load:
-```yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/spec.md
-documentation:
-  - .specweave/docs/internal/architecture/auth-design.md
-```
-
-Then load ONLY those files (70%+ token savings).
 
 ## Example Workflow
 

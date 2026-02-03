@@ -67,9 +67,9 @@ gemini "Read AGENTS.md. Create increment 0002 for payment processing with Stripe
 gemini "Read increment 0002, implement task T001"
 ```
 
-### Context Loading (70%+ Token Savings)
+### Context Loading
 ```bash
-gemini "Read context-manifest.yaml from increment 0001, load only those files, then implement T001"
+gemini "Read spec.md, plan.md, tasks.md from increment 0001, then implement T001"
 ```
 
 ## Comparison with Claude Code

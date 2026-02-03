@@ -159,7 +159,6 @@ npx specweave init my-project --adapter cursor
 4. ✅ Act as PM: Create spec.md (WHAT/WHY, user stories, acceptance criteria)
 5. ✅ Act as Architect: Create plan.md (HOW, technical design, components)
 6. ✅ Create tasks.md (implementation checklist)
-7. ✅ Create context-manifest.yaml (list files to load - 70%+ token savings)
 
 **Result**: Complete increment ready for implementation!
 
@@ -191,31 +190,6 @@ npx specweave init my-project --adapter cursor
 2. ✅ Create Terraform files (provider.tf, main.tf, variables.tf)
 3. ✅ Add monitoring, logging, security configs
 4. ✅ Document deployment process
-
-## Context Loading (70%+ Token Savings)
-
-**.cursorrules teaches Cursor**:
-
-```markdown
-## CRITICAL: Context Manifest
-
-**Always read context-manifest.yaml first!**
-
-Example:
-```yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/spec.md
-documentation:
-  - .specweave/docs/internal/architecture/auth-design.md
-```
-
-**ONLY load these 2 files**, not entire .specweave/docs/ folder!
-
-**Why?**
-- Full specs: 500+ pages (50k tokens)
-- Manifest files: 50 pages (5k tokens)
-- Savings: 90% = 45k tokens saved!
-```
 
 ## Comparison: Cursor vs Claude Code
 
@@ -255,10 +229,7 @@ Since Cursor doesn't have hooks, you MUST manually update documentation after ev
 
 ## Tips & Tricks
 
-### 1. Always Mention Context-Manifest
-"Read context-manifest.yaml and load only files listed there"
-
-### 2. Be Explicit About Roles
+### 1. Be Explicit About Roles
 "Act as PM agent and create spec" (not just "create spec")
 
 ### 3. Use @ Shortcuts

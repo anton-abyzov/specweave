@@ -128,7 +128,6 @@ Reopen     →  /sw:reopen   (needs more work)
 ```
 Progress   →  /sw:progress   (task completion)
 Status     →  /sw:status     (all increments)
-Workflow   →  /sw:workflow   (next steps)
 ```
 
 ### Synchronization
@@ -137,15 +136,14 @@ Workflow   →  /sw:workflow   (next steps)
 Sync All       →  /sw:sync-progress   (tasks → docs → external)
 Sync Docs      →  /sw:sync-docs       (living docs)
 Sync Tasks     →  /sw:sync-tasks      (external → tasks.md)
-Sync ACs       →  /sw:sync-acs        (acceptance criteria)
 ```
 
 ### Quality
 
 ```
 Validate   →  /sw:validate   (rule-based)
-QA         →  /sw:qa         (AI assessment)
-Check Tests →  /sw:check-tests (test coverage)
+QA         →  /sw:qa         (AI spec assessment)
+Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 ```
 
 ---

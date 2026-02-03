@@ -22,7 +22,6 @@ Need organized way to manage features/increments without:
 │   ├── spec.md              # WHAT & WHY (< 250 lines)
 │   ├── plan.md              # HOW + Test Strategy (< 500 lines)
 │   ├── tasks.md             # Implementation steps + Embedded tests (BDD)
-│   ├── context-manifest.yaml
 │   ├── logs/
 │   ├── scripts/
 │   └── reports/

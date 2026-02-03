@@ -215,11 +215,10 @@ For each increment modifying existing code:
 ├── plan.md                    # How we'll change it
 ├── tasks.md                   # Implementation tasks
 ├── tests.md                   # Test strategy
-├── reports/
-│   ├── payment-before.md      # Current behavior (pre-change)
-│   ├── payment-after.md       # New behavior (post-change)
-│   └── regression-tests.md    # Safety net tests
-└── context-manifest.yaml      # What specs to load
+└── reports/
+    ├── payment-before.md      # Current behavior (pre-change)
+    ├── payment-after.md       # New behavior (post-change)
+    └── regression-tests.md    # Safety net tests
 
 .specweave/docs/internal/strategy/payments/
 └── payment-flow-spec.md       # Living spec (updated after increment)

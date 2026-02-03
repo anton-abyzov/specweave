@@ -159,7 +159,6 @@ if [ -d "features" ]; then
       "$first_feature/plan.md"
       "$first_feature/tasks.md"
       "$first_feature/tests.md"
-      "$first_feature/context-manifest.yaml"
     )
 
     for file in "${feature_files[@]}"; do
@@ -227,21 +226,7 @@ else
   echo "  No specifications yet (optional for users)"
 fi
 
-# Step 12: Verify context manifests (optional)
-info "Step 12: Verifying context manifests (optional)..."
-
-if [ -d "features" ]; then
-  manifests=$(find features -name "context-manifest.yaml" 2>/dev/null | wc -l)
-  if [ "$manifests" -gt 0 ]; then
-    success "Context manifests exist ($manifests found)"
-  else
-    echo "  No context manifests yet (will be created with features)"
-  fi
-else
-  echo "  No features yet (optional for users)"
-fi
-
-# Step 13: Install dependencies (if package.json exists)
+# Step 12: Install dependencies (if package.json exists)
 if [ -f "package.json" ]; then
   info "Step 13: Installing dependencies..."
   npm install --silent || fail "npm install failed"

@@ -37,7 +37,6 @@ You are an expert in mapping SpecWeave concepts to JIRA and vice versa with prec
 | **Status: in-progress** | Status: In Progress | Active work |
 | **Status: completed** | Status: Done | Finished |
 | **spec.md** | Epic Description | Summary + link to spec (if GitHub repo) |
-| **context-manifest.yaml** | Custom Field: Context | Serialized YAML in custom field (optional) |
 
 ### JIRA → SpecWeave
 
@@ -232,18 +231,7 @@ Last Sync: 2025-10-26T14:00:00Z
    - [ ] {Subtask 3 title} (JIRA: PROJ-132)
    ```
 
-7. **Generate context-manifest.yaml** (default):
-   ```yaml
-   ---
-   spec_sections: []
-   documentation: []
-   max_context_tokens: 10000
-   priority: high
-   auto_refresh: false
-   ---
-   ```
-
-8. **Update JIRA Epic** (add custom field if available):
+7. **Update JIRA Epic** (add custom field if available):
    ```
    Custom Field: SpecWeave Increment ID = 0003-imported-feature
    ```
@@ -441,8 +429,7 @@ You:
 3. Auto-number next increment (e.g., 0003)
 4. Generate spec.md with user stories
 5. Generate tasks.md with subtasks
-6. Generate context-manifest.yaml (default)
-7. Present summary with increment location
+6. Present summary with increment location
 ```
 
 ### Bidirectional Sync
