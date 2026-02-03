@@ -2,7 +2,7 @@
  * Unit tests for log-decision.sh
  *
  * Tests the shared decision logging utility used by all hooks.
- * TDD Phase: RED - These tests should FAIL until log-decision.sh is implemented.
+ * Covers: core logging, log rotation, debug mode
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -25,21 +25,35 @@ describe('log-decision.sh', () => {
     reason: string;
     contextJson?: string;
     durationMs?: number;
+    debugMode?: boolean;
   }): { stdout: string; stderr: string; status: number } {
-    const { hookName, decision, reasonCode, reason, contextJson = '{}', durationMs = 100 } = params;
+    const {
+      hookName,
+      decision,
+      reasonCode,
+      reason,
+      contextJson = '{}',
+      durationMs = 100,
+      debugMode = false,
+    } = params;
 
-    // Create a test script that sources log-decision.sh and calls log_decision
-    // Note: contextJson needs to be properly escaped for shell
     const escapedContext = contextJson.replace(/'/g, "'\\''");
+    const debugExport = debugMode ? 'export SPECWEAVE_DEBUG_HOOKS=1' : '';
     const testScript = `
       source "${hookPath}"
       export PROJECT_ROOT="${tempDir}"
+      ${debugExport}
       log_decision "${hookName}" "${decision}" "${reasonCode}" "${reason}" '${escapedContext}' ${durationMs}
     `;
 
+    const env: NodeJS.ProcessEnv = { ...process.env, PROJECT_ROOT: tempDir };
+    if (debugMode) {
+      env.SPECWEAVE_DEBUG_HOOKS = '1';
+    }
+
     const result = spawnSync('bash', ['-c', testScript], {
       encoding: 'utf-8',
-      env: { ...process.env, PROJECT_ROOT: tempDir },
+      env,
       timeout: 10000,
     });
 
@@ -51,12 +65,9 @@ describe('log-decision.sh', () => {
   }
 
   beforeEach(() => {
-    // Create temp project structure
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'log-decision-test-'));
     logsDir = path.join(tempDir, '.specweave', 'logs');
     decisionsLog = path.join(logsDir, 'decisions.jsonl');
-
-    // Create .specweave directory (logs dir will be created by log_decision)
     fs.mkdirSync(path.join(tempDir, '.specweave'), { recursive: true });
   });
 
@@ -68,10 +79,8 @@ describe('log-decision.sh', () => {
 
   describe('TC-001: log_decision writes to decisions.jsonl', () => {
     it('should create decisions.jsonl with JSON entry', () => {
-      // Given: Empty log directory
       expect(fs.existsSync(decisionsLog)).toBe(false);
 
-      // When: log_decision called with valid params
       const result = runLogDecision({
         hookName: 'stop-auto',
         decision: 'approve',
@@ -79,7 +88,6 @@ describe('log-decision.sh', () => {
         reason: 'No auto session active',
       });
 
-      // Then: decisions.jsonl created with JSON entry
       expect(result.status).toBe(0);
       expect(fs.existsSync(decisionsLog)).toBe(true);
 
@@ -91,7 +99,6 @@ describe('log-decision.sh', () => {
 
   describe('TC-002: Entry includes all required fields', () => {
     it('should include timestamp, hook, decision, reason, reasonCode, durationMs, context', () => {
-      // When: log_decision called
       runLogDecision({
         hookName: 'stop-auto',
         decision: 'block',
@@ -101,7 +108,6 @@ describe('log-decision.sh', () => {
         durationMs: 150,
       });
 
-      // Then: Entry has all required fields
       const content = fs.readFileSync(decisionsLog, 'utf-8').trim();
       const entry = JSON.parse(content);
 
@@ -123,7 +129,6 @@ describe('log-decision.sh', () => {
         increments: ['0001-feature'],
       };
 
-      // When: log_decision called with context JSON
       runLogDecision({
         hookName: 'stop-auto',
         decision: 'block',
@@ -132,7 +137,6 @@ describe('log-decision.sh', () => {
         contextJson: JSON.stringify(testContext),
       });
 
-      // Then: context field is parseable object
       const content = fs.readFileSync(decisionsLog, 'utf-8').trim();
       const entry = JSON.parse(content);
 
@@ -140,11 +144,120 @@ describe('log-decision.sh', () => {
       expect(entry.context.sessionActive).toBe(true);
       expect(entry.context.turn.current).toBe(5);
     });
+
+    it('should handle special characters in context JSON', () => {
+      // Test shell escaping edge cases: single quotes, double quotes, $variables, backticks
+      const testContext = {
+        message: "Value with 'single quotes' and \"double quotes\"",
+        path: '/path/to/$HOME/file',
+        command: '`whoami`',
+        newlines: 'line1\nline2',
+        special: '!@#$%^&*()',
+      };
+
+      const result = runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'approve',
+        reasonCode: 'special_chars_test',
+        reason: "Test with 'quotes' and $vars",
+        contextJson: JSON.stringify(testContext),
+      });
+
+      expect(result.status).toBe(0);
+      expect(fs.existsSync(decisionsLog)).toBe(true);
+
+      const content = fs.readFileSync(decisionsLog, 'utf-8').trim();
+      const entry = JSON.parse(content);
+
+      // Verify special characters survived shell escaping
+      expect(entry.context.message).toContain("'single quotes'");
+      expect(entry.context.message).toContain('"double quotes"');
+      expect(entry.context.path).toBe('/path/to/$HOME/file');
+      expect(entry.context.command).toBe('`whoami`');
+      expect(entry.context.special).toBe('!@#$%^&*()');
+    });
   });
 
-  describe('TC-004: Multiple entries append to log', () => {
+  describe('TC-004: Log rotation', () => {
+    it('should rotate log file when it exceeds 10MB', () => {
+      // Given: decisions.jsonl is 11MB
+      const largeContent: string[] = [];
+      const lineSize = 500;
+      const linesNeeded = Math.ceil((11 * 1024 * 1024) / lineSize);
+
+      for (let i = 0; i < linesNeeded; i++) {
+        const entry = {
+          timestamp: new Date().toISOString(),
+          hook: 'stop-auto',
+          decision: 'approve',
+          reason: 'x'.repeat(400),
+          reasonCode: 'test',
+          durationMs: 100,
+          context: {},
+        };
+        largeContent.push(JSON.stringify(entry));
+      }
+
+      fs.mkdirSync(logsDir, { recursive: true });
+      fs.writeFileSync(decisionsLog, largeContent.join('\n') + '\n');
+
+      const initialSize = fs.statSync(decisionsLog).size;
+      expect(initialSize).toBeGreaterThan(10 * 1024 * 1024);
+
+      // When: log_decision called
+      runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'approve',
+        reasonCode: 'test_rotation',
+        reason: 'Test rotation trigger',
+      });
+
+      // Then: File truncated to ~5MB
+      const newSize = fs.statSync(decisionsLog).size;
+      expect(newSize).toBeLessThan(6 * 1024 * 1024);
+      expect(newSize).toBeGreaterThan(4 * 1024 * 1024);
+
+      const content = fs.readFileSync(decisionsLog, 'utf-8');
+      expect(content).toContain('test_rotation');
+    });
+
+    it('should not rotate log file when under 10MB', () => {
+      const content: string[] = [];
+      const linesNeeded = Math.ceil((5 * 1024 * 1024) / 500);
+
+      for (let i = 0; i < linesNeeded; i++) {
+        const entry = {
+          timestamp: new Date().toISOString(),
+          hook: 'stop-auto',
+          decision: 'approve',
+          reason: 'x'.repeat(400),
+          reasonCode: 'existing',
+          durationMs: 100,
+          context: {},
+        };
+        content.push(JSON.stringify(entry));
+      }
+
+      fs.mkdirSync(logsDir, { recursive: true });
+      fs.writeFileSync(decisionsLog, content.join('\n') + '\n');
+
+      const initialLineCount = content.length;
+
+      runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'approve',
+        reasonCode: 'new_entry',
+        reason: 'Test no rotation',
+      });
+
+      const finalContent = fs.readFileSync(decisionsLog, 'utf-8');
+      const finalLineCount = finalContent.trim().split('\n').length;
+      expect(finalLineCount).toBe(initialLineCount + 1);
+    });
+  });
+
+  describe('TC-005: Multiple entries append to log', () => {
     it('should append entries as separate JSON lines', () => {
-      // When: Multiple log_decision calls
       runLogDecision({
         hookName: 'stop-auto',
         decision: 'block',
@@ -159,7 +272,6 @@ describe('log-decision.sh', () => {
         reason: 'Second decision',
       });
 
-      // Then: Both entries in file, one per line
       const content = fs.readFileSync(decisionsLog, 'utf-8').trim();
       const lines = content.split('\n');
 
@@ -173,12 +285,10 @@ describe('log-decision.sh', () => {
     });
   });
 
-  describe('TC-005: Creates logs directory if missing', () => {
+  describe('TC-006: Creates logs directory if missing', () => {
     it('should create .specweave/logs/ if it does not exist', () => {
-      // Given: No logs directory
       expect(fs.existsSync(logsDir)).toBe(false);
 
-      // When: log_decision called
       runLogDecision({
         hookName: 'stop-auto',
         decision: 'approve',
@@ -186,20 +296,60 @@ describe('log-decision.sh', () => {
         reason: 'No session',
       });
 
-      // Then: Directory created
       expect(fs.existsSync(logsDir)).toBe(true);
       expect(fs.existsSync(decisionsLog)).toBe(true);
     });
   });
 
-  describe('Debug mode', () => {
-    it('TC-011: should write to stderr when SPECWEAVE_DEBUG_HOOKS=1', () => {
-      // Create test script with debug mode
+  describe('TC-011: Debug mode writes to stderr', () => {
+    it('should write debug output to stderr when SPECWEAVE_DEBUG_HOOKS=1', () => {
+      const result = runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'approve',
+        reasonCode: 'test_debug',
+        reason: 'Debug test',
+        debugMode: true,
+      });
+
+      expect(result.stderr).toContain('[DECISION]');
+      expect(result.stderr).toContain('stop-auto');
+    });
+
+    it('should show BLOCK tag for block decisions', () => {
+      const result = runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'block',
+        reasonCode: 'work_remaining',
+        reason: 'Block decision test',
+        debugMode: true,
+      });
+
+      expect(result.stderr).toContain('BLOCK');
+      expect(result.stderr).toContain('stop-auto');
+    });
+  });
+
+  describe('TC-012: Debug mode disabled by default', () => {
+    it('should not write to stderr when debug mode disabled', () => {
+      const result = runLogDecision({
+        hookName: 'stop-auto',
+        decision: 'approve',
+        reasonCode: 'session_inactive',
+        reason: 'No session',
+        debugMode: false,
+      });
+
+      expect(result.stderr).not.toContain('[DECISION]');
+      expect(result.stderr).not.toContain('[BLOCK]');
+    });
+
+    it('should not affect stdout when debug mode is enabled', () => {
       const testScript = `
         source "${hookPath}"
-        PROJECT_ROOT="${tempDir}"
+        export PROJECT_ROOT="${tempDir}"
         export SPECWEAVE_DEBUG_HOOKS=1
-        log_decision "stop-auto" "approve" "session_inactive" "No session" '{}' 100
+        log_decision "stop-auto" "block" "work_remaining" "Test stdout"
+        echo '{"decision":"block"}'
       `;
 
       const result = spawnSync('bash', ['-c', testScript], {
@@ -208,23 +358,8 @@ describe('log-decision.sh', () => {
         timeout: 10000,
       });
 
-      // Then: Debug output appears on stderr
-      expect(result.stderr).toContain('DEBUG');
-      expect(result.stderr).toContain('stop-auto');
-    });
-
-    it('TC-012: should not write to stderr when debug mode disabled', () => {
-      // When: log_decision called without debug mode
-      const result = runLogDecision({
-        hookName: 'stop-auto',
-        decision: 'approve',
-        reasonCode: 'session_inactive',
-        reason: 'No session',
-      });
-
-      // Then: No stderr output (or minimal)
-      // Note: Some minimal stderr might exist for errors, but no DEBUG prefix
-      expect(result.stderr).not.toContain('[DEBUG]');
+      expect(result.stdout.trim()).toBe('{"decision":"block"}');
+      expect(result.stderr).toContain('[BLOCK]');
     });
   });
 });
