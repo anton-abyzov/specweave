@@ -82,13 +82,7 @@ export type InvalidationStrategy = 'soft' | 'hard';
  * Options for cache invalidation
  */
 export interface InvalidationOptions {
-  /** Whether to preserve skill memories */
-  preserveMemories: boolean;
-
-  /** Whether to create backup before invalidation */
-  backupFirst: boolean;
-
-  /** Strategy to use */
+  /** Strategy to use: 'soft' marks stale, 'hard' deletes */
   strategy: InvalidationStrategy;
 }
 
@@ -98,12 +92,6 @@ export interface InvalidationOptions {
 export interface InvalidationResult {
   /** Whether invalidation succeeded */
   success: boolean;
-
-  /** Backup path (if created) */
-  backupPath?: string;
-
-  /** Skill memories preserved path (if applicable) */
-  memoriesPath?: string;
 
   /** Error message (if failed) */
   error?: string;
