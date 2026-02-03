@@ -19,7 +19,12 @@ import { parseTasksWithUSLinks, getAllTasks } from '../generators/spec/task-pars
 import chalkFallback, { getChalk } from '../utils/chalk-fallback.js';
 // Use chalk if available, otherwise fallback to ANSI codes
 let chalk = chalkFallback;
-getChalk().then(c => { chalk = c; }).catch(() => { });
+getChalk().then(c => { chalk = c; }).catch((err) => {
+    // Fallback already set, just log at debug level
+    if (process.env.DEBUG) {
+        console.debug(`Chalk loading failed, using fallback: ${err.message}`);
+    }
+});
 /**
  * Validate increment ID format to prevent path traversal attacks
  * Valid format: 4 digits followed by alphanumeric/hyphen name (e.g., "0001-feature-name")
