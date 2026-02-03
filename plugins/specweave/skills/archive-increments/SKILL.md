@@ -1,5 +1,5 @@
 ---
-name: archive-increments
+name: sw:archive-increments
 description: Intelligent increment archiving expert that analyzes age, status, and activity to recommend archiving. Use when workspace has too many increments, cleaning up completed work, or organizing the _archive folder. Follows the 10-10-10 rule for workspace organization.
 ---
 

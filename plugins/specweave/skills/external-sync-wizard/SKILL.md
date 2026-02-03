@@ -1,5 +1,5 @@
 ---
-name: external-sync-wizard
+name: sw:external-sync-wizard
 description: Expert guide for setting up bidirectional sync between SpecWeave and GitHub Issues, JIRA, or Azure DevOps. Use when configuring external tool integration, mapping fields between systems, or troubleshooting sync issues. Covers webhook setup, authentication, and conflict resolution strategies.
 ---
 

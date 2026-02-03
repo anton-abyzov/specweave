@@ -1,5 +1,5 @@
 ---
-name: progress-sync
+name: sw:progress-sync
 description: Comprehensive progress synchronization expert for multi-system sync (tasks.md → living docs → GitHub/JIRA/ADO). Use when syncing progress across systems, creating missing external issues, or understanding /sw:sync-progress command. AUTO-CREATES missing issues when external links are absent.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: umbrella-repo-detector
+name: sw:umbrella-repo-detector
 description: Detects multi-repo architecture patterns (frontend/backend/shared) from user prompts and guides umbrella setup. Use when working with multiple repositories, microservices architecture, or projects with separate FE/BE/Shared libraries. Helps configure SpecWeave for multi-repo coordination.
 ---
 

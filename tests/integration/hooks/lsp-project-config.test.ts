@@ -97,11 +97,14 @@ describe('LSP project-level configuration', () => {
       expect(scriptContent).toMatch(/ENABLE_LSP_TOOL/);
     });
 
-    it('should provide one-time setup instructions', () => {
+    it('should check ENABLE_LSP_TOOL before LSP operations', () => {
       const scriptContent = fs.readFileSync(hookScript, 'utf-8');
 
-      // Should include setup instructions for the env var
-      expect(scriptContent).toMatch(/export ENABLE_LSP_TOOL=1|~\/\.zshrc|~\/\.bashrc/);
+      // LSP is opt-in (v1.0.210+) - hook should check ENABLE_LSP_TOOL env var
+      // Users enable LSP via `specweave lsp enable` which sets up the env var
+      expect(scriptContent).toMatch(/ENABLE_LSP_TOOL/);
+      // Should skip LSP operations if env var not set
+      expect(scriptContent).toMatch(/if.*ENABLE_LSP_TOOL|ENABLE_LSP_TOOL.*-z/);
     });
   });
 

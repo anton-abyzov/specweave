@@ -1,5 +1,5 @@
 ---
-name: context-loader
+name: sw:context-loader
 description: Explains how SpecWeave achieves context efficiency through Claude's native progressive disclosure and sub-agent parallelization. Use when asking about token usage, context management, or how SpecWeave scales with large projects. Leverages Claude's built-in mechanisms without custom caching.
 ---
 
@@ -26,7 +26,7 @@ Claude Code uses a **two-level progressive disclosure system** for skills:
 
 ```yaml
 ---
-name: nextjs
+name: sw:nextjs
 description: NextJS 14+ implementation specialist. Creates App Router projects...
 ---
 ```
@@ -205,13 +205,13 @@ SpecWeave organizes **35+ skills** with clear, focused descriptions:
 ```yaml
 # Good: Focused description
 ---
-name: nextjs
+name: sw:nextjs
 description: NextJS 14+ App Router specialist. Server Components, SSR, routing.
 ---
 
 # Bad: Vague description
 ---
-name: frontend
+name: sw:frontend
 description: Does frontend stuff
 ---
 ```
