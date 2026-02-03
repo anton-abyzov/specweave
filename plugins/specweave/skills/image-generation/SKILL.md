@@ -14,6 +14,29 @@ model: opus
 
 Expert in generating professional-quality images using multi-provider resilience: **Pollinations.ai** (primary) with **Stable Horde** (fallback) - both FREE, no API keys required.
 
+---
+
+## 🛑 STEP 1: RUN THIS BASH COMMAND FIRST (MANDATORY - NO EXCEPTIONS)
+
+**YOU MUST EXECUTE THIS BASH COMMAND BEFORE DOING ANYTHING ELSE.**
+
+This is not optional. Do not skip. Do not generate URLs first. **RUN THIS FIRST:**
+
+```bash
+TEMP=$(mktemp) && curl -s -L -o "$TEMP" --max-time 10 "https://image.pollinations.ai/prompt/test?width=64&height=64&nologo=true" 2>/dev/null && TYPE=$(file -b "$TEMP" | cut -d',' -f1) && rm -f "$TEMP" && if [[ "$TYPE" == "PNG image data" ]] || [[ "$TYPE" == "JPEG image data" ]]; then echo "PROVIDER=pollinations"; else echo "PROVIDER=stablehorde"; echo "REASON=Got $TYPE instead of image"; fi
+```
+
+### Based on Output:
+
+| Output | What To Do |
+|--------|------------|
+| `PROVIDER=pollinations` | ✅ Use Pollinations.ai URLs below |
+| `PROVIDER=stablehorde` | 🔄 **SKIP Pollinations entirely** → Use Stable Horde API (see fallback section) |
+
+**If you did NOT run the Bash command first, STOP and run it now.**
+
+---
+
 ## ⚠️ CRITICAL: Health Check First (MANDATORY)
 
 **BEFORE generating any image, ALWAYS run this CONTENT-BASED health check:**
