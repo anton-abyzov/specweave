@@ -1,5 +1,5 @@
 ---
-name: sw:resume
+name: resume
 description: Resume a paused or backlog increment
 usage: /sw:resume <increment-id>
 ---

@@ -1,5 +1,5 @@
 ---
-name: sw:external
+name: external
 description: View external items dashboard - open issues from GitHub, JIRA, and Azure DevOps
 usage: /sw:external [--refresh]
 ---
