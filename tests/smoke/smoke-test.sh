@@ -63,14 +63,14 @@ echo "----------------------------"
 test_command "plugins/specweave/ exists" "test -d $PROJECT_ROOT/plugins/specweave"
 test_command "plugins/specweave/skills/ exists" "test -d $PROJECT_ROOT/plugins/specweave/skills"
 # NOTE: Agents are implemented as skills with context: fork (no separate agents/ directory)
-# NOTE: Commands are now part of skills/ (commands/ was removed in favor of skills/ as canonical)
+test_command "plugins/specweave/commands/ exists" "test -d $PROJECT_ROOT/plugins/specweave/commands"
 echo ""
 
 echo "📋 Test 4: Core Plugin Components"
 echo "----------------------------------"
 test_command "increment-planner skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/increment-planner/SKILL.md"
 test_command "PM skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/pm/SKILL.md"
-test_command "increment skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/increment/SKILL.md"
+test_command "increment command exists" "test -f $PROJECT_ROOT/plugins/specweave/commands/increment.md"
 test_command "hooks.json exists" "test -f $PROJECT_ROOT/plugins/specweave/hooks/hooks.json"
 echo ""
 

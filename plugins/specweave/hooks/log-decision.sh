@@ -46,7 +46,7 @@ _log_debug() {
             "WARN") color="$color_yellow" ;;
         esac
 
-        echo -e "${color}[DEBUG]${color_reset} $message" >&2
+        echo -e "${color}[$level]${color_reset} $message" >&2
     fi
 }
 

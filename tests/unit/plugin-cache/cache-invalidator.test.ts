@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CacheInvalidator } from '../../../src/core/plugin-cache/cache-invalidator.js';
 import { InvalidationOptions } from '../../../src/core/plugin-cache/types.js';
 import fs from 'fs';
@@ -8,33 +8,17 @@ import os from 'os';
 describe('CacheInvalidator', () => {
   let invalidator: CacheInvalidator;
   let mockCacheDir: string;
-  let mockBackupDir: string;
 
   beforeEach(() => {
     invalidator = new CacheInvalidator();
     mockCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-'));
-    // Use the actual backup directory from CacheInvalidator (now in temp dir)
-    mockBackupDir = CacheInvalidator.getBackupDir();
-
-    // Clean up backup dir before each test (handle CI permission issues)
-    try {
-      if (fs.existsSync(mockBackupDir)) {
-        fs.rmSync(mockBackupDir, { recursive: true, force: true });
-      }
-    } catch {
-      // If we can't delete it, try to fix permissions first
-      try {
-        fs.chmodSync(mockBackupDir, 0o755);
-        fs.rmSync(mockBackupDir, { recursive: true, force: true });
-      } catch {
-        // Ignore - will create fresh in tests
-      }
-    }
 
     // Create mock cache structure
-    fs.mkdirSync(path.join(mockCacheDir, 'skills'), { recursive: true });
     fs.writeFileSync(path.join(mockCacheDir, 'test-file.js'), 'content');
-    fs.writeFileSync(path.join(mockCacheDir, 'skills', 'memory.md'), 'skill memories');
+    fs.writeFileSync(
+      path.join(mockCacheDir, '.cache-metadata.json'),
+      JSON.stringify({ pluginName: 'sw', version: '1.0.0', stale: false })
+    );
   });
 
   afterEach(() => {
@@ -42,259 +26,57 @@ describe('CacheInvalidator', () => {
     if (fs.existsSync(mockCacheDir)) {
       fs.rmSync(mockCacheDir, { recursive: true, force: true });
     }
-    // Cleanup backup dir
-    try {
-      if (fs.existsSync(mockBackupDir)) {
-        // Restore permissions if needed
-        try { fs.chmodSync(mockBackupDir, 0o755); } catch { /* ignore */ }
-        fs.rmSync(mockBackupDir, { recursive: true, force: true });
-      }
-    } catch {
-      // Ignore cleanup failures in CI
-    }
   });
 
   describe('invalidatePlugin', () => {
     it('should perform soft invalidation by default', async () => {
-      const options: InvalidationOptions = {
-        strategy: 'soft',
-        preserveMemories: false,
-        backupFirst: false
-      };
+      const options: InvalidationOptions = { strategy: 'soft' };
 
-      await invalidator.invalidatePlugin('sw', '1.0.0', options);
+      await invalidator.invalidatePlugin('sw', '1.0.0', options, mockCacheDir);
 
       // Cache should still exist
       expect(fs.existsSync(mockCacheDir)).toBe(true);
 
       // Metadata should be marked as stale
       const metadataPath = path.join(mockCacheDir, '.cache-metadata.json');
-      if (fs.existsSync(metadataPath)) {
-        const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-        expect(metadata.stale).toBe(true);
-      }
+      expect(fs.existsSync(metadataPath)).toBe(true);
+
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+      expect(metadata.stale).toBe(true);
+      expect(metadata.staleSince).toBeDefined();
     });
 
-    it('should perform hard invalidation with backup', async () => {
-      const options: InvalidationOptions = {
-        strategy: 'hard',
-        preserveMemories: true,
-        backupFirst: true
-      };
+    it('should perform hard invalidation and delete cache', async () => {
+      const options: InvalidationOptions = { strategy: 'hard' };
 
       await invalidator.invalidatePlugin('sw', '1.0.0', options, mockCacheDir);
 
-      // Verify backup was created
-      const backupExists = fs.existsSync(mockBackupDir) &&
-        fs.readdirSync(mockBackupDir).some(f => f.includes('sw-1.0.0'));
-
-      expect(backupExists).toBe(true);
+      // Cache should be deleted
+      expect(fs.existsSync(mockCacheDir)).toBe(false);
     });
 
-    it('should preserve skill memories during hard invalidation', async () => {
-      const options: InvalidationOptions = {
-        strategy: 'hard',
-        preserveMemories: true,
-        backupFirst: true
-      };
+    it('should handle non-existent cache path gracefully', async () => {
+      const options: InvalidationOptions = { strategy: 'hard' };
+      const nonExistentPath = path.join(os.tmpdir(), 'non-existent-cache-' + Date.now());
 
-      const memoriesPath = path.join(mockCacheDir, 'skills', 'memory.md');
-      const originalContent = fs.readFileSync(memoriesPath, 'utf8');
+      // Should not throw
+      await expect(
+        invalidator.invalidatePlugin('sw', '1.0.0', options, nonExistentPath)
+      ).resolves.toBeUndefined();
+    });
 
+    it('should not modify metadata if file does not exist during soft invalidation', async () => {
+      // Remove metadata file
+      fs.rmSync(path.join(mockCacheDir, '.cache-metadata.json'));
+
+      const options: InvalidationOptions = { strategy: 'soft' };
+
+      // Should not throw
       await invalidator.invalidatePlugin('sw', '1.0.0', options, mockCacheDir);
 
-      // Verify memories were backed up
-      const backupFiles = fs.readdirSync(mockBackupDir, { recursive: true });
-      const memoryBackup = backupFiles.find(f =>
-        typeof f === 'string' && f.includes('memory.md')
-      );
-
-      expect(memoryBackup).toBeDefined();
-
-      if (memoryBackup) {
-        const backupContent = fs.readFileSync(
-          path.join(mockBackupDir, memoryBackup),
-          'utf8'
-        );
-        expect(backupContent).toBe(originalContent);
-      }
-    });
-
-    // Skip this test in CI where chmod may not work as expected (root/docker)
-    it.skipIf(process.env.CI === 'true')('should throw error if backup fails during hard invalidation', async () => {
-      const options: InvalidationOptions = {
-        strategy: 'hard',
-        preserveMemories: true,
-        backupFirst: true
-      };
-
-      // Mock backup failure by making backup directory readonly
-      fs.mkdirSync(mockBackupDir, { recursive: true });
-      fs.chmodSync(mockBackupDir, 0o444);
-
-      await expect(
-        invalidator.invalidatePlugin('sw', '1.0.0', options)
-      ).rejects.toThrow();
-
-      // Restore permissions for cleanup
-      fs.chmodSync(mockBackupDir, 0o755);
-    });
-  });
-
-  describe('backupSkillMemories', () => {
-    it('should create backup with timestamp', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      expect(backupPath).toContain('sw-1.0.0');
-      expect(backupPath).toMatch(/\d{4}-\d{2}-\d{2}-\d{6}/); // Timestamp format
-      expect(fs.existsSync(backupPath)).toBe(true);
-    });
-
-    it('should backup all skill memory files', async () => {
-      // Create multiple memory files
-      const skillsDir = path.join(mockCacheDir, 'skills');
-      fs.writeFileSync(path.join(skillsDir, 'component-usage.md'), 'component memories');
-      fs.writeFileSync(path.join(skillsDir, 'api-patterns.md'), 'api memories');
-
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      const backupFiles = fs.readdirSync(backupPath);
-      expect(backupFiles).toContain('component-usage.md');
-      expect(backupFiles).toContain('api-patterns.md');
-    });
-
-    it('should return empty path if no memories exist', async () => {
-      // Remove skills directory
-      fs.rmSync(path.join(mockCacheDir, 'skills'), { recursive: true });
-
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      expect(backupPath).toBe('');
-    });
-  });
-
-  describe('restoreSkillMemories', () => {
-    it('should restore memories from backup', async () => {
-      // Create backup
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      // Delete original
-      fs.rmSync(path.join(mockCacheDir, 'skills'), { recursive: true, force: true });
-
-      // Restore
-      await invalidator.restoreSkillMemories(backupPath, mockCacheDir);
-
-      // Verify restoration
-      const memoryPath = path.join(mockCacheDir, 'skills', 'memory.md');
-      expect(fs.existsSync(memoryPath)).toBe(true);
-      expect(fs.readFileSync(memoryPath, 'utf8')).toBe('skill memories');
-    });
-
-    it('should merge with existing memories if present', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      // Add new memory to cache
-      const newMemoryPath = path.join(mockCacheDir, 'skills', 'new-memory.md');
-      fs.writeFileSync(newMemoryPath, 'new content');
-
-      await invalidator.restoreSkillMemories(backupPath, mockCacheDir);
-
-      // Both old and new should exist
-      expect(fs.existsSync(path.join(mockCacheDir, 'skills', 'memory.md'))).toBe(true);
-      expect(fs.existsSync(newMemoryPath)).toBe(true);
-    });
-
-    it('should throw error if backup path invalid', async () => {
-      await expect(
-        invalidator.restoreSkillMemories('/invalid/path', mockCacheDir)
-      ).rejects.toThrow();
-    });
-  });
-
-  describe('validateBackup', () => {
-    it('should validate backup completeness', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      const isValid = await invalidator.validateBackup(backupPath, mockCacheDir);
-
-      expect(isValid).toBe(true);
-    });
-
-    it('should detect missing files in backup', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      // Add new file to cache after backup
-      fs.writeFileSync(path.join(mockCacheDir, 'skills', 'new-file.md'), 'new');
-
-      const isValid = await invalidator.validateBackup(backupPath, mockCacheDir);
-
-      expect(isValid).toBe(false);
-    });
-
-    it('should detect corrupted backup files', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      // Corrupt a backup file
-      const backupFile = path.join(backupPath, 'memory.md');
-      fs.writeFileSync(backupFile, 'corrupted');
-
-      const isValid = await invalidator.validateBackup(backupPath, mockCacheDir);
-
-      expect(isValid).toBe(false);
-    });
-  });
-
-  describe('getBackupMetadata', () => {
-    it('should return backup metadata', async () => {
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-
-      const metadata = await invalidator.getBackupMetadata(backupPath);
-
-      expect(metadata.pluginName).toBe('sw');
-      expect(metadata.version).toBe('1.0.0');
-      expect(metadata.timestamp).toBeDefined();
-      expect(metadata.fileCount).toBeGreaterThan(0);
-    });
-  });
-
-  describe('cleanupOldBackups', () => {
-    it('should remove backups older than TTL', async () => {
-      // Create a backup
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-      expect(fs.existsSync(backupPath)).toBe(true);
-
-      // Modify the mtime to be older than TTL (25 hours ago)
-      const oldTime = new Date(Date.now() - 25 * 60 * 60 * 1000);
-      fs.utimesSync(backupPath, oldTime, oldTime);
-
-      // Run cleanup
-      await invalidator.cleanupOldBackups();
-
-      // Old backup should be deleted
-      expect(fs.existsSync(backupPath)).toBe(false);
-    });
-
-    it('should keep recent backups', async () => {
-      // Create a backup (will be recent by default)
-      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
-      expect(fs.existsSync(backupPath)).toBe(true);
-
-      // Run cleanup
-      await invalidator.cleanupOldBackups();
-
-      // Recent backup should still exist
-      expect(fs.existsSync(backupPath)).toBe(true);
-    });
-  });
-
-  describe('getBackupDir', () => {
-    it('should return temp directory path', () => {
-      const backupDir = CacheInvalidator.getBackupDir();
-
-      // Should be in temp directory, not home directory
-      expect(backupDir).toContain(os.tmpdir());
-      expect(backupDir).not.toContain(os.homedir());
-      expect(backupDir).toContain('specweave-cache-backups');
+      // Cache should still exist but no metadata created
+      expect(fs.existsSync(mockCacheDir)).toBe(true);
+      expect(fs.existsSync(path.join(mockCacheDir, '.cache-metadata.json'))).toBe(false);
     });
   });
 });

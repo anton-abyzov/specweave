@@ -1,41 +1,23 @@
 /**
  * Cache Invalidator
  *
- * Smart cache invalidation strategies with skill memory preservation.
- * Backups are stored in OS temp directory (transient) - NOT in home directory.
+ * Smart cache invalidation strategies for plugin cache management.
+ * Skill memories are stored in CLAUDE.md and .specweave/skill-memories/ (project level),
+ * NOT in the plugin cache - so no backup/restore needed here.
+ *
+ * @module core/plugin-cache/cache-invalidator
  */
 
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import { InvalidationOptions } from './types.js';
 import { CacheMetadataManager } from './cache-metadata.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 /**
- * Backup metadata interface
- */
-interface BackupMetadata {
-  pluginName: string;
-  version: string;
-  timestamp: string;
-  fileCount: number;
-  files: string[];
-}
-
-/**
- * Max age for backups before cleanup (24 hours)
- */
-const BACKUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Handles cache invalidation with backup/restore capabilities
+ * Handles cache invalidation for plugins
  */
 export class CacheInvalidator {
-  // Use OS temp directory for transient backups - NOT home directory
-  // This prevents: 1) home directory pollution, 2) iCloud sync issues, 3) stale backup accumulation
-  private static readonly BACKUP_DIR = path.join(os.tmpdir(), 'specweave-cache-backups');
-
   /**
    * Invalidate plugin cache with specified strategy
    *
@@ -60,7 +42,7 @@ export class CacheInvalidator {
     if (options.strategy === 'soft') {
       await this.softInvalidate(actualCachePath);
     } else {
-      await this.hardInvalidate(pluginName, version, actualCachePath, options);
+      await this.hardInvalidate(actualCachePath);
     }
   }
 
@@ -80,286 +62,17 @@ export class CacheInvalidator {
   }
 
   /**
-   * Hard invalidation: backup, delete cache, optionally restore memories
+   * Hard invalidation: delete cache directory
    */
-  private async hardInvalidate(
-    pluginName: string,
-    version: string,
-    cachePath: string,
-    options: InvalidationOptions
-  ): Promise<void> {
-    let backupPath = '';
-
+  private async hardInvalidate(cachePath: string): Promise<void> {
     try {
-      // Backup first if requested
-      if (options.backupFirst) {
-        backupPath = await this.backupSkillMemories(pluginName, version, cachePath);
-
-        if (backupPath && !(await this.validateBackup(backupPath, cachePath))) {
-          throw new Error('Backup validation failed');
-        }
-      }
-
-      // Delete cache directory
       if (fs.existsSync(cachePath)) {
         fs.rmSync(cachePath, { recursive: true, force: true });
         logger.info(`Hard invalidation: deleted ${cachePath}`);
-      }
-
-      // Restore memories if requested
-      if (options.preserveMemories && backupPath) {
-        // Note: memories will be restored after marketplace refresh completes
-        logger.info(`Skill memories backed up to: ${backupPath}`);
       }
     } catch (error) {
       logger.error(`Hard invalidation failed: ${error}`);
       throw error;
     }
-  }
-
-  /**
-   * Backup skill memories to backup directory
-   *
-   * @param pluginName - Plugin name
-   * @param version - Plugin version
-   * @param cachePath - Optional cache path override (for testing)
-   * @returns Path to backup directory, or empty string if no memories exist
-   */
-  async backupSkillMemories(pluginName: string, version: string, cachePath?: string): Promise<string> {
-    const actualCachePath = cachePath || CacheMetadataManager.getPluginCachePath(pluginName, version);
-    const skillsPath = path.join(actualCachePath, 'skills');
-
-    if (!fs.existsSync(skillsPath)) {
-      logger.info(`No skill memories to backup for ${pluginName}@${version}`);
-      return '';
-    }
-
-    // Clean up old backups before creating new ones
-    await this.cleanupOldBackups();
-
-    // Create backup directory with timestamp (YYYY-MM-DD-HHMMSS format)
-    const now = new Date();
-    const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
-    const time = now.toISOString().slice(11, 19).replace(/:/g, ''); // HHMMSS
-    const timestamp = `${date}-${time}`;
-    const backupPath = path.join(
-      CacheInvalidator.BACKUP_DIR,
-      `${pluginName}-${version}-${timestamp}`
-    );
-
-    try {
-      fs.mkdirSync(backupPath, { recursive: true });
-
-      // Copy all skill memory files
-      const files = fs.readdirSync(skillsPath, { recursive: true });
-      let fileCount = 0;
-
-      for (const file of files) {
-        if (typeof file !== 'string') continue;
-
-        const sourcePath = path.join(skillsPath, file);
-        const destPath = path.join(backupPath, file);
-
-        if (fs.statSync(sourcePath).isFile()) {
-          fs.mkdirSync(path.dirname(destPath), { recursive: true });
-          fs.copyFileSync(sourcePath, destPath);
-          fileCount++;
-        }
-      }
-
-      const metadata: BackupMetadata = {
-        pluginName,
-        version,
-        timestamp: new Date().toISOString(),
-        fileCount,
-        files: files
-          .filter((f): f is string => typeof f === 'string')
-          .filter((f) => fs.statSync(path.join(skillsPath, f)).isFile())
-      };
-
-      fs.writeFileSync(
-        path.join(backupPath, '.backup-metadata.json'),
-        JSON.stringify(metadata, null, 2)
-      );
-
-      logger.info(`Backed up ${fileCount} skill memory files to ${backupPath}`);
-      return backupPath;
-    } catch (error) {
-      logger.error(`Backup failed: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Restore skill memories from backup
-   *
-   * @param backupPath - Path to backup directory
-   * @param cachePath - Destination cache path
-   */
-  async restoreSkillMemories(backupPath: string, cachePath: string): Promise<void> {
-    if (!fs.existsSync(backupPath)) {
-      throw new Error(`Backup path does not exist: ${backupPath}`);
-    }
-
-    const skillsPath = path.join(cachePath, 'skills');
-    fs.mkdirSync(skillsPath, { recursive: true });
-
-    try {
-      const files = fs.readdirSync(backupPath, { recursive: true });
-
-      for (const file of files) {
-        if (typeof file !== 'string') continue;
-        if (file === '.backup-metadata.json') continue;
-
-        const sourcePath = path.join(backupPath, file);
-        const destPath = path.join(skillsPath, file);
-
-        if (fs.statSync(sourcePath).isFile()) {
-          fs.mkdirSync(path.dirname(destPath), { recursive: true });
-
-          // Merge with existing if file already exists
-          if (fs.existsSync(destPath)) {
-            // For now, keep existing file (don't overwrite)
-            logger.info(`Skipping ${file} (already exists in cache)`);
-          } else {
-            fs.copyFileSync(sourcePath, destPath);
-          }
-        }
-      }
-
-      logger.info(`Restored skill memories from ${backupPath}`);
-    } catch (error) {
-      logger.error(`Restore failed: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Validate backup completeness
-   *
-   * @param backupPath - Path to backup
-   * @param cachePath - Original cache path
-   * @returns True if backup is valid
-   */
-  async validateBackup(backupPath: string, cachePath: string): Promise<boolean> {
-    if (!fs.existsSync(backupPath)) {
-      return false;
-    }
-
-    try {
-      const metadataPath = path.join(backupPath, '.backup-metadata.json');
-      if (!fs.existsSync(metadataPath)) {
-        return false;
-      }
-
-      const metadata: BackupMetadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-
-      // Verify all backup metadata files exist
-      for (const file of metadata.files) {
-        const backupFilePath = path.join(backupPath, file);
-        const isDirectory = fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile();
-
-        if (isDirectory) {
-          continue;
-        }
-        if (!fs.existsSync(backupFilePath)) {
-          logger.warn(`Missing file in backup: ${file}`);
-          return false;
-        }
-      }
-
-      // Validate against current cache if it exists
-      const skillsPath = path.join(cachePath, 'skills');
-      if (!fs.existsSync(skillsPath)) {
-        return true;
-      }
-
-      const currentFiles = fs.readdirSync(skillsPath, { recursive: true })
-        .filter((f): f is string => typeof f === 'string')
-        .filter((f) => fs.statSync(path.join(skillsPath, f)).isFile());
-
-      // Ensure all current files are in backup
-      for (const file of currentFiles) {
-        if (!metadata.files.includes(file)) {
-          logger.warn(`File ${file} exists in cache but not in backup`);
-          return false;
-        }
-      }
-
-      // Verify content matches for files that exist in both locations
-      for (const file of metadata.files) {
-        const originalPath = path.join(skillsPath, file);
-        const backupFilePath = path.join(backupPath, file);
-
-        const originalIsFile = fs.existsSync(originalPath) && fs.statSync(originalPath).isFile();
-        const backupIsFile = fs.existsSync(backupFilePath) && fs.statSync(backupFilePath).isFile();
-
-        if (originalIsFile && backupIsFile) {
-          const originalContent = fs.readFileSync(originalPath, 'utf8');
-          const backupContent = fs.readFileSync(backupFilePath, 'utf8');
-
-          if (originalContent !== backupContent) {
-            logger.warn(`Content mismatch for ${file}`);
-            return false;
-          }
-        }
-      }
-
-      return true;
-    } catch (error) {
-      logger.error(`Backup validation failed: ${error}`);
-      return false;
-    }
-  }
-
-  /**
-   * Get backup metadata
-   *
-   * @param backupPath - Path to backup
-   * @returns Backup metadata
-   */
-  async getBackupMetadata(backupPath: string): Promise<BackupMetadata> {
-    const metadataPath = path.join(backupPath, '.backup-metadata.json');
-
-    if (!fs.existsSync(metadataPath)) {
-      throw new Error(`Backup metadata not found: ${metadataPath}`);
-    }
-
-    return JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-  }
-
-  /**
-   * Clean up old backups that exceed TTL
-   * Called automatically before creating new backups
-   */
-  async cleanupOldBackups(): Promise<void> {
-    if (!fs.existsSync(CacheInvalidator.BACKUP_DIR)) {
-      return;
-    }
-
-    try {
-      const now = Date.now();
-      const entries = fs.readdirSync(CacheInvalidator.BACKUP_DIR);
-
-      for (const entry of entries) {
-        const entryPath = path.join(CacheInvalidator.BACKUP_DIR, entry);
-        const stat = fs.statSync(entryPath);
-
-        if (stat.isDirectory() && now - stat.mtimeMs > BACKUP_MAX_AGE_MS) {
-          fs.rmSync(entryPath, { recursive: true, force: true });
-          logger.debug(`Cleaned up old backup: ${entry}`);
-        }
-      }
-    } catch (error) {
-      // Non-fatal - just log and continue
-      logger.debug(`Backup cleanup warning: ${error}`);
-    }
-  }
-
-  /**
-   * Get the backup directory path (for testing/debugging)
-   */
-  static getBackupDir(): string {
-    return CacheInvalidator.BACKUP_DIR;
   }
 }
