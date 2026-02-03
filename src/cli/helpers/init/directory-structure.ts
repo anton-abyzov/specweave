@@ -15,7 +15,7 @@ import type { TestMode } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
-import { ensureClaudeSettingsWithLsp } from './claude-settings-lsp.js';
+// ensureClaudeSettingsWithLsp removed (v1.0.210) - LSP is opt-in only
 import {
   LivingDocsScaffold,
   scanExistingDocs,
@@ -332,15 +332,9 @@ export async function copyTemplates(
     fs.copyFileSync(gitattributesTemplate, path.join(targetDir, '.gitattributes'));
   }
 
-  // Auto-configure LSP in .claude/settings.json (v1.0.184+)
-  // Detects project tech stack and adds appropriate LSP servers
-  try {
-    await ensureClaudeSettingsWithLsp(targetDir);
-    console.log(chalk.green('   ✓ LSP auto-configured in .claude/settings.json'));
-  } catch {
-    // Non-fatal - LSP is optional
-    console.log(chalk.yellow('   ⚠ LSP auto-configuration skipped'));
-  }
+  // LSP is OPT-IN only (v1.0.210+)
+  // Users who want LSP should run: specweave lsp enable
+  // See: specweave lsp status
 }
 
 /**

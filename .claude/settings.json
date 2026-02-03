@@ -8,22 +8,6 @@
     "defaultMode": "bypassPermissions"
   },
   "enabledPlugins": {
-    "./plugins/specweave-lsp": true
-  },
-  "lspServers": {
-    "vtsls": {
-      "command": "typescript-language-server",
-      "args": [
-        "--stdio"
-      ],
-      "extensionToLanguage": {
-        ".ts": "typescript",
-        ".tsx": "typescriptreact",
-        ".js": "javascript",
-        ".jsx": "javascriptreact",
-        ".mjs": "javascript",
-        ".cjs": "javascript"
-      }
-    }
+    "sw@specweave": true
   }
 }
