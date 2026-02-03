@@ -32,10 +32,7 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
-import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
-import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
-import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js';
-// PluginCacheManager removed - using direct CLI calls (simplified v1.0.165)
+// Plugin cache modules removed (v1.0.209) - Claude Code manages its own plugin cache
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
 import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
@@ -204,13 +201,13 @@ function getPluginVersion(cachePath: string): string {
 }
 
 /**
- * Generate cache metadata for a plugin after installation
+ * Log plugin installation (cache metadata removed - Claude Code manages cache)
  */
 function generatePluginCacheMetadata(pluginName: string): void {
   const basePath = path.join(os.homedir(), '.claude/plugins/cache/specweave', pluginName);
 
   if (!fs.existsSync(basePath)) {
-    logger.debug(`Cache path not found for ${pluginName}: ${basePath}`);
+    logger.debug(`Plugin ${pluginName} not found in cache (may be installed elsewhere)`);
     return;
   }
 
@@ -226,23 +223,7 @@ function generatePluginCacheMetadata(pluginName: string): void {
   }
 
   const version = versions.sort().reverse()[0];
-  const versionPath = path.join(basePath, version);
-
-  // Generate metadata
-  const metadataManager = new CacheMetadataManager();
-
-  // Try to get commit SHA from marketplace or use timestamp
-  const commitSha = getLatestCommitSha() || `installed-${Date.now()}`;
-
-  const metadata = metadataManager.generateMetadata(
-    versionPath,
-    pluginName,
-    version,
-    commitSha
-  );
-
-  metadataManager.writeMetadata(versionPath, metadata);
-  logger.debug(`Generated cache metadata for ${pluginName}@${version}`);
+  logger.debug(`Plugin ${pluginName}@${version} installed successfully`);
 }
 
 /**
@@ -484,7 +465,7 @@ function fixHookPermissionsInCache(cachePath: string): { fixed: number; skipped:
 }
 
 /**
- * Check plugin cache health before refresh and auto-invalidate critical issues
+ * Pre-refresh cache check (simplified - Claude Code manages plugin cache health)
  */
 async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
   const basePath = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
@@ -494,67 +475,22 @@ async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
     return;
   }
 
-  console.log(chalk.yellow('🔍 Checking cache health before refresh...'));
-
-  const monitor = new CacheHealthMonitor();
-  const invalidator = new CacheInvalidator();
+  console.log(chalk.yellow('🔍 Checking plugin cache...'));
 
   const pluginNames = fs.readdirSync(basePath).filter(name => {
     const pluginPath = path.join(basePath, name);
     return fs.statSync(pluginPath).isDirectory();
   });
 
-  let criticalCount = 0;
-  const criticalPlugins: string[] = [];
-
-  for (const pluginName of pluginNames) {
-    const pluginPath = path.join(basePath, pluginName);
-    const versions = fs.readdirSync(pluginPath).filter(v => {
-      const versionPath = path.join(pluginPath, v);
-      return fs.statSync(versionPath).isDirectory();
-    });
-
-    if (versions.length === 0) continue;
-
-    const version = versions.sort().reverse()[0];
-    const versionPath = path.join(pluginPath, version);
-
-    const issues = monitor.checkPluginHealth(versionPath, version);
-    const hasCritical = issues.some(i => i.severity === 'critical');
-
-    if (hasCritical) {
-      criticalCount++;
-      criticalPlugins.push(pluginName);
-
-      if (verbose) {
-        console.log(chalk.red(`  ❌ ${pluginName}: Critical issues detected`));
-        for (const issue of issues.filter(i => i.severity === 'critical')) {
-          console.log(chalk.gray(`     - ${issue.message}`));
-        }
-      }
-
-      // Auto-invalidate critical issues
-      try {
-        await invalidator.invalidatePlugin(
-          pluginName,
-          version,
-          { strategy: 'hard' }
-        );
-
-        if (verbose) {
-          console.log(chalk.green(`  ✓ ${pluginName}: Cache invalidated (will be refreshed)`));
-        }
-      } catch (error) {
-        logger.warn(`Failed to invalidate ${pluginName}: ${error}`);
+  if (pluginNames.length > 0) {
+    console.log(chalk.green(`✓ Found ${pluginNames.length} cached plugin(s)`));
+    if (verbose) {
+      for (const name of pluginNames) {
+        console.log(chalk.gray(`   • ${name}`));
       }
     }
-  }
-
-  if (criticalCount > 0) {
-    console.log(chalk.yellow(`⚠️  Found ${criticalCount} plugin(s) with critical issues - auto-invalidated`));
-    console.log(chalk.gray(`   Plugins: ${criticalPlugins.join(', ')}`));
   } else {
-    console.log(chalk.green('✓ Cache health check passed'));
+    console.log(chalk.blue('ℹ No cached plugins found'));
   }
 
   console.log('');

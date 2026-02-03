@@ -443,30 +443,9 @@ if echo "$PROMPT" | grep -qiE "\.rs|rust|cargo|rustc|tokio|actix|axum"; then
   LSP_PROMPT_NEEDS_RUST="true"
 fi
 
-# LSP environment variable check - warn once if config enabled but env var missing
+# LSP setup is handled by `specweave init` and `specweave lsp status`
+# No per-prompt warnings needed - avoids state file pollution
 LSP_ENV_SETUP_MSG=""
-LSP_ENV_STATE_FILE=".specweave/state/lsp-env-warned.flag"
-if [[ "$LSP_CONFIG_ENABLED" == "true" ]] && [[ -z "${ENABLE_LSP_TOOL:-}" ]]; then
-  if [[ ! -f "$LSP_ENV_STATE_FILE" ]]; then
-    LSP_ENV_SETUP_MSG="⚠️ **LSP Setup Required**
-
-LSP is enabled in your project config (\`.specweave/config.json\`) but the required environment variable is not set.
-
-**One-time setup** - add to \`~/.zshrc\` or \`~/.bashrc\`:
-\`\`\`bash
-export ENABLE_LSP_TOOL=1
-\`\`\`
-
-Then restart your terminal and Claude Code.
-
----
-
-"
-    # Mark as warned
-    mkdir -p "$(dirname "$LSP_ENV_STATE_FILE")" 2>/dev/null
-    touch "$LSP_ENV_STATE_FILE" 2>/dev/null
-  fi
-fi
 
 # ==============================================================================
 # LSP AUTO-INSTALL (v1.0.196) - Install LSP plugins with PROJECT SCOPE
