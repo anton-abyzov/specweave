@@ -7,7 +7,7 @@
  * @module core/lsp/tsserver-client
  */
 
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, execSync, ChildProcess } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { consoleLogger as logger } from '../../utils/logger.js';
@@ -128,7 +128,6 @@ export class TsServerClient {
 
     // Try to find global typescript
     try {
-      const { execSync } = require('child_process');
       const tsPath = execSync('which tsc', { encoding: 'utf-8' }).trim();
       const tsserverPath = path.join(path.dirname(tsPath), '../lib/node_modules/typescript/lib/tsserver.js');
       if (fs.existsSync(tsserverPath)) {

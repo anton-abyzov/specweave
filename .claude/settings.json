@@ -7,7 +7,5 @@
     ],
     "defaultMode": "bypassPermissions"
   },
-  "enabledPlugins": {
-    "sw@specweave": true
-  }
+  "enabledPlugins": {}
 }

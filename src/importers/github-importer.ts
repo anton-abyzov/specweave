@@ -35,16 +35,13 @@ export class GitHubImporter implements Importer {
     this.owner = owner;
     this.repo = repo;
 
-    // DIAGNOSTIC (v1.0.7): Log token presence for debugging import issues
+    // Token handling - avoid logging sensitive information
     const effectiveToken = token || process.env.GITHUB_TOKEN;
-    const tokenSource = token ? 'parameter' : (process.env.GITHUB_TOKEN ? 'GITHUB_TOKEN env' : 'none');
-    const tokenPrefix = effectiveToken ? effectiveToken.slice(0, 8) + '...' : 'none';
-    console.log(`   🔑 GitHubImporter: ${owner}/${repo} (token: ${tokenPrefix} from ${tokenSource})`);
+    const tokenSource = token ? 'parameter' : (process.env.GITHUB_TOKEN ? 'env' : 'none');
+    console.log(`   🔑 GitHubImporter: ${owner}/${repo} (auth: ${tokenSource !== 'none' ? 'configured' : 'none'})`);
 
-    // CRITICAL WARNING (v1.0.7): OAuth tokens (gho_) lack repo scope for private repos!
-    if (effectiveToken && effectiveToken.startsWith('gho_')) {
-      console.log(`   ⚠️  WARNING: OAuth token (gho_*) detected - may lack repo scope for private repos!`);
-    }
+    // Note: OAuth tokens (gho_*) may lack repo scope for private repos
+    // Warning will be shown if 404 error occurs during import
 
     this.octokit = new Octokit({
       auth: effectiveToken,

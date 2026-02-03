@@ -6,6 +6,20 @@
 #
 # Usage: bash read-progress.sh [incrementId]
 #
+# DATA SOURCE: .specweave/state/dashboard.json (rebuilt by rebuild-dashboard-cache.sh)
+#
+# FOLDER LOOKUP (by rebuild-dashboard-cache.sh):
+#   Scanned:  .specweave/increments/[0-9]*/ (numeric-prefixed folders only)
+#   Excluded: _archive/, _abandoned/, _paused/ (special folders)
+#   Status:   From metadata.json "status" field
+#
+# STATUS GROUPING:
+#   👀 Ready for Review: ready_for_review
+#   🔄 Active:           active, planning
+#   📋 Backlog:          backlog (planned but not started)
+#   ⏸️  Paused:           paused
+#   (Not shown):         completed, abandoned
+#
 # Compatible with bash 3.x (macOS default)
 
 set -e
@@ -199,11 +213,11 @@ if [[ -n "$READY_FOR_REVIEW" ]]; then
   echo ""
 fi
 
-# Get active increments (excluding ready_for_review)
+# Get active increments (excluding ready_for_review and backlog)
 # Note: "planned" is a legacy typo for "planning" - support both for backwards compatibility
 ACTIVE=$(jq -r '
   .increments | to_entries[] |
-  select(.value.status == "active" or .value.status == "planning" or .value.status == "planned" or .value.status == "backlog") |
+  select(.value.status == "active" or .value.status == "planning" or .value.status == "planned") |
   "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.acs.completed)|\(.value.acs.total)|\(.value.status)|\(.value.priority)|\(.value.type)"
 ' "$CACHE_FILE" 2>/dev/null)
 
@@ -227,15 +241,40 @@ if [[ -n "$ACTIVE" ]]; then
     # Format priority badge
     pri_badge=""
     case "$priority" in P0|critical) pri_badge="🔴" ;; P1|high) pri_badge="🟠" ;; esac
-    # Show status indicator if not "active"
+    # Show status indicator if planning
     status_indicator=""
     case "$inc_status" in
       planning|planned) status_indicator=" (📝 planning)" ;;
-      backlog) status_indicator=" (📋 backlog)" ;;
     esac
     echo "  $pri_badge $id$status_indicator"
     echo "     $bar $completed/$total tasks | $ac_completed/$ac_total ACs ($ac_pct%)"
   done <<< "$ACTIVE"
+  echo ""
+fi
+
+# Get backlog increments (separate from active)
+BACKLOG=$(jq -r '
+  .increments | to_entries[] |
+  select(.value.status == "backlog") |
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.acs.completed)|\(.value.acs.total)|\(.value.priority)"
+' "$CACHE_FILE" 2>/dev/null)
+
+BACKLOG_COUNT=0
+if [[ -n "$BACKLOG" ]]; then
+  echo "📋 Backlog:"
+  while IFS='|' read -r id completed total ac_completed ac_total priority; do
+    [[ -z "$id" ]] && continue
+    BACKLOG_COUNT=$((BACKLOG_COUNT + 1))
+    if [[ "$total" -gt 0 ]]; then
+      pct=$((completed * 100 / total))
+    else
+      pct=0
+    fi
+    # Format priority badge
+    pri_badge=""
+    case "$priority" in P0|critical) pri_badge="🔴" ;; P1|high) pri_badge="🟠" ;; esac
+    echo "  $pri_badge $id - $pct% planned"
+  done <<< "$BACKLOG"
   echo ""
 fi
 
@@ -267,12 +306,13 @@ if [[ -n "$PAUSED" ]]; then
 fi
 
 # Summary section
-if [[ "$REVIEW_COUNT" -gt 0 ]] || [[ "$ACTIVE_COUNT" -gt 0 ]] || [[ -n "$PAUSED" ]]; then
+if [[ "$REVIEW_COUNT" -gt 0 ]] || [[ "$ACTIVE_COUNT" -gt 0 ]] || [[ "$BACKLOG_COUNT" -gt 0 ]] || [[ -n "$PAUSED" ]]; then
   # Has work - show summary
   echo "────────────────────────────────────────"
   SUMMARY_PARTS=()
   [[ "$REVIEW_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$REVIEW_COUNT ready for review")
   [[ "$ACTIVE_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$ACTIVE_COUNT active")
+  [[ "$BACKLOG_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$BACKLOG_COUNT backlog")
   PAUSED_COUNT=0
   [[ -n "$PAUSED" ]] && PAUSED_COUNT=$(echo "$PAUSED" | grep -c '|' || echo 0)
   [[ "$PAUSED_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$PAUSED_COUNT paused")
