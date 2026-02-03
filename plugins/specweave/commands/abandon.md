@@ -1,5 +1,5 @@
 ---
-name: sw:abandon
+name: abandon
 description: Abandon an incomplete increment (requirements changed, obsolete)
 usage: /sw:abandon <increment-id> --reason="<reason>"
 ---
