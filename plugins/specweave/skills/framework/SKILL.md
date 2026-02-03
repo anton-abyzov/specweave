@@ -1,5 +1,5 @@
 ---
-name: framework
+name: sw:framework
 description: Expert on SpecWeave framework structure, rules, and spec-driven development conventions. Use when learning SpecWeave best practices, understanding increment lifecycle, or configuring hooks. Covers source-of-truth discipline, tasks.md/spec.md formats, living docs sync, and file organization patterns.
 allowed-tools: Read, Grep, Glob
 ---

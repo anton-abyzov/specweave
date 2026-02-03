@@ -1,5 +1,5 @@
 ---
-name: tdd-orchestrator
+name: sw:tdd-orchestrator
 description: Master TDD orchestrator for strict red-green-refactor discipline, multi-agent test-driven workflows, and TDD intent detection. Use when implementing TDD across complex features, coordinating test and implementation agents, enforcing TDD cycle discipline, or wanting to write tests first. Covers modern TDD practices, test isolation, quality gates, and TDD education.
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---

@@ -1,5 +1,5 @@
 ---
-name: lsp
+name: sw:lsp
 description: >
   Code navigation with LSP. When user says "find references", "go to definition",
   "where defined", "show type", "list symbols", "what uses", or "who calls" -

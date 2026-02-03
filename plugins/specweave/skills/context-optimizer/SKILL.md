@@ -1,5 +1,5 @@
 ---
-name: context-optimizer
+name: sw:context-optimizer
 description: Second-pass context optimization that surgically removes irrelevant content after initial context load. Use when context is bloated, tokens need reduction, or loaded specs are irrelevant to current task. Achieves 80%+ token reduction through intelligent prompt analysis.
 allowed-tools: Read, Grep, Glob
 ---

@@ -1,5 +1,5 @@
 ---
-name: docs-updater
+name: sw:docs-updater
 description: Living documentation updater that syncs implementation progress to product docs. Use when updating docs after task completion, changing DRAFT status to published, or ensuring documentation reflects current implementation state.
 ---
 
