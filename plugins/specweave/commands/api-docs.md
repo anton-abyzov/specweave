@@ -1,7 +1,7 @@
 ---
 name: api-docs
 description: Generate and synchronize API documentation - OpenAPI spec, Postman collection with environments, and API client SDKs. Framework-aware with auto-detection. For API projects only.
-usage: /sw:api-docs [--openapi] [--postman] [--env] [--all] [--watch] [--validate] [--framework <name>]
+argument-hint: [--openapi] [--postman] [--all] [--validate]
 ---
 
 # API Documentation Generator
