@@ -9,7 +9,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AnalyticsAggregator } from '../../core/analytics/analytics-aggregator.js';
 import { AnalyticsQueryOptions, AnalyticsSummary, UsageCount, DailySummary } from '../../core/analytics/types.js';
-import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 
 interface AnalyticsCommandOptions {
   since?: string;
@@ -109,27 +108,16 @@ function renderActivityChart(dailySummaries: DailySummary[]): void {
   }
 }
 
-/** Render lazy loading analytics dashboard */
+/** Render lazy loading analytics dashboard (deprecated in v1.0.210) */
 function renderLazyLoadingDashboard(): void {
-  const cacheManager = new PluginCacheManager();
-  const analytics = cacheManager.getAnalyticsSummary();
-
   const line = '═'.repeat(68);
-  const thinLine = '─'.repeat(68);
 
   console.log('\n⚡ Plugin Loading Analytics');
   console.log(line + '\n');
 
-  console.log('SUMMARY');
-  console.log(thinLine);
-  console.log(`Total plugin loads:          ${formatNumber(analytics.totalLoads)}`);
-  console.log(`Currently loaded:            ${analytics.loadedPlugins}`);
-  console.log(`Available in marketplace:    ${analytics.availablePlugins}`);
-  console.log('');
-
-  if (analytics.totalLoads === 0) {
-    console.log('No plugin loading activity recorded yet.\n');
-  }
+  console.log('Plugin cache analytics removed in v1.0.210.');
+  console.log('Claude Code now manages plugin loading directly.');
+  console.log('\nUse: claude plugin list\n');
 }
 
 /**

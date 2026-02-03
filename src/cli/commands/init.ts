@@ -1206,28 +1206,15 @@ async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<voi
       return;
     }
 
-    // Import cache manager and install the selected plugin
-    const { PluginCacheManager } = await import('../../core/lazy-loading/cache-manager.js');
-    const cacheManager = new PluginCacheManager();
-
+    // Install plugin via Claude CLI directly (v1.0.210 - removed PluginCacheManager)
     console.log(chalk.cyan(`\n📦 Auto-installing ${defaultProfile.provider.toUpperCase()} plugin...`));
 
-    const installResult = await cacheManager.installPlugins({
-      plugins: [pluginToInstall],
-      force: false,
-    });
-
-    if (installResult.success && installResult.pluginsAffected > 0) {
+    const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', `${pluginToInstall}@specweave`]);
+    if (cliResult.success) {
       console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
     } else {
-      // Fallback to CLI install
-      const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginToInstall]);
-      if (cliResult.success) {
-        console.log(chalk.green(`   ✓ ${pluginToInstall} installed`));
-      } else {
-        console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
-        console.log(chalk.gray(`   → Install manually: /plugin install ${pluginToInstall}`));
-      }
+      console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
+      console.log(chalk.gray(`   → Install manually: claude plugin install ${pluginToInstall}@specweave`));
     }
   } catch (error) {
     // Non-blocking - just log and continue

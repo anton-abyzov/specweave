@@ -32,7 +32,6 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
-import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 import { ensureLspSettingsOnUpdate } from '../helpers/init/claude-settings-lsp.js';
 import { setupLspEnvVar, isEnvVarConfigured, getShellConfigPath, detectShell } from '../helpers/init/shell-config.js';
 
@@ -187,18 +186,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2.4: Cleanup orphaned global plugin state (v1.0.176)
-  // This is GLOBAL cleanup (~/.specweave/state/plugins-loaded.json), runs even outside SpecWeave projects
-  if (!options.check) {
-    try {
-      const pluginStateCleaned = cleanupGlobalPluginState();
-      if (pluginStateCleaned) {
-        console.log(chalk.green(`  ✓ Cleaned orphaned plugin cache data (cachedPlugins removed)`));
-      }
-    } catch {
-      // Silently ignore cleanup errors
-    }
-  }
+  // Step 2.4: Plugin cache cleanup removed (v1.0.210) - Claude Code manages its own cache
 
   // Step 2.5: Remove deprecated .specweave/memory/ directory
   // No migration needed - just delete. Learnings now go to CLAUDE.md

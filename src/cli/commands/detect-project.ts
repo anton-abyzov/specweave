@@ -17,8 +17,6 @@ import chalk from 'chalk';
 import { detectProjectType, getRecommendedPlugins } from '../../core/lazy-loading/project-detector.js';
 import { detectProjectFromIncrement } from '../../core/specs/spec-detector.js';
 import { ConfigManager } from '../../core/config-manager.js';
-import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
-import { getPluginsForGroup } from '../../core/lazy-loading/keyword-detector.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
 
 export interface DetectProjectOptions {
@@ -69,51 +67,15 @@ async function detectFromFiles(
     latencyMs: detection.latencyMs,
   };
 
-  // Handle installation if requested
+  // Plugin installation removed (v1.0.210) - Claude Code manages plugins directly
   if (options.install && detection.plugins.length > 0) {
-    try {
-      const cacheManager = new PluginCacheManager();
+    result.installed = false;
+    result.installMessage = 'Plugin auto-install removed in v1.0.210. Use: claude plugin install <name>@specweave';
 
-      // Map plugin groups to actual plugin names
-      const pluginNames: string[] = [];
-      for (const group of detection.plugins) {
-        const groupPlugins = getPluginsForGroup(group);
-        pluginNames.push(...groupPlugins);
-      }
-
-      // Filter to only plugins not already loaded
-      const unloadedPlugins = pluginNames.filter((p) => !cacheManager.isPluginLoaded(p));
-
-      if (unloadedPlugins.length > 0) {
-        const installResult = await cacheManager.installPlugins({
-          plugins: unloadedPlugins,
-          force: false,
-        });
-
-        result.installed = installResult.success;
-        result.installMessage = installResult.success
-          ? `Installed ${installResult.pluginsAffected} plugin(s) in ${Math.round(installResult.durationMs)}ms`
-          : installResult.error;
-
-        logInfo('detect-project', 'Plugins installed (file-based)', {
-          types: detection.types,
-          plugins: unloadedPlugins,
-          success: installResult.success,
-        });
-      } else {
-        result.installed = true;
-        result.installMessage = 'All recommended plugins already loaded';
-      }
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      result.installed = false;
-      result.installMessage = err.message;
-
-      logError('detect-project', 'Installation failed', err, {
-        types: detection.types,
-        plugins: detection.plugins,
-      });
-    }
+    logInfo('detect-project', 'Plugin install requested but disabled', {
+      types: detection.types,
+      plugins: detection.plugins,
+    });
   }
 
   return result;
