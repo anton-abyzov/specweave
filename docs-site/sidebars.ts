@@ -390,6 +390,81 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
+    {
+      type: 'category',
+      label: 'Complete Reference',
+      collapsed: true,
+      items: [
+        {
+          type: 'link',
+          label: 'All Skills (80+)',
+          href: '/docs/reference/skills',
+        },
+        {
+          type: 'link',
+          label: 'All Commands',
+          href: '/docs/reference/commands',
+        },
+        {
+          type: 'link',
+          label: 'Use Case Guide',
+          href: '/docs/reference/use-case-guide',
+        },
+      ],
+    },
+  ],
+
+  // Reference sidebar
+  referenceSidebar: [
+    {
+      type: 'doc',
+      id: 'reference/index',
+      label: 'Overview',
+    },
+    {
+      type: 'category',
+      label: 'Skills & Commands',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'reference/skills',
+          label: 'Skills Reference (80+)',
+        },
+        {
+          type: 'doc',
+          id: 'reference/commands',
+          label: 'Commands Reference',
+        },
+        {
+          type: 'doc',
+          id: 'reference/use-case-guide',
+          label: 'Use Case Guide',
+        },
+        {
+          type: 'doc',
+          id: 'reference/command-decision-tree',
+          label: 'Command Decision Tree',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Additional References',
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'reference/compliance-standards',
+          label: 'Compliance Standards',
+        },
+        {
+          type: 'doc',
+          id: 'reference/cost-tracking',
+          label: 'Cost Tracking',
+        },
+      ],
+    },
   ],
 
   // Academy sidebar (consolidated learning)
