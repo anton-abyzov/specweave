@@ -440,7 +440,10 @@ count_open_acs() {
     fi
 
     # Count unchecked ACs: - [ ] **AC-
-    grep -c '^- \[ \] \*\*AC-' "$spec_file" 2>/dev/null || echo "0"
+    # Note: grep -c returns exit code 1 when count is 0, so use a temp var
+    local count
+    count=$(grep -c '^- \[ \] \*\*AC-' "$spec_file" 2>/dev/null) || count=0
+    echo "$count"
 }
 
 # ============================================================================

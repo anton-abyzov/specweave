@@ -1,11 +1,13 @@
-<!-- SW:META template="agents" version="1.0.202" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
+<!-- SW:META template="agents" version="1.0.205" sections="index,quickstart,rules,orchestration,principles,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
 
-<!-- SW:SECTION:index version="1.0.202" -->
+<!-- SW:SECTION:index version="1.0.205" -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
 |---------|------------|---------|
 | Rules | `#essential-rules` | Critical rules, file organization |
+| **Orchestration** | `#workflow-orchestration` | **Plan Mode, Subagents, Verification** |
+| **Principles** | `#core-principles` | **Quality: Simplicity, No Laziness** |
 | Commands | `#commands` | All SpecWeave commands |
 | **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
 | **User Story** | `#user-story-format` | **CRITICAL: Project/Board fields** |
@@ -14,7 +16,7 @@
 | Troubleshoot | `#troubleshooting` | Common issues |
 <!-- SW:END:index -->
 
-<!-- SW:SECTION:quickstart version="1.0.202" -->
+<!-- SW:SECTION:quickstart version="1.0.205" -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
@@ -23,7 +25,7 @@
 4. **Execute**: `/sw:do` to start implementation
 <!-- SW:END:quickstart -->
 
-<!-- SW:SECTION:rules version="1.0.202" -->
+<!-- SW:SECTION:rules version="1.0.205" -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -77,7 +79,193 @@
 ```
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:commands version="1.0.202" -->
+<!-- SW:SECTION:orchestration version="1.0.205" -->
+## Workflow Orchestration {#workflow-orchestration}
+
+**Claude Code has built-in orchestration features. Non-Claude tools must implement these manually.**
+
+### 1. Plan Mode Default (Use SpecWeave Increments!)
+
+**Claude Code**: Has `EnterPlanMode` tool → triggers `/sw:increment` workflow automatically.
+
+**Non-Claude Tools - Use SpecWeave Increment Structure:**
+```
+BEFORE implementing ANY non-trivial task (3+ steps):
+
+1. STOP - Don't start coding immediately
+2. Create increment folder: `.specweave/increments/XXXX-feature/`
+3. Create the 3 required files:
+   - spec.md   → WHAT & WHY (user stories, acceptance criteria)
+   - plan.md   → HOW (architecture, approach, risks)
+   - tasks.md  → Task checklist with test plans
+4. GET USER APPROVAL before implementing
+
+If something goes sideways during implementation:
+→ STOP and re-plan (don't keep pushing)
+→ Update spec.md/plan.md with revised approach
+→ Get approval again if scope changed
+```
+
+**SpecWeave Planning Files:**
+
+**spec.md** (WHAT & WHY):
+```markdown
+---
+increment: 0001-feature-name
+title: "Feature Title"
+---
+
+### US-001: User Story Title
+**Project**: my-app              # ← MANDATORY! Get from: specweave context projects
+
+**As a** [user type]
+**I want** [goal]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: [Criterion 1]
+- [ ] **AC-US1-02**: [Criterion 2]
+```
+
+**plan.md** (HOW):
+```markdown
+# Plan: Feature Name
+
+## Approach
+[High-level architecture/approach]
+
+## Risks & Decisions
+- [ ] Decision: [question needing user input]
+- Risk: [potential issue and mitigation]
+```
+
+**tasks.md** (Checklist):
+```markdown
+### T-001: Task Title
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+
+**Test Plan** (BDD):
+- Given [context] → When [action] → Then [result]
+```
+
+### 2. Subagent Strategy (Parallel Execution)
+
+**Claude Code**: Can spawn subagents with `Task` tool for parallel work.
+
+**Non-Claude Tools - Manual Parallelization:**
+```
+For large exploration/analysis tasks:
+
+Option A: Sequential Breakdown
+1. Split work into independent chunks
+2. Process one chunk at a time
+3. Aggregate results
+
+Option B: Parallel Prompts (Cursor/Copilot)
+1. Open multiple chat sessions
+2. Give each session one focused task
+3. Combine outputs manually
+
+Best practices:
+- One task per "subagent" (focused execution)
+- Keep analysis/exploration separate from implementation
+- Use checklists to track parallel workstreams
+```
+
+**When to use parallel approach:**
+- Codebase exploration (search multiple areas)
+- Multi-file analysis (review patterns across modules)
+- Batch validation (check multiple files for issues)
+- Large-scale refactoring analysis
+
+### 3. Verification Before Done
+
+**Claude Code**: PostToolUse hooks validate completion automatically.
+
+**Non-Claude Tools - Manual Verification Checklist:**
+```
+⛔ NEVER mark a task complete without proving it works!
+
+Before marking ANY task as [x] completed:
+
+□ Code compiles/builds successfully
+□ Tests pass (run: npm test, pytest, etc.)
+□ Manual verification performed (if applicable)
+□ Acceptance criteria actually satisfied (re-read AC)
+□ No console errors in browser (for frontend)
+□ API returns expected responses (for backend)
+
+Ask yourself: "Would a staff engineer approve this?"
+
+If answer is NO → task is NOT complete
+```
+
+**Verification Commands by Stack:**
+```bash
+# JavaScript/TypeScript
+npm run build && npm test
+
+# Python
+pytest && mypy .
+
+# .NET
+dotnet build && dotnet test
+
+# General
+git diff  # Review what actually changed
+```
+
+### 4. Think-Before-Act (Dependencies)
+
+**Satisfy dependencies BEFORE dependent operations.**
+
+```
+❌ Wrong: node script.js → Error → npm run build
+✅ Correct: npm run build → node script.js → Success
+
+❌ Wrong: Import module → Error → Install package
+✅ Correct: npm install package → Import module → Success
+```
+
+**Dependency Detection Questions:**
+1. Does this require a build step first?
+2. Are all imports/packages installed?
+3. Does this depend on another file being created?
+4. Is there a database migration needed?
+5. Are environment variables configured?
+<!-- SW:END:orchestration -->
+
+<!-- SW:SECTION:principles version="1.0.205" -->
+## Core Principles (Quality) {#core-principles}
+
+### Simplicity First
+- Write the simplest code that solves the problem
+- Avoid over-engineering and premature optimization
+- One function = one responsibility
+- If you can delete code and tests still pass, delete it
+
+### No Laziness
+- Don't leave TODO comments for "later"
+- Don't skip error handling because "it probably won't fail"
+- Don't copy-paste without understanding
+- Test edge cases, not just happy paths
+
+### Minimal Impact
+- Change only what's necessary for the task
+- Don't refactor adjacent code unless asked
+- Keep PRs focused and reviewable
+- Preserve existing patterns unless improving them is the task
+
+### Demand Elegance (Balanced)
+- Code should be readable by humans first
+- Names should reveal intent
+- BUT: Don't over-abstract for hypothetical futures
+- Pragmatic > Perfect
+<!-- SW:END:principles -->
+
+<!-- SW:SECTION:commands version="1.0.205" -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -101,10 +289,24 @@
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
-<!-- SW:SECTION:nonclaudetools version="1.0.202" -->
+<!-- SW:SECTION:nonclaudetools version="1.0.205" -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
-**CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
+**CRITICAL**: Claude Code has automatic hooks and orchestration. Other tools DO NOT.
+
+> **See also**: [Workflow Orchestration](#workflow-orchestration) for Plan Mode, Subagent Strategy, and Verification protocols.
+
+### Built-in vs Manual - Complete Comparison
+
+| Capability | Claude Code | Non-Claude Tools |
+|------------|-------------|------------------|
+| **Plan Mode** | `EnterPlanMode` → `/sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
+| **Subagents** | `Task` tool spawns parallel agents | Manual: Split work, parallel prompts |
+| **Verification** | PostToolUse hooks validate | Manual: Run tests, check AC checklist |
+| **Hooks** | Auto-run on events | YOU must mimic (see below) |
+| **Task sync** | Automatic AC updates | Manual: Edit tasks.md + spec.md |
+| **Commands** | Slash syntax works | Read command .md, follow manually |
+| **Skills** | Auto-activate on keywords | Read SKILL.md, follow workflow |
 
 ### Latest Features
 
@@ -350,7 +552,7 @@ cat plugins/specweave/commands/increment.md
 **Without these manual steps, your work won't be tracked!**
 <!-- SW:END:nonclaudetools -->
 
-<!-- SW:SECTION:syncworkflow version="1.0.202" -->
+<!-- SW:SECTION:syncworkflow version="1.0.205" -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -432,7 +634,7 @@ TASK COMPLETED
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 <!-- SW:END:syncworkflow -->
 
-<!-- SW:SECTION:contextloading version="1.0.202" -->
+<!-- SW:SECTION:contextloading version="1.0.205" -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -452,7 +654,7 @@ Read only what's needed for the current task:
 4. Avoid loading entire documentation trees
 <!-- SW:END:contextloading -->
 
-<!-- SW:SECTION:structure version="1.0.202" -->
+<!-- SW:SECTION:structure version="1.0.205" -->
 ## Project Structure
 
 ```
@@ -473,7 +675,7 @@ Read only what's needed for the current task:
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:agents version="1.0.202" -->
+<!-- SW:SECTION:agents version="1.0.205" -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
@@ -481,7 +683,7 @@ Read only what's needed for the current task:
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 
-<!-- SW:SECTION:skills version="1.0.202" -->
+<!-- SW:SECTION:skills version="1.0.205" -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -531,7 +733,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 <!-- SW:END:skills -->
 
-<!-- SW:SECTION:taskformat version="1.0.202" -->
+<!-- SW:SECTION:taskformat version="1.0.205" -->
 ## Task Format
 
 ```markdown
@@ -545,7 +747,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:usformat version="1.0.202" -->
+<!-- SW:SECTION:usformat version="1.0.205" -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -579,7 +781,7 @@ specweave context projects
 ```
 <!-- SW:END:usformat -->
 
-<!-- SW:SECTION:workflows version="1.0.202" -->
+<!-- SW:SECTION:workflows version="1.0.205" -->
 ## Workflows
 
 ### Creating Increment
@@ -636,7 +838,7 @@ title: "Feature Title"
 4. GitHub issue closed (if enabled)
 <!-- SW:END:workflows -->
 
-<!-- SW:SECTION:plugincommands version="1.0.202" -->
+<!-- SW:SECTION:plugincommands version="1.0.205" -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -646,7 +848,7 @@ title: "Feature Title"
 | `/sw-ado:sync` | Azure DevOps |
 <!-- SW:END:plugincommands -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.202" -->
+<!-- SW:SECTION:troubleshooting version="1.0.205" -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -751,7 +953,7 @@ npx playwright test
 - Running `npx` instead of MCP tools (better anyway!)
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:docs version="1.0.202" -->
+<!-- SW:SECTION:docs version="1.0.205" -->
 ## Documentation
 
 | Resource | Purpose |
