@@ -45,6 +45,9 @@ jobs:
       - name: Copy adapters
         run: npm run copy:adapters
 
+      - name: Link CLI globally
+        run: npm link
+
       - name: Run smoke tests
         run: npm test
 
