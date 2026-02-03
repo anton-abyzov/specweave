@@ -403,7 +403,6 @@ integrations:
    - `.specweave/increments/00001-feature-name/plan.md`
    - `.specweave/increments/00001-feature-name/tasks.md`
    - `.specweave/increments/00001-feature-name/tests.md`
-   - `.specweave/increments/00001-feature-name/context-manifest.yaml`
 4. Creates branch `feature/0001-feature-name`
 5. Commits files
 6. Creates draft PR
@@ -421,8 +420,7 @@ Label: feature
   ├── spec.md (WHAT/WHY)
   ├── plan.md (HOW)
   ├── tasks.md (checklist)
-  ├── tests.md (TC-0001 through TC-0010)
-  └── context-manifest.yaml
+  └── tests.md (TC-0001 through TC-0010)
 
 → Creates: PR #15 (draft)
 → Comments: "Feature structure created! Review PR #15"
@@ -435,7 +433,7 @@ Label: feature
 **Trigger**: PR opened or updated
 
 **What it does**:
-1. Loads feature's `context-manifest.yaml`
+1. Loads feature's spec files (spec.md, plan.md, tasks.md)
 2. Loads referenced specs from `docs/internal/strategy/`
 3. Validates:
    - ✅ Spec exists for changes
@@ -652,7 +650,7 @@ None ✅
 ```bash
 # Check increment folder
 ls features/0001-dark-mode/
-# Should see: spec.md, plan.md, tasks.md, tests.md, context-manifest.yaml
+# Should see: spec.md, plan.md, tasks.md, tests.md
 
 # Check branch
 git fetch
@@ -797,12 +795,7 @@ cat .specweave/docs/changelog/2025-10.md
    - Check: Actions tab → Filter by workflow
    - Fix: Adjust triggers in YAML
 
-4. **Not using context manifests**
-   - Check: Features have context-manifest.yaml
-   - Fix: Create manifests to reduce context
-
 **Cost optimization tips**:
-- Use context manifests (70%+ reduction)
 - Set reasonable max_tokens (8000-16000)
 - Use Haiku for simple tasks
 - Cache frequently-used context

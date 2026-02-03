@@ -28,8 +28,6 @@ The Generic adapter provides a **manual workflow** for SpecWeave that works with
 - **Step 2**: Create spec.md (copy template → paste to AI → save response)
 - **Step 3**: Create plan.md (copy template → paste to AI → save response)
 - **Step 4**: Create tasks.md (copy template → paste to AI → save response)
-- **Step 5**: Create context-manifest.yaml (fill manually)
-
 **Total time**: 30-60 minutes per feature (vs 30 seconds with Claude Code)
 
 ### Trade-Off: Speed vs Compatibility
@@ -109,12 +107,7 @@ cd .specweave/increments/0001-user-authentication
 3. AI generates implementation checklist
 4. Copy response → Save to `tasks.md`
 
-**Step 5** (Create context-manifest.yaml - 5 minutes):
-1. Manually create file
-2. List only relevant docs (auth specs, auth architecture)
-3. Save
-
-**Total**: 41 minutes (vs 30 seconds with Claude Code automation!)
+**Total**: 36 minutes (vs 30 seconds with Claude Code automation!)
 
 ## Simulating Skills Manually
 
@@ -139,8 +132,7 @@ You: Follow Step 1 (create folder - 1 min)
 You: Follow Step 2 (create spec.md with AI - 10 min)
 You: Follow Step 3 (create plan.md with AI - 15 min)
 You: Follow Step 4 (create tasks.md with AI - 10 min)
-You: Follow Step 5 (create manifest - 5 min)
-Total: 41 minutes
+Total: 36 minutes
 ```
 
 You manually execute the entire workflow!
@@ -215,43 +207,13 @@ The AI adopts PM perspective and creates spec.md!
 - You have VS Code+Copilot → Use Copilot adapter (2-3x faster)
 - Large projects (10+ increments) → Manual becomes tedious
 
-## Context Manifests (70%+ Token Savings)
-
-**Same benefit as automated adapters!**
-
-### The Problem
-- Your specs might be 500+ pages
-- Loading all = 50k tokens
-- ChatGPT/Claude have token limits
-
-### The Solution
-- context-manifest.yaml lists ONLY relevant files
-- Load only 50 pages = 5k tokens
-- **Savings: 90%!**
-
-### How to Use with Your AI
-
-When implementing auth feature:
-1. Open `.specweave/increments/0001-auth/context-manifest.yaml`
-2. See relevant files listed:
-   ```yaml
-   spec_sections:
-     - .specweave/docs/internal/strategy/auth/spec.md
-   documentation:
-     - .specweave/docs/internal/architecture/auth/design.md
-   ```
-3. ONLY copy those 2 files to AI (not entire docs/ folder!)
-4. AI has relevant context without token waste
-
-**Result**: Same 70%+ token savings as automated adapters!
-
 ## Tips for Success
 
 ### 1. Follow SPECWEAVE-MANUAL.md Exactly
 Templates are tested and proven → Use as-is
 
-### 2. Use Context Manifests Always
-Don't paste 500 pages → Use manifests (list 50 pages only)
+### 2. Load Only Relevant Context
+Don't paste 500 pages → Only load increment spec.md, plan.md, tasks.md
 
 ### 3. Tell AI Which Role to Adopt
 "Act as PM" or "Act as Architect" → Better results

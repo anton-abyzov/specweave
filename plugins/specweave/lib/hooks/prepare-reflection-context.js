@@ -1,4 +1,4 @@
-import { mkdirpSync, writeJsonSync } from "../utils/fs-native.js";
+import { mkdirpSync, writeJsonSync, existsSync, readJsonSync, removeSync } from "../utils/fs-native.js";
 import path from "path";
 import { createReflectionContext } from "./run-self-reflection";
 import { getModifiedFilesSummary } from "./git-diff-analyzer";
@@ -49,7 +49,7 @@ function hasReflectionContext(incrementId, projectRoot) {
     ".temp",
     "reflection-context.json"
   );
-  return fs.existsSync(contextFile);
+  return existsSync(contextFile);
 }
 function readReflectionContext(incrementId, projectRoot) {
   const rootDir = projectRoot || process.cwd();
@@ -63,11 +63,11 @@ function readReflectionContext(incrementId, projectRoot) {
     ".temp",
     "reflection-context.json"
   );
-  if (!fs.existsSync(contextFile)) {
+  if (!existsSync(contextFile)) {
     return null;
   }
   try {
-    return fs.readJsonSync(contextFile);
+    return readJsonSync(contextFile);
   } catch {
     return null;
   }
@@ -83,8 +83,8 @@ function clearReflectionContext(incrementId, projectRoot) {
     "reflections",
     ".temp"
   );
-  if (fs.existsSync(tempDir)) {
-    fs.removeSync(tempDir);
+  if (existsSync(tempDir)) {
+    removeSync(tempDir);
   }
 }
 if (require.main === module) {

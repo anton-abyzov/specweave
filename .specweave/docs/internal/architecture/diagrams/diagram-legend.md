@@ -330,7 +330,6 @@ All in `.specweave/increments/_archive/0001-name/`:
 - `plan.md` - Technical design
 - `tasks.md` - Implementation checklist
 - `tests.md` - Test strategy
-- `context-manifest.yaml` - Context loading config
 - `security.md` - Threat model
 - `reports/` - Validation/quality reports
 - `scripts/` - Helper scripts

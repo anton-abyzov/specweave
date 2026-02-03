@@ -100,9 +100,8 @@ interface IAdapter {
 1. Check if increment exists in `.specweave/increments/####-name/`
 2. If not, create: spec.md, plan.md, tasks.md
 
-## Context Loading (70%+ Token Reduction)
-**CRITICAL**: Always read `context-manifest.yaml` first!
-Only load files listed in manifest.
+## Context Loading
+Load spec.md, plan.md, tasks.md from the increment folder.
 ```
 
 **Detection**: Checks for Cursor editor process or .cursor/ directory
@@ -134,7 +133,7 @@ mkdir -p .specweave/increments/0001-feature-name
 [Detailed template and instructions]
 
 ## Step 3: Load Context
-Copy files listed in `context-manifest.yaml` to your AI chat.
+Copy spec.md, plan.md, and tasks.md from your increment folder.
 ```
 
 **Detection**: Always returns `true` (universal fallback)

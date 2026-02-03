@@ -692,7 +692,6 @@ Store test fixtures in `tests/fixtures/`
 ```
 tests/fixtures/
 ├── sample-spec.md
-├── sample-context-manifest.yaml
 └── sample-config.yaml
 ```
 

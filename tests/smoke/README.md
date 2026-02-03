@@ -164,7 +164,6 @@ These smoke tests verify that SpecWeave framework:
 - plan.md - How to implement
 - tasks.md - Executable checklist
 - tests.md - Test strategy
-- context-manifest.yaml - Context loading
 
 ---
 
@@ -183,11 +182,6 @@ These smoke tests verify that SpecWeave framework:
 - `nextjs` - Next.js Specialist (for Next.js scenarios)
 - `devops` - DevOps Engineer
 - `qa-lead` - QA Lead
-
-✅ **Context manifests exist**:
-- Every feature has `context-manifest.yaml`
-- Manifests specify `spec_sections` and `documentation`
-- Enables 70%+ token reduction
 
 ---
 
