@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.210] - 2026-02-02
+
+### 🔧 Improvements
+
+- **Plugin cache removal**: Removed custom plugin cache system in favor of Claude Code's native caching
+- **Code cleanup**: Deleted ~5000 lines of unused cache infrastructure code
+
+---
+
 ## [1.0.209] - 2026-02-02
 
 ### 🔧 Improvements
