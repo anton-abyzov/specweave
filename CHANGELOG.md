@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.211] - 2026-02-02
+
+### 🔧 Improvements
+
+- **Cleanup**: Removed remaining plugin cache references from CLI commands
+- **Vendor files**: Added vendor utility files to plugin distribution
+- **Docs site**: Added favicon assets and updated docusaurus config
+
+---
+
 ## [1.0.210] - 2026-02-02
 
 ### 🔧 Improvements
