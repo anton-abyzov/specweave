@@ -1,9 +1,10 @@
 ---
-name: sw:lsp
+name: lsp
 description: >
   Code navigation with LSP. When user says "find references", "go to definition",
   "where defined", "show type", "list symbols", "what uses", or "who calls" -
   use native LSP tools if available, otherwise fall back to specweave lsp commands.
+user-invocable: false
 ---
 
 # LSP Code Intelligence

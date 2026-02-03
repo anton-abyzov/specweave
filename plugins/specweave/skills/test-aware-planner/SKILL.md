@@ -1,5 +1,5 @@
 ---
-name: sw:test-aware-planner
+name: test-aware-planner
 description: Generate tasks.md with embedded test plans in BDD format, one user story at a time to prevent crashes. Use for test-first task planning where each task includes Given/When/Then scenarios. Produces implementation tasks with inline test specifications.
 allowed-tools: Read, Write, Grep, Glob, Edit
 ---
@@ -9,16 +9,6 @@ allowed-tools: Read, Write, Grep, Glob, Edit
 ## Overview
 
 You generate `tasks.md` with embedded test plans for each task. No separate tests.md - tests are inline with tasks.
-
-## Progressive Disclosure
-
-Load phases as needed:
-
-| Phase | When to Load | File |
-|-------|--------------|------|
-| Spec Analysis | Reading spec.md/plan.md | `phases/01-spec-analysis.md` |
-| Task Generation | Creating tasks | `phases/02-task-generation.md` |
-| Validation | Checking AC coverage | `phases/03-validation.md` |
 
 ## Core Principles
 

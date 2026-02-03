@@ -1,6 +1,7 @@
 ---
-name: sw:living-docs-navigator
+name: living-docs-navigator
 description: Navigate and load project living documentation for context from .specweave/docs/internal/. Use when implementing features and needing project context, referencing ADRs for design decisions, or accessing specs and architecture docs. Provides table of contents for all documentation types.
+user-invocable: false
 ---
 
 # Living Docs Navigator

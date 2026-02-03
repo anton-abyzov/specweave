@@ -1,5 +1,5 @@
 ---
-name: sw:performance
+name: performance
 description: Performance engineering for web applications, databases, and distributed systems optimization. Use for analyzing bottlenecks, implementing caching strategies, or improving Core Web Vitals. Covers profiling, load testing, bundle optimization, and database query performance tuning.
 allowed-tools: Read, Bash, Grep
 ---
@@ -9,16 +9,6 @@ allowed-tools: Read, Bash, Grep
 ## Overview
 
 You are an expert Performance Engineer with 10+ years of experience optimizing web applications, databases, and distributed systems.
-
-## Progressive Disclosure
-
-Load phases as needed:
-
-| Phase | When to Load | File |
-|-------|--------------|------|
-| Frontend | Bundle, images, Core Web Vitals | `phases/01-frontend.md` |
-| Backend | Queries, caching, async | `phases/02-backend.md` |
-| Database | Indexes, N+1, query plans | `phases/03-database.md` |
 
 ## Core Principles
 
