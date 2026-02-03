@@ -34,7 +34,6 @@ import {
   SkillInvocation,
   LspRecommendation,
 } from '../../core/lazy-loading/llm-plugin-detector.js';
-import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
 
 export interface DetectIntentOptions {
@@ -345,46 +344,16 @@ export async function detectIntentCommand(
     });
   }
 
-  // Handle installation if requested
-  // Note: No confidence threshold - if LLM says install, we install
+  // Plugin installation removed (v1.0.210) - Claude Code manages plugins directly
+  // The --install flag is deprecated but kept for backward compatibility
   if (options.install && result.plugins.length > 0) {
-    try {
-      const cacheManager = new PluginCacheManager();
+    result.installed = false;
+    result.installMessage = 'Plugin auto-install removed in v1.0.210. Use: claude plugin install <name>@specweave';
 
-      // Filter to only plugins not already loaded
-      const unloadedPlugins = result.plugins.filter((p) => !cacheManager.isPluginLoaded(p));
-
-      if (unloadedPlugins.length > 0) {
-        const installResult = await cacheManager.installPlugins({
-          plugins: unloadedPlugins,
-          force: false,
-        });
-
-        result.installed = installResult.success;
-        result.installMessage = installResult.success
-          ? `Installed ${installResult.pluginsAffected} plugin(s) in ${Math.round(installResult.durationMs)}ms`
-          : installResult.error;
-
-        logInfo('detect-intent', 'Plugins installed via LLM detection', {
-          plugins: unloadedPlugins,
-          success: installResult.success,
-          durationMs: installResult.durationMs,
-          reasoning: llmResult.reasoning,
-        });
-      } else {
-        result.installed = true;
-        result.installMessage = 'All plugins already loaded';
-      }
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      result.installed = false;
-      result.installMessage = err.message;
-
-      logError('detect-intent', 'Installation failed', err, {
-        plugins: result.plugins,
-        prompt: prompt.substring(0, 100),
-      });
-    }
+    logInfo('detect-intent', 'Plugin install requested but disabled', {
+      plugins: result.plugins,
+      reasoning: llmResult.reasoning,
+    });
   }
 
   // Output result (unless silent mode)

@@ -35,7 +35,6 @@ import os from 'os';
 // Plugin cache modules removed (v1.0.209) - Claude Code manages its own plugin cache
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
-import { cleanupGlobalPluginState } from '../../core/lazy-loading/cache-manager.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -746,15 +745,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.yellow('🔄 Force mode: Will clear cache before reinstalling\n'));
   }
 
-  // Step 0.5: Cleanup orphaned plugin state (v1.0.176)
-  try {
-    const cleaned = cleanupGlobalPluginState();
-    if (cleaned) {
-      console.log(chalk.green('✓ Cleaned orphaned plugin cache data'));
-    }
-  } catch {
-    // Silently ignore cleanup errors
-  }
+  // Plugin cache cleanup removed (v1.0.210) - Claude Code manages its own cache
 
   // Step 1: Check/update marketplace from GitHub
   console.log(chalk.yellow('📥 Step 1: Checking marketplace status...'));
