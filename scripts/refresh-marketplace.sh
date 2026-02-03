@@ -254,7 +254,8 @@ if [ "$LAZY_MODE" = true ]; then
 
   # Install CORE plugin (provides /sw:increment, /sw:do, /sw:done etc.)
   echo -e "${BLUE}  Installing $CORE_PLUGIN (core commands)...${NC}"
-  if claude plugin install "$CORE_PLUGIN" 2>&1 | grep -q "Successfully installed\|already installed"; then
+  # v1.0.210: Install with PROJECT scope by default to prevent global pollution
+  if claude plugin install "$CORE_PLUGIN" --scope project 2>&1 | grep -q "Successfully installed\|already installed"; then
     echo -e "${GREEN}  ✓ $CORE_PLUGIN installed${NC}"
     ((SUCCESS_COUNT++))
   else
@@ -299,7 +300,8 @@ else
   while IFS= read -r plugin; do
     echo -e "${BLUE}  Installing $plugin...${NC}"
 
-    if claude plugin install "$plugin" 2>&1 | grep -q "Successfully installed\|already installed"; then
+    # v1.0.210: Install with PROJECT scope by default
+    if claude plugin install "$plugin" --scope project 2>&1 | grep -q "Successfully installed\|already installed"; then
       echo -e "${GREEN}  ✓ $plugin installed${NC}"
       ((SUCCESS_COUNT++))
     else
