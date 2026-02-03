@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.218] - 2026-02-03
+
+### 🔧 Breaking Changes
+
+- **Plugin commands migrated to skills**: All 60 commands from `plugins/specweave/commands/` converted to `plugins/specweave/skills/*/SKILL.md` format
+- Commands like `/sw:progress`, `/sw:do`, `/sw:done` now work properly in Claude Code 2.1.3+
+
+### Improvements
+
+- **Skill naming convention**: Fixed frontmatter names to follow Anthropic's official pattern (simple names without prefix)
+- **Smoke tests**: Updated to reflect new skills-only structure
+
+---
+
+
+
 ## [1.0.216] - 2026-02-03
 
 ### 🔧 Improvements
