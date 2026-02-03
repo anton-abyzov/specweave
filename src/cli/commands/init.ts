@@ -307,8 +307,8 @@ export async function initCommand(
   // Now show welcome message in selected language
   console.log(chalk.blue.bold('\n' + locale.t('cli', 'init.welcome') + '\n'));
 
-  let targetDir: string;
-  let finalProjectName: string;
+  let targetDir: string = '';
+  let finalProjectName: string = '';
   let usedDotNotation = false;
   let continueExisting = false;
 
@@ -372,12 +372,35 @@ export async function initCommand(
       continueExisting = result.continueExisting;
     }
   } else {
-    // Create subdirectory
+    // Create subdirectory OR use current directory in quick mode
     if (!projectName) {
       if (isCI) {
-        // CI/quick mode: use default project name
-        projectName = 'my-saas';
-        console.log(chalk.gray('   → CI/quick mode: Using default project name "my-saas"'));
+        // CI/quick mode without project name: use current directory (like "." notation)
+        // This enables: specweave init --quick (without any args)
+        usedDotNotation = true;
+        targetDir = process.cwd();
+        const dirName = path.basename(targetDir);
+
+        // Sanitize directory name for project name
+        if (!/^[a-z0-9-]+$/.test(dirName)) {
+          finalProjectName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+          console.log(chalk.gray(`   → Quick mode: Using current directory "${dirName}" as "${finalProjectName}"`));
+        } else {
+          finalProjectName = dirName;
+          console.log(chalk.gray(`   → Quick mode: Using current directory "${finalProjectName}"`));
+        }
+
+        // Smart re-initialization for quick mode
+        if (fs.existsSync(path.join(targetDir, '.specweave'))) {
+          const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
+          if (result.action === 'cancel') {
+            process.exit(0);
+          }
+          continueExisting = result.continueExisting;
+        }
+
+        // Quick mode handled: targetDir and finalProjectName already set
+        // Skip to nested .specweave check below
       } else {
         projectName = await input({
           message: 'Project name:',
@@ -387,40 +410,44 @@ export async function initCommand(
       }
     }
 
-    targetDir = path.resolve(process.cwd(), projectName);
-    // CRITICAL FIX (v1.0.23): Normalize projectName to strip path prefixes like ./
-    // Bug: "specweave init ./my-project" stored "./my-project" in config.json
-    // which later caused split('/')[0] to return "." and fail validation
-    finalProjectName = path.basename(projectName);
+    // Only process subdirectory creation if projectName was provided/set
+    // (Quick mode without args already set targetDir and finalProjectName above)
+    if (projectName) {
+      targetDir = path.resolve(process.cwd(), projectName);
+      // CRITICAL FIX (v1.0.23): Normalize projectName to strip path prefixes like ./
+      // Bug: "specweave init ./my-project" stored "./my-project" in config.json
+      // which later caused split('/')[0] to return "." and fail validation
+      finalProjectName = path.basename(projectName);
 
-    if (fs.existsSync(targetDir)) {
-      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
+      if (fs.existsSync(targetDir)) {
+        const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
 
-      if (hasSpecweave) {
-        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-        if (result.action === 'cancel') {
-          process.exit(0);
-        }
-        continueExisting = result.continueExisting;
-      } else {
-        const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
-        if (existingFiles.length > 0) {
-          console.log(chalk.yellow('\nDirectory ' + projectName + ' exists with ' + existingFiles.length + ' file(s).'));
-          if (isCI) {
-            // CI/quick mode: proceed without asking
-            console.log(chalk.gray('   → CI/quick mode: Proceeding with initialization'));
-          } else {
-            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
-            if (!initExisting) {
-              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-              process.exit(0);
-            }
+        if (hasSpecweave) {
+          const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
+          if (result.action === 'cancel') {
+            process.exit(0);
           }
-          console.log(chalk.green('   ✅ Initializing in existing directory (brownfield-safe)\n'));
+          continueExisting = result.continueExisting;
+        } else {
+          const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
+          if (existingFiles.length > 0) {
+            console.log(chalk.yellow('\nDirectory ' + projectName + ' exists with ' + existingFiles.length + ' file(s).'));
+            if (isCI) {
+              // CI/quick mode: proceed without asking
+              console.log(chalk.gray('   → CI/quick mode: Proceeding with initialization'));
+            } else {
+              const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
+              if (!initExisting) {
+                console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+                process.exit(0);
+              }
+            }
+            console.log(chalk.green('   ✅ Initializing in existing directory (brownfield-safe)\n'));
+          }
         }
+      } else {
+        fs.mkdirSync(targetDir, { recursive: true });
       }
-    } else {
-      fs.mkdirSync(targetDir, { recursive: true });
     }
   }
 
@@ -826,8 +853,37 @@ export async function initCommand(
     }
 
     // LSP Environment Variable Setup (v1.0.191)
-    // Only for Claude tool in interactive mode - LSP enhances code intelligence
+    // For Claude tool - LSP enhances code intelligence
     const isQuickMode = options.quick || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+    // QUICK MODE: Auto-enable LSP without prompts (v1.0.210)
+    if (toolName === 'claude' && isQuickMode) {
+      // Silently enable LSP in config.json
+      const configPath = path.join(targetDir, '.specweave', 'config.json');
+      if (fs.existsSync(configPath)) {
+        try {
+          const config = await fs.readJson(configPath);
+          config.lsp = {
+            enabled: true,
+            autoInstallPlugins: true,
+            marketplace: 'boostvolt/claude-code-lsps'
+          };
+          await fs.writeJson(configPath, config, { spaces: 2 });
+          console.log(chalk.green('   ✓ LSP enabled in config'));
+        } catch {
+          // Non-critical, continue
+        }
+      }
+
+      // Try to set up shell env var silently
+      const result = setupLspEnvVar();
+      if (result.success && !result.alreadyConfigured) {
+        console.log(chalk.green('   ✓ LSP shell config added'));
+        console.log(chalk.gray('     Restart terminal for LSP to take effect'));
+      }
+    }
+
+    // INTERACTIVE MODE: Prompt for LSP setup
     if (toolName === 'claude' && !isQuickMode) {
       console.log('');
       console.log(chalk.cyan('━━━ LSP Support ━━━'));

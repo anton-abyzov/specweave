@@ -85,12 +85,13 @@ describe('LSP Plugin Installation Blocking (Gap #2)', () => {
     expect(hookContent).not.toContain('typescript-lsp@claude-plugins-official');
   });
 
-  it('should show LSP setup warning when env var not set', () => {
+  it('should document that LSP setup is handled by specweave init', () => {
     const hookContent = fs.readFileSync(hookPath, 'utf8');
 
-    // Verify the warning message exists
-    expect(hookContent).toContain('LSP Setup Required');
-    expect(hookContent).toContain('export ENABLE_LSP_TOOL=1');
+    // LSP warning removed (v1.0.209) - state file pollution issue
+    // Setup is now handled by `specweave init` and `specweave lsp status`
+    expect(hookContent).toContain('specweave init');
+    expect(hookContent).toContain('specweave lsp status');
   });
 
   it('should have v1.0.195 version marker for this fix', () => {
