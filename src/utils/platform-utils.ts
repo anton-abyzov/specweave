@@ -343,6 +343,18 @@ export class PlatformUtils {
   }
 
   /**
+   * Escapes string for AppleScript to prevent command injection
+   * Security: Handles backslashes first, then quotes, then control chars
+   */
+  private escapeForAppleScript(str: string): string {
+    return str
+      .replace(/\\/g, '\\\\')    // Escape backslashes first
+      .replace(/"/g, '\\"')       // Escape double quotes
+      .replace(/\n/g, '\\n')      // Escape newlines
+      .replace(/\r/g, '\\r');     // Escape carriage returns
+  }
+
+  /**
    * macOS notification using osascript (NON-BLOCKING)
    *
    * CRITICAL: Uses exec() without await to prevent blocking the main thread!
@@ -353,8 +365,8 @@ export class PlatformUtils {
    * @param sound Optional sound name (default: "Pop" for neutral notifications)
    */
   private sendNotificationMacOS(title: string, body: string, sound: string = 'Pop'): void {
-    const escapedTitle = title.replace(/"/g, '\\"');
-    const escapedBody = body.replace(/"/g, '\\"');
+    const escapedTitle = this.escapeForAppleScript(title);
+    const escapedBody = this.escapeForAppleScript(body);
     const soundParam = sound ? ` sound name "${sound}"` : '';
     const cmd = `osascript -e 'display notification "${escapedBody}" with title "${escapedTitle}"${soundParam}'`;
 
@@ -367,14 +379,29 @@ export class PlatformUtils {
   }
 
   /**
+   * Escapes string for shell (notify-send on Linux) to prevent command injection
+   * Security: Comprehensive escaping for shell metacharacters
+   */
+  private escapeForShell(str: string): string {
+    return str
+      .replace(/\\/g, '\\\\')    // Escape backslashes first
+      .replace(/"/g, '\\"')       // Escape double quotes
+      .replace(/\$/g, '\\$')      // Escape dollar signs
+      .replace(/`/g, '\\`')       // Escape backticks
+      .replace(/!/g, '\\!')       // Escape history expansion
+      .replace(/\n/g, ' ')        // Replace newlines with spaces
+      .replace(/\r/g, '');        // Remove carriage returns
+  }
+
+  /**
    * Linux notification using notify-send (NON-BLOCKING)
    *
    * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
    * Notifications should NEVER block execution.
    */
   private sendNotificationLinux(title: string, body: string): void {
-    const escapedTitle = title.replace(/"/g, '\\"');
-    const escapedBody = body.replace(/"/g, '\\"');
+    const escapedTitle = this.escapeForShell(title);
+    const escapedBody = this.escapeForShell(body);
     const cmd = `notify-send "${escapedTitle}" "${escapedBody}" --urgency=normal`;
 
     // Fire-and-forget: DON'T wait for completion!
@@ -386,14 +413,28 @@ export class PlatformUtils {
   }
 
   /**
+   * Escapes string for PowerShell to prevent command injection
+   * Security: Comprehensive escaping for PowerShell special chars
+   */
+  private escapeForPowerShell(str: string): string {
+    return str
+      .replace(/`/g, '``')        // Escape backticks first (PowerShell escape char)
+      .replace(/"/g, '`"')        // Escape double quotes
+      .replace(/\$/g, '`$')       // Escape dollar signs
+      .replace(/'/g, "''")        // Escape single quotes (doubled in PS)
+      .replace(/\n/g, '`n')       // Escape newlines
+      .replace(/\r/g, '`r');      // Escape carriage returns
+  }
+
+  /**
    * Windows notification using PowerShell toast (NON-BLOCKING)
    *
    * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
    * Notifications should NEVER block execution.
    */
   private sendNotificationWindows(title: string, body: string): void {
-    const escapedTitle = title.replace(/'/g, "''");
-    const escapedBody = body.replace(/'/g, "''");
+    const escapedTitle = this.escapeForPowerShell(title);
+    const escapedBody = this.escapeForPowerShell(body);
     const psScript = `
       [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;
       $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02);

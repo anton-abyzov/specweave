@@ -27,7 +27,12 @@ import { getCleanEnv } from '../utils/clean-env.js';
 
 // Use chalk if available, otherwise fallback to ANSI codes
 let chalk = chalkFallback;
-getChalk().then(c => { chalk = c; }).catch(() => {});
+getChalk().then(c => { chalk = c; }).catch((err) => {
+  // Fallback already set, just log at debug level
+  if (process.env.DEBUG) {
+    console.debug(`Chalk loading failed, using fallback: ${err.message}`);
+  }
+});
 
 const execAsync = promisify(exec);
 
