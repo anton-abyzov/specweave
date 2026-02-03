@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.209] - 2026-02-02
+
+### 🔧 Improvements
+
+- **Command naming**: Removed plugin prefixes from command names for cleaner invocation
+
+---
+
 ## [1.0.208] - 2026-02-02
 
 ### 🔧 Improvements
