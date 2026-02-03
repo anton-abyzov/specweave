@@ -160,17 +160,20 @@ If a skill didn't auto-activate, Claude can explicitly invoke it:
 Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
 ```
 
-### Via Task Tool (Agents)
+### Via Task Tool (Subagents)
 
-For complex tasks requiring isolation:
+For complex tasks requiring isolated context:
 
 ```typescript
+// Use valid subagent types: Explore, Plan, general-purpose
 Task({
-  subagent_type: "sw-frontend:frontend-architect",
-  prompt: "Create a React dashboard with charts",
-  description: "Frontend architecture"
+  subagent_type: "Explore",
+  prompt: "Analyze the frontend codebase structure and patterns",
+  description: "Frontend codebase exploration"
 })
 ```
+
+**Note**: Task tool accepts these subagent types: `Explore`, `Plan`, `general-purpose`. For skills, use the Skill tool instead.
 
 ---
 

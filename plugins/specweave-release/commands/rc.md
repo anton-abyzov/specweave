@@ -1,5 +1,5 @@
 ---
-name: sw-release:rc
+name: rc
 description: Manage Release Candidate (RC) lifecycle including creation, testing, validation, and promotion to production. Handles RC iteration (rc.1, rc.2, rc.3), tracks testing status, coordinates RC across multiple repositories, manages canary deployments, and promotes RC to final release when validation passes.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: sw-github:update-user-story
+name: update-user-story
 description: Update GitHub issue for user story with proper ACs and tasks
 ---
 

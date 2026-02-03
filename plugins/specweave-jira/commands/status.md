@@ -1,5 +1,5 @@
 ---
-name: sw-jira:status
+name: status
 description: Check JIRA sync status for SpecWeave increment
 ---
 
@@ -63,12 +63,10 @@ const completedTasks = (tasksContent.match(/\[x\] completed/gi) || []).length;
 const completion = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 ```
 
-### 4. Invoke JIRA Manager Agent (Optional - For Live Status)
+### 4. Invoke JIRA Manager Skill (Optional - For Live Status)
 
 ```
-Use Task tool with subagent_type: "specweave-jira:jira-manager:jira-manager"
-
-Prompt: "Check JIRA sync status for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Check JIRA sync status for increment {increment-id}.
 
 Issue Key: {issueKey}
 Profile: {profileName} (domain: {domain})

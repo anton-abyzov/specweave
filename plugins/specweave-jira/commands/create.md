@@ -1,5 +1,5 @@
 ---
-name: sw-jira:create
+name: create
 description: Create JIRA issue from SpecWeave increment
 ---
 
@@ -81,12 +81,10 @@ const { domain, projectKey } = profileConfig.config;
 - Check JIRA_API_TOKEN and JIRA_EMAIL environment variables set
 - Check JIRA profile has domain and projectKey
 
-### 4. Invoke JIRA Manager Agent
+### 4. Invoke JIRA Manager Skill
 
 ```
-Use Task tool with subagent_type: "specweave-jira:jira-manager:jira-manager"
-
-Prompt: "Create JIRA issue for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Create JIRA issue for increment {increment-id}.
 
 IMPORTANT: Permission already verified (canUpdateExternalItems=true).
 Use profile: {profileName} (domain: {domain}, project: {projectKey})
