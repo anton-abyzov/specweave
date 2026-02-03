@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.212] - 2026-02-03
+
+### 🔧 Improvements
+
+- **Code simplification**: Simplified update command and directory structure initialization
+
+---
+
 ## [1.0.211] - 2026-02-02
 
 ### 🔧 Improvements
