@@ -1,5 +1,5 @@
 ---
-name: sw:do
+name: do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
 hooks:
   PostToolUse:

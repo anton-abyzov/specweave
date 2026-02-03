@@ -1,5 +1,5 @@
 ---
-name: sw:reflect-on
+name: reflect-on
 description: Enable automatic reflection on session end. Stop hook will analyze session and extract learnings automatically. Activates for reflect on, enable reflect, auto reflect, automatic learning.
 ---
 

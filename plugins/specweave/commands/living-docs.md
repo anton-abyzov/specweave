@@ -1,5 +1,5 @@
 ---
-name: sw:living-docs
+name: living-docs
 description: Launch or resume Living Docs Builder independently. Generates comprehensive enterprise documentation from codebase analysis with AI-powered insights. LSP-enhanced by default for accurate API extraction.
 usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan] [--no-lsp]
 ---

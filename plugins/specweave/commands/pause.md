@@ -1,5 +1,5 @@
 ---
-name: sw:pause
+name: pause
 description: Pause an active increment (blocked by external dependency, deprioritized)
 usage: /sw:pause <increment-id> --reason="<reason>"
 ---

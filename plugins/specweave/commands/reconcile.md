@@ -1,5 +1,5 @@
 ---
-name: sw:reconcile
+name: reconcile
 description: Reconcile increment ID collisions after multi-developer merge. Renumbers conflicting increments based on modification dates.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: sw:check-tests
+name: check-tests
 description: Validate test coverage for increment tasks, check AC-ID coverage, report test status, and verify coverage targets (NEW format with embedded tests in tasks.md)
 ---
 

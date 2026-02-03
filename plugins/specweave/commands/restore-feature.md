@@ -1,5 +1,5 @@
 ---
-name: sw:restore-feature
+name: restore-feature
 description: Restore a feature or epic from archive back to active status
 ---
 

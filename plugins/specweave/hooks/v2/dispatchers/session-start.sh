@@ -39,6 +39,18 @@ if [[ -f "$AUTO_MODE_FILE" ]]; then
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SessionStart: Cleared auto-mode session files (session-scoped)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
 fi
 
+# ============================================================================
+# PLUGIN CACHE CLEANUP: Clear cached plugin files on each session start
+# This ensures plugins are always loaded fresh from source, avoiding stale cache issues.
+# v1.0.206: Added per user request to eliminate cache-related plugin loading problems
+# ============================================================================
+PLUGIN_CACHE_DIR="$HOME/.claude/plugins/cache/specweave"
+if [[ -d "$PLUGIN_CACHE_DIR" ]]; then
+  rm -rf "$PLUGIN_CACHE_DIR" 2>/dev/null
+  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SessionStart: Cleared plugin cache ($PLUGIN_CACHE_DIR)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
+fi
+
 # Read stdin to extract agent_type (Claude Code 2.1.2+)
 INPUT=$(cat 2>/dev/null || echo '{}')
 AGENT_TYPE=""
@@ -76,7 +88,9 @@ HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DEBUG="$HOME/.claude/debug/latest"
 if [[ -f "$CLAUDE_DEBUG" ]]; then
   # Count MCP drops in last debug log (only check last 500 lines for speed)
-  MCP_DROPS=$(tail -500 "$CLAUDE_DEBUG" 2>/dev/null | grep -c "WS-IDE connection dropped" 2>/dev/null || echo "0")
+  MCP_DROPS=$(tail -500 "$CLAUDE_DEBUG" 2>/dev/null | grep -c "WS-IDE connection dropped" 2>/dev/null | head -1 || echo "0")
+  MCP_DROPS="${MCP_DROPS//[^0-9]/}"  # Strip non-numeric characters
+  [[ -z "$MCP_DROPS" ]] && MCP_DROPS=0
   if [[ "$MCP_DROPS" -gt 2 ]]; then
     echo "{\"continue\":true,\"systemMessage\":\"⚠️ MCP Connection Issues Detected: $MCP_DROPS drops in last session. Consider: (1) Restart VS Code Extension Host (Cmd+Shift+P), (2) Close extra files, (3) Use terminal mode if issues persist.\"}"
   fi

@@ -1,5 +1,5 @@
 ---
-name: sw:sync-status
+name: sync-status
 description: Detect and fix status desyncs between metadata.json and spec.md
 ---
 

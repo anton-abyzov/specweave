@@ -1,5 +1,5 @@
 ---
-name: sw:notifications
+name: notifications
 description: View and manage sync notifications - import completions, discrepancies, sync failures. Filter by type and severity, show details, dismiss notifications.
 ---
 

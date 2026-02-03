@@ -1,5 +1,5 @@
 ---
-name: sw:update-status
+name: update-status
 description: Force-update status line cache with latest increment status
 ---
 

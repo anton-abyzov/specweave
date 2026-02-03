@@ -1,5 +1,5 @@
 ---
-name: sw:embed-acs
+name: embed-acs
 description: Auto-embed Acceptance Criteria from living docs into increment spec.md for hook compatibility
 ---
 

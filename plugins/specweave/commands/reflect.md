@@ -1,5 +1,5 @@
 ---
-name: sw:reflect
+name: reflect
 description: Analyze current session and extract learnings to CLAUDE.md Skill Memories. Enables self-improving AI that learns from corrections and patterns. Activates for reflect, remember, learn from session, extract learnings.
 ---
 

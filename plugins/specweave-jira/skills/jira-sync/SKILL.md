@@ -224,3 +224,60 @@ fi
 **Sync**: `/sync-jira sync 0001`
 
 All conversion logic is handled by the `jira-mapper` agent.
+
+---
+
+## Confluence Page Sync
+
+JIRA and Confluence are both Atlassian products and often used together. This skill can also help with Confluence page sync.
+
+### Confluence Credentials
+
+Same authentication pattern as JIRA (Basic Auth with email:api_token):
+
+```bash
+# .env (gitignored)
+CONFLUENCE_API_TOKEN=your-api-token    # Same as JIRA token works
+CONFLUENCE_EMAIL=your-email@example.com
+CONFLUENCE_DOMAIN=your-domain.atlassian.net
+CONFLUENCE_SPACE_KEY=PROJ
+```
+
+### Key Confluence Operations
+
+| Operation | Endpoint | Method |
+|-----------|----------|--------|
+| Get page | `/wiki/api/v2/pages/{id}?body-format=storage` | GET |
+| Update page | `/wiki/api/v2/pages/{id}` | PUT |
+| Create page | `/wiki/api/v2/pages` | POST |
+
+### Critical: Version Increment
+
+**Every page update MUST increment the version number**:
+
+```bash
+# 1. Get current version
+curl -s GET ".../pages/{id}" | jq '.version.number'
+# Returns: 5
+
+# 2. Update with version + 1
+PUT ".../pages/{id}"
+{ "version": { "number": 6 } }
+```
+
+**Error if version not incremented**:
+```
+409 Conflict: "Version must be incremented on update. Current version is: 5"
+```
+
+### Reference Documentation
+
+For complete Confluence API details, see:
+- [confluence-page-api.md](../../reference/confluence-page-api.md)
+
+### When to Use Confluence Sync
+
+- Sync increment specs to Confluence for stakeholder visibility
+- Publish living docs to Confluence wiki
+- Sync task completion status to Confluence task lists
+- Create Confluence pages for PRDs, HLDs, ADRs

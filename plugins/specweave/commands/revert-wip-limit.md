@@ -1,5 +1,5 @@
 ---
-name: sw:revert-wip-limit
+name: revert-wip-limit
 description: Revert WIP limit to original value after temporary adjustment
 ---
 

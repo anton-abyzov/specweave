@@ -462,4 +462,116 @@ You:
 
 ---
 
+---
+
+## Confluence Page Sync (Atlassian Wiki)
+
+### Overview
+
+Sync SpecWeave living docs to Confluence pages. Confluence is commonly paired with JIRA for documentation.
+
+**Reference**: [confluence-page-api.md](../../reference/confluence-page-api.md)
+
+### Confluence Credentials
+
+```bash
+# .env (gitignored)
+CONFLUENCE_API_TOKEN=your-api-token
+CONFLUENCE_EMAIL=your-email@example.com
+CONFLUENCE_DOMAIN=your-domain.atlassian.net
+CONFLUENCE_SPACE_KEY=PROJ
+```
+
+### Page Update Workflow (CRITICAL)
+
+**Rule**: Version MUST be incremented on every update.
+
+```bash
+# 1. GET current page to retrieve version
+GET /wiki/api/v2/pages/{pageId}?body-format=storage
+→ Extract: version.number, title, spaceId
+
+# 2. PUT with incremented version
+PUT /wiki/api/v2/pages/{pageId}
+{
+  "id": "{pageId}",
+  "status": "current",
+  "title": "{title}",
+  "spaceId": "{spaceId}",
+  "body": {
+    "representation": "storage",
+    "value": "<p>Updated content</p>"
+  },
+  "version": {
+    "number": {currentVersion + 1},
+    "message": "Synced from SpecWeave"
+  }
+}
+```
+
+### SpecWeave → Confluence Mapping
+
+| SpecWeave | Confluence | Location |
+|-----------|------------|----------|
+| Increment spec.md | Page | `/wiki/spaces/{SPACE}/pages/{pageId}` |
+| tasks.md | Task List macro | `<ac:task-list>` in page body |
+| Living docs | Child pages | Under parent page |
+| AC checkboxes | Task status | `complete`/`incomplete` |
+
+### Storage Format Essentials
+
+Confluence uses XHTML-based storage format (NOT standard HTML):
+
+```xml
+<!-- Task list for spec ACs -->
+<ac:task-list>
+  <ac:task>
+    <ac:task-status>incomplete</ac:task-status>
+    <ac:task-body>AC-001: User can login</ac:task-body>
+  </ac:task>
+  <ac:task>
+    <ac:task-status>complete</ac:task-status>
+    <ac:task-body>AC-002: Password validation</ac:task-body>
+  </ac:task>
+</ac:task-list>
+
+<!-- Status macro (colored label) -->
+<ac:structured-macro ac:name="status">
+  <ac:parameter ac:name="colour">Green</ac:parameter>
+  <ac:parameter ac:name="title">COMPLETED</ac:parameter>
+</ac:structured-macro>
+
+<!-- Code block -->
+<ac:structured-macro ac:name="code">
+  <ac:parameter ac:name="language">typescript</ac:parameter>
+  <ac:plain-text-body><![CDATA[const x = 1;]]></ac:plain-text-body>
+</ac:structured-macro>
+```
+
+### Metadata Storage
+
+```json
+{
+  "external_sync": {
+    "jira": { "issueKey": "PROJ-123" },
+    "confluence": {
+      "pageId": "123456789",
+      "pageUrl": "https://company.atlassian.net/wiki/spaces/PROJ/pages/123456789",
+      "spaceKey": "PROJ",
+      "lastSyncedAt": "2026-02-02T10:30:00Z"
+    }
+  }
+}
+```
+
+### Common Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `409: Version must be incremented` | Stale version | Re-GET page, increment version |
+| `400: Invalid storage format` | Bad XHTML | Self-close tags (`<br />`) |
+| `403: Forbidden` | No page permission | Check space permissions |
+
+---
+
 **You are the authoritative mapper between SpecWeave and JIRA. Your conversions must be accurate, traceable, and reversible.**

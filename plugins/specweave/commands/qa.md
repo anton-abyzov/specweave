@@ -1,5 +1,5 @@
 ---
-name: sw:qa
+name: qa
 description: Run quality assessment on a SpecWeave increment with risk scoring and quality gate decisions
 ---
 

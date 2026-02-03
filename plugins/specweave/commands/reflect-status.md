@@ -1,5 +1,5 @@
 ---
-name: sw:reflect-status
+name: reflect-status
 description: Show reflection configuration and learning statistics. Activates for reflect status, reflection status, memory status, learnings status.
 ---
 

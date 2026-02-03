@@ -1,5 +1,5 @@
 ---
-name: sw:sync-specs
+name: sync-specs
 description: Sync ALL increment specifications to living docs structure by default. Creates FS-XXX folders for each increment. Use with increment ID to sync single increment.
 ---
 

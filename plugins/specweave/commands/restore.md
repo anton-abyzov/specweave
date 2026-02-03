@@ -1,5 +1,5 @@
 ---
-name: sw:restore
+name: restore
 description: Restore archived increments back to active folder
 ---
 

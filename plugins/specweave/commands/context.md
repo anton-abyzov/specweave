@@ -1,5 +1,5 @@
 ---
-name: sw:context
+name: context
 description: Load living docs context for a topic into the current conversation. Use before implementation to get relevant specs, ADRs, and architecture docs. Keywords - context, load context, get context, living docs context, inject context.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: sw:sync-monitor
+name: sync-monitor
 description: Show sync orchestration dashboard - scheduled jobs status, pending notifications, and recent sync activity across GitHub, JIRA, and ADO.
 ---
 

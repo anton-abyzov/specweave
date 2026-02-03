@@ -1,7 +1,7 @@
 ---
-name: sw:progress
+name: progress
 description: Show progress for all active increments with task completion status
-usage: /sw:progress [incrementId]
+argument-hint: "[incrementId]"
 ---
 
 # Increment Progress

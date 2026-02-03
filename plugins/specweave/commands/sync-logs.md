@@ -1,5 +1,5 @@
 ---
-name: sw:sync-logs
+name: sync-logs
 description: Query and export sync audit logs. Filter by date range, platform (github/jira/ado), and result (success/denied/error). Export to JSON, CSV, or JSONL.
 ---
 

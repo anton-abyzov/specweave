@@ -1,5 +1,5 @@
 ---
-name: sw:sync-acs
+name: sync-acs
 description: Manually synchronize acceptance criteria (AC) checkbox status in spec.md based on task completion
 ---
 
