@@ -1,6 +1,7 @@
 ---
-name: sw:smart-reopen-detector
+name: smart-reopen-detector
 description: Detects when user reports issues with recently completed work and suggests reopening relevant tasks or increments. Use when reporting bugs, regressions, or problems with recently finished features. Scans completed work from last 7 days and provides relevance-scored suggestions while checking WIP limits.
+user-invocable: false
 ---
 
 # Smart Reopen Detector
