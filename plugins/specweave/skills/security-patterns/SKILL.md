@@ -1,5 +1,5 @@
 ---
-name: security-patterns
+name: sw:security-patterns
 description: Real-time security pattern detector based on Anthropic's official security-guidance plugin. Use proactively when writing code to detect command injection, XSS, unsafe deserialization, and dynamic code execution risks. Identifies dangerous patterns BEFORE they're committed.
 allowed-tools: Read, Grep, Glob
 ---

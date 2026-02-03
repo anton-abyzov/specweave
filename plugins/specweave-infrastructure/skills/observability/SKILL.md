@@ -229,6 +229,4 @@ rules:
 
 ## Related Skills
 
-- `sre` - Incident response and runbooks
-- `performance-engineer` - Load testing and optimization
 - `devops` - Infrastructure provisioning

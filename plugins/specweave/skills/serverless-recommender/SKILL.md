@@ -1,5 +1,5 @@
 ---
-name: serverless-recommender
+name: sw:serverless-recommender
 description: Serverless platform selection expert for AWS Lambda, Azure Functions, GCP Cloud Functions, and Firebase. Use when choosing between serverless platforms, evaluating cold start requirements, or designing event-driven architectures. Considers project scale (pet project vs enterprise), workload patterns, and cost optimization.
 ---
 
