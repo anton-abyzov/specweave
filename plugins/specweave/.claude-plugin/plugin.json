@@ -18,5 +18,7 @@
     "pm",
     "architect",
     "living-docs"
-  ]
+  ],
+  "commands": "./commands/",
+  "skills": "./skills/"
 }

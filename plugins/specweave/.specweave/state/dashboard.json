@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "updatedAt": "2026-02-03T05:49:24Z",
+  "increments": {},
+  "summary": {
+    "total": 0,
+    "active": 0,
+    "paused": 0,
+    "backlog": 0,
+    "planning": 0,
+    "ready_for_review": 0,
+    "completed": 0,
+    "abandoned": 0,
+    "archived": 0,
+    "byType": {
+      "feature": 0,
+      "hotfix": 0,
+      "bug": 0,
+      "refactor": 0,
+      "experiment": 0,
+      "change-request": 0
+    },
+    "byPriority": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    }
+  },
+  "jobs": {
+    "running": [],
+    "paused": [],
+    "failed": [],
+    "completedCount": 0
+  },
+  "costs": {
+    "totalTokens": 0,
+    "totalCost": 0,
+    "totalSavings": 0,
+    "byIncrement": {}
+  },
+  "mtimes": {}
+}
