@@ -14,7 +14,6 @@ import { HealthReporter } from '../../core/hooks/HealthReporter.js';
 import { HookAutoFixer } from '../../core/hooks/HookAutoFixer.js';
 import { ReportFormat } from '../../core/hooks/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
-import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -224,26 +223,25 @@ export async function checkReflectHealth(verbose: boolean = false): Promise<{ he
 }
 
 /**
- * Check plugin cache health
+ * Check plugin cache health (simplified - relies on Claude Code's native plugin management)
  */
 export async function checkCacheHealth(verbose: boolean = false): Promise<void> {
-  console.log('\n🔍 Checking plugin cache health...\n');
+  console.log('\n🔍 Checking plugin cache...\n');
 
   const basePath = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
 
   if (!fs.existsSync(basePath)) {
     console.log('   No plugin cache found.\n');
+    console.log('   💡 Install plugins with: claude plugin install sw@specweave\n');
     return;
   }
 
-  const monitor = new CacheHealthMonitor();
   const pluginNames = fs.readdirSync(basePath).filter(name => {
     const pluginPath = path.join(basePath, name);
     return fs.statSync(pluginPath).isDirectory();
   });
 
-  let healthyCount = 0;
-  let criticalCount = 0;
+  console.log(`   Found ${pluginNames.length} cached plugins:\n`);
 
   for (const pluginName of pluginNames) {
     const pluginPath = path.join(basePath, pluginName);
@@ -255,38 +253,11 @@ export async function checkCacheHealth(verbose: boolean = false): Promise<void> 
     if (versions.length === 0) continue;
 
     const version = versions.sort().reverse()[0];
-    const versionPath = path.join(pluginPath, version);
-
-    const issues = monitor.checkPluginHealth(versionPath, version);
-    const hasCritical = issues.some(i => i.severity === 'critical');
-
-    if (issues.length === 0) {
-      healthyCount++;
-      console.log(`   ✅ ${pluginName} (${version}): Healthy`);
-    } else if (hasCritical) {
-      criticalCount++;
-      console.log(`   ❌ ${pluginName} (${version}): Critical issues`);
-      if (verbose) {
-        for (const issue of issues.filter(i => i.severity === 'critical')) {
-          console.log(`      - ${issue.message} (${issue.file})`);
-        }
-      }
-    } else {
-      console.log(`   ⚠️  ${pluginName} (${version}): ${issues.length} warnings`);
-      if (verbose) {
-        for (const issue of issues) {
-          console.log(`      - ${issue.message} (${issue.file})`);
-        }
-      }
-    }
+    console.log(`   ✅ ${pluginName} (${version})`);
   }
 
-  console.log(`\n   Summary: ${healthyCount} healthy, ${criticalCount} critical\n`);
-
-  if (criticalCount > 0) {
-    console.log('   💡 Run: specweave cache-status for details\n');
-    console.log('   💡 Run: specweave cache-refresh --force to fix\n');
-  }
+  console.log('\n   💡 Use: claude plugin list to see installed plugins\n');
+  console.log('   💡 Use: claude plugin install sw@specweave --force to refresh\n');
 }
 
 /**

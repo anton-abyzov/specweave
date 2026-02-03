@@ -1,0 +1,11 @@
+{
+  "id": "0182-remove-custom-plugin-cache",
+  "title": "Remove Custom Plugin Cache System",
+  "type": "refactor",
+  "priority": "P1",
+  "status": "completed",
+  "created": "2026-02-03",
+  "completed": "2026-02-02",
+  "testMode": "TDD",
+  "coverageTarget": 80
+}

@@ -40,16 +40,10 @@ if [[ -f "$AUTO_MODE_FILE" ]]; then
 fi
 
 # ============================================================================
-# PLUGIN CACHE CLEANUP: Clear cached plugin files on each session start
-# This ensures plugins are always loaded fresh from source, avoiding stale cache issues.
-# v1.0.206: Added per user request to eliminate cache-related plugin loading problems
+# PLUGIN CACHE: Do NOT delete - Claude Code manages its own plugin cache
+# v1.0.206: (REVERTED) Cache deletion broke plugin loading - installed_plugins.json
+#           still referenced deleted paths, causing all commands/skills to fail
 # ============================================================================
-PLUGIN_CACHE_DIR="$HOME/.claude/plugins/cache/specweave"
-if [[ -d "$PLUGIN_CACHE_DIR" ]]; then
-  rm -rf "$PLUGIN_CACHE_DIR" 2>/dev/null
-  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
-  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SessionStart: Cleared plugin cache ($PLUGIN_CACHE_DIR)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
-fi
 
 # Read stdin to extract agent_type (Claude Code 2.1.2+)
 INPUT=$(cat 2>/dev/null || echo '{}')
