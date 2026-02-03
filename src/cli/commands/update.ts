@@ -32,8 +32,7 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
-import { ensureLspSettingsOnUpdate } from '../helpers/init/claude-settings-lsp.js';
-import { setupLspEnvVar, isEnvVarConfigured, getShellConfigPath, detectShell } from '../helpers/init/shell-config.js';
+// LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 interface UpdateOptions {
   /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
@@ -211,58 +210,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2.7: Ensure LSP settings in .claude/settings.json (v1.0.184+)
-  // Projects initialized before v1.0.184 may not have lspServers configured
-  if (!options.check) {
-    try {
-      await ensureLspSettingsOnUpdate(projectPath);
-      if (options.verbose) {
-        console.log(chalk.green(`  ✓ LSP settings verified in .claude/settings.json`));
-      }
-    } catch {
-      // Non-fatal - LSP is optional
-      if (options.verbose) {
-        console.log(chalk.yellow(`  ⚠ LSP settings check skipped`));
-      }
-    }
-  }
-
-  // Step 2.8: Ensure ENABLE_LSP_TOOL env var in shell config (v1.0.191+)
-  // Projects initialized before v1.0.191 may not have the env var configured
-  if (!options.check) {
-    try {
-      const shell = detectShell();
-      const configPath = getShellConfigPath(shell, process.platform);
-
-      if (!isEnvVarConfigured(configPath, 'ENABLE_LSP_TOOL')) {
-        const result = setupLspEnvVar();
-        if (result.success && !result.alreadyConfigured) {
-          console.log(chalk.green(`  ✓ LSP enabled: Added ${result.exportSyntax} to ${result.configPath}`));
-          console.log(chalk.yellow(`    ⚠ Restart your terminal for LSP to take effect`));
-        } else if (result.success && result.alreadyConfigured) {
-          if (options.verbose) {
-            console.log(chalk.green(`  ✓ LSP env var already configured in ${result.configPath}`));
-          }
-        }
-      } else if (options.verbose) {
-        console.log(chalk.green(`  ✓ ENABLE_LSP_TOOL already in shell config`));
-      }
-    } catch {
-      // Non-fatal - shell config is optional
-      if (options.verbose) {
-        console.log(chalk.yellow(`  ⚠ LSP shell config check skipped`));
-      }
-    }
-  }
-
-  // Step 2.9: Ensure LSP config in .specweave/config.json (v1.0.193+)
-  // Projects initialized before v1.0.193 may not have the lsp section
-  if (isSpecWeaveProject && !options.check) {
-    const lspMigrated = migrateLspConfig(projectPath, options.verbose);
-    if (lspMigrated) {
-      console.log(chalk.green(`  ✓ Added LSP config to config.json (enabled by default)`));
-    }
-  }
+  // LSP is OPT-IN only (v1.0.210+)
+  // Users who want LSP should run: specweave lsp enable
+  // Removed: forced ensureLspSettingsOnUpdate, setupLspEnvVar, migrateLspConfig
 
   // Step 2.10: Ensure Deep Interview config in .specweave/config.json (v1.0.195+)
   // Projects initialized before v1.0.195 may not have the planning.deepInterview section
@@ -819,49 +769,7 @@ export function migrateDeepInterviewConfig(projectPath: string, verbose?: boolea
   }
 }
 
-/**
- * Migrate config.json to add LSP section if missing (v1.0.193+)
- * Projects initialized before v1.0.193 may not have the lsp section
- *
- * @param projectPath - Path to the project root
- * @param verbose - Show detailed output
- * @returns true if migration was performed
- */
-function migrateLspConfig(projectPath: string, verbose?: boolean): boolean {
-  const configPath = path.join(projectPath, '.specweave', 'config.json');
-
-  if (!fs.existsSync(configPath)) {
-    return false;
-  }
-
-  try {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    // Only migrate if lsp section is missing
-    if (!config.lsp) {
-      config.lsp = {
-        enabled: true,
-        autoInstallPlugins: true,
-        marketplace: 'boostvolt/claude-code-lsps',
-      };
-
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
-      if (verbose) {
-        console.log(chalk.gray(`    Added lsp section to config.json`));
-      }
-      return true;
-    }
-
-    // lsp section already exists, no migration needed
-    return false;
-  } catch (error) {
-    // If parsing fails, don't modify
-    if (verbose) {
-      console.log(chalk.yellow(`    ⚠ Could not migrate LSP config: ${error}`));
-    }
-    return false;
-  }
-}
+// migrateLspConfig removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 /**
  * Register command with Commander
