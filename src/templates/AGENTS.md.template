@@ -107,45 +107,70 @@
 
 **Claude Code has built-in orchestration features. Non-Claude tools must implement these manually.**
 
-### 1. Plan Mode Default
+### 1. Plan Mode Default (Use SpecWeave Increments!)
 
-**Claude Code**: Has `EnterPlanMode` tool that automatically enters planning state for complex tasks.
+**Claude Code**: Has `EnterPlanMode` tool → triggers `/sw:increment` workflow automatically.
 
-**Non-Claude Tools - Manual Planning Protocol:**
+**Non-Claude Tools - Use SpecWeave Increment Structure:**
 ```
 BEFORE implementing ANY non-trivial task (3+ steps):
 
 1. STOP - Don't start coding immediately
-2. Create `.specweave/increments/XXXX-feature/plan.md`
-3. List all steps required
-4. Identify dependencies between steps
-5. Note architectural decisions needed
-6. GET USER APPROVAL before implementing
+2. Create increment folder: `.specweave/increments/XXXX-feature/`
+3. Create the 3 required files:
+   - spec.md   → WHAT & WHY (user stories, acceptance criteria)
+   - plan.md   → HOW (architecture, approach, risks)
+   - tasks.md  → Task checklist with test plans
+4. GET USER APPROVAL before implementing
 
 If something goes sideways during implementation:
 → STOP and re-plan (don't keep pushing)
-→ Update plan.md with revised approach
+→ Update spec.md/plan.md with revised approach
 → Get approval again if scope changed
 ```
 
-**Planning Template (plan.md):**
+**SpecWeave Planning Files:**
+
+**spec.md** (WHAT & WHY):
+```markdown
+---
+increment: 0001-feature-name
+title: "Feature Title"
+---
+
+### US-001: User Story Title
+**Project**: my-app              # ← MANDATORY! Get from: specweave context projects
+
+**As a** [user type]
+**I want** [goal]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: [Criterion 1]
+- [ ] **AC-US1-02**: [Criterion 2]
+```
+
+**plan.md** (HOW):
 ```markdown
 # Plan: Feature Name
 
 ## Approach
-[High-level approach description]
+[High-level architecture/approach]
 
-## Steps
-1. [ ] Step one
-2. [ ] Step two (depends on: #1)
-3. [ ] Step three
-
-## Risks/Decisions
+## Risks & Decisions
 - [ ] Decision: [question needing user input]
 - Risk: [potential issue and mitigation]
+```
 
-## Approval
-- [ ] User approved this plan
+**tasks.md** (Checklist):
+```markdown
+### T-001: Task Title
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+
+**Test Plan** (BDD):
+- Given [context] → When [action] → Then [result]
 ```
 
 ### 2. Subagent Strategy (Parallel Execution)
@@ -304,9 +329,9 @@ git diff  # Review what actually changed
 
 | Capability | Claude Code | Non-Claude Tools |
 |------------|-------------|------------------|
-| **Plan Mode** | `EnterPlanMode` tool (automatic) | Manual: Create plan.md, get approval |
+| **Plan Mode** | `EnterPlanMode` → `/sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
 | **Subagents** | `Task` tool spawns parallel agents | Manual: Split work, parallel prompts |
-| **Verification** | PostToolUse hooks validate | Manual: Run tests, check checklist |
+| **Verification** | PostToolUse hooks validate | Manual: Run tests, check AC checklist |
 | **Hooks** | Auto-run on events | YOU must mimic (see below) |
 | **Task sync** | Automatic AC updates | Manual: Edit tasks.md + spec.md |
 | **Commands** | Slash syntax works | Read command .md, follow manually |

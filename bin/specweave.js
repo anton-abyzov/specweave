@@ -409,6 +409,34 @@ program
     });
   });
 
+// Decision log command - Query structured decision logs
+program
+  .command('decision-log')
+  .description('Query structured decision logs from hooks')
+  .option('--hook <name>', 'Filter by hook name (stop-auto, stop-reflect)')
+  .option('--decision <type>', 'Filter by decision type (approve, block)')
+  .option('--since <window>', 'Filter by time window (1h, 24h, 7d)')
+  .option('--limit <number>', 'Number of entries to show (default: 20)', '20')
+  .option('--json', 'Output raw JSON format')
+  .option('--tail', 'Follow log in real-time (like tail -f)')
+  .action(async (options) => {
+    const { decisionLogCommand, decisionLogTail } = await import('../dist/src/cli/commands/decision-log.js');
+    if (options.tail) {
+      await decisionLogTail({
+        hook: options.hook,
+        decision: options.decision
+      });
+    } else {
+      await decisionLogCommand({
+        hook: options.hook,
+        decision: options.decision,
+        since: options.since,
+        limit: parseInt(options.limit, 10),
+        json: options.json
+      });
+    }
+  });
+
 // Status line command - Display current increment progress
 program
   .command('status-line')

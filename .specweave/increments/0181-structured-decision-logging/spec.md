@@ -35,11 +35,11 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 **So that** I can query and analyze them programmatically
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: All hooks write to `.specweave/logs/decisions.jsonl` (JSON Lines format)
-- [ ] **AC-US1-02**: Each decision entry includes: timestamp, hook name, decision (approve/block), reason
-- [ ] **AC-US1-03**: Each decision entry includes context object with hook-specific state
+- [x] **AC-US1-01**: All hooks write to `.specweave/logs/decisions.jsonl` (JSON Lines format)
+- [x] **AC-US1-02**: Each decision entry includes: timestamp, hook name, decision (approve/block), reason
+- [x] **AC-US1-03**: Each decision entry includes context object with hook-specific state
 - [ ] **AC-US1-04**: Log rotation when file exceeds 10MB (keep last 5MB)
-- [ ] **AC-US1-05**: Decision log is human-readable with `cat` and machine-parseable with `jq`
+- [x] **AC-US1-05**: Decision log is human-readable with `cat` and machine-parseable with `jq`
 
 ---
 
@@ -51,12 +51,12 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 **So that** I can understand why sessions continue, stop, or get stuck
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Log turn counter state (current/max) on every decision
-- [ ] **AC-US2-02**: Log retry counter state (current/max) and whether stuck detected
-- [ ] **AC-US2-03**: Log validation results per increment (tasks pending, ACs open, tests status)
-- [ ] **AC-US2-04**: Log re-iteration context: previous reasons, progress made since last check
-- [ ] **AC-US2-05**: Log exit reason enum: `session_inactive`, `session_stale`, `turn_limit`, `retry_limit`, `all_complete`, `work_remaining`
-- [ ] **AC-US2-06**: When blocking, log specific blockers with actionable fix suggestions
+- [x] **AC-US2-01**: Log turn counter state (current/max) on every decision
+- [x] **AC-US2-02**: Log retry counter state (current/max) and whether stuck detected
+- [x] **AC-US2-03**: Log validation results per increment (tasks pending, ACs open, tests status)
+- [x] **AC-US2-04**: Log re-iteration context: previous reasons, progress made since last check
+- [x] **AC-US2-05**: Log exit reason enum: `session_inactive`, `session_stale`, `turn_limit`, `retry_limit`, `all_complete`, `work_remaining`
+- [x] **AC-US2-06**: When blocking, log specific blockers with actionable fix suggestions
 
 ---
 
@@ -68,11 +68,11 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 **So that** I can see what learnings were extracted and why reflection completed
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Log reflection trigger reason (session end, manual invoke)
-- [ ] **AC-US3-02**: Log transcript stats (line count, message count)
-- [ ] **AC-US3-03**: Log learnings extracted count and categories
-- [ ] **AC-US3-04**: Log exit reason enum: `learnings_saved`, `nothing_to_learn`, `timeout`, `error`, `disabled`, `no_transcript`
-- [ ] **AC-US3-05**: Log duration in milliseconds
+- [x] **AC-US3-01**: Log reflection trigger reason (session end, manual invoke)
+- [x] **AC-US3-02**: Log transcript stats (line count, message count)
+- [x] **AC-US3-03**: Log learnings extracted count and categories
+- [x] **AC-US3-04**: Log exit reason enum: `learnings_saved`, `nothing_to_learn`, `timeout`, `error`, `disabled`, `no_transcript`
+- [x] **AC-US3-05**: Log duration in milliseconds
 
 ---
 
@@ -100,12 +100,12 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 **So that** I can analyze patterns and debug issues without manual jq scripting
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: `specweave decision-log` shows recent decisions (default: last 20)
-- [ ] **AC-US5-02**: `specweave decision-log --hook stop-auto` filters by hook name
-- [ ] **AC-US5-03**: `specweave decision-log --decision block` filters by decision type
-- [ ] **AC-US5-04**: `specweave decision-log --since 1h` filters by time window (supports 1h, 24h, 7d)
-- [ ] **AC-US5-05**: `specweave decision-log --json` outputs raw JSON for piping to jq
-- [ ] **AC-US5-06**: `specweave decision-log --tail` follows log in real-time (like tail -f)
+- [x] **AC-US5-01**: `specweave decision-log` shows recent decisions (default: last 20)
+- [x] **AC-US5-02**: `specweave decision-log --hook stop-auto` filters by hook name
+- [x] **AC-US5-03**: `specweave decision-log --decision block` filters by decision type
+- [x] **AC-US5-04**: `specweave decision-log --since 1h` filters by time window (supports 1h, 24h, 7d)
+- [x] **AC-US5-05**: `specweave decision-log --json` outputs raw JSON for piping to jq
+- [x] **AC-US5-06**: `specweave decision-log --tail` follows log in real-time (like tail -f)
 
 ## Functional Requirements
 

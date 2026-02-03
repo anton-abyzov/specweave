@@ -111,7 +111,7 @@
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05, AC-US2-06
 **Depends On**: T-005
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Implementation**:
@@ -130,7 +130,7 @@
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03
 **Depends On**: T-002
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test Plan**:
@@ -155,7 +155,7 @@
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04, AC-US3-05
 **Depends On**: T-007
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Implementation**:
@@ -208,7 +208,7 @@
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03
 **Depends On**: T-002
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test Plan**:
@@ -233,7 +233,7 @@
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
 **Depends On**: T-011
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Implementation**:
@@ -280,7 +280,7 @@
 **User Story**: All
 **Satisfies ACs**: All
 **Depends On**: T-014
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Refactoring tasks**:
@@ -296,11 +296,14 @@
 
 | Phase | Tasks | Status |
 |-------|-------|--------|
-| 1. Core Utility | T-001 to T-004 | Pending |
-| 2. Stop-Auto | T-005 to T-006 | Pending |
-| 3. Stop-Reflect | T-007 to T-008 | Pending |
-| 4. Debug Mode | T-009 to T-010 | Pending |
-| 5. CLI Tool | T-011 to T-014 | Pending |
+| 1. Core Utility | T-001, T-002 | ✅ Completed |
+| 1. Core Utility | T-003, T-004 (log rotation) | Pending (P2) |
+| 2. Stop-Auto | T-005, T-006 | ✅ Completed |
+| 3. Stop-Reflect | T-007, T-008 | ✅ Completed |
+| 4. Debug Mode | T-009, T-010 | Pending (P2) |
+| 5. CLI Tool | T-011, T-012 | ✅ Completed |
+| 5. CLI Tool | T-013, T-014 (--tail mode) | Pending (P2) |
 | 6. Refactor | T-015 | Pending |
 
-**Total**: 15 tasks (TDD: 7 RED, 7 GREEN, 1 REFACTOR)
+**Completed**: 8/15 tasks (all P1 core functionality)
+**Remaining**: 7 tasks (P2 enhancements: log rotation, debug mode, --tail mode)
