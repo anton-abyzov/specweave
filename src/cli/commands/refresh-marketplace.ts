@@ -110,6 +110,25 @@ function getMarketplaceInstallPath(): string | null {
   }
 }
 
+/**
+ * Get the current source type of the marketplace (github or directory/local)
+ */
+function getMarketplaceSourceType(): 'github' | 'directory' | null {
+  const knownMarketplacesPath = path.join(os.homedir(), '.claude/plugins/known_marketplaces.json');
+
+  if (!fs.existsSync(knownMarketplacesPath)) {
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(knownMarketplacesPath, 'utf8');
+    const data = JSON.parse(content);
+    return data[MARKETPLACE_NAME]?.source?.source || null;
+  } catch {
+    return null;
+  }
+}
+
 function getPluginsFromMarketplace(marketplacePath: string): string[] {
   const marketplaceJsonPath = path.join(marketplacePath, '.claude-plugin/marketplace.json');
 
@@ -846,8 +865,16 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   const marketplaceExists = checkMarketplaceExists();
 
-  if (marketplaceExists) {
-    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' already registered`));
+  // Check current marketplace source to detect if we need to switch
+  const currentSourceType = getMarketplaceSourceType();
+  const needsSourceSwitch = marketplaceExists && (
+    (sourceMode === 'local' && currentSourceType === 'github') ||
+    (sourceMode === 'github' && currentSourceType === 'directory')
+  );
+
+  if (marketplaceExists && sourceMode !== 'local' && !needsSourceSwitch) {
+    // GitHub mode with existing GitHub marketplace: just update
+    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' already registered (GitHub source)`));
     console.log(chalk.blue('📥 Updating marketplace from source...'));
 
     const updateResult = runCommand('claude', ['plugin', 'marketplace', 'update', MARKETPLACE_NAME], true);
@@ -857,6 +884,61 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     } else {
       console.log(chalk.red('✗ Failed to update marketplace'));
       console.log(chalk.gray(updateResult.output));
+      process.exit(1);
+    }
+  } else if (needsSourceSwitch && sourceMode === 'github') {
+    // Switching from local to GitHub: remove and re-add from GitHub
+    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' exists but switching to GitHub source...`));
+
+    // Remove existing marketplace
+    const removeResult = removeMarketplace(MARKETPLACE_NAME);
+    if (!removeResult.success && !removeResult.output.includes('not found')) {
+      console.log(chalk.yellow('⚠ Could not remove existing marketplace, trying to re-add anyway...'));
+    }
+
+    // Re-add from GitHub
+    const addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO];
+    console.log(chalk.blue(`Adding from GitHub: ${GITHUB_REPO}`));
+
+    const addResult = runCommand('claude', addArgs, true);
+
+    if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
+      console.log(chalk.green('✓ GitHub marketplace added'));
+    } else {
+      console.log(chalk.red('✗ Failed to add GitHub marketplace'));
+      console.log(chalk.gray(addResult.output));
+      process.exit(1);
+    }
+  } else if (marketplaceExists && sourceMode === 'local') {
+    // Local mode with existing marketplace: re-add from local to switch source
+    console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' exists but switching to local source...`));
+
+    // Remove existing marketplace
+    const removeResult = removeMarketplace(MARKETPLACE_NAME);
+    if (!removeResult.success && !removeResult.output.includes('not found')) {
+      console.log(chalk.yellow('⚠ Could not remove existing marketplace, trying to re-add anyway...'));
+    }
+
+    // Re-add from local
+    const localPath = process.cwd();
+    const marketplaceJsonPath = path.join(localPath, '.claude-plugin/marketplace.json');
+
+    if (!fs.existsSync(marketplaceJsonPath)) {
+      console.log(chalk.red(`✗ Error: marketplace.json not found at ${localPath}`));
+      console.log(chalk.yellow('  Make sure you are in the SpecWeave repository root.'));
+      process.exit(1);
+    }
+
+    const addArgs = ['plugin', 'marketplace', 'add', localPath];
+    console.log(chalk.blue(`Adding from local development: ${localPath}`));
+
+    const addResult = runCommand('claude', addArgs, true);
+
+    if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
+      console.log(chalk.green('✓ Local marketplace added'));
+    } else {
+      console.log(chalk.red('✗ Failed to add local marketplace'));
+      console.log(chalk.gray(addResult.output));
       process.exit(1);
     }
   } else {
