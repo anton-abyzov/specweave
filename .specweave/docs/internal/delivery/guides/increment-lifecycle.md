@@ -53,12 +53,6 @@ This guide covers the complete lifecycle of SpecWeave increments, from creation 
 │   ├── Dependencies                 # Task → Task dependencies
 │   └── Estimates                    # Time estimates per task
 │
-├── context-manifest.yaml            # Context Loading (70%+ token reduction)
-│   ├── spec_sections                # Which strategy docs to load
-│   ├── documentation                # Which architecture docs to load
-│   ├── max_context_tokens           # Token budget (e.g., 10000)
-│   └── priority                     # high | medium | low
-│
 ├── logs/                            # Execution History
 │   ├── execution.log                # Task execution timeline
 │   ├── errors.log                   # Error tracking, debugging
@@ -141,7 +135,6 @@ This guide covers the complete lifecycle of SpecWeave increments, from creation 
 | **spec.md** | WHAT & WHY (business requirements) | < 250 lines | PM Agent |
 | **plan.md** | HOW (technical design + test strategy) | < 500 lines | Architect Agent |
 | **tasks.md** | Implementation checklist + embedded tests (v0.7.0+) | Variable | test-aware-planner Agent |
-| **context-manifest.yaml** | Context loading config | < 50 lines | Context Loader |
 
 ### Folder Purposes
 
@@ -1087,25 +1080,7 @@ wip_slot: 1
 
 ### Example 3: Token Savings with Context Manifest
 
-**Without manifest**: Load ALL strategy docs (50k tokens)
-**With manifest**: Load ONLY auth docs (15k tokens)
-**Savings: 70%** ✅
-
-```yaml
-# context-manifest.yaml
----
-spec_sections:
-  - .specweave/docs/internal/strategy/authentication/overview.md
-  - .specweave/docs/internal/strategy/authentication/requirements.md
-
-documentation:
-  - .specweave/docs/internal/architecture/auth-system.md
-  - .specweave/docs/internal/architecture/adr/0001-auth-method.md
-
-max_context_tokens: 15000
-priority: high
----
-```
+**Context optimization** is now handled automatically by Claude's progressive disclosure - skills and context are loaded on-demand based on the task at hand. No manual manifest configuration required.
 
 ---
 

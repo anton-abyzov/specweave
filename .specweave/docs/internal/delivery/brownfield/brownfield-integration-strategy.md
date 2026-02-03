@@ -182,7 +182,6 @@ features/0001-user-authentication/
 ├── plan.md                    # Implementation plan
 ├── tasks.md                   # Executable tasks
 ├── tests.md                   # Test strategy
-├── context-manifest.yaml      # Context loading
 ├── sync/                      # ✨ NEW - Sync metadata
 │   ├── jira-sync.json         # Last sync status with Jira
 │   ├── ado-sync.json          # Last sync status with ADO

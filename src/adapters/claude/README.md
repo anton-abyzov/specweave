@@ -129,7 +129,6 @@ npm run install:agents
 5. ✅ `increment-planner` invokes `architect` agent
 6. ✅ `architect` agent creates `plan.md` (HOW)
 7. ✅ `increment-planner` creates `tasks.md` (implementation steps)
-8. ✅ `context-loader` creates `context-manifest.yaml` (70%+ token savings)
 
 **Result**: Complete increment ready for implementation!
 

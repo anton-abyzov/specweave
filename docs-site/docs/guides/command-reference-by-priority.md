@@ -61,7 +61,7 @@ Commands you'll use regularly but not every day.
 |---------|-------------|---------|
 | `/sw:validate` | Validate increment structure | `/sw:validate 0031` |
 | `/sw:qa` | Quality assessment with risk scoring | `/sw:qa 0031` |
-| `/sw:check-tests` | Validate test coverage | `/sw:check-tests 0031` |
+| `/sw:judge-llm` | Ultrathink code validation (any files) | `/sw:judge-llm src/**/*.ts` |
 
 ### Documentation Sync
 
@@ -97,9 +97,8 @@ Specialized commands for advanced workflows.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:archive-increments` | Archive completed increments | `/sw:archive-increments` |
-| `/sw:archive-features` | Archive completed features | `/sw:archive-features FS-031` |
-| `/sw:restore-feature` | Restore archived feature | `/sw:restore-feature FS-031` |
+| `/sw:archive` | Archive completed increments | `/sw:archive 0031` |
+| `/sw:restore` | Restore archived increment | `/sw:restore 0031` |
 | `/sw:abandon` | Abandon increment | `/sw:abandon 0031 --reason "Obsolete"` |
 
 ### Import & Migration

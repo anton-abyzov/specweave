@@ -187,11 +187,7 @@ export class JiraMapper {
       await this.generateRFC(epic, stories, incrementId);
       console.log(`   ✅ Generated RFC document`);
 
-      // 9. Generate context-manifest.yaml
-      await this.generateContextManifest(incrementFolder);
-      console.log(`   ✅ Generated context-manifest.yaml`);
-
-      // 10. Update Epic in Jira with SpecWeave ID
+      // 9. Update Epic in Jira with SpecWeave ID
       await this.client.updateIssue({
         key: epicKey,
         customFields: {
@@ -545,23 +541,6 @@ export class JiraMapper {
     content += `See increment ${incrementId} in \`.specweave/increments/${incrementId}/\`\n`;
 
     fs.writeFileSync(rfcPath, content, 'utf-8');
-  }
-
-  private async generateContextManifest(incrementFolder: string): Promise<void> {
-    const manifest = {
-      spec_sections: [] as string[],
-      documentation: [] as string[],
-      max_context_tokens: 10000,
-      priority: 'high',
-      auto_refresh: false
-    };
-
-    const manifestYaml = yaml.dump(manifest);
-    fs.writeFileSync(
-      path.join(incrementFolder, 'context-manifest.yaml'),
-      `---\n${manifestYaml}---\n`,
-      'utf-8'
-    );
   }
 
   private parseMarkdownWithFrontmatter(content: string): { frontmatter: any; content: string } {
