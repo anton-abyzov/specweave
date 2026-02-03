@@ -1,5 +1,5 @@
 ---
-name: sw-github:pull
+name: pull
 description: Pull latest changes from GitHub Issues (like git pull). Imports comments, labels, and status changes.
 ---
 
@@ -58,9 +58,7 @@ if (!issueNumber) {
 ### 2. Fetch and Compare
 
 ```
-Use Task tool with subagent_type: "specweave-github:github-manager:AGENT"
-
-Prompt: "Pull changes from GitHub for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-github:github-manager", args: "Pull changes from GitHub for increment {increment-id}.
 
 Issue: #{issueNumber}
 

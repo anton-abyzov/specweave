@@ -1,5 +1,5 @@
 ---
-name: sw-ml:ml-pipeline
+name: ml-pipeline
 description: Design and implement a complete ML pipeline with multi-agent MLOps orchestration
 ---
 
@@ -27,7 +27,8 @@ The multi-agent approach ensures each aspect is handled by domain experts:
 ## Phase 1: Data & Requirements Analysis
 
 <Task>
-subagent_type: data-engineer
+subagent_type: general-purpose
+role: Data Engineer
 prompt: |
   Analyze and design data pipeline for ML system with requirements: $ARGUMENTS
 
@@ -54,7 +55,8 @@ prompt: |
 </Task>
 
 <Task>
-subagent_type: data-scientist
+subagent_type: general-purpose
+role: Data Scientist
 prompt: |
   Design feature engineering and model requirements for: $ARGUMENTS
   Using data architecture from: {phase1.data-engineer.output}
@@ -84,7 +86,8 @@ prompt: |
 ## Phase 2: Model Development & Training
 
 <Task>
-subagent_type: ml-engineer
+subagent_type: general-purpose
+role: ML Engineer
 prompt: |
   Implement training pipeline based on requirements: {phase1.data-scientist.output}
   Using data pipeline: {phase1.data-engineer.output}
@@ -112,7 +115,8 @@ prompt: |
 </Task>
 
 <Task>
-subagent_type: python-pro
+subagent_type: general-purpose
+role: Python Developer
 prompt: |
   Optimize and productionize ML code from: {phase2.ml-engineer.output}
 
@@ -141,7 +145,8 @@ prompt: |
 ## Phase 3: Production Deployment & Serving
 
 <Task>
-subagent_type: mlops-engineer
+subagent_type: general-purpose
+role: MLOps Engineer
 prompt: |
   Design production deployment for models from: {phase2.ml-engineer.output}
   With optimized code from: {phase2.python-pro.output}
@@ -175,7 +180,8 @@ prompt: |
 </Task>
 
 <Task>
-subagent_type: kubernetes-architect
+subagent_type: general-purpose
+role: Kubernetes Architect
 prompt: |
   Design Kubernetes infrastructure for ML workloads from: {phase3.mlops-engineer.output}
 
@@ -204,7 +210,8 @@ prompt: |
 ## Phase 4: Monitoring & Continuous Improvement
 
 <Task>
-subagent_type: observability-engineer
+subagent_type: general-purpose
+role: Observability Engineer
 prompt: |
   Implement comprehensive monitoring for ML system deployed in: {phase3.mlops-engineer.output}
   Using Kubernetes infrastructure: {phase3.kubernetes-architect.output}

@@ -1,5 +1,5 @@
 ---
-name: sw-jira:push
+name: push
 description: Push local progress to Jira (like git push). Updates epic/story with task completion and comments.
 ---
 
@@ -71,9 +71,7 @@ const percentage = Math.round((completedTasks / totalTasks) * 100);
 ### 3. Invoke Push Sync
 
 ```
-Use Task tool with subagent_type: "specweave-jira:jira-manager:jira-manager"
-
-Prompt: "Push progress to Jira for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Push progress to Jira for increment {increment-id}.
 
 Issue: {jiraIssueKey}
 Progress: {completedTasks}/{totalTasks} ({percentage}%)

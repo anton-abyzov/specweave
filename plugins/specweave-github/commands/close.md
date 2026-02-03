@@ -1,5 +1,5 @@
 ---
-name: sw-github:close
+name: close
 description: Close GitHub issue for completed SpecWeave increment. Posts completion summary with final stats, deliverables, and closes the issue. Links closure in increment metadata.
 ---
 

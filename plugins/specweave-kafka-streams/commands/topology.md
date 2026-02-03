@@ -1,5 +1,5 @@
 ---
-name: sw-kafka-streams:topology
+name: topology
 description: Generate Kafka Streams topology code (Java/Kotlin) with KStream/KTable patterns. Creates stream processing applications with windowing, joins, state stores, and exactly-once semantics.
 ---
 

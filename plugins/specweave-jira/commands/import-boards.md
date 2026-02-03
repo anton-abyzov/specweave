@@ -1,5 +1,5 @@
 ---
-name: sw-jira:import-boards
+name: import-boards
 description: Import JIRA boards from a project and map them to SpecWeave projects. Creates 2-level directory structure with board-based organization.
 ---
 

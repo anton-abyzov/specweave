@@ -1,5 +1,5 @@
 ---
-name: sw-ado:close
+name: close
 description: Close Azure DevOps work item when increment complete
 ---
 
@@ -101,12 +101,10 @@ Complete remaining tasks first, then re-run this command.
 }
 ```
 
-### 4. Invoke ADO Manager Agent
+### 4. Invoke ADO Manager Skill
 
 ```
-Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
-
-Prompt: "Close ADO work item for completed increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Close ADO work item for completed increment {increment-id}.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems=true, canUpdateStatus=true

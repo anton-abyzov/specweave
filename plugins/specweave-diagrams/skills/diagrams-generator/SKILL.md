@@ -76,9 +76,9 @@ const architecture = await Read('.specweave/docs/internal/architecture/auth-desi
 Delegate to agent via Task tool:
 
 ```typescript
-const result = await Task({
-  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
-  prompt: `Create ${diagramType} diagram for ${scope}
+const result = await Skill({
+  skill: "sw-diagrams:diagrams-architect",
+  args: `Create ${diagramType} diagram for ${scope}
 
 Context:
 ${loadedContext}
@@ -86,8 +86,7 @@ ${loadedContext}
 Requirements:
 - Follow SpecWeave C4 conventions
 - Use correct file naming
-- Include validation instructions`,
-  description: `Generate ${diagramType} diagram`
+- Include validation instructions`
 });
 ```
 
@@ -119,10 +118,9 @@ The agent returns diagram content. Save to correct location:
 2. Load context: Read auth spec if exists
 3. Invoke agent:
 ```typescript
-await Task({
-  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
-  prompt: "Create C4 context diagram for authentication system. Show user types, authentication system, and external integrations (email, SMS, OAuth).",
-  description: "Generate C4 Level 1 diagram"
+await Skill({
+  skill: "sw-diagrams:diagrams-architect",
+  args: "Create C4 context diagram for authentication system. Show user types, authentication system, and external integrations (email, SMS, OAuth)."
 });
 ```
 4. Agent returns diagram content
@@ -138,10 +136,9 @@ await Task({
 2. Load context: Read login spec/flow docs if exist
 3. Invoke agent:
 ```typescript
-await Task({
-  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
-  prompt: "Create sequence diagram for login flow. Show: User → Browser → AuthService → Database → SessionStore. Include success and failure paths.",
-  description: "Generate sequence diagram"
+await Skill({
+  skill: "sw-diagrams:diagrams-architect",
+  args: "Create sequence diagram for login flow. Show: User → Browser → AuthService → Database → SessionStore. Include success and failure paths."
 });
 ```
 4. Agent returns diagram
@@ -157,10 +154,9 @@ await Task({
 2. Load context: Read database schema docs if exist
 3. Invoke agent:
 ```typescript
-await Task({
-  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
-  prompt: "Create ER diagram for authentication data model. Entities: USER, SESSION, REFRESH_TOKEN, PASSWORD_RESET. Show relationships and key fields.",
-  description: "Generate ER diagram"
+await Skill({
+  skill: "sw-diagrams:diagrams-architect",
+  args: "Create ER diagram for authentication data model. Entities: USER, SESSION, REFRESH_TOKEN, PASSWORD_RESET. Show relationships and key fields."
 });
 ```
 4. Agent returns diagram

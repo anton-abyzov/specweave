@@ -110,20 +110,17 @@ You: "I need to debug network requests in my app"
 → mobile-debugging skill activates
 ```
 
-### Invoke the Mobile Architect Agent
+### Invoke the Mobile Architect Skill
 
 For architectural decisions and system design:
 
 ```
-Use the Task tool to invoke the mobile-architect agent:
+Use the Skill tool to invoke the mobile-architect skill:
 
-Task(
-  subagent_type: "specweave-mobile:mobile-architect:mobile-architect",
-  description: "Design architecture for social media app",
-  prompt: "Design a scalable React Native architecture for a social media app
-  with feed, messaging, and profile features. Include state management,
-  navigation, and performance considerations."
-)
+Skill({
+  skill: "sw-mobile:mobile-architect",
+  args: "Design a scalable React Native architecture for a social media app with feed, messaging, and profile features. Include state management, navigation, and performance considerations."
+})
 ```
 
 ## Common Workflows

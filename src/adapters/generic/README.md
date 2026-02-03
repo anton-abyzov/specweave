@@ -156,11 +156,11 @@ You manually execute the entire workflow!
 
 **Claude Code (automatic)**:
 ```typescript
-Task({ subagent_type: "sw-frontend:frontend-architect", prompt: "design components" })
-→ Frontend agent designs components with separate context window
+Skill({ skill: "sw-frontend:frontend-architect", args: "design components" })
+→ Frontend skill activates and provides specialized guidance
 ```
 
-**Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords, not agents invoked via Task.
+**Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords. For explicit invocation, use the Skill tool.
 
 **Generic (manual)**:
 ```

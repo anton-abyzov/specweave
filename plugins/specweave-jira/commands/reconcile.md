@@ -1,5 +1,5 @@
 ---
-name: sw-jira:reconcile
+name: reconcile
 description: Reconcile JIRA issue states with increment statuses. Fixes drift by closing issues for completed increments and reopening issues for resumed increments.
 ---
 

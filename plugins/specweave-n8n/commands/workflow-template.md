@@ -1,5 +1,5 @@
 ---
-name: sw-n8n:workflow-template
+name: workflow-template
 description: Generate n8n workflow JSON template with Kafka trigger/producer nodes. Creates event-driven workflow patterns (fan-out, retry+DLQ, enrichment, CDC).
 ---
 

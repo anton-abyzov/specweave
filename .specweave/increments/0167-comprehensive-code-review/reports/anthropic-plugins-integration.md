@@ -222,20 +222,20 @@ From auto mode: Clear completion signals, incremental phases, safety limits.
 
 ### PR Review (New Capabilities)
 ```bash
-# Run comprehensive PR analysis
-Task(subagent_type="sw-testing:pr-test-analyzer", prompt="Analyze test coverage for this PR")
-Task(subagent_type="sw-testing:silent-failure-hunter", prompt="Check error handling in changed files")
-Task(subagent_type="sw-testing:comment-analyzer", prompt="Review comments in modified files")
-Task(subagent_type="sw-testing:type-design-analyzer", prompt="Evaluate type quality of new types")
+# Run comprehensive PR analysis via Skill tool
+Skill({ skill: "sw-testing:pr-test-analyzer", args: "Analyze test coverage for this PR" })
+Skill({ skill: "sw-testing:silent-failure-hunter", args: "Check error handling in changed files" })
+Skill({ skill: "sw-testing:comment-analyzer", args: "Review comments in modified files" })
+Skill({ skill: "sw-testing:type-design-analyzer", args: "Evaluate type quality of new types" })
 ```
 
 ### Frontend Development
 ```bash
-# Use bold design aesthetics
-Task(subagent_type="sw-frontend:frontend-design", prompt="Create a landing page hero section")
+# Use bold design aesthetics via Skill tool
+Skill({ skill: "sw-frontend:frontend-design", args: "Create a landing page hero section" })
 
 # Deep codebase exploration
-Task(subagent_type="sw-frontend:code-explorer", prompt="Trace the authentication flow")
+Skill({ skill: "sw-frontend:code-explorer", args: "Trace the authentication flow" })
 ```
 
 ### Feature Development

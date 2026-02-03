@@ -1,5 +1,5 @@
 ---
-name: sw-kafka:dev-env
+name: dev-env
 description: Set up local Kafka development environment using Docker Compose. Includes Kafka (KRaft mode), Schema Registry, Kafka UI, Prometheus, and Grafana.
 ---
 

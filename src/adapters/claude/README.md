@@ -188,21 +188,24 @@ description: Plan features with context awareness. Activates for: create feature
 
 When user says "create feature", Claude Code automatically activates `increment-planner` skill.
 
-### Agents Invocation
+### Skills Invocation
 
-Agents are invoked explicitly via Task tool:
+Skills are invoked explicitly via Skill tool or auto-activate based on keywords:
 
 ```typescript
-await Task({
-  subagent_type: "sw-frontend:frontend-architect",
-  prompt: "Design React component architecture for dashboard",
-  description: "Frontend architecture design"
+// Explicit invocation
+await Skill({
+  skill: "sw-frontend:frontend-architect",
+  args: "Design React component architecture for dashboard"
 });
+
+// Or via slash command
+/sw-frontend:frontend-architect Design React component architecture
 ```
 
-Agents have separate context windows to prevent pollution of main conversation.
+Skills like PM and Architect auto-activate based on keywords. For explicit invocation, use the Skill tool.
 
-**Note**: Skills like PM and Architect auto-activate based on keywords - you don't invoke them via Task. Only specialized plugin agents (sw-frontend, sw-testing, sw-k8s, etc.) use Task invocation.
+**Note**: The Task tool is for spawning subagents (Explore, Plan, general-purpose) with isolated contexts. Skills use the Skill tool.
 
 ### Hooks Execution
 

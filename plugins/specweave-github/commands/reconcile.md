@@ -1,5 +1,5 @@
 ---
-name: sw-github:reconcile
+name: reconcile
 description: Reconcile GitHub issue states with increment statuses. Fixes drift by closing issues for completed increments and reopening issues for resumed increments.
 ---
 

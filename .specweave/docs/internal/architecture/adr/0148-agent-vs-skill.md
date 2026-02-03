@@ -45,11 +45,11 @@ model: opus
 You are an expert Frontend Architect...
 ```
 
-**Invocation**: Via Task tool (explicit)
+**Invocation**: Via Skill tool (explicit) or auto-activation
 ```typescript
-await Task({
-  subagent_type: "sw-frontend:frontend-architect",
-  prompt: "Design React component architecture for..."
+await Skill({
+  skill: "sw-frontend:frontend-architect",
+  args: "Design React component architecture for..."
 });
 ```
 

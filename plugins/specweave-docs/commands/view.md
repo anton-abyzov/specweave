@@ -1,5 +1,5 @@
 ---
-name: sw-docs:view
+name: view
 description: Launch Docusaurus documentation server for living docs. Supports internal (default, port 3015) and public (--public, port 3016) docs. Validates docs first, auto-fixes issues, auto-setup on first run.
 ---
 

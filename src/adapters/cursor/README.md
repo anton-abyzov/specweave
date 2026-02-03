@@ -101,15 +101,15 @@ User: "create increment for auth"
 → Act like increment-planner by following those steps
 ```
 
-### Simulating Agents
+### Simulating Skills
 
 **Claude Code (automatic)**:
 ```typescript
-Task({ subagent_type: "sw-frontend:frontend-architect", prompt: "design components" })
-→ Frontend agent invoked with separate context window
+Skill({ skill: "sw-frontend:frontend-architect", args: "design components" })
+→ Frontend skill activates with specialized guidance
 ```
 
-**Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords, not agents you invoke via Task.
+**Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords. For explicit invocation, use the Skill tool.
 
 **Cursor (manual adoption)**:
 ```typescript

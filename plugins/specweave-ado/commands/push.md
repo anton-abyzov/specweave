@@ -1,5 +1,5 @@
 ---
-name: sw-ado:push
+name: push
 description: Push local changes to Azure DevOps (like git push). Supports increment, project, or full living docs sync.
 ---
 
@@ -140,9 +140,7 @@ const recentlyCompleted = parseRecentlyCompletedTasks(tasksContent);
 ### 4. Invoke Push Sync
 
 ```
-Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
-
-Prompt: "Push progress to ADO for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Push progress to ADO for increment {increment-id}.
 
 DIRECTION: to-ado
 PERMISSION: canUpdateExternalItems = true (verified)

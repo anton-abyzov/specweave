@@ -1,5 +1,5 @@
 ---
-name: sw-docs:generate
+name: generate
 description: Generate documentation from TypeScript/JavaScript code, OpenAPI specs, GraphQL schemas, and SpecWeave specifications.
 ---
 

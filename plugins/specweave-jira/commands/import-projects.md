@@ -1,5 +1,5 @@
 ---
-name: sw-jira:import-projects
+name: import-projects
 description: Import additional JIRA projects post-init with smart filtering, resume, and dry-run support
 ---
 
