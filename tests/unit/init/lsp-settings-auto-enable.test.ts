@@ -1,11 +1,13 @@
 /**
- * Unit Tests for LSP Auto-Enable Feature
+ * Unit Tests for LSP Opt-In Feature (v1.0.210+)
  *
- * Tests that LSP configuration is automatically set up via a local plugin
- * during `specweave init` and `specweave update`.
+ * Tests that LSP is NOT automatically configured during `specweave init`.
+ * LSP is now opt-in only - users must run `specweave lsp enable` to enable it.
  *
- * The correct approach is to create a plugin at .claude/plugins/specweave-lsp/
- * with .lsp.json, NOT to put lspServers directly in settings.json.
+ * This change was made because:
+ * - LSP requires external dependencies (typescript-language-server, pyright, etc.)
+ * - Auto-enabling caused issues when dependencies weren't installed
+ * - Users should explicitly choose to enable LSP support
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -13,7 +15,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-describe('LSP Auto-Enable Feature', () => {
+describe('LSP Opt-In Feature (v1.0.210+)', () => {
   let tempDir: string;
 
   beforeEach(() => {
@@ -28,17 +30,17 @@ describe('LSP Auto-Enable Feature', () => {
     }
   });
 
-  describe('ensureClaudeSettingsWithLsp', () => {
-    it('should create .claude/settings.json with lspServers if not exists', async () => {
+  describe('ensureClaudeSettingsWithLsp (opt-in manual call)', () => {
+    it('should create .claude/settings.json with lspServers when explicitly called', async () => {
       // Import the function we're testing
       const { ensureClaudeSettingsWithLsp } = await import(
         '../../../src/cli/helpers/init/claude-settings-lsp.js'
       );
 
-      // Execute
+      // Execute (this is now a manual opt-in call)
       await ensureClaudeSettingsWithLsp(tempDir);
 
-      // Verify settings.json has lspServers (for backwards compat)
+      // Verify settings.json has lspServers
       const settingsPath = path.join(tempDir, '.claude', 'settings.json');
       expect(fs.existsSync(settingsPath)).toBe(true);
 
@@ -46,12 +48,12 @@ describe('LSP Auto-Enable Feature', () => {
       expect(settings.lspServers).toBeDefined();
       expect(settings.lspServers.vtsls).toBeDefined();
 
-      // Also verify plugin was created (the correct approach)
+      // Also verify plugin was created
       const pluginPath = path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json');
       expect(fs.existsSync(pluginPath)).toBe(true);
     });
 
-    it('should add lspServers to existing .claude/settings.json without overwriting permissions', async () => {
+    it('should preserve existing settings when adding lspServers', async () => {
       const { ensureClaudeSettingsWithLsp } = await import(
         '../../../src/cli/helpers/init/claude-settings-lsp.js'
       );
@@ -122,56 +124,12 @@ describe('LSP Auto-Enable Feature', () => {
       expect(settings.lspServers.customServer).toBeDefined();
       expect(settings.lspServers.customServer.command).toBe('my-custom-lsp');
     });
-
-    it('should detect TypeScript project and include vtsls', async () => {
-      const { ensureClaudeSettingsWithLsp } = await import(
-        '../../../src/cli/helpers/init/claude-settings-lsp.js'
-      );
-
-      // Create TypeScript project indicators
-      fs.writeFileSync(path.join(tempDir, 'tsconfig.json'), '{}');
-      fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify({
-        devDependencies: { typescript: '^5.0.0' }
-      }));
-
-      // Execute
-      await ensureClaudeSettingsWithLsp(tempDir);
-
-      // Verify in plugin .lsp.json
-      const lspJson = JSON.parse(
-        fs.readFileSync(path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json'), 'utf-8')
-      );
-
-      expect(lspJson.vtsls).toBeDefined();
-      expect(lspJson.vtsls.extensionToLanguage['.ts']).toBe('typescript');
-    });
-
-    it('should detect Python project and include pyright', async () => {
-      const { ensureClaudeSettingsWithLsp } = await import(
-        '../../../src/cli/helpers/init/claude-settings-lsp.js'
-      );
-
-      // Create Python project indicators
-      fs.writeFileSync(path.join(tempDir, 'requirements.txt'), 'flask==2.0.0');
-      fs.writeFileSync(path.join(tempDir, 'main.py'), 'print("hello")');
-
-      // Execute
-      await ensureClaudeSettingsWithLsp(tempDir);
-
-      // Verify in plugin .lsp.json
-      const lspJson = JSON.parse(
-        fs.readFileSync(path.join(tempDir, '.claude', 'plugins', 'specweave-lsp', '.lsp.json'), 'utf-8')
-      );
-
-      expect(lspJson.pyright).toBeDefined();
-      expect(lspJson.pyright.extensionToLanguage['.py']).toBe('python');
-    });
   });
 
-  describe('Integration with init command', () => {
-    it('should call ensureClaudeSettingsWithLsp during specweave init', async () => {
-      // This test verifies the integration point
-      // The actual init flow should include LSP setup
+  describe('LSP NOT auto-enabled during init (v1.0.210+)', () => {
+    it('should NOT call ensureClaudeSettingsWithLsp during specweave init', async () => {
+      // This test verifies that LSP is NOT auto-enabled during init
+      // Users must explicitly run `specweave lsp enable`
 
       const { copyTemplates } = await import(
         '../../../src/cli/helpers/init/directory-structure.js'
@@ -191,42 +149,33 @@ describe('LSP Auto-Enable Feature', () => {
         '# Agents\n<!-- SW:META template="agents" version="1.0.0" -->'
       );
 
-      // Execute copyTemplates (which should now include LSP setup)
+      // Execute copyTemplates
       await copyTemplates(templatesDir, tempDir, 'test-project', 'en');
 
-      // Verify LSP settings were created
+      // Verify LSP was NOT auto-configured (opt-in behavior)
+      const lspPluginPath = path.join(tempDir, '.claude', 'plugins', 'specweave-lsp');
+      expect(fs.existsSync(lspPluginPath)).toBe(false);
+
+      // settings.json should exist but without lspServers
       const settingsPath = path.join(tempDir, '.claude', 'settings.json');
-      expect(fs.existsSync(settingsPath)).toBe(true);
-
-      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      expect(settings.lspServers).toBeDefined();
+      if (fs.existsSync(settingsPath)) {
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+        expect(settings.lspServers).toBeUndefined();
+      }
     });
-  });
 
-  describe('Integration with update command', () => {
-    it('should add lspServers during specweave update if missing', async () => {
-      const { ensureLspSettingsOnUpdate } = await import(
-        '../../../src/cli/helpers/init/claude-settings-lsp.js'
+    it('should provide opt-in documentation comment instead of auto-enable', async () => {
+      // Verify the code has the opt-in comment explaining how to enable LSP
+      const directoryStructurePath = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/directory-structure.ts'
       );
 
-      // Create existing .claude/settings.json WITHOUT lspServers
-      const claudeDir = path.join(tempDir, '.claude');
-      fs.mkdirSync(claudeDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(claudeDir, 'settings.json'),
-        JSON.stringify({ permissions: { allow: ['Bash'] } }, null, 2)
-      );
+      const content = fs.readFileSync(directoryStructurePath, 'utf-8');
 
-      // Execute update logic
-      await ensureLspSettingsOnUpdate(tempDir);
-
-      // Verify lspServers was added
-      const settings = JSON.parse(
-        fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf-8')
-      );
-
-      expect(settings.lspServers).toBeDefined();
-      expect(settings.permissions.allow).toContain('Bash'); // preserved
+      // Should have opt-in comment
+      expect(content).toContain('LSP is OPT-IN only');
+      expect(content).toContain('specweave lsp enable');
     });
   });
 

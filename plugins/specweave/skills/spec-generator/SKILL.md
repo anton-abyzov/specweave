@@ -1,5 +1,5 @@
 ---
-name: spec-generator
+name: sw:spec-generator
 description: Generates comprehensive specifications (spec.md, plan.md, tasks.md with embedded tests) for SpecWeave increments. Use when creating new increments, planning features, or converting ideas into actionable specs. Produces structured documentation with proven templates and context-aware organization.
 ---
 

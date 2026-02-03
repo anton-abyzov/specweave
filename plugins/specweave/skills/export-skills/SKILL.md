@@ -1,5 +1,5 @@
 ---
-name: export-skills
+name: sw:export-skills
 description: Export SpecWeave skills to Agent Skills open standard format (agentskills.io) for cross-platform portability. Use when converting skills to GitHub Copilot, VS Code, Gemini CLI, or Cursor format. Creates portable SKILL.md files compatible with any Agent Skills-supported tool.
 visibility: public
 allowed-tools: Read, Write, Glob, Bash
@@ -139,7 +139,7 @@ function convertSkill(specweave: SpecWeaveSkill, pluginName: string): AgentSkill
 Input (`plugins/specweave/skills/architect/SKILL.md`):
 ```yaml
 ---
-name: architect
+name: sw:architect
 description: System Architect expert...
 allowed-tools: Read, Write, Edit
 context: fork
@@ -150,7 +150,7 @@ model: opus
 Output (`.agent-skills/architect/SKILL.md`):
 ```yaml
 ---
-name: architect
+name: sw:architect
 description: System Architect expert...
 license: Apache-2.0
 compatibility: Designed for Claude Code (or similar products)

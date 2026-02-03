@@ -243,5 +243,3 @@ jobs:
 ## Related Skills
 
 - `observability` - Monitoring and alerting
-- `sre` - Incident response
-- `network-engineer` - VPC and networking

@@ -1,5 +1,5 @@
 ---
-name: qa-lead
+name: sw:qa-lead
 description: QA lead for comprehensive test strategy, automation frameworks, and quality gates. Use when creating test plans, designing test suites, or setting up E2E/integration testing. Covers web, mobile, and API testing with Playwright, Jest, and test coverage requirements.
 allowed-tools: Read, Write, Edit, Bash
 context: fork

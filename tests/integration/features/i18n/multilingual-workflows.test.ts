@@ -308,7 +308,7 @@ describe('Multilingual Workflows E2E', () => {
 
     // Verify YAML frontmatter
     expect(content).toContain('---');
-    expect(content).toContain('name: translator');
+    expect(content).toContain('name: sw:translator');
     expect(content).toContain('description:');
 
     // Verify key sections
@@ -344,7 +344,7 @@ describe('Multilingual Workflows E2E', () => {
 
     // Verify YAML frontmatter
     expect(content).toContain('---');
-    expect(content).toContain('name: sw:translate');
+    expect(content).toContain('name: translate');
 
     // Verify command syntax
     expect(content).toContain('/sw:translate');
