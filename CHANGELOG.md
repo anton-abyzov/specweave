@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.216] - 2026-02-03
+
+### 🔧 Improvements
+
+- **Test fixes**: Fixed 3 failing integration tests (multilingual workflows, LSP config, plugin install)
+- **Skill enhancements**: Added project learnings section to all 46 core skills
+- **Code cleanup**: Simplified test files and removed outdated comments
+
+---
+
 ## [1.0.212] - 2026-02-03
 
 ### 🔧 Improvements
