@@ -83,6 +83,30 @@ format_status() {
   esac
 }
 
+# Helper: format priority with icon
+format_priority() {
+  case "$1" in
+    P0|critical) echo "🔴 P0" ;;
+    P1|high) echo "🟠 P1" ;;
+    P2) echo "🟡 P2" ;;
+    P3) echo "🟢 P3" ;;
+    *) echo "$1" ;;
+  esac
+}
+
+# Helper: format type with icon
+format_type() {
+  case "$1" in
+    feature) echo "✨ feature" ;;
+    bug|bugfix) echo "🐛 bug" ;;
+    hotfix) echo "🚨 hotfix" ;;
+    refactor) echo "♻️  refactor" ;;
+    experiment) echo "🧪 experiment" ;;
+    code-review) echo "👁️ review" ;;
+    *) echo "$1" ;;
+  esac
+}
+
 # If specific increment requested
 if [[ -n "$INCREMENT_ID" ]]; then
   # Find increment (partial match)
@@ -99,25 +123,40 @@ if [[ -n "$INCREMENT_ID" ]]; then
   INC_DATA=$(jq --arg id "$FULL_ID" '.increments[$id]' "$CACHE_FILE")
   STATUS=$(echo "$INC_DATA" | jq -r '.status // "unknown"')
   TYPE=$(echo "$INC_DATA" | jq -r '.type // "feature"')
+  PRIORITY=$(echo "$INC_DATA" | jq -r '.priority // "P1"')
+  TITLE=$(echo "$INC_DATA" | jq -r '.title // ""')
   TOTAL=$(echo "$INC_DATA" | jq -r '.tasks.total // 0')
   COMPLETED=$(echo "$INC_DATA" | jq -r '.tasks.completed // 0')
+  AC_TOTAL=$(echo "$INC_DATA" | jq -r '.acs.total // 0')
+  AC_COMPLETED=$(echo "$INC_DATA" | jq -r '.acs.completed // 0')
 
   if [[ "$TOTAL" -gt 0 ]]; then
-    PCT=$((COMPLETED * 100 / TOTAL))
+    TASK_PCT=$((COMPLETED * 100 / TOTAL))
   else
-    PCT=0
+    TASK_PCT=0
   fi
 
-  BAR=$(progress_bar "$PCT")
+  if [[ "$AC_TOTAL" -gt 0 ]]; then
+    AC_PCT=$((AC_COMPLETED * 100 / AC_TOTAL))
+  else
+    AC_PCT=0
+  fi
+
+  BAR=$(progress_bar "$TASK_PCT")
   STATUS_FMT=$(format_status "$STATUS")
+  TYPE_FMT=$(format_type "$TYPE")
+  PRIORITY_FMT=$(format_priority "$PRIORITY")
 
   echo ""
   echo "📊 Progress: $FULL_ID"
+  [[ -n "$TITLE" ]] && echo "   $TITLE"
   echo ""
-  echo "Status: $STATUS_FMT"
-  echo "Type: $TYPE"
-  echo "Tasks: $COMPLETED/$TOTAL ($PCT%)"
-  echo "Progress: $BAR"
+  echo "Status:   $STATUS_FMT"
+  echo "Type:     $TYPE_FMT"
+  echo "Priority: $PRIORITY_FMT"
+  echo ""
+  echo "Tasks:    $COMPLETED/$TOTAL ($TASK_PCT%) $BAR"
+  echo "ACs:      $AC_COMPLETED/$AC_TOTAL ($AC_PCT%)"
   exit 0
 fi
 
@@ -130,13 +169,13 @@ echo ""
 READY_FOR_REVIEW=$(jq -r '
   .increments | to_entries[] |
   select(.value.status == "ready_for_review") |
-  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)"
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.acs.completed)|\(.value.acs.total)|\(.value.priority)|\(.value.type)"
 ' "$CACHE_FILE" 2>/dev/null)
 
 REVIEW_COUNT=0
 if [[ -n "$READY_FOR_REVIEW" ]]; then
   echo "👀 Ready for Review:"
-  while IFS='|' read -r id completed total; do
+  while IFS='|' read -r id completed total ac_completed ac_total priority inc_type; do
     [[ -z "$id" ]] && continue
     REVIEW_COUNT=$((REVIEW_COUNT + 1))
     if [[ "$total" -gt 0 ]]; then
@@ -144,9 +183,17 @@ if [[ -n "$READY_FOR_REVIEW" ]]; then
     else
       pct=0
     fi
-    bar=$(progress_bar "$pct" 15)
-    echo "  $id"
-    echo "     $bar $completed/$total ($pct%)"
+    if [[ "$ac_total" -gt 0 ]]; then
+      ac_pct=$((ac_completed * 100 / ac_total))
+    else
+      ac_pct=0
+    fi
+    bar=$(progress_bar "$pct" 12)
+    # Format priority badge
+    pri_badge=""
+    case "$priority" in P0|critical) pri_badge="🔴" ;; P1|high) pri_badge="🟠" ;; esac
+    echo "  $pri_badge $id"
+    echo "     $bar $completed/$total tasks | $ac_completed/$ac_total ACs ($ac_pct%)"
     echo "     → /sw:done $id"
   done <<< "$READY_FOR_REVIEW"
   echo ""
@@ -157,13 +204,13 @@ fi
 ACTIVE=$(jq -r '
   .increments | to_entries[] |
   select(.value.status == "active" or .value.status == "planning" or .value.status == "planned" or .value.status == "backlog") |
-  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.status)"
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.acs.completed)|\(.value.acs.total)|\(.value.status)|\(.value.priority)|\(.value.type)"
 ' "$CACHE_FILE" 2>/dev/null)
 
 ACTIVE_COUNT=0
 if [[ -n "$ACTIVE" ]]; then
   echo "🔄 Active:"
-  while IFS='|' read -r id completed total inc_status; do
+  while IFS='|' read -r id completed total ac_completed ac_total inc_status priority inc_type; do
     [[ -z "$id" ]] && continue
     ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
     if [[ "$total" -gt 0 ]]; then
@@ -171,15 +218,23 @@ if [[ -n "$ACTIVE" ]]; then
     else
       pct=0
     fi
-    bar=$(progress_bar "$pct" 15)
+    if [[ "$ac_total" -gt 0 ]]; then
+      ac_pct=$((ac_completed * 100 / ac_total))
+    else
+      ac_pct=0
+    fi
+    bar=$(progress_bar "$pct" 12)
+    # Format priority badge
+    pri_badge=""
+    case "$priority" in P0|critical) pri_badge="🔴" ;; P1|high) pri_badge="🟠" ;; esac
     # Show status indicator if not "active"
     status_indicator=""
     case "$inc_status" in
       planning|planned) status_indicator=" (📝 planning)" ;;
       backlog) status_indicator=" (📋 backlog)" ;;
     esac
-    echo "  $id$status_indicator"
-    echo "     $bar $completed/$total ($pct%)"
+    echo "  $pri_badge $id$status_indicator"
+    echo "     $bar $completed/$total tasks | $ac_completed/$ac_total ACs ($ac_pct%)"
   done <<< "$ACTIVE"
   echo ""
 fi
@@ -188,20 +243,25 @@ fi
 PAUSED=$(jq -r '
   .increments | to_entries[] |
   select(.value.status == "paused") |
-  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)"
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.acs.completed)|\(.value.acs.total)"
 ' "$CACHE_FILE" 2>/dev/null)
 
 if [[ -n "$PAUSED" ]]; then
   PAUSED_COUNT=$(echo "$PAUSED" | wc -l | tr -d ' ')
   echo "⏸️  Paused ($PAUSED_COUNT):"
-  while IFS='|' read -r id completed total; do
+  while IFS='|' read -r id completed total ac_completed ac_total; do
     [[ -z "$id" ]] && continue
     if [[ "$total" -gt 0 ]]; then
       pct=$((completed * 100 / total))
     else
       pct=0
     fi
-    echo "  $id - $pct%"
+    if [[ "$ac_total" -gt 0 ]]; then
+      ac_pct=$((ac_completed * 100 / ac_total))
+    else
+      ac_pct=0
+    fi
+    echo "  $id - $pct% tasks | $ac_pct% ACs"
   done <<< "$PAUSED"
   echo ""
 fi

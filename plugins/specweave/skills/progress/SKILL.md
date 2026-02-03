@@ -1,19 +1,50 @@
 ---
 name: progress
-description: Show progress for all active increments with task completion status
+description: Show detailed progress for active increments with task/AC completion, priority, and type
 argument-hint: "[incrementId]"
 ---
 
 # Increment Progress
 
-**NOTE**: This command is normally intercepted by the UserPromptSubmit hook for instant execution (<100ms). If the hook output isn't displayed, execute the CLI fallback below.
+Shows detailed progress information for active increments including:
+- **Task completion** with progress bars
+- **Acceptance Criteria (AC)** completion percentages
+- **Priority** indicators (P0/P1/P2)
+- **Type** badges (feature/bug/hotfix/refactor)
+- **Status** grouping (ready for review → active → paused)
 
-When this command is invoked, extract any arguments from the user's prompt and execute:
+## Hook Execution (Default)
+
+This command is intercepted by the **UserPromptSubmit hook** for instant execution (<10ms). The hook reads from `.specweave/state/dashboard.json` cache.
+
+**No action needed** - the hook output appears automatically in `<system-reminder>` tags.
+
+## CLI Fallback
+
+If hook output isn't displayed (rare), execute:
 
 ```bash
-specweave progress
+specweave status --verbose
 ```
 
-If the user provided an increment ID (e.g., `/sw:progress 0042`), pass it to the command.
+Note: The CLI command is `specweave status` (with `progress` as an alias).
 
-**CRITICAL**: Execute the command directly with NO commentary before or after. Show the output to the user.
+## Arguments
+
+- `/sw:progress` - Show all active increments
+- `/sw:progress 0042` - Show specific increment details (partial ID match supported)
+
+## Data Shown
+
+| Field | Description |
+|-------|-------------|
+| Tasks | `X/Y (Z%)` with progress bar |
+| ACs | `A/B (C%)` acceptance criteria completion |
+| Priority | P0 (critical), P1 (high), P2 (normal) |
+| Type | feature, bug, hotfix, refactor, experiment |
+| Status | ready_for_review, active, planning, paused |
+
+## Related Commands
+
+- `/sw:status` - Macro view (all increments grouped by status)
+- `/sw:done <id>` - Close increment after review
