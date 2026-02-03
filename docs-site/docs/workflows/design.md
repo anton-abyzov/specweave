@@ -279,11 +279,11 @@ OWASP compliance and security"
 # Output: Security recommendations, threat model
 ```
 
-**Note**: Architect and Security are SKILLS that auto-activate based on keywords in your prompt. For specialized domain work, use agents via Task tool:
+**Note**: Architect and Security are SKILLS that auto-activate based on keywords in your prompt. For explicit skill invocation, use the Skill tool:
 
 ```typescript
-Task({ subagent_type: "sw-frontend:frontend-architect", prompt: "..." })
-Task({ subagent_type: "sw-k8s:kubernetes-architect", prompt: "..." })
+Skill({ skill: "sw-frontend:frontend-architect", args: "..." })
+Skill({ skill: "sw-k8s:kubernetes-architect", args: "..." })
 ```
 
 ---

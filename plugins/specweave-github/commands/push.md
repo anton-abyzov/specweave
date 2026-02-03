@@ -1,5 +1,5 @@
 ---
-name: sw-github:push
+name: push
 description: Push local progress to GitHub Issues (like git push). Updates issue with task completion checklist.
 ---
 
@@ -71,9 +71,7 @@ const percentage = Math.round((completedTasks / totalTasks) * 100);
 ### 3. Invoke Push Sync
 
 ```
-Use Task tool with subagent_type: "specweave-github:github-manager:AGENT"
-
-Prompt: "Push progress to GitHub for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-github:github-manager", args: "Push progress to GitHub for increment {increment-id}.
 
 Issue: #{issueNumber}
 Progress: {completedTasks}/{totalTasks} ({percentage}%)

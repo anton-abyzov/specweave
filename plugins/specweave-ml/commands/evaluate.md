@@ -1,5 +1,5 @@
 ---
-name: sw-ml:ml-evaluate
+name: ml-evaluate
 description: Evaluate ML model with comprehensive metrics
 ---
 

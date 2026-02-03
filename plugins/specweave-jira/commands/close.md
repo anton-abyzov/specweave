@@ -1,5 +1,5 @@
 ---
-name: sw-jira:close
+name: close
 description: Close JIRA issue when increment complete
 ---
 
@@ -119,12 +119,10 @@ First create an issue with: /sw-jira:create ${incrementId}
 }
 ```
 
-### 5. Invoke JIRA Manager Agent
+### 5. Invoke JIRA Manager Skill
 
 ```
-Use Task tool with subagent_type: "specweave-jira:jira-manager:jira-manager"
-
-Prompt: "Close JIRA issue for completed increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Close JIRA issue for completed increment {increment-id}.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems=true, canUpdateStatus=true

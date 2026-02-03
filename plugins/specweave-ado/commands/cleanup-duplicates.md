@@ -1,5 +1,5 @@
 ---
-name: sw-ado:cleanup-duplicates
+name: cleanup-duplicates
 description: Clean up duplicate Azure DevOps work items for a Feature. Finds work items with duplicate titles and closes all except the first created item.
 justification: |
   CRITICAL INCIDENT RESPONSE TOOL - DO NOT DELETE!

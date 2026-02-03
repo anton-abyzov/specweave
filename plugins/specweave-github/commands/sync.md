@@ -1,5 +1,5 @@
 ---
-name: sw-github:sync
+name: sync
 description: Synchronize SpecWeave increment with GitHub issue (Multi-Project Support). Select profile, configure time range, and sync with rate limit protection.
 ---
 

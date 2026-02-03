@@ -1,5 +1,5 @@
 ---
-name: sw-ado:create
+name: create
 description: Create Azure DevOps work item from SpecWeave increment
 ---
 
@@ -83,12 +83,10 @@ const { organization, project } = profileConfig.config;
 - Check AZURE_DEVOPS_PAT environment variable set
 - Check ADO profile has organization and project
 
-### 4. Invoke ADO Manager Agent
+### 4. Invoke ADO Manager Skill
 
 ```
-Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
-
-Prompt: "Create ADO work item for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Create ADO work item for increment {increment-id}.
 
 IMPORTANT: Permission already verified (canUpdateExternalItems=true).
 Use profile: {profileName} (org: {organization}, project: {project})
