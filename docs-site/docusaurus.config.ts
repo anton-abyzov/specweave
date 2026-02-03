@@ -226,6 +226,12 @@ const config: Config = {
           position: 'left',
           label: 'Commands',
         },
+        {
+          type: 'docSidebar',
+          sidebarId: 'referenceSidebar',
+          position: 'left',
+          label: 'Reference',
+        },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           type: 'search',
@@ -253,11 +259,15 @@ const config: Config = {
             },
             {
               label: 'Getting Started',
-              to: '/docs/guides/getting-started/quickstart',
+              to: '/docs/getting-started',
             },
             {
-              label: 'Commands',
-              to: '/docs/commands/status-management',
+              label: 'Skills Reference (80+)',
+              to: '/docs/reference/skills',
+            },
+            {
+              label: 'Commands Reference',
+              to: '/docs/reference/commands',
             },
           ],
         },

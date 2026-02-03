@@ -3,7 +3,7 @@ increment: 0181-structured-decision-logging
 title: "Structured Decision Logging for Hook Debugging"
 type: feature
 priority: P1
-status: active
+status: completed
 created: 2026-02-02
 structure: user-stories
 test_mode: TDD
