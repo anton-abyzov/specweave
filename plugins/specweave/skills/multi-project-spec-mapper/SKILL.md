@@ -1,6 +1,7 @@
 ---
-name: sw:multi-project-spec-mapper
+name: multi-project-spec-mapper
 description: Intelligent multi-project specification splitting that maps user stories to correct projects (FE, BE, MOBILE, INFRA). Use when working with multiple JIRA/GitHub projects, microservices architecture, or brownfield projects with multiple teams. Analyzes content and tech stack for automatic classification.
+user-invocable: false
 ---
 
 # Multi-Project Spec Mapper - Intelligent Project Organization

@@ -1,7 +1,8 @@
 ---
-name: sw:reflect-check
+name: reflect-check
 description: Diagnostic tool for validating SpecWeave reflection system health and troubleshooting issues. Use when reflection seems stuck, learnings aren't being captured, or CLAUDE.md Skill Memories aren't updating. Checks configuration, permissions, and system state.
 allowed-tools: Read, Bash
+user-invocable: false
 ---
 
 # Reflect Health Check

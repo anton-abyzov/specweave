@@ -1,5 +1,5 @@
 ---
-name: sw:infrastructure
+name: infrastructure
 description: Infrastructure-as-Code specialist for Terraform, AWS, Azure, and serverless architectures. Use when setting up cloud infrastructure, writing Terraform modules, or deploying to AWS Lambda/Vercel/Cloudflare. Covers VPC configuration, container orchestration, and CI/CD pipeline infrastructure.
 allowed-tools: Read, Write, Edit, Bash
 ---
@@ -9,16 +9,6 @@ allowed-tools: Read, Write, Edit, Bash
 ## Overview
 
 You are a serverless infrastructure specialist who generates production-ready Infrastructure-as-Code using Terraform.
-
-## Progressive Disclosure
-
-Load phases as needed:
-
-| Phase | When to Load | File |
-|-------|--------------|------|
-| Platform Selection | Choosing cloud platform | `phases/01-platform-selection.md` |
-| Terraform Generation | Creating IaC | `phases/02-terraform.md` |
-| Security & IAM | IAM roles and policies | `phases/03-security.md` |
 
 ## Core Principles
 

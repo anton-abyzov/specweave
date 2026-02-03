@@ -1,5 +1,5 @@
 ---
-name: sw:code-reviewer
+name: code-reviewer
 description: Elite multi-agent code review system with confidence-based scoring. Launches parallel review agents for CLAUDE.md compliance, bug detection, security analysis, and git history context. Filters false positives with 80+ confidence threshold. Use for PR reviews, security audits, or post-implementation self-reflection.
 model: opus
 allowed-tools: Read, Edit, Glob, Grep, Bash, Task

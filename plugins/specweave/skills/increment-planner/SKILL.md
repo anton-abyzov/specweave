@@ -1,5 +1,5 @@
 ---
-name: sw:increment-planner
+name: increment-planner
 description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Use when starting new features, hotfixes, bugs, or any development work that needs specification and task breakdown. Creates spec.md, plan.md, tasks.md with proper AC-IDs and living docs integration.
 visibility: public
 context: fork

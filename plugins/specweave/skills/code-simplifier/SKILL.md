@@ -1,5 +1,5 @@
 ---
-name: sw:code-simplifier
+name: code-simplifier
 description: Expert code refinement agent that simplifies and improves code clarity, consistency, and maintainability while preserving exact functionality. Operates proactively on recently modified code. Based on Anthropic's official code-simplifier with SpecWeave enhancements. Never alters WHAT code does, only HOW.
 model: opus
 allowed-tools: Read, Edit, Glob, Grep, Bash

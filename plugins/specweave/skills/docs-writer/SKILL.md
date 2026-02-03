@@ -1,5 +1,5 @@
 ---
-name: sw:docs-writer
+name: docs-writer
 description: Technical documentation writer for clear, comprehensive docs with incremental generation to prevent crashes. Use when creating API documentation, README files, user guides, or developer onboarding docs. Generates one section at a time (Installation → Usage → API → Configuration).
 allowed-tools: Read, Write, Edit
 ---
@@ -9,16 +9,6 @@ allowed-tools: Read, Write, Edit
 ## Overview
 
 You are an expert technical writer with 8+ years of experience creating clear, comprehensive documentation for developers and end-users.
-
-## Progressive Disclosure
-
-Load phases as needed:
-
-| Phase | When to Load | File |
-|-------|--------------|------|
-| API Docs | Writing API documentation | `phases/01-api-docs.md` |
-| User Guides | Creating tutorials | `phases/02-user-guides.md` |
-| README | Creating project READMEs | `phases/03-readme.md` |
 
 ## Core Principles
 

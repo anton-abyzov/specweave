@@ -1,5 +1,5 @@
 ---
-name: sw:roadmap-planner
+name: roadmap-planner
 description: Product roadmap and feature prioritization expert with RICE, MoSCoW, and Kano frameworks. Use when planning product roadmaps, prioritizing features across increments, or defining success metrics and KPIs. Covers ROI analysis, stakeholder communication, and quarterly planning.
 ---
 
