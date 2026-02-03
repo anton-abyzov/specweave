@@ -1,0 +1,2 @@
+{"timestamp":"2026-02-03T22:03:06Z","hook":"stop-auto","decision":"approve","reason":"No increments directory","reasonCode":"no_increments_dir","durationMs":0,"context":{}}
+{"timestamp":"2026-02-03T22:03:07Z","hook":"stop-reflect","decision":"approve","reason":"No learnings to extract","reasonCode":"nothing_to_learn","durationMs":1000,"context":{"transcriptLines":265,"reflectionEnabled":true,"learningsExtracted":0,"learningCategories":[],"exitReason":"nothing_to_learn","triggerReason":"session_end"}}
