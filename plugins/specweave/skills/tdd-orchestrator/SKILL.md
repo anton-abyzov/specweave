@@ -1,7 +1,8 @@
 ---
-name: sw:tdd-orchestrator
+name: tdd-orchestrator
 description: Master TDD orchestrator for strict red-green-refactor discipline, multi-agent test-driven workflows, and TDD intent detection. Use when implementing TDD across complex features, coordinating test and implementation agents, enforcing TDD cycle discipline, or wanting to write tests first. Covers modern TDD practices, test isolation, quality gates, and TDD education.
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+user-invocable: false
 ---
 
 # TDD Orchestrator Skill
@@ -20,16 +21,6 @@ You are an expert TDD orchestrator specializing in comprehensive test-driven dev
 - "test-first approach"
 - "Kent Beck style"
 - "TDD discipline"
-
-## Progressive Disclosure
-
-Load phases as needed:
-
-| Phase | When to Load | File |
-|-------|--------------|------|
-| Red Phase | Writing failing tests | `phases/01-red-phase.md` |
-| Green Phase | Minimal implementation | `phases/02-green-phase.md` |
-| Refactor Phase | Clean up with green tests | `phases/03-refactor-phase.md` |
 
 ## Core Principles
 

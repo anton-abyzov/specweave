@@ -1,5 +1,5 @@
 ---
-name: sw:service-connect
+name: service-connect
 description: Smart external service connection orchestrator that automatically selects optimal connection method (MCP → REST API → SDK → CLI → Direct). Use when connecting to Supabase, Cloudflare, PostgreSQL, MongoDB, Redis, or AWS services. Follows path of least resistance to avoid connection issues.
 ---
 
