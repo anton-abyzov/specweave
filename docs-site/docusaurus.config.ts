@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'SpecWeave',
   tagline: 'AI That Remembers Everything You Build - Ship Features While You Sleep',
-  // Use SpecWeave logo as favicon (SVG for modern browsers)
-  favicon: 'img/logo.svg',
+  // Use proper favicon.ico for broad compatibility (Teams, etc.)
+  favicon: 'favicon.ico',
 
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
