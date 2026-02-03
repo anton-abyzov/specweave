@@ -192,7 +192,7 @@ describe('Template Validation Tests', () => {
     });
 
     test('should have context loading section', () => {
-      expect(agentsContent).toMatch(/context.*loading|context-manifest/i);
+      expect(agentsContent).toMatch(/context.*loading|load.*context/i);
     });
 
     test('should mention sync workflow', () => {

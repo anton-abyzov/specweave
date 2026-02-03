@@ -220,10 +220,6 @@ export class JiraIncrementalMapper {
       await this.generateRFCFromWorkItems(incrementId, title, workItems);
       console.log(`   ✅ Generated RFC`);
 
-      // 8. Generate context-manifest
-      await this.generateContextManifest(incrementFolder);
-      console.log(`   ✅ Generated context-manifest.yaml`);
-
       return {
         success: true,
         incrementId,
@@ -643,21 +639,5 @@ export class JiraIncrementalMapper {
 
   private slugify(text: string): string {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  }
-
-  private async generateContextManifest(incrementFolder: string): Promise<void> {
-    const manifest = {
-      spec_sections: [] as string[],
-      documentation: [] as string[],
-      max_context_tokens: 10000,
-      priority: 'high',
-      auto_refresh: false
-    };
-    const manifestYaml = yaml.dump(manifest);
-    fs.writeFileSync(
-      path.join(incrementFolder, 'context-manifest.yaml'),
-      `---\n${manifestYaml}---\n`,
-      'utf-8'
-    );
   }
 }
