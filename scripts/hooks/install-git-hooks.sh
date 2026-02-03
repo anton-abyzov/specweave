@@ -40,29 +40,7 @@ cat > "$HOOKS_DIR/pre-commit" << 'EOF'
 
 echo "🔍 Running pre-commit checks..."
 
-# 0. Verify local development setup (contributors only)
-if [ -f ".specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh" ]; then
-  # Only run if this is a contributor setup (not a user project)
-  if [ -d "plugins/specweave" ]; then
-    echo "📋 Verifying local development setup..."
-    if ! bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh > /dev/null 2>&1; then
-      echo ""
-      echo "⚠️  WARNING: Local development setup verification failed"
-      echo "   Run: bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh"
-      echo "   See: CLAUDE.md → 'Local Development Setup'"
-      echo ""
-      echo "   Hooks may not work correctly until setup is fixed."
-      echo "   To bypass: git commit --no-verify"
-      echo ""
-      # Don't fail the commit, just warn (setup might be intentionally different)
-      # exit 1
-    else
-      echo "   ✅ Development setup OK"
-    fi
-  fi
-fi
-
-# 0A. Check for dangerous test patterns
+# 0. Check for dangerous test patterns
 if [ -f "scripts/hooks/pre-commit-test-pattern-check.sh" ]; then
   bash scripts/hooks/pre-commit-test-pattern-check.sh || exit 1
 fi
@@ -268,7 +246,6 @@ echo ""
 echo "Installed hooks:"
 echo ""
 echo "  📋 PRE-COMMIT (runs on every commit):"
-echo "    - Local development setup verification (symlink check)"
 echo "    - Dangerous test pattern detection"
 echo "    - Mass .specweave/ deletion protection (>50 files)"
 echo "    - Build verification and .js extension check"

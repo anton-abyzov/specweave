@@ -227,7 +227,6 @@ if [ "$ICLOUD_ISSUE" = true ]; then
     echo -e "   2. Uncheck 'Desktop & Documents Folders'"
     echo -e "   3. OR move ~/.claude outside of synced folders:"
     echo -e "      mv ~/.claude ~/Library/Application\\ Support/claude"
-    echo -e "      ln -s ~/Library/Application\\ Support/claude ~/.claude"
     echo ""
 fi
 
