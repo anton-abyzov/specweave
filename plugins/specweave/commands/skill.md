@@ -1,4 +1,10 @@
-# /sw:skill
+---
+name: skill
+description: Create Claude Code skills with proper YAML frontmatter, validation, and best practices
+argument-hint: [--name skill-name] [--type auto|command|knowledge]
+---
+
+# Skill Creator
 
 Create Claude Code skills with proper YAML frontmatter, validation, and best practices.
 

@@ -1,7 +1,7 @@
 ---
 name: abandon
 description: Abandon an incomplete increment (requirements changed, obsolete)
-usage: /sw:abandon <increment-id> --reason="<reason>"
+argument-hint: [increment-id] --reason="reason"
 ---
 
 # Abandon Increment Command
