@@ -13,7 +13,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as readline from 'readline';
 import chalk from 'chalk';
 
 export interface DecisionLogEntry {
@@ -239,23 +238,47 @@ export async function decisionLogTail(
   const { projectRoot = process.cwd(), hook, decision } = options;
 
   const logPath = path.join(projectRoot, '.specweave', 'logs', 'decisions.jsonl');
+  const logsDir = path.dirname(logPath);
 
   console.log(chalk.yellow(`Watching ${logPath} for new entries...`));
   console.log(chalk.dim('Press Ctrl+C to stop.\n'));
 
-  // Track file position
+  // Track file position and inode for staleness detection
   let lastSize = 0;
-  if (fs.existsSync(logPath)) {
-    const stats = fs.statSync(logPath);
-    lastSize = stats.size;
-  }
+  let lastInode: number | null = null;
+
+  const updateFileInfo = (): void => {
+    if (fs.existsSync(logPath)) {
+      const stats = fs.statSync(logPath);
+      lastSize = stats.size;
+      lastInode = stats.ino;
+    } else {
+      lastSize = 0;
+      lastInode = null;
+    }
+  };
+
+  updateFileInfo();
 
   // Watch for changes
-  const watcher = fs.watch(path.dirname(logPath), (event, filename) => {
+  const watcher = fs.watch(logsDir, (event, filename) => {
     if (filename === 'decisions.jsonl') {
-      if (!fs.existsSync(logPath)) return;
+      if (!fs.existsSync(logPath)) {
+        // File was deleted - reset tracking
+        lastSize = 0;
+        lastInode = null;
+        return;
+      }
 
       const stats = fs.statSync(logPath);
+
+      // Detect file replacement (different inode = new file)
+      if (lastInode !== null && stats.ino !== lastInode) {
+        console.log(chalk.dim('[File recreated, resetting position]'));
+        lastSize = 0;
+        lastInode = stats.ino;
+      }
+
       if (stats.size > lastSize) {
         // Read new content
         const fd = fs.openSync(logPath, 'r');
@@ -281,15 +304,37 @@ export async function decisionLogTail(
         }
 
         lastSize = stats.size;
+        lastInode = stats.ino;
       } else if (stats.size < lastSize) {
         // File was truncated/rotated
         lastSize = stats.size;
+        lastInode = stats.ino;
       }
     }
   });
 
-  // Keep process alive
+  // Periodic staleness check (every 5 seconds)
+  const stalenessCheck = setInterval(() => {
+    if (!fs.existsSync(logPath)) {
+      if (lastInode !== null) {
+        console.log(chalk.dim('[File deleted, waiting for recreation...]'));
+        lastSize = 0;
+        lastInode = null;
+      }
+    } else {
+      const stats = fs.statSync(logPath);
+      // Check if file was replaced while watcher wasn't notified
+      if (lastInode !== null && stats.ino !== lastInode) {
+        console.log(chalk.dim('[File replaced, resetting position]'));
+        lastSize = 0;
+        lastInode = stats.ino;
+      }
+    }
+  }, 5000);
+
+  // Keep process alive and cleanup on exit
   process.on('SIGINT', () => {
+    clearInterval(stalenessCheck);
     watcher.close();
     console.log('\nStopped watching.');
     process.exit(0);

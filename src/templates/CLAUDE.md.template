@@ -223,7 +223,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 ```bash
 # MANDATORY first step - check for nested repos
-for folder in repositories packages services apps libs; do
+for folder in repositories packages services apps libs workspace; do
   [ -d "$folder" ] && find "$folder" -maxdepth 2 -name ".git" -type d
 done
 ```

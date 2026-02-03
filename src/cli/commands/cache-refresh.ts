@@ -101,24 +101,11 @@ export async function cacheRefresh(options: CacheRefreshOptions = {}): Promise<v
         await invalidator.invalidatePlugin(
           plugin.name,
           plugin.version,
-          {
-            strategy: options.force ? 'hard' : 'soft',
-            preserveMemories: true,
-            backupFirst: true
-          },
+          { strategy: options.force ? 'hard' : 'soft' },
           versionPath
         );
 
         console.log(`   ✅ Cache invalidated`);
-
-        // Show backup message if memories were backed up
-        const backupDir = CacheInvalidator.getBackupDir();
-        if (fs.existsSync(backupDir)) {
-          const backups = fs.readdirSync(backupDir).filter(b => b.includes(plugin.name));
-          if (backups.length > 0) {
-            console.log(`   📦 Backed up skill memories`);
-          }
-        }
       } catch (error) {
         console.error(`   ❌ Failed to refresh ${plugin.name}: ${error}`);
         continue;

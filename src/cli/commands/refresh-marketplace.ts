@@ -538,11 +538,7 @@ async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
         await invalidator.invalidatePlugin(
           pluginName,
           version,
-          {
-            strategy: 'hard',
-            preserveMemories: true,
-            backupFirst: true
-          }
+          { strategy: 'hard' }
         );
 
         if (verbose) {

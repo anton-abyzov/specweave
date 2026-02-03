@@ -38,7 +38,7 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 - [x] **AC-US1-01**: All hooks write to `.specweave/logs/decisions.jsonl` (JSON Lines format)
 - [x] **AC-US1-02**: Each decision entry includes: timestamp, hook name, decision (approve/block), reason
 - [x] **AC-US1-03**: Each decision entry includes context object with hook-specific state
-- [ ] **AC-US1-04**: Log rotation when file exceeds 10MB (keep last 5MB)
+- [x] **AC-US1-04**: Log rotation when file exceeds 10MB (keep last 5MB)
 - [x] **AC-US1-05**: Decision log is human-readable with `cat` and machine-parseable with `jq`
 
 ---
@@ -84,11 +84,11 @@ Developers debugging SpecWeave hook behavior (especially sw:auto and sw:reflect)
 **So that** I can trace exactly what hooks are checking in real-time
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: `SPECWEAVE_DEBUG_HOOKS=1` enables verbose logging to stderr
-- [ ] **AC-US4-02**: Debug mode logs each validation check as it happens
-- [ ] **AC-US4-03**: Debug mode logs state machine transitions
-- [ ] **AC-US4-04**: Debug output includes color-coded decision highlights
-- [ ] **AC-US4-05**: Debug mode does not affect hook decision output (stdout remains valid JSON)
+- [x] **AC-US4-01**: `SPECWEAVE_DEBUG_HOOKS=1` enables verbose logging to stderr
+- [x] **AC-US4-02**: Debug mode logs each validation check as it happens
+- [x] **AC-US4-03**: Debug mode logs state machine transitions
+- [x] **AC-US4-04**: Debug output includes color-coded decision highlights
+- [x] **AC-US4-05**: Debug mode does not affect hook decision output (stdout remains valid JSON)
 
 ---
 

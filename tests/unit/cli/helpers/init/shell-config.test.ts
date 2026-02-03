@@ -26,6 +26,41 @@ import {
   ShellConfigResult,
 } from '../../../../../src/cli/helpers/init/shell-config.js';
 
+// Hoisted mock control - allows tests to inject errors into fs operations
+const { mockFsError } = vi.hoisted(() => ({
+  mockFsError: { pathPattern: null as string | null, errorMessage: null as string | null }
+}));
+
+// Mock native 'fs' module to allow controlled error injection
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+
+  const createErrorIfMatches = (pathArg: unknown): void => {
+    if (mockFsError.pathPattern && String(pathArg).includes(mockFsError.pathPattern)) {
+      const err = new Error(mockFsError.errorMessage || 'EACCES: permission denied') as NodeJS.ErrnoException;
+      err.code = 'EACCES';
+      throw err;
+    }
+  };
+
+  const wrappedMethods = {
+    writeFileSync: (filePath: unknown, ...rest: unknown[]) => {
+      createErrorIfMatches(filePath);
+      return (actual.writeFileSync as Function)(filePath, ...rest);
+    },
+    appendFileSync: (filePath: unknown, ...rest: unknown[]) => {
+      createErrorIfMatches(filePath);
+      return (actual.appendFileSync as Function)(filePath, ...rest);
+    }
+  };
+
+  return {
+    ...actual,
+    default: { ...actual, ...wrappedMethods },
+    ...wrappedMethods
+  };
+});
+
 describe('Shell Configuration Helper', () => {
   describe('detectShell() - AC-US6-01', () => {
     const originalEnv = process.env;
@@ -309,6 +344,10 @@ alias ll="ls -la"
     });
 
     afterEach(() => {
+      // Reset mock error injection
+      mockFsError.pathPattern = null;
+      mockFsError.errorMessage = null;
+
       fs.rmSync(tempDir, { recursive: true, force: true });
       process.env = originalEnv;
       Object.defineProperty(process, 'platform', { value: originalPlatform });
@@ -360,25 +399,26 @@ alias ll="ls -la"
       process.env.SHELL = '/bin/zsh';
       process.env.HOME = tempDir;
 
-      // Create a read-only config file to trigger an error
-      const configFile = path.join(tempDir, '.zshrc');
-      fs.writeFileSync(configFile, 'existing content\n');
-      fs.chmodSync(configFile, 0o444); // Read-only
+      // Use mock to inject write error (cross-platform compatible)
+      // Note: This will fail any write to .zshrc regardless of the actual homedir
+      mockFsError.pathPattern = '.zshrc';
+      mockFsError.errorMessage = 'EACCES: permission denied, write';
 
-      // Try to append to read-only file (should fail on most systems)
-      // However, this may not fail if running as root, so we accept both outcomes
+      // Try to set up LSP env var - mock will fail the write operation
       const result = setupLspEnvVar();
 
-      // Restore permissions for cleanup
-      fs.chmodSync(configFile, 0o644);
-
-      // The test verifies the result structure is valid regardless of success/failure
+      // The test verifies the result structure is always valid
       expect(result.shell).toBe('zsh');
       expect(result.configPath).toBeDefined();
       expect(result.exportSyntax).toBeDefined();
-      // If it failed, error should be defined; if succeeded, alreadyConfigured may be set
+
+      // With mock active, should fail with error
+      // (unless the config file already has ENABLE_LSP_TOOL, in which case success=true)
       if (!result.success) {
         expect(result.error).toBeDefined();
+      } else {
+        // If succeeded, it's because ENABLE_LSP_TOOL was already configured
+        expect(result.alreadyConfigured).toBe(true);
       }
     });
   });
