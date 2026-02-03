@@ -6,6 +6,13 @@
 >
 > **See**: ADR-0062 "GitHub-First Development Workflow" for current guidelines.
 >
+> **Code Cleanup (2026-02-03)**: Symlink-related code has been removed from the codebase:
+> - Deleted: `scripts/verify-dev-setup.sh`
+> - Deleted: `plugins/specweave/lib/utils/validate-dev-setup.sh`
+> - Deleted: `tests/integration/core/dev-setup/marketplace-symlink.test.ts`
+> - Updated: `scripts/hooks/install-git-hooks.sh` (removed symlink verification)
+> - Updated: `scripts/diagnose-plugins.sh` (removed symlink recommendation)
+>
 > ---
 
 **Status**: ❌ DEPRECATED (Superseded by ADR-0062)

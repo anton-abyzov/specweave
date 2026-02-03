@@ -3,7 +3,7 @@
 # Pre-commit hook: Validate plugin structure
 # Prevents commits with empty agent/skill directories or missing required files
 #
-# Install: ln -sf ../../scripts/pre-commit-validate-plugins.sh .git/hooks/pre-commit-validate-plugins
+# Install: Copy to .git/hooks/pre-commit-validate-plugins
 # Or add to .git/hooks/pre-commit
 
 set -euo pipefail
