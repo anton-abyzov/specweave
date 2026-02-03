@@ -744,13 +744,13 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   PLUGINS_INSTALLED=""
                   PLUGINS_ALREADY=""
 
-                  # v1.0.198: Read plugin scope configuration
-                  # context7, playwright, specweave → user scope (global)
-                  # All others → project scope by default
-                  SPECWEAVE_PLUGIN_SCOPE="user"
+                  # v1.0.210: All plugins install with PROJECT scope by default
+                  # This prevents global pollution - plugins stay scoped to current project
+                  # Only context7/playwright remain global (vendor plugins)
+                  SPECWEAVE_PLUGIN_SCOPE="project"
                   DEFAULT_PLUGIN_SCOPE="project"
                   if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
-                    SCOPE_VAL=$(jq -r '.plugins.scope.specweaveScope // "user"' "$CONFIG_PATH" 2>/dev/null)
+                    SCOPE_VAL=$(jq -r '.plugins.scope.specweaveScope // "project"' "$CONFIG_PATH" 2>/dev/null)
                     [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && SPECWEAVE_PLUGIN_SCOPE="$SCOPE_VAL"
                     SCOPE_VAL=$(jq -r '.plugins.scope.defaultScope // "project"' "$CONFIG_PATH" 2>/dev/null)
                     [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && DEFAULT_PLUGIN_SCOPE="$SCOPE_VAL"
