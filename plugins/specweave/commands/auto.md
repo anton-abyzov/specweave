@@ -892,8 +892,6 @@ I need your Supabase database URL to execute the migration.
 2. EXECUTE immediately
 3. Continue auto mode
 
-See: `plugins/specweave/skills/auto-execute/SKILL.md` for full details.
-
 ---
 
 ## 🎯 Self-Assessment & Quality Gates

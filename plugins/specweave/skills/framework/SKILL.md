@@ -101,13 +101,13 @@ board: digital-operations    # REQUIRED for 2-level
 **Enforcement**:
 - `/sw:inc` **blocks** if previous increments incomplete
 - Use `/sw:status` to check all increments
-- Use `/sw:close` to close incomplete work
+- Use `/sw:done` to close incomplete work
 - `--force` flag for emergencies (logged, should be rare)
 
 **What "DONE" Means**:
 1. All tasks in `tasks.md` marked `[x] Completed`, OR
 2. `COMPLETION-SUMMARY.md` exists with "✅ COMPLETE" status, OR
-3. Explicit closure via `/sw:close`
+3. Explicit closure via `/sw:done`
 
 **Three Options for Closing**:
 1. **Adjust Scope** - Remove features from spec.md, regenerate tasks
@@ -125,7 +125,7 @@ board: digital-operations    # REQUIRED for 2-level
 # ❌ Blocked! "Close 0002 and 0003 first"
 
 # Close previous work
-/sw:close
+/sw:done
 # Interactive: Choose force-complete, move tasks, or reduce scope
 
 # Now can proceed
@@ -454,8 +454,8 @@ SpecWeave works with multiple AI coding assistants:
 - `/sw:sync-docs update` - Update living docs from completed increments
 
 ### External Platform Sync
-- `/sw:sync-github` - Bidirectional GitHub sync
-- `/sw:sync-jira` - Bidirectional Jira sync
+- `/sw-github:sync` - Bidirectional GitHub sync
+- `/sw-jira:sync` - Bidirectional Jira sync
 
 ## Common Questions
 

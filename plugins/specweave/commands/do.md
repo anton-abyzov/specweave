@@ -1150,8 +1150,6 @@ I need your Supabase database URL to execute the migration.
 [I will save to .env and execute automatically]
 ```
 
-See: `plugins/specweave/skills/auto-execute/SKILL.md` for full details.
-
 ---
 
 ## Why "/do" instead of "/do"?

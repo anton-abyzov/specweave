@@ -3,65 +3,292 @@
 ## Task Legend
 
 - `[ ]` Not started | `[x]` Completed
+- TDD Phases: `[RED]` Write failing test | `[GREEN]` Minimal implementation | `[REFACTOR]` Code quality
 - Model hints: haiku (simple), sonnet (default), opus (complex)
 
 ---
 
-## US-001: Language-Aware Warm-up (P1)
+## Phase 1: Foundation (No Dependencies)
 
-**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US1-05
-**Tasks**: 5 total, 0 completed
+### T-001: [RED] Write failing tests for LspConfig schema
 
----
-
-### T-001: Create WarmupStrategy interface and base implementation
-
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-05
-**Status**: [ ] pending
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01, AC-US2-04
+**Status**: [x] completed
 **Model**: sonnet
 
-**Test Plan**:
-- **Given** a WarmupStrategy implementation
-- **When** getFilesToOpen() is called with count=3
-- **Then** returns array of max 3 file paths
+**Test File**: `src/core/lsp/config/__tests__/lsp-config.test.ts`
 
-**Test Cases** (`src/core/lsp/warmup/__tests__/strategy.test.ts`):
-- `testSequentialExecution()`: Files opened one-by-one with delay
-- `testOpenCountRespected()`: Never opens more than configured count
-- **Coverage Target**: 90%
+**Tests to Write**:
+```typescript
+describe('LspConfig', () => {
+  it('parses global timeout in seconds', () => {
+    const config = parseLspConfig({ lsp: { timeout: 120 } });
+    expect(config.timeout).toBe(120); // seconds, not ms
+  });
 
-**Implementation**:
-1. Create `src/core/lsp/warmup/strategy.ts` with interface
-2. Create `src/core/lsp/warmup/executor.ts` for sequential logic
-3. Add 100ms delay between file opens
+  it('parses warmupTimeout separately', () => {
+    const config = parseLspConfig({ lsp: { warmupTimeout: 90 } });
+    expect(config.warmupTimeout).toBe(90);
+  });
+
+  it('uses defaults when config missing', () => {
+    const config = parseLspConfig({});
+    expect(config.timeout).toBe(120);
+    expect(config.warmupTimeout).toBe(90);
+  });
+});
+```
+
+**Expected**: Tests FAIL (module doesn't exist yet)
 
 **Dependencies**: None
 
 ---
 
-### T-002: Implement C# warm-up strategy with .sln detection
+### T-002: [GREEN] Implement LspConfig schema with Zod
+
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-04
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-001
+
+**Implementation**:
+1. Create `src/core/lsp/config/lsp-config.ts`
+2. Define Zod schema for LspConfig interface
+3. Add defaults: timeout=120, warmupTimeout=90
+4. Export parseLspConfig() function
+
+**Expected**: T-001 tests PASS
+
+---
+
+### T-003: [RED] Write failing tests for timeout resolution
+
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-03, AC-US2-05
+**Status**: [x] completed
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/config/__tests__/timeout-resolver.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('TimeoutResolver', () => {
+  it('uses perLanguage override when present', () => {
+    const resolver = new TimeoutResolver({
+      timeout: 120,
+      perLanguage: { csharp: { timeout: 180 } }
+    });
+    expect(resolver.getTimeout('csharp')).toBe(180);
+  });
+
+  it('falls back to global when no perLanguage', () => {
+    const resolver = new TimeoutResolver({ timeout: 120 });
+    expect(resolver.getTimeout('go')).toBe(120);
+  });
+
+  it('resolves warmupTimeout separately', () => {
+    const resolver = new TimeoutResolver({
+      warmupTimeout: 90,
+      perLanguage: { csharp: { warmupTimeout: 120 } }
+    });
+    expect(resolver.getWarmupTimeout('csharp')).toBe(120);
+  });
+});
+```
+
+**Expected**: Tests FAIL (TimeoutResolver doesn't exist)
+
+**Dependencies**: T-002
+
+---
+
+### T-004: [GREEN] Implement TimeoutResolver with per-language overrides
+
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-03, AC-US2-05
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-003
+
+**Implementation**:
+1. Create `src/core/lsp/config/timeout-resolver.ts`
+2. Resolution order: perLanguage > global > default
+3. Separate methods for timeout and warmupTimeout
+
+**Expected**: T-003 tests PASS
+
+---
+
+### T-005: [RED] Write failing tests for WarmupStrategy interface
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-05
+**Status**: [x] completed
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/warmup/__tests__/strategy.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('WarmupExecutor', () => {
+  it('opens files sequentially with delay', async () => {
+    const strategy = new MockStrategy(['a.ts', 'b.ts', 'c.ts']);
+    const executor = new WarmupExecutor();
+    const openTimes: number[] = [];
+
+    await executor.warmup(strategy, {
+      onFileOpen: () => openTimes.push(Date.now())
+    });
+
+    // Files should be opened ~100ms apart
+    expect(openTimes[1] - openTimes[0]).toBeGreaterThanOrEqual(90);
+  });
+
+  it('respects openCount limit', async () => {
+    const strategy = new MockStrategy(['a.ts', 'b.ts', 'c.ts', 'd.ts', 'e.ts']);
+    const executor = new WarmupExecutor();
+    const opened: string[] = [];
+
+    await executor.warmup(strategy, { openCount: 3 });
+
+    expect(opened.length).toBe(3);
+  });
+});
+```
+
+**Expected**: Tests FAIL (WarmupExecutor doesn't exist)
+
+**Dependencies**: None
+
+---
+
+### T-006: [GREEN] Implement WarmupStrategy interface and executor
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-05
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-005
+
+**Implementation**:
+1. Create `src/core/lsp/warmup/strategy.ts` with WarmupStrategy interface
+2. Create `src/core/lsp/warmup/executor.ts` for sequential logic
+3. Add 100ms delay between file opens
+
+**Expected**: T-005 tests PASS
+
+---
+
+### T-007: [RED] Write failing tests for language analyzer
+
+**User Story**: US-003
+**Satisfies ACs**: AC-US3-01, AC-US3-02
+**Status**: [x] completed
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/config/__tests__/language-analyzer.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('LanguageAnalyzer', () => {
+  it('weights project files higher than source files', async () => {
+    // Mock filesystem with 1 .sln and 100 .cs files
+    const analyzer = new LanguageAnalyzer(mockFs);
+    const results = await analyzer.analyze('/project');
+
+    expect(results[0].language).toBe('csharp');
+    expect(results[0].score).toBeGreaterThan(100); // .sln = 10, .cs = 1 each
+  });
+
+  it('returns max 3 languages', async () => {
+    // Mock with 5 different languages
+    const results = await analyzer.analyze('/polyglot');
+    expect(results.length).toBe(3);
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: None
+
+---
+
+### T-008: [GREEN] Implement language analyzer with weighted scoring
+
+**User Story**: US-003
+**Satisfies ACs**: AC-US3-01, AC-US3-02
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-007
+
+**Implementation**:
+1. Create `src/core/lsp/config/language-analyzer.ts`
+2. Weight: project file=10, source file=1
+3. Return sorted top 3
+
+**Expected**: T-007 tests PASS
+
+---
+
+## Phase 2: Multi-Language Warm-up Strategies
+
+### T-009: [RED] Write failing tests for C# warm-up strategy
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-03
 **Status**: [ ] pending
 **Model**: sonnet
 
-**Test Plan**:
-- **Given** a project with .sln file at root
-- **When** detectProjectRoot() is called
-- **Then** returns path containing .sln
+**Test File**: `src/core/lsp/warmup/strategies/__tests__/csharp.test.ts`
 
-- **Given** multiple .sln files at root
-- **When** warm-up runs
-- **Then** user is prompted to choose, choice is cached
+**Tests to Write**:
+```typescript
+describe('CSharpStrategy', () => {
+  it('detects .sln at project root', async () => {
+    const strategy = new CSharpStrategy(mockFs);
+    const root = await strategy.detectProjectRoot('/project');
+    expect(root).toBe('/project');
+    expect(strategy.solutionFile).toBe('MyApp.sln');
+  });
 
-**Test Cases** (`src/core/lsp/warmup/strategies/__tests__/csharp.test.ts`):
-- `testSlnDetection()`: Finds .sln in project root
-- `testCsprojFallback()`: Uses .csproj if no .sln
-- `testMultiSlnPrompt()`: Shows interactive prompt
-- `testChoiceCaching()`: Reads from `.specweave/cache/lsp-choices.json`
-- **Coverage Target**: 90%
+  it('falls back to .csproj if no .sln', async () => {
+    const strategy = new CSharpStrategy(mockFsNosln);
+    const root = await strategy.detectProjectRoot('/project');
+    expect(strategy.projectFile).toBe('MyApp.csproj');
+  });
+
+  it('prompts for choice when multiple .sln files', async () => {
+    const promptMock = vi.fn().mockResolvedValue('App2.sln');
+    const strategy = new CSharpStrategy(mockFsMultiSln, promptMock);
+    await strategy.detectProjectRoot('/project');
+    expect(promptMock).toHaveBeenCalled();
+  });
+
+  it('caches solution choice', async () => {
+    const strategy = new CSharpStrategy(mockFs);
+    await strategy.detectProjectRoot('/project');
+    // Check .specweave/cache/lsp-choices.json was written
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-006
+
+---
+
+### T-010: [GREEN] Implement C# warm-up strategy
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-03
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-009
 
 **Implementation**:
 1. Create `src/core/lsp/warmup/strategies/csharp.ts`
@@ -69,503 +296,492 @@
 3. Add interactive prompt for multiple .sln files
 4. Cache choice in `.specweave/cache/lsp-choices.json`
 
-**Dependencies**: T-001
+**Expected**: T-009 tests PASS
 
 ---
 
-### T-003: Implement Go warm-up strategy
+### T-011: [RED] Write failing tests for Go/TypeScript/Python/Rust strategies
 
 **User Story**: US-001
-**Satisfies ACs**: AC-US1-02
-**Status**: [ ] pending
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+**Status**: [x] completed
 **Model**: haiku
 
-**Test Plan**:
-- **Given** a project with go.mod
-- **When** detectProjectRoot() is called
-- **Then** returns directory containing go.mod
+**Test Files**: `src/core/lsp/warmup/strategies/__tests__/{go,typescript,python,rust}.test.ts`
 
-**Test Cases** (`src/core/lsp/warmup/strategies/__tests__/go.test.ts`):
-- `testGoModDetection()`: Finds go.mod
-- `testGoFilesOpened()`: Opens *.go files for warm-up
-- **Coverage Target**: 85%
+**Tests to Write**:
+- Go: go.mod detection, opens .go files
+- TypeScript: tsconfig.json detection, opens .ts/.tsx files
+- Python: pyproject.toml/requirements.txt detection
+- Rust: Cargo.toml detection
 
-**Implementation**:
-1. Create `src/core/lsp/warmup/strategies/go.ts`
-2. Detect go.mod, open 3 .go files
+**Expected**: Tests FAIL
 
-**Dependencies**: T-001
+**Dependencies**: T-006
 
 ---
 
-### T-004: Implement TypeScript/Python/Rust strategies
+### T-012: [GREEN] Implement Go/TypeScript/Python/Rust strategies
 
 **User Story**: US-001
-**Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+**Status**: [x] completed
 **Model**: haiku
-
-**Test Plan**:
-- **Given** TypeScript project with tsconfig.json
-- **When** strategy detects, **Then** opens .ts files
-
-**Test Cases** (`src/core/lsp/warmup/strategies/__tests__/*.test.ts`):
-- `testTypescriptStrategy()`: tsconfig.json detection
-- `testPythonStrategy()`: pyproject.toml/requirements.txt detection
-- `testRustStrategy()`: Cargo.toml detection
-- **Coverage Target**: 85%
+**Depends On**: T-011
 
 **Implementation**:
-1. Create `typescript.ts`, `python.ts`, `rust.ts` in strategies/
+1. Create `typescript.ts`, `python.ts`, `go.ts`, `rust.ts` in strategies/
 2. Each follows WarmupStrategy interface
 
-**Dependencies**: T-001
+**Expected**: T-011 tests PASS
 
 ---
 
-### T-005: Add --skip-warmup CLI flag
+### T-013: [RED] Write failing test for --skip-warmup flag
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-04
 **Status**: [ ] pending
 **Model**: haiku
 
-**Test Plan**:
-- **Given** `specweave lsp refs --skip-warmup File.ts Symbol`
-- **When** command runs
-- **Then** warm-up phase is skipped entirely
+**Test File**: `src/cli/__tests__/lsp.test.ts`
 
-**Test Cases** (`src/cli/__tests__/lsp.test.ts`):
-- `testSkipWarmupFlag()`: Warm-up executor not called
-- **Coverage Target**: 80%
+**Test to Write**:
+```typescript
+it('skips warmup when --skip-warmup flag present', async () => {
+  const warmupSpy = vi.spyOn(executor, 'warmup');
+  await runLspCommand(['refs', '--skip-warmup', 'file.ts', 'Symbol']);
+  expect(warmupSpy).not.toHaveBeenCalled();
+});
+```
+
+**Expected**: Test FAILS
+
+**Dependencies**: T-006
+
+---
+
+### T-014: [GREEN] Add --skip-warmup CLI flag
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-04
+**Status**: [ ] pending
+**Model**: haiku
+**Depends On**: T-013
 
 **Implementation**:
 1. Add `--skip-warmup` option to lsp command
 2. Skip `executor.warmup()` call when flag present
 
-**Dependencies**: T-001
+**Expected**: T-013 test PASSES
 
 ---
 
-## US-002: Configurable Timeouts (P1)
+## Phase 3: Diagnostics & Error Handling
 
-**Linked ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05
-**Tasks**: 3 total, 0 completed
-
----
-
-### T-006: Create LspConfig schema with Zod validation
-
-**User Story**: US-002
-**Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-04
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** config with `lsp.timeout: 120`
-- **When** parsed
-- **Then** returns timeout as 120 (seconds, not ms)
-
-**Test Cases** (`src/core/lsp/config/__tests__/lsp-config.test.ts`):
-- `testGlobalTimeoutParsed()`: lsp.timeout correctly parsed
-- `testWarmupTimeoutParsed()`: lsp.warmupTimeout correctly parsed
-- `testSecondsNotMilliseconds()`: Values interpreted as seconds
-- `testDefaults()`: Missing config returns 120s global, 90s warmup
-- **Coverage Target**: 95%
-
-**Implementation**:
-1. Create `src/core/lsp/config/lsp-config.ts`
-2. Define Zod schema for LspConfig interface
-3. Add defaults: timeout=120, warmupTimeout=90
-
-**Dependencies**: None
-
----
-
-### T-007: Implement timeout resolution with per-language overrides
-
-**User Story**: US-002
-**Satisfies ACs**: AC-US2-03, AC-US2-05
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** `lsp.perLanguage.csharp.timeout: 180`
-- **When** resolveTimeout('csharp') called
-- **Then** returns 180 (not global 120)
-
-**Test Cases** (`src/core/lsp/config/__tests__/timeout-resolver.test.ts`):
-- `testPerLanguageOverride()`: Language-specific wins
-- `testGlobalFallback()`: Uses global when no per-language
-- `testDefaultFallback()`: Uses 120s when no config
-- `testWarmupTimeoutResolution()`: Separate warmup timeout resolved
-- **Coverage Target**: 95%
-
-**Implementation**:
-1. Create `src/core/lsp/config/timeout-resolver.ts`
-2. Resolution order: perLanguage > global > default
-3. Separate methods for timeout and warmupTimeout
-
-**Dependencies**: T-006
-
----
-
-### T-008: Integrate timeout config into LSP clients
-
-**User Story**: US-002
-**Satisfies ACs**: AC-US2-01, AC-US2-02
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** lsp-manager with custom timeout config
-- **When** LSP request made
-- **Then** request uses configured timeout
-
-**Test Cases** (`src/core/lsp/__tests__/lsp-manager.test.ts`):
-- `testTimeoutAppliedToRequests()`: Request timeout uses config
-- `testWarmupUsesWarmupTimeout()`: Warm-up phase uses warmupTimeout
-- **Coverage Target**: 85%
-
-**Implementation**:
-1. Inject TimeoutResolver into LspManager
-2. Pass resolved timeout to request methods
-3. Update existing hardcoded 60000ms to use resolver
-
-**Dependencies**: T-007
-
----
-
-## US-003: LSP Server Recommendations (P1)
-
-**Linked ACs**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04, AC-US3-05
-**Tasks**: 2 total, 0 completed
-
----
-
-### T-009: Implement language analyzer with weighted file counting
-
-**User Story**: US-003
-**Satisfies ACs**: AC-US3-01, AC-US3-02
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** project with 100 .cs files and 1 .sln
-- **When** analyzer runs
-- **Then** .sln weighted higher, C# ranked top
-
-**Test Cases** (`src/core/lsp/config/__tests__/language-analyzer.test.ts`):
-- `testWeightedScoring()`: Project files score higher
-- `testTop3Ranking()`: Returns max 3 languages
-- **Coverage Target**: 90%
-
-**Implementation**:
-1. Create `src/core/lsp/config/language-analyzer.ts`
-2. Weight: project file=10, source file=1
-3. Return sorted top 3
-
-**Dependencies**: None
-
----
-
-### T-010: Create interactive LSP suggestion prompt
-
-**User Story**: US-003
-**Satisfies ACs**: AC-US3-03, AC-US3-04, AC-US3-05
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** analyzer suggests csharp, typescript
-- **When** prompt shown
-- **Then** user can confirm/modify selection
-
-**Test Cases** (`src/core/lsp/config/__tests__/lsp-prompt.test.ts`):
-- `testInteractivePrompt()`: Shows suggestions
-- `testInstallCommandShown()`: Missing servers show install cmd
-- `testMax3Enforced()`: Can't enable more than 3
-- **Coverage Target**: 85%
-
-**Implementation**:
-1. Create `src/core/lsp/config/lsp-prompt.ts`
-2. Show install commands (dotnet tool install, npm i -g, etc.)
-3. Enforce max 3 active servers
-
-**Dependencies**: T-009
-
----
-
-## US-004: Custom LSP Server Registration (P2)
-
-**Linked ACs**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04
-**Tasks**: 2 total, 0 completed
-
----
-
-### T-011: Add custom server config parsing
-
-**User Story**: US-004
-**Satisfies ACs**: AC-US4-01
-**Status**: [ ] pending
-**Model**: haiku
-
-**Test Plan**:
-- **Given** `lsp.servers.myLang` in config
-- **When** LSP initializes
-- **Then** custom server is registered
-
-**Test Cases** (`src/core/lsp/config/__tests__/server-registry.test.ts`):
-- `testCustomServerParsed()`: Config correctly parsed
-- `testBuiltInAndCustomMerged()`: Both available
-- **Coverage Target**: 85%
-
-**Implementation**:
-1. Extend LspConfig schema for servers map
-2. Merge custom with built-in in server-registry.ts
-
-**Dependencies**: T-006
-
----
-
-### T-012: Implement security warning and binary validation
-
-**User Story**: US-004
-**Satisfies ACs**: AC-US4-02, AC-US4-03, AC-US4-04
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** first use of custom server
-- **When** initialized
-- **Then** security warning shown, confirmation required
-
-**Test Cases** (`src/core/lsp/config/__tests__/server-validator.test.ts`):
-- `testSecurityWarning()`: Warning shown on first use
-- `testBinaryExists()`: Check binary path exists
-- `testBinaryExecutable()`: Check +x permission
-- `testClearError()`: Invalid path shows fix suggestion
-- **Coverage Target**: 90%
-
-**Implementation**:
-1. Create `src/core/lsp/config/server-validator.ts`
-2. Check fs.access(path, fs.constants.X_OK)
-3. Store confirmation in `.specweave/cache/lsp-trusted.json`
-
-**Dependencies**: T-011
-
----
-
-## US-005: Progress Feedback & Diagnostics (P1)
-
-**Linked ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
-**Tasks**: 3 total, 0 completed
-
----
-
-### T-013: Implement progress bar for LSP operations
+### T-015: Implement progress bar for LSP operations
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 
-**Test Plan**:
-- **Given** LSP indexing in progress
-- **When** waiting
-- **Then** progress bar with elapsed time shown
-
-**Implementation**:
+**Implementation** (no formal test needed - UI component):
 1. Create `src/core/lsp/diagnostics/progress.ts`
-2. Use cli-progress or ora for terminal output
-3. Show elapsed time in seconds
+2. Use ora for spinner with elapsed time
+3. Show: "🔄 csharp-ls indexing (45s elapsed)..."
 
 **Dependencies**: None
 
 ---
 
-### T-014: Add detailed symbol count reporting
+### T-016: Implement detailed symbol count reporting
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-02
 **Status**: [ ] pending
 **Model**: haiku
-
-**Test Plan**:
-- **Given** warm-up complete
-- **When** reported
-- **Then** shows "847 symbols: 423 functions, 312 classes"
+**Depends On**: T-015
 
 **Implementation**:
 1. Query workspace/symbol after warm-up
-2. Group by symbolKind
-3. Format output
-
-**Dependencies**: T-013
+2. Group by symbolKind (Function, Class, Interface, etc.)
+3. Format: "✅ LSP ready - 847 symbols (423 functions, 312 classes, 112 interfaces)"
 
 ---
 
-### T-015: Implement `specweave lsp doctor` command
+### T-017: [RED] Write failing tests for lsp doctor command
 
 **User Story**: US-005
-**Satisfies ACs**: AC-US5-03, AC-US5-04, AC-US5-05
+**Satisfies ACs**: AC-US5-03, AC-US5-04
 **Status**: [ ] pending
 **Model**: sonnet
 
-**Test Plan**:
-- **Given** `specweave lsp doctor`
-- **When** run
-- **Then** shows installed servers, connectivity, suggestions
+**Test File**: `src/cli/__tests__/lsp-doctor.test.ts`
 
-**Test Cases** (`src/cli/__tests__/lsp-doctor.test.ts`):
-- `testServerDetection()`: Lists installed LSP servers
-- `testConnectivityCheck()`: Tests server startup
-- `testSuggestions()`: Recommends fixes
-- **Coverage Target**: 85%
+**Tests to Write**:
+```typescript
+describe('lsp doctor', () => {
+  it('detects installed LSP servers', async () => {
+    const result = await runLspDoctor();
+    expect(result.installedServers).toContain('typescript-language-server');
+  });
+
+  it('tests server connectivity', async () => {
+    const result = await runLspDoctor();
+    expect(result.connectivity.typescript).toBe('ok');
+  });
+
+  it('suggests fixes for common issues', async () => {
+    const result = await runLspDoctor({ mockMissingServer: 'csharp-ls' });
+    expect(result.suggestions).toContain('dotnet tool install -g csharp-ls');
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-008
+
+---
+
+### T-018: [GREEN] Implement lsp doctor command
+
+**User Story**: US-005
+**Satisfies ACs**: AC-US5-03, AC-US5-04, AC-US5-05
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-017
 
 **Implementation**:
 1. Create `src/core/lsp/diagnostics/lsp-doctor.ts`
 2. Add `doctor` subcommand to lsp CLI
 3. Write logs to `.specweave/logs/lsp-doctor-*.log`
 
-**Dependencies**: T-009
+**Expected**: T-017 tests PASS
 
 ---
 
-## US-006: Symbol Caching (P2)
-
-**Linked ACs**: AC-US6-01, AC-US6-02, AC-US6-03
-**Tasks**: 2 total, 0 completed
-
----
-
-### T-016: Implement disk-based symbol cache
-
-**User Story**: US-006
-**Satisfies ACs**: AC-US6-01, AC-US6-03
-**Status**: [ ] pending
-**Model**: sonnet
-
-**Test Plan**:
-- **Given** LSP query result
-- **When** cached
-- **Then** stored in `.specweave/cache/lsp/`
-
-**Test Cases** (`src/core/lsp/cache/__tests__/symbol-cache.test.ts`):
-- `testCacheWrite()`: Symbols written to disk
-- `testCacheRead()`: Cached result returned
-- `testCacheKeyFormat()`: Key includes file, symbol, lang, version
-- **Coverage Target**: 90%
-
-**Implementation**:
-1. Create `src/core/lsp/cache/symbol-cache.ts`
-2. Use JSON files keyed by hash of (file+symbol+lang+version)
-
-**Dependencies**: None
-
----
-
-### T-017: Implement mtime-based cache invalidation
-
-**User Story**: US-006
-**Satisfies ACs**: AC-US6-02
-**Status**: [ ] pending
-**Model**: haiku
-
-**Test Plan**:
-- **Given** cached symbol for file.ts
-- **When** file.ts modified
-- **Then** cache invalidated
-
-**Test Cases** (`src/core/lsp/cache/__tests__/cache-invalidation.test.ts`):
-- `testMtimeCheck()`: Changed mtime invalidates
-- `testUnchangedReturnsCache()`: Same mtime uses cache
-- **Coverage Target**: 90%
-
-**Implementation**:
-1. Store mtime in cache entry
-2. Compare on cache read
-3. Return null if stale
-
-**Dependencies**: T-016
-
----
-
-## US-007: Error Handling & Fallback (P1)
-
-**Linked ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04
-**Tasks**: 2 total, 0 completed
-
----
-
-### T-018: Implement fail-fast error handling
+### T-019: [RED] Write failing tests for error handling
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01, AC-US7-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
-**Test Plan**:
-- **Given** LSP error
-- **When** handling
-- **Then** fail fast with clear message, fallback to grep
+**Test File**: `src/core/lsp/__tests__/error-handler.test.ts`
 
-**Test Cases** (`src/core/lsp/__tests__/error-handler.test.ts`):
-- `testFailFast()`: No silent retry
-- `testGrepFallback()`: Crash triggers grep search
-- `testClearMessage()`: Error includes fix suggestion
-- **Coverage Target**: 85%
+**Tests to Write**:
+```typescript
+describe('LspErrorHandler', () => {
+  it('fails fast without retry', async () => {
+    const handler = new LspErrorHandler();
+    const result = await handler.handle(new Error('LSP timeout'));
+    expect(result.retried).toBe(false);
+  });
 
-**Implementation**:
-1. Remove existing retry logic
-2. Add grep fallback in lsp-manager.ts
-3. Format user-friendly error messages
+  it('falls back to grep on crash', async () => {
+    const grepSpy = vi.spyOn(grepFallback, 'search');
+    await handler.handle(new Error('LSP process crashed'));
+    expect(grepSpy).toHaveBeenCalled();
+  });
+});
+```
+
+**Expected**: Tests FAIL
 
 **Dependencies**: None
 
 ---
 
-### T-019: Implement project root detection with upward search
+### T-020: [GREEN] Implement fail-fast error handling with grep fallback
+
+**User Story**: US-007
+**Satisfies ACs**: AC-US7-01, AC-US7-02
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-019
+
+**Implementation**:
+1. Create `src/core/lsp/error-handler.ts`
+2. Remove existing retry logic from lsp-manager.ts
+3. Add grep fallback
+4. Format user-friendly error messages
+
+**Expected**: T-019 tests PASS
+
+---
+
+### T-021: [RED] Write failing tests for project root detection
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-03, AC-US7-04
 **Status**: [ ] pending
 **Model**: haiku
 
-**Test Plan**:
-- **Given** command run from src/utils/
-- **When** detecting project root
-- **Then** searches upward until package.json/.sln found
+**Test File**: `src/core/lsp/__tests__/project-detector.test.ts`
 
-**Test Cases** (`src/core/lsp/__tests__/project-detector.test.ts`):
-- `testUpwardSearch()`: Finds project file in parent
-- `testUnknownProject()`: Suggests LSP based on file extensions
-- **Coverage Target**: 85%
+**Tests to Write**:
+```typescript
+describe('ProjectDetector', () => {
+  it('searches upward for project file', async () => {
+    // cwd = /project/src/utils, package.json at /project
+    const detector = new ProjectDetector();
+    const root = await detector.findRoot('/project/src/utils');
+    expect(root).toBe('/project');
+  });
+
+  it('suggests LSP based on file extensions when no project file', async () => {
+    const result = await detector.analyzeUnknownProject('/unknown');
+    expect(result.suggestedLanguage).toBe('typescript'); // most .ts files
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-008
+
+---
+
+### T-022: [GREEN] Implement project root detection
+
+**User Story**: US-007
+**Satisfies ACs**: AC-US7-03, AC-US7-04
+**Status**: [ ] pending
+**Model**: haiku
+**Depends On**: T-021
 
 **Implementation**:
 1. Create `src/core/lsp/config/project-detector.ts`
 2. Walk up from cwd until project file found
 3. If none found, count extensions and suggest
 
-**Dependencies**: T-009
+**Expected**: T-021 tests PASS
 
 ---
 
-## US-008: Modular Code Architecture (P2)
+## Phase 4: Advanced Features
 
-**Linked ACs**: AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04
-**Tasks**: 2 total, 0 completed
+### T-023: [RED] Write failing tests for custom server config
+
+**User Story**: US-004
+**Satisfies ACs**: AC-US4-01
+**Status**: [ ] pending
+**Model**: haiku
+
+**Test File**: `src/core/lsp/config/__tests__/server-registry.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('ServerRegistry', () => {
+  it('parses custom server from config', () => {
+    const registry = new ServerRegistry({
+      servers: { myLang: { command: 'my-lsp', args: ['--stdio'] } }
+    });
+    expect(registry.get('myLang')).toBeDefined();
+  });
+
+  it('merges custom with built-in servers', () => {
+    const registry = new ServerRegistry({ servers: { custom: {...} } });
+    expect(registry.get('typescript')).toBeDefined(); // built-in
+    expect(registry.get('custom')).toBeDefined(); // custom
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-002
 
 ---
 
-### T-020: Scaffold modular directory structure
+### T-024: [GREEN] Implement custom server config parsing
+
+**User Story**: US-004
+**Satisfies ACs**: AC-US4-01
+**Status**: [ ] pending
+**Model**: haiku
+**Depends On**: T-023
+
+**Implementation**:
+1. Extend LspConfig schema for servers map
+2. Create `src/core/lsp/config/server-registry.ts`
+3. Merge custom with built-in servers
+
+**Expected**: T-023 tests PASS
+
+---
+
+### T-025: [RED] Write failing tests for security validation
+
+**User Story**: US-004
+**Satisfies ACs**: AC-US4-02, AC-US4-03, AC-US4-04
+**Status**: [ ] pending
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/config/__tests__/server-validator.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('ServerValidator', () => {
+  it('shows security warning on first custom server use', async () => {
+    const warnSpy = vi.spyOn(console, 'warn');
+    await validator.validateCustomServer('myLang', '/path/to/lsp');
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('security'));
+  });
+
+  it('validates binary exists and is executable', async () => {
+    const result = await validator.validateBinary('/nonexistent');
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('not found');
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-024
+
+---
+
+### T-026: [GREEN] Implement security warning and binary validation
+
+**User Story**: US-004
+**Satisfies ACs**: AC-US4-02, AC-US4-03, AC-US4-04
+**Status**: [ ] pending
+**Model**: sonnet
+**Depends On**: T-025
+
+**Implementation**:
+1. Create `src/core/lsp/config/server-validator.ts`
+2. Check fs.access(path, fs.constants.X_OK)
+3. Store trust confirmation in `.specweave/cache/lsp-trusted.json`
+
+**Expected**: T-025 tests PASS
+
+---
+
+### T-027: [RED] Write failing tests for symbol cache
+
+**User Story**: US-006
+**Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03
+**Status**: [x] completed
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/cache/__tests__/symbol-cache.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('SymbolCache', () => {
+  it('writes symbols to disk', async () => {
+    const cache = new SymbolCache('/cache');
+    await cache.set('file.ts', 'MyClass', [/* locations */]);
+    expect(fs.existsSync('/cache/abc123.json')).toBe(true);
+  });
+
+  it('reads cached result', async () => {
+    await cache.set('file.ts', 'MyClass', locations);
+    const result = await cache.get('file.ts', 'MyClass');
+    expect(result).toEqual(locations);
+  });
+
+  it('invalidates on mtime change', async () => {
+    await cache.set('file.ts', 'MyClass', locations);
+    // Simulate file modification
+    mockFs.setMtime('file.ts', Date.now());
+    const result = await cache.get('file.ts', 'MyClass');
+    expect(result).toBeNull();
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: None
+
+---
+
+### T-028: [GREEN] Implement symbol cache with mtime invalidation
+
+**User Story**: US-006
+**Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03
+**Status**: [x] completed
+**Model**: sonnet
+**Depends On**: T-027
+
+**Implementation**:
+1. Create `src/core/lsp/cache/symbol-cache.ts`
+2. Use JSON files keyed by hash of (file+symbol+lang+version)
+3. Store mtime in cache entry, compare on read
+
+**Expected**: T-027 tests PASS
+
+---
+
+### T-029: [RED] Write failing tests for interactive LSP prompt
+
+**User Story**: US-003
+**Satisfies ACs**: AC-US3-03, AC-US3-04, AC-US3-05
+**Status**: [ ] pending
+**Model**: sonnet
+
+**Test File**: `src/core/lsp/config/__tests__/lsp-prompt.test.ts`
+
+**Tests to Write**:
+```typescript
+describe('LspPrompt', () => {
+  it('shows suggestions from analyzer', async () => {
+    const prompt = new LspPrompt(mockInquirer);
+    await prompt.show(['typescript', 'csharp', 'python']);
+    expect(mockInquirer.prompt).toHaveBeenCalled();
+  });
+
+  it('shows install command for missing servers', async () => {
+    const output = await prompt.show(['csharp']);
+    expect(output).toContain('dotnet tool install -g csharp-ls');
+  });
+
+  it('enforces max 3 servers', async () => {
+    const result = await prompt.show(['ts', 'cs', 'py', 'go']);
+    expect(result.enabled.length).toBeLessThanOrEqual(3);
+  });
+});
+```
+
+**Expected**: Tests FAIL
+
+**Dependencies**: T-008
+
+---
+
+### T-030: [GREEN] Implement interactive LSP suggestion prompt
+
+**User Story**: US-003
+**Satisfies ACs**: AC-US3-03, AC-US3-04, AC-US3-05
+**Status**: [ ] pending
+**Model**: sonnet
+**Depends On**: T-029
+
+**Implementation**:
+1. Create `src/core/lsp/config/lsp-prompt.ts`
+2. Show install commands (dotnet tool install, npm i -g, etc.)
+3. Enforce max 3 active servers
+
+**Expected**: T-029 tests PASS
+
+---
+
+## Phase 5: Integration & Refactoring
+
+### T-031: Scaffold modular directory structure
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01
 **Status**: [ ] pending
 **Model**: haiku
 
-**Implementation**:
+**Implementation** (no test needed - filesystem scaffolding):
 1. Create directories: config/, servers/, warmup/, cache/, diagnostics/
 2. Add index.ts in each with exports
 3. Update main lsp/index.ts
@@ -574,12 +790,28 @@
 
 ---
 
-### T-021: Migrate existing code to modular structure
+### T-032: Integrate timeout config into LSP clients
+
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01, AC-US2-02
+**Status**: [ ] pending
+**Model**: sonnet
+**Depends On**: T-004, T-006
+
+**Implementation**:
+1. Inject TimeoutResolver into LspManager
+2. Pass resolved timeout to request methods
+3. Update existing hardcoded 60000ms to use resolver
+
+---
+
+### T-033: [REFACTOR] Migrate existing code to modular structure
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-02, AC-US8-03, AC-US8-04
 **Status**: [ ] pending
 **Model**: opus
+**Depends On**: T-031, T-006, T-010, T-020
 
 **Implementation**:
 1. Move lsp-client.ts logic to servers/generic-lsp.ts
@@ -588,4 +820,18 @@
 4. Update all imports in lsp-manager.ts
 5. Run tests after each move
 
-**Dependencies**: T-020, T-001, T-006
+**Expected**: All existing tests still PASS
+
+---
+
+## Summary
+
+| Phase | Tasks | Description |
+|-------|-------|-------------|
+| 1 | T-001 to T-008 | Foundation (config, interfaces) |
+| 2 | T-009 to T-014 | Multi-language strategies |
+| 3 | T-015 to T-022 | Diagnostics & error handling |
+| 4 | T-023 to T-030 | Advanced features |
+| 5 | T-031 to T-033 | Integration & refactor |
+
+**Total**: 33 tasks (16 RED, 15 GREEN, 1 REFACTOR, 1 scaffold)
