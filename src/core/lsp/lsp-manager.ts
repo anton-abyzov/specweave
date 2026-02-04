@@ -20,6 +20,8 @@ import {
   LSPWorkspaceSymbolsResult,
 } from './lsp-client.js';
 import { TsServerClient } from './tsserver-client.js';
+import { TimeoutResolver } from './config/timeout-resolver.js';
+import { parseLspConfig, type LspConfig } from './config/lsp-config.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -40,6 +42,8 @@ interface CodeIntelligenceClient {
 export interface LSPManagerOptions {
   projectRoot: string;
   enabledLanguages?: string[];
+  /** LSP configuration (from .specweave/config.json) */
+  lspConfig?: LspConfig;
 }
 
 /**
@@ -49,9 +53,13 @@ export class LSPManager {
   private clients: Map<string, CodeIntelligenceClient> = new Map();
   private projectRoot: string;
   private initialized = false;
+  /** Timeout resolver for per-language timeouts */
+  private readonly timeoutResolver: TimeoutResolver;
 
   constructor(options: LSPManagerOptions) {
     this.projectRoot = options.projectRoot;
+    const config = options.lspConfig ?? parseLspConfig({});
+    this.timeoutResolver = new TimeoutResolver(config);
   }
 
   /**
@@ -67,7 +75,9 @@ export class LSPManager {
       const hasTypeScript = this.hasTypeScriptProject();
       if (hasTypeScript) {
         logger.debug('TypeScript project detected, using direct tsserver client');
-        const tsClient = new TsServerClient(this.projectRoot);
+        // Get timeout in ms (TimeoutResolver returns seconds)
+        const timeoutMs = this.timeoutResolver.getTimeout('typescript') * 1000;
+        const tsClient = new TsServerClient(this.projectRoot, { timeoutMs });
         const success = await tsClient.initialize();
         if (success) {
           this.clients.set('typescript', tsClient);
@@ -86,16 +96,18 @@ export class LSPManager {
       if (nonTsServers.length > 0) {
         logger.info(`Found ${nonTsServers.length} additional LSP server(s)`);
 
-        for (const config of nonTsServers) {
-          const client = new LSPClient(config);
+        for (const serverConfig of nonTsServers) {
+          const lang = this.getLanguageFromCommand(serverConfig.command);
+          // Get timeout in ms (TimeoutResolver returns seconds)
+          const timeoutMs = this.timeoutResolver.getTimeout(lang) * 1000;
+          const client = new LSPClient({ ...serverConfig, timeoutMs });
           const success = await client.initialize();
 
           if (success) {
-            const lang = this.getLanguageFromCommand(config.command);
             this.clients.set(lang, client);
             logger.info(`LSP client for ${lang} initialized`);
           } else {
-            logger.warn(`Failed to initialize LSP for ${config.command}`);
+            logger.warn(`Failed to initialize LSP for ${serverConfig.command}`);
           }
         }
       }
