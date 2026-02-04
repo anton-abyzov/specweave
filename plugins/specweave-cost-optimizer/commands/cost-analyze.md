@@ -1,3 +1,8 @@
+---
+name: cost-analyze
+description: Analyze cloud infrastructure costs and identify optimization opportunities across AWS, Azure, and GCP.
+---
+
 # /sw-cost:cost-analyze
 
 Analyze cloud infrastructure costs and identify optimization opportunities across AWS, Azure, and GCP.
