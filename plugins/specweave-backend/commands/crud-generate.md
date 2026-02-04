@@ -1,3 +1,8 @@
+---
+name: crud-generate
+description: Generate complete CRUD operations for a database entity including model, service, controller, DTOs, and tests
+---
+
 # CRUD Generator Command
 
 Generate complete CRUD (Create, Read, Update, Delete) operations for a database entity.

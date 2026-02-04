@@ -1,3 +1,8 @@
+---
+name: test-coverage
+description: Analyze test coverage, identify gaps, generate reports, and provide actionable quality metrics.
+---
+
 # /sw-testing:test-coverage
 
 Comprehensive test coverage analysis, reporting, and quality metrics for modern test suites.

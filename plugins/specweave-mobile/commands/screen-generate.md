@@ -1,3 +1,8 @@
+---
+name: screen-generate
+description: Generate React Native screens with navigation integration, data fetching, form handling, and proper TypeScript typing.
+---
+
 # Screen Generator
 
 Generate React Native screens with navigation integration.

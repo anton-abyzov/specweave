@@ -1,3 +1,8 @@
+---
+name: design-system-init
+description: Initialize a complete design system with Atomic Design principles, design tokens, theming, and component library foundation.
+---
+
 # /sw-frontend:design-system-init
 
 Initialize a complete design system with Atomic Design principles, design tokens, and component library.

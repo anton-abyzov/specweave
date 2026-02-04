@@ -1,3 +1,8 @@
+---
+name: test-generate
+description: Generate comprehensive unit, integration, and E2E tests from components, functions, and API endpoints.
+---
+
 # /sw-testing:test-generate
 
 Generate comprehensive unit, integration, and E2E tests from components, functions, and API endpoints.

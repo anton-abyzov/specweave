@@ -1,3 +1,8 @@
+---
+name: ui-inspect
+description: Inspect web page elements using browser automation to identify selectors, attributes, and structure for testing and scraping.
+---
+
 # UI Inspect - Browser Element Inspection
 
 Inspect web page elements using browser automation tools. Helps identify selectors, attributes, and structure for automated testing and web scraping.

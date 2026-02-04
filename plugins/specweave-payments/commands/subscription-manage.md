@@ -1,3 +1,8 @@
+---
+name: subscription-manage
+description: Generate a complete subscription management system with pricing tiers, billing, upgrades, cancellations, and usage tracking
+---
+
 # Subscription Management
 
 Generate complete subscription management system.

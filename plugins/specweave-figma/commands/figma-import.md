@@ -1,3 +1,8 @@
+---
+name: figma-import
+description: Import Figma designs into your project using Figma REST API or MCP server integration.
+---
+
 # /sw-figma:import
 
 Import Figma designs into your project using Figma REST API or MCP server integration.
