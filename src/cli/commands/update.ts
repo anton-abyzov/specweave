@@ -744,7 +744,7 @@ export function migrateDeepInterviewConfig(projectPath: string, verbose?: boolea
     // Add deep interview with defaults (disabled by default per ADR-0232)
     config.planning.deepInterview = {
       enabled: false, // Opt-in, users can enable in config.json or during /sw:increment
-      minQuestions: 10,
+      minQuestions: 5,  // Soft guideline - LLM should assess complexity
       categories: [
         'architecture',
         'integrations',
