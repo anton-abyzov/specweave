@@ -666,7 +666,6 @@ To generate full environment:
 
 ## Related Skills
 
-- `auto-execute` - Ensures credentials are used for API testing
 - `increment-planner` - Plans API endpoints as part of increment
 
 ---
