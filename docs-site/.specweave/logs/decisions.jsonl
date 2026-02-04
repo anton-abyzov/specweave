@@ -1,0 +1,2 @@
+{"timestamp":"2026-02-04T05:30:34Z","hook":"stop-auto","decision":"approve","reason":"Auto mode not activated (no session file)","reasonCode":"session_inactive","durationMs":0,"context":{"sessionActive":false}}
+{"timestamp":"2026-02-04T05:30:35Z","hook":"stop-reflect","decision":"approve","reason":"No learnings to extract","reasonCode":"nothing_to_learn","durationMs":1000,"context":{"transcriptLines":119,"reflectionEnabled":true,"learningsExtracted":0,"learningCategories":[],"exitReason":"nothing_to_learn","triggerReason":"session_end"}}
