@@ -1,3 +1,8 @@
+---
+name: figma-to-react
+description: Convert Figma components to production-ready React components with TypeScript, styled-components, and responsive design.
+---
+
 # /sw-figma:to-react
 
 Convert Figma components to production-ready React components with TypeScript, styled-components, and responsive design.

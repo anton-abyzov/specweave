@@ -1,3 +1,8 @@
+---
+name: test-init
+description: Initialize comprehensive testing infrastructure with Vitest, Playwright, and testing best practices.
+---
+
 # /sw-testing:test-init
 
 Initialize comprehensive testing infrastructure with Vitest, Playwright, and testing best practices.

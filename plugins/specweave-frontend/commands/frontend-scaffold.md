@@ -1,3 +1,8 @@
+---
+name: frontend-scaffold
+description: Scaffold a complete frontend project with modern tooling, TypeScript, and best practices for React, Vue, Angular, or Next.js.
+---
+
 # /sw-frontend:frontend-scaffold
 
 Scaffold a complete frontend project with modern tooling and best practices.

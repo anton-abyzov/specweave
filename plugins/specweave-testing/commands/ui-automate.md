@@ -1,3 +1,8 @@
+---
+name: ui-automate
+description: Create and execute automated browser workflows using Playwright for testing, web scraping, form automation, and UI interaction sequences.
+---
+
 # UI Automate - Browser Automation Workflows
 
 Create and execute automated browser workflows using Playwright. Generate scripts for testing, web scraping, form automation, and UI interaction sequences.

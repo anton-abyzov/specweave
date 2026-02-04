@@ -1,3 +1,8 @@
+---
+name: subscription-flow
+description: Implement complete subscription billing with pricing tiers, trials, upgrades/downgrades, proration, and lifecycle management
+---
+
 # /sw-payments:subscription-flow
 
 Complete subscription billing implementation guide with pricing tiers, trials, upgrades/downgrades, and lifecycle management.
