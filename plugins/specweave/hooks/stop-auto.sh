@@ -829,9 +829,37 @@ if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; the
 
     if [ "$CLOSED_COUNT" -gt 0 ]; then
         log "APPROVE: Auto-closed $CLOSED_COUNT increment(s), all work complete"
-        silent_approve "Auto-closed $CLOSED_COUNT increment(s)" "all_complete" "$_complete_context"
+        # Show completion message to user
+        COMPLETE_MSG="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ AUTO MODE COMPLETE (Turn $CURRENT_TURN/$MAX_TURNS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 Auto-closed $CLOSED_COUNT increment(s) successfully!
+
+📊 Session Summary:
+   • Turns used: $CURRENT_TURN
+   • Increments completed: $CLOSED_COUNT
+
+💡 Next steps:
+   • Start new work: /sw:increment \"feature name\"
+   • View completed: /sw:status
+   • Review logs: specweave decision-log --since 1h
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        loud_approve "Auto-closed $CLOSED_COUNT increment(s)" "all_complete" "$_complete_context" "$COMPLETE_MSG"
     else
-        silent_approve "No active increments" "all_complete" "$_complete_context"
+        # No active increments - show brief message
+        NO_WORK_MSG="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ NO ACTIVE INCREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No active increments to work on. Session ended.
+
+💡 Start new work: /sw:increment \"feature name\"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        loud_approve "No active increments" "all_complete" "$_complete_context" "$NO_WORK_MSG"
     fi
 fi
 
