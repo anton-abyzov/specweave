@@ -99,7 +99,7 @@
     "deepInterview": {
       "enabled": true,
       "enforcement": "strict",
-      "minQuestions": 10,
+      "minQuestions": 5,
       "categories": [
         "architecture",
         "integrations",

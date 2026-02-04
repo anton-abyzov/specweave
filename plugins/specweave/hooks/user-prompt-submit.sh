@@ -1032,7 +1032,11 @@ Before creating spec.md, you MUST ask thorough questions about:
 - Security considerations
 - Edge cases & error handling
 
-Continue interviewing until requirements are crystal clear (10-40+ questions for big features).
+Continue interviewing until requirements are crystal clear. Assess complexity first:
+- Trivial (0-3 questions): Config change, typo fix, obvious bug
+- Small (4-8 questions): Single component, clear requirements
+- Medium (9-18 questions): Multiple components, some integration
+- Large (19-40+ questions): Architectural, cross-cutting, high-risk
 "
                       fi
 
