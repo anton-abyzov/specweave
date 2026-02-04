@@ -38,7 +38,13 @@ import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js'
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
-const GITHUB_REPO = 'anton-abyzov/specweave';
+// CRITICAL: Use FULL HTTPS URL, not short owner/repo format!
+// Claude CLI converts owner/repo to SSH URL (git@github.com:owner/repo.git)
+// which FAILS for users without SSH keys configured.
+// Using full HTTPS URL works for ALL users (public repo).
+const GITHUB_REPO_URL = 'https://github.com/anton-abyzov/specweave';
+// Short form kept for display purposes only
+const GITHUB_REPO_SHORT = 'anton-abyzov/specweave';
 
 interface RefreshOptions {
   verbose?: boolean;
@@ -631,7 +637,7 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
   console.log(chalk.yellow('📥 Step 4: Installing core plugins from GitHub...'));
 
   // First, add the marketplace back temporarily to install plugins
-  const addResult = runCommand('claude', ['plugin', 'marketplace', 'add', GITHUB_REPO], true);
+  const addResult = runCommand('claude', ['plugin', 'marketplace', 'add', GITHUB_REPO_URL], true);
   if (!addResult.success && !addResult.output.includes('already')) {
     console.log(chalk.red('✗ Failed to add marketplace for installation'));
     console.log(chalk.gray(addResult.output));
@@ -761,14 +767,44 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     if (updateResult.success || updateResult.output.includes('Updated')) {
       console.log(chalk.green('✓ Marketplace updated'));
     } else {
-      console.log(chalk.red('✗ Failed to update marketplace'));
-      console.log(chalk.gray(updateResult.output));
-      process.exit(1);
+      // Check if update failed due to SSH authentication
+      // This happens when marketplace was registered with short form (owner/repo)
+      // which Claude CLI converts to SSH URL (git@github.com:owner/repo.git)
+      const isSshError = updateResult.output.includes('SSH authentication failed') ||
+                         updateResult.output.includes('Permission denied (publickey)') ||
+                         updateResult.output.includes('git@github.com');
+
+      if (isSshError) {
+        console.log(chalk.yellow('⚠ Marketplace registered with SSH URL - fixing...'));
+        console.log(chalk.gray('  (This is a one-time fix for marketplaces registered before v1.0.229)'));
+
+        // Remove the marketplace with broken SSH URL
+        const removeResult = runCommand('claude', ['plugin', 'marketplace', 'remove', MARKETPLACE_NAME], true);
+        if (!removeResult.success && !removeResult.output.includes('removed')) {
+          console.log(chalk.red('✗ Could not remove broken marketplace'));
+          console.log(chalk.gray(removeResult.output));
+          process.exit(1);
+        }
+
+        // Re-add with correct HTTPS URL
+        const reAddResult = runCommand('claude', ['plugin', 'marketplace', 'add', GITHUB_REPO_URL], true);
+        if (reAddResult.success || reAddResult.output.includes('Added')) {
+          console.log(chalk.green('✓ Marketplace re-registered with HTTPS URL'));
+        } else {
+          console.log(chalk.red('✗ Failed to re-add marketplace'));
+          console.log(chalk.gray(reAddResult.output));
+          process.exit(1);
+        }
+      } else {
+        console.log(chalk.red('✗ Failed to update marketplace'));
+        console.log(chalk.gray(updateResult.output));
+        process.exit(1);
+      }
     }
   } else {
     console.log(chalk.blue('Marketplace not found - adding from GitHub...'));
 
-    const addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO];
+    const addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO_URL];
     const addResult = runCommand('claude', addArgs, true);
 
     if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
