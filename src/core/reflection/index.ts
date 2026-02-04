@@ -1,11 +1,11 @@
 /**
- * Skill Reflection System - Self-Improving AI Memory (v2.0 - Simplified)
+ * Skill Reflection System - Self-Improving AI Memory (v4.0)
  *
- * ARCHITECTURE v2.0:
- * - All learnings go to CLAUDE.md (single source of truth)
- * - Organized by skill under "## Skill Memories" section
- * - Always uses LLM for extraction (no quick signal check)
- * - User can disable via config
+ * ARCHITECTURE v4.0:
+ * - PRIMARY: .specweave/skill-memories/{skill}.md (for KNOWN_SKILLS)
+ * - OVERFLOW: CLAUDE.md Skill Memories section (for unknown skills only)
+ * - LLM-based semantic deduplication (existing memories in extraction prompt)
+ * - Auto-pruning of old learnings
  *
  * WHAT IT REMEMBERS:
  * - SpecWeave workflow preferences (how user uses SpecWeave)
@@ -32,3 +32,19 @@ export {
   type SkillLearning,
   type LLMExtractionResult,
 } from './reflect-handler.js';
+
+// Skill memory management
+export {
+  writeSkillMemories,
+  writeSkillMemoryFile,
+  readSkillMemoryFile,
+  readAllSkillMemories,
+  listSkillMemoryFiles,
+  pruneSkillMemories,
+  formatMemoriesForPrompt,
+  generateSkillMemoryContent,
+  SKILL_MEMORY_DIR,
+  DEFAULT_PRUNE_CONFIG,
+  type PruneConfig,
+  type ParsedLearning,
+} from './skill-memories.js';

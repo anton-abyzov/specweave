@@ -15,6 +15,14 @@ export interface FileSystemProvider {
 
 const MAX_FILES = 10;
 
+/**
+ * Get directory from file path (cross-platform)
+ */
+function getDirectory(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash > 0 ? filePath.substring(0, lastSlash) : filePath;
+}
+
 export class TypeScriptStrategy implements WarmupStrategy {
   readonly language = 'typescript';
   private readonly fs: FileSystemProvider;
@@ -27,13 +35,13 @@ export class TypeScriptStrategy implements WarmupStrategy {
   async detectProjectRoot(startDir: string): Promise<string | null> {
     const tsconfigPath = await this.fs.findUp('tsconfig.json', startDir);
     if (tsconfigPath) {
-      this.projectRoot = tsconfigPath.substring(0, tsconfigPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(tsconfigPath);
       return this.projectRoot;
     }
 
     const packagePath = await this.fs.findUp('package.json', startDir);
     if (packagePath) {
-      this.projectRoot = packagePath.substring(0, packagePath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(packagePath);
       return this.projectRoot;
     }
 

@@ -17,6 +17,9 @@ import {
   readSkillMemoryFile,
   SKILL_MEMORY_DIR,
   generateSkillMemoryContent,
+  readAllSkillMemories,
+  pruneSkillMemories,
+  formatMemoriesForPrompt,
 } from '../../../../src/core/reflection/skill-memories.js';
 
 describe('skill-memories', () => {
@@ -189,6 +192,159 @@ describe('skill-memories', () => {
       // Should only have one learning (case-insensitive dedup)
       const learningLines = content.split('\n').filter((l) => l.startsWith('- **'));
       expect(learningLines.length).toBe(1);
+    });
+  });
+
+  describe('readAllSkillMemories', () => {
+    it('should return empty array when no memory files exist', () => {
+      const memories = readAllSkillMemories(tempDir);
+      expect(memories).toEqual([]);
+    });
+
+    it('should read learnings from multiple skill files', () => {
+      // Create multiple skill memory files
+      fs.mkdirSync(skillMemoriesDir, { recursive: true });
+
+      fs.writeFileSync(path.join(skillMemoriesDir, 'pm.md'), `# Pm Memory
+
+## Learnings
+
+- **2026-02-01**: Enable interview process
+- **2026-02-02**: Use ultrathink for question count
+`);
+
+      fs.writeFileSync(path.join(skillMemoriesDir, 'frontend.md'), `# Frontend Memory
+
+## Learnings
+
+- **2026-02-01**: Use Tailwind CSS
+`);
+
+      const memories = readAllSkillMemories(tempDir);
+
+      expect(memories).toHaveLength(3);
+      expect(memories.find(m => m.skill === 'pm' && m.learning === 'Enable interview process')).toBeTruthy();
+      expect(memories.find(m => m.skill === 'pm' && m.learning === 'Use ultrathink for question count')).toBeTruthy();
+      expect(memories.find(m => m.skill === 'frontend' && m.learning === 'Use Tailwind CSS')).toBeTruthy();
+    });
+
+    it('should include dates in parsed learnings', () => {
+      fs.mkdirSync(skillMemoriesDir, { recursive: true });
+      fs.writeFileSync(path.join(skillMemoriesDir, 'general.md'), `# General Memory
+
+## Learnings
+
+- **2026-01-15**: Old learning
+- **2026-02-04**: New learning
+`);
+
+      const memories = readAllSkillMemories(tempDir);
+
+      expect(memories[0].date).toBe('2026-01-15');
+      expect(memories[1].date).toBe('2026-02-04');
+    });
+  });
+
+  describe('formatMemoriesForPrompt', () => {
+    it('should return empty string for empty learnings', () => {
+      const result = formatMemoriesForPrompt([]);
+      expect(result).toBe('');
+    });
+
+    it('should group learnings by skill', () => {
+      const learnings = [
+        { skill: 'pm', learning: 'Learning 1', date: '2026-02-01' },
+        { skill: 'frontend', learning: 'Learning 2', date: '2026-02-01' },
+        { skill: 'pm', learning: 'Learning 3', date: '2026-02-02' },
+      ];
+
+      const result = formatMemoriesForPrompt(learnings);
+
+      expect(result).toContain('[pm]');
+      expect(result).toContain('[frontend]');
+      expect(result).toContain('Learning 1');
+      expect(result).toContain('Learning 2');
+      expect(result).toContain('Learning 3');
+    });
+  });
+
+  describe('pruneSkillMemories', () => {
+    it('should return zero pruned when no files exist', () => {
+      const result = pruneSkillMemories(tempDir);
+      expect(result.prunedCount).toBe(0);
+      expect(result.skillsAffected).toHaveLength(0);
+    });
+
+    it('should prune learnings exceeding maxLearningsPerSkill', () => {
+      fs.mkdirSync(skillMemoriesDir, { recursive: true });
+
+      // Create file with 5 learnings
+      const today = new Date().toISOString().split('T')[0];
+      fs.writeFileSync(path.join(skillMemoriesDir, 'general.md'), `# General Memory
+
+## Learnings
+
+- **${today}**: Learning 1
+- **${today}**: Learning 2
+- **${today}**: Learning 3
+- **${today}**: Learning 4
+- **${today}**: Learning 5
+`);
+
+      // Prune to max 3
+      const result = pruneSkillMemories(tempDir, { maxLearningsPerSkill: 3 });
+
+      expect(result.prunedCount).toBe(2);
+      expect(result.skillsAffected).toContain('general');
+
+      // Verify file now has only 3 learnings
+      const learnings = readSkillMemoryFile(tempDir, 'general');
+      expect(learnings).toHaveLength(3);
+    });
+
+    it('should prune learnings older than retentionDays', () => {
+      fs.mkdirSync(skillMemoriesDir, { recursive: true });
+
+      const today = new Date().toISOString().split('T')[0];
+      const oldDate = '2020-01-01'; // Very old date
+
+      fs.writeFileSync(path.join(skillMemoriesDir, 'testing.md'), `# Testing Memory
+
+## Learnings
+
+- **${oldDate}**: Old learning 1
+- **${oldDate}**: Old learning 2
+- **${today}**: Recent learning
+`);
+
+      // Prune with 30 day retention
+      const result = pruneSkillMemories(tempDir, { retentionDays: 30 });
+
+      expect(result.prunedCount).toBe(2);
+      expect(result.skillsAffected).toContain('testing');
+
+      // Verify only recent learning remains
+      const learnings = readSkillMemoryFile(tempDir, 'testing');
+      expect(learnings).toHaveLength(1);
+      expect(learnings[0]).toBe('Recent learning');
+    });
+
+    it('should not prune recent learnings within retention period', () => {
+      fs.mkdirSync(skillMemoriesDir, { recursive: true });
+
+      const today = new Date().toISOString().split('T')[0];
+      fs.writeFileSync(path.join(skillMemoriesDir, 'pm.md'), `# Pm Memory
+
+## Learnings
+
+- **${today}**: Learning 1
+- **${today}**: Learning 2
+`);
+
+      const result = pruneSkillMemories(tempDir, { retentionDays: 90, maxLearningsPerSkill: 10 });
+
+      expect(result.prunedCount).toBe(0);
+      expect(result.skillsAffected).toHaveLength(0);
     });
   });
 });

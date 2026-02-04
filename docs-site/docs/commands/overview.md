@@ -19,16 +19,18 @@ graph LR
     B -->|Manual| D["/sw:do"]
     C --> E["/sw:progress"]
     D --> E
-    E --> F["/sw:next"]
+    E --> G["/sw:grill"]
+    G --> F["/sw:next"]
 
     style A fill:#a8e6cf
     style C fill:#ff8b94
     style D fill:#ffd3b6
     style E fill:#a3d5ff
+    style G fill:#ffcc66
     style F fill:#d4a5ff
 ```
 
-**Pro tip**: Use `/sw:auto` for autonomous execution (hours of hands-free work!) or `/sw:do` for manual task-by-task control.
+**Pro tip**: Use `/sw:auto` for autonomous execution (hours of hands-free work!) or `/sw:do` for manual task-by-task control. **Always run `/sw:grill` before closing!**
 
 ## 1. Planning
 
@@ -135,6 +137,30 @@ Returns: 🟢 PASS | 🟡 CONCERNS | 🔴 FAIL
 
 ---
 
+### `/sw:grill` - Code Review (MANDATORY) 🔥
+
+:::warning Required Before Closing
+`/sw:grill` must pass before `/sw:done` will work. This is enforced automatically.
+:::
+
+```bash
+/sw:grill 0007                # Full review
+/sw:grill 0007 security       # Focus on security
+/sw:grill 0007 performance    # Focus on performance
+```
+
+**What it reviews:**
+- 🔒 Security vulnerabilities (OWASP Top 10)
+- ⚡ Performance issues (N+1 queries, complexity)
+- 🎯 Edge cases and error handling
+- 📐 Code quality and maintainability
+
+**Issue severities:** BLOCKER, CRITICAL, MAJOR, MINOR, SUGGESTION
+
+**On PASS:** Creates marker file allowing `/sw:done` to proceed.
+
+---
+
 ## 5. Completion
 
 ### `/sw:next` - Smart Workflow Transition ⭐ RECOMMENDED
@@ -150,8 +176,11 @@ Returns: 🟢 PASS | 🟡 CONCERNS | 🔴 FAIL
 ### `/sw:done` - Close Increment
 
 ```bash
+/sw:grill 0007   # Required first!
 /sw:done 0007    # Close specific increment
 ```
+
+**Prerequisite:** `/sw:grill` must pass first.
 
 Use `/sw:next` instead - it does the same thing plus suggests next work.
 
@@ -197,6 +226,7 @@ See [GitHub Integration](/docs/academy/specweave-essentials/14-github-integratio
 |---------|---------|
 | `/sw:validate` | Quick rule-based validation |
 | `/sw:qa --gate` | AI quality gate check |
+| `/sw:grill` | Code review (MANDATORY before close) |
 
 ### State Management
 
@@ -242,6 +272,7 @@ Most users should use `specweave update`. The `refresh-marketplace` command exis
 /sw:increment "User authentication"
 /sw:auto                  # Let it run for hours
 # ... come back later ...
+/sw:grill 0007            # Code review (mandatory!)
 /sw:next                  # Close and see what's next
 ```
 
@@ -252,6 +283,7 @@ Most users should use `specweave update`. The `refresh-marketplace` command exis
 /sw:do                    # Task-by-task with your guidance
 /sw:progress              # Check status
 /sw:qa --gate             # Quality check
+/sw:grill 0007            # Code review (mandatory!)
 /sw:done 0007             # Close
 ```
 
@@ -264,10 +296,12 @@ Most users should use `specweave update`. The `refresh-marketplace` command exis
 - **Use `/sw:auto`** for: CRUD, repetitive tasks, well-defined specs
 - **Use `/sw:do`** for: Architecture decisions, debugging, exploration
 
-### 2. Validate Before Closing
+### 2. Grill and Validate Before Closing
 
 ```bash
-/sw:qa --gate    # Quality check before /sw:done
+/sw:qa --gate       # Quality check
+/sw:grill 0007      # Code review (mandatory!)
+/sw:done 0007       # Now close
 ```
 
 ---

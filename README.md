@@ -183,6 +183,8 @@ Then:
 ```bash
 /sw:increment "Add dark mode"   # Create spec + plan + tasks
 /sw:auto                        # Ship while you sleep
+/sw:grill 0001                  # Code review before close
+/sw:done 0001                   # Complete with validation
 ```
 
 ---
@@ -194,6 +196,7 @@ Then:
 | `/sw:increment "feature"` | Create spec + plan + tasks |
 | `/sw:auto` | Autonomous execution (hours) |
 | `/sw:do` | Execute one task at a time |
+| `/sw:grill 0001` | **Code review before close** |
 | `/sw:done 0001` | Close with quality validation |
 | `/sw:sync-progress` | Push to GitHub/JIRA/ADO |
 | `/sw:next` | Auto-close + suggest next |

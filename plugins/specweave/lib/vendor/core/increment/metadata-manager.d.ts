@@ -35,6 +35,8 @@ export declare class MetadataManager {
      *
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * creating/accessing .specweave in wrong location when CWD != project root.
+     *
+     * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     private static getMetadataPath;
     /**
@@ -42,6 +44,8 @@ export declare class MetadataManager {
      *
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * creating/accessing .specweave in wrong location when CWD != project root.
+     *
+     * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     private static getIncrementPath;
     /**

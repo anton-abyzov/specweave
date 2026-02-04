@@ -1,7 +1,7 @@
 /**
  * LSP Cache Module
  *
- * Exports symbol caching functionality with mtime-based invalidation.
+ * Exports symbol caching functionality for LSP results.
  */
 
 export {

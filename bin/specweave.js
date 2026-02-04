@@ -628,23 +628,6 @@ program
     await qaCommand(incrementId, options);
   });
 
-// Validate plugins command - Plugin validation
-program
-  .command('validate-plugins')
-  .description('Validate SpecWeave plugin installation')
-  .option('--auto-install', 'Auto-install missing components', false)
-  .option('--context <description>', 'Increment description for context detection')
-  .option('--dry-run', 'Show what would be installed without installing', false)
-  .option('-v, --verbose', 'Show detailed validation steps', false)
-  .action(async (options) => {
-    const { setupValidatePluginsCommand } = await import('../dist/src/cli/commands/validate-plugins.js');
-    // Create a temporary program for this command
-    const tempProgram = new Command();
-    setupValidatePluginsCommand(tempProgram);
-    // Execute the action directly
-    await import('../dist/src/cli/commands/validate-plugins.js').then(m => m.runValidation(options));
-  });
-
 // Validate Jira command - Jira resource validation
 program
   .command('validate-jira')
@@ -1198,9 +1181,6 @@ program.on('--help', () => {
   console.log('  $ specweave qa 0008                         # Quick quality check');
   console.log('  $ specweave qa 0008 --pre                   # Pre-implementation check');
   console.log('  $ specweave qa 0008 --gate --export         # Quality gate + export to tasks');
-  console.log('  $ specweave validate-plugins                # Validate plugin installation');
-  console.log('  $ specweave validate-plugins --auto-install # Auto-install missing plugins');
-  console.log('  $ specweave validate-plugins --dry-run      # Preview what would be installed');
   console.log('  $ specweave validate-jira                   # Validate Jira configuration');
   console.log('  $ specweave jobs                            # Show active background jobs');
   console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
