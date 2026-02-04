@@ -63,24 +63,27 @@ fi
 ```bash
 deepInterview=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
 enforcement=$(jq -r '.planning.deepInterview.enforcement // "advisory"' .specweave/config.json 2>/dev/null)
-minQuestions=$(jq -r '.planning.deepInterview.minQuestions // 10' .specweave/config.json 2>/dev/null)
+minQuestions=$(jq -r '.planning.deepInterview.minQuestions // 5' .specweave/config.json 2>/dev/null)
 
 if [ "$deepInterview" = "true" ]; then
   echo "DEEP INTERVIEW MODE ACTIVE"
   echo "Enforcement: $enforcement"
-  echo "Minimum questions: $minQuestions"
+  echo "Suggested minimum: $minQuestions (SOFT GUIDELINE - assess complexity first!)"
+  echo ""
+  echo "Question count by complexity:"
+  echo "  Trivial: 0-3 | Small: 4-8 | Medium: 9-18 | Large: 19-40+"
   echo ""
 
   if [ "$enforcement" = "strict" ]; then
-    echo "⚠️ STRICT MODE: spec.md BLOCKED until ALL categories covered!"
+    echo "⚠️ STRICT MODE: spec.md BLOCKED until ALL categories covered (or marked N/A)!"
     echo "Categories: architecture, integrations, ui-ux, performance, security, edge-cases"
   fi
 
   echo ""
-  echo "BEFORE creating spec, you MUST:"
-  echo "1. Ask thorough questions about architecture, integrations, UI/UX"
-  echo "2. Cover: performance, security, edge cases"
-  echo "3. Continue until requirements are crystal clear"
+  echo "BEFORE creating spec, THINK about complexity first:"
+  echo "1. Assess: Is this trivial, small, medium, or large?"
+  echo "2. Ask the RIGHT number of questions (not blindly minQuestions)"
+  echo "3. Skip categories that don't apply (mark as N/A in strict mode)"
   echo ""
   echo "Load PM skill phases/00-deep-interview.md for question templates"
 fi

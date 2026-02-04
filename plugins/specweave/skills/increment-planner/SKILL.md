@@ -59,8 +59,8 @@ STEP 0: Pre-flight (TDD mode, multi-project, Deep Interview)
 
 STEP 0.5: Deep Interview (if enabled)
         → PM skill loads phases/00-deep-interview.md
-        → Ask 10-40+ questions about architecture, integrations, etc.
-        → Continue until all categories covered
+        → ASSESS complexity first, then ask right number of questions
+        → Skip categories that don't apply to this feature
 
 STEP 1: Project Context (resolve project/board)
         → Load phases/01-project-context.md
@@ -95,9 +95,10 @@ fi
 
 **If Deep Interview Mode is enabled:**
 1. Delegate to PM skill with interview phase
-2. Ask minimum 10 questions (40+ for large features)
-3. Cover all configured categories
-4. Only proceed to STEP 1 after interview complete
+2. **THINK about complexity first** - assess before asking:
+   - Trivial: 0-3 questions | Small: 4-8 | Medium: 9-18 | Large: 19-40+
+3. Cover RELEVANT categories (skip those that don't apply to this feature)
+4. Only proceed to STEP 1 after sufficient clarity achieved
 
 **Strict Mode (v1.0.198+):**
 - `enforcement: "strict"` blocks spec.md creation until all categories are covered

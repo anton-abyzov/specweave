@@ -35,8 +35,13 @@ jq -r '.planning.deepInterview.enabled // false' .specweave/config.json
 
 If `true`:
 1. Load `phases/00-deep-interview.md`
-2. Ask 10-40+ questions covering architecture, integrations, UI/UX, performance, security, edge cases
-3. Only proceed to Research phase after thorough interview
+2. **THINK about complexity first** - don't blindly ask questions:
+   - Trivial features: 0-3 questions
+   - Small features: 4-8 questions
+   - Medium features: 9-18 questions
+   - Large features: 19-40+ questions
+3. Cover relevant categories (skip those that don't apply)
+4. Only proceed to Research phase after sufficient clarity
 
 ## Core Principles
 

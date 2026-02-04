@@ -290,7 +290,7 @@ export function updateConfigWithDeepInterview(
 
   config.planning.deepInterview = {
     enabled,
-    minQuestions: 10,
+    minQuestions: 5,  // Soft guideline - LLM should assess complexity and decide
     categories: [
       'architecture',
       'integrations',

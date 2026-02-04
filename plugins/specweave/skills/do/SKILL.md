@@ -75,10 +75,13 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 2. **For each candidate**, check if it has incomplete tasks:
 
    ```bash
-   # Count incomplete tasks in tasks.md
+   # Count incomplete tasks in tasks.md (supports multiple formats)
+   # Format 1: List items "- [ ] Task"
    INCOMPLETE=$(grep -c '^\- \[ \]' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo "0")
-   # Also check ### T-XXX format
-   INCOMPLETE_ALT=$(grep -c '^\[.\] pending' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo "0")
+   # Format 2: Status field "**Status**: [ ] pending"
+   INCOMPLETE_STATUS=$(grep -c '\*\*Status\*\*: \[ \]' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo "0")
+   # Total incomplete = sum of all formats
+   TOTAL_INCOMPLETE=$((INCOMPLETE + INCOMPLETE_STATUS))
    ```
 
 3. **Select the best candidate**:

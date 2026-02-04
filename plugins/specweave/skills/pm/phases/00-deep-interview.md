@@ -154,11 +154,85 @@ Ask about:
 4. **Summarize understanding**: Confirm before proceeding
 5. **Identify gaps**: "Is there anything else I should know?"
 
-## Minimum Questions
+## Question Count: Think, Don't Count
 
-For small features: 10+ questions
-For medium features: 20+ questions
-For large features: 40+ questions
+**DO NOT blindly ask a fixed number of questions.** Assess the situation first:
+
+### Assessment Criteria
+
+Before starting, evaluate:
+1. **Feature complexity**: Is this trivial, small, medium, or large?
+2. **Existing context**: Has the user already explained details? Returning user?
+3. **Domain familiarity**: Well-understood patterns or novel architecture?
+4. **Risk level**: High-stakes (payments, security) vs low-stakes (UI tweak)?
+
+### Resolving Assessment Conflicts
+
+When factors point to different complexity levels:
+
+| Conflict | Resolution |
+|----------|------------|
+| Small complexity + High risk | **Upgrade to Medium/Large** (risk wins) |
+| Large complexity + Lots of user context | **Reduce questions proportionally** (skip what's answered) |
+| Novel domain + Simple feature | **Upgrade one tier** (unfamiliarity adds questions) |
+| Returning user + Same feature area | **Reduce by 30-50%** (context already established) |
+
+**The rule: When in doubt, err on the side of asking one more question rather than missing critical requirements.**
+
+### Guidelines (Adapt Based on Assessment)
+
+| Complexity | Typical Range | When |
+|------------|---------------|------|
+| **Trivial** | 0-3 questions | Config change, typo fix, obvious bug |
+| **Small** | 4-8 questions | Single well-defined component, clear requirements |
+| **Medium** | 9-18 questions | Multiple components, some integration points |
+| **Large** | 19-40+ questions | Architectural, cross-cutting, high-risk (payments, security) |
+
+### What's a "Single Component"?
+
+A "single component" means **isolated scope** - changes contained to one area:
+- **Frontend**: One React component, one page, one form
+- **Backend**: One API endpoint, one service method, one database table
+- **Infrastructure**: One config file, one environment variable
+
+**NOT single component** (upgrade to Medium/Large):
+- Changes touching multiple services
+- New integrations with external systems
+- Features requiring database migrations + API + UI
+
+### Examples
+
+**Over-interviewing (BAD)**:
+- User: "Add a logout button to the navbar"
+- Claude: Asks 15 questions about architecture, performance, security...
+- Reality: This is a trivial UI task. 2-3 questions max.
+
+**Right-sized interviewing (GOOD)**:
+- User: "Add Stripe subscription billing"
+- Claude: Assesses as high-complexity (payments = high-risk, multiple integrations)
+- Result: Asks 25+ questions covering payment flows, edge cases, refunds, etc.
+
+**Under-interviewing (BAD)**:
+- User: "Add user authentication"
+- Claude: Asks 3 questions and starts implementing
+- Reality: Auth is high-risk + architectural. Needed 15-25+ questions about:
+  - OAuth vs JWT vs sessions
+  - Password policies, MFA requirements
+  - Session expiry, refresh tokens
+  - Role-based access control
+  - Account recovery flows
+  - Security logging, rate limiting
+
+**Medium complexity (GOOD)**:
+- User: "Add email notifications for order updates"
+- Claude: Assesses as medium (integration with email service, multiple trigger points)
+- Result: Asks 10-12 questions about triggers, templates, delivery preferences, error handling
+
+### The Rule
+
+**Ask exactly as many questions as needed to produce a clear specification - no more, no less.**
+
+Skip categories that don't apply (e.g., skip "UI/UX" for backend-only features).
 
 ## Using AskUserQuestion Tool
 
@@ -183,12 +257,19 @@ AskUserQuestion({
 ## Completion Criteria
 
 Only proceed to `phases/01-research.md` when:
-- [ ] All 6 categories have been discussed
+- [ ] All **RELEVANT** categories have been discussed or marked N/A
 - [ ] User has confirmed understanding is correct
 - [ ] No major ambiguities remain
 - [ ] Integration dependencies are documented
 
-**For Strict Mode:** All categories must be marked in interview state file before spec.md can be written.
+**Marking Irrelevant Categories:**
+Not all categories apply to every feature. For irrelevant categories, mark as:
+```
+Mark performance covered: N/A - backend config change, no performance impact
+Mark ui-ux covered: N/A - API-only feature, no UI involved
+```
+
+**For Strict Mode:** All 6 categories must be marked (either with content OR as N/A) in interview state file before spec.md can be written.
 
 ## Marking Categories Complete
 

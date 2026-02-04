@@ -519,12 +519,24 @@ export interface DeepInterviewConfig {
   enabled?: boolean;
 
   /**
-   * Minimum number of questions to ask before proceeding
+   * Suggested minimum questions - LLM should assess complexity and decide
    *
-   * For small features, may ask fewer questions. For big features (40+ questions).
-   * This is a soft minimum - Claude will ask more if needed for clarity.
+   * This is a SOFT GUIDELINE, not a hard requirement. The LLM should:
+   * 1. Assess feature complexity (trivial, small, medium, large)
+   * 2. Evaluate existing context (returning user vs greenfield)
+   * 3. Consider domain familiarity (well-understood vs novel)
+   * 4. Decide the RIGHT number of questions needed for clarity
    *
-   * @default 10
+   * Guidelines (LLM should think and adapt):
+   * - Trivial features (typo fix, config change): 0-3 questions
+   * - Small features (single well-defined component): 4-8 questions
+   * - Medium features (multiple components, some integration): 9-18 questions
+   * - Large features (architectural, cross-cutting, high-risk): 19-40+ questions
+   *
+   * The LLM MUST NOT blindly ask minQuestions - it should think about
+   * what's actually needed to produce a good specification.
+   *
+   * @default 5
    */
   minQuestions?: number;
 
@@ -849,8 +861,8 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
   },
   planning: {
     deepInterview: {
-      enabled: false,           // v1.0.195+: Opt-in deep interview mode (40+ questions)
-      minQuestions: 10,         // Minimum questions before proceeding
+      enabled: false,           // v1.0.195+: Opt-in deep interview mode
+      minQuestions: 5,          // Soft guideline - LLM should assess complexity
       categories: [             // Categories to cover during interview
         'architecture',
         'integrations',

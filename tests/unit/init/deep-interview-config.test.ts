@@ -43,7 +43,7 @@ describe('Deep Interview Mode Configuration (v1.0.195)', () => {
       expect(DEFAULT_CONFIG.planning).toBeDefined();
       expect(DEFAULT_CONFIG.planning?.deepInterview).toBeDefined();
       expect(DEFAULT_CONFIG.planning?.deepInterview?.enabled).toBe(false);
-      expect(DEFAULT_CONFIG.planning?.deepInterview?.minQuestions).toBe(10);
+      expect(DEFAULT_CONFIG.planning?.deepInterview?.minQuestions).toBe(5);
       expect(DEFAULT_CONFIG.planning?.deepInterview?.categories).toHaveLength(6);
     });
 
@@ -176,7 +176,7 @@ describe('Deep Interview Mode Configuration (v1.0.195)', () => {
       expect(updatedConfig.planning).toBeDefined();
       expect(updatedConfig.planning.deepInterview).toBeDefined();
       expect(updatedConfig.planning.deepInterview.enabled).toBe(true);
-      expect(updatedConfig.planning.deepInterview.minQuestions).toBe(10);
+      expect(updatedConfig.planning.deepInterview.minQuestions).toBe(5);
       expect(updatedConfig.planning.deepInterview.categories).toHaveLength(6);
     });
 
@@ -315,7 +315,7 @@ describe('Deep Interview Mode Configuration (v1.0.195)', () => {
       expect(updatedConfig.planning).toBeDefined();
       expect(updatedConfig.planning.deepInterview).toBeDefined();
       expect(updatedConfig.planning.deepInterview.enabled).toBe(false); // Default: disabled
-      expect(updatedConfig.planning.deepInterview.minQuestions).toBe(10);
+      expect(updatedConfig.planning.deepInterview.minQuestions).toBe(5);
       expect(updatedConfig.planning.deepInterview.categories).toHaveLength(6);
     });
 
