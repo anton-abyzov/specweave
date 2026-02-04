@@ -66,13 +66,13 @@ if [ ! -d "$CLAUDE_DIR" ]; then
     echo -e "${YELLOW}    Fix: Run 'claude' to initialize${NC}"
 elif [ ! -d "$PLUGINS_DIR" ]; then
     echo -e "${RED}  ✗ ~/.claude/plugins directory does not exist${NC}"
-    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add anton-abyzov/specweave'${NC}"
+    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add https://github.com/anton-abyzov/specweave'${NC}"
 elif [ ! -d "$MARKETPLACES_DIR" ]; then
     echo -e "${RED}  ✗ ~/.claude/plugins/marketplaces directory does not exist${NC}"
-    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add anton-abyzov/specweave'${NC}"
+    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add https://github.com/anton-abyzov/specweave'${NC}"
 elif [ ! -d "$SPECWEAVE_DIR" ]; then
     echo -e "${RED}  ✗ SpecWeave marketplace not installed${NC}"
-    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add anton-abyzov/specweave'${NC}"
+    echo -e "${YELLOW}    Fix: Run 'claude plugin marketplace add https://github.com/anton-abyzov/specweave'${NC}"
 else
     echo -e "${GREEN}  ✓ All directories exist${NC}"
 fi
@@ -238,7 +238,7 @@ echo -e "   2. Clear cache:"
 echo -e "      ${BLUE}rm -rf ~/.claude/plugins/cache/specweave${NC}"
 echo -e ""
 echo -e "   3. Reinstall from GitHub:"
-echo -e "      ${BLUE}claude plugin marketplace add anton-abyzov/specweave${NC}"
+echo -e "      ${BLUE}claude plugin marketplace add https://github.com/anton-abyzov/specweave${NC}"
 echo -e ""
 echo -e "   4. Install all plugins:"
 echo -e "      ${BLUE}claude plugin install sw sw-github sw-jira sw-ado sw-infra${NC}"
