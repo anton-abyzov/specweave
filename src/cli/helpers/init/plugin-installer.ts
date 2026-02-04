@@ -21,6 +21,12 @@ const SPECWEAVE_MARKETPLACE_REPO = 'anton-abyzov/specweave';
 const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_REPO}`;
 
 /**
+ * Anthropic's official plugins marketplace
+ * Contains context7, playwright, and other official plugins
+ */
+const OFFICIAL_MARKETPLACE_URL = 'https://github.com/anthropics/claude-plugins-official';
+
+/**
  * Options for plugin installation
  */
 export interface PluginInstallOptions {
@@ -131,6 +137,10 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     // Just ensure marketplace is registered - Claude CLI handles caching internally
     // No need for manual cache management - that was over-engineering!
     await refreshMarketplace(spinner);
+
+    // CRITICAL FIX (v1.0.223): Ensure official Anthropic marketplace is registered
+    // Required for context7 and playwright plugins
+    await ensureOfficialMarketplace(spinner);
 
     // Load marketplace.json to get ALL available plugins
     spinner.start('Loading available plugins...');
@@ -360,6 +370,47 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
 
     spinner.succeed('SpecWeave marketplace ready');
   }
+}
+
+/**
+ * Ensure Anthropic's official plugins marketplace is registered
+ *
+ * Required for context7 and playwright plugins which are essential
+ * for documentation context and browser automation.
+ *
+ * v1.0.223: Added to fix missing marketplace during init
+ */
+async function ensureOfficialMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
+  spinner.start('Checking official plugins marketplace...');
+
+  // Check if marketplace is already registered
+  const listResult = execFileNoThrowSync('claude', ['plugin', 'marketplace', 'list']);
+  const marketplaceExists = listResult.success &&
+    (listResult.stdout || '').toLowerCase().includes('claude-plugins-official');
+
+  if (marketplaceExists) {
+    spinner.succeed('Official plugins marketplace ready');
+    return;
+  }
+
+  // Marketplace not registered - add it
+  spinner.text = 'Adding official plugins marketplace...';
+  const addResult = execFileNoThrowSync('claude', [
+    'plugin',
+    'marketplace',
+    'add',
+    OFFICIAL_MARKETPLACE_URL
+  ]);
+
+  if (!addResult.success) {
+    // Non-fatal - warn but continue
+    spinner.warn('Could not add official marketplace (context7/playwright unavailable)');
+    console.log(chalk.gray('   → Manual: claude plugin marketplace add https://github.com/anthropics/claude-plugins-official'));
+    return;
+  }
+
+  console.log(chalk.green('   ✔ Official plugins marketplace added'));
+  spinner.succeed('Official plugins marketplace ready');
 }
 
 /**
