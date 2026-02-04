@@ -872,7 +872,7 @@ integrations, UI/UX, and tradeoffs before creating specifications.
 Enable Deep Interview Mode? [y/N]
 ```
 
-> "When enabled, before creating ANY spec, Claude conducts a thorough interview. Architecture decisions, external integrations, UI/UX concerns, performance requirements, security considerations, edge cases. 10 to 40+ questions depending on feature complexity.
+> "When enabled, before creating ANY spec, Claude conducts a thorough interview. Architecture decisions, external integrations, UI/UX concerns, performance requirements, security considerations, edge cases. Claude assesses complexity first — trivial features get 0-3 questions, small features 4-8, medium 9-18, and large architectural features can get 19-40+ questions.
 >
 > This is inspired by Thariq — the creator of Claude Code himself — who shared that for big features, Claude asks him 40+ questions and he ends up with a much more detailed spec that he feels in control of.
 >

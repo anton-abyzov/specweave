@@ -36,7 +36,7 @@ Add a **Deep Interview Mode** that:
   "planning": {
     "deepInterview": {
       "enabled": false,
-      "minQuestions": 10,
+      "minQuestions": 5,
       "categories": [
         "architecture",
         "integrations",

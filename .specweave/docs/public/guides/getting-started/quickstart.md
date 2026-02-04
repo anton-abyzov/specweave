@@ -81,7 +81,13 @@ integrations, UI/UX, and tradeoffs before creating specifications.
 Enable Deep Interview Mode? [y/N]
 ```
 
-When enabled, Claude asks 10-40+ questions covering:
+When enabled, Claude assesses feature complexity and asks the right number of questions:
+- **Trivial** (0-3): Config changes, typo fixes
+- **Small** (4-8): Single component features
+- **Medium** (9-18): Multiple components with integrations
+- **Large** (19-40+): Architectural, cross-cutting, high-risk
+
+Questions cover:
 - Architecture & system design patterns
 - External integrations (APIs, databases, auth)
 - UI/UX concerns and tradeoffs

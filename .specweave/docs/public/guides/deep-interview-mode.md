@@ -42,7 +42,7 @@ Edit `.specweave/config.json`:
   "planning": {
     "deepInterview": {
       "enabled": true,
-      "minQuestions": 10,
+      "minQuestions": 5,
       "categories": [
         "architecture",
         "integrations",
@@ -106,11 +106,16 @@ AskUserQuestion({
 
 ### 4. Question Volume
 
-| Feature Size | Expected Questions |
-|--------------|-------------------|
-| Small (bugfix, tweak) | 10-15 |
-| Medium (new page, API) | 20-30 |
-| Large (new feature) | 40+ |
+Claude assesses complexity and adapts question count accordingly:
+
+| Complexity | Questions | When |
+|------------|-----------|------|
+| **Trivial** | 0-3 | Config change, typo fix, obvious bug |
+| **Small** | 4-8 | Single well-defined component |
+| **Medium** | 9-18 | Multiple components, some integration |
+| **Large** | 19-40+ | Architectural, cross-cutting, high-risk |
+
+**The LLM thinks about what's needed - not blindly following a count.**
 
 ### 5. Completion
 
@@ -162,10 +167,14 @@ Enable or disable Deep Interview Mode.
 
 ### `minQuestions`
 
-Minimum questions before proceeding (soft limit).
+Soft guideline for minimum questions. The LLM should assess feature complexity and decide:
+- Trivial features: 0-3 questions
+- Small features: 5-10 questions
+- Medium features: 10-20 questions
+- Large features: 20-40+ questions
 
 ```json
-"minQuestions": 10
+"minQuestions": 5
 ```
 
 ### `categories`
