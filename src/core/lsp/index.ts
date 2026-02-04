@@ -7,7 +7,6 @@
  * - config/    - Configuration, timeout resolution, analyzers
  * - warmup/    - Language warm-up strategies
  * - diagnostics/ - Progress tracking, doctor command
- * - cache/     - Symbol caching
  * - servers/   - LSP server clients
  */
 
@@ -15,8 +14,8 @@
 export * from './config/index.js';
 export * from './warmup/index.js';
 export * from './diagnostics/index.js';
-export * from './cache/index.js';
 export * from './servers/index.js';
+export * from './cache/index.js';
 
 // Error handling
 export {

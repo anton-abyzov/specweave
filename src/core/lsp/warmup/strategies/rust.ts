@@ -15,6 +15,14 @@ export interface FileSystemProvider {
 
 const MAX_FILES = 10;
 
+/**
+ * Get directory from file path (cross-platform)
+ */
+function getDirectory(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash > 0 ? filePath.substring(0, lastSlash) : filePath;
+}
+
 export class RustStrategy implements WarmupStrategy {
   readonly language = 'rust';
   private readonly fs: FileSystemProvider;
@@ -27,7 +35,7 @@ export class RustStrategy implements WarmupStrategy {
   async detectProjectRoot(startDir: string): Promise<string | null> {
     const cargoPath = await this.fs.findUp('Cargo.toml', startDir);
     if (cargoPath) {
-      this.projectRoot = cargoPath.substring(0, cargoPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(cargoPath);
       return this.projectRoot;
     }
     return null;

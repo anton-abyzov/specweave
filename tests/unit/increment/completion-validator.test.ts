@@ -20,6 +20,15 @@ describe('IncrementCompletionValidator', () => {
     incrementPath = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
 
+    // Create config.json to disable grill validation for tests (v1.0.228+)
+    // Tests focus on AC/task validation, not grill workflow
+    const configDir = path.join(testRoot, '.specweave');
+    await fs.ensureDir(configDir);
+    await fs.writeFile(
+      path.join(configDir, 'config.json'),
+      JSON.stringify({ grill: { required: false } }, null, 2)
+    );
+
     // Mock process.cwd() to return test root
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
   });
