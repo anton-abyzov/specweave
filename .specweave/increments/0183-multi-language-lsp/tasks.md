@@ -723,7 +723,7 @@ describe('SymbolCache', () => {
 
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-03, AC-US3-04, AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test File**: `src/core/lsp/config/__tests__/lsp-prompt.test.ts`
@@ -759,7 +759,7 @@ describe('LspPrompt', () => {
 
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-03, AC-US3-04, AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 **Depends On**: T-029
 
@@ -778,7 +778,7 @@ describe('LspPrompt', () => {
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 
 **Implementation** (no test needed - filesystem scaffolding):
@@ -794,7 +794,7 @@ describe('LspPrompt', () => {
 
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 **Depends On**: T-004, T-006
 
@@ -809,7 +809,7 @@ describe('LspPrompt', () => {
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-02, AC-US8-03, AC-US8-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 **Depends On**: T-031, T-006, T-010, T-020
 

@@ -168,14 +168,23 @@ The session won't block indefinitely waiting for manual closure.
 
 | Condition | Description | Action |
 |-----------|-------------|--------|
+| **Max turns** | Reached maxTurns (default: 20) | Session ends |
 | **Max iterations** | Reached 2500 iterations | Session ends |
 | **Max hours** | Time limit exceeded (if configured) | Session ends |
+| **Stale session** | No activity for maxSessionAge (default: 2h) | Session cleared |
 | **Test failures (3x)** | Tests failed 3 times in a row | Pause for human |
 | **Low confidence** | Self-assessment score < 0.50 | Pause for review |
 | **Credential errors** | Multiple auth/deployment failures | Pause for config |
 | **Human gate** | Dangerous operation detected | Wait for approval |
 | **Circuit breaker** | External API failing repeatedly | Queue and continue |
 | **Max retries exceeded** | Stop hook blocked too many times (v1.0.131+) | Force approve to break loop |
+
+:::info maxTurns vs maxRetries (v1.0.226+)
+- **maxTurns**: Hard stop - total turns in session (NEVER resets). Controls session duration.
+- **maxRetries**: Stuck detection - retries on same work (resets when work changes). Prevents loops.
+
+A "turn" is when Claude Code considers stopping (calls the stop hook), not individual API roundtrips.
+:::
 
 ### ⏸️ Pause Conditions
 
@@ -259,13 +268,16 @@ Enable stricter test requirements:
 {
   "auto": {
     "enabled": true,            // Enable auto mode (default: true)
-    "maxRetries": 20,           // Circuit breaker threshold (v1.0.131+)
+    "maxTurns": 20,             // HARD STOP: Total turns in session (default: 20)
+    "maxRetries": 20,           // Stuck detection: Retries on same work (default: 20)
+    "maxSessionAge": 7200,      // Stale session timeout in seconds (default: 2 hours)
     "maxIterations": 2500,      // Max loop iterations (safety)
     "maxHours": 8,              // Max duration in hours (optional)
     "tddStrictMode": false,     // Require TDD discipline
     "requireTests": false,      // Require tests to pass before task completion
     "requireValidation": true,  // Require validation before closure
-    "requireJudgeLLM": false,   // Require AI quality gate
+    "requireLLMEval": false,    // Lightweight LLM-based completion evaluation
+    "requireJudgeLLM": false,   // Heavy AI quality gate (/sw:judge-llm)
     "skipQualityGates": false   // Skip all quality gates (not recommended)
   }
 }
@@ -320,6 +332,45 @@ The stop hook includes a built-in circuit breaker that prevents infinite loops:
   }
 }
 ```
+
+### Quality Gate Presets (v1.0.226+)
+
+During `specweave init`, you can choose a quality gate preset that configures auto mode behavior:
+
+| Preset | requireTests | requireValidation | requireLLMEval | Description |
+|--------|--------------|-------------------|----------------|-------------|
+| **Production** | ✅ | ✅ | ✅ | All gates enabled - best for production code |
+| **Standard** | ✅ | ✅ | ❌ | Tests + validation - good balance |
+| **Minimal** | ❌ | ✅ | ❌ | Validation only - fast iteration |
+| **None** | ❌ | ❌ | ❌ | Skip all gates - hackathon mode |
+
+**Note:** `requireLLMEval` (lightweight, integrated in stop hook) is different from `requireJudgeLLM` (heavy, uses `/sw:judge-llm` command). Production preset enables the lightweight eval but not the heavy judge.
+
+### Debugging with Decision Log (v1.0.226+)
+
+View all stop hook decisions with the decision-log command:
+
+```bash
+# View last 20 decisions
+specweave decision-log
+
+# Filter by hook
+specweave decision-log --hook stop-auto
+
+# Filter by decision type (allow/block/approve)
+specweave decision-log --decision block
+
+# Time window (1h, 24h, 7d)
+specweave decision-log --since 1h
+
+# Follow in real-time
+specweave decision-log --tail
+
+# Raw JSON for scripting
+specweave decision-log --json
+```
+
+**Log location:** `.specweave/logs/decisions.jsonl`
 
 ---
 

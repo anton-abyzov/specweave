@@ -47,6 +47,15 @@ interface TsServerEvent {
 
 type TsServerMessage = TsServerResponse | TsServerEvent;
 
+/** Default request timeout in milliseconds */
+const DEFAULT_TIMEOUT_MS = 60000;
+
+/** Options for TsServerClient */
+export interface TsServerClientOptions {
+  /** Request timeout in milliseconds (default: 60000) */
+  timeoutMs?: number;
+}
+
 /**
  * Direct tsserver client - works with large TypeScript projects
  * where typescript-language-server times out
@@ -60,9 +69,12 @@ export class TsServerClient {
   private buffer = '';
   private openedFiles: Set<string> = new Set();
   private projectLoaded = false;
+  /** Request timeout in milliseconds */
+  private readonly timeoutMs: number;
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, options: TsServerClientOptions = {}) {
     this.projectRoot = projectRoot;
+    this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
   /**
@@ -218,14 +230,14 @@ export class TsServerClient {
       const json = JSON.stringify(request);
       this.serverProcess.stdin.write(json + '\n');
 
-      // Timeout after 60 seconds - store so we can clear on success
+      // Timeout - store so we can clear on success
       const timeout = setTimeout(() => {
         if (this.responseHandlers.has(seq)) {
           this.responseHandlers.delete(seq);
           this.timeouts.delete(seq);
           reject(new Error(`tsserver request timeout: ${command}`));
         }
-      }, 60000);
+      }, this.timeoutMs);
       this.timeouts.set(seq, timeout);
     });
   }
