@@ -88,6 +88,31 @@ silent_approve() {
 }
 
 # ============================================================================
+# LOUD APPROVE - Session completions need user notification
+# Used when work completes, increments close, or session ends successfully
+# ============================================================================
+loud_approve() {
+    local reason="$1"
+    local reason_code="${2:-session_complete}"
+    local context_json="${3:-"{}"}"
+    local message="$4"
+
+    log "APPROVE (loud): $reason"
+
+    # Log structured decision if log_decision function is available
+    if type log_decision &>/dev/null; then
+        log_decision "stop-auto" "approve" "$reason_code" "$reason" "$context_json" "$(_get_duration_ms)"
+    fi
+
+    jq -n \
+        --arg decision "approve" \
+        --arg reason "$reason" \
+        --arg msg "$message" \
+        '{decision: $decision, reason: $reason, systemMessage: $msg}'
+    exit 0
+}
+
+# ============================================================================
 # QUICK EXITS - Not a SpecWeave project
 # ============================================================================
 

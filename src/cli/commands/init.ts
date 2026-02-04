@@ -688,7 +688,7 @@ export async function initCommand(
     await createMultiProjectFolders(targetDir);
 
     // Wizard loop: External import → Living Docs → Testing → Deep Interview → Translation
-    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'deep-interview' | 'translation' | 'done';
+    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'deep-interview' | 'translation' | 'quality-gates' | 'done';
     let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
 
     while (wizardStep !== 'done') {
@@ -787,6 +787,24 @@ export async function initCommand(
 
           updateConfigWithDeepInterview(targetDir, deepInterviewResult.enabled, language);
         }
+        wizardStep = 'quality-gates';
+        continue;
+      }
+
+      // STEP: Quality Gates Configuration (v1.0.226+)
+      // Configures auto mode quality enforcement: tests, validation, LLM checks
+      if (wizardStep === 'quality-gates') {
+        if (!isCI && !continueExisting) {
+          const qualityGatesResult = await promptQualityGatesConfig(language);
+
+          if (qualityGatesResult.goBack === WIZARD_BACK) {
+            logGoingBack(language);
+            wizardStep = 'deep-interview';
+            continue;
+          }
+
+          updateConfigWithQualityGates(targetDir, qualityGatesResult.preset, language);
+        }
         wizardStep = 'translation';
         continue;
       }
@@ -798,7 +816,7 @@ export async function initCommand(
 
           if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
             logGoingBack(language);
-            wizardStep = 'deep-interview';
+            wizardStep = 'quality-gates';
             continue;
           }
 
