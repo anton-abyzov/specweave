@@ -19,9 +19,12 @@ graph LR
     C --> D[Validate ACs]
     D --> E[Quality Gates]
     E --> F{All Pass?}
-    F -->|Yes| G[Ready to Ship]
-    F -->|No| H[Fix Issues]
-    H --> B
+    F -->|Yes| G[Code Grill]
+    G --> H{Grill Pass?}
+    H -->|Yes| I[Ready to Ship]
+    H -->|No| J[Fix Issues]
+    F -->|No| J
+    J --> B
 ```
 
 ---
@@ -320,21 +323,60 @@ jobs:
 
 ## After Validation Passes
 
+### Code Grill (Mandatory)
+
+After all validation checks pass, run the **code grill** - a demanding senior engineer review:
+
 ```bash
-# All checks passed? Close the increment
+/sw:grill 0001
+```
+
+The grill performs:
+- **Correctness checks** - edge cases, null handling, error paths
+- **Security review** - OWASP Top 10, injection vulnerabilities
+- **Performance audit** - time complexity, N+1 queries, memory leaks
+- **Maintainability review** - code clarity, magic numbers, consistency
+
+**Grill Verdicts:**
+
+| Severity | Action Required |
+|----------|-----------------|
+| **BLOCKER** | Must fix before close |
+| **CRITICAL** | Must fix before close |
+| **MAJOR** | Should fix before close |
+| **MINOR** | Can fix in follow-up |
+
+```bash
+# If grill fails
+/sw:grill 0001          # Fix issues, re-run
+
+# If grill passes
+/sw:done 0001           # Now you can close
+```
+
+:::warning Grill is Mandatory
+`/sw:done` will **block** if grill hasn't passed. The grill creates a marker file that `/sw:done` checks before allowing closure.
+:::
+
+### Close the Increment
+
+```bash
+# All checks passed AND grill passed? Close the increment
 /sw:done 0001
 ```
 
 This:
-1. Marks increment as complete
-2. Updates living docs
-3. Syncs to external tools (GitHub/JIRA)
-4. Archives increment data
+1. Verifies grill marker exists
+2. Marks increment as complete
+3. Updates living docs
+4. Syncs to external tools (GitHub/JIRA)
+5. Archives increment data
 
 ---
 
 ## Related
 
+- [Code Grill Command](/docs/commands/grill) - Deep code review before closure
 - [Quality Gates](/docs/glossary/terms/quality-gate)
 - [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
 - [Implementation Workflow](/docs/workflows/implementation)

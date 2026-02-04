@@ -12,6 +12,7 @@ import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { consoleLogger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
+import { validateIncrementId } from '../../utils/increment-id-validator.js';
 /**
  * Error thrown when metadata operations fail
  */
@@ -42,8 +43,11 @@ export class MetadataManager {
      *
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * creating/accessing .specweave in wrong location when CWD != project root.
+     *
+     * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     static getMetadataPath(incrementId, rootDir) {
+        validateIncrementId(incrementId); // SECURITY: Prevent path traversal
         const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
     }
@@ -52,8 +56,11 @@ export class MetadataManager {
      *
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * creating/accessing .specweave in wrong location when CWD != project root.
+     *
+     * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     static getIncrementPath(incrementId, rootDir) {
+        validateIncrementId(incrementId); // SECURITY: Prevent path traversal
         const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId);
     }

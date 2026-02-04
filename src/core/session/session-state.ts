@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import type { PluginInstallTrigger } from './plugin-install-detector.js';
+import { acquireFileLock } from '../../utils/platform-utils.js';
 
 // ============================================================================
 // Types
@@ -79,6 +80,15 @@ const STATE_FILE_NAME = 'session-state.json';
 /** Directory containing state files */
 const STATE_DIR_NAME = 'state';
 
+/** Lock file for session state operations */
+const STATE_LOCK_NAME = 'session-state.lock';
+
+/** Maximum attempts to acquire lock before giving up */
+const LOCK_MAX_ATTEMPTS = 10;
+
+/** Delay between lock acquisition attempts (ms) */
+const LOCK_RETRY_DELAY_MS = 50;
+
 // ============================================================================
 // Path Utilities
 // ============================================================================
@@ -91,6 +101,13 @@ function getStateFilePath(projectRoot: string): string {
 }
 
 /**
+ * Get the full path to the session state lock file
+ */
+function getLockFilePath(projectRoot: string): string {
+  return path.join(projectRoot, '.specweave', STATE_DIR_NAME, STATE_LOCK_NAME);
+}
+
+/**
  * Ensure the state directory exists
  */
 function ensureStateDirectory(projectRoot: string): void {
@@ -98,6 +115,37 @@ function ensureStateDirectory(projectRoot: string): void {
   if (!fs.existsSync(stateDir)) {
     fs.mkdirSync(stateDir, { recursive: true });
   }
+}
+
+/**
+ * Release a file lock
+ */
+function releaseLock(lockPath: string): void {
+  try {
+    if (fs.existsSync(lockPath)) {
+      fs.rmdirSync(lockPath);
+    }
+  } catch {
+    // Ignore errors during unlock
+  }
+}
+
+/**
+ * Acquire a lock with retry logic
+ * Returns true if lock acquired, false otherwise
+ */
+function acquireLockWithRetry(lockPath: string): boolean {
+  for (let attempt = 0; attempt < LOCK_MAX_ATTEMPTS; attempt++) {
+    if (acquireFileLock(lockPath)) {
+      return true;
+    }
+    // Wait before retry (synchronous to keep API simple)
+    const end = Date.now() + LOCK_RETRY_DELAY_MS;
+    while (Date.now() < end) {
+      // Busy wait - brief enough for session state operations
+    }
+  }
+  return false;
 }
 
 // ============================================================================
@@ -179,37 +227,52 @@ export function recordPluginInstallation(
   plugins: string[],
   options: RecordOptions = {}
 ): SessionState {
-  // Load existing state or create new one
-  let state = loadSessionState(projectRoot);
-  if (!state) {
-    state = initSessionState(projectRoot);
+  ensureStateDirectory(projectRoot);
+  const lockPath = getLockFilePath(projectRoot);
+
+  // SECURITY: Acquire lock to prevent race conditions from concurrent hooks
+  if (!acquireLockWithRetry(lockPath)) {
+    // Failed to acquire lock after retries - proceed anyway but log warning
+    // This is better than crashing, and the worst case is a lost update
+    console.error('[session-state] Warning: Could not acquire lock, proceeding without');
   }
 
-  // Add new plugins (deduplicate using Set)
-  const existingPlugins = new Set(state.pluginsInstalledDuringSession);
-  for (const plugin of plugins) {
-    existingPlugins.add(plugin);
+  try {
+    // Load existing state or create new one
+    let state = loadSessionState(projectRoot);
+    if (!state) {
+      state = initSessionState(projectRoot);
+    }
+
+    // Add new plugins (deduplicate using Set)
+    const existingPlugins = new Set(state.pluginsInstalledDuringSession);
+    for (const plugin of plugins) {
+      existingPlugins.add(plugin);
+    }
+    state.pluginsInstalledDuringSession = Array.from(existingPlugins);
+
+    // Update last installation event
+    state.lastInstallationEvent = {
+      timestamp: new Date().toISOString(),
+      plugins,
+      trigger: options.trigger || 'manual',
+      projectPath: options.projectPath,
+    };
+
+    // Update project path if provided
+    if (options.projectPath) {
+      state.projectPath = options.projectPath;
+    }
+
+    // Persist updated state
+    const stateFile = getStateFilePath(projectRoot);
+    fs.writeFileSync(stateFile, JSON.stringify(state, null, 2), 'utf-8');
+
+    return state;
+  } finally {
+    // Always release lock
+    releaseLock(lockPath);
   }
-  state.pluginsInstalledDuringSession = Array.from(existingPlugins);
-
-  // Update last installation event
-  state.lastInstallationEvent = {
-    timestamp: new Date().toISOString(),
-    plugins,
-    trigger: options.trigger || 'manual',
-    projectPath: options.projectPath,
-  };
-
-  // Update project path if provided
-  if (options.projectPath) {
-    state.projectPath = options.projectPath;
-  }
-
-  // Persist updated state
-  const stateFile = getStateFilePath(projectRoot);
-  fs.writeFileSync(stateFile, JSON.stringify(state, null, 2), 'utf-8');
-
-  return state;
 }
 
 /**

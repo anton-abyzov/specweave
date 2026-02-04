@@ -4,6 +4,25 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.228] - 2026-02-04
+
+### 🚀 Features
+
+- **Code Grill (`/sw:grill`)**: Mandatory code review gate before increment completion
+  - Acts as demanding senior engineer reviewing code quality
+  - Checks correctness, security (OWASP Top 10), performance, and maintainability
+  - Categorizes issues as BLOCKER, CRITICAL, MAJOR, MINOR, SUGGESTION
+  - Creates marker file on pass, required before `/sw:done`
+  - Stop hook reminds about ungrilled increments when session ends
+  - Configurable: disable with `{ "grill": { "required": false } }` in config.json
+
+### 🔧 Improvements
+
+- **Workflow enforcement**: `/sw:done` now checks for grill marker before allowing closure
+- **Documentation**: Updated all docs with grill step in workflow
+
+---
+
 ## [1.0.227] - 2026-02-04
 
 ### 🚀 Features

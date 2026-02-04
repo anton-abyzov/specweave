@@ -158,6 +158,41 @@ describe('WarmupExecutor', () => {
       expect(openedFiles).toContain('c.ts');
       expect(errorCount).toBe(1);
     });
+
+    it('throws error for empty projectRoot', async () => {
+      const strategy = new MockStrategy(['a.ts']);
+      const executor = new WarmupExecutor();
+
+      await expect(executor.warmup(strategy, '')).rejects.toThrow(
+        'projectRoot must be a non-empty string'
+      );
+    });
+
+    it('throws error for whitespace-only projectRoot', async () => {
+      const strategy = new MockStrategy(['a.ts']);
+      const executor = new WarmupExecutor();
+
+      await expect(executor.warmup(strategy, '   ')).rejects.toThrow(
+        'projectRoot must be a non-empty string'
+      );
+    });
+
+    it('does not count failed file opens in filesOpened', async () => {
+      const strategy = new MockStrategy(['a.ts', 'b.ts', 'c.ts']);
+      const executor = new WarmupExecutor();
+
+      const result = await executor.warmup(strategy, '/project', {
+        onFileOpen: (file: string) => {
+          if (file === 'b.ts') {
+            throw new Error('Failed to open b.ts');
+          }
+        },
+        onError: () => {},
+      });
+
+      // b.ts failed, so only a.ts and c.ts should be counted
+      expect(result.filesOpened).toBe(2);
+    });
   });
 });
 

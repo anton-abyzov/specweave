@@ -6,10 +6,19 @@
  * and system notifications
  */
 
-import { exec, execSync } from 'child_process';
+import { exec, execSync, execFileSync } from 'child_process';
 import { stat, mkdir, rmdir } from 'fs/promises';
-import { mkdirSync } from 'fs';
+import { mkdirSync, statSync } from 'fs';
 import { Logger, consoleLogger } from './logger.js';
+
+/**
+ * Validates that a value is a safe integer (prevents command injection via non-numeric PIDs)
+ */
+function validatePid(pid: number): void {
+  if (!Number.isInteger(pid) || pid <= 0) {
+    throw new Error(`Invalid PID: ${pid}. Must be a positive integer.`);
+  }
+}
 
 export type Platform = 'darwin' | 'linux' | 'win32';
 
@@ -22,20 +31,25 @@ export function getCurrentPlatform(): Platform {
 
 /**
  * Checks if a process exists (cross-platform)
+ * SECURITY: Uses process.kill(pid, 0) for POSIX, validated PID for Windows
  *
  * @param pid - Process ID to check
  * @returns true if process exists
  */
 export function checkProcessExists(pid: number): boolean {
+  validatePid(pid);
   try {
     if (process.platform === 'win32') {
-      const output = execSync(`tasklist /FI "PID eq ${pid}" /NH`, {
+      // Use execFileSync with array args to prevent injection
+      const output = execFileSync('tasklist', ['/FI', `PID eq ${pid}`, '/NH'], {
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
+        windowsHide: true,
       });
       return output.includes(String(pid));
     } else {
-      execSync(`kill -0 ${pid}`, { stdio: 'ignore' });
+      // Signal 0 = check existence without sending a signal (safe, no shell)
+      process.kill(pid, 0);
       return true;
     }
   } catch {
@@ -45,26 +59,15 @@ export function checkProcessExists(pid: number): boolean {
 
 /**
  * Gets file modification time in seconds since epoch (cross-platform)
+ * SECURITY: Uses Node.js fs.statSync instead of shell commands
  *
  * @param filePath - Path to file
  * @returns Modification time in seconds since epoch
  */
 export function getFileMtime(filePath: string): number {
   try {
-    if (process.platform === 'darwin') {
-      const output = execSync(`stat -f %m "${filePath}"`, { encoding: 'utf-8' });
-      return parseInt(output.trim(), 10);
-    } else if (process.platform === 'win32') {
-      const output = execSync(
-        `powershell -Command "(Get-Item '${filePath}').LastWriteTime.ToFileTimeUtc()"`,
-        { encoding: 'utf-8' }
-      );
-      const fileTime = parseInt(output.trim(), 10);
-      return Math.floor((fileTime - 116444736000000000) / 10000000);
-    } else {
-      const output = execSync(`stat -c %Y "${filePath}"`, { encoding: 'utf-8' });
-      return parseInt(output.trim(), 10);
-    }
+    const stats = statSync(filePath);
+    return Math.floor(stats.mtimeMs / 1000);
   } catch {
     return 0;
   }
@@ -72,16 +75,22 @@ export function getFileMtime(filePath: string): number {
 
 /**
  * Kills a process (cross-platform)
+ * SECURITY: Uses process.kill for POSIX, execFileSync for Windows
  *
  * @param pid - Process ID to kill
  * @param signal - Signal to send (default: SIGTERM)
  */
 export function killProcess(pid: number, signal: string = 'SIGTERM'): void {
+  validatePid(pid);
   try {
     if (process.platform === 'win32') {
-      execSync(`taskkill /F /PID ${pid}`, { stdio: 'ignore' });
+      // Use execFileSync with array args to prevent injection
+      execFileSync('taskkill', ['/F', '/PID', String(pid)], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
     } else {
-      process.kill(pid, signal);
+      process.kill(pid, signal as NodeJS.Signals);
     }
   } catch {
     // Process may not exist, ignore

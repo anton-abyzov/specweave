@@ -1,20 +1,24 @@
 /**
- * SymbolCache - On-disk cache for LSP symbol locations
+ * SymbolCache - Disk-based symbol location cache with mtime invalidation
  *
- * Uses mtime-based invalidation to ensure cache freshness.
+ * Caches LSP symbol lookup results to disk, invalidated when source
+ * files are modified (based on mtime comparison).
  *
  * @see spec.md US-006: Symbol Caching
  * @satisfies AC-US6-01, AC-US6-02, AC-US6-03
  */
 
-import { createHash } from 'crypto';
+import * as crypto from 'crypto';
 
 /**
- * Symbol location from LSP
+ * Symbol location information
  */
 export interface SymbolLocation {
+  /** File URI (file://...) */
   uri: string;
+  /** Line number (0-indexed) */
   line: number;
+  /** Column number (0-indexed) */
   column: number;
 }
 
@@ -34,22 +38,20 @@ export interface FileSystemAdapter {
  * Cache entry stored on disk
  */
 interface CacheEntry {
-  /** Source file mtime when cache was created */
-  sourceMtime: number;
+  /** Source file mtime when cached */
+  mtime: number;
   /** Cached symbol locations */
   locations: SymbolLocation[];
-  /** Timestamp when cache was created */
-  createdAt: number;
 }
 
 /**
- * On-disk symbol cache with mtime-based invalidation
+ * Disk-based symbol cache with mtime invalidation
  */
 export class SymbolCache {
   private readonly cacheDir: string;
   private readonly fs: FileSystemAdapter;
-  /** In-memory index of cache keys to file paths */
-  private cacheIndex: Map<string, string> = new Map();
+  /** Track cache file paths for clear() */
+  private readonly cachedPaths: Set<string> = new Set();
 
   constructor(cacheDir: string, fs: FileSystemAdapter) {
     this.cacheDir = cacheDir;
@@ -57,52 +59,60 @@ export class SymbolCache {
   }
 
   /**
-   * Store symbols in cache
+   * Cache symbol locations for a file/symbol combination
    *
-   * @param sourceFile - Path to the source file
-   * @param symbolName - Name of the symbol
+   * @param filePath - Source file path
+   * @param symbol - Symbol name
    * @param locations - Symbol locations to cache
    */
-  async set(
-    sourceFile: string,
-    symbolName: string,
-    locations: SymbolLocation[]
-  ): Promise<void> {
-    const key = this.getCacheKey(sourceFile, symbolName);
-    const cachePath = this.getCachePath(key);
+  async set(filePath: string, symbol: string, locations: SymbolLocation[]): Promise<void> {
+    try {
+      const cacheKey = this.getCacheKey(filePath, symbol);
+      const cachePath = this.getCachePath(cacheKey);
 
-    // Get source file mtime for invalidation check
-    const sourceMtime = await this.fs.getMtime(sourceFile);
+      // Get current mtime of source file
+      let mtime: number;
+      try {
+        mtime = await this.fs.getMtime(filePath);
+      } catch {
+        // If source file doesn't exist, use current time
+        mtime = Date.now();
+      }
 
-    const entry: CacheEntry = {
-      sourceMtime,
-      locations,
-      createdAt: Date.now(),
-    };
+      const entry: CacheEntry = {
+        mtime,
+        locations,
+      };
 
-    await this.fs.mkdir(this.cacheDir);
-    await this.fs.writeFile(cachePath, JSON.stringify(entry));
-    this.cacheIndex.set(key, cachePath);
+      // Ensure cache directory exists
+      try {
+        await this.fs.mkdir(this.cacheDir);
+      } catch {
+        // Directory may already exist
+      }
+
+      await this.fs.writeFile(cachePath, JSON.stringify(entry));
+      this.cachedPaths.add(cachePath);
+    } catch {
+      // Silently fail on cache write errors - cache is optional
+    }
   }
 
   /**
-   * Get cached symbols
+   * Get cached symbol locations if still valid
    *
-   * @param sourceFile - Path to the source file
-   * @param symbolName - Name of the symbol
-   * @returns Cached locations or null if not cached/invalidated
+   * @param filePath - Source file path
+   * @param symbol - Symbol name
+   * @returns Cached locations or null if not found/invalid
    */
-  async get(
-    sourceFile: string,
-    symbolName: string
-  ): Promise<SymbolLocation[] | null> {
-    const key = this.getCacheKey(sourceFile, symbolName);
-    const cachePath = this.cacheIndex.get(key) ?? this.getCachePath(key);
-
+  async get(filePath: string, symbol: string): Promise<SymbolLocation[] | null> {
     try {
+      const cacheKey = this.getCacheKey(filePath, symbol);
+      const cachePath = this.getCachePath(cacheKey);
+
       // Check if cache file exists
-      const exists = await this.fs.exists(cachePath);
-      if (!exists) {
+      const cacheExists = await this.fs.exists(cachePath);
+      if (!cacheExists) {
         return null;
       }
 
@@ -110,41 +120,54 @@ export class SymbolCache {
       const content = await this.fs.readFile(cachePath);
       const entry: CacheEntry = JSON.parse(content);
 
-      // Check mtime invalidation
-      const currentMtime = await this.fs.getMtime(sourceFile);
-      if (currentMtime !== entry.sourceMtime) {
-        // Source file has changed, invalidate cache
-        await this.fs.unlink(cachePath);
-        this.cacheIndex.delete(key);
+      // Validate mtime - cache is invalid if source file changed
+      try {
+        const currentMtime = await this.fs.getMtime(filePath);
+        if (currentMtime !== entry.mtime) {
+          // Source file modified, cache invalid
+          return null;
+        }
+      } catch {
+        // Source file doesn't exist anymore, cache invalid
         return null;
       }
 
       return entry.locations;
     } catch {
+      // Any error reading cache - return null (cache miss)
       return null;
     }
   }
 
   /**
-   * Clear all cached entries
+   * Clear all cache entries
    */
   async clear(): Promise<void> {
-    for (const [key, path] of this.cacheIndex) {
+    const pathsToDelete = Array.from(this.cachedPaths);
+    this.cachedPaths.clear();
+
+    for (const cachePath of pathsToDelete) {
       try {
-        await this.fs.unlink(path);
+        await this.fs.unlink(cachePath);
       } catch {
-        // Ignore errors during cleanup
+        // Silently fail on delete errors - file may already be gone
       }
     }
-    this.cacheIndex.clear();
   }
 
-  private getCacheKey(sourceFile: string, symbolName: string): string {
-    return `${sourceFile}:${symbolName}`;
+  /**
+   * Generate unique cache key from file path and symbol
+   */
+  private getCacheKey(filePath: string, symbol: string): string {
+    const input = `${filePath}:${symbol}`;
+    return crypto.createHash('sha256').update(input).digest('hex').slice(0, 16);
   }
 
-  private getCachePath(key: string): string {
-    const hash = createHash('sha256').update(key).digest('hex').slice(0, 16);
-    return `${this.cacheDir}/${hash}.json`;
+  /**
+   * Get cache file path for a cache key
+   */
+  private getCachePath(cacheKey: string): string {
+    // Use forward slash for path joining (cross-platform via Node's normalization)
+    return `${this.cacheDir}/${cacheKey}.json`;
   }
 }

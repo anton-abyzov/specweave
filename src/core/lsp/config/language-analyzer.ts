@@ -160,8 +160,10 @@ export class LanguageAnalyzer {
 
   private filterIgnoredDirs(files: string[]): string[] {
     return files.filter((file) => {
+      // Split by both forward and back slashes for cross-platform support
+      const parts = file.split(/[/\\]/);
       for (const ignored of IGNORED_DIRS) {
-        if (file.includes(`/${ignored}/`) || file.startsWith(`${ignored}/`)) {
+        if (parts.includes(ignored)) {
           return false;
         }
       }

@@ -15,6 +15,14 @@ export interface FileSystemProvider {
 
 const MAX_FILES = 10;
 
+/**
+ * Get directory from file path (cross-platform)
+ */
+function getDirectory(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash > 0 ? filePath.substring(0, lastSlash) : filePath;
+}
+
 export class PythonStrategy implements WarmupStrategy {
   readonly language = 'python';
   private readonly fs: FileSystemProvider;
@@ -28,21 +36,21 @@ export class PythonStrategy implements WarmupStrategy {
     // Try pyproject.toml first (modern Python)
     const pyprojectPath = await this.fs.findUp('pyproject.toml', startDir);
     if (pyprojectPath) {
-      this.projectRoot = pyprojectPath.substring(0, pyprojectPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(pyprojectPath);
       return this.projectRoot;
     }
 
     // Try requirements.txt (common)
     const requirementsPath = await this.fs.findUp('requirements.txt', startDir);
     if (requirementsPath) {
-      this.projectRoot = requirementsPath.substring(0, requirementsPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(requirementsPath);
       return this.projectRoot;
     }
 
     // Try setup.py (legacy)
     const setupPath = await this.fs.findUp('setup.py', startDir);
     if (setupPath) {
-      this.projectRoot = setupPath.substring(0, setupPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(setupPath);
       return this.projectRoot;
     }
 

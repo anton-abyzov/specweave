@@ -32,6 +32,7 @@ import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
+import { pruneSkillMemories, listSkillMemoryFiles } from '../../core/reflection/skill-memories.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 interface UpdateOptions {
@@ -207,6 +208,35 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     const reflectMigrated = migrateReflectConfig(projectPath, options.verbose);
     if (reflectMigrated) {
       console.log(chalk.green(`  ✓ Enabled autoReflect in reflect-config.json (self-improving AI)`));
+    }
+  }
+
+  // Step 2.7: Prune old skill memories (v1.0.228+)
+  // Removes learnings older than 90 days or exceeding 10 per skill
+  if (isSpecWeaveProject) {
+    const skillMemoryFiles = listSkillMemoryFiles(projectPath);
+    if (skillMemoryFiles.length > 0) {
+      if (options.check) {
+        console.log(chalk.yellow(`  ⚠️  ${skillMemoryFiles.length} skill memory file(s) will be checked for pruning`));
+      } else {
+        const pruneResult = pruneSkillMemories(projectPath, {
+          retentionDays: 90,
+          maxLearningsPerSkill: 10,
+        });
+        if (pruneResult.prunedCount > 0) {
+          console.log(chalk.green(`  ✓ Pruned ${pruneResult.prunedCount} old learning(s) from ${pruneResult.skillsAffected.length} skill(s)`));
+          if (options.verbose) {
+            pruneResult.skillsAffected.forEach(skill => {
+              console.log(chalk.gray(`    - ${skill}`));
+            });
+          }
+        }
+        if (pruneResult.errors.length > 0 && options.verbose) {
+          pruneResult.errors.forEach(err => {
+            console.log(chalk.yellow(`    ⚠️ ${err}`));
+          });
+        }
+      }
     }
   }
 

@@ -1,13 +1,11 @@
 /**
- * Reflect Handler - Simplified reflection system
+ * Reflect Handler - Reflection system with semantic deduplication
  *
- * ARCHITECTURE (v3.0):
- * - Learnings go to BOTH:
- *   1. CLAUDE.md Skill Memories section (general visibility)
- *   2. .specweave/skill-memories/{skill}.md (skill-specific context)
- * - Organized by skill name
- * - Always uses LLM for extraction (no quick signal check)
- * - User can disable via config
+ * ARCHITECTURE (v4.0):
+ * - PRIMARY: .specweave/skill-memories/{skill}.md (for KNOWN_SKILLS)
+ * - OVERFLOW: CLAUDE.md Skill Memories section (for unknown skills only)
+ * - LLM-based semantic deduplication (existing memories in extraction prompt)
+ * - Auto-pruning of old learnings
  *
  * WHAT IT REMEMBERS:
  * - SpecWeave workflow preferences (how user uses SpecWeave)
@@ -25,7 +23,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runClaudeCli, parseJsonFromOutput, type ClaudeModel } from '../../utils/claude-cli-runner.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
-import { writeSkillMemories } from './skill-memories.js';
+import {
+  writeSkillMemories,
+  readAllSkillMemories,
+  formatMemoriesForPrompt,
+  pruneSkillMemories,
+  type PruneConfig,
+  type ParsedLearning,
+} from './skill-memories.js';
 
 /**
  * Configuration for reflection
@@ -128,19 +133,31 @@ const KNOWN_SKILLS = [
 /**
  * Build the LLM prompt for extracting skill learnings
  *
- * v1.0.198: Stricter extraction - only high-signal learnings that will
- * genuinely improve future skill behavior. Prefer fewer, high-quality
- * learnings over many low-quality ones.
+ * v4.0: Includes existing memories for semantic deduplication.
+ * The LLM will skip learnings that are semantically similar to existing ones.
  */
-function buildExtractionPrompt(transcript: string): string {
-  return `You are analyzing a Claude Code session transcript to extract ONLY high-value learnings.
+function buildExtractionPrompt(transcript: string, existingMemoriesStr: string): string {
+  const existingSection = existingMemoriesStr
+    ? `
+=== EXISTING LEARNINGS (DO NOT DUPLICATE - skip if semantically similar) ===
+${existingMemoriesStr}
+=== END EXISTING ===
+
+CRITICAL DEDUP RULE: If a potential learning is semantically similar to ANY existing learning above, DO NOT include it.
+Semantic similarity means: same core idea, even if worded differently.
+
+`
+    : '';
+
+  return `You are analyzing a Claude Code session transcript to extract ONLY high-value, NEW learnings.
 
 CRITICAL: Be VERY selective. Most sessions have 0-1 learnings worth saving. Only extract if:
 1. User EXPLICITLY corrected Claude's behavior ("No, don't X", "Wrong, do Y instead")
 2. User stated a PERMANENT preference ("Always X", "Never Y", "For this project...")
 3. Learning will CHANGE how a skill behaves in FUTURE sessions
-
-WHAT TO EXTRACT (only if HIGH confidence it's reusable):
+4. Learning is NOT semantically similar to any existing learning
+${existingSection}
+WHAT TO EXTRACT (only if HIGH confidence it's reusable AND truly new):
 1. **User corrections**: Claude did X, user said "No, do Y instead"
    - Example: "pm: Enable interview process during increment creation" (user corrected workflow)
    - Example: "architect: Skip ADR for hotfixes" (user said don't create ADRs for hotfixes)
@@ -153,6 +170,7 @@ WHAT TO EXTRACT (only if HIGH confidence it's reusable):
    - Example: "general: Run /sw:validate before /sw:done" (workflow preference)
 
 WHAT NOT TO EXTRACT (be strict!):
+- Anything semantically similar to existing learnings (check above!)
 - Generic coding advice (TypeScript patterns, React hooks, etc.)
 - One-time fixes that won't recur
 - Implementation details (specific file paths, variable names)
@@ -167,8 +185,9 @@ pm, devops, payments, ml, kafka, confluent, github, jira, ado, release,
 diagrams, general
 
 IMPORTANCE TEST: Before including a learning, ask:
-"Will this CHANGE how Claude behaves in a FUTURE session with this skill?"
-If NO → don't include it.
+1. "Will this CHANGE how Claude behaves in a FUTURE session with this skill?"
+2. "Is this semantically different from ALL existing learnings?"
+If either answer is NO → don't include it.
 
 Respond with ONLY valid JSON (no markdown, no explanation):
 {
@@ -177,7 +196,7 @@ Respond with ONLY valid JSON (no markdown, no explanation):
   ]
 }
 
-If NO high-value learnings found (most sessions), return: {"skillLearnings": []}
+If NO high-value NEW learnings found (most sessions), return: {"skillLearnings": []}
 
 === SESSION TRANSCRIPT ===
 ${transcript.slice(0, 8000)}
@@ -187,12 +206,17 @@ ${transcript.length > 8000 ? '\n... (truncated)' : ''}
 
 /**
  * Extract learnings from transcript using LLM
+ *
+ * @param transcript - Session transcript
+ * @param model - Claude model to use
+ * @param existingMemoriesStr - Formatted existing memories for dedup (optional)
  */
 async function extractLearningsViaLLM(
   transcript: string,
-  model: ClaudeModel
+  model: ClaudeModel,
+  existingMemoriesStr: string = ''
 ): Promise<{ success: boolean; learnings: SkillLearning[]; error?: string; durationMs: number }> {
-  const prompt = buildExtractionPrompt(transcript);
+  const prompt = buildExtractionPrompt(transcript, existingMemoriesStr);
 
   const result = runClaudeCli({
     model,
@@ -520,12 +544,13 @@ export function readReflectConfig(projectRoot: string): ReflectConfig {
 /**
  * Main reflect handler - called at session end
  *
- * Pipeline:
+ * ARCHITECTURE (v4.0):
  * 1. Check config (enabled?)
- * 2. Read transcript
- * 3. Extract learnings via LLM
- * 4. Write to CLAUDE.md
- * 5. Log summary
+ * 2. Read existing memories for LLM context (semantic dedup)
+ * 3. Read transcript
+ * 4. Extract learnings via LLM (with existing memories for dedup)
+ * 5. Write KNOWN skills to .specweave/skill-memories/ (primary storage)
+ * 6. Write UNKNOWN skills to CLAUDE.md (overflow only)
  */
 export async function handleReflectStop(
   transcriptPath: string,
@@ -566,19 +591,16 @@ export async function handleReflectStop(
     return result;
   }
 
-  // Find CLAUDE.md
-  const claudeMdPath = findClaudeMd(projectRoot);
-  if (!claudeMdPath) {
-    result.reason = 'CLAUDE.md not found in project';
-    result.durationMs = performance.now() - startTime;
-    return result;
-  }
+  // Read existing memories for LLM context (semantic deduplication)
+  const existingMemories = readAllSkillMemories(projectRoot);
+  const existingMemoriesStr = formatMemoriesForPrompt(existingMemories);
+  logger.debug(`[reflect] Found ${existingMemories.length} existing memories for dedup context`);
 
-  // Extract learnings via LLM
+  // Extract learnings via LLM (with existing memories for semantic dedup)
   result.model = config.model;
   result.ran = true;
 
-  const extraction = await extractLearningsViaLLM(transcript, config.model);
+  const extraction = await extractLearningsViaLLM(transcript, config.model, existingMemoriesStr);
 
   if (!extraction.success) {
     result.reason = `LLM extraction failed: ${extraction.error}`;
@@ -597,22 +619,44 @@ export async function handleReflectStop(
     return result;
   }
 
-  // Write to CLAUDE.md
-  const writeResult = updateClaudeMd(claudeMdPath, learningsToWrite);
-  result.written.learningsAdded = writeResult.added;
-  result.written.learningsSkippedDuplicate = writeResult.skipped;
-  result.written.claudeMdPath = claudeMdPath;
+  // Separate learnings into known skills (skill-memories) vs unknown (CLAUDE.md overflow)
+  const knownSkillLearnings = learningsToWrite.filter((l) =>
+    KNOWN_SKILLS.includes(l.skill.toLowerCase() as (typeof KNOWN_SKILLS)[number])
+  );
+  const unknownSkillLearnings = learningsToWrite.filter(
+    (l) => !KNOWN_SKILLS.includes(l.skill.toLowerCase() as (typeof KNOWN_SKILLS)[number])
+  );
 
-  // Also write to skill-specific memory files
-  // This ensures learnings are visible when skills load
+  // Write KNOWN skills to skill-memories (primary storage)
   try {
-    const skillMemoryResult = writeSkillMemories(projectRoot, learningsToWrite);
+    const skillMemoryResult = writeSkillMemories(projectRoot, knownSkillLearnings);
+    result.written.learningsAdded += skillMemoryResult.written;
+    result.written.learningsSkippedDuplicate += skillMemoryResult.skipped;
     logger.debug(
       `[reflect] Wrote ${skillMemoryResult.written} skill memory files, skipped ${skillMemoryResult.skipped} duplicates`
     );
   } catch (err) {
     // Non-fatal - continue even if skill memory write fails
     logger.warn(`[reflect] Failed to write skill memories: ${err}`);
+  }
+
+  // Write UNKNOWN skills to CLAUDE.md (overflow storage only)
+  // This is for skills that don't have dedicated memory files
+  if (unknownSkillLearnings.length > 0) {
+    const claudeMdPath = findClaudeMd(projectRoot);
+    if (claudeMdPath) {
+      try {
+        const writeResult = updateClaudeMd(claudeMdPath, unknownSkillLearnings);
+        result.written.learningsAdded += writeResult.added;
+        result.written.learningsSkippedDuplicate += writeResult.skipped;
+        result.written.claudeMdPath = claudeMdPath;
+        logger.debug(
+          `[reflect] Wrote ${writeResult.added} unknown skill learnings to CLAUDE.md overflow`
+        );
+      } catch (err) {
+        logger.warn(`[reflect] Failed to write to CLAUDE.md: ${err}`);
+      }
+    }
   }
 
   result.durationMs = performance.now() - startTime;
