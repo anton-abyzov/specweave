@@ -67,7 +67,9 @@ echo '{}' > ~/.claude/plugins/known_marketplaces.json
 ### Step 3: Re-Register from GitHub
 
 ```bash
-claude plugin marketplace add anton-abyzov/specweave
+# IMPORTANT: Use full HTTPS URL, not short form!
+# Short form (anton-abyzov/specweave) causes SSH authentication errors
+claude plugin marketplace add https://github.com/anton-abyzov/specweave
 ```
 
 ### Step 4: Reinstall Plugins

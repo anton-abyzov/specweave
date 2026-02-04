@@ -68,7 +68,7 @@ if [ ! -d "$PLUGINS_SUBDIR" ]; then
         claude plugin marketplace remove specweave 2>/dev/null
         rm -rf "$PLUGINS_DIR/cache/specweave" 2>/dev/null
 
-        if claude plugin marketplace add anton-abyzov/specweave 2>&1 | tee -a "$HEALTH_LOG"; then
+        if claude plugin marketplace add https://github.com/anton-abyzov/specweave 2>&1 | tee -a "$HEALTH_LOG"; then
             log "SUCCESS: Marketplace re-cloned"
 
             # === REMOVED (v1.0.159) ===

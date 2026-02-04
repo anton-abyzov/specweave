@@ -59,7 +59,7 @@ if [ $ERRORS -gt 0 ]; then
             rm -rf "$PLUGINS_DIR/cache/specweave" 2>/dev/null || true
 
             # Reinstall
-            if claude plugin marketplace add anton-abyzov/specweave 2>&1; then
+            if claude plugin marketplace add https://github.com/anton-abyzov/specweave 2>&1; then
                 echo "✓ Marketplace reinstalled"
 
                 # Install core plugins

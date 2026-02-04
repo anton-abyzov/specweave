@@ -38,7 +38,7 @@ rm -rf "$PLUGINS_DIR/cache/specweave" 2>/dev/null || true
 echo -e "${GREEN}  ✓ Cache cleared${NC}"
 
 echo -e "${YELLOW}Step 3: Reinstalling from GitHub...${NC}"
-if claude plugin marketplace add anton-abyzov/specweave 2>&1; then
+if claude plugin marketplace add https://github.com/anton-abyzov/specweave 2>&1; then
     echo -e "${GREEN}  ✓ Marketplace installed${NC}"
 else
     echo -e "${RED}  ✗ Failed to install marketplace${NC}"
