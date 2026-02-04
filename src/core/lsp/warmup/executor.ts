@@ -38,12 +38,18 @@ export class WarmupExecutor {
    * @param projectRoot - Root directory of the project
    * @param options - Execution options
    * @returns Promise resolving to warm-up result
+   * @throws Error if projectRoot is empty
    */
   async warmup(
     strategy: WarmupStrategy,
     projectRoot: string,
     options: WarmupOptions = {}
   ): Promise<WarmupResult> {
+    // Validate projectRoot
+    if (!projectRoot || projectRoot.trim() === '') {
+      throw new Error('projectRoot must be a non-empty string');
+    }
+
     const startTime = Date.now();
     const openCount = options.openCount ?? WarmupExecutor.DEFAULT_OPEN_COUNT;
     const delayMs = options.delayMs ?? WarmupExecutor.DEFAULT_DELAY_MS;
@@ -65,12 +71,13 @@ export class WarmupExecutor {
         if (options.onFileOpen) {
           options.onFileOpen(file);
         }
+        // Only increment AFTER successful callback execution
         filesOpened++;
       } catch (error) {
         if (options.onError) {
           options.onError(file, error instanceof Error ? error : new Error(String(error)));
         }
-        // Continue to next file on error
+        // Don't increment filesOpened on error - continue to next file
       }
     }
 

@@ -9,8 +9,21 @@
 
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { IncrementStatusDetector } from './increment-status.js';
+import { validateIncrementId } from '../../utils/increment-id-validator.js';
+
+/**
+ * Validates that a GitHub issue number is a safe positive integer.
+ * Prevents command injection via malicious issue numbers in metadata.json.
+ */
+function validateIssueNumber(issueNumber: unknown): number {
+  const num = typeof issueNumber === 'string' ? parseInt(issueNumber, 10) : issueNumber;
+  if (!Number.isInteger(num) || (num as number) <= 0) {
+    throw new Error(`Invalid GitHub issue number: ${issueNumber}. Must be a positive integer.`);
+  }
+  return num as number;
+}
 
 export interface MetadataValidationResult {
   valid: boolean;
@@ -38,6 +51,9 @@ export class MetadataValidator {
    * Validate metadata for a specific increment
    */
   async validate(incrementId: string): Promise<MetadataValidationResult> {
+    // SECURITY: Validate increment ID to prevent path traversal
+    validateIncrementId(incrementId);
+
     const issues: MetadataIssue[] = [];
     const metadataPath = path.join(
       this.projectRoot,
@@ -120,17 +136,34 @@ export class MetadataValidator {
 
     // Validate GitHub sync
     if (metadata.github?.issue) {
-      const issueNumber = metadata.github.issue;
+      // SECURITY: Validate issue number to prevent command injection
+      let issueNumber: number;
+      try {
+        issueNumber = validateIssueNumber(metadata.github.issue);
+      } catch {
+        issues.push({
+          type: 'github_mismatch',
+          message: `Invalid GitHub issue number in metadata: ${metadata.github.issue}`,
+          severity: 'error',
+          suggestion: 'Fix or remove the invalid github.issue field in metadata.json'
+        });
+        return { valid: false, incrementId, issues };
+      }
 
       // Check if gh CLI is available
       try {
         execSync('gh --version', { stdio: 'ignore' });
 
-        // Check issue state
-        const issueState = execSync(
-          `gh issue view ${issueNumber} --json state --jq '.state'`,
-          { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }
-        ).trim();
+        // SECURITY: Use execFileSync with array args to prevent injection
+        const issueOutput = execFileSync('gh', [
+          'issue', 'view', String(issueNumber),
+          '--json', 'state',
+          '--jq', '.state'
+        ], {
+          encoding: 'utf-8',
+          stdio: ['ignore', 'pipe', 'ignore']
+        }).trim();
+        const issueState = issueOutput;
 
         if (issueState === 'CLOSED' && metadata.status !== 'completed' && metadata.status !== 'abandoned') {
           issues.push({

@@ -167,4 +167,95 @@ describe('ProjectDetector', () => {
       expect(info.suggestedLanguage).toBe('typescript');
     });
   });
+
+  describe('error handling', () => {
+    it('returns null for empty startDir in findRoot', async () => {
+      const mockFs = createMockFs({});
+      const detector = new ProjectDetector(mockFs);
+
+      const root = await detector.findRoot('');
+      expect(root).toBeNull();
+    });
+
+    it('returns null for whitespace-only startDir in findRoot', async () => {
+      const mockFs = createMockFs({});
+      const detector = new ProjectDetector(mockFs);
+
+      const root = await detector.findRoot('   ');
+      expect(root).toBeNull();
+    });
+
+    it('returns empty result for empty dir in analyzeUnknownProject', async () => {
+      const mockFs = createMockFs({});
+      const detector = new ProjectDetector(mockFs);
+
+      const result = await detector.analyzeUnknownProject('');
+      expect(result.suggestedLanguage).toBeNull();
+      expect(result.fileCount).toBe(0);
+    });
+
+    it('returns empty result for empty dir in detectProjectInfo', async () => {
+      const mockFs = createMockFs({});
+      const detector = new ProjectDetector(mockFs);
+
+      const info = await detector.detectProjectInfo('');
+      expect(info.root).toBeNull();
+      expect(info.language).toBeNull();
+    });
+
+    it('handles readdir errors gracefully in findRoot', async () => {
+      const mockFs: FileSystemProvider = {
+        async exists() { return false; },
+        async readdir(path: string) {
+          if (path === '/broken') throw new Error('Permission denied');
+          return [];
+        },
+        async glob() { return []; },
+        getParentDir(path: string) {
+          if (path === '/broken') return '/';
+          return null;
+        },
+      };
+      const detector = new ProjectDetector(mockFs);
+
+      // Should not throw, should return null
+      const root = await detector.findRoot('/broken');
+      expect(root).toBeNull();
+    });
+
+    it('handles glob errors gracefully in analyzeUnknownProject', async () => {
+      const mockFs: FileSystemProvider = {
+        async exists() { return false; },
+        async readdir() { return []; },
+        async glob() { throw new Error('Glob failed'); },
+        getParentDir() { return null; },
+      };
+      const detector = new ProjectDetector(mockFs);
+
+      // Should not throw, should return empty result
+      const result = await detector.analyzeUnknownProject('/dir');
+      expect(result.suggestedLanguage).toBeNull();
+      expect(result.fileCount).toBe(0);
+    });
+
+    it('handles readdir errors in detectProjectInfo', async () => {
+      let callCount = 0;
+      const mockFs: FileSystemProvider = {
+        async exists() { return false; },
+        async readdir(path: string) {
+          callCount++;
+          // First call (findRoot) succeeds, second call fails
+          if (callCount === 1) return ['package.json'];
+          throw new Error('Permission denied');
+        },
+        async glob() { return []; },
+        getParentDir() { return null; },
+      };
+      const detector = new ProjectDetector(mockFs);
+
+      const info = await detector.detectProjectInfo('/project');
+      expect(info.root).toBe('/project');
+      expect(info.language).toBeNull(); // Could not determine due to readdir failure
+    });
+  });
 });

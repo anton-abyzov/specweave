@@ -1,5 +1,12 @@
 /**
  * Tests for duplicate increment ID prevention
+ *
+ * NOTE: These tests are SKIPPED because they test a CLI script (feature-utils.js)
+ * that was never created. The duplicate prevention logic exists in
+ * IncrementNumberManager (src/core/increment/increment-utils.ts) and is tested
+ * in tests/unit/core/increment/increment-utils.test.ts instead.
+ *
+ * @see ADR-0165 for the architectural decision
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -10,7 +17,10 @@ import { getCleanEnv } from '../../test-utils/clean-env.js';
 import os from 'os';
 import { fileURLToPath } from 'url';
 
-describe('Increment Duplicate Prevention', () => {
+// Skip: feature-utils.js CLI script was never created
+// The functionality is implemented in IncrementNumberManager TypeScript class
+// See src/core/increment/increment-utils.ts for the actual implementation
+describe.skip('Increment Duplicate Prevention', () => {
   let testDir: string;
   let utilsPath: string;
 

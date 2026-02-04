@@ -15,6 +15,14 @@ export interface FileSystemProvider {
 
 const MAX_FILES = 10;
 
+/**
+ * Get directory from file path (cross-platform)
+ */
+function getDirectory(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash > 0 ? filePath.substring(0, lastSlash) : filePath;
+}
+
 export class GoStrategy implements WarmupStrategy {
   readonly language = 'go';
   private readonly fs: FileSystemProvider;
@@ -27,7 +35,7 @@ export class GoStrategy implements WarmupStrategy {
   async detectProjectRoot(startDir: string): Promise<string | null> {
     const goModPath = await this.fs.findUp('go.mod', startDir);
     if (goModPath) {
-      this.projectRoot = goModPath.substring(0, goModPath.lastIndexOf('/'));
+      this.projectRoot = getDirectory(goModPath);
       return this.projectRoot;
     }
     return null;

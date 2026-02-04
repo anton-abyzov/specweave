@@ -217,6 +217,56 @@ describe('LanguageAnalyzer', () => {
       expect(results[0].language).toBe('typescript');
     });
   });
+
+  describe('cross-platform paths', () => {
+    it('ignores node_modules with Windows-style backslash paths', async () => {
+      const files = [
+        'src\\app.ts',
+        'node_modules\\lodash\\index.js',
+        'dist\\bundle.js',
+      ];
+      const mockFs = createMockFs(files);
+      const analyzer = new LanguageAnalyzer(mockFs);
+
+      const results = await analyzer.analyze('C:\\project');
+
+      // Should only count src\app.ts, ignoring node_modules and dist
+      expect(results[0].language).toBe('typescript');
+      expect(results[0].sourceFiles.length).toBe(1);
+    });
+
+    it('handles mixed path separators', async () => {
+      const files = [
+        'src/components\\Button.tsx',
+        'node_modules/react\\index.ts',
+        'src\\utils/helper.ts',
+      ];
+      const mockFs = createMockFs(files);
+      const analyzer = new LanguageAnalyzer(mockFs);
+
+      const results = await analyzer.analyze('/project');
+
+      // Should count files not in ignored directories
+      expect(results[0].language).toBe('typescript');
+      // Both src files should be counted, node_modules excluded
+      expect(results[0].sourceFiles.length).toBe(2);
+    });
+
+    it('ignores .git directory with backslash paths', async () => {
+      const files = [
+        'src\\main.py',
+        '.git\\hooks\\pre-commit',
+        '__pycache__\\module.pyc',
+      ];
+      const mockFs = createMockFs(files);
+      const analyzer = new LanguageAnalyzer(mockFs);
+
+      const results = await analyzer.analyze('C:\\python-project');
+
+      expect(results[0].language).toBe('python');
+      expect(results[0].sourceFiles.length).toBe(1);
+    });
+  });
 });
 
 describe('LanguageScore interface', () => {

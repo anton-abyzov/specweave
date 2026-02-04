@@ -17,7 +17,8 @@ description: Know exactly which SpecWeave command to use in any situation
 | Start new feature | `/sw:increment "feature name"` |
 | Implement current feature | `/sw:do` |
 | See what's in progress | `/sw:progress` |
-| Complete an increment | `/sw:done 0001` |
+| Code review before close | `/sw:grill 0001` **(mandatory!)** |
+| Complete an increment | `/sw:done 0001` (requires grill) |
 | Pause for other work | `/sw:pause 0001` |
 | Resume paused work | `/sw:resume 0001` |
 | Validate before closing | `/sw:validate 0001` |
@@ -50,8 +51,11 @@ flowchart TD
     B -->|No| C[Continue with /sw:do]
     B -->|Yes| D[/sw:validate]
     D --> E{Validation passed?}
-    E -->|Yes| F[/sw:done]
-    E -->|No| G[Fix issues, then validate again]
+    E -->|Yes| F[/sw:grill]
+    F --> G{Grill passed?}
+    G -->|Yes| H[/sw:done]
+    G -->|No| I[Fix issues, run grill again]
+    E -->|No| J[Fix issues, then validate again]
 ```
 
 ---
@@ -89,7 +93,8 @@ flowchart TD
 | Scenario | Command | Notes |
 |----------|---------|-------|
 | Validate before closing | `/sw:validate 0001` | Checks tasks, tests, docs |
-| Close with PM review | `/sw:done 0001` | 3-gate validation |
+| Code review before close | `/sw:grill 0001` | **MANDATORY** - blocks /sw:done |
+| Close with PM review | `/sw:done 0001` | Requires grill to pass first |
 | Move to next increment | `/sw:next` | Auto-close current, suggest next |
 
 ### Syncing & Saving
@@ -110,6 +115,7 @@ flowchart TD
 Start     →  /sw:increment
 Implement →  /sw:do
 Validate  →  /sw:validate
+Review    →  /sw:grill (mandatory!)
 Complete  →  /sw:done
 ```
 
@@ -143,6 +149,7 @@ Sync Tasks     →  /sw:sync-tasks      (external → tasks.md)
 ```
 Validate   →  /sw:validate   (rule-based)
 QA         →  /sw:qa         (AI spec assessment)
+Grill      →  /sw:grill      (code review - MANDATORY before close!)
 Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 ```
 
@@ -165,7 +172,10 @@ Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 # 4. Validate when tasks complete
 /sw:validate 0001
 
-# 5. Close when ready
+# 5. Code review (mandatory!)
+/sw:grill 0001
+
+# 6. Close when ready
 /sw:done 0001
 ```
 
@@ -322,8 +332,9 @@ Judge-LLM  →  /sw:judge-llm  (ultrathink code validation)
 1. **Start with `/sw:increment`** — Always plan before coding
 2. **Use `/sw:progress` often** — Stay aware of status
 3. **Validate before closing** — `/sw:validate` catches issues
-4. **Sync at end of day** — `/sw:sync-progress` keeps everyone informed
-5. **Save frequently** — `/sw:save` protects your work
+4. **Always grill before done** — `/sw:grill` is mandatory for closure
+5. **Sync at end of day** — `/sw:sync-progress` keeps everyone informed
+6. **Save frequently** — `/sw:save` protects your work
 
 ---
 

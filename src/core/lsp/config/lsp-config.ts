@@ -62,11 +62,16 @@ export interface LspConfig {
 /**
  * Parse and validate LSP configuration from raw config object
  *
+ * Uses safeParse to gracefully handle invalid configurations,
+ * falling back to defaults when validation fails.
+ *
  * @param rawConfig - Raw configuration object (typically from config.json)
  * @returns Validated LspConfig with defaults applied
  */
 export function parseLspConfig(rawConfig: unknown): LspConfig {
-  const parsed = RootConfigSchema.parse(rawConfig);
+  // Use safeParse to gracefully handle invalid config
+  const result = RootConfigSchema.safeParse(rawConfig);
+  const parsed = result.success ? result.data : { lsp: undefined };
   const lsp = parsed.lsp ?? {};
 
   return {

@@ -73,26 +73,35 @@ export class ProjectDetector {
    * @returns Project root path or null if not found
    */
   async findRoot(startDir: string): Promise<string | null> {
+    if (!startDir || startDir.trim() === '') {
+      return null;
+    }
+
     let currentDir: string | null = startDir;
 
     while (currentDir) {
-      // Check for project files in current directory
-      for (const config of Object.values(PROJECT_FILES)) {
-        for (const pattern of config.files) {
-          const fileName = pattern.startsWith('*') ? pattern.slice(1) : pattern;
-          const files = await this.fs.readdir(currentDir);
+      try {
+        // Check for project files in current directory
+        const files = await this.fs.readdir(currentDir);
 
-          const match = files.find((f) => {
-            if (pattern.startsWith('*')) {
-              return f.endsWith(fileName);
+        for (const config of Object.values(PROJECT_FILES)) {
+          for (const pattern of config.files) {
+            const fileName = pattern.startsWith('*') ? pattern.slice(1) : pattern;
+
+            const match = files.find((f) => {
+              if (pattern.startsWith('*')) {
+                return f.endsWith(fileName);
+              }
+              return f === pattern;
+            });
+
+            if (match) {
+              return currentDir;
             }
-            return f === pattern;
-          });
-
-          if (match) {
-            return currentDir;
           }
         }
+      } catch {
+        // Directory not readable or doesn't exist, continue searching upward
       }
 
       // Move to parent directory
@@ -109,14 +118,22 @@ export class ProjectDetector {
    * @returns Suggested language based on file extensions
    */
   async analyzeUnknownProject(dir: string): Promise<UnknownProjectResult> {
+    if (!dir || dir.trim() === '') {
+      return { suggestedLanguage: null, fileCount: 0 };
+    }
+
     const counts: Record<string, number> = {};
 
     // Count files by extension
     for (const [ext, lang] of Object.entries(EXTENSION_LANGUAGE)) {
       const pattern = `*${ext}`;
-      const files = await this.fs.glob(pattern, dir);
-      if (files.length > 0) {
-        counts[lang] = (counts[lang] || 0) + files.length;
+      try {
+        const files = await this.fs.glob(pattern, dir);
+        if (files.length > 0) {
+          counts[lang] = (counts[lang] || 0) + files.length;
+        }
+      } catch {
+        // Glob failed for this extension, continue with others
       }
     }
 
@@ -144,15 +161,26 @@ export class ProjectDetector {
    * @returns Project information with root, language, and suggestions
    */
   async detectProjectInfo(startDir: string): Promise<ProjectInfo> {
+    if (!startDir || startDir.trim() === '') {
+      return { root: null, language: null };
+    }
+
     const root = await this.findRoot(startDir);
 
     if (root) {
       // Determine language from project files
-      const files = await this.fs.readdir(root);
+      let files: string[];
+      try {
+        files = await this.fs.readdir(root);
+      } catch {
+        // Can't read directory, return root without language info
+        return { root, language: null };
+      }
+
       let language: string | null = null;
       let projectFile: string | undefined;
 
-      for (const [lang, config] of Object.entries(PROJECT_FILES)) {
+      for (const [, config] of Object.entries(PROJECT_FILES)) {
         for (const pattern of config.files) {
           const match = files.find((f) => {
             if (pattern.startsWith('*')) {

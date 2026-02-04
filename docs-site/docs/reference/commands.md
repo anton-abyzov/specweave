@@ -17,11 +17,12 @@ For domain expertise, see [Skills Reference](./skills).
 ## Quick Reference Card
 
 ```
-PLAN → EXECUTE → MONITOR → COMPLETE
+PLAN → EXECUTE → MONITOR → GRILL → COMPLETE
 
 /sw:increment "feature"    Start new work
 /sw:auto                   Run autonomously (hours!)
 /sw:progress               Check status
+/sw:grill 0007             Code review (MANDATORY)
 /sw:next                   Complete and suggest next
 ```
 
@@ -293,10 +294,18 @@ Finish work and move on.
 /sw:done 0007    # Close increment 0007
 ```
 
+**Prerequisites:**
+- `/sw:grill` must pass first (creates marker file)
+
 **Validations:**
 - All P1 tasks must be complete
 - Tests must pass
 - Acceptance criteria must be met
+- Grill marker file exists
+
+:::warning Grill Required
+`/sw:done` is BLOCKED if `/sw:grill` hasn't passed. Run `/sw:grill 0007` first.
+:::
 
 :::tip Use /sw:next
 `/sw:next` does everything `/sw:done` does, plus suggests what to work on next.

@@ -118,15 +118,30 @@ You'll see real-time labels showing progress:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-### Step 6: Complete the Increment
+### Step 6: Grill and Complete
 
-When all tasks are done:
+When all tasks are done, run the **code grill** first:
+
+```bash
+/sw:grill 0002
+```
+
+The grill acts as a demanding senior engineer, checking for:
+- 🔍 Edge cases and error handling
+- 🔒 Security vulnerabilities
+- ⚡ Performance issues
+- 🧹 Code maintainability
+
+If issues are found, fix them and re-run `/sw:grill 0002`.
+
+Once grill passes:
 
 ```bash
 /sw:done 0002
 ```
 
 SpecWeave validates:
+- ✅ Grill passed (marker file exists)
 - ✅ All tasks marked complete
 - ✅ All tests passing
 - ✅ Living docs updated
@@ -158,6 +173,7 @@ You just experienced **spec-driven development**:
 ```bash
 /sw:increment "Feature description"  # Create spec + plan + tasks
 /sw:auto                              # Execute autonomously
+/sw:grill XXXX                        # Code review before close
 /sw:done XXXX                         # Validate and complete
 ```
 
@@ -166,6 +182,7 @@ You just experienced **spec-driven development**:
 ```bash
 /sw:increment "Fix login redirect loop"
 /sw:do                                # Manual execution for debugging
+/sw:grill XXXX                        # Review fix quality
 /sw:done XXXX
 ```
 

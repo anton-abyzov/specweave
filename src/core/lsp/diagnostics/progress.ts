@@ -31,31 +31,33 @@ export class LspProgress implements ProgressCallback {
   start(message: string): void {
     this.startTime = Date.now();
     this.currentMessage = message;
-    this.emit(`🔄 ${message}...`);
+    this.emit(`[...] ${message}...`);
 
     // Update every second to show elapsed time
+    // Use unref() to prevent interval from keeping process alive
     this.intervalId = setInterval(() => {
       const elapsed = this.getElapsedSeconds();
-      this.emit(`🔄 ${this.currentMessage} (${elapsed}s elapsed)...`);
+      this.emit(`[...] ${this.currentMessage} (${elapsed}s elapsed)...`);
     }, 1000);
+    this.intervalId.unref();
   }
 
   update(message: string): void {
     this.currentMessage = message;
     const elapsed = this.getElapsedSeconds();
-    this.emit(`🔄 ${message} (${elapsed}s elapsed)...`);
+    this.emit(`[...] ${message} (${elapsed}s elapsed)...`);
   }
 
   succeed(message: string): void {
     this.stop();
     const elapsed = this.getElapsedSeconds();
-    this.emit(`✅ ${message} (${elapsed}s)`);
+    this.emit(`[OK] ${message} (${elapsed}s)`);
   }
 
   fail(message: string): void {
     this.stop();
     const elapsed = this.getElapsedSeconds();
-    this.emit(`❌ ${message} (${elapsed}s)`);
+    this.emit(`[FAILED] ${message} (${elapsed}s)`);
   }
 
   private stop(): void {
@@ -66,7 +68,8 @@ export class LspProgress implements ProgressCallback {
   }
 
   private getElapsedSeconds(): number {
-    return Math.round((Date.now() - this.startTime) / 1000);
+    // Use max(0) to handle potential clock adjustments
+    return Math.max(0, Math.round((Date.now() - this.startTime) / 1000));
   }
 
   private emit(message: string): void {

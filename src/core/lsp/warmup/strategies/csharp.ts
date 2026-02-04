@@ -36,6 +36,22 @@ export interface CacheProvider {
 const MAX_FILES = 10;
 
 /**
+ * Get directory from file path (cross-platform)
+ */
+function getDirectory(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash > 0 ? filePath.substring(0, lastSlash) : filePath;
+}
+
+/**
+ * Get filename from file path (cross-platform)
+ */
+function getFilename(filePath: string): string {
+  const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+  return lastSlash >= 0 ? filePath.substring(lastSlash + 1) : filePath;
+}
+
+/**
  * C# warm-up strategy with solution/project file detection
  */
 export class CSharpStrategy implements WarmupStrategy {
@@ -72,7 +88,7 @@ export class CSharpStrategy implements WarmupStrategy {
     // Try to find .sln file first (preferred)
     const slnPath = await this.fs.findUp('*.sln', startDir);
     if (slnPath) {
-      const dir = slnPath.substring(0, slnPath.lastIndexOf('/'));
+      const dir = getDirectory(slnPath);
       const files = await this.fs.glob('*.sln', dir);
 
       if (files.length > 1) {
@@ -89,7 +105,7 @@ export class CSharpStrategy implements WarmupStrategy {
           this.solutionFile = files[0];
         }
       } else {
-        this.solutionFile = slnPath.substring(slnPath.lastIndexOf('/') + 1);
+        this.solutionFile = getFilename(slnPath);
       }
 
       this.projectRoot = dir;
@@ -99,8 +115,8 @@ export class CSharpStrategy implements WarmupStrategy {
     // Fall back to .csproj
     const csprojPath = await this.fs.findUp('*.csproj', startDir);
     if (csprojPath) {
-      const dir = csprojPath.substring(0, csprojPath.lastIndexOf('/'));
-      this.projectFile = csprojPath.substring(csprojPath.lastIndexOf('/') + 1);
+      const dir = getDirectory(csprojPath);
+      this.projectFile = getFilename(csprojPath);
       this.projectRoot = dir;
       return dir;
     }

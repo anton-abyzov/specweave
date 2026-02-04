@@ -162,16 +162,10 @@ describe('reflect-handler', () => {
       expect(result.reason).toBe('Transcript too short (< 100 chars)');
     });
 
-    it('returns early when CLAUDE.md is not found', async () => {
-      // Create transcript
-      const transcriptPath = path.join(tmpDir, 'transcript.txt');
-      fs.writeFileSync(transcriptPath, 'A'.repeat(200));
-
-      const result = await handleReflectStop(transcriptPath, projectRoot);
-
-      expect(result.ran).toBe(false);
-      expect(result.reason).toBe('CLAUDE.md not found in project');
-    });
+    // NOTE: Test removed in v4.0 architecture change
+    // CLAUDE.md is no longer required early in the flow
+    // Known skills go to skill-memories, CLAUDE.md is only for overflow
+    // The LLM extraction now happens before checking CLAUDE.md
   });
 
   describe('formatReflectResult', () => {
