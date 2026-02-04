@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.227] - 2026-02-04
+
+### 🚀 Features
+
+- **Multi-language LSP support**: Added LSP server configurations for Go, Python, Rust, Java, and C#
+- **LSP improvements**: Enhanced LSP client with warmup, caching, and diagnostics modules
+- **Analytics command**: Added new analytics CLI command for usage tracking
+
+### 🔧 Improvements
+
+- **Auto mode docs**: Expanded auto command documentation with detailed examples
+- **Stop auto hook**: Improved auto mode stop detection logic
+
+---
+
 ## [1.0.218] - 2026-02-03
 
 ### 🔧 Breaking Changes
