@@ -1,0 +1,9 @@
+{
+  "id": "0186-auto-completion-evaluation",
+  "title": "LLM-Based Auto Completion Evaluation",
+  "status": "completed",
+  "created": "2026-01-22T10:00:00Z",
+  "updated": "2026-01-22T10:00:00Z",
+  "project": "specweave",
+  "tags": ["auto-mode", "llm", "completion-evaluation", "stop-hook"]
+}
