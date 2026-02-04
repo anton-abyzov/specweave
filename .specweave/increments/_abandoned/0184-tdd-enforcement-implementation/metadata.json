@@ -1,0 +1,16 @@
+{
+  "id": "0184-tdd-enforcement-implementation",
+  "status": "abandoned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-07T12:00:00Z",
+  "lastActivity": "2026-01-07T12:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "updated": "2026-01-08T19:30:00.000Z",
+  "abandonedAt": "2026-01-08T19:30:00.000Z",
+  "abandonedReason": "Test increment, no longer needed"
+}

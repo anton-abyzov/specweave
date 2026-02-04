@@ -1,0 +1,15 @@
+{
+  "id": "0187-lsp-skill-integration",
+  "status": "abandoned",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2026-01-07T18:00:00Z",
+  "abandonedAt": "2026-01-25T00:00:00Z",
+  "updated": "2026-01-25T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "notes": "Abandoned: Duplicate ID with 0162-auto-simplification. Never started (0/28 tasks). LSP integration documentation can be re-planned with unique ID if needed."
+}
