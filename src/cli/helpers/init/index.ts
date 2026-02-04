@@ -145,3 +145,13 @@ export {
   updateConfigWithDeepInterview,
   type DeepInterviewConfigResult,
 } from './deep-interview-config.js';
+
+// Quality gates configuration (v1.0.226+)
+export {
+  promptQualityGatesConfig,
+  updateConfigWithQualityGates,
+  getQualityGatePreset,
+  type QualityGatesConfigResult,
+  type QualityGatePreset,
+  type QualityGateSettings,
+} from './quality-gates-config.js';

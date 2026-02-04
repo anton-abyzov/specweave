@@ -54,6 +54,8 @@ import {
   installGitHooks,
   promptDeepInterviewConfig,
   updateConfigWithDeepInterview,
+  promptQualityGatesConfig,
+  updateConfigWithQualityGates,
   WIZARD_BACK,
   logGoingBack,
 } from '../helpers/init/index.js';
