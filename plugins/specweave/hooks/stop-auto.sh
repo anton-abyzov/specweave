@@ -144,6 +144,7 @@ MAX_RETRIES="20"         # Stuck detection: Retries on same work (resets when wo
 TDD_MODE="false"
 SKIP_QUALITY_GATES="false"
 TEST_COMMAND=""
+MAX_SESSION_AGE="7200"   # Stale session timeout (default 2 hours)
 
 if [ -f "$CONFIG_FILE" ]; then
     AUTO_ENABLED=$(jq -r '.auto.enabled // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
@@ -159,6 +160,8 @@ if [ -f "$CONFIG_FILE" ]; then
     SKIP_QUALITY_GATES=$(jq -r '.auto.skipQualityGates // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     TDD_MODE_CONFIG=$(jq -r '.testing.defaultTestMode // "standard"' "$CONFIG_FILE" 2>/dev/null || echo "standard")
     [ "$TDD_MODE_CONFIG" = "tdd" ] || [ "$TDD_MODE_CONFIG" = "TDD" ] && TDD_MODE="true"
+    # maxSessionAge = stale session timeout in seconds (default 2 hours = 7200s)
+    MAX_SESSION_AGE=$(jq -r '.auto.maxSessionAge // 7200' "$CONFIG_FILE" 2>/dev/null || echo "7200")
 fi
 
 # Auto mode disabled in config - silent approve
@@ -181,7 +184,7 @@ fi
 FILE_MTIME=$(stat -f%m "$AUTO_SESSION_FILE" 2>/dev/null || stat -c%Y "$AUTO_SESSION_FILE" 2>/dev/null || echo "0")
 CURRENT_TIME=$(date +%s)
 SESSION_AGE=$((CURRENT_TIME - FILE_MTIME))
-MAX_SESSION_AGE=1800  # 30 minutes
+# MAX_SESSION_AGE loaded from config above (default: 7200s = 2 hours)
 
 if [ "$SESSION_AGE" -gt "$MAX_SESSION_AGE" ]; then
     log "STALE SESSION DETECTED: Session file is ${SESSION_AGE}s old (max: ${MAX_SESSION_AGE}s)"

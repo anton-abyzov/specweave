@@ -71,7 +71,12 @@ export interface LSPServerConfig {
   command: string;
   args: string[];
   rootPath: string;
+  /** Request timeout in milliseconds (default: 60000) */
+  timeoutMs?: number;
 }
+
+/** Default request timeout in milliseconds */
+const DEFAULT_TIMEOUT_MS = 60000;
 
 /**
  * LSP Client for semantic code analysis
@@ -87,9 +92,12 @@ export class LSPClient {
   private openedDocuments: Set<string> = new Set();
   /** Track if workspace has been indexed (first query triggers this) */
   private workspaceIndexed = false;
+  /** Request timeout in milliseconds */
+  private readonly timeoutMs: number;
 
   constructor(config: LSPServerConfig) {
     this.config = config;
+    this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
   /**
@@ -443,15 +451,16 @@ export class LSPClient {
       const written = this.serverProcess.stdin.write(message);
       logger.debug(`LSP request id=${id} written=${written}, pending handlers: ${this.responseHandlers.size}`);
 
-      // Timeout after 60 seconds - store so we can clear on success
+      // Timeout - store so we can clear on success
+      const timeoutSecs = Math.round(this.timeoutMs / 1000);
       const timeout = setTimeout(() => {
         if (this.responseHandlers.has(id)) {
           this.responseHandlers.delete(id);
           this.timeouts.delete(id);
-          logger.debug(`LSP request id=${id} timed out after 60s`);
+          logger.debug(`LSP request id=${id} timed out after ${timeoutSecs}s`);
           reject(new Error('LSP request timeout'));
         }
-      }, 60000);
+      }, this.timeoutMs);
       this.timeouts.set(id, timeout);
     });
   }
