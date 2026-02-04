@@ -701,6 +701,26 @@ program
     await cacheCommand(options);
   });
 
+// Analytics command - Usage analytics dashboard
+program
+  .command('analytics')
+  .description('Show usage analytics dashboard (commands, skills, agents)')
+  .option('--export <format>', 'Export data (json, csv)')
+  .option('--since <time>', 'Filter by time range (24h, 7d, 30d)')
+  .option('--type <type>', 'Filter by event type (command, skill, agent)')
+  .option('--json', 'Output raw JSON for scripting')
+  .option('--limit <n>', 'Number of top items to show', '10')
+  .action(async (options) => {
+    const { analyticsCommand } = await import('../dist/src/cli/commands/analytics.js');
+    await analyticsCommand({
+      export: options.export,
+      since: options.since,
+      type: options.type,
+      json: options.json,
+      limit: options.limit ? parseInt(options.limit, 10) : undefined,
+    });
+  });
+
 // LSP command - Code intelligence operations
 const lspCmd = program
   .command('lsp')
