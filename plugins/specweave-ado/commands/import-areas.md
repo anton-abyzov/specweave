@@ -1,5 +1,4 @@
 ---
-name: import-areas
 description: Import Azure DevOps area paths from a project and map them to SpecWeave projects. Creates 2-level directory structure with area path-based organization.
 ---
 

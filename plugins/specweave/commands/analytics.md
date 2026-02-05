@@ -1,5 +1,4 @@
 ---
-name: analytics
 description: Show usage analytics dashboard - command invocations, skill activations, agent spawns. Supports --export json/csv and --since filtering. Activates for analytics, usage stats, command stats, what commands used, skill usage, agent usage.
 ---
 

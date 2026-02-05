@@ -1,5 +1,4 @@
 ---
-name: cost-optimization
 description: FinOps expert for AWS/Azure/GCP cost optimization - right-sizing, reserved instances, savings plans, spot instances. Use for reducing cloud costs.
 ---
 

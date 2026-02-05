@@ -1,5 +1,4 @@
 ---
-name: aws-cost-expert
 description: AWS cost optimization - EC2 Reserved Instances, Savings Plans, Spot, Lambda optimization, Cost Explorer, Trusted Advisor.
 ---
 

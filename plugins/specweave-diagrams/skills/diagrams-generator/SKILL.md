@@ -1,5 +1,4 @@
 ---
-name: diagrams-generator
 description: Generate Mermaid diagrams following C4 conventions. Activates for create diagram, draw diagram, visualize, system diagram, architecture diagram, C4 diagram, context diagram, container diagram, component diagram, sequence diagram, ER diagram, entity relationship, data model, deployment diagram. Coordinates with diagrams-architect agent.
 allowed-tools: Read, Write, Edit, Task
 ---

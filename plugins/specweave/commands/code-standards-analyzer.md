@@ -1,5 +1,4 @@
 ---
-name: code-standards-analyzer
 description: Generate and maintain coding standards documentation from existing codebase patterns. Use when creating STANDARDS.md files, onboarding new developers, documenting team conventions, analyzing naming conventions, detecting anti-patterns, or discovering implicit code standards. Evidence-based approach - standards reflect reality, not aspirations.
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 ---

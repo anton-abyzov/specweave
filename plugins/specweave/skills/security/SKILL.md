@@ -1,5 +1,4 @@
 ---
-name: security
 description: Security engineer for vulnerability assessment, penetration testing guidance, and secure code review. Use for OWASP Top 10 checks, threat modeling, or security architecture review. Covers authentication flaws, injection vulnerabilities, access control, and compliance requirements.
 allowed-tools: Read, Bash, Grep
 context: fork

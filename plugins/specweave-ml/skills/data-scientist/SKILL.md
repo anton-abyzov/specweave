@@ -1,5 +1,4 @@
 ---
-name: data-scientist
 description: Statistical modeling and data analysis expert. A/B testing, causal inference, customer analytics (CLV, churn), anomaly detection, experiment tracking (MLflow/W&B), and data visualization. Use for business analytics, experiment design, or exploratory data analysis.
 model: opus
 context: fork

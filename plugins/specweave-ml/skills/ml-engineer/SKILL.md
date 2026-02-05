@@ -1,5 +1,4 @@
 ---
-name: ml-engineer
 description: Machine learning pipeline builder for end-to-end ML systems. Covers feature engineering, model training, evaluation, hyperparameter tuning, AutoML, and explainability (SHAP/LIME). Use for ML pipelines, model training, or building production ML systems.
 model: opus
 context: fork

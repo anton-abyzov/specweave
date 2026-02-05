@@ -1,5 +1,4 @@
 ---
-name: qa-engineer
 description: Expert QA engineer for test strategy and automation. Use when writing tests, fixing failing tests, or improving test coverage.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

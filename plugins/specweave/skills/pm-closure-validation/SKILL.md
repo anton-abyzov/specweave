@@ -1,5 +1,4 @@
 ---
-name: pm-closure-validation
 description: Expert PM validation for increment closure with 3-gate quality checks (tasks, tests, documentation). Use before /sw:done to validate readiness - checks P1/P2/P3 task completion, test coverage requirements, and documentation updates. Detects scope creep and acts as final release quality gate.
 ---
 

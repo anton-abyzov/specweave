@@ -1,5 +1,4 @@
 ---
-name: ml-specialist
 description: Domain-specific ML expert for NLP, Computer Vision, and Time Series. Text classification, NER, sentiment (BERT, transformers), image classification, object detection (YOLO, ResNet), and forecasting (ARIMA, Prophet, LSTM). Use for specialized ML domains.
 model: opus
 context: fork

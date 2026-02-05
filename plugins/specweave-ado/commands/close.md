@@ -1,5 +1,4 @@
 ---
-name: close
 description: Close Azure DevOps work item when increment complete
 ---
 

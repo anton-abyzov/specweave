@@ -1,5 +1,4 @@
 ---
-name: role-orchestrator
 description: Multi-agent orchestration system that coordinates PM, Architect, DevOps, QA, Tech Lead, and Security agents for complex tasks. Use when building full products, creating SaaS applications, or any end-to-end implementation requiring multiple specialized roles. Implements hierarchical orchestrator-worker pattern.
 ---
 

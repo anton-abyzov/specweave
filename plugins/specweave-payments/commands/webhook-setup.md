@@ -1,5 +1,4 @@
 ---
-name: webhook-setup
 description: Generate secure webhook handlers for payment providers including Stripe, PayPal, and Stripe Connect with signature verification and idempotency
 ---
 

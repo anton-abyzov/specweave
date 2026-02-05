@@ -1,5 +1,4 @@
 ---
-name: app-scaffold
 description: Generate production-ready React Native application structure with navigation, state management, API client, and best practices.
 ---
 

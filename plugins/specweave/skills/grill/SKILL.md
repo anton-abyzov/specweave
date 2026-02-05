@@ -1,5 +1,4 @@
 ---
-name: grill
 description: Critical code review and quality interrogation before increment completion. Use when finishing a feature, before /sw:done, or when saying "grill the code", "review my work", "critique implementation". Acts as a demanding senior engineer who finds issues before users do.
 allowed-tools: Read, Grep, Glob, Bash
 context: fork

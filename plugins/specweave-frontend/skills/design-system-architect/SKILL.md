@@ -1,5 +1,4 @@
 ---
-name: design-system-architect
 description: Expert in building scalable design systems with Atomic Design, design tokens, and theming infrastructure. Use when creating component libraries, implementing dark mode, or establishing typography and color systems. Covers multi-brand support, Storybook-driven development, and accessibility-first component APIs.
 ---
 

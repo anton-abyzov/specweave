@@ -1,5 +1,4 @@
 ---
-name: nextjs-setup
 description: Set up Next.js 14+ App Router project with Server Components, metadata configuration, and production-ready best practices.
 ---
 

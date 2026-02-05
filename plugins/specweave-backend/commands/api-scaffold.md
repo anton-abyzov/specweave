@@ -1,5 +1,4 @@
 ---
-name: api-scaffold
 description: Generate production-ready backend API structure with authentication, database, and best practices
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: image-generation
 description: AI image generation using Pollinations.ai with Stable Horde fallback - FREE with no API key required. Use when generating hero images, icons, logos, illustrations, mockups, or any visual assets for websites and apps. Covers product shots, avatars, placeholders, and social media images with professional quality.
 allowed-tools:
   - Read
