@@ -1,5 +1,6 @@
 ---
 description: Disable automatic reflection on session end. Manual reflection still works. Activates for reflect off, disable reflect, stop auto reflect.
+disable-model-invocation: true
 ---
 
 # Reflect Off Command

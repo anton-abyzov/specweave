@@ -7,6 +7,7 @@ allowed-tools:
   - Bash
 context: fork
 model: opus
+disable-model-invocation: true
 ---
 
 # AI Image Generation Skill

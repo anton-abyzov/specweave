@@ -1,5 +1,6 @@
 ---
 description: Detect and fix status desyncs between metadata.json and spec.md
+disable-model-invocation: true
 ---
 
 # Sync Status - Desync Detection & Recovery

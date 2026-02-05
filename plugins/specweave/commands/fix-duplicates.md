@@ -1,5 +1,6 @@
 ---
 description: Automatically detect and resolve duplicate increments with smart conflict resolution
+disable-model-invocation: true
 ---
 
 # Fix Duplicate Increments

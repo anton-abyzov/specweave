@@ -1,5 +1,6 @@
 ---
 description: Translate SpecWeave project content to target language using LLM-native zero-cost translation
+disable-model-invocation: true
 ---
 
 # /sw:translate - Batch Translation Command

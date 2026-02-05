@@ -1,5 +1,6 @@
 ---
 description: Restore archived increments back to active folder
+disable-model-invocation: true
 ---
 
 # Restore Increment from Archive

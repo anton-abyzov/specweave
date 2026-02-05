@@ -1,5 +1,6 @@
 ---
 description: Migrate .env-only configuration to split secrets/config format
+disable-model-invocation: true
 ---
 
 Migrate your project from the old .env-only format to the new split format where secrets stay in `.env` (gitignored) and configuration moves to `.specweave/config.json` (committed to git).

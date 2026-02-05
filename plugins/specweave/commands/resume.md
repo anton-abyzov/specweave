@@ -1,6 +1,7 @@
 ---
 description: Resume a paused or backlog increment
 argument-hint: [increment-id]
+disable-model-invocation: true
 ---
 
 # Resume Increment Command

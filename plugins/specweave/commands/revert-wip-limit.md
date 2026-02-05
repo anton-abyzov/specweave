@@ -1,5 +1,6 @@
 ---
 description: Revert WIP limit to original value after temporary adjustment
+disable-model-invocation: true
 ---
 
 # Revert WIP Limit Command

@@ -1,5 +1,6 @@
 ---
 description: Reconcile increment ID collisions after multi-developer merge. Renumbers conflicting increments based on modification dates.
+disable-model-invocation: true
 ---
 
 # Reconcile Increment IDs

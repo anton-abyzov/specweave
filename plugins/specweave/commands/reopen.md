@@ -3,6 +3,7 @@ description: |
   Reopen completed increments, tasks, or user stories when issues are discovered.
   Validates WIP limits, creates audit trail, and syncs to external tools.
   Use when recently completed work has issues that need fixing.
+disable-model-invocation: true
 ---
 
 # Reopen Increment, Task, or User Story
