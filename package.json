@@ -21,7 +21,7 @@
     "test:unit": "vitest run tests/unit --coverage",
     "test:integration": "vitest run tests/integration --coverage",
     "test:lifecycle": "npm run test:unit && npm run test:integration",
-    "test:e2e:lifecycle": "vitest run tests/e2e/normal-session-lifecycle.e2e.ts tests/e2e/crash-recovery.e2e.ts tests/e2e/multiple-sessions.e2e.ts",
+    "test:e2e:lifecycle": "vitest run tests/e2e/crash-recovery.e2e.ts",
     "test:performance": "ts-node tests/performance/session-registry-bench.ts && bash tests/performance/heartbeat-overhead-bench.sh && ts-node tests/performance/compare-to-baseline.ts",
     "test:smoke": "bash tests/smoke/smoke-test.sh",
     "test:e2e": "vitest run tests/e2e",
