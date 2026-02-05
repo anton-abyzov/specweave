@@ -44,17 +44,14 @@ Run these checks on every SKILL.md:
 
 #### 2. Required Fields
 ```
-[  ] `name:` present (recommended)
 [  ] `description:` present (CRITICAL for activation)
 ```
 
-#### 3. Name Validation
-```
-[  ] Matches pattern: ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
-[  ] Max 64 characters
-[  ] No consecutive hyphens
-[  ] Matches directory name (if directory-based)
-```
+> **WARNING**: Do NOT use `name:` in SKILL.md frontmatter for plugin-based skills.
+> It causes Claude Code to strip the plugin namespace prefix (e.g., `/sw:grill` becomes `/grill`).
+> The skill name is derived from the directory name automatically.
+
+#### 3. Description Quality (moved up - name validation removed)
 
 #### 4. Description Quality
 ```
@@ -172,7 +169,7 @@ Comprehensive audit of ALL skills across project.
 
 | Issue | Auto-Fix |
 |-------|----------|
-| Missing frontmatter | Add minimal `---\nname: {from-filename}\ndescription: TODO\n---` |
+| Missing frontmatter | Add minimal `---\ndescription: TODO\n---` |
 | Name mismatch | Update to match directory name |
 | Invalid characters in name | Convert to kebab-case |
 | Missing description | Add placeholder with TODO marker |
@@ -314,7 +311,6 @@ mkdir -p .claude/skills/{skill-name}
 **Auto-activating skill**:
 ```yaml
 ---
-name: {skill-name}
 description: {description with "Activates for:" keywords}
 ---
 
@@ -355,7 +351,6 @@ Ask me about:
 **Command skill** (add frontmatter):
 ```yaml
 ---
-name: {skill-name}
 description: {description}
 disable-model-invocation: true
 ---
@@ -364,7 +359,6 @@ disable-model-invocation: true
 **Knowledge skill** (add frontmatter):
 ```yaml
 ---
-name: {skill-name}
 description: {description}
 user-invocable: false
 ---
@@ -373,7 +367,6 @@ user-invocable: false
 **With tool restrictions** (add frontmatter):
 ```yaml
 ---
-name: {skill-name}
 description: {description}
 allowed-tools: Read, Grep, Glob, WebSearch
 ---
@@ -383,11 +376,10 @@ allowed-tools: Read, Grep, Glob, WebSearch
 
 Check these before finishing:
 - [ ] SKILL.md starts with `---` on line 1
-- [ ] Has `name:` field (matches directory name)
 - [ ] Has `description:` field (includes "Activates for:")
 - [ ] Closing `---` present before markdown content
 - [ ] Description under 1024 characters
-- [ ] Name matches `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`
+- [ ] Does NOT have `name:` field (causes prefix stripping in plugins)
 
 ### Step 4: Show Next Steps
 
@@ -596,7 +588,7 @@ From https://code.claude.com/docs/en/skills:
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `name` | Recommended | string | Identifier (kebab-case, max 64 chars) |
+| `name` | **AVOID for plugins** | string | Strips plugin prefix! Only for standalone `~/.claude/skills/` |
 | `description` | Recommended | string | When to use (max 1024 chars, include keywords) |
 | `argument-hint` | Optional | string | Hint for arguments (e.g., `[issue-number]`) |
 | `disable-model-invocation` | Optional | boolean | Prevent Claude auto-loading (default: false) |
