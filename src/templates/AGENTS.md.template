@@ -486,7 +486,8 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 /sw-github:sync <increment-id>
 ```
 
-#### 5. Bidirectional Sync - PULL from External Tools ```bash
+#### 5. Bidirectional Sync - PULL from External Tools
+```bash
 # Claude hook: SessionStart (runs automatically)
 # For non-Claude tools, run manually to catch external changes:
 
@@ -505,7 +506,8 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # - After PM updates status in external tool
 ```
 
-#### 6. After Init on Brownfield Project ```bash
+#### 6. After Init on Brownfield Project
+```bash
 # SpecWeave automatically launches living-docs-builder job after init
 # For non-Claude tools, monitor it manually:
 

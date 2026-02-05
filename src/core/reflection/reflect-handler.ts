@@ -199,8 +199,7 @@ Respond with ONLY valid JSON (no markdown, no explanation):
 If NO high-value NEW learnings found (most sessions), return: {"skillLearnings": []}
 
 === SESSION TRANSCRIPT ===
-${transcript.slice(0, 8000)}
-${transcript.length > 8000 ? '\n... (truncated)' : ''}
+${transcript.length > 8000 ? '... (earlier content truncated)\n' : ''}${transcript.slice(-8000)}
 === END TRANSCRIPT ===`;
 }
 
@@ -244,9 +243,9 @@ async function extractLearningsViaLLM(
   }
 
   // Validate and filter learnings
+  // Keep ALL skills (known + unknown) - unknown skills go to CLAUDE.md overflow
   const validLearnings = (parsed.data.skillLearnings || [])
     .filter((l) => l.skill && l.learning)
-    .filter((l) => KNOWN_SKILLS.includes(l.skill as (typeof KNOWN_SKILLS)[number]) || l.skill === 'general')
     .slice(0, 5); // Max 5 learnings per extraction
 
   return {
@@ -702,7 +701,11 @@ export function formatReflectResult(result: ReflectResult): string {
 
   if (result.written.learningsAdded > 0) {
     lines.push(`✅ Added: ${result.written.learningsAdded} learning(s)`);
-    lines.push(`   → ${result.written.claudeMdPath}`);
+    if (result.written.claudeMdPath) {
+      lines.push(`   → ${result.written.claudeMdPath}`);
+    } else {
+      lines.push(`   → .specweave/skill-memories/`);
+    }
   } else {
     lines.push('⏭️  Nothing new to add');
   }

@@ -45,6 +45,14 @@ case "$script_name" in
     # Project detection may involve file scanning and optional LLM
     HOOK_TIMEOUT="${HOOK_TIMEOUT_SESSION_START:-20}"
     ;;
+  stop-auto.sh)
+    # May run tests + LLM evaluation + validation
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_STOP_AUTO:-120}"
+    ;;
+  stop-*.sh)
+    # Other stop hooks (reflect, sync, grill) are usually fast
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_STOP:-15}"
+    ;;
 esac
 
 # ============================================================================
@@ -69,7 +77,12 @@ PROJECT_ROOT=$(find_project_root)
 # Exit early if not a SpecWeave project (prevents .specweave pollution)
 if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
   # Not a SpecWeave project - output success JSON and exit
-  echo '{"continue": true}'
+  # Stop hooks need {"decision":"approve"}, others need {"continue":true}
+  if [[ "$script_name" == stop-* ]]; then
+    echo '{"decision":"approve"}'
+  else
+    echo '{"continue": true}'
+  fi
   exit 0
 fi
 
@@ -142,6 +155,10 @@ get_safe_output_with_warnings() {
     cat <<EOF
 {"decision":"allow","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
 EOF
+  elif [[ "$(basename "$script")" == stop-* ]]; then
+    cat <<EOF
+{"decision":"approve","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
+EOF
   else
     cat <<EOF
 {"continue":true,"warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
@@ -154,6 +171,8 @@ get_safe_output() {
   local script="$1"
   if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
     echo '{"decision":"allow","warnings":[]}'
+  elif [[ "$(basename "$script")" == stop-* ]]; then
+    echo '{"decision":"approve","warnings":[]}'
   else
     echo '{"continue":true,"warnings":[]}'
   fi

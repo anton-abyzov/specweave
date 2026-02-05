@@ -48,19 +48,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-reflect.sh"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-reflect.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "timeout": 15000
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-auto.sh"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-auto.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "timeout": 120000
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-sync.sh"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-sync.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "timeout": 15000
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-grill.sh"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-grill.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
+            "timeout": 15000
           }
         ]
       }
