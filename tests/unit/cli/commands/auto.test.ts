@@ -233,6 +233,8 @@ describe('Auto Command (Stop Hook Feedback Loop)', () => {
       // Create some state files
       fs.writeFileSync(path.join(stateDir, 'auto-mode.json'), '{}');
       fs.writeFileSync(path.join(stateDir, 'auto-session.json'), '{}');
+      fs.writeFileSync(path.join(stateDir, '.stop-auto-retry'), '{"count":5}');
+      fs.writeFileSync(path.join(stateDir, '.stop-auto-turns'), '12');
 
       const options: AutoCommandOptions = { reset: true };
       await handleAutoCommand(tempDir, [], options);
@@ -240,6 +242,8 @@ describe('Auto Command (Stop Hook Feedback Loop)', () => {
       // State files should be cleaned up
       expect(fs.existsSync(path.join(stateDir, 'auto-mode.json'))).toBe(false);
       expect(fs.existsSync(path.join(stateDir, 'auto-session.json'))).toBe(false);
+      expect(fs.existsSync(path.join(stateDir, '.stop-auto-retry'))).toBe(false);
+      expect(fs.existsSync(path.join(stateDir, '.stop-auto-turns'))).toBe(false);
     });
   });
 

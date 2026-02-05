@@ -401,6 +401,8 @@ function cleanupStateFiles(stateDir: string): void {
     'auto-needs-increment.json',
     '.stop-auto-dedup',
     '.stop-auto-last-fire',
+    '.stop-auto-retry',
+    '.stop-auto-turns',
   ];
 
   for (const file of filesToClean) {
