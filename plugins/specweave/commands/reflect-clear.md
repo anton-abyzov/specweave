@@ -1,5 +1,6 @@
 ---
 description: Clear specific learnings from CLAUDE.md Skill Memories section. Activates for reflect clear, clear learning, remove learning, delete memory.
+disable-model-invocation: true
 ---
 
 # Reflect Clear Command

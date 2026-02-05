@@ -1,5 +1,6 @@
 ---
 description: Manually archive completed increments and sync living docs - NEVER auto-archives, explicit user action only
+disable-model-invocation: true
 ---
 
 # Archive Increments (Manual Only)

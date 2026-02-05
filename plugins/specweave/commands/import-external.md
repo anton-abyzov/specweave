@@ -1,5 +1,6 @@
 ---
 description: AUTO-EXECUTE import of external work items (GitHub/JIRA/ADO) since last import. NO PROMPTS - immediately runs with defaults. Creates READ-ONLY references in living docs. Options available but NOT required.
+disable-model-invocation: true
 ---
 
 # Import External Work Items (Reference Import)

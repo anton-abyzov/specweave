@@ -1,6 +1,7 @@
 ---
 description: Abandon an incomplete increment (requirements changed, obsolete)
 argument-hint: [increment-id] --reason="reason"
+disable-model-invocation: true
 ---
 
 # Abandon Increment Command

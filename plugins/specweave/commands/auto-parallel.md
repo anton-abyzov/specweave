@@ -2,6 +2,7 @@
 description: Enable parallel agent execution for multi-domain features with git worktree isolation
 argument-hint: "[INCREMENT_ID] --frontend --backend [OPTIONS]"
 allowed-tools: ["Bash(specweave auto *)"]
+disable-model-invocation: true
 ---
 
 # Parallel Execution Mode
