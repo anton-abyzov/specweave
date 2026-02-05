@@ -35,7 +35,7 @@ else
 fi
 
 # Read stdin (Claude Code passes context here)
-INPUT=$(cat)
+cat > /dev/null  # Consume stdin (unused by this hook)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 
 # ============================================================================
@@ -66,6 +66,9 @@ LOG_FILE="$LOGS_DIR/stop-auto.log"
 
 log() {
     echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] $1" >> "$LOG_FILE" 2>/dev/null
+    if [ "${SPECWEAVE_DEBUG_HOOKS:-0}" = "1" ]; then
+        echo -e "\033[36m[stop-auto]\033[0m $1" >&2
+    fi
 }
 
 # ============================================================================
