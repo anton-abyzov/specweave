@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.230] - 2026-02-05
+
+### Changes
+- **Command consolidation**: Unified reflect (6->1), state management (4->1), removed quality-judge-v2
+- **Duplicate cleanup**: Removed 17 duplicate command files that had skill equivalents
+- **Context optimization**: Added `disable-model-invocation` to 27 niche/side-effect commands
+- **Plugin fix**: Removed `name:` field from all SKILL.md/command frontmatter (was stripping plugin prefix)
+
+---
+
+
+
 ## [1.0.228] - 2026-02-04
 
 ### 🚀 Features
