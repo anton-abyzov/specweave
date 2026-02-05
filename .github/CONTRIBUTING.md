@@ -394,7 +394,6 @@ plugins/specweave/agents/my-agent/
 **AGENT.md Format**:
 ```yaml
 ---
-name: my-agent
 description: What this agent does and when to use it. Include activation keywords.
 tools: Read, Write, Edit  # Optional: restrict tools
 model: opus  # Optional: specify model alias (opus, sonnet, haiku)
@@ -430,7 +429,6 @@ plugins/specweave/skills/my-skill/
 **SKILL.md Format**:
 ```yaml
 ---
-name: my-skill
 description: What this skill does. Include activation keywords users might say.
 allowed-tools: Read, Write, Edit  # Optional: restrict tools
 ---
@@ -451,7 +449,6 @@ This skill helps you...
 **Example**:
 ```yaml
 ---
-name: my-command
 description: What this command does
 ---
 
@@ -459,6 +456,11 @@ description: What this command does
 
 This command...
 ```
+
+> **WARNING: Do NOT use `name:` in YAML frontmatter** for plugin-based skills/commands.
+> The `name` field causes Claude Code to strip the plugin namespace prefix
+> (e.g., `/sw:grill` becomes `/grill`). Skill/command names are derived from
+> the directory name (skills) or filename (commands) automatically.
 
 **Must be**:
 - Framework-agnostic (adapts to ANY tech stack)
