@@ -33,13 +33,17 @@ jobs:
       - name: Check for auto-fix loop
         id: loop-check
         run: |
-          LAST_MSG=$(git log -1 --pretty=%s)
-          if echo "$LAST_MSG" | grep -q "^fix(ci):"; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Last commit was already an auto-fix attempt. Stopping to prevent loop."
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+          # Check last 2 commits for auto-fix patterns (handles merge, squash, and direct commits)
+          for i in 0 1; do
+            MSG=$(git log -1 --skip=$i --pretty=%s 2>/dev/null || echo "")
+            if echo "$MSG" | grep -qE "^fix\(ci\):|^Merge.*fix/ci-autofix"; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "Recent commit matches auto-fix pattern: $MSG"
+              echo "Stopping to prevent loop."
+              exit 0
+            fi
+          done
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Get failure logs
         if: steps.loop-check.outputs.skip != 'true'
@@ -79,6 +83,8 @@ jobs:
       - name: Auto-fix with Claude
         if: steps.loop-check.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
+        env:
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -90,7 +96,7 @@ jobs:
             2. Run `npm run test:unit` to reproduce locally
             3. Fix the root cause with minimal changes
             4. Verify the fix passes: `npm run test:unit && npm run test:e2e`
-            5. Commit and push
+            5. Create a PR with the fix (branch is protected, cannot push directly)
 
             ## Rules
 
@@ -99,15 +105,22 @@ jobs:
             - If unfixable, create a GitHub issue with label "ci-failure" explaining the problem
             - Commit message MUST start with "fix(ci): " followed by short description
             - No emoji, no AI references, no Co-Authored-By in commit messages
+            - Do NOT commit failure-logs.txt or any other non-source files
 
-            ## Commit and Push
+            ## Create Fix PR
 
             ```bash
-            git add -A
+            BRANCH_NAME="fix/ci-autofix-$(date +%s)"
+            git checkout -b "$BRANCH_NAME"
+            git add -u  # only tracked files
             git commit -m "fix(ci): <describe what was fixed>"
-            git push
+            git push -u origin "$BRANCH_NAME"
+            gh pr create \
+              --title "fix(ci): <describe what was fixed>" \
+              --body "Automated fix for CI failure. See workflow run for details." \
+              --base ${{ github.event.workflow_run.head_branch }}
             ```
-          claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
+          claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Bash(gh*),Read,Write,Edit,Glob,Grep"'
 
       - name: Create issue if auto-fix skipped (loop detected)
         if: steps.loop-check.outputs.skip == 'true'
