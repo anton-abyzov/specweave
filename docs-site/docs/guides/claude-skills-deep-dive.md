@@ -130,7 +130,6 @@ Skills contain domain knowledge independent of any specific codebase:
 **Example Skill (Front-End Design):**
 ```markdown
 ---
-name: frontend-design
 description: Typography standards, animation patterns, and layout
              conventions. Activates for UI components, styling,
              design system, typography, animations.
@@ -268,7 +267,6 @@ graph TB
 
 ```markdown
 ---
-name: team-coding-standards
 description: Company coding standards and conventions.
              Activates for new code, PR review, coding style,
              best practices, how we code.
@@ -305,7 +303,6 @@ User: "I'm new to the team. How should I structure my React components?"
 
 ```markdown
 ---
-name: security-checklist
 description: Security best practices for code review.
              Activates for PR review, security check,
              vulnerability scan, OWASP, security patterns.
@@ -347,7 +344,6 @@ User: "Review this PR for security issues"
 
 ```markdown
 ---
-name: data-analysis-patterns
 description: Team data analysis methodology and patterns.
              Activates for data analysis, SQL queries,
              analytics, reports, dashboards, metrics.
@@ -388,7 +384,6 @@ description: Team data analysis methodology and patterns.
 
 ```yaml
 ---
-name: my-skill-name        # lowercase, hyphens, max 64 chars
 description: |             # max 1024 chars, MUST include
   What this skill does.    # activation keywords!
   Activates for: keyword1, keyword2, keyword3.
@@ -415,6 +410,7 @@ description: |             # max 1024 chars, MUST include
 - Use consistent formatting
 
 **DON'T:**
+- Use `name:` in frontmatter for plugin-based skills (strips the plugin namespace prefix!)
 - Make skills too generic ("general programming")
 - Include project-specific details (use Claude.md for that)
 - Forget the YAML frontmatter
@@ -435,7 +431,6 @@ Limit what tools a skill can use:
 
 ```yaml
 ---
-name: read-only-helper
 description: Documentation lookup skill. Read-only.
 allowed-tools: Read, Grep, Glob
 ---
