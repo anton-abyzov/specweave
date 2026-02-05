@@ -1,5 +1,6 @@
 ---
 description: Import brownfield documentation from Notion exports, Confluence, GitHub Wiki, or any markdown folder. Automatically classifies files as specs, modules, team docs, or legacy.
+disable-model-invocation: true
 ---
 
 # Import Brownfield Documentation

@@ -1,5 +1,6 @@
 ---
 description: Manually synchronize acceptance criteria (AC) checkbox status in spec.md based on task completion
+disable-model-invocation: true
 ---
 
 # Sync Acceptance Criteria Status
