@@ -8,6 +8,12 @@
 # Implements self-healing for build/lint failures (max 3 retries)
 # Returns exit code 0 if ALL conditions pass, 1 if ANY fail
 #
+# STATUS: NOT YET WIRED into stop-auto.sh
+# This script exists but is never called from the stop hook.
+# stop-auto.sh has its own inline validate_increment() function.
+# This script reads auto-session.json which is not created by current auto.ts.
+# Wiring this into the stop hook pipeline is future work.
+#
 # Usage: validate-completion-conditions.sh <SESSION_FILE> <TRANSCRIPT_PATH>
 
 set -e
