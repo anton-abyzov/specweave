@@ -145,7 +145,20 @@ jobs:
           git push origin "v$NEW_VERSION"
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Check if version already published
+        id: check-published
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          if npm view "specweave@$VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Version $VERSION is already published on npm, skipping publish"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm
+        if: steps.check-published.outputs.already_published != 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}

@@ -18,22 +18,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install --ignore-scripts
-
-      - name: Build project
-        run: npm run build
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
 
       - name: Calculate DORA metrics
         id: calculate

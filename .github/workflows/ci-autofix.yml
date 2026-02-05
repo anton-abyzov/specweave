@@ -1,0 +1,133 @@
+name: CI Auto-Fix
+
+on:
+  workflow_run:
+    workflows: ["Test & Validate"]
+    types: [completed]
+    branches: [develop, main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: ci-autofix-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout failing branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 5
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for auto-fix loop
+        id: loop-check
+        run: |
+          LAST_MSG=$(git log -1 --pretty=%s)
+          if echo "$LAST_MSG" | grep -q "^fix(ci):"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Last commit was already an auto-fix attempt. Stopping to prevent loop."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Get failure logs
+        if: steps.loop-check.outputs.skip != 'true'
+        id: failure-logs
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+            let failedLogs = '';
+            for (const job of jobs.data.jobs) {
+              if (job.conclusion === 'failure') {
+                try {
+                  const logs = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    job_id: job.id
+                  });
+                  const logLines = logs.data.split('\n');
+                  failedLogs += `\n=== Job: ${job.name} ===\n${logLines.slice(-200).join('\n')}\n`;
+                } catch (e) {
+                  console.log(`Could not get logs for job ${job.id}: ${e.message}`);
+                }
+              }
+            }
+            const fs = require('fs');
+            fs.writeFileSync('failure-logs.txt', failedLogs || 'No detailed logs available');
+
+      - name: Setup and build
+        if: steps.loop-check.outputs.skip != 'true'
+        uses: ./.github/actions/setup-and-build
+
+      - name: Auto-fix with Claude
+        if: steps.loop-check.outputs.skip != 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            CI tests failed on the ${{ github.event.workflow_run.head_branch }} branch.
+
+            ## Instructions
+
+            1. Read failure-logs.txt for error details
+            2. Run `npm run test:unit` to reproduce locally
+            3. Fix the root cause with minimal changes
+            4. Verify the fix passes: `npm run test:unit && npm run test:e2e`
+            5. Commit and push
+
+            ## Rules
+
+            - ONLY fix test/build failures, do not refactor or improve unrelated code
+            - Keep changes minimal - just enough to make CI pass
+            - If unfixable, create a GitHub issue with label "ci-failure" explaining the problem
+            - Commit message MUST start with "fix(ci): " followed by short description
+            - No emoji, no AI references, no Co-Authored-By in commit messages
+
+            ## Commit and Push
+
+            ```bash
+            git add -A
+            git commit -m "fix(ci): <describe what was fixed>"
+            git push
+            ```
+          claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
+
+      - name: Create issue if auto-fix skipped (loop detected)
+        if: steps.loop-check.outputs.skip == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = `CI auto-fix failed: ${context.payload.workflow_run.head_branch}`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci-failure'
+            });
+            const alreadyExists = existing.data.some(i => i.title === title);
+            if (!alreadyExists) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: `Auto-fix was attempted but the previous commit was already an auto-fix.\n\nManual intervention required.\n\nFailed run: ${context.payload.workflow_run.html_url}`,
+                labels: ['ci-failure']
+              });
+            }

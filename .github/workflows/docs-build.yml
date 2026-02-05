@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: 'docs-site/package-lock.json'
 
@@ -41,7 +41,7 @@ jobs:
           cp README.md docs-site/docs/overview/readme.md
           # Add frontmatter for Docusaurus
           sed -i '1i---\nsidebar_position: 0\ntitle: README\ndescription: SpecWeave project overview from GitHub README\n---\n' docs-site/docs/overview/readme.md
-          echo "✅ Synced README.md to docs-site"
+          echo "Synced README.md to docs-site"
 
       - name: Build documentation
         run: |
@@ -56,19 +56,22 @@ jobs:
           fi
           echo "Build directory size:"
           du -sh docs-site/build
-          echo "Build contents:"
-          ls -la docs-site/build
 
-      - name: Upload build artifacts (for debugging)
+      - name: Upload docs build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: docs-build
+          path: docs-site/build
+          retention-days: 1
+
+      - name: Upload build logs (for debugging)
         if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: build-logs
-          path: |
-            docs-site/.docusaurus
-            docs-site/build
+          path: docs-site/.docusaurus
 
-  # Broken link checker for documentation PRs
+  # Broken link checker - reuses build artifact instead of rebuilding
   link-check:
     name: Check for Broken Links
     runs-on: ubuntu-latest
@@ -76,28 +79,14 @@ jobs:
     if: success()
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Download docs build artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'docs-site/package-lock.json'
+          name: docs-build
+          path: docs-site-build
 
-      - name: Install dependencies
+      - name: Serve and check links
         run: |
-          cd docs-site
-          npm ci
-
-      - name: Build and serve
-        run: |
-          cd docs-site
-          npm run build
-          npx serve build -l 3000 &
+          npx serve docs-site-build -l 3000 &
           sleep 5
-
-      - name: Check for broken links
-        run: |
           npx linkinator http://localhost:3000 --recurse --verbosity error --skip "github.com/anton-abyzov/specweave/edit"

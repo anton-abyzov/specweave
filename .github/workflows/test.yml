@@ -17,33 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.x'
-          # Disabled npm cache to ensure fresh install with new devDependencies
-          # cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Clean dist
-        run: rm -rf dist/
-
-      - name: TypeScript compile
-        run: npx tsc || (echo "TypeScript failed. Checking specific errors:" && npx tsc --noEmitOnError false 2>&1 | head -100)
-
-      - name: Copy locales
-        run: npm run copy:locales
-
-      - name: Copy plugins
-        run: npm run copy:plugins
-
-      - name: Copy hook deps
-        run: npm run copy:hook-deps
-
-      - name: Copy adapters
-        run: npm run copy:adapters
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
 
       - name: Link CLI globally
         run: npm link

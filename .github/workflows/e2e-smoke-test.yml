@@ -44,19 +44,10 @@ jobs:
           fi
 
       - name: Checkout SpecWeave
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install SpecWeave Dependencies
-        run: npm install
-
-      - name: Build SpecWeave
-        run: npm run build
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
 
       - name: Make Smoke Test Executable
         run: chmod +x tests/smoke/e2e-smoke-test.sh
@@ -191,19 +182,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build SpecWeave
-        run: npm run build
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
 
       - name: Make Smoke Test Executable
         run: chmod +x tests/smoke/e2e-smoke-test.sh

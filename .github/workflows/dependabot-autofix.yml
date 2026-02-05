@@ -156,9 +156,7 @@ jobs:
             After fixing, run:
             ```bash
             git add -A
-            git commit -m "fix(deps): auto-fix for dependabot update
-
-            🤖 Generated with Claude Code"
+            git commit -m "fix(deps): auto-fix for dependabot update"
             git push
             ```
           claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
