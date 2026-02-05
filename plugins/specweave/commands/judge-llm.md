@@ -306,9 +306,11 @@ Claude will:
 | **Scope** | Increments only | Any files |
 | **Input** | Increment ID | Files, git diff, context |
 | **Default Mode** | Standard | **ULTRATHINK** |
-| **Pattern** | 7-dimension scoring | Judge LLM reasoning |
+| **Pattern** | 7-dimension scoring + BMAD risk | Judge LLM reasoning |
 | **Focus** | Spec quality, risks | Code correctness |
 | **When** | Before increment close | After any work |
+
+> **Note**: The `increment-quality-judge-v2` command has been retired. Its BMAD risk scoring and quality gate logic are available through `/sw:qa` which uses the v2 assessment internally.
 
 ## Best Practices
 
