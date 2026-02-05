@@ -1,5 +1,4 @@
 ---
-name: plugin-validator
 description: Validates SpecWeave plugin installation when EXPLICITLY requested by user. Use for checking if plugins are installed correctly, validating marketplace registration, or troubleshooting missing plugins. Only triggers on explicit requests to avoid false positives during normal workflow.
 allowed-tools: Read, Bash, Grep
 ---

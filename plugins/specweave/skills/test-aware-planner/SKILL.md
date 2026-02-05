@@ -1,5 +1,4 @@
 ---
-name: test-aware-planner
 description: Generate tasks.md with embedded test plans in BDD format, one user story at a time to prevent crashes. Use for test-first task planning where each task includes Given/When/Then scenarios. Produces implementation tasks with inline test specifications.
 allowed-tools: Read, Write, Grep, Glob, Edit
 ---

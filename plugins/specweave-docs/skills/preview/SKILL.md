@@ -1,5 +1,4 @@
 ---
-name: preview
 description: Documentation view expert for Docusaurus integration. Launches interactive server for SpecWeave living documentation with hot reload, auto-generated sidebar, and Mermaid diagrams. Works in ANY SpecWeave project with auto-setup. Supports both internal (port 3015) and public (port 3016) docs. Activates for preview docs, view documentation, Docusaurus server, docs UI, documentation website, local docs server, hot reload docs, static site build.
 ---
 

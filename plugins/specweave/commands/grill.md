@@ -1,5 +1,4 @@
 ---
-name: grill
 description: Comprehensive implementation auditor - grills code quality, finds problems, and identifies improvements
 argument-hint: "[SCOPE] [--focus TYPE] [--full]"
 ---

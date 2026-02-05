@@ -1,5 +1,4 @@
 ---
-name: translator
 description: LLM-native translation skill that uses the current session for zero-cost SpecWeave content translation. Use when translating CLI messages, templates, documentation, or living docs to other languages. Supports multilingual output and internationalization workflows.
 allowed-tools: Read, Write, Edit, Grep, Glob
 user-invocable: false

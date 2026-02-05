@@ -1,5 +1,4 @@
 ---
-name: figma-tokens
 description: Extract design tokens from Figma and generate token files for theme configuration (CSS variables, JavaScript, JSON, SCSS).
 ---
 

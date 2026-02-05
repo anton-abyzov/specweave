@@ -1,5 +1,4 @@
 ---
-name: clone-repos
 description: Clone Azure DevOps repositories to local workspace. Use after init if cloning was skipped, or to add repos later.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: create
 description: Create JIRA issue from SpecWeave increment
 ---
 

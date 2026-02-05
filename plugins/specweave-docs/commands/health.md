@@ -1,5 +1,4 @@
 ---
-name: health
 description: Documentation health report - analyzes docs for freshness, coverage, naming violations, duplicates, and provides recommendations.
 ---
 

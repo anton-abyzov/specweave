@@ -1,5 +1,4 @@
 ---
-name: e2e-setup
 description: Set up comprehensive Playwright E2E testing with best practices, page objects, and CI/CD integration.
 ---
 

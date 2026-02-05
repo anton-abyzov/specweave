@@ -1,5 +1,4 @@
 ---
-name: diagrams-architect
 description: Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Use for architecture visualization.
 allowed-tools: Read, Write, Edit
 model: opus

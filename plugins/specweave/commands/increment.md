@@ -1,5 +1,4 @@
 ---
-name: increment
 description: Plan new Product Increment. Use when starting new features, hotfixes, or development work that needs specification.
 hooks:
   PreToolUse:

@@ -1,5 +1,4 @@
 ---
-name: component-generate
 description: Generate React/Vue/Angular components with tests, Storybook stories, and documentation following Atomic Design principles.
 ---
 

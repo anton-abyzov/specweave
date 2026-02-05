@@ -1,5 +1,4 @@
 ---
-name: code-explorer
 description: Deep codebase analysis expert that traces feature implementations across architecture layers. Use when exploring how a feature works, understanding data flow, or mapping module dependencies. Identifies entry points, traces call chains, and creates dependency maps from UI to database.
 allowed-tools: Read, Glob, Grep, Bash
 model: opus

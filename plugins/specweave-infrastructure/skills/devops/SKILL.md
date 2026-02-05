@@ -1,5 +1,4 @@
 ---
-name: devops
 description: DevOps and IaC expert for Terraform, Kubernetes, Docker, CI/CD pipelines, and deployment platform decisions (Vercel vs Cloudflare vs Hetzner). Generates infrastructure ONE COMPONENT AT A TIME to prevent crashes.
 allowed-tools: Read, Write, Edit, Bash
 model: opus

@@ -1,5 +1,4 @@
 ---
-name: deployment-generate
 description: Generate production-ready Kubernetes deployment manifests including Deployment, Service, ConfigMap, Secret, and HPA resources
 ---
 

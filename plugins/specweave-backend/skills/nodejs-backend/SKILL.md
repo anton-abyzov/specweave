@@ -1,5 +1,4 @@
 ---
-name: nodejs-backend
 description: Node.js/TypeScript backend developer for Express, Fastify, NestJS, and GraphQL. Use when building Node.js APIs, REST endpoints, GraphQL APIs, or backend services.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
