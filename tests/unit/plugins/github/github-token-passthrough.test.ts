@@ -36,6 +36,9 @@ describe('GitHub CLI Token Passthrough Pattern', () => {
 
   beforeEach(() => {
     originalEnv = { ...process.env };
+    // Clean up CI tokens to ensure test isolation
+    delete process.env.GH_TOKEN;
+    delete process.env.GITHUB_TOKEN;
   });
 
   afterEach(() => {
