@@ -1,6 +1,7 @@
 ---
 description: Create and validate Claude Code skills with proper YAML frontmatter. Use for skill creation, validation, and auditing. Activates for: create skill, validate skill, audit skills, check skills, skill format, SKILL.md.
 argument-hint: [--validate [path]] [--audit] [--name skill-name] [--type auto|command|knowledge]
+disable-model-invocation: true
 ---
 
 # Skill Creator & Validator
