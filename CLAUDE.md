@@ -495,7 +495,8 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 | **Completion** | `/sw:done` only (NEVER edit metadata.json) |
 | **Protected dirs** | NEVER delete `.specweave/docs/`, `.specweave/increments/` |
 | **Token budget** | ~80k/increment, max 25 tasks, max 1500 lines/file |
-| **Marketplace** | Contributors: `scripts/refresh-marketplace.sh` | Users: `specweave refresh-marketplace` |
+| **Marketplace** | Contributors: `scripts/refresh-marketplace.sh` \| Users: `specweave refresh-marketplace` |
+| **No `name:` in frontmatter** | NEVER use `name:` in SKILL.md/command frontmatter - it strips plugin prefix (`/sw:grill` → `/grill`) |
 
 ## Plugin Naming
 
