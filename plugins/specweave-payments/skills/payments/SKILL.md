@@ -1,5 +1,4 @@
 ---
-name: payments
 description: Payment integration expert for Stripe, PayPal, and marketplace payments (Stripe Connect). Checkout flows, webhooks, subscriptions, Direct/Destination Charge patterns, and idempotent payment processing.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

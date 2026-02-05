@@ -1,5 +1,4 @@
 ---
-name: release-coordinator
 description: Multi-repo release coordination - dependency management, release waves, RC lifecycle (alpha/beta/rc), brownfield detection, rollback planning. Use for synchronized releases or release strategy.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

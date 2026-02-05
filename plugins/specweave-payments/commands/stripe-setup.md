@@ -1,5 +1,4 @@
 ---
-name: stripe-setup
 description: Complete Stripe integration setup with checkout flows, payment intents, customer management, and security best practices
 ---
 

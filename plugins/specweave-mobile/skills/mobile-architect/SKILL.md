@@ -1,5 +1,4 @@
 ---
-name: mobile-architect
 description: React Native and Expo mobile architect. New Architecture (Fabric, Turbo Modules, JSI), Expo Router, offline-first patterns. Use for mobile app architecture and React Native design.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

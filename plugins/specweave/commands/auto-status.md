@@ -1,5 +1,4 @@
 ---
-name: auto-status
 description: Show current auto session status, progress, and any pending gates. Activates for: auto status, auto status, session status, check auto.
 ---
 

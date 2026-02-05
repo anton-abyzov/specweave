@@ -1,5 +1,4 @@
 ---
-name: cancel-auto
 description: EMERGENCY ONLY - Manually cancel running auto session. Generates summary report and releases lock. Activates for: cancel auto, stop auto, emergency cancel.
 ---
 

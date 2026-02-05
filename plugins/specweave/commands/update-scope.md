@@ -1,5 +1,4 @@
 ---
-name: update-scope
 description: Update living completion report with scope changes during increment execution
 ---
 

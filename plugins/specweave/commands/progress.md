@@ -1,5 +1,4 @@
 ---
-name: progress
 description: Show detailed progress for active increments with task/AC completion, priority, and type
 argument-hint: "[incrementId]"
 ---

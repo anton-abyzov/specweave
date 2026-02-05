@@ -1,5 +1,4 @@
 ---
-name: build-config
 description: Generate build configurations for iOS and Android mobile apps including Expo, EAS Build, environment variables, and CI/CD pipelines.
 ---
 

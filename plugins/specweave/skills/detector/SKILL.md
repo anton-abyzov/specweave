@@ -1,5 +1,4 @@
 ---
-name: detector
 description: Detects SpecWeave context and provides workflow documentation for available commands. Use when learning SpecWeave commands, understanding available slash commands (/sw:increment, /sw:do, /sw:progress, /sw:done), or getting workflow guidance. Explains command syntax and recommended workflow patterns.
 user-invocable: false
 ---

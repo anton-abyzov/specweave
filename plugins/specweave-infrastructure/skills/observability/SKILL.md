@@ -1,5 +1,4 @@
 ---
-name: observability
 description: Full-stack observability architect for Prometheus, Grafana, OpenTelemetry, distributed tracing (Jaeger/Tempo), SLIs/SLOs, error budgets, and alerting. Use for metrics, dashboards, traces, or reliability engineering.
 allowed-tools: Read, Write, Edit, Bash
 model: opus

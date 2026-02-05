@@ -1,5 +1,4 @@
 ---
-name: status
 description: Check JIRA sync status for SpecWeave increment
 ---
 

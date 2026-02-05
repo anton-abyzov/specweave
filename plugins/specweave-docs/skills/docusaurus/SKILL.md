@@ -1,5 +1,4 @@
 ---
-name: docusaurus
 description: Docusaurus 3.x documentation framework - MDX authoring, theming, versioning, i18n. Use for documentation sites or spec-weave.com.
 ---
 

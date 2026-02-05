@@ -1,5 +1,4 @@
 ---
-name: schema-register
 description: Register and manage Avro, JSON Schema, and Protobuf schemas in Confluent Schema Registry.
 ---
 

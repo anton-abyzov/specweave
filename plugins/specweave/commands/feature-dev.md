@@ -1,5 +1,4 @@
 ---
-name: feature-dev
 description: Feature Development Workflow - 7-phase structured approach for building features. Based on Anthropic's official feature-dev plugin. Activates for build feature, implement feature, feature development, feature workflow, structured development.
 argument-hint: "[FEATURE_DESCRIPTION]"
 ---

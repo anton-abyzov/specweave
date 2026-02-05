@@ -1,5 +1,4 @@
 ---
-name: cloud-pricing
 description: Expert knowledge of cloud provider pricing models for AWS, Azure, GCP covering compute, storage, database, networking, and serverless services. Includes 2025 pricing data, regional differences, free tiers, pricing calculators, and cost comparison across providers. Activates for cloud pricing, how much does it cost, price comparison, AWS vs Azure vs GCP pricing, pricing calculator, estimate costs, regional pricing, free tier, what's cheaper.
 ---
 

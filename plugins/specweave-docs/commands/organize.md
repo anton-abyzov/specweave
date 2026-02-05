@@ -1,5 +1,4 @@
 ---
-name: organize
 description: Smart documentation organization - generates themed navigation indexes for large folders. Works seamlessly with Docusaurus preview.
 ---
 

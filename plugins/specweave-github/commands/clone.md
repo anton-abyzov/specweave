@@ -1,5 +1,4 @@
 ---
-name: clone
 description: Clone GitHub repositories to local workspace. Use after init if cloning was skipped, to resume interrupted cloning, or to add repos later. Already-cloned repos are automatically skipped.
 ---
 

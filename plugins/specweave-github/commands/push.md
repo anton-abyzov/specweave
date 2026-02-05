@@ -1,5 +1,4 @@
 ---
-name: push
 description: Push local progress to GitHub Issues (like git push). Updates issue with task completion checklist.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: migrate-config
 description: Migrate .env-only configuration to split secrets/config format
 ---
 

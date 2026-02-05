@@ -1,5 +1,4 @@
 ---
-name: deploy
 description: Deploy Apache Kafka cluster using Terraform (Apache Kafka, AWS MSK, or Azure Event Hubs). Guides platform selection, sizing, and deployment.
 ---
 

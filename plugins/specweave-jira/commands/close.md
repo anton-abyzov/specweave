@@ -1,5 +1,4 @@
 ---
-name: close
 description: Close JIRA issue when increment complete
 ---
 

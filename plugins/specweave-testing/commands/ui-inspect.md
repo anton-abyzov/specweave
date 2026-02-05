@@ -1,5 +1,4 @@
 ---
-name: ui-inspect
 description: Inspect web page elements using browser automation to identify selectors, attributes, and structure for testing and scraping.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: self-validating-example
 description: Example skill demonstrating self-validating REST API generation with automatic test execution. Use as a template for creating skills with pre-tool-use validation hooks. Validates Node.js environment and dependencies before generating endpoints.
 user-invocable: false
 hooks:

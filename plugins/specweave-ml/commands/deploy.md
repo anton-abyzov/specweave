@@ -1,5 +1,4 @@
 ---
-name: ml-deploy
 description: Generate deployment artifacts (API, Docker, monitoring)
 ---
 

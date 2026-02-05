@@ -1,5 +1,4 @@
 ---
-name: build
 description: Build static documentation site for deployment. Validates docs first, auto-fixes issues, auto-setup on first run. Outputs production-ready HTML/CSS/JS.
 ---
 

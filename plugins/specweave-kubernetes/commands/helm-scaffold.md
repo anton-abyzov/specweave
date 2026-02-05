@@ -1,5 +1,4 @@
 ---
-name: helm-scaffold
 description: Generate production-ready Helm charts with best practices including Chart.yaml, values files, and deployment templates
 ---
 

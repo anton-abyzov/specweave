@@ -1,5 +1,4 @@
 ---
-name: status
 description: Check Azure DevOps sync status for increment
 ---
 

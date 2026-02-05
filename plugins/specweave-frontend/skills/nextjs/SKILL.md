@@ -1,5 +1,4 @@
 ---
-name: nextjs
 description: Expert in Next.js 14+ App Router, Server Components, and Server Actions. Use when building Next.js applications, implementing SSR/SSG, or configuring dynamic routing and data fetching. Covers streaming, caching strategies, middleware, and deployment optimization.
 ---
 

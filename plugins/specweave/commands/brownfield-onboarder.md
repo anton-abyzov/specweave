@@ -1,5 +1,4 @@
 ---
-name: brownfield-onboarder
 description: Intelligently onboards brownfield projects by merging existing CLAUDE.md backups into SpecWeave structure. Use when installing SpecWeave into existing projects with CLAUDE.md, merging documentation, or importing project knowledge. Distributes content to appropriate folders without bloating main CLAUDE.md.
 ---
 

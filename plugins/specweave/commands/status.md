@@ -1,5 +1,4 @@
 ---
-name: status
 description: Show increment status overview with rich details (active, backlog, paused, completed, abandoned)
 argument-hint: [--active|--backlog|--paused|--completed|--abandoned]
 ---

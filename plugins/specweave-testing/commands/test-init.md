@@ -1,5 +1,4 @@
 ---
-name: test-init
 description: Initialize comprehensive testing infrastructure with Vitest, Playwright, and testing best practices.
 ---
 

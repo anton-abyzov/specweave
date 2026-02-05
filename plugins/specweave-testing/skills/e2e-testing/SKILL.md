@@ -1,5 +1,4 @@
 ---
-name: e2e-testing
 description: End-to-end testing expert for Playwright, Cypress, visual regression (Percy, Chromatic), and UI testing. Use for E2E tests, browser automation, visual diffs, or debugging flaky tests.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

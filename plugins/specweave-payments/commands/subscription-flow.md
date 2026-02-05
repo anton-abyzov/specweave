@@ -1,5 +1,4 @@
 ---
-name: subscription-flow
 description: Implement complete subscription billing with pricing tiers, trials, upgrades/downgrades, proration, and lifecycle management
 ---
 

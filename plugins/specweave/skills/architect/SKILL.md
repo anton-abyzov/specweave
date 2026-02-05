@@ -1,5 +1,4 @@
 ---
-name: architect
 description: System architect for scalable, maintainable technical designs and architectural decisions. Use when designing system architecture, writing ADRs (Architecture Decision Records), or planning microservices and database structures. Covers trade-off analysis, component diagrams, and technology selection.
 allowed-tools: Read, Write, Edit
 context: fork

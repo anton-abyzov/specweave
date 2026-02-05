@@ -1,5 +1,4 @@
 ---
-name: version-aligner
 description: Multi-repo version alignment - lockstep/independent/umbrella strategies, semver constraints, version conflict detection.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: tdd-cycle
 description: Execute comprehensive TDD workflow with strict red-green-refactor discipline. Orchestrates test-first development with automated validation gates at each phase.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: connector-deploy
 description: Deploy and manage Kafka Connect source and sink connectors with configuration templates and deployment scripts.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: stakeholder-docs
 description: Executive documentation from technical living docs - business summaries, progress dashboards, feature status reports. Use for stakeholder communication.
 allowed-tools:
   - Read

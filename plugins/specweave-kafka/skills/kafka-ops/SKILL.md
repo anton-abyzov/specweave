@@ -1,5 +1,4 @@
 ---
-name: kafka-ops
 description: Kafka operations expert for deployment, monitoring, and tooling. Kubernetes (Strimzi, Confluent), Terraform IaC, Prometheus/Grafana observability, and CLI tools (kcat, kafkactl). Use for Kafka deployment, monitoring setup, or operational tasks.
 model: opus
 context: fork

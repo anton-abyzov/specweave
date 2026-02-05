@@ -1,5 +1,4 @@
 ---
-name: judge-llm
 description: Ultrathink LLM-as-Judge validation of completed work. Uses extended thinking by DEFAULT for thorough evaluation.
 ---
 

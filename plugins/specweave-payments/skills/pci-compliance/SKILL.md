@@ -1,5 +1,4 @@
 ---
-name: pci-compliance
 description: PCI DSS compliance expert for secure payment card handling and audit preparation. Use when implementing card tokenization, encrypting payment data, or preparing for PCI compliance audits. Covers SAQ levels, data minimization, access control, and audit logging requirements.
 ---
 

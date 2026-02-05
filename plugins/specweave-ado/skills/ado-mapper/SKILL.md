@@ -1,5 +1,4 @@
 ---
-name: ado-mapper
 description: Bidirectional conversion between SpecWeave increments and Azure DevOps work items. Use when exporting increments to ADO epics, importing ADO epics as increments, or resolving sync conflicts. Handles Epic/Feature/User Story/Task hierarchy mapping.
 allowed-tools: Read, Write, Edit, Bash
 model: opus

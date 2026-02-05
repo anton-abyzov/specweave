@@ -1,5 +1,4 @@
 ---
-name: validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
 hooks:
   Stop:

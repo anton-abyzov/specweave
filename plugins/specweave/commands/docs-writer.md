@@ -1,5 +1,4 @@
 ---
-name: docs-writer
 description: Technical documentation writer for clear, comprehensive docs with incremental generation to prevent crashes. Use when creating API documentation, README files, user guides, or developer onboarding docs. Generates one section at a time (Installation → Usage → API → Configuration).
 allowed-tools: Read, Write, Edit
 ---

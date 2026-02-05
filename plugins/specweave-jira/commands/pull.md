@@ -1,5 +1,4 @@
 ---
-name: pull
 description: Pull latest changes from Jira (like git pull). Imports status, priority, sprint, and comments.
 ---
 

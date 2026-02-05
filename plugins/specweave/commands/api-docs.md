@@ -1,5 +1,4 @@
 ---
-name: api-docs
 description: Generate and synchronize API documentation - OpenAPI spec, Postman collection with environments, and API client SDKs. Framework-aware with auto-detection. For API projects only.
 argument-hint: [--openapi] [--postman] [--all] [--validate]
 ---

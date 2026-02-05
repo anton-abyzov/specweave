@@ -1,5 +1,4 @@
 ---
-name: create
 description: Create Azure DevOps work item from SpecWeave increment
 ---
 

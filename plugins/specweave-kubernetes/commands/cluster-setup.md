@@ -1,5 +1,4 @@
 ---
-name: cluster-setup
 description: Set up a production-ready Kubernetes cluster with essential components including ingress, cert-manager, monitoring, and GitOps
 ---
 

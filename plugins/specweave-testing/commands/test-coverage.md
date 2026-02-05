@@ -1,5 +1,4 @@
 ---
-name: test-coverage
 description: Analyze test coverage, identify gaps, generate reports, and provide actionable quality metrics.
 ---
 

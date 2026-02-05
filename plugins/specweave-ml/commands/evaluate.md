@@ -1,5 +1,4 @@
 ---
-name: ml-evaluate
 description: Evaluate ML model with comprehensive metrics
 ---
 

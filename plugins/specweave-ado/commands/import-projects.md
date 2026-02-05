@@ -1,5 +1,4 @@
 ---
-name: import-projects
 description: Import additional Azure DevOps projects post-init with area path mapping, filtering, and dry-run preview
 ---
 

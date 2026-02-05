@@ -1,5 +1,4 @@
 ---
-name: frontend-design
 description: Frontend design expert for polished, production-ready UIs with distinctive visual characteristics and micro-interactions. Use when improving visual design, adding CSS animations, or polishing the UI with shadows, gradients, and transitions. Rejects generic AI aesthetics in favor of bold, distinctive design choices.
 allowed-tools: Read, Write, Edit, Glob, Grep
 model: opus

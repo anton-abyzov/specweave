@@ -1,5 +1,4 @@
 ---
-name: tech-lead
 description: Technical lead bridging architecture and implementation for code quality and guidance. Use when reviewing code, refactoring for maintainability, or breaking features into implementation tasks. Covers design patterns, SOLID principles, code organization, and technical debt management.
 allowed-tools: Read, Write, Edit, Bash
 context: fork

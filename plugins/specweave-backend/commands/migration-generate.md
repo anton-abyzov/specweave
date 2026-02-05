@@ -1,5 +1,4 @@
 ---
-name: migration-generate
 description: Generate database migration files for schema changes with up/down migrations and safety checks
 ---
 

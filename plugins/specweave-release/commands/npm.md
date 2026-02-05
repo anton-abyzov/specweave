@@ -1,5 +1,4 @@
 ---
-name: npm
 description: Full patch release - auto-commit, push, build, npm publish, AND GitHub Release creation. Use --quick for save+release (no GH release). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 

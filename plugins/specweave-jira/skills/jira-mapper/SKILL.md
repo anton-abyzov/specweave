@@ -1,5 +1,4 @@
 ---
-name: jira-mapper
 description: Expert in mapping SpecWeave increments to JIRA structure (Increment → Epic + Stories + Subtasks) with bidirectional sync. Use when exporting increments to JIRA, importing JIRA epics as increments, or configuring field mapping. Maintains traceability across systems.
 allowed-tools: Read, Write, Edit, Bash
 model: opus

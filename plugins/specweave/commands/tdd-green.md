@@ -1,5 +1,4 @@
 ---
-name: tdd-green
 description: Implement minimal code to make failing tests pass in TDD green phase. Focuses on simplicity and making tests green without over-engineering.
 ---
 

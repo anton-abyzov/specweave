@@ -1,5 +1,4 @@
 ---
-name: sync
 description: Two-way sync between SpecWeave increment and Azure DevOps work item (push & pull by default)
 ---
 

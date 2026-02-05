@@ -1,5 +1,4 @@
 ---
-name: kafka-architect
 description: Apache Kafka architecture expert for event-driven systems, cluster design, partition strategies, consumer groups, and event sourcing/CQRS patterns. Use when designing Kafka topics, planning data pipelines, or implementing event-driven architectures.
 model: opus
 context: fork

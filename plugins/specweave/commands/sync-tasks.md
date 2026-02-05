@@ -1,5 +1,4 @@
 ---
-name: sync-tasks
 description: Sync tasks.md with actual completion status (GitHub issue or reality check)
 ---
 
