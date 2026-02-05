@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.231] - 2026-02-05
+
+### Changes
+- **npm skill**: Convert `/sw:npm` from command to skill so it's invocable via Skill tool
+- **Auto hooks**: Fix fail-fast wrapper and completion validation hooks
+- **Reflection handler**: Improve reflect handler reliability
+
+---
+
 ## [1.0.230] - 2026-02-05
 
 ### Changes
