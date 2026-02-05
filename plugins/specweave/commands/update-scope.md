@@ -1,5 +1,6 @@
 ---
 description: Update living completion report with scope changes during increment execution
+disable-model-invocation: true
 ---
 
 # Update Increment Scope (Living Reports)

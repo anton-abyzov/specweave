@@ -1,6 +1,7 @@
 ---
 description: Move an increment to backlog (planned but not ready to start)
 argument-hint: [increment-id] --reason="reason"
+disable-model-invocation: true
 ---
 
 # Backlog Increment Command

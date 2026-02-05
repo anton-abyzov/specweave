@@ -1,6 +1,7 @@
 ---
 description: Pause an active increment (blocked by external dependency, deprioritized)
 argument-hint: [increment-id] --reason="reason"
+disable-model-invocation: true
 ---
 
 # Pause Increment Command
