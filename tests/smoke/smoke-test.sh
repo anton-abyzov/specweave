@@ -69,7 +69,7 @@ echo "📋 Test 4: Core Plugin Components"
 echo "----------------------------------"
 test_command "increment-planner command exists" "test -f $PROJECT_ROOT/plugins/specweave/commands/increment-planner.md"
 test_command "PM skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/pm/SKILL.md"
-test_command "increment command exists" "test -f $PROJECT_ROOT/plugins/specweave/commands/increment.md"
+test_command "state command exists" "test -f $PROJECT_ROOT/plugins/specweave/commands/state.md"
 test_command "hooks.json exists" "test -f $PROJECT_ROOT/plugins/specweave/hooks/hooks.json"
 echo ""
 
