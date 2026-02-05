@@ -1,5 +1,4 @@
 ---
-name: brownfield-analyzer
 description: Analyzes existing brownfield projects to map documentation to SpecWeave's structure (PRD/HLD/Spec/Runbook). Use when migrating existing projects to SpecWeave, scanning legacy docs, or creating project context maps. Detects external tools (JIRA, ADO, GitHub) and supports incremental or comprehensive migration paths.
 ---
 

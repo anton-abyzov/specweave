@@ -1,5 +1,4 @@
 ---
-name: github-issue-tracker
 description: Task-level GitHub issue tracking for fine-grained progress visibility via comments, checklists, and labels. Use when tracking detailed task progress in GitHub, managing team collaboration on specific tasks, or tracking blocking issues. Enables per-task updates and discussions.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: pm
 description: Product Manager for spec-driven development with SpecWeave conventions. Use when writing user stories, defining acceptance criteria, planning MVPs, or prioritizing features. Creates specs with proper AC-IDs, manages requirements, and maintains product roadmaps.
 allowed-tools: Read, Write, Grep, Glob
 context: fork

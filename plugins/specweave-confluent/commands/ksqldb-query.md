@@ -1,5 +1,4 @@
 ---
-name: ksqldb-query
 description: Generate ksqlDB queries for stream processing, aggregations, joins, and windowed operations.
 ---
 

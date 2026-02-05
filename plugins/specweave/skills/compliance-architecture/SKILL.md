@@ -1,5 +1,4 @@
 ---
-name: compliance-architecture
 description: Enterprise compliance architecture for SOC 2, HIPAA, GDPR, and PCI-DSS regulated systems. Use when designing compliant systems, preparing for audits, or implementing regulatory requirements. Covers compliance checklists, data protection controls, audit evidence collection, and security policies.
 ---
 

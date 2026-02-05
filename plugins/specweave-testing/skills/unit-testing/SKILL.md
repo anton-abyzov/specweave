@@ -1,5 +1,4 @@
 ---
-name: unit-testing
 description: Unit testing and TDD expert for Vitest/Jest. Red-green-refactor workflow, mocking strategies, coverage analysis, and ESM mocking patterns. Use for writing tests, implementing TDD, or setting up test coverage.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

@@ -1,5 +1,4 @@
 ---
-name: react-native-expert
 description: React Native and Expo expert for environment setup, Metro bundler, native modules, device testing, performance optimization, and debugging. Use for RN setup, build issues, or mobile debugging.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

@@ -1,5 +1,4 @@
 ---
-name: mlops-engineer
 description: MLOps expert for ML infrastructure and production systems. ML pipelines (Kubeflow, Airflow, Prefect), model registry, deployment (Docker, K8s, serverless), monitoring, and CI/CD for ML. Use for automated training, model deployment, or ML infrastructure.
 model: opus
 context: fork

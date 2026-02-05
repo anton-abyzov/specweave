@@ -1,5 +1,4 @@
 ---
-name: pause
 description: Pause an active increment (blocked by external dependency, deprioritized)
 argument-hint: [increment-id] --reason="reason"
 ---

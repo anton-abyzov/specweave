@@ -1,5 +1,4 @@
 ---
-name: frontend
 description: Expert frontend developer for React, Vue, Angular, and modern JavaScript/TypeScript. Use when creating components, implementing hooks, handling state management, or building responsive web interfaces. Covers React 18+ features, custom hooks, form handling, and accessibility best practices.
 ---
 

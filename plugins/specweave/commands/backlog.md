@@ -1,5 +1,4 @@
 ---
-name: backlog
 description: Move an increment to backlog (planned but not ready to start)
 argument-hint: [increment-id] --reason="reason"
 ---

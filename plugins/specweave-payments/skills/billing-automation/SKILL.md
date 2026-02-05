@@ -1,5 +1,4 @@
 ---
-name: billing-automation
 description: Automated billing systems for SaaS subscription management, invoicing, and payment recovery. Use when implementing recurring billing, automating invoice generation, or handling failed payment dunning. Covers proration calculations, billing cycle management, usage-based billing, and tax compliance (VAT/GST).
 ---
 

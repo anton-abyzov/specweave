@@ -1,5 +1,4 @@
 ---
-name: infrastructure
 description: Infrastructure-as-Code specialist for Terraform, AWS, Azure, and serverless architectures. Use when setting up cloud infrastructure, writing Terraform modules, or deploying to AWS Lambda/Vercel/Cloudflare. Covers VPC configuration, container orchestration, and CI/CD pipeline infrastructure.
 allowed-tools: Read, Write, Edit, Bash
 ---

@@ -1,5 +1,4 @@
 ---
-name: sync-progress
 description: Comprehensive progress sync - tasks.md → living docs → external tools (GitHub/JIRA/ADO). AUTO-CREATES missing external issues. Updates all systems with latest task completion status. TRUE single-button sync.
 ---
 
