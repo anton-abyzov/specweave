@@ -250,4 +250,4 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tested platforms:** Ubuntu, macOS, Windows" >> $GITHUB_STEP_SUMMARY
-          echo "**Node versions:** 18.x, 20.x" >> $GITHUB_STEP_SUMMARY
+          echo "**Node versions:** 20.x, 22.x" >> $GITHUB_STEP_SUMMARY
