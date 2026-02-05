@@ -80,6 +80,8 @@ describe('GitHub CLI Token Passthrough Pattern', () => {
     });
 
     it('should return process.env directly when no token provided', () => {
+      // Clear GH_TOKEN to test the undefined case
+      delete process.env.GH_TOKEN;
       process.env.CUSTOM_VAR = 'test_value';
 
       const getGhEnv = createGetGhEnv(undefined);
@@ -88,7 +90,7 @@ describe('GitHub CLI Token Passthrough Pattern', () => {
       // Should be the same reference as process.env
       expect(env).toBe(process.env);
       expect(env.CUSTOM_VAR).toBe('test_value');
-      // GH_TOKEN should not be set (unless it was in process.env)
+      // GH_TOKEN should not be set when it was deleted and no token provided
       expect(env.GH_TOKEN).toBeUndefined();
     });
 
