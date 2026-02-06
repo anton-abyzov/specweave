@@ -24,6 +24,16 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'overview/why-specweave',
+          label: 'Why SpecWeave?',
+        },
+        {
+          type: 'doc',
+          id: 'overview/claude-code-basics',
+          label: 'Claude Code Basics',
+        },
+        {
+          type: 'doc',
           id: 'overview/claude-code-architecture',
           label: 'Claude Code Architecture',
         },
@@ -397,7 +407,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'link',
-          label: 'All Skills (80+)',
+          label: 'All Skills (100+)',
           href: '/docs/reference/skills',
         },
         {
@@ -429,7 +439,7 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'reference/skills',
-          label: 'Skills Reference (80+)',
+          label: 'Skills Reference (100+)',
         },
         {
           type: 'doc',

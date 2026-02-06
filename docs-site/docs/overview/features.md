@@ -15,7 +15,7 @@ SpecWeave provides a comprehensive suite of tools and workflows for building pro
 | "Commit everything, push, and create a PR..." | `/sw:save` |
 
 **The expertise is built-in:**
-- 15+ AI agents work in parallel (PM, Architect, QA, Security, DevOps)
+- 68+ AI agents work in parallel (PM, Architect, QA, Security, DevOps) — powered by Claude Opus 4.6
 - Skills auto-activate when you mention keywords - no need to ask for expertise
 - Quality gates enforce senior dev practices automatically
 - Patterns learned once become defaults everywhere
@@ -173,7 +173,7 @@ See [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from
 
 ## 🤖 AI Agents & Skills
 
-### 11 Core Agents
+### 68+ Specialized Agents
 
 | Agent | Role | Expertise |
 |-------|------|-----------|

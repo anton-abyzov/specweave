@@ -16,18 +16,19 @@ description: "Choose the right model for each task"
 
 | Model | Best For | Cost | Speed |
 |-------|----------|------|-------|
-| **Opus 4.5** | All complex work (default) | $$$ | Best quality |
+| **Opus 4.6** | All complex work (latest, most capable) | $$$ | Best quality |
+| **Opus 4.5** | Complex work (previous generation) | $$$ | Best quality |
+| **Sonnet 4.5** | Balanced speed + capability | $$ | Fast |
 | **Haiku 4.5** | Quick lookups, simple edits | $ | Fastest |
-| **Sonnet 4** | Legacy (rarely needed) | $$ | Fast |
 
-> **Opus 4.5 is now best-in-class and the default.**
-> Use Haiku for mechanical tasks to save costs.
+> **Opus 4.6 is the most capable coding model available and the recommended default.**
+> Use Sonnet 4.5 for routine tasks. Use Haiku for mechanical tasks to save costs.
 
 ---
 
 ## When to Use Each Model
 
-### Opus 4.5
+### Opus 4.6 / 4.5
 
 ```
 ✅ Architecture decisions

@@ -262,7 +262,7 @@ const config: Config = {
               to: '/docs/getting-started',
             },
             {
-              label: 'Skills Reference (80+)',
+              label: 'Skills Reference (100+)',
               to: '/docs/reference/skills',
             },
             {

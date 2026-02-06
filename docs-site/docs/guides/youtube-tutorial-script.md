@@ -72,7 +72,9 @@ draft: true
 >
 > You know what else was a side project? Claude Code itself. The tool I'm using to build all of this? Created by Anthropic as almost an experiment. And now it's enabling this level of productivity.
 >
-> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Claude Code is that unlock.
+> And here's the thing — Anthropic just released Claude Opus 4.6 and Sonnet 4.5, and the leap in capability is staggering. Opus 4.6 is the most capable coding model we've ever worked with. It understands complex architectures, writes production-quality code, and reasons about tradeoffs like a staff engineer. SpecWeave leverages these models heavily — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is incredibly powerful.
+>
+> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Claude Code with Opus 4.6 is that unlock.
 >
 > If you want to see these apps in detail, I'll walk through them at the end of this video. But for now, understand this: all of these were built with SpecWeave. Every feature spec'd. Every decision documented. Every change traceable.
 >
@@ -577,6 +579,11 @@ ls .claude/hooks/
 │                CLAUDE CODE RECENT OPTIMIZATIONS                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
+│  CLAUDE MODELS (Jan-Feb 2026)                                        │
+│  • Claude Opus 4.6 — most capable coding model ever released        │
+│  • Claude Sonnet 4.5 — fast, accurate, great for routine tasks      │
+│  • SpecWeave uses Opus 4.6 for architecture + Sonnet 4.5 for speed  │
+│                                                                      │
 │  v2.1.6 (Jan 2026)                                                  │
 │  • Automatic skill discovery from nested directories                 │
 │  • Date range filtering in /stats                                   │
@@ -600,7 +607,9 @@ ls .claude/hooks/
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-> "The Claude Code team ships updates weekly. These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
+> "The Claude Code team ships updates weekly. And then there's the model side — Claude Opus 4.6 is a game-changer. It's the most capable coding model we've ever used. Complex multi-file refactors, architectural reasoning, understanding legacy codebases — Opus 4.6 handles it all. Pair it with Sonnet 4.5 for faster routine tasks, and you have an incredibly powerful duo. SpecWeave leverages both models depending on task complexity.
+>
+> These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
 
 ### 7.5 Claude Code Global Settings - Explanatory and Thinking
 
@@ -1162,7 +1171,7 @@ specweave init .
 >
 > **Second, STOP hooks** — and they work with subagents too. This means you can set up autonomous workflows where Claude spawns specialized agents, those agents do their work, and your stop hooks validate the results before allowing the session to complete. It's quality gates at every level of execution.
 >
-> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. With these new Claude Code capabilities, that future is here now. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
+> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. And with Claude Opus 4.6 now available, the quality of autonomous output has reached a new level entirely — it reasons about edge cases, handles complex refactors, and produces code that passes review on the first try. With these new Claude Code capabilities and Opus 4.6, that future is here now. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
 
 ---
 
@@ -2143,8 +2152,9 @@ specweave init .
 │    │  /sw:done 0001                            │       │
 │    └────────────────────────────────────────────┘       │
 │                                                          │
-│    140+ self-built features | 0% change failure rate    │
-│    136 skills | 68 agents | 53 commands                 │
+│    190+ self-built increments | 0% change failure rate   │
+│    100+ skills | 68 agents | 100+ commands               │
+│    Powered by Claude Opus 4.6 & Sonnet 4.5              │
 │                                                          │
 │    📖 spec-weave.com                                     │
 │    💬 discord.gg/UYg4BGJ65V                              │
@@ -2153,9 +2163,9 @@ specweave init .
 └─────────────────────────────────────────────────────────┘
 ```
 
-> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them.
+> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them. Powered by Claude Opus 4.6 — the most capable AI coding model available.
 >
-> Three commands to ship. 140+ features built with full traceability. Zero change failures.
+> Three commands to ship. 190+ increments built with full traceability. Zero change failures.
 >
 > Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice. Without a system, that knowledge disappears. With SpecWeave, it becomes permanent.
 >

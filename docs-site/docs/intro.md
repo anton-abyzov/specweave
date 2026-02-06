@@ -134,7 +134,7 @@ Run `/sw:auto` and watch AI work for **hours** without intervention:
 - **Self-healing** — Test fails? AI analyzes, fixes, retries
 - **Quality gates** — Won't ship until all checks pass
 - **Real-time visibility** — See exactly what's happening
-- **15+ specialized agents** — PM, Architect, QA, Security, DevOps
+- **68+ specialized agents** — PM, Architect, QA, Security, DevOps — powered by Claude Opus 4.6
 
 </div>
 <div className="auto-mode-terminal">
@@ -169,7 +169,7 @@ Run `/sw:auto` and watch AI work for **hours** without intervention:
 
 <div className="feature-card">
 <div className="feature-icon">🤖</div>
-<h3>15+ AI Agents</h3>
+<h3>68+ AI Agents</h3>
 <p>PM, Architect, Tech Lead, QA, Security, DevOps — all working together on your feature.</p>
 </div>
 
@@ -276,7 +276,7 @@ specweave init .
 **Requirements:** Node.js 20.12+ · Claude Code (VSCode or CLI) · Git
 
 :::tip Best Experience
-**Claude Code + Claude Opus 4.5** — native hooks, multi-hour sessions, quality gates work out of the box.
+**Claude Code + Claude Opus 4.6** — native hooks, multi-hour sessions, quality gates work out of the box.
 :::
 
 </div>

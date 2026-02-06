@@ -6,7 +6,7 @@ description: Complete reference for all SpecWeave skills organized by domain
 
 # Skills Reference
 
-SpecWeave provides **80+ specialized skills** that activate automatically based on context or can be invoked directly. Skills are more powerful than commands - they provide domain expertise, best practices, and guided workflows.
+SpecWeave provides **100+ specialized skills** that activate automatically based on context or can be invoked directly. Skills are more powerful than commands - they provide domain expertise, best practices, and guided workflows.
 
 :::tip Skills = Commands Now
 In Claude Code, skills and slash commands execute identically. Use `/sw:skill-name` to invoke any skill. Skills auto-activate when their keywords are detected in your prompts.

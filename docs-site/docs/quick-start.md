@@ -216,7 +216,7 @@ You just experienced **spec-driven development**:
 - [Multi-Project Setup](./guides/multi-project-setup) - Coordinate multiple repositories
 - [External Tools](./academy/specweave-essentials/07-external-tools) - GitHub/JIRA/ADO sync
 - [Hooks](/docs/glossary/terms/hooks) - Customize behavior
-- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) - 136 specialized skills
+- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) - 100+ specialized skills
 
 ### Real-World Examples
 

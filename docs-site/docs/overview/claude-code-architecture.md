@@ -145,7 +145,7 @@ my-plugin/
 | **sw-infra** | 5 | 5 | 1 | DevOps/SRE |
 | ... | | | | |
 
-**Total: 136 skills, 68 agents, 53 commands**
+**Total: 100+ skills, 68+ agents, 100+ commands**
 
 ---
 
@@ -643,5 +643,5 @@ SpecWeave works with any AI coding assistant. Each has different integration dep
   - *Global*: Cross-cutting (always fire)
   - *Skill-scoped*: Command-specific (~50% fewer invocations)
 
-SpecWeave bundles 24 plugins with 136 skills, 68 agents, 53 commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless.
+SpecWeave bundles 23 plugins with 100+ skills, 68+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.5.
 :::
