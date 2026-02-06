@@ -2,23 +2,23 @@
 ║      LSP (tsserver) vs GREP BENCHMARK RESULTS                 ║
 ╚═══════════════════════════════════════════════════════════════╝
 
-Timestamp: 2026-02-02T23:08:15.294Z
+Timestamp: 2026-02-06T01:56:16.310Z
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TEST 1: Find References Speed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  GREP times:     61.4ms, 70.5ms, 70.9ms, 68.6ms, 65.5ms
-  tsserver times: 1.5ms, 1.5ms, 1.0ms, 0.9ms, 0.7ms
-  Average GREP:     67.37 ms
-  Average tsserver: 1.12 ms
-  Speedup:          59.9x FASTER
+  GREP times:     67.1ms, 66.2ms, 71.0ms, 77.8ms, 65.9ms
+  tsserver times: 0.5ms, 0.2ms, 0.2ms, 0.2ms, 0.3ms
+  Average GREP:     69.59 ms
+  Average tsserver: 0.27 ms
+  Speedup:          254.7x FASTER
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TEST 2: Accuracy - "read" symbol
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  GREP matches (text):      259 matches
+  GREP matches (text):      244 matches
   tsserver refs (semantic): 32 references
-  False positives avoided:  227
+  False positives avoided:  212
 
   Why? Grep matches: read, readFile, readFileSync, readdir, etc.
   tsserver only matches actual MetadataManager.read() calls.

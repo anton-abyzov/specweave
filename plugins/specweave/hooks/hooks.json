@@ -60,11 +60,6 @@
             "type": "command",
             "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-sync.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
             "timeout": 15000
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/stop-grill.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"approve\\\"}\")'",
-            "timeout": 15000
           }
         ]
       }
