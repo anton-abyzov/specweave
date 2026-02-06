@@ -156,6 +156,14 @@ async function updateFile(
       console.log(chalk.gray('    Would add: ' + result.added.join(', ')));
     }
   } else {
+    // Create backup before overwriting (safety net for merge issues)
+    if (existingContent) {
+      try {
+        fs.writeFileSync(filePath + '.bak', existingContent);
+      } catch {
+        // Non-fatal: proceed even if backup fails
+      }
+    }
     fs.writeFileSync(filePath, result.content);
 
     if (result.action === 'created') {
