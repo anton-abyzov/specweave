@@ -108,7 +108,7 @@ Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, a
 | **Living Documentation** | Specs auto-update after every task via hooks—never drift from code | ⭐ Unique |
 | **External Sync** | Push specs to GitHub/JIRA/ADO, read status back—keep existing workflows | Strong |
 | **Quality Gates** | Three-gate validation (tasks + 60%+ tests + docs) before closing | Strong |
-| **15+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously | Good |
+| **68+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously (Claude Opus 4.6) | Good |
 | **Universal Stack** | Works with ANY tech stack and ANY AI tool (Claude, Cursor, Copilot) | Expected |
 
 ## What You Get vs. Current State

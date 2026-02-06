@@ -2,7 +2,7 @@
 
 **The Enterprise Layer for AI Coding.**
 
-*Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Ship features while you sleep.*
+*Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Powered by Claude Opus 4.6. Ship features while you sleep.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -111,7 +111,7 @@ Enable Deep Interview Mode? [y/N]
 
 Inspired by [Thariq's workflow](https://x.com/trq212/status/2005315275026260309) (Claude Code creator): *"For big features Claude might ask me 40+ questions and I end up with a much more detailed spec."*
 
-### 15+ AI Agents Working Together
+### 68+ AI Agents Working Together
 
 | Agent | Role |
 |-------|------|
@@ -121,7 +121,7 @@ Inspired by [Thariq's workflow](https://x.com/trq212/status/2005315275026260309)
 | **Security** | OWASP review, vulnerability scanning |
 | **DevOps** | CI/CD, infrastructure, deployment |
 
-Agents auto-activate based on context. Mention "security" → security expertise loads.
+Agents auto-activate based on context. Mention "security" → security expertise loads. Best results with Claude Opus 4.6 and Sonnet 4.5.
 
 ### LSP Integration (100x Faster Code Understanding)
 
@@ -201,7 +201,7 @@ Then:
 | `/sw:sync-progress` | Push to GitHub/JIRA/ADO |
 | `/sw:next` | Auto-close + suggest next |
 
-**[53 total commands →](https://spec-weave.com/docs/commands/overview)**
+**[100+ total commands →](https://spec-weave.com/docs/commands/overview)**
 
 ---
 
@@ -249,7 +249,7 @@ Run `specweave update` - this fixes 98% of issues (updates CLI, plugins, and ins
 ## Requirements
 
 - **Node.js 20.12.0+** (recommend 22 LTS)
-- Any AI coding tool (Claude Code recommended)
+- Any AI coding tool (Claude Code with Opus 4.6 recommended)
 - Git repository
 
 ---
@@ -259,7 +259,7 @@ Run `specweave update` - this fixes 98% of issues (updates CLI, plugins, and ins
 > This framework builds itself. Every feature, bug fix, and release is spec-driven.
 
 [![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
-[![Features](https://img.shields.io/badge/Features-140+-blue)](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)
+[![Features](https://img.shields.io/badge/Features-190+-blue)](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)
 
 **[Browse our increments →](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
 

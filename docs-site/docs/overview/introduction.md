@@ -39,7 +39,7 @@ Every app needs the same things: auth, tests, docs, deployment. Without SpecWeav
 
 SpecWeave isn't just shortcuts - it's **encapsulated expertise**:
 
-- **15+ AI agents** (PM, Architect, QA, Security) work in parallel
+- **68+ AI agents** (PM, Architect, QA, Security) work in parallel, powered by Claude Opus 4.6
 - **Skills auto-activate** - mention "security" and security expertise loads
 - **Quality gates** enforce what senior devs know: tests before merge, docs before close
 
@@ -154,7 +154,7 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 
 | Feature | Benefit |
 |---------|---------|
-| **15+ AI Agents** | [PM](/docs/glossary/terms/pm-agent), [Architect](/docs/glossary/terms/architect-agent), [Tech Lead](/docs/glossary/terms/tech-lead-agent), [QA](/docs/glossary/terms/qa-lead-agent), Security, DevOps work autonomously |
+| **68+ AI Agents** | [PM](/docs/glossary/terms/pm-agent), [Architect](/docs/glossary/terms/architect-agent), [Tech Lead](/docs/glossary/terms/tech-lead-agent), [QA](/docs/glossary/terms/qa-lead-agent), Security, DevOps work autonomously (Claude Opus 4.6) |
 | **[Living Documentation](/docs/glossary/terms/living-docs)** | Specs auto-update after every task via [hooks](/docs/glossary/terms/hooks) |
 | **70% Token Reduction** | Context precision loads only what you need |
 | **[Quality Gates](/docs/glossary/terms/quality-gate)** | Three-gate validation before closing [increments](/docs/glossary/terms/increments) |
