@@ -179,10 +179,10 @@ describe('ConfigManager', () => {
       // The comprehensive DEFAULT_CONFIG should include testing settings
       const config = DEFAULT_CONFIG as any;
       expect(config.testing).toBeDefined();
-      expect(config.testing.defaultTestMode).toBe('test-after');
-      expect(config.testing.defaultCoverageTarget).toBe(50);
+      expect(config.testing.defaultTestMode).toBe('TDD');
+      expect(config.testing.defaultCoverageTarget).toBe(90);
       expect(config.testing.coverageTargets).toBeDefined();
-      expect(config.testing.coverageTargets.unit).toBe(55);
+      expect(config.testing.coverageTargets.unit).toBe(95);
     });
 
     it('should have limits config in DEFAULT_CONFIG', () => {

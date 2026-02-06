@@ -35,8 +35,7 @@ Quality gates auto-enforce - no manual intervention needed:
 |-----------|------|-------------|
 | `task-ac-sync` | PostToolUse guard | Task completion → auto-updates spec.md ACs |
 | `tdd-enforcement` | PostToolUse guard | Blocks GREEN tasks if RED not done (strict mode) |
-| `grill-gate` | `/sw:done` validator | Blocks closure if `/sw:grill` marker missing |
-| `stop-grill` | Stop hook | Reminds to run `/sw:grill` at session end |
+| `grill` | Inline in `/sw:done` | Runs `/sw:grill` as first closure step; blockers halt close |
 | `living-specs` | Lifecycle handler | Updates docs on increment done/reopened/archived |
 
 <!-- SW:SECTION:skill-chaining version="1.0.179" -->

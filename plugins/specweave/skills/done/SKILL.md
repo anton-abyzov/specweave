@@ -73,35 +73,18 @@ Contributors closing SpecWeave features need reminders about:
 
 ---
 
-### Step 0.5: Grill Validation (MANDATORY)
+### Step 0.5: Inline Grill Review (MANDATORY)
 
-**🔥 CRITICAL: Code grill must pass before closure!**
+**🔥 CRITICAL: Run code grill before closure!**
 
-Before proceeding with PM validation, check that the code grill has been completed:
+Before proceeding with PM validation, run `/sw:grill {incrementId}` inline:
 
-```typescript
-import { IncrementCompletionValidator } from '../../../src/core/increment/completion-validator.js';
+1. Check config: `jq -r '.grill.required // true' .specweave/config.json` — if `false`, skip grill
+2. Invoke `/sw:grill {incrementId}` (the full grill skill, not just a check)
+3. If grill finds **BLOCKERs or CRITICALs** → **STOP closure**, show findings, ask user to fix
+4. If grill passes (no blockers) → continue to Step 0.6
 
-// Check grill marker exists
-const grillResult = await IncrementCompletionValidator.validateGrillPassed(incrementId);
-
-if (!grillResult.passed) {
-  console.error('❌ CANNOT CLOSE INCREMENT - Grill not completed');
-  console.error('');
-  console.error(grillResult.error);
-  console.error('');
-  console.error('Run: /sw:grill ' + incrementId);
-  process.exit(1);
-}
-
-console.log('✅ Grill passed - proceeding to validation');
-```
-
-**Why grill is mandatory**:
-- Catches bugs before users do
-- Finds security vulnerabilities
-- Identifies performance issues
-- Ensures maintainability standards
+**No marker files needed** — grill runs fresh each time as part of `/sw:done`.
 
 **To disable** (not recommended): Set `{ "grill": { "required": false } }` in `.specweave/config.json`
 
