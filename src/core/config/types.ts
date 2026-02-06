@@ -7,6 +7,8 @@
  */
 
 import type { SyncOrchestrationConfig } from '../types/sync-config.js';
+import type { PluginConfig } from '../types/plugin.js';
+import { IncrementType } from '../types/increment-metadata.js';
 
 /**
  * Repository provider types
@@ -254,8 +256,11 @@ export interface HookConfiguration {
  * Project metadata
  */
 export interface ProjectMetadata {
-  name: string;
-  version: string;
+  name?: string;
+  version?: string;
+  description?: string;
+  techStack?: string[];
+  team?: string;
 }
 
 /**
@@ -420,6 +425,14 @@ export interface ProjectMapping {
 export type ProjectMappings = Record<string, ProjectMapping>;
 
 /**
+ * Backward-compatible aliases for mapping types
+ * @deprecated Use GitHubProjectMapping, JiraProjectMapping, AdoProjectMapping
+ */
+export type GitHubMapping = GitHubProjectMapping;
+export type JiraMapping = JiraProjectMapping;
+export type AdoMapping = AdoProjectMapping;
+
+/**
  * Supported languages for SpecWeave
  * Re-exported here for config type completeness
  */
@@ -500,6 +513,209 @@ export interface TranslationConfiguration {
    */
   keepEnglishOriginals: boolean;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Interfaces consolidated from src/core/types/config.ts (0188)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Testing mode options
+ */
+export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
+
+/**
+ * TDD Enforcement Level
+ * @since 1.0.111
+ */
+export type TDDEnforcement = 'strict' | 'warn' | 'off';
+
+/**
+ * Coverage target configuration
+ */
+export interface CoverageTargets {
+  unit: number;
+  integration: number;
+  e2e: number;
+}
+
+/**
+ * Testing configuration
+ */
+export interface TestingConfig {
+  defaultTestMode: TestMode;
+  defaultCoverageTarget: number;
+  coverageTargets: CoverageTargets;
+  tddEnforcement?: TDDEnforcement;
+}
+
+/**
+ * WIP Limits Configuration (v0.7.0+)
+ */
+export interface LimitsConfig {
+  maxActiveIncrements?: number;
+  hardCap?: number;
+  allowEmergencyInterrupt?: boolean;
+  typeBehaviors?: {
+    canInterrupt?: (IncrementType | string)[];
+    autoAbandonDays?: {
+      experiment?: number;
+    };
+  };
+  staleness?: {
+    paused?: number;
+    active?: number;
+  };
+}
+
+/**
+ * Global command deduplication configuration (v0.17.18+)
+ */
+export interface DeduplicationConfig {
+  enabled?: boolean;
+  windowMs?: number;
+  maxCacheSize?: number;
+  debug?: boolean;
+  cleanupIntervalMs?: number;
+}
+
+/**
+ * Archiving Configuration
+ */
+export interface ArchivingConfig {
+  keepLast?: number;
+  autoArchive?: boolean;
+  archiveAfterDays?: number;
+  preserveActive?: boolean;
+  archiveCompleted?: boolean;
+  archivePatterns?: string[];
+  preserveList?: string[];
+}
+
+/**
+ * Living Docs Configuration (v0.21.4+)
+ */
+export interface LivingDocsConfig {
+  copyBasedSync?: {
+    enabled?: boolean;
+    autoGenerate?: boolean;
+  };
+  threeLayerSync?: {
+    enabled?: boolean;
+    autoSync?: boolean;
+  };
+}
+
+/**
+ * API Documentation Configuration (v1.0.58+)
+ */
+export interface ApiDocsConfig {
+  enabled?: boolean;
+  openApiPath?: string;
+  autoGenerateOpenApi?: boolean;
+  generatePostman?: boolean;
+  postmanPath?: string;
+  postmanEnvPath?: string;
+  generateOn?: 'on-increment-done' | 'on-api-change' | 'manual';
+  watchPatterns?: string[];
+  baseUrl?: string;
+}
+
+/**
+ * Plugin Auto-Load Configuration (v1.0.140+)
+ */
+export interface PluginAutoLoadConfig {
+  enabled?: boolean;
+}
+
+/**
+ * Increment Assist Configuration (v1.0.141+)
+ */
+export interface IncrementAssistConfig {
+  enabled?: boolean;
+  suggestNewIncrement?: boolean;
+  suggestReopen?: boolean;
+  confidenceThreshold?: number;
+  mandatory?: boolean;
+}
+
+/**
+ * Deep Interview Mode Configuration (v1.0.195+)
+ */
+export interface DeepInterviewConfig {
+  enabled?: boolean;
+  minQuestions?: number;
+  categories?: Array<'architecture' | 'integrations' | 'ui-ux' | 'performance' | 'security' | 'edge-cases'>;
+}
+
+/**
+ * Planning Configuration (v1.0.195+)
+ */
+export interface PlanningConfig {
+  deepInterview?: DeepInterviewConfig;
+}
+
+/**
+ * CI/CD Configuration (v1.0.231+)
+ * Controls push strategy, auto-fix behavior, and monitoring defaults.
+ * The cicd config-loader reads from this section first, then falls back to env vars.
+ */
+export interface CiCdConfig {
+  /** Push strategy: 'direct' pushes to branch, 'pr-based' creates pull requests */
+  pushStrategy: 'direct' | 'pr-based';
+  /** Auto-fix configuration for CI failures */
+  autoFix: {
+    /** Enable automatic fix attempts on CI failure */
+    enabled: boolean;
+    /** Maximum retry attempts before giving up */
+    maxRetries: number;
+    /** Branches where auto-fix is allowed */
+    allowedBranches: string[];
+  };
+  /** Monitoring configuration (optional, overrides env vars) */
+  monitoring?: {
+    /** Poll interval in milliseconds */
+    pollInterval: number;
+    /** Auto-notify on workflow completion */
+    autoNotify: boolean;
+  };
+}
+
+/**
+ * Multi-Project Configuration (v1.0.0+)
+ */
+export interface MultiProjectConfig {
+  enabled?: boolean;
+  projects?: Record<string, ProjectConfig>;
+}
+
+/**
+ * Individual Project Configuration
+ */
+export interface ProjectConfig {
+  id?: string;
+  name: string;
+  description?: string;
+  keywords?: string[];
+  techStack?: string[];
+  team?: string;
+  externalTools?: {
+    github?: { repository?: string };
+    jira?: { project?: string };
+    ado?: { project?: string };
+  };
+}
+
+/**
+ * Adapter configuration (rich version from types/config.ts)
+ */
+export interface AdapterConfig {
+  default?: 'claude' | 'cursor' | 'generic';
+  [key: string]: any;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// End consolidated interfaces
+// ═══════════════════════════════════════════════════════════════════
 
 /**
  * Main SpecWeave configuration
@@ -585,32 +801,201 @@ export interface SpecWeaveConfig {
    * ```
    */
   projectMappings?: ProjectMappings;
+
+  // Fields consolidated from src/core/types/config.ts (0188)
+
+  /** Plugin configuration */
+  plugins?: PluginConfig;
+
+  /** Multi-project configuration (v1.0.0+) */
+  multiProject?: MultiProjectConfig;
+
+  /** Testing configuration */
+  testing?: TestingConfig;
+
+  /** WIP limits configuration */
+  limits?: LimitsConfig;
+
+  /** Global command deduplication configuration (v0.17.18+) */
+  deduplication?: DeduplicationConfig;
+
+  /** Archiving configuration for increment management */
+  archiving?: ArchivingConfig;
+
+  /** Living docs configuration (v0.21.4+) */
+  livingDocs?: LivingDocsConfig;
+
+  /** API documentation configuration (v1.0.58+) */
+  apiDocs?: ApiDocsConfig;
+
+  /** Plugin auto-load configuration (v1.0.140+) */
+  pluginAutoLoad?: PluginAutoLoadConfig;
+
+  /** Increment assist configuration (v1.0.141+) */
+  incrementAssist?: IncrementAssistConfig;
+
+  /** Planning configuration including deep interview mode (v1.0.195+) */
+  planning?: PlanningConfig;
+
+  /** CI/CD configuration (v1.0.231+) */
+  cicd?: CiCdConfig;
+
+  /** Allow additional properties for forward compatibility */
+  [key: string]: any;
 }
+
+/**
+ * Backward-compatible alias for SpecWeaveConfig
+ * @deprecated Use SpecWeaveConfig from src/core/config/types.ts instead
+ */
+export type SpecweaveConfig = SpecWeaveConfig;
 
 /**
  * Default configuration values
  */
 export const DEFAULT_CONFIG: SpecWeaveConfig = {
   version: '2.0',
+  language: 'en',
+  translation: {
+    enabled: false,
+    languages: ['en'],
+    primary: 'en',
+    method: 'auto',
+    preserveFrameworkTerms: true,
+    scope: {
+      incrementSpecs: false,
+      livingDocs: false,
+      externalSync: false,
+    },
+    keepEnglishOriginals: false,
+  },
+  adapters: {
+    default: 'claude',
+  },
   repository: {
-    provider: 'local'
+    provider: 'local',
   },
   issueTracker: {
-    provider: 'none'
+    provider: 'none',
+  },
+  testing: {
+    defaultTestMode: 'test-after',
+    defaultCoverageTarget: 50,
+    coverageTargets: {
+      unit: 55,
+      integration: 50,
+      e2e: 60,
+    },
+  },
+  limits: {
+    maxActiveIncrements: 1,
+    hardCap: 3,
+    allowEmergencyInterrupt: true,
+    typeBehaviors: {
+      canInterrupt: [IncrementType.HOTFIX, IncrementType.BUG],
+      autoAbandonDays: {
+        experiment: 14,
+      },
+    },
+    staleness: {
+      paused: 7,
+      active: 30,
+    },
+  },
+  deduplication: {
+    enabled: true,
+    windowMs: 1000,
+    maxCacheSize: 1000,
+    debug: false,
+    cleanupIntervalMs: 60000,
+  },
+  archiving: {
+    keepLast: 5,
+    autoArchive: false,
+    archiveAfterDays: 60,
+    preserveActive: true,
+    archiveCompleted: false,
+    archivePatterns: [],
+    preserveList: [],
+  },
+  livingDocs: {
+    copyBasedSync: {
+      enabled: true,
+      autoGenerate: true,
+    },
+    threeLayerSync: {
+      enabled: true,
+      autoSync: true,
+    },
+  },
+  apiDocs: {
+    enabled: false,
+    openApiPath: 'openapi.yaml',
+    autoGenerateOpenApi: true,
+    generatePostman: true,
+    postmanPath: 'postman-collection.json',
+    postmanEnvPath: 'postman-environment.json',
+    generateOn: 'on-increment-done',
+    watchPatterns: [
+      '**/routes/**',
+      '**/controllers/**',
+      '**/api/**',
+      '**/endpoints/**',
+    ],
+    baseUrl: 'http://localhost:3000',
+  },
+  hooks: {
+    post_task_completion: {
+      sync_living_docs: true,
+      sync_tasks_md: true,
+      external_tracker_sync: true,
+    },
   },
   sync: {
     enabled: false,
     direction: 'bidirectional',
     autoSync: false,
     includeStatus: true,
-    autoApplyLabels: true
+    autoApplyLabels: true,
   },
   statusLine: {
     enabled: true,
-    maxCacheAge: 30000, // 30 seconds
+    maxCacheAge: 30000,
     progressBarWidth: 8,
-    maxNameLength: 30
-  }
+    maxNameLength: 30,
+  },
+  pluginAutoLoad: {
+    enabled: true,
+  },
+  incrementAssist: {
+    enabled: true,
+    suggestNewIncrement: true,
+    suggestReopen: true,
+    confidenceThreshold: 0.7,
+    mandatory: false,
+  },
+  planning: {
+    deepInterview: {
+      enabled: false,
+      minQuestions: 5,
+      categories: [
+        'architecture',
+        'integrations',
+        'ui-ux',
+        'performance',
+        'security',
+        'edge-cases',
+      ],
+    },
+  },
+  cicd: {
+    pushStrategy: 'direct',
+    autoFix: {
+      enabled: true,
+      maxRetries: 1,
+      allowedBranches: ['develop', 'main'],
+    },
+  },
 };
 
 /**

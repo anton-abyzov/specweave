@@ -452,6 +452,57 @@ export class ConfigManager {
     return result;
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // Backward-compat aliases from old ConfigManager API (0188)
+  // ═══════════════════════════════════════════════════════════════════
+
+  /**
+   * @deprecated Use readSync() instead
+   */
+  load(): SpecWeaveConfig {
+    return this.readSync();
+  }
+
+  /**
+   * @deprecated Use read() instead
+   */
+  async loadAsync(): Promise<SpecWeaveConfig> {
+    return this.read();
+  }
+
+  /**
+   * @deprecated Use write() instead
+   */
+  async save(config: SpecWeaveConfig): Promise<void> {
+    return this.write(config);
+  }
+
+  /**
+   * @deprecated Use write() with await instead
+   */
+  saveSync(config: SpecWeaveConfig): void {
+    const configPath = path.join(this.projectRoot, '.specweave', CONFIG_FILE_NAME);
+    const dir = path.dirname(configPath);
+    const { mkdirSync, writeFileSync } = require('fs');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    this.config = config;
+  }
+
+  /**
+   * @deprecated Access configPath via constructor
+   */
+  getConfigPath(): string {
+    return path.join(this.projectRoot, '.specweave', CONFIG_FILE_NAME);
+  }
+
+  /**
+   * @deprecated Use exists() instead
+   */
+  async existsAsync(): Promise<boolean> {
+    return this.exists();
+  }
+
   /**
    * Clear cached configuration
    */

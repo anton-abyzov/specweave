@@ -25,6 +25,16 @@ export interface MonitorServiceConfig {
 
   /** Auto-notify on failure detection */
   autoNotify?: boolean;
+
+  /** Push strategy from unified config (v1.0.231+) */
+  pushStrategy?: 'direct' | 'pr-based';
+
+  /** Auto-fix configuration from unified config (v1.0.231+) */
+  autoFix?: {
+    enabled: boolean;
+    maxRetries: number;
+    allowedBranches: string[];
+  };
 }
 
 /**
@@ -67,7 +77,9 @@ export class MonitorService {
     this.config = {
       ...config,
       rootDir: config.rootDir ?? process.cwd(),
-      autoNotify: config.autoNotify ?? true
+      autoNotify: config.autoNotify ?? true,
+      pushStrategy: config.pushStrategy ?? 'direct',
+      autoFix: config.autoFix ?? { enabled: true, maxRetries: 1, allowedBranches: ['develop', 'main'] },
     };
 
     this.stateManager = new StateManager(this.config.rootDir);

@@ -8,7 +8,7 @@ import path from 'path';
 import os from 'os';
 import { ConfigManager } from '../../../../src/core/config/config-manager.js';
 import { DEFAULT_CONFIG } from '../../../../src/core/config/types.js';
-import type { SpecWeaveConfig } from '../../../../src/core/config/types.js';
+import type { SpecWeaveConfig, SpecweaveConfig } from '../../../../src/core/config/types.js';
 
 describe('ConfigManager', () => {
   let testDir: string;
@@ -162,6 +162,112 @@ describe('ConfigManager', () => {
     });
   });
 
+  // ═══════════════════════════════════════════════════════════════════
+  // 0188: Unified config type consolidation tests
+  // ═══════════════════════════════════════════════════════════════════
+
+  describe('unified config type (0188)', () => {
+    it('should export SpecweaveConfig as alias for SpecWeaveConfig', () => {
+      // SpecweaveConfig (camelCase) should be available from config/types.ts
+      // This is the canonical name used by 25+ files in the old system
+      const config: SpecweaveConfig = { version: '2.0' };
+      const configAlt: SpecWeaveConfig = config;
+      expect(configAlt.version).toBe('2.0');
+    });
+
+    it('should have testing config in DEFAULT_CONFIG', () => {
+      // The comprehensive DEFAULT_CONFIG should include testing settings
+      const config = DEFAULT_CONFIG as any;
+      expect(config.testing).toBeDefined();
+      expect(config.testing.defaultTestMode).toBe('test-after');
+      expect(config.testing.defaultCoverageTarget).toBe(50);
+      expect(config.testing.coverageTargets).toBeDefined();
+      expect(config.testing.coverageTargets.unit).toBe(55);
+    });
+
+    it('should have limits config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.limits).toBeDefined();
+      expect(config.limits.maxActiveIncrements).toBe(1);
+      expect(config.limits.hardCap).toBe(3);
+      expect(config.limits.allowEmergencyInterrupt).toBe(true);
+    });
+
+    it('should have archiving config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.archiving).toBeDefined();
+      expect(config.archiving.keepLast).toBe(5);
+      expect(config.archiving.autoArchive).toBe(false);
+    });
+
+    it('should have planning config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.planning).toBeDefined();
+      expect(config.planning.deepInterview).toBeDefined();
+      expect(config.planning.deepInterview.enabled).toBe(false);
+      expect(config.planning.deepInterview.minQuestions).toBe(5);
+    });
+
+    it('should have livingDocs config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.livingDocs).toBeDefined();
+      expect(config.livingDocs.copyBasedSync).toBeDefined();
+      expect(config.livingDocs.threeLayerSync).toBeDefined();
+    });
+
+    it('should have pluginAutoLoad config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.pluginAutoLoad).toBeDefined();
+      expect(config.pluginAutoLoad.enabled).toBe(true);
+    });
+
+    it('should have deduplication config in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.deduplication).toBeDefined();
+      expect(config.deduplication.enabled).toBe(true);
+      expect(config.deduplication.windowMs).toBe(1000);
+    });
+
+    it('should have language and translation defaults in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.language).toBe('en');
+      expect(config.translation).toBeDefined();
+      expect(config.translation.primary).toBe('en');
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 0188 Phase 2: CI/CD Config Schema (US-002)
+  // ═══════════════════════════════════════════════════════════════════
+
+  describe('CiCdConfig type and defaults (0188 T-007)', () => {
+    it('should have cicd section in DEFAULT_CONFIG', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.cicd).toBeDefined();
+    });
+
+    it('should have pushStrategy defaulting to direct', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.cicd.pushStrategy).toBe('direct');
+    });
+
+    it('should have autoFix.enabled defaulting to true', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.cicd.autoFix).toBeDefined();
+      expect(config.cicd.autoFix.enabled).toBe(true);
+    });
+
+    it('should have autoFix.maxRetries defaulting to 1', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.cicd.autoFix.maxRetries).toBe(1);
+    });
+
+    it('should have autoFix.allowedBranches defaulting to develop and main', () => {
+      const config = DEFAULT_CONFIG as any;
+      expect(config.cicd.autoFix.allowedBranches).toEqual(['develop', 'main']);
+    });
+  });
+
   describe('validate()', () => {
     it('should validate valid config', () => {
       const valid: SpecWeaveConfig = { version: '2.0', repository: { provider: 'github' } };
@@ -193,6 +299,51 @@ describe('ConfigManager', () => {
       };
       const result = configManager.validate(invalid);
       expect(result.valid).toBe(false);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 0188: Backward-compat method aliases (old ConfigManager API)
+  // ═══════════════════════════════════════════════════════════════════
+
+  describe('backward-compat methods (0188)', () => {
+    it('load() should return config synchronously', () => {
+      const config = (configManager as any).load();
+      expect(config).toBeDefined();
+      expect(config.version).toBe('2.0');
+    });
+
+    it('loadAsync() should return config asynchronously', async () => {
+      const config = await (configManager as any).loadAsync();
+      expect(config).toBeDefined();
+      expect(config.version).toBe('2.0');
+    });
+
+    it('save() should persist config', async () => {
+      const testConfig: SpecWeaveConfig = {
+        version: '2.0',
+        repository: { provider: 'github', organization: 'test-org' }
+      };
+      await (configManager as any).save(testConfig);
+      const loaded = (configManager as any).load();
+      expect(loaded.repository?.provider).toBe('github');
+    });
+
+    it('saveSync() should persist config synchronously', () => {
+      const testConfig: SpecWeaveConfig = {
+        version: '2.0',
+        repository: { provider: 'local' }
+      };
+      (configManager as any).saveSync(testConfig);
+      configManager.clearCache();
+      const loaded = (configManager as any).load();
+      expect(loaded.repository?.provider).toBe('local');
+    });
+
+    it('getConfigPath() should return config file path', () => {
+      const configPath = (configManager as any).getConfigPath();
+      expect(configPath).toContain('.specweave');
+      expect(configPath).toContain('config.json');
     });
   });
 });
