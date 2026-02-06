@@ -211,8 +211,12 @@ describe('LSP (tsserver) vs Grep: Performance & Accuracy', () => {
       const absoluteFile = path.join(projectRoot, testFile);
 
       // LSP: Find all files that import/use MetadataManager
-      // Line 44 (0-indexed: 43) where "export class MetadataManager" is defined
-      const result = await tsClient.findReferences(absoluteFile, 43, 13);
+      // Find line dynamically to avoid hardcoded line numbers breaking on edits
+      const fileContent = fs.readFileSync(absoluteFile, 'utf-8');
+      const lines = fileContent.split('\n');
+      const classLine = lines.findIndex(l => l.includes('export class MetadataManager'));
+      const classCol = classLine >= 0 ? lines[classLine].indexOf('MetadataManager') : 13;
+      const result = await tsClient.findReferences(absoluteFile, classLine >= 0 ? classLine : 43, classCol);
 
       // Group by file
       const fileGroups = new Map<string, number>();

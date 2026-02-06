@@ -1,7 +1,7 @@
 {
   "name": "sw-infra",
-  "description": "Cloud infrastructure provisioning and monitoring. Includes Hetzner Cloud provisioning, Prometheus/Grafana setup, distributed tracing (Jaeger/Tempo), and SLO implementation. Focus on cost-effective, production-ready infrastructure.",
-  "version": "1.0.0",
+  "description": "Comprehensive infrastructure and DevOps: Terraform/OpenTofu, OpenTelemetry, GitHub Actions, DevSecOps, secret management, Azure (Bicep/AKS), AWS (CDK/EKS/Lambda), and cloud-native patterns.",
+  "version": "1.1.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -11,11 +11,21 @@
   "license": "MIT",
   "keywords": [
     "infrastructure",
+    "terraform",
+    "opentofu",
+    "opentelemetry",
+    "github-actions",
+    "devsecops",
+    "vault",
+    "secret-management",
+    "azure",
+    "bicep",
+    "aks",
+    "aws",
+    "cdk",
+    "eks",
+    "lambda",
     "cloud",
-    "hetzner",
-    "monitoring",
-    "prometheus",
-    "grafana",
     "specweave"
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "sw-backend",
-  "description": "Backend API development for Node.js, Python, and .NET stacks. Includes Express, NestJS, FastAPI, Django, Flask, ASP.NET Core, and Entity Framework Core. Focus on REST APIs, authentication, database operations, and background services.",
-  "version": "1.0.0",
+  "description": "Full-stack backend development for Node.js, Python, .NET, Go, Java/Spring Boot, Rust, and GraphQL. REST APIs, gRPC, authentication, database optimization, and enterprise patterns.",
+  "version": "1.1.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -14,8 +14,13 @@
     "nodejs",
     "python",
     "dotnet",
+    "golang",
+    "java",
+    "spring-boot",
+    "rust",
+    "graphql",
     "rest-api",
-    "server",
+    "grpc",
     "specweave"
   ]
 }
