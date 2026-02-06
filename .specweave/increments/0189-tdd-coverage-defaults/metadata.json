@@ -1,0 +1,13 @@
+{
+  "id": "0189",
+  "name": "tdd-coverage-defaults",
+  "title": "TDD Default Mode & 100% Coverage Option",
+  "status": "active",
+  "startedAt": "2026-02-06T00:30:00Z",
+  "testMode": "TDD",
+  "priority": "P1",
+  "type": "enhancement",
+  "createdAt": "2026-02-06T00:30:00Z",
+  "estimatedComplexity": "small",
+  "tags": ["testing", "config", "init", "tdd", "coverage"]
+}
