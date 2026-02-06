@@ -641,7 +641,7 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
   if (!addResult.success && !addResult.output.includes('already')) {
     console.log(chalk.red('✗ Failed to add marketplace for installation'));
     console.log(chalk.gray(addResult.output));
-    process.exit(1);
+    throw new Error('Failed to add marketplace for plugin installation');
   }
 
   // Install core plugin (sw-router is obsolete as of v1.0.160)
@@ -783,7 +783,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
         if (!removeResult.success && !removeResult.output.includes('removed')) {
           console.log(chalk.red('✗ Could not remove broken marketplace'));
           console.log(chalk.gray(removeResult.output));
-          process.exit(1);
+          throw new Error('Could not remove broken SSH marketplace');
         }
 
         // Re-add with correct HTTPS URL
@@ -793,12 +793,12 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
         } else {
           console.log(chalk.red('✗ Failed to re-add marketplace'));
           console.log(chalk.gray(reAddResult.output));
-          process.exit(1);
+          throw new Error('Failed to re-add marketplace with HTTPS URL');
         }
       } else {
         console.log(chalk.red('✗ Failed to update marketplace'));
         console.log(chalk.gray(updateResult.output));
-        process.exit(1);
+        throw new Error(`Failed to update marketplace: ${updateResult.output}`);
       }
     }
   } else {
@@ -812,7 +812,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     } else {
       console.log(chalk.red('✗ Failed to add marketplace'));
       console.log(chalk.gray(addResult.output));
-      process.exit(1);
+      throw new Error(`Failed to add marketplace: ${addResult.output}`);
     }
   }
 
@@ -821,39 +821,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   // Step 1.5: Pre-refresh cache health check
   await preRefreshCacheCheck(options.verbose);
 
-  // Step 1.6: Clean up auto mode state files
-  console.log(chalk.yellow('🧹 Cleaning up auto mode state files...'));
-  const stateDir = path.join(process.cwd(), '.specweave/state');
-  if (fs.existsSync(stateDir)) {
-    const filesToClean = [
-      'auto-mode.json',
-      'auto-session.json',
-      'auto-needs-increment.json',
-      '.stop-auto-dedup',
-      '.stop-auto-last-fire',
-    ];
-
-    let cleaned = 0;
-    for (const file of filesToClean) {
-      const filePath = path.join(stateDir, file);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-          cleaned++;
-        } catch (e) {
-          // Ignore errors
-        }
-      }
-    }
-
-    if (cleaned > 0) {
-      console.log(chalk.green(`✓ Cleaned up ${cleaned} auto mode state file(s)`));
-    } else {
-      console.log(chalk.blue('ℹ No auto mode state files to clean'));
-    }
-  } else {
-    console.log(chalk.blue('ℹ Not in a SpecWeave project - skipping auto mode cleanup'));
-  }
+  // Auto mode state cleanup is handled by updateCommand() - no duplication needed here
 
   console.log('');
 
@@ -865,7 +833,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   if (!marketplacePath) {
     console.log(chalk.red('✗ Error: Could not find marketplace install location'));
     console.log(chalk.yellow('  Check ~/.claude/plugins/known_marketplaces.json'));
-    process.exit(1);
+    throw new Error('Could not find marketplace install location');
   }
 
   let plugins: string[];
@@ -873,7 +841,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     plugins = getPluginsFromMarketplace(marketplacePath);
   } catch (error) {
     console.log(chalk.red(`✗ Error: ${error}`));
-    process.exit(1);
+    throw new Error(`Failed to read marketplace plugins: ${error}`);
   }
 
   console.log(chalk.green(`✓ Found ${plugins.length} plugins\n`));
@@ -1204,8 +1172,8 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 5: Verify marketplace ready for lazy loading
-  console.log(chalk.yellow('📦 Step 5: Verifying marketplace for lazy loading...'));
+  // Step 4: Verify marketplace ready for lazy loading
+  console.log(chalk.yellow('📦 Step 4: Verifying marketplace for lazy loading...'));
 
   try {
     const pluginsPath = path.join(marketplacePath, 'plugins');
@@ -1226,8 +1194,8 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 6: Update instruction files
-  console.log(chalk.yellow('📄 Step 6: Updating instruction files...'));
+  // Step 5: Update instruction files
+  console.log(chalk.yellow('📄 Step 5: Updating instruction files...'));
 
   const configPath = path.join(process.cwd(), '.specweave/config.json');
 

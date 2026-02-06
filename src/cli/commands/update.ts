@@ -263,12 +263,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     if (healthIssues.length > 0) {
       spinner.warn(`Found ${healthIssues.length} issue(s)`);
       result.warnings.push(...healthIssues);
-
-      if (options.verbose) {
-        healthIssues.forEach(issue => {
-          console.log(chalk.yellow(`   - ${issue}`));
-        });
-      }
+      healthIssues.forEach(issue => {
+        console.log(chalk.yellow(`   - ${issue}`));
+      });
     } else {
       spinner.succeed('Project health OK');
     }
@@ -312,9 +309,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
   if (result.warnings.length > 0) {
     console.log(chalk.yellow(`\n  Warnings: ${result.warnings.length}`));
-    if (!options.verbose) {
-      console.log(chalk.gray('    Use --verbose to see details'));
-    }
+    result.warnings.forEach(warn => {
+      console.log(chalk.yellow(`    - ${warn}`));
+    });
   }
 
   if (result.errors.length > 0) {
@@ -340,6 +337,11 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   }
 
   console.log('');
+
+  // Set non-zero exit code if any errors occurred (CI/CD friendly)
+  if (result.errors.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
 /**
@@ -572,10 +574,11 @@ async function selfUpdateSpecWeave(
   spinner.start('Checking for SpecWeave updates...');
 
   try {
-    // Get latest version from npm
+    // Get latest version from npm (30s timeout to prevent indefinite hang)
     const latestVersion = execSync('npm view specweave version', {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 30000,
     }).trim();
 
     // Compare versions
@@ -635,7 +638,29 @@ async function selfUpdateSpecWeave(
     execSync('npm install -g specweave@latest', {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 120000, // 2 min timeout for install
     });
+
+    // Verify the new binary is functional before declaring success
+    try {
+      const installedVersion = execSync('specweave --version', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 10000,
+      }).trim();
+
+      // Extract version number (output may include prefix like "specweave/1.0.233")
+      const versionMatch = installedVersion.match(/(\d+\.\d+\.\d+)/);
+      const actualVersion = versionMatch ? versionMatch[1] : installedVersion;
+
+      if (actualVersion !== latestVersion) {
+        spinner.warn(`SpecWeave installed but version mismatch: expected v${latestVersion}, got v${actualVersion}`);
+        return { updated: true, newVersion: actualVersion };
+      }
+    } catch {
+      spinner.warn('SpecWeave installed but could not verify new binary');
+      return { updated: true, newVersion: latestVersion };
+    }
 
     spinner.succeed(`SpecWeave updated: v${currentVersion} → v${latestVersion}`);
     return { updated: true, newVersion: latestVersion };
@@ -655,6 +680,13 @@ async function selfUpdateSpecWeave(
       return {
         updated: false,
         error: 'npm not found. Make sure Node.js is installed.',
+      };
+    }
+
+    if (error.message?.includes('ETIMEDOUT') || error.signal === 'SIGTERM' || error.killed) {
+      return {
+        updated: false,
+        error: 'npm registry timed out. Check your network connection and try again.',
       };
     }
 
