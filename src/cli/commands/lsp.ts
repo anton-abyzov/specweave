@@ -58,13 +58,19 @@ export function findSymbolPosition(filePath: string, symbolName: string): Symbol
     new RegExp(`\\b(${symbolName})\\b`),
   ];
 
+  // Two-pass search: first try declaration patterns (specific),
+  // then fall back to generic word boundary (usage).
+  // This ensures we find "class LSPManager" instead of "import { LSPManager }".
+  const declarationPatterns = patterns.slice(0, -1); // All except generic fallback
+  const fallbackPattern = patterns[patterns.length - 1]; // Generic \b match
+
+  // Pass 1: Look for declarations (specific patterns)
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     const line = lines[lineIndex];
 
-    for (const pattern of patterns) {
+    for (const pattern of declarationPatterns) {
       const match = pattern.exec(line);
       if (match) {
-        // Find the position of the captured group (the symbol name)
         const symbolStartIndex = line.indexOf(match[1], match.index);
         if (symbolStartIndex !== -1) {
           return {
@@ -72,6 +78,20 @@ export function findSymbolPosition(filePath: string, symbolName: string): Symbol
             character: symbolStartIndex,
           };
         }
+      }
+    }
+  }
+
+  // Pass 2: Fall back to generic word boundary match (first usage)
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const match = fallbackPattern.exec(lines[lineIndex]);
+    if (match) {
+      const symbolStartIndex = lines[lineIndex].indexOf(match[1], match.index);
+      if (symbolStartIndex !== -1) {
+        return {
+          line: lineIndex,
+          character: symbolStartIndex,
+        };
       }
     }
   }

@@ -1,0 +1,13 @@
+{
+  "name": "sw-desktop",
+  "description": "Desktop application development with Electron and Tauri. Covers cross-platform desktop apps, native APIs, packaging, auto-updates, and security best practices.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": ["desktop", "electron", "tauri", "cross-platform", "specweave"]
+}

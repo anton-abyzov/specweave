@@ -124,12 +124,15 @@ export class LSPManager {
   }
 
   /**
-   * Check if project has TypeScript configuration
+   * Check if project has TypeScript configuration.
+   * Requires tsconfig.json (or jsconfig.json) - not just package.json,
+   * since package.json alone doesn't indicate a TypeScript project
+   * (Python, Go, etc. projects may have package.json for tooling).
    */
   private hasTypeScriptProject(): boolean {
     return (
       fs.existsSync(path.join(this.projectRoot, 'tsconfig.json')) ||
-      fs.existsSync(path.join(this.projectRoot, 'package.json'))
+      fs.existsSync(path.join(this.projectRoot, 'jsconfig.json'))
     );
   }
 

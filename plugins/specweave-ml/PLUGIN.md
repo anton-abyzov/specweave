@@ -1,21 +1,26 @@
 # ML Plugin
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Author**: SpecWeave Contributors
 **License**: MIT
 
 ## Description
 
-Comprehensive machine learning plugin covering the entire ML lifecycle. Includes statistical analysis and experimentation, end-to-end ML pipeline building, domain-specific expertise (NLP, Computer Vision, Time Series), and MLOps infrastructure for production ML systems.
+Comprehensive AI/ML plugin covering traditional ML, LLM application development, RAG, fine-tuning, and edge/mobile ML. From data science to production AI systems.
 
 ## Skills
 
 | Skill | Description |
 |-------|-------------|
-| data-scientist | Statistical modeling and data analysis expert for A/B testing, causal inference, customer analytics, anomaly detection, and experiment tracking |
-| ml-engineer | Machine learning pipeline builder for end-to-end ML systems covering feature engineering, model training, evaluation, and explainability |
-| ml-specialist | Domain-specific ML expert for NLP, Computer Vision, and Time Series with text classification, object detection, and forecasting |
-| mlops-engineer | MLOps expert for ML infrastructure, automated training pipelines, model deployment, monitoring, and CI/CD for machine learning |
+| data-scientist | Statistical modeling and data analysis for A/B testing, causal inference, and experiment tracking |
+| ml-engineer | End-to-end ML pipeline building covering feature engineering, training, and evaluation |
+| ml-specialist | Domain-specific ML for NLP, Computer Vision, and Time Series |
+| mlops-engineer | MLOps infrastructure, automated pipelines, model deployment, and monitoring |
+| langchain-agents | LangChain, LangGraph, CrewAI agent frameworks for LLM application development |
+| rag-vectordb | RAG architecture and vector databases (Pinecone, Weaviate, Qdrant, ChromaDB, pgvector) |
+| llm-fine-tuning | LLM fine-tuning with LoRA, QLoRA, PEFT, DPO, and quantization |
+| huggingface | Hugging Face ecosystem: Transformers, Datasets, Accelerate, TGI, and Model Hub |
+| edge-ml | Edge/Mobile ML with Core ML, TensorFlow Lite, ONNX Runtime, and ML Kit |
 
 ## Installation
 
@@ -27,4 +32,3 @@ claude plugin install sw-ml@specweave
 
 - SpecWeave core plugin (sw@specweave)
 - Python 3.9+ environment
-- ML frameworks: scikit-learn, PyTorch, or TensorFlow

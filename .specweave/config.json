@@ -21,16 +21,23 @@
     "provider": "none"
   },
   "sync": {
-    "enabled": false,
-    "direction": "bidirectional",
+    "enabled": true,
+    "preset": "bidirectional",
     "autoSync": false,
-    "includeStatus": true,
-    "autoApplyLabels": true,
-    "settings": {
-      "canUpsertInternalItems": true,
-      "canUpdateExternalItems": true,
-      "canUpdateStatus": true,
-      "autoSyncOnCompletion": true
+    "github": {
+      "enabled": true,
+      "owner": "anton-abyzov",
+      "repo": "specweave"
+    },
+    "jira": {
+      "enabled": true,
+      "domain": "antonabyzov.atlassian.net",
+      "projectKey": "WTTC"
+    },
+    "ado": {
+      "enabled": true,
+      "organization": "EasyChamp",
+      "project": "SpecWeaveSync"
     }
   },
   "hooks": {
