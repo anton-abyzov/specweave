@@ -10,6 +10,8 @@
   "enabledPlugins": {
     "sw@specweave": true,
     "sw-infra@specweave": true,
-    "sw-testing@specweave": true
+    "sw-testing@specweave": true,
+    "sw-jira@specweave": true,
+    "sw-ado@specweave": true
   }
 }
