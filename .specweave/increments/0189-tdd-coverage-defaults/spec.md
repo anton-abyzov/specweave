@@ -22,10 +22,10 @@ SpecWeave currently defaults to `test-after` mode with 50% coverage. This should
 **So that** new projects start with best testing practices out of the box
 
 **Acceptance Criteria**:
-- [ ] AC-US1-01: `DEFAULT_CONFIG.testing.defaultTestMode` is `'TDD'` (was `'test-after'`)
-- [ ] AC-US1-02: `DEFAULT_CONFIG.testing.defaultCoverageTarget` is `90` (was `50`)
-- [ ] AC-US1-03: `DEFAULT_CONFIG.testing.coverageTargets` updated to `{ unit: 95, integration: 90, e2e: 100 }` (was `{ unit: 55, integration: 50, e2e: 60 }`)
-- [ ] AC-US1-04: Init wizard test mode prompt defaults to `TDD` (was `TDD` already in wizard, but code default was `test-after`)
+- [x] AC-US1-01: `DEFAULT_CONFIG.testing.defaultTestMode` is `'TDD'` (was `'test-after'`)
+- [x] AC-US1-02: `DEFAULT_CONFIG.testing.defaultCoverageTarget` is `90` (was `50`)
+- [x] AC-US1-03: `DEFAULT_CONFIG.testing.coverageTargets` updated to `{ unit: 95, integration: 90, e2e: 100 }` (was `{ unit: 55, integration: 50, e2e: 60 }`)
+- [x] AC-US1-04: Init wizard test mode prompt defaults to `TDD` (was `TDD` already in wizard, but code default was `test-after`)
 
 ### US-002: 100% Coverage Option in Init Wizard
 
@@ -34,9 +34,9 @@ SpecWeave currently defaults to `test-after` mode with 50% coverage. This should
 **So that** I don't have to type a custom value for full coverage
 
 **Acceptance Criteria**:
-- [ ] AC-US2-01: Coverage picker includes `100%` option labeled "Full coverage (strict)" after the 90% option
-- [ ] AC-US2-02: 100% option is available in all 9 languages (en, ru, es, zh, de, fr, ja, ko, pt)
-- [ ] AC-US2-03: When 100% is selected, `coverageTargets` is `{ unit: 100, integration: 100, e2e: 100 }`
+- [x] AC-US2-01: Coverage picker includes `100%` option labeled "Full coverage (strict)" after the 90% option
+- [x] AC-US2-02: 100% option is available in all 9 languages (en, ru, es, zh, de, fr, ja, ko, pt)
+- [x] AC-US2-03: When 100% is selected, `coverageTargets` is `{ unit: 100, integration: 100, e2e: 100 }`
 
 ### US-003: Mode-Aware Coverage Defaults
 
@@ -45,9 +45,9 @@ SpecWeave currently defaults to `test-after` mode with 50% coverage. This should
 **So that** I get sensible defaults without manual tuning
 
 **Acceptance Criteria**:
-- [ ] AC-US3-01: When `TDD` is selected, coverage prompt defaults to `90%`
-- [ ] AC-US3-02: When `test-after` is selected, coverage prompt defaults to `80%`
-- [ ] AC-US3-03: When `manual` or `none` is selected, coverage prompt is skipped (existing behavior preserved)
+- [x] AC-US3-01: When `TDD` is selected, coverage prompt defaults to `90%`
+- [x] AC-US3-02: When `test-after` is selected, coverage prompt defaults to `80%`
+- [x] AC-US3-03: When `manual` or `none` is selected, coverage prompt is skipped (existing behavior preserved)
 
 ### US-004: SpecWeave Self-Application
 
@@ -56,9 +56,9 @@ SpecWeave currently defaults to `test-after` mode with 50% coverage. This should
 **So that** the framework practices what it preaches
 
 **Acceptance Criteria**:
-- [ ] AC-US4-01: `.specweave/config.json` updated: `testing.defaultTestMode: "TDD"`
-- [ ] AC-US4-02: `.specweave/config.json` updated: `testing.defaultCoverageTarget: 90`
-- [ ] AC-US4-03: `.specweave/config.json` updated: `testing.coverageTargets: { unit: 95, integration: 90, e2e: 100 }`
+- [x] AC-US4-01: `.specweave/config.json` updated: `testing.defaultTestMode: "TDD"`
+- [x] AC-US4-02: `.specweave/config.json` updated: `testing.defaultCoverageTarget: 90`
+- [x] AC-US4-03: `.specweave/config.json` updated: `testing.coverageTargets: { unit: 95, integration: 90, e2e: 100 }`
 
 ---
 

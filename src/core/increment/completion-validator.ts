@@ -175,19 +175,7 @@ export class IncrementCompletionValidator {
       warnings.push('External tool drift detection skipped due to error');
     }
 
-    // NEW (v1.0.228): Grill validation - code review before closure
-    // Requires /sw:grill to be run before /sw:done
-    // Creates marker file at .specweave/state/.sw-grill-passed-{incrementId}
-    // See: CLAUDE.md "Grill" section
-    try {
-      const grillValidation = await IncrementCompletionValidator.validateGrillPassed(incrementId);
-      if (!grillValidation.passed) {
-        errors.push(grillValidation.error!);
-      }
-    } catch (error) {
-      logger.warn(`Grill validation check failed: ${error instanceof Error ? error.message : String(error)}`);
-      // Don't add to warnings - missing marker is an error, not a warning
-    }
+    // NOTE: Grill validation removed (v1.0.232) — /sw:done now calls /sw:grill inline
 
     // NEW (v1.0.105): Test coverage validation for TDD increments
     // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
@@ -420,68 +408,4 @@ export class IncrementCompletionValidator {
     return matches.length;
   }
 
-  /**
-   * Validate that the grill has passed for this increment (NEW - v1.0.228)
-   *
-   * Checks for marker file at .specweave/state/.sw-grill-passed-{incrementId}
-   * This marker is created by /sw:grill when the code review passes.
-   *
-   * Can be disabled via config: { "grill": { "required": false } }
-   *
-   * @param incrementId - The increment ID
-   * @returns Validation result with passed status and optional error message
-   *
-   * @example
-   * ```typescript
-   * const result = await IncrementCompletionValidator.validateGrillPassed('0042-feature');
-   * if (!result.passed) {
-   *   console.error(result.error);
-   * }
-   * ```
-   */
-  static async validateGrillPassed(
-    incrementId: string
-  ): Promise<{ passed: boolean; error?: string }> {
-    const stateDir = path.join(process.cwd(), '.specweave', 'state');
-    const configPath = path.join(process.cwd(), '.specweave', 'config.json');
-
-    // Check if grill is required (default: true)
-    let grillRequired = true;
-    try {
-      if (await fs.pathExists(configPath)) {
-        const configContent = await fs.readFile(configPath, 'utf-8');
-        const config = JSON.parse(configContent);
-        // Allow disabling via config: { "grill": { "required": false } }
-        if (config.grill?.required === false) {
-          grillRequired = false;
-        }
-      }
-    } catch {
-      // Config parsing failed, assume grill is required
-    }
-
-    if (!grillRequired) {
-      return { passed: true };
-    }
-
-    // Check for grill marker file
-    const grillMarkerPath = path.join(stateDir, `.sw-grill-passed-${incrementId}`);
-
-    if (await fs.pathExists(grillMarkerPath)) {
-      return { passed: true };
-    }
-
-    // Grill marker not found - return error
-    return {
-      passed: false,
-      error:
-        `🔥 GRILL REQUIRED: Code review not completed for ${incrementId}\n\n` +
-        `  The /sw:grill command must be run before closing an increment.\n` +
-        `  This ensures code quality is validated by a critical review.\n\n` +
-        `  Run: /sw:grill ${incrementId}\n\n` +
-        `  After grill passes, you can run: /sw:done ${incrementId}\n\n` +
-        `  To disable grill requirement (not recommended):\n` +
-        `  Add to .specweave/config.json: { "grill": { "required": false } }`
-    };
-  }
 }
