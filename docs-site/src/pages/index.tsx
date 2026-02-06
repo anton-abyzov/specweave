@@ -116,7 +116,7 @@ function HomepageHeader() {
             </Heading>
 
             <p className={styles.heroSubtitle}>
-              Autonomous AI agents with <strong>persistent memory</strong>.
+              Autonomous AI agents with <strong>persistent memory</strong>, powered by <strong>Claude Opus 4.6</strong>.
               Your specifications, architectural decisions, and documentation endure across sessions — enabling continuous, unattended development.
             </p>
 
@@ -181,25 +181,25 @@ function ProblemSection(): ReactNode {
           <div className={styles.problemCard}>
             <div className={styles.problemIconWrapper}>{Icons.contextLoss}</div>
             <h3>Context Evaporates</h3>
-            <p>Session ends, specifications vanish. Critical decisions lost between conversations.</p>
+            <p>Chat ends. Decisions vanish. "Why did we choose JWT?" becomes archaeology. Every session starts from zero.</p>
           </div>
           <div className={styles.problemCard}>
             <div className={styles.problemIconWrapper}>{Icons.repeat}</div>
-            <h3>Repetitive Onboarding</h3>
-            <p>Re-explain architecture, patterns, and constraints every single session.</p>
+            <h3>9 Hours Per Feature</h3>
+            <p>2 hours building, 4 hours fixing bugs (no upfront design), 3 hours explaining to teammates (no docs). Every time.</p>
           </div>
           <div className={styles.problemCard}>
             <div className={styles.problemIconWrapper}>{Icons.docsRot}</div>
-            <h3>Documentation Decay</h3>
-            <p>JIRA stale. README outdated. Technical debt compounds silently.</p>
+            <h3>No Quality Gates</h3>
+            <p>Code ships without tests, reviews, or documentation. Bugs reach production. Technical debt compounds silently.</p>
           </div>
         </div>
 
         <div className={styles.solutionBox}>
-          <h3>SpecWeave Eliminates This</h3>
+          <h3>SpecWeave: AI That Never Forgets</h3>
           <p>
-            AI with <strong>institutional memory</strong> — your decisions, patterns, and domain knowledge
-            persist and compound across sessions. Documentation updates automatically. Zero knowledge loss.
+            Every decision, every architecture choice, every line of reasoning — <strong>captured permanently</strong> in spec.md, plan.md, and tasks.md.
+            New session? Full context. New teammate? Instant onboarding. Six months later? Search and find exactly why.
           </p>
         </div>
       </div>
@@ -247,7 +247,7 @@ function FeaturesSection(): ReactNode {
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.agents}</div>
             <h3>Multi-Agent Orchestration</h3>
-            <p>15+ specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables.</p>
+            <p>68+ specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables. Powered by Claude Opus 4.6.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
@@ -306,7 +306,7 @@ function IntegrationsSection(): ReactNode {
           <div className={styles.integrationCard}>
             <div className={styles.integrationIconWrapper}>{Icons.ai}</div>
             <h3>AI Platforms</h3>
-            <p>Claude, Cursor, Copilot, Gemini. Platform-agnostic design.</p>
+            <p>Claude Opus 4.6 & Sonnet 4.5 native. Also works with Cursor, Copilot, Gemini.</p>
           </div>
         </div>
 
@@ -324,9 +324,9 @@ function CTASection(): ReactNode {
   return (
     <section className={styles.ctaSection}>
       <div className="container">
-        <Heading as="h2" className={styles.ctaTitle}>Ready to Transform Your Workflow?</Heading>
+        <Heading as="h2" className={styles.ctaTitle}>Stop Losing Work. Start Shipping.</Heading>
         <p className={styles.ctaSubtitle}>
-          Join engineering teams worldwide delivering production features with AI that maintains institutional knowledge.
+          Two commands. Permanent memory. Autonomous execution for hours. Your AI coding assistant finally remembers everything.
         </p>
 
         <div className={styles.ctaCode}>
@@ -358,7 +358,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Ship Features While You Sleep"
-      description="Autonomous AI agents with persistent memory. Specifications, architectural decisions, and documentation endure across sessions. Enterprise-grade development automation.">
+      description="Autonomous AI agents powered by Claude Opus 4.6 with persistent memory. Specifications, architectural decisions, and documentation endure across sessions. Enterprise-grade development automation.">
       <HomepageHeader />
       <main>
         <ProblemSection />

@@ -1,13 +1,13 @@
 ---
 sidebar_position: 2
 title: Plugin Ecosystem
-description: Complete guide to SpecWeave's 21 plugins covering integrations, tech stacks, ML, infrastructure, and more
+description: Complete guide to SpecWeave's 23 plugins covering integrations, tech stacks, ML, infrastructure, and more
 keywords: [plugins, skills, agents, commands, github, jira, kubernetes, react, ml, integration]
 ---
 
 # 🧩 Plugin Ecosystem
 
-SpecWeave's power comes from its **modular plugin architecture**. With **21 specialized plugins**, you get enterprise-grade capabilities that activate automatically based on your project needs.
+SpecWeave's power comes from its **modular plugin architecture**. With **23 specialized plugins**, you get enterprise-grade capabilities that activate automatically based on your project needs.
 
 :::tip Key Insight
 **Progressive Disclosure**: Only relevant plugins activate based on context. Working on React? Frontend plugin loads. Mention Kubernetes? Infrastructure plugin activates. This keeps your AI context lean and efficient.
@@ -19,7 +19,7 @@ All plugins are **automatically installed** during `specweave init`:
 
 ```bash
 npx specweave init .
-# ✅ Installs all 21 plugins (GitHub, JIRA, K8s, React, ML, etc.)
+# ✅ Installs all 23 plugins (GitHub, JIRA, K8s, React, ML, etc.)
 # ✅ Registers marketplace globally
 # ✅ Ready to use immediately!
 ```
@@ -32,9 +32,9 @@ npx specweave init .
 The foundation of SpecWeave, always loaded in every project.
 
 **Key Capabilities:**
-- 🎯 **9 Skills**: increment-planner, spec-generator, tdd-workflow, brownfield-analyzer, context-optimizer
-- 🤖 **22 Agents**: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer
-- ⚡ **22 Commands**: Full increment lifecycle management
+- 🎯 **30+ Skills**: increment-planner, spec-generator, tdd-workflow, brownfield-analyzer, context-optimizer, and more
+- 🤖 **68+ Agents**: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer, and more
+- ⚡ **40+ Commands**: Full increment lifecycle management
 
 **Example: Planning a New Feature**
 ```bash
@@ -538,7 +538,7 @@ Tracks AI costs, suggests optimizations.
 | **React Feature** | Core + Frontend | ~18K tokens |
 | **Full-Stack API** | Core + Frontend + Backend | ~24K tokens |
 | **ML Pipeline** | Core + ML + Infrastructure | ~28K tokens |
-| **Enterprise (All)** | All 21 plugins | ~30K tokens |
+| **Enterprise (All)** | All 23 plugins | ~30K tokens |
 
 **Result**: 75% smaller than monolithic architecture!
 
@@ -561,11 +561,11 @@ Tracks AI costs, suggests optimizations.
 
 ---
 
-## 🚀 Quick Reference: All 19 Plugins
+## 🚀 Quick Reference: All 23 Plugins
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
-| **sw** | Core framework | 22 agents, 22 commands, increment lifecycle |
+| **sw** | Core framework | 68+ agents, 40+ commands, increment lifecycle |
 | **sw-github** | GitHub sync | Bidirectional sync, auto-issue creation |
 | **sw-jira** | JIRA sync | Epic/Story sync, status mapping |
 | **sw-ado** | Azure DevOps | Work items, multi-project strategies |
@@ -717,5 +717,5 @@ Want to add a new plugin? See [CLAUDE.md](https://github.com/anton-abyzov/specwe
 4. 🔗 Sync: `/sw-github:sync`
 5. ✅ Complete: `/sw:done`
 
-**All 21 plugins are ready to help you build faster!**
+**All 23 plugins are ready to help you build faster!**
 :::
