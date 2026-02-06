@@ -7,10 +7,11 @@
 ## Overview
 
 SpecWeave automatically optimizes your AI costs by intelligently routing work to the most cost-effective model:
-- **Opus 4.5** ($15/$75 per 1M tokens) for planning, architecture, and complex reasoning (default)
-- **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple implementation
+- **Opus 4.6** (or Opus 4.5) for planning, architecture, and complex reasoning (default)
+- **Sonnet 4.5** for balanced speed and capability on routine implementation
+- **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple tasks
 
-**Result**: Maximum quality with Opus 4.5 as default, with Haiku optimization for routine tasks.
+**Result**: Maximum quality with Opus 4.6 as default, with Sonnet/Haiku optimization for routine tasks.
 
 ---
 
