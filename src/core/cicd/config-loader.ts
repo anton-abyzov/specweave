@@ -19,23 +19,32 @@ import { NotificationChannel } from './notifier.js';
  */
 
 /**
- * Raw configuration from files
+ * Raw configuration from files (supports both legacy and unified formats)
  */
 interface RawConfig {
   cicd?: {
+    // Legacy format fields
     github?: {
       token?: string;
       owner?: string;
       repo?: string;
     };
-    monitoring?: {
-      pollInterval?: number;
-      autoNotify?: boolean;
-    };
     notifications?: {
       channels?: string[];
       webhookUrl?: string;
       logFile?: string;
+    };
+
+    // Unified config format fields (v1.0.231+)
+    pushStrategy?: 'direct' | 'pr-based';
+    autoFix?: {
+      enabled: boolean;
+      maxRetries: number;
+      allowedBranches: string[];
+    };
+    monitoring?: {
+      pollInterval?: number;
+      autoNotify?: boolean;
     };
   };
 }
@@ -106,6 +115,14 @@ async function loadFromConfigFile(
         repo: rawConfig.cicd.github.repo || '',
         pollInterval: rawConfig.cicd.monitoring?.pollInterval || 60000
       };
+    } else if (rawConfig.cicd?.monitoring) {
+      // Unified config format: cicd.monitoring at top level (no github sub-key)
+      config.monitor = {
+        token: '',
+        owner: '',
+        repo: '',
+        pollInterval: rawConfig.cicd.monitoring.pollInterval || 60000
+      };
     }
 
     if (rawConfig.cicd?.notifications) {
@@ -118,6 +135,14 @@ async function loadFromConfigFile(
 
     if (rawConfig.cicd?.monitoring?.autoNotify !== undefined) {
       config.autoNotify = rawConfig.cicd.monitoring.autoNotify;
+    }
+
+    // Unified config fields (v1.0.231+)
+    if (rawConfig.cicd?.pushStrategy) {
+      config.pushStrategy = rawConfig.cicd.pushStrategy;
+    }
+    if (rawConfig.cicd?.autoFix) {
+      config.autoFix = rawConfig.cicd.autoFix;
     }
 
     return config;
@@ -146,7 +171,13 @@ function getDefaults(): MonitorServiceConfig {
       debug: false
     },
     rootDir: process.cwd(),
-    autoNotify: true
+    autoNotify: true,
+    pushStrategy: 'direct',
+    autoFix: {
+      enabled: true,
+      maxRetries: 1,
+      allowedBranches: ['develop', 'main'],
+    },
   };
 }
 
@@ -171,7 +202,9 @@ function mergeConfigs(
       ...(env.notifier || {})
     },
     rootDir: env.rootDir || configFile.rootDir || defaults.rootDir,
-    autoNotify: env.autoNotify ?? configFile.autoNotify ?? defaults.autoNotify
+    autoNotify: env.autoNotify ?? configFile.autoNotify ?? defaults.autoNotify,
+    pushStrategy: configFile.pushStrategy ?? defaults.pushStrategy,
+    autoFix: configFile.autoFix ?? defaults.autoFix
   };
 }
 

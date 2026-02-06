@@ -62,6 +62,7 @@ import {
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js';
 import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
+import { createProjectFolders } from '../helpers/init/multi-project-folders.js';
 import {
   collectLivingDocsInputs,
 } from '../helpers/init/living-docs-preflight.js';
@@ -71,6 +72,23 @@ const __dirname = getDirname(import.meta.url);
 
 // Re-export InitOptions for external use
 export type { InitOptions };
+
+/**
+ * Unified CI/non-interactive detection.
+ * Single source of truth for determining if wizard should skip prompts.
+ * Covers all major CI platforms and non-TTY environments.
+ */
+export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
+  return !!(
+    options.quick ||
+    process.env.CI === 'true' ||
+    process.env.GITHUB_ACTIONS === 'true' ||
+    process.env.GITLAB_CI === 'true' ||
+    process.env.CIRCLECI === 'true' ||
+    process.env.JENKINS_URL ||
+    !process.stdin.isTTY
+  );
+}
 
 /**
  * Detect if we're in the SpecWeave framework repository itself
@@ -269,13 +287,8 @@ export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
-  // Detect CI/non-interactive environment or quick mode
-  const isCI = options.quick ||  // Quick mode acts like CI for skipping prompts
-               process.env.CI === 'true' ||
-               process.env.GITHUB_ACTIONS === 'true' ||
-               process.env.GITLAB_CI === 'true' ||
-               process.env.CIRCLECI === 'true' ||
-               !process.stdin.isTTY;
+  // Detect CI/non-interactive environment or quick mode (unified, 0188)
+  const isCI = isNonInteractive(options);
 
   // In quick mode, show a brief message
   if (options.quick) {
@@ -656,6 +669,16 @@ export async function initCommand(
       }
     }
 
+    // Create multi-project folders for GitHub repos (0188: provider symmetry)
+    if (githubClonedRepos.length > 0) {
+      console.log(chalk.blue('\n📁 Creating GitHub Project Folders'));
+      const created = await createProjectFolders(targetDir, githubClonedRepos);
+      for (const folder of created) {
+        console.log(chalk.green(`   ✓ Created: specs/${folder}/`));
+      }
+      console.log('');
+    }
+
     // Issue tracker setup (MANDATORY for all tools)
     const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
     const githubRepoSelection = repoResult.githubRepoSelection
@@ -690,6 +713,11 @@ export async function initCommand(
     // Wizard loop: External import → Living Docs → Testing → Deep Interview → Translation
     type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'deep-interview' | 'translation' | 'quality-gates' | 'done';
     let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
+
+    // Announce skipped step when continuing existing project (0188)
+    if (continueExisting) {
+      console.log(chalk.gray('  ⏭ External import: preserved from existing config'));
+    }
 
     while (wizardStep !== 'done') {
       // STEP: External Import
@@ -769,6 +797,8 @@ export async function initCommand(
           }
 
           updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
+        } else if (continueExisting) {
+          console.log(chalk.gray('  ⏭ Testing config: preserved from existing config'));
         }
         wizardStep = 'deep-interview';
         continue;
@@ -786,6 +816,8 @@ export async function initCommand(
           }
 
           updateConfigWithDeepInterview(targetDir, deepInterviewResult.enabled, language);
+        } else if (continueExisting) {
+          console.log(chalk.gray('  ⏭ Deep interview: preserved from existing config'));
         }
         wizardStep = 'quality-gates';
         continue;
@@ -804,6 +836,8 @@ export async function initCommand(
           }
 
           updateConfigWithQualityGates(targetDir, qualityGatesResult.preset, language);
+        } else if (continueExisting) {
+          console.log(chalk.gray('  ⏭ Quality gates: preserved from existing config'));
         }
         wizardStep = 'translation';
         continue;
@@ -822,6 +856,9 @@ export async function initCommand(
 
           updateConfigWithTranslation(targetDir, translationResult);
         } else {
+          if (continueExisting) {
+            console.log(chalk.gray('  ⏭ Translation: preserved from existing config'));
+          }
           const defaultTranslation = getDefaultTranslationConfig(language);
           defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
           updateConfigWithTranslation(targetDir, defaultTranslation);
@@ -874,10 +911,10 @@ export async function initCommand(
 
     // LSP Environment Variable Setup (v1.0.191)
     // For Claude tool - LSP enhances code intelligence
-    const isQuickMode = options.quick || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+    // Uses unified isNonInteractive() instead of duplicate isQuickMode (0188)
 
-    // QUICK MODE: Auto-enable LSP without prompts (v1.0.210)
-    if (toolName === 'claude' && isQuickMode) {
+    // NON-INTERACTIVE MODE: Auto-enable LSP without prompts (v1.0.210)
+    if (toolName === 'claude' && isCI) {
       // Silently enable LSP in config.json
       const configPath = path.join(targetDir, '.specweave', 'config.json');
       if (fs.existsSync(configPath)) {
@@ -904,7 +941,7 @@ export async function initCommand(
     }
 
     // INTERACTIVE MODE: Prompt for LSP setup
-    if (toolName === 'claude' && !isQuickMode) {
+    if (toolName === 'claude' && !isCI) {
       console.log('');
       console.log(chalk.cyan('━━━ LSP Support ━━━'));
       console.log('');

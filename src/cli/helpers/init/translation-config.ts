@@ -64,7 +64,7 @@ function getLanguageNativeName(code: SupportedLanguage): string {
 /**
  * Get translated strings for translation config prompts
  */
-function getTranslationStrings(language: SupportedLanguage): {
+export function getTranslationStrings(language: SupportedLanguage): {
   header: string;
   subheader: string;
   costHeader: string;
@@ -90,6 +90,8 @@ function getTranslationStrings(language: SupportedLanguage): {
   specsLabel: string;
   livingDocsLabel: string;
   externalLabel: string;
+  enableChoice: string;
+  disableChoice: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getTranslationStrings>> = {
     en: {
@@ -118,6 +120,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Increment specs',
       livingDocsLabel: 'Living docs',
       externalLabel: 'External tools',
+      enableChoice: '✓ Enable translation (auto)',
+      disableChoice: 'No translation',
     },
     ru: {
       header: '📝 Настройка автоперевода',
@@ -145,6 +149,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Спецификации инкрементов',
       livingDocsLabel: 'Living docs',
       externalLabel: 'Внешние инструменты',
+      enableChoice: '✓ Включить перевод (авто)',
+      disableChoice: 'Нет перевода',
     },
     es: {
       header: '📝 Configuración de traducción automática',
@@ -172,6 +178,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Specs de incrementos',
       livingDocsLabel: 'Living docs',
       externalLabel: 'Herramientas externas',
+      enableChoice: '✓ Habilitar traducción (auto)',
+      disableChoice: 'Sin traducción',
     },
     zh: {
       header: '📝 自动翻译配置',
@@ -199,6 +207,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: '增量规范',
       livingDocsLabel: 'Living docs',
       externalLabel: '外部工具',
+      enableChoice: '✓ 启用翻译（自动）',
+      disableChoice: '不翻译',
     },
     de: {
       header: '📝 Auto-Übersetzung Konfiguration',
@@ -226,6 +236,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Increment Specs',
       livingDocsLabel: 'Living docs',
       externalLabel: 'Externe Tools',
+      enableChoice: '✓ Übersetzung aktivieren (auto)',
+      disableChoice: 'Keine Übersetzung',
     },
     fr: {
       header: '📝 Configuration de traduction automatique',
@@ -253,6 +265,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Specs d\'incréments',
       livingDocsLabel: 'Living docs',
       externalLabel: 'Outils externes',
+      enableChoice: '✓ Activer la traduction (auto)',
+      disableChoice: 'Pas de traduction',
     },
     ja: {
       header: '📝 自動翻訳設定',
@@ -280,6 +294,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'インクリメント仕様',
       livingDocsLabel: 'Living docs',
       externalLabel: '外部ツール',
+      enableChoice: '✓ 翻訳を有効にする（自動）',
+      disableChoice: '翻訳なし',
     },
     ko: {
       header: '📝 자동 번역 구성',
@@ -307,6 +323,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: '증분 사양',
       livingDocsLabel: 'Living docs',
       externalLabel: '외부 도구',
+      enableChoice: '✓ 번역 활성화 (자동)',
+      disableChoice: '번역 없음',
     },
     pt: {
       header: '📝 Configuração de tradução automática',
@@ -334,6 +352,8 @@ function getTranslationStrings(language: SupportedLanguage): {
       specsLabel: 'Specs de incrementos',
       livingDocsLabel: 'Living docs',
       externalLabel: 'Ferramentas externas',
+      enableChoice: '✓ Habilitar tradução (auto)',
+      disableChoice: 'Sem tradução',
     },
   };
 
@@ -394,8 +414,8 @@ export async function promptTranslationConfig(
   const enableChoice = await select<'yes' | 'no' | 'back'>({
     message: strings.enableQuestion,
     choices: [
-      { value: 'no', name: strings.disabled.replace('Translat', 'No translat').replace('Перевод:', 'Нет -').replace('Traducción:', 'No -') },
-      { value: 'yes', name: '✓ ' + strings.translationEnabled.replace('Translat', 'Enable translat').replace('Перевод:', 'Включить').replace('Traducción:', 'Activar') },
+      { value: 'no', name: strings.disableChoice },
+      { value: 'yes', name: strings.enableChoice },
       { value: 'back', name: chalk.gray(goBackStrings.goBack) },
     ],
     default: 'no', // Default to NO (opt-in, not opt-out)

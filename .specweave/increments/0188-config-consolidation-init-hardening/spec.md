@@ -21,14 +21,14 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** I don't encounter confusing import paths and inconsistent behavior
 
 **Acceptance Criteria**:
-- [ ] AC-US1-01: Single `SpecweaveConfig` type exported from `src/core/config/types.ts` with all ~100 fields
-- [ ] AC-US1-02: Old `src/core/types/config.ts` re-exports from new location (backward compat) with deprecation comment
-- [ ] AC-US1-03: Single `ConfigManager` at `src/core/config/config-manager.ts` with all methods from both implementations
-- [ ] AC-US1-04: Old `src/core/config-manager.ts` re-exports from new location with deprecation comment
-- [ ] AC-US1-05: Single `DEFAULT_CONFIG` with all ~100 fields, validated against the type
-- [ ] AC-US1-06: All 25+ importers of old type path continue to compile without changes
-- [ ] AC-US1-07: All 15+ importers of old ConfigManager continue to work without changes
-- [ ] AC-US1-08: All existing unit tests pass without modification
+- [x] AC-US1-01: Single `SpecweaveConfig` type exported from `src/core/config/types.ts` with all ~100 fields
+- [x] AC-US1-02: Old `src/core/types/config.ts` re-exports from new location (backward compat) with deprecation comment
+- [x] AC-US1-03: Single `ConfigManager` at `src/core/config/config-manager.ts` with all methods from both implementations
+- [x] AC-US1-04: Old `src/core/config-manager.ts` re-exports from new location with deprecation comment
+- [x] AC-US1-05: Single `DEFAULT_CONFIG` with all ~100 fields, validated against the type
+- [x] AC-US1-06: All 25+ importers of old type path continue to compile without changes
+- [x] AC-US1-07: All 15+ importers of old ConfigManager continue to work without changes
+- [x] AC-US1-08: All existing unit tests pass without modification
 
 ### US-002: CI/CD Configuration in Config Schema
 
@@ -37,10 +37,10 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** each project can choose its auto-fix approach
 
 **Acceptance Criteria**:
-- [ ] AC-US2-01: `CiCdConfig` interface added with `pushStrategy: 'direct' | 'pr-based'`, `autoFix.enabled`, `autoFix.maxRetries`, `autoFix.allowedBranches`
-- [ ] AC-US2-02: `cicd` section added to unified `SpecweaveConfig` type
-- [ ] AC-US2-03: `DEFAULT_CONFIG.cicd` populated with sensible defaults (`pushStrategy: 'direct'`, `autoFix.enabled: true`, `maxRetries: 1`, `allowedBranches: ['develop', 'main']`)
-- [ ] AC-US2-04: Existing standalone `src/core/cicd/config-loader.ts` reads from unified config first, falls back to env vars
+- [x] AC-US2-01: `CiCdConfig` interface added with `pushStrategy: 'direct' | 'pr-based'`, `autoFix.enabled`, `autoFix.maxRetries`, `autoFix.allowedBranches`
+- [x] AC-US2-02: `cicd` section added to unified `SpecweaveConfig` type
+- [x] AC-US2-03: `DEFAULT_CONFIG.cicd` populated with sensible defaults (`pushStrategy: 'direct'`, `autoFix.enabled: true`, `maxRetries: 1`, `allowedBranches: ['develop', 'main']`)
+- [x] AC-US2-04: Existing standalone `src/core/cicd/config-loader.ts` reads from unified config first, falls back to env vars
 
 ### US-003: Init Wizard CI Detection Fix
 
@@ -49,9 +49,9 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** init doesn't show interactive prompts in non-TTY environments
 
 **Acceptance Criteria**:
-- [ ] AC-US3-01: Single `isCI` constant defined once, used everywhere in init.ts
-- [ ] AC-US3-02: `isQuickMode` removed or aliased to the single `isCI` definition
-- [ ] AC-US3-03: GitLab CI, CircleCI, and non-TTY environments correctly detected for ALL wizard steps including LSP setup
+- [x] AC-US3-01: Single `isCI` constant defined once, used everywhere in init.ts
+- [x] AC-US3-02: `isQuickMode` removed or aliased to the single `isCI` definition
+- [x] AC-US3-03: GitLab CI, CircleCI, and non-TTY environments correctly detected for ALL wizard steps including LSP setup
 
 ### US-004: Translation String Replacements for All Languages
 
@@ -60,9 +60,9 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** the UI isn't broken with untranslated English fragments
 
 **Acceptance Criteria**:
-- [ ] AC-US4-01: All 9 languages (en, ru, es, zh, de, fr, ja, ko, pt) have proper enable/disable choice text in translation-config.ts
-- [ ] AC-US4-02: Hard-coded `.replace('Translat', ...)` pattern replaced with per-language string definitions
-- [ ] AC-US4-03: Each language's `translatedStrings` object includes dedicated `enableChoice` and `disableChoice` fields
+- [x] AC-US4-01: All 9 languages (en, ru, es, zh, de, fr, ja, ko, pt) have proper enable/disable choice text in translation-config.ts
+- [x] AC-US4-02: Hard-coded `.replace('Translat', ...)` pattern replaced with per-language string definitions
+- [x] AC-US4-03: Each language's `translatedStrings` object includes dedicated `enableChoice` and `disableChoice` fields
 
 ### US-005: Init Wizard User Feedback for Skipped Steps
 
@@ -71,9 +71,9 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** I understand what's happening and can re-run with `--force` if needed
 
 **Acceptance Criteria**:
-- [ ] AC-US5-01: When `continueExisting` is true, each skipped step prints a gray message like "Keeping existing testing configuration"
-- [ ] AC-US5-02: External import step skip is announced (currently silent jump to 'living-docs')
-- [ ] AC-US5-03: Translation step skip is announced for non-English languages
+- [x] AC-US5-01: When `continueExisting` is true, each skipped step prints a gray message like "Keeping existing testing configuration"
+- [x] AC-US5-02: External import step skip is announced (currently silent jump to 'living-docs')
+- [x] AC-US5-03: Translation step skip is announced for non-English languages
 
 ### US-006: Symmetric Provider Multi-Project Support
 
@@ -82,9 +82,9 @@ The SpecWeave codebase has accumulated two parallel config type systems (`Specwe
 **So that** I get the same organized specs layout as JIRA and ADO users
 
 **Acceptance Criteria**:
-- [ ] AC-US6-01: GitHub multi-repo selection creates `specs/{repo-name}/` folders (matching JIRA/ADO behavior)
-- [ ] AC-US6-02: Bitbucket multi-repo selection creates `specs/{repo-name}/` folders
-- [ ] AC-US6-03: Folder creation logic extracted into a shared helper used by all 4 providers
+- [x] AC-US6-01: GitHub multi-repo selection creates `specs/{repo-name}/` folders (matching JIRA/ADO behavior)
+- [x] AC-US6-02: Bitbucket multi-repo selection creates `specs/{repo-name}/` folders
+- [x] AC-US6-03: Folder creation logic extracted into a shared helper used by all 4 providers
 
 ---
 
