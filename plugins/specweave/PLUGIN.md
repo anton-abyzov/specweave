@@ -117,7 +117,9 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | /sw:validate-features | Validate feature folder consistency |
 | /sw:api-docs | Generate API documentation (OpenAPI, Postman) |
 | /sw:npm | Full patch release with npm publish |
-| /sw:image-generation | AI image generation using Pollinations.ai |
+| /sw-media:image | AI image generation (Google Imagen 4 / Pollinations.ai) |
+| /sw-media:video | AI video generation (Google Veo 3.1 / Pollinations.ai) |
+| /sw-media:remotion | Programmatic video from React with Remotion |
 | /sw:analytics | Show usage analytics dashboard |
 | /sw:plugin-validator | Validate SpecWeave plugin installation |
 | /sw:migrate-config | Migrate configuration to split secrets/config format |

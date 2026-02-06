@@ -215,14 +215,14 @@ ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort | uniq -d
 
 ## Image Generation
 
-When documentation needs visuals (diagrams, illustrations, icons), use the `/sw:image-generation` skill:
+When documentation needs visuals (diagrams, illustrations, icons), use the `/sw-media:image` skill:
 
 ```
 "Generate a hero image for the authentication documentation"
 "Create an architecture diagram illustration for the API docs"
 ```
 
-See `plugins/specweave-ui/skills/image-generation/SKILL.md` for SpecWeave brand colors and templates.
+See `plugins/specweave-media/skills/image/SKILL.md` for image generation details and provider options.
 
 ## Project-Specific Learnings
 

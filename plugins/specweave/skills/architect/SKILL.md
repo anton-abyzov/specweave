@@ -96,6 +96,7 @@ What did we choose?
 - **Frontend Architecture**: `sw-frontend:frontend-architect` agent for detailed UI/component design
 - **Backend Architecture**: `sw-backend:database-optimizer` agent for database design
 - **Infrastructure**: `sw-infra:devops` agent for deployment architecture
+- **Media Generation**: `sw-media:image` for AI images, `sw-media:video` for video, `sw-media:remotion` for programmatic video
 
 ## ⚠️ MANDATORY: Skill Chaining
 
@@ -115,6 +116,8 @@ Skill({ skill: "sw-backend:dotnet-backend", args: "Build API for increment XXXX"
 | plan.md with Node.js | `sw-backend:nodejs-backend` | Express/Fastify patterns |
 | plan.md with Stripe | `sw-payments:stripe-integration` | Payment flows, webhooks |
 | plan.md with K8s | `sw-k8s:kubernetes-architect` | Deployment patterns |
+| plan.md with images/video needs | `sw-media:image` or `sw-media:video` | AI-generated visual assets |
+| plan.md with animated demos | `sw-media:remotion` | Programmatic video from React |
 
 **Note**: LSP plugins (csharp-lsp, typescript-lsp) work AUTOMATICALLY when editing code - no invocation needed.
 

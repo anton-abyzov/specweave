@@ -115,6 +115,7 @@ export const SPECWEAVE_PLUGINS = [
   'sw-cost',           // Cloud cost optimization
   'sw-docs',          // Extended documentation
   'sw-diagrams',      // Extended diagram support (beyond core)
+  'sw-media',         // AI image/video generation (Imagen, Veo, Pollinations, Remotion)
   'sw-release',       // Extended release management (beyond core)
   // NOTE: sw-ui REMOVED v1.0.204 - merged into sw-testing
   // NOTE: sw-router REMOVED v1.0.160 - detect-intent now handles routing
@@ -521,6 +522,7 @@ sw-mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
 sw-ml: ML, PyTorch, TensorFlow, LLM, MLOps (ONLY if explicit)
 sw-kafka: Kafka, event streaming, MSK (ONLY if explicit)
 sw-confluent: Confluent Cloud, Schema Registry, ksqlDB (ONLY if explicit)
+sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
 sw-github: GitHub issues, PRs, Actions, sync (USE THIS instead of github@official)
 sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)

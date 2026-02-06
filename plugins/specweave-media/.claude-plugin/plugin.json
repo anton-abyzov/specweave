@@ -1,0 +1,24 @@
+{
+  "name": "sw-media",
+  "description": "AI-powered image and video generation. Supports Google Imagen 4 (images), Google Veo 3.1 (video), Pollinations.ai (free fallback), and Remotion (programmatic video from React). One Google API key for both image and video.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "image-generation",
+    "video-generation",
+    "ai-media",
+    "imagen",
+    "veo",
+    "remotion",
+    "pollinations",
+    "text-to-image",
+    "text-to-video",
+    "specweave"
+  ]
+}
