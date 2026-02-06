@@ -20,15 +20,6 @@ describe('IncrementCompletionValidator', () => {
     incrementPath = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
 
-    // Create config.json to disable grill validation for tests (v1.0.228+)
-    // Tests focus on AC/task validation, not grill workflow
-    const configDir = path.join(testRoot, '.specweave');
-    await fs.ensureDir(configDir);
-    await fs.writeFile(
-      path.join(configDir, 'config.json'),
-      JSON.stringify({ grill: { required: false } }, null, 2)
-    );
-
     // Mock process.cwd() to return test root
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
   });
@@ -418,6 +409,44 @@ No tasks in this increment.
 
       // Assert
       expect(count).toBe(0);
+    });
+  });
+
+  describe('grill marker removal', () => {
+    it('should not have validateGrillPassed method (replaced by inline grill in /sw:done)', () => {
+      expect(IncrementCompletionValidator).not.toHaveProperty('validateGrillPassed');
+    });
+
+    it('should not check grill markers in validateCompletion', async () => {
+      // Arrange: Complete increment with NO grill config and NO marker file
+      const specContent = `---
+increment: ${incrementId}
+---
+
+# Test
+
+- [x] **AC-US1-01**: Test AC
+`;
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), specContent);
+
+      const tasksContent = `---
+increment: ${incrementId}
+---
+
+# Tasks
+
+### T-001: Task
+**Status**: [x] completed
+**Satisfies ACs**: AC-US1-01
+`;
+      await fs.writeFile(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      // Act: validateCompletion should pass WITHOUT any grill marker or config
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      // Assert: Should be valid - no grill-related errors
+      expect(result.isValid).toBe(true);
+      expect(result.errors.some(e => e.includes('GRILL'))).toBe(false);
     });
   });
 

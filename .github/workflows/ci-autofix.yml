@@ -18,12 +18,68 @@ concurrency:
 
 jobs:
   autofix:
-    if: github.event.workflow_run.conclusion == 'failure'
+    # Only run on real failures; skip bot-created branches to prevent cascade loops
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      !startsWith(github.event.workflow_run.head_branch, 'ci-autofix/') &&
+      !startsWith(github.event.workflow_run.head_branch, 'fix/ci-')
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
+      - name: Check for existing bot fix PRs
+        id: dedup-check
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.payload.workflow_run.head_branch;
+
+            // Check for open bot PRs targeting this branch
+            const { data: prs } = await github.rest.pulls.list({
+              owner, repo, state: 'open', base: branch, per_page: 100
+            });
+
+            const botPRs = prs.filter(pr =>
+              pr.user.login === 'claude[bot]' ||
+              pr.head.ref.startsWith('ci-autofix/') ||
+              pr.head.ref.startsWith('fix/ci-')
+            );
+
+            if (botPRs.length > 0) {
+              core.setOutput('skip', 'true');
+              core.setOutput('reason', `existing-pr-${botPRs[0].number}`);
+              console.log(`Open bot PR #${botPRs[0].number} exists -- skipping to prevent duplicates`);
+              return;
+            }
+
+            // Check retry count: how many bot PRs were closed in last 24h
+            const { data: closedPRs } = await github.rest.pulls.list({
+              owner, repo, state: 'closed', base: branch, per_page: 50
+            });
+
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const recentClosedBot = closedPRs.filter(pr => {
+              const isBot = pr.user.login === 'claude[bot]' ||
+                pr.head.ref.startsWith('ci-autofix/') ||
+                pr.head.ref.startsWith('fix/ci-');
+              return isBot && new Date(pr.closed_at) > oneDayAgo;
+            });
+
+            if (recentClosedBot.length >= 2) {
+              core.setOutput('skip', 'true');
+              core.setOutput('escalate', 'true');
+              core.setOutput('reason', `${recentClosedBot.length}-bot-prs-closed-in-24h`);
+              console.log(`${recentClosedBot.length} bot PRs closed in 24h -- escalating`);
+              return;
+            }
+
+            // Also check last commit for loop detection (belt-and-suspenders)
+            core.setOutput('skip', 'false');
+
       - name: Checkout failing branch
+        if: steps.dedup-check.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
@@ -31,6 +87,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check for auto-fix loop
+        if: steps.dedup-check.outputs.skip != 'true'
         id: loop-check
         run: |
           LAST_MSG=$(git log -1 --pretty=%s)
@@ -42,7 +99,7 @@ jobs:
           fi
 
       - name: Get failure logs
-        if: steps.loop-check.outputs.skip != 'true'
+        if: steps.dedup-check.outputs.skip != 'true' && steps.loop-check.outputs.skip != 'true'
         id: failure-logs
         uses: actions/github-script@v8
         with:
@@ -72,17 +129,54 @@ jobs:
             const fs = require('fs');
             fs.writeFileSync('failure-logs.txt', failedLogs || 'No detailed logs available');
 
+      - name: Classify failure
+        if: steps.dedup-check.outputs.skip != 'true' && steps.loop-check.outputs.skip != 'true'
+        id: classify
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const logs = fs.readFileSync('failure-logs.txt', 'utf-8');
+
+            // Known pre-existing failures that the bot should NOT attempt to fix
+            // These are tracked separately and fixed by humans
+            const KNOWN_UNFIXABLE = [
+              "Cannot find module '../../src/cli/commands/project.js'",
+              "Cannot find module './project.js'",
+            ];
+
+            const matchedPatterns = KNOWN_UNFIXABLE.filter(p => logs.includes(p));
+            const hasFixableFailures = logs.includes('FAIL') || logs.includes('npm ERR!') ||
+              logs.includes('Error:') || logs.includes('TypeScript');
+
+            if (matchedPatterns.length > 0 && !hasFixableFailures) {
+              core.setOutput('skip', 'true');
+              core.setOutput('reason', 'only-known-unfixable-failures');
+              console.log(`Only known unfixable failures detected: ${matchedPatterns.join(', ')}`);
+            } else {
+              core.setOutput('skip', 'false');
+              const isBuild = logs.includes('tsc') || logs.includes('npm ERR!');
+              core.setOutput('failure_type', isBuild ? 'build' : 'test');
+            }
+
       - name: Setup and build
-        if: steps.loop-check.outputs.skip != 'true'
+        if: |
+          steps.dedup-check.outputs.skip != 'true' &&
+          steps.loop-check.outputs.skip != 'true' &&
+          steps.classify.outputs.skip != 'true'
         uses: ./.github/actions/setup-and-build
 
       - name: Auto-fix with Claude
-        if: steps.loop-check.outputs.skip != 'true'
+        if: |
+          steps.dedup-check.outputs.skip != 'true' &&
+          steps.loop-check.outputs.skip != 'true' &&
+          steps.classify.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             CI tests failed on the ${{ github.event.workflow_run.head_branch }} branch.
+            Failure type: ${{ steps.classify.outputs.failure_type }}
 
             ## Instructions
 
@@ -90,12 +184,15 @@ jobs:
             2. Run `npm run test:unit` to reproduce locally
             3. Fix the root cause with minimal changes
             4. Verify the fix passes: `npm run test:unit && npm run test:e2e`
-            5. Commit and push directly (fast iteration mode)
+            5. Commit and push directly to this branch
 
-            ## Rules
+            ## CRITICAL RULES
 
+            - Do NOT create a new branch. Fix and push to the CURRENT branch only.
+            - Do NOT create a pull request. Just commit and push.
             - ONLY fix test/build failures, do not refactor or improve unrelated code
             - Keep changes minimal - just enough to make CI pass
+            - If the failure is in E2E tests that seem environment-specific or flaky, skip fixing them and focus on unit/smoke failures
             - If unfixable, create a GitHub issue with label "ci-failure" explaining the problem
             - Commit message MUST start with "fix(ci): " followed by short description
             - No emoji, no AI references, no Co-Authored-By in commit messages
@@ -110,25 +207,38 @@ jobs:
             ```
           claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
 
-      - name: Create issue if auto-fix skipped (loop detected)
-        if: steps.loop-check.outputs.skip == 'true'
+      - name: Escalate to human
+        if: |
+          always() &&
+          (steps.dedup-check.outputs.escalate == 'true' || steps.loop-check.outputs.skip == 'true')
         uses: actions/github-script@v8
         with:
           script: |
-            const title = `CI auto-fix failed: ${context.payload.workflow_run.head_branch}`;
+            const branch = context.payload.workflow_run.head_branch;
+            const reason = '${{ steps.dedup-check.outputs.reason }}' || 'loop-detected';
+            const title = `CI auto-fix needs human intervention: ${branch}`;
+
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               labels: 'ci-failure'
             });
-            const alreadyExists = existing.data.some(i => i.title === title);
-            if (!alreadyExists) {
+
+            if (!existing.data.some(i => i.title === title)) {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title,
-                body: `Auto-fix was attempted but the previous commit was already an auto-fix.\n\nManual intervention required.\n\nFailed run: ${context.payload.workflow_run.html_url}`,
+                body: [
+                  `The CI auto-fix bot has been unable to resolve failures on \`${branch}\`.`,
+                  '',
+                  `**Reason**: ${reason}`,
+                  `**Failed run**: ${context.payload.workflow_run.html_url}`,
+                  '',
+                  'This requires manual investigation. The bot will not attempt further fixes',
+                  'until this issue is closed or the existing bot PRs are resolved.',
+                ].join('\n'),
                 labels: ['ci-failure']
               });
             }

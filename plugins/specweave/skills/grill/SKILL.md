@@ -175,32 +175,16 @@ When called, you can specify a focus area:
 
 ---
 
-## Marker File
-
-When the grill passes, I create a marker file to indicate the increment is ready for closure:
-
-```bash
-# On successful grill
-mkdir -p .specweave/state
-echo '{"status":"passed","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","increment":"'$INCREMENT_ID'"}' > .specweave/state/.sw-grill-passed-{increment-id}
-```
-
-This marker is checked by `/sw:done` - if missing, the increment cannot be closed.
-
----
-
 ## Integration with /sw:done
 
-The grill is MANDATORY before closure:
+`/sw:done` calls `/sw:grill` inline as its first step — no marker files needed.
 
-1. Developer completes all tasks
-2. Developer runs `/sw:grill {increment-id}`
-3. If FAIL: Fix issues, re-run grill
-4. If PASS: Marker file created
-5. Developer runs `/sw:done {increment-id}`
-6. `/sw:done` checks for marker file
-7. If marker missing: BLOCKED with message to run grill first
-8. If marker present: Increment closes
+1. Developer runs `/sw:done {increment-id}`
+2. `/sw:done` invokes `/sw:grill` automatically
+3. If grill finds BLOCKERs/CRITICALs → closure stops, user fixes issues
+4. If grill passes → closure continues to PM validation
+
+You can also run `/sw:grill` standalone at any time for early feedback.
 
 ---
 

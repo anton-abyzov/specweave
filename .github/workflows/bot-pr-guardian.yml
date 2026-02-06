@@ -1,0 +1,134 @@
+name: Bot PR Guardian
+
+# Scheduled housekeeping: closes stale/duplicate bot PRs, escalates persistent failures
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:        # Manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  guardian:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan and manage bot PRs
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const MAX_FAILED_CHECKS = 2;
+            const MAX_AGE_HOURS = 48;
+
+            // Identify bot PRs by author or branch naming convention
+            const BOT_AUTHORS = ['claude[bot]'];
+            const BOT_BRANCH_PREFIXES = ['ci-autofix/', 'fix/ci-'];
+
+            const isBot = (pr) =>
+              BOT_AUTHORS.includes(pr.user.login) ||
+              BOT_BRANCH_PREFIXES.some(p => pr.head.ref.startsWith(p));
+
+            // Get all open PRs
+            const { data: allPRs } = await github.rest.pulls.list({
+              owner, repo, state: 'open', per_page: 100
+            });
+
+            const botPRs = allPRs.filter(isBot);
+            console.log(`Found ${botPRs.length} open bot PRs`);
+
+            if (botPRs.length === 0) {
+              console.log('No bot PRs to manage');
+              return;
+            }
+
+            // Group by target branch (base)
+            const grouped = {};
+            for (const pr of botPRs) {
+              const key = pr.base.ref;
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(pr);
+            }
+
+            const actions = [];
+
+            for (const [base, group] of Object.entries(grouped)) {
+              // Sort newest first
+              group.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+              // Close duplicates: keep only the newest PR per target branch
+              if (group.length > 1) {
+                for (const pr of group.slice(1)) {
+                  await github.rest.pulls.update({
+                    owner, repo, pull_number: pr.number, state: 'closed'
+                  });
+                  try {
+                    await github.rest.git.deleteRef({
+                      owner, repo, ref: `heads/${pr.head.ref}`
+                    });
+                  } catch (e) { /* branch may already be deleted */ }
+                  actions.push(`Closed #${pr.number} (duplicate targeting ${base})`);
+                }
+              }
+
+              // Check the remaining (newest) PR for repeated failures or staleness
+              const newest = group[0];
+              const ageHours = (Date.now() - new Date(newest.created_at)) / (1000 * 60 * 60);
+
+              // Get check runs
+              const { data: checks } = await github.rest.checks.listForRef({
+                owner, repo, ref: newest.head.sha
+              });
+
+              const failedChecks = checks.check_runs.filter(c => c.conclusion === 'failure').length;
+
+              if (failedChecks >= MAX_FAILED_CHECKS || ageHours > MAX_AGE_HOURS) {
+                const reason = failedChecks >= MAX_FAILED_CHECKS
+                  ? `${failedChecks} failed checks`
+                  : `stale (${Math.round(ageHours)}h old)`;
+
+                await github.rest.pulls.update({
+                  owner, repo, pull_number: newest.number, state: 'closed'
+                });
+                try {
+                  await github.rest.git.deleteRef({
+                    owner, repo, ref: `heads/${newest.head.ref}`
+                  });
+                } catch (e) { /* ok */ }
+                actions.push(`Closed #${newest.number} (${reason})`);
+              }
+            }
+
+            // Summarize
+            if (actions.length === 0) {
+              console.log('All bot PRs are healthy -- no action needed');
+              return;
+            }
+
+            const summary = actions.join('\n- ');
+            console.log(`Actions taken:\n- ${summary}`);
+
+            // Create escalation issue if we had to close PRs
+            const title = 'Bot PR Guardian: cleaned up failing bot PRs';
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'ci-failure,bot-guardian'
+            });
+
+            if (!existing.some(i => i.title === title)) {
+              await github.rest.issues.create({
+                owner, repo, title,
+                body: [
+                  'The Bot PR Guardian workflow cleaned up the following bot PRs:',
+                  '',
+                  ...actions.map(a => `- ${a}`),
+                  '',
+                  'These failures likely require manual investigation.',
+                  '',
+                  `Run: [${context.runId}](https://github.com/${owner}/${repo}/actions/runs/${context.runId})`,
+                ].join('\n'),
+                labels: ['ci-failure', 'bot-guardian']
+              });
+            }

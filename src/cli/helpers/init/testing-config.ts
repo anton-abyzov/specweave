@@ -12,9 +12,21 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { WIZARD_BACK, createGoBackChoice, type WizardResult } from './wizard-navigation.js';
 
 /**
+ * Get the default coverage target based on the selected test mode.
+ * TDD mode defaults to 90%, test-after to 80%, manual/none to 0%.
+ */
+export function getCoverageDefault(testMode: TestMode): number {
+  switch (testMode) {
+    case 'TDD': return 90;
+    case 'test-after': return 80;
+    default: return 0;
+  }
+}
+
+/**
  * Get translated strings for testing configuration
  */
-function getTestingStrings(language: SupportedLanguage): {
+export function getTestingStrings(language: SupportedLanguage): {
   header: string;
   subheader: string;
   guidance: string;
@@ -33,6 +45,7 @@ function getTestingStrings(language: SupportedLanguage): {
   coverage70: string;
   coverage80: string;
   coverage90: string;
+  coverage100: string;
   coverageCustom: string;
   enterCustom: string;
   coverageValidation: string;
@@ -61,6 +74,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Moderate (good for most projects)',
       coverage80: '80% - Good (recommended for production)',
       coverage90: '90% - High (comprehensive coverage)',
+      coverage100: '100% - Full coverage (strict)',
       coverageCustom: 'Custom (enter your own value 0-100)',
       enterCustom: 'Enter custom coverage target (0-100):',
       coverageValidation: 'Coverage target must be between 0% and 100%',
@@ -88,6 +102,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Умеренно (подходит для большинства проектов)',
       coverage80: '80% - Хорошо (рекомендуется для production)',
       coverage90: '90% - Высокое (полное покрытие)',
+      coverage100: '100% - Полное покрытие (строгое)',
       coverageCustom: 'Свое значение (введите 0-100)',
       enterCustom: 'Введите целевое покрытие (0-100):',
       coverageValidation: 'Целевое покрытие должно быть между 0% и 100%',
@@ -115,6 +130,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Moderado (bueno para la mayoría de proyectos)',
       coverage80: '80% - Bueno (recomendado para producción)',
       coverage90: '90% - Alto (cobertura completa)',
+      coverage100: '100% - Cobertura total (estricto)',
       coverageCustom: 'Personalizado (ingrese valor 0-100)',
       enterCustom: 'Ingrese cobertura objetivo personalizada (0-100):',
       coverageValidation: 'La cobertura objetivo debe estar entre 0% y 100%',
@@ -142,6 +158,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - 中等（适合大多数项目）',
       coverage80: '80% - 良好（推荐用于生产）',
       coverage90: '90% - 高（全面覆盖）',
+      coverage100: '100% - 完全覆盖（严格）',
       coverageCustom: '自定义（输入0-100）',
       enterCustom: '输入自定义覆盖率目标（0-100）：',
       coverageValidation: '覆盖率目标必须在0%到100%之间',
@@ -169,6 +186,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Moderat (gut für die meisten Projekte)',
       coverage80: '80% - Gut (empfohlen für Produktion)',
       coverage90: '90% - Hoch (umfassende Abdeckung)',
+      coverage100: '100% - Volle Abdeckung (streng)',
       coverageCustom: 'Benutzerdefiniert (Wert 0-100 eingeben)',
       enterCustom: 'Geben Sie ein benutzerdefiniertes Abdeckungsziel ein (0-100):',
       coverageValidation: 'Abdeckungsziel muss zwischen 0% und 100% liegen',
@@ -196,6 +214,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Modéré (bon pour la plupart des projets)',
       coverage80: '80% - Bon (recommandé pour la production)',
       coverage90: '90% - Élevé (couverture complète)',
+      coverage100: '100% - Couverture totale (strict)',
       coverageCustom: 'Personnalisé (entrez une valeur 0-100)',
       enterCustom: 'Entrez une couverture cible personnalisée (0-100) :',
       coverageValidation: 'La couverture cible doit être entre 0% et 100%',
@@ -223,6 +242,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - 中程度（ほとんどのプロジェクトに適切）',
       coverage80: '80% - 良好（本番に推奨）',
       coverage90: '90% - 高い（包括的カバレッジ）',
+      coverage100: '100% - 完全カバレッジ（厳格）',
       coverageCustom: 'カスタム（0-100の値を入力）',
       enterCustom: 'カスタムカバレッジ目標を入力（0-100）：',
       coverageValidation: 'カバレッジ目標は0%から100%の間でなければなりません',
@@ -250,6 +270,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - 중간 (대부분 프로젝트에 적합)',
       coverage80: '80% - 좋음 (프로덕션에 권장)',
       coverage90: '90% - 높음 (포괄적 커버리지)',
+      coverage100: '100% - 완전 커버리지 (엄격)',
       coverageCustom: '사용자 지정 (0-100 값 입력)',
       enterCustom: '사용자 지정 커버리지 목표 입력 (0-100):',
       coverageValidation: '커버리지 목표는 0%에서 100% 사이여야 합니다',
@@ -277,6 +298,7 @@ function getTestingStrings(language: SupportedLanguage): {
       coverage70: '70% - Moderado (bom para maioria dos projetos)',
       coverage80: '80% - Bom (recomendado para produção)',
       coverage90: '90% - Alto (cobertura abrangente)',
+      coverage100: '100% - Cobertura total (estrito)',
       coverageCustom: 'Personalizado (digite valor 0-100)',
       enterCustom: 'Digite a cobertura alvo personalizada (0-100):',
       coverageValidation: 'A cobertura alvo deve estar entre 0% e 100%',
@@ -382,11 +404,15 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
           value: 90 as number | 'custom',
         },
         {
+          name: strings.coverage100,
+          value: 100 as number | 'custom',
+        },
+        {
           name: strings.coverageCustom,
           value: 'custom' as number | 'custom',
         }
       ],
-      default: 80
+      default: getCoverageDefault(testMode)
     });
 
     if (selectedCoverageLevel === 'custom') {

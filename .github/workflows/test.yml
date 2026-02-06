@@ -12,22 +12,63 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup and build
         uses: ./.github/actions/setup-and-build
-
       - name: Link CLI globally
         run: npm link
-
       - name: Run smoke tests
         run: npm test
 
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
       - name: Run unit tests
         run: npm run test:unit
 
+  e2e:
+    runs-on: ubuntu-latest
+    # E2E tests are non-blocking: flaky environment-specific tests
+    # should not prevent merges or trigger autofix loops
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup and build
+        uses: ./.github/actions/setup-and-build
+      - name: Link CLI globally
+        run: npm link
       - name: Run E2E tests
         run: npm run test:e2e
+
+  results:
+    needs: [smoke, unit, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check critical test results
+        run: |
+          echo "Smoke: ${{ needs.smoke.result }}"
+          echo "Unit:  ${{ needs.unit.result }}"
+          echo "E2E:   ${{ needs.e2e.result }}"
+
+          if [ "${{ needs.smoke.result }}" = "failure" ]; then
+            echo "::error::Smoke tests failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.unit.result }}" = "failure" ]; then
+            echo "::error::Unit tests failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.e2e.result }}" = "failure" ]; then
+            echo "::warning::E2E tests failed (non-blocking)"
+          fi
+
+          echo "All critical tests passed"

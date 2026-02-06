@@ -879,12 +879,12 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     provider: 'none',
   },
   testing: {
-    defaultTestMode: 'test-after',
-    defaultCoverageTarget: 50,
+    defaultTestMode: 'TDD',
+    defaultCoverageTarget: 90,
     coverageTargets: {
-      unit: 55,
-      integration: 50,
-      e2e: 60,
+      unit: 95,
+      integration: 90,
+      e2e: 100,
     },
   },
   limits: {
