@@ -445,7 +445,9 @@ Build machine learning systems.
 | `ml-engineer` | sw-ml | ML pipeline engineering |
 | `mlops-engineer` | sw-ml | MLOps and model deployment |
 | `data-scientist` | sw-ml | Data analysis and experimentation |
-| `image-generation` | core | AI image generation (Pollinations.ai) |
+| `image` | sw-media | AI image generation (Google Imagen 4 / Pollinations.ai) |
+| `video` | sw-media | AI video generation (Google Veo 3.1 / Pollinations.ai) |
+| `remotion` | sw-media | Programmatic video from React with Remotion |
 
 ### ml-specialist
 
@@ -461,18 +463,34 @@ Build machine learning systems.
 - Training pipelines
 - Model evaluation metrics
 
-### image-generation
+### image (sw-media)
 
-**Purpose**: Generate images using AI (free, no API key).
+**Purpose**: Generate images using AI. Google Imagen 4 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
 
 ```bash
-/sw:image-generation "hero image for SaaS landing page"
+/sw-media:image "hero image for SaaS landing page"
 ```
 
 **Generates:**
 - Hero images
 - Icons and logos
 - Product mockups
+
+### video (sw-media)
+
+**Purpose**: Generate videos using AI. Google Veo 3.1 (with `GEMINI_API_KEY`) or Pollinations.ai (free fallback).
+
+```bash
+/sw-media:video "product demo showing the dashboard in action"
+```
+
+### remotion (sw-media)
+
+**Purpose**: Create programmatic videos with Remotion (React components rendered to MP4).
+
+```bash
+/sw-media:remotion "animated product launch video with logo reveal"
+```
 - Illustrations
 
 ---

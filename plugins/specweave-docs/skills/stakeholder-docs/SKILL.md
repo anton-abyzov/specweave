@@ -230,7 +230,8 @@ This skill works best when combined with:
 
 - **living-docs-navigator**: Navigate source technical docs
 - **docs-writer**: Generate detailed documentation
-- **image-generation**: Add charts and visualizations via `/sw:image-generation`
+- **sw-media:image**: Add images and visualizations via `/sw-media:image`
+- **sw-media:video**: Add video content via `/sw-media:video`
 
 ## Activation Keywords
 
