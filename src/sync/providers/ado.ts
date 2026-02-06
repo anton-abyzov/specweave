@@ -91,14 +91,26 @@ export class AdoAdapter implements ProviderAdapter {
       operations.push({ op: 'add', path: '/fields/Microsoft.VSTS.Common.AcceptanceCriteria', value: `<ul>${acHtml}</ul>` });
     }
 
+    // Note: Work item type varies by process template (Agile/Scrum use "User Story", Basic uses "Issue")
+    // For now, use "Issue" which is most common in Basic template projects
     const response = await this.apiRequest(
       'POST',
-      `/wit/workitems/$User Story?api-version=7.1`,
+      `/wit/workitems/$Issue?api-version=7.1`,
       operations,
       'application/json-patch+json'
     );
 
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to create work item: ${response.status} ${text.substring(0, 200)}`);
+    }
+
     const workItem = await response.json() as AdoWorkItem;
+
+    if (!workItem.id) {
+      throw new Error(`Work item created but no ID returned. Response: ${JSON.stringify(workItem).substring(0, 200)}`);
+    }
+
     const htmlUrl = workItem._links?.html?.href ||
       `https://dev.azure.com/${this.organization}/${this.project}/_workitems/edit/${workItem.id}`;
 
@@ -134,8 +146,9 @@ export class AdoAdapter implements ProviderAdapter {
   }
 
   async closeIssue(ref: ExternalRef, comment?: string): Promise<void> {
+    // Note: State names vary by process template (Agile/Scrum use "Closed", Basic uses "Done")
     const operations: Array<{ op: string; path: string; value: unknown }> = [
-      { op: 'add', path: '/fields/System.State', value: 'Closed' },
+      { op: 'add', path: '/fields/System.State', value: 'Done' },
     ];
 
     if (comment) {
@@ -208,6 +221,10 @@ export class AdoAdapter implements ProviderAdapter {
 
   async getIssueState(ref: ExternalRef): Promise<ItemState> {
     const response = await this.apiRequest('GET', `/wit/workitems/${ref.id}?api-version=7.1`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to get work item ${ref.id}: ${response.status} ${text.substring(0, 200)}`);
+    }
     const item = await response.json() as AdoWorkItem;
 
     const tags = String(item.fields['System.Tags'] || '').split(';').map(t => t.trim()).filter(Boolean);

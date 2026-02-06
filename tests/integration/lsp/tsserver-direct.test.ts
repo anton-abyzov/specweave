@@ -47,8 +47,20 @@ describe('TsServerClient on SpecWeave codebase', () => {
       return;
     }
 
-    // Find references to LSPManager class (line 48, "export class LSPManager")
-    const result = await client.findReferences(testFile, 47, 13);
+    // Find references to LSPManager class - find line dynamically
+    const content = fs.readFileSync(testFile, 'utf-8');
+    const lines = content.split('\n');
+    const classLine = lines.findIndex(l => l.includes('export class LSPManager'));
+    if (classLine === -1) {
+      console.log('Skipping: LSPManager class not found');
+      return;
+    }
+    const classCol = lines[classLine].indexOf('LSPManager');
+
+    // Warmup first to ensure project is loaded
+    await client.warmup([testFile]);
+
+    const result = await client.findReferences(testFile, classLine, classCol);
 
     expect(result.success).toBe(true);
     expect(result.locations).toBeDefined();

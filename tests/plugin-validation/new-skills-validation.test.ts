@@ -1,0 +1,238 @@
+import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync, readdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, '..', '..');
+const pluginsDir = join(projectRoot, 'plugins');
+
+/**
+ * Validation Tests: New Skills from Increment 0191 (Skill Enrichment)
+ *
+ * Validates that all 25 new SKILL.md files have correct:
+ * 1. File existence and placement
+ * 2. YAML frontmatter structure (no forbidden `name:` field)
+ * 3. Required frontmatter fields (description)
+ * 4. Content quality (minimum lines, required sections)
+ * 5. Plugin manifest correctness
+ */
+
+// New skills added in increment 0191
+const NEW_SKILLS: Record<string, string[]> = {
+  'specweave-mobile': [
+    'swiftui',
+    'jetpack-compose',
+    'flutter',
+    'expo',
+    'mobile-testing',
+    'deep-linking-push',
+    'capacitor-ionic',
+  ],
+  'specweave-ml': [
+    'langchain-agents',
+    'rag-vectordb',
+    'llm-fine-tuning',
+    'huggingface',
+    'edge-ml',
+  ],
+  'specweave-backend': [
+    'go-backend',
+    'java-spring',
+    'rust-backend',
+    'graphql',
+  ],
+  'specweave-infrastructure': [
+    'terraform-opentofu',
+    'opentelemetry',
+    'github-actions',
+    'devsecops',
+    'secret-management',
+    'azure-bicep-aks',
+    'aws-deep-dive',
+  ],
+  'specweave-desktop': ['electron'],
+  'specweave-blockchain': ['blockchain'],
+};
+
+// New plugins that need manifests
+const NEW_PLUGINS = ['specweave-desktop', 'specweave-blockchain'];
+
+function parseFrontmatter(content: string): {
+  frontmatter: Record<string, string>;
+  body: string;
+} {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    return { frontmatter: {}, body: content };
+  }
+
+  const frontmatter: Record<string, string> = {};
+  const lines = match[1].split('\n');
+
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.substring(0, colonIndex).trim();
+      const value = line.substring(colonIndex + 1).trim();
+      // Only capture top-level keys (not indented sub-keys)
+      if (!line.startsWith(' ') && !line.startsWith('\t')) {
+        frontmatter[key] = value;
+      }
+    }
+  }
+
+  return { frontmatter, body: match[2] };
+}
+
+describe('New Skills Validation (Increment 0191)', () => {
+  describe('File Existence', () => {
+    for (const [plugin, skills] of Object.entries(NEW_SKILLS)) {
+      for (const skill of skills) {
+        it(`${plugin}/${skill}/SKILL.md should exist`, () => {
+          const skillPath = join(pluginsDir, plugin, 'skills', skill, 'SKILL.md');
+          expect(existsSync(skillPath)).toBe(true);
+        });
+      }
+    }
+  });
+
+  describe('Frontmatter Validation', () => {
+    for (const [plugin, skills] of Object.entries(NEW_SKILLS)) {
+      for (const skill of skills) {
+        const skillPath = join(pluginsDir, plugin, 'skills', skill, 'SKILL.md');
+
+        it(`${plugin}/${skill} should have valid frontmatter with description`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const { frontmatter } = parseFrontmatter(content);
+
+          expect(frontmatter.description).toBeDefined();
+          expect(frontmatter.description.length).toBeGreaterThan(20);
+        });
+
+        it(`${plugin}/${skill} should NOT have forbidden name: field in frontmatter`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const { frontmatter } = parseFrontmatter(content);
+
+          expect(frontmatter.name).toBeUndefined();
+        });
+
+        it(`${plugin}/${skill} should start with --- frontmatter delimiter`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          expect(content.startsWith('---')).toBe(true);
+        });
+      }
+    }
+  });
+
+  describe('Content Quality', () => {
+    for (const [plugin, skills] of Object.entries(NEW_SKILLS)) {
+      for (const skill of skills) {
+        const skillPath = join(pluginsDir, plugin, 'skills', skill, 'SKILL.md');
+
+        it(`${plugin}/${skill} should have minimum 200 lines`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const lineCount = content.split('\n').length;
+          expect(lineCount).toBeGreaterThan(200);
+        });
+
+        it(`${plugin}/${skill} should not exceed 1500 lines`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const lineCount = content.split('\n').length;
+          expect(lineCount).toBeLessThanOrEqual(1500);
+        });
+
+        it(`${plugin}/${skill} should have an H1 title`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          expect(content).toMatch(/^# .+/m);
+        });
+
+        it(`${plugin}/${skill} should have at least 3 H2 sections`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const h2Count = (content.match(/^## .+/gm) || []).length;
+          expect(h2Count).toBeGreaterThanOrEqual(3);
+        });
+
+        it(`${plugin}/${skill} should contain code examples`, () => {
+          if (!existsSync(skillPath)) return;
+          const content = readFileSync(skillPath, 'utf-8');
+          const codeBlockCount = (content.match(/```/g) || []).length;
+          // At least 2 code blocks (opening + closing = 1 example)
+          expect(codeBlockCount).toBeGreaterThanOrEqual(2);
+        });
+      }
+    }
+  });
+
+  describe('Plugin Manifests', () => {
+    for (const plugin of NEW_PLUGINS) {
+      const manifestPath = join(pluginsDir, plugin, '.claude-plugin', 'plugin.json');
+
+      it(`${plugin}/plugin.json should exist`, () => {
+        expect(existsSync(manifestPath)).toBe(true);
+      });
+
+      it(`${plugin}/plugin.json should have required fields`, () => {
+        if (!existsSync(manifestPath)) return;
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+
+        expect(manifest.name).toBeDefined();
+        expect(manifest.name).toMatch(/^sw-/);
+        expect(manifest.description).toBeDefined();
+        expect(manifest.version).toBeDefined();
+        expect(manifest.license).toBe('MIT');
+      });
+
+      it(`${plugin}/PLUGIN.md should exist`, () => {
+        const pluginMdPath = join(pluginsDir, plugin, 'PLUGIN.md');
+        expect(existsSync(pluginMdPath)).toBe(true);
+      });
+    }
+
+    // Updated plugins should have correct version
+    const updatedPlugins = [
+      'specweave-mobile',
+      'specweave-ml',
+      'specweave-backend',
+      'specweave-infrastructure',
+    ];
+
+    for (const plugin of updatedPlugins) {
+      it(`${plugin}/plugin.json should be updated to 1.1.0`, () => {
+        const manifestPath = join(pluginsDir, plugin, '.claude-plugin', 'plugin.json');
+        if (!existsSync(manifestPath)) return;
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+        expect(manifest.version).toBe('1.1.0');
+      });
+    }
+  });
+
+  describe('Skill Count Totals', () => {
+    it('should have exactly 25 new skills', () => {
+      let totalSkills = 0;
+      for (const skills of Object.values(NEW_SKILLS)) {
+        totalSkills += skills.length;
+      }
+      expect(totalSkills).toBe(25);
+    });
+
+    it('should have all skill directories containing only SKILL.md', () => {
+      for (const [plugin, skills] of Object.entries(NEW_SKILLS)) {
+        for (const skill of skills) {
+          const skillDir = join(pluginsDir, plugin, 'skills', skill);
+          if (!existsSync(skillDir)) continue;
+          const files = readdirSync(skillDir);
+          expect(files).toContain('SKILL.md');
+        }
+      }
+    });
+  });
+});

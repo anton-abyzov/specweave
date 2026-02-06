@@ -171,6 +171,7 @@ export class JiraAdapter implements ProviderAdapter {
     const response = await this.apiRequest('POST', `/search/jql`, {
       jql,
       maxResults: 50,
+      fields: ['summary', 'status', 'issuetype', 'priority', 'labels', 'parent'],
     });
     const data = await response.json() as { issues: JiraIssue[] };
     const changes: ExternalChange[] = [];

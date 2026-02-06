@@ -1,22 +1,30 @@
 {
   "name": "sw-mobile",
-  "version": "1.0.0",
-  "description": "Comprehensive React Native and Expo development support for mobile app development. Includes environment setup, debugging, performance optimization, native modules, and testing strategies.",
+  "version": "1.1.0",
+  "description": "Comprehensive mobile development for iOS (SwiftUI), Android (Jetpack Compose/Kotlin), Flutter, React Native/Expo, and Capacitor/Ionic. Includes mobile testing, deep linking, push notifications, and cross-platform architecture.",
   "author": {
-    "name": "SpecWeave Team"
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
   },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
   "keywords": [
-    "react-native",
-    "expo",
     "mobile",
     "ios",
     "android",
-    "simulator",
-    "emulator",
-    "native-modules",
-    "metro",
-    "mobile-development"
-  ],
-  "repository": "https://github.com/anton-abyzov/specweave",
-  "license": "MIT"
+    "swiftui",
+    "jetpack-compose",
+    "kotlin",
+    "flutter",
+    "dart",
+    "react-native",
+    "expo",
+    "capacitor",
+    "ionic",
+    "deep-linking",
+    "push-notifications",
+    "mobile-testing",
+    "specweave"
+  ]
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.201 - LSP CLI Fallback Instructions)
+# SpecWeave UserPromptSubmit Hook (v1.0.235 - Project-Scope Initialization Guard)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
@@ -87,6 +87,109 @@ if command -v jq >/dev/null 2>&1; then
 else
   # Fallback: extract prompt with grep (no node!)
   PROMPT=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]*' 2>/dev/null || echo "")
+fi
+
+# ==============================================================================
+# PROJECT-SCOPE INITIALIZATION GUARD (v1.0.235)
+# ==============================================================================
+# Prevents SpecWeave skills from running in non-initialized projects.
+# Provides user-friendly prompt to initialize or disable plugins.
+#
+# Control:
+# - SPECWEAVE_DISABLE_GUARD=1 environment variable
+# - guard.enabled: false in .specweave/config.json
+#
+# Why: Skills are globally visible due to Claude Code's plugin system,
+# but they require project-specific initialization to work correctly.
+
+# Helper function: Find .specweave/config.json by walking up directory tree
+find_specweave_config() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/.specweave/config.json" ]]; then
+      # Validate it's valid JSON
+      if command -v jq >/dev/null 2>&1; then
+        if jq empty "$dir/.specweave/config.json" 2>/dev/null; then
+          echo "$dir/.specweave/config.json"
+          return 0
+        fi
+      else
+        # No jq available - assume valid if file exists
+        echo "$dir/.specweave/config.json"
+        return 0
+      fi
+    fi
+    dir=$(dirname "$dir")
+  done
+  return 1
+}
+
+# Check if this is a SpecWeave skill invocation
+if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]]; then
+  # Check if guard is disabled via environment variable
+  if [[ "${SPECWEAVE_DISABLE_GUARD:-0}" != "1" ]]; then
+    # Check if project is initialized (walk up tree to find .specweave/config.json)
+    FOUND_CONFIG=$(find_specweave_config)
+    if [[ -z "$FOUND_CONFIG" ]]; then
+      # Check if guard is disabled in config (would fail since no config exists yet)
+      # Extract skill name for error message
+      SKILL_NAME=$(echo "$PROMPT" | grep -oP '^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+' | tr '[:upper:]' '[:lower:]')
+
+      # Generate helpful error message
+      cat <<EOF
+{
+  "decision": "block",
+  "reason": "⚠️ **SpecWeave Not Initialized**
+
+You invoked \`${SKILL_NAME}\`, but this project hasn't been initialized with SpecWeave yet.
+
+**Options:**
+
+1. **Initialize SpecWeave in this project:**
+   \`\`\`bash
+   specweave init
+   # or
+   npx specweave init
+   \`\`\`
+
+2. **Use SpecWeave in a different directory:**
+   Navigate to a SpecWeave project first:
+   \`\`\`bash
+   cd /path/to/your/specweave-project
+   \`\`\`
+
+3. **Disable SpecWeave plugins globally:**
+   If you don't need SpecWeave in most projects, disable it in:
+   \`~/.claude/settings.json\`
+   \`\`\`json
+   {
+     \"enabledPlugins\": {
+       \"sw@specweave\": false,
+       \"sw-frontend@specweave\": false
+     }
+   }
+   \`\`\`
+
+4. **Disable this guard (not recommended):**
+   \`\`\`bash
+   export SPECWEAVE_DISABLE_GUARD=1
+   \`\`\`
+
+**Note:** SpecWeave skills are globally installed but require project-specific initialization to work correctly."
+}
+EOF
+      exit 0
+    fi
+
+    # Check if guard is disabled in config (using found config path)
+    if command -v jq >/dev/null 2>&1; then
+      GUARD_ENABLED=$(jq -r '.guard.enabled // true' "$FOUND_CONFIG" 2>/dev/null)
+      if [[ "$GUARD_ENABLED" == "false" ]]; then
+        # Guard disabled in config - allow through
+        :
+      fi
+    fi
+  fi
 fi
 
 # ==============================================================================
@@ -385,9 +488,15 @@ fi
 LSP_PROJECT_NEEDS_TS="false"
 LSP_PROJECT_NEEDS_PY="false"
 LSP_PROJECT_NEEDS_RUST="false"
+LSP_PROJECT_NEEDS_CSHARP="false"
+LSP_PROJECT_NEEDS_GO="false"
+LSP_PROJECT_NEEDS_JAVA="false"
 LSP_PROMPT_NEEDS_TS="false"
 LSP_PROMPT_NEEDS_PY="false"
 LSP_PROMPT_NEEDS_RUST="false"
+LSP_PROMPT_NEEDS_CSHARP="false"
+LSP_PROMPT_NEEDS_GO="false"
+LSP_PROMPT_NEEDS_JAVA="false"
 
 # Detect TypeScript/JavaScript project from file system
 # Check for: tsconfig.json, package.json with typescript, *.ts/*.tsx files
@@ -428,6 +537,40 @@ if [[ "$LSP_PROJECT_NEEDS_RUST" != "true" ]]; then
   fi
 fi
 
+# v1.0.235: Detect C#/.NET project from file system
+# Check for: *.csproj, *.sln, Directory.Build.props, *.cs files
+if ls *.csproj *.sln 2>/dev/null | head -1 | grep -q . || [[ -f "Directory.Build.props" ]]; then
+  LSP_PROJECT_NEEDS_CSHARP="true"
+fi
+if [[ "$LSP_PROJECT_NEEDS_CSHARP" != "true" ]]; then
+  # Check one level of subdirectories (common C# project structure: src/MyApp/MyApp.csproj)
+  if ls */*.csproj */*.sln src/*/*.csproj 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_CSHARP="true"
+  elif ls *.cs src/*.cs 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_CSHARP="true"
+  fi
+fi
+
+# v1.0.235: Detect Go project from file system
+if [[ -f "go.mod" ]] || [[ -f "go.sum" ]]; then
+  LSP_PROJECT_NEEDS_GO="true"
+fi
+if [[ "$LSP_PROJECT_NEEDS_GO" != "true" ]]; then
+  if ls *.go cmd/*.go pkg/*.go 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_GO="true"
+  fi
+fi
+
+# v1.0.235: Detect Java project from file system
+if [[ -f "pom.xml" ]] || [[ -f "build.gradle" ]] || [[ -f "build.gradle.kts" ]] || [[ -f "settings.gradle" ]]; then
+  LSP_PROJECT_NEEDS_JAVA="true"
+fi
+if [[ "$LSP_PROJECT_NEEDS_JAVA" != "true" ]]; then
+  if ls *.java src/*.java src/main/java/*.java 2>/dev/null | head -1 | grep -q .; then
+    LSP_PROJECT_NEEDS_JAVA="true"
+  fi
+fi
+
 # Detect from prompt keywords (TypeScript/React/Vue/Angular/Node)
 if echo "$PROMPT" | grep -qiE "\.tsx?|typescript|react|vue|angular|next\.?js|node\.?js|express|nestjs"; then
   LSP_PROMPT_NEEDS_TS="true"
@@ -441,6 +584,21 @@ fi
 # Detect from prompt keywords (Rust/Cargo)
 if echo "$PROMPT" | grep -qiE "\.rs|rust|cargo|rustc|tokio|actix|axum"; then
   LSP_PROMPT_NEEDS_RUST="true"
+fi
+
+# v1.0.235: Detect from prompt keywords (C#/.NET)
+if echo "$PROMPT" | grep -qiE "\.cs\b|c#|csharp|dotnet|\.net|asp\.net|blazor|entity.?framework|nuget|\.csproj|\.sln"; then
+  LSP_PROMPT_NEEDS_CSHARP="true"
+fi
+
+# v1.0.235: Detect from prompt keywords (Go)
+if echo "$PROMPT" | grep -qiE "\.go\b|golang|go\.mod|goroutine|gin|echo|fiber"; then
+  LSP_PROMPT_NEEDS_GO="true"
+fi
+
+# v1.0.235: Detect from prompt keywords (Java/Spring/Kotlin)
+if echo "$PROMPT" | grep -qiE "\.java\b|java\b|spring|maven|gradle|kotlin|\.kt\b|jvm"; then
+  LSP_PROMPT_NEEDS_JAVA="true"
 fi
 
 # LSP setup is handled by `specweave init` and `specweave lsp status`
@@ -478,7 +636,10 @@ fi
 if [[ "$LSP_REQUEST_DETECTED" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]] || \
    [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]] || \
-   [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+   [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_CSHARP" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_CSHARP" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]] || \
+   [[ "$LSP_PROJECT_NEEDS_JAVA" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_JAVA" == "true" ]]; then
   LSP_NEEDS_INSTALL="true"
 fi
 
@@ -506,20 +667,49 @@ if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" != "true" ]]; 
       [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
       DETECTED_LANGS="${DETECTED_LANGS}Rust"
     fi
+    if [[ "$LSP_PROJECT_NEEDS_CSHARP" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_CSHARP" == "true" ]]; then
+      [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
+      DETECTED_LANGS="${DETECTED_LANGS}C#"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+      [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
+      DETECTED_LANGS="${DETECTED_LANGS}Go"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_JAVA" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_JAVA" == "true" ]]; then
+      [[ -n "$DETECTED_LANGS" ]] && DETECTED_LANGS="$DETECTED_LANGS, "
+      DETECTED_LANGS="${DETECTED_LANGS}Java"
+    fi
 
-    # Check if plugins are missing
+    # v1.0.235: Check if plugins are missing (expanded language support)
     MISSING_PLUGINS="false"
+    INSTALLED_PLUGINS_FILE="$HOME/.claude/plugins/installed_plugins.json"
+    _check_plugin() {
+      local plugin_name="$1"
+      if [[ -f "$INSTALLED_PLUGINS_FILE" ]]; then
+        if ! grep -q "\"${plugin_name}@" "$INSTALLED_PLUGINS_FILE" 2>/dev/null; then
+          MISSING_PLUGINS="true"
+        fi
+      else
+        MISSING_PLUGINS="true"
+      fi
+    }
     if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
-      VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-      [[ "$VTSLS_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+      _check_plugin "vtsls"
     fi
     if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
-      PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-      [[ "$PYRIGHT_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+      _check_plugin "pyright"
     fi
     if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
-      RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-      [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && MISSING_PLUGINS="true"
+      _check_plugin "rust-analyzer"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_CSHARP" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_CSHARP" == "true" ]]; then
+      _check_plugin "csharp-lsp"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+      _check_plugin "gopls"
+    fi
+    if [[ "$LSP_PROJECT_NEEDS_JAVA" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_JAVA" == "true" ]]; then
+      _check_plugin "jdtls"
     fi
 
     if [[ "$MISSING_PLUGINS" == "true" ]] && [[ -n "$DETECTED_LANGS" ]]; then
@@ -617,44 +807,99 @@ fi
 # When user asks for LSP features (find references, go to definition, etc.),
 # instruct Claude to use `specweave lsp` commands which provide REAL semantic analysis
 # via TsServerClient - NOT grep text matching!
+# ==============================================================================
+# v1.0.235: LSP AUTO-INSTALL + CLI INSTRUCTIONS
+# ==============================================================================
+# When user requests LSP operations (find references, go to definition, etc.):
+# 1. Detect which language from prompt/project context
+# 2. Check if that language's LSP binary + plugin are installed
+# 3. If missing, return AUTO-INSTALL commands for Claude to run silently
+# 4. Then provide CLI instructions for the actual LSP operation
 LSP_EXPLICIT_REQUEST_MSG=""
 if echo "$PROMPT" | grep -qiE "(use|with|via)[[:space:]]+(the[[:space:]]+)?LSP|LSP[[:space:]]+(find|get|show|goto|hover|definition|references|implementations)|(find|get|show)[[:space:]]+(all[[:space:]]+)?references|go[[:space:]]?to[[:space:]]?definition|where[[:space:]]+(is|are).*defined|what[[:space:]]+(uses|calls)|who[[:space:]]+(uses|calls)"; then
-  LSP_EXPLICIT_REQUEST_MSG="🎯 **LSP Semantic Analysis Available**
 
-For **semantic code intelligence** (not text matching), use the SpecWeave LSP CLI:
+  # Build auto-install commands for missing LSP servers
+  LSP_AUTO_INSTALL_CMDS=""
+  _lsp_check_and_install() {
+    local lang="$1" binary="$2" binary_install="$3" plugin="$4" marketplace="${LSP_MARKETPLACE:-claude-code-lsps}"
+    # Check if binary is installed
+    if ! command -v "$binary" >/dev/null 2>&1; then
+      LSP_AUTO_INSTALL_CMDS="${LSP_AUTO_INSTALL_CMDS}
+- **${lang}** binary missing: \`${binary_install}\`"
+    fi
+    # Check if plugin is installed
+    local plugins_file="$HOME/.claude/plugins/installed_plugins.json"
+    if [[ -f "$plugins_file" ]]; then
+      if ! grep -q "\"${plugin}@" "$plugins_file" 2>/dev/null; then
+        LSP_AUTO_INSTALL_CMDS="${LSP_AUTO_INSTALL_CMDS}
+- **${lang}** plugin missing: \`claude plugin install ${plugin}@${marketplace} --scope ${LSP_PLUGIN_SCOPE:-project}\`"
+      fi
+    else
+      LSP_AUTO_INSTALL_CMDS="${LSP_AUTO_INSTALL_CMDS}
+- **${lang}** plugin missing: \`claude plugin install ${plugin}@${marketplace} --scope ${LSP_PLUGIN_SCOPE:-project}\`"
+    fi
+  }
+
+  # Check each detected language
+  if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
+    _lsp_check_and_install "TypeScript" "typescript-language-server" "npm install -g typescript-language-server typescript" "vtsls"
+  fi
+  if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
+    _lsp_check_and_install "Python" "pyright-langserver" "pip install pyright" "pyright"
+  fi
+  if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+    _lsp_check_and_install "Rust" "rust-analyzer" "rustup component add rust-analyzer" "rust-analyzer"
+  fi
+  if [[ "$LSP_PROJECT_NEEDS_CSHARP" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_CSHARP" == "true" ]]; then
+    _lsp_check_and_install "C#" "csharp-ls" "dotnet tool install -g csharp-ls" "csharp-lsp"
+  fi
+  if [[ "$LSP_PROJECT_NEEDS_GO" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_GO" == "true" ]]; then
+    _lsp_check_and_install "Go" "gopls" "go install golang.org/x/tools/gopls@latest" "gopls"
+  fi
+  if [[ "$LSP_PROJECT_NEEDS_JAVA" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_JAVA" == "true" ]]; then
+    _lsp_check_and_install "Java" "jdtls" "brew install jdtls" "jdtls"
+  fi
+
+  # Build the message
+  if [[ -n "$LSP_AUTO_INSTALL_CMDS" ]]; then
+    LSP_EXPLICIT_REQUEST_MSG="⚡ **LSP AUTO-INSTALL REQUIRED**
+
+The following LSP components are missing for this request. **Install them NOW before proceeding:**
+${LSP_AUTO_INSTALL_CMDS}
+
+**MANDATORY**: Run ALL missing install commands above using Bash tool, then use \`specweave lsp\` CLI:
 
 \`\`\`bash
-# Find all SEMANTIC references to a symbol (not grep!)
-specweave lsp refs <file> <symbol>
-
-# Go to definition
-specweave lsp def <file> <symbol>
-
-# Get type information (hover)
-specweave lsp hover <file> <symbol>
-
-# List all symbols in a file
-specweave lsp symbols <file>
-
-# Search workspace for symbols
-specweave lsp search <query>
+specweave lsp refs <file> <symbol>     # Find semantic references
+specweave lsp def <file> <symbol>      # Go to definition
+specweave lsp hover <file> <symbol>    # Type information
+specweave lsp symbols <file>           # List symbols
 \`\`\`
 
-**Example for this request:**
-\`\`\`bash
-# First find which file contains the symbol
-grep -rn --include=\"*.ts\" \"class SymbolName\" src/
-
-# Then use LSP for semantic references
-specweave lsp refs <found-file> <symbol-name>
-\`\`\`
-
-⚠️ **Do NOT use Grep for \"find references\"** - Grep finds TEXT matches (including comments, strings, docs).
-LSP finds SEMANTIC references (actual code usages only).
+⚠️ Do NOT use Grep for \"find references\" - use LSP for semantic accuracy.
 
 ---
 
 "
+  else
+    LSP_EXPLICIT_REQUEST_MSG="🎯 **LSP Semantic Analysis Available**
+
+Use SpecWeave LSP CLI for **semantic code intelligence** (not grep text matching):
+
+\`\`\`bash
+specweave lsp refs <file> <symbol>     # Find semantic references
+specweave lsp def <file> <symbol>      # Go to definition
+specweave lsp hover <file> <symbol>    # Type information
+specweave lsp symbols <file>           # List symbols
+specweave lsp search <query>           # Workspace symbol search
+\`\`\`
+
+⚠️ Do NOT use Grep for \"find references\" - use LSP for semantic accuracy.
+
+---
+
+"
+  fi
 fi
 
 # Only run if features are enabled and not disabled via env
@@ -909,11 +1154,14 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               # Override grep-based detection with LLM decision
               if [[ "$LSP_LLM_NEEDED" == "true" ]]; then
                 LSP_REQUEST_DETECTED="true"
-                # Use LLM language detection to supplement project detection
+                # v1.0.235: Use LLM language detection for all supported languages
                 case "$LSP_LLM_LANGUAGE" in
-                  typescript) LSP_PROMPT_NEEDS_TS="true" ;;
+                  typescript|javascript) LSP_PROMPT_NEEDS_TS="true" ;;
                   python) LSP_PROMPT_NEEDS_PY="true" ;;
                   rust) LSP_PROMPT_NEEDS_RUST="true" ;;
+                  csharp|c#) LSP_PROMPT_NEEDS_CSHARP="true" ;;
+                  go|golang) LSP_PROMPT_NEEDS_GO="true" ;;
+                  java|kotlin) LSP_PROMPT_NEEDS_JAVA="true" ;;
                 esac
               fi
 

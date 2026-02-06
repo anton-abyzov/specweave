@@ -395,15 +395,102 @@ export class LSPClient {
 
   /**
    * Handle parsed LSP message
+   *
+   * Handles three message types:
+   * 1. Responses to our requests (has id matching our responseHandlers)
+   * 2. Server-initiated requests (has method + id, needs response)
+   * 3. Server-initiated notifications (has method, no id)
+   *
+   * Missing server-request handling was causing C#, Python, Java servers
+   * to hang or return empty results (same as Claude Code issue #16360).
    */
   private handleMessage(message: any): void {
-    if (message.id && this.responseHandlers.has(message.id)) {
+    // 1. Response to our request
+    if (message.id !== undefined && this.responseHandlers.has(message.id)) {
       const handler = this.responseHandlers.get(message.id);
       if (handler) {
         handler(message);
         this.responseHandlers.delete(message.id);
       }
+      return;
     }
+
+    // 2. Server-initiated request (has method + id, needs a response)
+    if (message.method && message.id !== undefined) {
+      this.handleServerRequest(message);
+      return;
+    }
+
+    // 3. Server-initiated notification (has method, no id) - log and ignore
+    if (message.method) {
+      logger.debug(`LSP notification: ${message.method}`);
+    }
+  }
+
+  /**
+   * Handle server-initiated requests that require a response.
+   *
+   * Many LSP servers (csharp-ls, pyright, jdtls) send requests during
+   * initialization that MUST be answered or the server hangs/crashes:
+   * - workspace/configuration: Server asks for settings
+   * - client/registerCapability: Dynamic capability registration
+   * - window/workDoneProgress/create: Progress token registration
+   * - window/showMessageRequest: User-facing message with actions
+   */
+  private handleServerRequest(message: any): void {
+    const { id, method } = message;
+    logger.debug(`LSP server request: ${method} (id=${id})`);
+
+    let result: unknown = null;
+
+    switch (method) {
+      case 'workspace/configuration':
+        // Return empty config for each requested item
+        result = (message.params?.items || []).map(() => ({}));
+        break;
+
+      case 'client/registerCapability':
+        // Accept all dynamic registrations
+        result = null;
+        break;
+
+      case 'window/workDoneProgress/create':
+        // Accept progress token creation
+        result = null;
+        break;
+
+      case 'window/showMessageRequest':
+        // Auto-dismiss message requests (no action selected)
+        result = null;
+        break;
+
+      default:
+        logger.debug(`LSP unhandled server request: ${method}`);
+        result = null;
+        break;
+    }
+
+    // Send response back to server
+    this.sendResponse(id, result);
+  }
+
+  /**
+   * Send a response to a server-initiated request
+   */
+  private sendResponse(id: number, result: unknown): void {
+    if (!this.serverProcess || !this.serverProcess.stdin) {
+      return;
+    }
+
+    const response = {
+      jsonrpc: '2.0',
+      id,
+      result,
+    };
+
+    const content = JSON.stringify(response);
+    const message = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n${content}`;
+    this.serverProcess.stdin.write(message);
   }
 
   /** Track timeouts so we can clear them on response */
@@ -428,7 +515,7 @@ export class LSPClient {
       };
 
       const content = JSON.stringify(request);
-      const message = `Content-Length: ${content.length}\r\n\r\n${content}`;
+      const message = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n${content}`;
 
       logger.debug(`LSP request id=${id} method=${method}`);
 
@@ -466,6 +553,43 @@ export class LSPClient {
   }
 
   /**
+   * Send shutdown request per LSP spec (shutdown is a request, not notification).
+   * Uses a dedicated method to bypass the normal timeout handling since
+   * we've already cleared timeouts during shutdown.
+   */
+  private sendShutdownRequest(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.serverProcess || !this.serverProcess.stdin) {
+        resolve();
+        return;
+      }
+
+      const id = ++this.requestId;
+      const request = {
+        jsonrpc: '2.0',
+        id,
+        method: 'shutdown',
+        params: null,
+      };
+
+      const content = JSON.stringify(request);
+      const message = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n${content}`;
+
+      this.responseHandlers.set(id, () => {
+        resolve();
+      });
+
+      this.serverProcess.stdin.write(message);
+
+      // Safety timeout - don't wait forever
+      setTimeout(() => {
+        this.responseHandlers.delete(id);
+        resolve();
+      }, 3000);
+    });
+  }
+
+  /**
    * Send notification to LSP server (no response expected)
    */
   private sendNotification(method: string, params: any): void {
@@ -480,7 +604,7 @@ export class LSPClient {
     };
 
     const content = JSON.stringify(notification);
-    const message = `Content-Length: ${content.length}\r\n\r\n${content}`;
+    const message = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n${content}`;
     this.serverProcess.stdin.write(message);
   }
 
@@ -742,8 +866,17 @@ export class LSPClient {
         this.closeDocument(uri);
       }
 
-      // Send shutdown without timeout handling (we already cleared them)
-      this.sendNotification('shutdown', {});
+      // Per LSP spec: shutdown is a REQUEST (expects response), exit is a NOTIFICATION
+      // Send shutdown request with a short timeout, then exit
+      try {
+        await Promise.race([
+          this.sendShutdownRequest(),
+          new Promise((resolve) => setTimeout(resolve, 3000)),
+        ]);
+      } catch {
+        // Timeout or error during shutdown - proceed to exit anyway
+        logger.debug('LSP shutdown request timed out, proceeding to exit');
+      }
       this.sendNotification('exit', {});
     } catch (error) {
       logger.error(`LSP shutdown failed: ${error}`);
@@ -874,16 +1007,35 @@ async function isCommandAvailable(command: string): Promise<boolean> {
 }
 
 /**
- * Check if project has any of the specified files (supports glob patterns)
+ * Check if project has any of the specified files (supports glob patterns).
+ * For glob patterns (e.g., *.csproj, *.sln), also checks one level of
+ * subdirectories since project files are often not at root (e.g., src/MyApp/MyApp.csproj).
  */
 function hasProjectFiles(projectRoot: string, patterns: string[]): boolean {
   for (const pattern of patterns) {
     if (pattern.includes('*')) {
-      // Glob pattern - check if any matching files exist
-      const dir = fs.readdirSync(projectRoot).filter(f =>
-        f.match(new RegExp(pattern.replace('*', '.*')))
-      );
-      if (dir.length > 0) return true;
+      // Glob pattern - check root directory
+      const regex = new RegExp('^' + pattern.replace('.', '\\.').replace('*', '.*') + '$');
+      try {
+        const rootFiles = fs.readdirSync(projectRoot);
+        if (rootFiles.some(f => regex.test(f))) return true;
+
+        // Also check one level of subdirectories for project files
+        // (e.g., src/MyApp/MyApp.csproj, MyProject/MyProject.sln)
+        for (const entry of rootFiles) {
+          const subPath = path.join(projectRoot, entry);
+          try {
+            if (fs.statSync(subPath).isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
+              const subFiles = fs.readdirSync(subPath);
+              if (subFiles.some(f => regex.test(f))) return true;
+            }
+          } catch {
+            // Skip unreadable dirs
+          }
+        }
+      } catch {
+        // Skip unreadable root
+      }
     } else {
       // Exact file
       if (fs.existsSync(path.join(projectRoot, pattern))) return true;

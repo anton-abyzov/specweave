@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.231" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.234" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,structure,taskformat,secrets,syncing,testing,tdd,api,limits,troubleshooting,lazyloading,principles,linking,mcp,auto,docs" -->
 
 <!-- SW:SECTION:hook-priority version="1.0.171" -->
 ## ⛔ Hook Instructions Override Everything
@@ -11,7 +11,7 @@
 | **"SKILL FIRST"** | Call shown skill FIRST → chain domain skills → implement |
 <!-- SW:END:hook-priority -->
 
-<!-- SW:SECTION:header version="1.0.231" -->
+<!-- SW:SECTION:header version="1.0.234" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
@@ -48,56 +48,95 @@ If auto-activation fails, invoke explicitly: `Skill({ skill: "name" })`
 
 **Native LSP broken in v2.1.0+.** Use: `specweave lsp refs|def|hover src/file.ts SymbolName`
 
-<!-- SW:SECTION:start version="1.0.231" -->
+<!-- SW:SECTION:start version="1.0.234" -->
 ## Getting Started
 
-`0001-project-setup` auto-created by `specweave init`. Start fresh: `/sw:increment "your-feature"`, or customize existing spec.md.
+**Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
+
+**Options**:
+1. **Start fresh**: `rm -rf .specweave/increments/0001-project-setup` → `/sw:increment "your-feature"`
+2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.231" -->
+<!-- SW:SECTION:autodetect version="1.0.234" -->
 ## Auto-Detection
 
-Routes to `/sw:increment` when 5+ signals detected: Project name | Features list (3+) | Tech stack | Timeline/MVP | Problem statement | Business model
+SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
-**Opt-out**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion"
+**Signals** (5+ = auto-route): Project name | Features list (3+) | Tech stack | Timeline/MVP | Problem statement | Business model
+
+**Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.231" -->
+<!-- SW:SECTION:metarule version="1.0.234" -->
 ## Workflow Orchestration
 
-1. **Plan first**: Enter plan mode for non-trivial tasks (3+ steps). If sideways → STOP, re-plan.
-2. **Subagents**: Offload research/exploration. One task per subagent. Use liberally for large analysis.
-3. **Verify before done**: Prove it works. "Would a staff engineer approve this?"
-4. **Dependencies first**: Build before run. Install before import.
+### 1. Plan Mode Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, **STOP and re-plan** - don't keep pushing
+- Write detailed specs upfront to reduce ambiguity
+
+### 2. Subagent Strategy
+- Use subagents liberally to keep main context clean
+- Offload research, exploration, and parallel analysis to subagents
+- One task per subagent for focused execution
+- Append "use subagents" to requests for safe parallelization
+
+### 3. Verification Before Done
+- Never mark a task complete without proving it works
+- Ask yourself: **"Would a staff engineer approve this?"**
+- Run tests, check logs, demonstrate correctness
+
+### 4. Think-Before-Act (Dependencies)
+**Satisfy dependencies BEFORE dependent operations.**
+```
+❌ node script.js → Error → npm run build
+✅ npm run build → node script.js → Success
+```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.231" -->
+<!-- SW:SECTION:rules version="1.0.234" -->
 ## Rules
 
-1. **Files** → `.specweave/increments/####-name/` (only `metadata.json`, `spec.md`, `plan.md`, `tasks.md` at root; everything else → subfolders)
-2. **Update immediately**: Mark tasks `[x]` + update spec.md ACs on completion
-3. **Unique IDs**: Check all folders: `find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u | tail -5`
-4. **Emergency mode**: 1 edit, 50 lines max, no agents
-5. ⛔ `.specweave/` folders ONLY where `specweave init` was run
-6. ⛔ Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
-7. ⛔ Before creating `docs/NN-*`, check existing prefixes to avoid collisions
+1. **Files** → `.specweave/increments/####-name/` (see Structure section for details)
+2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
+3. **Unique IDs**: Check ALL folders (active, archive, abandoned):
+   ```bash
+   find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+   ```
+4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
+5. **⛔ Project-Scope Guard (v1.0.235)**: SpecWeave skills are **globally visible** but **project-scoped**:
+   - Skills appear in ALL projects (Claude Code limitation - plugins enabled globally)
+   - Guard **blocks** skill execution in non-initialized projects with helpful 4-option prompt
+   - User options: (1) init here, (2) navigate elsewhere, (3) disable plugins, (4) bypass guard
+   - Disable: `export SPECWEAVE_DISABLE_GUARD=1` OR `.specweave/config.json` → `guard.enabled: false`
+   - Rule: `.specweave/` folders MUST ONLY exist where `specweave init` was run
+6. **⛔ Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
+7. **⛔ Numbered folder collisions**: Before creating `docs/NN-*` folders, CHECK existing prefixes:
+   ```bash
+   ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort -u
+   ```
+   Use next available number. **NEVER create duplicate prefixes.**
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.231" -->
+<!-- SW:SECTION:workflow version="1.0.234" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
 
 | Cmd | Action |
-|---|---|
+|-----|--------|
 | `/sw:increment` | Plan feature |
 | `/sw:do` | Execute tasks |
-| `/sw:auto` | Autonomous (IMPLEMENT→TEST→FIX→NEXT). Requires explicit stop conditions. |
+| `/sw:auto` | Autonomous execution |
+| `/sw:auto-status` | Check auto session |
+| `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
-| `/sw:done` | Close (grill → validate → sync) |
-| `/sw-github:sync` `/sw-jira:sync` | External sync |
+| `/sw:done` | Close |
+| `/sw-github:sync` | GitHub sync |
+| `/sw-jira:sync` | Jira sync |
 
-**Natural language**: "Let's build X" → increment | "What's status?" → progress | "We're done" → done | "Ship while sleeping" → auto
+**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
 <!-- SW:SECTION:save-nested-repos version="1.0.194" -->
@@ -106,10 +145,12 @@ Routes to `/sw:increment` when 5+ signals detected: Project name | Features list
 Before git operations, scan: `for d in repositories packages services apps libs workspace; do [ -d "$d" ] && find "$d" -maxdepth 2 -name ".git" -type d; done`
 <!-- SW:END:save-nested-repos -->
 
-<!-- SW:SECTION:reflect version="1.0.231" -->
+<!-- SW:SECTION:reflect version="1.0.234" -->
 ## Skill Memories
 
-Auto-captured learnings. Disable: `"reflect": { "enabled": false }` in config.json
+SpecWeave learns from corrections. Learnings saved here automatically. Edit or delete as needed.
+
+**Disable**: Set `"reflect": { "enabled": false }` in `.specweave/config.json`
 <!-- SW:END:reflect -->
 
 <!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
@@ -123,13 +164,15 @@ Auto-captured learnings. Disable: `"reflect": { "enabled": false }` in config.js
 - Auto command: explicit stop conditions, visible output
 - Prefer leaderboard-style reporting for analysis
 
-<!-- SW:SECTION:context version="1.0.231" -->
+<!-- SW:SECTION:context version="1.0.234" -->
 ## Context
 
-Check ADRs at `.specweave/docs/internal/architecture/adr/` before implementing. Load context: `/sw:context <topic>`
+**Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
+
+**Load context**: `/sw:context <topic>` loads relevant living docs into conversation
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:structure version="1.0.231" -->
+<!-- SW:SECTION:structure version="1.0.234" -->
 ## Structure
 
 ```
@@ -139,10 +182,12 @@ Check ADRs at `.specweave/docs/internal/architecture/adr/` before implementing. 
 └── config.json
 ```
 
-⛔ Increment root: ONLY 4 files. Everything else → subfolders (`reports/`, `logs/`, `scripts/`)
+**⛔ Increment root**: ONLY `metadata.json`, `spec.md`, `plan.md`, `tasks.md`
+
+**Everything else → subfolders**: `reports/` | `logs/` | `scripts/` | `backups/`
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.231" -->
+<!-- SW:SECTION:taskformat version="1.0.234" -->
 ## Task Format
 
 ```markdown
@@ -152,110 +197,208 @@ Check ADRs at `.specweave/docs/internal/architecture/adr/` before implementing. 
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.231" -->
+<!-- SW:SECTION:secrets version="1.0.234" -->
 ## Secrets Check
 
-Before CLI tools: `grep -qE "(GITHUB_TOKEN|GH_TOKEN|JIRA_|AZURE_DEVOPS_|ADO_)" .env 2>/dev/null && echo "Found"`
+**BEFORE CLI tools**: Check existing config first!
+```bash
+# Check if credentials EXIST (never display values!)
+grep -qE "(GITHUB_TOKEN|GH_TOKEN|JIRA_|AZURE_DEVOPS_|ADO_)" .env 2>/dev/null && echo "Credentials found in .env"
+cat .specweave/config.json | grep -A5 '"sync"'
+gh auth status
+```
 
-⛔ NEVER `grep TOKEN .env` without `-q` — exposes credentials in terminal!
+**SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.231" -->
-## External Sync
+<!-- SW:SECTION:syncing version="1.0.234" -->
+## External Sync (GitHub/JIRA/ADO)
 
-Commands: `/sw-github:sync {id}` | `/sw:sync-specs` (living docs)
-Mapping: Feature → Milestone | Story → Issue | Task → Checkbox
-Config: `sync.github.enabled: true` + `canUpdateExternalItems: true`
+**Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
+
+**Mapping**: Feature → Milestone | Story → Issue | Task → Checkbox
+
+**Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:testing version="1.0.231" -->
+<!-- SW:SECTION:testing version="1.0.234" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
 
 ```typescript
-// ESM mocking (Vitest 4.x+)
+// ESM mocking: vi.hoisted() + vi.mock() (Vitest 4.x+)
 const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
 vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:tdd version="1.0.231" -->
-## TDD Mode
+<!-- SW:SECTION:tdd version="1.0.234" -->
+## TDD Mode (Test-Driven Development)
 
-When `testing.defaultTestMode: "TDD"` in config.json: RED → GREEN → REFACTOR.
+**When `testing.defaultTestMode: "TDD"` is configured**, follow RED-GREEN-REFACTOR discipline:
 
-Commands: `/sw:tdd-red` | `/sw:tdd-green` | `/sw:tdd-refactor` | `/sw:tdd-cycle`
+### TDD Workflow (MANDATORY when configured)
 
-Enforcement (`testing.tddEnforcement`): `strict` (blocks GREEN until RED) | `warn` (default) | `off`
+```
+1. RED:     Write FAILING test first → verify it fails
+2. GREEN:   Write MINIMAL code to pass → no extra features
+3. REFACTOR: Improve code quality → keep tests green
+```
 
-TDD tasks use phase markers: `[RED] Write tests` → `[GREEN] Implement` → `[REFACTOR] Optimize`. Complete dependencies in order.
+### Check TDD Mode Before Implementation
+
+```bash
+# Check if TDD mode is enabled
+jq -r '.testing.defaultTestMode' .specweave/config.json
+# Returns: "TDD" | "test-first" | "test-after"
+```
+
+### TDD Commands
+
+| Command | Phase | Purpose |
+|---------|-------|---------|
+| `/sw:tdd-red` | RED | Write failing tests |
+| `/sw:tdd-green` | GREEN | Minimal implementation |
+| `/sw:tdd-refactor` | REFACTOR | Code quality improvement |
+| `/sw:tdd-cycle` | ALL | Full orchestrated workflow |
+
+### Enforcement Levels
+
+Set `testing.tddEnforcement` in config.json:
+
+| Level | Behavior |
+|-------|----------|
+| `strict` | **BLOCKS** task completion if RED not done before GREEN |
+| `warn` | Shows warning but allows continuation (default) |
+| `off` | No enforcement |
+
+### TDD Task Format
+
+When TDD is enabled, tasks include phase markers:
+
+```markdown
+### T-001: [RED] Write auth service tests
+**Depends On**: None
+**Status**: [ ] pending
+
+### T-002: [GREEN] Implement auth service
+**Depends On**: T-001
+**Status**: [ ] pending
+
+### T-003: [REFACTOR] Extract token utilities
+**Depends On**: T-002
+**Status**: [ ] pending
+```
+
+**Rule**: Complete dependencies BEFORE dependent tasks (RED before GREEN).
 <!-- SW:END:tdd -->
 
-<!-- SW:SECTION:api version="1.0.231" -->
-## API Development
+<!-- SW:SECTION:api version="1.0.234" -->
+## API Development (OpenAPI-First)
 
-OpenAPI-first. Commands: `/sw:api-docs --all|--openapi|--postman|--validate`. Enable: `apiDocs.enabled: true`
+**For API projects only.** Commands: `/sw:api-docs --all` | `--openapi` | `--postman` | `--validate`
+
+Enable in config: `{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml"}}`
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.231" -->
+<!-- SW:SECTION:limits version="1.0.234" -->
 ## Limits
 
-Max 1500 lines/file — extract before adding
+**Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.231" -->
+<!-- SW:SECTION:troubleshooting version="1.0.234" -->
 ## Troubleshooting
 
 | Issue | Fix |
-|---|---|
-| Skills missing | Restart Claude Code |
+|-------|-----|
+| Skills/commands missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-marketplace` |
 | Out of sync | `/sw:sync-tasks` |
+| Duplicate IDs | `/sw:fix-duplicates` |
 | Edits blocked | Add `"additionalDirectories":["repositories"]` to `.claude/settings.json` |
-| Session stuck | `rm -f .specweave/state/*.lock` + restart |
+| Session stuck | Kill + `rm -f .specweave/state/*.lock` + restart |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.231" -->
+<!-- SW:SECTION:lazyloading version="1.0.234" -->
 ## Plugin Auto-Loading
 
-Auto-loads by project type. Manual: `claude plugin install sw-frontend@specweave`. Disable: `SPECWEAVE_DISABLE_AUTO_LOAD=1`
+Plugins load automatically based on project type and keywords. Manual install if needed:
+
+```bash
+claude plugin install sw-frontend@specweave  # Install plugin
+claude plugin list                           # Check installed
+export SPECWEAVE_DISABLE_AUTO_LOAD=1         # Disable auto-load
+```
+
+**Token savings**: Core ~3-5K tokens vs all plugins ~60K+
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.231" -->
+<!-- SW:SECTION:principles version="1.0.234" -->
 ## Principles
 
-1. **Spec-first**: `/sw:increment` before coding. Docs = truth. Small increments. All work traceable to ACs.
-2. **Simplicity**: Simplest solution. Minimal impact. Only change what's needed.
-3. **No laziness**: Root causes. No temp fixes. Senior developer standards.
-4. **Elegance**: Pause for non-trivial changes — "is there a more elegant way?" Pragmatic > perfect.
+### SpecWeave Principles
+1. **Spec-first**: `/sw:increment` before coding
+2. **Docs = truth**: Specs guide implementation
+3. **Incremental**: Small, validated increments
+4. **Traceable**: All work → specs → ACs
+
+### Core Principles (Quality)
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Demand Elegance**: For non-trivial changes, pause and ask "is there a more elegant way?" - but skip this for simple, obvious fixes (don't over-engineer).
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.231" -->
+<!-- SW:SECTION:linking version="1.0.234" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
+
+Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.231" -->
+<!-- SW:SECTION:mcp version="1.0.234" -->
 ## External Services
 
-CLI first → MCP for complex integrations. Check auth: `gh auth status` | `wrangler whoami` | `supabase status`
+**Priority**: CLI tools first (simpler) → MCP for complex integrations
 
-MCP: `claude mcp add --transport http github https://api.github.com/mcp` | `/mcp` to check status
+**CLI tools** (check auth first):
+```bash
+gh auth status          # GitHub
+wrangler whoami         # Cloudflare
+supabase status         # Supabase
+```
+
+**MCP servers** (for richer integrations):
+```bash
+claude mcp add --transport http github https://api.github.com/mcp
+claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server-postgres
+/mcp                    # Check status in Claude Code
+```
+
+MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:auto version="1.0.231" -->
+<!-- SW:SECTION:auto version="1.0.234" -->
 ## Auto Mode
 
-**TDD in auto**: `/sw:auto --tdd` for strict enforcement. Follows RED → GREEN → REFACTOR per task triplet.
+**Commands**: `/sw:auto` (start) | `/sw:auto-status` (check) | `/sw:cancel-auto` (emergency only)
 
-**Pragmatic completion**: MUST (MVP, security) | SHOULD (edge cases) | CAN SKIP (conflicts — ask user)
+**Pattern**: IMPLEMENT → TEST → FAIL? → FIX → PASS → NEXT
 
-**STOP & ASK**: Spec conflicts | Task unnecessary | Requirement ambiguous
+**TDD in Auto Mode**: If `testing.defaultTestMode: "TDD"` is configured:
+- Use `/sw:auto --tdd` for strict enforcement (ALL tests must pass)
+- Auto mode reads config and displays TDD banner
+- Follow RED → GREEN → REFACTOR order for task triplets
+
+**Pragmatic completion**: MUST (MVP, security, data integrity) | SHOULD (edge cases) | CAN SKIP (conflicts - ask user)
+
+**STOP & ASK** if: Spec conflicts | Task unnecessary | Requirement ambiguous
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.231" -->
+<!-- SW:SECTION:docs version="1.0.234" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com)
