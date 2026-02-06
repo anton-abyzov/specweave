@@ -1,0 +1,13 @@
+{
+  "name": "sw-blockchain",
+  "description": "Blockchain and Web3 development with Solidity, Hardhat, Foundry, ethers.js, and smart contract security. Covers Ethereum, Layer 2 solutions, DeFi, NFTs, and decentralized storage.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": ["blockchain", "web3", "solidity", "ethereum", "smart-contracts", "specweave"]
+}
