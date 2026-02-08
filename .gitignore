@@ -155,6 +155,16 @@ coverage/
 # ✅ Directories: src/, tests/, plugins/, .specweave/, docs-site/, scripts/, bin/
 # ❌ Everything else (*.md reports, *.js scripts, *.log files) → Use increment folders!
 
+# Root-level media files (screenshots, social cards, benchmark output)
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/lsp-benchmark-results.txt
+
+# Generated media output (from specweave-media plugin)
+generated-media/
+
 # Prevent common root folder violations
 /*-SUMMARY*.md
 /*-REPORT*.md
