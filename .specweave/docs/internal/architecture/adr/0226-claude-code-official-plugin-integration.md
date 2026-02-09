@@ -217,3 +217,58 @@ Integration point: `/sw:living-docs` can detect Greptile availability and use it
 | `php-lsp` | PHP | `npm i -g intelephense` | `.php` |
 | `clangd-lsp` | C, C++ | `brew install llvm` | `.c`, `.cpp`, `.h`, `.hpp` |
 | `lua-lsp` | Lua | `brew install lua-language-server` | `.lua` |
+
+## Addendum: Playwright Dual-Mode Architecture (Feb 2026)
+
+### Context
+
+Microsoft released `@playwright/cli` (v0.1.0, Feb 7 2026), a standalone CLI designed for AI coding agents. Unlike the MCP plugin which pushes full accessibility trees into context (~5-8K tokens per snapshot), the CLI keeps browser state external and returns minimal element references (~250 chars regardless of page complexity).
+
+### Decision
+
+Integrate `@playwright/cli` as a **complementary** tool alongside the existing Playwright MCP plugin. The two modes serve different purposes:
+
+| Mode | Tool | Best For | Token Cost |
+|------|------|----------|------------|
+| **CLI** | `@playwright/cli` via Bash | Test execution, automation scripts, CI/CD, token-constrained sessions | ~250 chars/snapshot |
+| **MCP** | `playwright@claude-plugins-official` | Interactive page exploration, self-healing tests, deep DOM inspection | ~5-8K chars/snapshot |
+
+### Routing Logic
+
+The `sw-testing` skill layer routes automatically:
+- **CLI preferred** (80% of tasks): `ui-automate`, `e2e-test-run`, `screenshot`, `form-automation`, `ci-testing`
+- **MCP preferred** (20% of tasks): `ui-inspect`, `page-exploration`, `self-healing-test`
+- **Fallback**: If CLI is not installed, all tasks route to MCP (graceful degradation)
+
+### Configuration
+
+```json
+{
+  "testing": {
+    "playwright": {
+      "preferCli": true
+    }
+  }
+}
+```
+
+### Capability Parity
+
+82% full parity (18/22 MCP tools have direct CLI equivalents). Key gaps:
+- `browser_wait_for` — CLI uses `eval` with polling
+- `browser_install` — CLI requires pre-installed browsers via `npx playwright install`
+
+CLI-exclusive features: network mocking (`route`), auth state persistence (`state-save/load`), granular storage management, PDF export.
+
+### Installation
+
+```bash
+npm install -g @playwright/cli@latest  # Global install for CLI
+# MCP plugin remains as before via claude plugin install
+```
+
+### Status
+
+- **ADR Status**: Accepted (addendum to ADR-0226)
+- **Increment**: 0195-playwright-cli-integration
+- **Risk**: v0.1.0 maturity — API may change rapidly; wrapped in abstraction layer

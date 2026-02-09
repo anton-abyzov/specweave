@@ -186,6 +186,31 @@ You just experienced **spec-driven development**:
 /sw:done XXXX
 ```
 
+### Parallel Development (Multiple Agents)
+
+Run multiple AI agents on the same repository — local Claude Code sessions, cloud instances, or [OpenClaw](https://openclaw.ai) agents. SpecWeave coordinates them through increment isolation:
+
+```bash
+# Terminal 1 (local Claude Code)
+/sw:increment "User authentication"    # Creates 0002-auth
+/sw:auto                               # Agent works on auth tasks only
+
+# Terminal 2 (another session or OpenClaw)
+/sw:increment "Payment processing"     # Creates 0003-payments
+/sw:auto                               # Agent works on payments tasks only
+
+# Terminal 3 (cloud/remote agent)
+/sw:increment "Email notifications"    # Creates 0004-notifications
+/sw:auto                               # Agent works on notifications tasks only
+```
+
+Each agent has its own spec, plan, and task list. No overlap, no conflicts. Check overall progress:
+
+```bash
+/sw:status                            # See all increments across agents
+/sw:progress                          # Active increments only
+```
+
 ### Multi-Repo Coordination
 
 ```bash
@@ -237,7 +262,7 @@ Customize behavior at every phase — session start, prompt submit, tool calls, 
 ### Join the Community
 
 - **Discord**: [Join our community](https://discord.gg/UYg4BGJ65V)
-- **GitHub**: [Browse 150+ increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments) (dogfooding!)
+- **GitHub**: [Browse our increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments) (dogfooding!)
 - **YouTube**: [Video tutorials](https://www.youtube.com/@antonabyzov)
 
 ---
@@ -341,16 +366,18 @@ JIRA_TOKEN=xxxxx          # For JIRA sync (optional)
 
 ## What Makes SpecWeave Different?
 
-| Feature | SpecWeave | Other Tools |
-|---------|-----------|-------------|
-| **Autonomous Execution** | Hours of work autonomously | Manual or one-shot |
-| **Traceability** | Every line → requirement | Chat history only |
-| **Test Validation** | Embedded + auto-run | Maybe later |
-| **Living Docs** | Auto-updated via hooks | Manual or none |
-| **Self-Improving AI** | Learns from corrections (Reflect) | Starts from zero every session |
-| **Multi-Repo** | Native support | Single repo only |
-| **External Sync** | GitHub/JIRA bidirectional | Manual updates |
-| **Proven at Scale** | 150+ features self-built | Unknown |
+| Capability | SpecWeave | BMAD Method | GitHub SpecKit |
+|------------|-----------|-------------|----------------|
+| **Parallel agent coordination** | Increment-scoped isolation | No | No |
+| **Autonomous execution** | Hours of unattended `/sw:auto` | No | No |
+| **Quality gates (Code Grill)** | Senior-level review before close | No | No |
+| **Living documentation** | Auto-updated after every task | Manual | Manual |
+| **Self-improving AI** | Learns from corrections | No | No |
+| **External sync** | GitHub / JIRA / ADO bidirectional | No | No |
+| **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
+| **Traceability** | Every line traces to a requirement | Partial | Partial |
+| **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |
+| **Proven at scale** | Framework builds itself | Community projects | New |
 
 ---
 

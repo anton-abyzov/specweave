@@ -510,6 +510,15 @@ test.afterEach(async () => {
 
 **Solution**: Run E2E tests in CI/CD pipeline (GitHub Actions, CircleCI).
 
+### Browser Automation Modes
+
+When running E2E tests with SpecWeave, two browser automation modes are available:
+
+- **`@playwright/cli`**: Token-efficient CLI for automated test runs and CI/CD (see [Playwright glossary entry](./playwright.md#cli-vs-mcp-mode-selection))
+- **Playwright MCP plugin**: Rich DOM inspection for interactive debugging and self-healing tests
+
+Most E2E test execution uses CLI mode for efficiency. Switch to MCP mode when you need to interactively explore page structure or debug failing selectors.
+
 ## Related Terms
 
 - **[Unit Testing](/docs/glossary/terms/unit-testing)** - Test individual functions/classes in isolation

@@ -1,0 +1,13 @@
+{
+  "id": "0193-github-sync-ac-comment-wiring",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-07T21:06:06.246Z",
+  "lastActivity": "2026-02-07T21:06:06.247Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

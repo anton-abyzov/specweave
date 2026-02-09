@@ -202,6 +202,7 @@ generated-media/
 
 # MCP/Playwright test artifacts (screenshots, traces, etc.)
 .playwright-mcp/
+.playwright-cli/
 .*-mcp/
 
 # Accidental test workspace folders

@@ -230,6 +230,44 @@ e2e/
 └── playwright.config.ts
 ```
 
+## Browser Automation Mode: CLI vs MCP
+
+SpecWeave provides dual-mode browser automation for optimal token efficiency:
+
+| Mode | Tool | Best For | Token Cost |
+|------|------|----------|------------|
+| **CLI** | `@playwright/cli` (Bash) | Test execution, automation, CI/CD | ~250 chars/action |
+| **MCP** | Playwright MCP plugin | Interactive inspection, self-healing | ~5K+ chars/action |
+
+### When to Use CLI Mode
+- Running E2E test suites (`npx playwright test`)
+- Generating automation scripts
+- CI/CD pipelines (headless by default)
+- Token-constrained sessions
+- Network mocking and auth state management
+
+### When to Use MCP Mode
+- Interactive page exploration and debugging
+- Self-healing test repair (needs full DOM reasoning)
+- Element inspection with accessibility tree
+
+### Install CLI
+```bash
+npm install -g @playwright/cli@latest
+```
+
+### Configuration
+Set preference in `.specweave/config.json`:
+```json
+{
+  "testing": {
+    "playwright": { "preferCli": true }
+  }
+}
+```
+
+The `sw-testing` skill layer routes automatically based on task type.
+
 ## Related Skills
 
 - `qa-engineer` - Overall test strategy
