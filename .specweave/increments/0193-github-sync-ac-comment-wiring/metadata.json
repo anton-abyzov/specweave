@@ -13,33 +13,33 @@
     "github": {
       "issues": {
         "US-001": {
-          "issueNumber": 1065,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1065",
+          "issueNumber": 1091,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1091",
           "status": "created"
         },
         "US-002": {
-          "issueNumber": 1066,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1066",
+          "issueNumber": 1092,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1092",
           "status": "created"
         },
         "US-003": {
-          "issueNumber": 1067,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1067",
+          "issueNumber": 1093,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1093",
           "status": "created"
         },
         "US-004": {
-          "issueNumber": 1068,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1068",
+          "issueNumber": 1094,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1094",
           "status": "created"
         },
         "US-005": {
-          "issueNumber": 1069,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1069",
+          "issueNumber": 1095,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1095",
           "status": "created"
         }
       },
-      "milestone": 91,
-      "syncedAt": "2026-02-09T17:54:55Z"
+      "milestone": 95,
+      "syncedAt": "2026-02-09T18:09:51Z"
     }
   }
 }

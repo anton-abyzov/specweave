@@ -178,10 +178,22 @@ log "Found $US_COUNT user stories. Creating GitHub issues..."
 INC_TITLE=$(grep -m1 '^title:' "$SPEC_PATH" | sed 's/^title:[[:space:]]*//' | sed 's/^"//' | sed 's/"$//')
 
 # ============================================================================
+# DERIVE FEATURE ID (ADR-0187: FS-{number} from increment number)
+# ============================================================================
+# Extract numeric prefix from increment ID: "0192-github-sync-v2-multi-repo" → "0192"
+INC_NUM=$(echo "$INC_ID" | grep -oE '^[0-9]+')
+# Strip leading zeros: "0192" → "192", "0001" → "1"
+FEATURE_NUM=$(echo "$INC_NUM" | sed 's/^0*//')
+[[ -z "$FEATURE_NUM" ]] && FEATURE_NUM="0"
+FEATURE_ID="FS-${FEATURE_NUM}"
+log "Derived Feature ID: $FEATURE_ID (from increment $INC_ID)"
+
+# ============================================================================
 # CREATE MILESTONE (one per increment, idempotent)
 # ============================================================================
 
-MILESTONE_TITLE="${INC_ID}"
+# Milestone uses Feature ID format: "FS-192: Short Title"
+MILESTONE_TITLE="${FEATURE_ID}"
 MILESTONE_NUM=""
 
 # Check existing milestones (list all, including closed)
@@ -218,6 +230,7 @@ ensure_label() {
 ensure_label "user-story" "0075ca" "User story from SpecWeave spec"
 ensure_label "specweave" "6f42c1" "Managed by SpecWeave"
 ensure_label "$PROJECT_LABEL" "c5def5" "$PROJECT_NAME project"
+ensure_label "status:active" "0e8a16" "Active work item"
 
 # Priority labels (collect unique priorities from parsed user stories)
 for i in $(seq 0 $((US_COUNT - 1))); do
@@ -317,10 +330,10 @@ for i in $(seq 0 $((US_COUNT - 1))); do
   US_TITLE="${US_TITLES[$i]}"
   US_PRIORITY="${US_PRIORITIES[$i]}"
 
-  ISSUE_TITLE="[${INC_ID}][${US_ID}] ${US_TITLE}"
+  ISSUE_TITLE="[${FEATURE_ID}][${US_ID}] ${US_TITLE}"
 
-  # Check if issue already exists (by title prefix search)
-  EXISTING=$(gh issue list --repo "$REPO_SLUG" --search "[${INC_ID}][${US_ID}] in:title" --json number,url --limit 1 2>/dev/null || echo "[]")
+  # Check if issue already exists (by title prefix search — match both old and new format)
+  EXISTING=$(gh issue list --repo "$REPO_SLUG" --search "[${FEATURE_ID}][${US_ID}] in:title" --json number,url --limit 1 2>/dev/null || echo "[]")
   EXISTING_NUM=$(echo "$EXISTING" | jq -r '.[0].number // empty' 2>/dev/null)
 
   if [[ -n "$EXISTING_NUM" ]]; then
@@ -346,8 +359,8 @@ ${US_DESC}
 ${US_ACS}<!-- specweave:ac-end -->
 
 ---
-_Synced from SpecWeave increment \`${INC_ID}\` | ${US_ID}_
-<!-- specweave:sync spec=${INC_ID} us=${US_ID} -->"
+**Feature**: ${FEATURE_ID} | **Increment**: \`${INC_ID}\`
+<!-- specweave:sync feature=${FEATURE_ID} increment=${INC_ID} us=${US_ID} -->"
 
   # Create the issue
   CREATE_ARGS=(
@@ -358,6 +371,7 @@ _Synced from SpecWeave increment \`${INC_ID}\` | ${US_ID}_
     "--label" "user-story"
     "--label" "specweave"
     "--label" "$PROJECT_LABEL"
+    "--label" "status:active"
     "--label" "priority:$(echo "$US_PRIORITY" | tr '[:upper:]' '[:lower:]')"
   )
 
