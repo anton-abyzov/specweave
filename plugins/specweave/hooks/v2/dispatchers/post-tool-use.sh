@@ -312,6 +312,14 @@ case "$FILE_PATH" in
       fi
 
       # ========================================================================
+      # GITHUB AC SYNC (v1.0.236+): Post progress to GitHub after AC sync
+      # ========================================================================
+      GITHUB_AC_HANDLER="${HOOK_DIR}/../../../specweave-github/hooks/github-ac-sync-handler.sh"
+      if [[ -f "$GITHUB_AC_HANDLER" ]]; then
+        safe_run_background "$GITHUB_AC_HANDLER" "github-ac-sync" "$INC_ID"
+      fi
+
+      # ========================================================================
       # TDD ENFORCEMENT (v1.0.160+): Enforce TDD discipline
       # ========================================================================
       # When tasks.md is edited in TDD mode, check for violations

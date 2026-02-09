@@ -1,7 +1,7 @@
 # Multi-Project GitHub Sync Architecture
 
-**Version**: v0.18.0+
-**Date**: 2025-11-11
+**Version**: v1.0.235+ (V2 Integration)
+**Date**: 2026-02-06
 **Status**: Implemented and Tested
 
 ---
@@ -643,16 +643,102 @@ spec-003.md
 
 ---
 
+## Projects V2 Integration (v1.0.235+)
+
+### Overview
+
+The sync system now supports GitHub Projects V2 for visual project management:
+- Issues are added to Projects V2 boards after creation
+- Status and Priority custom fields are synced via configurable mappings
+- Cross-repo issues can be added to the same org-level project
+
+### Architecture
+
+```
+Spec → Push Sync → GitHub Issues → Board Resolver V2 → Projects V2
+                                   Field Sync → Status/Priority fields
+                                   Frontmatter Updater → spec.md metadata
+```
+
+### Key Components
+
+| Module | Purpose |
+|--------|---------|
+| `github-sync-orchestrator.ts` | Composes push + V2 + frontmatter into single flow |
+| `github-board-resolver-v2.ts` | Find/create Projects V2 boards |
+| `github-field-sync.ts` | Sync Status/Priority custom fields |
+| `github-graphql-client.ts` | GraphQL mutations via `gh api graphql` |
+| `github-spec-frontmatter-updater.ts` | Write sync results to spec.md |
+
+### Configuration
+
+```json
+{
+  "sync": {
+    "profiles": {
+      "myproject": {
+        "provider": "github",
+        "config": {
+          "owner": "myorg",
+          "repo": "myrepo",
+          "projectV2Enabled": true,
+          "projectV2Number": 5,
+          "statusFieldMapping": {
+            "planned": "Todo",
+            "in-progress": "In Progress",
+            "completed": "Done"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Pull Sync (GitHub to Spec)
+
+The pull sync fetches GitHub issue state and compares with spec ACs:
+- `github-pull-sync.ts` — fetches issues, compares AC states
+- `github-conflict-resolver.ts` — field-level conflict detection
+- Modes: `github-wins` (default for status/AC), `spec-wins`, `prompt` (for content)
+
+### Cross-Repo Sync
+
+- `github-cross-repo-sync.ts` — creates issues in multiple repos per user story
+- Cross-references added: "Also tracked in: org/other-repo#XX"
+- All cross-repo issues can be added to a shared org-level Projects V2 board
+
+### Batch Sync
+
+- `github-batch-sync.ts` — discovers all specs and syncs sequentially
+- Usage: `batchSyncAllSpecs({ owner, repo, workspaceRoot })`
+- Returns aggregated summary: specs processed, issues created/updated, errors
+
+### Agent Teams Orchestration
+
+Skills for parallel multi-domain development:
+- `/sw:team-orchestrate` — analyze feature, create per-domain increments, spawn agents
+- `/sw:team-status` — show agent progress table
+- `/sw:team-merge` — merge in dependency order, trigger sync per increment
+
 ## References
 
-- **Implementation**: `plugins/specweave-github/lib/github-spec-sync.ts`
-- **Types**: `src/core/types/sync-profile.ts`, `src/core/types/spec-metadata.ts`
-- **Tests**: `tests/e2e/github-sync-multi-project.spec.ts`
-- **Project Management**: `src/core/sync/project-context.ts`
+- **Orchestrator**: `plugins/specweave-github/lib/github-sync-orchestrator.ts`
+- **Push Sync**: `plugins/specweave-github/lib/github-push-sync.ts`
+- **Pull Sync**: `plugins/specweave-github/lib/github-pull-sync.ts`
+- **Board Resolver V2**: `plugins/specweave-github/lib/github-board-resolver-v2.ts`
+- **Field Sync**: `plugins/specweave-github/lib/github-field-sync.ts`
+- **Conflict Resolver**: `plugins/specweave-github/lib/github-conflict-resolver.ts`
+- **Cross-Repo**: `plugins/specweave-github/lib/github-cross-repo-sync.ts`
+- **Batch Sync**: `plugins/specweave-github/lib/github-batch-sync.ts`
+- **GraphQL Client**: `plugins/specweave-github/lib/github-graphql-client.ts`
+- **Types**: `src/core/types/sync-profile.ts`
+- **Tests**: `tests/unit/plugins/github/`
+- **Legacy**: `plugins/specweave-github/lib/github-spec-sync.ts`
 - **Original Architecture Fix**: `plugins/specweave-github/SYNC-ARCHITECTURE-FIX-SUMMARY.md`
 
 ---
 
-**Version**: v0.18.0
-**Last Updated**: 2025-11-11
+**Version**: v1.0.235
+**Last Updated**: 2026-02-06
 **Status**: Complete and Tested

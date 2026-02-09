@@ -1,0 +1,9 @@
+{
+  "id": "0195",
+  "name": "playwright-cli-integration",
+  "status": "in-progress",
+  "priority": "medium",
+  "createdAt": "2026-02-08T12:00:00Z",
+  "updatedAt": "2026-02-08T12:00:00Z",
+  "tags": ["testing", "infrastructure", "playwright", "optimization"]
+}

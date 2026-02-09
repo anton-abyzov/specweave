@@ -579,6 +579,79 @@
       },
       "additionalProperties": false
     },
+    "testing": {
+      "type": "object",
+      "description": "Testing configuration including TDD mode, coverage targets, and browser automation",
+      "properties": {
+        "defaultTestMode": {
+          "type": "string",
+          "description": "Default test mode for new increments",
+          "enum": ["TDD", "test-first", "test-after"],
+          "default": "test-after"
+        },
+        "defaultCoverageTarget": {
+          "type": "number",
+          "description": "Default code coverage target percentage",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 80
+        },
+        "coverageTargets": {
+          "type": "object",
+          "description": "Per-level coverage targets",
+          "properties": {
+            "unit": {
+              "type": "number",
+              "description": "Unit test coverage target",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 80
+            },
+            "integration": {
+              "type": "number",
+              "description": "Integration test coverage target",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 60
+            },
+            "e2e": {
+              "type": "number",
+              "description": "E2E test coverage target (critical paths)",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "tddEnforcement": {
+          "type": "string",
+          "description": "TDD enforcement level: strict blocks GREEN without RED, warn shows warning, off disables",
+          "enum": ["strict", "warn", "off"],
+          "default": "warn"
+        },
+        "playwright": {
+          "type": "object",
+          "description": "Playwright browser automation configuration for dual-mode (CLI vs MCP)",
+          "properties": {
+            "preferCli": {
+              "type": "boolean",
+              "description": "Prefer @playwright/cli over MCP plugin for automation tasks (98% token reduction). Set false to always use MCP.",
+              "default": true
+            },
+            "cliFlags": {
+              "type": "array",
+              "description": "Additional flags to pass to playwright-cli commands",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "sync": {
       "type": "object",
       "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",

@@ -1,10 +1,10 @@
 ---
 increment: 0183-multi-language-lsp
-title: "Multi-Language LSP Warm-up & Configurable Timeouts"
+title: Multi-Language LSP Warm-up & Configurable Timeouts
 type: feature
 priority: P1
-status: active
-created: 2026-02-04
+status: paused
+created: 2026-02-04T00:00:00.000Z
 structure: user-stories
 test_mode: test-after
 coverage_target: 80

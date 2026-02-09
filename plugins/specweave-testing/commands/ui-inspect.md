@@ -63,6 +63,14 @@ Provides:
 - **Accessibility Audit**: Check element accessibility
 - **Bug Investigation**: Debug element behavior and properties
 
+## Browser Mode
+
+This command **prefers MCP mode** for rich DOM introspection. When the Playwright MCP plugin provides inline accessibility tree snapshots, the AI can reason about page structure and find optimal selectors.
+
+If MCP is unavailable, falls back to `@playwright/cli snapshot` which saves the accessibility tree to a file (`.playwright-cli/*.yml`). The AI can then read the file, but loses the ability to iterate on snapshots without re-reading.
+
+**Recommended**: Keep the Playwright MCP plugin installed for best `ui-inspect` experience.
+
 ## Requirements
 
 - Playwright browser binaries (auto-installed on first use)

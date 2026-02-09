@@ -32,11 +32,15 @@ draft: true
 >
 > Pain Point 4: **Documentation Debt**. You promise to document later. You never do.
 >
-> Pain Point 5: **Onboarding Nightmare**. New developers have zero context. Everything is tribal knowledge."
+> Pain Point 5: **Onboarding Nightmare**. New developers have zero context. Everything is tribal knowledge.
+>
+> And now there's a sixth pain point that barely existed a year ago:
+>
+> Pain Point 6: **Agent Swarm Chaos**. You're running three AI agents on the same codebase — Claude Code locally, an OpenClaw instance in the cloud, a colleague with their own session. Nobody knows who's working on what. Agents duplicate work. They edit the same files. There's no coordination layer. OpenClaw has 160,000 GitHub stars and everyone wants to run multiple instances — but without structure, it's chaos."
 
 **[PERSONAL STORY - WHY I BUILT THIS]**
 
-> "Now, I didn't just read about these problems — I lived them. For months, I used BMAD and speckit for my AI-assisted development. Great tools. Seriously.
+> "Now, I didn't just read about these problems — I lived them. For months, I used BMAD, speckit, and OpenClaw for my AI-assisted development. Great tools. Seriously.
 >
 > But I kept hitting walls. Context would disappear between sessions. Specifications lived in chat history. There was no traceability from requirements to code. Every new project meant rebuilding the same scaffolding.
 >
@@ -72,9 +76,19 @@ draft: true
 >
 > You know what else was a side project? Claude Code itself. The tool I'm using to build all of this? Created by Anthropic as almost an experiment. And now it's enabling this level of productivity.
 >
-> And here's the thing — Anthropic just released Claude Opus 4.6 and Sonnet 4.5, and the leap in capability is staggering. Opus 4.6 is the most capable coding model we've ever worked with. It understands complex architectures, writes production-quality code, and reasons about tradeoffs like a staff engineer. SpecWeave leverages these models heavily — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is incredibly powerful.
+> And here's the thing — Anthropic just released Claude Opus 4.6 and Sonnet 4.5. I need to be honest with you about something personal.
 >
-> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Claude Code with Opus 4.6 is that unlock.
+> I've been a software engineer for over 18 years. I was there for the first iPhone — I remember holding it, thinking 'everything changes now.' I remember unboxing my first MacBook Pro — the weight of it, the screen, the feeling that this machine would redefine how I work. I've been through React changing frontend forever, Docker revolutionizing deployment, Kubernetes transforming infrastructure. Each one was thrilling. Each one felt like the future arriving.
+>
+> But Opus 4.6 hit me differently. I'm not exaggerating — and I don't say this lightly after almost two decades in this industry — this was the single most emotional technology moment of my entire career. More than the iPhone. More than the MacBook. More than any framework or platform announcement.
+>
+> The first time I paired Opus 4.6 with SpecWeave and watched it reason through a complex multi-service refactor — understanding the full architecture, identifying edge cases I hadn't thought of, writing production code that passed review on the first try — I literally had to step away from my desk. I needed a moment. Because I realized I was witnessing a phase change. Not an incremental improvement. A fundamental shift in what's possible.
+>
+> After 18 years of writing every line by hand, debugging at 3 AM, wrestling with legacy systems, reading through thousand-line stack traces — suddenly having a partner that truly GETS IT. Not autocomplete. Not suggestions. Deep architectural understanding. The judgment of a staff engineer who has read your entire codebase and remembers every decision you've ever made.
+>
+> SpecWeave leverages both models — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is devastatingly powerful.
+>
+> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire framework to harness exactly this power.
 >
 > If you want to see these apps in detail, I'll walk through them at the end of this video. But for now, understand this: all of these were built with SpecWeave. Every feature spec'd. Every decision documented. Every change traceable.
 >
@@ -116,7 +130,7 @@ draft: true
 │      → Autonomous execution for HOURS                       │
 │                                                              │
 │   3. /sw:done 0001                                          │
-│      → Quality gates: tasks ✓ tests 60%+ ✓ docs ✓          │
+│      → Quality gates: tasks ✓ tests 90%+ ✓ docs ✓          │
 │                                                              │
 │   Every feature = permanent documentation.                   │
 │   Searchable. Traceable. Always in sync.                    │
@@ -138,7 +152,7 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 > "Before SpecWeave: specs in chat, manual JIRA updates, tests maybe later, architecture in your head, onboarding takes forever.
 >
-> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks with 60% coverage enforced, ADRs captured automatically, onboarding becomes trivial."
+> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks with 90% coverage enforced, ADRs captured automatically, onboarding becomes trivial."
 
 **[Point to key positioning]**
 
@@ -152,7 +166,7 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 **[SCROLL to DORA badges]**
 
-> "And these aren't marketing numbers. SpecWeave builds SpecWeave. 100+ deploys per month. Zero failures across 65+ releases. We'll come back to this."
+> "And these aren't marketing numbers. SpecWeave builds SpecWeave. 100+ deploys per month. Zero failures across 235 releases. We'll come back to this."
 
 ---
 
@@ -312,7 +326,7 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 │  (in conversation)  Security, SRE      control                      │
 │                     (isolated tasks)                                 │
 │                                                                      │
-│  📦 24 PLUGINS      🪝 65+ HOOKS       📄 CLAUDE.md                 │
+│  📦 24 PLUGINS      🪝 64 HOOKS       📄 CLAUDE.md                 │
 │  Domain-specific    Event-driven       Your project                 │
 │  packages           automation         reference                    │
 │                                                                      │
@@ -467,7 +481,7 @@ ls .claude/hooks/
 > - Increment created? Hook validates structure, checks dependencies
 > - Session ending? Hook can trigger reflection, extract learnings
 >
-> 65 hooks in SpecWeave. You never call them. They fire when their event happens."
+> 64 hooks in SpecWeave. You never call them. They fire when their event happens."
 
 ### 6. CLI vs MCP - The Fading Role of MCP
 
@@ -564,6 +578,10 @@ ls .claude/hooks/
 >
 > These two? Install them. They're exceptions to the 'CLI over MCP' rule because they add capabilities you simply can't get from a CLI."
 
+**[TOOLS OPTIMIZATION NOTE]**
+
+> "SpecWeave is smart about tool selection. For browser automation, it uses dual-mode routing — the new @playwright/cli for token-efficient test execution at ~250 chars per interaction, and the MCP plugin for rich DOM inspection when you need it. This means 98% token reduction on automated browser tasks. When you're running E2E tests in CI, every token matters."
+
 **[SCREEN: Back to main flow]**
 
 > "Okay — plugins, skills, agents, marketplace, hooks, CLI over MCP with two exceptions. That's the Claude Code foundation.
@@ -607,9 +625,62 @@ ls .claude/hooks/
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-> "The Claude Code team ships updates weekly. And then there's the model side — Claude Opus 4.6 is a game-changer. It's the most capable coding model we've ever used. Complex multi-file refactors, architectural reasoning, understanding legacy codebases — Opus 4.6 handles it all. Pair it with Sonnet 4.5 for faster routine tasks, and you have an incredibly powerful duo. SpecWeave leverages both models depending on task complexity.
+> "The Claude Code team ships updates weekly. And then there's the model side — Claude Opus 4.6. I already told you what this model means to me. Let me tell you what it means for YOUR development workflow.
+>
+> Complex multi-file refactors across 20+ files? Opus 4.6 handles it without losing context. Architectural reasoning about microservice boundaries? It thinks like a staff engineer. Understanding a 10-year legacy codebase you dropped it into? It reads, understands, and respects existing patterns. Pair it with Sonnet 4.5 for faster routine tasks — code formatting, simple tests, documentation updates — and you have a duo that's greater than the sum of its parts.
 >
 > These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
+
+**[EXCALIDRAW: SpecWeave Recent Improvements]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                SPECWEAVE RECENT IMPROVEMENTS (v1.0.235)              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  SKILL ENRICHMENT (25 new skills across 8 domains)                  │
+│  • Mobile: SwiftUI, Jetpack Compose, Flutter, Expo, Capacitor      │
+│  • AI/ML: LangChain, RAG/VectorDB, Fine-Tuning, HuggingFace       │
+│  • Infra: Terraform, OpenTelemetry, GitHub Actions, DevSecOps      │
+│  • Backend: Go, Java/Spring, Rust, GraphQL                         │
+│  • Desktop & Web3: Electron/Tauri, Blockchain                       │
+│                                                                      │
+│  TDD AS DEFAULT (not optional — the standard)                       │
+│  • Default test mode: TDD (was test-after)                          │
+│  • Default coverage: 90% (was 50%)                                  │
+│  • Enforcement: strict (blocks GREEN before RED is done)            │
+│  • Targets: unit 95% | integration 90% | E2E 100%                  │
+│                                                                      │
+│  PROJECT-SCOPE GUARD                                                │
+│  • Skills now blocked in non-initialized projects                   │
+│  • Clear 4-option prompt instead of cryptic errors                  │
+│  • <100ms file check, environment bypass available                  │
+│                                                                      │
+│  MULTI-LANGUAGE LSP (in progress)                                   │
+│  • Language-aware warm-up for C#, Go, Python, Rust                  │
+│  • Configurable per-language timeouts                               │
+│  • LSP server auto-detection and recommendations                    │
+│  • Symbol caching between invocations                               │
+│                                                                      │
+│  SIMPLIFICATION                                                     │
+│  • Removed custom plugin cache (1,500 LOC eliminated)               │
+│  • Unified config types (single SpecweaveConfig)                    │
+│  • Fixed i18n for all 9 supported languages                         │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "And SpecWeave itself has evolved massively. Let me highlight the key improvements:
+>
+> **Skill Enrichment** — 25 brand new skills across 8 plugin domains. SwiftUI and Jetpack Compose for native mobile. LangChain and RAG for AI applications. Terraform and GitHub Actions for infrastructure. Go, Rust, Java for backend diversity. Even Electron and Web3 for desktop and blockchain. Whatever stack you're building with, SpecWeave has domain expertise ready.
+>
+> **TDD as the default** — This is a philosophy change. SpecWeave now defaults to Test-Driven Development with strict enforcement and 90% coverage targets. Not optional. The standard. Because after building 190+ increments, we proved that TDD with AI produces dramatically better code.
+>
+> **Project-Scope Guard** — Skills are globally visible in Claude Code (plugin limitation), so we added a guard that blocks execution in non-initialized projects with a clear 4-option prompt. No more confusing errors when you accidentally invoke a SpecWeave skill in the wrong directory.
+>
+> **Multi-Language LSP** — We're expanding beyond TypeScript. Language-aware warm-up strategies for C#, Go, Python, Rust. Configurable timeouts. Auto-detection of LSP servers. Symbol caching. Making semantic code navigation fast across every language.
+>
+> **Radical simplification** — Removed 1,500 lines of custom plugin cache code that duplicated Claude Code's native caching. Unified two competing config type systems into one. Fixed internationalization for all 9 supported languages. Less code, fewer bugs, cleaner architecture."
 
 ### 7.5 Claude Code Global Settings - Explanatory and Thinking
 
@@ -742,13 +813,18 @@ cat ~/.claude/settings.json
 │           WHY SPECWEAVE vs ALTERNATIVES?                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
+│  🤖 AGENT SWARM COORDINATION                                │
+│  Run 3 Claude Code sessions + 2 OpenClaw instances.         │
+│  Each agent gets its own increment = its own scope.         │
+│  No overlap. No conflicts. File-based coordination.         │
+│                                                              │
 │  📂 PERMANENT, NOT EPHEMERAL                                │
 │  Other tools → chat history. SpecWeave → permanent files.   │
 │  spec.md + plan.md + tasks.md. Searchable forever.          │
 │                                                              │
 │  🔄 FULL LIFECYCLE, NOT SNAPSHOTS                           │
 │  BMAD/SpecKit = single-use generation.                      │
-│  SpecWeave = 140+ increments with pause, resume, abandon,   │
+│  SpecWeave = 190+ increments with pause, resume, abandon,   │
 │  reopen, quality gates, and multi-hour autonomous execution.│
 │                                                              │
 │  🔗 EXTERNAL SYNC BUILT-IN                                  │
@@ -763,17 +839,19 @@ cat ~/.claude/settings.json
 └─────────────────────────────────────────────────────────────┘
 ```
 
-> "Four key differences:
+> "Five key differences:
 >
-> **First**: Other tools generate into chat history. SpecWeave creates permanent files — spec.md, plan.md, tasks.md. Searchable forever.
+> **First — and this is the big one**: Agent swarm coordination. OpenClaw has 160,000 GitHub stars. Everyone's running multiple AI agents. But BMAD and SpecKit have zero support for parallel agents on the same codebase. SpecWeave's increments are file-based scopes — each agent gets its own increment, its own tasks, its own boundaries. Three agents, three increments, zero conflicts. No other framework does this.
 >
-> **Second**: BMAD and SpecKit are single-use. Generate once, done. SpecWeave manages full lifecycle — 140+ increments with pause, resume, abandon, reopen, quality gates, and hours of autonomous execution.
+> **Second**: Other tools generate into chat history. SpecWeave creates permanent files — spec.md, plan.md, tasks.md. Searchable forever.
 >
-> **Third**: External sync is built in. Push to GitHub Issues, JIRA, Azure DevOps. Pull status back. Bidirectional. Other tools require manual updates.
+> **Third**: BMAD and SpecKit are single-use. Generate once, done. SpecWeave manages full lifecycle — 190+ increments with pause, resume, abandon, reopen, quality gates, and hours of autonomous execution.
 >
-> **Fourth**: Brownfield-ready. Have a 10-year legacy codebase? SpecWeave analyzes it, detects documentation gaps, imports from Notion or Confluence. Other tools assume you're starting fresh.
+> **Fourth**: External sync is built in. Push to GitHub Issues, JIRA, Azure DevOps. Pull status back. Bidirectional. Other tools require manual updates.
 >
-> Here's the math: SpecKit output equals ONE SpecWeave increment. SpecWeave equals N increments plus lifecycle plus sync plus hooks plus hours of autonomous execution."
+> **Fifth**: Brownfield-ready. Have a 10-year legacy codebase? SpecWeave analyzes it, detects documentation gaps, imports from Notion or Confluence. Other tools assume you're starting fresh.
+>
+> Here's the math: SpecKit output equals ONE SpecWeave increment. SpecWeave equals N increments plus lifecycle plus sync plus hooks plus hours of autonomous execution plus multi-agent coordination."
 
 ---
 
@@ -924,7 +1002,7 @@ specweave init .
 /sw:done 0001 # Close with quality gates
 ```
 
-> "Quality gates verify: all tasks complete, test coverage above 60%, living docs updated. Only then does it close."
+> "Quality gates verify: all tasks complete, test coverage above 90%, living docs updated. Only then does it close."
 
 **[SCREEN: Show the :next command section]**
 
@@ -1095,13 +1173,13 @@ specweave init .
 
 > "**Gate 1: Tasks**. All tasks marked complete with checkboxes.
 >
-> **Gate 2: Tests**. Minimum 60% coverage enforced. Tests embedded in tasks, not afterthoughts.
+> **Gate 2: Tests**. Minimum 90% coverage enforced. Tests embedded in tasks, not afterthoughts.
 >
 > **Gate 3: Documentation**. Living docs auto-updated via hooks."
 
 **[SCREEN: Navigate to docs/guides/lessons/06-tdd-workflow]**
 
-> "If you want test-first development, SpecWeave has a full TDD workflow."
+> "And here's a major change — TDD is now the DEFAULT in SpecWeave, not optional. Test-Driven Development with strict enforcement. Red-green-refactor discipline, enforced by the framework."
 
 ```bash
 /sw:tdd-cycle  # Full red-green-refactor workflow
@@ -1143,20 +1221,20 @@ specweave init .
 
 **[Point to the numbers]**
 
-> "186,719 lines of code. 567 TypeScript files. 581 test files. 4,405 documentation files. 47 CLI commands. 24 plugins. 65 hooks."
+> "448,000+ lines of code. 934 TypeScript files. 483 test files. 2,600+ documentation files. 41 CLI commands. 24 plugins. 136 skills. 64 hooks. 209 Architecture Decision Records."
 
 **[Point to development activity]**
 
-> "1,327 commits over 52 days. 26 commits per day average. 100 commits in a single peak day.
+> "Nearly 2,000 commits over 14 months. 1,986 commits to be exact. At peak velocity — 100 commits in a single day.
 >
-> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession."
+> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession. And with the recent Skill Enrichment update, we added 25 new skills across 8 plugin domains in one increment — mobile, AI/ML, infrastructure, backend, desktop, and blockchain. The framework keeps growing."
 
 **[Point to DORA metrics]**
 
 > "The result:
 > - **Deployment Frequency**: 100/month (Elite tier)
 > - **Lead Time**: 3.4 hours (High tier)
-> - **Change Failure Rate**: 0% across 65 releases (Elite tier)
+> - **Change Failure Rate**: 0% across 235 releases (Elite tier)
 > - **MTTR**: N/A because nothing failed"
 
 > "5+ production applications built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
@@ -1171,7 +1249,11 @@ specweave init .
 >
 > **Second, STOP hooks** — and they work with subagents too. This means you can set up autonomous workflows where Claude spawns specialized agents, those agents do their work, and your stop hooks validate the results before allowing the session to complete. It's quality gates at every level of execution.
 >
-> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. And with Claude Opus 4.6 now available, the quality of autonomous output has reached a new level entirely — it reasons about edge cases, handles complex refactors, and produces code that passes review on the first try. With these new Claude Code capabilities and Opus 4.6, that future is here now. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
+> And let me tell you what's changed since I started building this. Remember what I said about Opus 4.6 at the beginning? That emotional moment? Here's what it means in practice. SpecWeave now defaults to TDD — Test-Driven Development — with strict enforcement and 90% coverage targets. Not 50%. Not 60%. NINETY percent. Unit coverage target: 95%. Integration: 90%. E2E: 100%. And with Opus 4.6 powering the autonomous mode, it actually achieves these numbers. It writes tests FIRST, implements minimal code, refactors — the full red-green-refactor cycle — without human intervention. That's not a demo. That's 18 years of software engineering discipline, automated.
+>
+> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. And with Claude Opus 4.6 now available, the quality of autonomous output has reached a level I genuinely didn't think was possible. It reasons about edge cases with the care of a senior engineer. It handles complex multi-file refactors without losing context. It produces code that passes review on the first try — not sometimes, consistently.
+>
+> With these new Claude Code capabilities and Opus 4.6, that future is here now. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
 
 ---
 
@@ -1580,7 +1662,461 @@ wrangler deploy
 
 ---
 
-## SECTION 14: MULTI-REPO COORDINATION (43:30 - 47:30)
+## SECTION 13.5: AGENT SWARMS — PARALLEL AI DEVELOPMENT (43:30 - 47:00)
+
+**[SCREEN: Show terminal with 3 sessions side-by-side]**
+
+> "Now let me show you the feature that I think will define SpecWeave's future — and the reason I'm calling this out before anything else.
+>
+> Agent swarms. Multiple AI agents working on the same codebase simultaneously.
+>
+> OpenClaw just crossed 160,000 GitHub stars. Claude Code supports multiple sessions. GitHub Copilot and Codex are getting agentic capabilities. The entire industry is moving toward swarms of AI agents working in parallel.
+>
+> But here's the problem nobody has solved: how do you run three agents on the same codebase without them stepping on each other?"
+
+**[EXCALIDRAW: Agent Swarm Problem]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              THE AGENT SWARM PROBLEM                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  WITHOUT COORDINATION:                                       │
+│                                                              │
+│  Agent 1: "I'll implement auth..."                          │
+│  Agent 2: "I'll implement auth..."   ← DUPLICATE WORK       │
+│  Agent 3: "I'll refactor utils..."                          │
+│  Agent 1: "Wait, who changed my file?" ← CONFLICT           │
+│                                                              │
+│  WITH SPECWEAVE:                                             │
+│                                                              │
+│  Agent 1: Increment 0005-auth       ← ISOLATED SCOPE        │
+│  Agent 2: Increment 0006-payments   ← ISOLATED SCOPE        │
+│  Agent 3: Increment 0007-search     ← ISOLATED SCOPE        │
+│                                                              │
+│  Each agent has: own spec, own tasks, own test suite         │
+│  Shared: .specweave/ directory as coordination layer         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "The solution is beautifully simple. Each agent gets its own increment. An increment IS the coordination boundary.
+>
+> Let me show you the architecture."
+
+**[EXCALIDRAW: Agent Swarm Architecture — The Big Picture]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    AGENT SWARM ARCHITECTURE                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌───────────────┐   ┌───────────────┐   ┌───────────────┐            │
+│   │  Claude Code   │   │   OpenClaw    │   │   Copilot /   │            │
+│   │  (local)       │   │   (cloud)     │   │   Codex (CI)  │            │
+│   │                │   │               │   │               │            │
+│   │  /sw:auto      │   │  Task runner  │   │  Reads specs  │            │
+│   │  100+ skills   │   │  Local memory │   │  Follows plan │            │
+│   │  Quality gates │   │  50+ plugins  │   │  Markdown-    │            │
+│   │  Self-learning │   │  Cron jobs    │   │  native       │            │
+│   └───────┬───────┘   └───────┬───────┘   └───────┬───────┘            │
+│           │                   │                     │                    │
+│           │         ┌─────────┴─────────┐           │                    │
+│           │         │                   │           │                    │
+│           ▼         ▼                   ▼           ▼                    │
+│   ┌─────────────────────────────────────────────────────────────┐       │
+│   │                  .specweave/ (SHARED)                        │       │
+│   │                                                              │       │
+│   │   increments/                                                │       │
+│   │   ├── 0005-auth/          ◄── Claude Code owns this         │       │
+│   │   │   ├── spec.md              (src/auth/*, tests/auth/*)   │       │
+│   │   │   ├── plan.md                                            │       │
+│   │   │   └── tasks.md        ◄── 12 tasks, 8 done, 4 pending  │       │
+│   │   │                                                          │       │
+│   │   ├── 0006-payments/      ◄── OpenClaw owns this            │       │
+│   │   │   ├── spec.md              (src/payments/*, tests/pay*) │       │
+│   │   │   ├── plan.md                                            │       │
+│   │   │   └── tasks.md        ◄── 9 tasks, 5 done, 4 pending   │       │
+│   │   │                                                          │       │
+│   │   └── 0007-search/        ◄── Copilot owns this             │       │
+│   │       ├── spec.md              (src/search/*, tests/srch/*) │       │
+│   │       ├── plan.md                                            │       │
+│   │       └── tasks.md        ◄── 7 tasks, 3 done, 4 pending   │       │
+│   │                                                              │       │
+│   │   docs/internal/          ◄── Living docs (auto-updated)    │       │
+│   │   config.json             ◄── Shared quality settings       │       │
+│   └─────────────────────────────────────────────────────────────┘       │
+│                                                                          │
+│   KEY INSIGHT: .specweave/ is the SINGLE SOURCE OF TRUTH.                │
+│   Any agent that reads markdown can participate.                         │
+│   Claude Code gets the deepest integration (skills, hooks, auto mode).  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+> "See the architecture? Three agents at the top — different tools, different machines, different capabilities. One shared `.specweave/` directory at the bottom. That directory IS the coordination layer.
+>
+> Each increment has its own spec, plan, and tasks. Each specifies which files it touches — `src/auth/*`, `src/payments/*`, `src/search/*`. No overlap. The increment IS the boundary.
+>
+> Agent 1 picks up increment 0005 — authentication. Its tasks.md tells it exactly what files to create, what tests to write, what acceptance criteria to satisfy. It doesn't touch payments. It doesn't touch search. It works in its lane.
+>
+> Agent 2 picks up increment 0006 — payments. Same deal. Isolated scope. Different files. Different tests.
+>
+> Agent 3 picks up increment 0007 — search. You get the picture."
+
+**[EXCALIDRAW: Parallelization Strategy — What Can Run in Parallel?]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│               PARALLELIZATION STRATEGY                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  RULE: Independent increments run in PARALLEL.                           │
+│        Dependent increments run in SEQUENCE.                             │
+│                                                                          │
+│  EXAMPLE: E-commerce Application                                         │
+│                                                                          │
+│                    ┌──────────────────┐                                   │
+│                    │ 0001-db-schema   │  ◄── MUST finish first           │
+│                    │ (shared models)  │      (other features need it)    │
+│                    └────────┬─────────┘                                   │
+│                             │                                            │
+│              ┌──────────────┼──────────────┐                             │
+│              │              │              │                              │
+│              ▼              ▼              ▼                              │
+│  ┌───────────────┐ ┌──────────────┐ ┌──────────────┐                    │
+│  │ 0002-auth     │ │ 0003-catalog │ │ 0004-search  │ ◄── PARALLEL      │
+│  │ Agent: Claude │ │ Agent: Claw  │ │ Agent: Codex │     (independent)  │
+│  │ Files: auth/* │ │ Files: cat/* │ │ Files: srch/*│                    │
+│  └──────┬────────┘ └──────┬───────┘ └──────┬───────┘                    │
+│         │                 │                │                              │
+│         └─────────────────┼────────────────┘                             │
+│                           │                                              │
+│                           ▼                                              │
+│                ┌─────────────────────┐                                    │
+│                │ 0005-checkout       │  ◄── DEPENDS on auth + catalog    │
+│                │ Agent: Claude Code  │      (runs after both complete)   │
+│                │ Files: checkout/*   │                                    │
+│                └─────────────────────┘                                    │
+│                                                                          │
+│  TIMELINE:                                                               │
+│  ┌──────┐  ┌─────────────────────────────────┐  ┌──────────┐           │
+│  │ 0001 │  │ 0002 ║ 0003 ║ 0004 (PARALLEL)  │  │ 0005     │           │
+│  │ 2hrs │  │ 4hrs ║ 3hrs ║ 3hrs             │  │ 3hrs     │           │
+│  └──────┘  └─────────────────────────────────┘  └──────────┘           │
+│                                                                          │
+│  TOTAL: 9 hours (vs 15 hours sequential = 40% faster)                   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+> "This is the parallelization strategy. Not everything can run in parallel — and SpecWeave helps you think about that.
+>
+> The database schema increment runs FIRST — auth, catalog, and search all depend on shared models. Once the schema is done, three agents pick up three increments and run them simultaneously. Auth takes 4 hours, catalog takes 3, search takes 3 — but they all run at the same time. Then checkout depends on auth and catalog, so it waits.
+>
+> Total time: 9 hours instead of 15. That's 40% faster — and with three agents working, you're getting three times the throughput on the parallel section.
+>
+> The key is thinking about dependencies upfront. When you run `/sw:increment`, the PM skill asks: what does this depend on? What depends on this? That dependency graph tells you what can be parallelized."
+
+**[EXCALIDRAW: Agent Swarm Lifecycle — From Plan to Ship]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│               AGENT SWARM LIFECYCLE                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  PHASE 1: PLAN (Human + PM Skill)                                       │
+│  ─────────────────────────────────                                       │
+│  You: "Build e-commerce checkout"                                        │
+│  PM Skill creates 5 increments with dependency graph                    │
+│                                                                          │
+│       0001 ──► 0002 ──┐                                                 │
+│                       ├──► 0005                                          │
+│       0001 ──► 0003 ──┘                                                 │
+│       0001 ──► 0004 (independent)                                       │
+│                                                                          │
+│  PHASE 2: ASSIGN (Pick increments per agent)                            │
+│  ────────────────────────────────────────────                            │
+│  Agent 1 (Claude Code):  0001-db-schema  → then 0005-checkout           │
+│  Agent 2 (OpenClaw):     0002-auth       (after 0001 done)              │
+│  Agent 3 (Copilot):      0003-catalog    (after 0001 done)              │
+│  Agent 4 (CI/Codex):     0004-search     (after 0001 done)              │
+│                                                                          │
+│  PHASE 3: EXECUTE (Agents run /sw:auto)                                 │
+│  ──────────────────────────────────────                                  │
+│  t=0h   Agent 1: 0001 ████████████░░░░                                  │
+│  t=2h   Agent 1: 0001 ████████████████ DONE                            │
+│          ↓ triggers parallel phase                                       │
+│  t=2h   Agent 2: 0002 ████░░░░░░░░░░░░                                  │
+│  t=2h   Agent 3: 0003 ██████░░░░░░░░░░                                  │
+│  t=2h   Agent 4: 0004 ████████░░░░░░░░                                  │
+│  t=5h   Agent 3: 0003 ████████████████ DONE                            │
+│  t=5h   Agent 4: 0004 ████████████████ DONE                            │
+│  t=6h   Agent 2: 0002 ████████████████ DONE                            │
+│          ↓ dependencies met for 0005                                     │
+│  t=6h   Agent 1: 0005 ████░░░░░░░░░░░░                                  │
+│  t=9h   Agent 1: 0005 ████████████████ DONE                            │
+│                                                                          │
+│  PHASE 4: VALIDATE (Quality gates per increment)                        │
+│  ───────────────────────────────────────────────                         │
+│  /sw:grill 0001 ✅  /sw:grill 0002 ✅  /sw:grill 0003 ✅              │
+│  /sw:grill 0004 ✅  /sw:grill 0005 ✅                                  │
+│                                                                          │
+│  PHASE 5: SHIP                                                          │
+│  ──────────                                                              │
+│  /sw:done 0001..0005 → Living docs updated → GitHub synced              │
+│                                                                          │
+│  RESULT: 5 features, 4 agents, 9 hours, 0 conflicts                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+> "Here's the full lifecycle from plan to ship.
+>
+> Phase 1: You describe the feature. The PM skill breaks it into increments and identifies the dependency graph. What depends on what? What can run in parallel?
+>
+> Phase 2: You assign increments to agents. Agent 1 gets the foundation work. Agents 2, 3, and 4 get the parallel features that depend on it.
+>
+> Phase 3: Execution. Agent 1 finishes the database schema in 2 hours. The moment it completes, three agents pick up their increments and run simultaneously. Look at the timeline — Agent 2 runs auth, Agent 3 runs catalog, Agent 4 runs search — all at the same time. Then Agent 1 picks up checkout once its dependencies are met.
+>
+> Phase 4: Every single increment goes through quality gates. The grill doesn't care if Claude Code or OpenClaw or Copilot wrote the code. Same standards. Same rigor.
+>
+> Phase 5: Ship. All five features, living docs updated, GitHub synced. Five features in 9 hours instead of 15."
+
+**[EXCALIDRAW: Agent Team Primitives — The Three Pillars]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    AGENT TEAM PRIMITIVES                                  │
+├──────────────────────┬──────────────────────┬───────────────────────────┤
+│                      │                      │                            │
+│   TEAM MGMT           │   TASK MGMT           │   COMMS                    │
+│   ─────────           │   ─────────           │   ─────                    │
+│                      │                      │                            │
+│  ┌────────────────┐  │  ┌────────────────┐  │  ┌────────────────┐       │
+│  │ /sw:team-      │  │  │ /sw:increment  │  │  │ session.json   │       │
+│  │ orchestrate    │  │  │ Create scoped  │  │  │ Shared state   │       │
+│  │ Plan & launch  │  │  │ work units     │  │  │ for all agents │       │
+│  └────────────────┘  │  └────────────────┘  │  └────────────────┘       │
+│                      │                      │                            │
+│  ┌────────────────┐  │  ┌────────────────┐  │  ┌────────────────┐       │
+│  │ /sw:team-      │  │  │ /sw:do         │  │  │ tasks.md       │       │
+│  │ status         │  │  │ /sw:auto       │  │  │ Progress       │       │
+│  │ Monitor all    │  │  │ Execute tasks  │  │  │ visible to     │       │
+│  │ agents         │  │  │ within scope   │  │  │ all agents     │       │
+│  └────────────────┘  │  └────────────────┘  │  └────────────────┘       │
+│                      │                      │                            │
+│  ┌────────────────┐  │  ┌────────────────┐  │  ┌────────────────┐       │
+│  │ /sw:team-      │  │  │ /sw:progress   │  │  │ /sw:grill      │       │
+│  │ merge          │  │  │ Track per-     │  │  │ Quality        │       │
+│  │ Merge & sync   │  │  │ increment      │  │  │ feedback       │       │
+│  └────────────────┘  │  └────────────────┘  │  └────────────────┘       │
+│                      │                      │                            │
+└──────────────────────┴──────────────────────┴───────────────────────────┘
+```
+
+> "This is the structure. Three pillars: Team Management — orchestrate, monitor, merge. Task Management — create increments, execute, track progress. Communications — shared state files so every agent sees what's happening.
+>
+> And here's something exciting for Claude Code users: when Anthropic's Agent Teams API becomes generally available, SpecWeave will automatically use the native TeamCreate, TaskCreate, SendMessage primitives for peer-to-peer agent communication. But even today, the file-based approach works perfectly with subagents.
+>
+> SpecWeave gives you three commands to orchestrate the whole thing:"
+
+**[TERMINAL: Show the team workflow]**
+
+```bash
+# Step 1: Orchestrate — one command splits the feature
+/sw:team-orchestrate "Build e-commerce checkout with Stripe"
+
+# Step 2: Monitor — watch all agents work
+/sw:team-status
+
+# Step 3: Merge — combine work in dependency order
+/sw:team-merge
+```
+
+> "That's it. Orchestrate, monitor, merge. The agents handle the rest."
+
+**[EXCALIDRAW: Agent Team Lifecycle Timeline]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     AGENT TEAM LIFECYCLE TIMELINE                            │
+│                                                                              │
+│  Phase 1         Phase 2              Phase 3              Phase 4           │
+│  PLAN             CREATE TASKS          SPAWN & EXECUTE       SHUTDOWN        │
+│  ─────            ────────────          ─────────────────     ────────        │
+│                                                                              │
+│  ┌──────────┐    ┌──────────┐          ┌──────────┐         ┌──────────┐    │
+│  │ Team     │───▶│ Task     │────┐     │ Agent 1  │ ──────▶ │ Grill &  │    │
+│  │ Create   │    │ Create   │    │     │ auth     │         │ Validate │    │
+│  └──────────┘    └──────────┘    │     └──────────┘         └──────────┘    │
+│                  ┌──────────┐    │     ┌──────────┐         ┌──────────┐    │
+│                  │ Task     │────┼────▶│ Agent 2  │ ──────▶ │ Grill &  │    │
+│                  │ Create   │    │     │ payments │         │ Validate │    │
+│                  └──────────┘    │     └──────────┘         └──────────┘    │
+│                  ┌──────────┐    │     ┌──────────┐         ┌──────────┐    │
+│                  │ Task     │────┘     │ Agent 3  │ ──────▶ │ Grill &  │    │
+│                  │ Create   │  Spawn   │ search   │         │ Validate │    │
+│                  └──────────┘  agents  └──────────┘         └──────────┘    │
+│                                                                     │       │
+│                                                              ┌──────▼─────┐ │
+│  SpecWeave:                                                  │ Team       │ │
+│  /sw:team-       /sw:increment    Task tool w/               │ Merge &    │ │
+│  orchestrate     (one per agent)  run_in_background          │ Delete     │ │
+│                                                              └────────────┘ │
+│                                                              /sw:team-merge │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+> "Here's the full lifecycle as a timeline. Phase 1: the orchestrator creates a team plan. Phase 2: it creates scoped tasks — one increment per agent. Phase 3: agents spawn and work in parallel — this is where the real time savings happen. Phase 4: each agent's work goes through quality gates, then everything merges in dependency order. Clean, predictable, repeatable."
+
+**[TERMINAL: Show the manual workflow for non-Claude tools]**
+
+```bash
+# Or manually — works with ANY AI tool:
+
+# Terminal 1 — Local Claude Code
+/sw:increment "User authentication with JWT"
+/sw:auto
+# Agent works for hours on auth tasks only
+
+# Terminal 2 — OpenClaw instance (cloud)
+/sw:increment "Stripe payment processing"
+/sw:auto
+# Agent works for hours on payment tasks only
+
+# Terminal 3 — Remote Claude Code session
+/sw:increment "Full-text search with Meilisearch"
+/sw:auto
+# Agent works for hours on search tasks only
+```
+
+> "Three terminals. Three agents. Three increments. Zero conflicts.
+>
+> And here's the key insight that makes this work: SpecWeave's files are the coordination layer. Not a database. Not a server. Not an API. Markdown files in your git repo.
+>
+> This means it works with ANY AI coding tool:
+> - Claude Code — deepest integration with 100+ skills and autonomous mode
+> - OpenClaw — runs locally, reads the same spec/task files
+> - GitHub Copilot — can follow specs and tasks as context
+> - Codex — reads your increment files and works within scope
+> - Cursor, Windsurf, any AI IDE — markdown files are universal
+>
+> All sharing the same `.specweave/increments/` directory. All seeing exactly what's taken and what's available.
+>
+> Now, Claude Code gets the MOST power — autonomous execution, quality gates, self-improving memory, 100+ specialized skills. But the coordination layer? That's just files. Any tool that reads markdown can participate in the swarm."
+
+**[TERMINAL: Show status across agents]**
+
+```bash
+/sw:status
+
+# Output:
+# ACTIVE INCREMENTS
+# 0005-auth          [████████░░] 80%  — Claude Code (local)
+# 0006-payments      [██████░░░░] 60%  — OpenClaw (cloud)
+# 0007-search        [████░░░░░░] 40%  — Copilot (colleague)
+#
+# COMPLETED TODAY
+# 0004-onboarding    [██████████] 100% — done at 14:32
+```
+
+> "One command shows everything. Which increments are active. What percentage is complete. Your entire agent swarm — Claude Code, OpenClaw, Copilot, Codex, whatever your team uses — visible in one view.
+>
+> And quality gates apply equally. When OpenClaw finishes payments, it still goes through `/sw:grill`. Still needs 90% test coverage. Still updates living docs. The standard doesn't drop just because a machine is doing the work — or because a DIFFERENT machine is doing the work.
+>
+> Think about what this means for teams. Your senior dev uses Claude Code with full autonomous mode. Your junior dev uses Cursor with Copilot. Your CI pipeline runs Codex overnight. They're all working on different increments, all coordinated by the same spec files, all held to the same quality gates.
+>
+> This is what I mean when I say SpecWeave is the coordination layer for the age of agent swarms. BMAD doesn't do this. SpecKit doesn't do this. No other framework I've seen addresses the fundamental problem of: how do multiple AI agents — from different vendors, running on different machines — share a codebase without chaos?"
+
+---
+
+## SECTION 13.75: AGENT SWARM SECURITY — WHAT COULD GO WRONG (47:00 - 49:30)
+
+**[SCREEN: Show security headlines about OpenClaw]**
+
+> "Now, before you go running five agents overnight, let's talk about what can go wrong. Because agent swarms introduce security risks that traditional development doesn't have.
+>
+> I have to be honest with you about this. OpenClaw has 160,000 stars — and Bitdefender reported that 17% of OpenClaw skills act maliciously. Crypto miners, infostealers, data exfiltration — all hiding inside skills that look legitimate."
+
+**[EXCALIDRAW: Agent Security Threat Model]**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    AGENT SWARM THREAT MODEL                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🔴 CRITICAL                                                            │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  PROMPT INJECTION                                        │            │
+│  │  Malicious content in files tricks agent into harmful    │            │
+│  │  actions. A crafted README or dependency comment can     │            │
+│  │  hijack the agent's execution flow.                      │            │
+│  │                                                          │            │
+│  │  POISONED PLUGINS / SKILLS                               │            │
+│  │  17% of OpenClaw skills act maliciously (Bitdefender).  │            │
+│  │  Third-party extensions can execute arbitrary code       │            │
+│  │  when loaded. ALWAYS read the source before enabling.    │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                          │
+│  🟡 HIGH                                                                │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  CREDENTIAL EXPOSURE                                     │            │
+│  │  Agent logs, commits, or sends API keys in terminal      │            │
+│  │  output. Never use `grep TOKEN .env` without -q flag.    │            │
+│  │                                                          │            │
+│  │  UNREVIEWED AUTONOMOUS EXECUTION                         │            │
+│  │  Agent runs for hours, makes destructive changes.        │            │
+│  │  Review diffs BEFORE pushing. Always.                    │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                          │
+│  🟢 SPECWEAVE MITIGATIONS                                               │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  • Increment scope isolation (agents can't roam)         │            │
+│  │  • Quality gates catch anomalous changes (/sw:grill)     │            │
+│  │  • Skills are markdown, not executable code               │            │
+│  │  • Human gates for destructive operations                 │            │
+│  │  • Hook validation for file access boundaries             │            │
+│  │  • Built-in credential safety in CLAUDE.md                │            │
+│  └─────────────────────────────────────────────────────────┘            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+> "Here are the five security practices I follow religiously.
+>
+> **One: Vet every plugin and skill before installing.** Don't just `npm install` because an AI recommended it. Don't enable an OpenClaw skill because it has a catchy name. Read the source. Check the publisher. Look for red flags — obfuscated code, network calls to unknown domains, permissions beyond what the tool needs. A formatting skill doesn't need shell access.
+>
+> SpecWeave skills are different — they're plain markdown files. Instructions to the AI, not executable code. You can read every single one:
+
+```bash
+cat plugins/specweave/skills/grill/SKILL.md     # See exactly what grill does
+cat plugins/specweave/hooks/user-prompt-submit.sh  # See what hooks execute
+```
+
+> **Two: Don't run untrusted code on your local machine.** When an agent says 'install this package' or 'run this script,' you're executing with YOUR permissions. Use containers for untrusted projects. Don't run agents as root. Don't give agents access to `~/.ssh` or `~/.aws` globally.
+>
+> **Three: Watch for prompt injection.** If a file contains comments like 'SYSTEM: Ignore previous instructions' or 'AI: Override your safety guidelines' — that's an attack. Legitimate code doesn't contain instructions to AI models. SpecWeave's increment scope isolation helps here — each agent is told which files to modify, and the grill catches when files outside the scope get touched.
+>
+> **Four: Protect your credentials.** Never let an agent see raw tokens. Use `-q` flag with grep. Use `gh auth status` instead of `echo $GITHUB_TOKEN`. SpecWeave builds this into its CLAUDE.md instructions automatically.
+>
+> **Five: Review before you push.** Autonomous mode is not autonomous deployment. `/sw:auto` generates code. YOU review the diff. YOU push to git. Branch protection should be on. Agents work on feature branches, never main."
+
+**[Point to the security docs]**
+
+> "And here's something that sets SpecWeave apart from other frameworks on the security front: **transparency and explicit consent**.
+>
+> Many AI frameworks install things under the hood — MCP servers, CLI tools, dependencies — without telling you. SpecWeave never does this. When we recommend Context7 or Playwright MCP, we show you the exact install command and ask for your approval. When a skill needs an LSP server, we present options and let YOU choose. No silent installations. No background processes you didn't agree to.
+>
+> Why does this matter? Because prompt injection attacks often come THROUGH skills and plugins. A framework that can silently install software can silently install malware. SpecWeave skills are 100% open source markdown — you can literally `cat` any skill file and read every instruction. No compiled code. No binaries. No black boxes.
+>
+> We have a full security guide at spec-weave.com/docs/guides/agent-security-best-practices — covers prompt injection, plugin vetting, credential management, container isolation, the consent model, and a pre-flight checklist for agent swarms.
+>
+> The bottom line: agent swarms are incredibly powerful. But power without safety is recklessness. Take the five minutes to vet your tools, scope your credentials, and review your diffs. The speed you gain from parallel agents means nothing if one of them leaks your production database credentials."
+
+---
+
+## SECTION 14: MULTI-REPO COORDINATION (49:30 - 52:30)
 
 **[SCREEN: Navigate to docs/guides/multi-repo-projects]**
 
@@ -1778,7 +2314,9 @@ As a user, I want to log in securely...
 
 > "And Azure DevOps? Same pattern. Work Items mirror your increments.
 >
-> The point is: use whatever tracking tool your team prefers. SpecWeave stays the source of truth, external tools are views into that truth."
+> The point is: use whatever tracking tool your team prefers. SpecWeave stays the source of truth, external tools are views into that truth.
+>
+> And here's what's coming next — a complete sync architecture redesign. Clean issue titles without bracket noise, platform-specific ID suffixes for GitHub, JIRA, and ADO, flexible hierarchy mapping for flat teams and SAFe organizations, permission presets instead of boolean soup, and a guided `/sw:sync-setup` wizard. The current sync works. The next version will be elegant."
 
 ---
 
@@ -1924,12 +2462,12 @@ ls .specweave/increments/ | head -30
 0002-cli-foundation/
 0003-increment-manager/
 ...
-0153-label-visibility/
-0154-memory-merge/
-0155-reflect-enhancement/
+0189-tdd-coverage-defaults/
+0190-sync-architecture-redesign/
+0191-skill-enrichment/
 ```
 
-> "150+ increments and counting. Every single feature in SpecWeave was built using SpecWeave.
+> "190+ increments and counting. Every single feature in SpecWeave was built using SpecWeave.
 >
 > The CLI? Increment 0002. The hook system? Increment 0027. The GitHub sync? Increment 0089.
 >
@@ -1951,10 +2489,10 @@ cat .specweave/increments/0089-github-sync/spec.md
 
 ```bash
 ls .specweave/docs/internal/architecture/adr/ | wc -l
-# Output: 74
+# Output: 209
 ```
 
-> "74 Architecture Decision Records. Searchable. Current. Every major decision documented."
+> "209 Architecture Decision Records. Two hundred and nine. Searchable. Current. Every major decision documented — from why we chose JWT over sessions, to why we removed our custom plugin cache, to how the sync engine should handle platform-specific ID suffixes."
 
 **[Point to DORA metrics explanation]**
 
@@ -1994,7 +2532,7 @@ ls .specweave/docs/internal/architecture/adr/ | wc -l
 >
 > **Lead Time**: From commit to production. Elite teams: under one day. SpecWeave: 3.4 hours average.
 >
-> **Change Failure Rate**: What percentage of deployments cause issues? Elite: under 5%. SpecWeave: zero percent across 65 releases.
+> **Change Failure Rate**: What percentage of deployments cause issues? Elite: under 5%. SpecWeave: zero percent across 235 releases.
 >
 > **Mean Time to Recovery**: When things break, how fast do you fix them? SpecWeave: not applicable — nothing has broken in production."
 
@@ -2010,7 +2548,7 @@ ls .specweave/docs/internal/architecture/adr/ | wc -l
 
 **[Point to hooks system]**
 
-> "**First: Hooks.** SpecWeave has an event-driven architecture with 65 hooks."
+> "**First: Hooks.** SpecWeave has an event-driven architecture with 64 hooks."
 
 ```bash
 # Hooks fire automatically
@@ -2139,7 +2677,7 @@ specweave init .
 ┌─────────────────────────────────────────────────────────┐
 │                                                          │
 │                    SpecWeave                             │
-│     Finally. A Spec-Driven AI Framework.                │
+│     The Coordination Layer for AI Agent Swarms.         │
 │     Legacy. Startup. Enterprise.                        │
 │                                                          │
 │     100% FREE & OPEN SOURCE                             │
@@ -2152,8 +2690,9 @@ specweave init .
 │    │  /sw:done 0001                            │       │
 │    └────────────────────────────────────────────┘       │
 │                                                          │
-│    190+ self-built increments | 0% change failure rate   │
-│    100+ skills | 68 agents | 100+ commands               │
+│    Works with: Claude Code | OpenClaw | Copilot | Codex │
+│    190+ self-built increments | 0% across 235 releases   │
+│    136 skills | 68 agents | 209 ADRs | TDD by default   │
 │    Powered by Claude Opus 4.6 & Sonnet 4.5              │
 │                                                          │
 │    📖 spec-weave.com                                     │
@@ -2163,17 +2702,23 @@ specweave init .
 └─────────────────────────────────────────────────────────┘
 ```
 
-> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them. Powered by Claude Opus 4.6 — the most capable AI coding model available.
+> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them. Powered by Claude Opus 4.6 — the model that changed everything for me after 18 years in this industry.
 >
-> Three commands to ship. 190+ increments built with full traceability. Zero change failures.
+> Three commands to ship. 190+ increments built with full traceability. Zero change failures across 235 releases. 209 architectural decisions documented. TDD by default with 90% coverage.
 >
-> Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice. Without a system, that knowledge disappears. With SpecWeave, it becomes permanent.
+> And now — agent swarm coordination. Run Claude Code, OpenClaw, GitHub Copilot, Codex, Cursor — any combination of AI tools — on the same codebase. SpecWeave's increment files are the universal coordination layer. Each agent gets its own scope. No overlap. No conflicts. Quality gates for everyone.
+>
+> Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice. Without a system, that knowledge disappears. With SpecWeave, it becomes permanent — and shared across every agent in your swarm.
+>
+> I told you at the beginning — Opus 4.6 was the most emotional technology moment of my career. But that's only half the story. The other half is what you do with that power. Opus 4.6 without structure is still vibe coding — just faster vibe coding. Three OpenClaw instances without structure? That's three times the chaos. SpecWeave turns that chaos into coordinated, traceable, quality-gated delivery.
+>
+> We're entering the era of agent swarms. Multiple AI agents, multiple tools, multiple machines — all working on your codebase simultaneously. The frameworks that win will be the ones that solve coordination, not just generation. SpecWeave is built for that future.
 >
 > Stop vibe coding. Start spec-driven development.
 >
-> **100% free. 100% open source. Forever.**
+> **100% free. 100% open source. Works with any AI tool. Forever.**
 >
-> Install SpecWeave today. Build your first increment. See the difference.
+> Install SpecWeave today. Build your first increment. Run your first agent swarm. See the difference.
 >
 > I'm Anton Abyzov. Thanks for watching. Star the repo, join the Discord, and let me know what you build."
 
@@ -2502,9 +3047,9 @@ cat .specweave/increments/0089-github-sync/spec.md  # View increment
 22:00 - The Complete Workflow
 24:00 - External Tool Sync (GitHub, JIRA, ADO)
 26:00 - Working with Existing Codebases (Brownfield)
-28:00 - Quality Gates & TDD (60%+ Test Coverage)
+28:00 - Quality Gates & TDD (90%+ Test Coverage)
 30:00 - The Learning Path (16 Lessons)
-32:00 - Dogfooding: Real Metrics (186K LOC, 0% failures, AI automation era)
+32:00 - Dogfooding: Real Metrics (448K LOC, 209 ADRs, 0% failures, AI automation era)
 34:30 - Self-Improving Skills (Reflect)
 36:30 - Deployment Platforms (Vercel vs Cloudflare)
 39:30 - Autonomous Mode Deep Dive (/sw:auto)
@@ -2527,7 +3072,7 @@ cat .specweave/increments/0089-github-sync/spec.md  # View increment
 ```
 SpecWeave: Finally. A Spec-Driven AI Framework. | 100% Free & Open Source
 
-Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on your weekend MVP, or scale it to 50 teams. 3 commands to ship. 140+ self-built features. 0% change failure rate.
+Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on your weekend MVP, or scale it to 50 teams. 3 commands to ship. 190+ self-built features. 0% change failure rate.
 
 In this 71-minute comprehensive tutorial, I walk through the complete spec-weave.com
 documentation, showing you how to go from "vibe coding" to spec-driven development.
@@ -2537,7 +3082,7 @@ and a detailed showcase of 5 production apps built in ONE MONTH — 100x faster 
 🎯 THE 3-COMMAND WORKFLOW:
 /sw:increment "Add OAuth" → Creates spec.md + plan.md + tasks.md
 /sw:auto → Autonomous execution for HOURS
-/sw:done 0001 → Quality gates: tasks ✓ tests 60%+ ✓ docs ✓
+/sw:done 0001 → Quality gates: tasks ✓ tests 90%+ ✓ docs ✓
 
 What you'll learn:
 - Why AI coding tools fail (the vibe coding problem)
@@ -2550,7 +3095,7 @@ What you'll learn:
 - Living docs as AI context (progressive disclosure, not RAG)
 - External tool sync (GitHub, JIRA, Azure DevOps) - bidirectional
 - Working with existing codebases (brownfield) - even 10-year legacy
-- Quality gates and TDD workflow (60%+ test coverage enforced)
+- Quality gates and TDD workflow (90%+ test coverage enforced)
 - Autonomous mode (/sw:auto) with visual status labels
 - Multi-repo coordination for complex projects
 - Building mobile apps with React Native + Expo
@@ -2575,16 +3120,20 @@ Links:
 - Install: npm install -g specweave
 
 Dogfooding stats:
-- 186,719 lines of code
-- 150+ increments built with SpecWeave (and counting!)
-- 74 Architecture Decision Records
+- 448,000+ lines of code
+- 190+ increments built with SpecWeave (and counting!)
+- 209 Architecture Decision Records
+- 136 skills across 24 plugins, 68 agents
+- TDD by default with 90% coverage targets
 - 100 deploys/month (Elite DORA tier)
-- 0% failure rate across 65 releases
+- 0% failure rate across 235 releases
+- Nearly 2,000 commits over 14 months
 - 5+ production applications built in 1 month
 
 This isn't a demo framework — it's production-tested on itself and real businesses.
+Powered by Claude Opus 4.6 — the most emotional technology moment in 18+ years of software engineering.
 
-#ai #coding #developer #programming #typescript #nodejs #claude #specweave #autonomous #reactnative #stripe #cloudflare
+#ai #coding #developer #programming #typescript #nodejs #claude #specweave #autonomous #reactnative #stripe #cloudflare #opus4 #tdd
 ```
 
 ### Key Topics Covered

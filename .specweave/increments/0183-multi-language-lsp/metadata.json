@@ -1,15 +1,18 @@
 {
   "id": "0183-multi-language-lsp",
-  "status": "active",
+  "status": "paused",
   "type": "feature",
   "priority": "P1",
   "created": "2026-02-04T00:17:50.318Z",
-  "lastActivity": "2026-02-04T00:25:00.000Z",
+  "lastActivity": "2026-02-06T20:54:11.526Z",
   "testMode": "TDD",
   "coverageTarget": 80,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {},
   "breakingChanges": true,
-  "interviewComplete": true
+  "interviewComplete": true,
+  "updated": "2026-02-04T00:25:00.000Z",
+  "pausedReason": "making room for 0192",
+  "pausedAt": "2026-02-06T20:54:11.526Z"
 }
