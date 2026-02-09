@@ -340,6 +340,127 @@
 }
 
 /* ===========================================
+   WHAT'S NEW SECTION
+   =========================================== */
+
+.whatsNewSection {
+  padding: 5rem 2rem;
+  background: white;
+}
+
+.whatsNewBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.whatsNewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.whatsNewCard {
+  display: flex;
+  gap: 1.25rem;
+  padding: 2rem;
+  background: #fafafa;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.whatsNewCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.whatsNewIcon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  border-radius: 12px;
+  color: #7c3aed;
+}
+
+.whatsNewIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.whatsNewCard h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+.whatsNewCard p {
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.whatsNewCard code {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+[data-theme='dark'] .whatsNewSection {
+  background: #0f0f23;
+}
+
+[data-theme='dark'] .whatsNewCard {
+  background: #1a1a2e;
+  border-color: #3d3d5c;
+}
+
+[data-theme='dark'] .whatsNewCard h3 {
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] .whatsNewCard p {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .whatsNewIcon {
+  background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%);
+  color: #c4b5fd;
+}
+
+[data-theme='dark'] .whatsNewCard code {
+  background: rgba(139, 92, 246, 0.2);
+  color: #c4b5fd;
+}
+
+@media screen and (max-width: 996px) {
+  .whatsNewGrid {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ===========================================
    STATS SECTION (DOGFOODING)
    =========================================== */
 
@@ -406,7 +527,7 @@
 }
 
 .statNumber {
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 800;
   background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
   -webkit-background-clip: text;

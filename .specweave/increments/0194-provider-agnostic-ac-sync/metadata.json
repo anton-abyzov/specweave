@@ -1,0 +1,13 @@
+{
+  "id": "0194-provider-agnostic-ac-sync",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-08T22:59:04.910Z",
+  "lastActivity": "2026-02-08T22:59:04.911Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

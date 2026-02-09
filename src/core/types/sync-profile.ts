@@ -354,6 +354,41 @@ export interface GitHubConfig {
    * - Create issues in multiple repos for cross-team specs
    */
   enableCrossTeamDetection?: boolean;
+
+  // ============================================================================
+  // NEW in v1.0.235: Projects V2 Support (GitHub Sync V2)
+  // ============================================================================
+
+  /**
+   * GitHub Projects V2 number (visible in project URL)
+   * e.g., https://github.com/orgs/myorg/projects/5 → projectV2Number: 5
+   */
+  projectV2Number?: number;
+
+  /**
+   * GitHub Projects V2 node ID (for GraphQL mutations)
+   * e.g., "PVT_kwDO..."
+   */
+  projectV2Id?: string;
+
+  /**
+   * Enable Projects V2 board sync (default: false)
+   * When true, synced issues are added to the specified Project V2
+   * with Status and Priority field mapping
+   */
+  projectV2Enabled?: boolean;
+
+  /**
+   * Map spec status values to Projects V2 Status field option names
+   * @example { "planned": "Todo", "in-progress": "In Progress", "completed": "Done" }
+   */
+  statusFieldMapping?: Record<string, string>;
+
+  /**
+   * Map spec priority values to Projects V2 Priority field option names
+   * @example { "P1": "Urgent", "P2": "High", "P3": "Medium" }
+   */
+  priorityFieldMapping?: Record<string, string>;
 }
 
 /**
@@ -626,6 +661,69 @@ export interface AdoConfig {
    * Default: 0 (disabled in v0.30.5+, was 30 before)
    */
   autoArchiveAfterDays?: number;
+}
+
+// ============================================================================
+// NEW in v1.0.235: GitHub Spec-Level Sync Metadata (GitHub Sync V2)
+// ============================================================================
+
+/**
+ * Per-User-Story link to a GitHub Issue
+ * Stored in spec frontmatter: externalLinks.github.userStories[US-XXX]
+ */
+export interface GitHubUserStoryLink {
+  /** GitHub issue number */
+  issueNumber: number;
+
+  /** Full URL to the GitHub issue */
+  issueUrl: string;
+
+  /** GitHub node ID for Projects V2 operations */
+  issueNodeId?: string;
+
+  /** When this user story was last synced */
+  syncedAt: string;
+
+  /** Last conflict info (null if no conflict) */
+  lastConflict?: {
+    field: string;
+    specValue: string;
+    githubValue: string;
+    resolvedAt?: string;
+    resolution?: 'github-wins' | 'spec-wins' | 'manual';
+  } | null;
+}
+
+/**
+ * GitHub sync metadata stored in spec frontmatter
+ * under externalLinks.github
+ */
+export interface GitHubSyncMetadata {
+  /** Overall sync status */
+  syncStatus: 'synced' | 'dirty' | 'conflicted';
+
+  /** Projects V2 number (if enabled) */
+  projectV2Number?: number;
+
+  /** Projects V2 node ID (if enabled) */
+  projectV2Id?: string;
+
+  /** Per-User-Story issue links */
+  userStories: Record<string, GitHubUserStoryLink>;
+
+  /** Cross-team repos that this spec syncs to */
+  crossTeamRepos?: Array<{
+    owner: string;
+    repo: string;
+    relevantStories: string[];
+  }>;
+}
+
+/**
+ * Check if GitHub config has Projects V2 enabled
+ */
+export function hasGitHubProjectsV2(config: GitHubConfig): boolean {
+  return !!config.projectV2Enabled && (!!config.projectV2Number || !!config.projectV2Id);
 }
 
 export type ProviderConfig = GitHubConfig | JiraConfig | AdoConfig;

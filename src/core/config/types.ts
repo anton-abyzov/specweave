@@ -539,6 +539,14 @@ export interface CoverageTargets {
 }
 
 /**
+ * Playwright browser automation configuration
+ */
+export interface PlaywrightConfig {
+  preferCli?: boolean;
+  cliFlags?: string[];
+}
+
+/**
  * Testing configuration
  */
 export interface TestingConfig {
@@ -546,6 +554,7 @@ export interface TestingConfig {
   defaultCoverageTarget: number;
   coverageTargets: CoverageTargets;
   tddEnforcement?: TDDEnforcement;
+  playwright?: PlaywrightConfig;
 }
 
 /**
@@ -885,6 +894,9 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
       unit: 95,
       integration: 90,
       e2e: 100,
+    },
+    playwright: {
+      preferCli: true,
     },
   },
   limits: {

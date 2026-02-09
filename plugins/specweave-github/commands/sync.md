@@ -1,10 +1,24 @@
 ---
-description: Synchronize SpecWeave increment with GitHub issue (Multi-Project Support). Select profile, configure time range, and sync with rate limit protection.
+description: "[DEPRECATED] Use /sw-github:sync-spec instead. Legacy increment-based GitHub sync."
 ---
 
-# Sync Increment with GitHub Issue (Multi-Project)
+# DEPRECATED: Use `/sw-github:sync-spec` Instead
 
-## ⚠️ CRITICAL: Pre-Sync Requirements (Read First!)
+> **This command is deprecated as of v1.0.235.** The increment-based sync has been replaced by spec-based sync.
+>
+> **Migration:**
+> - For spec-to-GitHub Issue sync: `/sw-github:sync-spec <spec-id>`
+> - For batch sync: `/sw-github:sync-spec --all`
+> - For pull direction: `/sw-github:sync-spec <spec-id> --direction from-github`
+>
+> The old increment-based sync created issues per-task. The new spec-based sync creates issues per-User-Story,
+> which is the correct granularity for GitHub project management.
+
+---
+
+# Legacy: Sync Increment with GitHub Issue (Multi-Project)
+
+## Pre-Sync Requirements (Read First!)
 
 ### ⛔ MANDATORY: Sync Living Docs BEFORE GitHub Sync
 

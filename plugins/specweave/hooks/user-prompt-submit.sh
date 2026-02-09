@@ -1119,6 +1119,16 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   fi
 
                   echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
+
+                  # v0195: Suggest @playwright/cli alongside MCP plugin for token efficiency
+                  if echo " $DETECTED_PLUGINS " | grep -q " playwright "; then
+                    if ! command -v playwright-cli >/dev/null 2>&1; then
+                      CLI_SUGGEST_MSG="\\n💡 **Tip**: Install \`@playwright/cli\` for token-efficient browser automation (~98% savings vs MCP):\\n"
+                      CLI_SUGGEST_MSG="${CLI_SUGGEST_MSG}  \`npm install -g @playwright/cli@latest\`\\n"
+                      AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG:-}${CLI_SUGGEST_MSG}"
+                      echo "[$(date -Iseconds)] playwright-cli | suggested=true | reason=not-installed" >> "$LAZY_LOAD_LOG"
+                    fi
+                  fi
                 fi
               fi
             fi

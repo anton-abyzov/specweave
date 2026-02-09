@@ -116,8 +116,7 @@ function HomepageHeader() {
             </Heading>
 
             <p className={styles.heroSubtitle}>
-              Autonomous AI agents with <strong>persistent memory</strong>, powered by <strong>Claude Opus 4.6</strong>.
-              Your specifications, architectural decisions, and documentation endure across sessions — enabling continuous, unattended development.
+              The spec-driven framework for <strong>Claude Code</strong>. Persistent memory, autonomous execution, quality gates, and living documentation — all powered by <strong>Claude Opus 4.6</strong>.
             </p>
 
             <div className={styles.heroButtons}>
@@ -207,6 +206,48 @@ function ProblemSection(): ReactNode {
   );
 }
 
+function WhatsNewSection(): ReactNode {
+  return (
+    <section className={styles.whatsNewSection}>
+      <div className="container">
+        <div className={styles.whatsNewBadge}>LATEST</div>
+        <Heading as="h2" className={styles.sectionTitle}>What's New</Heading>
+        <p className={styles.sectionSubtitle}>Recent updates that make SpecWeave even more powerful.</p>
+
+        <div className={styles.whatsNewGrid}>
+          <div className={styles.whatsNewCard}>
+            <div className={styles.whatsNewIcon}>
+              {Icons.qualityGates}
+            </div>
+            <div>
+              <h3>Code Grill</h3>
+              <p>A demanding senior engineer reviews your code before every release. Checks correctness, security (OWASP), performance, and maintainability. Run <code>/sw:grill</code> and ship with confidence.</p>
+            </div>
+          </div>
+          <div className={styles.whatsNewCard}>
+            <div className={styles.whatsNewIcon}>
+              {Icons.sync}
+            </div>
+            <div>
+              <h3>Multi-Repo Sync</h3>
+              <p>Redesigned sync architecture for coordinating work across multiple repositories. GitHub, JIRA, and Azure DevOps stay in sync — automatically.</p>
+            </div>
+          </div>
+          <div className={styles.whatsNewCard}>
+            <div className={styles.whatsNewIcon}>
+              {Icons.setup}
+            </div>
+            <div>
+              <h3>LSP Code Intelligence</h3>
+              <p>Language Server Protocol integration for TypeScript, Python, Go, Rust, Java, and C#. Semantic code understanding instead of text search — dramatically faster and more accurate.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StatsSection(): ReactNode {
   return (
     <section className={styles.statsSection}>
@@ -214,21 +255,21 @@ function StatsSection(): ReactNode {
         <div className={styles.statsBadge}>DOGFOODING: BUILT WITH ITSELF</div>
         <Heading as="h2" className={styles.statsTitle}>Production Proven</Heading>
         <p className={styles.statsSubtitle}>
-          Not a prototype. SpecWeave is entirely developed using SpecWeave. Every feature, every release.
+          Not a prototype. SpecWeave is entirely developed using SpecWeave — every feature, every release, every page you're reading right now.
         </p>
 
         <div className={styles.statsGrid}>
           <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.statCard}>
-            <div className={styles.statNumber}>200+</div>
-            <div className={styles.statLabel}>Increments Delivered</div>
+            <div className={styles.statNumber}>Self-Built</div>
+            <div className={styles.statLabel}>Every feature spec-driven</div>
           </Link>
           <div className={styles.statCard}>
-            <div className={styles.statNumber}>10k+</div>
-            <div className={styles.statLabel}>Installations</div>
+            <div className={styles.statNumber}>Zero</div>
+            <div className={styles.statLabel}>Context Loss</div>
           </div>
           <div className={styles.statCard}>
-            <div className={styles.statNumber}>0%</div>
-            <div className={styles.statLabel}>Context Loss</div>
+            <div className={styles.statNumber}>Hours</div>
+            <div className={styles.statLabel}>Of Autonomous Work</div>
           </div>
         </div>
       </div>
@@ -247,7 +288,7 @@ function FeaturesSection(): ReactNode {
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.agents}</div>
             <h3>Multi-Agent Orchestration</h3>
-            <p>68+ specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables. Powered by Claude Opus 4.6.</p>
+            <p>Specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables. Powered by Claude Opus 4.6.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
@@ -358,10 +399,11 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Ship Features While You Sleep"
-      description="Autonomous AI agents powered by Claude Opus 4.6 with persistent memory. Specifications, architectural decisions, and documentation endure across sessions. Enterprise-grade development automation.">
+      description="The spec-driven framework for Claude Code. Persistent memory, autonomous execution, quality gates, and living documentation. Ship features while you sleep.">
       <HomepageHeader />
       <main>
         <ProblemSection />
+        <WhatsNewSection />
         <StatsSection />
         <FeaturesSection />
         <IntegrationsSection />
