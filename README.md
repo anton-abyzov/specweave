@@ -1,14 +1,13 @@
 # SpecWeave
 
-**The Enterprise Layer for AI Coding.**
+**The spec-driven framework for Claude Code and OpenClaw.**
 
-*Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Powered by Claude Opus 4.6. Ship features while you sleep.*
+*Coordinate parallel AI agents. Prevent task overlap. Quality gates. Ship features while you sleep.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Test & Validate](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
-[![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
 ```bash
 npm install -g specweave   # Requires Node.js 20.12.0+
@@ -19,159 +18,46 @@ npm install -g specweave   # Requires Node.js 20.12.0+
 ## Quick Demo
 
 ```bash
-/sw:increment "User authentication"
-/sw:auto                              # Ship while you sleep
+/sw:increment "User authentication"   # AI creates spec + plan + tasks
+/sw:auto                               # Autonomous execution for hours
+/sw:grill 0001                         # Senior-level code review
+/sw:done 0001                          # Validate and complete
 ```
 
-**What happens:**
-- AI creates spec + plan + tasks
-- Executes autonomously for **hours**
-- Tests, fixes failures, syncs to GitHub/JIRA
-- You review finished work
-
-```
-[08:23:41] [Planning]      Analyzing T-003: Implement refresh token rotation
-[08:24:12] [Implementing]  Writing src/auth/token-manager.ts
-[08:25:33] [Testing]       Running tests... FAILED
-[08:25:47] [Fixing]        Adjusting implementation...
-[08:26:15] [Testing]       Re-running... PASSED
-[08:26:22] [Done]          T-003 complete. Moving to T-004...
-```
+**What happens:** Claude creates a full specification, executes tasks autonomously, runs tests, fixes failures, and syncs progress to GitHub/JIRA. You review finished work.
 
 ---
 
 ## Why SpecWeave?
 
-Every AI coding tool loses context when the chat ends. SpecWeave creates **permanent documentation**:
+AI coding agents are powerful individually. Run three of them on the same codebase and you get conflicts, duplicated work, and zero traceability.
+
+SpecWeave solves this with **file-based coordination**:
 
 ```
 .specweave/increments/0001-oauth/
-├── spec.md    <- WHAT: User stories, acceptance criteria
-├── plan.md    <- HOW: Architecture decisions, tech choices
-└── tasks.md   <- DO: Implementation tasks with tests
+├── spec.md    ← WHAT: User stories, acceptance criteria
+├── plan.md    ← HOW: Architecture decisions, tech choices
+└── tasks.md   ← DO: Implementation tasks with tests
 ```
 
-**After 6 months**: Search "OAuth" → find exact decisions, who approved, why it was built that way.
+Each increment is a self-contained scope. Each agent knows exactly what's taken and what's available. No overlap. No conflicts. Six months later, search "OAuth" and find exactly what was decided, who approved it, and why.
 
----
+### What Makes It Different
 
-## Key Differentiators
-
-### Lazy Plugin Loading (99% Token Savings)
-
-SpecWeave loads plugins **on-demand** based on your prompt keywords:
-
-| Scenario | Without Lazy Loading | With Lazy Loading |
-|----------|---------------------|-------------------|
-| Non-SpecWeave work | ~60k tokens | ~500 tokens |
-| SpecWeave work | ~60k tokens | ~60k (when needed) |
-
-Say "React frontend" → frontend plugin loads. Say "Kubernetes deploy" → k8s plugin loads. No manual configuration.
-
-### Self-Improving Skills
-
-SpecWeave learns from corrections. When you fix something, it captures the learning:
-
-```markdown
-## Skill Memories
-<!-- Auto-captured by SpecWeave reflect -->
-- Always use `vi.hoisted()` for ESM mocking in Vitest 4.x+
-- Prefer native `fs` over fs-extra in new code
-```
-
-Next time, it won't make the same mistake.
-
-### Structured Documentation (No Root Bloat)
-
-Everything stays organized in `.specweave/`:
-
-```
-.specweave/
-├── increments/####-name/     # Feature specs + tasks
-├── docs/internal/            # Living documentation
-│   ├── architecture/adr/     # Architecture Decision Records
-│   └── specs/                # Feature specifications
-└── config.json               # Project configuration
-```
-
-Your project root stays clean. No scattered markdown files.
-
-### Deep Interview Mode (NEW)
-
-For complex features, enable **Deep Interview Mode** during init. Claude asks 40+ questions about architecture, integrations, UI/UX, and tradeoffs before creating specifications:
-
-```
-Deep Interview Mode
-
-For big features, Claude can ask 40+ questions about architecture,
-integrations, UI/UX, and tradeoffs before creating specifications.
-
-Enable Deep Interview Mode? [y/N]
-```
-
-Inspired by [Thariq's workflow](https://x.com/trq212/status/2005315275026260309) (Claude Code creator): *"For big features Claude might ask me 40+ questions and I end up with a much more detailed spec."*
-
-### 68+ AI Agents Working Together
-
-| Agent | Role |
-|-------|------|
-| **PM** | Requirements, user stories, acceptance criteria |
-| **Architect** | System design, ADRs, tech decisions |
-| **QA Lead** | Test strategy, quality gates |
-| **Security** | OWASP review, vulnerability scanning |
-| **DevOps** | CI/CD, infrastructure, deployment |
-
-Agents auto-activate based on context. Mention "security" → security expertise loads. Best results with Claude Opus 4.6 and Sonnet 4.5.
-
-### LSP Integration (100x Faster Code Understanding)
-
-SpecWeave leverages **Language Server Protocol** for semantic code intelligence:
-
-| Operation | Without LSP | With LSP |
-|-----------|-------------|----------|
-| Find all references | Grep + read 15 files (~10K tokens) | Semantic query (~500 tokens) |
-| Check type errors | Build + parse output (~5K tokens) | getDiagnostics (~1K tokens) |
-| Navigate to definition | Grep + verify (~8K tokens) | goToDefinition (~200 tokens) |
-
-**LSP plugins work automatically** when editing code. Edit a `.cs` file → `csharp-lsp` activates. Edit `.ts` → `typescript-lsp` activates. No configuration needed.
-
-```bash
-# Install language servers for your stack
-npm install -g typescript-language-server typescript  # TypeScript
-pip install pyright                                    # Python
-dotnet tool install -g csharp-ls                      # C#
-```
-
-**[Full LSP Guide →](https://spec-weave.com/docs/guides/lsp-integration)**
+- **Parallel agent coordination** — multiple Claude Code sessions, OpenClaw instances, or remote agents work on different increments without stepping on each other.
+- **Autonomous execution** — runs for hours, not minutes. Write, test, fix, repeat.
+- **Persistent memory** — AI learns from corrections. Fix once, remembered permanently.
+- **Quality gates** — Code Grill reviews code like a demanding senior engineer before every release.
+- **Living documentation** — specs, ADRs, and runbooks sync automatically after every task.
+- **100+ specialized skills** — PM, Architect, QA, Security, DevOps, Frontend, Mobile, ML, and more collaborate on deliverables.
+- **External sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time.
+- **Self-improving** — captures what works and what doesn't. Gets smarter over time.
+- **LSP integration** — semantic code intelligence for TypeScript, Python, Go, Rust, Java, C#.
 
 ---
 
 ## Install
-
-### Prerequisites
-
-**Node.js 20.12.0+** required (recommend Node.js 22 LTS).
-
-```bash
-node --version   # Check version
-```
-
-> **Getting `SyntaxError: Unexpected token 'with'`?** Your Node.js is too old. [Upgrade instructions →](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error)
-
-### New Project
-
-```bash
-npm install -g specweave
-mkdir my-app && cd my-app
-specweave init .
-```
-
-Then describe what you want in Claude Code:
-```
-"Build a calculator app with React"
-```
-
-### Existing Project
 
 ```bash
 npm install -g specweave
@@ -179,13 +65,50 @@ cd your-project
 specweave init .
 ```
 
-Then:
+Then in Claude Code:
 ```bash
-/sw:increment "Add dark mode"   # Create spec + plan + tasks
+/sw:increment "Add dark mode"   # Describe your feature
 /sw:auto                        # Ship while you sleep
-/sw:grill 0001                  # Code review before close
-/sw:done 0001                   # Complete with validation
 ```
+
+> **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
+
+---
+
+## Parallel Development
+
+Run multiple AI agents on the same repository — locally, in the cloud, or with [OpenClaw](https://openclaw.ai). SpecWeave's increment files are the coordination layer:
+
+```
+Agent 1 (local Claude Code)    Agent 2 (cloud)           Agent 3 (OpenClaw)
+working on: 0001-auth          working on: 0002-payments  working on: 0003-notifications
+         │                              │                           │
+         └──────────────────────────────┼───────────────────────────┘
+                                        │
+                           .specweave/increments/
+                           ├── 0001-auth/tasks.md           ← Agent 1's scope
+                           ├── 0002-payments/tasks.md       ← Agent 2's scope
+                           └── 0003-notifications/tasks.md  ← Agent 3's scope
+```
+
+**How it works:**
+1. Create increments for each feature: `/sw:increment "auth"`, `/sw:increment "payments"`
+2. Each agent picks an increment and runs `/sw:auto` — tasks.md tracks exactly what's done
+3. Agents work in isolated scopes — different files, different specs, different tests
+4. Quality gates (`/sw:grill`) ensure consistent standards regardless of which agent built it
+5. Progress syncs to GitHub/JIRA so you see everything in one place
+
+**Why this matters:** OpenClaw and Claude Code sessions are stateless by default. SpecWeave's spec/plan/tasks files persist across sessions and agents — your coordination layer survives restarts, crashes, and context window limits.
+
+**Agent team commands:**
+
+| Command | Purpose |
+|---------|---------|
+| `/sw:team-orchestrate "feature"` | Split feature across parallel agents |
+| `/sw:team-status` | Monitor all agent progress |
+| `/sw:team-merge` | Merge completed work in dependency order |
+
+**[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
 
 ---
 
@@ -194,63 +117,43 @@ Then:
 | Command | Purpose |
 |---------|---------|
 | `/sw:increment "feature"` | Create spec + plan + tasks |
-| `/sw:auto` | Autonomous execution (hours) |
+| `/sw:auto` | Autonomous execution |
 | `/sw:do` | Execute one task at a time |
-| `/sw:grill 0001` | **Code review before close** |
-| `/sw:done 0001` | Close with quality validation |
-| `/sw:sync-progress` | Push to GitHub/JIRA/ADO |
+| `/sw:grill` | Code review before close |
+| `/sw:done` | Close with quality validation |
+| `/sw:sync-progress` | Push to GitHub / JIRA / ADO |
 | `/sw:next` | Auto-close + suggest next |
 
-**[100+ total commands →](https://spec-weave.com/docs/commands/overview)**
+**[Full command reference](https://spec-weave.com/docs/commands/overview)**
 
 ---
 
-## External Integrations
+## Integrations
 
-| Platform | Capabilities |
-|----------|--------------|
-| **GitHub** | Issues, PRs, milestones, bidirectional sync |
-| **JIRA** | Epics, stories, status sync |
+| Platform | What Syncs |
+|----------|-----------|
+| **GitHub** | Issues, PRs, milestones — bidirectional |
+| **JIRA** | Epics, stories, status |
 | **Azure DevOps** | Work items, area paths |
 
-**Automatic sync**: When you close an increment (`/sw:done`), external tools update immediately. Task progress syncs at session end.
-
-```bash
-/sw:sync-progress         # Manual: Push updates to ALL tools
-/sw-github:sync 0001      # Manual: Sync specific increment to GitHub
-/sw-jira:sync 0001        # Manual: Sync specific increment to JIRA
-```
+When you close an increment, external tools update automatically.
 
 ---
 
-## Works On Everything
+## How It Compares
 
-| Scenario | What Happens |
-|----------|-------------|
-| **10-year legacy codebase** | Brownfield analysis detects doc gaps |
-| **Weekend MVP** | Full spec-driven development |
-| **50-team enterprise** | Multi-project sync to JIRA/ADO |
-
----
-
-## CLI Commands
-
-| Command | Purpose |
-|---------|---------|
-| `specweave init .` | Initialize project |
-| `specweave update` | **Full update**: CLI + plugins + instructions |
-
-### Troubleshooting
-
-Run `specweave update` - this fixes 98% of issues (updates CLI, plugins, and instructions).
-
----
-
-## Requirements
-
-- **Node.js 20.12.0+** (recommend 22 LTS)
-- Any AI coding tool (Claude Code with Opus 4.6 recommended)
-- Git repository
+| Capability | SpecWeave | BMAD Method | GitHub SpecKit |
+|------------|-----------|-------------|----------------|
+| **Parallel agent coordination** | Increment-scoped isolation | No | No |
+| **Autonomous execution** | Hours of unattended `/sw:auto` | No | No |
+| **Quality gates** | Code Grill before every release | No | No |
+| **Living documentation** | Auto-updated after every task | Manual | Manual |
+| **Self-improving AI** | Learns from corrections | No | No |
+| **External sync** | GitHub / JIRA / ADO bidirectional | No | No |
+| **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
+| **Works with OpenClaw** | Yes | Partial | Partial |
+| **Spec/plan/tasks workflow** | Yes | Yes | Yes |
+| **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |
 
 ---
 
@@ -258,25 +161,18 @@ Run `specweave update` - this fixes 98% of issues (updates CLI, plugins, and ins
 
 > This framework builds itself. Every feature, bug fix, and release is spec-driven.
 
-[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
-[![Features](https://img.shields.io/badge/Features-190+-blue)](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)
-
-**[Browse our increments →](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
+**[Browse increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — see how SpecWeave develops SpecWeave.
 
 ---
 
 ## Documentation
 
-**[spec-weave.com](https://spec-weave.com)** - Full documentation, guides, and examples.
-
----
+**[spec-weave.com](https://spec-weave.com)** — guides, examples, and full reference.
 
 ## Community
 
-[Discord](https://discord.gg/UYg4BGJ65V) | [YouTube](https://www.youtube.com/@antonabyzov) | [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
-
----
+[Discord](https://discord.gg/UYg4BGJ65V) · [YouTube](https://www.youtube.com/@antonabyzov) · [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
 
 ## License
 
-MIT - [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
+MIT — [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)

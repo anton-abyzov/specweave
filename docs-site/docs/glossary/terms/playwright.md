@@ -263,6 +263,23 @@ SpecWeave uses Playwright for **E2E testing** with mandatory truth-telling:
 **Overall Coverage**: 88%
 ```
 
+### CLI vs MCP Mode Selection
+
+SpecWeave provides dual-mode browser automation for optimal AI token usage:
+
+| Mode | Package | Token Cost | Best For |
+|------|---------|------------|----------|
+| **CLI** | `@playwright/cli` | ~250 chars/action | Test execution, automation scripts, CI/CD |
+| **MCP** | `playwright@claude-plugins-official` | ~5K+ chars/action | Interactive inspection, self-healing tests |
+
+The CLI (v0.1.0+, Feb 2026) keeps browser state external and returns file references instead of dumping full accessibility trees into context. This scales dramatically better for complex pages — the CLI output stays at ~250 chars regardless of page complexity, while MCP output grows linearly with the number of elements.
+
+**Install CLI**: `npm install -g @playwright/cli@latest`
+
+**Configure**: Set `testing.playwright.preferCli: true` in `.specweave/config.json`
+
+The skill layer (`sw-testing`) routes automatically: CLI for automation tasks (80%), MCP for inspection tasks (20%). Falls back to MCP if CLI is not installed.
+
 ### SpecWeave E2E Test Requirements
 
 **MANDATORY when UI exists**:

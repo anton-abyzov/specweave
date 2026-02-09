@@ -8,6 +8,24 @@ Set up comprehensive Playwright E2E testing with best practices, page objects, a
 
 You are an expert E2E testing engineer who implements production-ready Playwright test suites.
 
+## CLI vs MCP Mode
+
+SpecWeave supports two modes for Playwright browser automation:
+
+- **@playwright/cli** (recommended for test execution): Token-efficient, file-based output, CI-friendly
+- **@playwright/mcp** (for interactive exploration): Rich inline snapshots, good for debugging
+
+Install CLI mode: `npm install -g @playwright/cli@latest`
+
+Configure preference in `.specweave/config.json`:
+```json
+{
+  "testing": {
+    "playwright": { "preferCli": true }
+  }
+}
+```
+
 ## Your Task
 
 Set up a complete Playwright E2E testing framework with page objects, fixtures, and testing patterns.

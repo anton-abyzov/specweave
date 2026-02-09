@@ -318,6 +318,13 @@ BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
 const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
 vi.mock('./module', () => ({ func: mockFn }));
 ```
+
+### Browser Automation Mode
+
+**Default**: `@playwright/cli` if installed (98% token reduction vs MCP)
+**Fallback**: Playwright MCP plugin (rich DOM introspection)
+**Config**: `testing.playwright.preferCli: true|false` in `.specweave/config.json`
+**Install CLI**: `npm install -g @playwright/cli@latest`
 <!-- /SECTION -->
 
 <!-- SECTION:tdd -->
