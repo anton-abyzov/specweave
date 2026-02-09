@@ -15,43 +15,43 @@
     "github": {
       "issues": {
         "US-001": {
-          "issueNumber": 1077,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1077",
+          "issueNumber": 1102,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1102",
           "status": "created"
         },
         "US-002": {
-          "issueNumber": 1078,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1078",
+          "issueNumber": 1103,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1103",
           "status": "created"
         },
         "US-003": {
-          "issueNumber": 1079,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1079",
+          "issueNumber": 1104,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1104",
           "status": "created"
         },
         "US-004": {
-          "issueNumber": 1080,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1080",
+          "issueNumber": 1105,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1105",
           "status": "created"
         },
         "US-005": {
-          "issueNumber": 1081,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1081",
+          "issueNumber": 1106,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1106",
           "status": "created"
         },
         "US-006": {
-          "issueNumber": 1082,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1082",
+          "issueNumber": 1107,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1107",
           "status": "created"
         },
         "US-007": {
-          "issueNumber": 1083,
-          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1083",
+          "issueNumber": 1108,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1108",
           "status": "created"
         }
       },
-      "milestone": 93,
-      "syncedAt": "2026-02-09T17:56:26Z"
+      "milestone": 97,
+      "syncedAt": "2026-02-09T18:10:36Z"
     }
   }
 }
