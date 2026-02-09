@@ -5,5 +5,53 @@
   "priority": "medium",
   "createdAt": "2026-02-08T12:00:00Z",
   "updatedAt": "2026-02-08T12:00:00Z",
-  "tags": ["testing", "infrastructure", "playwright", "optimization"]
+  "tags": [
+    "testing",
+    "infrastructure",
+    "playwright",
+    "optimization"
+  ],
+  "externalLinks": {
+    "github": {
+      "issues": {
+        "US-001": {
+          "issueNumber": 1077,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1077",
+          "status": "created"
+        },
+        "US-002": {
+          "issueNumber": 1078,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1078",
+          "status": "created"
+        },
+        "US-003": {
+          "issueNumber": 1079,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1079",
+          "status": "created"
+        },
+        "US-004": {
+          "issueNumber": 1080,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1080",
+          "status": "created"
+        },
+        "US-005": {
+          "issueNumber": 1081,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1081",
+          "status": "created"
+        },
+        "US-006": {
+          "issueNumber": 1082,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1082",
+          "status": "created"
+        },
+        "US-007": {
+          "issueNumber": 1083,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1083",
+          "status": "created"
+        }
+      },
+      "milestone": 93,
+      "syncedAt": "2026-02-09T17:56:26Z"
+    }
+  }
 }

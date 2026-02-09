@@ -5,6 +5,7 @@
   "sync": {
     "enabled": true,
     "provider": "github",
+    "autoSync": true,
     "includeStatus": true,
     "autoApplyLabels": true,
     "defaultProfile": "main",
@@ -13,7 +14,8 @@
       "canUpsertInternalItems": true,
       "canUpdateExternalItems": true,
       "canUpdateStatus": true,
-      "autoSyncOnCompletion": true
+      "autoSyncOnCompletion": true,
+      "autoCreateOnIncrement": true
     },
 
     "github": {
@@ -39,6 +41,12 @@
           "maxItemsPerSync": 500,
           "warnThreshold": 100
         }
+      }
+    },
+
+    "hooks": {
+      "post_increment_planning": {
+        "auto_create_github_issue": true
       }
     },
 

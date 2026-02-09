@@ -23,7 +23,7 @@
   "sync": {
     "enabled": true,
     "preset": "bidirectional",
-    "autoSync": false,
+    "autoSync": true,
     "github": {
       "enabled": true,
       "owner": "anton-abyzov",
@@ -47,7 +47,7 @@
       "external_tracker_sync": true
     },
     "post_increment_planning": {
-      "auto_create_github_issue": false
+      "auto_create_github_issue": true
     }
   },
   "auto": {

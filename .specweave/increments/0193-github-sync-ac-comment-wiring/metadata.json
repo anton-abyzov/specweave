@@ -9,5 +9,37 @@
   "coverageTarget": 80,
   "feature_id": null,
   "epic_id": null,
-  "externalLinks": {}
+  "externalLinks": {
+    "github": {
+      "issues": {
+        "US-001": {
+          "issueNumber": 1065,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1065",
+          "status": "created"
+        },
+        "US-002": {
+          "issueNumber": 1066,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1066",
+          "status": "created"
+        },
+        "US-003": {
+          "issueNumber": 1067,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1067",
+          "status": "created"
+        },
+        "US-004": {
+          "issueNumber": 1068,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1068",
+          "status": "created"
+        },
+        "US-005": {
+          "issueNumber": 1069,
+          "issueUrl": "https://github.com/anton-abyzov/specweave/issues/1069",
+          "status": "created"
+        }
+      },
+      "milestone": 91,
+      "syncedAt": "2026-02-09T17:54:55Z"
+    }
+  }
 }

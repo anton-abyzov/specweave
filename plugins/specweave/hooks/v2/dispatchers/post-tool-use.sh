@@ -357,6 +357,18 @@ case "$FILE_PATH" in
       play_task_completion_sound "$FILE_PATH"
     fi
 
+    # ========================================================================
+    # GITHUB AUTO-CREATE (v1.0.237+): Create issues when spec.md is written
+    # ========================================================================
+    # When spec.md is created/updated AND has user stories, auto-create
+    # GitHub issues if autoSync or auto_create_github_issue is enabled.
+    if [[ "$FILE_PATH" == *spec.md ]]; then
+      GITHUB_AUTO_CREATE="${HOOK_DIR}/../../../specweave-github/hooks/github-auto-create-handler.sh"
+      if [[ -f "$GITHUB_AUTO_CREATE" ]]; then
+        safe_run_background "$GITHUB_AUTO_CREATE" "github-auto-create" "$INC_ID"
+      fi
+    fi
+
     # Tasks or spec changed -> check for US completion (background)
     safe_run_background "$DETECTOR_DIR/us-completion-detector.sh" "us-completion-detector" "$INC_ID"
 
