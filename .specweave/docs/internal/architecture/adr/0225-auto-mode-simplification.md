@@ -1,7 +1,8 @@
 # ADR-0225: Auto Mode Simplification - Trust the Framework
 
-**Status**: Proposed
+**Status**: Accepted (Phase 1 implemented)
 **Date**: 2026-01-08
+**Updated**: 2026-02-09
 **Decision Makers**: Core Team
 **Related**: ADR-0221 (Auto Mode Architecture)
 
@@ -298,11 +299,12 @@ async function validateTestsGate(incrementId: string) {
 
 ## Implementation Plan
 
-### Phase 1: Stop Hook (High Value, Low Risk - 4 hours)
-- [x] Create stop-auto-simple.sh (DONE - already exists!)
-- [ ] Test with various scenarios
-- [ ] Activate simplified hook
-- [ ] Archive old stop-auto.sh
+### Phase 1: Stop Hook (High Value, Low Risk) - COMPLETED 2026-02-09
+- [x] Create stop-auto-v5.sh (166 lines, gate-only design)
+- [x] 46 passing tests (29 integration + 17 unit)
+- [x] Activate v5 hook in hooks.json (timeout reduced 120s → 15s)
+- [x] Archive stop-auto.sh → _archive/stop-auto-v4-legacy.sh
+- [x] SKILL.md rewritten to match reality (removed auto-heal, framework detection claims)
 
 ### Phase 2: Auto.ts Refactoring (Medium Risk - 8 hours)
 - [ ] Remove SessionStateManager usage
@@ -381,7 +383,7 @@ async function validateTestsGate(incrementId: string) {
 
 | Metric | Before | After | Target |
 |--------|--------|-------|--------|
-| Stop hook LOC | 2785 | 118 | <200 |
+| Stop hook LOC | 1320 (v4) | 166 (v5) | <200 |
 | Core auto LOC | ~5000 | ~1000 | <1200 |
 | Component count | 18 | 10 | <12 |
 | Manual sync calls | Many | 0 | 0 |
@@ -418,5 +420,5 @@ async function validateTestsGate(incrementId: string) {
 
 ---
 
-**Approved by**: [Pending]
-**Implementation**: Increment 0162 (Phase 1), Follow-up increments (Phase 2-5)
+**Approved by**: Implemented
+**Implementation**: Increment 0196-auto-mode-v5-stop-hook (Phase 1), Follow-up increments (Phase 2-5)

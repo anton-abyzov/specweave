@@ -400,8 +400,7 @@ function cleanupStateFiles(stateDir: string): void {
     'auto-session.json',
     'auto-needs-increment.json',
     '.stop-auto-dedup',
-    '.stop-auto-last-fire',
-    '.stop-auto-retry',
+    '.stop-auto-dedup-prev',
     '.stop-auto-turns',
   ];
 
