@@ -682,6 +682,29 @@ Read only what's needed for the current task:
 
 {AGENTS_SECTION}
 
+### Agent Teams (Parallel Development)
+
+When using `/sw:team-orchestrate` or `/sw:team-build`, agents are assigned domain roles:
+
+| Role | Primary Skill | Additional Skills | File Ownership |
+|------|---------------|-------------------|----------------|
+| Frontend | `sw-frontend:frontend-architect` | `sw-frontend:nextjs`, `sw-frontend:frontend-design` | `src/components/**`, `src/pages/**`, `src/app/**` |
+| Backend | `sw:architect` | `sw-infra:devops`, `sw:tech-lead` | `src/api/**`, `src/services/**`, `src/lib/**` |
+| Database | `sw:architect` | — | `prisma/**`, `src/db/**`, `migrations/**` |
+| Shared/Types | `sw:architect` | `sw:tech-lead` | `src/types/**`, `src/shared/**`, `src/utils/**` |
+| Testing | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | `tests/**`, `e2e/**` |
+| Security | `sw:security` | `sw:security-patterns` | Read-only review of all files |
+| DevOps | `sw-infra:devops` | `sw-infra:observability` | `Dockerfile`, `.github/**`, `k8s/**` |
+| Mobile | `sw-mobile:mobile-architect` | `sw-mobile:react-native-expert` | `src/screens/**`, `src/navigation/**` |
+| ML | `sw-ml:ml-engineer` | `sw-ml:pipeline`, `sw-ml:deploy` | `src/ml/**`, `models/**`, `notebooks/**` |
+
+**Presets**: Use `/sw:team-build --preset <name>` for common team configurations:
+- `full-stack` — Shared → Backend + Frontend (contract-first)
+- `review` — Security + Quality + Docs (all parallel)
+- `testing` — Unit + E2E + Coverage (all parallel)
+- `tdd` — Red → Green → Refactor (sequential)
+- `migration` — Schema → Backend + Frontend (contract-first)
+
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 

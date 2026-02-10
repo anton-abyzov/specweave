@@ -348,6 +348,54 @@ When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, SpecWeave uses the native 
 
 SpecWeave automatically detects which mode is available and uses the best option.
 
+#### Enabling Native Agent Teams
+
+Add the feature flag to your `.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Or export it in your shell before launching Claude Code:
+
+```bash
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+```
+
+#### Contract-First Spawning Protocol
+
+Native teams follow a **contract-first** two-phase spawning order to prevent dependency conflicts:
+
+1. **Phase 1 — Upstream agents** run first: shared types, database schemas, and any code that downstream agents depend on. These agents finish and their output is available before Phase 2 begins.
+2. **Phase 2 — Downstream agents** run in parallel: backend, frontend, and testing agents spawn concurrently once upstream contracts are in place.
+
+This ensures that API types, DB models, and shared utilities are committed before consumers start building against them.
+
+```
+Phase 1 (sequential):   shared-types → db-schema
+                                ↓
+Phase 2 (parallel):      backend  |  frontend  |  testing
+```
+
+#### Communication
+
+- **Native mode**: Agents communicate via `SendMessage` — real-time, peer-to-peer messaging managed by the Agent SDK. Supports direct messages, broadcasts, and shutdown coordination.
+- **Fallback**: If native messaging is unavailable, agents fall back to file-based communication through `.specweave/state/parallel/` files (same mechanism as subagent mode).
+
+#### Terminal Setup
+
+Native Agent Teams spawn multiple Claude Code processes. Choose a terminal strategy:
+
+| Strategy | Setup | Notes |
+|----------|-------|-------|
+| **tmux** (recommended) | `brew install tmux` / `apt install tmux` | Each agent gets its own pane; best visibility |
+| **iTerm2** (macOS) | Built-in split panes | Native macOS experience, no extra setup |
+| **In-process** (default) | No setup needed | Agents run as background tasks; less visibility but zero configuration |
+
 ---
 
 ## Works With Any AI Tool
@@ -364,6 +412,8 @@ The coordination layer is file-based markdown. While Claude Code gets the deepes
 
 The key insight: the `.specweave/increments/` directory is a **universal coordination protocol**. Spec files define what to build. Task files track progress. Any tool that reads markdown can participate.
 
+**Note on execution modes:** Native Agent Teams (Mode 2) requires Claude Code with the Agent SDK and is Claude Code-specific. Subagent mode (Mode 1) works with any AI tool since it relies only on file-based coordination through the shared `.specweave/` directory.
+
 ---
 
 ## Quick Start
@@ -377,6 +427,23 @@ The key insight: the `.specweave/increments/` directory is a **universal coordin
 
 # 3. Merge — combine completed work in dependency order
 /sw:team-merge
+```
+
+### Team-Build Presets
+
+Instead of manually configuring agent roles, use a preset to get a pre-configured team shape:
+
+| Preset | Agents Spawned | Use Case |
+|--------|---------------|----------|
+| `full-stack` | shared, backend, frontend | Feature development across the stack |
+| `review` | reviewer, security-auditor | Code review and security analysis |
+| `testing` | unit-tester, integration-tester, e2e-tester | Comprehensive test coverage |
+| `tdd` | red-agent, green-agent, refactor-agent | Test-driven development cycle |
+| `migration` | analyzer, migrator, validator | Codebase migrations and upgrades |
+
+```bash
+# Use a preset with team-orchestrate
+/sw:team-orchestrate "Add checkout flow" --preset full-stack
 ```
 
 ---
