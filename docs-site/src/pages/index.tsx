@@ -116,7 +116,7 @@ function HomepageHeader() {
             </Heading>
 
             <p className={styles.heroSubtitle}>
-              The spec-driven framework for <strong>Claude Code</strong>. Persistent memory, autonomous execution, quality gates, and living documentation — all powered by <strong>Claude Opus 4.6</strong>.
+              The spec-driven framework for AI coding agents. First-class support for <strong>Claude Code</strong> — compatible with any LLM-powered coding tool. Persistent memory, autonomous execution, quality gates, and living documentation.
             </p>
 
             <div className={styles.heroButtons}>
@@ -399,7 +399,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Ship Features While You Sleep"
-      description="The spec-driven framework for Claude Code. Persistent memory, autonomous execution, quality gates, and living documentation. Ship features while you sleep.">
+      description="The spec-driven framework for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Ship features while you sleep.">
       <HomepageHeader />
       <main>
         <ProblemSection />

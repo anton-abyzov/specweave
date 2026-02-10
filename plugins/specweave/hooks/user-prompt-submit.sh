@@ -1884,6 +1884,22 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   exit 0
 fi
 
+# /sw:grill → Load increment context for code review (pure bash, ~50ms)
+# Unlike /sw:progress which displays data, this injects CONTEXT + INSTRUCTIONS
+# so the LLM performs a structured code review with full increment awareness.
+if echo "$PROMPT" | grep -qE "^/sw:grill($| )"; then
+  ARGS=$(extract_command_args "$PROMPT" "/sw:grill")
+
+  if [[ -f "$SCRIPTS_DIR/read-grill-context.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-grill-context.sh" $ARGS 2>&1)
+  else
+    OUTPUT="GRILL MODE ACTIVATED — Run a thorough code review of the active increment. Check correctness, security, performance, and maintainability. Categorize issues as BLOCKER, CRITICAL, MAJOR, MINOR, or SUGGESTION. End with VERDICT: PASS or FAIL."
+  fi
+
+  output_approve_with_context "$OUTPUT"
+  exit 0
+fi
+
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
   ARGS=$(extract_command_args "$PROMPT" "/sw:status")

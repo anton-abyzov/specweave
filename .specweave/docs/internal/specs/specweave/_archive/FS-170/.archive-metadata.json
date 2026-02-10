@@ -1,0 +1,11 @@
+{
+  "id": "FS-170",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.782Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-170",
+  "linkedIncrements": [
+    "0170-parallel-auto-mode"
+  ]
+}

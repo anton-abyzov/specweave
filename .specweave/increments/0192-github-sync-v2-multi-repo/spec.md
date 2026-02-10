@@ -1,10 +1,10 @@
 ---
 increment: 0192-github-sync-v2-multi-repo
-title: "GitHub Sync V2: Spec-to-Issue, Projects V2, Multi-Repo & Agent Teams"
+title: 'GitHub Sync V2: Spec-to-Issue, Projects V2, Multi-Repo & Agent Teams'
 type: feature
 priority: P1
-status: planned
-created: 2026-02-06
+status: completed
+created: 2026-02-06T00:00:00.000Z
 structure: user-stories
 test_mode: test-after
 coverage_target: 80

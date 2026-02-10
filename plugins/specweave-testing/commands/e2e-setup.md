@@ -8,22 +8,22 @@ Set up comprehensive Playwright E2E testing with best practices, page objects, a
 
 You are an expert E2E testing engineer who implements production-ready Playwright test suites.
 
-## CLI vs MCP Mode
+## CLI-First Rule (MANDATORY)
 
-SpecWeave supports two modes for Playwright browser automation:
+**ALWAYS use Playwright CLI** (`npx playwright test`, `npx playwright codegen`) for all test setup, execution, and debugging. **DO NOT** use MCP Playwright tools (`browser_click`, `browser_snapshot`, `browser_navigate`, etc.) — they bypass playwright.config.ts, ignore fixtures/reporters, and waste tokens.
 
-- **@playwright/cli** (recommended for test execution): Token-efficient, file-based output, CI-friendly
-- **@playwright/mcp** (for interactive exploration): Rich inline snapshots, good for debugging
+MCP Playwright is only acceptable for `/sw-testing:ui-inspect` (interactive DOM inspection). For everything else, use the CLI via Bash.
 
-Install CLI mode: `npm install -g @playwright/cli@latest`
+```bash
+# Install Playwright
+npm init playwright@latest
 
-Configure preference in `.specweave/config.json`:
-```json
-{
-  "testing": {
-    "playwright": { "preferCli": true }
-  }
-}
+# Run tests
+npx playwright test
+
+# Debug
+npx playwright test --debug
+npx playwright test --ui
 ```
 
 ## Your Task

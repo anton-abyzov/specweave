@@ -173,12 +173,15 @@ export class AdoAdapter implements ProviderAdapter {
   }
 
   async pullChanges(since?: Date): Promise<ExternalChange[]> {
-    let wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${this.project}' AND [System.Tags] CONTAINS 'specweave' ORDER BY [System.ChangedDate] DESC`;
+    const escapedProject = this.project.replace(/'/g, "''");
+    let whereClause = `[System.TeamProject] = '${escapedProject}' AND [System.Tags] CONTAINS 'specweave'`;
 
     if (since) {
       const dateStr = since.toISOString().split('T')[0];
-      wiql += ` AND [System.ChangedDate] >= '${dateStr}'`;
+      whereClause += ` AND [System.ChangedDate] >= '${dateStr}'`;
     }
+
+    const wiql = `SELECT [System.Id] FROM WorkItems WHERE ${whereClause} ORDER BY [System.ChangedDate] DESC`;
 
     const response = await this.apiRequest('POST', `/wit/wiql?api-version=7.1`, { query: wiql });
     const data = await response.json() as { workItems: Array<{ id: number }> };

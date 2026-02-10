@@ -118,6 +118,10 @@ export class JiraAdapter implements ProviderAdapter {
     }
 
     const response = await this.apiRequest('POST', '/issue', body);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to create JIRA issue: ${response.status} ${text.substring(0, 200)}`);
+    }
     const issue = await response.json() as JiraIssue;
 
     return {
@@ -161,10 +165,11 @@ export class JiraAdapter implements ProviderAdapter {
   }
 
   async pullChanges(since?: Date): Promise<ExternalChange[]> {
-    let jql = `project = ${this.projectKey} AND labels = specweave ORDER BY updated DESC`;
+    const safeKey = this.projectKey.replace(/[^A-Za-z0-9_]/g, '');
+    let jql = `project = "${safeKey}" AND labels = specweave ORDER BY updated DESC`;
     if (since) {
       const dateStr = since.toISOString().split('T')[0];
-      jql = `project = ${this.projectKey} AND labels = specweave AND updated >= "${dateStr}" ORDER BY updated DESC`;
+      jql = `project = "${safeKey}" AND labels = specweave AND updated >= "${dateStr}" ORDER BY updated DESC`;
     }
 
     // Use /search/jql (JIRA deprecated /search in 2025, see CHANGE-2046)
@@ -173,6 +178,10 @@ export class JiraAdapter implements ProviderAdapter {
       maxResults: 50,
       fields: ['summary', 'status', 'issuetype', 'priority', 'labels', 'parent'],
     });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to pull JIRA changes: ${response.status} ${text.substring(0, 200)}`);
+    }
     const data = await response.json() as { issues: JiraIssue[] };
     const changes: ExternalChange[] = [];
 
@@ -199,6 +208,9 @@ export class JiraAdapter implements ProviderAdapter {
 
   async getIssueState(ref: ExternalRef): Promise<ItemState> {
     const response = await this.apiRequest('GET', `/issue/${ref.id}`);
+    if (!response.ok) {
+      throw new Error(`Failed to get JIRA issue ${ref.id} state: ${response.status}`);
+    }
     const issue = await response.json() as JiraIssue;
 
     return {

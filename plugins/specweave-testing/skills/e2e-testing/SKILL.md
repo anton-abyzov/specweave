@@ -230,43 +230,44 @@ e2e/
 └── playwright.config.ts
 ```
 
-## Browser Automation Mode: CLI vs MCP
+## Browser Automation: CLI-First Rule
 
-SpecWeave provides dual-mode browser automation for optimal token efficiency:
+**MANDATORY**: Always use Playwright CLI (`npx playwright test`, Bash tool) for test execution, automation scripts, and CI/CD workflows. **DO NOT** use MCP Playwright tools (`browser_click`, `browser_snapshot`, `browser_navigate`, etc.) for these tasks.
 
-| Mode | Tool | Best For | Token Cost |
-|------|------|----------|------------|
-| **CLI** | `@playwright/cli` (Bash) | Test execution, automation, CI/CD | ~250 chars/action |
-| **MCP** | Playwright MCP plugin | Interactive inspection, self-healing | ~5K+ chars/action |
+MCP Playwright tools consume ~20x more tokens per action and bypass your test configuration (playwright.config.ts, fixtures, reporters). They are the wrong tool for testing.
 
-### When to Use CLI Mode
-- Running E2E test suites (`npx playwright test`)
-- Generating automation scripts
-- CI/CD pipelines (headless by default)
-- Token-constrained sessions
-- Network mocking and auth state management
+### When to Use What
 
-### When to Use MCP Mode
-- Interactive page exploration and debugging
-- Self-healing test repair (needs full DOM reasoning)
-- Element inspection with accessibility tree
+| Task | Tool | Why |
+|------|------|-----|
+| Run tests | `npx playwright test` (Bash) | Uses project config, parallel execution, reporters |
+| Write test code | Write/Edit tools | Produces committable, CI-runnable `.spec.ts` files |
+| Generate tests | `npx playwright codegen` (Bash) | Records user actions as code |
+| Debug failures | `npx playwright test --debug` or `--ui` (Bash) | Full trace viewer, time-travel debugging |
+| **Exception**: inspect live DOM | MCP `browser_snapshot` | Only when you need to reason about current page structure interactively |
 
-### Install CLI
+### Why CLI Over MCP for Testing
+
+1. **Headless control**: CLI respects `playwright.config.ts` headless settings; MCP always opens a visible browser
+2. **Config integration**: CLI uses your fixtures, projects, retries, reporters; MCP ignores them all
+3. **Token efficiency**: CLI returns concise pass/fail output (~250 chars); MCP returns full DOM trees (~5K+ chars per action)
+4. **Reproducibility**: CLI tests are deterministic `.spec.ts` files; MCP interactions are ephemeral tool calls
+5. **CI/CD ready**: CLI output works directly in GitHub Actions, Jenkins, etc.
+
+### Install Playwright CLI
 ```bash
-npm install -g @playwright/cli@latest
+npm init playwright@latest
+# or for existing projects:
+npx playwright install
 ```
 
-### Configuration
-Set preference in `.specweave/config.json`:
-```json
-{
-  "testing": {
-    "playwright": { "preferCli": true }
-  }
-}
-```
+### The Only MCP Exception
 
-The `sw-testing` skill layer routes automatically based on task type.
+Use MCP Playwright tools **only** for:
+- `/sw-testing:ui-inspect` — interactive element inspection requiring DOM reasoning
+- One-off page exploration when you need to see what's on a page right now
+
+For everything else — writing tests, running tests, generating tests, debugging tests — use the CLI via Bash.
 
 ## Related Skills
 
