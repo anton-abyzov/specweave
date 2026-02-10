@@ -369,8 +369,7 @@ async function cleanupStaleAutoState(
     'auto-mode.json',
     'auto-session.json',
     '.stop-auto-dedup',
-    '.stop-auto-last-fire',
-    '.stop-auto-retry',
+    '.stop-auto-dedup-prev',
     '.stop-auto-turns',
   ];
 

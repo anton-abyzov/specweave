@@ -47,7 +47,7 @@ if [ -f "$AUTO_MODE_FILE" ]; then
     log "SESSION START: Clearing previous auto-mode.json (session-scoped cleanup)"
     rm -f "$AUTO_MODE_FILE" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
-    rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-dedup-prev" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null
     log "Cleared all auto-mode session files - new session starts fresh"
 fi

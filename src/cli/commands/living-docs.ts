@@ -114,8 +114,8 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
     : undefined;
 
   // Check if running in auto mode
-  const autoSessionPath = path.join(projectPath, '.specweave/state/auto-session.json');
-  const isAutoMode = fs.existsSync(autoSessionPath);
+  const autoModePath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  const isAutoMode = fs.existsSync(autoModePath);
 
   if (isAutoMode) {
     // Auto mode: Use chunked execution

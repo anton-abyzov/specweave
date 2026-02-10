@@ -1,0 +1,12 @@
+{
+  "id": "0197",
+  "title": "Native Agent Teams Integration",
+  "status": "in-progress",
+  "priority": "P1",
+  "type": "feature",
+  "featureFlag": "FS-AGENT-TEAMS",
+  "created": "2026-02-09T18:00:00Z",
+  "tags": ["agent-teams", "parallel", "tmux", "collaboration"],
+  "dependencies": ["0170-parallel-auto-mode"],
+  "tdd": true
+}

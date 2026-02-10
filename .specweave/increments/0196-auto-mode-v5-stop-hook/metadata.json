@@ -1,0 +1,11 @@
+{
+  "id": "0196-auto-mode-v5-stop-hook",
+  "title": "Auto Mode v5 - Stop Hook Simplification",
+  "status": "active",
+  "type": "refactor",
+  "priority": "high",
+  "created": "2026-02-09T17:30:00Z",
+  "updated": "2026-02-09T17:30:00Z",
+  "tags": ["auto-mode", "stop-hook", "simplification", "testing", "adr-0225"],
+  "relatedADRs": ["0225-auto-mode-simplification"]
+}

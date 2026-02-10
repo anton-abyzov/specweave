@@ -1,109 +1,800 @@
 ---
-description: Orchestrate multi-agent parallel development across repos/domains. Use when building features across frontend, backend, shared services. Activates for: team setup, parallel agents, multi-repo work, orchestrate agents, team orchestrate.
+description: Orchestrate multi-agent parallel development using Claude Code Agent Teams or subagent fallback. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, orchestrate agents, team orchestrate, agent teams.
 ---
 
 # Team Orchestrate
 
-**Plan and launch parallel development agents across domains/repos.**
+**Plan and launch parallel development agents across domains using Claude Code's native Agent Teams or subagent fallback.**
 
 ## Usage
 
 ```bash
-/sw:team-orchestrate "<feature description>"
+/sw:team-orchestrate "<feature description>" [OPTIONS]
 ```
 
-## What This Skill Does
+## Options
 
-1. **Analyze the feature** — detect which domains (frontend, backend, shared, etc.) are involved
-2. **Create per-domain increments** — each agent gets its own increment with focused tasks
-3. **Spawn parallel agents** — use the Task tool to launch agents for each domain
-4. **Assign ownership** — each agent owns specific files and directories
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--dry-run` | Show proposed agent plan without launching | false |
+| `--domains` | Override domain detection (e.g., `--domains frontend,backend,testing`) | auto-detect |
+| `--max-agents` | Maximum number of concurrent agents | 6 |
 
-## Workflow
+---
 
-### Step 1: Feature Analysis
+## 1. Mode Detection
 
-Read the feature request and determine:
-- Which codebases/repos are affected
-- What user stories belong to which domain
-- Dependencies between domains (e.g., API contract before frontend)
+Before spawning agents, detect the available orchestration mode.
 
-### Step 2: Create Domain Increments
+### Step 1a: Check for Native Agent Teams
 
-For each domain, create a SpecWeave increment:
-
-```
-.specweave/increments/XXXX-feature-frontend/
-.specweave/increments/XXXX-feature-backend/
-.specweave/increments/XXXX-feature-shared/
-```
-
-### Step 3: Spawn Agents
-
-Use the Task tool to launch parallel agents:
-
-```typescript
-// Frontend agent
-Task({
-  subagent_type: "general-purpose",
-  prompt: "Implement frontend increment XXXX-feature-frontend. Your workspace is src/frontend/. Follow the tasks in tasks.md.",
-  run_in_background: true,
-});
-
-// Backend agent
-Task({
-  subagent_type: "general-purpose",
-  prompt: "Implement backend increment XXXX-feature-backend. Your workspace is src/backend/. Follow the tasks in tasks.md.",
-  run_in_background: true,
-});
+```bash
+# Check if native Agent Teams is enabled
+if [[ -n "$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" ]]; then
+  MODE="native-agent-teams"
+else
+  MODE="subagent-fallback"
+fi
+echo "Orchestration mode: $MODE"
 ```
 
-### Step 4: Record Session State
+### Step 1b: Detect Terminal Environment (Native Agent Teams only)
 
-Write agent session state to `.specweave/state/parallel/session.json`:
+When `MODE == "native-agent-teams"`, detect the terminal multiplexer:
+
+```bash
+# Detect terminal environment
+if [[ -n "$TMUX" ]]; then
+  TERMINAL="tmux"
+elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+  TERMINAL="iterm2"
+else
+  TERMINAL="in-process"
+fi
+echo "Terminal: $TERMINAL"
+```
+
+| Terminal | Detection | Navigation | Notes |
+|----------|-----------|------------|-------|
+| **tmux** | `$TMUX` env var set | `Ctrl+B` + arrow keys | Best for SSH/remote |
+| **iTerm2** | `$TERM_PROGRAM == iTerm.app` | `it2` CLI + Python API | macOS native |
+| **In-process** | Default fallback | `Shift+Up` / `Shift+Down` | No terminal setup required |
+
+### Step 1c: Terminal Setup (if needed)
+
+**tmux** (if not installed):
+```bash
+# macOS
+brew install tmux
+
+# Linux (Debian/Ubuntu)
+sudo apt install tmux
+```
+
+**iTerm2** (macOS only):
+```bash
+# Enable Python API in iTerm2 preferences
+# Then use it2 CLI for tab/split control
+```
+
+**In-process** (default fallback):
+- No setup required
+- Agents run as background tasks within the Claude Code process
+- Navigate with `Shift+Up` / `Shift+Down`
+
+### Step 1d: settings.json Configuration (Native Agent Teams)
+
+Ensure Agent Teams is enabled in Claude Code settings:
 
 ```json
 {
-  "sessionId": "session-uuid",
-  "startedAt": "2026-02-06T...",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Place this in `.claude/settings.json` (project-level) or `~/.claude/settings.json` (global).
+
+---
+
+## 2. Domain-to-Skill Mapping
+
+Analyze the feature request and map affected domains to SpecWeave skills.
+
+| Domain | Primary Skill | Additional Skills | When to Use |
+|--------|--------------|-------------------|-------------|
+| **Frontend** | `sw-frontend:frontend-architect` | `sw-frontend:nextjs`, `sw-frontend:frontend-design` | UI components, pages, client-side state |
+| **Backend** | `sw:architect` | `sw-infra:devops` | API endpoints, services, business logic |
+| **Database** | `sw:architect` | | Schema design, migrations, seed data |
+| **Shared/Types** | `sw:architect` | `sw:tech-lead` | TypeScript interfaces, shared constants, API contracts |
+| **Testing** | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | Test strategy, E2E suites, integration tests |
+| **Security** | `sw:security` | `sw:security-patterns` | Auth, authorization, threat modeling, OWASP |
+| **DevOps** | `sw-infra:devops` | `sw-k8s:deployment-generate`, `sw-infra:observability` | CI/CD, Docker, K8s, monitoring |
+| **Mobile** | `sw-mobile:mobile-architect` | `sw-mobile:screen-generate`, `sw-mobile:react-native-expert` | Native/cross-platform mobile apps |
+| **ML** | `sw-ml:ml-engineer` | `sw-ml:pipeline`, `sw-ml:deploy` | Model training, inference pipelines, deployment |
+
+### Auto-Detection Signals
+
+The orchestrator infers domains from the feature description and codebase structure (e.g., `src/components/` signals Frontend, `prisma/` signals Database, `src/api/` signals Backend, `tests/` signals Testing, auth-related keywords signal Security, Docker/K8s/CI files signal DevOps, React Native/Flutter signal Mobile, model/pipeline keywords signal ML).
+
+---
+
+## 3. Contract-First Spawning Protocol
+
+Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase dependency protocol to prevent integration conflicts.
+
+### Contract Artifacts
+
+| Artifact | Location | Producer | Consumers |
+|----------|----------|----------|-----------|
+| TypeScript interfaces | `src/types/` or `src/shared/types/` | Shared/Types agent | Frontend, Backend, Testing |
+| Prisma schema | `prisma/schema.prisma` | Database agent | Backend, Testing |
+| OpenAPI spec | `openapi.yaml` or `src/api/openapi.yaml` | Backend agent | Frontend, Testing |
+| GraphQL schema | `schema.graphql` | Backend agent | Frontend, Mobile |
+| API route types | `src/api/types/` | Backend agent | Frontend |
+
+### Phase 1: Upstream Agents (Contracts First)
+
+**Contract chain order**: shared/types → database → backend → frontend (upstream before downstream).
+
+Spawn agents that produce shared contracts. These MUST complete before downstream agents begin.
+
+**Upstream agents** (spawn first, wait for completion):
+- **Shared/Types agent** -- produces TypeScript interfaces, enums, constants
+- **Database agent** -- produces Prisma schema, migration files, seed data
+
+```
+Phase 1: Upstream
+  ├── Shared/Types Agent → produces interfaces, enums
+  └── Database Agent → produces schema, migrations
+
+  [WAIT for Phase 1 completion]
+```
+
+**Completion signal**: Each upstream agent writes a contract-ready message (see Communication Protocol below).
+
+### Phase 2: Downstream Agents (Consume Contracts)
+
+Once upstream contracts are established, spawn downstream agents in parallel.
+
+**Downstream agents** (spawn in parallel after Phase 1):
+- **Backend agent** -- consumes types and schema, produces API endpoints
+- **Frontend agent** -- consumes types and API contracts, produces UI
+- **Testing agent** -- consumes all contracts, produces test suites
+- **Security agent** -- consumes all code, produces security hardening
+- **DevOps agent** -- consumes all code, produces deployment config
+
+```
+Phase 2: Downstream (parallel)
+  ├── Backend Agent (reads types + schema)
+  ├── Frontend Agent (reads types + API spec)
+  ├── Testing Agent (reads all contracts)
+  ├── Security Agent (reads all code)
+  └── DevOps Agent (reads all code)
+```
+
+### No-Dependency Case
+
+If the feature has no cross-domain dependencies (e.g., purely frontend work with no new types), skip Phase 1 and spawn all agents in parallel immediately.
+
+```bash
+# Example: independent domains
+# If domains are [frontend, testing] with no shared types needed:
+# → Spawn both in parallel (no Phase 1 needed)
+```
+
+### Spawn Decision Logic
+
+```
+Analyze domains
+  │
+  ├── Any upstream domains (shared/types, database)?
+  │     YES → Phase 1: spawn upstream, wait for contracts
+  │           Phase 2: spawn downstream in parallel
+  │     NO  → Spawn all agents in parallel (no dependency)
+  │
+  └── Single domain?
+        YES → Spawn single agent, no orchestration needed
+```
+
+---
+
+## 4. Agent Spawn Prompt Templates
+
+Each agent receives a detailed prompt that includes its skill invocations, file ownership, and workflow instructions.
+
+### 4a. Frontend Agent
+
+```
+You are the FRONTEND agent for increment [INCREMENT_ID].
+
+SKILLS TO INVOKE:
+  Skill({ skill: "sw-frontend:frontend-architect" })
+  Skill({ skill: "sw-frontend:nextjs" })         // if Next.js project
+  Skill({ skill: "sw-frontend:frontend-design" }) // for design system work
+
+FILE OWNERSHIP (WRITE access):
+  src/components/**
+  src/pages/**
+  src/hooks/**
+  src/styles/**
+  src/app/**           // Next.js app router
+  src/stores/**        // Client state (zustand, redux, etc.)
+  public/**
+
+READ ACCESS: Any file in the repository (especially src/types/, src/shared/, openapi.yaml)
+
+WORKFLOW:
+  1. Read the increment spec: .specweave/increments/[ID]/spec.md
+  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  3. Wait for contract artifacts if Phase 1 is active:
+     - Read src/types/ for shared interfaces
+     - Read openapi.yaml for API endpoints (if backend produces one)
+  4. Execute tasks: /sw:do or /sw:auto
+  5. Run quality gate: /sw:grill
+  6. Signal completion (see Communication Protocol)
+
+RULES:
+  - WRITE only to files you own (listed above)
+  - READ any file for context
+  - Follow existing code conventions (check .eslintrc, .prettierrc, tsconfig.json)
+  - Run linter and type-check before signaling completion
+  - All new components must have corresponding test files
+```
+
+### 4b. Backend Agent
+
+```
+You are the BACKEND agent for increment [INCREMENT_ID].
+
+SKILLS TO INVOKE:
+  Skill({ skill: "sw:architect" })
+  Skill({ skill: "sw-infra:devops" })  // if deployment config needed
+
+FILE OWNERSHIP (WRITE access):
+  src/api/**
+  src/services/**
+  src/middleware/**
+  src/routes/**
+  src/controllers/**
+  src/utils/server/**
+  prisma/seed.ts       // seed data only (schema owned by DB agent)
+
+READ ACCESS: Any file in the repository (especially prisma/schema.prisma, src/types/)
+
+WORKFLOW:
+  1. Read the increment spec: .specweave/increments/[ID]/spec.md
+  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  3. Wait for contract artifacts if Phase 1 is active:
+     - Read prisma/schema.prisma for database schema
+     - Read src/types/ for shared interfaces
+  4. Execute tasks: /sw:do or /sw:auto
+  5. Generate or update OpenAPI spec if API routes change
+  6. Run quality gate: /sw:grill
+  7. Signal completion (see Communication Protocol)
+
+RULES:
+  - WRITE only to files you own (listed above)
+  - READ any file for context
+  - Every new API endpoint must have request/response validation
+  - Error handling must follow project conventions
+  - All services must have unit tests
+```
+
+### 4c. Database Agent
+
+```
+You are the DATABASE agent for increment [INCREMENT_ID].
+
+SKILLS TO INVOKE:
+  Skill({ skill: "sw:architect" })
+
+FILE OWNERSHIP (WRITE access):
+  prisma/schema.prisma
+  prisma/migrations/**
+  src/db/**
+  src/repositories/**
+  scripts/db/**
+  seeds/**
+
+READ ACCESS: Any file in the repository
+
+WORKFLOW:
+  1. Read the increment spec: .specweave/increments/[ID]/spec.md
+  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  3. Design database schema changes
+  4. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
+  5. Write seed data if needed
+  6. Execute tasks: /sw:do or /sw:auto
+  7. Run quality gate: /sw:grill
+  8. Signal CONTRACT_READY with schema details (see Communication Protocol)
+  9. Signal completion
+
+RULES:
+  - WRITE only to files you own (listed above)
+  - READ any file for context
+  - Always create migrations (never modify schema without migration)
+  - Seed data must be idempotent
+  - Schema changes must be backward-compatible when possible
+```
+
+### 4d. Testing Agent
+
+```
+You are the TESTING agent for increment [INCREMENT_ID].
+
+SKILLS TO INVOKE:
+  Skill({ skill: "sw-testing:qa-engineer" })
+  Skill({ skill: "sw-testing:e2e-testing" })   // for E2E test suites
+  Skill({ skill: "sw-testing:unit-testing" })   // for unit test coverage
+
+FILE OWNERSHIP (WRITE access):
+  tests/**
+  __tests__/**
+  src/**/*.test.ts
+  src/**/*.test.tsx
+  src/**/*.spec.ts
+  e2e/**
+  playwright.config.ts  // if Playwright
+  cypress.config.ts     // if Cypress
+  test-utils/**
+  fixtures/**
+
+READ ACCESS: Any file in the repository
+
+WORKFLOW:
+  1. Read the increment spec: .specweave/increments/[ID]/spec.md
+  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  3. Wait for ALL other agents to produce initial code
+  4. Write unit tests for new services/components
+  5. Write integration tests for API endpoints
+  6. Write E2E tests for user journeys
+  7. Execute tasks: /sw:do or /sw:auto
+  8. Run full test suite and report results
+  9. Run quality gate: /sw:grill
+  10. Signal completion
+
+RULES:
+  - WRITE only to test files (listed above)
+  - READ any file for context
+  - Tests must cover all acceptance criteria from spec.md
+  - Follow existing test patterns and utilities
+  - E2E tests must include accessibility checks when applicable
+```
+
+### 4e. Security Agent
+
+```
+You are the SECURITY agent for increment [INCREMENT_ID].
+
+SKILLS TO INVOKE:
+  Skill({ skill: "sw:security" })
+  Skill({ skill: "sw:security-patterns" })
+
+FILE OWNERSHIP (WRITE access):
+  src/auth/**
+  src/middleware/auth*
+  src/middleware/security*
+  src/utils/crypto/**
+  src/utils/validation/**
+  security/**
+  .env.example          // document required secrets (never .env itself)
+
+READ ACCESS: Any file in the repository
+
+WORKFLOW:
+  1. Read the increment spec: .specweave/increments/[ID]/spec.md
+  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  3. Audit code produced by other agents for security issues
+  4. Implement auth/authz middleware if needed
+  5. Add input validation and sanitization
+  6. Execute tasks: /sw:do or /sw:auto
+  7. Run security audit tools (npm audit, dependency check)
+  8. Run quality gate: /sw:grill
+  9. Signal completion with security findings summary
+
+RULES:
+  - WRITE only to files you own (listed above)
+  - READ any file for context and audit
+  - NEVER commit secrets, credentials, or API keys
+  - All user input must be validated and sanitized
+  - Follow OWASP Top 10 guidelines
+```
+
+---
+
+## 5. File Ownership
+
+Each agent has exclusive WRITE access to specific file patterns. This prevents merge conflicts.
+
+### Ownership Map
+
+| Domain | WRITE Patterns | Notes |
+|--------|---------------|-------|
+| **Frontend** | `src/components/**`, `src/pages/**`, `src/hooks/**`, `src/styles/**`, `src/app/**`, `src/stores/**`, `public/**` | UI layer |
+| **Backend** | `src/api/**`, `src/services/**`, `src/middleware/**`, `src/routes/**`, `src/controllers/**` | API layer |
+| **Database** | `prisma/**`, `src/db/**`, `src/repositories/**`, `seeds/**`, `scripts/db/**` | Data layer |
+| **Shared/Types** | `src/types/**`, `src/shared/**`, `src/constants/**`, `src/utils/shared/**` | Contracts |
+| **Testing** | `tests/**`, `__tests__/**`, `e2e/**`, `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `test-utils/**`, `fixtures/**` | All test files |
+| **Security** | `src/auth/**`, `src/middleware/auth*`, `src/middleware/security*`, `src/utils/crypto/**`, `src/utils/validation/**`, `security/**` | Auth and security |
+| **DevOps** | `.github/**`, `docker/**`, `Dockerfile*`, `docker-compose*`, `k8s/**`, `terraform/**`, `.gitlab-ci.yml`, `Makefile` | Infrastructure |
+| **Mobile** | `src/screens/**`, `src/navigation/**`, `ios/**`, `android/**`, `src/native/**` | Mobile app |
+| **ML** | `models/**`, `notebooks/**`, `src/ml/**`, `src/pipelines/**`, `data/**` | Machine learning |
+
+### Ownership Rules
+
+1. **WRITE only to files you own** -- agents must not modify files outside their ownership patterns
+2. **READ any file** -- all agents have unrestricted read access for context
+3. **Shared files require coordination** -- if two domains need to modify the same file (e.g., `package.json`), the orchestrator assigns a primary owner and others request changes via messages
+4. **New files** -- agents can create new files ONLY within their ownership patterns
+5. **Conflict detection** -- the orchestrator checks for ownership overlap before spawning and resolves ambiguity upfront
+
+---
+
+## 6. Communication Protocol
+
+Agents must communicate contract readiness, blocking issues, and completion status.
+
+### Mode A: Native Agent Teams (SendMessage)
+
+When `MODE == "native-agent-teams"`, agents use the `SendMessage` tool for peer-to-peer communication.
+
+```typescript
+// Upstream agent signals contract is ready
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "CONTRACT_READY: TypeScript interfaces written to src/types/checkout.ts. Exports: CheckoutItem, CartSummary, PaymentIntent.",
+  summary: "Shared types contract ready"
+});
+
+// Agent reports a blocking issue
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "BLOCKING_ISSUE: Cannot implement payment webhook -- Stripe webhook secret not found in .env. Need STRIPE_WEBHOOK_SECRET to proceed.",
+  summary: "Blocked on missing Stripe secret"
+});
+
+// Agent signals completion
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "COMPLETION: All 8 tasks done. Tests passing (24/24). /sw:grill passed. Frontend increment ready for merge.",
+  summary: "Frontend agent completed all tasks"
+});
+```
+
+**Message Types:**
+
+| Type | Prefix | Purpose | Sender | Receiver |
+|------|--------|---------|--------|----------|
+| `CONTRACT_READY` | `CONTRACT_READY:` | Upstream contract is published | Upstream agent | Team lead (broadcasts to downstream) |
+| `BLOCKING_ISSUE` | `BLOCKING_ISSUE:` | Agent is stuck, needs help | Any agent | Team lead |
+| `COMPLETION` | `COMPLETION:` | Agent finished all tasks | Any agent | Team lead |
+
+### Mode B: Subagent Fallback (File-Based)
+
+When `MODE == "subagent-fallback"`, agents communicate via files in `.specweave/state/parallel/messages/`.
+
+**Message file format**: `{timestamp}-{sender}-{type}.json`
+
+```json
+{
+  "timestamp": "2026-02-09T14:30:00Z",
+  "sender": "database-agent",
+  "type": "CONTRACT_READY",
+  "content": "Prisma schema updated with Checkout, CartItem, PaymentRecord models. Migration 20260209_add_checkout created.",
+  "artifacts": ["prisma/schema.prisma", "prisma/migrations/20260209_add_checkout/"]
+}
+```
+
+```json
+{
+  "timestamp": "2026-02-09T15:10:00Z",
+  "sender": "frontend-agent",
+  "type": "BLOCKING_ISSUE",
+  "content": "OpenAPI spec not found at openapi.yaml. Backend agent has not published API contract yet.",
+  "blockedOn": "backend-agent"
+}
+```
+
+```json
+{
+  "timestamp": "2026-02-09T16:45:00Z",
+  "sender": "backend-agent",
+  "type": "COMPLETION",
+  "content": "All 6 tasks complete. 18 tests passing. API endpoints: POST /checkout, GET /orders, POST /payments/webhook.",
+  "incrementId": "0194-checkout-backend"
+}
+```
+
+**File-based state tracking directory structure:**
+
+```
+.specweave/state/parallel/
+├── session.json                           # Session metadata
+├── messages/
+│   ├── 1707489000-database-CONTRACT_READY.json
+│   ├── 1707492600-frontend-BLOCKING_ISSUE.json
+│   └── 1707497100-backend-COMPLETION.json
+└── agents/
+    ├── frontend.json                      # Agent status
+    ├── backend.json
+    └── database.json
+```
+
+---
+
+## 7. Spawning Agents
+
+### Native Agent Teams Mode
+
+When Agent Teams is available, use the `Teammate` and `Task` tools with team coordination.
+
+```typescript
+// Step 1: Create the team
+Teammate({
+  operation: "spawnTeam",
+  team_name: "feature-checkout",
+  description: "Building checkout flow across frontend, backend, and database"
+});
+
+// Step 2: Spawn upstream agents (Phase 1)
+Task({
+  team_name: "feature-checkout",
+  name: "database-agent",
+  subagent_type: "general-purpose",
+  prompt: `[DATABASE AGENT PROMPT - see template in Section 4c]`,
+});
+
+Task({
+  team_name: "feature-checkout",
+  name: "shared-types-agent",
+  subagent_type: "general-purpose",
+  prompt: `[SHARED/TYPES AGENT PROMPT]`,
+});
+
+// Step 3: Wait for Phase 1 CONTRACT_READY messages
+// Messages are delivered automatically via SendMessage
+
+// Step 4: Spawn downstream agents (Phase 2)
+Task({
+  team_name: "feature-checkout",
+  name: "backend-agent",
+  subagent_type: "general-purpose",
+  prompt: `[BACKEND AGENT PROMPT - see template in Section 4b]`,
+});
+
+Task({
+  team_name: "feature-checkout",
+  name: "frontend-agent",
+  subagent_type: "general-purpose",
+  prompt: `[FRONTEND AGENT PROMPT - see template in Section 4a]`,
+});
+
+Task({
+  team_name: "feature-checkout",
+  name: "testing-agent",
+  subagent_type: "general-purpose",
+  prompt: `[TESTING AGENT PROMPT - see template in Section 4d]`,
+});
+```
+
+### Subagent Fallback Mode
+
+When Agent Teams is NOT available, use the Task tool with background execution.
+
+```typescript
+// Spawn agents as background subagents
+// Phase 1: upstream
+Task({
+  subagent_type: "general-purpose",
+  prompt: `[DATABASE AGENT PROMPT]`,
+  run_in_background: true,
+});
+
+Task({
+  subagent_type: "general-purpose",
+  prompt: `[SHARED/TYPES AGENT PROMPT]`,
+  run_in_background: true,
+});
+
+// Poll for Phase 1 completion by checking file-based messages
+// Wait until CONTRACT_READY messages appear in .specweave/state/parallel/messages/
+
+// Phase 2: downstream
+Task({
+  subagent_type: "general-purpose",
+  prompt: `[BACKEND AGENT PROMPT]`,
+  run_in_background: true,
+});
+
+Task({
+  subagent_type: "general-purpose",
+  prompt: `[FRONTEND AGENT PROMPT]`,
+  run_in_background: true,
+});
+```
+
+**File-based state tracking**: Each agent writes its status to `.specweave/state/parallel/agents/{domain}.json` (fields: `domain`, `incrementId`, `status`, `tasksCompleted`, `tasksTotal`, `lastUpdate`, `fileOwnership`). The orchestrator polls these files to track progress and determine when phases complete.
+
+---
+
+## 8. Quality Gates
+
+Every agent MUST run quality validation before signaling completion.
+
+### Per-Agent Quality Gate
+
+Each agent runs `/sw:grill` as the final step before marking its work complete:
+
+```
+Agent Workflow:
+  1. Execute all assigned tasks → /sw:do or /sw:auto
+  2. Run tests for owned code
+  3. Run linter/type-check for owned code
+  4. Run /sw:grill
+  5. If /sw:grill passes → signal COMPLETION
+  6. If /sw:grill fails → fix issues, repeat from step 2
+```
+
+### Orchestrator Quality Gate
+
+After all agents complete, the orchestrator (team lead) runs a final validation:
+
+```
+Orchestrator Final Check:
+  1. All agents signaled COMPLETION
+  2. No unresolved BLOCKING_ISSUE messages
+  3. Run full test suite (all domains combined)
+  4. Run /sw:grill on the combined increment
+  5. If all pass → /sw:team-merge
+  6. If failures → identify owning agent, request fix
+```
+
+### Grill Checklist per Domain
+
+| Domain | Grill Checks |
+|--------|-------------|
+| Frontend | Components render, no console errors, accessibility, responsive |
+| Backend | API endpoints return correct status codes, validation works, error handling |
+| Database | Migrations apply cleanly, seed data loads, rollback works |
+| Testing | All tests pass, coverage threshold met, no flaky tests |
+| Security | No exposed secrets, input validation, auth working |
+| DevOps | Docker builds, CI passes, deployment config valid |
+
+---
+
+## 9. Workflow Summary
+
+### Full Orchestration Flow
+
+```
+/sw:team-orchestrate "Build checkout flow"
+  │
+  ├── Step 1: Detect mode (native Agent Teams vs subagent fallback)
+  ├── Step 2: Analyze feature → identify domains
+  ├── Step 3: Create per-domain increments
+  ├── Step 4: Contract-first spawning
+  │     ├── Phase 1: Spawn shared + database → wait for CONTRACT_READY
+  │     └── Phase 2: Spawn backend + frontend + testing (parallel)
+  ├── Step 5: Monitor progress (/sw:team-status)
+  ├── Step 6: Quality gates (each agent runs /sw:grill)
+  └── Step 7: Merge and close (/sw:team-merge)
+```
+
+### --dry-run Output
+
+When `--dry-run` is specified, display the proposed plan without executing:
+
+```
+Team Orchestration Plan (DRY RUN)
+==================================================
+Feature: Build checkout flow | Mode: native-agent-teams (tmux) | Domains: 4
+
+Phase 1 (upstream):
+  1. shared-types → sw:architect, sw:tech-lead  | Increment: 0200-checkout-shared
+  2. database     → sw:architect                 | Increment: 0201-checkout-database
+
+Phase 2 (downstream, parallel):
+  3. backend      → sw:architect, sw-infra:devops          | Increment: 0202-checkout-backend
+  4. frontend     → sw-frontend:frontend-architect         | Increment: 0203-checkout-frontend
+
+Max agents: 4 (2 sequential + 2 parallel)
+To execute, run without --dry-run.
+```
+
+---
+
+## 10. Session State
+
+The orchestrator records the team session to `.specweave/state/parallel/session.json`:
+
+```json
+{
+  "sessionId": "team-20260209-abc123",
+  "feature": "Build checkout flow",
+  "mode": "native-agent-teams",
+  "terminal": "tmux",
+  "startedAt": "2026-02-09T14:00:00Z",
+  "phases": {
+    "phase1": { "status": "completed", "agents": ["shared-types", "database"] },
+    "phase2": { "status": "in-progress", "agents": ["backend", "frontend", "testing"] }
+  },
   "agents": [
-    {
-      "domain": "frontend",
-      "incrementId": "XXXX-feature-frontend",
-      "taskId": "agent-task-id",
-      "status": "running",
-      "fileOwnership": ["src/frontend/**"]
-    }
+    { "name": "shared-types", "domain": "shared", "incrementId": "0200-checkout-shared", "status": "completed", "fileOwnership": ["src/types/**", "src/shared/**"] },
+    { "name": "database", "domain": "database", "incrementId": "0201-checkout-database", "status": "completed", "fileOwnership": ["prisma/**", "src/db/**"] },
+    { "name": "backend", "domain": "backend", "incrementId": "0202-checkout-backend", "status": "running", "fileOwnership": ["src/api/**", "src/services/**"] },
+    { "name": "frontend", "domain": "frontend", "incrementId": "0203-checkout-frontend", "status": "running", "fileOwnership": ["src/components/**", "src/pages/**"] },
+    { "name": "testing", "domain": "testing", "incrementId": "0204-checkout-testing", "status": "running", "fileOwnership": ["tests/**", "e2e/**"] }
   ]
 }
 ```
 
-## File Ownership Rules
+---
 
-- Each agent owns specific file patterns (no overlap)
-- Shared files (e.g., API types) are owned by the "shared" agent
-- Conflicts are detected during merge (T-020)
+## 11. Troubleshooting
 
-## Agent Teams Detection
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| **tmux panes hang/freeze** | Pane buffer overflow or stuck process | `tmux kill-pane -t <pane>` then re-spawn the agent; or `tmux kill-session -t <session>` to reset all |
+| **Agent not spawning** | Missing terminal multiplexer or Agent Teams not enabled | Check `echo $CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`; install tmux if needed; fall back to subagent mode |
+| **Agents editing same files** | Overlapping file ownership patterns | Review ownership map in session.json; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
+| **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
+| **Agent completes but lead does not notice** | Message delivery missed (subagent mode) | Check `.specweave/state/parallel/messages/` for COMPLETION files; in native mode, messages are auto-delivered |
+| **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
+| **Phase 2 starts before Phase 1 finishes** | Race condition in subagent fallback mode | Verify CONTRACT_READY messages exist before spawning downstream; add explicit polling loop with sleep |
+| **Session state file corrupted** | Concurrent writes from multiple agents | Use atomic file writes (write to temp, rename); or let only the orchestrator write session.json |
+| **Agent fails mid-task** | Build error, test failure, or dependency issue | Check agent logs; fix the issue in the agent's owned files; restart the agent with `/sw:auto` on its increment |
+| **Cannot find team session** | Session file deleted or wrong path | Check `.specweave/state/parallel/session.json`; verify the team name matches; use `/sw:team-status` to inspect |
 
-If `$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set, use native Agent Teams for peer-to-peer coordination instead of Task tool.
+---
 
-## Options
+## 12. Examples
 
-| Option | Description |
-|--------|-------------|
-| `--dry-run` | Show proposed agent plan without launching |
-| `--domains` | Override domain detection (e.g., `--domains frontend,backend`) |
-
-## Example
+### Example 1: Full-Stack Feature
 
 ```
-User: /sw:team-orchestrate "Build checkout flow across frontend and backend"
+User: /sw:team-orchestrate "Build user authentication with login, signup, password reset, and OAuth"
 
-Assistant analyzes and proposes:
-- Frontend agent: checkout UI, cart summary, payment form
-- Backend agent: payment API, order service, inventory check
-- Shared: order types, payment types
+Orchestrator detects domains: shared/types, database, backend, frontend, testing, security
+Creates 6 increments.
 
-Creates 3 increments, spawns 3 agents, records session.
+Phase 1:
+  - shared-types agent: Auth types (User, Session, AuthToken interfaces)
+  - database agent: User table, Session table, Prisma migrations
+
+Phase 2 (after contracts ready):
+  - backend agent: /api/auth/login, /api/auth/signup, /api/auth/reset, OAuth flow
+  - frontend agent: LoginForm, SignupForm, ResetPasswordForm, OAuthButton
+  - testing agent: Unit tests, E2E login flow, E2E signup flow
+  - security agent: Password hashing, JWT validation, rate limiting, CSRF
 ```
+
+### Example 2: Frontend-Only (No Dependencies)
+
+```
+User: /sw:team-orchestrate "Redesign dashboard" --domains frontend,testing
+→ No upstream dependencies. Both agents spawn in parallel immediately.
+```
+
+### Example 3: Dry Run
+
+```
+User: /sw:team-orchestrate "Add payment processing" --dry-run
+→ Shows plan with domains, phases, file ownership. No agents spawned.
+```
+
+---
+
+## Related Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `/sw:team-status` | Show progress of all agents in the current team session |
+| `/sw:team-merge` | Merge completed agent work in dependency order |
+| `/sw:auto` | Autonomous execution (single-agent mode) |
+| `/sw:architect` | System architecture and ADRs |
+| `/sw:grill` | Quality validation gate |

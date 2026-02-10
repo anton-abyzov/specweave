@@ -165,7 +165,7 @@ safe_run_sync() {
 play_task_completion_sound() {
   local tasks_file="$1"
   local state_file="$STATE_DIR/.last-task-completion"
-  local session_file="$STATE_DIR/auto-session.json"
+  local session_file="$STATE_DIR/auto-mode.json"
 
   # DISABLED: Sound notifications are disabled by default
   # To re-enable, set SPECWEAVE_SOUND_ENABLED=1 in environment

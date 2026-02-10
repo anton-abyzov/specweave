@@ -32,7 +32,7 @@ AUTO_MODE_FILE="$STATE_DIR/auto-mode.json"
 if [[ -f "$AUTO_MODE_FILE" ]]; then
   rm -f "$AUTO_MODE_FILE" 2>/dev/null
   rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
-  rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-dedup-prev" 2>/dev/null
   rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null
   # Log cleanup (non-blocking, fire-and-forget)
   mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null

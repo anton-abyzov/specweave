@@ -35,7 +35,6 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 
 **STOP Hooks with Subagents** — Stop hooks now work with spawned subagents! This means `/sw:auto` can validate quality gates at EVERY level of execution. When auto mode spawns specialized agents (QA, Security, Performance), the stop hook validates their results before allowing the session to continue.
 
-**Real-world proof**: Boris Cherny (Claude Code creator) shipped 259 PRs, 497 commits, 40,000 lines in one month without opening an IDE — using autonomous execution with stop hooks. [See demo](https://x.com/bcherny/status/2004916410687050167)
 :::
 
 ## Arguments
@@ -50,8 +49,7 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** |
-| `--max-hours N` | Maximum hours to run | **600 hours** (25 days) |
+| `--max-turns N` | Maximum hook invocations before hard stop | **20** |
 | `--simple` | Simple mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
@@ -60,232 +58,81 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 | `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
 | `--tdd`, `--strict` | Enable TDD strict mode - ALL tests must pass | false |
-| **`--build`** | Build must pass before completion (auto-heal: 3 retries) | false |
+| **`--build`** | Build must pass before completion | false |
 | **`--tests`** | Tests must pass before completion (unit + integration) | false |
 | **`--e2e`** | E2E tests must pass before completion | false |
-| **`--lint`** | Linting must pass before completion (auto-heal: 3 retries) | false |
-| **`--types`** | Type-checking must pass before completion (auto-heal: 3 retries) | false |
+| **`--lint`** | Linting must pass before completion | false |
+| **`--types`** | Type-checking must pass before completion | false |
 | **`--cov <n>`** | Code coverage must meet threshold (%) | 80 |
 | **`--e2e-cov <n>`** | E2E coverage must meet threshold (%) | 70 |
 | **`--cmd "<command>"`** | Custom command must pass before completion | None |
 
-:::warning Iteration limits are SAFETY NETS
-The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Completion should be detected through **external verification** (test results), not self-assessment.
-
-**IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
+:::warning Turn limit is a SAFETY NET
+The primary completion criteria is **all tasks complete + all ACs satisfied** (grep-based, reliable). The turn limit (default: 20) is a backup safety net. Quality gates (tests, build, coverage) are enforced by the MODEL before running `/sw:done`, NOT by the stop hook.
 :::
 
-## Completion Conditions
+## Completion Architecture (v5)
 
-**Auto mode will NOT stop until ALL specified conditions pass.**
+**Two-layer design**: Stop hook gates exit. Model enforces quality before `/sw:done`.
 
-### What Are Completion Conditions?
+### What the Stop Hook Does (v5)
 
-Completion conditions are **quality gates** that prevent auto mode from completing until specific checks pass:
+The stop hook (`stop-auto-v5.sh`, ~166 lines) is a **simple gate**:
 
-- **`--build`**: Build must succeed (auto-heal enabled, max 3 retries)
-- **`--tests`**: All tests must pass (unit + integration tests)
-- **`--e2e`**: E2E tests must pass (Playwright, Cypress, etc.)
-- **`--lint`**: Linting must pass (ESLint, Black, Clippy, etc.)
-- **`--types`**: Type-checking must pass (TypeScript, mypy, etc.)
-- **`--cov N`**: Code coverage must meet threshold (e.g., `--cov 80` = 80% minimum)
-- **`--e2e-cov N`**: E2E coverage must meet threshold
-- **`--cmd "..."`**: Custom command must pass (e.g., `--cmd "make verify"`)
+1. Checks if auto mode is active (auto-mode.json marker)
+2. Counts pending tasks in `tasks.md` (grep-based, reliable)
+3. Counts open ACs in `spec.md` (grep-based, reliable)
+4. If work remains: **block** with concise message
+5. If all complete: **approve** (model should then run `/sw:done`)
 
-### Auto-Heal vs Manual Fix
+The hook does NOT run tests, builds, or any external commands. It has no PATH dependency.
 
-| Condition | Auto-Heal? | Behavior |
-|-----------|-----------|----------|
-| `--build` | ✅ Yes (3 retries) | Build failures auto-fixed by LLM |
-| `--lint` | ✅ Yes (3 retries) | Lint errors auto-fixed by LLM |
-| `--types` | ✅ Yes (3 retries) | Type errors auto-fixed by LLM |
-| `--tests` | ❌ No | Tests must be fixed manually by LLM |
-| `--e2e` | ❌ No | E2E tests must be fixed manually |
-| `--cov` | ❌ No | Must write more tests to meet threshold |
-| `--cmd` | ❌ No | Custom commands run as-is |
+### What the Model Does (before /sw:done)
 
-**Auto-heal** means the hook will:
-1. Run the command
-2. If it fails, ask LLM to fix the issue
-3. Retry up to 3 times
-4. Block completion if still failing after 3 attempts
+When `--build`, `--tests`, etc. flags are passed, they are stored as **success criteria** in `auto-mode.json`. The model reads these criteria and MUST verify them before running `/sw:done`:
 
-**Manual fix** means:
-1. Run the command
-2. If it fails, BLOCK immediately
-3. LLM must fix the issue manually
-4. Re-run to validate
+| Flag | Stored As | Model Responsibility |
+|------|-----------|---------------------|
+| `--build` | `successCriteria[type=build]` | Run build command, fix failures |
+| `--tests` | `successCriteria[type=tests]` | Run tests, fix failures |
+| `--e2e` | `successCriteria[type=e2e]` | Run E2E tests, fix failures |
+| `--lint` | `successCriteria[type=lint]` | Run linter, fix issues |
+| `--types` | `successCriteria[type=types]` | Run type checker, fix errors |
+| `--cov N` | `successCriteria[type=coverage]` | Write tests to meet threshold |
+| `--cmd "..."` | `successCriteria[type=custom]` | Run custom command |
 
-### Framework Auto-Detection
+The model runs in a proper shell environment where npm/node ARE available.
 
-Commands are auto-detected based on your project structure:
-
-**TypeScript/Node:**
-```bash
-# Detected from package.json, jest.config.js, vitest.config.ts
-build: npm run build
-tests: npm test OR npx vitest run
-e2e: npx playwright test OR npx cypress run
-lint: npm run lint OR npx eslint .
-types: npx tsc --noEmit
-```
-
-**Python:**
-```bash
-# Detected from requirements.txt, pyproject.toml, pytest.ini
-build: python -m build
-tests: pytest
-e2e: (none)
-lint: black --check . OR flake8
-types: mypy .
-```
-
-**Go:**
-```bash
-# Detected from go.mod
-build: go build ./...
-tests: go test ./...
-lint: golangci-lint run
-```
-
-**Rust:**
-```bash
-# Detected from Cargo.toml
-build: cargo build
-tests: cargo test
-lint: cargo clippy
-```
-
-### Example Usage
-
-**Basic - Build + Tests:**
-```bash
-/sw:auto --build --tests
-# → Auto mode will NOT stop until build passes AND all tests pass
-```
-
-**Strict Quality:**
-```bash
-/sw:auto --build --tests --e2e --lint --types --cov 80
-# → ALL conditions must pass:
-#   ✅ Build succeeds
-#   ✅ Tests pass
-#   ✅ E2E tests pass
-#   ✅ Lint passes
-#   ✅ Type-check passes
-#   ✅ Coverage ≥80%
-```
-
-**Custom Command:**
-```bash
-/sw:auto --cmd "make verify"
-# → Auto mode will run `make verify` before completion
-```
-
-**Combined with Other Flags:**
-```bash
-/sw:auto --prompt "Build auth system" --yes --build --tests --cov 85
-# → Intelligent chunking + auto-approve + quality gates
-```
-
-### Session Output
-
-When you start auto mode with completion conditions, you'll see:
+### Completion Flow
 
 ```
-🚀 Auto Session Started
-
-Session ID: auto-2026-01-04-abc123
-Max Iterations: 2500
-Max Hours: 600
-Simple Mode: false
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚙️  COMPLETION CONDITIONS
-   Auto mode will NOT stop until ALL conditions pass:
-
-   • 🔨 Build must pass (auto-heal enabled, max 3 retries)
-   • ✅ Tests must pass (unit + integration)
-   • 🎭 E2E tests must pass
-   • 📊 Code coverage must be ≥80%
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Increment Queue (1):
-  • 0001-auth-system
-
-Current: 0001-auth-system
-
-The session will continue until:
-  • All tasks complete AND tests pass
-  • ALL 4 completion conditions pass
-  • Max iterations (2500) reached
-  • Max hours (600) exceeded
-  • You run specweave cancel-auto
-  • A human gate requires approval
+Tasks done + ACs satisfied
+  → Hook approves exit
+  → Model verifies quality criteria (build, tests, etc.)
+  → Model runs /sw:done
+  → /sw:done runs PM validation gates
+  → Increment closed
 ```
 
-### Stop Hook Validation
+### Safety Nets
 
-The stop hook (`stop-auto.sh`) validates completion conditions:
+| Mechanism | Default | Purpose |
+|-----------|---------|---------|
+| Turn limit | 20 | Hard stop after N hook invocations |
+| Staleness | 2h | Auto-cleanup sessions inactive > 2 hours |
+| Dedup | 30s | Prevent rapid-fire blocks |
 
-1. **Before allowing completion**, the hook runs:
-   ```bash
-   plugins/specweave/hooks/validate-completion-conditions.sh
-   ```
-
-2. **For each condition**:
-   - Auto-detects the framework-specific command
-   - Runs the command
-   - Parses the output
-   - If auto-heal enabled, retries on failure (max 3x)
-   - BLOCKS completion if ANY condition fails
-
-3. **Only when ALL conditions pass**:
-   - Hook approves completion
-   - Auto mode stops successfully
-   - Celebration sound plays 🎉
-
-### Per-Increment Override
-
-You can override completion conditions per increment in `metadata.json`:
-
+Configure in `.specweave/config.json`:
 ```json
-{
-  "increment": "0001-auth-system",
-  "autoCompletion": {
-    "conditions": [
-      { "type": "build" },
-      { "type": "tests" },
-      { "type": "coverage", "threshold": 90 }
-    ],
-    "override": true
-  }
-}
+{ "auto": { "maxTurns": 50, "maxSessionAge": 7200 } }
 ```
-
-When `override: true`, the increment-specific conditions replace the session-level conditions.
-
-### Troubleshooting
-
-**Issue**: "Build command not detected"
-- **Fix**: Add `scripts.build` to `package.json` OR use `--cmd "your-build-cmd"`
-
-**Issue**: "Tests pass but coverage below threshold"
-- **Fix**: Write more tests to cover untested code paths
-
-**Issue**: "Auto-heal keeps retrying but failing"
-- **Fix**: After 3 retries, the hook will BLOCK. Fix the issue manually, then resume.
-
-**Issue**: "E2E tests not detected"
-- **Fix**: Ensure `playwright.config.ts` or `cypress.config.js` exists
 
 ### Best Practices
 
 1. **Start Simple**: Use `--build --tests` for basic quality gates
-2. **Add Coverage Gradually**: Start with `--cov 70`, increase to 80-90 over time
-3. **Use Auto-Heal**: Let build/lint/types auto-fix (saves manual work)
-4. **Don't Skip E2E**: Use `--e2e` for user-facing features
-5. **Custom Commands**: Use `--cmd` for project-specific checks (e.g., security scans)
+2. **Add Coverage Gradually**: Start with `--cov 70`, increase over time
+3. **Don't Skip E2E**: Use `--e2e` for user-facing features
+4. **Custom Commands**: Use `--cmd` for project-specific checks
 
 ## Intelligent Increment Creation (NEW!)
 
@@ -450,11 +297,10 @@ Analyze & Show Plan
 4. Claude tries to exit (naturally)
            │
            ▼
-5. Stop Hook intercepts (stop-auto.sh)
-   ├─ Checks: All tasks complete?
-   ├─ Checks: Max iterations reached?
-   ├─ Checks: Completion promise?
-   └─ Checks: Human gate pending?
+5. Stop Hook intercepts (stop-auto-v5.sh)
+   ├─ Checks: All tasks complete? (grep)
+   ├─ Checks: All ACs satisfied? (grep)
+   └─ Checks: Turn limit reached?
            │
    ┌──────┴──────┐
    ▼             ▼
@@ -484,11 +330,8 @@ prompt
 ### With Options
 
 ```bash
-# Limit iterations
-/sw:auto --max-iterations 50
-
-# Time limit
-/sw:auto --max-hours 8
+# Increase turn limit
+/sw:auto --max-turns 50
 
 # Simple mode (minimal context)
 /sw:auto --simple
@@ -555,7 +398,7 @@ In `.specweave/config.json`:
 }
 ```
 
-**Note**: The stop hook will NOT allow completion until tests are actually executed. If test files exist (`.test.ts`, `.spec.ts`, `playwright.config.ts`, etc.), auto mode will block exit and require test runs.
+**Note**: The stop hook checks task/AC completion via grep. Quality gates (tests, build) are the model's responsibility before running `/sw:done`.
 
 ## Completion Signals
 
@@ -568,9 +411,7 @@ The session ends when ANY of these occur:
 5. **User cancellation** - `/sw:cancel-auto`
 6. **Human gate timeout** - Gate pending too long
 
-**⚠️ IMPORTANT**: Auto mode will NOT complete just because tasks are marked done. If test files exist in the project, the stop hook ENFORCES test execution. You'll see messages like:
-- "🧪 MANDATORY: All tasks marked complete but NO TEST EXECUTION detected"
-- "🎭 MANDATORY: E2E tests exist but were NOT executed"
+**⚠️ IMPORTANT**: When tasks are all marked done, the stop hook approves exit. The model MUST verify quality criteria (from `--build`, `--tests`, etc. flags stored in `auto-mode.json`) before running `/sw:done`.
 
 ## Simple Mode (--simple)
 
@@ -588,8 +429,7 @@ Pure stop hook loop behavior:
 
 - **Human Gates**: Sensitive operations require approval
 - **Circuit Breakers**: External service failures handled gracefully
-- **Max Iterations**: Prevents runaway loops (2500 default)
-- **Max Hours**: Time boxing (600 hours / 25 days default)
+- **Turn Limit**: Hard stop after maxTurns (default: 20)
 - **stop_hook_active**: Prevents infinite continuation loops
 - **Sound Notifications**: Audible alerts when Claude stops working
 
@@ -637,13 +477,13 @@ Main Agent (Claude Code)
 
 ### Key Implications
 
-1. **Iteration count = main agent loops**: When you see "Iteration 42/2500", that's 42 times the MAIN agent tried to exit, not subagent work.
+1. **Turn count = main agent loops**: When you see "Turn 8/20", that's 8 times the MAIN agent tried to exit, not subagent work.
 
-2. **Subagent work is "free"**: Spawning specialized agents (QA, Security, etc.) doesn't consume iterations from the main loop.
+2. **Subagent work is "free"**: Spawning specialized agents (QA, Security, etc.) doesn't consume turns from the main loop.
 
 3. **Shared session state**: All agents (main + sub) share the same `auto-session.json`, so task completion is tracked globally.
 
-4. **Test validation at main level**: The stop hook validates test results when the MAIN agent tries to complete, ensuring all subagent work is verified.
+4. **Completion validation at main level**: The stop hook checks task/AC completion when the MAIN agent tries to exit.
 
 ### Configuration
 
@@ -660,8 +500,8 @@ To enable stop hooks for subagents (advanced):
 
 - Let subagents do specialized work without worrying about iterations
 - Main agent orchestrates and validates via stop hook
-- Use `--max-iterations` as a safety net, not a target
-- Primary completion = tests pass + tasks complete
+- Use `--max-turns` as a safety net, not a target
+- Primary completion = tasks complete + ACs satisfied
 
 ## 🔧 v2.1 Reliability Improvements
 
@@ -894,40 +734,20 @@ I need your Supabase database URL to execute the migration.
 
 ---
 
-## 🎯 Self-Assessment & Quality Gates
+## Quality Gates
 
-**Auto mode self-assesses each task and enforces quality gates:**
+**Before running `/sw:done`, verify these gates based on success criteria in `auto-mode.json`:**
 
-### Confidence Thresholds
+1. All tasks marked `[x]` in tasks.md
+2. All ACs marked `[x]` in spec.md
+3. If `--build` flag: build passes
+4. If `--tests` flag: tests pass
+5. If `--e2e` flag: E2E tests pass
+6. If `--lint` flag: linting passes
+7. If `--types` flag: type-checking passes
+8. If `--cov N` flag: coverage meets threshold
 
-| Score | Action |
-|-------|--------|
-| ≥ 0.90 | ✅ Continue confidently |
-| 0.70-0.89 | ⚠️ Continue with caution |
-| 0.50-0.69 | 🟡 Pause for self-review |
-| < 0.50 | 🔴 Stop for human review |
-
-### Quality Gates (verify before continuing)
-
-1. ✅ Task marked complete in tasks.md + ACs in spec.md
-2. ✅ All tests pass (3 retry attempts on failure)
-3. ✅ E2E tests pass (if UI task)
-4. ✅ Self-assessment score ≥ 0.70
-
-### Test Status Reporting (MANDATORY)
-
-After EVERY task, output test status:
-```markdown
-## 🧪 Test Status (T-003)
-| Type | Status | Pass/Total |
-|------|--------|------------|
-| Unit | ✅ | 42/42 |
-| E2E | ⚠️ | 8/10 |
-```
-
-### Local-First Development
-
-Build and test locally first. Don't assume deployment target - ask user when ready
+The stop hook validates gates 1-2 via grep. Gates 3-8 are the model's responsibility.
 
 ---
 
