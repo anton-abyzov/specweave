@@ -557,6 +557,22 @@ program
     await cancelCmd.parseAsync(args, { from: 'user' });
   });
 
+// Team command - Launch Claude Code with native agent teams
+program
+  .command('team [description]')
+  .description('Launch Claude Code with agent teams (tmux/iTerm2 split panes)')
+  .option('--mode <mode>', 'Display mode: tmux (default) or in-process', 'tmux')
+  .action(async (description, options) => {
+    try {
+      const { handleTeamCommand } = await import('../dist/src/cli/commands/team.js');
+      await handleTeamCommand(description, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
+
 // Update instructions command - Smart merge CLAUDE.md/AGENTS.md
 program
   .command('update-instructions')
