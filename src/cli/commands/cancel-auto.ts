@@ -104,9 +104,8 @@ async function handleCancelAuto(projectPath: string, options: CancelAutoOptions)
     path.join(projectPath, '.specweave/state/active-session.lock'),
     // Stop hook state files (CRITICAL - these cause infinite loops if not cleaned!)
     path.join(projectPath, '.specweave/state/.stop-auto-turns'),
-    path.join(projectPath, '.specweave/state/.stop-auto-retry'),
     path.join(projectPath, '.specweave/state/.stop-auto-dedup'),
-    path.join(projectPath, '.specweave/state/.stop-auto-last-fire'),
+    path.join(projectPath, '.specweave/state/.stop-auto-dedup-prev'),
   ];
 
   for (const file of stateFiles) {
