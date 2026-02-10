@@ -1,3 +1,6 @@
+---
+status: completed
+---
 # 0197: Native Agent Teams Integration
 
 ## Problem Statement
@@ -37,17 +40,17 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** each agent has expert-level instructions for its domain without me having to specify everything manually
 
 **Acceptance Criteria:**
-- [ ] AC-US1-01: When user says `/sw:team-orchestrate "feature"`, Claude Code analyzes the feature and proposes agent roles with specific SpecWeave skills
-- [ ] AC-US1-02: Agent-to-skill mapping covers all core domains:
+- [x] AC-US1-01: When user says `/sw:team-orchestrate "feature"`, Claude Code analyzes the feature and proposes agent roles with specific SpecWeave skills
+- [x] AC-US1-02: Agent-to-skill mapping covers all core domains:
   - Frontend: `sw-frontend:frontend-architect` + `sw-frontend:nextjs` (if Next.js detected)
   - Backend: `sw-infra:devops` or domain-specific backend skill
   - Database/Shared: `sw:architect` for schema design + types
   - Testing: `sw-testing:qa-engineer` + `sw-testing:e2e-testing`
   - Security: `sw:security` for security-focused reviews
   - DevOps: `sw-infra:devops` + `sw-k8s:*` (if K8s detected)
-- [ ] AC-US1-03: Each agent's spawn prompt includes: (1) assigned SpecWeave skill to invoke, (2) increment ID to work on, (3) file ownership list, (4) contract dependencies
-- [ ] AC-US1-04: Formation respects WIP limits (max 5 active increments by default)
-- [ ] AC-US1-05: `--dry-run` flag shows proposed team without launching
+- [x] AC-US1-03: Each agent's spawn prompt includes: (1) assigned SpecWeave skill to invoke, (2) increment ID to work on, (3) file ownership list, (4) contract dependencies
+- [x] AC-US1-04: Formation respects WIP limits (max 5 active increments by default)
+- [x] AC-US1-05: `--dry-run` flag shows proposed team without launching
 
 ### US-002: Contract-First Spawning Protocol
 **As a** developer building cross-layer features
@@ -55,12 +58,12 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** agents don't waste tokens building against incorrect schemas/types
 
 **Acceptance Criteria:**
-- [ ] AC-US2-01: SKILL.md defines contract chain: `shared/types` → `database/schema` → `backend/api` → `frontend/ui`
-- [ ] AC-US2-02: Phase 1 spawns ONLY upstream agents (shared types, DB schema)
-- [ ] AC-US2-03: Phase 1 agent signals contract completion by writing a contract file (e.g., `src/types/api-contract.ts` or `prisma/schema.prisma`)
-- [ ] AC-US2-04: Phase 2 spawns downstream agents ONLY after contract files exist
-- [ ] AC-US2-05: Contract files are passed as context to downstream agent spawn prompts
-- [ ] AC-US2-06: If no cross-layer dependencies detected, all agents spawn in parallel immediately
+- [x] AC-US2-01: SKILL.md defines contract chain: `shared/types` → `database/schema` → `backend/api` → `frontend/ui`
+- [x] AC-US2-02: Phase 1 spawns ONLY upstream agents (shared types, DB schema)
+- [x] AC-US2-03: Phase 1 agent signals contract completion by writing a contract file (e.g., `src/types/api-contract.ts` or `prisma/schema.prisma`)
+- [x] AC-US2-04: Phase 2 spawns downstream agents ONLY after contract files exist
+- [x] AC-US2-05: Contract files are passed as context to downstream agent spawn prompts
+- [x] AC-US2-06: If no cross-layer dependencies detected, all agents spawn in parallel immediately
 
 ### US-003: Agent Team Presets
 **As a** developer who frequently uses common team patterns
@@ -68,12 +71,12 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** I don't have to describe team formation every time
 
 **Acceptance Criteria:**
-- [ ] AC-US3-01: `full-stack` preset: frontend (`sw-frontend:frontend-architect`) + backend + shared (`sw:architect`)
-- [ ] AC-US3-02: `review` preset: security (`sw:security`) + code quality (`sw:grill`/`sw:tech-lead`) + documentation (`sw:docs-updater`)
-- [ ] AC-US3-03: `testing` preset: unit (`sw-testing:unit-testing`) + e2e (`sw-testing:e2e-testing`) + coverage (`sw-testing:test-coverage`)
-- [ ] AC-US3-04: `migration` preset: schema (`sw:architect`) + backend + frontend (for DB migrations)
-- [ ] AC-US3-05: `tdd` preset: red agent (`sw:tdd-red`) + green agent (`sw:tdd-green`) + refactor agent (`sw:tdd-refactor`)
-- [ ] AC-US3-06: Usage: `/sw:team-build --preset full-stack "Build checkout"`
+- [x] AC-US3-01: `full-stack` preset: frontend (`sw-frontend:frontend-architect`) + backend + shared (`sw:architect`)
+- [x] AC-US3-02: `review` preset: security (`sw:security`) + code quality (`sw:grill`/`sw:tech-lead`) + documentation (`sw:docs-updater`)
+- [x] AC-US3-03: `testing` preset: unit (`sw-testing:unit-testing`) + e2e (`sw-testing:e2e-testing`) + coverage (`sw-testing:test-coverage`)
+- [x] AC-US3-04: `migration` preset: schema (`sw:architect`) + backend + frontend (for DB migrations)
+- [x] AC-US3-05: `tdd` preset: red agent (`sw:tdd-red`) + green agent (`sw:tdd-green`) + refactor agent (`sw:tdd-refactor`)
+- [x] AC-US3-06: Usage: `/sw:team-build --preset full-stack "Build checkout"`
 
 ### US-004: Terminal Multiplexer Configuration
 **As a** developer who wants visual split-pane monitoring
@@ -81,12 +84,12 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** I can see all agents working simultaneously in split panes
 
 **Acceptance Criteria:**
-- [ ] AC-US4-01: SKILL.md detects terminal mode: tmux installed → recommend tmux; macOS + iTerm2 → offer as alternative; neither → default to in-process
-- [ ] AC-US4-02: Setup instructions for tmux (brew install tmux / apt install tmux / WSL setup)
-- [ ] AC-US4-03: Setup instructions for iTerm2 (it2 CLI + Python API)
-- [ ] AC-US4-04: In-process mode works without any terminal multiplexer (Shift+Up/Down to navigate)
-- [ ] AC-US4-05: Navigation guide: tmux (Ctrl+B + arrow), iTerm2 (click pane), in-process (Shift+Up/Down)
-- [ ] AC-US4-06: `settings.json` configuration example for enabling agent teams per-project
+- [x] AC-US4-01: SKILL.md detects terminal mode: tmux installed → recommend tmux; macOS + iTerm2 → offer as alternative; neither → default to in-process
+- [x] AC-US4-02: Setup instructions for tmux (brew install tmux / apt install tmux / WSL setup)
+- [x] AC-US4-03: Setup instructions for iTerm2 (it2 CLI + Python API)
+- [x] AC-US4-04: In-process mode works without any terminal multiplexer (Shift+Up/Down to navigate)
+- [x] AC-US4-05: Navigation guide: tmux (Ctrl+B + arrow), iTerm2 (click pane), in-process (Shift+Up/Down)
+- [x] AC-US4-06: `settings.json` configuration example for enabling agent teams per-project
 
 ### US-005: SpecWeave Workflow Integration
 **As a** developer using Agent Teams within SpecWeave's increment lifecycle
@@ -94,12 +97,12 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** all work is tracked, quality-gated, and syncable
 
 **Acceptance Criteria:**
-- [ ] AC-US5-01: Each agent runs `/sw:do` (or `/sw:auto`) on its assigned increment
-- [ ] AC-US5-02: Each agent updates its `tasks.md` as it completes tasks
-- [ ] AC-US5-03: Lead agent can check `/sw:team-status` to see progress across all increments
-- [ ] AC-US5-04: `/sw:grill` runs per agent before it signals completion
-- [ ] AC-US5-05: `/sw:team-merge` triggers `/sw:done` per increment after successful merge
-- [ ] AC-US5-06: GitHub/JIRA sync triggered per increment via `/sw-github:sync` or `/sw-jira:push`
+- [x] AC-US5-01: Each agent runs `/sw:do` (or `/sw:auto`) on its assigned increment
+- [x] AC-US5-02: Each agent updates its `tasks.md` as it completes tasks
+- [x] AC-US5-03: Lead agent can check `/sw:team-status` to see progress across all increments
+- [x] AC-US5-04: `/sw:grill` runs per agent before it signals completion
+- [x] AC-US5-05: `/sw:team-merge` triggers `/sw:done` per increment after successful merge
+- [x] AC-US5-06: GitHub/JIRA sync triggered per increment via `/sw-github:sync` or `/sw-jira:push`
 
 ### US-006: Agent Communication Protocol
 **As a** developer with agents that need to share discoveries
@@ -107,10 +110,10 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** downstream work stays consistent with upstream changes
 
 **Acceptance Criteria:**
-- [ ] AC-US6-01: In native Agent Teams mode: agents use SDK `SendMessage` for peer communication
-- [ ] AC-US6-02: In subagent fallback mode: agents communicate via shared files in `.specweave/state/parallel/messages/`
-- [ ] AC-US6-03: SKILL.md instructs agents to announce: (1) contract changes, (2) blocking issues, (3) completion signals
-- [ ] AC-US6-04: Lead agent aggregates messages into a summary when checking `/sw:team-status`
+- [x] AC-US6-01: In native Agent Teams mode: agents use SDK `SendMessage` for peer communication
+- [x] AC-US6-02: In subagent fallback mode: agents communicate via shared files in `.specweave/state/parallel/messages/`
+- [x] AC-US6-03: SKILL.md instructs agents to announce: (1) contract changes, (2) blocking issues, (3) completion signals
+- [x] AC-US6-04: Lead agent aggregates messages into a summary when checking `/sw:team-status`
 
 ### US-007: Documentation and Setup Guide
 **As a** new SpecWeave user interested in Agent Teams
@@ -118,10 +121,10 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **So that** I can start using Agent Teams effectively without trial and error
 
 **Acceptance Criteria:**
-- [ ] AC-US7-01: docs-site page at `docs/guides/agent-teams-setup.md` with step-by-step setup
-- [ ] AC-US7-02: Existing `docs/guides/agent-teams-and-swarms.md` updated with native Agent Teams details
-- [ ] AC-US7-03: SKILL.md includes troubleshooting section (hanging tmux, agent not spawning, etc.)
-- [ ] AC-US7-04: README.md mentions Agent Teams capability
+- [x] AC-US7-01: docs-site page at `docs/guides/agent-teams-setup.md` with step-by-step setup
+- [x] AC-US7-02: Existing `docs/guides/agent-teams-and-swarms.md` updated with native Agent Teams details
+- [x] AC-US7-03: SKILL.md includes troubleshooting section (hanging tmux, agent not spawning, etc.)
+- [x] AC-US7-04: README.md mentions Agent Teams capability
 
 ## Domain-to-Skill Agent Mapping (Reference)
 

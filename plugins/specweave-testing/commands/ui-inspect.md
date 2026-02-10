@@ -65,11 +65,11 @@ Provides:
 
 ## Browser Mode
 
-This command **prefers MCP mode** for rich DOM introspection. When the Playwright MCP plugin provides inline accessibility tree snapshots, the AI can reason about page structure and find optimal selectors.
+This command is the **only SpecWeave testing command where MCP Playwright is appropriate**. It uses MCP's `browser_snapshot` for rich DOM introspection — the AI can reason about the accessibility tree inline and find optimal selectors.
 
-If MCP is unavailable, falls back to `@playwright/cli snapshot` which saves the accessibility tree to a file (`.playwright-cli/*.yml`). The AI can then read the file, but loses the ability to iterate on snapshots without re-reading.
+If MCP is unavailable, falls back to `@playwright/cli snapshot` which saves the accessibility tree to a file (`.playwright-cli/*.yml`).
 
-**Recommended**: Keep the Playwright MCP plugin installed for best `ui-inspect` experience.
+**Important**: MCP Playwright is appropriate here for interactive inspection. For all other testing tasks (running tests, writing test code, automation scripts), always use the Playwright CLI via Bash instead. See `/sw-testing:e2e-setup` for details.
 
 ## Requirements
 

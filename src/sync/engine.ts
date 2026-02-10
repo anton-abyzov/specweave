@@ -268,6 +268,7 @@ export class SyncEngine {
   // -------------------------------------------------------------------------
 
   async reconcile(platform: Platform, items: ExpectedState[]): Promise<ReconcileResult> {
+    this.requirePermission('canUpdateStatus', 'reconcile');
     const adapter = this.requireProvider(platform);
     return adapter.reconcile(items);
   }
@@ -277,6 +278,7 @@ export class SyncEngine {
   // -------------------------------------------------------------------------
 
   async detectHierarchy(platform: Platform): Promise<DetectedHierarchy> {
+    this.requirePermission('canRead', 'detectHierarchy');
     const adapter = this.requireProvider(platform);
     return adapter.detectHierarchy();
   }

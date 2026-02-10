@@ -1,3 +1,6 @@
+---
+status: completed
+---
 # 0196 - Auto Mode v5 - Stop Hook Simplification
 
 ## Problem Statement

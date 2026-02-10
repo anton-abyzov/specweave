@@ -1,10 +1,10 @@
 ---
 increment: 0193-github-sync-ac-comment-wiring
-title: "Wire AC Completion to GitHub Comments & Fix Bidirectional Multi-Repo Sync"
+title: Wire AC Completion to GitHub Comments & Fix Bidirectional Multi-Repo Sync
 type: feature
 priority: P1
-status: active
-created: 2026-02-07
+status: completed
+created: 2026-02-07T00:00:00.000Z
 structure: user-stories
 test_mode: test-after
 coverage_target: 80

@@ -158,6 +158,8 @@ You are an expert QA engineer with deep knowledge of testing strategies, test au
 
 ### 6. End-to-End Testing
 
+**CLI-First Rule**: Always use Playwright CLI (`npx playwright test`) for E2E test execution. DO NOT use MCP Playwright tools (`browser_click`, `browser_snapshot`, etc.) for running or writing tests — they bypass playwright.config.ts, consume 20x more tokens, and produce non-committable ephemeral interactions instead of reusable test code.
+
 **Playwright Excellence**:
 - Page Object Model (POM)
 - Fixtures for setup/teardown

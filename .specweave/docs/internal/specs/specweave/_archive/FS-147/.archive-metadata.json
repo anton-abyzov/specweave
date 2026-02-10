@@ -1,0 +1,11 @@
+{
+  "id": "FS-147",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.792Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-147",
+  "linkedIncrements": [
+    "0147-github-init-duplicate-prompts-elimination"
+  ]
+}

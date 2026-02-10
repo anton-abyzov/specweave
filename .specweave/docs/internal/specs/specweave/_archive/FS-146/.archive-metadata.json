@@ -1,0 +1,11 @@
+{
+  "id": "FS-146",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.792Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-146",
+  "linkedIncrements": [
+    "0146-github-cli-token-passthrough-fix"
+  ]
+}
