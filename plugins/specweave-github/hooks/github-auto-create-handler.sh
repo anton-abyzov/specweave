@@ -418,7 +418,29 @@ if [[ -f "$META_PATH" ]]; then
 
   if [[ -n "$UPDATED_META" ]]; then
     echo "$UPDATED_META" > "$META_PATH" 2>/dev/null
-    log "Updated metadata.json with GitHub issue links"
+    log "Updated metadata.json with GitHub issue links (externalLinks format)"
+
+    # v1.0.240 FIX: Also write OLD format (metadata.github.issues[]) for reconciler compatibility
+    # The reconciler and closure flows read metadata.github.issues[], not externalLinks
+    OLD_FORMAT_JSON=$(echo "$CREATED_JSON" | jq '[to_entries[] | select(.value.issueNumber != null) | {
+      userStory: .key,
+      number: .value.issueNumber,
+      url: .value.issueUrl,
+      createdAt: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+    }]' 2>/dev/null)
+
+    if [[ -n "$OLD_FORMAT_JSON" ]] && [[ "$OLD_FORMAT_JSON" != "[]" ]]; then
+      UPDATED_META_V2=$(jq --argjson old_issues "$OLD_FORMAT_JSON" '
+        if .github == null then .github = {} else . end |
+        .github.issues = ((.github.issues // []) + $old_issues | unique_by(.userStory)) |
+        .github.lastSync = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+      ' "$META_PATH" 2>/dev/null)
+
+      if [[ -n "$UPDATED_META_V2" ]]; then
+        echo "$UPDATED_META_V2" > "$META_PATH" 2>/dev/null
+        log "Also backfilled old-format github.issues[] for reconciler"
+      fi
+    fi
   fi
 fi
 

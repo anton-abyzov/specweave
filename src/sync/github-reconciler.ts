@@ -17,6 +17,8 @@ import path from 'path';
 import yaml from 'yaml';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { resolvePermissions, SyncPreset } from './config.js';
+import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 
 export interface ReconcileOptions {
   projectRoot: string;
@@ -81,7 +83,14 @@ export class GitHubReconciler {
     try {
       // 1. Check if GitHub sync is enabled
       const config = await this.loadConfig();
-      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? false;
+      // v1.0.240 FIX: Honor preset when explicit settings absent
+      const syncAny = config.sync as Record<string, unknown> | undefined;
+      const permissions = resolvePermissions(
+        syncAny?.preset as SyncPreset | undefined,
+        undefined,
+        config.sync?.settings,
+      );
+      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
       const githubEnabled = config.sync?.github?.enabled ?? false;
 
       if (!canUpdate || !githubEnabled) {
@@ -308,7 +317,7 @@ This typically happens when:
           };
         }
 
-        // Extract User Story issues from metadata
+        // Extract User Story issues from metadata (OLD format: metadata.github.issues[])
         if (metadata.github?.issues && Array.isArray(metadata.github.issues)) {
           for (const issue of metadata.github.issues) {
             if (issue.userStory && issue.number) {
@@ -320,37 +329,58 @@ This typically happens when:
           }
         }
 
-        // FALLBACK: Search GitHub if metadata doesn't have issues stored
-        // This handles cases where issues were created but not recorded in metadata.json
-        if (state.userStoryIssues.length === 0 && state.featureId) {
-          // Check if we have user_stories array (indicates issues might exist)
-          const userStories = metadata.user_stories || [];
-
-          if (userStories.length > 0 && this.client) {
-            this.logger.log(`  🔍 Searching GitHub for ${state.featureId} issues (not in metadata)...`);
-
-            try {
-              // Search for all issues matching the feature pattern
-              const foundIssues = await this.client.searchIssuesByFeature(state.featureId);
-
-              for (const issue of foundIssues) {
-                // Extract user story ID from title: [FS-063][US-001] Title
-                const match = issue.title.match(/\[([A-Z]+-\d+)\]\[([A-Z]+-\d+)\]/);
-                if (match && match[1] === state.featureId) {
-                  const usId = match[2];
-                  state.userStoryIssues.push({
-                    userStoryId: usId,
-                    issueNumber: issue.number,
-                  });
-                }
-              }
-
-              if (state.userStoryIssues.length > 0) {
-                this.logger.log(`     Found ${state.userStoryIssues.length} issue(s) via GitHub search`);
-              }
-            } catch (error: any) {
-              this.logger.log(`  ⚠️  GitHub search failed: ${error.message}`);
+        // v1.0.240 FIX: Also read NEW format (externalLinks.github.issues{})
+        // Hook path (github-auto-create-handler.sh) writes this keyed object format
+        if (state.userStoryIssues.length === 0 && metadata.externalLinks?.github?.issues) {
+          const newFormatIssues = metadata.externalLinks.github.issues;
+          for (const [usId, issueData] of Object.entries(newFormatIssues)) {
+            if (issueData && typeof issueData === 'object' && 'issueNumber' in (issueData as Record<string, unknown>)) {
+              state.userStoryIssues.push({
+                userStoryId: usId,
+                issueNumber: (issueData as { issueNumber: number }).issueNumber,
+              });
             }
+          }
+          if (state.userStoryIssues.length > 0) {
+            this.logger.log(`  📋 Found ${state.userStoryIssues.length} issue(s) from externalLinks format`);
+          }
+        }
+
+        // v1.0.240 FIX: Auto-derive featureId when metadata.feature_id is null
+        if (!state.featureId) {
+          try {
+            state.featureId = deriveFeatureId(entry.name) || undefined;
+          } catch {
+            // Non-critical: featureId derivation may fail for non-standard names
+          }
+        }
+
+        // FALLBACK: Search GitHub if metadata doesn't have issues stored
+        // v1.0.240 FIX: Removed user_stories.length requirement — search by featureId alone
+        if (state.userStoryIssues.length === 0 && state.featureId && this.client) {
+          this.logger.log(`  🔍 Searching GitHub for ${state.featureId} issues (not in metadata)...`);
+
+          try {
+            // Search for all issues matching the feature pattern
+            const foundIssues = await this.client.searchIssuesByFeature(state.featureId);
+
+            for (const issue of foundIssues) {
+              // Extract user story ID from title: [FS-063][US-001] Title
+              const match = issue.title.match(/\[([A-Z]+-\d+)\]\[([A-Z]+-\d+)\]/);
+              if (match && match[1] === state.featureId) {
+                const usId = match[2];
+                state.userStoryIssues.push({
+                  userStoryId: usId,
+                  issueNumber: issue.number,
+                });
+              }
+            }
+
+            if (state.userStoryIssues.length > 0) {
+              this.logger.log(`     Found ${state.userStoryIssues.length} issue(s) via GitHub search`);
+            }
+          } catch (error: any) {
+            this.logger.log(`  ⚠️  GitHub search failed: ${error.message}`);
           }
         }
 

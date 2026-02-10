@@ -281,6 +281,12 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         log(chalk.yellow(`\n⚠️  Warnings (non-blocking):\n`));
         validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
       }
+    } else {
+      // v1.0.240: Soft gate — warn if grill wasn't run before direct completion
+      // Auto mode and /sw:done both set skipValidation=false so this only triggers
+      // for direct callers bypassing the standard closure flow
+      log(chalk.yellow(`⚠️  Validation skipped — quality gates (grill, PM review) may not have been run`));
+      log(chalk.gray(`   Consider running /sw:grill ${incrementId} and /sw:done ${incrementId} for proper closure`));
     }
 
     // Update status to completed

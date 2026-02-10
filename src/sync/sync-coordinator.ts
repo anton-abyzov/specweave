@@ -36,6 +36,7 @@ import {
   GitHubRepoConfig,
   RepoInfo,
 } from './provider-router.js';
+import { resolvePermissions, SyncPreset } from './config.js';
 
 // Re-export for backwards compatibility
 export { isProviderEnabled } from './status-mapper.js';
@@ -267,8 +268,24 @@ export class SyncCoordinator {
           let existingIssue: number | null = null;
           if (existsSync(metadataFile)) {
             const metadata = JSON.parse(await fs.readFile(metadataFile, 'utf-8')) as IncrementMetadataWithSync;
+            // Check OLD format (metadata.github.issues[])
             const githubIssues = metadata.github?.issues || [];
-            const found = githubIssues.find((i: GitHubIssueReference) => i.userStory === usFile.id);
+            let found = githubIssues.find((i: GitHubIssueReference) => i.userStory === usFile.id);
+
+            // v1.0.240 FIX: Also check NEW format (externalLinks.github.issues{})
+            if (!found) {
+              const extLinks = (metadata as Record<string, any>).externalLinks?.github?.issues;
+              if (extLinks && extLinks[usFile.id]?.issueNumber) {
+                found = {
+                  userStory: usFile.id,
+                  number: extLinks[usFile.id].issueNumber,
+                  url: extLinks[usFile.id].issueUrl || '',
+                  createdAt: new Date().toISOString(),
+                };
+                this.logger.log(`  🔍 ${usFile.id} - Issue #${found.number} exists (externalLinks)`);
+              }
+            }
+
             if (found) {
               this.logger.log(`  🔍 ${usFile.id} - Issue #${found.number} exists (metadata)`);
               // Check if issue needs content update
@@ -869,7 +886,15 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       const config = await this.loadConfig();
 
       // Check gates (same as syncIncrementCompletion)
-      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+      // v1.0.240 FIX: Use resolvePermissions() to honor "bidirectional" preset when
+      // explicit settings are absent. Previously defaulted to false, blocking all closure.
+      const syncAny = config.sync as Record<string, unknown> | undefined;
+      const permissions = resolvePermissions(
+        syncAny?.preset as SyncPreset | undefined,
+        undefined,
+        config.sync?.settings,
+      );
+      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
       // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
       const githubEnabled = isProviderEnabled(config, 'github');
       const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
@@ -1168,7 +1193,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
 
       // GATE 2: Check if external sync is enabled (canUpdateExternalItems)
-      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+      // v1.0.240 FIX: Honor preset when explicit settings absent
+      const syncAny2 = config.sync as Record<string, unknown> | undefined;
+      const perms2 = resolvePermissions(syncAny2?.preset as SyncPreset | undefined, undefined, config.sync?.settings);
+      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? perms2.canUpsert;
       if (!canUpdateExternal) {
         this.logger.log('✅ Living docs sync enabled (canUpsertInternalItems=true)');
         this.logger.log('ℹ️  External tool sync disabled (canUpdateExternalItems=false)');
@@ -1229,8 +1257,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       // 4. Initialize sync service
       const syncService = new FormatPreservationSyncService(
         {
-          canUpdateExternalItems: config.sync?.settings?.canUpdateExternalItems ?? false,
-          canUpdateStatus: config.sync?.settings?.canUpdateStatus ?? false
+          canUpdateExternalItems: config.sync?.settings?.canUpdateExternalItems ?? perms2.canUpsert,
+          canUpdateStatus: config.sync?.settings?.canUpdateStatus ?? perms2.canUpdateStatus
         },
         { logger: this.logger }
       );
@@ -1761,7 +1789,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         return result;
       }
 
-      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+      // v1.0.240 FIX: Honor preset when explicit settings absent
+      const syncAny3 = config.sync as Record<string, unknown> | undefined;
+      const perms3 = resolvePermissions(syncAny3?.preset as SyncPreset | undefined, undefined, config.sync?.settings);
+      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? perms3.canUpsert;
       if (!canUpdateExternal) {
         this.logger.log('ℹ️  External update disabled (canUpdateExternalItems=false)');
         return result;
