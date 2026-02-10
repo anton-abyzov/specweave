@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 export interface CliDetectionResult {
   installed: boolean;
@@ -12,6 +12,10 @@ export interface DetectOptions {
 
 let cachedResult: CliDetectionResult | null = null;
 
+export function clearCache(): void {
+  cachedResult = null;
+}
+
 export function detectPlaywrightCli(options: DetectOptions = {}): CliDetectionResult {
   const { useCache = false } = options;
 
@@ -19,11 +23,12 @@ export function detectPlaywrightCli(options: DetectOptions = {}): CliDetectionRe
     return cachedResult;
   }
 
+  const whichCmd = process.platform === 'win32' ? 'where' : 'which';
   let path: string | undefined;
   let version: string | undefined;
 
   try {
-    path = execSync('which playwright-cli', {
+    path = execFileSync(whichCmd, ['playwright-cli'], {
       encoding: 'utf-8',
       timeout: 5_000,
     }).trim();
@@ -34,7 +39,7 @@ export function detectPlaywrightCli(options: DetectOptions = {}): CliDetectionRe
   }
 
   try {
-    version = execSync('playwright-cli --version', {
+    version = execFileSync('playwright-cli', ['--version'], {
       encoding: 'utf-8',
       timeout: 5_000,
     }).trim();

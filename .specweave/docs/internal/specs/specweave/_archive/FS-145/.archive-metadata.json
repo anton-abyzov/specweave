@@ -1,0 +1,11 @@
+{
+  "id": "FS-145",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.793Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-145",
+  "linkedIncrements": [
+    "0145-project-registry-eda-sync"
+  ]
+}

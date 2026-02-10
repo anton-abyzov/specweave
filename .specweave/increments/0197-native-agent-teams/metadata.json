@@ -1,12 +1,27 @@
 {
   "id": "0197",
   "title": "Native Agent Teams Integration",
-  "status": "in-progress",
+  "status": "completed",
   "priority": "P1",
   "type": "feature",
   "featureFlag": "FS-AGENT-TEAMS",
   "created": "2026-02-09T18:00:00Z",
-  "tags": ["agent-teams", "parallel", "tmux", "collaboration"],
-  "dependencies": ["0170-parallel-auto-mode"],
-  "tdd": true
+  "tags": [
+    "agent-teams",
+    "parallel",
+    "tmux",
+    "collaboration"
+  ],
+  "dependencies": [
+    "0170-parallel-auto-mode"
+  ],
+  "tdd": true,
+  "updated": "2026-02-10T06:41:15.993Z",
+  "lastActivity": "2026-02-10T06:41:15.993Z",
+  "approvedAt": "2026-02-10T06:41:15.993Z",
+  "github": {
+    "issue": 1142,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1142",
+    "synced": "2026-02-10T06:41:31.250Z"
+  }
 }

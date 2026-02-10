@@ -1,11 +1,26 @@
 {
   "id": "0196-auto-mode-v5-stop-hook",
   "title": "Auto Mode v5 - Stop Hook Simplification",
-  "status": "active",
+  "status": "completed",
   "type": "refactor",
   "priority": "high",
   "created": "2026-02-09T17:30:00Z",
   "updated": "2026-02-09T17:30:00Z",
-  "tags": ["auto-mode", "stop-hook", "simplification", "testing", "adr-0225"],
-  "relatedADRs": ["0225-auto-mode-simplification"]
+  "tags": [
+    "auto-mode",
+    "stop-hook",
+    "simplification",
+    "testing",
+    "adr-0225"
+  ],
+  "relatedADRs": [
+    "0225-auto-mode-simplification"
+  ],
+  "lastActivity": "2026-02-10T04:56:07.646Z",
+  "approvedAt": "2026-02-10T04:56:07.647Z",
+  "github": {
+    "issue": 1118,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1118",
+    "synced": "2026-02-10T04:56:16.597Z"
+  }
 }

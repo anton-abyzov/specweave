@@ -1,5 +1,5 @@
 ---
-status: paused
+status: completed
 ---
 # 0189: TDD Default Mode & 100% Coverage Option
 

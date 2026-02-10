@@ -1,16 +1,14 @@
 {
-  "id": "0195",
-  "name": "playwright-cli-integration",
-  "status": "in-progress",
+  "id": "0195-playwright-cli-integration",
+  "status": "completed",
+  "type": "feature",
   "priority": "medium",
-  "createdAt": "2026-02-08T12:00:00Z",
-  "updatedAt": "2026-02-08T12:00:00Z",
-  "tags": [
-    "testing",
-    "infrastructure",
-    "playwright",
-    "optimization"
-  ],
+  "created": "2026-02-08T12:00:00Z",
+  "lastActivity": "2026-02-10T06:37:04.883Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
   "externalLinks": {
     "github": {
       "issues": {
@@ -53,5 +51,18 @@
       "milestone": 97,
       "syncedAt": "2026-02-09T18:10:36Z"
     }
+  },
+  "tags": [
+    "testing",
+    "infrastructure",
+    "playwright",
+    "optimization"
+  ],
+  "updated": "2026-02-09T18:10:36Z",
+  "approvedAt": "2026-02-10T06:37:04.884Z",
+  "github": {
+    "issue": 1105,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1105",
+    "synced": "2026-02-10T06:37:05.613Z"
   }
 }

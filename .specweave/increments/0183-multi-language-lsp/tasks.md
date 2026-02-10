@@ -240,7 +240,7 @@ describe('LanguageAnalyzer', () => {
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test File**: `src/core/lsp/warmup/strategies/__tests__/csharp.test.ts`
@@ -341,7 +341,7 @@ describe('CSharpStrategy', () => {
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 
 **Test File**: `src/cli/__tests__/lsp.test.ts`
@@ -365,7 +365,7 @@ it('skips warmup when --skip-warmup flag present', async () => {
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 **Depends On**: T-013
 
@@ -399,7 +399,7 @@ it('skips warmup when --skip-warmup flag present', async () => {
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 **Depends On**: T-015
 
@@ -414,7 +414,7 @@ it('skips warmup when --skip-warmup flag present', async () => {
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-03, AC-US5-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test File**: `src/cli/__tests__/lsp-doctor.test.ts`
@@ -516,7 +516,7 @@ describe('LspErrorHandler', () => {
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-03, AC-US7-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 
 **Test File**: `src/core/lsp/__tests__/project-detector.test.ts`
@@ -548,7 +548,7 @@ describe('ProjectDetector', () => {
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-03, AC-US7-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 **Depends On**: T-021
 
@@ -567,7 +567,7 @@ describe('ProjectDetector', () => {
 
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 
 **Test File**: `src/core/lsp/config/__tests__/server-registry.test.ts`
@@ -600,7 +600,7 @@ describe('ServerRegistry', () => {
 
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: haiku
 **Depends On**: T-023
 
@@ -617,7 +617,7 @@ describe('ServerRegistry', () => {
 
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-02, AC-US4-03, AC-US4-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 
 **Test File**: `src/core/lsp/config/__tests__/server-validator.test.ts`
@@ -649,7 +649,7 @@ describe('ServerValidator', () => {
 
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-02, AC-US4-03, AC-US4-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: sonnet
 **Depends On**: T-025
 

@@ -87,6 +87,11 @@ export class GitHubAdapter implements ProviderAdapter {
       labels,
     });
 
+    if (!data.ok) {
+      const text = await data.text();
+      throw new Error(`Failed to create GitHub issue: ${data.status} ${text.substring(0, 200)}`);
+    }
+
     const issue = await data.json() as GitHubIssue;
 
     return {
@@ -128,6 +133,10 @@ export class GitHubAdapter implements ProviderAdapter {
     if (since) params.set('since', since.toISOString());
 
     const response = await this.apiRequest('GET', `/issues?${params}`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to pull GitHub changes: ${response.status} ${text.substring(0, 200)}`);
+    }
     const issues = await response.json() as GitHubIssue[];
     const changes: ExternalChange[] = [];
 
@@ -155,6 +164,9 @@ export class GitHubAdapter implements ProviderAdapter {
 
   async getIssueState(ref: ExternalRef): Promise<ItemState> {
     const response = await this.apiRequest('GET', `/issues/${ref.id}`);
+    if (!response.ok) {
+      throw new Error(`Failed to get issue #${ref.id} state: ${response.status}`);
+    }
     const issue = await response.json() as GitHubIssue;
 
     return {

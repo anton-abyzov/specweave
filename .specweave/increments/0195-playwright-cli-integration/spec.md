@@ -1,3 +1,6 @@
+---
+status: completed
+---
 # 0195 - Playwright CLI Integration
 
 ## Problem Statement

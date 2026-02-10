@@ -2,8 +2,8 @@
  * Team CLI Command
  *
  * Launches Claude Code with native agent teams enabled.
- * Sets CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, --teammate-mode,
- * and --dangerously-skip-permissions for autonomous team work.
+ * Sets CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and passes
+ * the initial prompt for team orchestration.
  *
  * Usage:
  *   specweave team                          # Launch with tmux split panes
@@ -21,6 +21,8 @@ export interface TeamCommandOptions {
   mode?: 'tmux' | 'in-process';
 }
 
+const VALID_MODES = ['tmux', 'in-process'] as const;
+
 /**
  * Check if a CLI tool is available on PATH
  */
@@ -35,7 +37,12 @@ function isToolAvailable(tool: string): boolean {
  */
 function resolveTeammateMode(requestedMode?: string): string {
   if (requestedMode) {
-    return requestedMode;
+    if (!VALID_MODES.includes(requestedMode as typeof VALID_MODES[number])) {
+      console.log(chalk.yellow(`Unknown mode "${requestedMode}". Valid modes: ${VALID_MODES.join(', ')}`));
+      console.log(chalk.gray('Falling back to auto-detection.'));
+    } else {
+      return requestedMode;
+    }
   }
 
   // Check for tmux or iTerm2 (it2 CLI)
@@ -84,16 +91,17 @@ export async function handleTeamCommand(
   // Determine mode
   const mode = resolveTeammateMode(options.mode);
 
-  // Build args
-  const args = ['--teammate-mode', mode, '--dangerously-skip-permissions'];
+  // Build args — use -p (prompt) flag for initial instruction
+  const args: string[] = ['--dangerously-skip-permissions'];
 
   // Add description as initial prompt if provided
   if (description) {
-    args.push(`Use /sw:team-orchestrate to: ${description}`);
+    args.push('-p', `Use /sw:team-orchestrate to: ${description}`);
   }
 
-  // Spawn claude with team flags
+  // Spawn claude with team env
   console.log(chalk.cyan(`Launching Claude Code with agent teams (${mode} mode)...`));
+  console.log(chalk.gray('Agent Teams is an experimental feature. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in your env.'));
 
   const child = spawn('claude', args, {
     stdio: 'inherit',
@@ -101,6 +109,14 @@ export async function handleTeamCommand(
       ...process.env,
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
     },
+  });
+
+  child.on('error', (err) => {
+    console.error(chalk.red(`Failed to launch Claude Code: ${err.message}`));
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      console.error(chalk.gray('Make sure `claude` is on your PATH.'));
+    }
+    process.exit(1);
   });
 
   child.on('exit', (code) => {

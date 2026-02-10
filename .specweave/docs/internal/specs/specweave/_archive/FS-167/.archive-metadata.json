@@ -1,0 +1,11 @@
+{
+  "id": "FS-167",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.784Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-167",
+  "linkedIncrements": [
+    "0167-comprehensive-code-review"
+  ]
+}

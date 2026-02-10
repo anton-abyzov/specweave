@@ -1,0 +1,11 @@
+{
+  "id": "FS-149",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.791Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-149",
+  "linkedIncrements": [
+    "0149-usage-analytics"
+  ]
+}

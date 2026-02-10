@@ -1,0 +1,11 @@
+{
+  "id": "FS-157",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.788Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-157",
+  "linkedIncrements": [
+    "0157-skill-routing-optimization"
+  ]
+}

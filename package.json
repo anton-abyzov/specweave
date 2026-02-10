@@ -1,7 +1,7 @@
 {
   "name": "specweave",
   "version": "1.0.239",
-  "description": "Spec-driven development framework for Claude Code. AI-native workflow with living documentation, intelligent agents, and multilingual support (9 languages). Enterprise-grade traceability with permanent specs and temporary increments.",
+  "description": "Spec-driven development framework for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Living documentation, autonomous execution, quality gates, and multilingual support (9 languages).",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
