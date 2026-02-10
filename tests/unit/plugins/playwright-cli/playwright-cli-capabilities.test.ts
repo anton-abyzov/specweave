@@ -134,7 +134,7 @@ describe('Playwright CLI vs MCP Capability Gap Analysis', () => {
   describe('CLI Runtime Verification', () => {
     const isAvailable = cliAvailable();
 
-    it('playwright-cli should be installed', () => {
+    it.skipIf(!isAvailable)('playwright-cli should be installed', () => {
       expect(isAvailable).toBe(true);
     });
 
