@@ -255,6 +255,11 @@ export class GitHubFeatureSync {
       // Update User Story frontmatter with issue link
       await this.updateUserStoryFrontmatter(userStory.filePath, issueNumber);
 
+      // v1.0.240 FIX: Backfill increment metadata.json for reconciler compatibility
+      // Previously only US frontmatter was updated, leaving metadata.json empty.
+      // This caused reconciler and closure flows to miss these issues.
+      await this.backfillIncrementMetadata(featureId, userStory.id, issueNumber);
+
       // ✅ CRITICAL FIX (2025-11-24): Check completion for ALL issues (new AND reused)
       // BUG: Previously only checked completion for reused issues, not new ones
       // RESULT: New issues stayed OPEN even if status:complete
@@ -311,6 +316,63 @@ export class GitHubFeatureSync {
     }
 
     return null;
+  }
+
+  /**
+   * Backfill increment metadata.json with GitHub issue reference (v1.0.240)
+   *
+   * Writes in the old format (metadata.github.issues[]) that the reconciler
+   * and closure flows expect. Non-blocking — errors are logged but don't halt sync.
+   */
+  private async backfillIncrementMetadata(
+    featureId: string,
+    userStoryId: string,
+    issueNumber: number
+  ): Promise<void> {
+    try {
+      // Derive increment ID from feature ID (reverse of deriveFeatureId)
+      const featureNumMatch = featureId.match(/FS-0*(\d+)E?/i);
+      if (!featureNumMatch) return;
+
+      const num = parseInt(featureNumMatch[1], 10);
+      const paddedNum = String(num).padStart(4, '0');
+
+      // Find the increment directory
+      const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+      if (!existsSync(incrementsDir)) return;
+
+      const entries = await readdir(incrementsDir);
+      const match = entries.find(e => e.startsWith(paddedNum + '-'));
+      if (!match) return;
+
+      const metadataPath = path.join(incrementsDir, match, 'metadata.json');
+      if (!existsSync(metadataPath)) return;
+
+      const metadata = JSON.parse(await readFile(metadataPath, 'utf-8'));
+
+      // Write in OLD format for reconciler compatibility
+      if (!metadata.github) metadata.github = {};
+      if (!metadata.github.issues) metadata.github.issues = [];
+
+      const exists = metadata.github.issues.some(
+        (i: { userStory: string }) => i.userStory === userStoryId
+      );
+
+      if (!exists) {
+        metadata.github.issues.push({
+          userStory: userStoryId,
+          number: issueNumber,
+          url: `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`,
+          createdAt: new Date().toISOString(),
+        });
+        metadata.github.lastSync = new Date().toISOString();
+        await writeFile(metadataPath, JSON.stringify(metadata, null, 2) + '\n', 'utf-8');
+        console.log(`      📝 Backfilled metadata.json for ${userStoryId}`);
+      }
+    } catch (error) {
+      // Non-blocking
+      console.warn(`      ⚠️ Metadata backfill failed: ${(error as Error).message}`);
+    }
   }
 
   /**

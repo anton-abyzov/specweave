@@ -24,6 +24,11 @@
     "enabled": true,
     "preset": "bidirectional",
     "autoSync": true,
+    "settings": {
+      "canUpdateExternalItems": true,
+      "canUpdateStatus": true,
+      "autoSyncOnCompletion": true
+    },
     "github": {
       "enabled": true,
       "owner": "anton-abyzov",
