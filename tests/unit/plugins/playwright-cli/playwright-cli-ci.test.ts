@@ -37,6 +37,9 @@ describe('Playwright CI Defaults', () => {
 
     it('should allow headed mode when not in CI', () => {
       delete process.env.CI;
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITLAB_CI;
+      delete process.env.JENKINS_URL;
       const config = getCiDefaults({ headed: true });
 
       expect(config.headed).toBe(true);
