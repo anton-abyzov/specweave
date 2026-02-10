@@ -1,10 +1,10 @@
 {
   "id": "0192-github-sync-v2-multi-repo",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2026-02-06T20:26:53.275Z",
-  "lastActivity": "2026-02-06T20:26:53.276Z",
+  "lastActivity": "2026-02-10T05:53:21.225Z",
   "testMode": "test-after",
   "coverageTarget": 80,
   "feature_id": null,
@@ -46,5 +46,12 @@
       "milestone": 94,
       "syncedAt": "2026-02-09T18:09:30Z"
     }
+  },
+  "updated": "2026-02-06T20:26:53.276Z",
+  "approvedAt": "2026-02-10T05:53:21.226Z",
+  "github": {
+    "issue": 1090,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1090",
+    "synced": "2026-02-10T05:53:21.874Z"
   }
 }

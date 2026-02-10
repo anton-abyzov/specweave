@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 export interface CliRunnerConfig {
   headed?: boolean;
@@ -19,19 +19,22 @@ export class PlaywrightCliRunner {
     this.config = {
       headed: config.headed ?? false,
       browser: config.browser ?? 'chrome',
-      session: config.session,
       timeout: config.timeout ?? 30_000,
-      ...config,
+      session: config.session,
     };
   }
 
-  private exec(command: string): CliResult {
-    const sessionFlag = this.config.session ? `-s=${this.config.session} ` : '';
-    const fullCommand = `playwright-cli ${sessionFlag}${command}`;
+  private exec(args: string[]): CliResult {
+    const fullArgs: string[] = [];
+    if (this.config.session) {
+      fullArgs.push(`-s=${this.config.session}`);
+    }
+    fullArgs.push(...args);
     try {
-      const output = execSync(fullCommand, {
+      const output = execFileSync('playwright-cli', fullArgs, {
         encoding: 'utf-8',
         timeout: this.config.timeout,
+        maxBuffer: 1024 * 1024,
       }).trim();
       return { ok: true, output };
     } catch (e: unknown) {
@@ -40,41 +43,43 @@ export class PlaywrightCliRunner {
   }
 
   open(url?: string): CliResult {
-    const headedFlag = this.config.headed ? ' --headed' : '';
-    const urlPart = url ? ` ${url}` : '';
-    return this.exec(`open${urlPart}${headedFlag}`);
+    const args = ['open'];
+    if (url) args.push(url);
+    if (this.config.headed) args.push('--headed');
+    return this.exec(args);
   }
 
   navigate(url: string): CliResult {
-    return this.exec(`goto ${url}`);
+    return this.exec(['goto', url]);
   }
 
   snapshot(): CliResult {
-    return this.exec('snapshot');
+    return this.exec(['snapshot']);
   }
 
   screenshot(filename?: string): CliResult {
-    const flag = filename ? ` --filename ${filename}` : '';
-    return this.exec(`screenshot${flag}`);
+    const args = ['screenshot'];
+    if (filename) args.push('--filename', filename);
+    return this.exec(args);
   }
 
   close(): CliResult {
-    return this.exec('close');
+    return this.exec(['close']);
   }
 
   click(ref: string): CliResult {
-    return this.exec(`click ${ref}`);
+    return this.exec(['click', ref]);
   }
 
   type(text: string): CliResult {
-    return this.exec(`type "${text}"`);
+    return this.exec(['type', text]);
   }
 
   fill(ref: string, text: string): CliResult {
-    return this.exec(`fill ${ref} "${text}"`);
+    return this.exec(['fill', ref, text]);
   }
 
   evaluate(fn: string): CliResult {
-    return this.exec(`eval "${fn}"`);
+    return this.exec(['eval', fn]);
   }
 }

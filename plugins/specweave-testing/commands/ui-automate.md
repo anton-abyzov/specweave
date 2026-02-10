@@ -19,9 +19,9 @@ Create and execute automated browser workflows using Playwright. Generate script
 3. **Error Handling**: Add retry logic, timeouts, and fallbacks
 4. **Output Collection**: Capture screenshots, data, and validation results
 
-> **Why Code-First?** Anthropic research shows [code execution beats MCP tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) with 98% token reduction. Playwright code is reusable, committable, CI-runnable, and deterministic.
-
-> **CLI Mode Available**: When `@playwright/cli` is installed, this command routes to the CLI by default for maximum token efficiency (~250 chars per interaction vs ~5K+ via MCP). The CLI keeps browser state external and returns file references instead of inline DOM trees. Install: `npm install -g @playwright/cli@latest`
+> **Code-First, CLI-First (MANDATORY)**: Generate Playwright scripts as `.ts` files and run them via CLI (`npx playwright test` or `npx tsx script.ts`). **DO NOT** use MCP Playwright tools (`browser_click`, `browser_fill_form`, `browser_navigate`, etc.) for automation — they produce ephemeral tool calls instead of reusable code, consume 20x more tokens, and cannot be committed or run in CI.
+>
+> Anthropic research confirms [code execution beats MCP tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) with 98% token reduction.
 
 ## Workflow Types
 

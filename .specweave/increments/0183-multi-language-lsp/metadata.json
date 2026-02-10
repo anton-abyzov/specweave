@@ -1,10 +1,10 @@
 {
   "id": "0183-multi-language-lsp",
-  "status": "paused",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2026-02-04T00:17:50.318Z",
-  "lastActivity": "2026-02-06T20:54:11.526Z",
+  "lastActivity": "2026-02-10T05:57:59.394Z",
   "testMode": "TDD",
   "coverageTarget": 80,
   "feature_id": null,
@@ -12,7 +12,11 @@
   "externalLinks": {},
   "breakingChanges": true,
   "interviewComplete": true,
-  "updated": "2026-02-04T00:25:00.000Z",
-  "pausedReason": "making room for 0192",
-  "pausedAt": "2026-02-06T20:54:11.526Z"
+  "updated": "2026-02-10T05:57:44.000Z",
+  "github": {
+    "issue": 1122,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1122",
+    "synced": "2026-02-10T05:53:52.885Z"
+  },
+  "approvedAt": "2026-02-10T05:57:59.394Z"
 }

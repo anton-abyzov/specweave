@@ -1,0 +1,11 @@
+{
+  "id": "FS-143",
+  "type": "feature",
+  "archivedAt": "2026-02-10T04:56:28.793Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-143",
+  "linkedIncrements": [
+    "0143-frontmatter-removal-code-templates-tests"
+  ]
+}

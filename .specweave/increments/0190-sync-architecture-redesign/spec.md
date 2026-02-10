@@ -1,10 +1,10 @@
 ---
 increment: 0190-sync-architecture-redesign
-title: "Sync Architecture Redesign"
+title: Sync Architecture Redesign
 type: feature
 priority: P0
-status: active
-created: 2026-02-06
+status: completed
+created: 2026-02-06T00:00:00.000Z
 structure: user-stories
 test_mode: TDD
 coverage_target: 90
@@ -224,7 +224,7 @@ SpecWeave's external sync system (GitHub, JIRA, Azure DevOps) is over-engineered
 - [x] **AC-US12-01**: Given the GitHub E2E test suite, when run against the specweave repo, then it creates an issue, updates it, syncs status, and cleans up
 - [x] **AC-US12-02**: Given the JIRA E2E test suite, when run against a test project, then it creates a story, transitions status, and verifies sync
 - [x] **AC-US12-03**: Given the ADO E2E test suite, when run against a test organization, then it creates a work item, updates state, and verifies sync
-- [ ] **AC-US12-04**: Given CI pipeline, when E2E tests are configured, then they run on a schedule (not on every PR) to avoid rate limits
+- [x] **AC-US12-04**: Given CI pipeline, when E2E tests are configured, then they run on a schedule (not on every PR) to avoid rate limits
 - [x] **AC-US12-05**: Given E2E test credentials, when stored, then they use CI secrets (not committed to repo)
 
 ## Out of Scope
