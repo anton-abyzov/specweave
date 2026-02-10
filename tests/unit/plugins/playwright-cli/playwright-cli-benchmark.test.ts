@@ -16,6 +16,15 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
+function cliInstalled(): boolean {
+  try {
+    execSync('playwright-cli --version', { encoding: 'utf-8', timeout: 5_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Run a CLI command and return stdout */
 function runCli(command: string, timeout = 30_000): string {
   return execSync(`playwright-cli ${command}`, {
@@ -24,7 +33,8 @@ function runCli(command: string, timeout = 30_000): string {
   }).trim();
 }
 
-describe('Playwright CLI vs MCP Token Benchmark', () => {
+// Skip entire suite when playwright-cli is not installed (e.g. CI)
+describe.skipIf(!cliInstalled())('Playwright CLI vs MCP Token Benchmark', () => {
   const TEST_URL = 'https://example.com';
 
   beforeAll(() => {
