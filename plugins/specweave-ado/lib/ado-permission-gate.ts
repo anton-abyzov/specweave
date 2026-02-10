@@ -56,6 +56,19 @@ export interface SyncSettings {
 }
 
 /**
+ * Resolve preset permissions for fallback when explicit settings are absent
+ */
+function resolvePresetPermissions(preset?: string): { canUpsert: boolean; canUpdateStatus: boolean } {
+  switch (preset) {
+    case 'bidirectional': return { canUpsert: true, canUpdateStatus: true };
+    case 'push-only': return { canUpsert: true, canUpdateStatus: true };
+    case 'full-control': return { canUpsert: true, canUpdateStatus: true };
+    case 'read-only': return { canUpsert: false, canUpdateStatus: false };
+    default: return { canUpsert: false, canUpdateStatus: false };
+  }
+}
+
+/**
  * Default settings (all disabled for safety)
  */
 export const DEFAULT_SYNC_SETTINGS: SyncSettings = {
@@ -187,10 +200,14 @@ export async function createAdoPermissionGate(
     const content = await fs.readFile(configPath, 'utf-8');
     const config = JSON.parse(content);
 
+    // v1.0.240 FIX: Honor preset (e.g., "bidirectional") when explicit settings absent
+    const preset = config?.sync?.preset;
+    const presetDefaults = resolvePresetPermissions(preset);
+
     const settings: SyncSettings = {
       canUpsertInternalItems: config?.sync?.settings?.canUpsertInternalItems ?? false,
-      canUpdateExternalItems: config?.sync?.settings?.canUpdateExternalItems ?? false,
-      canUpdateStatus: config?.sync?.settings?.canUpdateStatus ?? false,
+      canUpdateExternalItems: config?.sync?.settings?.canUpdateExternalItems ?? presetDefaults.canUpsert,
+      canUpdateStatus: config?.sync?.settings?.canUpdateStatus ?? presetDefaults.canUpdateStatus,
     };
 
     return new AdoPermissionGate(settings, configPath);

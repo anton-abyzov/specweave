@@ -18,6 +18,8 @@ import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { ConfigManager } from '../core/config/config-manager.js';
+import { resolvePermissions, SyncPreset } from './config.js';
+import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 
 export interface AdoReconcileOptions {
   projectRoot: string;
@@ -91,12 +93,26 @@ export class AdoReconciler {
     try {
       // 1. Check if ADO sync is enabled
       const config = await this.loadConfig();
-      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? false;
+      // v1.0.240 FIX: Use resolvePermissions() to honor "bidirectional" preset
+      const syncAny = config.sync as Record<string, unknown> | undefined;
+      const permissions = resolvePermissions(
+        syncAny?.preset as SyncPreset | undefined,
+        undefined,
+        config.sync?.settings,
+      );
+      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
+      const canUpdateStatus = config.sync?.settings?.canUpdateStatus ?? permissions.canUpdateStatus;
       const adoEnabled = config.sync?.ado?.enabled ?? false;
 
       if (!canUpdate || !adoEnabled) {
         this.logger.log('ℹ️  ADO sync is disabled - skipping reconciliation');
         this.logger.log('   Enable with: canUpdateExternalItems=true AND sync.ado.enabled=true');
+        return result;
+      }
+
+      if (!canUpdateStatus) {
+        this.logger.log('ℹ️  ADO status updates are disabled - skipping reconciliation');
+        this.logger.log('   Enable with: canUpdateStatus=true');
         return result;
       }
 
@@ -307,11 +323,17 @@ This typically happens when an increment was resumed after being paused/complete
         const adoSync = metadata.external_sync?.ado;
         if (!adoSync?.workItemId) continue;
 
+        // v1.0.240 FIX: Auto-derive featureId when metadata.feature_id is null
+        let featureId = metadata.featureId || metadata.feature_id;
+        if (!featureId) {
+          try { featureId = deriveFeatureId(entry.name) || undefined; } catch { /* skip */ }
+        }
+
         const state: IncrementAdoState = {
           incrementId: entry.name,
           incrementPath,
           metadataStatus: metadata.status || 'unknown',
-          featureId: metadata.featureId,
+          featureId,
           workItem: {
             id: adoSync.workItemId,
             url: adoSync.workItemUrl,
