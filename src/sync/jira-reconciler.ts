@@ -18,6 +18,8 @@ import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { ConfigManager } from '../core/config/config-manager.js';
+import { resolvePermissions, SyncPreset } from './config.js';
+import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 
 export interface JiraReconcileOptions {
   projectRoot: string;
@@ -93,8 +95,15 @@ export class JiraReconciler {
     try {
       // 1. Check if JIRA sync is enabled
       const config = await this.loadConfig();
-      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? false;
-      const canUpdateStatus = config.sync?.settings?.canUpdateStatus ?? false;
+      // v1.0.240 FIX: Use resolvePermissions() to honor "bidirectional" preset
+      const syncAny = config.sync as Record<string, unknown> | undefined;
+      const permissions = resolvePermissions(
+        syncAny?.preset as SyncPreset | undefined,
+        undefined,
+        config.sync?.settings,
+      );
+      const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
+      const canUpdateStatus = config.sync?.settings?.canUpdateStatus ?? permissions.canUpdateStatus;
       const jiraEnabled = config.sync?.jira?.enabled ?? false;
 
       if (!canUpdate || !jiraEnabled) {
@@ -315,11 +324,17 @@ This typically happens when an increment was resumed after being paused/complete
         const jiraSync = metadata.external_sync?.jira || metadata.external_ids?.jira;
         if (!jiraSync?.issueKey && !jiraSync?.epic) continue;
 
+        // v1.0.240 FIX: Auto-derive featureId when metadata.feature_id is null
+        let featureId = metadata.featureId || metadata.feature_id;
+        if (!featureId) {
+          try { featureId = deriveFeatureId(entry.name) || undefined; } catch { /* skip */ }
+        }
+
         const state: IncrementJiraState = {
           incrementId: entry.name,
           incrementPath,
           metadataStatus: metadata.status || 'unknown',
-          featureId: metadata.featureId,
+          featureId,
           issue: {
             key: jiraSync.issueKey || jiraSync.epic,
             url: jiraSync.issueUrl,
