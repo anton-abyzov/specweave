@@ -616,6 +616,14 @@ export async function initCommand(
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
       }
+
+      // Enable agent teams env var in .claude/settings.json
+      try {
+        const { enableAgentTeamsEnvVar } = await import('../helpers/init/claude-settings-env.js');
+        enableAgentTeamsEnvVar(targetDir);
+      } catch {
+        // Non-critical - agent teams can be enabled later via `specweave team`
+      }
     }
 
     // ========================================================================
