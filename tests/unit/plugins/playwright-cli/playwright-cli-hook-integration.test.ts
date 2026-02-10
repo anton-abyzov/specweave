@@ -7,9 +7,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock child_process before importing
-const mockExecSync = vi.hoisted(() => vi.fn());
+const mockExecFileSync = vi.hoisted(() => vi.fn());
 vi.mock('child_process', () => ({
-  execSync: mockExecSync,
+  execFileSync: mockExecFileSync,
 }));
 
 import {
@@ -100,7 +100,7 @@ describe('Playwright CLI Hook Integration', () => {
 
   describe('CLI detection integration', () => {
     it('should detect CLI as installed when binary exists', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n')
         .mockReturnValueOnce('0.1.0\n');
 
@@ -117,7 +117,7 @@ describe('Playwright CLI Hook Integration', () => {
     });
 
     it('should suggest CLI when binary not found', () => {
-      mockExecSync.mockImplementation(() => {
+      mockExecFileSync.mockImplementation(() => {
         throw new Error('not found');
       });
 
