@@ -240,6 +240,26 @@ project/
 ```
 
 **NEVER assume single-repo mode without scanning first!**
+
+### Multi-Repo Increment Placement (CRITICAL)
+
+**In umbrella projects with `repositories/` folder:**
+- Each repo manages its OWN `.specweave/increments/`
+- Team agents MUST create increments in their assigned repo's `.specweave/`
+- The umbrella root `.specweave/` is for config and docs ONLY
+- Run `specweave init` in each repo if `.specweave/` doesn't exist
+- Agent working directory = `repositories/{org}/{repo-name}/`
+
+```
+# CORRECT                           # WRONG
+repositories/                        .specweave/increments/
+  org/frontend/                        0001-all-agents-here/  ← NO!
+    .specweave/increments/
+      0001-ui-feature/  ← YES
+  org/backend/
+    .specweave/increments/
+      0001-api-feature/  ← YES
+```
 <!-- /SECTION -->
 
 <!-- SECTION:reflect -->

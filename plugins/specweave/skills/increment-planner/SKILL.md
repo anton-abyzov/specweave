@@ -1,0 +1,199 @@
+---
+description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Use when starting new features, hotfixes, bugs, or any development work that needs specification and task breakdown. Creates spec.md, plan.md, tasks.md with proper AC-IDs and living docs integration.
+context: fork
+model: opus
+hooks:
+  PreToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/interview-enforcement-guard.sh
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/spec-template-enforcement-guard.sh
+  PostToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/increment-duplicate-guard.sh
+---
+
+# Increment Planner Skill
+
+**Self-contained increment planning for ANY user project after `specweave init`.**
+
+## Workflow Overview
+
+```
+STEP 0: Pre-flight (TDD mode, multi-project, Deep Interview)
+        -> CHECK: Deep Interview Mode enabled?
+
+STEP 0.5: Deep Interview (if enabled)
+        -> PM skill loads phases/00-deep-interview.md
+        -> ASSESS complexity first, then ask right number of questions
+        -> Skip categories that don't apply to this feature
+
+STEP 1: Project Context (resolve project/board)
+
+STEP 2: Create Increment (via Template API)
+
+STEP 3: Guide User (complete in main conversation)
+```
+
+## Step 0: Pre-flight Checks
+
+```bash
+# 1. Check TDD mode
+jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/null
+
+# 2. Check multi-project config
+specweave context projects 2>/dev/null
+
+# 3. Check deep interview mode
+jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null
+
+# 4. Check WIP limits
+find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status":"active"' {} \; 2>/dev/null | wc -l
+```
+
+## Step 0.5: Deep Interview Mode (if enabled)
+
+**If deep interview is enabled, delegate to PM skill:**
+
+```typescript
+Skill({ skill: "sw:pm", args: "Deep interview mode for: <user description>" })
+```
+
+**THINK about complexity first** - assess before asking:
+- Trivial: 0-3 questions | Small: 4-8 | Medium: 9-18 | Large: 19-40+
+
+## Step 1: Project Context
+
+```bash
+# Get project/board values for spec.md
+specweave context projects
+```
+
+Every US MUST have `**Project**:` field. For 2-level structures, also `**Board**:`.
+
+## Step 2: Create Increment
+
+### 2a. Determine Increment Location
+
+**CRITICAL for multi-repo setups:**
+
+```bash
+# Check if this is a multi-repo umbrella project
+if [ -d "repositories" ]; then
+  echo "MULTI-REPO: Increments belong in EACH repo's .specweave/"
+  echo "Example: repositories/{org}/{repo-name}/.specweave/increments/"
+  ls -d repositories/*/* 2>/dev/null | head -20
+else
+  echo "SINGLE-REPO: Use .specweave/increments/"
+fi
+```
+
+**Multi-repo rules:**
+- Each repository has its OWN `.specweave/increments/` directory
+- Team agents MUST create increments in their assigned repo's `.specweave/`
+- The umbrella root `.specweave/` is for umbrella-level config ONLY
+- Run `specweave init` in each repo if `.specweave/` doesn't exist
+
+### 2b. Get Unique ID
+
+```bash
+# Check ALL folders for existing IDs
+find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" 2>/dev/null | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+
+# For multi-repo, also check child repos
+find repositories -path "*/specweave/increments/*" -maxdepth 5 -type d -name "[0-9]*" 2>/dev/null | grep -oE '[0-9]{4}E?' | sort -u | tail -5
+```
+
+### 2c. Create via CLI (preferred)
+
+```bash
+specweave create-increment --id "XXXX-name" --project "my-app"
+```
+
+### 2d. Create manually (if CLI unavailable)
+
+```bash
+mkdir -p .specweave/increments/XXXX-name
+```
+
+Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
+
+## Quick Reference
+
+### Increment Types
+
+| Type | Use When | WIP Limit |
+|------|----------|-----------|
+| **feature** | New functionality | Max 2 |
+| **hotfix** | Production broken | Unlimited |
+| **bug** | Needs RCA | Unlimited |
+| **change-request** | Business changes | Max 2 |
+| **refactor** | Technical debt | Max 1 |
+| **experiment** | POC/spike | Unlimited |
+
+### Directory Structure
+
+```
+.specweave/increments/####-name/
+├── metadata.json  # REQUIRED - create FIRST
+├── spec.md        # REQUIRED - user stories, ACs
+├── plan.md        # OPTIONAL - architecture
+└── tasks.md       # REQUIRED - implementation
+```
+
+### User Story Format
+
+```markdown
+### US-001: Feature Name
+**Project**: my-app    # <- REQUIRED! Get from: specweave context projects
+
+**As a** [role]
+**I want** [capability]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: [Criterion 1]
+- [ ] **AC-US1-02**: [Criterion 2]
+```
+
+## Critical Rules
+
+1. **Project field is MANDATORY** - Every US MUST have `**Project**:` field
+2. **Use Template Creator API** when available: `specweave create-increment --id "XXXX-name" --project "my-app"`
+3. **NO agent spawning** - Skills MUST NOT spawn Task() agents (causes crashes). Guide user in main conversation.
+4. **Increment naming** - Format: `####-descriptive-kebab-case`
+5. **Multi-repo** - In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
+
+## Delegation
+
+After increment creation:
+
+```typescript
+// Invoke architect for plan.md
+Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX" })
+
+// Invoke test-aware planner for tasks.md
+Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX" })
+```
+
+## Usage
+
+```typescript
+// Called by hook system (primary path)
+Skill({ skill: "sw:increment-planner", args: "--description=\"Add auth\"" })
+
+// Via command (handles pre-flight checks too)
+/sw:increment "Add user authentication"
+```
+
+## Project-Specific Learnings
+
+**Before starting work, check for project-specific learnings:**
+
+```bash
+cat .specweave/skill-memories/increment-planner.md 2>/dev/null || echo "No project learnings yet"
+```

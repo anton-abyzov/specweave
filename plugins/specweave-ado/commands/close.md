@@ -103,7 +103,7 @@ Complete remaining tasks first, then re-run this command.
 ### 4. Invoke ADO Manager Skill
 
 ```
-Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Close ADO work item for completed increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-sync", args: "Close ADO work item for completed increment {increment-id}.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems=true, canUpdateStatus=true

@@ -65,7 +65,7 @@ const completion = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 1
 ### 4. Invoke JIRA Manager Skill (Optional - For Live Status)
 
 ```
-Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Check JIRA sync status for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-sync", args: "Check JIRA sync status for increment {increment-id}.
 
 Issue Key: {issueKey}
 Profile: {profileName} (domain: {domain})

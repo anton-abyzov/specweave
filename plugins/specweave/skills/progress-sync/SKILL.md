@@ -14,9 +14,9 @@ I'm the comprehensive progress synchronization expert for SpecWeave. I help you 
 **When `/sw:sync-progress` is executed and no external issue exists, it MUST automatically create the issue using the Skill tool.**
 
 The command MUST invoke:
-- `Skill({ skill: "sw-github:create", args: "<increment-id>" })` for GitHub
-- `Skill({ skill: "sw-jira:create", args: "<increment-id>" })` for JIRA
-- `Skill({ skill: "sw-ado:create", args: "<increment-id>" })` for Azure DevOps
+- `/sw-github:create <increment-id>` for GitHub
+- `/sw-jira:create <increment-id>` for JIRA
+- `/sw-ado:create <increment-id>` for Azure DevOps
 
 **DO NOT just report "No issues linked" - ACTUALLY CREATE THE ISSUE.**
 

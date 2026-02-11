@@ -117,7 +117,7 @@ console.log(`  Project: ${project}`);
 ### 3. Invoke ADO Manager Skill
 
 ```
-Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "{direction} sync for increment {increment-id} with ADO.
+Use Skill tool: Skill({ skill: "sw-ado:ado-sync", args: "{direction} sync for increment {increment-id} with ADO.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems={canUpdateExternal}
