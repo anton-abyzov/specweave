@@ -97,7 +97,7 @@ export class AgentsMdGenerator {
       'pm': 'Creating requirements, user stories, product specs (WHAT/WHY)',
       'architect': 'System design, architecture decisions, technical plans (HOW)',
       'devops': 'Infrastructure, deployment, CI/CD pipelines',
-      'qa-lead': 'Test strategy, test cases, quality assurance',
+      'qa-engineer': 'Test strategy, test cases, quality assurance',
       'security': 'Threat modeling, security review, vulnerability assessment',
       'tech-lead': 'Code review, best practices, refactoring',
       'frontend': 'UI components, React/Vue/Angular implementation',

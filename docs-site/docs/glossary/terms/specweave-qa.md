@@ -98,7 +98,7 @@ Dimension Scores:
 ## Related
 
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checkpoints
-- [QA Lead Agent](/docs/glossary/terms/qa-lead-agent) - Quality agent
+- [QA Engineer Agent](/docs/glossary/terms/qa-lead-agent) - Quality agent (now `sw-testing:qa-engineer`)
 - [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - Testable requirements
 - [/sw:validate](/docs/glossary/terms/specweave-validate) - Rule-based validation
 - [/sw:done](/docs/glossary/terms/specweave-done) - Close increment

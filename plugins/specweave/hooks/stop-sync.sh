@@ -21,14 +21,15 @@ set +e  # Never fail
 # Read input from stdin (required by Claude Code)
 INPUT=$(cat)
 
-# Project root detection
-PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
-STATE_DIR="$PROJECT_ROOT/.specweave/state"
-QUEUE_DIR="$STATE_DIR/event-queue"
-PENDING_FILE="$QUEUE_DIR/pending.jsonl"
-LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
-LOG_FILE="$LOGS_DIR/stop-sync.log"
-HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/v2/handlers" 2>/dev/null && pwd)"
+# Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
+if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -d "$PROJECT_ROOT/.specweave" ]]; then
+    : # env var already set and valid
+else
+    PROJECT_ROOT="$PWD"
+    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+        PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
+    done
+fi
 
 # Silent approve helper
 silent_approve() {
@@ -36,8 +37,15 @@ silent_approve() {
     exit 0
 }
 
-# Not a SpecWeave project
+# Not a SpecWeave project — approve and exit (MUST be before any mkdir)
 [ ! -d "$PROJECT_ROOT/.specweave" ] && silent_approve
+
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
+QUEUE_DIR="$STATE_DIR/event-queue"
+PENDING_FILE="$QUEUE_DIR/pending.jsonl"
+LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
+LOG_FILE="$LOGS_DIR/stop-sync.log"
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/v2/handlers" 2>/dev/null && pwd)"
 
 # Create logs directory
 mkdir -p "$LOGS_DIR" 2>/dev/null || true

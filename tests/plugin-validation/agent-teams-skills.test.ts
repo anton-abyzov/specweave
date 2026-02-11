@@ -205,7 +205,7 @@ describe('T-007: team-build SKILL.md', () => {
     const content = readFileSync(skillPath, 'utf-8');
     expect(content).toContain('sw-testing:unit-testing');
     expect(content).toContain('sw-testing:e2e-testing');
-    expect(content).toContain('sw-testing:test-coverage');
+    expect(content).toContain('sw-testing:qa-engineer');
   });
 
   it('should map tdd preset to red/green/refactor skills', () => {

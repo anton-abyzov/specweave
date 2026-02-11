@@ -402,6 +402,223 @@ exit 1
     });
   });
 
+  describe('small_fix Increment Suggestion (v1.0.241)', () => {
+    it('should suggest increment even for small_fix action', async () => {
+      // Previously small_fix fell through with no output — now it should suggest
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'small_fix',
+          confidence: 0.9,
+          mandatory: false,
+          suggestedName: 'version-bump-2.0',
+          reasoning: 'Simple version string change, trivial edit'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Update the package version to 2.0');
+
+      expect(result.exitCode).toBe(0);
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // small_fix should now produce a suggestion (not silent skip)
+      expect(additionalContext).toBeTruthy();
+      expect(additionalContext).toContain('Increment Suggestion');
+      expect(additionalContext).toContain('sw:increment-planner');
+    });
+
+    it('should NOT include SKILL FIRST for small_fix (non-mandatory)', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'small_fix',
+          confidence: 0.9,
+          mandatory: false,
+          suggestedName: 'fix-readme-typo',
+          reasoning: 'Literal typo fix, trivial 1-line change'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Fix typo in README');
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // small_fix should be a suggestion, not mandatory SKILL FIRST
+      if (additionalContext) {
+        expect(additionalContext).not.toContain('SKILL FIRST');
+        expect(additionalContext).toContain('Increment Suggestion');
+      }
+    });
+
+    it('should suggest increment for bug fixes reclassified as new', async () => {
+      // Bug fixes should now be classified as "new" by LLM, not "small_fix"
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'new',
+          confidence: 0.85,
+          mandatory: false,
+          suggestedName: 'fix-login-bug',
+          reasoning: 'Bug fix requiring investigation and code changes'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Fix the login bug');
+
+      expect(result.exitCode).toBe(0);
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // Bug fixes as "new" with mandatory=false should produce suggestion
+      expect(additionalContext).toBeTruthy();
+      expect(additionalContext).toContain('Increment Suggestion');
+      expect(additionalContext).toContain('sw:increment-planner');
+    });
+
+    it('should suggest increment for refactoring classified as new', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'new',
+          confidence: 0.85,
+          mandatory: false,
+          suggestedName: 'refactor-auth-module',
+          reasoning: 'Refactoring work that changes code structure'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Refactor the auth module');
+
+      expect(result.exitCode).toBe(0);
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      expect(additionalContext).toBeTruthy();
+      expect(additionalContext).toContain('Increment Suggestion');
+    });
+
+    it('should render valid Skill invocation syntax for small_fix', async () => {
+      // Verify the rendered output contains a parseable Skill call
+      // that Claude can actually execute
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'small_fix',
+          confidence: 0.9,
+          mandatory: false,
+          suggestedName: 'update-config',
+          reasoning: 'Config value change'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Change the timeout to 30 seconds');
+
+      expect(result.exitCode).toBe(0);
+
+      // First verify the raw output is valid JSON (escaping didn't break it)
+      expect(result.parsed).not.toBeNull();
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+      expect(additionalContext).toBeTruthy();
+
+      // The rendered Skill call must contain proper syntax:
+      // Skill({ skill: "sw:increment-planner", args: "..." })
+      // After JSON unescaping, quotes should be proper double quotes
+      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*"sw:increment-planner"/);
+      expect(additionalContext).toMatch(/args:.*"/);
+
+      // Must NOT contain broken escape sequences that would confuse Claude
+      expect(additionalContext).not.toContain('\\\\\"');  // double-escaped quotes
+      expect(additionalContext).not.toContain('\\"');      // literal backslash-quote (JSON artifact)
+    });
+
+    it('should render valid Skill invocation syntax for new non-mandatory', async () => {
+      // Same check for the existing "new" non-mandatory case
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'new',
+          confidence: 0.85,
+          mandatory: false,
+          suggestedName: 'add-validation',
+          reasoning: 'Adding input validation'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Add input validation to the form');
+
+      expect(result.exitCode).toBe(0);
+      expect(result.parsed).not.toBeNull();
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+      expect(additionalContext).toBeTruthy();
+
+      // Same validity checks
+      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*"sw:increment-planner"/);
+      expect(additionalContext).toMatch(/args:.*"/);
+      expect(additionalContext).not.toContain('\\\\\"');
+      expect(additionalContext).not.toContain('\\"');
+    });
+
+    it('should render valid Skill invocation syntax for mandatory', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'new',
+          confidence: 0.95,
+          mandatory: true,
+          suggestedName: 'fullstack-feature',
+          reasoning: 'Multi-component feature'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('Build a React dashboard with API backend');
+
+      expect(result.exitCode).toBe(0);
+      expect(result.parsed).not.toBeNull();
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+      expect(additionalContext).toBeTruthy();
+
+      // Mandatory uses triple-escaped backticks but should still render clean
+      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*sw:increment-planner/);
+      expect(additionalContext).not.toContain('\\\\\"');
+    });
+
+    it('should still produce no suggestion for action: none', async () => {
+      await createMockSpecweaveCli({
+        plugins: [],
+        increment: {
+          action: 'none',
+          confidence: 0.99,
+          mandatory: false,
+          reasoning: 'Question, no implementation'
+        },
+        routing: { skills: [] }
+      });
+
+      const result = executeHook('How do I use React hooks?');
+
+      expect(result.exitCode).toBe(0);
+
+      const additionalContext = extractAdditionalContext(result.parsed);
+
+      // action: none should produce NO increment suggestion
+      if (additionalContext) {
+        expect(additionalContext).not.toContain('Increment Suggestion');
+        expect(additionalContext).not.toContain('SKILL FIRST');
+      }
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle detect-intent timeout gracefully', async () => {
       // Create a mock that takes longer than the 15s timeout in the hook

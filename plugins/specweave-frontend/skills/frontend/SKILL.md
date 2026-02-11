@@ -1,5 +1,5 @@
 ---
-description: Expert frontend developer for React, Vue, Angular, and modern JavaScript/TypeScript. Use when creating components, implementing hooks, handling state management, or building responsive web interfaces. Covers React 18+ features, custom hooks, form handling, and accessibility best practices.
+description: Expert frontend developer for React, Vue, Angular, and modern JavaScript/TypeScript. Use when creating components, implementing hooks, handling state management, or building responsive web interfaces. Covers React 18/19 features (use() hook, React Compiler, Server Functions, useActionState, useOptimistic), custom hooks, form handling, and accessibility best practices.
 ---
 
 # Frontend Development Expert
@@ -17,6 +17,98 @@ You are an expert frontend developer with deep knowledge of modern frameworks, J
 - React.memo, useMemo, useCallback for optimization
 - Suspense and Error Boundaries
 - Concurrent features (useTransition, useDeferredValue)
+
+**React 19 Core Features**:
+- `use()` hook for reading promises and context in render
+- React Compiler (auto-memoization replaces manual useMemo/useCallback)
+- Server Functions (`"use server"`) and Server Actions
+- Form Actions with `useActionState` (replaces useFormState)
+- `useOptimistic` hook for optimistic UI updates
+- `<form action={fn}>` native integration
+- `ref` as a prop (no more forwardRef)
+- `<Context>` as a provider (no more `<Context.Provider>`)
+- Metadata (`<title>`, `<meta>`) hoisted from components automatically
+- Stylesheet precedence with `precedence` attribute
+- Async script deduplication
+
+**React 19 Patterns**:
+```tsx
+// use() hook — read a promise during render (Suspense handles loading)
+function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
+  const user = use(userPromise);
+  return <h1>{user.name}</h1>;
+}
+
+// use() hook — read context (replaces useContext, works in conditionals)
+function ThemeButton() {
+  if (shouldUseTheme) {
+    const theme = use(ThemeContext);
+    return <button className={theme.buttonClass}>Click</button>;
+  }
+  return <button>Click</button>;
+}
+
+// useActionState for form handling
+function LoginForm() {
+  const [state, formAction, isPending] = useActionState(loginAction, null);
+  return (
+    <form action={formAction}>
+      <input name="email" />
+      <button disabled={isPending}>Login</button>
+      {state?.error && <p>{state.error}</p>}
+    </form>
+  );
+}
+
+// useOptimistic for instant UI feedback
+function TodoList({ todos }: { todos: Todo[] }) {
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
+    todos,
+    (state, newTodo: Todo) => [...state, { ...newTodo, pending: true }]
+  );
+
+  async function addTodo(formData: FormData) {
+    const newTodo = { id: crypto.randomUUID(), title: formData.get('title') as string };
+    addOptimisticTodo(newTodo);
+    await saveTodoToServer(newTodo);
+  }
+
+  return (
+    <form action={addTodo}>
+      <input name="title" />
+      <button type="submit">Add</button>
+      <ul>
+        {optimisticTodos.map(todo => (
+          <li key={todo.id} style={{ opacity: todo.pending ? 0.5 : 1 }}>{todo.title}</li>
+        ))}
+      </ul>
+    </form>
+  );
+}
+
+// ref as prop (no forwardRef needed in React 19)
+function Input({ ref, ...props }: { ref?: React.Ref<HTMLInputElement> }) {
+  return <input ref={ref} {...props} />;
+}
+
+// Server Functions (in a server component or 'use server' file)
+// server-actions.ts
+'use server';
+export async function submitForm(prevState: State, formData: FormData) {
+  const email = formData.get('email');
+  // validate and persist...
+  return { success: true };
+}
+```
+
+**React Compiler Impact**:
+- Auto-memoizes components, values, and callbacks — remove manual `useMemo`/`useCallback` for performance-only usage
+- Still use `useMemo` when the memo is part of semantic behavior (e.g., stable dependency for a non-React API)
+- Still use `useCallback` when passing callbacks to non-React code that compares references (e.g., `addEventListener` wrappers)
+- Requirements: React 19, strict mode enabled, rules of hooks followed, no rule-of-hooks ESLint violations
+- Migration: install `babel-plugin-react-compiler` or enable in framework config, then gradually remove manual memos
+- Compiler skips components it cannot prove are safe — no breakage, just no optimization for those
+- Works with Next.js 15+, Vite via Babel plugin, and Remix
 
 **React Patterns**:
 - Compound components
@@ -166,9 +258,53 @@ You are an expert frontend developer with deep knowledge of modern frameworks, J
 
 **Modern CSS**:
 - CSS Variables (custom properties)
-- Container Queries
+- Container Queries (`@container`) and container query units (`cqi`, `cqb`)
 - CSS Grid and Flexbox
 - Logical properties for i18n
+- CSS Nesting (native, no preprocessor required)
+- `@layer` for cascade control and specificity management
+- `@scope` for scoped styles
+- `color-mix()` and relative color syntax
+- View Transitions API for page transitions
+
+**Modern CSS Patterns**:
+```css
+/* Container queries — responsive based on parent, not viewport */
+.card-container {
+  container-type: inline-size;
+  container-name: card;
+}
+@container card (min-width: 400px) {
+  .card { flex-direction: row; }
+}
+
+/* CSS nesting — native, no Sass needed */
+.nav {
+  background: var(--surface);
+
+  & a {
+    color: var(--text);
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+
+  @media (width < 768px) {
+    flex-direction: column;
+  }
+}
+
+/* @layer for cascade control */
+@layer reset, base, components, utilities;
+
+@layer components {
+  .btn { padding: 0.5rem 1rem; border-radius: 0.25rem; }
+}
+@layer utilities {
+  .p-4 { padding: 1rem; }  /* always wins over components */
+}
+```
 
 ### 8. Performance Optimization
 

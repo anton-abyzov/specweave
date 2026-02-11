@@ -170,7 +170,7 @@ npm run test:specweave:all
 |-----------|------|
 | `test-importer` skill | Detects frameworks, imports tests, manages sync |
 | `test-engineer` agent | Analyzes test coverage, suggests improvements |
-| `qa-lead` agent | Reviews test strategy, validates regression coverage |
+| `sw-testing:qa-engineer` agent | Reviews test strategy, validates regression coverage |
 
 ---
 

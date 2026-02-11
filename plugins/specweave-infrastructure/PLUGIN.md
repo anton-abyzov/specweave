@@ -6,7 +6,7 @@
 
 ## Description
 
-Comprehensive infrastructure, DevOps, and cloud platform expertise. Covers Terraform/OpenTofu, OpenTelemetry, GitHub Actions, DevSecOps, secret management, Azure (Bicep/AKS), and AWS (CDK/EKS/Lambda).
+Comprehensive infrastructure, DevOps, and cloud platform expertise. Covers Terraform/OpenTofu, OpenTelemetry, GitHub Actions, DevSecOps, secret management, Azure (Bicep/AKS), AWS (CDK/EKS/Lambda), and GCP (GKE/Cloud Run/BigQuery).
 
 ## Skills
 
@@ -21,6 +21,7 @@ Comprehensive infrastructure, DevOps, and cloud platform expertise. Covers Terra
 | secret-management | Secret management with Vault, External Secrets Operator, SOPS, and cloud KMS |
 | azure-bicep-aks | Azure Bicep IaC and AKS cluster management with Managed Identity and Container Apps |
 | aws-deep-dive | AWS CDK, EKS, Lambda, VPC design, IAM least-privilege, and serverless patterns |
+| gcp-deep-dive | GCP GKE, Cloud Run, Cloud Functions, VPC design, IAM, BigQuery, and Cloud Build CI/CD |
 
 ## Installation
 

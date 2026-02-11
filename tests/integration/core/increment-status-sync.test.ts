@@ -353,9 +353,13 @@ All tasks complete (for testing purposes).
         { from: IncrementStatus.ACTIVE, to: IncrementStatus.ABANDONED, label: 'active→abandoned' },
       ];
 
-      for (const transition of transitions) {
-        // Create increment with starting status
-        const incrementId = `test-${transition.from}-to-${transition.to}`;
+      for (let i = 0; i < transitions.length; i++) {
+        const transition = transitions[i];
+        // Create increment with starting status (use NNNN- prefix format required by validator)
+        // Replace underscores with hyphens in status names (e.g., ready_for_review → ready-for-review)
+        const fromName = transition.from.replace(/_/g, '-');
+        const toName = transition.to.replace(/_/g, '-');
+        const incrementId = `00${50 + i}-${fromName}-to-${toName}`;
         await createTestIncrement(incrementId, transition.from);
 
         // Verify starting state (enum values are already lowercase with underscores)

@@ -68,7 +68,8 @@ describe('stop-auto-v5.sh helper functions', () => {
     });
 
     it('should be sourceable without errors when __STOP_AUTO_V5_SOURCED=1', () => {
-      const result = runBashHelper('echo "sourced_ok"');
+      // Must run from a dir with .specweave/ so the script doesn't exit early
+      const result = runBashHelper('echo "sourced_ok"', { cwd: tempDir });
       expect(result.stdout.trim()).toBe('sourced_ok');
       expect(result.exitCode).toBe(0);
     });

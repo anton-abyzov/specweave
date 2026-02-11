@@ -169,7 +169,7 @@ tdd:
 - `/sw:tdd:red`, `/sw:tdd:green`, `/sw:tdd:refactor` - Individual phases
 
 **Skills**:
-- `qa-lead` - Test strategy overlaps with TDD principles
+- `sw-testing:qa-engineer` - Test strategy overlaps with TDD principles
 
 ## Project-Specific Learnings
 
