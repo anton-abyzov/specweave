@@ -124,7 +124,6 @@ These smoke tests verify that SpecWeave framework:
 - `pm` - Product Manager
 - `architect` - System Architect
 - `devops` - DevOps Engineer
-- `qa-lead` - QA Lead
 - `nextjs` - Next.js Specialist
 - And more...
 
@@ -181,7 +180,6 @@ These smoke tests verify that SpecWeave framework:
 - `architect` - System Architect
 - `nextjs` - Next.js Specialist (for Next.js scenarios)
 - `devops` - DevOps Engineer
-- `qa-lead` - QA Lead
 
 ---
 

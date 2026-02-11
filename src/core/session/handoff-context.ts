@@ -225,8 +225,8 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
   ],
   'sw-mobile': [
     {
-      name: 'sw-mobile:mobile-architect',
-      description: 'Mobile app architecture',
+      name: 'sw-mobile:react-native-expert',
+      description: 'Mobile app architecture and React Native development',
       category: 'mobile',
     },
   ],

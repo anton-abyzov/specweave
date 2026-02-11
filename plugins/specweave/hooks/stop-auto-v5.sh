@@ -16,7 +16,23 @@ _get_duration_ms() {
 
 # ── Stdin & paths ────────────────────────────────────────────────────────
 [ -z "${__STOP_AUTO_V5_SOURCED:-}" ] && cat > /dev/null
-PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+
+# Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
+if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -d "$PROJECT_ROOT/.specweave" ]]; then
+    : # env var already set and valid
+else
+    PROJECT_ROOT="$PWD"
+    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+        PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
+    done
+fi
+
+# Not a SpecWeave project — approve and exit (MUST be before any mkdir)
+if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+    echo '{"decision":"approve"}'
+    exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/log-decision.sh" ] && source "$SCRIPT_DIR/log-decision.sh"
 

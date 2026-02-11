@@ -1171,7 +1171,8 @@ async function setupIssueTrackerWrapper(
       repositoryHosting,
       adoCredentialsFromRepoSetup: adoProjectSelection,
       githubCredentialsFromRepoSetup,
-      gitUrlFormat
+      gitUrlFormat,
+      isCI
     });
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));

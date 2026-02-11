@@ -227,7 +227,8 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
       expect(hookContent).toContain('Questions');
       expect(hookContent).toContain('Exploration');
       expect(hookContent).toContain('Commands');
-      expect(hookContent).toContain('Small fixes');
+      // v1.0.241: small_fix now suggests increments, documented in STILL SUGGEST section
+      expect(hookContent).toContain('STILL SUGGEST INCREMENT');
     });
 
     it('should document explicit opt-out phrases', () => {

@@ -98,14 +98,12 @@ describe('Team Command', () => {
   });
 
   describe('spawning claude with correct flags', () => {
-    it('should spawn claude with --teammate-mode tmux and --dangerously-skip-permissions', async () => {
+    it('should spawn claude with --dangerously-skip-permissions', async () => {
       await handleTeamCommand(undefined, {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
       const [cmd, args] = mockSpawn.mock.calls[0];
       expect(cmd).toBe('claude');
-      expect(args).toContain('--teammate-mode');
-      expect(args).toContain('tmux');
       expect(args).toContain('--dangerously-skip-permissions');
     });
 
@@ -126,34 +124,44 @@ describe('Team Command', () => {
   });
 
   describe('description passthrough', () => {
-    it('should pass description as initial prompt when provided', async () => {
+    it('should NOT use -p flag (non-interactive) when description provided', async () => {
       await handleTeamCommand('Build auth system', {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
       const [, args] = mockSpawn.mock.calls[0];
-      // Description should appear somewhere in the args
-      const argsStr = args.join(' ');
-      expect(argsStr).toContain('Build auth system');
+      // -p makes it non-interactive — must NOT be used for team mode
+      expect(args).not.toContain('-p');
+      // Should launch interactively with just base flags
+      expect(args).toEqual(['--dangerously-skip-permissions']);
+    });
+
+    it('should print description as suggested prompt for the user', async () => {
+      await handleTeamCommand('Build auth system', {});
+
+      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(logCalls).toContain('Build auth system');
     });
 
     it('should not include prompt arg when no description', async () => {
       await handleTeamCommand(undefined, {});
 
       const [, args] = mockSpawn.mock.calls[0];
-      // Should only have the flags, no extra prompt args
-      expect(args).toEqual(['--teammate-mode', 'tmux', '--dangerously-skip-permissions']);
+      // Should only have the base flag, no extra prompt args
+      expect(args).toEqual(['--dangerously-skip-permissions']);
     });
   });
 
   describe('mode selection', () => {
-    it('should use in-process mode when explicitly requested', async () => {
+    it('should resolve in-process mode when explicitly requested and log it', async () => {
       await handleTeamCommand(undefined, { mode: 'in-process' });
 
-      const [, args] = mockSpawn.mock.calls[0];
-      expect(args).toContain('in-process');
+      // Mode is resolved for display but not passed as CLI flag
+      expect(mockSpawn).toHaveBeenCalledTimes(1);
+      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
+      expect(logCalls).toMatch(/in-process/i);
     });
 
-    it('should fall back to in-process when tmux is unavailable', async () => {
+    it('should fall back to in-process when tmux is unavailable and warn user', async () => {
       mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
         if (cmd === 'which' && args[0] === 'claude') {
           return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
@@ -164,11 +172,9 @@ describe('Team Command', () => {
 
       await handleTeamCommand(undefined, {});
 
-      const [, args] = mockSpawn.mock.calls[0];
-      expect(args).toContain('in-process');
-
-      // Should warn the user
-      const logCalls = consoleSpy.mock.calls.map((c) => c.join(' ')).join('\n');
+      expect(mockSpawn).toHaveBeenCalledTimes(1);
+      // Should warn the user about missing tmux
+      const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
       expect(logCalls).toMatch(/tmux|iTerm2|in-process/i);
     });
   });

@@ -46,7 +46,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Deep implementation audit | `/sw:grill` | Command |
 | Follow TDD strictly | `/sw:tdd-orchestrator` | Skill |
 | Write failing tests first | `/sw:tdd-red` | Skill |
-| Get test strategy help | `/sw:qa-lead` | Skill |
+| Get test strategy help | `/sw-testing:qa-engineer` | Skill |
 | Write E2E tests | `/sw-testing:e2e-testing` | Skill |
 | Code review my changes | `/sw:code-reviewer` | Skill |
 
@@ -144,13 +144,13 @@ Find the right SpecWeave skill or command for what you're trying to do.
 /sw-infrastructure:devops          # CI/CD pipelines
 /sw-kubernetes:k8s-manifest-generator  # K8s manifests
 /sw-kubernetes:gitops-workflow     # ArgoCD/Flux
-/sw:infrastructure                 # Terraform IaC
+/sw-infra:terraform-opentofu       # Terraform IaC
 ```
 
 ### I'm a QA Engineer
 
 ```bash
-/sw:qa-lead                        # Test strategy
+/sw-testing:qa-engineer             # Test strategy
 /sw-testing:e2e-testing            # Playwright E2E
 /sw-testing:unit-testing           # Unit test patterns
 /sw:tdd-orchestrator               # TDD workflow

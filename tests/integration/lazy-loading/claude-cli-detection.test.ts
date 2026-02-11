@@ -100,7 +100,16 @@ describe('Claude CLI Detection (Isolated)', () => {
   });
 
   describe('Plugin Check Methods (Mimics tryPluginCheck)', () => {
-    const claudePath = path.join(os.homedir(), '.local', 'bin', 'claude');
+    // Dynamically resolve claude binary path instead of hardcoding ~/.local/bin/claude
+    let claudePath: string;
+    try {
+      claudePath = execFileNoThrowSync('which', ['claude']).stdout?.trim() || '';
+    } catch {
+      claudePath = '';
+    }
+    if (!claudePath) {
+      claudePath = path.join(os.homedir(), '.local', 'bin', 'claude');
+    }
 
     it('Method 1: execFileNoThrowSync direct binary', () => {
       console.log(`\n[Method 1] execFileNoThrowSync('${claudePath}', ['plugin', '--help'])`);

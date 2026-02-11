@@ -10,6 +10,12 @@ user-invocable: false
 
 This skill provides real-time security pattern detection based on Anthropic's official security-guidance plugin. It identifies potentially dangerous coding patterns BEFORE they're committed.
 
+## Scope Boundaries
+
+This skill is a **REAL-TIME DETECTOR**. Activates proactively when writing code. Detects: command injection, XSS, unsafe deserialization, dynamic code execution.
+
+- For comprehensive security audits → use `/sw:security`
+
 ## Detection Categories
 
 ### 1. Command Injection Risks

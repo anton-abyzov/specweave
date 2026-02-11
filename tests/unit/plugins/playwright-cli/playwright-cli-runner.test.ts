@@ -5,9 +5,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockExecSync = vi.hoisted(() => vi.fn());
+const mockExecFileSync = vi.hoisted(() => vi.fn());
 vi.mock('child_process', () => ({
-  execSync: mockExecSync,
+  execFileSync: mockExecFileSync,
 }));
 
 import {
@@ -38,35 +38,38 @@ describe('PlaywrightCliRunner', () => {
 
   describe('open', () => {
     it('should launch browser with URL', () => {
-      mockExecSync.mockReturnValue('### Browser `default` opened\n');
+      mockExecFileSync.mockReturnValue('### Browser `default` opened\n');
       const runner = new PlaywrightCliRunner();
       const result = runner.open('https://example.com');
 
       expect(result.ok).toBe(true);
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining('playwright-cli open https://example.com'),
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'playwright-cli',
+        expect.arrayContaining(['open', 'https://example.com']),
         expect.any(Object),
       );
     });
 
     it('should pass --headed flag when configured', () => {
-      mockExecSync.mockReturnValue('### Browser opened\n');
+      mockExecFileSync.mockReturnValue('### Browser opened\n');
       const runner = new PlaywrightCliRunner({ headed: true });
       runner.open('https://example.com');
 
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining('--headed'),
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'playwright-cli',
+        expect.arrayContaining(['--headed']),
         expect.any(Object),
       );
     });
 
     it('should use named session when configured', () => {
-      mockExecSync.mockReturnValue('### Browser opened\n');
+      mockExecFileSync.mockReturnValue('### Browser opened\n');
       const runner = new PlaywrightCliRunner({ session: 'my-session' });
       runner.open('https://example.com');
 
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining('-s=my-session'),
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'playwright-cli',
+        expect.arrayContaining(['-s=my-session']),
         expect.any(Object),
       );
     });
@@ -74,7 +77,7 @@ describe('PlaywrightCliRunner', () => {
 
   describe('navigate', () => {
     it('should navigate to URL and return page info', () => {
-      mockExecSync.mockReturnValue(
+      mockExecFileSync.mockReturnValue(
         '### Ran Playwright code\n### Page\n- Page URL: https://example.com/\n- Page Title: Example Domain\n',
       );
       const runner = new PlaywrightCliRunner();
@@ -87,7 +90,7 @@ describe('PlaywrightCliRunner', () => {
 
   describe('snapshot', () => {
     it('should return snapshot file reference', () => {
-      mockExecSync.mockReturnValue(
+      mockExecFileSync.mockReturnValue(
         '### Snapshot\n- [Snapshot](.playwright-cli/page-2026.yml)\n',
       );
       const runner = new PlaywrightCliRunner();
@@ -100,13 +103,14 @@ describe('PlaywrightCliRunner', () => {
 
   describe('screenshot', () => {
     it('should save screenshot to specified path', () => {
-      mockExecSync.mockReturnValue('Screenshot saved to /tmp/test.png\n');
+      mockExecFileSync.mockReturnValue('Screenshot saved to /tmp/test.png\n');
       const runner = new PlaywrightCliRunner();
       const result = runner.screenshot('/tmp/test.png');
 
       expect(result.ok).toBe(true);
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining('--filename /tmp/test.png'),
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'playwright-cli',
+        expect.arrayContaining(['screenshot', '--filename', '/tmp/test.png']),
         expect.any(Object),
       );
     });
@@ -114,7 +118,7 @@ describe('PlaywrightCliRunner', () => {
 
   describe('close', () => {
     it('should close browser', () => {
-      mockExecSync.mockReturnValue("Browser 'default' closed\n");
+      mockExecFileSync.mockReturnValue("Browser 'default' closed\n");
       const runner = new PlaywrightCliRunner();
       const result = runner.close();
 
@@ -122,7 +126,7 @@ describe('PlaywrightCliRunner', () => {
     });
 
     it('should handle already-closed browser gracefully', () => {
-      mockExecSync.mockImplementation(() => {
+      mockExecFileSync.mockImplementation(() => {
         throw new Error('Browser is not open');
       });
       const runner = new PlaywrightCliRunner();
@@ -134,7 +138,7 @@ describe('PlaywrightCliRunner', () => {
 
   describe('error handling', () => {
     it('should return ok=false with error message on failure', () => {
-      mockExecSync.mockImplementation(() => {
+      mockExecFileSync.mockImplementation(() => {
         throw new Error('Connection refused');
       });
       const runner = new PlaywrightCliRunner();
