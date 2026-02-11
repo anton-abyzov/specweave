@@ -23,6 +23,12 @@ Design and implement comprehensive observability using OpenTelemetry (OTel). Pro
 - Kubernetes observability setup
 - Cost optimization for telemetry data
 
+## Scope Boundaries
+
+This skill covers **OTEL IMPLEMENTATION**: Collector configuration, auto-instrumentation, sampling strategies.
+
+- For high-level observability strategy and SLOs → use `/sw-infra:observability`
+
 ## OTel Architecture Overview
 
 ```

@@ -234,6 +234,8 @@ export interface SetupOptions {
   };
   /** Git URL format preference from repository setup (SSH or HTTPS) - v1.0.8+ */
   gitUrlFormat?: 'ssh' | 'https';
+  /** Non-interactive mode (--quick flag or CI environment) - skips all prompts */
+  isCI?: boolean;
 }
 
 /**

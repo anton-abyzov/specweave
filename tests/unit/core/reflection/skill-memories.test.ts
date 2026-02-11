@@ -154,9 +154,9 @@ describe('skill-memories', () => {
     });
 
     it('should capitalize skill name in title', () => {
-      const content = generateSkillMemoryContent('qa-lead', ['Test the happy path first']);
+      const content = generateSkillMemoryContent('qa-engineer', ['Test the happy path first']);
 
-      expect(content).toContain('# Qa Lead Memory');
+      expect(content).toContain('# Qa Engineer Memory');
     });
   });
 

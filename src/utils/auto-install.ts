@@ -48,10 +48,10 @@ export const COMPONENT_MAPPING: Record<string, { skills: string[], agents: strin
   'docker': { skills: [], agents: ['devops'] },
 
   // Testing detection
-  'test': { skills: [], agents: ['qa-lead'] },
-  'testing': { skills: [], agents: ['qa-lead'] },
-  'e2e': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
-  'playwright': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
+  'test': { skills: [], agents: ['qa-engineer'] },
+  'testing': { skills: [], agents: ['qa-engineer'] },
+  'e2e': { skills: ['e2e-playwright'], agents: ['qa-engineer'] },
+  'playwright': { skills: ['e2e-playwright'], agents: ['qa-engineer'] },
 
   // Design detection
   'figma': { skills: ['figma-implementer', 'figma-designer'], agents: [] },

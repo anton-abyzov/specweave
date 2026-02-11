@@ -106,6 +106,12 @@ log_decision() {
         return 1
     fi
 
+    # Guard: only create dirs in initialized SpecWeave projects (prevents .specweave pollution)
+    if [ ! -d "$project_root/.specweave/increments" ] && [ ! -f "$project_root/.specweave/config.json" ]; then
+        _log_debug "WARN" "Not a SpecWeave project, skipping decision log"
+        return 0
+    fi
+
     # Ensure logs directory exists
     if [ ! -d "$log_dir" ]; then
         mkdir -p "$log_dir" 2>/dev/null

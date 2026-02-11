@@ -49,7 +49,7 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 | `pm` | Product Manager | Requirements, user stories |
 | `architect` | System Architect | Design, ADRs, architecture |
 | `devops` | DevOps Engineer | Infrastructure, deployment |
-| `qa-lead` | QA Lead | Test strategy, test cases |
+| `sw-testing:qa-engineer` | QA Engineer | Test strategy, test cases |
 | `security` | Security Engineer | Threat modeling, audits |
 | `tech-lead` | Technical Lead | Code review, best practices |
 | `frontend` | Frontend Developer | UI implementation |
