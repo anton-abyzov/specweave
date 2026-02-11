@@ -28,7 +28,7 @@ export interface DiscoveredRepo {
 
 export interface BulkDiscoveryResult {
   repositories: DiscoveredRepo[];
-  strategy: 'manual' | 'all-repos' | 'pattern' | 'regex';
+  strategy: 'manual' | 'all-repos' | 'pattern' | 'regex' | 'greenfield';
   pattern?: string;
   source?: string; // 'personal' | 'org:name'
 }
@@ -115,8 +115,16 @@ function filterByPattern(repos: DiscoveredRepo[], pattern: string): DiscoveredRe
     return repos.filter(repo => repo.name.includes(substring));
   }
 
+  // Auto-expand patterns without glob metacharacters to prefix match
+  let effectivePattern = trimmedPattern;
+  const hasGlobChars = /[*?\[]/.test(trimmedPattern);
+  if (!hasGlobChars) {
+    effectivePattern = `${trimmedPattern}*`;
+    console.log(chalk.blue(`   ℹ Pattern "${trimmedPattern}" expanded to "${effectivePattern}" (prefix match)`));
+  }
+
   // Default: glob pattern matching (supports *, ?, [])
-  return repos.filter(repo => minimatch(repo.name, trimmedPattern));
+  return repos.filter(repo => minimatch(repo.name, effectivePattern));
 }
 
 /**
@@ -176,7 +184,7 @@ function showRepositoryPreview(
     console.log(chalk.gray(`\n   ... and ${repos.length - maxDisplay} more repositories`));
   }
 
-  console.log(chalk.green(`\n✅ Ready to configure! Next: Select which one is the parent.\n`));
+  console.log(chalk.green(`\n✅ Ready to configure! First repository will be the default.\n`));
 }
 
 export interface DiscoveryOptions {
@@ -207,10 +215,6 @@ export async function discoverRepositories(
       message: 'How do you want to configure these repositories?',
       choices: [
         {
-          name: `${chalk.bold('Manual entry')} - Enter each repository one by one ${chalk.gray('(current behavior)')}`,
-          value: 'manual' as const
-        },
-        {
           name: `${chalk.bold('Bulk import')} - Discover all repositories from ${owner} ${chalk.gray('(automatic)')}`,
           value: 'all-repos' as const
         },
@@ -219,16 +223,27 @@ export async function discoverRepositories(
           value: 'pattern' as const
         },
         {
+          name: `${chalk.bold('Define new repos')} - Plan repos to create later ${chalk.gray('(greenfield)')}`,
+          value: 'greenfield' as const
+        },
+        {
+          name: `${chalk.bold('Manual entry')} - Enter each repository one by one`,
+          value: 'manual' as const
+        },
+        {
           name: `${chalk.bold('Regex matching')} - Advanced filtering with regular expressions ${chalk.gray('(e.g., "^ec-.*-api$")')}`,
           value: 'regex' as const
         }
       ],
-      default: 'manual'
+      default: 'all-repos'
     });
 
-    // If manual, return early
+    // If manual or greenfield, return early (handled by caller)
     if (strategy === 'manual') {
       return { repositories: [], strategy: 'manual' };
+    }
+    if (strategy === 'greenfield') {
+      return { repositories: [], strategy: 'greenfield' };
     }
 
     // Step 2: Fetch all repositories (use cache if available)
@@ -315,15 +330,25 @@ export async function discoverRepositories(
     // Step 5: Validate count
     if (filteredRepos.length === 0) {
       console.log(chalk.yellow('⚠️  No repositories match the criteria.\n'));
-      const retryChoice = await select<'retry' | 'manual'>({
+
+      // Show hint if pattern had no glob chars (auto-expansion already happened but still 0)
+      if (pattern && !/[*?\[]/.test(pattern)) {
+        console.log(chalk.blue(`   💡 Tip: Try "starts:${pattern.replace(/[-]$/, '')}" or "${pattern}*" for broader matching\n`));
+      }
+
+      const retryChoice = await select<'retry' | 'manual' | 'greenfield'>({
         message: 'What would you like to do?',
         choices: [
           { name: '← Go back and choose a different strategy', value: 'retry' as const },
+          { name: 'Define new repos to create later (greenfield)', value: 'greenfield' as const },
           { name: 'Switch to manual entry', value: 'manual' as const }
         ]
       });
       if (retryChoice === 'manual') {
         return { repositories: [], strategy: 'manual' };
+      }
+      if (retryChoice === 'greenfield') {
+        return { repositories: [], strategy: 'greenfield' };
       }
       continue; // Restart loop
     }
