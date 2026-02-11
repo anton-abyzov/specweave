@@ -303,8 +303,11 @@ When making architectural decisions, consider:
 3. Set up build tools and development environment
 4. Configure linting, formatting, and Git hooks
 5. Create base components and layouts
-6. Set up testing infrastructure
-7. Configure deployment pipeline
+6. Include `lib/formatters.ts` with `formatPrice()`, `formatDate()`, `formatNumber()` utilities using `Intl` APIs
+7. Include `lib/mock-data.ts` with realistic seed data (real names, valid prices, placeholder image URLs)
+8. Set up testing infrastructure
+9. Verify all pages render without NaN/undefined/broken images
+10. Configure deployment pipeline
 
 ### Design Component Architecture
 1. Analyze UI requirements and design system

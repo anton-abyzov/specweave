@@ -144,6 +144,128 @@ public:
 };
 ```
 
+## Expo Monorepo Setup
+
+### Monorepo with Expo (Workspaces)
+
+Expo supports monorepos but requires explicit Metro configuration. Metro does NOT resolve workspace packages or follow symlinks by default.
+
+### Step-by-Step Setup
+
+#### 1. Root package.json
+
+```jsonc
+{
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}
+```
+
+#### 2. Shared Package
+
+```jsonc
+// packages/shared/package.json
+{
+  "name": "@myapp/shared",
+  "main": "src/index.ts",    // Point to SOURCE, not dist — Metro transpiles
+  "types": "src/index.ts"
+}
+```
+
+#### 3. Mobile App Dependencies
+
+```jsonc
+// apps/mobile/package.json
+{
+  "dependencies": {
+    "@myapp/shared": "*"      // workspace:* for pnpm
+  }
+}
+```
+
+#### 4. Metro Config (Critical)
+
+```javascript
+// apps/mobile/metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
+
+const monorepoRoot = path.resolve(__dirname, '../..');
+const config = getDefaultConfig(__dirname);
+
+// Watch the entire monorepo
+config.watchFolders = [monorepoRoot];
+
+// Resolve node_modules from both app and root (for hoisted deps)
+config.resolver.nodeModulesPaths = [
+  path.resolve(__dirname, 'node_modules'),
+  path.resolve(monorepoRoot, 'node_modules'),
+];
+
+// Prevent duplicate React/RN instances (crashes at runtime)
+config.resolver.extraNodeModules = {
+  'react': path.resolve(__dirname, 'node_modules/react'),
+  'react-native': path.resolve(__dirname, 'node_modules/react-native'),
+  'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+};
+
+// Enable symlink resolution (workspace packages are symlinked)
+config.resolver.unstable_enableSymlinks = true;
+
+module.exports = config;
+```
+
+#### 5. TypeScript Path Aliases (Editor Only)
+
+```jsonc
+// apps/mobile/tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@myapp/shared": ["../../packages/shared/src"],
+      "@myapp/shared/*": ["../../packages/shared/src/*"]
+    }
+  }
+}
+```
+
+**Important**: `tsconfig.json` paths only affect the editor and `tsc`. Metro uses its own resolver configured in `metro.config.js`.
+
+### EAS Build with Monorepos
+
+```jsonc
+// apps/mobile/eas.json
+{
+  "build": {
+    "production": {
+      "node": "20.0.0"
+    }
+  }
+}
+```
+
+EAS Build automatically detects monorepo structure. If using pnpm:
+
+```bash
+# Set install command for EAS
+eas secret:create --name EAS_BUILD_INSTALL_COMMAND --value "pnpm install --frozen-lockfile"
+```
+
+For yarn workspaces, EAS uses `yarn install` by default — no extra config needed.
+
+### Troubleshooting Monorepo Issues
+
+| Error | Fix |
+|-------|-----|
+| `Unable to resolve module @myapp/shared` | Add `watchFolders: [monorepoRoot]` to metro.config.js |
+| `Unable to resolve module react` (duplicate) | Set `extraNodeModules.react` to app's copy |
+| Module found by TS but crashes at runtime | Configure Metro resolver (tsconfig paths ≠ Metro) |
+| `ENOENT` errors on workspace packages | Set `resolver.unstable_enableSymlinks: true` |
+| EAS Build fails with missing packages | Verify workspace setup, add `EAS_BUILD_INSTALL_COMMAND` for pnpm |
+
+---
+
 ## EAS Build and EAS Submit
 
 ### EAS Configuration
