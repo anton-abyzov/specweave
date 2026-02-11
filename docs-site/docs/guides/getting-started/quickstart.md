@@ -130,8 +130,8 @@ No configuration needed — enabled by default when MCP tools exceed 10% of cont
 **Coming in v1.1**: [Native Lazy Plugin Loading](/docs/guides/lazy-plugin-loading) — 99% token savings for non-SpecWeave work via router-based architecture.
 :::
 
-:::info Recommended MCP Servers
-Two MCP servers that supercharge SpecWeave:
+:::info Optional MCP Servers
+Two optional MCP servers that can enhance SpecWeave (not auto-installed):
 
 **Context7** — Real-time docs for any library (no more hallucinated APIs):
 ```bash
@@ -143,7 +143,7 @@ claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp
 claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp
 ```
 
-These add capabilities CLI tools can't match — current documentation and visual verification.
+These are **optional** and user-installed. SpecWeave works without them, but they add capabilities like current documentation lookup and visual verification when needed.
 :::
 
 ---

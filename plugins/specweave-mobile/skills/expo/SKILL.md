@@ -9,31 +9,11 @@ context: fork
 
 Comprehensive expertise in **Expo SDK 52+**, the **managed workflow**, and the **React Native New Architecture** (Fabric, TurboModules, JSI). Covers the full lifecycle from project creation through App Store and Play Store submission using EAS.
 
-## CRITICAL: Fetching Current Documentation
+## Fetching Current Documentation
 
-**Before providing version-specific guidance, ALWAYS fetch the latest documentation:**
+**Before providing version-specific guidance, verify current versions.** Expo SDK releases every ~3 months and React Native every ~8 weeks. Static version numbers go stale quickly.
 
-```typescript
-// Expo SDK - get current version info
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "expo",
-  query: "Expo SDK latest version features and migration guide"
-});
-
-// Expo Router - get current routing docs
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "expo-router",
-  query: "Expo Router file-based routing configuration"
-});
-
-// React Native - New Architecture status
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "react-native",
-  query: "React Native New Architecture Fabric TurboModules"
-});
-```
-
-**Why?** Expo SDK releases every ~3 months and React Native every ~8 weeks. Static version numbers go stale quickly. Always verify current versions before recommending specific APIs.
+For library documentation, use WebSearch or install Context7 manually: `claude plugin install context7@claude-plugins-official`
 
 ## Expo SDK 52+ and the Managed Workflow
 
@@ -655,7 +635,7 @@ eas submit --platform android --latest
 
 ## Related Skills
 
-- `mobile-architect` - Architecture decisions and patterns
+- `react-native-expert` - Architecture decisions and patterns
 - `react-native-expert` - Bare RN setup, Metro, debugging
 - `mobile-testing` - Comprehensive testing strategies
 - `deep-linking-push` - Deep linking and push notification details

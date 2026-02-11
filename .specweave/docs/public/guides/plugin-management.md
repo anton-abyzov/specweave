@@ -19,9 +19,9 @@ SpecWeave uses a **plugin architecture** to provide domain-specific expertise (f
 │   │   │   └── hooks/        # ← Hooks run from HERE, not source
 │   │   ├── sw-router/1.0.1/
 │   │   └── sw-frontend/1.0.0/
-│   └── claude-plugins-official/
-│       ├── context7/
-│       └── playwright/
+│   └── claude-plugins-official/  # Optional MCP plugins (user-installed)
+│       ├── context7/             # Install: claude plugin install context7@claude-plugins-official
+│       └── playwright/           # Install: claude plugin install playwright@claude-plugins-official
 └── marketplaces/             # Available plugins from registries
     └── specweave/
 ```
@@ -193,18 +193,19 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 4. **Clean registry manually**:
    ```bash
-   # Keep only core plugins
+   # Keep only core plugins (context7 and playwright are optional)
    cat > ~/.claude/plugins/installed_plugins.json << 'EOF'
    {
      "version": 2,
      "plugins": {
-       "context7@claude-plugins-official": [...],
-       "playwright@claude-plugins-official": [...],
        "sw@specweave": [...],
        "sw-router@specweave": [...]
      }
    }
    EOF
+   # Optionally re-add MCP plugins if you use them:
+   # claude plugin install context7@claude-plugins-official
+   # claude plugin install playwright@claude-plugins-official
    ```
 
 5. **Restart Claude Code** for changes to take effect.

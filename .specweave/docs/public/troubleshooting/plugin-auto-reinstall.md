@@ -32,24 +32,11 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1
 ### Step 2: Clean the Registry
 
 ```bash
+# Keep only core SpecWeave plugins (context7 and playwright are optional, user-installed)
 cat > ~/.claude/plugins/installed_plugins.json << 'EOF'
 {
   "version": 2,
   "plugins": {
-    "context7@claude-plugins-official": [
-      {
-        "scope": "user",
-        "installPath": "/Users/YOUR_USER/.claude/plugins/cache/claude-plugins-official/context7/VERSION",
-        "version": "VERSION"
-      }
-    ],
-    "playwright@claude-plugins-official": [
-      {
-        "scope": "user",
-        "installPath": "/Users/YOUR_USER/.claude/plugins/cache/claude-plugins-official/playwright/VERSION",
-        "version": "VERSION"
-      }
-    ],
     "sw@specweave": [
       {
         "scope": "user",
@@ -67,6 +54,9 @@ cat > ~/.claude/plugins/installed_plugins.json << 'EOF'
   }
 }
 EOF
+# Optionally re-add MCP plugins if you use them:
+# claude plugin install context7@claude-plugins-official
+# claude plugin install playwright@claude-plugins-official
 ```
 
 ### Step 3: Restart Claude Code

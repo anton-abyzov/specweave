@@ -1,6 +1,6 @@
 /**
- * Tests for smart routing between CLI and MCP.
- * Routes automation tasks to CLI, inspection tasks to MCP.
+ * Tests for Playwright routing.
+ * v1.0.240 (0198): All tasks route to CLI. MCP only as fallback when CLI unavailable.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -52,19 +52,33 @@ describe('Playwright Routing Logic', () => {
         expect(mode).toBe<PlaywrightMode>('cli');
       });
 
-      it('should route ui-inspect to MCP', () => {
+      // 0198: inspection tasks now route to CLI too (CLI-only mode)
+      it('should route ui-inspect to CLI', () => {
         const mode = resolvePlaywrightMode('ui-inspect');
-        expect(mode).toBe<PlaywrightMode>('mcp');
+        expect(mode).toBe<PlaywrightMode>('cli');
       });
 
-      it('should route page-exploration to MCP', () => {
+      it('should route page-exploration to CLI', () => {
         const mode = resolvePlaywrightMode('page-exploration');
-        expect(mode).toBe<PlaywrightMode>('mcp');
+        expect(mode).toBe<PlaywrightMode>('cli');
       });
 
-      it('should route self-healing-test to MCP', () => {
+      it('should route self-healing-test to CLI', () => {
         const mode = resolvePlaywrightMode('self-healing-test');
-        expect(mode).toBe<PlaywrightMode>('mcp');
+        expect(mode).toBe<PlaywrightMode>('cli');
+      });
+
+      // 0198: comprehensive check — ALL task types route to CLI
+      it('should route ALL task types to CLI', () => {
+        const allTasks: TaskType[] = [
+          'ui-automate', 'e2e-test-run', 'screenshot',
+          'form-automation', 'ci-testing',
+          'ui-inspect', 'page-exploration', 'self-healing-test',
+        ];
+
+        allTasks.forEach(task => {
+          expect(resolvePlaywrightMode(task)).toBe<PlaywrightMode>('cli');
+        });
       });
     });
 
