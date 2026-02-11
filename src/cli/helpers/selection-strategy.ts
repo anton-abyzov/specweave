@@ -462,7 +462,7 @@ const PATTERN_SHORTCUTS: Array<{ pattern: RegExp; transform: (match: string) => 
  * - "starts: prefix" → "prefix*" (glob)
  * - "ends: suffix" → "*suffix" (glob)
  * - "contains: text" → "*text*" (glob)
- * - Raw patterns are passed through as-is
+ * - Raw patterns without glob chars are auto-expanded to prefix match: "sw-ecom" → "sw-ecom*"
  *
  * @param input - User input (may contain shortcuts)
  * @returns Parsed pattern
@@ -475,6 +475,13 @@ export function parsePatternShortcut(input: string): string {
     if (match) {
       return transform(match[1].trim());
     }
+  }
+
+  // Auto-expand patterns without glob metacharacters to prefix match
+  // e.g., "sw-ecom" → "sw-ecom*" so it matches "sw-ecom-web", "sw-ecom-api", etc.
+  const hasGlobChars = /[*?\[]/.test(trimmed);
+  if (!hasGlobChars && trimmed.length > 0) {
+    return `${trimmed}*`;
   }
 
   return trimmed;

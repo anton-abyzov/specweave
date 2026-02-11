@@ -42,15 +42,16 @@ import { RateLimitError } from './types.js';
 export async function checkExistingGitHubCredentials(
   projectPath: string
 ): Promise<ExistingCredentials | null> {
-  // 1. Check project .env file
+  // 1. Check project .env file (check both GITHUB_TOKEN and GH_TOKEN)
   const envContent = readEnvFile(projectPath);
   if (envContent) {
     const parsed = parseEnvFile(envContent);
-    if (parsed.GH_TOKEN) {
+    const envToken = parsed.GITHUB_TOKEN || parsed.GH_TOKEN;
+    if (envToken) {
       return {
         source: '.env',
         credentials: {
-          token: parsed.GH_TOKEN,
+          token: envToken,
           instanceType: 'cloud' // Assume cloud unless specified
         }
       };
