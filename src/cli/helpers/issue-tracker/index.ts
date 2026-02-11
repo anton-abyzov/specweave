@@ -419,6 +419,25 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     );
   }
 
+  // Smart credential reuse: If GitHub was selected for repos AND for issues, save PAT to .env
+  // so all subsequent steps (checkExistingCredentials, external import) find it automatically
+  if (tracker === 'github' && githubCredentialsFromRepoSetup?.pat) {
+    console.log(chalk.green('\n✓ Saving GitHub PAT from repository setup to .env'));
+    console.log(chalk.gray(`   Organization: ${githubCredentialsFromRepoSetup.org}`));
+
+    // Persist PAT to .env so checkExistingCredentials and external import find it
+    let envContent = readEnvFile(projectPath);
+    if (!envContent) {
+      envContent = createEnvFromTemplate(projectPath);
+    }
+    const updatedContent = updateEnvVars(envContent, getGitHubEnvVars({
+      token: githubCredentialsFromRepoSetup.pat,
+      instanceType: 'cloud'
+    }));
+    writeEnvFile(projectPath, updatedContent);
+    ensureEnvGitignored(projectPath);
+  }
+
   // Step 1.5: Ask about sync settings (v0.24.0+: Three-Permission Architecture)
   console.log('');
   console.log(chalk.cyan.bold('⚙️  External Tool Sync Permissions'));

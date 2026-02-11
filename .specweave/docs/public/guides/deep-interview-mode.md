@@ -2,13 +2,13 @@
 
 **Version**: 1.0.195+
 
-Deep Interview Mode enables comprehensive upfront questioning during increment planning. When enabled, Claude asks 40+ questions about architecture, integrations, UI/UX, and tradeoffs before creating specifications.
+Deep Interview Mode enables comprehensive upfront questioning during increment planning. When enabled, Claude asks 5-40 questions (scaled to complexity) about architecture, integrations, UI/UX, and tradeoffs before creating specifications.
 
 ## Overview
 
 This feature is inspired by Thariq's (@trq212, Claude Code creator) workflow:
 
-> "For big features or new projects Claude might ask me 40+ questions and I end up with a much more detailed spec that I feel I had a lot of control over."
+> "For big features or new projects Claude might ask me many in-depth questions and I end up with a much more detailed spec that I feel I had a lot of control over."
 
 ### Benefits
 
@@ -27,7 +27,7 @@ When running `specweave init`, you'll be asked:
 ```
 Deep Interview Mode
 
-For big features, Claude can ask 40+ questions about architecture,
+Claude asks 5-40 questions (scaled to complexity) about architecture,
 integrations, UI/UX, and tradeoffs before creating specifications.
 
 Enable Deep Interview Mode? [y/N]
@@ -58,22 +58,19 @@ Edit `.specweave/config.json`:
 
 ## How It Works
 
-### 1. Detection
+### 1. Smart Interview Gate (v1.0.243+)
 
-When you create an increment via `/sw:increment`, the hook detects Deep Interview Mode:
+When Deep Interview Mode is enabled, a **Smart Interview Gate** fires on every user prompt until an increment is created. The gate:
 
-```
-DEEP INTERVIEW MODE ENABLED
-Before creating spec.md, you MUST ask thorough questions about:
-- Architecture & system design patterns
-- External integrations (APIs, databases, auth)
-- UI/UX concerns and tradeoffs
-- Performance & scalability requirements
-- Security considerations
-- Edge cases & error handling
-```
+1. **Assesses complexity** — Is this trivial, small, medium, or large?
+2. **Checks for completeness signals** — tech stack, integrations, auth, deployment, users, flows, business model
+3. **Decides intelligently**:
+   - If the prompt has enough detail for the complexity level → proceeds directly to increment creation
+   - If gaps are detected → asks 2-5 targeted questions about only what's missing
 
-### 2. Interview Phase
+**This means**: If you write a comprehensive description upfront, you skip the interview entirely. The LLM only asks when it genuinely needs more information.
+
+### 2. Interview Phase (when gaps detected)
 
 Claude uses the `AskUserQuestion` tool to ask structured questions:
 
@@ -113,7 +110,7 @@ Claude assesses complexity and adapts question count accordingly:
 | **Trivial** | 0-3 | Config change, typo fix, obvious bug |
 | **Small** | 4-8 | Single well-defined component |
 | **Medium** | 9-18 | Multiple components, some integration |
-| **Large** | 19-40+ | Architectural, cross-cutting, high-risk |
+| **Large** | 19-40 | Architectural, cross-cutting, high-risk |
 
 **The LLM thinks about what's needed - not blindly following a count.**
 
@@ -171,7 +168,7 @@ Soft guideline for minimum questions. The LLM should assess feature complexity a
 - Trivial features: 0-3 questions
 - Small features: 5-10 questions
 - Medium features: 10-20 questions
-- Large features: 20-40+ questions
+- Large features: 20-40 questions
 
 ```json
 "minQuestions": 5

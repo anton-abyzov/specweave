@@ -412,3 +412,159 @@ describe('T-024: Subagent fallback compatibility', () => {
     expect(content).toMatch(/Task\(\{|subagent_type|run_in_background/i);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-1: team-orchestrate must use correct Claude Code tool names
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-1: team-orchestrate uses correct Claude Code tool names', () => {
+  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+
+  it('should NOT reference non-existent Teammate() tool', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    expect(content).not.toMatch(/Teammate\s*\(/);
+    expect(content).not.toMatch(/operation:\s*["']spawnTeam["']/);
+  });
+
+  it('should reference TeamCreate() for team creation', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    expect(content).toMatch(/TeamCreate\s*\(/);
+  });
+
+  it('should have mandatory enforcement directive for native mode BEFORE domain mappings', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    const enforcementIndex = content.search(/MANDATORY.*TeamCreate|MUST.*use.*TeamCreate/i);
+    const domainMappingIndex = content.search(/Domain-to-Skill Mapping/i);
+    expect(enforcementIndex).toBeGreaterThan(-1);
+    expect(domainMappingIndex).toBeGreaterThan(-1);
+    expect(enforcementIndex).toBeLessThan(domainMappingIndex);
+  });
+
+  it('should instruct NOT to use Task(run_in_background) in native mode', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    expect(content).toMatch(/NEVER.*run_in_background.*native|NOT.*Task\s*\(\s*\{?\s*run_in_background/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-4: Repository structure enforcement in agent teams
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-4: Repository structure enforcement', () => {
+  const orchestratePath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const mergePath = join(pluginsDir, 'team-merge', 'SKILL.md');
+
+  it('should include repositories/{org}/ directory rule in team-orchestrate', () => {
+    const content = readFileSync(orchestratePath, 'utf-8');
+    expect(content).toMatch(/repositories\/.*directory|repository.*operations.*MUST.*repositories/i);
+  });
+
+  it('should include repo structure rule in agent spawn RULES sections', () => {
+    const content = readFileSync(orchestratePath, 'utf-8');
+    // Must appear in the RULES sections of spawn templates
+    expect(content).toMatch(/RULE[\s\S]{0,500}repositories\//i);
+  });
+
+  it('should include post-merge repo structure validation in team-merge', () => {
+    const content = readFileSync(mergePath, 'utf-8');
+    expect(content).toMatch(/validate.*repo.*structure|verify.*repositories.*directory|repo.*structure.*validation/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-5: Mandatory local test execution before agent completion
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-5: Agents must run ALL tests locally before completion', () => {
+  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+
+  it('should require running ALL tests (unit + integration + E2E) before signaling completion', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Must have a clear mandate that tests run locally before completion
+    expect(content).toMatch(/run.*all.*tests.*before.*complet|all.*tests.*must.*pass.*before.*signal/i);
+  });
+
+  it('should include test execution in EVERY agent WORKFLOW section', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Each agent template should mention running tests
+    // Frontend, Backend, Database, Testing, Security — all 5 should have it
+    const agentSections = content.split(/### 4[a-e]\./);
+    // At least 4 agent sections (first split part is before 4a)
+    expect(agentSections.length).toBeGreaterThanOrEqual(5);
+    for (let i = 1; i < agentSections.length; i++) {
+      expect(agentSections[i]).toMatch(/run.*test|npm.*test|test.*pass|execute.*test/i);
+    }
+  });
+
+  it('should block completion if tests fail in quality gate section', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    expect(content).toMatch(/tests.*fail.*fix|if.*test.*fail.*repeat|NOT.*signal.*until.*tests.*pass/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-6: Frontend design quality defaults
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-6: Frontend agent design quality', () => {
+  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+
+  it('should instruct frontend agent to invoke design skill', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Frontend agent section should include design skill invocation
+    const frontendSection = content.split(/### 4a\./)[1]?.split(/### 4b\./)[0] || '';
+    expect(frontendSection).toMatch(/sw-frontend:frontend-design/);
+  });
+
+  it('should set world-class design quality as default expectation', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    const frontendSection = content.split(/### 4a\./)[1]?.split(/### 4b\./)[0] || '';
+    expect(frontendSection).toMatch(/world.class|polished|sleek|production.ready.*design|high.*quality.*ui/i);
+  });
+
+  it('should include responsive and accessible design requirements', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    const frontendSection = content.split(/### 4a\./)[1]?.split(/### 4b\./)[0] || '';
+    expect(frontendSection).toMatch(/responsive/i);
+    expect(frontendSection).toMatch(/accessib/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-7: Authentication/service setup in agent prompts
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-7: Authentication and service setup guidance', () => {
+  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+
+  it('should include auth setup guidance in backend agent', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    const backendSection = content.split(/### 4b\./)[1]?.split(/### 4c\./)[0] || '';
+    expect(backendSection).toMatch(/auth.*setup|supabase|authentication.*service|auth.*provider/i);
+  });
+
+  it('should instruct agents to use sw:service-connect for external services', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    expect(content).toMatch(/sw:service-connect/);
+  });
+
+  it('should include environment verification before implementation', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Agents should verify services are running/accessible
+    expect(content).toMatch(/verify.*service|check.*connection|environment.*ready|service.*running/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// ISSUE-8: Agents should use /sw:auto for autonomous work
+// ─────────────────────────────────────────────────────────────────────
+describe('ISSUE-8: Agents prefer auto mode for autonomous work', () => {
+  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+
+  it('should instruct agents to prefer /sw:auto for autonomous execution', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Should explicitly recommend auto mode as preferred
+    expect(content).toMatch(/prefer.*\/sw:auto|\/sw:auto.*preferred|use.*\/sw:auto.*autonomous/i);
+  });
+
+  it('should instruct agents to attempt closure via /sw:done after auto completes', () => {
+    const content = readFileSync(skillPath, 'utf-8');
+    // Agents should try to close their increment after auto work
+    expect(content).toMatch(/\/sw:done.*after.*auto|auto.*complete.*\/sw:done|close.*increment.*after/i);
+  });
+});
