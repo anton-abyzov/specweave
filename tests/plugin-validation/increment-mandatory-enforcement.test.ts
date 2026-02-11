@@ -10,8 +10,12 @@ const projectRoot = join(__dirname, '..', '..');
 /**
  * Validation Tests: Increment Mandatory Enforcement (Config-Based)
  *
- * Ensures that incrementAssist.mandatory config option is wired up
- * to block implementation prompts when no increment exists.
+ * Ensures that incrementAssist.mandatory config option forces SKILL FIRST
+ * instructions via additionalContext (approve decision, not block).
+ *
+ * History: Previously used "block" decision which prevented Claude from
+ * following the SKILL FIRST instructions. Changed to "approve" with
+ * additionalContext so Claude can read and execute the Skill() call.
  */
 
 describe('ISSUE-2: Config-based mandatory increment enforcement', () => {
@@ -38,30 +42,31 @@ describe('ISSUE-2: Config-based mandatory increment enforcement', () => {
     expect(incrementAssistProps?.mandatory?.type).toBe('boolean');
   });
 
-  it('should use block decision when config-forced mandatory=true', () => {
+  it('should use approve+additionalContext for mandatory enforcement (not block)', () => {
     const hookPath = join(projectRoot, 'plugins', 'specweave', 'hooks', 'user-prompt-submit.sh');
     const content = readFileSync(hookPath, 'utf-8');
-    // When incrementAssist.mandatory=true from config AND implementation detected,
-    // hook must use "block" decision (not "approve")
-    expect(content).toMatch(/INCREMENT_MANDATORY_CONFIG.*block|mandatory.*config.*decision.*block/is);
+    // When INCREMENT_MANDATORY_CONFIG=true forces INC_MANDATORY=true,
+    // the hook uses output_approve_with_context (not block) so Claude
+    // can read and follow the SKILL FIRST instructions.
+    // The mandatory enforcement happens via strong additionalContext directives.
+    expect(content).toMatch(/INC_MANDATORY.*true[\s\S]*?output_approve_with_context/);
   });
 
-  it('should enforce block on hotfix action when config mandatory=true', () => {
+  it('should use output_approve_with_context in hotfix branch', () => {
     const hookPath = join(projectRoot, 'plugins', 'specweave', 'hooks', 'user-prompt-submit.sh');
     const content = readFileSync(hookPath, 'utf-8');
-    // The hotfix branch must also check INCREMENT_MANDATORY_CONFIG and use block
-    // Extract the hotfix case branch content
+    // The hotfix branch uses approve+additionalContext
     const hotfixMatch = content.match(/hotfix\)([\s\S]*?);;/);
     expect(hotfixMatch).toBeTruthy();
-    expect(hotfixMatch![1]).toMatch(/INCREMENT_MANDATORY_CONFIG/);
+    expect(hotfixMatch![1]).toMatch(/output_approve_with_context/);
   });
 
-  it('should enforce block on small_fix action when config mandatory=true', () => {
+  it('should use output_approve_with_context in small_fix branch', () => {
     const hookPath = join(projectRoot, 'plugins', 'specweave', 'hooks', 'user-prompt-submit.sh');
     const content = readFileSync(hookPath, 'utf-8');
-    // The small_fix branch must also check INCREMENT_MANDATORY_CONFIG and use block
+    // The small_fix branch uses approve+additionalContext
     const smallFixMatch = content.match(/small_fix\)([\s\S]*?);;/);
     expect(smallFixMatch).toBeTruthy();
-    expect(smallFixMatch![1]).toMatch(/INCREMENT_MANDATORY_CONFIG/);
+    expect(smallFixMatch![1]).toMatch(/output_approve_with_context/);
   });
 });

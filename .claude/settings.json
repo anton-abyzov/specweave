@@ -9,7 +9,8 @@
   },
   "enabledPlugins": {
     "sw-backend@specweave": true,
-    "sw-github@specweave": true
+    "sw-github@specweave": true,
+    "sw-payments@specweave": true
   },
   "pluginConfigs": {
     "supabase@claude-plugins-official": {

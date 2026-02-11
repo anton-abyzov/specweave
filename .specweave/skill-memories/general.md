@@ -9,3 +9,4 @@
 - **2026-02-11**: Auto command must have explicit stop conditions (passing tests, increment completion, quality gates) and log/display output visibly to user in terminal
 - **2026-02-11**: Auto mode uses Claude Code's native Stop hook (stop-auto-v5.sh) to create implicit loops - hook returns {"decision":"block", "systemMessage":"..."} to prevent stopping and inject work remaining
 - **2026-02-11**: Stop hooks in v5 only check checkbox completion via grep (no tests/builds) - quality checks belong in /sw:done, not in hooks
+- **2026-02-11**: Hook decision 'block' erases user prompt from context and prevents Claude from seeing instructions - use hookSpecificOutput.additionalContext instead to inject context that Claude can act on
