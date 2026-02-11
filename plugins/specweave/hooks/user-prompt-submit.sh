@@ -1252,9 +1252,9 @@ ${SKILL_MEMORY}
 You MUST invoke this skill for this task. Do NOT implement directly without using this skill.
 
 **Invoke NOW using Skill tool:**
-\\\`\\\`\\\`typescript
-Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
-\\\`\\\`\\\`
+\`\`\`typescript
+Skill({ skill: \"${SKILL_INVOCATION}\" })
+\`\`\`
 
 **Why this skill is required:**
 ${SKILL_REASON:-This skill provides specialized support for your task.}
@@ -1269,9 +1269,9 @@ ${SKILL_MEMORY}
 ### 💡 Recommended: Use ${SKILL_INVOCATION} Skill
 
 Consider invoking this skill for better results:
-\\\`\\\`\\\`typescript
-Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
-\\\`\\\`\\\`
+\`\`\`typescript
+Skill({ skill: \"${SKILL_INVOCATION}\" })
+\`\`\`
 *${SKILL_REASON:-This skill provides specialized support for your task.}*"
                   fi
                 elif [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
@@ -1287,13 +1287,13 @@ Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
 ### 🚀 Then SPAWN Specialized Agent
 
 **After creating increment, use Task tool:**
-\\\`\\\`\\\`typescript
+\`\`\`typescript
 Task({
-  subagent_type: \\\"${AGENT_TYPE}\\\",
-  prompt: \\\"Implement the feature...\\\",
-  description: \\\"${PRIMARY_REASON:-Implementation}\\\"
+  subagent_type: \"${AGENT_TYPE}\",
+  prompt: \"Implement the feature...\",
+  description: \"${PRIMARY_REASON:-Implementation}\"
 })
-\\\`\\\`\\\`
+\`\`\`
 *Specialized agents produce better code than direct implementation.*"
                   fi
                 fi
@@ -1356,9 +1356,9 @@ ${INC_PLANNER_MEMORY_RAW}
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 **Your FIRST tool call must be:**
-\\\`\\\`\\\`
-Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"${ESCAPED_PROMPT}\\\" })
-\\\`\\\`\\\`
+\`\`\`
+Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT}\" })
+\`\`\`
 
 **Order matters:**
 1. ✅ Call Skill tool FIRST (as shown above)
@@ -1369,24 +1369,18 @@ Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"${ESCAPED_PROMPT}\\\" })
 
 ---
 
-⚠️ **SKILL CHAINING REQUIRED** - \\\"SKILL FIRST\\\" does NOT mean \\\"only one skill\\\"!
+⚠️ **SKILL CHAINING REQUIRED** - \"SKILL FIRST\" does NOT mean \"only one skill\"!
 
 After sw:increment-planner, ALSO invoke domain skills for your tech stack:
-- React/Vue/Angular → \\\`sw-frontend:frontend-architect\\\`
-- .NET/C# → \\\`sw-backend:dotnet-backend\\\`
-- Stripe → \\\`sw-payments:stripe-integration\\\`
+- React/Vue/Angular → \`sw-frontend:frontend-architect\`
+- .NET/C# → \`sw-backend:dotnet-backend\`
+- Stripe → \`sw-payments:stripe-integration\`
 - After code → LSP works automatically (use findReferences, goToDefinition)
 
-See CLAUDE.md section \\\"MANDATORY: Skill Chaining\\\" for full pattern."
-                      # When INCREMENT_MANDATORY_CONFIG=true (from config), use block decision
-                      # to actually prevent execution without increment creation
-                      if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
-                        local escaped_block
-                        escaped_block=$(escape_json_early "$MSG")
-                        printf '{"decision":"block","reason":"%s"}\n' "$escaped_block"
-                      else
-                        output_approve_with_context "$MSG"
-                      fi
+See CLAUDE.md section \"MANDATORY: Skill Chaining\" for full pattern."
+                      # Use approve+additionalContext so Claude can read and follow
+                      # the SKILL FIRST instructions (block erases prompt from context)
+                      output_approve_with_context "$MSG"
                       exit 0
                     else
                       # v1.0.169: Also suggest direct skill call for non-mandatory
@@ -1427,14 +1421,7 @@ Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    # When INCREMENT_MANDATORY_CONFIG=true, block hotfix too
-                    if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
-                      local escaped_hotfix_block
-                      escaped_hotfix_block=$(escape_json_early "$MSG")
-                      printf '{"decision":"block","reason":"%s"}\n' "$escaped_hotfix_block"
-                    else
-                      output_approve_with_context "$MSG"
-                    fi
+                    output_approve_with_context "$MSG"
                     exit 0
                     ;;
 
@@ -1479,14 +1466,7 @@ Or via command: \`$CMD_SMALLFIX\`
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    # When INCREMENT_MANDATORY_CONFIG=true, block small_fix too
-                    if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
-                      local escaped_smallfix_block
-                      escaped_smallfix_block=$(escape_json_early "$MSG")
-                      printf '{"decision":"block","reason":"%s"}\n' "$escaped_smallfix_block"
-                    else
-                      output_approve_with_context "$MSG"
-                    fi
+                    output_approve_with_context "$MSG"
                     exit 0
                     ;;
                 esac
@@ -1514,9 +1494,9 @@ Or via command: \`$CMD_SMALLFIX\`
 You MUST use this skill for this task. Do NOT proceed without loading it first.
 
 **Invoke NOW using Skill tool:**
-\\\`\\\`\\\`typescript
-Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
-\\\`\\\`\\\`
+\`\`\`typescript
+Skill({ skill: \"${SKILL_INVOCATION}\" })
+\`\`\`
 
 **Why this skill is required:**
 ${SKILL_REASON:-This skill provides specialized support for your task.}
@@ -1529,10 +1509,10 @@ ${SKILL_REASON:-This skill provides specialized support for your task.}
                   # Non-mandatory skill recommendation
                   MSG="${SKILL_ONLY_PREFIX}💡 **Skill Recommended**: Consider using a specialized skill.
 
-Use \\\`${SKILL_INVOCATION}\\\` for better results:
-\\\`\\\`\\\`typescript
-Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
-\\\`\\\`\\\`
+Use \`${SKILL_INVOCATION}\` for better results:
+\`\`\`typescript
+Skill({ skill: \"${SKILL_INVOCATION}\" })
+\`\`\`
 
 *${SKILL_REASON:-This skill provides specialized support for your task.}*"
                   output_approve_with_context "$MSG"
