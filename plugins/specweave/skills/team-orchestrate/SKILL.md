@@ -149,6 +149,43 @@ Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase 
 | GraphQL schema | `schema.graphql` | Backend agent | Frontend, Mobile |
 | API route types | `src/api/types/` | Backend agent | Frontend |
 
+### Organization Discovery (CRITICAL — resolve BEFORE spawning agents)
+
+**The orchestrator MUST resolve the actual organization/owner name before spawning ANY agents.**
+All `{ORG}` placeholders below must be replaced with the real value.
+
+**Discovery chain (in order of priority):**
+
+1. **From config** (`repository.organization`):
+```bash
+ORG=$(jq -r '.repository.organization // empty' .specweave/config.json 2>/dev/null)
+```
+
+2. **From sync profiles** (fallback if repository.organization not set):
+```bash
+if [ -z "$ORG" ]; then
+  ORG=$(jq -r '[.sync.profiles[].config.owner // .sync.profiles[].config.organization] | map(select(. != null)) | first // empty' .specweave/config.json 2>/dev/null)
+fi
+```
+
+3. **From umbrella childRepos** (fallback):
+```bash
+if [ -z "$ORG" ]; then
+  ORG=$(jq -r '.umbrella.childRepos[0].path // empty' .specweave/config.json 2>/dev/null | sed 's|repositories/||' | cut -d/ -f1)
+fi
+```
+
+4. **From existing filesystem** (last resort):
+```bash
+if [ -z "$ORG" ]; then
+  ORG=$(ls -d repositories/*/ 2>/dev/null | head -1 | xargs basename 2>/dev/null)
+fi
+```
+
+5. **If all fail**: Ask the user. NEVER guess or use a placeholder.
+
+**NEVER read org from .env files.** Organization belongs in `.specweave/config.json`.
+
 ### Multi-Repo Increment Placement (CRITICAL)
 
 **In umbrella projects with a `repositories/` folder, each agent MUST create its increment in its OWN repo's `.specweave/`:**
@@ -158,11 +195,11 @@ Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase 
 umbrella-project/
 ├── .specweave/config.json              # Umbrella config ONLY
 ├── repositories/
-│   ├── {org}/sw-ecom-domain/
+│   ├── {ORG}/sw-ecom-domain/
 │   │   └── .specweave/increments/0001-domain-models/    # Domain agent's increment
-│   ├── {org}/sw-ecom-shared/
+│   ├── {ORG}/sw-ecom-shared/
 │   │   └── .specweave/increments/0001-shared-types/     # Shared agent's increment
-│   └── {org}/sw-ecom-api/
+│   └── {ORG}/sw-ecom-api/
 │       └── .specweave/increments/0001-api-endpoints/    # Backend agent's increment
 
 # WRONG: All agents dumping into umbrella root
@@ -174,6 +211,7 @@ umbrella-project/
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
 - Each agent's working directory is its assigned repo inside `repositories/`
 - Never create `.specweave/increments/` in the umbrella root for multi-repo work
+- Replace `{ORG}` with the actual organization discovered above
 
 ### Phase 1: Upstream Agents (Contracts First)
 
@@ -274,7 +312,7 @@ DESIGN QUALITY:
   - Invoke `sw-frontend:frontend-design` for high-quality UI polish
 
 WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec: .specweave/increments/[ID]/spec.md
@@ -296,7 +334,7 @@ RULES:
   - Follow existing code conventions (check .eslintrc, .prettierrc, tsconfig.json)
   - Run linter and type-check before signaling completion
   - All new components must have corresponding test files
-  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
   - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
@@ -327,7 +365,7 @@ AUTH SETUP:
   - Ensure auth middleware works end-to-end before signaling completion
 
 WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec: .specweave/increments/[ID]/spec.md
@@ -350,7 +388,7 @@ RULES:
   - Every new API endpoint must have request/response validation
   - Error handling must follow project conventions
   - All services must have unit tests
-  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
   - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
@@ -373,7 +411,7 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec: .specweave/increments/[ID]/spec.md
@@ -395,7 +433,7 @@ RULES:
   - Always create migrations (never modify schema without migration)
   - Seed data must be idempotent
   - Schema changes must be backward-compatible when possible
-  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
   - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
@@ -424,7 +462,7 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec: .specweave/increments/[ID]/spec.md
@@ -446,7 +484,7 @@ RULES:
   - Tests must cover all acceptance criteria from spec.md
   - Follow existing test patterns and utilities
   - E2E tests must include accessibility checks when applicable
-  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
   - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
@@ -471,7 +509,7 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec: .specweave/increments/[ID]/spec.md
@@ -493,7 +531,7 @@ RULES:
   - NEVER commit secrets, credentials, or API keys
   - All user input must be validated and sanitized
   - Follow OWASP Top 10 guidelines
-  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
   - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
@@ -524,7 +562,7 @@ Each agent has exclusive WRITE access to specific file patterns. This prevents m
 3. **Shared files require coordination** -- if two domains need to modify the same file (e.g., `package.json`), the orchestrator assigns a primary owner and others request changes via messages
 4. **New files** -- agents can create new files ONLY within their ownership patterns
 5. **Conflict detection** -- the orchestrator checks for ownership overlap before spawning and resolves ambiguity upfront
-6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{org}/` directory convention. NEVER create repositories at the project root or arbitrary locations.
+6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{ORG}/` directory convention. NEVER create repositories at the project root or arbitrary locations.
 
 ---
 

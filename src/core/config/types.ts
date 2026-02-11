@@ -900,8 +900,8 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     },
   },
   limits: {
-    maxActiveIncrements: 1,
-    hardCap: 3,
+    maxActiveIncrements: 3,
+    hardCap: 5,
     allowEmergencyInterrupt: true,
     typeBehaviors: {
       canInterrupt: [IncrementType.HOTFIX, IncrementType.BUG],
@@ -984,7 +984,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     suggestNewIncrement: true,
     suggestReopen: true,
     confidenceThreshold: 0.7,
-    mandatory: false,
+    mandatory: true,
   },
   planning: {
     deepInterview: {

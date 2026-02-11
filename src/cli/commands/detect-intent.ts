@@ -33,6 +33,7 @@ import {
   SkillRouting,
   SkillInvocation,
   LspRecommendation,
+  ActiveIncrementContext,
 } from '../../core/lazy-loading/llm-plugin-detector.js';
 import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
 
@@ -91,6 +92,42 @@ export interface DetectIntentResult {
 
   /** LSP operation recommendation (v1.0.198+) */
   lsp?: LspRecommendation;
+}
+
+/**
+ * Scan active increments for reopen detection context.
+ * Includes ALL increments in the /increments folder (excludes _archive dirs).
+ */
+function scanActiveIncrementsForDetection(): ActiveIncrementContext[] {
+  const projectRoot = findProjectRoot();
+  if (!projectRoot) return [];
+
+  const incDir = path.join(projectRoot, '.specweave', 'increments');
+  if (!fs.existsSync(incDir)) return [];
+
+  const results: ActiveIncrementContext[] = [];
+  try {
+    const entries = fs.readdirSync(incDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('_')) continue;
+      const metaPath = path.join(incDir, entry.name, 'metadata.json');
+      if (!fs.existsSync(metaPath)) continue;
+      try {
+        const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+        // Include all non-archived, non-abandoned, non-backlog increments
+        const excludedStatuses = ['archived', 'abandoned', 'backlog'];
+        if (!excludedStatuses.includes(meta.status)) {
+          results.push({
+            id: entry.name,
+            name: meta.title || meta.name || entry.name,
+            type: meta.type || 'feature',
+            status: meta.status || 'unknown',
+          });
+        }
+      } catch { /* skip unreadable metadata */ }
+    }
+  } catch { /* skip if directory unreadable */ }
+  return results;
 }
 
 /**
@@ -243,8 +280,11 @@ export async function detectIntentCommand(
   const incrementAssistEnabled = isIncrementAssistEnabled();
   const confidenceThreshold = getIncrementConfidenceThreshold();
 
+  // Gather active increments for reopen detection
+  const activeIncrements = scanActiveIncrementsForDetection();
+
   // Run LLM detection
-  const llmResult = await detectPluginsViaLLM(prompt);
+  const llmResult = await detectPluginsViaLLM(prompt, 15000, activeIncrements);
 
   const result: DetectIntentResult = {
     detected: llmResult.success && llmResult.plugins.length > 0,

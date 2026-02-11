@@ -469,14 +469,16 @@ Before considering a component complete:
 - [ ] TypeScript interface with JSDoc comments
 - [ ] All variants implemented and tested
 - [ ] Unit tests with >80% coverage
-- [ ] Storybook stories for all variants
+- [ ] Storybook stories for all variants with realistic data
 - [ ] README documentation
 - [ ] Accessibility compliance (ARIA, keyboard nav)
 - [ ] Responsive design
-- [ ] Error states handled
-- [ ] Loading states (if applicable)
+- [ ] Error states handled (styled fallbacks, never raw undefined/NaN)
+- [ ] Loading states with skeleton shimmer (if applicable)
 - [ ] Dark mode support (if applicable)
 - [ ] Performance optimized (React.memo, useMemo)
+- [ ] Images use placeholder URLs or AI-generated assets (never "No image" boxes)
+- [ ] Numeric data uses Intl.NumberFormat (prices, dates, percentages)
 
 ## Workflow
 
