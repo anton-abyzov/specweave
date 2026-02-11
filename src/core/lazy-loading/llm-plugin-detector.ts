@@ -144,9 +144,9 @@ export const OFFICIAL_PLUGINS = [
   // NOTE: LSP plugins REMOVED - they're broken in @claude-plugins-official
   // Use boostvolt/claude-code-lsps marketplace + ENABLE_LSP_TOOL=1 instead
 
-  // Core/Required
-  'context7',         // Documentation lookup (useful for any coding)
-  'playwright',       // Browser automation, E2E testing
+  // NOTE (v1.0.240 / 0198): context7 and playwright REMOVED from auto-install.
+  // Users can install manually: claude plugin install context7@claude-plugins-official
+  // Playwright browser automation handled by @playwright/cli (98% token savings).
 
   // Service Integrations (no SW equivalent)
   'firebase',         // Firebase, Firestore
@@ -506,7 +506,7 @@ DETECTION RULES:
 4. ⚠️ NEVER suggest LSP plugins (*-lsp) - they are BROKEN in official marketplace
 
 OUTPUT FORMAT (JSON only):
-{"plugins":["sw-frontend","context7"],"confidence":0.9,"reasoning":"one-line"}
+{"plugins":["sw-frontend"],"confidence":0.9,"reasoning":"one-line"}
 
 ═══════════════════════════════════════════════════════════════
 SPECWEAVE PLUGINS (sw-*@specweave) - PRIORITY for overlapping services
@@ -515,7 +515,7 @@ SPECWEAVE PLUGINS (sw-*@specweave) - PRIORITY for overlapping services
 sw-frontend: React, Vue, Angular, Next.js, Svelte, UI, dashboard, components, Tailwind
 sw-backend: API, REST, GraphQL, .NET, C#, Node.js, Express, FastAPI, Django, Spring Boot, Go, PostgreSQL, MongoDB
 sw-payments: Stripe, PayPal, checkout, billing, subscriptions (USE THIS instead of stripe@official)
-sw-testing: TDD, Jest, Vitest, Playwright, Cypress, E2E (ONLY if explicit)
+sw-testing: test, testing, unit test, integration test, coverage, TDD, Jest, Vitest, Playwright, Cypress, E2E, QA, test strategy, code coverage, test automation
 sw-infra: Terraform, Docker, AWS, CI/CD, CloudFormation (ONLY if explicit)
 sw-k8s: Kubernetes, Helm, EKS, AKS, GKE (ONLY if explicit)
 sw-mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
@@ -536,9 +536,8 @@ The official marketplace LSP plugins (csharp-lsp, gopls-lsp, etc.) only contain
 README files with no actual configuration. See GitHub Issue #15148.
 LSP is handled separately via boostvolt/claude-code-lsps marketplace.
 
-Core/Required:
-  context7: Documentation lookup (add for ANY coding task)
-  playwright: Browser automation (add when E2E/browser testing mentioned)
+⚠️ DO NOT suggest context7 or playwright - they are optional, user-installed.
+Browser automation is handled by @playwright/cli (not MCP plugin).
 
 Service Integrations (NO SW equivalent - use these):
   firebase: Firebase, Firestore, Firebase Auth
@@ -557,26 +556,39 @@ Development Tools:
   hookify: Git hooks, pre-commit hooks
 
 ═══════════════════════════════════════════════════════════════
-INCREMENT RECOMMENDATION (v1.0.168 - LLM decides mandatory)
+INCREMENT RECOMMENDATION (v1.0.241 - DEFAULT: create increment)
 ═══════════════════════════════════════════════════════════════
 
 ALSO analyze if user should create/reopen a SpecWeave increment.
+
+⚠️ CRITICAL PRINCIPLE: Almost ALL implementation work should be tracked in an increment.
+The DEFAULT is to recommend an increment (~95% of prompts that involve code changes).
+Only skip for pure questions, greetings, exploration, or explicit user opt-out.
 
 "increment" field with:
 - action: "new" | "reopen" | "small_fix" | "hotfix" | "none"
 - confidence: 0.0-1.0
 - mandatory: true/false (YOU decide - not config-based!)
-- suggestedName: kebab-case name (for "new")
+- suggestedName: kebab-case name (for "new" and "small_fix")
 - reasoning: brief explanation
 
 WHEN TO USE EACH ACTION:
 ┌─────────────┬─────────────────────────────────────────────────────────────┐
-│ new         │ Multi-file feature, significant implementation, new func   │
+│ new         │ ANY feature, bug fix, refactoring, enhancement, or         │
+│             │ implementation work that changes code behavior              │
 │ hotfix      │ "urgent", "production bug", "critical fix"                 │
 │ reopen      │ "fix the X feature", work related to recent increment      │
-│ small_fix   │ Typo, config tweak, single-line fix, version bump          │
-│ none        │ Questions, exploration, "how do I", general chat           │
+│ small_fix   │ ONLY: literal typo fix, version bump, single config value  │
+│             │ change, comment update — truly trivial, <5 min changes     │
+│ none        │ ONLY: questions, exploration, "how do I", general chat,    │
+│             │ greetings, or user explicitly opted out of tracking         │
 └─────────────┴─────────────────────────────────────────────────────────────┘
+
+⚠️ IMPORTANT: When in doubt between "new" and "small_fix", ALWAYS choose "new".
+Bug fixes, refactoring, adding error handling, improving validation, updating
+tests, fixing logic errors — these are ALL "new", NOT "small_fix".
+"small_fix" is ONLY for changes where you literally change 1-2 lines with zero
+investigation needed (typo, version string, config value).
 
 WHEN mandatory: true (Claude MUST create increment before implementing):
 - Multi-file feature work (React + API + Database)
@@ -585,10 +597,10 @@ WHEN mandatory: true (Claude MUST create increment before implementing):
 - Significant architectural changes
 - confidence >= 0.85 AND action = "new"
 
-WHEN mandatory: false (suggestion only):
-- Single-file fixes
-- Small improvements
-- User explicitly opted out
+WHEN mandatory: false (suggestion only, but still SUGGEST increment):
+- Bug fixes and refactoring (action: "new", mandatory: false)
+- Single-file improvements (action: "new", mandatory: false)
+- Small but non-trivial changes (action: "small_fix", mandatory: false)
 - Low confidence
 
 EXPLICIT OPT-OUT → action: "none":
@@ -600,13 +612,19 @@ EXAMPLES (with increment field + mandatory)
 ═══════════════════════════════════════════════════════════════
 
 "Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["sw-frontend","sw-backend","sw-payments","context7"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
+{"plugins":["sw-frontend","sw-backend","sw-payments"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
 
 "Build Go microservice with PostgreSQL"
-{"plugins":["sw-backend","context7"],"confidence":0.95,"reasoning":"Go→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
+{"plugins":["sw-backend"],"confidence":0.95,"reasoning":"Go→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
 
 "Fix the login bug"
-{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"small_fix","confidence":0.85,"mandatory":false,"reasoning":"Bug fix, likely single-file change"}}
+{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"fix-login-bug","reasoning":"Bug fix requiring investigation and code changes"}}
+
+"Add error handling to the API"
+{"plugins":[],"confidence":0.8,"reasoning":"API improvement","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"api-error-handling","reasoning":"Feature enhancement — adding error handling logic"}}
+
+"Refactor the auth module"
+{"plugins":[],"confidence":0.8,"reasoning":"Refactoring work","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"refactor-auth-module","reasoning":"Refactoring work that changes code structure"}}
 
 "The auth feature is broken again"
 {"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
@@ -615,13 +633,19 @@ EXAMPLES (with increment field + mandatory)
 {"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Question, no implementation"}}
 
 "Update the package version to 2.0"
-{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.95,"mandatory":false,"reasoning":"Config/version change, no feature work"}}
+{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"version-bump-2.0","reasoning":"Simple version string change, trivial edit"}}
 
 "Urgent: production checkout is failing"
 {"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention - MANDATORY"}}
 
+"Fix typo in README"
+{"plugins":[],"confidence":0.9,"reasoning":"Typo fix","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"fix-readme-typo","reasoning":"Literal typo fix, trivial 1-line change"}}
+
 "Just fix the typo in README, don't track it"
 {"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"User explicitly opted out of tracking"}}
+
+"Hello" / "Thanks" / "What's up?"
+{"plugins":[],"confidence":0.95,"reasoning":"Greeting/chat","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Conversational, no implementation work"}}
 
 ═══════════════════════════════════════════════════════════════
 SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
@@ -642,6 +666,10 @@ SKILL INVOCATION RULES:
 │ Domain Skills        │ MANDATORY for specialized work                   │
 │ (sw-backend, sw-ml)  │ "Use dotnet-backend skill for .NET patterns"     │
 ├──────────────────────┼──────────────────────────────────────────────────┤
+│ Testing Skills       │ MANDATORY for testing/QA work                    │
+│ (sw-testing)         │ "Use unit-testing for Jest/Vitest patterns"      │
+│                      │ "Use e2e-testing for Playwright/Cypress"         │
+├──────────────────────┼──────────────────────────────────────────────────┤
 │ Payment Skills       │ MANDATORY for payment integration                │
 │ (sw-payments)        │ "Use stripe-integration for Stripe patterns"     │
 ├──────────────────────┼──────────────────────────────────────────────────┤
@@ -653,6 +681,7 @@ WHEN TO MAKE SKILL MANDATORY:
 - .NET/C# work → sw-backend:dotnet-backend is MANDATORY
 - ML/AI work → sw-ml:ml-engineer is MANDATORY
 - Payment integration → sw-payments:stripe-integration is MANDATORY
+- Testing/QA work → sw-testing:unit-testing or sw-testing:e2e-testing is MANDATORY
 - Complex architecture → relevant architect skill is recommended
 
 NOTE: LSP is handled separately (boostvolt/claude-code-lsps marketplace).
@@ -661,13 +690,22 @@ DO NOT include any *-lsp plugins in your response.
 SKILL EXAMPLES:
 
 "Build .NET API with Entity Framework"
-{"plugins":["sw-backend","context7"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
+{"plugins":["sw-backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
 
 "Train a machine learning model for image classification"
-{"plugins":["sw-ml","context7"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
+{"plugins":["sw-ml"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
 
 "Implement Stripe checkout flow"
-{"plugins":["sw-payments","sw-frontend","context7"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}
+{"plugins":["sw-payments","sw-frontend"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}
+
+"Write unit tests for the auth service"
+{"plugins":["sw-testing"],"confidence":0.95,"reasoning":"Unit testing task","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing task, likely extends existing work"},"skillInvocation":{"skill":"sw-testing:unit-testing","reason":"Use unit-testing skill for Vitest/Jest patterns, mocking strategies, and TDD workflow","mandatory":true}}
+
+"Set up E2E tests with Playwright"
+{"plugins":["sw-testing"],"confidence":0.95,"reasoning":"E2E test setup","increment":{"action":"new","confidence":0.8,"mandatory":false,"suggestedName":"e2e-test-setup","reasoning":"Test infrastructure setup"},"skillInvocation":{"skill":"sw-testing:e2e-testing","reason":"Use E2E testing skill for Playwright setup, page objects, and CI integration","mandatory":true}}
+
+"Add test coverage for the API endpoints"
+{"plugins":["sw-testing"],"confidence":0.9,"reasoning":"Test coverage work","increment":{"action":"small_fix","confidence":0.6,"mandatory":false,"reasoning":"Adding tests to existing code"},"skillInvocation":{"skill":"sw-testing:unit-testing","reason":"Use unit-testing skill for API test patterns and coverage strategies","mandatory":false}}
 
 ═══════════════════════════════════════════════════════════════
 LSP OPERATION DETECTION (v1.0.198 - unified detection)
@@ -716,7 +754,7 @@ LSP EXAMPLES:
 {"plugins":[],"confidence":0.95,"reasoning":"Symbol listing","lsp":{"needed":true,"operation":"symbols","language":"typescript","warmupRequired":true}}
 
 "Build a React dashboard" (NO LSP needed)
-{"plugins":["sw-frontend","context7"],"confidence":0.95,"reasoning":"React development"}`;
+{"plugins":["sw-frontend"],"confidence":0.95,"reasoning":"React development"}`;
 }
 
 /**

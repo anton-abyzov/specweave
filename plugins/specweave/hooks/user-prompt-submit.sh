@@ -208,13 +208,30 @@ fi
 #
 # When both disabled: NO detection, NO LLM calls, fastest response time (~5-7s saved)
 
+# ==============================================================================
+# PROJECT ROOT DETECTION (walk up to find .specweave/ — prevents folder pollution)
+# ==============================================================================
+SW_PROJECT_ROOT=""
+_swdir="$PWD"
+while [[ "$_swdir" != "/" ]]; do
+  if [[ -d "$_swdir/.specweave" ]]; then
+    SW_PROJECT_ROOT="$_swdir"
+    break
+  fi
+  _swdir=$(dirname "$_swdir")
+done
+
 # Check config for pluginAutoLoad.enabled, suggestOnly and incrementAssist.enabled settings
 PLUGIN_AUTOLOAD_ENABLED=true
 PLUGIN_SUGGEST_ONLY=false
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
 DEEP_INTERVIEW_ENABLED=false
-CONFIG_PATH=".specweave/config.json"
+if [[ -n "$SW_PROJECT_ROOT" ]]; then
+  CONFIG_PATH="$SW_PROJECT_ROOT/.specweave/config.json"
+else
+  CONFIG_PATH=".specweave/config.json"
+fi
 if [[ -f "$CONFIG_PATH" ]]; then
   if command -v jq >/dev/null 2>&1; then
     AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
@@ -284,7 +301,10 @@ output_approve_with_context() {
 # Returns: Formatted memory content on stdout, or empty string if not found
 get_skill_memory_context() {
   local full_skill="$1"
-  local project_root="${PROJECT_ROOT:-$(pwd)}"
+  local project_root="${SW_PROJECT_ROOT:-${PROJECT_ROOT:-$(pwd)}}"
+
+  # Not a SpecWeave project — no skill memories to load
+  [[ ! -d "$project_root/.specweave" ]] && return 0
 
   # Extract skill name (part after colon, or whole string if no colon)
   local skill_name="${full_skill##*:}"
@@ -358,23 +378,27 @@ check_plugin_installed_from_json() {
 # - plugins: which plugins to install (for CURRENT prompt via hot-reload)
 # - increment: whether to suggest creating an increment
 #
-# WHEN NOT TO CREATE INCREMENT:
+# DEFAULT: SUGGEST INCREMENT for ~95% of implementation work.
+# LLM decides action: "new" (most cases), "small_fix" (trivial edits),
+# "hotfix" (urgent), "reopen" (related to previous), "none" (skip).
+#
+# WHEN NOT TO CREATE INCREMENT (action: "none" ONLY):
 # ┌─────────────────────────────────────────────────────────────────────────────┐
-# │ SKIP (LLM returns action: "none" or "small_fix")                           │
-# ├─────────────────────────────────────────────────────────────────────────────┤
 # │ • Questions: "how do I", "what is", "explain", "why does"                  │
 # │ • Exploration: "show me", "find", "search for", "list"                     │
 # │ • Commands: "run tests", "build", "deploy", "commit"                       │
-# │ • Small fixes: "fix typo", "update version", "rename X"                    │
 # │ • Already in workflow: prompt starts with /sw:                              │
 # │ • Chat/greetings: "hello", "thanks", general conversation                  │
-# │ • Config tweaks: "change port", "update .env"                              │
 # │ • EXPLICIT OPT-OUT:                                                         │
 # │   - "don't create an increment", "no increment needed", "skip workflow"    │
 # │   - "just a quick fix", "without tracking", "no spec needed"               │
 # │   - "don't reopen", "leave it closed" (for completed increments)           │
 # │   - "I'll track it myself", "already in an increment"                      │
 # └─────────────────────────────────────────────────────────────────────────────┘
+#
+# STILL SUGGEST INCREMENT (action: "small_fix"):
+# │ • Typo fixes, version bumps, single config value changes                   │
+# │ • These get a non-mandatory suggestion so user can opt in                  │
 
 # Initialize message variable
 AUTOLOAD_PLUGINS_MSG=""
@@ -413,7 +437,11 @@ fi
 # Reads results from background lsp-check.sh (spawned by session-start.sh)
 # Shows warning ONCE per session if language servers are missing
 LSP_WARNING_MSG=""
-LSP_STATE_FILE=".specweave/state/lsp-check.json"
+if [[ -n "$SW_PROJECT_ROOT" ]]; then
+  LSP_STATE_FILE="$SW_PROJECT_ROOT/.specweave/state/lsp-check.json"
+else
+  LSP_STATE_FILE=""
+fi
 if [[ -f "$LSP_STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
   LSP_STATUS=$(jq -r '.status // "ok"' "$LSP_STATE_FILE" 2>/dev/null)
   LSP_WARNED=$(jq -r '.warned // false' "$LSP_STATE_FILE" 2>/dev/null)
@@ -649,7 +677,11 @@ fi
 # When languages are detected but auto-install is disabled, suggest running
 # specweave lsp setup which does multi-repo scanning and asks user approval
 LSP_SETUP_SUGGESTION_MSG=""
-LSP_SETUP_STATE_FILE=".specweave/state/lsp-setup-suggested.flag"
+if [[ -n "$SW_PROJECT_ROOT" ]]; then
+  LSP_SETUP_STATE_FILE="$SW_PROJECT_ROOT/.specweave/state/lsp-setup-suggested.flag"
+else
+  LSP_SETUP_STATE_FILE=""
+fi
 
 if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" != "true" ]]; then
   # Check if we've already suggested setup in this session
@@ -727,9 +759,11 @@ This will scan your project (including nested repos) and let you choose which LS
 ---
 
 "
-      # Mark as suggested
-      mkdir -p "$(dirname "$LSP_SETUP_STATE_FILE")" 2>/dev/null
-      touch "$LSP_SETUP_STATE_FILE" 2>/dev/null
+      # Mark as suggested (only in initialized SpecWeave projects)
+      if [[ -n "$LSP_SETUP_STATE_FILE" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
+        mkdir -p "$(dirname "$LSP_SETUP_STATE_FILE")" 2>/dev/null
+        touch "$LSP_SETUP_STATE_FILE" 2>/dev/null
+      fi
     fi
   fi
 fi
@@ -991,7 +1025,6 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                   # v1.0.210: All plugins install with PROJECT scope by default
                   # This prevents global pollution - plugins stay scoped to current project
-                  # Only context7/playwright remain global (vendor plugins)
                   SPECWEAVE_PLUGIN_SCOPE="project"
                   DEFAULT_PLUGIN_SCOPE="project"
                   if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
@@ -1006,12 +1039,10 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                     # v1.0.159: Determine marketplace based on plugin name
                     # sw-* plugins → @specweave, others → @claude-plugins-official
+                    # v1.0.240 (0198): context7/playwright removed from auto-install
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
                       MARKETPLACE="specweave"
                       PLUGIN_SCOPE="$SPECWEAVE_PLUGIN_SCOPE"
-                    elif [[ "$plugin" == "context7" ]] || [[ "$plugin" == "playwright" ]]; then
-                      MARKETPLACE="claude-plugins-official"
-                      PLUGIN_SCOPE="user"  # These are always global
                     else
                       MARKETPLACE="claude-plugins-official"
                       PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
@@ -1120,15 +1151,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                   echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
 
-                  # v0195: Suggest @playwright/cli alongside MCP plugin for token efficiency
-                  if echo " $DETECTED_PLUGINS " | grep -q " playwright "; then
-                    if ! command -v playwright-cli >/dev/null 2>&1; then
-                      CLI_SUGGEST_MSG="\\n💡 **Tip**: Install \`@playwright/cli\` for token-efficient browser automation (~98% savings vs MCP):\\n"
-                      CLI_SUGGEST_MSG="${CLI_SUGGEST_MSG}  \`npm install -g @playwright/cli@latest\`\\n"
-                      AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG:-}${CLI_SUGGEST_MSG}"
-                      echo "[$(date -Iseconds)] playwright-cli | suggested=true | reason=not-installed" >> "$LAZY_LOAD_LOG"
-                    fi
-                  fi
+                  # v1.0.240 (0198): Playwright MCP suggestion removed
+                  # Browser automation handled by @playwright/cli (CLI-only mode)
                 fi
               fi
             fi
@@ -1400,6 +1424,31 @@ Consider reopening the existing increment:
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
+
+                  small_fix)
+                    # v1.0.241: small_fix still suggests increment (non-mandatory)
+                    # Previously small_fix fell through with no output at all
+                    ESCAPED_PROMPT_SMALLFIX=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+                    CMD_SMALLFIX="/sw:increment"
+                    [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
+
+                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a small change worth tracking.
+
+Consider creating an increment:
+\`\`\`
+Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SMALLFIX}\" })
+\`\`\`
+
+Or via command: \`$CMD_SMALLFIX\`
+
+*Reason: $INC_REASON*${AGENT_DIRECTIVE}
+
+---
+
+*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    output_approve_with_context "$MSG"
+                    exit 0
+                    ;;
                 esac
               fi
 
@@ -1656,13 +1705,13 @@ TDD_ENFORCEMENT="warn"
 TDD_SOURCE=""
 TDD_MSG=""
 
-# Only check TDD if we're in a SpecWeave project
-if [[ -d ".specweave" ]]; then
+# Only check TDD if we're in a SpecWeave project (use resolved project root)
+if [[ -n "$SW_PROJECT_ROOT" ]] && [[ -d "$SW_PROJECT_ROOT/.specweave" ]]; then
 
   # Step 1: Check global config (LOWEST priority)
-  if [[ -f ".specweave/config.json" ]] && command -v jq >/dev/null 2>&1; then
-    GLOBAL_TDD=$(jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/null)
-    GLOBAL_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' .specweave/config.json 2>/dev/null)
+  if [[ -f "$SW_PROJECT_ROOT/.specweave/config.json" ]] && command -v jq >/dev/null 2>&1; then
+    GLOBAL_TDD=$(jq -r '.testing.defaultTestMode // "test-after"' "$SW_PROJECT_ROOT/.specweave/config.json" 2>/dev/null)
+    GLOBAL_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' "$SW_PROJECT_ROOT/.specweave/config.json" 2>/dev/null)
     if [[ "$GLOBAL_TDD" == "TDD" || "$GLOBAL_TDD" == "tdd" ]]; then
       TDD_MODE="TDD"
       TDD_ENFORCEMENT="$GLOBAL_ENFORCEMENT"
@@ -1672,7 +1721,7 @@ if [[ -d ".specweave" ]]; then
 
   # Step 2: Check active increment metadata (MEDIUM priority - overrides global)
   ACTIVE_INCREMENT=""
-  for meta in .specweave/increments/*/metadata.json; do
+  for meta in "$SW_PROJECT_ROOT/.specweave/increments/"/*/metadata.json; do
     [[ -f "$meta" ]] || continue
     if jq -e '.status == "in-progress" or .status == "active"' "$meta" >/dev/null 2>&1; then
       ACTIVE_INCREMENT="$meta"

@@ -9,25 +9,11 @@ context: fork
 
 Comprehensive expertise in **Capacitor 6+** and **Ionic Framework** for building cross-platform mobile applications from web technologies. Covers architecture, native API access, custom plugin development, deployment, and when to choose Capacitor over React Native or Flutter.
 
-## CRITICAL: Fetching Current Documentation
+## Fetching Current Documentation
 
-**Before providing version-specific guidance, ALWAYS fetch the latest documentation:**
+**Before providing version-specific guidance, verify current versions.** Capacitor releases frequently, and plugin APIs evolve. Always verify current APIs before recommending specific patterns.
 
-```typescript
-// Capacitor
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "@capacitor/core",
-  query: "Capacitor latest version features and plugin API"
-});
-
-// Ionic Framework
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "@ionic/angular",
-  query: "Ionic Framework latest version components and features"
-});
-```
-
-**Why?** Capacitor releases frequently, and plugin APIs evolve. Always verify current APIs before recommending specific patterns.
+For library documentation, use WebSearch or install Context7 manually: `claude plugin install context7@claude-plugins-official`
 
 ## Capacitor 6+ Architecture
 
@@ -809,6 +795,6 @@ describe('Product List', () => {
 ## Related Skills
 
 - `expo` - Expo/React Native for comparison
-- `mobile-architect` - Architecture decisions
+- `react-native-expert` - Architecture and RN/Expo expertise
 - `mobile-testing` - Testing Ionic/Capacitor apps
 - `deep-linking-push` - Deep linking and push in Capacitor

@@ -651,6 +651,27 @@ describe('Plugin List Validation', () => {
       expect(plugin.startsWith('specweave-')).toBe(false);
     }
   });
+
+  // ============================================================================
+  // 0198: context7 and playwright should NOT be in OFFICIAL_PLUGINS
+  // These are optional — users install manually if they want them
+  // ============================================================================
+  it('should NOT include context7 in OFFICIAL_PLUGINS', () => {
+    expect(OFFICIAL_PLUGINS).not.toContain('context7');
+  });
+
+  it('should NOT include playwright in OFFICIAL_PLUGINS', () => {
+    expect(OFFICIAL_PLUGINS).not.toContain('playwright');
+  });
+
+  it('should NOT have any "Core/Required" official plugins', () => {
+    // All official plugins are optional service integrations
+    // None should be treated as core/required
+    const corePlugins = ['context7', 'playwright'];
+    for (const core of corePlugins) {
+      expect(OFFICIAL_PLUGINS).not.toContain(core);
+    }
+  });
 });
 
 // ============================================================================
