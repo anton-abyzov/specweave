@@ -83,7 +83,7 @@ const { domain, projectKey } = profileConfig.config;
 ### 4. Invoke JIRA Manager Skill
 
 ```
-Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Create JIRA issue for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-sync", args: "Create JIRA issue for increment {increment-id}.
 
 IMPORTANT: Permission already verified (canUpdateExternalItems=true).
 Use profile: {profileName} (domain: {domain}, project: {projectKey})

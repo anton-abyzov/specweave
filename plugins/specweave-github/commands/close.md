@@ -435,6 +435,6 @@ Close and lock issue to prevent further comments:
 
 **Command**: `/sw:github:close-issue`
 **Plugin**: specweave-github
-**Agent**: github-manager
+**Agent**: github-sync
 **Version**: 1.0.0
 **Last Updated**: 2025-10-30

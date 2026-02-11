@@ -70,7 +70,7 @@ const percentage = Math.round((completedTasks / totalTasks) * 100);
 ### 3. Invoke Push Sync
 
 ```
-Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Push progress to Jira for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-sync", args: "Push progress to Jira for increment {increment-id}.
 
 Issue: {jiraIssueKey}
 Progress: {completedTasks}/{totalTasks} ({percentage}%)

@@ -70,7 +70,7 @@ const percentage = Math.round((completedTasks / totalTasks) * 100);
 ### 3. Invoke Push Sync
 
 ```
-Use Skill tool: Skill({ skill: "sw-github:github-manager", args: "Push progress to GitHub for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-github:github-sync", args: "Push progress to GitHub for increment {increment-id}.
 
 Issue: #{issueNumber}
 Progress: {completedTasks}/{totalTasks} ({percentage}%)

@@ -674,7 +674,7 @@ SKILL INVOCATION RULES:
 │ (sw-payments)        │ "Use stripe-integration for Stripe patterns"     │
 ├──────────────────────┼──────────────────────────────────────────────────┤
 │ Architecture Skills  │ Recommended for design decisions                 │
-│ (sw-frontend:arch)   │ "Consider frontend-architect for component design│
+│ (sw-frontend:frontend-architect)   │ "Consider frontend-architect for component design│
 └──────────────────────┴──────────────────────────────────────────────────┘
 
 WHEN TO MAKE SKILL MANDATORY:

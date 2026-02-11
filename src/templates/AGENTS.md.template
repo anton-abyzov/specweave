@@ -710,6 +710,24 @@ Read only what's needed for the current task:
 │   └── delivery/         # CI/CD, deployment guides
 └── state/                # Runtime state (active increment, caches)
 ```
+
+### Multi-Repo Structure
+
+**In umbrella projects with `repositories/` folder, each repo has its own `.specweave/`:**
+
+```
+umbrella-project/
+├── .specweave/config.json          # Umbrella config ONLY
+├── repositories/
+│   ├── org/frontend/
+│   │   └── .specweave/increments/  # Frontend increments HERE
+│   ├── org/backend/
+│   │   └── .specweave/increments/  # Backend increments HERE
+│   └── org/shared/
+│       └── .specweave/increments/  # Shared increments HERE
+```
+
+**Rules**: Each repo manages its own increments. Never create agent increments in the umbrella root.
 <!-- /SECTION -->
 
 ---

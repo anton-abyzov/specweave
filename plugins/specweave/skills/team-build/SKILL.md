@@ -308,6 +308,14 @@ Each spawned agent integrates with the standard SpecWeave workflow:
 5. **Ownership boundaries** — agents only modify files within their assigned directories
 6. **Conflict prevention** — ownership scopes are non-overlapping to prevent merge conflicts
 
+### Multi-Repo Increment Placement
+
+**In umbrella projects with a `repositories/` folder:**
+- Each agent MUST create its increment in its assigned repo's `.specweave/increments/`
+- The umbrella root `.specweave/` is for config ONLY, not for agent increments
+- Run `specweave init` in each repo if `.specweave/` doesn't exist
+- Agent working directory = `repositories/{org}/{repo-name}/`
+
 ### Agent Lifecycle
 
 ```
