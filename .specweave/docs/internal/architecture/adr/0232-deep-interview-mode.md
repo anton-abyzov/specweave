@@ -5,7 +5,7 @@
 
 ## Context
 
-Users building large features benefit from extensive upfront questioning about architecture, integrations, UI/UX, and tradeoffs. Thariq (@trq212, Claude Code creator) demonstrated this pattern where Claude asks 40+ questions for big features, resulting in much more detailed and comprehensive specifications.
+Users building large features benefit from extensive upfront questioning about architecture, integrations, UI/UX, and tradeoffs. Thariq (@trq212, Claude Code creator) demonstrated this pattern where Claude asks many in-depth questions for big features, resulting in much more detailed and comprehensive specifications.
 
 Current SpecWeave behavior jumps straight to spec creation without extensive discovery. This works for simple features but misses important architectural considerations for complex features involving:
 - External service integrations (databases, APIs, auth providers)
@@ -56,7 +56,7 @@ Add a **Deep Interview Mode** that:
    ```
    🎤 Deep Interview Mode
 
-   For big features, Claude can ask 40+ questions about architecture,
+   Claude asks 5-40 questions (scaled to complexity) about architecture,
    integrations, UI/UX, and tradeoffs before creating specs.
 
    Enable Deep Interview Mode? [y/N]

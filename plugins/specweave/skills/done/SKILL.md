@@ -399,6 +399,59 @@ Recommendation: ❌ CANNOT close increment
   • Estimated effort: 4-6 hours
 ```
 
+#### Gate 2a: E2E Test Execution (AUTOMATED - BLOCKING)
+
+**Before PM subjective review, automatically detect and run E2E tests.**
+
+**Step 1: Detect E2E test frameworks**
+
+Scan the project for E2E test configurations:
+
+```bash
+# Detect E2E test frameworks
+E2E_DETECTED=false
+E2E_FRAMEWORK=""
+E2E_DIRS=()
+
+# Check current project
+if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+  E2E_DETECTED=true; E2E_FRAMEWORK="playwright"
+elif [ -f "cypress.config.ts" ] || [ -f "cypress.config.js" ]; then
+  E2E_DETECTED=true; E2E_FRAMEWORK="cypress"
+fi
+
+# Multi-repo: scan repositories/ for ALL E2E projects (collect all, not just last)
+if [ -d "repositories" ]; then
+  for e2e_dir in repositories/*/*-e2e repositories/*/e2e; do
+    if [ -d "$e2e_dir" ]; then
+      E2E_DETECTED=true
+      E2E_DIRS+=("$e2e_dir")
+    fi
+  done
+fi
+```
+
+**Step 2: Run E2E tests (BLOCKING - E2E test failure blocks closure)**
+
+```bash
+if [ "$E2E_DETECTED" = "true" ]; then
+  case "$E2E_FRAMEWORK" in
+    playwright) npx playwright test --reporter=list ;;
+    cypress)    npx cypress run --reporter spec ;;
+  esac
+
+  # Multi-repo: run E2E tests in each collected directory
+  for dir in "${E2E_DIRS[@]}"; do
+    echo "Running E2E tests in $dir..."
+    (cd "$dir" && npm test)
+    # If E2E tests fail → BLOCK closure
+  done
+fi
+# If E2E tests fail → "CANNOT CLOSE INCREMENT - E2E tests failing. Fix failures before /sw:done."
+```
+
+**E2E test passing is a BLOCKING requirement for closure.** If E2E tests are detected and they fail, the increment CANNOT be closed. This is an automated gate, not a subjective PM check. If no E2E tests are detected, this gate is skipped.
+
 #### Gate 2: Tests Passing ✅
 
 **PM checks**:

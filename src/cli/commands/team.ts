@@ -92,7 +92,7 @@ export async function handleTeamCommand(
   const mode = resolveTeammateMode(options.mode);
 
   // Build args — always interactive (no -p flag, which is non-interactive one-shot)
-  const args: string[] = ['--dangerously-skip-permissions'];
+  const args: string[] = ['--dangerously-skip-permissions', '--teammate-mode', mode];
 
   // Spawn claude with team env
   console.log(chalk.cyan(`Launching Claude Code with agent teams (${mode} mode)...`));

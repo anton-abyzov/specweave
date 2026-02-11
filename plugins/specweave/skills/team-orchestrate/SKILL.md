@@ -22,6 +22,21 @@ description: Orchestrate multi-agent parallel development using Claude Code Agen
 
 ---
 
+## MANDATORY: Tool Selection for Native Agent Teams
+
+**When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, you MUST use `TeamCreate` to create the team.** Do NOT fall back to background subagents.
+
+| Action | MUST use | NEVER use in native mode |
+|--------|----------|--------------------------|
+| Create team | `TeamCreate({ team_name, description })` | NOT "Teammate" tool (does not exist) |
+| Spawn agent | `Task({ team_name, name, subagent_type, prompt })` | `Task({ run_in_background: true })` |
+| Send message | `SendMessage({ type, recipient, content, summary })` | File-based messages |
+| Shutdown agent | `SendMessage({ type: "shutdown_request", recipient })` | - |
+
+**NEVER use `Task({ run_in_background: true })` in native Agent Teams mode.** That pattern is the subagent fallback for when Agent Teams is unavailable. Native mode uses `TeamCreate` first, then `Task` with `team_name` parameter to spawn named teammates.
+
+---
+
 ## 1. Mode Detection
 
 Before spawning agents, detect the available orchestration mode.
@@ -212,7 +227,8 @@ You are the FRONTEND agent for increment [INCREMENT_ID].
 SKILLS TO INVOKE:
   Skill({ skill: "sw-frontend:frontend-architect" })
   Skill({ skill: "sw-frontend:nextjs" })         // if Next.js project
-  Skill({ skill: "sw-frontend:frontend-design" }) // for design system work
+  Skill({ skill: "sw-frontend:frontend-design" }) // for polished, world-class UI
+  Skill({ skill: "sw:service-connect" })          // for external service setup
 
 FILE OWNERSHIP (WRITE access):
   src/components/**
@@ -225,15 +241,25 @@ FILE OWNERSHIP (WRITE access):
 
 READ ACCESS: Any file in the repository (especially src/types/, src/shared/, openapi.yaml)
 
+DESIGN QUALITY:
+  - Default to world-class, sleek, polished, production-ready design
+  - All UI must be responsive (mobile-first) and accessible (WCAG 2.1 AA)
+  - Use modern design patterns: clean spacing, typography hierarchy, subtle animations
+  - Invoke `sw-frontend:frontend-design` for high-quality UI polish
+
 WORKFLOW:
   1. Read the increment spec: .specweave/increments/[ID]/spec.md
   2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Wait for contract artifacts if Phase 1 is active:
+  3. Verify services are running and accessible (check dev server, API endpoints)
+  4. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
      - Read openapi.yaml for API endpoints (if backend produces one)
-  4. Execute tasks: /sw:do or /sw:auto
-  5. Run quality gate: /sw:grill
-  6. Signal completion (see Communication Protocol)
+  5. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  6. Run all tests for owned code (unit + integration): npm test
+  7. Run quality gate: /sw:grill
+  8. Do NOT signal completion until all tests pass
+  9. After auto completes, attempt closure via /sw:done to identify remaining issues
+  10. Signal completion (see Communication Protocol)
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -241,6 +267,7 @@ RULES:
   - Follow existing code conventions (check .eslintrc, .prettierrc, tsconfig.json)
   - Run linter and type-check before signaling completion
   - All new components must have corresponding test files
+  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
 ```
 
 ### 4b. Backend Agent
@@ -250,7 +277,8 @@ You are the BACKEND agent for increment [INCREMENT_ID].
 
 SKILLS TO INVOKE:
   Skill({ skill: "sw:architect" })
-  Skill({ skill: "sw-infra:devops" })  // if deployment config needed
+  Skill({ skill: "sw-infra:devops" })      // if deployment config needed
+  Skill({ skill: "sw:service-connect" })    // for auth provider and external service setup
 
 FILE OWNERSHIP (WRITE access):
   src/api/**
@@ -263,16 +291,25 @@ FILE OWNERSHIP (WRITE access):
 
 READ ACCESS: Any file in the repository (especially prisma/schema.prisma, src/types/)
 
+AUTH SETUP:
+  - If the project needs authentication, set up the auth provider (Supabase, Firebase, Auth0, etc.)
+  - Use `sw:service-connect` to connect to auth services and verify connectivity
+  - Ensure auth middleware works end-to-end before signaling completion
+
 WORKFLOW:
   1. Read the increment spec: .specweave/increments/[ID]/spec.md
   2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Wait for contract artifacts if Phase 1 is active:
+  3. Verify services are running and accessible (database, auth provider, external APIs)
+  4. Wait for contract artifacts if Phase 1 is active:
      - Read prisma/schema.prisma for database schema
      - Read src/types/ for shared interfaces
-  4. Execute tasks: /sw:do or /sw:auto
-  5. Generate or update OpenAPI spec if API routes change
-  6. Run quality gate: /sw:grill
-  7. Signal completion (see Communication Protocol)
+  5. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  6. Generate or update OpenAPI spec if API routes change
+  7. Run all tests for owned code (unit + integration): npm test
+  8. Run quality gate: /sw:grill
+  9. Do NOT signal completion until all tests pass
+  10. After auto completes, attempt closure via /sw:done to identify remaining issues
+  11. Signal completion (see Communication Protocol)
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -280,6 +317,7 @@ RULES:
   - Every new API endpoint must have request/response validation
   - Error handling must follow project conventions
   - All services must have unit tests
+  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
 ```
 
 ### 4c. Database Agent
@@ -306,10 +344,13 @@ WORKFLOW:
   3. Design database schema changes
   4. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
   5. Write seed data if needed
-  6. Execute tasks: /sw:do or /sw:auto
-  7. Run quality gate: /sw:grill
-  8. Signal CONTRACT_READY with schema details (see Communication Protocol)
-  9. Signal completion
+  6. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  7. Run all tests for owned code (migration, seed): npm test
+  8. Run quality gate: /sw:grill
+  9. Do NOT signal completion until all tests pass
+  10. Signal CONTRACT_READY with schema details (see Communication Protocol)
+  11. After auto completes, attempt closure via /sw:done to identify remaining issues
+  12. Signal completion
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -317,6 +358,7 @@ RULES:
   - Always create migrations (never modify schema without migration)
   - Seed data must be idempotent
   - Schema changes must be backward-compatible when possible
+  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
 ```
 
 ### 4d. Testing Agent
@@ -350,10 +392,12 @@ WORKFLOW:
   4. Write unit tests for new services/components
   5. Write integration tests for API endpoints
   6. Write E2E tests for user journeys
-  7. Execute tasks: /sw:do or /sw:auto
-  8. Run full test suite and report results
-  9. Run quality gate: /sw:grill
-  10. Signal completion
+  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  8. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  9. Do NOT signal completion until all tests pass — if tests fail, fix and repeat
+  10. Run quality gate: /sw:grill
+  11. After auto completes, attempt closure via /sw:done to identify remaining issues
+  12. Signal completion
 
 RULES:
   - WRITE only to test files (listed above)
@@ -361,6 +405,7 @@ RULES:
   - Tests must cover all acceptance criteria from spec.md
   - Follow existing test patterns and utilities
   - E2E tests must include accessibility checks when applicable
+  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
 ```
 
 ### 4e. Security Agent
@@ -389,10 +434,13 @@ WORKFLOW:
   3. Audit code produced by other agents for security issues
   4. Implement auth/authz middleware if needed
   5. Add input validation and sanitization
-  6. Execute tasks: /sw:do or /sw:auto
-  7. Run security audit tools (npm audit, dependency check)
-  8. Run quality gate: /sw:grill
-  9. Signal completion with security findings summary
+  6. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  7. Run all tests for owned code (security tests): npm test
+  8. Run security audit tools (npm audit, dependency check)
+  9. Run quality gate: /sw:grill
+  10. Do NOT signal completion until all tests pass
+  11. After auto completes, attempt closure via /sw:done to identify remaining issues
+  12. Signal completion with security findings summary
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -400,6 +448,7 @@ RULES:
   - NEVER commit secrets, credentials, or API keys
   - All user input must be validated and sanitized
   - Follow OWASP Top 10 guidelines
+  - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
 ```
 
 ---
@@ -429,6 +478,7 @@ Each agent has exclusive WRITE access to specific file patterns. This prevents m
 3. **Shared files require coordination** -- if two domains need to modify the same file (e.g., `package.json`), the orchestrator assigns a primary owner and others request changes via messages
 4. **New files** -- agents can create new files ONLY within their ownership patterns
 5. **Conflict detection** -- the orchestrator checks for ownership overlap before spawning and resolves ambiguity upfront
+6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{org}/` directory convention. NEVER create repositories at the project root or arbitrary locations.
 
 ---
 
@@ -531,12 +581,11 @@ When `MODE == "subagent-fallback"`, agents communicate via files in `.specweave/
 
 ### Native Agent Teams Mode
 
-When Agent Teams is available, use the `Teammate` and `Task` tools with team coordination.
+When Agent Teams is available, use `TeamCreate` and `Task` (with `team_name` parameter) for team coordination.
 
 ```typescript
-// Step 1: Create the team
-Teammate({
-  operation: "spawnTeam",
+// Step 1: Create the team (MUST use TeamCreate, NOT Teammate)
+TeamCreate({
   team_name: "feature-checkout",
   description: "Building checkout flow across frontend, backend, and database"
 });
@@ -628,16 +677,18 @@ Every agent MUST run quality validation before signaling completion.
 
 ### Per-Agent Quality Gate
 
-Each agent runs `/sw:grill` as the final step before marking its work complete:
+Each agent MUST run all tests locally before signaling completion. **All tests must pass before signal COMPLETION.**
 
 ```
 Agent Workflow:
-  1. Execute all assigned tasks → /sw:do or /sw:auto
-  2. Run tests for owned code
+  1. Execute all assigned tasks → prefer /sw:auto for autonomous execution
+  2. Run all tests for owned code (unit + integration + E2E)
   3. Run linter/type-check for owned code
   4. Run /sw:grill
-  5. If /sw:grill passes → signal COMPLETION
-  6. If /sw:grill fails → fix issues, repeat from step 2
+  5. If tests fail → fix issues and repeat from step 2. Do NOT signal completion until all tests pass.
+  6. If /sw:grill passes → attempt closure via /sw:done after auto completes
+  7. If /sw:grill fails → fix issues, repeat from step 2
+  8. Signal COMPLETION
 ```
 
 ### Orchestrator Quality Gate

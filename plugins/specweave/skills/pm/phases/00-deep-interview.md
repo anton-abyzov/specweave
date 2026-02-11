@@ -2,6 +2,25 @@
 
 **Load this phase when Deep Interview Mode is enabled.**
 
+## Smart Interview Gate (v1.0.243+)
+
+The `user-prompt-submit.sh` hook now injects a **Smart Interview Gate** on every prompt when:
+1. `deepInterview.enabled: true` in config
+2. No active increment exists
+
+The gate instructs the LLM to **assess prompt completeness** before deciding whether to interview or proceed. This replaces the old "always ask 5-40 questions" approach.
+
+**How it works:**
+- Gate fires on every prompt, accumulating context across messages
+- LLM evaluates technical signals (stack, integrations, auth, deployment) AND product signals (users, flows, business model)
+- If the user's prompt is comprehensive enough for the detected complexity → skip interview, proceed to `sw:increment-planner`
+- If gaps exist → ask 2-5 targeted questions about what's missing (NOT a full interview)
+
+**As PM skill, your role when gate is active:**
+- If the gate determined the prompt is complete → proceed directly to spec creation
+- If the gate flagged missing areas → ask about ONLY those areas, then proceed
+- Never re-ask questions the user already answered in prior messages
+
 ## Detection
 
 Check config before proceeding with spec creation:
@@ -186,7 +205,7 @@ When factors point to different complexity levels:
 | **Trivial** | 0-3 questions | Config change, typo fix, obvious bug |
 | **Small** | 4-8 questions | Single well-defined component, clear requirements |
 | **Medium** | 9-18 questions | Multiple components, some integration points |
-| **Large** | 19-40+ questions | Architectural, cross-cutting, high-risk (payments, security) |
+| **Large** | 19-40 questions | Architectural, cross-cutting, high-risk (payments, security) |
 
 ### What's a "Single Component"?
 

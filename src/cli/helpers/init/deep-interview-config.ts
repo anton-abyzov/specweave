@@ -2,7 +2,7 @@
  * Deep Interview Mode configuration prompts
  *
  * Handles deep interview mode selection during init.
- * When enabled, Claude asks 40+ questions about architecture,
+ * When enabled, Claude asks 5-40 questions (scaled to complexity) about architecture,
  * integrations, UI/UX, and tradeoffs before creating specs.
  *
  * @since v1.0.195
@@ -39,7 +39,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
   const strings: Record<SupportedLanguage, ReturnType<typeof getDeepInterviewStrings>> = {
     en: {
       header: 'Deep Interview Mode',
-      description: 'For big features, Claude can ask 40+ questions about architecture,',
+      description: 'Claude asks 5-40 questions (scaled to complexity) about architecture,',
       example: 'integrations, UI/UX, and tradeoffs before creating specifications.',
       benefits: 'Benefits:',
       benefit1: 'More comprehensive specs with fewer iterations',
@@ -48,7 +48,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Feel more control over the final specification',
       note: 'Note: Can be disabled per-session or toggled in config.json anytime.',
       prompt: 'Enable Deep Interview Mode?',
-      optionYes: 'Yes - Enable deep interview (40+ questions for big features)',
+      optionYes: 'Yes - Enable deep interview (5-40 questions scaled to complexity)',
       optionNo: 'No - Use standard spec flow (faster, less questions)',
       selectedEnabled: 'Deep Interview Mode: ENABLED',
       selectedDisabled: 'Deep Interview Mode: Disabled (standard flow)',
@@ -56,7 +56,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     ru: {
       header: 'Режим глубокого интервью',
-      description: 'Для больших функций Claude может задавать 40+ вопросов об архитектуре,',
+      description: 'Claude задаёт 5-40 вопросов (в зависимости от сложности) об архитектуре,',
       example: 'интеграциях, UI/UX и компромиссах перед созданием спецификаций.',
       benefits: 'Преимущества:',
       benefit1: 'Более полные спецификации с меньшим количеством итераций',
@@ -65,7 +65,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Больше контроля над итоговой спецификацией',
       note: 'Примечание: Можно отключить для сессии или изменить в config.json в любое время.',
       prompt: 'Включить режим глубокого интервью?',
-      optionYes: 'Да - Включить глубокое интервью (40+ вопросов для больших функций)',
+      optionYes: 'Да - Включить глубокое интервью (5-40 вопросов в зависимости от сложности)',
       optionNo: 'Нет - Использовать стандартный процесс (быстрее, меньше вопросов)',
       selectedEnabled: 'Режим глубокого интервью: ВКЛЮЧЕН',
       selectedDisabled: 'Режим глубокого интервью: Отключен (стандартный процесс)',
@@ -73,7 +73,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     es: {
       header: 'Modo de Entrevista Profunda',
-      description: 'Para funciones grandes, Claude puede hacer 40+ preguntas sobre arquitectura,',
+      description: 'Claude hace 5-40 preguntas (según la complejidad) sobre arquitectura,',
       example: 'integraciones, UI/UX y compensaciones antes de crear especificaciones.',
       benefits: 'Beneficios:',
       benefit1: 'Especificaciones mas completas con menos iteraciones',
@@ -82,7 +82,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Mas control sobre la especificacion final',
       note: 'Nota: Se puede desactivar por sesion o cambiar en config.json en cualquier momento.',
       prompt: 'Habilitar Modo de Entrevista Profunda?',
-      optionYes: 'Si - Habilitar entrevista profunda (40+ preguntas para funciones grandes)',
+      optionYes: 'Si - Habilitar entrevista profunda (5-40 preguntas según complejidad)',
       optionNo: 'No - Usar flujo estandar (mas rapido, menos preguntas)',
       selectedEnabled: 'Modo de Entrevista Profunda: HABILITADO',
       selectedDisabled: 'Modo de Entrevista Profunda: Deshabilitado (flujo estandar)',
@@ -90,7 +90,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     zh: {
       header: '深度访谈模式',
-      description: '对于大型功能,Claude 可以在创建规格之前询问 40+ 个关于架构、',
+      description: 'Claude 会根据复杂度询问 5-40 个关于架构、',
       example: '集成、UI/UX 和权衡的问题。',
       benefits: '好处:',
       benefit1: '更少的迭代获得更全面的规格',
@@ -99,7 +99,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: '对最终规格有更多控制',
       note: '注意:可以按会话禁用或随时在 config.json 中切换。',
       prompt: '启用深度访谈模式?',
-      optionYes: '是 - 启用深度访谈(大型功能40+问题)',
+      optionYes: '是 - 启用深度访谈(5-40个问题,根据复杂度调整)',
       optionNo: '否 - 使用标准流程(更快,更少问题)',
       selectedEnabled: '深度访谈模式:已启用',
       selectedDisabled: '深度访谈模式:已禁用(标准流程)',
@@ -107,7 +107,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     de: {
       header: 'Tiefeninterview-Modus',
-      description: 'Fur grosse Funktionen kann Claude 40+ Fragen zu Architektur,',
+      description: 'Claude stellt 5-40 Fragen (an Komplexität angepasst) zu Architektur,',
       example: 'Integrationen, UI/UX und Kompromissen stellen, bevor Spezifikationen erstellt werden.',
       benefits: 'Vorteile:',
       benefit1: 'Umfassendere Spezifikationen mit weniger Iterationen',
@@ -116,7 +116,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Mehr Kontrolle uber die endgultige Spezifikation',
       note: 'Hinweis: Kann pro Sitzung deaktiviert oder jederzeit in config.json umgeschaltet werden.',
       prompt: 'Tiefeninterview-Modus aktivieren?',
-      optionYes: 'Ja - Tiefeninterview aktivieren (40+ Fragen fur grosse Funktionen)',
+      optionYes: 'Ja - Tiefeninterview aktivieren (5-40 Fragen, an Komplexität angepasst)',
       optionNo: 'Nein - Standardablauf verwenden (schneller, weniger Fragen)',
       selectedEnabled: 'Tiefeninterview-Modus: AKTIVIERT',
       selectedDisabled: 'Tiefeninterview-Modus: Deaktiviert (Standardablauf)',
@@ -124,7 +124,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     fr: {
       header: 'Mode Interview Approfondie',
-      description: 'Pour les grandes fonctionnalites, Claude peut poser 40+ questions sur l\'architecture,',
+      description: 'Claude pose 5-40 questions (adaptées à la complexité) sur l\'architecture,',
       example: 'les integrations, l\'UI/UX et les compromis avant de creer les specifications.',
       benefits: 'Avantages:',
       benefit1: 'Specifications plus completes avec moins d\'iterations',
@@ -133,7 +133,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Plus de controle sur la specification finale',
       note: 'Note: Peut etre desactive par session ou bascule dans config.json a tout moment.',
       prompt: 'Activer le Mode Interview Approfondie?',
-      optionYes: 'Oui - Activer l\'interview approfondie (40+ questions pour grandes fonctionnalites)',
+      optionYes: 'Oui - Activer l\'interview approfondie (5-40 questions adaptées à la complexité)',
       optionNo: 'Non - Utiliser le flux standard (plus rapide, moins de questions)',
       selectedEnabled: 'Mode Interview Approfondie: ACTIVE',
       selectedDisabled: 'Mode Interview Approfondie: Desactive (flux standard)',
@@ -141,8 +141,8 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     ja: {
       header: 'ディープインタビューモード',
-      description: '大きな機能の場合、Claude は仕様を作成する前にアーキテクチャ、',
-      example: '統合、UI/UX、トレードオフについて40以上の質問をすることができます。',
+      description: 'Claude は複雑さに応じて 5-40 の質問をアーキテクチャ、',
+      example: '統合、UI/UX、トレードオフについて仕様作成前に行います。',
       benefits: '利点:',
       benefit1: 'より少ないイテレーションでより包括的な仕様',
       benefit2: '統合の問題を早期に発見',
@@ -150,7 +150,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: '最終的な仕様に対するより多くのコントロール',
       note: '注意: セッションごとに無効にするか、いつでも config.json で切り替え可能。',
       prompt: 'ディープインタビューモードを有効にしますか?',
-      optionYes: 'はい - ディープインタビューを有効にする(大きな機能向け40+質問)',
+      optionYes: 'はい - ディープインタビューを有効にする(5-40の質問、複雑さに応じて調整)',
       optionNo: 'いいえ - 標準フローを使用(より速く、質問少なめ)',
       selectedEnabled: 'ディープインタビューモード: 有効',
       selectedDisabled: 'ディープインタビューモード: 無効(標準フロー)',
@@ -158,8 +158,8 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     ko: {
       header: '심층 인터뷰 모드',
-      description: '큰 기능의 경우 Claude가 사양을 만들기 전에 아키텍처,',
-      example: '통합, UI/UX 및 트레이드오프에 대해 40개 이상의 질문을 할 수 있습니다.',
+      description: 'Claude가 복잡도에 따라 5-40개의 질문을 아키텍처,',
+      example: '통합, UI/UX 및 트레이드오프에 대해 사양 작성 전에 합니다.',
       benefits: '이점:',
       benefit1: '더 적은 반복으로 더 포괄적인 사양',
       benefit2: '통합 문제를 조기에 발견',
@@ -167,7 +167,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: '최종 사양에 대한 더 많은 통제',
       note: '참고: 세션별로 비활성화하거나 언제든지 config.json에서 전환 가능.',
       prompt: '심층 인터뷰 모드를 활성화하시겠습니까?',
-      optionYes: '예 - 심층 인터뷰 활성화 (큰 기능용 40+ 질문)',
+      optionYes: '예 - 심층 인터뷰 활성화 (5-40개 질문, 복잡도에 따라 조정)',
       optionNo: '아니오 - 표준 흐름 사용 (더 빠름, 질문 적음)',
       selectedEnabled: '심층 인터뷰 모드: 활성화됨',
       selectedDisabled: '심층 인터뷰 모드: 비활성화됨 (표준 흐름)',
@@ -175,7 +175,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
     },
     pt: {
       header: 'Modo de Entrevista Profunda',
-      description: 'Para funcionalidades grandes, Claude pode fazer 40+ perguntas sobre arquitetura,',
+      description: 'Claude faz 5-40 perguntas (de acordo com a complexidade) sobre arquitetura,',
       example: 'integracoes, UI/UX e compensacoes antes de criar especificacoes.',
       benefits: 'Beneficios:',
       benefit1: 'Especificacoes mais completas com menos iteracoes',
@@ -184,7 +184,7 @@ function getDeepInterviewStrings(language: SupportedLanguage): {
       benefit4: 'Mais controle sobre a especificacao final',
       note: 'Nota: Pode ser desativado por sessao ou alternado em config.json a qualquer momento.',
       prompt: 'Habilitar Modo de Entrevista Profunda?',
-      optionYes: 'Sim - Habilitar entrevista profunda (40+ perguntas para funcionalidades grandes)',
+      optionYes: 'Sim - Habilitar entrevista profunda (5-40 perguntas de acordo com a complexidade)',
       optionNo: 'Nao - Usar fluxo padrao (mais rapido, menos perguntas)',
       selectedEnabled: 'Modo de Entrevista Profunda: HABILITADO',
       selectedDisabled: 'Modo de Entrevista Profunda: Desabilitado (fluxo padrao)',

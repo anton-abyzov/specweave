@@ -39,6 +39,25 @@ For each agent:
   - If any running → report and ask user to wait
 ```
 
+### Step 1.5: Validate Repository Structure
+
+For multi-repo team sessions, verify all agent work follows the repository directory convention:
+
+```bash
+# Check for repos created outside repositories/ directory
+if [ -d "repositories" ]; then
+  for git_dir in ./*/.git; do
+    repo_name=$(dirname "$git_dir")
+    if [[ "$repo_name" != ./repositories/* && "$repo_name" != "./.git" ]]; then
+      echo "WARNING: Repository $repo_name found outside repositories/ directory"
+      echo "Expected: repositories/{org}/$(basename $repo_name)/"
+    fi
+  done
+fi
+```
+
+If repos are found outside `repositories/`, report as a warning with remediation instructions. The merge proceeds but the report flags the issue for cleanup.
+
 ### Step 2: Determine Merge Order
 
 Dependencies flow: shared → backend → frontend (or as defined in session)

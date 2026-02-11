@@ -1318,6 +1318,11 @@
           "minimum": 0,
           "maximum": 1,
           "default": 0.7
+        },
+        "mandatory": {
+          "type": "boolean",
+          "description": "When true, BLOCKS prompts detected as implementation work until an increment is created via /sw:increment. Overrides the LLM mandatory decision. Default: false (suggestive only).",
+          "default": false
         }
       },
       "additionalProperties": false

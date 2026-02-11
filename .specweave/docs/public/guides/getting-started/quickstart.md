@@ -75,7 +75,7 @@ For complex features, enable **Deep Interview Mode** during `specweave init`:
 ```
 Deep Interview Mode
 
-For big features, Claude can ask 40+ questions about architecture,
+Claude asks 5-40 questions (scaled to complexity) about architecture,
 integrations, UI/UX, and tradeoffs before creating specifications.
 
 Enable Deep Interview Mode? [y/N]
@@ -85,7 +85,7 @@ When enabled, Claude assesses feature complexity and asks the right number of qu
 - **Trivial** (0-3): Config changes, typo fixes
 - **Small** (4-8): Single component features
 - **Medium** (9-18): Multiple components with integrations
-- **Large** (19-40+): Architectural, cross-cutting, high-risk
+- **Large** (19-40): Architectural, cross-cutting, high-risk
 
 Questions cover:
 - Architecture & system design patterns

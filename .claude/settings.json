@@ -7,16 +7,15 @@
     ],
     "defaultMode": "bypassPermissions"
   },
-  "enabledPlugins": {
-    "sw@specweave": true,
-    "sw-infra@specweave": true,
-    "sw-testing@specweave": true,
-    "sw-jira@specweave": true,
-    "sw-ado@specweave": true,
-    "sw-mobile@specweave": true,
-    "sw-ml@specweave": true,
-    "sw-k8s@specweave": true,
-    "sw-payments@specweave": true,
-    "supabase@claude-plugins-official": true
+  "enabledPlugins": {},
+  "pluginConfigs": {
+    "supabase@claude-plugins-official": {
+      "mcpServers": {
+        "supabase": {
+          "url": "SUPABASE_URL",
+          "apikey": "SUPABASE_ANON_KEY"
+        }
+      }
+    }
   }
 }

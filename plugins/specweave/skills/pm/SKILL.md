@@ -38,7 +38,7 @@ If `true`:
    - Trivial features: 0-3 questions
    - Small features: 4-8 questions
    - Medium features: 9-18 questions
-   - Large features: 19-40+ questions
+   - Large features: 19-40 questions
 3. Cover relevant categories (skip those that don't apply)
 4. Only proceed to Research phase after sufficient clarity
 
