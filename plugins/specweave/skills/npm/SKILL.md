@@ -1,5 +1,4 @@
 ---
-disable-model-invocation: true
 description: Full patch release with npm publish and GitHub Release. Flags: --quick (no GH release), --ci (Actions), --only (local).
 ---
 
