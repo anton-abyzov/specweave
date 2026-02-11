@@ -13,6 +13,7 @@ import {
   PluginScopeConfig,
   PluginInstallationScope,
   getPluginScope,
+  getScopeArgs,
   DEFAULT_PLUGIN_SCOPE_CONFIG,
 } from '../../../src/core/types/plugin-scope.js';
 
@@ -47,13 +48,13 @@ describe('Plugin Scope Configuration', () => {
       expect(config.lspScope).toBe('project');
     });
 
-    it('should define specweaveScope as user by default', () => {
+    it('should define specweaveScope as project by default', () => {
       const config: PluginScopeConfig = {
         defaultScope: 'user',
-        specweaveScope: 'user',
+        specweaveScope: 'project',
       };
 
-      expect(config.specweaveScope).toBe('user');
+      expect(config.specweaveScope).toBe('project');
     });
 
     it('should support scopeOverrides for specific plugins', () => {
@@ -81,8 +82,12 @@ describe('Plugin Scope Configuration', () => {
       expect(DEFAULT_PLUGIN_SCOPE_CONFIG.lspScope).toBe('project');
     });
 
-    it('should have user as specweaveScope', () => {
-      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.specweaveScope).toBe('user');
+    it('should have project as specweaveScope', () => {
+      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.specweaveScope).toBe('project');
+    });
+
+    it('should override core sw plugin to user scope', () => {
+      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.scopeOverrides?.['sw']).toBe('user');
     });
   });
 
@@ -111,16 +116,17 @@ describe('Plugin Scope Configuration', () => {
       expect(getPluginScope('rust-analyzer', 'claude-code-lsps', config)).toBe('project');
     });
 
-    it('should return specweaveScope for SpecWeave plugins', () => {
-      const config: PluginScopeConfig = {
-        defaultScope: 'user',
-        specweaveScope: 'project',
-      };
+    it('should return project scope for domain SpecWeave plugins', () => {
+      // With default config, domain plugins get project scope
+      expect(getPluginScope('sw-frontend', 'specweave')).toBe('project');
+      expect(getPluginScope('sw-backend', 'specweave')).toBe('project');
+      expect(getPluginScope('sw-github', 'specweave')).toBe('project');
+      expect(getPluginScope('sw-jira', 'specweave')).toBe('project');
+    });
 
-      // SpecWeave plugins (sw-* from specweave marketplace)
-      expect(getPluginScope('sw-frontend', 'specweave', config)).toBe('project');
-      expect(getPluginScope('sw-backend', 'specweave', config)).toBe('project');
-      expect(getPluginScope('sw', 'specweave', config)).toBe('project');
+    it('should return user scope for core sw plugin via override', () => {
+      // Core sw plugin stays at user level via scopeOverrides
+      expect(getPluginScope('sw', 'specweave')).toBe('user');
     });
 
     it('should return defaultScope for other plugins', () => {
@@ -144,6 +150,20 @@ describe('Plugin Scope Configuration', () => {
   });
 });
 
+describe('getScopeArgs', () => {
+  it('should return empty array for user scope', () => {
+    expect(getScopeArgs('user')).toEqual([]);
+  });
+
+  it('should return --scope project for project scope', () => {
+    expect(getScopeArgs('project')).toEqual(['--scope', 'project']);
+  });
+
+  it('should return --scope local for local scope', () => {
+    expect(getScopeArgs('local')).toEqual(['--scope', 'local']);
+  });
+});
+
 describe('Config Parsing for Plugin Scopes', () => {
   it('should parse plugins.scope config from JSON', () => {
     const configJson = {
@@ -151,8 +171,9 @@ describe('Config Parsing for Plugin Scopes', () => {
         scope: {
           defaultScope: 'user',
           lspScope: 'project',
-          specweaveScope: 'user',
+          specweaveScope: 'project',
           scopeOverrides: {
+            'sw': 'user',
             'context7': 'user',
             'playwright': 'user',
           },
@@ -163,6 +184,8 @@ describe('Config Parsing for Plugin Scopes', () => {
     // This test validates the expected config structure
     expect(configJson.plugins.scope.defaultScope).toBe('user');
     expect(configJson.plugins.scope.lspScope).toBe('project');
+    expect(configJson.plugins.scope.specweaveScope).toBe('project');
+    expect(configJson.plugins.scope.scopeOverrides['sw']).toBe('user');
     expect(configJson.plugins.scope.scopeOverrides['context7']).toBe('user');
   });
 });

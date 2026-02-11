@@ -288,6 +288,28 @@ Tertiary Content  → Subtle, discovered on exploration
 }
 ```
 
+## Visual Media & Placeholder Strategy
+
+When building UIs that display images, products, or media content:
+
+**NEVER leave empty image placeholders.** Every image slot must show something visually appealing.
+
+1. **Product/Hero images**: Invoke `/sw-media:image` to generate custom AI images matching the brand
+2. **Profile avatars**: Use `https://i.pravatar.cc/150?u={unique-id}` for realistic avatars
+3. **Stock photography**: Use `https://picsum.photos/seed/{slug}/{width}/{height}` for contextual photos
+4. **Branded graphics**: Generate with AI or use gradient SVGs with brand colors
+
+**Data Display Rules**:
+- Prices MUST use `Intl.NumberFormat` with currency — showing `$NaN` is a critical visual bug
+- Dates MUST use `Intl.DateTimeFormat` — never show raw ISO strings or "Invalid Date"
+- Empty/null values MUST show styled fallbacks ("Price unavailable", skeleton loaders) — never raw `undefined` or `null`
+- Counts and stats should use compact notation for large numbers
+
+**Empty & Error States**:
+- Empty states need illustrations or icons, a clear message, and a CTA
+- Error states need a visual indicator, human-readable message, and retry action
+- Loading states use skeleton shimmer animations (see Loading States section above)
+
 ## When to Use This Agent
 
 - Creating landing pages

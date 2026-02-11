@@ -15,3 +15,6 @@
 - **2026-02-11**: Change `/sw:grill` context from fork to shared - forked context loses conversation history needed for effective code review of recently changed files
 - **2026-02-11**: Init flow needs topology-aware branching: ask greenfield vs brownfield + single vs multi-repo upfront (Phase 1), then show only relevant questions downstream (Phase 2). This reduces typical flow from 15-20 questions to 5-7, pushing power-user config to `specweave config` commands.
 - **2026-02-11**: Commands are NOT automatically registered as invocable Skills in Claude Code - only files in skills/*/SKILL.md are registered. Hook calls to Skill({ skill: "command-name" }) will fail silently if the command hasn't been converted to a proper SKILL.md file.
+- **2026-02-11**: Prefer Task subagents with run_in_background: true over TeamCreate for independent, non-coordinating work - simpler and more resilient without messaging overhead and idle-wait loops
+- **2026-02-11**: Use max_turns parameter aggressively on all Task calls (20-25 range) as built-in circuit breaker to prevent single agents from spinning forever
+- **2026-02-11**: Implement phased spawning (waves) instead of big-bang agent launches for dependent work - foundational fast agents first (shared, domain, ui, db), then wave 2 (web, mobile, APIs), then e2e

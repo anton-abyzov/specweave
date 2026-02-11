@@ -188,8 +188,8 @@ describe('ConfigManager', () => {
     it('should have limits config in DEFAULT_CONFIG', () => {
       const config = DEFAULT_CONFIG as any;
       expect(config.limits).toBeDefined();
-      expect(config.limits.maxActiveIncrements).toBe(1);
-      expect(config.limits.hardCap).toBe(3);
+      expect(config.limits.maxActiveIncrements).toBe(3);
+      expect(config.limits.hardCap).toBe(5);
       expect(config.limits.allowEmergencyInterrupt).toBe(true);
     });
 
