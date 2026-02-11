@@ -8,8 +8,8 @@
     "defaultMode": "bypassPermissions"
   },
   "enabledPlugins": {
-    "sw-github@specweave": true,
-    "sw-jira@specweave": true
+    "sw-backend@specweave": true,
+    "sw-github@specweave": true
   },
   "pluginConfigs": {
     "supabase@claude-plugins-official": {
