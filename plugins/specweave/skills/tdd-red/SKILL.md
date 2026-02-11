@@ -64,6 +64,59 @@ Generate failing tests using Task tool with subagent_type="unit-testing::test-au
 - Contexts for different scenarios
 - Shared examples for common behavior
 
+## CLI Integration Test Patterns
+
+When testing CLI commands, hooks, or terminal tools, use these specialized patterns:
+
+**Temp Home Isolation** (prevents touching real ~/.specweave/):
+```typescript
+import { withIsolatedHome, getIsolatedEnv } from '../test-utils/temp-home.js';
+
+it('should run CLI command in isolated environment', async () => {
+  const { homePath, restore } = await withIsolatedHome('my-test');
+  try {
+    const { stdout } = await execAsync('node bin/cli.js --version', {
+      env: getIsolatedEnv(homePath),
+    });
+    expect(normalizeOutput(stdout)).toMatch(/^\d+\.\d+\.\d+$/);
+  } finally {
+    await restore();
+  }
+});
+```
+
+**Hook Execution Testing** (execute real hooks, not string matching):
+```typescript
+import { HookTestHarness } from '../test-utils/hook-test-harness.js';
+import { extractJson } from '../test-utils/normalize-output.js';
+
+it('should return approve decision from hook', async () => {
+  const harness = new HookTestHarness(testDir, hookPath);
+  const result = await harness.execute({ CI: 'true' });
+  const json = extractJson<{ decision: string }>(result.stdout);
+  expect(json?.decision).toBe('approve');
+});
+```
+
+**Process Spawning Best Practices**:
+- Always use `getCleanEnv()` or `getIsolatedEnv()` to strip NODE_OPTIONS
+- Set timeout: `{ timeout: 30000 }` for CLI tests
+- Capture both stdout AND stderr
+- Use `normalizeOutput()` before assertions
+- Use `extractJson()` for mixed JSON/text output
+- Create temp working directories with `createIsolatedTestDir()`
+
+**Exit Code Verification**:
+```typescript
+try {
+  await execAsync('node bin/cli.js bad-command', { env: getIsolatedEnv(home) });
+  expect.unreachable('Expected non-zero exit');
+} catch (error: any) {
+  expect(error.code).not.toBe(0);
+  expect(normalizeOutput(error.stderr)).toContain('Unknown command');
+}
+```
+
 ## Quality Checklist
 
 - Readable test names documenting intent

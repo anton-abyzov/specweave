@@ -45,12 +45,11 @@ export default defineConfig({
         'src/**/*.spec.ts',
       ],
       thresholds: {
-        // Realistic thresholds based on current coverage (2025-12)
-        // TODO: Gradually increase as test coverage improves
-        lines: 25,
-        functions: 25,
-        branches: 25,
-        statements: 25,
+        // Raised from 25% → 40% (2026-02) — target 70% by Q3
+        lines: 40,
+        functions: 40,
+        branches: 40,
+        statements: 40,
       },
     },
 

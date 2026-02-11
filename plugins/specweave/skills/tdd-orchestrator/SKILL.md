@@ -150,6 +150,56 @@ Increment tasks completed with TDD discipline
 - ✅ Want finer control over cycle
 - ✅ Integrating with other workflows
 
+## CLI/Hook Integration Testing
+
+When TDD targets CLI commands, hooks, or terminal tools, apply these patterns:
+
+### Test Isolation Stack
+
+| Layer | Helper | Purpose |
+|-------|--------|---------|
+| Home dir | `withIsolatedHome()` | Override HOME to temp dir |
+| Working dir | `createIsolatedTestDir()` | Isolated .specweave/ structure |
+| Env vars | `getIsolatedEnv()` | Strip NODE_OPTIONS, set HOME |
+| Output | `normalizeOutput()` | Strip ANSI, normalize endings |
+| JSON parsing | `extractJson()` | Extract JSON from mixed stdout |
+
+### TDD for CLI: Red Phase
+```typescript
+// RED: Write test that spawns CLI process
+it('should init project in isolated dir', async () => {
+  const { homePath, restore } = await withIsolatedHome('init-test');
+  try {
+    const result = await execAsync('node bin/specweave.js init', {
+      cwd: workDir,
+      env: getIsolatedEnv(homePath, { CI: 'true' }),
+      timeout: 30000,
+    });
+    expect(normalizeOutput(result.stdout)).toContain('initialized');
+  } finally {
+    await restore();
+  }
+});
+```
+
+### TDD for Hooks: Red Phase
+```typescript
+// RED: Write test that executes real hook
+it('should approve when no increment active', async () => {
+  const harness = new HookTestHarness(testDir, hookPath);
+  const result = await harness.execute({ CI: 'true' });
+  const json = extractJson<{ decision: string }>(result.stdout);
+  expect(json?.decision).toBe('approve');
+});
+```
+
+### Key Rules for CLI TDD
+- Use 30s timeout for CLI tests (not default 5s)
+- Always use `getCleanEnv()` or `getIsolatedEnv()` for child processes
+- Never test hooks by string-matching file contents - EXECUTE them
+- Separate CLI tests into `vitest.e2e.config.ts` with fewer workers
+- Run `npm run test:e2e:cli` for CLI-specific tests
+
 ## Configuration
 
 **Optional**: Customize TDD preferences in `.specweave/config.yaml`:
