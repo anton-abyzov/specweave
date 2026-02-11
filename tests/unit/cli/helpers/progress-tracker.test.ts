@@ -235,8 +235,9 @@ describe('ProgressTracker', () => {
       tracker.finish();
 
       // Should show time in seconds (e.g., "in 0s" or "in 1s")
+      // No $ anchor — chalk.green() appends ANSI reset codes after the visible text
       expect(logSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/in \d+s$/)
+        expect.stringMatching(/in \d+s/)
       );
     });
   });
