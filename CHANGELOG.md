@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.242] - 2026-02-11
+
+### Changes
+- **Multi-repo configurator**: Improved multi-repo discovery and configuration
+- **Tests**: Updated increment discipline tests
+- **Hooks**: Streamlined user-prompt-submit hook
+
+---
+
 ## [1.0.231] - 2026-02-05
 
 ### Changes
