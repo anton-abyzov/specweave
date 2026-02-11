@@ -226,6 +226,7 @@ PLUGIN_AUTOLOAD_ENABLED=true
 PLUGIN_SUGGEST_ONLY=false
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
+INCREMENT_MANDATORY_CONFIG=false
 DEEP_INTERVIEW_ENABLED=false
 if [[ -n "$SW_PROJECT_ROOT" ]]; then
   CONFIG_PATH="$SW_PROJECT_ROOT/.specweave/config.json"
@@ -246,6 +247,10 @@ if [[ -f "$CONFIG_PATH" ]]; then
 
     THRESHOLD_VALUE=$(jq -r '.incrementAssist.confidenceThreshold // 0.7' "$CONFIG_PATH" 2>/dev/null)
     [[ "$THRESHOLD_VALUE" =~ ^[0-9.]+$ ]] && INCREMENT_CONFIDENCE_THRESHOLD="$THRESHOLD_VALUE"
+
+    # Read incrementAssist.mandatory from config (config-based override for blocking)
+    MANDATORY_CONFIG_VALUE=$(jq -r '.incrementAssist.mandatory // false' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$MANDATORY_CONFIG_VALUE" == "true" ]] && INCREMENT_MANDATORY_CONFIG=true
 
     # Deep Interview Mode detection (v1.0.195)
     DEEP_INTERVIEW_VALUE=$(jq -r '.planning.deepInterview.enabled // false' "$CONFIG_PATH" 2>/dev/null)
@@ -1174,6 +1179,12 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               # v1.0.168: LLM decides if mandatory (not config-based)
               INC_MANDATORY=$(echo "$JSON_OUTPUT" | jq -r '.increment.mandatory // false' 2>/dev/null)
 
+              # Config-based override: if incrementAssist.mandatory=true in config,
+              # force mandatory for ALL detected implementation work (action != "none")
+              if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" && "$INC_ACTION" != "none" ]]; then
+                INC_MANDATORY="true"
+              fi
+
               # v1.0.168: Parse skill invocation recommendation
               SKILL_INVOCATION=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.skill // empty' 2>/dev/null)
               SKILL_REASON=$(echo "$JSON_OUTPUT" | jq -r '.skillInvocation.reason // empty' 2>/dev/null)
@@ -1300,26 +1311,33 @@ Task({
                       # Use printf to handle special chars, then escape for nested JSON
                       ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
 
-                      # Build deep interview mode reminder if enabled (v1.0.195)
+                      # v1.0.243: Smart interview gate — LLM assesses prompt completeness
+                      # before blindly calling increment-planner. If details are missing,
+                      # ask targeted questions first. If complete, proceed directly.
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
                         DEEP_INTERVIEW_MSG="
 
-🎤 **DEEP INTERVIEW MODE ENABLED**
-Before creating spec.md, you MUST ask thorough questions about:
-- Architecture & system design patterns
-- External integrations (APIs, databases, auth)
-- UI/UX concerns and tradeoffs
-- Performance & scalability requirements
-- Security considerations
-- Edge cases & error handling
+🧠 **SMART INTERVIEW GATE** (Deep Interview Mode active)
 
-Continue interviewing until requirements are crystal clear. Assess complexity first:
-- Trivial (0-3 questions): Config change, typo fix, obvious bug
-- Small (4-8 questions): Single component, clear requirements
-- Medium (9-18 questions): Multiple components, some integration
-- Large (19-40+ questions): Architectural, cross-cutting, high-risk
-"
+BEFORE calling sw:increment-planner, assess this prompt for completeness.
+Consider ALL prior messages in this conversation.
+
+**Assess complexity:**
+- Trivial → need almost nothing, call increment-planner now
+- Small (single component) → need: tech stack + basic flow
+- Medium (multiple components) → need: stack + integrations + user flows + auth
+- Large (platform/multi-service) → need: architecture + security + deployment + edge cases
+
+**Check signals (weight by project type):**
+- Technical: stack, frameworks, DB, auth, API integrations, deployment target
+- Product: target users, core flows, business model, MVP scope
+- Operational: env vars/keys, CI/CD, monitoring
+
+**Decision:**
+- Sufficient detail → call increment-planner immediately with full context
+- Gaps detected → ask 2-5 targeted questions about ONLY what is missing, then call increment-planner after answers received
+- NEVER ask 10+ questions. NEVER repeat what the user already said."
                       fi
 
                       # v1.0.198: Get skill memory for increment-planner
@@ -1360,7 +1378,15 @@ After sw:increment-planner, ALSO invoke domain skills for your tech stack:
 - After code → LSP works automatically (use findReferences, goToDefinition)
 
 See CLAUDE.md section \\\"MANDATORY: Skill Chaining\\\" for full pattern."
-                      output_approve_with_context "$MSG"
+                      # When INCREMENT_MANDATORY_CONFIG=true (from config), use block decision
+                      # to actually prevent execution without increment creation
+                      if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
+                        local escaped_block
+                        escaped_block=$(escape_json_early "$MSG")
+                        printf '{"decision":"block","reason":"%s"}\n' "$escaped_block"
+                      else
+                        output_approve_with_context "$MSG"
+                      fi
                       exit 0
                     else
                       # v1.0.169: Also suggest direct skill call for non-mandatory
@@ -1401,7 +1427,14 @@ Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    output_approve_with_context "$MSG"
+                    # When INCREMENT_MANDATORY_CONFIG=true, block hotfix too
+                    if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
+                      local escaped_hotfix_block
+                      escaped_hotfix_block=$(escape_json_early "$MSG")
+                      printf '{"decision":"block","reason":"%s"}\n' "$escaped_hotfix_block"
+                    else
+                      output_approve_with_context "$MSG"
+                    fi
                     exit 0
                     ;;
 
@@ -1446,7 +1479,14 @@ Or via command: \`$CMD_SMALLFIX\`
 ---
 
 *Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
-                    output_approve_with_context "$MSG"
+                    # When INCREMENT_MANDATORY_CONFIG=true, block small_fix too
+                    if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
+                      local escaped_smallfix_block
+                      escaped_smallfix_block=$(escape_json_early "$MSG")
+                      printf '{"decision":"block","reason":"%s"}\n' "$escaped_smallfix_block"
+                    else
+                      output_approve_with_context "$MSG"
+                    fi
                     exit 0
                     ;;
                 esac
@@ -2107,6 +2147,54 @@ if [[ "$ACTIVE_COUNT" -gt 0 ]]; then
 fi
 
 # ==============================================================================
+# SMART INTERVIEW GATE (v1.0.243 - LLM-Driven Prompt Assessment)
+# ==============================================================================
+# When Deep Interview Mode is enabled AND no active increment exists,
+# inject instructions for the LLM to assess prompt completeness.
+# The LLM decides: ask targeted questions OR proceed to increment creation.
+# Fires on EVERY prompt until an increment is created.
+# See ADR-0243 for architecture decision.
+
+SMART_INTERVIEW_GATE_MSG=""
+if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; then
+  # Also check active-increment.json state file as secondary source
+  HAVE_ACTIVE_STATE=false
+  STATE_FILE="$SPECWEAVE_DIR/state/active-increment.json"
+  if [[ -f "$STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
+    ACTIVE_IDS=$(jq -r '.ids // [] | length' "$STATE_FILE" 2>/dev/null || echo "0")
+    [[ "$ACTIVE_IDS" -gt 0 ]] && HAVE_ACTIVE_STATE=true
+  fi
+
+  if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
+    SMART_INTERVIEW_GATE_MSG="
+🧠 **SMART INTERVIEW GATE** (Deep Interview Mode active, no increment yet)
+
+Before proceeding, assess this conversation for completeness. Consider ALL prior messages.
+
+**Assess complexity first:**
+- Trivial (config change, typo) → need almost nothing, proceed immediately
+- Small (single component) → need: tech stack + basic flow
+- Medium (multiple components) → need: stack + integrations + user flows + auth approach
+- Large (platform/multi-service) → need: architecture + security + deployment + edge cases + monitoring
+
+**Check for these signals (weight by project type):**
+- Technical: tech stack, frameworks, database, auth method, API integrations, deployment target
+- Product: target users, core flows, business model, MVP scope, timeline
+- Operational: env vars/keys, CI/CD, monitoring needs
+
+**Your decision:**
+- If sufficient detail for the detected complexity → call \`Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"<summarize all gathered context>\\\" })\`
+- If gaps exist → ask 2-5 targeted questions about ONLY what is missing. Do NOT repeat questions already answered in prior messages. Do NOT run a full category-by-category interview.
+
+**Rules:**
+- NEVER overwhelm with 10+ questions at once
+- NEVER ask about things the user already explained
+- Simple projects need fewer signals than complex platforms
+- When in doubt about one detail, ask — but don't block on nice-to-haves"
+  fi
+fi
+
+# ==============================================================================
 # DISCIPLINE VALIDATION: Warn about WIP limits (configurable, not hard block!)
 # ==============================================================================
 
@@ -2367,6 +2455,15 @@ fi
 # v1.0.180: Add explicit LSP request explanation if detected
 if [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]]; then
   FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_EXPLICIT_REQUEST_MSG}"
+fi
+
+# v1.0.243: Smart Interview Gate for non-incrementAssist paths
+# When deep interview is enabled but incrementAssist didn't trigger SKILL FIRST,
+# still inject the gate so LLM can gather context across conversational prompts.
+if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}
+
+${SMART_INTERVIEW_GATE_MSG}"
 fi
 
 # Add context if available

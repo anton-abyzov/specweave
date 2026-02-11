@@ -131,8 +131,9 @@ describe('Team Command', () => {
       const [, args] = mockSpawn.mock.calls[0];
       // -p makes it non-interactive — must NOT be used for team mode
       expect(args).not.toContain('-p');
-      // Should launch interactively with just base flags
-      expect(args).toEqual(['--dangerously-skip-permissions']);
+      // Should launch interactively with base flags and teammate mode
+      expect(args).toContain('--dangerously-skip-permissions');
+      expect(args).toContain('--teammate-mode');
     });
 
     it('should print description as suggested prompt for the user', async () => {
@@ -146,22 +147,36 @@ describe('Team Command', () => {
       await handleTeamCommand(undefined, {});
 
       const [, args] = mockSpawn.mock.calls[0];
-      // Should only have the base flag, no extra prompt args
-      expect(args).toEqual(['--dangerously-skip-permissions']);
+      // Should have base flags plus teammate mode, no extra prompt args
+      expect(args).toContain('--dangerously-skip-permissions');
+      expect(args).toContain('--teammate-mode');
+      expect(args).not.toContain('-p');
     });
   });
 
   describe('mode selection', () => {
-    it('should resolve in-process mode when explicitly requested and log it', async () => {
+    it('should pass --teammate-mode in-process when explicitly requested', async () => {
       await handleTeamCommand(undefined, { mode: 'in-process' });
 
-      // Mode is resolved for display but not passed as CLI flag
       expect(mockSpawn).toHaveBeenCalledTimes(1);
+      const [, args] = mockSpawn.mock.calls[0];
+      expect(args).toContain('--teammate-mode');
+      expect(args).toContain('in-process');
+
       const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
       expect(logCalls).toMatch(/in-process/i);
     });
 
-    it('should fall back to in-process when tmux is unavailable and warn user', async () => {
+    it('should pass --teammate-mode tmux when tmux is available', async () => {
+      await handleTeamCommand(undefined, {});
+
+      expect(mockSpawn).toHaveBeenCalledTimes(1);
+      const [, args] = mockSpawn.mock.calls[0];
+      expect(args).toContain('--teammate-mode');
+      expect(args).toContain('tmux');
+    });
+
+    it('should fall back to in-process when tmux is unavailable and pass that mode', async () => {
       mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
         if (cmd === 'which' && args[0] === 'claude') {
           return { success: true, stdout: '/usr/local/bin/claude', stderr: '', exitCode: 0 };
@@ -173,6 +188,10 @@ describe('Team Command', () => {
       await handleTeamCommand(undefined, {});
 
       expect(mockSpawn).toHaveBeenCalledTimes(1);
+      const [, args] = mockSpawn.mock.calls[0];
+      expect(args).toContain('--teammate-mode');
+      expect(args).toContain('in-process');
+
       // Should warn the user about missing tmux
       const logCalls = consoleSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
       expect(logCalls).toMatch(/tmux|iTerm2|in-process/i);
