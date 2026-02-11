@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.243] - 2026-02-11
+
+### Changes
+- **Smart interview gate**: Added enforcement for deep interview mode with configurable requirements
+- **Done enforcement**: Improved validation for increment completion workflow
+- **GitHub credential reuse**: Enhanced token detection and configuration management
+- **Agent teams**: Refined orchestration and merge workflows
+- **Testing**: Added enforcement tests for done and increment commands
+
+---
+
+
+
 ## [1.0.242] - 2026-02-11
 
 ### Changes
