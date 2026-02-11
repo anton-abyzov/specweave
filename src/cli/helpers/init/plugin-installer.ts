@@ -22,7 +22,7 @@ const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_RE
 
 /**
  * Anthropic's official plugins marketplace
- * Contains context7, playwright, and other official plugins
+ * Optional — users can install plugins manually if needed
  */
 const OFFICIAL_MARKETPLACE_URL = 'https://github.com/anthropics/claude-plugins-official';
 
@@ -138,8 +138,7 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     // No need for manual cache management - that was over-engineering!
     await refreshMarketplace(spinner);
 
-    // CRITICAL FIX (v1.0.223): Ensure official Anthropic marketplace is registered
-    // Required for context7 and playwright plugins
+    // Register official marketplace (optional — for user-installed plugins)
     await ensureOfficialMarketplace(spinner);
 
     // Load marketplace.json to get ALL available plugins
@@ -375,10 +374,10 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
 /**
  * Ensure Anthropic's official plugins marketplace is registered
  *
- * Required for context7 and playwright plugins which are essential
- * for documentation context and browser automation.
+ * Optional — makes official plugins available for manual installation.
  *
  * v1.0.223: Added to fix missing marketplace during init
+ * v1.0.240 (0198): context7/playwright no longer auto-installed
  */
 async function ensureOfficialMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
   spinner.start('Checking official plugins marketplace...');
@@ -404,7 +403,7 @@ async function ensureOfficialMarketplace(spinner: ReturnType<typeof ora>): Promi
 
   if (!addResult.success) {
     // Non-fatal - warn but continue
-    spinner.warn('Could not add official marketplace (context7/playwright unavailable)');
+    spinner.warn('Could not add official marketplace');
     console.log(chalk.gray('   → Manual: claude plugin marketplace add https://github.com/anthropics/claude-plugins-official'));
     return;
   }
@@ -545,25 +544,22 @@ function getPluginVersion(pluginName: string): string {
 }
 
 /**
- * Install in lazy mode - essential plugins only, load others on-demand
+ * Install in lazy mode - core plugin only, load others on-demand
  *
  * Installs:
  * - sw@specweave (core SpecWeave framework)
- * - context7@claude-plugins-official (documentation context)
- * - playwright@claude-plugins-official (browser automation)
  *
  * Other SpecWeave plugins are loaded on-demand via detect-intent hook.
+ * Official plugins (context7, playwright) are optional user installs.
  */
 async function installLazyMode(
-  allPlugins: Array<{ name: string }>,
+  _allPlugins: Array<{ name: string }>,
   spinner: ReturnType<typeof ora>,
   _dirname: string
 ): Promise<PluginInstallResult> {
-  // Essential plugins to install
+  // Essential plugins to install (v1.0.240: only core SW plugin)
   const essentialPlugins = [
     { name: 'sw', marketplace: 'specweave', description: 'Core SpecWeave framework' },
-    { name: 'context7', marketplace: 'claude-plugins-official', description: 'Documentation context' },
-    { name: 'playwright', marketplace: 'claude-plugins-official', description: 'Browser automation' },
   ];
 
   let installedCount = 0;

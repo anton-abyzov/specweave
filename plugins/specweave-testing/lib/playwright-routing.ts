@@ -13,26 +13,29 @@ export type TaskType =
   | 'self-healing-test';
 
 export interface RoutingConfig {
+  /** @deprecated CLI is now the only mode. MCP plugin removed from auto-install (0198). */
   preferCli?: boolean;
 }
 
-/** Tasks that benefit from MCP's rich DOM introspection */
-const MCP_PREFERRED_TASKS: ReadonlySet<TaskType> = new Set([
-  'ui-inspect',
-  'page-exploration',
-  'self-healing-test',
-]);
-
+/**
+ * Resolve Playwright mode for a given task.
+ *
+ * v1.0.240 (0198): CLI-only mode. All tasks route to CLI.
+ * MCP fallback only when CLI is not installed (graceful degradation).
+ * Users who want Playwright MCP can install it manually.
+ */
 export function resolvePlaywrightMode(
   task: TaskType,
   config: RoutingConfig = {},
 ): PlaywrightMode {
   const { preferCli = true } = config;
 
+  // Config override: allow forcing MCP if user explicitly installed Playwright MCP
   if (!preferCli) return 'mcp';
 
   const detection = detectPlaywrightCli({ useCache: true });
   if (!detection.installed) return 'mcp';
 
-  return MCP_PREFERRED_TASKS.has(task) ? 'mcp' : 'cli';
+  // All tasks route to CLI — no MCP-preferred tasks
+  return 'cli';
 }
