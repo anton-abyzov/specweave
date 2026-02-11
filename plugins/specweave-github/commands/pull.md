@@ -57,7 +57,7 @@ if (!issueNumber) {
 ### 2. Fetch and Compare
 
 ```
-Use Skill tool: Skill({ skill: "sw-github:github-manager", args: "Pull changes from GitHub for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-github:github-sync", args: "Pull changes from GitHub for increment {increment-id}.
 
 Issue: #{issueNumber}
 

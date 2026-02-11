@@ -121,7 +121,7 @@ First create an issue with: /sw-jira:create ${incrementId}
 ### 5. Invoke JIRA Manager Skill
 
 ```
-Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Close JIRA issue for completed increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-sync", args: "Close JIRA issue for completed increment {increment-id}.
 
 IMPORTANT:
 - Permission verified: canUpdateExternalItems=true, canUpdateStatus=true

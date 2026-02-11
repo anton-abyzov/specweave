@@ -149,6 +149,32 @@ Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase 
 | GraphQL schema | `schema.graphql` | Backend agent | Frontend, Mobile |
 | API route types | `src/api/types/` | Backend agent | Frontend |
 
+### Multi-Repo Increment Placement (CRITICAL)
+
+**In umbrella projects with a `repositories/` folder, each agent MUST create its increment in its OWN repo's `.specweave/`:**
+
+```
+# CORRECT: Each repo has its own .specweave/increments/
+umbrella-project/
+├── .specweave/config.json              # Umbrella config ONLY
+├── repositories/
+│   ├── {org}/sw-ecom-domain/
+│   │   └── .specweave/increments/0001-domain-models/    # Domain agent's increment
+│   ├── {org}/sw-ecom-shared/
+│   │   └── .specweave/increments/0001-shared-types/     # Shared agent's increment
+│   └── {org}/sw-ecom-api/
+│       └── .specweave/increments/0001-api-endpoints/    # Backend agent's increment
+
+# WRONG: All agents dumping into umbrella root
+umbrella-project/
+├── .specweave/increments/0001-everything/               # WRONG! Not per-repo
+```
+
+**Rules:**
+- Run `specweave init` in each repo if `.specweave/` doesn't exist
+- Each agent's working directory is its assigned repo inside `repositories/`
+- Never create `.specweave/increments/` in the umbrella root for multi-repo work
+
 ### Phase 1: Upstream Agents (Contracts First)
 
 **Contract chain order**: shared/types → database → backend → frontend (upstream before downstream).
@@ -248,18 +274,21 @@ DESIGN QUALITY:
   - Invoke `sw-frontend:frontend-design` for high-quality UI polish
 
 WORKFLOW:
-  1. Read the increment spec: .specweave/increments/[ID]/spec.md
-  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Verify services are running and accessible (check dev server, API endpoints)
-  4. Wait for contract artifacts if Phase 1 is active:
+  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  2. If .specweave/ doesn't exist in your repo, run: specweave init
+  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
+  4. Read the increment spec: .specweave/increments/[ID]/spec.md
+  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  6. Verify services are running and accessible (check dev server, API endpoints)
+  7. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
      - Read openapi.yaml for API endpoints (if backend produces one)
-  5. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  6. Run all tests for owned code (unit + integration): npm test
-  7. Run quality gate: /sw:grill
-  8. Do NOT signal completion until all tests pass
-  9. After auto completes, attempt closure via /sw:done to identify remaining issues
-  10. Signal completion (see Communication Protocol)
+  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  9. Run all tests for owned code (unit + integration): npm test
+  10. Run quality gate: /sw:grill
+  11. Do NOT signal completion until all tests pass
+  12. After auto completes, attempt closure via /sw:done to identify remaining issues
+  13. Signal completion (see Communication Protocol)
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -268,6 +297,7 @@ RULES:
   - Run linter and type-check before signaling completion
   - All new components must have corresponding test files
   - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
 ### 4b. Backend Agent
@@ -297,19 +327,22 @@ AUTH SETUP:
   - Ensure auth middleware works end-to-end before signaling completion
 
 WORKFLOW:
-  1. Read the increment spec: .specweave/increments/[ID]/spec.md
-  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Verify services are running and accessible (database, auth provider, external APIs)
-  4. Wait for contract artifacts if Phase 1 is active:
+  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  2. If .specweave/ doesn't exist in your repo, run: specweave init
+  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
+  4. Read the increment spec: .specweave/increments/[ID]/spec.md
+  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  6. Verify services are running and accessible (database, auth provider, external APIs)
+  7. Wait for contract artifacts if Phase 1 is active:
      - Read prisma/schema.prisma for database schema
      - Read src/types/ for shared interfaces
-  5. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  6. Generate or update OpenAPI spec if API routes change
-  7. Run all tests for owned code (unit + integration): npm test
-  8. Run quality gate: /sw:grill
-  9. Do NOT signal completion until all tests pass
-  10. After auto completes, attempt closure via /sw:done to identify remaining issues
-  11. Signal completion (see Communication Protocol)
+  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  9. Generate or update OpenAPI spec if API routes change
+  10. Run all tests for owned code (unit + integration): npm test
+  11. Run quality gate: /sw:grill
+  12. Do NOT signal completion until all tests pass
+  13. After auto completes, attempt closure via /sw:done to identify remaining issues
+  14. Signal completion (see Communication Protocol)
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -318,6 +351,7 @@ RULES:
   - Error handling must follow project conventions
   - All services must have unit tests
   - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
 ### 4c. Database Agent
@@ -339,18 +373,21 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Read the increment spec: .specweave/increments/[ID]/spec.md
-  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Design database schema changes
-  4. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
-  5. Write seed data if needed
-  6. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  7. Run all tests for owned code (migration, seed): npm test
-  8. Run quality gate: /sw:grill
-  9. Do NOT signal completion until all tests pass
-  10. Signal CONTRACT_READY with schema details (see Communication Protocol)
-  11. After auto completes, attempt closure via /sw:done to identify remaining issues
-  12. Signal completion
+  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  2. If .specweave/ doesn't exist in your repo, run: specweave init
+  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
+  4. Read the increment spec: .specweave/increments/[ID]/spec.md
+  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  6. Design database schema changes
+  7. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
+  8. Write seed data if needed
+  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  10. Run all tests for owned code (migration, seed): npm test
+  11. Run quality gate: /sw:grill
+  12. Do NOT signal completion until all tests pass
+  13. Signal CONTRACT_READY with schema details (see Communication Protocol)
+  14. After auto completes, attempt closure via /sw:done to identify remaining issues
+  15. Signal completion
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -359,6 +396,7 @@ RULES:
   - Seed data must be idempotent
   - Schema changes must be backward-compatible when possible
   - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
 ### 4d. Testing Agent
@@ -386,18 +424,21 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Read the increment spec: .specweave/increments/[ID]/spec.md
-  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Wait for ALL other agents to produce initial code
-  4. Write unit tests for new services/components
-  5. Write integration tests for API endpoints
-  6. Write E2E tests for user journeys
-  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  8. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  9. Do NOT signal completion until all tests pass — if tests fail, fix and repeat
-  10. Run quality gate: /sw:grill
-  11. After auto completes, attempt closure via /sw:done to identify remaining issues
-  12. Signal completion
+  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  2. If .specweave/ doesn't exist in your repo, run: specweave init
+  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
+  4. Read the increment spec: .specweave/increments/[ID]/spec.md
+  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  6. Wait for ALL other agents to produce initial code
+  7. Write unit tests for new services/components
+  8. Write integration tests for API endpoints
+  9. Write E2E tests for user journeys
+  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  11. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  12. Do NOT signal completion until all tests pass — if tests fail, fix and repeat
+  13. Run quality gate: /sw:grill
+  14. After auto completes, attempt closure via /sw:done to identify remaining issues
+  15. Signal completion
 
 RULES:
   - WRITE only to test files (listed above)
@@ -406,6 +447,7 @@ RULES:
   - Follow existing test patterns and utilities
   - E2E tests must include accessibility checks when applicable
   - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
 ### 4e. Security Agent
@@ -429,18 +471,21 @@ FILE OWNERSHIP (WRITE access):
 READ ACCESS: Any file in the repository
 
 WORKFLOW:
-  1. Read the increment spec: .specweave/increments/[ID]/spec.md
-  2. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  3. Audit code produced by other agents for security issues
-  4. Implement auth/authz middleware if needed
-  5. Add input validation and sanitization
-  6. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  7. Run all tests for owned code (security tests): npm test
-  8. Run security audit tools (npm audit, dependency check)
-  9. Run quality gate: /sw:grill
-  10. Do NOT signal completion until all tests pass
-  11. After auto completes, attempt closure via /sw:done to identify remaining issues
-  12. Signal completion with security findings summary
+  1. Set working directory to your assigned repo: cd repositories/{org}/{repo-name}
+  2. If .specweave/ doesn't exist in your repo, run: specweave init
+  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
+  4. Read the increment spec: .specweave/increments/[ID]/spec.md
+  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
+  6. Audit code produced by other agents for security issues
+  7. Implement auth/authz middleware if needed
+  8. Add input validation and sanitization
+  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  10. Run all tests for owned code (security tests): npm test
+  11. Run security audit tools (npm audit, dependency check)
+  12. Run quality gate: /sw:grill
+  13. Do NOT signal completion until all tests pass
+  14. After auto completes, attempt closure via /sw:done to identify remaining issues
+  15. Signal completion with security findings summary
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -449,6 +494,7 @@ RULES:
   - All user input must be validated and sanitized
   - Follow OWASP Top 10 guidelines
   - ALL repository operations MUST use `repositories/{org}/` directory structure. NEVER create repos at the project root.
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
 ```
 
 ---

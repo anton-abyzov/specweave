@@ -108,7 +108,7 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
 
       // Should have case for "reopen" action
       expect(hookContent).toContain('reopen)');
-      expect(hookContent).toContain('/sw:resume');
+      expect(hookContent).toContain('specweave resume');
     });
 
     it('should respect incrementAssist.enabled config', () => {

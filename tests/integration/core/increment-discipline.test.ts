@@ -215,7 +215,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('/sw:done');
-      expect(result.systemMessage).toContain('/sw:pause');
+      expect(result.systemMessage).toContain('specweave pause');
     });
 
     it('should mention completing or pausing', async () => {
@@ -252,7 +252,7 @@ describe('Increment Discipline Enforcement (E2E)', () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('/sw:done');
-      expect(result.systemMessage).toContain('/sw:pause');
+      expect(result.systemMessage).toContain('specweave pause');
     });
   });
 

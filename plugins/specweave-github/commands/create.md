@@ -161,10 +161,10 @@ Contact repository admin to request access.
 
 ## Implementation
 
-This command invokes the `github-manager` agent via the Task tool:
+This command invokes the `github-sync` agent via the Task tool:
 
 ```typescript
-const agent = new TaskAgent('github-manager', {
+const agent = new TaskAgent('github-sync', {
   prompt: `Create GitHub issue for increment ${incrementId}`,
   context: {
     incrementPath: `.specweave/increments/${incrementId}`,
@@ -325,6 +325,6 @@ Run without --dry-run to create this issue.
 
 **Command**: `/sw:github:create-issue`
 **Plugin**: specweave-github
-**Agent**: github-manager
+**Agent**: github-sync
 **Version**: 1.0.0
 **Last Updated**: 2025-10-30

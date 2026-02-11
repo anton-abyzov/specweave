@@ -85,7 +85,7 @@ const { organization, project } = profileConfig.config;
 ### 4. Invoke ADO Manager Skill
 
 ```
-Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Create ADO work item for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-sync", args: "Create ADO work item for increment {increment-id}.
 
 IMPORTANT: Permission already verified (canUpdateExternalItems=true).
 Use profile: {profileName} (org: {organization}, project: {project})

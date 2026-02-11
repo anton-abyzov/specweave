@@ -12,7 +12,7 @@ description: Check Azure DevOps sync status for increment
 
 ## Command Behavior
 
-When user runs this command, invoke `ado-manager` agent to:
+When user runs this command, invoke `ado-sync` agent to:
 
 1. Read increment-metadata.json
 2. Fetch work item from ADO API
@@ -21,7 +21,7 @@ When user runs this command, invoke `ado-manager` agent to:
 
 **Skill Invocation**:
 ```
-Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Check ADO sync status for increment 0005-payment-integration.
+Use Skill tool: Skill({ skill: "sw-ado:ado-sync", args: "Check ADO sync status for increment 0005-payment-integration.
 
 Steps:
 1. Read increment-metadata.json

@@ -73,7 +73,7 @@ if (!jiraIssueKey) {
 ### 2. Fetch and Apply
 
 ```
-Use Skill tool: Skill({ skill: "sw-jira:jira-manager", args: "Pull changes from Jira for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-jira:jira-sync", args: "Pull changes from Jira for increment {increment-id}.
 
 Issue: {jiraIssueKey}
 

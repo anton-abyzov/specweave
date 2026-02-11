@@ -1446,7 +1446,7 @@ Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
 Consider reopening the existing increment:
 \`\`\`
 /sw:status  # Find the related increment
-/sw:resume <id>  # Reopen it
+specweave resume <id>  # Reopen it
 \`\`\`
 
 *Reason: $INC_REASON*
@@ -1627,7 +1627,7 @@ Skill({ skill: \\\"${SKILL_INVOCATION}\\\" })
                 STEP_NUM=$((STEP_NUM + 1))
               elif [[ "$INC_ACTION" == "reopen" ]]; then
                 BRAIN_MSG+="### Step ${STEP_NUM}: Find & Reopen Increment\\n"
-                BRAIN_MSG+="\\\`\\\`\\\`\\n/sw:status  # Find related increment\\n/sw:resume <id>\\n\\\`\\\`\\\`\\n"
+                BRAIN_MSG+="\\\`\\\`\\\`\\n/sw:status  # Find related increment\\nspecweave resume <id>\\n\\\`\\\`\\\`\\n"
                 [[ -n "$INC_KEYWORD" ]] && BRAIN_MSG+="*Look for: ${INC_KEYWORD}*\\n"
                 BRAIN_MSG+="\\n"
                 STEP_NUM=$((STEP_NUM + 1))
@@ -2142,7 +2142,7 @@ if [[ "$ACTIVE_COUNT" -gt 0 ]]; then
   [[ ! "$_WIP_LIMIT" =~ ^[0-9]+$ ]] && _WIP_LIMIT=3
 
   if [[ "$ACTIVE_COUNT" -ge "$_WIP_LIMIT" ]]; then
-    WIP_WARNING="⚠️ **WIP Notice** (${ACTIVE_COUNT}/${_WIP_LIMIT} active)\\n\\nActive increments:\\n${ACTIVE_LIST}\\nConsider completing existing work first (\`/sw:done <id>\`) or pausing (\`/sw:pause <id>\`).\\n\\n---\\n\\n"
+    WIP_WARNING="⚠️ **WIP Notice** (${ACTIVE_COUNT}/${_WIP_LIMIT} active)\\n\\nActive increments:\\n${ACTIVE_LIST}\\nConsider completing existing work first (\`/sw:done <id>\`) or pausing (\`specweave pause <id>\`).\\n\\n---\\n\\n"
   fi
 fi
 

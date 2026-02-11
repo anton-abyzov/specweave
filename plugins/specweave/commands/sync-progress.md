@@ -12,14 +12,14 @@ This is the **TRUE "single button"** to sync all progress across the entire Spec
 
 ## ⚠️ CRITICAL MANDATORY BEHAVIOR - AUTO-CREATE EXTERNAL ISSUES
 
-**You MUST use the Skill tool to invoke `/sw-github:create` (or JIRA/ADO equivalent) when:**
+**You MUST invoke `/sw-github:create` (or JIRA/ADO equivalent) when:**
 1. GitHub is configured in config.json (`sync.github.enabled: true` OR profiles with `provider: "github"`)
 2. No GitHub issue is linked to this increment (check metadata.json for `github.issue` field)
 3. The `--no-create` flag was NOT passed
 
 **THIS IS NOT OPTIONAL. If these conditions are met, you MUST call:**
 ```
-Skill({ skill: "sw-github:create", args: "<increment-id>" })
+/sw-github:create <increment-id>
 ```
 
 **DO NOT just report "No issues linked" and suggest manual creation. AUTO-CREATE is the DEFAULT behavior.**
@@ -244,7 +244,7 @@ fi
 
 | INCREMENT_STATUS | Issue EXISTS | Action |
 |------------------|--------------|--------|
-| `active` | No | ✅ **MUST invoke** `Skill({ skill: "sw-github:create", args: "<id>" })` |
+| `active` | No | ✅ **MUST invoke** `/sw-github:create <id>` |
 | `active` | Yes | ✅ SYNC (update progress) |
 | `completed` | No | ✅ **MUST invoke** create skill + THEN close |
 | `completed` | Yes | ✅ CLOSE the existing issue |
@@ -256,9 +256,9 @@ fi
 1. **READ** the metadata.json to check for `github.issue` field
 2. **IF** no issue exists:
    - **Log**: "📝 No GitHub issue linked - AUTO-CREATING..."
-   - **INVOKE THE SKILL**: You MUST use the Skill tool:
+   - **INVOKE THE COMMAND**: You MUST call:
      ```
-     Skill({ skill: "sw-github:create", args: "<increment-id>" })
+     /sw-github:create <increment-id>
      ```
    - **WAIT** for the skill to complete
    - **LOG** the result: "✅ GitHub issue auto-created: #<number>"
@@ -280,7 +280,7 @@ IF github configured AND no issue linked AND --no-create NOT set:
     IF permissions allow:
         LOG "📝 No GitHub issue linked - AUTO-CREATING..."
 
-        >>> ACTUALLY INVOKE: Skill({ skill: "sw-github:create", args: incrementId })
+        >>> ACTUALLY INVOKE: /sw-github:create incrementId
 
         THEN re-read metadata.json to get issue number
         LOG "✅ GitHub issue auto-created: #<number>"
@@ -295,14 +295,14 @@ ELSE IF issue exists:
 **Same mandatory pattern as GitHub:**
 - Check metadata.json for `jira.issue` field
 - If no issue AND permissions allow AND `--no-create` not set:
-  - **INVOKE**: `Skill({ skill: "sw-jira:create", args: "<increment-id>" })`
+  - **INVOKE**: `/sw-jira:create <increment-id>`
 
 ### 🚨 ADO AUTO-CREATE (If Azure DevOps configured)
 
 **Same mandatory pattern as GitHub:**
 - Check metadata.json for `ado.workItem` field
 - If no work item AND permissions allow AND `--no-create` not set:
-  - **INVOKE**: `Skill({ skill: "sw-ado:create", args: "<increment-id>" })`
+  - **INVOKE**: `/sw-ado:create <increment-id>`
 
 ---
 

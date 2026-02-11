@@ -139,7 +139,7 @@ const recentlyCompleted = parseRecentlyCompletedTasks(tasksContent);
 ### 4. Invoke Push Sync
 
 ```
-Use Skill tool: Skill({ skill: "sw-ado:ado-manager", args: "Push progress to ADO for increment {increment-id}.
+Use Skill tool: Skill({ skill: "sw-ado:ado-sync", args: "Push progress to ADO for increment {increment-id}.
 
 DIRECTION: to-ado
 PERMISSION: canUpdateExternalItems = true (verified)

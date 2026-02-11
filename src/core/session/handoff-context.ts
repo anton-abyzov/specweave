@@ -210,11 +210,6 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       description: 'DevOps and infrastructure automation',
       category: 'infrastructure',
     },
-    {
-      name: 'sw-infra:infrastructure',
-      description: 'Infrastructure as Code expertise',
-      category: 'infrastructure',
-    },
   ],
   'sw-testing': [
     {
@@ -258,8 +253,8 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
   ],
   'sw-confluent': [
     {
-      name: 'sw-confluent:confluent-architect',
-      description: 'Confluent Cloud and Schema Registry',
+      name: 'sw-confluent:confluent-kafka-connect',
+      description: 'Confluent Kafka Connect integration',
       category: 'streaming',
     },
   ],
