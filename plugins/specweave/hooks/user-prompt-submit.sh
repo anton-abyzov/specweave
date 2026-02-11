@@ -2078,7 +2078,7 @@ if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
       inc_type=$(grep -oP '"type"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "feature")
     fi
 
-    if [[ "$status" == "active" || "$status" == "planning" || "$status" == "backlog" || "$status" == "ready_for_review" ]]; then
+    if [[ "$status" == "active" || "$status" == "planning" || "$status" == "ready_for_review" ]]; then
       inc_id=$(basename "$(dirname "$metadata_file")")
       ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
       ACTIVE_LIST="${ACTIVE_LIST}  - $inc_id [$inc_type]\n"
