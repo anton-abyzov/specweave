@@ -9,29 +9,11 @@ context: fork
 
 Comprehensive expertise in **deep linking** (Universal Links, App Links, deferred deep linking) and **push notifications** (APNs, FCM, rich notifications, silent push) across iOS, Android, React Native, and Flutter.
 
-## CRITICAL: Fetching Current Documentation
+## Fetching Current Documentation
 
-**Before providing version-specific guidance, ALWAYS fetch the latest documentation:**
+**Before providing version-specific guidance, verify current versions.** Library APIs for notifications, deep linking, and routing evolve frequently.
 
-```typescript
-// expo-notifications
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "expo-notifications",
-  query: "Expo notifications setup push notification configuration"
-});
-
-// Firebase Messaging (Flutter)
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "firebase_messaging",
-  query: "Firebase Cloud Messaging Flutter setup and configuration"
-});
-
-// Expo Router deep linking
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "expo-router",
-  query: "Deep linking URL handling and navigation"
-});
-```
+For library documentation, use WebSearch or install Context7 manually: `claude plugin install context7@claude-plugins-official`
 
 ---
 
@@ -808,6 +790,6 @@ function trackNotificationTap(notificationId: string, action: string) {
 ## Related Skills
 
 - `expo` - Expo-specific notification and linking setup
-- `mobile-architect` - Navigation architecture for deep link routing
+- `react-native-expert` - Navigation architecture for deep link routing
 - `mobile-testing` - Testing deep links and notifications
 - `capacitor-ionic` - Capacitor deep linking and push setup

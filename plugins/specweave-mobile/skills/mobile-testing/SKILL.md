@@ -9,29 +9,11 @@ context: fork
 
 Comprehensive mobile testing expertise across **iOS**, **Android**, **React Native**, and **Flutter**. Covers the full testing pyramid from unit tests through E2E, plus CI/CD integration, device farms, performance testing, and accessibility automation.
 
-## CRITICAL: Fetching Current Documentation
+## Fetching Current Documentation
 
-**Before providing version-specific guidance, ALWAYS fetch the latest documentation:**
+**Before providing version-specific guidance, verify current versions.** Testing frameworks like Detox, Testing Library, and Maestro evolve frequently.
 
-```typescript
-// Detox - React Native E2E testing
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "detox",
-  query: "Detox E2E testing setup and configuration"
-});
-
-// Testing Library - React Native
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "@testing-library/react-native",
-  query: "React Native Testing Library component testing"
-});
-
-// Maestro - Cross-platform E2E
-mcp__plugin_context7_context7__resolve-library-id({
-  libraryName: "maestro",
-  query: "Maestro mobile E2E testing framework"
-});
-```
+For library documentation, use WebSearch or install Context7 manually: `claude plugin install context7@claude-plugins-official`
 
 ## Test Strategy: The Mobile Testing Pyramid
 
@@ -702,5 +684,5 @@ genhtml coverage/lcov.info -o coverage/html
 
 - `expo` - Expo-specific testing setup
 - `react-native-expert` - React Native debugging tools
-- `mobile-architect` - Architecture for testability
+- `react-native-expert` - Architecture for testability
 - `deep-linking-push` - Testing deep links and notifications

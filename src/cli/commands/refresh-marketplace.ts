@@ -665,36 +665,8 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
     console.log(chalk.gray('  ✓ Marketplace removed after installation'));
   }
 
-  // Step 5: Install essential plugins from claude-plugins-official
-  console.log('');
-  console.log(chalk.yellow('📥 Step 5: Installing essential official plugins...'));
-
-  const officialPlugins = ['context7', 'playwright'];
-  let officialInstalledCount = 0;
-
-  for (const pluginName of officialPlugins) {
-    console.log(chalk.blue(`  Installing ${pluginName}@claude-plugins-official...`));
-    const installResult = runCommand('claude', [
-      'plugin',
-      'install',
-      `${pluginName}@claude-plugins-official`,
-    ], true);
-
-    if (installResult.success) {
-      console.log(chalk.green(`  ✓ ${pluginName}@claude-plugins-official installed`));
-      officialInstalledCount++;
-    } else {
-      if (installResult.output?.includes('already')) {
-        console.log(chalk.gray(`  ✓ ${pluginName}@claude-plugins-official (already installed)`));
-        officialInstalledCount++;
-      } else {
-        console.log(chalk.yellow(`  ⚠ ${pluginName}@claude-plugins-official failed`));
-        if (options.verbose) {
-          console.log(chalk.gray(`    ${installResult.output}`));
-        }
-      }
-    }
-  }
+  // v1.0.240 (0198): Official plugins (context7, playwright) removed from auto-install
+  // Users can install manually: claude plugin install context7@claude-plugins-official
 
   console.log('');
   console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -703,10 +675,8 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
 
   console.log(chalk.cyan('  Installed plugins:'));
   console.log(chalk.gray('     • sw@specweave              - Core framework'));
-  console.log(chalk.gray('     • context7@claude-plugins-official - Documentation context'));
-  console.log(chalk.gray('     • playwright@claude-plugins-official - Browser automation'));
   console.log('');
-  console.log(`  Total: ${installedCount + officialInstalledCount} plugin(s)`);
+  console.log(`  Total: ${installedCount} plugin(s)`);
   console.log(chalk.cyan('  /plugin will now show only installed plugins\n'));
 
   console.log(chalk.yellow('⚠️  Note: Lazy loading is disabled in minimal mode'));
@@ -1027,37 +997,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
       }
     }
 
-    // Step 3d: Install essential plugins from claude-plugins-official marketplace
-    console.log('');
-    console.log(chalk.yellow('⚙️  Step 3d: Installing essential official plugins...\n'));
-
-    const officialPlugins = ['context7', 'playwright'];
-    let officialInstalledCount = 0;
-
-    for (const pluginName of officialPlugins) {
-      console.log(chalk.blue(`  Installing ${pluginName}@claude-plugins-official...`));
-      const installResult = runCommand('claude', [
-        'plugin',
-        'install',
-        `${pluginName}@claude-plugins-official`,
-      ], true);
-
-      if (installResult.success) {
-        console.log(chalk.green(`  ✓ ${pluginName}@claude-plugins-official installed`));
-        officialInstalledCount++;
-      } else {
-        // Check if already installed
-        if (installResult.output?.includes('already')) {
-          console.log(chalk.gray(`  ✓ ${pluginName}@claude-plugins-official (already installed)`));
-          officialInstalledCount++;
-        } else {
-          console.log(chalk.yellow(`  ⚠ ${pluginName}@claude-plugins-official failed`));
-          if (options.verbose) {
-            console.log(chalk.gray(`    ${installResult.output}`));
-          }
-        }
-      }
-    }
+    // v1.0.240 (0198): Official plugins (context7, playwright) removed from auto-install
 
     console.log('');
     console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -1066,16 +1006,14 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
     console.log(chalk.cyan('  Installed (always loaded):'));
     console.log(chalk.gray('     • sw@specweave              - Core framework'));
-    console.log(chalk.gray('     • context7@claude-plugins-official - Documentation context'));
-    console.log(chalk.gray('     • playwright@claude-plugins-official - Browser automation'));
     console.log('');
     console.log(`  Total SpecWeave plugins available: ${plugins.length}`);
-    console.log(chalk.green(`  Core installed: 1 + ${officialInstalledCount} official`));
+    console.log(chalk.green(`  Core installed: 1`));
     console.log(chalk.cyan(`  Cached for on-demand: ${plugins.length - 1}`));
     console.log('');
-    console.log(chalk.green('  💡 Token savings:'));
+    console.log(chalk.green('  Token savings:'));
     console.log(chalk.gray(`     Before: ~60,000 tokens (all plugins)`));
-    console.log(chalk.gray(`     After:  ~3,000 tokens (core + official)`));
+    console.log(chalk.gray(`     After:  ~3,000 tokens (core only)`));
     console.log(chalk.green(`     Saved:  ~57,000 tokens (95% reduction!)`));
 
   } else {
