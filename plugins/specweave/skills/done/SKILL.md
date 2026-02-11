@@ -1430,7 +1430,7 @@ Check progress: /list-increments
 ## Related Agents
 
 - `pm`: Product Manager agent (validates completion)
-- `qa-lead`: QA Lead agent (validates tests)
+- `sw-testing:qa-engineer`: QA Engineer agent (validates tests)
 - `tech-lead`: Tech Lead agent (validates code quality)
 - `docs-writer`: Documentation writer (validates docs)
 

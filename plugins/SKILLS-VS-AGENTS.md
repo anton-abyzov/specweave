@@ -88,7 +88,7 @@ All domain experts are now skills with `context: fork`:
 | **Testing** | `sw-testing:qa-engineer` | E2E, Playwright, Vitest, Jest, TDD, QA |
 | **Kubernetes** | `sw-k8s:kubernetes-architect` | K8s, pods, deployments, Helm, GitOps |
 | **Infrastructure** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
-| **Mobile** | `sw-mobile:mobile-architect` | React Native, iOS, Android, Expo |
+| **Mobile** | `sw-mobile:react-native-expert` | React Native, iOS, Android, Expo |
 | **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, TensorFlow, PyTorch |
 | **Diagrams** | `sw-diagrams:diagrams-architect` | Mermaid, C4, architecture diagram, flowchart |
 | **Release** | `sw-release:release-manager` | release, version, changelog, npm publish |

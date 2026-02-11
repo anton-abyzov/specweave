@@ -12,8 +12,7 @@ Comprehensive mobile development plugin covering native iOS (SwiftUI), native An
 
 | Skill | Description |
 |-------|-------------|
-| mobile-architect | Mobile system design and architecture for iOS, Android, and cross-platform |
-| react-native-expert | React Native and Expo expert for environment setup, native modules, and performance |
+| react-native-expert | React Native and Expo architect and expert: architecture, setup, native modules, performance, and debugging |
 | swiftui | iOS native development with SwiftUI, Swift 6, SwiftData, and modern Apple frameworks |
 | jetpack-compose | Android native development with Jetpack Compose, Kotlin, Material Design 3, and Hilt |
 | flutter | Cross-platform development with Flutter and Dart 3+, Riverpod, GoRouter |

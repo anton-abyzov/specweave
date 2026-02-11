@@ -15,6 +15,8 @@
     "sw-ado@specweave": true,
     "sw-mobile@specweave": true,
     "sw-ml@specweave": true,
-    "sw-k8s@specweave": true
+    "sw-k8s@specweave": true,
+    "sw-payments@specweave": true,
+    "supabase@claude-plugins-official": true
   }
 }

@@ -60,7 +60,7 @@ Activates for requests requiring **3+ agents** or **full product development**:
 
 ### Quality & Operations Layer
 
-**QA Lead Agent (qa-lead-agent)**
+**QA Engineer Agent (sw-testing:qa-engineer)**
 - Test strategy, quality assurance, coverage
 - **When**: Defining testing approach
 

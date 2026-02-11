@@ -25,6 +25,12 @@ Design and implement comprehensive observability systems covering metrics, logs,
 - Prevent alert fatigue
 - Debug microservices latency
 
+## Scope Boundaries
+
+This skill covers **OBSERVABILITY STRATEGY**: SLIs/SLOs, error budgets, dashboards, alerting design.
+
+- For OpenTelemetry instrumentation details → use `/sw-infra:opentelemetry`
+
 ## Core Concepts
 
 ### Three Pillars of Observability

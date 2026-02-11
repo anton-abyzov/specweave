@@ -15,7 +15,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | pm | Product Manager for spec-driven development with user stories, acceptance criteria, and MVP planning |
 | architect | System architect for scalable, maintainable technical designs and ADRs |
 | tech-lead | Technical lead for code quality, design patterns, and implementation guidance |
-| qa-lead | QA lead for test strategy, automation frameworks, and quality gates |
 | pm-closure-validation | PM validation for increment closure with 3-gate quality checks |
 | roadmap-planner | Product roadmap and feature prioritization with RICE, MoSCoW, and Kano frameworks |
 | spec-generator | Generates comprehensive specifications (spec.md, plan.md, tasks.md) for increments |
@@ -25,7 +24,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | performance | Performance engineering for web apps, databases, and distributed systems |
 | security | Security engineer for vulnerability assessment and secure code review |
 | security-patterns | Real-time security pattern detector for dangerous code patterns |
-| infrastructure | Infrastructure-as-Code specialist for Terraform, AWS, Azure, serverless |
 | compliance-architecture | Enterprise compliance architecture for SOC 2, HIPAA, GDPR, PCI-DSS |
 | serverless-recommender | Serverless platform selection expert for AWS Lambda, Azure Functions, etc. |
 | service-connect | Smart external service connection orchestrator (MCP, REST, SDK, CLI) |

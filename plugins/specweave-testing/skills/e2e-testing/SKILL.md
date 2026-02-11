@@ -264,7 +264,7 @@ npx playwright install
 ### The Only MCP Exception
 
 Use MCP Playwright tools **only** for:
-- `/sw-testing:ui-inspect` — interactive element inspection requiring DOM reasoning
+- MCP Playwright tools — interactive element inspection requiring DOM reasoning
 - One-off page exploration when you need to see what's on a page right now
 
 For everything else — writing tests, running tests, generating tests, debugging tests — use the CLI via Bash.

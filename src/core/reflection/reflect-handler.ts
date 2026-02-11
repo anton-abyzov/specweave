@@ -111,7 +111,7 @@ const KNOWN_SKILLS = [
   'kubernetes',
   'architect',
   'tech-lead',
-  'qa-lead',
+  'qa-engineer',
   'security',
   'docs-writer',
   'performance',
@@ -180,7 +180,7 @@ WHAT NOT TO EXTRACT (be strict!):
 
 SKILL CATEGORIES (use these exact names):
 mobile, frontend, backend, testing, infrastructure, kubernetes, architect,
-tech-lead, qa-lead, security, docs-writer, performance, tdd-orchestrator,
+tech-lead, qa-engineer, security, docs-writer, performance, tdd-orchestrator,
 pm, devops, payments, ml, kafka, confluent, github, jira, ado, release,
 diagrams, general
 

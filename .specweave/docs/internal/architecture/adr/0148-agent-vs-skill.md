@@ -28,9 +28,9 @@ Question: When to use which?
 - Quick operations in shared context
 - Role-based expertise (PM, Architect, Security, etc.)
 - Capability extensions
-- Examples: pm, architect, tech-lead, qa-lead, increment-planner, context-loader
+- Examples: pm, architect, tech-lead, increment-planner, context-loader
 
-**Key insight**: PM, Architect, Security, QA Lead are SKILLS (auto-activate), NOT agents!
+**Key insight**: PM, Architect, Security are SKILLS (auto-activate), NOT agents!
 
 ## Agent Examples
 
@@ -93,7 +93,7 @@ Plans features by loading context manifests...
 ## Metrics
 
 **Agents**: 35+ agents in domain plugins (frontend-architect, kubernetes-architect, qa-engineer, etc.)
-**Skills**: 50+ skills in core plugin (pm, architect, tech-lead, qa-lead, increment-planner, etc.)
+**Skills**: 50+ skills in core plugin (pm, architect, tech-lead, increment-planner, etc.)
 
 ## Related
 

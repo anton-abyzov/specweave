@@ -175,7 +175,7 @@ environments:
       purpose: "Live customer traffic"
       requires_approval: true
       approval_chain:
-        - qa-lead
+        - qa-engineer
         - security-lead
         - tech-lead
         - product-owner

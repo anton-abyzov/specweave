@@ -25,8 +25,22 @@ INPUT=$(cat)
 # Parse input fields
 TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path // ""' 2>/dev/null)
 
-# Project root detection
-PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+# Project root detection (walk up to find .specweave/ — prevents pollution of subdirectories)
+if [[ -n "${PROJECT_ROOT:-}" ]] && [[ -d "$PROJECT_ROOT/.specweave" ]]; then
+    : # env var already set and valid
+else
+    PROJECT_ROOT="$PWD"
+    while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
+        PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
+    done
+fi
+
+# Not a SpecWeave project — approve and exit (MUST be before any mkdir)
+if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+    echo '{"decision":"approve"}'
+    exit 0
+fi
+
 CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs/reflect"
 STATE_DIR="$PROJECT_ROOT/.specweave/state"

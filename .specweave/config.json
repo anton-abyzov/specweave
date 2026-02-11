@@ -121,5 +121,10 @@
         "edge-cases"
       ]
     }
+  },
+  "limits": {
+    "maxActiveIncrements": 3,
+    "hardCap": 5,
+    "allowEmergencyInterrupt": true
   }
 }

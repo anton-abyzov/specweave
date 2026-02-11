@@ -6,9 +6,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock child_process before importing the module
-const mockExecSync = vi.hoisted(() => vi.fn());
+const mockExecFileSync = vi.hoisted(() => vi.fn());
 vi.mock('child_process', () => ({
-  execSync: mockExecSync,
+  execFileSync: mockExecFileSync,
 }));
 
 // Import after mocking
@@ -24,7 +24,7 @@ describe('Playwright CLI Detector', () => {
 
   describe('detectPlaywrightCli', () => {
     it('should return installed=true with version and path when CLI is available', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n') // which
         .mockReturnValueOnce('0.1.0\n'); // --version
 
@@ -36,7 +36,7 @@ describe('Playwright CLI Detector', () => {
     });
 
     it('should return installed=false when CLI is not found', () => {
-      mockExecSync.mockImplementation(() => {
+      mockExecFileSync.mockImplementation(() => {
         throw new Error('not found');
       });
 
@@ -48,7 +48,7 @@ describe('Playwright CLI Detector', () => {
     });
 
     it('should handle version check failure gracefully', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n') // which succeeds
         .mockImplementationOnce(() => { throw new Error('version fail'); }); // version fails
 
@@ -60,7 +60,7 @@ describe('Playwright CLI Detector', () => {
     });
 
     it('should trim whitespace from path and version', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('  /opt/bin/playwright-cli  \n')
         .mockReturnValueOnce('  0.1.0  \n');
 
@@ -73,7 +73,7 @@ describe('Playwright CLI Detector', () => {
 
   describe('caching behavior', () => {
     it('should use cache on subsequent calls when useCache=true', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n')
         .mockReturnValueOnce('0.1.0\n');
 
@@ -84,11 +84,11 @@ describe('Playwright CLI Detector', () => {
 
       expect(result1).toEqual(result2);
       // execSync should only be called twice (which + version) for the first call
-      expect(mockExecSync).toHaveBeenCalledTimes(2);
+      expect(mockExecFileSync).toHaveBeenCalledTimes(2);
     });
 
     it('should bypass cache when useCache=false', () => {
-      mockExecSync
+      mockExecFileSync
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n')
         .mockReturnValueOnce('0.1.0\n')
         .mockReturnValueOnce('/usr/local/bin/playwright-cli\n')
@@ -99,7 +99,7 @@ describe('Playwright CLI Detector', () => {
 
       expect(result1.version).toBe('0.1.0');
       expect(result2.version).toBe('0.2.0');
-      expect(mockExecSync).toHaveBeenCalledTimes(4);
+      expect(mockExecFileSync).toHaveBeenCalledTimes(4);
     });
   });
 });

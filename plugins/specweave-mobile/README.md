@@ -66,15 +66,16 @@ The SpecWeave Mobile plugin provides specialized skills and agents for modern Re
    - Monorepo configuration
    - Hermes bytecode optimization
 
-### Mobile Architect Agent
+### React Native Expert (Architecture + Implementation)
 
-The `mobile-architect` agent specializes in:
+The `react-native-expert` skill covers both architecture and hands-on implementation:
 - Application architecture design for React Native / Expo
 - State management selection (Zustand, TanStack Query, Jotai, Legend State)
 - Navigation with Expo Router and React Navigation
 - Performance architecture with modern React features
 - Platform-specific strategies (iOS design patterns, Android edge-to-edge)
-- Testing architecture
+- Environment setup, Metro bundler, native modules
+- Device testing, debugging, and performance optimization
 - Build and deployment pipelines with EAS
 
 ## Installation
@@ -110,15 +111,15 @@ You: "I need to debug network requests in my app"
 → mobile-debugging skill activates
 ```
 
-### Invoke the Mobile Architect Skill
+### Invoke the React Native Expert Skill
 
-For architectural decisions and system design:
+For architectural decisions, system design, setup, and debugging:
 
 ```
-Use the Skill tool to invoke the mobile-architect skill:
+Use the Skill tool to invoke the react-native-expert skill:
 
 Skill({
-  skill: "sw-mobile:mobile-architect",
+  skill: "sw-mobile:react-native-expert",
   args: "Design a scalable React Native architecture for a social media app with feed, messaging, and profile features. Include state management, navigation, and performance considerations."
 })
 ```
@@ -157,10 +158,10 @@ Skill({
 
 ### 4. Architecture Design
 
-**User invokes**: mobile-architect agent
+**User invokes**: react-native-expert skill
 
 **What happens**:
-- Agent analyzes requirements
+- Skill analyzes requirements
 - Recommends folder structure
 - Selects state management solution
 - Designs navigation architecture
@@ -258,11 +259,11 @@ import { FlashList } from "@shopify/flash-list";
 ### Example 3: Architecture Design
 
 ```
-User invokes: mobile-architect agent
+User invokes: react-native-expert skill
 
 "Design architecture for a social media app with posts, comments, and real-time chat"
 
-Agent response:
+Skill response:
 # Architecture Recommendation: Social Media App
 
 ## Folder Structure (Feature-Based)
@@ -312,7 +313,7 @@ React Navigation with:
 
 - Check the [React Native Setup Guide](.specweave/docs/public/guides/mobile/react-native-setup-guide.md)
 - Review skill documentation in `skills/*/SKILL.md`
-- Invoke the mobile-architect agent for architectural questions
+- Invoke the react-native-expert skill for architectural questions
 
 ## Contributing
 

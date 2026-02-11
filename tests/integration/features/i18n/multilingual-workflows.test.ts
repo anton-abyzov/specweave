@@ -306,9 +306,8 @@ describe('Multilingual Workflows E2E', () => {
 
     const content = await fs.readFile(skillPath, 'utf-8');
 
-    // Verify YAML frontmatter
+    // Verify YAML frontmatter (name: field intentionally removed to prevent prefix stripping)
     expect(content).toContain('---');
-    expect(content).toContain('name: sw:translator');
     expect(content).toContain('description:');
 
     // Verify key sections
@@ -342,9 +341,9 @@ describe('Multilingual Workflows E2E', () => {
 
     const content = await fs.readFile(commandPath, 'utf-8');
 
-    // Verify YAML frontmatter
+    // Verify YAML frontmatter (name: field intentionally removed to prevent prefix stripping)
     expect(content).toContain('---');
-    expect(content).toContain('name: translate');
+    expect(content).toContain('description:');
 
     // Verify command syntax
     expect(content).toContain('/sw:translate');

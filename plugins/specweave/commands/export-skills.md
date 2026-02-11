@@ -41,7 +41,7 @@ Export SpecWeave skills to the [Agent Skills](https://agentskills.io) open stand
 │   └── SKILL.md
 ├── security/
 │   └── SKILL.md
-├── qa-lead/
+├── qa-engineer/
 │   └── SKILL.md
 └── pm/
     └── SKILL.md

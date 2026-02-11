@@ -73,7 +73,7 @@ Upgrade SpecWeave's team skills to leverage Claude Code's native Agent Teams whe
 **Acceptance Criteria:**
 - [x] AC-US3-01: `full-stack` preset: frontend (`sw-frontend:frontend-architect`) + backend + shared (`sw:architect`)
 - [x] AC-US3-02: `review` preset: security (`sw:security`) + code quality (`sw:grill`/`sw:tech-lead`) + documentation (`sw:docs-updater`)
-- [x] AC-US3-03: `testing` preset: unit (`sw-testing:unit-testing`) + e2e (`sw-testing:e2e-testing`) + coverage (`sw-testing:test-coverage`)
+- [x] AC-US3-03: `testing` preset: unit (`sw-testing:unit-testing`) + e2e (`sw-testing:e2e-testing`) + coverage (`sw-testing:qa-engineer`)
 - [x] AC-US3-04: `migration` preset: schema (`sw:architect`) + backend + frontend (for DB migrations)
 - [x] AC-US3-05: `tdd` preset: red agent (`sw:tdd-red`) + green agent (`sw:tdd-green`) + refactor agent (`sw:tdd-refactor`)
 - [x] AC-US3-06: Usage: `/sw:team-build --preset full-stack "Build checkout"`
@@ -139,7 +139,7 @@ This is the authoritative mapping used by the team-orchestrate and team-build sk
 | **Testing** | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | `tests/`, `playwright/`, `__tests__/` |
 | **Security** | `sw:security` | `sw:security-patterns` | Any (read-only review, no file ownership) |
 | **DevOps** | `sw-infra:devops` | `sw-k8s:deployment-generate`, `sw-infra:observability` | `docker/`, `k8s/`, `.github/workflows/`, `terraform/` |
-| **Mobile** | `sw-mobile:mobile-architect` | `sw-mobile:screen-generate`, `sw-mobile:react-native-expert` | `src/screens/`, `src/navigation/`, `ios/`, `android/` |
+| **Mobile** | `sw-mobile:react-native-expert` | `sw-mobile:screen-generate`, `sw-mobile:expo` | `src/screens/`, `src/navigation/`, `ios/`, `android/` |
 | **ML** | `sw-ml:ml-engineer` | `sw-ml:pipeline`, `sw-ml:deploy` | `src/ml/`, `models/`, `notebooks/`, `data/` |
 
 ## Agent Team Presets (Reference)
@@ -156,7 +156,7 @@ Lead → Security (sw:security) | Quality (sw:grill + sw:tech-lead) | Docs (sw:d
 
 ### `testing` (3 agents, parallel)
 ```
-Lead → Unit (sw-testing:unit-testing) | E2E (sw-testing:e2e-testing) | Coverage (sw-testing:test-coverage)
+Lead → Unit (sw-testing:unit-testing) | E2E (sw-testing:e2e-testing) | Coverage (sw-testing:qa-engineer)
 ```
 
 ### `tdd` (3 agents, sequential)

@@ -91,17 +91,20 @@ export async function handleTeamCommand(
   // Determine mode
   const mode = resolveTeammateMode(options.mode);
 
-  // Build args — use -p (prompt) flag for initial instruction
+  // Build args — always interactive (no -p flag, which is non-interactive one-shot)
   const args: string[] = ['--dangerously-skip-permissions'];
-
-  // Add description as initial prompt if provided
-  if (description) {
-    args.push('-p', `Use /sw:team-orchestrate to: ${description}`);
-  }
 
   // Spawn claude with team env
   console.log(chalk.cyan(`Launching Claude Code with agent teams (${mode} mode)...`));
   console.log(chalk.gray('Agent Teams is an experimental feature. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in your env.'));
+
+  // Print description as suggested prompt for user to type in interactive Claude
+  if (description) {
+    console.log('');
+    console.log(chalk.green('Once Claude Code opens, paste this prompt:'));
+    console.log(chalk.white(`  ${description}`));
+    console.log('');
+  }
 
   const child = spawn('claude', args, {
     stdio: 'inherit',

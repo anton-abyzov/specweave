@@ -141,7 +141,7 @@ Generate comprehensive test coverage across all test levels simultaneously. Each
 |---|------|----------|------|----------------|
 | 1 | Unit | `sw-testing:unit-testing` | `tests/unit/` | Write unit tests for individual functions, classes, and modules with proper mocking |
 | 2 | E2E | `sw-testing:e2e-testing` | `tests/e2e/` | Write end-to-end tests for user flows, API sequences, and cross-service interactions |
-| 3 | Coverage | `sw-testing:test-coverage` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
+| 3 | Coverage | `sw-testing:qa-engineer` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
 
 #### Execution Chain
 

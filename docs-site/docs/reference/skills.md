@@ -178,7 +178,6 @@ Ensure code quality and test coverage.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `sw:qa-lead` | core | Comprehensive test strategy and automation |
 | `sw:tdd-orchestrator` | core | Master TDD red-green-refactor discipline |
 | `sw:tdd-red` | core | Write failing tests first |
 | `sw:tdd-green` | core | Minimal implementation to pass |
@@ -190,12 +189,12 @@ Ensure code quality and test coverage.
 | `e2e-testing` | sw-testing | Playwright E2E testing |
 | `qa-engineer` | sw-testing | Manual QA processes |
 
-### qa-lead
+### qa-engineer (sw-testing plugin)
 
 **Purpose**: QA expert for test strategy and automation frameworks.
 
 ```bash
-/sw:qa-lead  # Get QA guidance
+/sw-testing:qa-engineer  # Get QA guidance
 ```
 
 **Covers:**
@@ -501,8 +500,7 @@ Build cross-platform mobile apps.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `mobile-architect` | sw-mobile | Mobile architecture patterns |
-| `react-native-expert` | sw-mobile | React Native development |
+| `react-native-expert` | sw-mobile | Mobile architecture and React Native development |
 
 ### react-native-expert
 

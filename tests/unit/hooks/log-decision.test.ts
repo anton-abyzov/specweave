@@ -68,7 +68,8 @@ describe('log-decision.sh', () => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'log-decision-test-'));
     logsDir = path.join(tempDir, '.specweave', 'logs');
     decisionsLog = path.join(logsDir, 'decisions.jsonl');
-    fs.mkdirSync(path.join(tempDir, '.specweave'), { recursive: true });
+    // log-decision.sh guard requires .specweave/increments/ or .specweave/config.json
+    fs.mkdirSync(path.join(tempDir, '.specweave', 'increments'), { recursive: true });
   });
 
   afterEach(() => {

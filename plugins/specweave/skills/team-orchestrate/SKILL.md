@@ -111,7 +111,7 @@ Analyze the feature request and map affected domains to SpecWeave skills.
 | **Testing** | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | Test strategy, E2E suites, integration tests |
 | **Security** | `sw:security` | `sw:security-patterns` | Auth, authorization, threat modeling, OWASP |
 | **DevOps** | `sw-infra:devops` | `sw-k8s:deployment-generate`, `sw-infra:observability` | CI/CD, Docker, K8s, monitoring |
-| **Mobile** | `sw-mobile:mobile-architect` | `sw-mobile:screen-generate`, `sw-mobile:react-native-expert` | Native/cross-platform mobile apps |
+| **Mobile** | `sw-mobile:react-native-expert` | `sw-mobile:screen-generate`, `sw-mobile:expo` | Native/cross-platform mobile apps |
 | **ML** | `sw-ml:ml-engineer` | `sw-ml:pipeline`, `sw-ml:deploy` | Model training, inference pipelines, deployment |
 
 ### Auto-Detection Signals

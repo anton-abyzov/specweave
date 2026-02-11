@@ -141,7 +141,7 @@ ${agentsTable}
       'pm': 'Planning features',
       'architect': 'Technical design',
       'security': 'Security review',
-      'qa-lead': 'Testing',
+      'qa-engineer': 'Testing',
       'devops': 'Deployment needed',
       'tech-lead': 'Code review',
       'sre': 'Troubleshooting',

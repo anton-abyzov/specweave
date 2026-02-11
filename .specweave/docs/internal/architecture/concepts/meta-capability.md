@@ -29,7 +29,7 @@ Layer 1: SpecWeave improves itself
 **Purpose**: Provide the foundational agents, skills, and methodology
 
 **Components**:
-- **20 Core Agents** (pm, architect, devops, security, qa-lead, etc.)
+- **20 Core Agents** (pm, architect, devops, security, etc.)
 - **24 Core Skills** (increment-planner, context-loader, skill-router, etc.)
 - **Framework Increments** (001-core-framework, 002-core-enhancements, etc.)
 

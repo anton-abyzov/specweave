@@ -235,15 +235,14 @@ Connect designs to implementation.
 #### **sw-mobile** - Mobile Development
 React Native and Expo expertise.
 
-**Agents:**
-- **mobile-architect**: Navigation, state, offline-first patterns
-- **react-native-expert**: Native modules, performance optimization
+**Skills:**
+- **react-native-expert**: Architecture, navigation, state, offline-first patterns, native modules, performance optimization
 
 **Example:**
 ```bash
 "Build offline-first mobile app with background sync"
 
-# Mobile architect provides:
+# React Native expert provides:
 # - React Native architecture
 # - Offline data strategy (SQLite, Realm, WatermelonDB)
 # - Background sync with NetInfo

@@ -263,12 +263,12 @@ describe('Dashboard Cache Scripts', () => {
       expect(output).toMatch(/No active increments|completed/i);
     });
 
-    it('should show progress bar with percentage', () => {
+    it('should show progress bar with task count', () => {
       createIncrement('0001-in-progress', 'active', 'feature', { total: 10, completed: 5 });
 
       const output = runProgressScript();
 
-      expect(output).toContain('50%');
+      // Progress format: "5/10 tasks | 0/0 ACs (0%)" — percentage is now AC-based
       expect(output).toContain('5/10');
     });
   });

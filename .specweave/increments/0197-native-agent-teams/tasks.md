@@ -86,8 +86,8 @@ Chain: All parallel (no dependencies)
 **testing** (3 agents, all parallel):
 ```
 Agent 1: Unit Tests (sw-testing:unit-testing)
-Agent 2: E2E Tests (sw-testing:e2e-testing + sw-testing:e2e-setup)
-Agent 3: Coverage Analysis (sw-testing:test-coverage + sw-testing:test-generate)
+Agent 2: E2E Tests (sw-testing:e2e-testing)
+Agent 3: Coverage Analysis (sw-testing:qa-engineer)
 Chain: All parallel
 ```
 
@@ -179,7 +179,7 @@ Templates for each domain:
 5. **Testing**: Invoke `sw-testing:qa-engineer` → generate tests → run tests → report coverage
 6. **Security**: Invoke `sw:security` + `sw:security-patterns` → review all files → report findings
 7. **DevOps**: Invoke `sw-infra:devops` → write Dockerfiles/K8s/CI → /sw:grill
-8. **Mobile**: Invoke `sw-mobile:mobile-architect` → screens + navigation → /sw:grill
+8. **Mobile**: Invoke `sw-mobile:react-native-expert` → screens + navigation → /sw:grill
 9. **ML**: Invoke `sw-ml:ml-engineer` → pipeline + model → /sw:grill
 
 **Depends On**: T-012

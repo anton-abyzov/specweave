@@ -333,20 +333,25 @@ async function writeSyncConfigHelper(
  * @returns True if setup completed successfully
  */
 export async function setupIssueTracker(options: SetupOptions): Promise<boolean> {
-  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup, githubCredentialsFromRepoSetup, gitUrlFormat } = options;
+  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup, githubCredentialsFromRepoSetup, gitUrlFormat, isCI: passedIsCI } = options;
   const locale = getLocaleManager(language);
 
-  // Check if running in CI/non-interactive environment
-  const isCI = process.env.CI === 'true' ||
-               process.env.GITHUB_ACTIONS === 'true' ||
-               process.env.GITLAB_CI === 'true' ||
-               process.env.CIRCLECI === 'true' ||
-               !process.stdin.isTTY;
+  // Check if running in CI/non-interactive environment (--quick flag or env detection)
+  const isCIEnv = process.env.CI === 'true' ||
+                  process.env.GITHUB_ACTIONS === 'true' ||
+                  process.env.GITLAB_CI === 'true' ||
+                  process.env.CIRCLECI === 'true' ||
+                  process.env.JENKINS_URL ||
+                  !process.stdin.isTTY;
+  const isNonInteractive = passedIsCI || isCIEnv;
 
-  if (isCI) {
-    // In CI, skip issue tracker setup (non-interactive)
+  if (isNonInteractive) {
     console.log('');
-    console.log(chalk.gray('⏭️  CI environment detected - skipping issue tracker setup'));
+    if (passedIsCI && !isCIEnv) {
+      console.log(chalk.gray('⏭️  Quick mode - skipping issue tracker setup'));
+    } else {
+      console.log(chalk.gray('⏭️  CI environment detected - skipping issue tracker setup'));
+    }
     console.log(chalk.gray('   You can configure later via /plugin install\n'));
     return true;
   }

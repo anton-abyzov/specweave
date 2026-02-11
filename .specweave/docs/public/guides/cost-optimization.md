@@ -91,7 +91,7 @@ OVERALL SUMMARY
 AGENT STATS
 ───────────────────────────────────────────────────────────────
   Most Expensive:    pm
-  Least Expensive:   qa-lead
+  Least Expensive:   qa-engineer
 
 COST BY INCREMENT
 ───────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ COST BY AGENT
   architect                 $  0.50  ( 16.7%)
   frontend                  $  0.75  ( 25.0%)
   devops                    $  0.50  ( 16.7%)
-  qa-lead                   $  0.25  (  8.3%)
+  qa-engineer               $  0.25  (  8.3%)
 
 RECENT SESSIONS
 ───────────────────────────────────────────────────────────────
