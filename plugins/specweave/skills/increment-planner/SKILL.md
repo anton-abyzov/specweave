@@ -85,7 +85,12 @@ Every US MUST have `**Project**:` field. For 2-level structures, also `**Board**
 # Check if this is a multi-repo umbrella project
 if [ -d "repositories" ]; then
   echo "MULTI-REPO: Increments belong in EACH repo's .specweave/"
-  echo "Example: repositories/{org}/{repo-name}/.specweave/increments/"
+  # Discover organization from config (NOT from .env)
+  ORG=$(jq -r '.repository.organization // empty' .specweave/config.json 2>/dev/null)
+  [ -z "$ORG" ] && ORG=$(jq -r '[.sync.profiles[].config.owner // .sync.profiles[].config.organization] | map(select(. != null)) | first // empty' .specweave/config.json 2>/dev/null)
+  [ -z "$ORG" ] && ORG=$(ls -d repositories/*/ 2>/dev/null | head -1 | xargs basename 2>/dev/null)
+  echo "Organization: $ORG"
+  echo "Example: repositories/$ORG/{repo-name}/.specweave/increments/"
   ls -d repositories/*/* 2>/dev/null | head -20
 else
   echo "SINGLE-REPO: Use .specweave/increments/"
@@ -97,6 +102,7 @@ fi
 - Team agents MUST create increments in their assigned repo's `.specweave/`
 - The umbrella root `.specweave/` is for umbrella-level config ONLY
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
+- Repos MUST be at `repositories/{ORG}/{repo-name}/` — NEVER directly under `repositories/`
 
 ### 2b. Get Unique ID
 

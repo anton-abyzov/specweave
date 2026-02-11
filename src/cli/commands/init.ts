@@ -67,6 +67,7 @@ import {
   collectLivingDocsInputs,
 } from '../helpers/init/living-docs-preflight.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
+import { getPluginScope, getScopeArgs } from '../../core/types/plugin-scope.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -677,6 +678,43 @@ export async function initCommand(
       }
     }
 
+    // Update repository config based on hosting selection
+    // Bug fix: repository.provider was always "local" and organization was never set
+    {
+      const configPath = path.join(targetDir, '.specweave', 'config.json');
+      if (fs.existsSync(configPath)) {
+        try {
+          const config = await fs.readJson(configPath);
+          const hosting = repoResult.hosting;
+          if (hosting.startsWith('github')) {
+            const org = repoResult.githubRepoSelection?.org || gitHubRemote?.owner || config.repository?.organization;
+            config.repository = {
+              ...config.repository,
+              provider: 'github',
+              ...(org && { organization: org }),
+            };
+          } else if (hosting.startsWith('ado')) {
+            const org = repoResult.adoProjectSelection?.org || config.repository?.organization;
+            config.repository = {
+              ...config.repository,
+              provider: 'ado',
+              ...(org && { organization: org }),
+            };
+          } else if (hosting.startsWith('bitbucket')) {
+            const org = repoResult.bitbucketRepoSelection?.workspace || config.repository?.organization;
+            config.repository = {
+              ...config.repository,
+              provider: 'bitbucket',
+              ...(org && { organization: org }),
+            };
+          }
+          await fs.writeJson(configPath, config, { spaces: 2 });
+        } catch {
+          // Non-critical — config update failed but init can continue
+        }
+      }
+    }
+
     // Create multi-project folders for GitHub repos (0188: provider symmetry)
     if (githubClonedRepos.length > 0) {
       console.log(chalk.blue('\n📁 Creating GitHub Project Folders'));
@@ -1275,7 +1313,8 @@ async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<voi
     // Install plugin via Claude CLI directly (v1.0.210 - removed PluginCacheManager)
     console.log(chalk.cyan(`\n📦 Auto-installing ${defaultProfile.provider.toUpperCase()} plugin...`));
 
-    const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', `${pluginToInstall}@specweave`]);
+    const scopeArgs = getScopeArgs(getPluginScope(pluginToInstall, 'specweave'));
+    const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', `${pluginToInstall}@specweave`, ...scopeArgs]);
     if (cliResult.success) {
       console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
     } else {

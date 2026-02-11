@@ -83,17 +83,17 @@
       "properties": {
         "maxActiveIncrements": {
           "type": "number",
-          "description": "Maximum active increments at any time (default: 1 for maximum focus)",
+          "description": "Maximum active increments at any time (default: 3 for balanced productivity)",
           "minimum": 1,
-          "maximum": 3,
-          "default": 1
+          "maximum": 10,
+          "default": 3
         },
         "hardCap": {
           "type": "number",
           "description": "Absolute maximum active increments, never exceeded (emergency ceiling)",
           "minimum": 1,
-          "maximum": 5,
-          "default": 2
+          "maximum": 10,
+          "default": 5
         },
         "allowEmergencyInterrupt": {
           "type": "boolean",
@@ -1321,8 +1321,8 @@
         },
         "mandatory": {
           "type": "boolean",
-          "description": "When true, BLOCKS prompts detected as implementation work until an increment is created via /sw:increment. Overrides the LLM mandatory decision. Default: false (suggestive only).",
-          "default": false
+          "description": "When true, BLOCKS prompts detected as implementation work until an increment is created via /sw:increment. Overrides the LLM mandatory decision. Default: true (enforced).",
+          "default": true
         }
       },
       "additionalProperties": false

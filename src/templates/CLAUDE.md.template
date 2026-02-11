@@ -194,6 +194,8 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
    ls docs/ | grep -E '^[0-9]{2}-' | cut -d'-' -f1 | sort -u
    ```
    Use next available number. **NEVER create duplicate prefixes.**
+8. **⛔ Multi-repo**: ALL repos MUST be at `repositories/{org}/{repo-name}/` — NEVER directly under `repositories/`
+   Discover org from config: `repository.organization` → `sync.profiles` → `umbrella.childRepos` → filesystem
 <!-- /SECTION -->
 
 <!-- SECTION:workflow required -->
@@ -608,7 +610,7 @@ Claude Code runs hooks automatically. **You must trigger these manually:**
 | **After EVERY task** | Update tasks.md `[ ]→[x]` + spec.md ACs `[ ]→[x]` + `/sw:sync-tasks` |
 | **After all ACs done** | `/sw:sync-docs update` to sync living docs |
 | **On increment close** | `/sw:validate {id}` then `/sw:done {id}` |
-| **Session start** | `/sw:sync-pull` to pull external changes |
+| **Session start** | Check `specweave jobs` + `/sw:progress` for current state |
 
 **Full hook simulation guide:** See `AGENTS.md` for detailed instructions.
 

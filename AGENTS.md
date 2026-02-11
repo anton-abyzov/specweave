@@ -1,6 +1,6 @@
-<!-- SW:META template="agents" version="1.0.243" sections="index,quickstart,rules,orchestration,principles,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
+<!-- SW:META template="agents" version="1.0.245" sections="index,quickstart,rules,orchestration,principles,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
 
-<!-- SW:SECTION:index version="1.0.243" -->
+<!-- SW:SECTION:index version="1.0.245" -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
@@ -12,11 +12,11 @@
 | **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
 | **User Story** | `#user-story-format` | **CRITICAL: Project/Board fields** |
 | Sync | `#sync-workflow` | When/how to sync |
-| Context | `#context-loading` | Token savings (70%+) |
+| Context | `#context-loading` | Efficient context loading |
 | Troubleshoot | `#troubleshooting` | Common issues |
 <!-- SW:END:index -->
 
-<!-- SW:SECTION:quickstart version="1.0.243" -->
+<!-- SW:SECTION:quickstart version="1.0.245" -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
@@ -25,7 +25,7 @@
 4. **Execute**: `/sw:do` to start implementation
 <!-- SW:END:quickstart -->
 
-<!-- SW:SECTION:rules version="1.0.243" -->
+<!-- SW:SECTION:rules version="1.0.245" -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -37,6 +37,8 @@
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
 7. ⛔ EVERY User Story MUST have **Project**: field
 8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
+9. ⛔ Multi-repo: ALL repos MUST be at repositories/{org}/{repo-name}/ — NEVER directly under repositories/
+   Discover org from config: repository.organization → sync.profiles → umbrella.childRepos → filesystem
 ```
 
 ### ⛔ INCREMENT FOLDER CLEANLINESS (CRITICAL!)
@@ -79,7 +81,7 @@
 ```
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:orchestration version="1.0.243" -->
+<!-- SW:SECTION:orchestration version="1.0.245" -->
 ## Workflow Orchestration {#workflow-orchestration}
 
 **Claude Code has built-in orchestration features. Non-Claude tools must implement these manually.**
@@ -237,7 +239,7 @@ git diff  # Review what actually changed
 5. Are environment variables configured?
 <!-- SW:END:orchestration -->
 
-<!-- SW:SECTION:principles version="1.0.243" -->
+<!-- SW:SECTION:principles version="1.0.245" -->
 ## Core Principles (Quality) {#core-principles}
 
 ### Simplicity First
@@ -265,7 +267,7 @@ git diff  # Review what actually changed
 - Pragmatic > Perfect
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:commands version="1.0.243" -->
+<!-- SW:SECTION:commands version="1.0.245" -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -289,7 +291,7 @@ git diff  # Review what actually changed
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
-<!-- SW:SECTION:nonclaudetools version="1.0.243" -->
+<!-- SW:SECTION:nonclaudetools version="1.0.245" -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
 **CRITICAL**: Claude Code has automatic hooks and orchestration. Other tools DO NOT.
@@ -315,7 +317,7 @@ SpecWeave v0.28+ introduces powerful automation that **works differently** in no
 | Feature | Claude Code | Non-Claude Tools |
 |---------|-------------|------------------|
 | **Living Docs Builder** | Auto-runs after init | Use `specweave jobs --follow` to monitor |
-| **Bidirectional Sync** | Pull sync on session start | Run `/sw:sync-pull` manually |
+| **Bidirectional Sync** | Pull sync on session start | Run `specweave jobs` to check status |
 | **Background Jobs** | Automatic with hooks | Monitor with `specweave jobs` CLI |
 | **EDA Hooks** | Auto-detect task completion | Manually update tasks.md + spec.md |
 
@@ -340,8 +342,10 @@ specweave jobs --resume <job-id>  # Resumes from checkpoint
 **Job Types**:
 - `clone-repos` - Clone multiple repositories (ADO/GitHub)
 - `import-issues` - Import work items from external tools
-- `living-docs-builder` - Generate documentation from codebase (NEW!)
+- `living-docs-builder` - Generate documentation from codebase
 - `sync-external` - Bidirectional sync with external tools
+- `brownfield-analysis` - Analyze existing/legacy codebases
+- `codebase-rescan` - Rescan codebase after increment closure
 
 **Job Dependencies**: The `living-docs-builder` waits for `clone-repos` and `import-issues` to complete before starting. This is automatic - just monitor with `specweave jobs`.
 
@@ -403,7 +407,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 
 #### 1. After EVERY Task Completion
 ```bash
-# Claude hook: PostTaskCompletion
+# Claude Code: PostToolUse hook detects task completion automatically
 # You must run these commands:
 
 # Step 1: Update tasks.md (source of truth)
@@ -420,7 +424,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 
 #### 2. After User Story Completion (all ACs satisfied)
 ```bash
-# Claude hook: PostUserStoryCompletion
+# Claude Code: PostToolUse hook detects US completion via AC pattern matching
 # When ALL acceptance criteria for a user story are [x] checked:
 
 # Step 1: Sync to living docs
@@ -432,7 +436,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 
 #### 3. After Increment Completion
 ```bash
-# Claude hook: PostIncrementDone
+# Claude Code: /sw:done skill orchestrates closure automatically
 # When running /sw:done:
 
 # Step 1: Validate all tasks complete
@@ -447,7 +451,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 
 #### 4. After Writing to spec.md or tasks.md
 ```bash
-# Claude hook: PostToolUse (Write/Edit to spec/tasks files)
+# Claude Code: PostToolUse hook auto-syncs on spec/tasks edits
 # After any edit to spec.md or tasks.md:
 
 # Sync status line cache
@@ -457,24 +461,20 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 /sw-github:sync <increment-id>
 ```
 
-#### 5. Bidirectional Sync - PULL from External Tools
+#### 5. Session Start - Check External Changes
 ```bash
-# Claude hook: SessionStart (runs automatically)
-# For non-Claude tools, run manually to catch external changes:
+# Claude Code: SessionStart hook runs automatically
+# For non-Claude tools, check for external changes manually:
 
-# Pull changes from external tools (status, priority, assignee)
-/sw:sync-pull
+# Check if any background sync jobs ran
+specweave jobs
 
-# This does:
-# 1. Query ADO/JIRA/GitHub for items changed since last sync
-# 2. Pull status/priority/assignee updates to living docs
-# 3. Use timestamp-based conflict resolution (latest wins)
-# 4. Log all changes with full audit trail
+# Check progress to see current state
+/sw:progress
 
-# When to run:
-# - Start of each work session (catch overnight changes)
-# - Before starting work on a linked increment
-# - After PM updates status in external tool
+# If external tools are configured, sync progress
+/sw-github:sync <increment-id>
+/sw-jira:sync <increment-id>
 ```
 
 #### 6. After Init on Brownfield Project
@@ -539,22 +539,21 @@ cat plugins/specweave/commands/increment.md
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Quick Reference: Session Start Routine 
+### Quick Reference: Session Start Routine
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ START OF EVERY SESSION (FOR NON-CLAUDE TOOLS)               │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Pull external changes: /sw:sync-pull              │
-│ 2. Check job status:      specweave jobs                    │
-│ 3. Check progress:        /sw:progress               │
-│ 4. Continue work:         /sw:do                     │
+│ 1. Check job status:      specweave jobs                    │
+│ 2. Check progress:        /sw:progress               │
+│ 3. Continue work:         /sw:do                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Without these manual steps, your work won't be tracked!**
 <!-- SW:END:nonclaudetools -->
 
-<!-- SW:SECTION:syncworkflow version="1.0.243" -->
+<!-- SW:SECTION:syncworkflow version="1.0.245" -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -628,15 +627,16 @@ TASK COMPLETED
 
 | Hook | Trigger | What It Does |
 |------|---------|--------------|
-| `UserPromptSubmit` | Every prompt | WIP limits, discipline checks |
-| `PostToolUse` | File write/edit | Detects task completion, syncs |
-| `PostTaskCompletion` | Task done | Updates GitHub/Jira progress |
-| `PostIncrementDone` | Increment closed | Closes issues, syncs all docs |
+| `SessionStart` | Session begins | Loads config, checks active increments |
+| `UserPromptSubmit` | Every prompt | WIP limits, discipline checks, intent detection |
+| `PreToolUse` | Before file write/edit | Validates spec constraints |
+| `PostToolUse` | After file write/edit | Detects task completion, syncs progress, updates GitHub/Jira |
+| `Stop` | Session ends | Cleanup, state persistence |
 
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 <!-- SW:END:syncworkflow -->
 
-<!-- SW:SECTION:contextloading version="1.0.243" -->
+<!-- SW:SECTION:contextloading version="1.0.245" -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -656,7 +656,7 @@ Read only what's needed for the current task:
 4. Avoid loading entire documentation trees
 <!-- SW:END:contextloading -->
 
-<!-- SW:SECTION:structure version="1.0.243" -->
+<!-- SW:SECTION:structure version="1.0.245" -->
 ## Project Structure
 
 ```
@@ -677,7 +677,7 @@ Read only what's needed for the current task:
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:agents version="1.0.243" -->
+<!-- SW:SECTION:agents version="1.0.245" -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
@@ -685,7 +685,7 @@ Read only what's needed for the current task:
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 
-<!-- SW:SECTION:skills version="1.0.243" -->
+<!-- SW:SECTION:skills version="1.0.245" -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -735,7 +735,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 <!-- SW:END:skills -->
 
-<!-- SW:SECTION:taskformat version="1.0.243" -->
+<!-- SW:SECTION:taskformat version="1.0.245" -->
 ## Task Format
 
 ```markdown
@@ -749,7 +749,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:usformat version="1.0.243" -->
+<!-- SW:SECTION:usformat version="1.0.245" -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -783,7 +783,7 @@ specweave context projects
 ```
 <!-- SW:END:usformat -->
 
-<!-- SW:SECTION:workflows version="1.0.243" -->
+<!-- SW:SECTION:workflows version="1.0.245" -->
 ## Workflows
 
 ### Creating Increment
@@ -840,7 +840,7 @@ title: "Feature Title"
 4. GitHub issue closed (if enabled)
 <!-- SW:END:workflows -->
 
-<!-- SW:SECTION:plugincommands version="1.0.243" -->
+<!-- SW:SECTION:plugincommands version="1.0.245" -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -850,7 +850,7 @@ title: "Feature Title"
 | `/sw-ado:sync` | Azure DevOps |
 <!-- SW:END:plugincommands -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.243" -->
+<!-- SW:SECTION:troubleshooting version="1.0.245" -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -955,7 +955,7 @@ npx playwright test
 - Running `npx` instead of MCP tools (better anyway!)
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:docs version="1.0.243" -->
+<!-- SW:SECTION:docs version="1.0.245" -->
 ## Documentation
 
 | Resource | Purpose |

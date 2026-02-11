@@ -133,9 +133,9 @@ describe('DisciplineChecker', () => {
   });
 
   describe('validate() - hard cap violations', () => {
-    it('should detect hard cap exceeded (4 active, limit 3)', async () => {
-      // Create 4 active increments (hard cap is 3)
-      for (let i = 1; i <= 4; i++) {
+    it('should detect hard cap exceeded (6 active, limit 5)', async () => {
+      // Create 6 active increments (hard cap is 5)
+      for (let i = 1; i <= 6; i++) {
         await createIncrement(testDir, `000${i}-inc`, 'active');
       }
 
@@ -149,15 +149,15 @@ describe('DisciplineChecker', () => {
         (v) => v.type === 'hard_cap_exceeded'
       );
       expect(hardCapViolation).toBeDefined();
-      expect(hardCapViolation?.message).toContain('4 active');
+      expect(hardCapViolation?.message).toContain('6 active');
       expect(hardCapViolation?.severity).toBe('warning');
     });
   });
 
   describe('validate() - WIP limit warnings', () => {
     it('should warn when exceeding recommended limit but under hard cap', async () => {
-      // Create 2 active increments (exceeds max of 1, but under hard cap of 3)
-      for (let i = 1; i <= 2; i++) {
+      // Create 4 active increments (exceeds max of 3, but under hard cap of 5)
+      for (let i = 1; i <= 4; i++) {
         await createIncrement(testDir, `000${i}-inc`, 'active');
       }
 
@@ -171,7 +171,7 @@ describe('DisciplineChecker', () => {
       );
       expect(wipViolation).toBeDefined();
       expect(wipViolation?.severity).toBe('warning');
-      expect(wipViolation?.message).toContain('2 active');
+      expect(wipViolation?.message).toContain('4 active');
     });
   });
 
@@ -246,20 +246,20 @@ describe('DisciplineChecker', () => {
 
   describe('validate() - configuration', () => {
     it('should respect custom limits', async () => {
-      // Create 2 active increments
-      for (let i = 1; i <= 2; i++) {
+      // Create 4 active increments
+      for (let i = 1; i <= 4; i++) {
         await createIncrement(testDir, `000${i}-inc`, 'active');
       }
 
-      // With default limits (max=1), this should warn
+      // With default limits (max=3), this should warn
       const checker1 = new DisciplineChecker(testDir);
       const result1 = await checker1.validate();
       expect(result1.compliant).toBe(false);
 
-      // With custom limits (max=2), this should pass
+      // With custom limits (max=4), this should pass
       const customLimits: DisciplineLimits = {
-        maxActiveIncrements: 2,
-        hardCap: 3,
+        maxActiveIncrements: 4,
+        hardCap: 6,
         allowEmergencyInterrupt: true,
       };
       const checker2 = new DisciplineChecker(testDir, customLimits);

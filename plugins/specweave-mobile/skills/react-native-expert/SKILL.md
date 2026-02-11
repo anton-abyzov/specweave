@@ -159,7 +159,176 @@ eas --version       # Expo
 
 ---
 
-## Part 3: Common Build Issues
+## Part 3: Monorepo & Metro Configuration
+
+### Monorepo Project Structure
+
+```
+my-monorepo/
+├── package.json              # workspaces: ["apps/*", "packages/*"]
+├── apps/
+│   ├── mobile/               # React Native / Expo app
+│   │   ├── app/              # Expo Router screens
+│   │   ├── metro.config.js   # ← Critical: must configure for monorepo
+│   │   ├── tsconfig.json     # Path aliases (editor only)
+│   │   └── package.json      # depends on @myapp/shared
+│   └── web/                  # Next.js / Vite web app
+├── packages/
+│   ├── shared/               # @myapp/shared — shared types, utils, API client
+│   │   ├── src/
+│   │   └── package.json      # "name": "@myapp/shared"
+│   └── ui/                   # @myapp/ui — shared components
+```
+
+### Metro Configuration for Monorepos
+
+Metro does NOT follow symlinks or resolve workspace packages by default. You must configure it explicitly.
+
+#### Expo Projects (Recommended)
+
+```javascript
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
+
+// Find the monorepo root (where root package.json with workspaces lives)
+const monorepoRoot = path.resolve(__dirname, '../..');
+
+const config = getDefaultConfig(__dirname);
+
+// 1. Watch all files in the monorepo (so Metro sees shared packages)
+config.watchFolders = [monorepoRoot];
+
+// 2. Tell Metro where to find node_modules (handles hoisted deps)
+config.resolver.nodeModulesPaths = [
+  path.resolve(__dirname, 'node_modules'),       // app-level
+  path.resolve(monorepoRoot, 'node_modules'),     // hoisted root
+];
+
+// 3. Ensure react/react-native resolve from the app (avoid duplicates)
+config.resolver.extraNodeModules = {
+  'react': path.resolve(__dirname, 'node_modules/react'),
+  'react-native': path.resolve(__dirname, 'node_modules/react-native'),
+};
+
+module.exports = config;
+```
+
+#### Bare React Native Projects
+
+```javascript
+// metro.config.js
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const path = require('path');
+
+const monorepoRoot = path.resolve(__dirname, '../..');
+
+const config = {
+  watchFolders: [monorepoRoot],
+  resolver: {
+    nodeModulesPaths: [
+      path.resolve(__dirname, 'node_modules'),
+      path.resolve(monorepoRoot, 'node_modules'),
+    ],
+    // Prevent duplicate React instances
+    extraNodeModules: {
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-native': path.resolve(__dirname, 'node_modules/react-native'),
+    },
+    // Handle symlinks (yarn/pnpm workspaces create symlinks)
+    unstable_enableSymlinks: true,
+  },
+};
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+```
+
+### TypeScript Path Aliases vs Metro Resolver
+
+**TypeScript `paths`** only affect the editor and type checker — Metro ignores them entirely. You need BOTH:
+
+```jsonc
+// tsconfig.json — for editor intellisense and tsc
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@myapp/shared": ["../../packages/shared/src"],
+      "@myapp/shared/*": ["../../packages/shared/src/*"],
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+```javascript
+// metro.config.js — for actual runtime bundling
+config.resolver.extraNodeModules = {
+  '@myapp/shared': path.resolve(monorepoRoot, 'packages/shared/src'),
+};
+// OR use a custom resolver:
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName.startsWith('@myapp/shared')) {
+    const subPath = moduleName.replace('@myapp/shared', '');
+    return context.resolveRequest(
+      context,
+      path.resolve(monorepoRoot, 'packages/shared/src') + subPath,
+      platform
+    );
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+```
+
+### Package Manager Workspace Setup
+
+```jsonc
+// Root package.json (yarn/npm workspaces)
+{
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}
+
+// pnpm-workspace.yaml (pnpm)
+// packages:
+//   - "apps/*"
+//   - "packages/*"
+```
+
+```jsonc
+// packages/shared/package.json
+{
+  "name": "@myapp/shared",
+  "main": "src/index.ts",      // Point to source for Metro (not dist)
+  "types": "src/index.ts"
+}
+```
+
+```jsonc
+// apps/mobile/package.json
+{
+  "dependencies": {
+    "@myapp/shared": "*"        // workspace:* for pnpm
+  }
+}
+```
+
+**Important**: For Metro bundling, point shared package `main` to **source** (`src/index.ts`), not compiled output. Metro transpiles everything itself.
+
+### Common Monorepo Pitfalls
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `Unable to resolve module @myapp/shared` | Metro can't see workspace package | Add `watchFolders` pointing to monorepo root |
+| `Unable to resolve module react` (duplicate) | Multiple React copies in node_modules | Pin via `extraNodeModules` to app's copy |
+| Module works in web but not mobile | Webpack resolves workspaces; Metro doesn't | Configure `metro.config.js` resolver |
+| Types resolve but runtime fails | tsconfig `paths` ≠ Metro resolver | Configure both tsconfig AND metro.config.js |
+| `ENOENT` on symlinked packages | Metro doesn't follow symlinks by default | Set `unstable_enableSymlinks: true` |
+| Hoisted deps not found | Dependencies hoisted to root node_modules | Add root `node_modules` to `nodeModulesPaths` |
+
+---
+
+## Part 3b: Common Build Issues
 
 ### Metro Cache Issues
 
@@ -184,6 +353,37 @@ cd ios && rm -rf build Pods Podfile.lock && pod install && cd ..
 ```bash
 cd android && ./gradlew clean && cd ..
 ```
+
+### Metro Resolution Errors
+
+**"Unable to resolve module X"** — Systematic debugging:
+
+```bash
+# 1. Verify the package exists and is installed
+ls node_modules/@myapp/shared 2>/dev/null || echo "NOT in app node_modules"
+ls ../../node_modules/@myapp/shared 2>/dev/null || echo "NOT in root node_modules"
+
+# 2. Check if it's a symlink (workspaces create these)
+ls -la node_modules/@myapp/ 2>/dev/null
+
+# 3. Verify metro.config.js has watchFolders and nodeModulesPaths
+cat metro.config.js
+
+# 4. Check the shared package's main/module entry point
+cat ../../packages/shared/package.json | grep -E '"main"|"module"|"exports"'
+
+# 5. Clear cache and restart
+watchman watch-del-all && npx expo start --clear
+```
+
+**"Unable to resolve module X from Y: X could not be found within the project or in these directories: node_modules"**
+
+This error means Metro's resolver checked its configured paths and found nothing. Checklist:
+1. Is `watchFolders` set to include the directory containing the package?
+2. Is `nodeModulesPaths` set to include all relevant `node_modules` directories?
+3. Does the package's `package.json` have a valid `main` field pointing to an existing file?
+4. If using pnpm, is `unstable_enableSymlinks: true` set in the resolver?
+5. After config changes, always run `npx expo start --clear` (Metro caches aggressively)
 
 ---
 

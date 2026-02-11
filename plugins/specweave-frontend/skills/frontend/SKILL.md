@@ -529,6 +529,34 @@ const useStore = create<Store>((set) => ({
 8. **Error Handling**: Implement Error Boundaries
 9. **Documentation**: Comment complex logic, document APIs
 10. **Security**: Sanitize user input, validate data
+11. **Demo-Ready Output**: Every page must render without visual bugs — no `$NaN`, no "No image" boxes, no raw `undefined`
+
+## Data Display & Formatting (MANDATORY)
+
+Never display raw, unformatted, or potentially-null data to users:
+
+```typescript
+// Prices — ALWAYS use Intl.NumberFormat, NEVER raw template literals
+// BAD:  `$${product.price}` → shows "$NaN" if price is undefined
+// GOOD: formatPrice(product.price)
+export function formatPrice(cents: number | null | undefined, currency = 'USD'): string {
+  if (cents == null || isNaN(cents)) return 'Price unavailable';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents / 100);
+}
+
+// Dates — ALWAYS use Intl.DateTimeFormat
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(d);
+}
+```
+
+**Images**: Never show "No image" text or broken icons. Use placeholder services:
+- Products: `https://picsum.photos/seed/{slug}/600/400`
+- Avatars: `https://i.pravatar.cc/150?u={id}`
+- Custom: invoke `/sw-media:image` for AI-generated visuals
 
 ## Tools and Libraries
 

@@ -308,13 +308,22 @@ Each spawned agent integrates with the standard SpecWeave workflow:
 5. **Ownership boundaries** — agents only modify files within their assigned directories
 6. **Conflict prevention** — ownership scopes are non-overlapping to prevent merge conflicts
 
+### Organization Discovery (resolve BEFORE spawning agents)
+
+Resolve the `{ORG}` placeholder from `.specweave/config.json` (in priority order):
+1. `repository.organization` field
+2. `sync.profiles[*].config.owner` (GitHub) or `.config.organization` (ADO)
+3. Parse from `umbrella.childRepos[0].path` (strip `repositories/` prefix, take first segment)
+4. Check filesystem: `ls repositories/*/` and use the org folder name
+5. If all fail, ask the user. **NEVER use .env files for org.**
+
 ### Multi-Repo Increment Placement
 
 **In umbrella projects with a `repositories/` folder:**
 - Each agent MUST create its increment in its assigned repo's `.specweave/increments/`
 - The umbrella root `.specweave/` is for config ONLY, not for agent increments
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
-- Agent working directory = `repositories/{org}/{repo-name}/`
+- Agent working directory = `repositories/{ORG}/{repo-name}/` (replace `{ORG}` with discovered value)
 
 ### Agent Lifecycle
 

@@ -20,6 +20,7 @@ import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
+import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
 
 /**
  * Plugin auto-load configuration from .specweave/config.json
@@ -243,6 +244,16 @@ export interface IncrementRecommendation {
 
   /** Brief explanation of why this action is recommended */
   reasoning: string;
+}
+
+/**
+ * Context about an active increment for LLM reopen detection
+ */
+export interface ActiveIncrementContext {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
 }
 
 /**
@@ -569,7 +580,9 @@ Only skip for pure questions, greetings, exploration, or explicit user opt-out.
 - action: "new" | "reopen" | "small_fix" | "hotfix" | "none"
 - confidence: 0.0-1.0
 - mandatory: true/false (YOU decide - not config-based!)
-- suggestedName: kebab-case name (for "new" and "small_fix")
+- suggestedName: kebab-case name (for "new" and "small_fix"). MUST be descriptive and actionable.
+  For vague prompts, extract the CORE intent: "it's broken" → "fix-[feature]", "not working" → "fix-[feature]",
+  "we need to improve X" → "improve-x", "the database is slow" → "fix-database-performance"
 - reasoning: brief explanation
 
 WHEN TO USE EACH ACTION:
@@ -581,7 +594,9 @@ WHEN TO USE EACH ACTION:
 │ small_fix   │ ONLY: literal typo fix, version bump, single config value  │
 │             │ change, comment update — truly trivial, <5 min changes     │
 │ none        │ ONLY: questions, exploration, "how do I", general chat,    │
-│             │ greetings, or user explicitly opted out of tracking         │
+│             │ greetings, or user explicitly opted out of tracking.        │
+│             │ NEVER use "none" for: "fix this", "it's broken",           │
+│             │ "not working", "improve X", "change Y" — these are work!   │
 └─────────────┴─────────────────────────────────────────────────────────────┘
 
 ⚠️ IMPORTANT: When in doubt between "new" and "small_fix", ALWAYS choose "new".
@@ -646,6 +661,18 @@ EXAMPLES (with increment field + mandatory)
 
 "Hello" / "Thanks" / "What's up?"
 {"plugins":[],"confidence":0.95,"reasoning":"Greeting/chat","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Conversational, no implementation work"}}
+
+"The search is returning wrong results"
+{"plugins":[],"confidence":0.8,"reasoning":"Bug report","increment":{"action":"new","confidence":0.85,"mandatory":true,"suggestedName":"fix-search-results","reasoning":"Bug report indicating broken functionality — requires investigation and code fix"}}
+
+"It's not respecting the folder structure, repositories are in the wrong place"
+{"plugins":[],"confidence":0.8,"reasoning":"Bug report about folder structure","increment":{"action":"new","confidence":0.85,"mandatory":true,"suggestedName":"fix-repository-folder-structure","reasoning":"Complaint about broken behavior — requires code investigation and fix"}}
+
+"The database queries are too slow, we need to optimize them"
+{"plugins":["sw-backend"],"confidence":0.85,"reasoning":"Database optimization","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"optimize-database-queries","reasoning":"Performance improvement requiring investigation and implementation"}}
+
+"We need better error messages when the API fails"
+{"plugins":[],"confidence":0.8,"reasoning":"Error handling improvement","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"improve-api-error-messages","reasoning":"UX improvement requiring code changes across error handlers"}}
 
 ═══════════════════════════════════════════════════════════════
 SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
@@ -917,7 +944,8 @@ function createFailureResult(
  */
 export async function detectPluginsViaLLM(
   userPrompt: string,
-  timeout: number = 15000 // v1.0.159: Reduced to 15s with --setting-sources "" optimization (CLI starts in <1s)
+  timeout: number = 15000, // v1.0.159: Reduced to 15s with --setting-sources "" optimization (CLI starts in <1s)
+  activeIncrements: ActiveIncrementContext[] = []
 ): Promise<LLMDetectionResult> {
   const startTime = performance.now();
 
@@ -938,7 +966,15 @@ export async function detectPluginsViaLLM(
 
   // Build the full prompt
   const systemPrompt = buildDetectionPrompt();
-  const fullPrompt = `${systemPrompt}
+
+  // Inject active increment context for reopen detection
+  let incrementContext = '';
+  if (activeIncrements.length > 0) {
+    const incList = activeIncrements.map(i => `  - ${i.id} (${i.type}, ${i.status}): "${i.name}"`).join('\n');
+    incrementContext = `\n\nACTIVE INCREMENTS (consider reopening one of these if the user's request relates to existing work):\n${incList}\n\nIf the user's prompt relates to any of these active increments, use action "reopen" with the relatedKeyword matching the increment name. Only suggest "new" if the work is clearly unrelated to ALL active increments.`;
+  }
+
+  const fullPrompt = `${systemPrompt}${incrementContext}
 
 User prompt to analyze:
 "${userPrompt.replace(/"/g, '\\"')}"
@@ -1267,7 +1303,10 @@ export async function installPluginViaCli(
   const fullPluginName = `${pluginName}@${marketplace}`;
 
   try {
-    const result = executeClaudeCli(['plugin', 'install', fullPluginName], timeout);
+    // Domain plugins (sw-frontend, sw-github, etc.) → project scope
+    // Core plugin (sw) → user scope
+    const scopeArgs = getScopeArgs(getPluginScope(pluginName, marketplace));
+    const result = executeClaudeCli(['plugin', 'install', fullPluginName, ...scopeArgs], timeout);
 
     // Handle spawn errors
     if (result.error) {

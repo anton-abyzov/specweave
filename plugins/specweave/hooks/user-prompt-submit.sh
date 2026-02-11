@@ -226,7 +226,7 @@ PLUGIN_AUTOLOAD_ENABLED=true
 PLUGIN_SUGGEST_ONLY=false
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
-INCREMENT_MANDATORY_CONFIG=false
+INCREMENT_MANDATORY_CONFIG=true
 DEEP_INTERVIEW_ENABLED=false
 if [[ -n "$SW_PROJECT_ROOT" ]]; then
   CONFIG_PATH="$SW_PROJECT_ROOT/.specweave/config.json"
@@ -249,8 +249,8 @@ if [[ -f "$CONFIG_PATH" ]]; then
     [[ "$THRESHOLD_VALUE" =~ ^[0-9.]+$ ]] && INCREMENT_CONFIDENCE_THRESHOLD="$THRESHOLD_VALUE"
 
     # Read incrementAssist.mandatory from config (config-based override for blocking)
-    MANDATORY_CONFIG_VALUE=$(jq -r '.incrementAssist.mandatory // false' "$CONFIG_PATH" 2>/dev/null)
-    [[ "$MANDATORY_CONFIG_VALUE" == "true" ]] && INCREMENT_MANDATORY_CONFIG=true
+    MANDATORY_CONFIG_VALUE=$(jq -r '.incrementAssist.mandatory // true' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$MANDATORY_CONFIG_VALUE" == "false" ]] && INCREMENT_MANDATORY_CONFIG=false
 
     # Deep Interview Mode detection (v1.0.195)
     DEEP_INTERVIEW_VALUE=$(jq -r '.planning.deepInterview.enabled // false' "$CONFIG_PATH" 2>/dev/null)

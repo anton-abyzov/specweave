@@ -66,14 +66,18 @@ export interface PluginScopeConfig {
  * Default plugin scope configuration
  *
  * - LSP plugins: project scope (language-specific, don't pollute global)
- * - SpecWeave plugins: user scope (useful across projects)
+ * - SpecWeave domain plugins (sw-frontend, sw-github, etc.): project scope
+ * - Core SpecWeave plugin (sw): user scope (needed across all projects)
  * - Other plugins: user scope (default)
  */
 export const DEFAULT_PLUGIN_SCOPE_CONFIG: PluginScopeConfig = {
   defaultScope: 'user',
   lspScope: 'project',
-  specweaveScope: 'user',
-  scopeOverrides: {},
+  specweaveScope: 'project',
+  scopeOverrides: {
+    // Core SW plugin stays at user level - it's the framework itself
+    'sw': 'user',
+  },
 };
 
 /**
@@ -168,4 +172,20 @@ export function formatScopeFlag(scope: PluginInstallationScope): string {
     return '';
   }
   return `--scope ${scope}`;
+}
+
+/**
+ * Get CLI args array for scope flag
+ *
+ * Returns ['--scope', 'project'] or [] for user scope.
+ * Use this when building CLI arg arrays for execFileNoThrowSync/spawnSync.
+ *
+ * @param scope The installation scope
+ * @returns CLI args array to spread into command args
+ */
+export function getScopeArgs(scope: PluginInstallationScope): string[] {
+  if (scope === 'user') {
+    return [];
+  }
+  return ['--scope', scope];
 }

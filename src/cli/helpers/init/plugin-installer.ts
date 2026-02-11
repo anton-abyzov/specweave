@@ -12,6 +12,7 @@ import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from '../../../utils/claude-cli-detector.js';
 import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
+import { getPluginScope, getScopeArgs } from '../../../core/types/plugin-scope.js';
 
 /**
  * SpecWeave marketplace GitHub repository
@@ -570,9 +571,10 @@ async function installLazyMode(
 
   for (const plugin of essentialPlugins) {
     const pluginKey = `${plugin.name}@${plugin.marketplace}`;
+    const scopeArgs = getScopeArgs(getPluginScope(plugin.name, plugin.marketplace));
     console.log(chalk.blue(`  Installing ${pluginKey}...`));
 
-    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey]);
+    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey, ...scopeArgs]);
 
     if (result.success) {
       console.log(chalk.green(`  ✓ ${pluginKey} installed`));
@@ -653,9 +655,12 @@ async function installPluginsWithRetry(
       // Fall through to try claude plugin install if manual failed
     }
 
+    // Determine installation scope (core 'sw' → user, domain plugins → project)
+    const scopeArgs = getScopeArgs(getPluginScope(pluginName, 'specweave'));
+
     // Retry up to 3 times with exponential backoff
     for (let attempt = 1; attempt <= 3; attempt++) {
-      const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginName]);
+      const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginName, ...scopeArgs]);
 
       if (installResult.success) {
         installed = true;

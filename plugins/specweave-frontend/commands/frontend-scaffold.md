@@ -166,7 +166,43 @@ Generate these essential config files:
 9. **API Integration**: Fetch wrapper, error handling, typing
 10. **Performance**: Code splitting, lazy loading, memoization
 
-### 6. Best Practices
+### 6. Demo-Ready Presentation (MANDATORY)
+
+Every scaffolded project MUST be demoable immediately after setup. No broken visuals, no missing data.
+
+**Data Formatting**:
+- ALWAYS use `Intl.NumberFormat` for prices/currencies — NEVER display raw numbers that could show `$NaN`, `$undefined`, or `$null`
+- Create a `formatPrice()` utility in `lib/utils` that handles edge cases:
+```typescript
+export function formatPrice(price: number | null | undefined, currency = 'USD', locale = 'en-US'): string {
+  if (price == null || isNaN(price)) return 'Price unavailable';
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(price / 100);
+}
+```
+- Apply the same defensive pattern to all displayed data — dates, percentages, counts
+
+**Placeholder Images**:
+- NEVER show "No image" text boxes or broken image icons. Use one of these approaches:
+  1. **Unsplash** (free, high-quality): `https://images.unsplash.com/photo-{id}?w=600&h=400&fit=crop`
+  2. **Picsum** (free, random): `https://picsum.photos/seed/{slug}/600/400`
+  3. **AI-generated**: Invoke `/sw-media:image` to generate custom product/hero images
+  4. **SVG placeholders**: Use tasteful gradient SVGs with subtle icons (not gray boxes)
+- For e-commerce: provide 4-6 realistic product image URLs in seed data
+- For dashboards: use chart/graph placeholder components with realistic mock data
+- For landing pages: use hero images that match the brand aesthetic
+
+**Seed Data Requirements**:
+- Include a `lib/mock-data.ts` with realistic, complete seed data
+- Every product must have: name, price (valid number), image URL, description
+- Every user profile must have: name, avatar URL, email
+- Use diverse, realistic names and data (not "Test User 1", "Product A")
+
+**Loading & Error States**:
+- Skeleton loaders with shimmer animation (not spinner-only)
+- Error states must show helpful messages with retry actions
+- Empty states must be visually designed, not just "No items found" text
+
+### 7. Best Practices
 
 - **Component Organization**: Atomic Design pattern
 - **Type Safety**: No `any` types, strict mode
@@ -176,15 +212,16 @@ Generate these essential config files:
 - **Security**: CSP headers, XSS prevention
 - **Code Quality**: Consistent naming, clear structure
 
-### 7. Workflow
+### 8. Workflow
 
 1. Ask about framework choice (React/Next/Vue/Angular)
 2. Confirm styling approach (Tailwind/styled-components/CSS Modules)
 3. Verify state management needs
-4. Generate complete file structure
+4. Generate complete file structure with mock data and placeholder images
 5. Create configuration files
 6. Set up package.json with scripts
-7. Provide setup instructions
+7. Verify all pages render without NaN/undefined/broken images
+8. Provide setup instructions
 
 ## Example Usage
 
