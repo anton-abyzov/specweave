@@ -168,20 +168,20 @@ describe('PluginLoader - Skill Visibility (v1.0.102+)', () => {
     loader = new PluginLoader();
   });
 
-  it('should extract visibility from SKILL.md frontmatter', async () => {
+  it('should extract visibility from command frontmatter', async () => {
     const specweavePluginPath = path.join(__dirname, '../../../plugins/specweave');
 
     // Only test if plugin exists
     if (await fs.pathExists(specweavePluginPath)) {
       const plugin = await loader.loadFromDirectory(specweavePluginPath);
 
-      // Find increment-planner skill (marked as public so it appears in Skill tool's available list)
-      const incrementPlannerSkill = plugin.skills.find(s => s.name === 'increment-planner');
+      // Find export-skills command (marked as visibility: public in command frontmatter)
+      const exportSkillsCmd = plugin.skills.find(s => s.name === 'export-skills');
 
-      if (incrementPlannerSkill) {
-        expect(incrementPlannerSkill.visibility).toBe('public');
+      if (exportSkillsCmd) {
+        expect(exportSkillsCmd.visibility).toBe('public');
       } else {
-        console.warn('increment-planner skill not found, skipping visibility test');
+        console.warn('export-skills command not found, skipping visibility test');
       }
     }
   });

@@ -82,11 +82,33 @@ Before proceeding with PM validation, run `/sw:grill {incrementId}` inline:
 1. Check config: `jq -r '.grill.required // true' .specweave/config.json` — if `false`, skip grill
 2. Invoke `/sw:grill {incrementId}` (the full grill skill, not just a check)
 3. If grill finds **BLOCKERs or CRITICALs** → **STOP closure**, show findings, ask user to fix
-4. If grill passes (no blockers) → continue to Step 0.6
+4. If grill passes (no blockers) → continue to Step 0.55
 
 **No marker files needed** — grill runs fresh each time as part of `/sw:done`.
 
 **To disable** (not recommended): Set `{ "grill": { "required": false } }` in `.specweave/config.json`
+
+---
+
+### Step 0.55: Judge LLM Validation (MANDATORY)
+
+**Independent deep validation using Opus with extended thinking.**
+
+After grill passes, run `/sw:judge-llm` for a second opinion with fresh context:
+
+1. Invoke `/sw:judge-llm --last-commit` (or `--staged` if not yet committed)
+   - Alternatively: `Skill({ skill: "sw:judge-llm" })` with the changed files
+2. Judge LLM uses **ultrathink extended thinking** via a separate Opus API call
+3. Wait for verdict: **APPROVED**, **CONCERNS**, or **REJECTED**
+
+**Verdict handling**:
+- **APPROVED** → continue to Step 0.6
+- **CONCERNS** → show findings to user, recommend fixes, but allow continuation
+- **REJECTED** → **STOP closure**, show critical findings, ask user to fix before retrying
+
+**Why both grill AND judge-llm**: Grill runs in-session (shares conversation context). Judge LLM makes a separate API call with fresh context, catching issues that in-session review may miss due to context saturation.
+
+**If no ANTHROPIC_API_KEY**: Judge LLM falls back to basic pattern matching. This is informational only and does not block closure.
 
 ---
 
