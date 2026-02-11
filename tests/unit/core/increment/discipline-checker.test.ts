@@ -150,7 +150,7 @@ describe('DisciplineChecker', () => {
       );
       expect(hardCapViolation).toBeDefined();
       expect(hardCapViolation?.message).toContain('4 active');
-      expect(hardCapViolation?.severity).toBe('error');
+      expect(hardCapViolation?.severity).toBe('warning');
     });
   });
 

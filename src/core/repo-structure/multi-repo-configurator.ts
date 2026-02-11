@@ -42,6 +42,69 @@ async function saveSetupState(stateManager: SetupStateManager, state: SetupState
 }
 
 /**
+ * Greenfield flow: define repos that don't exist yet using prefix + service names.
+ * Generates repo definitions without GitHub existence validation.
+ */
+async function configureGreenfieldRepos(
+  owner: string,
+  platform: GitPlatformType
+): Promise<RepoStructureConfig['repositories']> {
+  console.log(chalk.cyan('\n 🌱 Define New Repositories (Greenfield)\n'));
+  console.log(chalk.gray('Define repositories to create later. No GitHub validation required.\n'));
+
+  const prefix = await input({
+    message: 'Common prefix for all repos (e.g., sw-ecom-):',
+    validate: (val: string) => val.trim() ? true : 'Prefix is required'
+  });
+
+  const trimmedPrefix = prefix.trim().replace(/-$/, '') + '-';
+
+  const serviceNamesInput = await input({
+    message: 'Service/component names (comma-separated, e.g., web, api, gateway, shared):',
+    validate: (val: string) => {
+      const names = val.split(',').map(n => n.trim()).filter(Boolean);
+      if (names.length < 2) return 'Need at least 2 services';
+      if (names.length > 10) return 'Maximum 10 services';
+      return true;
+    }
+  });
+
+  const serviceNames = serviceNamesInput.split(',').map(n => n.trim()).filter(Boolean);
+  const repos = serviceNames.map(name => `${trimmedPrefix}${name}`);
+
+  console.log(chalk.cyan('\n📋 Planned repositories:\n'));
+  repos.forEach((repo, i) => {
+    console.log(`   ${i + 1}. ${chalk.white(repo)}${i === 0 ? chalk.yellow(' (default)') : ''}`);
+  });
+  console.log('');
+
+  const confirmed = await confirm({
+    message: `Create these ${repos.length} repository definitions?`,
+    default: true
+  });
+
+  if (!confirmed) {
+    // Retry
+    return configureGreenfieldRepos(owner, platform);
+  }
+
+  return repos.map((repoName, i) => {
+    const id = normalizeRepoName(repoName);
+    console.log(chalk.green(`   ✓ ${repoName} ${chalk.gray(`(id: ${id})`)}`));
+    return {
+      id,
+      name: repoName,
+      owner,
+      description: `${serviceNames[i]} service`,
+      path: `repositories/${owner}/${repoName}`,
+      visibility: 'private' as const,
+      createOnGitHub: true,
+      isNested: false
+    };
+  });
+}
+
+/**
  * Configure multi-repository architecture
  * v1.0.13: All repos are equal - no parent concept. First repo is default.
  * @param options - Configuration options
@@ -79,7 +142,7 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
   });
 
   // Ask discovery strategy
-  let discoveryStrategy: 'manual' | 'bulk-discovery' = 'manual';
+  let discoveryStrategy: 'manual' | 'bulk-discovery' | 'greenfield' = 'manual';
   let discoveredRepos: DiscoveredRepo[] = [];
   let owner: string = '';
 
@@ -102,10 +165,20 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
         },
         {
           name: [
+            chalk.bold(' Define New Repos (Greenfield)'),
+            chalk.gray('  Plan repos that don\'t exist yet'),
+            chalk.gray('  - Prefix + service names for bulk definition'),
+            chalk.gray('  - Repos will be created on GitHub later'),
+            ''
+          ].join('\n'),
+          value: 'greenfield'
+        },
+        {
+          name: [
             chalk.bold(' Manual Entry'),
             chalk.gray('  Enter each repository manually'),
             chalk.gray('  - Full control over settings'),
-            chalk.gray('  - Best for new repos or custom setup'),
+            chalk.gray('  - Works for both new and existing repos'),
             ''
           ].join('\n'),
           value: 'manual'
@@ -114,7 +187,41 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
       default: 'bulk-discovery'
     });
 
-    discoveryStrategy = configMethod as 'manual' | 'bulk-discovery';
+    discoveryStrategy = configMethod as 'manual' | 'bulk-discovery' | 'greenfield';
+  }
+
+  // Greenfield flow (from top-level selection)
+  if (discoveryStrategy === 'greenfield') {
+    // Ask for owner if not already known
+    if (!owner) {
+      console.log(chalk.cyan('\n Repository Owner\n'));
+      owner = await input({
+        message: `${provider.config.name} owner/organization:`,
+        validate: (val: string) => val.trim() ? true : 'Owner is required'
+      });
+    }
+
+    const greenfieldConfig = await configureGreenfieldRepos(owner, platform);
+    config.repositories = greenfieldConfig;
+
+    await saveSetupState(stateManager, {
+      version: '1.0.0',
+      architecture: 'multi-repo',
+      repos: config.repositories.map(r => ({
+        id: r.id,
+        repo: r.name,
+        owner: r.owner,
+        path: r.path,
+        visibility: r.visibility,
+        displayName: r.name,
+        created: false
+      })),
+      currentStep: 'repos-configured',
+      timestamp: new Date().toISOString(),
+      envCreated: false
+    });
+
+    return config;
   }
 
   // Bulk discovery flow
@@ -149,6 +256,32 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
       discoveryResult = await discoverRepositories(octokit, owner, isOrg, 0, { skipValidation: true });
       // If null, user selected "go back and adjust pattern", loop will retry
       // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
+    }
+
+    if (discoveryResult && discoveryResult.strategy === 'greenfield') {
+      // Greenfield flow: define repos that don't exist yet
+      const greenfieldConfig = await configureGreenfieldRepos(owner, platform);
+      config.repositories = greenfieldConfig;
+
+      // Save state
+      await saveSetupState(stateManager, {
+        version: '1.0.0',
+        architecture: 'multi-repo',
+        repos: config.repositories.map(r => ({
+          id: r.id,
+          repo: r.name,
+          owner: r.owner,
+          path: r.path,
+          visibility: r.visibility,
+          displayName: r.name,
+          created: false
+        })),
+        currentStep: 'repos-configured',
+        timestamp: new Date().toISOString(),
+        envCreated: false
+      });
+
+      return config;
     }
 
     if (discoveryResult && discoveryResult.strategy !== 'manual') {
@@ -256,32 +389,40 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
     const suggestedName = suggestRepoName(projectName, i, repoCount);
 
     // Manual entry
+    let repoAlreadyExists = false;
     const repoName = await input({
       message: 'Repository name:',
       default: suggestedName,
       validate: async (val: string) => {
         if (!val.trim()) return 'Repository name is required';
-
-        // Validate repository doesn't exist
-        if (githubToken) {
-          const result = await provider.validateRepository(owner, val, githubToken);
-          if (result.exists) {
-            return `Repository ${owner}/${val} already exists at ${result.url}`;
-          }
-        }
         return true;
       }
     });
+
+    // Check if repo exists on GitHub (informational, not blocking)
+    if (githubToken) {
+      const result = await provider.validateRepository(owner, repoName, githubToken);
+      if (result.exists) {
+        repoAlreadyExists = true;
+        console.log(chalk.green(`   ✓ Repository ${owner}/${repoName} exists at ${result.url}`));
+      }
+    }
 
     const repoDescription = await input({
       message: 'Repository description:',
       default: `${path.basename(repoName)} service`
     });
 
-    const repoCreateOnGitHub = await confirm({
-      message: 'Create this repository on GitHub?',
-      default: true
-    });
+    // Only ask about creating on GitHub if the repo doesn't already exist
+    let repoCreateOnGitHub = false;
+    if (repoAlreadyExists) {
+      console.log(chalk.gray('   Repository already exists on GitHub, skipping creation.'));
+    } else {
+      repoCreateOnGitHub = await confirm({
+        message: 'Create this repository on GitHub?',
+        default: true
+      });
+    }
 
     // Use normalized repo name as ID (repo names are unique)
     const id = normalizeRepoName(repoName);

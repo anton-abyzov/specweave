@@ -1333,7 +1333,7 @@ ${INC_PLANNER_MEMORY_RAW}
 "
                       fi
 
-                      MSG="${AUTOLOAD_PREFIX}${INC_PLANNER_MEMORY}╔══════════════════════════════════════════════════════════════════════════════╗
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}${INC_PLANNER_MEMORY}╔══════════════════════════════════════════════════════════════════════════════╗
 ║  🎯 SKILL FIRST - Call Skill tool BEFORE implementation                      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -1365,7 +1365,7 @@ See CLAUDE.md section \\\"MANDATORY: Skill Chaining\\\" for full pattern."
                     else
                       # v1.0.169: Also suggest direct skill call for non-mandatory
                       ESCAPED_PROMPT_SUGGEST=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
-                      MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
 
 Consider creating an increment first:
 \`\`\`
@@ -1387,7 +1387,7 @@ Or via command: \`$CMD\`
                   hotfix)
                     # v1.0.169: Direct skill call for hotfix too
                     ESCAPED_PROMPT_HOTFIX=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
-                    MSG="${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
 
 Create a hotfix increment:
 \`\`\`
@@ -1432,7 +1432,7 @@ Consider reopening the existing increment:
                     CMD_SMALLFIX="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
 
-                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a small change worth tracking.
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a small change worth tracking.
 
 Consider creating an increment:
 \`\`\`
@@ -2088,6 +2088,25 @@ if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
 fi
 
 # ==============================================================================
+# WIP WARNING BUILDER (reusable across all increment suggestion paths)
+# ==============================================================================
+# Builds a soft warning string when active increments >= configured limit.
+# Never blocks — just informs. Prepended to increment suggestion messages.
+WIP_WARNING=""
+if [[ "$ACTIVE_COUNT" -gt 0 ]]; then
+  _WIP_CONFIG="${SPECWEAVE_DIR}/config.json"
+  _WIP_LIMIT=3
+  if [[ -f "$_WIP_CONFIG" ]] && command -v jq >/dev/null 2>&1; then
+    _WIP_LIMIT=$(jq -r '.limits.maxActiveIncrements // 3' "$_WIP_CONFIG" 2>/dev/null || echo "3")
+  fi
+  [[ ! "$_WIP_LIMIT" =~ ^[0-9]+$ ]] && _WIP_LIMIT=3
+
+  if [[ "$ACTIVE_COUNT" -ge "$_WIP_LIMIT" ]]; then
+    WIP_WARNING="⚠️ **WIP Notice** (${ACTIVE_COUNT}/${_WIP_LIMIT} active)\\n\\nActive increments:\\n${ACTIVE_LIST}\\nConsider completing existing work first (\`/sw:done <id>\`) or pausing (\`/sw:pause <id>\`).\\n\\n---\\n\\n"
+  fi
+fi
+
+# ==============================================================================
 # DISCIPLINE VALIDATION: Warn about WIP limits (configurable, not hard block!)
 # ==============================================================================
 
@@ -2175,53 +2194,11 @@ if echo "$PROMPT" | grep -qE "^/sw:increment"; then
     fi
   fi
 
-  # WIP LIMITS CHECK (inside same block - no duplicate command detection)
-  # Read limits from config.json (respect user's settings!)
-  CONFIG_FILE="$SPECWEAVE_DIR/config.json"
-  SOFT_LIMIT=1
-  HARD_CAP=3
-
-  if [[ -f "$CONFIG_FILE" ]]; then
-    if command -v jq >/dev/null 2>&1; then
-      SOFT_LIMIT=$(jq -r '.limits.maxActiveIncrements // 1' "$CONFIG_FILE" 2>/dev/null || echo "1")
-      HARD_CAP=$(jq -r '.limits.hardCap // 3' "$CONFIG_FILE" 2>/dev/null || echo "3")
-    else
-      SOFT_LIMIT=$(grep -oP '"maxActiveIncrements"\s*:\s*\K[0-9]+' "$CONFIG_FILE" 2>/dev/null || echo "1")
-      HARD_CAP=$(grep -oP '"hardCap"\s*:\s*\K[0-9]+' "$CONFIG_FILE" 2>/dev/null || echo "3")
-    fi
-  fi
-
-  # Ensure valid numbers
-  [[ ! "$SOFT_LIMIT" =~ ^[0-9]+$ ]] && SOFT_LIMIT=1
-  [[ ! "$HARD_CAP" =~ ^[0-9]+$ ]] && HARD_CAP=3
-
-  # Above hard cap: strong warning but NOT a block (user decides!)
-  if [[ "$ACTIVE_COUNT" -ge "$HARD_CAP" ]]; then
-    WIP_MSG="⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\\n\\nYou have ${ACTIVE_COUNT} active increments (configured maximum: ${HARD_CAP})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /sw:done <id>\\n  2️⃣  Pause an increment: /sw:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."
-    # Prepend project context if available
-    if [[ -n "$PROJECT_CONTEXT" ]]; then
-      output_approve_with_context "${PROJECT_CONTEXT}${WIP_MSG}"
-    else
-      output_approve_with_context "$WIP_MSG"
-    fi
-    exit 0
-  fi
-
-  # At soft limit: mild warning, approve
-  if [[ "$ACTIVE_COUNT" -ge "$SOFT_LIMIT" ]]; then
-    WIP_MSG="⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\\n\\nYou have ${ACTIVE_COUNT} active increment(s) (recommended limit: ${SOFT_LIMIT})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/sw:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
-    # Prepend project context if available
-    if [[ -n "$PROJECT_CONTEXT" ]]; then
-      output_approve_with_context "${PROJECT_CONTEXT}${WIP_MSG}"
-    else
-      output_approve_with_context "$WIP_MSG"
-    fi
-    exit 0
-  fi
-
-  # No WIP limit warning, but we may have project context to inject
-  if [[ -n "$PROJECT_CONTEXT" ]]; then
-    output_approve_with_context "$PROJECT_CONTEXT"
+  # WIP + PROJECT CONTEXT: Combine WIP_WARNING (built earlier) with project context
+  # Never blocks — always approve with informational context
+  COMBINED_CONTEXT="${WIP_WARNING}${PROJECT_CONTEXT}"
+  if [[ -n "$COMBINED_CONTEXT" ]]; then
+    output_approve_with_context "$COMBINED_CONTEXT"
     exit 0
   fi
 fi
