@@ -7,6 +7,7 @@
  * @module core/scheduler/schedule-persistence
  */
 
+import nodeFs from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { ScheduledJob } from './scheduled-job.js';
@@ -64,11 +65,14 @@ export interface SchedulePersistenceOptions {
 export class SchedulePersistence {
   private readonly filePath: string;
   private readonly logger: Logger;
+  private readonly specweaveExists: boolean;
 
   constructor(options: SchedulePersistenceOptions = {}) {
     const specweavePath = options.specweavePath ?? path.join(process.cwd(), '.specweave');
     this.filePath = path.join(specweavePath, 'state', 'scheduled-jobs.json');
     this.logger = options.logger ?? consoleLogger;
+    // Guard: refuse to operate if .specweave doesn't exist (prevents stale folder creation)
+    this.specweaveExists = nodeFs.existsSync(specweavePath);
   }
 
   /**
@@ -128,6 +132,12 @@ export class SchedulePersistence {
    * @param jobs - Jobs to persist
    */
   async saveSchedules(jobs: ScheduledJob[]): Promise<void> {
+    // Guard: don't create .specweave/ from scratch in non-project directories
+    if (!this.specweaveExists) {
+      this.logger.debug('Skipping save: .specweave directory does not exist');
+      return;
+    }
+
     const data: PersistedJobsFile = {
       version: CURRENT_VERSION,
       jobs,

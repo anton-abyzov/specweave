@@ -119,7 +119,20 @@ export function detectNestedSpecweave(targetDir: string): ParentSpecweaveFolder[
       // ~/.specweave is a VALID global settings location and should NOT block init
       // It's used for: memory files, logs, state, skills-cache
       const isUserLevel = isHomeDir;
-      foundFolders.push({ path: currentDir, depth, isHomeDir, isUserLevel });
+
+      // Only consider this a real project if config.json exists.
+      // Stale .specweave/ folders (with only logs/state from runtime code)
+      // should NOT block initialization of new projects.
+      const hasConfig = fs.existsSync(path.join(specweavePath, 'config.json'));
+      const isRealProject = hasConfig;
+
+      foundFolders.push({
+        path: currentDir,
+        depth,
+        isHomeDir,
+        isUserLevel,
+        isStale: !isRealProject && !isUserLevel,
+      });
     }
 
     // Move up one level
