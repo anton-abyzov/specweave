@@ -40,7 +40,7 @@ describe('SKILL.md skill memory instructions', () => {
         'increment-work-router', 'smart-reopen-detector',
         'docs-updater', 'progress-sync', 'tdd-cycle',
         'tdd-red', 'tdd-green', 'tdd-refactor',
-        'team-status', 'team-orchestrate', 'team-merge', 'team-build',
+        'team-status', 'team-lead', 'team-merge', 'team-build',
       ]);
 
       for (const filePath of skillFiles) {

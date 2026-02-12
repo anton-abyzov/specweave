@@ -1925,7 +1925,7 @@ wrangler deploy
 
 ```bash
 # Step 1: Orchestrate — one command splits the feature
-/sw:team-orchestrate "Build e-commerce checkout with Stripe"
+/sw:team-lead "Build e-commerce checkout with Stripe"
 
 # Step 2: Monitor — watch all agents work
 /sw:team-status

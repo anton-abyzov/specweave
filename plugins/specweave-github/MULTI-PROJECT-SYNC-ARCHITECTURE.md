@@ -717,7 +717,7 @@ The pull sync fetches GitHub issue state and compares with spec ACs:
 ### Agent Teams Orchestration
 
 Skills for parallel multi-domain development:
-- `/sw:team-orchestrate` — analyze feature, create per-domain increments, spawn agents
+- `/sw:team-lead` — analyze feature, create per-domain increments, spawn agents
 - `/sw:team-status` — show agent progress table
 - `/sw:team-merge` — merge in dependency order, trigger sync per increment
 
