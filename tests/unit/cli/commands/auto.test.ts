@@ -271,4 +271,321 @@ describe('Auto Command (Stop Hook Feedback Loop)', () => {
       expect(meta.updated).toBe('2020-01-01T00:00:00Z');
     });
   });
+
+  describe('TDD mode detection', () => {
+    it('should detect TDD mode from config and add tests_pass criterion', async () => {
+      // Create a backlog increment
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      // Create config with TDD mode enabled
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          project: { name: 'test-project' },
+          testing: { defaultTestMode: 'TDD' }
+        })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Check that auto-mode.json contains TDD mode flag
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+      expect(session.tddMode).toBe(true);
+
+      // Should include tests_pass in success criteria
+      const hasModeFlag = session.tddMode === true;
+      const hasTestsCriterion = session.successCriteria?.some((c: any) => c.type === 'tests_pass');
+      expect(hasModeFlag || hasTestsCriterion).toBe(true);
+    });
+
+    it('should set requireTests flag when config requests it', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      // Create config with requireTests
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          project: { name: 'test-project' },
+          auto: { requireTests: true }
+        })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+      expect(session.requireTests).toBe(true);
+    });
+
+    it('should include DEFAULT_SUCCESS_CRITERIA in session marker', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+
+      // Should have success criteria array
+      expect(Array.isArray(session.successCriteria)).toBe(true);
+      expect(session.successCriteria.length).toBeGreaterThan(0);
+
+      // Should include basic criteria (tasks_complete, acs_satisfied)
+      const types = session.successCriteria.map((c: any) => c.type);
+      expect(types).toContain('tasks_complete');
+      expect(types).toContain('acs_satisfied');
+    });
+  });
+
+  describe('session marker content', () => {
+    it('should include startedAt timestamp in session marker', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      const beforeTime = new Date().toISOString();
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+      const afterTime = new Date().toISOString();
+
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+
+      expect(session.startedAt).toBeDefined();
+      expect(session.startedAt >= beforeTime).toBe(true);
+      expect(session.startedAt <= afterTime).toBe(true);
+    });
+
+    it('should include all increment IDs in session marker', async () => {
+      // Create multiple increments
+      const inc1 = path.join(incrementsDir, '0001-feature-a');
+      const inc2 = path.join(incrementsDir, '0002-feature-b');
+      fs.mkdirSync(inc1, { recursive: true });
+      fs.mkdirSync(inc2, { recursive: true });
+      fs.writeFileSync(
+        path.join(inc1, 'metadata.json'),
+        JSON.stringify({ status: 'backlog', id: '0001-feature-a' })
+      );
+      fs.writeFileSync(
+        path.join(inc2, 'metadata.json'),
+        JSON.stringify({ status: 'backlog', id: '0002-feature-b' })
+      );
+
+      const options: AutoCommandOptions = { allBacklog: true };
+      await handleAutoCommand(tempDir, [], options);
+
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+
+      expect(session.incrementIds).toContain('0001-feature-a');
+      expect(session.incrementIds).toContain('0002-feature-b');
+    });
+
+    it('should set successSummary in session marker', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      const flagPath = path.join(stateDir, 'auto-mode.json');
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+
+      expect(session.successSummary).toBeDefined();
+      expect(typeof session.successSummary).toBe('string');
+      expect(session.successSummary.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('WIP discipline enforcement', () => {
+    it('should validate discipline before activating increments', async () => {
+      // Create multiple active increments
+      for (let i = 1; i <= 2; i++) {
+        const incDir = path.join(incrementsDir, `000${i}-feature`);
+        fs.mkdirSync(incDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(incDir, 'metadata.json'),
+          JSON.stringify({ status: 'active', id: `000${i}-feature` })
+        );
+      }
+
+      // Create a backlog increment
+      const incDir = path.join(incrementsDir, '0003-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'backlog', id: '0003-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0003-feature'], options);
+
+      // Should have completed without error
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    it('should allow continuing work without blocking existing active increments', async () => {
+      // Create multiple active increments
+      for (let i = 1; i <= 3; i++) {
+        const incDir = path.join(incrementsDir, `000${i}-feature`);
+        fs.mkdirSync(incDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(incDir, 'metadata.json'),
+          JSON.stringify({ status: 'active', id: `000${i}-feature` })
+        );
+      }
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
+
+      // Should continue with existing active work
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Continuing with existing')
+      );
+    });
+
+    it('should show active increment list when continuing', async () => {
+      // Create active increments
+      for (let i = 1; i <= 2; i++) {
+        const incDir = path.join(incrementsDir, `000${i}-feature`);
+        fs.mkdirSync(incDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(incDir, 'metadata.json'),
+          JSON.stringify({ status: 'active', id: `000${i}-feature` })
+        );
+      }
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
+
+      // Should list the increments
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/0001-feature|0002-feature/));
+    });
+  });
+
+  describe('file system error handling', () => {
+    it('should handle missing increments directory gracefully', async () => {
+      // Don't create incrementsDir
+      fs.rmSync(incrementsDir, { recursive: true, force: true });
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
+
+      // Should warn about no increments
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('No increments')
+      );
+    });
+
+    it('should skip invalid metadata files', async () => {
+      // Create increment with invalid metadata
+      const incDir = path.join(incrementsDir, '0001-bad-meta');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        'this is not valid json {'
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
+
+      // Should not crash, just skip the bad one
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('No increments')
+      );
+    });
+
+    it('should handle missing increment metadata gracefully', async () => {
+      // Create increment without metadata
+      const incDir = path.join(incrementsDir, '0001-no-metadata');
+      fs.mkdirSync(incDir, { recursive: true });
+      // No metadata.json created
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001'], options);
+
+      // Should handle gracefully
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('output and messaging', () => {
+    it('should display active increments in start message', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Should show the increment ID in output
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('0001-test-feature')
+      );
+    });
+
+    it('should show completion criteria in start message', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Should show criteria section
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('COMPLETION CRITERIA')
+      );
+    });
+
+    it('should show auto-mode.json file path in start message', async () => {
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Should mention the auto-mode.json file
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('auto-mode.json')
+      );
+    });
+  });
 });

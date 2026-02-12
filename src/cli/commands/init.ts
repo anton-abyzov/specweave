@@ -456,10 +456,37 @@ export async function initCommand(
 
   // Check for nested .specweave/
   // EXCEPTION: User-level folders are VALID (e.g., ~/.specweave for global memory/state)
+  // EXCEPTION: Stale folders (no config.json) are NOT real projects and don't block init
   const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
   if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
-    // Filter out user-level folders - these are VALID global settings locations
-    const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel);
+    // Filter out user-level and stale folders
+    const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel && !f.isStale);
+    const staleFolders = parentSpecweaveFolders.filter(f => f.isStale);
+
+    // Warn about stale folders and offer cleanup
+    if (staleFolders.length > 0) {
+      console.log(chalk.yellow('\n⚠️  Found stale .specweave/ folder(s) without config.json (not a real project):\n'));
+      for (const folder of staleFolders) {
+        console.log(chalk.gray('   ' + path.join(folder.path, '.specweave') + '/'));
+      }
+      if (!isCI) {
+        const cleanup = await confirm({ message: 'Remove stale .specweave/ folder(s)?', default: true });
+        if (cleanup) {
+          for (const folder of staleFolders) {
+            const stalePath = path.join(folder.path, '.specweave');
+            try {
+              fs.rmSync(stalePath, { recursive: true, force: true });
+              console.log(chalk.green('   ✅ Removed ' + stalePath));
+            } catch {
+              console.log(chalk.yellow('   ⚠️  Could not remove ' + stalePath));
+            }
+          }
+          console.log('');
+        }
+      } else {
+        console.log(chalk.gray('\n   → Ignoring stale folders (no config.json)\n'));
+      }
+    }
 
     if (problematicFolders.length > 0) {
       console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
@@ -470,7 +497,7 @@ export async function initCommand(
       console.log(chalk.white('   Initialize in a different directory or remove the parent .specweave/ folder.\n'));
       process.exit(1);
     }
-    // User-level folders found but no problematic ones - allow init to proceed
+    // User-level or stale folders found but no problematic ones - allow init to proceed
   }
 
   const spinner = ora('Creating SpecWeave project...').start();

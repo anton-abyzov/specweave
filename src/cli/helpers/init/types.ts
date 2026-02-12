@@ -67,6 +67,12 @@ export interface ParentSpecweaveFolder {
    * User-level folders are VALID and should NOT block project initialization
    */
   isUserLevel?: boolean;
+  /**
+   * True if the .specweave folder has no config.json (stale/partial folder).
+   * Stale folders are created by runtime code (hooks, loggers) using process.cwd()
+   * and should NOT block project initialization.
+   */
+  isStale?: boolean;
 }
 
 /**

@@ -98,7 +98,11 @@ export function checkWslStatus(): WslStatus {
 }
 
 /**
- * Find project root by looking for .specweave directory
+ * Find project root by looking for .specweave directory WITH config.json
+ *
+ * A valid SpecWeave project must have .specweave/config.json.
+ * Stale .specweave/ folders (with only logs/state from runtime code)
+ * are NOT valid project roots and must be skipped.
  *
  * @param startDir - Directory to start searching from
  * @returns Project root path or null if not found
@@ -109,7 +113,11 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
 
   while (current !== root) {
     const specweavePath = path.join(current, '.specweave');
-    if (fs.existsSync(specweavePath) && fs.statSync(specweavePath).isDirectory()) {
+    if (
+      fs.existsSync(specweavePath) &&
+      fs.statSync(specweavePath).isDirectory() &&
+      fs.existsSync(path.join(specweavePath, 'config.json'))
+    ) {
       return current;
     }
     current = path.dirname(current);
@@ -218,6 +226,10 @@ export function readJsonSafe<T = unknown>(filePath: string): T | null {
 /**
  * Write JSON file safely with atomic write
  *
+ * SAFETY: Only creates directories if the parent .specweave/ already exists.
+ * This prevents accidentally creating stale .specweave/ folders in arbitrary
+ * directories when code runs from a non-project CWD.
+ *
  * @param filePath - Path to JSON file
  * @param data - Data to write
  * @returns true if successful, false otherwise
@@ -225,6 +237,16 @@ export function readJsonSafe<T = unknown>(filePath: string): T | null {
 export function writeJsonSafe(filePath: string, data: unknown): boolean {
   try {
     const dir = path.dirname(filePath);
+
+    // Guard: don't create .specweave/ from scratch
+    const specweaveDir = filePath.split(path.sep).reduce((acc, part, i, parts) => {
+      if (part === '.specweave') return parts.slice(0, i + 1).join(path.sep);
+      return acc;
+    }, '');
+    if (specweaveDir && !fs.existsSync(specweaveDir)) {
+      return false; // .specweave/ doesn't exist — refuse to create stale folder
+    }
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -242,12 +264,27 @@ export function writeJsonSafe(filePath: string, data: unknown): boolean {
 /**
  * Append to log file (creates directory if needed)
  *
+ * SAFETY: Only creates directories if the parent .specweave/ already exists.
+ * This prevents accidentally creating stale .specweave/ folders in arbitrary
+ * directories when hooks run from a non-project CWD.
+ *
  * @param logPath - Path to log file
  * @param message - Message to append
  */
 export function appendLog(logPath: string, message: string): void {
   try {
     const dir = path.dirname(logPath);
+
+    // Guard: don't create .specweave/ from scratch — only create subdirs
+    // if .specweave/ already exists (i.e., this is a real project root)
+    const specweaveDir = logPath.split(path.sep).reduce((acc, part, i, parts) => {
+      if (part === '.specweave') return parts.slice(0, i + 1).join(path.sep);
+      return acc;
+    }, '');
+    if (specweaveDir && !fs.existsSync(specweaveDir)) {
+      return; // .specweave/ doesn't exist — skip to avoid creating stale folder
+    }
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }

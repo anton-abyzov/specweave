@@ -12,6 +12,7 @@
  * @module core/sync/sync-audit-logger
  */
 
+import nodeFs from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { SyncPlatform } from '../types/sync-config.js';
@@ -170,7 +171,8 @@ export class SyncAuditLogger {
     this.logger = options.logger ?? consoleLogger;
     this.maxFileSizeBytes = options.maxFileSizeBytes ?? 100 * 1024 * 1024; // 100MB
     this.retentionDays = options.retentionDays ?? 30;
-    this.enabled = options.enabled ?? true;
+    // Guard: disable logging if .specweave doesn't exist (prevents stale folder creation)
+    this.enabled = (options.enabled ?? true) && nodeFs.existsSync(specweavePath);
   }
 
   /**
