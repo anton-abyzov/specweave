@@ -67,7 +67,11 @@ export interface RepoStructureConfig {
     visibility: 'private' | 'public';
     createOnGitHub: boolean;
     isNested: boolean;     // True for multi-repo nested repos
+    role?: string;         // e.g., 'frontend', 'backend', 'mobile', 'infra', 'shared'
+    storyPrefix?: string;  // e.g., 'FE', 'BE', 'MOB' for US-FE-001 format
   }>;
+  /** Parent repo ID for centralized issue tracking (set during role/prefix collection) */
+  parentRepoId?: string;
   monorepoProjects?: string[];  // For monorepo: ['frontend', 'backend', 'shared']
 }
 
