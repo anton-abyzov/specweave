@@ -46,7 +46,7 @@ Immediately after these migrations, `sw@specweave` was disabled.
 
 **Fix**: Restore `sw@specweave` enabled state after uninstall operations (lines 259-268)
 
-### Case 2: Cleanup Stale Plugins (POTENTIALLY VULNERABLE)
+### Case 2: Cleanup Stale Plugins (FIXED in v1.0.250)
 
 **Location**: `src/utils/cleanup-stale-plugins.ts` (line 244)
 
@@ -65,9 +65,9 @@ export async function migrateUserLevelPlugins(...) {
 
 **Risk**: If this function runs when `sw@specweave` is enabled, it may disable it as collateral damage.
 
-**Mitigation**: The function filters out `sw@specweave` via regex (line 214), so it shouldn't uninstall it. **However**, the side effect could still occur.
+**Fix**: Added restoration logic in both code paths (lines 230-241 and 265-275) to ensure `sw@specweave` remains enabled whether or not migrations occur.
 
-### Case 3: Refresh Marketplace (POTENTIALLY VULNERABLE)
+### Case 3: Refresh Marketplace (FIXED in v1.0.250)
 
 **Location**: `src/cli/commands/refresh-marketplace.ts` (multiple locations)
 
@@ -87,7 +87,11 @@ for (const plugin of pluginsToUninstall) {
 
 **Risk**: During marketplace refresh, multiple plugins are uninstalled sequentially. Each uninstall can corrupt `enabledPlugins`.
 
-**Partial Mitigation**: Lines 913-952 clean up `enabledPlugins` manually:
+**Fix**: Added restoration logic in both modes:
+- **Minimal mode**: Lines 670-682 (after plugin install)
+- **Lazy/all mode**: Lines 950-959 (after manual cleanup)
+
+**Previous Partial Mitigation**: Lines 913-952 clean up `enabledPlugins` manually:
 ```typescript
 // This is SAFE - it only manipulates specific keys
 for (const pluginKey of Object.keys(settings.enabledPlugins)) {
@@ -98,7 +102,7 @@ for (const pluginKey of Object.keys(settings.enabledPlugins)) {
 fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
 ```
 
-**Gap**: No protection for `sw@specweave` after uninstall operations.
+**Gap (NOW FIXED)**: Previously no protection for `sw@specweave` after uninstall operations. Now explicitly restored.
 
 ## General Pattern: All `claude plugin uninstall` Calls
 
@@ -109,8 +113,8 @@ grep -r "claude plugin uninstall" --include="*.ts" --include="*.sh"
 
 **Found**:
 - `plugins/specweave/hooks/user-prompt-submit.sh` - ✅ FIXED
-- `src/utils/cleanup-stale-plugins.ts` - ⚠️ VULNERABLE
-- `src/cli/commands/refresh-marketplace.ts` - ⚠️ VULNERABLE
+- `src/utils/cleanup-stale-plugins.ts` - ✅ FIXED
+- `src/cli/commands/refresh-marketplace.ts` - ✅ FIXED
 - Tests (not production risk)
 
 ## Recommended Fixes
@@ -224,8 +228,10 @@ When reviewing code that manipulates plugins:
 
 ## Version History
 
-- **v1.0.250**: Fixed user-prompt-submit hook (Case 1)
-- **Future**: Need to audit and fix Cases 2 and 3
+- **v1.0.250**: Fixed all 3 cases
+  - Case 1: user-prompt-submit hook (shell restoration pattern)
+  - Case 2: cleanup-stale-plugins.ts (TypeScript restoration in both code paths)
+  - Case 3: refresh-marketplace.ts (atomic settings update in both minimal and lazy/all modes)
 
 ## See Also
 
