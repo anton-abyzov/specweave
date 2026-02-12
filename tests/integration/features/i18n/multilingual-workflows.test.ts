@@ -298,7 +298,9 @@ describe('Multilingual Workflows E2E', () => {
     }
   });
 
-  it('should create translator skill files', async () => {
+  // Skip: Translator skill removed in cleanup (Feb 2026)
+  // Translation is now handled via in-session translation (no dedicated skill needed)
+  it.skip('should create translator skill files', async () => {
     const skillPath = path.join(process.cwd(), 'plugins/specweave/skills/translator/SKILL.md');
 
     // Verify translator skill exists
@@ -333,7 +335,9 @@ describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('Translation Planning');
   });
 
-  it('should create translate command', async () => {
+  // Skip: Translate command removed in cleanup (Feb 2026)
+  // Translation is now handled via in-session translation (no dedicated command needed)
+  it.skip('should create translate command', async () => {
     const commandPath = path.join(process.cwd(), 'plugins/specweave/commands/translate.md');
 
     // Verify translate command exists

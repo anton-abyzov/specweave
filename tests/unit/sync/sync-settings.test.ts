@@ -19,18 +19,18 @@ import {
 
 describe('SyncSettings Interface', () => {
   describe('DEFAULT_SYNC_SETTINGS', () => {
-    it('should have all permissions disabled by default', () => {
-      expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(false);
-      expect(DEFAULT_SYNC_SETTINGS.canUpdateExternalItems).toBe(false);
-      expect(DEFAULT_SYNC_SETTINGS.canUpdateStatus).toBe(false);
+    it('should have all permissions enabled by default', () => {
+      expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(true);
+      expect(DEFAULT_SYNC_SETTINGS.canUpdateExternalItems).toBe(true);
+      expect(DEFAULT_SYNC_SETTINGS.canUpdateStatus).toBe(true);
     });
 
     it('should be immutable (defensive copy)', () => {
       const copy = { ...DEFAULT_SYNC_SETTINGS };
-      copy.canUpsertInternalItems = true;
+      copy.canUpsertInternalItems = false;
 
       // Original should not be affected
-      expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(false);
+      expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(true);
     });
   });
 
@@ -136,10 +136,10 @@ describe('SyncSettings Interface', () => {
         const result = migrateSyncDirection('unknown');
 
         // Mutate the result
-        result.canUpsertInternalItems = true;
+        result.canUpsertInternalItems = false;
 
         // DEFAULT_SYNC_SETTINGS should not be affected
-        expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(false);
+        expect(DEFAULT_SYNC_SETTINGS.canUpsertInternalItems).toBe(true);
       });
 
       it('should return new object for bidirectional', () => {
@@ -358,13 +358,13 @@ describe('SyncSettings Interface', () => {
       expect(() => validateSyncSettings(migrated)).not.toThrow();
     });
 
-    it('should migrate disabled sync (null)', () => {
-      // Old: syncDirection: null
+    it('should migrate unspecified sync (null) to enabled defaults', () => {
+      // Old: syncDirection: null → uses DEFAULT_SYNC_SETTINGS (all enabled)
       const migrated = migrateSyncDirection(null);
 
-      expect(migrated.canUpsertInternalItems).toBe(false);
-      expect(migrated.canUpdateExternalItems).toBe(false);
-      expect(migrated.canUpdateStatus).toBe(false);
+      expect(migrated.canUpsertInternalItems).toBe(true);
+      expect(migrated.canUpdateExternalItems).toBe(true);
+      expect(migrated.canUpdateStatus).toBe(true);
 
       // Validate the migrated settings
       expect(() => validateSyncSettings(migrated)).not.toThrow();

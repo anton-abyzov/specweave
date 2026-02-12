@@ -84,10 +84,10 @@ describe('PermissionChecker', () => {
     it('should return defaults when config.json does not exist', async () => {
       const checker = await PermissionChecker.load(testDir);
 
-      // All permissions should be false (safe defaults)
-      expect(checker.canUpsertInternalItems()).toBe(false);
-      expect(checker.canUpdateExternalItems()).toBe(false);
-      expect(checker.canUpdateStatus()).toBe(false);
+      // All permissions should be true (new defaults for seamless sync)
+      expect(checker.canUpsertInternalItems()).toBe(true);
+      expect(checker.canUpdateExternalItems()).toBe(true);
+      expect(checker.canUpdateStatus()).toBe(true);
     });
 
     it('should return defaults when config.json is invalid JSON', async () => {
@@ -97,9 +97,9 @@ describe('PermissionChecker', () => {
 
       const checker = await PermissionChecker.load(testDir);
 
-      expect(checker.canUpsertInternalItems()).toBe(false);
-      expect(checker.canUpdateExternalItems()).toBe(false);
-      expect(checker.canUpdateStatus()).toBe(false);
+      expect(checker.canUpsertInternalItems()).toBe(true);
+      expect(checker.canUpdateExternalItems()).toBe(true);
+      expect(checker.canUpdateStatus()).toBe(true);
     });
 
     it('should return defaults when sync.settings is missing', async () => {
@@ -111,9 +111,9 @@ describe('PermissionChecker', () => {
 
       const checker = await PermissionChecker.load(testDir);
 
-      expect(checker.canUpsertInternalItems()).toBe(false);
-      expect(checker.canUpdateExternalItems()).toBe(false);
-      expect(checker.canUpdateStatus()).toBe(false);
+      expect(checker.canUpsertInternalItems()).toBe(true);
+      expect(checker.canUpdateExternalItems()).toBe(true);
+      expect(checker.canUpdateStatus()).toBe(true);
     });
 
     it('should fill in missing permission fields with defaults', async () => {
@@ -122,7 +122,7 @@ describe('PermissionChecker', () => {
       await fs.writeJSON(configPath, {
         sync: {
           settings: {
-            canUpsertInternalItems: true
+            canUpsertInternalItems: false
             // canUpdateExternalItems and canUpdateStatus missing
           }
         }
@@ -130,9 +130,9 @@ describe('PermissionChecker', () => {
 
       const checker = await PermissionChecker.load(testDir);
 
-      expect(checker.canUpsertInternalItems()).toBe(true);
-      expect(checker.canUpdateExternalItems()).toBe(false); // Default
-      expect(checker.canUpdateStatus()).toBe(false); // Default
+      expect(checker.canUpsertInternalItems()).toBe(false);
+      expect(checker.canUpdateExternalItems()).toBe(true); // Default (true)
+      expect(checker.canUpdateStatus()).toBe(true); // Default (true)
     });
   });
 

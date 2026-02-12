@@ -86,15 +86,15 @@ async function setupAdoWithExistingCredentials(
 
   const canUpsertInternalItems = await confirm({
     message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
-    default: false
+    default: true
   });
   const canUpdateExternalItems = await confirm({
     message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
-    default: false
+    default: true
   });
   const canUpdateStatus = await confirm({
     message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
-    default: false
+    default: true
   });
   const syncPermissions = { canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus };
 
@@ -446,15 +446,15 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
 
   const canUpsertInternalItems = await confirm({
     message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
-    default: false
+    default: true
   });
   const canUpdateExternalItems = await confirm({
     message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
-    default: false
+    default: true
   });
   const canUpdateStatus = await confirm({
     message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
-    default: false
+    default: true
   });
   const syncPermissions = { canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus };
 

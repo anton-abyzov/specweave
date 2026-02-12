@@ -57,9 +57,9 @@ export class FormatPreservationSyncService {
     options: { logger?: Logger; projectRoot?: string } = {}
   ) {
     this.config = {
-      canUpdateExternalItems: config.canUpdateExternalItems ?? false,
-      canUpsertInternalItems: config.canUpsertInternalItems ?? false,
-      canUpdateStatus: config.canUpdateStatus ?? false
+      canUpdateExternalItems: config.canUpdateExternalItems ?? true,
+      canUpsertInternalItems: config.canUpsertInternalItems ?? true,
+      canUpdateStatus: config.canUpdateStatus ?? true
     };
     this.logger = options.logger ?? consoleLogger;
     this.projectRoot = options.projectRoot ?? process.cwd();

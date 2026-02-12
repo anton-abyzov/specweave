@@ -381,7 +381,7 @@ Custom presets follow the same execution rules: agents with no `dependsOn` run i
 | Issue | Fix |
 |-------|-----|
 | Agent fails to spawn | Check that required skills are installed: `claude plugin list` |
-| Gate agent blocks forever | Kill the stuck agent and check its logs in `.specweave/state/` |
+| Gate agent blocks forever | Kill the stuck agent and check its output for errors |
 | Ownership conflict | Ensure no two agents in the same preset share directory ownership |
 | TDD gate rejects Green | Agent 1 (Red) tests must genuinely fail — check for accidentally passing tests |
 | Agents out of sync | Run `/sw:progress` to see per-agent task status and identify blockers |

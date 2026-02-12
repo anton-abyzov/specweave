@@ -56,9 +56,9 @@ export class ProfileManager {
         this.config = {
           profiles: {},
           settings: {
-            canUpsertInternalItems: false,
-            canUpdateExternalItems: false,
-            canUpdateStatus: false,
+            canUpsertInternalItems: true,
+            canUpdateExternalItems: true,
+            canUpdateStatus: true,
             autoDetectProject: true,
             defaultTimeRange: '1M',
             rateLimitProtection: true,

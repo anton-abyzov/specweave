@@ -18,6 +18,7 @@ import { WIZARD_BACK, getGoBackStrings } from './wizard-navigation.js';
 export { WIZARD_BACK };
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
+import { isGreenfield as isGreenfieldCheck } from './greenfield-detection.js';
 import type { LivingDocsUserInputs } from '../../../core/background/types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import {
@@ -182,38 +183,13 @@ export interface PreflightResult {
 
 /**
  * Detect if project is brownfield (has existing code)
+ *
+ * @deprecated Use `isGreenfield()` from `./greenfield-detection.js` instead.
+ * This wrapper inverts the result for backward compatibility.
  */
 export function detectBrownfield(projectPath: string): boolean {
-  // Check for common indicators of existing code
-  const indicators = [
-    'package.json',
-    'requirements.txt',
-    'go.mod',
-    'Cargo.toml',
-    'pom.xml',
-    'build.gradle',
-    'pyproject.toml',
-    'composer.json',
-    'Gemfile',
-    'CMakeLists.txt',
-  ];
-
-  for (const indicator of indicators) {
-    if (fs.existsSync(path.join(projectPath, indicator))) {
-      return true;
-    }
-  }
-
-  // Check for src/ directory with files
-  const srcDir = path.join(projectPath, 'src');
-  if (fs.existsSync(srcDir) && fs.statSync(srcDir).isDirectory()) {
-    const files = fs.readdirSync(srcDir);
-    if (files.length > 0) {
-      return true;
-    }
-  }
-
-  return false;
+  // Delegate to new greenfield detection (inverted logic)
+  return !isGreenfieldCheck(projectPath);
 }
 
 /**

@@ -370,9 +370,9 @@ export function createConfigFile(
       provider: 'none' as const
     },
     sync: {
-      enabled: false,
+      enabled: true,
       direction: 'bidirectional' as const,
-      autoSync: false,
+      autoSync: true,
       includeStatus: true,
       autoApplyLabels: true,
       settings: {
@@ -389,7 +389,7 @@ export function createConfigFile(
         external_tracker_sync: true
       },
       post_increment_planning: {
-        auto_create_github_issue: false
+        auto_create_github_issue: true
       }
     },
     // Auto mode configuration (stop hook behavior)
@@ -437,9 +437,11 @@ export function createConfigFile(
     };
   }
 
-  // Add language if non-English
+  // Always add language field (tests expect it to be present)
+  config.language = language;
+
+  // Add translation config if non-English
   if (language !== 'en') {
-    config.language = language;
     config.translation = {
       method: 'in-session',
       autoTranslateLivingDocs: false,

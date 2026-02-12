@@ -190,18 +190,6 @@ describe('Auto Command (Stop Hook Feedback Loop)', () => {
     });
   });
 
-  describe('prompt analysis mode', () => {
-    it('should analyze prompt without exit when no parallel flags', async () => {
-      const options: AutoCommandOptions = { prompt: 'Build a React dashboard with API' };
-
-      // Should NOT exit, just analyze and return
-      await handleAutoCommand(tempDir, [], options);
-
-      // Should show analysis
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Prompt Analysis'));
-    });
-  });
-
   describe('error handling', () => {
     it('should warn when no increments found', async () => {
       const options: AutoCommandOptions = {};

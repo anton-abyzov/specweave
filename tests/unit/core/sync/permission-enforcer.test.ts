@@ -18,9 +18,16 @@ import { silentLogger } from '../../../../src/utils/logger.js';
 describe('PermissionEnforcer', () => {
   let enforcer: PermissionEnforcer;
 
+  // Explicit all-disabled settings for testing deny scenarios
+  const ALL_DISABLED: SyncSettings = {
+    canUpsertInternalItems: false,
+    canUpdateExternalItems: false,
+    canUpdateStatus: false,
+  };
+
   beforeEach(() => {
     enforcer = new PermissionEnforcer({
-      settings: { ...DEFAULT_SYNC_SETTINGS },
+      settings: { ...ALL_DISABLED },
       logger: silentLogger,
       enableLogging: false, // Disable file logging in tests
     });
@@ -254,9 +261,9 @@ describe('createPermissionEnforcerFromConfig', () => {
     const enforcer = await createPermissionEnforcerFromConfig(tempDir, silentLogger);
     const settings = enforcer.getSettings();
 
-    expect(settings.canUpsertInternalItems).toBe(false);
-    expect(settings.canUpdateExternalItems).toBe(false);
-    expect(settings.canUpdateStatus).toBe(false);
+    expect(settings.canUpsertInternalItems).toBe(true);
+    expect(settings.canUpdateExternalItems).toBe(true);
+    expect(settings.canUpdateStatus).toBe(true);
   });
 
   it('should use defaults when sync settings are missing', async () => {
@@ -273,8 +280,8 @@ describe('createPermissionEnforcerFromConfig', () => {
     const enforcer = await createPermissionEnforcerFromConfig(tempDir, silentLogger);
     const settings = enforcer.getSettings();
 
-    expect(settings.canUpsertInternalItems).toBe(false);
-    expect(settings.canUpdateExternalItems).toBe(false);
-    expect(settings.canUpdateStatus).toBe(false);
+    expect(settings.canUpsertInternalItems).toBe(true);
+    expect(settings.canUpdateExternalItems).toBe(true);
+    expect(settings.canUpdateStatus).toBe(true);
   });
 });

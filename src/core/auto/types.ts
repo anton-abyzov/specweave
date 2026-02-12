@@ -4,182 +4,8 @@
  * Core principle: The increment's metadata.json status IS the state.
  * No complex session management needed.
  *
- * Extended with Parallel Orchestration support for multi-agent execution.
  * Extended with Success Criteria for LLM-based completion evaluation.
  */
-
-// ============================================================================
-// PARALLEL ORCHESTRATION TYPES
-// ============================================================================
-
-/**
- * Agent domain - specialized areas for parallel execution
- */
-export type AgentDomain =
-  | 'frontend'
-  | 'backend'
-  | 'database'
-  | 'devops'
-  | 'qa'
-  | 'general';
-
-/**
- * Agent execution status
- */
-export type AgentStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled';
-
-/**
- * Git worktree information for agent isolation
- */
-export interface WorktreeInfo {
-  path: string;
-  branch: string;
-  agentId: string;
-  createdAt: string;
-  locked: boolean;
-}
-
-/**
- * Individual parallel agent state
- */
-export interface ParallelAgent {
-  id: string;
-  domain: AgentDomain;
-  status: AgentStatus;
-  worktree: WorktreeInfo;
-  taskIds: string[];
-  startedAt?: string;
-  completedAt?: string;
-  failedAt?: string;
-  error?: string;
-  progress: {
-    completed: number;
-    total: number;
-  };
-  heartbeat?: string;
-  subagentType: string;
-}
-
-/**
- * Parallel session state - persisted to .specweave/state/parallel/session.json
- */
-export interface ParallelSession {
-  id: string;
-  incrementId: string;
-  status: 'active' | 'completed' | 'failed' | 'cancelled';
-  agents: ParallelAgent[];
-  startedAt: string;
-  completedAt?: string;
-  config: ParallelConfig;
-  mergeOrder: string[];
-  prResults: PRResult[];
-}
-
-/**
- * Configuration for parallel execution
- */
-export interface ParallelConfig {
-  enabled: boolean;
-  maxParallel: number;
-  domains: AgentDomain[];
-  createPR: boolean;
-  draftPR: boolean;
-  mergeStrategy: 'auto' | 'manual' | 'pr';
-  baseBranch: string;
-}
-
-/**
- * Flag suggestion from prompt analysis
- */
-export interface FlagSuggestion {
-  flag: string;
-  reason: string;
-  confidence: 'high' | 'medium' | 'low';
-  domain?: AgentDomain;
-}
-
-/**
- * PR creation result
- */
-export interface PRResult {
-  agentId: string;
-  domain: AgentDomain;
-  prNumber?: number;
-  prUrl?: string;
-  provider: GitProvider;
-  status: 'created' | 'failed' | 'skipped';
-  error?: string;
-  createdAt: string;
-}
-
-/**
- * Git provider for PR creation
- */
-export type GitProvider = 'github' | 'gitlab' | 'azure-devops' | 'bitbucket' | 'unknown';
-
-/**
- * Default parallel configuration
- */
-export const DEFAULT_PARALLEL_CONFIG: ParallelConfig = {
-  enabled: false,
-  maxParallel: 3,
-  domains: [],
-  createPR: false,
-  draftPR: false,
-  mergeStrategy: 'auto',
-  baseBranch: 'main',
-};
-
-/**
- * Domain to subagent type mapping
- */
-export const DOMAIN_SUBAGENT_MAP: Record<AgentDomain, string> = {
-  frontend: 'sw-frontend:frontend-architect',
-  backend: 'sw-backend:database-optimizer',
-  database: 'sw-backend:database-optimizer',
-  devops: 'sw-infra:devops',
-  qa: 'sw-testing:qa-engineer',
-  general: 'general-purpose',
-};
-
-// ============================================================================
-// TYPE GUARDS
-// ============================================================================
-
-/**
- * Check if value is a valid AgentDomain
- */
-export function isAgentDomain(value: unknown): value is AgentDomain {
-  return (
-    typeof value === 'string' &&
-    ['frontend', 'backend', 'database', 'devops', 'qa', 'general'].includes(value)
-  );
-}
-
-/**
- * Check if value is a valid AgentStatus
- */
-export function isAgentStatus(value: unknown): value is AgentStatus {
-  return (
-    typeof value === 'string' &&
-    ['pending', 'running', 'completed', 'failed', 'cancelled'].includes(value)
-  );
-}
-
-/**
- * Check if value is a valid GitProvider
- */
-export function isGitProvider(value: unknown): value is GitProvider {
-  return (
-    typeof value === 'string' &&
-    ['github', 'gitlab', 'azure-devops', 'bitbucket', 'unknown'].includes(value)
-  );
-}
 
 // ============================================================================
 // SUCCESS CRITERIA TYPES (for auto mode completion evaluation)
@@ -259,7 +85,6 @@ export interface AutoModeFlag {
   active: boolean;
   timestamp: string;
   incrementIds?: string[]; // Optional: specific increments to process
-  parallel?: boolean; // Whether parallel mode is active
   tddMode?: boolean; // TDD strict mode enabled
   requireTests?: boolean; // Tests required before completion
   // Success criteria for completion evaluation
@@ -294,31 +119,6 @@ export interface CompletionCondition {
   detectedCommand?: string; // Auto-detected command to run
 }
 
-/**
- * Parallel execution configuration (stored in auto.parallel section)
- */
-export interface ParallelAutoConfig {
-  enabled?: boolean; // Enable parallel mode by default
-  maxParallel?: number; // Max concurrent agents (default: 3)
-  defaultDomains?: AgentDomain[]; // Default domains when --parallel without specific flags
-  defaultMergeStrategy?: 'auto' | 'manual' | 'pr'; // Default merge strategy
-  defaultBaseBranch?: string; // Default base branch for merging (default: 'main')
-  createPR?: boolean; // Create PRs for each agent by default
-  draftPR?: boolean; // Create draft PRs by default
-}
-
-/**
- * Default parallel auto config
- */
-export const DEFAULT_PARALLEL_AUTO_CONFIG: ParallelAutoConfig = {
-  enabled: false,
-  maxParallel: 3,
-  defaultDomains: [],
-  defaultMergeStrategy: 'auto',
-  defaultBaseBranch: 'main',
-  createPR: false,
-  draftPR: false,
-};
 
 /**
  * Auto config - includes legacy fields for backward compatibility
@@ -339,7 +139,6 @@ export interface AutoConfig {
   testCommand?: string;
   coverageThreshold?: number;
   enforceTestFirst?: boolean;
-  warnOnParallelSession?: boolean;
   humanGated?: {
     patterns: string[];
     timeout: number;
@@ -353,8 +152,6 @@ export interface AutoConfig {
     batchInterval: number;
     forceOnComplete: boolean;
   };
-  // Parallel execution config (NEW)
-  parallel?: ParallelAutoConfig;
 }
 
 export const DEFAULT_AUTO_CONFIG: AutoConfig = {
@@ -370,7 +167,6 @@ export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   testCommand: 'npm test',
   coverageThreshold: 80,
   enforceTestFirst: false,
-  warnOnParallelSession: true,
   humanGated: {
     patterns: ['deploy', 'migrate', 'publish', 'push --force', 'rm -rf', 'API_KEY', 'SECRET'],
     timeout: 1800,
@@ -384,7 +180,6 @@ export const DEFAULT_AUTO_CONFIG: AutoConfig = {
     batchInterval: 300,
     forceOnComplete: true,
   },
-  parallel: { ...DEFAULT_PARALLEL_AUTO_CONFIG },
 };
 
 // ============================================================================

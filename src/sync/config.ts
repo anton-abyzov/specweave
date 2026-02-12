@@ -80,9 +80,9 @@ export function resolvePermissions(
   } else if (legacySettings) {
     // Backward compat: map old booleans to new permissions
     base = {
-      canRead: legacySettings.canUpdateExternalItems ?? false,
-      canUpdateStatus: legacySettings.canUpdateStatus ?? false,
-      canUpsert: legacySettings.canUpsertInternalItems ?? false,
+      canRead: legacySettings.canUpdateExternalItems ?? true,
+      canUpdateStatus: legacySettings.canUpdateStatus ?? true,
+      canUpsert: legacySettings.canUpsertInternalItems ?? true,
       canDelete: false, // legacy system had no delete
     };
   } else {

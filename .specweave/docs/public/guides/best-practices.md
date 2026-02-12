@@ -32,7 +32,7 @@ SpecWeave's task format enforces this naturally:
 
 | Claude Code Phase | SpecWeave Equivalent | Command |
 |-------------------|----------------------|---------|
-| **Explore** | Research/brownfield analysis | `/sw:context`, `/sw:discrepancies` |
+| **Explore** | Research/brownfield analysis | `/sw:docs`, `/sw:discrepancies` |
 | **Plan** | Increment planning | `/sw:increment "feature"` |
 | **Code** | Task execution | `/sw:do` |
 | **Commit** | Validation + closure | `/sw:validate`, `/sw:done` |
@@ -373,7 +373,7 @@ claude plugin enable X    # Enable plugin
 Is this a small, clear task?
 ├── Yes → Just ask Claude directly
 └── No → Is there existing code?
-    ├── Yes → /sw:context first, then /sw:increment
+    ├── Yes → /sw:docs first, then /sw:increment
     └── No → /sw:increment directly
 ```
 
