@@ -631,3 +631,321 @@ describe('JSON output structure', () => {
     expect(json!.activeCount).toBe(3);
   });
 });
+
+// ============================================================================
+// RED PHASE: Additional Comprehensive Tests
+// ============================================================================
+
+describe('Auto Mode Lifecycle (RED Phase)', () => {
+  it('should read auto-mode.json with all expected session fields', async () => {
+    const flagData = {
+      active: true,
+      timestamp: '2024-06-01T10:00:00.000Z',
+      incrementIds: ['0001-auth', '0002-api'],
+      tddMode: true,
+      requireTests: true,
+      successCriteria: [
+        { type: 'tasks_complete', description: 'All tasks complete', required: true },
+        { type: 'tests_pass', description: 'Tests must pass', required: true }
+      ],
+      successSummary: 'All work complete'
+    };
+    writeAutoFlag(flagData);
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // Session should be detected as active
+    expect(json!.autoModeActive).toBe(true);
+
+    // All increment IDs should be preserved
+    expect(json!.configuredIncrements).toEqual(['0001-auth', '0002-api']);
+  });
+
+  it('should handle auto-mode.json with success criteria', async () => {
+    const flagData = {
+      active: true,
+      timestamp: '2024-06-01T10:00:00.000Z',
+      incrementIds: ['0001-test'],
+      successCriteria: [
+        { type: 'tasks_complete', description: 'All tasks complete', required: true },
+        { type: 'acs_satisfied', description: 'All ACs met', required: true },
+        { type: 'tests_pass', description: 'Tests pass', required: true }
+      ]
+    };
+    writeAutoFlag(flagData);
+    createIncrement('0001-test', 'active');
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // Should detect active mode
+    expect(json!.autoModeActive).toBe(true);
+    // Should have the configured increment
+    expect(json!.configuredIncrements).toContain('0001-test');
+  });
+
+  it('should track actual active increments separately from configured ones', async () => {
+    // Create some increments
+    createIncrement('0001-active', 'active');
+    createIncrement('0002-active', 'active');
+    createIncrement('0003-completed', 'completed');
+
+    // Configure auto mode with different increments
+    writeAutoFlag({
+      active: true,
+      timestamp: '2024-06-01T10:00:00.000Z',
+      incrementIds: ['0001-active', '0002-active', '0999-doesnt-exist']
+    });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // configuredIncrements = what was set in auto-mode.json
+    expect((json!.configuredIncrements as string[]).length).toBe(3);
+
+    // activeIncrements = actually active in metadata (source of truth)
+    const active = json!.activeIncrements as string[];
+    expect(active).toContain('0001-active');
+    expect(active).toContain('0002-active');
+    expect(active).not.toContain('0003-completed');
+  });
+
+  it('should show session start time in human-readable format', async () => {
+    writeAutoFlag({
+      active: true,
+      timestamp: '2024-06-15T14:30:00.000Z',
+      incrementIds: ['0001-test']
+    });
+
+    await runCommand([]);
+    const output = consoleLogs.join('\n');
+
+    // Should display the timestamp
+    expect(output).toContain('2024-06-15T14:30:00.000Z');
+  });
+
+  it('should show different UI when auto mode is active vs inactive', async () => {
+    // Case 1: Active
+    writeAutoFlag({
+      active: true,
+      timestamp: new Date().toISOString(),
+      incrementIds: ['0001-test']
+    });
+    createIncrement('0001-test', 'active');
+
+    await runCommand([]);
+    let output = consoleLogs.join('\n');
+
+    expect(output).toContain('ACTIVE');
+    expect(output).not.toContain('NOT ACTIVE');
+
+    // Clear for next test
+    consoleLogs = [];
+
+    // Case 2: Inactive
+    fs.writeFileSync(
+      path.join(stateDir, 'auto-mode.json'),
+      JSON.stringify({ active: false, timestamp: new Date().toISOString() })
+    );
+
+    await runCommand([]);
+    output = consoleLogs.join('\n');
+
+    expect(output).toContain('NOT ACTIVE');
+  });
+});
+
+describe('Session Marker Persistence', () => {
+  it('should preserve session marker when querying status multiple times', async () => {
+    const flagData = {
+      active: true,
+      timestamp: '2024-06-01T10:00:00.000Z',
+      incrementIds: ['0001-test']
+    };
+    writeAutoFlag(flagData);
+
+    // Query once
+    await runCommand(['--json']);
+    let json = getJsonOutput();
+    expect(json!.autoModeActive).toBe(true);
+
+    // Verify file still exists
+    const flagPath = path.join(stateDir, 'auto-mode.json');
+    expect(fs.existsSync(flagPath)).toBe(true);
+
+    // Query again
+    consoleLogs = [];
+    await runCommand(['--json']);
+    json = getJsonOutput();
+    expect(json!.autoModeActive).toBe(true);
+  });
+
+  it('should handle concurrent reads of auto-mode.json', async () => {
+    writeAutoFlag({
+      active: true,
+      timestamp: '2024-06-01T10:00:00.000Z',
+      incrementIds: ['0001-test', '0002-test']
+    });
+
+    // Multiple concurrent reads
+    const results = await Promise.all([
+      runCommand(['--json']).then(() => getJsonOutput()),
+      runCommand(['--json']).then(() => getJsonOutput())
+    ]);
+
+    for (const json of results) {
+      expect(json!.autoModeActive).toBe(true);
+      expect((json!.configuredIncrements as string[]).length).toBe(2);
+    }
+  });
+});
+
+describe('Increment Status Integration', () => {
+  it('should count multiple active increments', async () => {
+    for (let i = 1; i <= 5; i++) {
+      createIncrement(`000${i}-feature`, 'active');
+    }
+    writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    expect(json!.activeCount).toBe(5);
+    expect((json!.activeIncrements as string[]).length).toBe(5);
+  });
+
+  it('should correctly identify mixed statuses', async () => {
+    // Create with various statuses
+    createIncrement('0001-active-1', 'active');
+    createIncrement('0002-in-progress-1', 'in-progress');
+    createIncrement('0003-active-2', 'active');
+    createIncrement('0004-completed-1', 'completed');
+    createIncrement('0005-backlog-1', 'backlog');
+    createIncrement('0006-planning-1', 'planning');
+
+    writeAutoFlag({ active: false, timestamp: new Date().toISOString() });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // Should only count active + in-progress
+    expect(json!.activeCount).toBe(3);
+    const active = json!.activeIncrements as string[];
+    expect(active).toEqual(
+      expect.arrayContaining(['0001-active-1', '0002-in-progress-1', '0003-active-2'])
+    );
+  });
+
+  it('should handle special characters in increment IDs', async () => {
+    // Create increments with hyphens and numbers
+    createIncrement('0001-auth-service-v2', 'active');
+    createIncrement('0002-api-routes-refactor', 'in-progress');
+
+    writeAutoFlag({
+      active: true,
+      timestamp: new Date().toISOString(),
+      incrementIds: ['0001-auth-service-v2', '0002-api-routes-refactor']
+    });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    expect(json!.activeIncrements).toContain('0001-auth-service-v2');
+    expect(json!.activeIncrements).toContain('0002-api-routes-refactor');
+  });
+});
+
+describe('Next Steps Guidance', () => {
+  it('should show /sw:do when active with increments', async () => {
+    writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
+    createIncrement('0001-feature', 'active');
+
+    await runCommand([]);
+    const output = consoleLogs.join('\n');
+
+    expect(output).toContain('NEXT STEPS');
+    expect(output).toContain('/sw:do');
+  });
+
+  it('should show cancel command when active', async () => {
+    writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
+    createIncrement('0001-feature', 'active');
+
+    await runCommand([]);
+    const output = consoleLogs.join('\n');
+
+    expect(output).toContain('cancel-auto');
+  });
+
+  it('should show how to start auto mode when not active', async () => {
+    writeAutoFlag({ active: false, timestamp: new Date().toISOString() });
+
+    await runCommand([]);
+    const output = consoleLogs.join('\n');
+
+    expect(output).toContain('specweave auto');
+  });
+
+  it('should warn when active but no increments', async () => {
+    writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
+    // No active increments
+
+    await runCommand([]);
+    const output = consoleLogs.join('\n');
+
+    expect(output).toContain('Auto mode is active but no active increments found');
+  });
+});
+
+describe('Error Resilience', () => {
+  it('should handle corrupted auto-mode.json gracefully', async () => {
+    fs.writeFileSync(
+      path.join(stateDir, 'auto-mode.json'),
+      'corrupted data }{['
+    );
+
+    await runCommand([]);
+    // Should not crash, treat as inactive
+
+    expect(consoleErrors.length === 0 || consoleLogs.length > 0).toBe(true);
+  });
+
+  it('should handle empty auto-mode.json', async () => {
+    fs.writeFileSync(
+      path.join(stateDir, 'auto-mode.json'),
+      ''
+    );
+
+    await runCommand([]);
+    // Should handle gracefully
+    expect(consoleLogs.length > 0 || consoleErrors.length > 0).toBe(true);
+  });
+
+  it('should handle missing metadata.json in increment', async () => {
+    const dir = path.join(incrementsDir, '0001-no-meta');
+    fs.mkdirSync(dir, { recursive: true });
+    // No metadata.json
+
+    writeAutoFlag({ active: true, timestamp: new Date().toISOString() });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // Should skip the invalid increment
+    expect(json!.activeCount).toBe(0);
+  });
+
+  it('should handle null/undefined active field in auto-mode.json', async () => {
+    writeAutoFlag({
+      timestamp: new Date().toISOString(),
+      // No 'active' field
+    });
+
+    await runCommand(['--json']);
+    const json = getJsonOutput();
+
+    // Should treat as inactive
+    expect(json!.autoModeActive).toBe(false);
+  });
+});
