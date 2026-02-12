@@ -101,7 +101,8 @@ describe('SpecWeave CLI Commands', { timeout: CLI_TIMEOUT }, () => {
         `node "${specweaveBin}" --version`,
         { env: getIsolatedEnv(homeDir) }
       );
-      expect(stdout).toBeTruthy();
+      const version = normalizeOutput(stdout);
+      expect(version).toMatch(/^\d+\.\d+\.\d+$/);
     });
   });
 
@@ -164,7 +165,7 @@ describe('SpecWeave CLI Commands', { timeout: CLI_TIMEOUT }, () => {
     it('should not hang in CI mode (non-interactive)', async () => {
       // This test verifies that CI=true prevents interactive prompts
       // If it hangs, the timeout will catch it
-      const { stdout } = await execAsync(
+      await execAsync(
         `node "${specweaveBin}" init --adapter=claude --language=en`,
         {
           cwd: workDir,
@@ -173,10 +174,15 @@ describe('SpecWeave CLI Commands', { timeout: CLI_TIMEOUT }, () => {
         }
       );
 
-      expect(stdout).toBeTruthy();
+      // Verify init produced correct structure (not just "something was printed")
       const specweaveDir = path.join(workDir, '.specweave');
       const stat = await fs.stat(specweaveDir);
       expect(stat.isDirectory()).toBe(true);
+
+      const configPath = path.join(specweaveDir, 'config.json');
+      const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+      expect(config).toHaveProperty('project');
+      expect(config.adapters?.default).toBe('claude');
     });
   });
 

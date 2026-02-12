@@ -13,6 +13,7 @@ import * as fs from './fs-native.js';
 import path from 'path';
 import os from 'os';
 import chalk from 'chalk';
+import { execFileNoThrowSync } from './execFileNoThrow.js';
 
 /**
  * Known removed/renamed plugins that should be cleaned up
@@ -146,6 +147,130 @@ export async function cleanupStalePlugins(
       console.error(chalk.red(`✗ Cleanup failed: ${errorMsg}`));
     }
 
+    return result;
+  }
+}
+
+/**
+ * Result of user-level plugin scope migration
+ */
+export interface ScopeMigrationResult {
+  success: boolean;
+  migratedCount: number;
+  migratedPlugins: string[];
+  error?: string;
+}
+
+/**
+ * Migrate user-level SpecWeave domain plugins and LSP plugins to project scope
+ *
+ * Prevents global pollution: sw-*@specweave and *-lsp@* should NEVER live in
+ * ~/.claude/settings.json (user scope). They belong in .claude/settings.json
+ * (project scope) to avoid leaking across projects.
+ *
+ * Exempt: sw@specweave (core plugin, intentionally user-scoped)
+ *
+ * Sources of user-level pollution:
+ * - Claude Code's own plugin discovery (installs at user scope by default)
+ * - Older SpecWeave versions (pre-v1.0.210)
+ * - Manual `claude plugin install` without --scope flag
+ *
+ * @param projectDir - Project directory with .claude/settings.json (optional, skips project migration if not provided)
+ * @param verbose - Show detailed output
+ * @returns Migration result
+ */
+export async function migrateUserLevelPlugins(
+  projectDir?: string,
+  verbose: boolean = false
+): Promise<ScopeMigrationResult> {
+  const result: ScopeMigrationResult = {
+    success: false,
+    migratedCount: 0,
+    migratedPlugins: [],
+  };
+
+  try {
+    const userSettingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+
+    if (!fs.existsSync(userSettingsPath)) {
+      result.success = true;
+      return result;
+    }
+
+    const userSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf-8'));
+    const enabledPlugins = userSettings.enabledPlugins as Record<string, boolean> | undefined;
+
+    if (!enabledPlugins) {
+      result.success = true;
+      return result;
+    }
+
+    // Find plugins that should be project-scoped
+    const toMigrate: string[] = [];
+    for (const pluginKey of Object.keys(enabledPlugins)) {
+      const pluginName = pluginKey.split('@')[0];
+
+      // sw-*@specweave domain plugins (NOT sw@specweave core)
+      if (/^sw-.+@specweave$/.test(pluginKey)) {
+        toMigrate.push(pluginKey);
+        continue;
+      }
+
+      // *-lsp@* plugins (any marketplace)
+      if (pluginName.endsWith('-lsp')) {
+        toMigrate.push(pluginKey);
+        continue;
+      }
+    }
+
+    if (toMigrate.length === 0) {
+      if (verbose) {
+        console.log(chalk.green('✓ No user-level plugins need migration'));
+      }
+      result.success = true;
+      return result;
+    }
+
+    if (verbose) {
+      console.log(chalk.yellow(`\nFound ${toMigrate.length} user-level plugin(s) to migrate:`));
+      toMigrate.forEach(p => console.log(chalk.gray(`  - ${p}`)));
+    }
+
+    // Migrate via CLI commands (uninstall user scope, reinstall project scope)
+    // This is more robust than JSON edits because Claude Code syncs its internal
+    // registry back to settings.json, overwriting direct file edits.
+    for (const pluginKey of toMigrate) {
+      // Uninstall from user scope
+      const uninstallResult = execFileNoThrowSync('claude', ['plugin', 'uninstall', pluginKey]);
+      if (uninstallResult.exitCode === 0) {
+        // Reinstall at project scope
+        const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey, '--scope', 'project']);
+        if (installResult.exitCode === 0) {
+          result.migratedPlugins.push(pluginKey);
+          if (verbose) {
+            console.log(chalk.gray(`  - ${pluginKey}: user → project`));
+          }
+        } else if (verbose) {
+          console.log(chalk.yellow(`  ⚠ ${pluginKey}: uninstalled but reinstall failed`));
+        }
+      } else if (verbose) {
+        console.log(chalk.yellow(`  ⚠ ${pluginKey}: could not uninstall from user scope`));
+      }
+    }
+    result.migratedCount = result.migratedPlugins.length;
+
+    if (verbose) {
+      console.log(chalk.green(`✓ Migrated ${result.migratedCount} plugin(s) from user → project scope`));
+    }
+
+    result.success = true;
+    return result;
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    result.error = errorMsg;
+    if (verbose) {
+      console.error(chalk.red(`✗ Scope migration failed: ${errorMsg}`));
+    }
     return result;
   }
 }
