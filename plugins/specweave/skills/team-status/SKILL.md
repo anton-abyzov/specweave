@@ -1,5 +1,5 @@
 ---
-description: Show status of parallel development agents launched by team-orchestrate. Activates for: team status, agent status, parallel status, check agents.
+description: Show status of parallel development agents launched by team-lead. Activates for: team status, agent status, parallel status, check agents.
 ---
 
 # Team Status
@@ -75,7 +75,7 @@ Active Skills: sw-frontend:frontend-architect, sw:architect, sw:architect
 ## Error Handling
 
 - If no session file exists, report "No active team session"
-- If native Agent Teams mode but no team found, report "No active agent team — try /sw:team-orchestrate first"
+- If native Agent Teams mode but no team found, report "No active agent team — try /sw:team-lead first"
 - If an agent's increment is missing, report "increment not found"
 - If a task file can't be parsed, show "?" for progress
 - If agent heartbeat is stale, warn user and suggest checking agent

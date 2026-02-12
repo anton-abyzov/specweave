@@ -104,7 +104,7 @@ working on: 0001-auth          working on: 0002-payments  working on: 0003-notif
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:team-orchestrate "feature"` | Split feature across parallel agents |
+| `/sw:team-lead "feature"` | Split feature across parallel agents |
 | `/sw:team-status` | Monitor all agent progress |
 | `/sw:team-merge` | Merge completed work in dependency order |
 

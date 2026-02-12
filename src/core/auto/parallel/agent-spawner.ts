@@ -57,6 +57,52 @@ const SUBAGENT_MAP: Record<AgentDomain, string> = {
 };
 
 /**
+ * Skill entry for domain skill mapping
+ */
+export interface DomainSkill {
+  name: string;
+  description: string;
+}
+
+/**
+ * Domain to available skills mapping.
+ *
+ * Maps each agent domain to the SpecWeave skills it should invoke.
+ * These are injected into agent prompts so subagents know which
+ * skills are available via the Skill tool.
+ *
+ * Source of truth: team-lead SKILL.md § Domain-to-Skill Mapping
+ */
+const DOMAIN_SKILLS: Record<AgentDomain, DomainSkill[]> = {
+  frontend: [
+    { name: 'sw-frontend:frontend-architect', description: 'Frontend architecture, component design, state management' },
+    { name: 'sw-frontend:frontend-design', description: 'Production-ready UI polish, animations, responsive design' },
+    { name: 'sw-frontend:nextjs', description: 'Next.js App Router, Server Components, SSR/SSG' },
+  ],
+  backend: [
+    { name: 'sw:architect', description: 'System architecture, API design, technical decisions' },
+    { name: 'sw-backend:nodejs-backend', description: 'Node.js/TypeScript APIs with Express, Fastify, NestJS, Hono' },
+    { name: 'sw-backend:python-backend', description: 'Python APIs with FastAPI, Django, Flask' },
+  ],
+  database: [
+    { name: 'sw:architect', description: 'Schema design, data modeling, architectural decisions' },
+    { name: 'sw-backend:database-optimizer', description: 'Query optimization, indexing, performance tuning' },
+  ],
+  devops: [
+    { name: 'sw-infra:devops', description: 'CI/CD, Docker, infrastructure automation' },
+  ],
+  qa: [
+    { name: 'sw-testing:qa-engineer', description: 'Test strategy, QA planning, automation frameworks' },
+    { name: 'sw-testing:unit-testing', description: 'Vitest/Jest unit tests, mocking, TDD patterns' },
+    { name: 'sw-testing:e2e-testing', description: 'Playwright/Cypress E2E tests, visual regression' },
+  ],
+  general: [
+    { name: 'sw:architect', description: 'System architecture and technical decisions' },
+    { name: 'sw:tech-lead', description: 'Code quality, design patterns, implementation guidance' },
+  ],
+};
+
+/**
  * Agent Spawner for creating parallel agent Task invocations.
  */
 export class AgentSpawner {
@@ -157,6 +203,13 @@ export class AgentSpawner {
     parts.push(this.getDomainGuidelines(domain));
     parts.push('');
 
+    // Skills available for this domain
+    const skillsSection = this.buildSkillsSection(domain);
+    if (skillsSection) {
+      parts.push(skillsSection);
+      parts.push('');
+    }
+
     // Completion instructions
     parts.push('## Completion Requirements');
     parts.push('1. Complete each task and mark it as done in tasks.md');
@@ -177,6 +230,36 @@ export class AgentSpawner {
     }
 
     return parts.join('\n');
+  }
+
+  /**
+   * Get the available skills for a domain
+   */
+  getSkillsForDomain(domain: AgentDomain): DomainSkill[] {
+    return DOMAIN_SKILLS[domain] || DOMAIN_SKILLS.general;
+  }
+
+  /**
+   * Build the skills section for an agent prompt
+   */
+  buildSkillsSection(domain: AgentDomain): string {
+    const skills = this.getSkillsForDomain(domain);
+    if (skills.length === 0) {
+      return '';
+    }
+
+    const lines: string[] = [];
+    lines.push('## Skills Available');
+    lines.push('');
+    lines.push(
+      'You have access to these specialized skills. Invoke them via the Skill tool for domain expertise:'
+    );
+    lines.push('');
+    for (const skill of skills) {
+      lines.push(`  Skill({ skill: "${skill.name}" })  — ${skill.description}`);
+    }
+
+    return lines.join('\n');
   }
 
   /**

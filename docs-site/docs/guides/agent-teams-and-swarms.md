@@ -33,7 +33,7 @@ The full agent team lifecycle maps directly to six SDK primitives:
 ```
 
 **Each phase in plain English:**
-1. **TeamCreate** — `/sw:team-orchestrate "feature"` analyzes your feature, identifies domains (frontend, backend, shared)
+1. **TeamCreate** — `/sw:team-lead "feature"` analyzes your feature, identifies domains (frontend, backend, shared)
 2. **TaskCreate (x3)** — Creates one increment per domain, each with its own spec, plan, and tasks
 3. **Spawn Agents** — Launches parallel agents via Task tool (background), each with domain expertise
 4. **Work in Parallel** — Agents run `/sw:auto` independently on their own increments, no file overlap
@@ -50,7 +50,7 @@ The full agent team lifecycle maps directly to six SDK primitives:
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌─────────────┐                                                        │
-│  │   YOU        │  /sw:team-orchestrate "Build e-commerce checkout"      │
+│  │   YOU        │  /sw:team-lead "Build e-commerce checkout"      │
 │  │  (Human)     │                                                        │
 │  └──────┬──────┘                                                        │
 │         │                                                                │
@@ -128,7 +128,7 @@ Agent coordination requires three capabilities: managing teams, managing tasks, 
 │                                                                          │
 │   HOW IT MAPS TO AGENT SDK PRIMITIVES:                                  │
 │                                                                          │
-│   TeamCreate  → /sw:team-orchestrate (creates session + agents)         │
+│   TeamCreate  → /sw:team-lead (creates session + agents)         │
 │   Task        → Task tool with run_in_background: true                  │
 │   TeamDelete  → /sw:team-merge (cleanup after completion)               │
 │   TaskCreate  → /sw:increment (creates scoped work unit)                │
@@ -149,7 +149,7 @@ Agent coordination requires three capabilities: managing teams, managing tasks, 
 Describe a feature. The orchestrator analyzes it, identifies domains (frontend, backend, database, DevOps), and creates one increment per domain:
 
 ```bash
-/sw:team-orchestrate "Add user checkout with Stripe payments"
+/sw:team-lead "Add user checkout with Stripe payments"
 ```
 
 The orchestrator:
@@ -420,7 +420,7 @@ The key insight: the `.specweave/increments/` directory is a **universal coordin
 
 ```bash
 # 1. Orchestrate — split a feature across agents
-/sw:team-orchestrate "Add user dashboard with real-time analytics"
+/sw:team-lead "Add user dashboard with real-time analytics"
 
 # 2. Monitor — check progress across all agents
 /sw:team-status
@@ -442,8 +442,8 @@ Instead of manually configuring agent roles, use a preset to get a pre-configure
 | `migration` | analyzer, migrator, validator | Codebase migrations and upgrades |
 
 ```bash
-# Use a preset with team-orchestrate
-/sw:team-orchestrate "Add checkout flow" --preset full-stack
+# Use a preset with team-lead
+/sw:team-lead "Add checkout flow" --preset full-stack
 ```
 
 ---

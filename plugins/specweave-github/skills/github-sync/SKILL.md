@@ -533,7 +533,7 @@ For distributed strategies, issues can be created in different repos:
 
 - **github-issue-tracker**: DEPRECATED - use spec sync instead
 - **Commands**: `/sw-github:sync-spec`, `/sw-github:import-project`, `/sw-github:status`
-- **Team Skills**: `/sw:team-orchestrate`, `/sw:team-status`, `/sw:team-merge`
+- **Team Skills**: `/sw:team-lead`, `/sw:team-status`, `/sw:team-merge`
 
 ---
 

@@ -323,6 +323,115 @@ describe('AgentSpawner', () => {
   });
 
   // ============================================================================
+  // DOMAIN SKILLS TESTS
+  // ============================================================================
+
+  describe('getSkillsForDomain', () => {
+    it('should return frontend skills', () => {
+      const skills = spawner.getSkillsForDomain('frontend');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw-frontend:frontend-architect')).toBe(true);
+      expect(skills.some((s) => s.name === 'sw-frontend:frontend-design')).toBe(true);
+    });
+
+    it('should return backend skills', () => {
+      const skills = spawner.getSkillsForDomain('backend');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw:architect')).toBe(true);
+      expect(skills.some((s) => s.name === 'sw-backend:nodejs-backend')).toBe(true);
+    });
+
+    it('should return database skills', () => {
+      const skills = spawner.getSkillsForDomain('database');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw:architect')).toBe(true);
+      expect(skills.some((s) => s.name === 'sw-backend:database-optimizer')).toBe(true);
+    });
+
+    it('should return devops skills', () => {
+      const skills = spawner.getSkillsForDomain('devops');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw-infra:devops')).toBe(true);
+    });
+
+    it('should return qa skills', () => {
+      const skills = spawner.getSkillsForDomain('qa');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw-testing:qa-engineer')).toBe(true);
+      expect(skills.some((s) => s.name === 'sw-testing:unit-testing')).toBe(true);
+      expect(skills.some((s) => s.name === 'sw-testing:e2e-testing')).toBe(true);
+    });
+
+    it('should return general skills', () => {
+      const skills = spawner.getSkillsForDomain('general');
+
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills.some((s) => s.name === 'sw:architect')).toBe(true);
+    });
+
+    it('should include description for each skill', () => {
+      const skills = spawner.getSkillsForDomain('frontend');
+
+      for (const skill of skills) {
+        expect(skill.name).toBeTruthy();
+        expect(skill.description).toBeTruthy();
+        expect(skill.description.length).toBeGreaterThan(5);
+      }
+    });
+  });
+
+  // ============================================================================
+  // SKILL INJECTION IN PROMPTS TESTS
+  // ============================================================================
+
+  describe('skill injection in prompts', () => {
+    it('should include Skills Available section in prompt', () => {
+      const context = createContext();
+      const prompt = spawner.buildAgentPrompt('frontend', context);
+
+      expect(prompt).toContain('## Skills Available');
+    });
+
+    it('should include Skill invocation syntax for frontend', () => {
+      const context = createContext();
+      const prompt = spawner.buildAgentPrompt('frontend', context);
+
+      expect(prompt).toContain('Skill({ skill: "sw-frontend:frontend-architect" })');
+    });
+
+    it('should include Skill invocation syntax for backend', () => {
+      const context = createContext();
+      const prompt = spawner.buildAgentPrompt('backend', context);
+
+      expect(prompt).toContain('Skill({ skill: "sw:architect" })');
+    });
+
+    it('should include Skill invocation syntax for qa', () => {
+      const context = createContext();
+      const prompt = spawner.buildAgentPrompt('qa', context);
+
+      expect(prompt).toContain('Skill({ skill: "sw-testing:qa-engineer" })');
+    });
+
+    it('should place skills section before completion requirements', () => {
+      const context = createContext();
+      const prompt = spawner.buildAgentPrompt('frontend', context);
+
+      const skillsIndex = prompt.indexOf('## Skills Available');
+      const completionIndex = prompt.indexOf('## Completion Requirements');
+
+      expect(skillsIndex).toBeGreaterThan(-1);
+      expect(completionIndex).toBeGreaterThan(-1);
+      expect(skillsIndex).toBeLessThan(completionIndex);
+    });
+  });
+
+  // ============================================================================
   // DOMAIN GUIDELINES TESTS
   // ============================================================================
 

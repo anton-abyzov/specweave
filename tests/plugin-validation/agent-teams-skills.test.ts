@@ -11,7 +11,7 @@ const pluginsDir = join(projectRoot, 'plugins', 'specweave', 'skills');
 /**
  * Validation Tests: Agent Teams Skills (Increment 0197)
  *
- * RED phase — validates that team-orchestrate, team-build, team-status,
+ * RED phase — validates that team-lead, team-build, team-status,
  * and team-merge SKILL.md files have correct structure and content
  * for native Agent Teams integration.
  */
@@ -41,10 +41,10 @@ function parseFrontmatter(content: string): {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// T-001: team-orchestrate SKILL.md content validation
+// T-001: team-lead SKILL.md content validation
 // ─────────────────────────────────────────────────────────────────────
-describe('T-001: team-orchestrate SKILL.md', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+describe('T-001: team-lead SKILL.md', () => {
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should exist', () => {
     expect(existsSync(skillPath)).toBe(true);
@@ -130,8 +130,8 @@ describe('T-001: team-orchestrate SKILL.md', () => {
 // ─────────────────────────────────────────────────────────────────────
 // T-004: Contract-first dependency detection
 // ─────────────────────────────────────────────────────────────────────
-describe('T-004: Contract-first protocol in team-orchestrate', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+describe('T-004: Contract-first protocol in team-lead', () => {
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should define contract chain order', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -231,8 +231,8 @@ describe('T-007: team-build SKILL.md', () => {
 // ─────────────────────────────────────────────────────────────────────
 // T-010: Terminal detection instructions
 // ─────────────────────────────────────────────────────────────────────
-describe('T-010: Terminal configuration in team-orchestrate', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+describe('T-010: Terminal configuration in team-lead', () => {
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should contain tmux setup instructions', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -264,7 +264,7 @@ describe('T-010: Terminal configuration in team-orchestrate', () => {
 // T-012: Agent spawn prompt templates
 // ─────────────────────────────────────────────────────────────────────
 describe('T-012: Agent spawn prompt templates', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should have spawn prompt templates for at least 5 domains', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -308,7 +308,7 @@ describe('T-012: Agent spawn prompt templates', () => {
 // T-017: Agent communication protocol
 // ─────────────────────────────────────────────────────────────────────
 describe('T-017: Communication protocol', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should define native mode communication (SendMessage)', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -374,10 +374,10 @@ describe('T-016: team-merge SKILL.md', () => {
 // T-023/T-024: Integration validation
 // ─────────────────────────────────────────────────────────────────────
 describe('T-023: Full-stack preset end-to-end validation', () => {
-  const orchestratePath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const orchestratePath = join(pluginsDir, 'team-lead', 'SKILL.md');
   const buildPath = join(pluginsDir, 'team-build', 'SKILL.md');
 
-  it('should have consistent skill mappings between team-orchestrate and team-build', () => {
+  it('should have consistent skill mappings between team-lead and team-build', () => {
     const orchestrate = readFileSync(orchestratePath, 'utf-8');
     const build = readFileSync(buildPath, 'utf-8');
 
@@ -400,7 +400,7 @@ describe('T-023: Full-stack preset end-to-end validation', () => {
 });
 
 describe('T-024: Subagent fallback compatibility', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should describe fallback to Task tool when native Agent Teams unavailable', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -414,10 +414,10 @@ describe('T-024: Subagent fallback compatibility', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// ISSUE-1: team-orchestrate must use correct Claude Code tool names
+// ISSUE-1: team-lead must use correct Claude Code tool names
 // ─────────────────────────────────────────────────────────────────────
-describe('ISSUE-1: team-orchestrate uses correct Claude Code tool names', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+describe('ISSUE-1: team-lead uses correct Claude Code tool names', () => {
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should NOT reference non-existent Teammate() tool', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -449,10 +449,10 @@ describe('ISSUE-1: team-orchestrate uses correct Claude Code tool names', () => 
 // ISSUE-4: Repository structure enforcement in agent teams
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-4: Repository structure enforcement', () => {
-  const orchestratePath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const orchestratePath = join(pluginsDir, 'team-lead', 'SKILL.md');
   const mergePath = join(pluginsDir, 'team-merge', 'SKILL.md');
 
-  it('should include repositories/{org}/ directory rule in team-orchestrate', () => {
+  it('should include repositories/{org}/ directory rule in team-lead', () => {
     const content = readFileSync(orchestratePath, 'utf-8');
     expect(content).toMatch(/repositories\/.*directory|repository.*operations.*MUST.*repositories/i);
   });
@@ -473,7 +473,7 @@ describe('ISSUE-4: Repository structure enforcement', () => {
 // ISSUE-5: Mandatory local test execution before agent completion
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-5: Agents must run ALL tests locally before completion', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should require running ALL tests (unit + integration + E2E) before signaling completion', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -503,7 +503,7 @@ describe('ISSUE-5: Agents must run ALL tests locally before completion', () => {
 // ISSUE-6: Frontend design quality defaults
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-6: Frontend agent design quality', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should instruct frontend agent to invoke design skill', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -530,7 +530,7 @@ describe('ISSUE-6: Frontend agent design quality', () => {
 // ISSUE-7: Authentication/service setup in agent prompts
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-7: Authentication and service setup guidance', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should include auth setup guidance in backend agent', () => {
     const content = readFileSync(skillPath, 'utf-8');
@@ -554,7 +554,7 @@ describe('ISSUE-7: Authentication and service setup guidance', () => {
 // ISSUE-8: Agents should use /sw:auto for autonomous work
 // ─────────────────────────────────────────────────────────────────────
 describe('ISSUE-8: Agents prefer auto mode for autonomous work', () => {
-  const skillPath = join(pluginsDir, 'team-orchestrate', 'SKILL.md');
+  const skillPath = join(pluginsDir, 'team-lead', 'SKILL.md');
 
   it('should instruct agents to prefer /sw:auto for autonomous execution', () => {
     const content = readFileSync(skillPath, 'utf-8');
