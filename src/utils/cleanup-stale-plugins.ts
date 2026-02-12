@@ -227,6 +227,19 @@ export async function migrateUserLevelPlugins(
       if (verbose) {
         console.log(chalk.green('✓ No user-level plugins need migration'));
       }
+
+      // CRITICAL FIX: Restore sw@specweave enabled state even if no migrations
+      // This protects against corruption from other code paths
+      try {
+        const { enablePlugin } = await import('../cli/helpers/init/claude-plugin-enabler.js');
+        enablePlugin('sw', 'specweave', userSettingsPath);
+        if (verbose) {
+          console.log(chalk.gray('  ✓ Verified sw@specweave enabled state'));
+        }
+      } catch {
+        // Non-critical - settings may already be correct
+      }
+
       result.success = true;
       return result;
     }
@@ -261,6 +274,18 @@ export async function migrateUserLevelPlugins(
 
     if (verbose) {
       console.log(chalk.green(`✓ Migrated ${result.migratedCount} plugin(s) from user → project scope`));
+    }
+
+    // CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
+    // claude plugin uninstall can corrupt the entire enabledPlugins object as a side effect
+    try {
+      const { enablePlugin } = await import('../cli/helpers/init/claude-plugin-enabler.js');
+      enablePlugin('sw', 'specweave', userSettingsPath);
+      if (verbose) {
+        console.log(chalk.gray('  ✓ Restored sw@specweave enabled state'));
+      }
+    } catch {
+      // Non-critical - settings may already be correct
     }
 
     result.success = true;
