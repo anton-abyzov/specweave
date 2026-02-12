@@ -16,7 +16,7 @@ Spawn a coordinated team of agents from a preset configuration. Each preset defi
 /sw:team-build --preset migration "Migrate users to v2 schema"
 ```
 
-**Note:** For the complete 9-domain skill mapping table, see `/sw:team-orchestrate`.
+**Note:** For the complete 9-domain skill mapping table, see `/sw:team-lead`.
 
 ## How It Works
 
