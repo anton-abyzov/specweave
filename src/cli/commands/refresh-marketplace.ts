@@ -666,6 +666,19 @@ async function runMinimalMode(options: RefreshOptions): Promise<void> {
     console.log(chalk.gray('  ✓ Marketplace removed after installation'));
   }
 
+  // CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
+  // claude plugin uninstall can corrupt the entire enabledPlugins object as a side effect
+  try {
+    const { enablePlugin } = await import('../helpers/init/claude-plugin-enabler.js');
+    const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+    enablePlugin('sw', 'specweave', settingsPath);
+    if (options.verbose) {
+      console.log(chalk.gray('  ✓ Restored sw@specweave enabled state'));
+    }
+  } catch {
+    // Non-critical - settings may already be correct
+  }
+
   // v1.0.240 (0198): Official plugins (context7, playwright) removed from auto-install
   // Users can install manually: claude plugin install context7@claude-plugins-official
 
@@ -943,6 +956,17 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
               }
             }
           }
+        }
+
+        // CRITICAL FIX: Ensure sw@specweave is enabled after cleanup
+        // The manual cleanup above only deletes non-core plugins, but uninstall operations
+        // earlier could have corrupted sw@specweave state. Explicitly restore it.
+        settings.enabledPlugins = settings.enabledPlugins || {};
+        settings.enabledPlugins['sw@specweave'] = true;
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+
+        if (options.verbose) {
+          console.log(chalk.gray('  ✓ Verified sw@specweave enabled state'));
         }
       } catch (e) {
         if (options.verbose) {
