@@ -1,10 +1,10 @@
 ---
-description: Orchestrate multi-agent parallel development using Claude Code Agent Teams or subagent fallback. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, team lead, agent teams.
+description: Orchestrate multi-agent parallel development using Claude Code Agent Teams. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, team lead, agent teams.
 ---
 
 # Team Lead
 
-**Plan and launch parallel development agents across domains using Claude Code's native Agent Teams or subagent fallback.**
+**Plan and launch parallel development agents across domains using Claude Code's native Agent Teams.**
 
 ## Usage
 
@@ -22,94 +22,14 @@ description: Orchestrate multi-agent parallel development using Claude Code Agen
 
 ---
 
-## MANDATORY: Tool Selection for Native Agent Teams
+## 1. Tool Reference
 
-**When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, you MUST use `TeamCreate` to create the team.** Do NOT fall back to background subagents.
-
-| Action | MUST use | NEVER use in native mode |
-|--------|----------|--------------------------|
-| Create team | `TeamCreate({ team_name, description })` | NOT "Teammate" tool (does not exist) |
-| Spawn agent | `Task({ team_name, name, subagent_type, prompt })` | `Task({ run_in_background: true })` |
-| Send message | `SendMessage({ type, recipient, content, summary })` | File-based messages |
-| Shutdown agent | `SendMessage({ type: "shutdown_request", recipient })` | - |
-
-**NEVER use `Task({ run_in_background: true })` in native Agent Teams mode.** That pattern is the subagent fallback for when Agent Teams is unavailable. Native mode uses `TeamCreate` first, then `Task` with `team_name` parameter to spawn named teammates.
-
----
-
-## 1. Mode Detection
-
-Before spawning agents, detect the available orchestration mode.
-
-### Step 1a: Check for Native Agent Teams
-
-```bash
-# Check if native Agent Teams is enabled
-if [[ -n "$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" ]]; then
-  MODE="native-agent-teams"
-else
-  MODE="subagent-fallback"
-fi
-echo "Orchestration mode: $MODE"
-```
-
-### Step 1b: Detect Terminal Environment (Native Agent Teams only)
-
-When `MODE == "native-agent-teams"`, detect the terminal multiplexer:
-
-```bash
-# Detect terminal environment
-if [[ -n "$TMUX" ]]; then
-  TERMINAL="tmux"
-elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-  TERMINAL="iterm2"
-else
-  TERMINAL="in-process"
-fi
-echo "Terminal: $TERMINAL"
-```
-
-| Terminal | Detection | Navigation | Notes |
-|----------|-----------|------------|-------|
-| **tmux** | `$TMUX` env var set | `Ctrl+B` + arrow keys | Best for SSH/remote |
-| **iTerm2** | `$TERM_PROGRAM == iTerm.app` | `it2` CLI + Python API | macOS native |
-| **In-process** | Default fallback | `Shift+Up` / `Shift+Down` | No terminal setup required |
-
-### Step 1c: Terminal Setup (if needed)
-
-**tmux** (if not installed):
-```bash
-# macOS
-brew install tmux
-
-# Linux (Debian/Ubuntu)
-sudo apt install tmux
-```
-
-**iTerm2** (macOS only):
-```bash
-# Enable Python API in iTerm2 preferences
-# Then use it2 CLI for tab/split control
-```
-
-**In-process** (default fallback):
-- No setup required
-- Agents run as background tasks within the Claude Code process
-- Navigate with `Shift+Up` / `Shift+Down`
-
-### Step 1d: settings.json Configuration (Native Agent Teams)
-
-Ensure Agent Teams is enabled in Claude Code settings:
-
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
-}
-```
-
-Place this in `.claude/settings.json` (project-level) or `~/.claude/settings.json` (global).
+| Action | Tool | Parameters |
+|--------|------|------------|
+| Create team | `TeamCreate` | `team_name`, `description` |
+| Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt` |
+| Send message | `SendMessage` | `type`, `recipient`, `content`, `summary` |
+| Shutdown agent | `SendMessage` | `type: "shutdown_request"`, `recipient` |
 
 ---
 
@@ -149,7 +69,7 @@ Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase 
 | GraphQL schema | `schema.graphql` | Backend agent | Frontend, Mobile |
 | API route types | `src/api/types/` | Backend agent | Frontend |
 
-### Organization Discovery (CRITICAL — resolve BEFORE spawning agents)
+### Organization Discovery (CRITICAL -- resolve BEFORE spawning agents)
 
 **The orchestrator MUST resolve the actual organization/owner name before spawning ANY agents.**
 All `{ORG}` placeholders below must be replaced with the real value.
@@ -196,15 +116,15 @@ umbrella-project/
 ├── .specweave/config.json              # Umbrella config ONLY
 ├── repositories/
 │   ├── {ORG}/sw-ecom-domain/
-│   │   └── .specweave/increments/0001-domain-models/    # Domain agent's increment
+│   │   └── .specweave/increments/0001-domain-models/
 │   ├── {ORG}/sw-ecom-shared/
-│   │   └── .specweave/increments/0001-shared-types/     # Shared agent's increment
+│   │   └── .specweave/increments/0001-shared-types/
 │   └── {ORG}/sw-ecom-api/
-│       └── .specweave/increments/0001-api-endpoints/    # Backend agent's increment
+│       └── .specweave/increments/0001-api-endpoints/
 
 # WRONG: All agents dumping into umbrella root
 umbrella-project/
-├── .specweave/increments/0001-everything/               # WRONG! Not per-repo
+├── .specweave/increments/0001-everything/               # WRONG!
 ```
 
 **Rules:**
@@ -215,7 +135,7 @@ umbrella-project/
 
 ### Phase 1: Upstream Agents (Contracts First)
 
-**Contract chain order**: shared/types → database → backend → frontend (upstream before downstream).
+**Contract chain order**: shared/types -> database -> backend -> frontend (upstream before downstream).
 
 Spawn agents that produce shared contracts. These MUST complete before downstream agents begin.
 
@@ -225,13 +145,11 @@ Spawn agents that produce shared contracts. These MUST complete before downstrea
 
 ```
 Phase 1: Upstream
-  ├── Shared/Types Agent → produces interfaces, enums
-  └── Database Agent → produces schema, migrations
+  ├── Shared/Types Agent -> produces interfaces, enums
+  └── Database Agent -> produces schema, migrations
 
-  [WAIT for Phase 1 completion]
+  [WAIT for Phase 1 completion via CONTRACT_READY messages]
 ```
-
-**Completion signal**: Each upstream agent writes a contract-ready message (see Communication Protocol below).
 
 ### Phase 2: Downstream Agents (Consume Contracts)
 
@@ -257,24 +175,18 @@ Phase 2: Downstream (parallel)
 
 If the feature has no cross-domain dependencies (e.g., purely frontend work with no new types), skip Phase 1 and spawn all agents in parallel immediately.
 
-```bash
-# Example: independent domains
-# If domains are [frontend, testing] with no shared types needed:
-# → Spawn both in parallel (no Phase 1 needed)
-```
-
 ### Spawn Decision Logic
 
 ```
 Analyze domains
   │
   ├── Any upstream domains (shared/types, database)?
-  │     YES → Phase 1: spawn upstream, wait for contracts
+  │     YES -> Phase 1: spawn upstream, wait for contracts
   │           Phase 2: spawn downstream in parallel
-  │     NO  → Spawn all agents in parallel (no dependency)
+  │     NO  -> Spawn all agents in parallel (no dependency)
   │
   └── Single domain?
-        YES → Spawn single agent, no orchestration needed
+        YES -> Spawn single agent, no orchestration needed
 ```
 
 ---
@@ -315,18 +227,17 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec: .specweave/increments/[ID]/spec.md
-  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  6. Verify services are running and accessible (check dev server, API endpoints)
-  7. Wait for contract artifacts if Phase 1 is active:
+  4. Read the increment spec and tasks
+  5. Verify services are running and accessible (check dev server, API endpoints)
+  6. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
      - Read openapi.yaml for API endpoints (if backend produces one)
-  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  9. Run all tests for owned code (unit + integration): npm test
-  10. Run quality gate: /sw:grill
-  11. Do NOT signal completion until all tests pass
-  12. After auto completes, attempt closure via /sw:done to identify remaining issues
-  13. Signal completion (see Communication Protocol)
+  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  8. Run all tests for owned code (unit + integration): npm test
+  9. Run quality gate: /sw:grill
+  10. Do NOT signal completion until all tests pass
+  11. After auto completes, attempt closure via /sw:done
+  12. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -334,8 +245,8 @@ RULES:
   - Follow existing code conventions (check .eslintrc, .prettierrc, tsconfig.json)
   - Run linter and type-check before signaling completion
   - All new components must have corresponding test files
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
 ```
 
 ### 4b. Backend Agent
@@ -368,19 +279,18 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec: .specweave/increments/[ID]/spec.md
-  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  6. Verify services are running and accessible (database, auth provider, external APIs)
-  7. Wait for contract artifacts if Phase 1 is active:
+  4. Read the increment spec and tasks
+  5. Verify services are running and accessible (database, auth provider, external APIs)
+  6. Wait for contract artifacts if Phase 1 is active:
      - Read prisma/schema.prisma for database schema
      - Read src/types/ for shared interfaces
-  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  9. Generate or update OpenAPI spec if API routes change
-  10. Run all tests for owned code (unit + integration): npm test
-  11. Run quality gate: /sw:grill
-  12. Do NOT signal completion until all tests pass
-  13. After auto completes, attempt closure via /sw:done to identify remaining issues
-  14. Signal completion (see Communication Protocol)
+  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  8. Generate or update OpenAPI spec if API routes change
+  9. Run all tests for owned code (unit + integration): npm test
+  10. Run quality gate: /sw:grill
+  11. Do NOT signal completion until all tests pass
+  12. After auto completes, attempt closure via /sw:done
+  13. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -388,8 +298,8 @@ RULES:
   - Every new API endpoint must have request/response validation
   - Error handling must follow project conventions
   - All services must have unit tests
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
 ```
 
 ### 4c. Database Agent
@@ -414,18 +324,17 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec: .specweave/increments/[ID]/spec.md
-  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  6. Design database schema changes
-  7. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
-  8. Write seed data if needed
-  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  10. Run all tests for owned code (migration, seed): npm test
-  11. Run quality gate: /sw:grill
-  12. Do NOT signal completion until all tests pass
-  13. Signal CONTRACT_READY with schema details (see Communication Protocol)
-  14. After auto completes, attempt closure via /sw:done to identify remaining issues
-  15. Signal completion
+  4. Read the increment spec and tasks
+  5. Design database schema changes
+  6. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
+  7. Write seed data if needed
+  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  9. Run all tests for owned code (migration, seed): npm test
+  10. Run quality gate: /sw:grill
+  11. Do NOT signal completion until all tests pass
+  12. Signal CONTRACT_READY with schema details via SendMessage to team-lead
+  13. After auto completes, attempt closure via /sw:done
+  14. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -433,8 +342,8 @@ RULES:
   - Always create migrations (never modify schema without migration)
   - Seed data must be idempotent
   - Schema changes must be backward-compatible when possible
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
 ```
 
 ### 4d. Testing Agent
@@ -465,18 +374,17 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec: .specweave/increments/[ID]/spec.md
-  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  6. Wait for ALL other agents to produce initial code
-  7. Write unit tests for new services/components
-  8. Write integration tests for API endpoints
-  9. Write E2E tests for user journeys
-  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  11. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  12. Do NOT signal completion until all tests pass — if tests fail, fix and repeat
-  13. Run quality gate: /sw:grill
-  14. After auto completes, attempt closure via /sw:done to identify remaining issues
-  15. Signal completion
+  4. Read the increment spec and tasks
+  5. Wait for ALL other agents to produce initial code
+  6. Write unit tests for new services/components
+  7. Write integration tests for API endpoints
+  8. Write E2E tests for user journeys
+  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  10. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  11. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
+  12. Run quality gate: /sw:grill
+  13. After auto completes, attempt closure via /sw:done
+  14. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to test files (listed above)
@@ -484,8 +392,8 @@ RULES:
   - Tests must cover all acceptance criteria from spec.md
   - Follow existing test patterns and utilities
   - E2E tests must include accessibility checks when applicable
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
 ```
 
 ### 4e. Security Agent
@@ -512,18 +420,17 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec: .specweave/increments/[ID]/spec.md
-  5. Read the tasks assigned to you in: .specweave/increments/[ID]/tasks.md
-  6. Audit code produced by other agents for security issues
-  7. Implement auth/authz middleware if needed
-  8. Add input validation and sanitization
-  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  10. Run all tests for owned code (security tests): npm test
-  11. Run security audit tools (npm audit, dependency check)
-  12. Run quality gate: /sw:grill
-  13. Do NOT signal completion until all tests pass
-  14. After auto completes, attempt closure via /sw:done to identify remaining issues
-  15. Signal completion with security findings summary
+  4. Read the increment spec and tasks
+  5. Audit code produced by other agents for security issues
+  6. Implement auth/authz middleware if needed
+  7. Add input validation and sanitization
+  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  9. Run all tests for owned code (security tests): npm test
+  10. Run security audit tools (npm audit, dependency check)
+  11. Run quality gate: /sw:grill
+  12. Do NOT signal completion until all tests pass
+  13. After auto completes, attempt closure via /sw:done
+  14. Signal completion with security findings summary via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -531,8 +438,8 @@ RULES:
   - NEVER commit secrets, credentials, or API keys
   - All user input must be validated and sanitized
   - Follow OWASP Top 10 guidelines
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure. NEVER create repos at the project root.
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root.
+  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
+  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
 ```
 
 ---
@@ -559,20 +466,26 @@ Each agent has exclusive WRITE access to specific file patterns. This prevents m
 
 1. **WRITE only to files you own** -- agents must not modify files outside their ownership patterns
 2. **READ any file** -- all agents have unrestricted read access for context
-3. **Shared files require coordination** -- if two domains need to modify the same file (e.g., `package.json`), the orchestrator assigns a primary owner and others request changes via messages
+3. **Shared files require coordination** -- if two domains need to modify the same file (e.g., `package.json`), the orchestrator assigns a primary owner and others request changes via SendMessage
 4. **New files** -- agents can create new files ONLY within their ownership patterns
 5. **Conflict detection** -- the orchestrator checks for ownership overlap before spawning and resolves ambiguity upfront
-6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{ORG}/` directory convention. NEVER create repositories at the project root or arbitrary locations.
+6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{ORG}/` directory convention
 
 ---
 
 ## 6. Communication Protocol
 
-Agents must communicate contract readiness, blocking issues, and completion status.
+Agents communicate contract readiness, blocking issues, and completion status using `SendMessage`.
 
-### Mode A: Native Agent Teams (SendMessage)
+### Message Types
 
-When `MODE == "native-agent-teams"`, agents use the `SendMessage` tool for peer-to-peer communication.
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `CONTRACT_READY:` | Upstream contract is published | Upstream agent | team-lead (broadcasts to downstream) |
+| `BLOCKING_ISSUE:` | Agent is stuck, needs help | Any agent | team-lead |
+| `COMPLETION:` | Agent finished all tasks | Any agent | team-lead |
+
+### Message Examples
 
 ```typescript
 // Upstream agent signals contract is ready
@@ -600,81 +513,22 @@ SendMessage({
 });
 ```
 
-**Message Types:**
-
-| Type | Prefix | Purpose | Sender | Receiver |
-|------|--------|---------|--------|----------|
-| `CONTRACT_READY` | `CONTRACT_READY:` | Upstream contract is published | Upstream agent | Team lead (broadcasts to downstream) |
-| `BLOCKING_ISSUE` | `BLOCKING_ISSUE:` | Agent is stuck, needs help | Any agent | Team lead |
-| `COMPLETION` | `COMPLETION:` | Agent finished all tasks | Any agent | Team lead |
-
-### Mode B: Subagent Fallback (File-Based)
-
-When `MODE == "subagent-fallback"`, agents communicate via files in `.specweave/state/parallel/messages/`.
-
-**Message file format**: `{timestamp}-{sender}-{type}.json`
-
-```json
-{
-  "timestamp": "2026-02-09T14:30:00Z",
-  "sender": "database-agent",
-  "type": "CONTRACT_READY",
-  "content": "Prisma schema updated with Checkout, CartItem, PaymentRecord models. Migration 20260209_add_checkout created.",
-  "artifacts": ["prisma/schema.prisma", "prisma/migrations/20260209_add_checkout/"]
-}
-```
-
-```json
-{
-  "timestamp": "2026-02-09T15:10:00Z",
-  "sender": "frontend-agent",
-  "type": "BLOCKING_ISSUE",
-  "content": "OpenAPI spec not found at openapi.yaml. Backend agent has not published API contract yet.",
-  "blockedOn": "backend-agent"
-}
-```
-
-```json
-{
-  "timestamp": "2026-02-09T16:45:00Z",
-  "sender": "backend-agent",
-  "type": "COMPLETION",
-  "content": "All 6 tasks complete. 18 tests passing. API endpoints: POST /checkout, GET /orders, POST /payments/webhook.",
-  "incrementId": "0194-checkout-backend"
-}
-```
-
-**File-based state tracking directory structure:**
-
-```
-.specweave/state/parallel/
-├── session.json                           # Session metadata
-├── messages/
-│   ├── 1707489000-database-CONTRACT_READY.json
-│   ├── 1707492600-frontend-BLOCKING_ISSUE.json
-│   └── 1707497100-backend-COMPLETION.json
-└── agents/
-    ├── frontend.json                      # Agent status
-    ├── backend.json
-    └── database.json
-```
-
 ---
 
 ## 7. Spawning Agents
 
-### Native Agent Teams Mode
-
-When Agent Teams is available, use `TeamCreate` and `Task` (with `team_name` parameter) for team coordination.
+### Step 1: Create the Team
 
 ```typescript
-// Step 1: Create the team (MUST use TeamCreate, NOT Teammate)
 TeamCreate({
   team_name: "feature-checkout",
   description: "Building checkout flow across frontend, backend, and database"
 });
+```
 
-// Step 2: Spawn upstream agents (Phase 1)
+### Step 2: Spawn Upstream Agents (Phase 1)
+
+```typescript
 Task({
   team_name: "feature-checkout",
   name: "database-agent",
@@ -688,11 +542,15 @@ Task({
   subagent_type: "general-purpose",
   prompt: `[SHARED/TYPES AGENT PROMPT]`,
 });
+```
 
-// Step 3: Wait for Phase 1 CONTRACT_READY messages
-// Messages are delivered automatically via SendMessage
+### Step 3: Wait for Phase 1 CONTRACT_READY Messages
 
-// Step 4: Spawn downstream agents (Phase 2)
+Messages are delivered automatically via SendMessage from upstream agents.
+
+### Step 4: Spawn Downstream Agents (Phase 2)
+
+```typescript
 Task({
   team_name: "feature-checkout",
   name: "backend-agent",
@@ -715,44 +573,6 @@ Task({
 });
 ```
 
-### Subagent Fallback Mode
-
-When Agent Teams is NOT available, use the Task tool with background execution.
-
-```typescript
-// Spawn agents as background subagents
-// Phase 1: upstream
-Task({
-  subagent_type: "general-purpose",
-  prompt: `[DATABASE AGENT PROMPT]`,
-  run_in_background: true,
-});
-
-Task({
-  subagent_type: "general-purpose",
-  prompt: `[SHARED/TYPES AGENT PROMPT]`,
-  run_in_background: true,
-});
-
-// Poll for Phase 1 completion by checking file-based messages
-// Wait until CONTRACT_READY messages appear in .specweave/state/parallel/messages/
-
-// Phase 2: downstream
-Task({
-  subagent_type: "general-purpose",
-  prompt: `[BACKEND AGENT PROMPT]`,
-  run_in_background: true,
-});
-
-Task({
-  subagent_type: "general-purpose",
-  prompt: `[FRONTEND AGENT PROMPT]`,
-  run_in_background: true,
-});
-```
-
-**File-based state tracking**: Each agent writes its status to `.specweave/state/parallel/agents/{domain}.json` (fields: `domain`, `incrementId`, `status`, `tasksCompleted`, `tasksTotal`, `lastUpdate`, `fileOwnership`). The orchestrator polls these files to track progress and determine when phases complete.
-
 ---
 
 ## 8. Quality Gates
@@ -761,18 +581,16 @@ Every agent MUST run quality validation before signaling completion.
 
 ### Per-Agent Quality Gate
 
-Each agent MUST run all tests locally before signaling completion. **All tests must pass before signal COMPLETION.**
-
 ```
 Agent Workflow:
-  1. Execute all assigned tasks → prefer /sw:auto for autonomous execution
+  1. Execute all assigned tasks (prefer /sw:auto for autonomous execution)
   2. Run all tests for owned code (unit + integration + E2E)
   3. Run linter/type-check for owned code
   4. Run /sw:grill
-  5. If tests fail → fix issues and repeat from step 2. Do NOT signal completion until all tests pass.
-  6. If /sw:grill passes → attempt closure via /sw:done after auto completes
-  7. If /sw:grill fails → fix issues, repeat from step 2
-  8. Signal COMPLETION
+  5. If tests fail -> fix issues and repeat from step 2. Do NOT signal completion until all tests pass.
+  6. If /sw:grill passes -> attempt closure via /sw:done
+  7. If /sw:grill fails -> fix issues, repeat from step 2
+  8. Signal COMPLETION via SendMessage
 ```
 
 ### Orchestrator Quality Gate
@@ -785,8 +603,8 @@ Orchestrator Final Check:
   2. No unresolved BLOCKING_ISSUE messages
   3. Run full test suite (all domains combined)
   4. Run /sw:grill on the combined increment
-  5. If all pass → /sw:team-merge
-  6. If failures → identify owning agent, request fix
+  5. If all pass -> /sw:team-merge
+  6. If failures -> identify owning agent, send fix request via SendMessage
 ```
 
 ### Grill Checklist per Domain
@@ -804,18 +622,16 @@ Orchestrator Final Check:
 
 ## 9. Workflow Summary
 
-### Full Orchestration Flow
-
 ```
 /sw:team-lead "Build checkout flow"
   │
-  ├── Step 1: Detect mode (native Agent Teams vs subagent fallback)
-  ├── Step 2: Analyze feature → identify domains
+  ├── Step 1: Analyze feature -> identify domains
+  ├── Step 2: Create team via TeamCreate
   ├── Step 3: Create per-domain increments
   ├── Step 4: Contract-first spawning
-  │     ├── Phase 1: Spawn shared + database → wait for CONTRACT_READY
+  │     ├── Phase 1: Spawn shared + database -> wait for CONTRACT_READY
   │     └── Phase 2: Spawn backend + frontend + testing (parallel)
-  ├── Step 5: Monitor progress (/sw:team-status)
+  ├── Step 5: Monitor progress via SendMessage
   ├── Step 6: Quality gates (each agent runs /sw:grill)
   └── Step 7: Merge and close (/sw:team-merge)
 ```
@@ -827,15 +643,15 @@ When `--dry-run` is specified, display the proposed plan without executing:
 ```
 Team Orchestration Plan (DRY RUN)
 ==================================================
-Feature: Build checkout flow | Mode: native-agent-teams (tmux) | Domains: 4
+Feature: Build checkout flow | Domains: 4
 
 Phase 1 (upstream):
-  1. shared-types → sw:architect, sw:tech-lead  | Increment: 0200-checkout-shared
-  2. database     → sw:architect                 | Increment: 0201-checkout-database
+  1. shared-types -> sw:architect, sw:tech-lead  | Increment: 0200-checkout-shared
+  2. database     -> sw:architect                 | Increment: 0201-checkout-database
 
 Phase 2 (downstream, parallel):
-  3. backend      → sw:architect, sw-infra:devops          | Increment: 0202-checkout-backend
-  4. frontend     → sw-frontend:frontend-architect         | Increment: 0203-checkout-frontend
+  3. backend      -> sw:architect, sw-infra:devops          | Increment: 0202-checkout-backend
+  4. frontend     -> sw-frontend:frontend-architect         | Increment: 0203-checkout-frontend
 
 Max agents: 4 (2 sequential + 2 parallel)
 To execute, run without --dry-run.
@@ -843,51 +659,19 @@ To execute, run without --dry-run.
 
 ---
 
-## 10. Session State
-
-The orchestrator records the team session to `.specweave/state/parallel/session.json`:
-
-```json
-{
-  "sessionId": "team-20260209-abc123",
-  "feature": "Build checkout flow",
-  "mode": "native-agent-teams",
-  "terminal": "tmux",
-  "startedAt": "2026-02-09T14:00:00Z",
-  "phases": {
-    "phase1": { "status": "completed", "agents": ["shared-types", "database"] },
-    "phase2": { "status": "in-progress", "agents": ["backend", "frontend", "testing"] }
-  },
-  "agents": [
-    { "name": "shared-types", "domain": "shared", "incrementId": "0200-checkout-shared", "status": "completed", "fileOwnership": ["src/types/**", "src/shared/**"] },
-    { "name": "database", "domain": "database", "incrementId": "0201-checkout-database", "status": "completed", "fileOwnership": ["prisma/**", "src/db/**"] },
-    { "name": "backend", "domain": "backend", "incrementId": "0202-checkout-backend", "status": "running", "fileOwnership": ["src/api/**", "src/services/**"] },
-    { "name": "frontend", "domain": "frontend", "incrementId": "0203-checkout-frontend", "status": "running", "fileOwnership": ["src/components/**", "src/pages/**"] },
-    { "name": "testing", "domain": "testing", "incrementId": "0204-checkout-testing", "status": "running", "fileOwnership": ["tests/**", "e2e/**"] }
-  ]
-}
-```
-
----
-
-## 11. Troubleshooting
+## 10. Troubleshooting
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| **tmux panes hang/freeze** | Pane buffer overflow or stuck process | `tmux kill-pane -t <pane>` then re-spawn the agent; or `tmux kill-session -t <session>` to reset all |
-| **Agent not spawning** | Missing terminal multiplexer or Agent Teams not enabled | Check `echo $CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`; install tmux if needed; fall back to subagent mode |
-| **Agents editing same files** | Overlapping file ownership patterns | Review ownership map in session.json; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
+| **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
-| **Agent completes but lead does not notice** | Message delivery missed (subagent mode) | Check `.specweave/state/parallel/messages/` for COMPLETION files; in native mode, messages are auto-delivered |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
-| **Phase 2 starts before Phase 1 finishes** | Race condition in subagent fallback mode | Verify CONTRACT_READY messages exist before spawning downstream; add explicit polling loop with sleep |
-| **Session state file corrupted** | Concurrent writes from multiple agents | Use atomic file writes (write to temp, rename); or let only the orchestrator write session.json |
-| **Agent fails mid-task** | Build error, test failure, or dependency issue | Check agent logs; fix the issue in the agent's owned files; restart the agent with `/sw:auto` on its increment |
-| **Cannot find team session** | Session file deleted or wrong path | Check `.specweave/state/parallel/session.json`; verify the team name matches; use `/sw:team-status` to inspect |
+| **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
+| **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `/sw:auto` on its increment |
 
 ---
 
-## 12. Examples
+## 11. Examples
 
 ### Example 1: Full-Stack Feature
 
@@ -912,14 +696,14 @@ Phase 2 (after contracts ready):
 
 ```
 User: /sw:team-lead "Redesign dashboard" --domains frontend,testing
-→ No upstream dependencies. Both agents spawn in parallel immediately.
+-> No upstream dependencies. Both agents spawn in parallel immediately.
 ```
 
 ### Example 3: Dry Run
 
 ```
 User: /sw:team-lead "Add payment processing" --dry-run
-→ Shows plan with domains, phases, file ownership. No agents spawned.
+-> Shows plan with domains, phases, file ownership. No agents spawned.
 ```
 
 ---

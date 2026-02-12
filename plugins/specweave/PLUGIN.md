@@ -87,7 +87,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | /sw:import-external | Auto-import external work items (GitHub/JIRA/ADO) |
 | /sw:external | View external items dashboard |
 | /sw:notifications | View and manage sync notifications |
-| /sw:jobs | Show current work status and background jobs |
 | /sw:discrepancies | View and manage code-to-spec discrepancies |
 | /sw:discrepancy-to-increment | Convert discrepancies into new increment |
 | /sw:update-scope | Update living completion report with scope changes |

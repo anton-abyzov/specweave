@@ -372,9 +372,9 @@ export async function createPermissionEnforcerFromConfig(
 
     // Extract sync settings from config
     const settings: SyncSettings = {
-      canUpsertInternalItems: config?.sync?.settings?.canUpsertInternalItems ?? false,
-      canUpdateExternalItems: config?.sync?.settings?.canUpdateExternalItems ?? false,
-      canUpdateStatus: config?.sync?.settings?.canUpdateStatus ?? false,
+      canUpsertInternalItems: config?.sync?.settings?.canUpsertInternalItems ?? DEFAULT_SYNC_SETTINGS.canUpsertInternalItems,
+      canUpdateExternalItems: config?.sync?.settings?.canUpdateExternalItems ?? DEFAULT_SYNC_SETTINGS.canUpdateExternalItems,
+      canUpdateStatus: config?.sync?.settings?.canUpdateStatus ?? DEFAULT_SYNC_SETTINGS.canUpdateStatus,
     };
 
     return new PermissionEnforcer({

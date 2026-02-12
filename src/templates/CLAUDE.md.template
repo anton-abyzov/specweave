@@ -212,8 +212,8 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
-| `/sw-github:sync` | GitHub sync |
-| `/sw-jira:sync` | Jira sync |
+| `/sw:progress-sync` | Sync progress to all external tools |
+| `/sw-github:push` | Push progress to GitHub |
 
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- /SECTION -->
@@ -278,7 +278,7 @@ SpecWeave learns from corrections. Learnings saved here automatically. Edit or d
 
 **Before implementing**: Check ADRs at `.specweave/docs/internal/architecture/adr/`
 
-**Load context**: `/sw:context <topic>` loads relevant living docs into conversation
+**Load context**: `/sw:docs <topic>` loads relevant living docs into conversation
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->
@@ -323,11 +323,22 @@ gh auth status
 <!-- SECTION:syncing -->
 ## External Sync (GitHub/JIRA/ADO)
 
-**Commands**: `/sw-github:sync {id}` (issues) | `/sw:sync-specs` (living docs only)
+**Primary command**: `/sw:progress-sync` — syncs tasks.md → spec.md → living docs → external tools (auto-creates missing issues)
+
+**Individual commands**:
+| Command | Action |
+|---------|--------|
+| `/sw-github:create {id}` | Create GitHub issue for increment |
+| `/sw-github:push {id}` | Push task progress to GitHub issue |
+| `/sw-github:close {id}` | Close GitHub issue |
+| `/sw-github:status {id}` | Check sync status |
+| `/sw:sync-specs` | Sync living docs locally |
 
 **Mapping**: Feature → Milestone | Story → Issue | Task → Checkbox
 
-**Config**: Set `sync.github.enabled: true` + `canUpdateExternalItems: true` in config.json
+**Auto-configured**: Sync enabled by default during `specweave init` when a tracker is selected.
+
+**After task completion**: Run `/sw:progress-sync` or `/sw-github:push` to sync changes to external tools.
 <!-- /SECTION -->
 
 <!-- SECTION:testing -->
