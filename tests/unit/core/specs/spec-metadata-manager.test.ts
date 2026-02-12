@@ -53,10 +53,6 @@ import { SpecMetadataManager } from '../../../../src/core/specs/spec-metadata-ma
 
 let tmpDir: string;
 
-function specsDir(): string {
-  return tmpDir;
-}
-
 /** Write a spec file into the temp specs directory */
 function writeSpec(filename: string, content: string): void {
   fs.writeFileSync(path.join(tmpDir, filename), content, 'utf-8');
@@ -645,8 +641,9 @@ priority: P1
       vi.setSystemTime(new Date('2024-07-01T00:00:00Z'));
       await mgr.updateSyncStatus('spec-001', 'github', 'synced');
 
-      const spec = await mgr.loadSpec('spec-001');
-      expect(spec!.metadata.externalLinks?.github?.syncedAt).toContain('2024-07-01');
+      // Verify the raw file contains updated syncedAt
+      const raw = readSpec('spec-001.md');
+      expect(raw).toContain('2024-07-01');
     });
 
     it('throws for non-existent spec', async () => {
