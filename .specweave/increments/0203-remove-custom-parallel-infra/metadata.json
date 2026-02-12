@@ -1,0 +1,15 @@
+{
+  "id": "0203-remove-custom-parallel-infra",
+  "status": "completed",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2026-02-12T05:08:36.512Z",
+  "lastActivity": "2026-02-12T05:08:36.513Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "updated": "2026-02-12T06:00:00.000Z",
+  "completedAt": "2026-02-12T06:00:00.000Z"
+}

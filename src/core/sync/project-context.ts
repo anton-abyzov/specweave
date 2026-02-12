@@ -57,9 +57,9 @@ export class ProjectContextManager {
           profiles: {},
           projects: {},
           settings: {
-            canUpsertInternalItems: false,
-            canUpdateExternalItems: false,
-            canUpdateStatus: false,
+            canUpsertInternalItems: true,
+            canUpdateExternalItems: true,
+            canUpdateStatus: true,
             autoDetectProject: true,
             defaultTimeRange: '1M',
             rateLimitProtection: true,

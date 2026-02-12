@@ -1,11 +1,10 @@
 ---
-description: Comprehensive progress synchronization expert for multi-system sync (tasks.md → living docs → GitHub/JIRA/ADO). Use when syncing progress across systems, creating missing external issues, or understanding /sw:sync-progress command. AUTO-CREATES missing issues when external links are absent.
-user-invocable: false
+description: Comprehensive progress sync - tasks.md to living docs to external tools (GitHub/JIRA/ADO). AUTO-CREATES missing external issues. Use when syncing progress, saying "sync progress", "update all systems", or "push progress to GitHub". Args: [INCREMENT_ID] [--dry-run] [--no-create] [--no-github] [--no-jira].
 ---
 
-# Progress Sync Expert
+# Progress Sync (Multi-System)
 
-I'm the comprehensive progress synchronization expert for SpecWeave. I help you understand and use the `/sw:sync-progress` command for end-to-end progress synchronization.
+Orchestrate end-to-end progress synchronization: **tasks.md → spec.md ACs → living docs → external tools (GitHub/JIRA/ADO)**.
 
 ---
 

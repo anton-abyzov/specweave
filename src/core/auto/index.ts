@@ -112,5 +112,3 @@ export {
 // Completion Conditions
 export * from './default-conditions.js';
 
-// Parallel Orchestration (Multi-Agent Execution)
-export * from './parallel/index.js';

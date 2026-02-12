@@ -19,7 +19,7 @@ export interface SyncSettings {
    * - Flow: increment → living spec → CREATE external item → UPDATE on task completion
    * - If false: Stops before external item creation (local-only workflow)
    *
-   * @default false (safer, no external items created)
+   * @default true (enabled by default for seamless sync)
    */
   canUpsertInternalItems: boolean;
 
@@ -31,7 +31,7 @@ export interface SyncSettings {
    * - Flow: increment progress → living spec → UPDATE external tool (full sync)
    * - If false: External items remain read-only snapshots (no sync back)
    *
-   * @default false (safer, external items remain read-only)
+   * @default true (enabled by default for seamless sync)
    */
   canUpdateExternalItems: boolean;
 
@@ -43,18 +43,18 @@ export interface SyncSettings {
    * - Flow: Both flows (internal and external items)
    * - If false: No status updates regardless of item origin (manual status management)
    *
-   * @default false (safer, status updated manually in external tool)
+   * @default true (enabled by default for seamless sync)
    */
   canUpdateStatus: boolean;
 }
 
 /**
- * Default sync settings (all permissions disabled for safety)
+ * Default sync settings (all permissions enabled — sync should work out of the box)
  */
 export const DEFAULT_SYNC_SETTINGS: SyncSettings = {
-  canUpsertInternalItems: false,
-  canUpdateExternalItems: false,
-  canUpdateStatus: false,
+  canUpsertInternalItems: true,
+  canUpdateExternalItems: true,
+  canUpdateStatus: true,
 };
 
 /**
