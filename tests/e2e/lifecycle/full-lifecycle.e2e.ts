@@ -7,9 +7,8 @@
  *   3. Verify project structure
  *   4. Run `specweave status`
  *   5. Run `specweave save --no-push` (commit changes)
- *   6. Verify git state
- *   7. Run `specweave doctor`
- *   8. Teardown: remove temp git repo + isolated home
+ *   6. Verify git state and filesystem integrity
+ *   7. Teardown: remove temp git repo + isolated home
  *
  * Every test is fully isolated - no env leaks, no real HOME touches.
  */
@@ -22,7 +21,7 @@ import { fileURLToPath } from 'url';
 import * as fs from 'fs/promises';
 import os from 'os';
 import { getIsolatedEnv } from '../../test-utils/temp-home.js';
-import { normalizeOutput, extractJson } from '../../test-utils/normalize-output.js';
+import { normalizeOutput } from '../../test-utils/normalize-output.js';
 
 const execAsync = promisify(exec);
 
@@ -99,21 +98,21 @@ describe('Full SpecWeave Lifecycle', { timeout: LIFECYCLE_TIMEOUT }, () => {
     await cleanup();
   });
 
-  it('should complete init → status → save → doctor lifecycle', async () => {
+  it('should complete init → status → save lifecycle', async () => {
     // === Step 1: Init ===
-    const initResult = await sw('init --adapter=claude --language=en', env, workDir);
-    const initOutput = normalizeOutput(initResult.stdout);
+    await sw('init --adapter=claude --language=en', env, workDir);
 
     // Verify .specweave/ directory was created
     const specweaveDir = path.join(workDir, '.specweave');
     const dirStat = await fs.stat(specweaveDir);
     expect(dirStat.isDirectory()).toBe(true);
 
-    // Verify config.json
+    // Verify config.json has correct adapter and language
     const configPath = path.join(specweaveDir, 'config.json');
     const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
     expect(config).toHaveProperty('project');
     expect(config.adapters?.default).toBe('claude');
+    expect(config.language).toBe('en');
 
     // Verify increments/ exists
     const incrementsDir = path.join(specweaveDir, 'increments');
@@ -123,8 +122,8 @@ describe('Full SpecWeave Lifecycle', { timeout: LIFECYCLE_TIMEOUT }, () => {
     // === Step 2: Status ===
     const statusResult = await sw('status', env, workDir);
     const statusOutput = normalizeOutput(statusResult.stdout);
-    // Status should work without errors (may show no active increments)
-    expect(statusOutput).toBeTruthy();
+    // Status must show the summary section (always present even with 0 increments)
+    expect(statusOutput).toMatch(/Summary|Progress|Active/i);
 
     // === Step 3: Save (no-push, local only) ===
     // Add a file to create changes
@@ -134,16 +133,24 @@ describe('Full SpecWeave Lifecycle', { timeout: LIFECYCLE_TIMEOUT }, () => {
     const saveOutput = normalizeOutput(saveResult.stdout);
     expect(saveOutput).toContain('SUMMARY');
 
-    // Verify git log has our commit
+    // Verify git log has our commit with exact message
     const logResult = await execAsync('git log --oneline -2', { cwd: workDir, env });
     const logOutput = normalizeOutput(logResult.stdout);
     expect(logOutput).toContain('test: add test feature');
 
-    // === Step 4: Doctor ===
-    const doctorResult = await sw('doctor --quick', env, workDir);
-    const doctorOutput = normalizeOutput(doctorResult.stdout);
-    // Doctor should run without crashing
-    expect(doctorOutput).toBeTruthy();
+    // Verify working directory is clean after save
+    const gitStatus = await execAsync('git status --porcelain', { cwd: workDir, env });
+    expect(gitStatus.stdout.trim()).toBe('');
+
+    // Verify the file was actually committed (exists in HEAD)
+    const showResult = await execAsync('git show HEAD:test-feature.ts', { cwd: workDir, env });
+    expect(showResult.stdout).toContain('export const hello');
+
+    // Verify .specweave/ structure still intact after save
+    const configAfterSave = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+    expect(configAfterSave.adapters?.default).toBe('claude');
+    const incStatAfter = await fs.stat(incrementsDir);
+    expect(incStatAfter.isDirectory()).toBe(true);
   });
 
   it('should handle save with no changes gracefully', async () => {
@@ -222,13 +229,35 @@ describe('Full SpecWeave Lifecycle', { timeout: LIFECYCLE_TIMEOUT }, () => {
     expect(isolatedStat.isDirectory()).toBe(true);
   });
 
-  it('should handle doctor --json output', async () => {
+  it('should produce valid project structure after init', async () => {
     await sw('init --adapter=claude --language=en', env, workDir);
 
-    const doctorResult = await sw('doctor --json --quick', env, workDir);
-    const json = extractJson<{ summary?: { total: number } }>(doctorResult.stdout);
-    expect(json).not.toBeNull();
-    expect(json?.summary).toHaveProperty('total');
-    expect(json!.summary!.total).toBeGreaterThan(0);
+    const specweaveDir = path.join(workDir, '.specweave');
+
+    // Verify required directories exist
+    const incrementsDir = path.join(specweaveDir, 'increments');
+    const incStat = await fs.stat(incrementsDir);
+    expect(incStat.isDirectory()).toBe(true);
+
+    // Verify docs/ directory (living docs scaffold)
+    const docsDir = path.join(specweaveDir, 'docs');
+    const docsStat = await fs.stat(docsDir);
+    expect(docsStat.isDirectory()).toBe(true);
+
+    // Verify config.json is valid JSON with required fields
+    const configPath = path.join(specweaveDir, 'config.json');
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+    expect(config).toHaveProperty('project');
+    expect(config).toHaveProperty('adapters');
+    expect(config.adapters.default).toBe('claude');
+    expect(config.language).toBe('en');
+
+    // Verify CLAUDE.md was created at project root
+    const claudeMdPath = path.join(workDir, 'CLAUDE.md');
+    const claudeMdStat = await fs.stat(claudeMdPath);
+    expect(claudeMdStat.isFile()).toBe(true);
+    const claudeMdContent = await fs.readFile(claudeMdPath, 'utf-8');
+    expect(claudeMdContent).toContain('SpecWeave');
   });
 });

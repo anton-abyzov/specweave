@@ -193,6 +193,75 @@ EOF
 fi
 
 # ==============================================================================
+# USER-LEVEL PLUGIN SCOPE GUARD (v1.0.249)
+# ==============================================================================
+# Prevents SpecWeave domain plugins (sw-*) and LSP plugins (*-lsp) from
+# polluting ~/.claude/settings.json (user scope). These should ALWAYS be
+# project-scoped (.claude/settings.json) to avoid leaking across projects.
+#
+# Sources of user-level pollution:
+# - Claude Code's own plugin discovery (installs at user scope by default)
+# - Older SpecWeave versions (pre-v1.0.210) that didn't enforce project scope
+# - Manual `claude plugin install` without --scope flag
+#
+# What this guard does:
+# 1. Reads installed plugins via `claude plugin list` (fast, <200ms)
+# 2. Identifies sw-*@specweave or *-lsp@* at user scope
+# 3. Uninstalls from user scope and reinstalls at project scope
+# 4. Uses a daily marker file to avoid running on every prompt
+#
+# Rate limit: runs at most once per day per project (marker in .specweave/state/)
+SCOPE_GUARD_MARKER="${SW_PROJECT_ROOT:-.}/.specweave/state/scope-guard.marker"
+SCOPE_GUARD_RUN=false
+
+if [[ -f "$SCOPE_GUARD_MARKER" ]]; then
+  # Check if marker is from today (skip if already ran today)
+  MARKER_DATE=$(cat "$SCOPE_GUARD_MARKER" 2>/dev/null)
+  TODAY=$(date +%Y-%m-%d)
+  [[ "$MARKER_DATE" != "$TODAY" ]] && SCOPE_GUARD_RUN=true
+else
+  SCOPE_GUARD_RUN=true
+fi
+
+if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && command -v claude >/dev/null 2>&1; then
+  USER_SETTINGS="$HOME/.claude/settings.json"
+
+  if [[ -f "$USER_SETTINGS" ]]; then
+    # Find SpecWeave domain plugins and LSP plugins at user level
+    # Exempt: sw@specweave (core plugin, intentionally user-scoped)
+    POLLUTED_PLUGINS=$(jq -r '
+      .enabledPlugins // {} | to_entries[]
+      | select(
+          (.key | test("^sw-.*@specweave$")) or
+          (.key | test("-lsp@"))
+        )
+      | .key
+    ' "$USER_SETTINGS" 2>/dev/null)
+
+    if [[ -n "$POLLUTED_PLUGINS" ]]; then
+      MIGRATED=""
+      for plugin_key in $POLLUTED_PLUGINS; do
+        # Uninstall from user scope, reinstall at project scope
+        if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
+          if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
+            [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
+            MIGRATED="${MIGRATED}${plugin_key}"
+          fi
+        fi
+      done
+
+      if [[ -n "$MIGRATED" ]]; then
+        echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "${SW_PROJECT_ROOT:-.}/.specweave/state/hook.log" 2>/dev/null || true
+      fi
+    fi
+  fi
+
+  # Write today's marker
+  mkdir -p "$(dirname "$SCOPE_GUARD_MARKER")" 2>/dev/null
+  date +%Y-%m-%d > "$SCOPE_GUARD_MARKER" 2>/dev/null || true
+fi
+
+# ==============================================================================
 # AUTO-LOAD PLUGIN DETECTION + INCREMENT ASSIST (v1.0.141)
 # ==============================================================================
 # Detect plugin needs AND increment creation suggestions using LLM (Claude Haiku)
