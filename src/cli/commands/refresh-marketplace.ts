@@ -35,6 +35,7 @@ import os from 'os';
 // Plugin cache modules removed (v1.0.209) - Claude Code manages its own plugin cache
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
+import { migrateUserLevelPlugins } from '../../utils/cleanup-stale-plugins.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -922,8 +923,12 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
           const pluginsToDisable: string[] = [];
 
           for (const pluginKey of Object.keys(settings.enabledPlugins)) {
-            // Only target specweave plugins, not official ones
-            if (pluginKey.endsWith('@specweave') && !coreEnabledPlugins.includes(pluginKey)) {
+            const pluginName = pluginKey.split('@')[0];
+            // Target non-core specweave plugins AND LSP plugins (v1.0.249)
+            if (
+              (pluginKey.endsWith('@specweave') && !coreEnabledPlugins.includes(pluginKey)) ||
+              pluginName.endsWith('-lsp')
+            ) {
               pluginsToDisable.push(pluginKey);
               delete settings.enabledPlugins[pluginKey];
             }
@@ -1128,6 +1133,26 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     if (options.verbose) {
       console.log(chalk.gray(`  ${error}`));
     }
+  }
+
+  console.log('');
+
+  // Step 4.5: User-level plugin scope guard (v1.0.249)
+  // Migrates sw-*@specweave and *-lsp@* from user scope to project scope
+  console.log(chalk.yellow('🔒 Step 4.5: Checking for user-level plugin pollution...'));
+  try {
+    const projectDir = fs.existsSync(path.join(process.cwd(), '.claude')) ? process.cwd() : undefined;
+    const migrationResult = await migrateUserLevelPlugins(projectDir, options.verbose);
+    if (migrationResult.migratedCount > 0) {
+      console.log(chalk.green(`✓ Migrated ${migrationResult.migratedCount} plugin(s) from user → project scope`));
+      for (const p of migrationResult.migratedPlugins) {
+        console.log(chalk.gray(`  - ${p}`));
+      }
+    } else {
+      console.log(chalk.green('✓ No user-level pollution detected'));
+    }
+  } catch {
+    console.log(chalk.yellow('⚠ Could not check user-level plugins'));
   }
 
   console.log('');
