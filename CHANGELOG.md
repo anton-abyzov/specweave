@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.250] - 2026-02-11
+
+### Changes
+- **Test coverage expansion**: Added 40+ unit tests for CLI commands, core modules, adapters, sync, and utilities
+- **E2E testing**: Added comprehensive CLI command end-to-end tests
+- **Quality improvements**: Enhanced cleanup-stale-plugins and refresh-marketplace implementations
+
+---
+
 ## [1.0.249] - 2026-02-11
 
 ### Changes
