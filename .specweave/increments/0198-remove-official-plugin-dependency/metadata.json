@@ -1,7 +1,9 @@
 {
   "id": "0198",
   "name": "remove-official-plugin-dependency",
-  "status": "active",
+  "status": "completed",
   "created": "2026-02-11",
-  "type": "refactor"
+  "type": "refactor",
+  "completedAt": "2026-02-12",
+  "approvedAt": "2026-02-12T00:30:00Z"
 }
