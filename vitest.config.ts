@@ -45,11 +45,11 @@ export default defineConfig({
         'src/**/*.spec.ts',
       ],
       thresholds: {
-        // Target: 80% — currently at ~38%, incrementally raising
-        // Gate set at 38% to prevent regression while adding tests
+        // Target: 80% — gates set just below actuals to prevent regression
+        // Actual (Feb 2026): stmts 38.8%, branches 34%, funcs 47%, lines 39%
         lines: 38,
-        functions: 38,
-        branches: 32,
+        functions: 46,
+        branches: 33,
         statements: 38,
       },
     },
