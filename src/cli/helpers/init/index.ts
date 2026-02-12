@@ -45,6 +45,12 @@ export {
   type PluginInstallResult,
 } from './plugin-installer.js';
 
+// Plugin enabler
+export {
+  enablePluginsInSettings,
+  enablePlugin,
+} from './claude-plugin-enabler.js';
+
 // Repository setup
 export {
   setupRepositoryHosting,
