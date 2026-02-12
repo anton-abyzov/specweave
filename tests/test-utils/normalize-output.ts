@@ -94,10 +94,26 @@ export function extractJson<T = unknown>(text: string): T | null {
     if (jsonStart >= 0) {
       jsonLines.push(line);
 
-      // Count braces to find complete JSON
+      // Count braces to find complete JSON (string-aware)
+      let inString = false;
+      let escape = false;
       for (const char of line) {
-        if (char === '{' || char === '[') braceCount++;
-        if (char === '}' || char === ']') braceCount--;
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (char === '\\' && inString) {
+          escape = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (char === '{' || char === '[') braceCount++;
+          if (char === '}' || char === ']') braceCount--;
+        }
       }
 
       if (braceCount === 0) {
@@ -144,9 +160,25 @@ export function extractAllJson<T = unknown>(text: string): T[] {
     if (jsonStart >= 0) {
       jsonLines.push(line);
 
+      let inString = false;
+      let escape = false;
       for (const char of line) {
-        if (char === '{' || char === '[') braceCount++;
-        if (char === '}' || char === ']') braceCount--;
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (char === '\\' && inString) {
+          escape = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (char === '{' || char === '[') braceCount++;
+          if (char === '}' || char === ']') braceCount--;
+        }
       }
 
       if (braceCount === 0) {
