@@ -58,18 +58,13 @@ const {
   const mockFetchAllProjects = vi.fn().mockResolvedValue({ projects: [], failed: 0, canceled: false });
   const mockFetchBatch = vi.fn().mockResolvedValue([]);
 
-  class _MockCacheManager {
-    get = mockCacheGet;
-    set = mockCacheSet;
-  }
+  const MockCacheManagerSpy = vi.fn();
+  MockCacheManagerSpy.prototype.get = mockCacheGet;
+  MockCacheManagerSpy.prototype.set = mockCacheSet;
 
-  class _MockAsyncProjectLoader {
-    fetchAllProjects = mockFetchAllProjects;
-    fetchBatch = mockFetchBatch;
-  }
-
-  const MockCacheManagerSpy = vi.fn().mockImplementation((projectRoot: string) => new _MockCacheManager());
-  const MockAsyncProjectLoaderSpy = vi.fn().mockImplementation(() => new _MockAsyncProjectLoader());
+  const MockAsyncProjectLoaderSpy = vi.fn();
+  MockAsyncProjectLoaderSpy.prototype.fetchAllProjects = mockFetchAllProjects;
+  MockAsyncProjectLoaderSpy.prototype.fetchBatch = mockFetchBatch;
 
   return {
     mockReadEnvFile: vi.fn().mockReturnValue(''),

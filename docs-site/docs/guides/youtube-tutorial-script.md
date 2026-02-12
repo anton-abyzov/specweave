@@ -36,7 +36,23 @@ draft: true
 >
 > And now there's a sixth pain point that barely existed a year ago:
 >
-> Pain Point 6: **Agent Swarm Chaos**. You're running three AI agents on the same codebase — Claude Code locally, an OpenClaw instance in the cloud, a colleague with their own session. Nobody knows who's working on what. Agents duplicate work. They edit the same files. There's no coordination layer. OpenClaw has 160,000 GitHub stars and everyone wants to run multiple instances — but without structure, it's chaos."
+> Pain Point 6: **Agent Swarm Chaos**. You're running three AI agents on the same codebase — Claude Code locally, an OpenClaw instance in the cloud, a colleague with their own session. Nobody knows who's working on what. Agents duplicate work. They edit the same files. There's no coordination layer. OpenClaw has 160,000 GitHub stars and everyone wants to run multiple instances — but without structure, it's chaos.
+>
+> And here's number seven — the one that hits you mid-session:
+>
+> Pain Point 7: **'Prompt is too long.'** You've seen this error. I see it ALL the time."
+
+**[SCREEN: Show "prompt is too long" error screenshot]**
+
+> "You're deep in a session. You've been building for an hour. Context is loaded, Claude understands your codebase, you're in the zone — and then: 'prompt is too long.' Session over. Start fresh.
+>
+> Now you're repeating yourself. Re-explaining architecture. Re-describing what you already built. Re-loading context that was JUST there five minutes ago. You're doing the same work twice. Three times. Every restart costs you 10-15 minutes of re-explaining before you can do anything productive.
+>
+> And by the way — Claude Code's latest updates now store some task context between sessions. But that's not enough. You still lose the WHY behind decisions, the acceptance criteria, the architecture choices, the test plans.
+>
+> This is exactly what SpecWeave solves. When you follow the discipline — create increments, write specs, break work into tasks — you can restart at ANY point. Fresh session? Claude reads your spec.md, your tasks.md, and it's back to full speed in seconds. Not 15 minutes of re-explaining. Seconds.
+>
+> It's not vibe coding anymore. It's structured, disciplined development where YOU are in control. Small tasks, full context, restartable at any point. That's the difference."
 
 **[PERSONAL STORY - WHY I BUILT THIS]**
 
@@ -209,17 +225,21 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 >
 > The truth? Claude Code by itself is already incredible. But it lacks enterprise features — external tool sync, multi-project coordination, quality enforcement, long-term memory.
 >
-> SpecWeave adds those missing pieces. It's the difference between:
+> SpecWeave adds those missing pieces. Think of it as Claude Code on steroids — for enterprises, for bigger solutions. It's a wrapper around Claude Code's raw power that organizes everything into one easy-to-execute solution.
+>
+> It's the difference between:
 > - A powerful tool you use session by session
 > - An AI development system that compounds over time"
 
 **[Quick mention of Claude Code velocity]**
 
-> "And here's something cool — Anthropic ships Claude Code features faster than they can document them. New version every week. SpecWeave tracks those changes and uses the latest optimizations automatically.
+> "And here's the thing — features are being delivered SO fast in this space. Claude Code ships new versions every week. New capabilities, new optimizations, new patterns. You literally cannot keep up. Nobody can.
 >
-> `context: fork` for isolated execution. `model: opus` for critical decisions. MCP Tool Search for 85% token reduction. Skill-scoped hooks for efficiency.
+> Anthropic is moving in this direction — they'll probably add project management, external sync, quality gates someday. But it's taking them a long time because they're handling too many things at once. They're building the foundation — the model, the SDK, the protocol. That's their job.
 >
-> You don't have to read Claude Code changelogs. SpecWeave does it for you."
+> SpecWeave is already here. It takes all that power and wraps it into a structured, disciplined workflow. `context: fork` for isolated execution. `model: opus` for critical decisions. MCP Tool Search for 85% token reduction. Skill-scoped hooks for efficiency.
+>
+> You don't have to read Claude Code changelogs. You don't have to figure out how to combine 20 new features into a workflow. SpecWeave does it for you. It's all here, ready to go, right now."
 
 **[SECTION 1.35: DETERMINISTIC VS NON-DETERMINISTIC]**
 

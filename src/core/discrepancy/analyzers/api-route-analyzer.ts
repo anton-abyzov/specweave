@@ -202,12 +202,18 @@ export class ApiRouteAnalyzer {
       .replace(/\\/g, '/')           // Windows paths
       .replace(/\.(ts|tsx|js|jsx)$/, '') // Remove extension
       .replace(/\/index$/, '')       // /index -> /
+      .replace(/^index$/, '')        // root index file -> /
       .replace(/\[\.\.\.([^\]]+)\]/g, '*$1')  // [...slug] -> *slug (catch-all)
       .replace(/\[([^\]]+)\]/g, ':$1');  // [id] -> :id
 
     // Ensure path starts with /api
     if (!routePath.startsWith('/api')) {
       routePath = '/api' + routePath;
+    }
+
+    // Clean up trailing slash (e.g., /api/ -> /api)
+    if (routePath.length > 1 && routePath.endsWith('/')) {
+      routePath = routePath.slice(0, -1);
     }
 
     // Extract params from path

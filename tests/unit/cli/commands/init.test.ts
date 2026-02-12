@@ -23,21 +23,25 @@ const {
   mockReadJson,
   mockReadJsonSync,
   mockWriteJson,
+  mockWriteJsonSync,
   mockMkdirSync,
   mockReaddirSync,
   mockEnsureDirSync,
   mockWriteFileSync,
   mockCopySync,
+  mockRmSync,
 } = vi.hoisted(() => ({
   mockExistsSync: vi.fn(),
   mockReadJson: vi.fn(),
   mockReadJsonSync: vi.fn(),
   mockWriteJson: vi.fn(),
+  mockWriteJsonSync: vi.fn(),
   mockMkdirSync: vi.fn(),
   mockReaddirSync: vi.fn(),
   mockEnsureDirSync: vi.fn(),
   mockWriteFileSync: vi.fn(),
   mockCopySync: vi.fn(),
+  mockRmSync: vi.fn(),
 }));
 
 const { mockExecFileNoThrowSync } = vi.hoisted(() => ({
@@ -194,6 +198,18 @@ const { mockSetupIssueTracker } = vi.hoisted(() => ({
   mockSetupIssueTracker: vi.fn(),
 }));
 
+const { mockApplySmartDefaults } = vi.hoisted(() => ({
+  mockApplySmartDefaults: vi.fn().mockReturnValue({}),
+}));
+
+const { mockIsGreenfieldCheck } = vi.hoisted(() => ({
+  mockIsGreenfieldCheck: vi.fn().mockReturnValue(false),
+}));
+
+const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
+  mockDisplaySummaryBanner: vi.fn(),
+}));
+
 // ============================================================================
 // vi.mock() declarations (run at module load time)
 // ============================================================================
@@ -203,24 +219,27 @@ vi.mock('../../../../src/utils/fs-native.js', () => ({
   readJson: mockReadJson,
   readJsonSync: mockReadJsonSync,
   writeJson: mockWriteJson,
+  writeJsonSync: mockWriteJsonSync,
   mkdirSync: mockMkdirSync,
   readdirSync: mockReaddirSync,
   ensureDirSync: mockEnsureDirSync,
   writeFileSync: mockWriteFileSync,
   copySync: mockCopySync,
+  rmSync: mockRmSync,
 }));
 
 vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
   execFileNoThrowSync: mockExecFileNoThrowSync,
 }));
 
-vi.mock('../../../../src/adapters/adapter-loader.js', () => ({
-  AdapterLoader: vi.fn().mockImplementation(() => ({
-    detectTool: mockDetectTool,
-    getAdapter: mockGetAdapter,
-    checkRequirements: mockCheckRequirements,
-  })),
-}));
+vi.mock('../../../../src/adapters/adapter-loader.js', () => {
+  const MockAdapterLoader = vi.fn(function(this: any) {
+    this.detectTool = mockDetectTool;
+    this.getAdapter = mockGetAdapter;
+    this.checkRequirements = mockCheckRequirements;
+  });
+  return { AdapterLoader: MockAdapterLoader };
+});
 
 vi.mock('../../../../src/utils/esm-helpers.js', () => ({
   getDirname: mockGetDirname,
@@ -337,6 +356,18 @@ vi.mock('../../../../src/cli/commands/lsp.js', () => ({
   handleLspSetup: vi.fn(),
 }));
 
+vi.mock('../../../../src/cli/helpers/init/smart-defaults.js', () => ({
+  applySmartDefaults: mockApplySmartDefaults,
+}));
+
+vi.mock('../../../../src/cli/helpers/init/greenfield-detection.js', () => ({
+  isGreenfield: mockIsGreenfieldCheck,
+}));
+
+vi.mock('../../../../src/cli/helpers/init/summary-banner.js', () => ({
+  displaySummaryBanner: mockDisplaySummaryBanner,
+}));
+
 // ============================================================================
 // Imports (must come AFTER vi.mock declarations)
 // ============================================================================
@@ -355,7 +386,7 @@ describe('init command', () => {
   const ciEnvVars = ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'CIRCLECI', 'JENKINS_URL'];
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
 
     // Save CI env vars
     for (const key of ciEnvVars) {
@@ -369,15 +400,69 @@ describe('init command', () => {
       throw new Error('process.exit called');
     });
 
-    // Default mock behaviors
+    // Default mock behaviors - MUST be comprehensive since resetAllMocks clears everything
     mockExistsSync.mockReturnValue(false);
     mockReadJson.mockResolvedValue({});
+    mockReadJsonSync.mockReturnValue({});
+    mockWriteJson.mockResolvedValue(undefined);
+    mockWriteJsonSync.mockReturnValue(undefined);
     mockReaddirSync.mockReturnValue([]);
     mockDetectTool.mockResolvedValue('claude');
-    mockGetAdapter.mockReturnValue(null);
+    // Default adapter mock: returns a functional adapter for non-Claude tools
+    mockGetAdapter.mockReturnValue({
+      install: vi.fn(),
+      postInstall: vi.fn(),
+      supportsPlugins: vi.fn().mockReturnValue(false),
+      compilePlugin: vi.fn(),
+    });
     mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '', exitCode: 0 });
     mockConfirm.mockResolvedValue(true);
     mockInput.mockResolvedValue('my-project');
+
+    // Helpers from init/index.js
+    mockFindSourceDir.mockReturnValue('/mock/templates');
+    mockFindPackageRoot.mockReturnValue('/mock/package-root');
+    mockDetectNestedSpecweave.mockReturnValue(null);
+    mockDetectGitHubRemote.mockReturnValue(null);
+    mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
+    mockPromptTestingConfig.mockResolvedValue({ testMode: 'test-after', coverageTarget: 80, goBack: null });
+    mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
+    mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
+    mockPromptAndRunExternalImport.mockResolvedValue({ totalCount: 0, platforms: [] });
+    mockPromptDeepInterviewConfig.mockResolvedValue({ enabled: false, goBack: null });
+    mockPromptQualityGatesConfig.mockResolvedValue({ preset: 'standard', goBack: null });
+    mockGetDefaultTranslationConfig.mockReturnValue({ enabled: false });
+    mockGetPluginScope.mockReturnValue('user');
+    mockGetScopeArgs.mockReturnValue([]);
+
+    // Locale
+    mockIsLanguageSupported.mockReturnValue(true);
+    mockGetSupportedLanguages.mockReturnValue(['en', 'es', 'de', 'fr']);
+    mockGetLocaleManager.mockReturnValue({ t: mockLocaleT });
+    mockLocaleT.mockImplementation((_ns: string, key: string) => `[${key}]`);
+
+    // Ora spinner
+    mockOra.mockReturnValue(mockOraInstance);
+    mockOraInstance.start.mockReturnThis();
+    mockOraInstance.stop.mockReturnThis();
+    mockOraInstance.succeed.mockReturnThis();
+    mockOraInstance.fail.mockReturnThis();
+    mockOraInstance.warn.mockReturnThis();
+
+    // Smart defaults & new modules
+    mockApplySmartDefaults.mockReturnValue({});
+    mockIsGreenfieldCheck.mockReturnValue(false);
+
+    // getDirname
+    mockGetDirname.mockReturnValue('/mock/dirname');
+
+    // Cloning defaults
+    mockTriggerAdoRepoCloning.mockResolvedValue(null);
+    mockTriggerGitHubRepoCloning.mockResolvedValue({ jobId: null, clonedRepos: [] });
+    mockTriggerBitbucketRepoCloning.mockResolvedValue(null);
+    mockCreateProjectFolders.mockResolvedValue([]);
+    mockCollectLivingDocsInputs.mockResolvedValue(null);
+    mockSetupLspEnvVar.mockReturnValue({ success: true, alreadyConfigured: false, configPath: '~/.zshrc', exportSyntax: 'export ENABLE_LSP_TOOL=1' });
 
     // Default: CI/quick mode for most tests
     process.env.CI = 'true';
@@ -562,23 +647,17 @@ describe('init command', () => {
     });
 
     it('should block initialization in home directory', async () => {
-      const realCwd = process.cwd();
-      try {
-        // Temporarily mock cwd to home directory
-        vi.spyOn(process, 'cwd').mockReturnValue(os.homedir());
-        vi.spyOn(path, 'resolve').mockImplementation((...args) => {
-          if (args.length === 1) return args[0];
-          return path.join(...args);
-        });
+      // Mock cwd to return home directory - path.resolve will normalize it
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(os.homedir());
 
+      try {
         await expect(
           initCommand('.', { quick: true })
         ).rejects.toThrow('process.exit called');
 
         expect(exitSpy).toHaveBeenCalledWith(1);
       } finally {
-        vi.restoreAllMocks();
-        // Re-setup mocks that were cleared by restoreAllMocks
+        cwdSpy.mockRestore();
       }
     });
 
@@ -986,7 +1065,8 @@ describe('init command', () => {
 
     it('should copy plugins folder for non-Claude adapters', async () => {
       mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('plugins')) return true;
+        // Only match the source plugins directory, not target paths
+        if (typeof p === 'string' && p.includes('plugins') && p.includes('package-root')) return true;
         return false;
       });
       const mockAdapter = {
@@ -997,7 +1077,7 @@ describe('init command', () => {
       };
       mockGetAdapter.mockReturnValue(mockAdapter);
 
-      await initCommand('plugins-copy', { adapter: 'generic', quick: true });
+      await initCommand('copy-test', { adapter: 'generic', quick: true });
 
       expect(mockCopySync).toHaveBeenCalled();
     });
@@ -1159,12 +1239,17 @@ describe('init command', () => {
   // ==========================================================================
 
   describe('initCommand - wizard steps', () => {
-    it('should run external import in wizard flow for new projects', async () => {
-      mockExistsSync.mockReturnValue(false);
+    it('should apply smart defaults for new projects', async () => {
+      // config.json must exist for smart defaults to be applied
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
 
       await initCommand('wizard-test', { quick: true });
 
-      expect(mockPromptAndRunExternalImport).toHaveBeenCalled();
+      // Smart defaults replace the old wizard prompts
+      expect(mockApplySmartDefaults).toHaveBeenCalled();
     });
 
     it('should handle background import results', async () => {
@@ -1215,13 +1300,20 @@ describe('init command', () => {
       expect(mockPromptQualityGatesConfig).not.toHaveBeenCalled();
     });
 
-    it('should apply default translation config in CI mode', async () => {
-      mockExistsSync.mockReturnValue(false);
+    it('should apply smart defaults including translation in CI mode', async () => {
+      // config.json must exist for smart defaults to be applied
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
 
       await initCommand('ci-translation', { quick: true });
 
-      expect(mockGetDefaultTranslationConfig).toHaveBeenCalledWith('en');
-      expect(mockUpdateConfigWithTranslation).toHaveBeenCalled();
+      // Translation is now handled via applySmartDefaults, not separate prompts
+      expect(mockApplySmartDefaults).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ language: 'en' })
+      );
     });
   });
 
@@ -1238,17 +1330,13 @@ describe('init command', () => {
       expect(mockCollectLivingDocsInputs).not.toHaveBeenCalled();
     });
 
-    it('should call collectLivingDocsInputs when not disabled', async () => {
+    it('should not call collectLivingDocsInputs (removed from init flow)', async () => {
       mockExistsSync.mockReturnValue(false);
 
       await initCommand('with-docs', { quick: true });
 
-      expect(mockCollectLivingDocsInputs).toHaveBeenCalledWith(
-        expect.objectContaining({
-          language: 'en',
-          isCi: true,
-        })
-      );
+      // Living docs collection was removed from the init flow (0200 redesign)
+      expect(mockCollectLivingDocsInputs).not.toHaveBeenCalled();
     });
 
     it('should handle living docs failure gracefully', async () => {
@@ -1620,27 +1708,21 @@ describe('init command', () => {
   });
 
   // ==========================================================================
-  // initCommand - Wizard go-back navigation
+  // initCommand - Smart defaults (replaces old wizard go-back)
   // ==========================================================================
 
-  describe('initCommand - wizard go-back navigation', () => {
-    it('should handle go-back from external import step', async () => {
+  describe('initCommand - smart defaults application', () => {
+    it('should call displaySummaryBanner after init completes', async () => {
       mockExistsSync.mockReturnValue(false);
-      let importCallCount = 0;
-      mockPromptAndRunExternalImport.mockImplementation(() => {
-        importCallCount++;
-        if (importCallCount === 1) {
-          return Promise.resolve({ goBack: MOCK_WIZARD_BACK });
-        }
-        return Promise.resolve({ totalCount: 0, platforms: [] });
-      });
 
-      await initCommand('goback-import', { quick: true });
+      await initCommand('summary-test', { quick: true });
 
-      // logGoingBack should have been called
-      expect(mockLogGoingBack).toHaveBeenCalled();
-      // The import should have been retried
-      expect(importCallCount).toBe(2);
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectName: 'summary-test',
+          adapter: 'claude',
+        })
+      );
     });
   });
 
@@ -1648,8 +1730,8 @@ describe('init command', () => {
   // initCommand - Git hooks (CI mode)
   // ==========================================================================
 
-  describe('initCommand - git hooks in CI mode', () => {
-    it('should NOT prompt for git hooks in CI mode', async () => {
+  describe('initCommand - git hooks auto-installation', () => {
+    it('should auto-install git hooks when .git exists for new project', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.endsWith('.git')) return true;
         return false;
@@ -1657,9 +1739,8 @@ describe('init command', () => {
 
       await initCommand('hooks-ci', { quick: true });
 
-      // installGitHooks should NOT be called directly in CI mode
-      // (no prompt in CI)
-      expect(mockInstallGitHooks).not.toHaveBeenCalled();
+      // In the new flow (0200), git hooks are auto-installed without prompts
+      expect(mockInstallGitHooks).toHaveBeenCalled();
     });
   });
 

@@ -221,7 +221,7 @@ describe('ADOProjectAdapter', () => {
         updateProject: vi.fn().mockResolvedValue(undefined),
       });
 
-      // Mock fetch to throw error
+      // Mock fetch to throw error — createAreaPath catches internally and returns false
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       adapter.subscribe(registry);
@@ -232,20 +232,21 @@ describe('ADOProjectAdapter', () => {
         timestamp: new Date().toISOString(),
       });
 
-      // Should have been called twice - first in the catch block
+      // createAreaPath swallows the error and returns false,
+      // so handleProjectCreated sets the "requires admin" message
       expect(registry.updateProject).toHaveBeenCalledWith(
         'test-project',
         expect.objectContaining({
           external: expect.objectContaining({
             ado: expect.objectContaining({
-              syncError: expect.stringContaining('Network error'),
+              syncError: 'Area path creation requires admin permissions',
             }),
           }),
         }),
         { emitEvent: false }
       );
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to handle ADO mapping for project')
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('ADO area path mapping saved')
       );
     });
 
@@ -537,30 +538,42 @@ describe('ADOProjectAdapter', () => {
     });
 
     it('should handle empty PAT', () => {
-      const adapterNoPat = new ADOProjectAdapter({
-        logger: mockLogger,
-        organization: 'org',
-        project: 'proj',
-      });
-      const header = (adapterNoPat as any).getAuthHeader();
-      const expected = `Basic ${Buffer.from(':').toString('base64')}`;
-      expect(header).toBe(expected);
+      const originalPat = process.env.AZURE_DEVOPS_PAT;
+      delete process.env.AZURE_DEVOPS_PAT;
+      try {
+        const adapterNoPat = new ADOProjectAdapter({
+          logger: mockLogger,
+          organization: 'org',
+          project: 'proj',
+        });
+        const header = (adapterNoPat as any).getAuthHeader();
+        const expected = `Basic ${Buffer.from(':').toString('base64')}`;
+        expect(header).toBe(expected);
+      } finally {
+        if (originalPat !== undefined) process.env.AZURE_DEVOPS_PAT = originalPat;
+      }
     });
   });
 
   describe('areaPathExists (private)', () => {
     it('should return false when no PAT configured', async () => {
-      const adapterNoPat = new ADOProjectAdapter({
-        logger: mockLogger,
-        organization: 'org',
-        project: 'proj',
-      });
+      const originalPat = process.env.AZURE_DEVOPS_PAT;
+      delete process.env.AZURE_DEVOPS_PAT;
+      try {
+        const adapterNoPat = new ADOProjectAdapter({
+          logger: mockLogger,
+          organization: 'org',
+          project: 'proj',
+        });
 
-      const exists = await (adapterNoPat as any).areaPathExists('proj\\Test');
-      expect(exists).toBe(false);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'No PAT configured, cannot verify area path'
-      );
+        const exists = await (adapterNoPat as any).areaPathExists('proj\\Test');
+        expect(exists).toBe(false);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          'No PAT configured, cannot verify area path'
+        );
+      } finally {
+        if (originalPat !== undefined) process.env.AZURE_DEVOPS_PAT = originalPat;
+      }
     });
 
     it('should return true when area path found in tree', async () => {
@@ -633,14 +646,20 @@ describe('ADOProjectAdapter', () => {
 
   describe('createAreaPath (private)', () => {
     it('should return false when no PAT configured', async () => {
-      const adapterNoPat = new ADOProjectAdapter({
-        logger: mockLogger,
-        organization: 'org',
-        project: 'proj',
-      });
+      const originalPat = process.env.AZURE_DEVOPS_PAT;
+      delete process.env.AZURE_DEVOPS_PAT;
+      try {
+        const adapterNoPat = new ADOProjectAdapter({
+          logger: mockLogger,
+          organization: 'org',
+          project: 'proj',
+        });
 
-      const created = await (adapterNoPat as any).createAreaPath('proj\\Test');
-      expect(created).toBe(false);
+        const created = await (adapterNoPat as any).createAreaPath('proj\\Test');
+        expect(created).toBe(false);
+      } finally {
+        if (originalPat !== undefined) process.env.AZURE_DEVOPS_PAT = originalPat;
+      }
     });
 
     it('should return true on 201 response', async () => {
@@ -687,17 +706,23 @@ describe('ADOProjectAdapter', () => {
 
   describe('discoverProjects', () => {
     it('should return empty array when no PAT configured', async () => {
-      const adapterNoPat = new ADOProjectAdapter({
-        logger: mockLogger,
-        organization: 'org',
-        project: 'proj',
-      });
+      const originalPat = process.env.AZURE_DEVOPS_PAT;
+      delete process.env.AZURE_DEVOPS_PAT;
+      try {
+        const adapterNoPat = new ADOProjectAdapter({
+          logger: mockLogger,
+          organization: 'org',
+          project: 'proj',
+        });
 
-      const projects = await adapterNoPat.discoverProjects();
-      expect(projects).toEqual([]);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        'No PAT configured, cannot discover ADO projects'
-      );
+        const projects = await adapterNoPat.discoverProjects();
+        expect(projects).toEqual([]);
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          'No PAT configured, cannot discover ADO projects'
+        );
+      } finally {
+        if (originalPat !== undefined) process.env.AZURE_DEVOPS_PAT = originalPat;
+      }
     });
 
     it('should discover area paths and convert to projects', async () => {

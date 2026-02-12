@@ -18,6 +18,9 @@ const {
   mockLoadAllSpecs,
   mockAnalyze,
   mockMap,
+  mockEnhancedSpecLoader,
+  mockHistoryAnalyzer,
+  mockRelationshipMapper,
 } = vi.hoisted(() => ({
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
@@ -26,6 +29,9 @@ const {
   mockLoadAllSpecs: vi.fn(),
   mockAnalyze: vi.fn(),
   mockMap: vi.fn(),
+  mockEnhancedSpecLoader: vi.fn(),
+  mockHistoryAnalyzer: vi.fn(),
+  mockRelationshipMapper: vi.fn(),
 }));
 
 vi.mock('fs', () => ({
@@ -55,6 +61,7 @@ vi.mock('../../../../../src/core/living-docs/enterprise/spec-loader.js', () => {
   return {
     EnhancedSpecLoader: class {
       loadAllSpecs = mockLoadAllSpecs;
+      constructor(opts: any) { mockEnhancedSpecLoader(opts); }
     },
   };
 });
@@ -63,6 +70,7 @@ vi.mock('../../../../../src/core/living-docs/enterprise/history-analyzer.js', ()
   return {
     HistoryAnalyzer: class {
       analyze = mockAnalyze;
+      constructor(opts: any) { mockHistoryAnalyzer(opts); }
     },
   };
 });
@@ -71,6 +79,7 @@ vi.mock('../../../../../src/core/living-docs/enterprise/relationship-mapper.js',
   return {
     RelationshipMapper: class {
       map = mockMap;
+      constructor(opts: any) { mockRelationshipMapper(opts); }
     },
   };
 });
@@ -519,10 +528,12 @@ describe('EnterpriseGenerator', () => {
       await gen.generate();
 
       const content = getWrittenContent('COMPANY-HISTORY.md');
-      expect(content).toContain('Event 1');
-      expect(content).toContain('Event 2');
-      expect(content).toContain('Event 3');
-      expect(content).not.toContain('Event 4');
+      // Extract the mermaid timeline block (events 4 & 5 excluded from it, but present in detailed table)
+      const mermaidBlock = content.split('```mermaid')[1]?.split('```')[0] ?? '';
+      expect(mermaidBlock).toContain('Event 1');
+      expect(mermaidBlock).toContain('Event 2');
+      expect(mermaidBlock).toContain('Event 3');
+      expect(mermaidBlock).not.toContain('Event 4');
     });
 
     it('should limit timeline to last 50 events', async () => {
@@ -540,9 +551,11 @@ describe('EnterpriseGenerator', () => {
       await gen.generate();
 
       const content = getWrittenContent('COMPANY-HISTORY.md');
-      // First 10 events should be excluded (60 - 50 = 10)
-      expect(content).not.toContain('BigEvent0');
-      expect(content).toContain('BigEvent59');
+      // Mermaid timeline uses last 50 events; first 10 should be excluded from it
+      const mermaidBlock = content.split('```mermaid')[1]?.split('```')[0] ?? '';
+      expect(mermaidBlock).not.toContain('BigEvent0');
+      // BigEvent10 is first event included in the last 50 and first in its month section
+      expect(mermaidBlock).toContain('BigEvent10');
     });
 
     it('should generate event detail table', async () => {
@@ -608,9 +621,11 @@ describe('EnterpriseGenerator', () => {
       await gen.generate();
 
       const content = getWrittenContent('COMPANY-HISTORY.md');
+      // Mermaid timeline truncates titles to 40 chars; detailed table keeps full title
+      const mermaidBlock = content.split('```mermaid')[1]?.split('```')[0] ?? '';
       const truncated = 'A'.repeat(40);
-      expect(content).toContain(truncated);
-      expect(content).not.toContain('A'.repeat(41));
+      expect(mermaidBlock).toContain(truncated);
+      expect(mermaidBlock).not.toContain('A'.repeat(41));
     });
 
     it('should limit related entities to 2 in detail table', async () => {

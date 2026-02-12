@@ -83,7 +83,12 @@ jobs:
                 owner, repo, ref: newest.head.sha
               });
 
-              const failedChecks = checks.check_runs.filter(c => c.conclusion === 'failure').length;
+              // Ignore non-blocking checks (claude-review is continue-on-error)
+              const NON_BLOCKING_CHECKS = ['claude-review', 'Claude Code Review'];
+              const failedChecks = checks.check_runs.filter(c =>
+                c.conclusion === 'failure' &&
+                !NON_BLOCKING_CHECKS.includes(c.name)
+              ).length;
 
               if (failedChecks >= MAX_FAILED_CHECKS || ageHours > MAX_AGE_HOURS) {
                 const reason = failedChecks >= MAX_FAILED_CHECKS

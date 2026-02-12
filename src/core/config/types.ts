@@ -337,6 +337,8 @@ export interface ChildRepoConfig {
   adoProject?: string;
   /** Tech stack keywords for story routing */
   techStack?: string[];
+  /** Repository role (frontend, backend, mobile, infra, shared, other) */
+  role?: string;
 }
 
 /**

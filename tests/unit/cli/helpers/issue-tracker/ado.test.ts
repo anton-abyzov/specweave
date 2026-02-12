@@ -39,6 +39,7 @@ const {
   mockCacheGet,
   mockCacheSet,
   MockCacheManager,
+  mockFetchAreaPathsForProject,
 } = vi.hoisted(() => {
   const oraInstance = {
     start: vi.fn().mockReturnThis(),
@@ -49,12 +50,9 @@ const {
   const mockCacheGet = vi.fn().mockResolvedValue(null);
   const mockCacheSet = vi.fn().mockResolvedValue(undefined);
 
-  class _MockCacheManager {
-    get = mockCacheGet;
-    set = mockCacheSet;
-  }
-
-  const MockCacheManagerSpy = vi.fn().mockImplementation((projectRoot: string) => new _MockCacheManager());
+  const MockCacheManagerSpy = vi.fn();
+  MockCacheManagerSpy.prototype.get = mockCacheGet;
+  MockCacheManagerSpy.prototype.set = mockCacheSet;
 
   return {
     mockReadEnvFile: vi.fn().mockReturnValue(''),
@@ -84,6 +82,7 @@ const {
     mockCacheGet,
     mockCacheSet,
     MockCacheManager: MockCacheManagerSpy,
+    mockFetchAreaPathsForProject: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -145,8 +144,8 @@ vi.mock('../../../../../src/core/cache/cache-manager.js', () => ({
 }));
 
 // Mock the dynamic import for fetchProjectAreaPaths
-vi.mock('../../../../plugins/specweave-ado/lib/ado-board-resolver.js', () => ({
-  fetchAreaPathsForProject: vi.fn().mockResolvedValue([]),
+vi.mock('../../../../../plugins/specweave-ado/lib/ado-board-resolver.js', () => ({
+  fetchAreaPathsForProject: mockFetchAreaPathsForProject,
 }));
 
 // ---------------------------------------------------------------------------
@@ -1201,6 +1200,12 @@ describe('ado.ts - Azure DevOps Issue Tracker', () => {
           value: [{ name: 'TestProject', id: 'proj-1' }],
         })
       );
+
+      // Return area paths from the API so selectAreaPaths is called
+      mockFetchAreaPathsForProject.mockResolvedValue([
+        { name: 'Team1', path: 'Root\\Team1' },
+        { name: 'Team2', path: 'Root\\Team2' },
+      ]);
 
       mockSelectAreaPaths.mockResolvedValue({
         areaPaths: ['Root\\Team1', 'Root\\Team2'],

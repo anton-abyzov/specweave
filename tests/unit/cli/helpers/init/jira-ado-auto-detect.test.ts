@@ -94,11 +94,11 @@ vi.mock('../../../../../src/integrations/jira/jira-client.js', () => ({
   },
 }));
 
-vi.mock('../../../../../../plugins/specweave-jira/lib/jira-board-resolver.js', () => ({
+vi.mock('../../../../../plugins/specweave-jira/lib/jira-board-resolver.js', () => ({
   fetchBoardsForProject: mockFetchBoardsForProject,
 }));
 
-vi.mock('../../../../../../plugins/specweave-ado/lib/ado-board-resolver.js', () => ({
+vi.mock('../../../../../plugins/specweave-ado/lib/ado-board-resolver.js', () => ({
   fetchAreaPathsForProject: mockFetchAreaPathsForProject,
 }));
 
@@ -1067,9 +1067,9 @@ describe('jira-ado-auto-detect', () => {
         { key: 'PROJ', name: 'Project' },
       ]);
       mockFetchBoardsForProject.mockResolvedValueOnce([
-        makeJiraBoard('Platform Team', 'scrum'),
-        makeJiraBoard('Infrastructure Board', 'kanban'),
-        makeJiraBoard('DevOps Team', 'scrum'),
+        makeJiraBoard('Platform Services', 'scrum'),
+        makeJiraBoard('DevOps Board', 'kanban'),
+        makeJiraBoard('SRE Board', 'scrum'),
       ]);
 
       const result = await detectJiraStructure();

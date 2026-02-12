@@ -75,7 +75,6 @@ jobs:
               return;
             }
 
-            // Also check last commit for loop detection (belt-and-suspenders)
             core.setOutput('skip', 'false');
 
       - name: Checkout failing branch
@@ -139,7 +138,6 @@ jobs:
             const logs = fs.readFileSync('failure-logs.txt', 'utf-8');
 
             // Known pre-existing failures that the bot should NOT attempt to fix
-            // These are tracked separately and fixed by humans
             const KNOWN_UNFIXABLE = [
               "Cannot find module '../../src/cli/commands/project.js'",
               "Cannot find module './project.js'",
@@ -166,6 +164,18 @@ jobs:
           steps.classify.outputs.skip != 'true'
         uses: ./.github/actions/setup-and-build
 
+      - name: Create fix branch
+        if: |
+          steps.dedup-check.outputs.skip != 'true' &&
+          steps.loop-check.outputs.skip != 'true' &&
+          steps.classify.outputs.skip != 'true'
+        id: fix-branch
+        run: |
+          BRANCH="ci-autofix/fix-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "base=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_OUTPUT"
+
       - name: Auto-fix with Claude
         if: |
           steps.dedup-check.outputs.skip != 'true' &&
@@ -183,16 +193,16 @@ jobs:
             1. Read failure-logs.txt for error details
             2. Run `npm run test:unit` to reproduce locally
             3. Fix the root cause with minimal changes
-            4. Verify the fix passes: `npm run test:unit && npm run test:e2e`
-            5. Commit and push directly to this branch
+            4. Verify the fix passes: `npm run test:unit`
+            5. Commit and push to THIS branch (you are on ${{ steps.fix-branch.outputs.branch }})
 
             ## CRITICAL RULES
 
-            - Do NOT create a new branch. Fix and push to the CURRENT branch only.
-            - Do NOT create a pull request. Just commit and push.
+            - Push to the CURRENT branch only (${{ steps.fix-branch.outputs.branch }})
+            - Do NOT create additional branches or PRs
             - ONLY fix test/build failures, do not refactor or improve unrelated code
             - Keep changes minimal - just enough to make CI pass
-            - If the failure is in E2E tests that seem environment-specific or flaky, skip fixing them and focus on unit/smoke failures
+            - If E2E tests seem environment-specific or flaky, skip them and focus on unit/smoke
             - If unfixable, create a GitHub issue with label "ci-failure" explaining the problem
             - Commit message MUST start with "fix(ci): " followed by short description
             - No emoji, no AI references, no Co-Authored-By in commit messages
@@ -203,9 +213,47 @@ jobs:
             ```bash
             git add -u  # only tracked files
             git commit -m "fix(ci): <describe what was fixed>"
-            git push
+            git push -u origin ${{ steps.fix-branch.outputs.branch }}
             ```
           claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
+
+      - name: Create PR with auto-merge
+        if: |
+          steps.dedup-check.outputs.skip != 'true' &&
+          steps.loop-check.outputs.skip != 'true' &&
+          steps.classify.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if Claude actually pushed commits
+          if ! git log --oneline origin/${{ steps.fix-branch.outputs.branch }}..HEAD 2>/dev/null | grep -q .; then
+            # Check remote branch exists and has commits ahead of base
+            AHEAD=$(gh api repos/${{ github.repository }}/compare/${{ steps.fix-branch.outputs.base }}...${{ steps.fix-branch.outputs.branch }} --jq '.ahead_by' 2>/dev/null || echo "0")
+            if [ "$AHEAD" = "0" ]; then
+              echo "No fix commits were pushed. Skipping PR creation."
+              exit 0
+            fi
+          fi
+
+          PR_URL=$(gh pr create \
+            --base "${{ steps.fix-branch.outputs.base }}" \
+            --head "${{ steps.fix-branch.outputs.branch }}" \
+            --title "fix(ci): auto-fix test failures on ${{ steps.fix-branch.outputs.base }}" \
+            --body "Automated fix for CI test failures on \`${{ steps.fix-branch.outputs.base }}\`.
+
+          Triggered by failed run: ${{ github.event.workflow_run.html_url }}
+
+          This PR will auto-merge after CI passes." \
+            2>&1) || true
+
+          if echo "$PR_URL" | grep -q "https://"; then
+            echo "Created PR: $PR_URL"
+            # Auto-approve and enable auto-merge
+            gh pr review --approve "$PR_URL"
+            gh pr merge --auto --squash "$PR_URL"
+          else
+            echo "PR creation output: $PR_URL"
+          fi
 
       - name: Escalate to human
         if: |
