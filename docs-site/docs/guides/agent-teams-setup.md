@@ -54,7 +54,7 @@ Restart Claude Code after changing settings.
 
 ### Custom Orchestration
 ```bash
-/sw:team-orchestrate "Build checkout with Stripe payments, React frontend, and Node.js backend"
+/sw:team-lead "Build checkout with Stripe payments, React frontend, and Node.js backend"
 ```
 
 ## Step 4: Monitor Progress
@@ -100,5 +100,5 @@ Restart Claude Code after changing settings.
 ## Further Reading
 
 - [Agent Teams & Swarms Guide](./agent-teams-and-swarms.md) — Architecture and concepts
-- `/sw:team-orchestrate` — Custom team formation
+- `/sw:team-lead` — Custom team formation
 - `/sw:team-build` — Preset-based team launch

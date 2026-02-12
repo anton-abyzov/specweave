@@ -1,15 +1,15 @@
 ---
-description: Orchestrate multi-agent parallel development using Claude Code Agent Teams or subagent fallback. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, orchestrate agents, team orchestrate, agent teams.
+description: Orchestrate multi-agent parallel development using Claude Code Agent Teams or subagent fallback. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, team lead, agent teams.
 ---
 
-# Team Orchestrate
+# Team Lead
 
 **Plan and launch parallel development agents across domains using Claude Code's native Agent Teams or subagent fallback.**
 
 ## Usage
 
 ```bash
-/sw:team-orchestrate "<feature description>" [OPTIONS]
+/sw:team-lead "<feature description>" [OPTIONS]
 ```
 
 ## Options
@@ -807,7 +807,7 @@ Orchestrator Final Check:
 ### Full Orchestration Flow
 
 ```
-/sw:team-orchestrate "Build checkout flow"
+/sw:team-lead "Build checkout flow"
   │
   ├── Step 1: Detect mode (native Agent Teams vs subagent fallback)
   ├── Step 2: Analyze feature → identify domains
@@ -892,7 +892,7 @@ The orchestrator records the team session to `.specweave/state/parallel/session.
 ### Example 1: Full-Stack Feature
 
 ```
-User: /sw:team-orchestrate "Build user authentication with login, signup, password reset, and OAuth"
+User: /sw:team-lead "Build user authentication with login, signup, password reset, and OAuth"
 
 Orchestrator detects domains: shared/types, database, backend, frontend, testing, security
 Creates 6 increments.
@@ -911,14 +911,14 @@ Phase 2 (after contracts ready):
 ### Example 2: Frontend-Only (No Dependencies)
 
 ```
-User: /sw:team-orchestrate "Redesign dashboard" --domains frontend,testing
+User: /sw:team-lead "Redesign dashboard" --domains frontend,testing
 → No upstream dependencies. Both agents spawn in parallel immediately.
 ```
 
 ### Example 3: Dry Run
 
 ```
-User: /sw:team-orchestrate "Add payment processing" --dry-run
+User: /sw:team-lead "Add payment processing" --dry-run
 → Shows plan with domains, phases, file ownership. No agents spawned.
 ```
 
