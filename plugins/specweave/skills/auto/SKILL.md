@@ -2,7 +2,6 @@
 disable-model-invocation: true
 description: Start autonomous execution with stop hook feedback loop. Works until all tasks complete or max iterations reached. Use when you want continuous unattended execution.
 argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
-allowed-tools: ["Bash(specweave auto *)"]
 ---
 
 # Auto Command
@@ -15,10 +14,11 @@ When user says "auto" or "autonomous" or "keep working" or provides a task descr
 
 1. **Understand the user's intent**: What do they want to work on?
 2. **Find or create the increment**: Check for active increments, or create new ones if needed
-3. **Execute the command**:
-   ```bash
-   specweave auto [INCREMENT_IDS] [OPTIONS]
-   ```
+3. **Set up auto session directly** (see Execution section):
+   - Read config and find increments using Read/Glob tools
+   - Activate increments by editing metadata.json via Edit tool
+   - Write session marker (`.specweave/state/auto-mode.json`) via Write tool
+   - Map quality flags to `successCriteria` in the marker
 4. **⚠️ MANDATORY: Display stop conditions banner** - Users MUST see when auto mode will stop BEFORE work begins! See "Step 1.5" in Execution section.
 5. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
 
@@ -91,15 +91,15 @@ The hook does NOT run tests, builds, or any external commands. It has no PATH de
 
 When `--build`, `--tests`, etc. flags are passed, they are stored as **success criteria** in `auto-mode.json`. The model reads these criteria and MUST verify them before running `/sw:done`:
 
-| Flag | Stored As | Model Responsibility |
-|------|-----------|---------------------|
-| `--build` | `successCriteria[type=build]` | Run build command, fix failures |
-| `--tests` | `successCriteria[type=tests]` | Run tests, fix failures |
-| `--e2e` | `successCriteria[type=e2e]` | Run E2E tests, fix failures |
-| `--lint` | `successCriteria[type=lint]` | Run linter, fix issues |
-| `--types` | `successCriteria[type=types]` | Run type checker, fix errors |
-| `--cov N` | `successCriteria[type=coverage]` | Write tests to meet threshold |
-| `--cmd "..."` | `successCriteria[type=custom]` | Run custom command |
+| Flag | successCriteria type | Model Responsibility |
+|------|---------------------|---------------------|
+| `--build` | `build_succeeds` | Run build command, fix failures |
+| `--tests` | `tests_pass` | Run tests, fix failures |
+| `--e2e` | `tests_pass` (description: "E2E tests") | Run E2E tests, fix failures |
+| `--lint` | `custom_command` (command: lint cmd) | Run linter, fix issues |
+| `--types` | `custom_command` (command: tsc) | Run type checker, fix errors |
+| `--cov N` | `tests_pass` (threshold: N) | Write tests to meet threshold |
+| `--cmd "..."` | `custom_command` | Run custom command |
 
 The model runs in a proper shell environment where npm/node ARE available.
 
@@ -286,8 +286,11 @@ Analyze & Show Plan
 1. User runs /sw:auto (with or without IDs)
            │
            ▼
-2. specweave auto command creates session state
-   └─ .specweave/state/auto-session.json
+2. Skill sets up session directly (no CLI needed):
+   ├─ Read config.json for TDD mode, auto settings
+   ├─ Glob/Read increments to find active/backlog
+   ├─ Edit metadata.json to activate increments
+   └─ Write .specweave/state/auto-mode.json (session marker)
            │
            ▼
 3. Claude starts working on tasks
@@ -298,8 +301,9 @@ Analyze & Show Plan
            │
            ▼
 5. Stop Hook intercepts (stop-auto-v5.sh)
-   ├─ Checks: All tasks complete? (grep)
-   ├─ Checks: All ACs satisfied? (grep)
+   ├─ Checks: auto-mode.json exists with active=true
+   ├─ Checks: All tasks complete? (grep [ ] in tasks.md)
+   ├─ Checks: All ACs satisfied? (grep [ ] in spec.md)
    └─ Checks: Turn limit reached?
            │
    ┌──────┴──────┐
@@ -757,22 +761,77 @@ The stop hook validates gates 1-2 via grep. Gates 3-8 are the model's responsibi
 
 When this command is invoked:
 
-### Step 1: MANDATORY - Run specweave auto (DO THIS FIRST!)
+### Step 1: MANDATORY - Set Up Auto Session (DO THIS FIRST!)
 
-**Execute this IMMEDIATELY when /sw:auto is invoked:**
+**Set up the auto session directly using Read/Write/Edit/Glob tools. No CLI needed.**
 
-```bash
-specweave auto [INCREMENT_IDS...] [OPTIONS]
+#### Step 1a: Read Configuration
+
+```
+Read .specweave/config.json to extract:
+  - auto.enabled (default: true) — if false, STOP
+  - auto.maxTurns (default: 20)
+  - testing.defaultTestMode — check for "TDD"
+  - testing.tddEnforcement — "strict" | "warn" | "off"
+  - auto.requireTests (default: false)
 ```
 
-**IMPORTANT**: The command is executed via the globally-installed `specweave` CLI, NOT bash scripts. This ensures cross-platform compatibility (Windows, macOS, Linux).
+#### Step 1b: Find Increments
 
-Pass any arguments from the user (increment IDs, completion conditions, --max-iterations, --simple, etc.)
+**If INCREMENT_IDS specified by user:**
+- For each ID, Glob `.specweave/increments/{ID}*/metadata.json`
+- Read each metadata.json, verify it exists
+- If not found, warn user and STOP
 
-**Handle exit codes:**
-- `0`: Success, session created → proceed to Step 1.5
-- `1`: Error (no increments found with --no-increment/--no-inc) → STOP
-- `2`: **Increment creation needed** → proceed to Step 2
+**If no IDs specified:**
+- Glob `.specweave/increments/*/metadata.json`
+- Read each, find ones with status "active" or "in-progress"
+- If none active, check for "backlog" or "planned"
+- If none at all → proceed to Step 2 (Intelligent Increment Creation)
+
+#### Step 1c: Activate Increments
+
+For each increment that needs activation:
+- Edit its `metadata.json`: set `"status": "active"` and `"updated"` to current ISO timestamp
+
+#### Step 1d: Create Session Marker
+
+**Write `.specweave/state/auto-mode.json` using the Write tool** with this schema:
+
+```json
+{
+  "active": true,
+  "timestamp": "2026-02-11T12:00:00.000Z",
+  "incrementIds": ["0001-feature-name"],
+  "tddMode": false,
+  "requireTests": false,
+  "userGoal": "optional user prompt text",
+  "successCriteria": [
+    { "type": "tasks_complete", "description": "All tasks marked complete in tasks.md", "required": true },
+    { "type": "acs_satisfied", "description": "All acceptance criteria satisfied in spec.md", "required": true }
+  ],
+  "successSummary": "All tasks and acceptance criteria complete"
+}
+```
+
+**Map quality flags to successCriteria entries:**
+
+| User Flag | Add to successCriteria |
+|-----------|----------------------|
+| `--tests` | `{ "type": "tests_pass", "description": "All tests must pass", "required": true }` |
+| `--build` | `{ "type": "build_succeeds", "description": "Build must succeed", "required": true }` |
+| `--e2e` | `{ "type": "tests_pass", "description": "E2E tests must pass", "required": true }` |
+| `--lint` | `{ "type": "custom_command", "description": "Linting must pass", "required": true, "command": "<lint-cmd>" }` |
+| `--types` | `{ "type": "custom_command", "description": "Type-checking must pass", "required": true, "command": "npx tsc --noEmit" }` |
+| `--cov N` | `{ "type": "tests_pass", "description": "Coverage must meet N%", "required": true, "threshold": N }` |
+| `--cmd "X"` | `{ "type": "custom_command", "description": "Custom: X", "required": true, "command": "X" }` |
+| `--tdd` | Set `"tddMode": true` in marker |
+
+**Always include `tasks_complete` and `acs_satisfied` as base criteria.**
+
+Ensure `.specweave/state/` directory exists (create with Bash `mkdir -p` if needed).
+
+**Proceed to Step 1.5**
 
 ### Step 1.5: MANDATORY - Analyze Tests & Display Stop Conditions
 
@@ -1054,16 +1113,11 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
 2. Or set globally: `testing.defaultTestMode: "TDD"` + `testing.tddEnforcement: "strict"`
 3. Tasks should be grouped in triplets: T-001 [RED], T-002 [GREEN], T-003 [REFACTOR]
 
-### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
+### Step 2: INTELLIGENT INCREMENT CREATION (when no increments found)
 
-**When specweave auto signals increment creation needed:**
+**When no active or matching increments were found in Step 1b:**
 
-1. **Check marker file:**
-   ```bash
-   cat .specweave/state/auto-needs-increment.json
-   ```
-
-2. **Analyze context** (ULTRATHINK):
+1. **Analyze context** (ULTRATHINK):
    - Read recent conversation history
    - Check user prompt for feature descriptions
    - Scan `.specweave/increments/` for planned/backlog items
@@ -1072,39 +1126,32 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
 3. **Make intelligent decision:**
 
    **A. Match existing increment:**
-   ```bash
+   ```
    # User said: "work on the login feature"
    # Found: .specweave/increments/0002-user-login-system (status: planned)
-   # Action: Activate it and run specweave auto with 0002
-   /sw:resume 0002
-   specweave auto 0002 [other-args]
+   # Action: Activate it via Edit metadata.json, then set up session (Step 1c-1d)
    ```
 
    **B. Extend existing increment:**
-   ```bash
+   ```
    # User said: "add password reset to auth"
    # Found: .specweave/increments/0001-authentication (status: active, incomplete)
-   # Action: Add tasks to existing increment, use it for auto mode
-   # Edit tasks.md to add new tasks
-   specweave auto 0001 [other-args]
+   # Action: Add tasks to existing tasks.md, include in session marker
    ```
 
    **C. Create new increment(s):**
-   ```bash
+   ```
    # User said: "build a payment integration with Stripe"
    # No matching increments found
-   # Action: Create new increment via /sw:increment
-   /sw:increment "Payment integration with Stripe - support card payments, webhooks, and subscription management"
-   # Then run specweave auto with the new increment ID
-   specweave auto 0003-payment-integration [other-args]
+   # Action: Create new increment via /sw:increment, then set up session (Step 1c-1d)
+   /sw:increment "Payment integration with Stripe"
    ```
 
    **D. Multiple increments:**
-   ```bash
+   ```
    # User said: "finish all pending features"
    # Found: multiple backlog/planned increments
-   # Action: Create queue
-   specweave auto 0002-dashboard 0003-reports 0004-export [other-args]
+   # Action: Activate all via Edit metadata.json, include all in session marker
    ```
 
    **E. Ask user (if ambiguous):**
@@ -1121,10 +1168,7 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
    - Something else (please describe)
    ```
 
-4. **Clean up marker:**
-   ```bash
-   rm -f .specweave/state/auto-needs-increment.json
-   ```
+4. **Set up session** — Go back to Step 1c-1d to activate and create the marker.
 
 5. **Proceed to Step 1.5** - Display the stop conditions banner!
 
