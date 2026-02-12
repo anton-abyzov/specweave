@@ -260,6 +260,8 @@ export interface AutoModeFlag {
   timestamp: string;
   incrementIds?: string[]; // Optional: specific increments to process
   parallel?: boolean; // Whether parallel mode is active
+  tddMode?: boolean; // TDD strict mode enabled
+  requireTests?: boolean; // Tests required before completion
   // Success criteria for completion evaluation
   successCriteria?: SuccessCriterion[];
   successSummary?: string; // Human-readable summary of what ends the session

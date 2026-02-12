@@ -98,14 +98,27 @@ for increment_dir in "$INCREMENTS_DIR"/[0-9]*/; do
   # Read user stories
   user_stories=$(jq -c '.userStories // []' "$metadata_file" 2>/dev/null || echo "[]")
 
-  # Count tasks
+  # Count tasks - supports multiple formats:
+  #   Format A: ### T-001: Title  (3-hash heading)
+  #   Format B: #### T-001: Title (4-hash heading)
+  #   Format C: - [x] T-001: Title (checklist)
   total_tasks=0
   completed_tasks=0
   if [[ -f "$tasks_file" ]]; then
-    # Count ### T- headers for total
-    total_tasks=$(grep -c "^### T-" "$tasks_file" 2>/dev/null) || total_tasks=0
-    # Count [x] for completed
-    completed_tasks=$(grep "^\*\*Status\*\*:.*\[x\]" "$tasks_file" 2>/dev/null | wc -l | tr -d ' ') || completed_tasks=0
+    # Count heading-based tasks (any heading level: ##, ###, ####, etc.)
+    heading_tasks=$(grep -cE "^#{2,} T-[0-9]" "$tasks_file" 2>/dev/null) || heading_tasks=0
+    # Count checklist-based tasks: - [ ] T-NNN or - [x] T-NNN
+    checklist_tasks=$(grep -cE "^- \[[x ]\] T-[0-9]" "$tasks_file" 2>/dev/null) || checklist_tasks=0
+    total_tasks=$((heading_tasks + checklist_tasks))
+
+    # Count completed - **Status**: [x] anywhere on line (not anchored to start)
+    completed_status=$(grep -cE "\*\*Status\*\*:\s*\[x\]" "$tasks_file" 2>/dev/null) || completed_status=0
+    # Count **Completed**: <date> format
+    completed_date=$(grep -cE "\*\*Completed\*\*:\s*[0-9]" "$tasks_file" 2>/dev/null) || completed_date=0
+    # Count checklist completed: - [x] T-NNN
+    completed_checklist=$(grep -cE "^- \[x\] T-[0-9]" "$tasks_file" 2>/dev/null) || completed_checklist=0
+    completed_tasks=$((completed_status + completed_date + completed_checklist))
+
     # Ensure numeric
     total_tasks="${total_tasks:-0}"
     completed_tasks="${completed_tasks:-0}"
