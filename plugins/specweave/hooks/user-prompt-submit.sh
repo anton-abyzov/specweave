@@ -253,6 +253,19 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
       if [[ -n "$MIGRATED" ]]; then
         echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "${SW_PROJECT_ROOT:-.}/.specweave/state/hook.log" 2>/dev/null || true
       fi
+
+      # CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
+      # The `claude plugin uninstall` commands above may corrupt ~/.claude/settings.json
+      # and disable sw@specweave as collateral damage. Re-enable it explicitly.
+      if [[ -f "$USER_SETTINGS" ]]; then
+        SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
+        if [[ "$SW_ENABLED" != "true" ]]; then
+          # Re-enable core plugin (preserves all other settings)
+          jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
+            mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+          echo "[$(date -Iseconds)] scope-guard | restored sw@specweave enabled state" >> "${SW_PROJECT_ROOT:-.}/.specweave/state/hook.log" 2>/dev/null || true
+        fi
+      fi
     fi
   fi
 
