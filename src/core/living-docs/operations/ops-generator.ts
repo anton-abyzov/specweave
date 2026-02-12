@@ -439,8 +439,8 @@ export class OpsGenerator {
       const content = fs.readFileSync(filePath, 'utf-8');
       const name = path.basename(filePath, '.sh');
 
-      // Extract description from first comment block
-      const descMatch = content.match(/^#\s*(.+)/m);
+      // Extract description from first comment block (skip shebang lines)
+      const descMatch = content.match(/^#(?!!)\s*(.+)/m);
       const description = descMatch ? descMatch[1] : `Script: ${name}`;
 
       // Extract major steps from comments

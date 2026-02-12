@@ -273,41 +273,63 @@ export class JavaStandardsParser {
       }
 
       // Parse modules (simplified XML parsing)
-      const moduleRegex = /<module\s+name="([^"]+)"([^>]*>[\s\S]*?<\/module>|[^>]*\/>)/g;
-      let match;
-      while ((match = moduleRegex.exec(content)) !== null) {
-        const moduleName = match[1];
-        const moduleContent = match[2];
-        const properties: Record<string, string> = {};
+      const containers = new Set(['Checker', 'TreeWalker']);
+      const extractModules = (xml: string) => {
+        const moduleRegex = /<module\s+name="([^"]+)"([^>]*\/>|[^>]*>[\s\S]*?<\/module>)/g;
+        let match;
+        while ((match = moduleRegex.exec(xml)) !== null) {
+          const moduleName = match[1];
+          const moduleContent = match[2];
 
-        // Extract properties
-        const propRegex = /<property\s+name="([^"]+)"\s+value="([^"]+)"/g;
-        let propMatch;
-        while ((propMatch = propRegex.exec(moduleContent)) !== null) {
-          properties[propMatch[1]] = propMatch[2];
-        }
+          if (containers.has(moduleName)) {
+            // Recurse into container content to extract child modules
+            extractModules(moduleContent);
+            continue;
+          }
 
-        // Skip Checker and TreeWalker modules (containers)
-        if (moduleName !== 'Checker' && moduleName !== 'TreeWalker') {
+          const properties: Record<string, string> = {};
+          const propRegex = /<property\s+name="([^"]+)"\s+value="([^"]+)"/g;
+          let propMatch;
+          while ((propMatch = propRegex.exec(moduleContent)) !== null) {
+            properties[propMatch[1]] = propMatch[2];
+          }
+
           rules.push({ module: moduleName, properties });
         }
-      }
+      };
+      extractModules(content);
 
       // Extract suppressions
       const suppressionRegex = /<suppress\s+files="([^"]+)"/g;
-      while ((match = suppressionRegex.exec(content)) !== null) {
-        suppressions.push(match[1]);
+      let suppressMatch;
+      while ((suppressMatch = suppressionRegex.exec(content)) !== null) {
+        suppressions.push(suppressMatch[1]);
       }
 
-      // Update formatting based on checkstyle rules
+      // Update formatting based on checkstyle rules (check rules array first, then raw content)
       const lineLength = rules.find((r) => r.module === 'LineLength');
       if (lineLength?.properties?.max) {
         result.formatting.maxLineLength = parseInt(lineLength.properties.max, 10);
+      } else {
+        // Fallback: extract directly from raw XML for nested modules the regex may miss
+        const lineLengthMatch = content.match(
+          /<module\s+name="LineLength"[\s\S]*?<property\s+name="max"\s+value="(\d+)"/
+        );
+        if (lineLengthMatch) {
+          result.formatting.maxLineLength = parseInt(lineLengthMatch[1], 10);
+        }
       }
 
       const indentation = rules.find((r) => r.module === 'Indentation');
       if (indentation?.properties?.basicOffset) {
         result.formatting.indentSize = parseInt(indentation.properties.basicOffset, 10);
+      } else {
+        const indentMatch = content.match(
+          /<module\s+name="Indentation"[\s\S]*?<property\s+name="basicOffset"\s+value="(\d+)"/
+        );
+        if (indentMatch) {
+          result.formatting.indentSize = parseInt(indentMatch[1], 10);
+        }
       }
 
       result.checkstyle = {

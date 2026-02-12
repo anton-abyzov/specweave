@@ -358,9 +358,7 @@ export class HistoryAnalyzer {
     // Version milestones
     const releases = events.filter(e => e.type === 'release');
     for (const release of releases) {
-      if (release.title.includes('1.0') ||
-          release.title.includes('2.0') ||
-          release.title.match(/v?\d+\.0\.0/)) {
+      if (release.title.match(/v?\d+\.0\.0/)) {
         milestones.push({
           name: release.title,
           date: release.date,
