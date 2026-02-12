@@ -2,7 +2,7 @@
  * Vitest config for UNIT tests only
  *
  * Fast execution - no CLI spawning, no network, no temp directories.
- * Use: pnpm test:unit:fast
+ * Use: npm run test:unit:fast
  */
 import { defineConfig } from 'vitest/config';
 import baseConfig from './vitest.config.ts';
