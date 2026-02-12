@@ -532,143 +532,37 @@ MCP supports lazy-loading (auto mode) - tools load on-demand when >10% context.
 <!-- /SECTION -->
 
 <!-- SECTION:non-claude -->
-## Non-Claude AI Tools
+## Using SpecWeave with Other AI Tools
 
-**SpecWeave works with ANY AI coding assistant.** The framework uses file-based tracking that's AI-tool agnostic.
+**Not using Claude Code?** See **AGENTS.md** for complete instructions on using SpecWeave with Cursor, Copilot, Windsurf, Aider, and other AI coding assistants.
 
-### Quick Setup for Other Tools
+### Key Differences for Non-Claude Tools
+
+| Feature | Claude Code | Other Tools |
+|---------|-------------|-------------|
+| **Hooks** | Automatic | Manual sync required (see AGENTS.md) |
+| **Commands** | Slash syntax works | Read command .md files |
+| **Skills** | Auto-activate | Load .md files manually |
+| **Task tracking** | Auto-updates | Manual checkbox updates |
+
+### Quick Start (Non-Claude)
 
 ```bash
-# Install SpecWeave CLI globally
+# 1. Install SpecWeave globally
 npm install -g specweave
 
-# Initialize project (creates .specweave/ folder)
+# 2. Initialize your project
 specweave init .
 
-# Install plugins for your AI tool
-bash ~/.specweave/scripts/install-plugins.sh --target generic
-# Or on Windows PowerShell:
-~\.specweave\scripts\install-plugins.ps1 -Target generic
+# 3. Read AGENTS.md for your specific tool
+cat AGENTS.md  # or open in your editor
 ```
 
-### Manual Context Loading (Cursor, Windsurf, Aider, etc.)
+**Essential workflow for ANY AI tool:**
+1. After completing a task → Update `tasks.md`: `[ ]` → `[x]`
+2. If task satisfies ACs → Update `spec.md`: `[ ] AC-XX` → `[x] AC-XX`
+3. Run `/sw:sync-tasks` to update progress cache
+4. When all tasks done → Run `/sw:done {id}` to close increment
 
-If your AI tool doesn't have a plugin system, manually include these files in context:
-
-**Essential files to include in EVERY session:**
-1. `CLAUDE.md` (this file) - Framework rules and workflow
-2. `.specweave/increments/####-*/tasks.md` - Current work items
-3. `.specweave/increments/####-*/spec.md` - Requirements and ACs
-
-**Copy-paste starter prompt:**
-```
-I'm using SpecWeave for spec-driven development. Here are my current files:
-
-[PASTE CLAUDE.md CONTENT]
-
-[PASTE CURRENT tasks.md CONTENT]
-
-[PASTE CURRENT spec.md CONTENT]
-
-Follow SpecWeave workflow: update tasks.md checkboxes when done, update spec.md ACs.
-```
-
-### Tool-Specific Setup
-
-**Cursor IDE:**
-- Add `.specweave/` to workspace folders
-- Include `CLAUDE.md` in `.cursorrules`
-- Use `@file` to reference spec.md and tasks.md
-
-**Windsurf:**
-- Add this file content to cascade rules
-- Reference increment files with `/file` command
-
-**Aider:**
-- Add CLAUDE.md to `.aider.conf.yml`:
-  ```yaml
-  read:
-    - CLAUDE.md
-    - .specweave/increments/*/spec.md
-    - .specweave/increments/*/tasks.md
-  ```
-
-**Continue.dev:**
-- Add to `.continue/config.json`:
-  ```json
-  {
-    "contextProviders": [{
-      "name": "file",
-      "params": { "path": "CLAUDE.md" }
-    }]
-  }
-  ```
-
-**GitHub Copilot:**
-- Add to `.github/copilot-instructions.md`:
-  ```
-  Follow SpecWeave workflow from CLAUDE.md.
-  Check .specweave/increments/ for current tasks.
-  Update tasks.md when completing work.
-  ```
-
-### Hook Simulation (CRITICAL for Non-Claude Tools)
-
-Claude Code runs hooks automatically. **You must trigger these manually:**
-
-| When | What To Do |
-|------|------------|
-| **After EVERY task** | Update tasks.md `[ ]→[x]` + spec.md ACs `[ ]→[x]` + `/sw:sync-tasks` |
-| **After all ACs done** | `/sw:sync-docs update` to sync living docs |
-| **On increment close** | `/sw:validate {id}` then `/sw:done {id}` |
-| **Session start** | Check `specweave jobs` + `/sw:progress` for current state |
-
-**Full hook simulation guide:** See `AGENTS.md` for detailed instructions.
-
-### Replicating SpecWeave Behaviors
-
-| SpecWeave Feature | Manual Equivalent |
-|-------------------|-------------------|
-| `/sw:increment` | Create `spec.md` + `tasks.md` (every US needs `**Project**:` field!) |
-| `/sw:do` | Read tasks.md, work on pending tasks, update checkboxes |
-| `/sw:done` | `/sw:validate` then close |
-| Auto mode | Loop: read tasks.md → work → update → test → repeat |
-
-**Task format for any AI:**
-```markdown
-### T-001: Task Title
-**Status**: [ ] pending
-**Acceptance**: Given X, When Y, Then Z
-
-Implementation notes here.
-```
-
-**Mark complete by changing:** `[ ] pending` → `[x] completed`
-
-### Autonomous Mode Without Claude Code
-
-For non-Claude AI tools, implement the stop hook feedback loop pattern:
-
-```bash
-# Pseudo-code for any AI tool with API access
-while tasks_pending():
-    tasks = read_file("tasks.md")
-    current_task = get_first_pending(tasks)
-
-    # Have AI work on task
-    result = ai.complete(f"Complete this task: {current_task}")
-
-    # Update files
-    update_task_status(current_task, "completed")
-
-    # Run tests
-    if not run_tests():
-        ai.complete("Fix failing tests")
-
-    # Max iterations safety
-    if iterations > 100:
-        break
-```
-
-**Key principle:** The AI reads tasks.md, works, updates the file, and loops until all `[x]` complete.
+**Full guide with hook simulation, tool-specific setup, and workflows**: See **AGENTS.md**
 <!-- /SECTION -->
