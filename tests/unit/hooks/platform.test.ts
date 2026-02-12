@@ -136,9 +136,10 @@ describe('hooks/platform', () => {
   // -------------------------------------------------------------------
 
   describe('findProjectRoot()', () => {
-    it('should find project root when .specweave exists', () => {
+    it('should find project root when .specweave with config.json exists', () => {
       const specweaveDir = path.join(tmpDir, '.specweave');
       fs.mkdirSync(specweaveDir, { recursive: true });
+      fs.writeFileSync(path.join(specweaveDir, 'config.json'), '{}');
 
       const result = findProjectRoot(tmpDir);
       expect(result).toBe(tmpDir);
@@ -147,11 +148,21 @@ describe('hooks/platform', () => {
     it('should find project root from a child directory', () => {
       const specweaveDir = path.join(tmpDir, '.specweave');
       fs.mkdirSync(specweaveDir, { recursive: true });
+      fs.writeFileSync(path.join(specweaveDir, 'config.json'), '{}');
       const childDir = path.join(tmpDir, 'src', 'hooks');
       fs.mkdirSync(childDir, { recursive: true });
 
       const result = findProjectRoot(childDir);
       expect(result).toBe(tmpDir);
+    });
+
+    it('should skip stale .specweave without config.json', () => {
+      const specweaveDir = path.join(tmpDir, '.specweave');
+      fs.mkdirSync(path.join(specweaveDir, 'logs'), { recursive: true });
+      fs.mkdirSync(path.join(specweaveDir, 'state'), { recursive: true });
+
+      const result = findProjectRoot(tmpDir);
+      expect(result).toBeNull();
     });
 
     it('should return null when no .specweave directory exists', () => {
