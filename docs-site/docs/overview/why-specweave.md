@@ -34,6 +34,7 @@ Two weeks later:
 | **No Quality Gates** | Code ships without tests, reviews, or documentation | Bugs in production. Security vulnerabilities. |
 | **No Traceability** | Can't trace code back to requirements | "Why does this exist?" becomes unanswerable. |
 | **Team Chaos** | Multiple developers generate conflicting implementations | Integration hell. Onboarding takes weeks. |
+| **Context Exhaustion** | "Prompt is too long" kills your session mid-work | 10-15 min re-explaining per restart. Same decisions repeated. |
 
 ### The Hidden Math
 

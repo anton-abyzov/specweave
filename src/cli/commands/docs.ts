@@ -167,6 +167,7 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
   if (options.validate !== false) {
     console.log(chalk.cyan('🔍 Running pre-build validation...\n'));
 
+    let validationResult;
     try {
       const { DocsValidator } = await import('../../utils/docs-validator.js');
 
@@ -175,16 +176,18 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
         autoFix: options.autoFix ?? true,
       });
 
-      const result = await validator.validate();
-
-      if (!result.valid) {
-        console.log(chalk.red('\n❌ Documentation has errors. Build aborted.\n'));
-        process.exit(1);
-      }
-
-      console.log(chalk.green('   ✅ Validation passed!\n'));
+      validationResult = await validator.validate();
     } catch (error) {
       console.log(chalk.yellow('   ⚠️  Validation skipped\n'));
+    }
+
+    if (validationResult && !validationResult.valid) {
+      console.log(chalk.red('\n❌ Documentation has errors. Build aborted.\n'));
+      process.exit(1);
+    }
+
+    if (validationResult) {
+      console.log(chalk.green('   ✅ Validation passed!\n'));
     }
   }
 
@@ -229,6 +232,7 @@ export async function docsValidateCommand(options: DocsValidateOptions = {}): Pr
     process.exit(1);
   }
 
+  let result;
   try {
     const { DocsValidator } = await import('../../utils/docs-validator.js');
 
@@ -239,64 +243,64 @@ export async function docsValidateCommand(options: DocsValidateOptions = {}): Pr
 
     console.log(chalk.dim(`   Scanning: ${docsPath}\n`));
 
-    const result = await validator.validate();
-
-    // Print summary
-    console.log(chalk.white('   Summary:'));
-    console.log(chalk.dim(`   • Total files: ${result.totalFiles}`));
-
-    if (result.errors > 0) {
-      console.log(chalk.red(`   • Errors: ${result.errors}`));
-    } else {
-      console.log(chalk.green(`   • Errors: 0`));
-    }
-
-    if (result.warnings > 0) {
-      console.log(chalk.yellow(`   • Warnings: ${result.warnings}`));
-    } else {
-      console.log(chalk.dim(`   • Warnings: 0`));
-    }
-
-    if (result.fixedCount > 0) {
-      console.log(chalk.green(`   • Auto-fixed: ${result.fixedCount}`));
-    }
-
-    console.log();
-
-    // Print issues
-    if (options.verbose || result.errors > 0) {
-      for (const issue of result.issues) {
-        const color = issue.severity === 'error' ? chalk.red
-          : issue.severity === 'warning' ? chalk.yellow
-          : chalk.dim;
-
-        const icon = issue.severity === 'error' ? '❌'
-          : issue.severity === 'warning' ? '⚠️'
-          : 'ℹ️';
-
-        console.log(color(`   ${icon} ${issue.file}:${issue.line || 1}`));
-        console.log(chalk.dim(`      ${issue.type}: ${issue.message}`));
-        if (issue.autoFixable && !options.autoFix) {
-          console.log(chalk.dim(`      (auto-fixable with --auto-fix)`));
-        }
-        console.log();
-      }
-    }
-
-    // Final status
-    if (result.valid) {
-      console.log(chalk.green('✅ Documentation is valid!\n'));
-      process.exit(0);
-    } else {
-      console.log(chalk.red('❌ Documentation has errors.\n'));
-      if (!options.autoFix) {
-        console.log(chalk.dim('   Try running with --auto-fix to fix common issues.\n'));
-      }
-      process.exit(1);
-    }
+    result = await validator.validate();
   } catch (error) {
     console.log(chalk.red(`\n❌ Validation failed:`));
     console.log(chalk.dim(`   ${error instanceof Error ? error.message : error}\n`));
+    process.exit(1);
+  }
+
+  // Print summary
+  console.log(chalk.white('   Summary:'));
+  console.log(chalk.dim(`   • Total files: ${result.totalFiles}`));
+
+  if (result.errors > 0) {
+    console.log(chalk.red(`   • Errors: ${result.errors}`));
+  } else {
+    console.log(chalk.green(`   • Errors: 0`));
+  }
+
+  if (result.warnings > 0) {
+    console.log(chalk.yellow(`   • Warnings: ${result.warnings}`));
+  } else {
+    console.log(chalk.dim(`   • Warnings: 0`));
+  }
+
+  if (result.fixedCount > 0) {
+    console.log(chalk.green(`   • Auto-fixed: ${result.fixedCount}`));
+  }
+
+  console.log();
+
+  // Print issues
+  if (options.verbose || result.errors > 0) {
+    for (const issue of result.issues) {
+      const color = issue.severity === 'error' ? chalk.red
+        : issue.severity === 'warning' ? chalk.yellow
+        : chalk.dim;
+
+      const icon = issue.severity === 'error' ? '❌'
+        : issue.severity === 'warning' ? '⚠️'
+        : 'ℹ️';
+
+      console.log(color(`   ${icon} ${issue.file}:${issue.line || 1}`));
+      console.log(chalk.dim(`      ${issue.type}: ${issue.message}`));
+      if (issue.autoFixable && !options.autoFix) {
+        console.log(chalk.dim(`      (auto-fixable with --auto-fix)`));
+      }
+      console.log();
+    }
+  }
+
+  // Final status
+  if (result.valid) {
+    console.log(chalk.green('✅ Documentation is valid!\n'));
+    process.exit(0);
+  } else {
+    console.log(chalk.red('❌ Documentation has errors.\n'));
+    if (!options.autoFix) {
+      console.log(chalk.dim('   Try running with --auto-fix to fix common issues.\n'));
+    }
     process.exit(1);
   }
 }

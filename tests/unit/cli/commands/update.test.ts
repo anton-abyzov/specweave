@@ -159,9 +159,9 @@ function createIncrement(
 
 describe('update command', () => {
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(
+    tempDir = fs.realpathSync(fs.mkdtempSync(
       path.join(os.tmpdir(), `sw-update-test-${Date.now()}-`)
-    );
+    ));
     originalCwd = process.cwd();
     process.chdir(tempDir);
 
@@ -527,7 +527,8 @@ describe('update command', () => {
           .spyOn(process, 'exit')
           .mockImplementation((() => {}) as any);
 
-        await updateCommand({});
+        // After mocked process.exit, the code falls through to re-throw
+        await expect(updateCommand({})).rejects.toThrow('process failed');
 
         expect(mockExit).toHaveBeenCalledWith(2);
         mockExit.mockRestore();

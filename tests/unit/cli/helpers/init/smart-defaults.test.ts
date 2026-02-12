@@ -127,6 +127,29 @@ describe('smart-defaults', () => {
       expect(config.translation.enabled).toBe(true);
     });
 
+    // ─── Increment interview defaults ────────────────────────
+
+    it('should set planning.incrementInterview.enabled to true by default', () => {
+      const config = applySmartDefaults({}, makeOptions());
+      expect(config.planning.incrementInterview.enabled).toBe(true);
+    });
+
+    it('should set planning.incrementInterview.minQuestions to 3', () => {
+      const config = applySmartDefaults({}, makeOptions());
+      expect(config.planning.incrementInterview.minQuestions).toBe(3);
+    });
+
+    it('should preserve existing incrementInterview config', () => {
+      const existing = {
+        planning: {
+          incrementInterview: { enabled: false, minQuestions: 10 },
+        },
+      };
+      const config = applySmartDefaults(existing, makeOptions());
+      expect(config.planning.incrementInterview.enabled).toBe(false);
+      expect(config.planning.incrementInterview.minQuestions).toBe(10);
+    });
+
     // ─── Overall behavior ─────────────────────────────────────
 
     it('should return the modified config object', () => {

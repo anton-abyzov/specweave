@@ -29,19 +29,25 @@ const {
   mockRunDoctor,
   mockFormatDoctorReport,
   mockExecSync,
+  mockLoggerError,
 } = vi.hoisted(() => ({
   mockRunDoctor: vi.fn(),
   mockFormatDoctorReport: vi.fn(),
   mockExecSync: vi.fn(),
+  mockLoggerError: vi.fn(),
 }));
 
 // ============================================================================
 // Module mocks
 // ============================================================================
 
-vi.mock('../../../src/core/doctor/doctor.js', () => ({
+vi.mock('../../../../src/core/doctor/doctor.js', () => ({
   runDoctor: mockRunDoctor,
   formatDoctorReport: mockFormatDoctorReport,
+}));
+
+vi.mock('../../../../src/utils/logger.js', () => ({
+  consoleLogger: { error: mockLoggerError, info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('child_process', () => ({
@@ -259,7 +265,7 @@ describe('doctor() function', () => {
 
       await doctor(tempDir, { json: false });
 
-      expect(mockFormatDoctorReport).toHaveBeenCalledWith(healthyReport, false);
+      expect(mockFormatDoctorReport).toHaveBeenCalledWith(healthyReport, undefined);
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('SpecWeave Doctor')
       );
@@ -461,23 +467,22 @@ describe('registerDoctorCommand()', () => {
   });
 
   describe('action handler', () => {
+    async function runDoctorCommand(...args: string[]): Promise<void> {
+      const program = new Command();
+      program.exitOverride();
+      registerDoctorCommand(program);
+      try {
+        await program.parseAsync(['node', 'test', 'doctor', ...args]);
+      } catch {
+        // Commander may throw on exitOverride; we handle exit via spy
+      }
+    }
+
     it('should call doctor() with correct options on action', async () => {
       mockRunDoctor.mockResolvedValue(createHealthyReport());
       mockFormatDoctorReport.mockReturnValue('Report');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: true,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand('--verbose');
 
       expect(mockRunDoctor).toHaveBeenCalled();
     });
@@ -486,19 +491,7 @@ describe('registerDoctorCommand()', () => {
       mockRunDoctor.mockResolvedValue(createReportWithFailures());
       mockFormatDoctorReport.mockReturnValue('Report with failures');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
@@ -507,19 +500,7 @@ describe('registerDoctorCommand()', () => {
       mockRunDoctor.mockResolvedValue(createHealthyReport());
       mockFormatDoctorReport.mockReturnValue('Report');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       expect(exitSpy).not.toHaveBeenCalled();
     });
@@ -528,19 +509,7 @@ describe('registerDoctorCommand()', () => {
       mockRunDoctor.mockResolvedValue(createReportWithWarnings());
       mockFormatDoctorReport.mockReturnValue('Report');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       // Warnings don't cause exit (only failures do)
       expect(exitSpy).not.toHaveBeenCalledWith(1);
@@ -548,23 +517,22 @@ describe('registerDoctorCommand()', () => {
   });
 
   describe('--fix flag handling', () => {
+    async function runDoctorCommand(...args: string[]): Promise<void> {
+      const program = new Command();
+      program.exitOverride();
+      registerDoctorCommand(program);
+      try {
+        await program.parseAsync(['node', 'test', 'doctor', ...args]);
+      } catch {
+        // Commander may throw on exitOverride; we handle exit via spy
+      }
+    }
+
     it('should not run fix when --fix flag is false', async () => {
       mockRunDoctor.mockResolvedValue(createReportWithFailures());
       mockFormatDoctorReport.mockReturnValue('Report');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       expect(mockExecSync).not.toHaveBeenCalled();
     });
@@ -575,19 +543,7 @@ describe('registerDoctorCommand()', () => {
       mockFormatDoctorReport.mockReturnValue('Report');
       mockExecSync.mockReturnValue('Fix executed');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: true,
-      });
+      await runDoctorCommand('--fix');
 
       expect(mockExecSync).toHaveBeenCalledWith('specweave init', {
         cwd: process.cwd(),
@@ -601,19 +557,7 @@ describe('registerDoctorCommand()', () => {
       mockRunDoctor.mockResolvedValue(report);
       mockFormatDoctorReport.mockReturnValue('Report');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: true,
-      });
+      await runDoctorCommand('--fix');
 
       expect(mockExecSync).not.toHaveBeenCalled();
     });
@@ -624,19 +568,7 @@ describe('registerDoctorCommand()', () => {
       mockFormatDoctorReport.mockReturnValue('Report');
       mockExecSync.mockReturnValue('Success');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: true,
-      });
+      await runDoctorCommand('--fix');
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Running fix: specweave init')
@@ -651,19 +583,7 @@ describe('registerDoctorCommand()', () => {
         throw new Error('Fix command failed');
       });
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: true,
-      });
+      await runDoctorCommand('--fix');
 
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
@@ -674,19 +594,7 @@ describe('registerDoctorCommand()', () => {
       mockFormatDoctorReport.mockReturnValue('Report');
       mockExecSync.mockReturnValue('Success');
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: true,
-      });
+      await runDoctorCommand('--fix');
 
       const callArgs = mockExecSync.mock.calls[0];
       expect(callArgs[1].cwd).toBe(process.cwd());
@@ -695,22 +603,21 @@ describe('registerDoctorCommand()', () => {
   });
 
   describe('error handling', () => {
+    async function runDoctorCommand(...args: string[]): Promise<void> {
+      const program = new Command();
+      program.exitOverride();
+      registerDoctorCommand(program);
+      try {
+        await program.parseAsync(['node', 'test', 'doctor', ...args]);
+      } catch {
+        // Commander may throw on exitOverride; we handle exit via spy
+      }
+    }
+
     it('should catch and log errors from doctor command', async () => {
       mockRunDoctor.mockRejectedValue(new Error('Health check failed'));
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
@@ -718,19 +625,7 @@ describe('registerDoctorCommand()', () => {
     it('should exit with code 1 on error', async () => {
       mockRunDoctor.mockRejectedValue(new Error('Check failed'));
 
-      const program = new Command();
-      registerDoctorCommand(program);
-
-      const command = program.commands.find((c) => c.name() === 'doctor');
-      const actionHandler = (command as any)._actionHandler;
-
-      await actionHandler({
-        verbose: false,
-        json: false,
-        quick: false,
-        skipExternal: false,
-        fix: false,
-      });
+      await runDoctorCommand();
 
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
