@@ -13,6 +13,7 @@ import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from
 import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
 import { getPluginScope, getScopeArgs } from '../../../core/types/plugin-scope.js';
+import { enablePluginsInSettings } from './claude-plugin-enabler.js';
 
 /**
  * SpecWeave marketplace GitHub repository
@@ -186,6 +187,21 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     // Install ALL plugins with retry logic
     const result = await installPluginsWithRetry(allPlugins, spinner);
 
+    // Enable installed plugins in Claude settings
+    // CRITICAL FIX: Plugins must be enabled in ~/.claude/settings.json to be active
+    if (result.installedPlugins.length > 0) {
+      spinner.start('Enabling plugins in Claude Code...');
+
+      const enabled = enablePluginsInSettings(result.installedPlugins, 'specweave');
+      if (enabled) {
+        spinner.succeed('Plugins enabled in Claude Code');
+        console.log(chalk.green('   ✓ All installed plugins are now active'));
+      } else {
+        spinner.warn('Could not auto-enable plugins');
+        console.log(chalk.yellow('   → Manual: Enable plugins in /plugin menu'));
+      }
+    }
+
     // Report results
     console.log('');
     console.log(chalk.green.bold('✅ Plugin Installation Complete'));
@@ -210,7 +226,8 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       success: result.successCount > 0,
       successCount: result.successCount,
       failCount: result.failCount,
-      failedPlugins: result.failedPlugins
+      failedPlugins: result.failedPlugins,
+      marketplaceOnly: false
     };
 
   } catch (error: unknown) {
@@ -565,6 +582,7 @@ async function installLazyMode(
 
   let installedCount = 0;
   const failedPlugins: string[] = [];
+  const successfullyInstalled: string[] = [];
 
   spinner.start('Installing essential plugins...');
   spinner.stop();
@@ -579,9 +597,11 @@ async function installLazyMode(
     if (result.success) {
       console.log(chalk.green(`  ✓ ${pluginKey} installed`));
       installedCount++;
+      successfullyInstalled.push(plugin.name);
     } else if (result.stderr?.includes('already') || result.stdout?.includes('already')) {
       console.log(chalk.gray(`  ✓ ${pluginKey} (already installed)`));
       installedCount++;
+      successfullyInstalled.push(plugin.name);
     } else {
       console.log(chalk.yellow(`  ⚠ ${pluginKey} failed`));
       console.log(chalk.gray(`    → Install manually: claude plugin install ${pluginKey}`));
@@ -590,6 +610,21 @@ async function installLazyMode(
   }
 
   spinner.succeed(`Installed ${installedCount}/${essentialPlugins.length} essential plugins`);
+
+  // Enable installed plugins in Claude settings
+  // CRITICAL FIX: Plugins must be enabled in ~/.claude/settings.json to be active
+  if (successfullyInstalled.length > 0) {
+    spinner.start('Enabling plugins in Claude Code...');
+
+    const enabled = enablePluginsInSettings(successfullyInstalled, 'specweave');
+    if (enabled) {
+      spinner.succeed('Plugins enabled in Claude Code');
+      console.log(chalk.green('   ✓ All installed plugins are now active'));
+    } else {
+      spinner.warn('Could not auto-enable plugins');
+      console.log(chalk.yellow('   → Manual: Enable plugins in /plugin menu'));
+    }
+  }
 
   // Show summary
   console.log('');
@@ -622,10 +657,11 @@ async function installLazyMode(
 async function installPluginsWithRetry(
   plugins: Array<{ name: string }>,
   spinner: ReturnType<typeof ora>
-): Promise<{ successCount: number; failCount: number; failedPlugins: string[] }> {
+): Promise<{ successCount: number; failCount: number; failedPlugins: string[]; installedPlugins: string[] }> {
   let successCount = 0;
   let failCount = 0;
   const failedPlugins: string[] = [];
+  const installedPlugins: string[] = [];
 
   // Sort plugins to install "specweave" FIRST
   // This prevents cache corruption from other plugin installs
@@ -649,6 +685,7 @@ async function installPluginsWithRetry(
 
       if (installed) {
         successCount++;
+        installedPlugins.push(pluginName);
         spinner.succeed(`${pluginName} installed (manual workaround)`);
         continue;
       }
@@ -679,6 +716,7 @@ async function installPluginsWithRetry(
 
     if (installed) {
       successCount++;
+      installedPlugins.push(pluginName);
       spinner.succeed(`${pluginName} installed`);
     } else {
       failCount++;
@@ -687,5 +725,5 @@ async function installPluginsWithRetry(
     }
   }
 
-  return { successCount, failCount, failedPlugins };
+  return { successCount, failCount, failedPlugins, installedPlugins };
 }
