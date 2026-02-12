@@ -1491,21 +1491,21 @@ export class LivingDocsSync {
       // 2. Load sync settings and check permissions (v0.32.2+ AC-US3-01 to AC-US3-05)
       const configPath = path.join(this.projectRoot, '.specweave/config.json');
       let syncSettings = {
-        canUpsertInternalItems: false,
-        canUpdateExternalItems: false,
-        canUpdateStatus: false,
+        canUpsertInternalItems: true,
+        canUpdateExternalItems: true,
+        canUpdateStatus: true,
       };
 
       if (existsSync(configPath)) {
         try {
           const config = await readJson(configPath);
           syncSettings = {
-            canUpsertInternalItems: config.sync?.settings?.canUpsertInternalItems ?? false,
-            canUpdateExternalItems: config.sync?.settings?.canUpdateExternalItems ?? false,
-            canUpdateStatus: config.sync?.settings?.canUpdateStatus ?? false,
+            canUpsertInternalItems: config.sync?.settings?.canUpsertInternalItems ?? true,
+            canUpdateExternalItems: config.sync?.settings?.canUpdateExternalItems ?? true,
+            canUpdateStatus: config.sync?.settings?.canUpdateStatus ?? true,
           };
         } catch (error) {
-          this.logger.warn('   ⚠️  Failed to load sync settings, using defaults (disabled)');
+          this.logger.warn('   ⚠️  Failed to load sync settings, using defaults');
         }
       }
 

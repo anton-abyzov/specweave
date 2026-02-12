@@ -23,7 +23,6 @@ import { getDirname } from '../../utils/esm-helpers.js';
 import { isLanguageSupported, getSupportedLanguages } from '../../core/i18n/language-manager.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../core/i18n/types.js';
-import { Logger, consoleLogger } from '../../utils/logger.js';
 import { readEnvFile, parseEnvFile } from '../../utils/env-file.js';
 import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
 
@@ -39,35 +38,23 @@ import {
   promptSmartReinit,
   installAllPlugins,
   setupRepositoryHosting,
-  promptTestingConfig,
-  updateConfigWithTesting,
   promptLanguageSelection,
   getDefaultLanguageSelection,
-  promptTranslationConfig,
-  updateConfigWithTranslation,
-  getDefaultTranslationConfig,
-  promptAndRunExternalImport,
   createDirectoryStructure,
   copyTemplates,
   createConfigFile,
   showNextSteps,
   installGitHooks,
-  promptDeepInterviewConfig,
-  updateConfigWithDeepInterview,
-  promptQualityGatesConfig,
-  updateConfigWithQualityGates,
-  WIZARD_BACK,
-  logGoingBack,
 } from '../helpers/init/index.js';
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js';
 import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
 import { createProjectFolders } from '../helpers/init/multi-project-folders.js';
-import {
-  collectLivingDocsInputs,
-} from '../helpers/init/living-docs-preflight.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
 import { getPluginScope, getScopeArgs } from '../../core/types/plugin-scope.js';
+import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
+import { isGreenfield as isGreenfieldCheck } from '../helpers/init/greenfield-detection.js';
+import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -770,336 +757,120 @@ export async function initCommand(
     // Multi-project folders
     await createMultiProjectFolders(targetDir);
 
-    // Wizard loop: External import → Living Docs → Testing → Deep Interview → Translation
-    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'deep-interview' | 'translation' | 'quality-gates' | 'done';
-    let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
+    // ========================================================================
+    // PHASE: Apply Smart Defaults (0200 — replaces wizard loop)
+    // No more testing/interview/quality-gates/translation prompts.
+    // Everything is auto-provisioned and shown in the summary banner.
+    // ========================================================================
+    {
+      const smartDefaultsConfigPath = path.join(targetDir, '.specweave', 'config.json');
+      if (fs.existsSync(smartDefaultsConfigPath)) {
+        const config = fs.readJsonSync(smartDefaultsConfigPath);
+        const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
+        applySmartDefaults(config, { adapter: toolName, language, isGitRepo });
 
-    // Announce skipped step when continuing existing project (0188)
-    if (continueExisting) {
-      console.log(chalk.gray('  ⏭ External import: preserved from existing config'));
-    }
-
-    while (wizardStep !== 'done') {
-      // STEP: External Import
-      if (wizardStep === 'external-import') {
-        try {
-          const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
-
-          if ('goBack' in importResult && importResult.goBack === WIZARD_BACK) {
-            logGoingBack(language);
-            continue;
-          }
-
-          if ('isBackground' in importResult && importResult.isBackground) {
-            console.log(chalk.cyan('\n🚀 Import running in background'));
-            console.log(chalk.gray(`   Check progress: /sw:jobs`));
-            if ('jobId' in importResult && importResult.jobId) {
-              pendingJobIds.push(importResult.jobId);
-            }
-          } else if ('totalCount' in importResult && importResult.totalCount > 0) {
-            console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
-          }
-        } catch (importError) {
-          const errorMsg = importError instanceof Error ? importError.message : String(importError);
-          console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
-          console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
+        // Preserve keepEnglishOriginals from language selection
+        if (languageResult.keepEnglishOriginals && config.translation) {
+          config.translation.keepEnglishOriginals = true;
         }
-        wizardStep = 'living-docs';
-        continue;
-      }
 
-      // STEP: Living Docs
-      if (wizardStep === 'living-docs') {
-        if (!options.noLivingDocs) {
-          try {
-            const preflightResult = await collectLivingDocsInputs({
-              projectPath: targetDir,
-              language,
-              isCi: isCI,
-              skipLivingDocs: options.noLivingDocs,
-              pendingJobIds,
-            });
-
-            if (preflightResult?.goBack === WIZARD_BACK) {
-              logGoingBack(language);
-              wizardStep = continueExisting ? 'living-docs' : 'external-import';
-              continue;
-            }
-
-            // NEW FLOW (v1.0.103+): Save config but DON'T spawn background job
-            // User will run /sw:living-docs in separate Claude Code window
-            if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-              // Save living docs config to state for later use
-              saveLivingDocsConfig(targetDir, preflightResult.userInputs);
-
-              // Display instructions to run /sw:living-docs interactively
-              displayLivingDocsInstructions(preflightResult.estimatedDuration, language);
-            }
-          } catch (livingDocsError) {
-            const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
-            console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-            console.log(chalk.gray('   → You can run /sw:living-docs to configure later'));
-          }
-        }
-        wizardStep = 'testing';
-        continue;
-      }
-
-      // STEP: Testing Configuration
-      if (wizardStep === 'testing') {
-        if (!isCI && !continueExisting) {
-          const testingResult = await promptTestingConfig(language);
-
-          if (testingResult.goBack === WIZARD_BACK) {
-            logGoingBack(language);
-            wizardStep = 'living-docs';
-            continue;
-          }
-
-          updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
-        } else if (continueExisting) {
-          console.log(chalk.gray('  ⏭ Testing config: preserved from existing config'));
-        }
-        wizardStep = 'deep-interview';
-        continue;
-      }
-
-      // STEP: Deep Interview Mode Configuration (v1.0.195+)
-      if (wizardStep === 'deep-interview') {
-        if (!isCI && !continueExisting) {
-          const deepInterviewResult = await promptDeepInterviewConfig(language);
-
-          if (deepInterviewResult.goBack === WIZARD_BACK) {
-            logGoingBack(language);
-            wizardStep = 'testing';
-            continue;
-          }
-
-          updateConfigWithDeepInterview(targetDir, deepInterviewResult.enabled, language);
-        } else if (continueExisting) {
-          console.log(chalk.gray('  ⏭ Deep interview: preserved from existing config'));
-        }
-        wizardStep = 'quality-gates';
-        continue;
-      }
-
-      // STEP: Quality Gates Configuration (v1.0.226+)
-      // Configures auto mode quality enforcement: tests, validation, LLM checks
-      if (wizardStep === 'quality-gates') {
-        if (!isCI && !continueExisting) {
-          const qualityGatesResult = await promptQualityGatesConfig(language);
-
-          if (qualityGatesResult.goBack === WIZARD_BACK) {
-            logGoingBack(language);
-            wizardStep = 'deep-interview';
-            continue;
-          }
-
-          updateConfigWithQualityGates(targetDir, qualityGatesResult.preset, language);
-        } else if (continueExisting) {
-          console.log(chalk.gray('  ⏭ Quality gates: preserved from existing config'));
-        }
-        wizardStep = 'translation';
-        continue;
-      }
-
-      // STEP: Translation Configuration
-      if (wizardStep === 'translation') {
-        if (!isCI && !continueExisting && language !== 'en') {
-          const translationResult = await promptTranslationConfig(languageResult);
-
-          if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
-            logGoingBack(language);
-            wizardStep = 'quality-gates';
-            continue;
-          }
-
-          updateConfigWithTranslation(targetDir, translationResult);
-        } else {
-          if (continueExisting) {
-            console.log(chalk.gray('  ⏭ Translation: preserved from existing config'));
-          }
-          const defaultTranslation = getDefaultTranslationConfig(language);
-          defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
-          updateConfigWithTranslation(targetDir, defaultTranslation);
-        }
-        wizardStep = 'done';
+        fs.writeJsonSync(smartDefaultsConfigPath, config, { spaces: 2 });
       }
     }
 
-    // v1.0.27: Removed automatic 0001-project-setup increment creation
-    // Reason: Multi-project scenarios REQUIRE **Project**: field per User Story,
-    // which cannot be determined automatically at init time.
-    // Users should create increments explicitly via /sw:increment command.
-
-    // FINAL STEP: Git Hooks Installation (optional)
-    // Only prompt if this is a git repository
+    // ========================================================================
+    // PHASE: Auto-install Git Hooks (0200 — no prompt)
+    // ========================================================================
     const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
-    if (isGitRepo && !isCI) {
-      console.log('');
-      console.log(chalk.bold('🪝 Git Hooks'));
-      console.log('');
-      console.log(chalk.gray('  SpecWeave can install pre-commit hooks to enforce best practices:'));
-      console.log(chalk.gray('   • Blocks .md files in project root (keeps it clean)'));
-      console.log(chalk.gray('   • Enforces increment folder organization'));
-      console.log(chalk.gray('   • Prevents duplicate increment IDs'));
-      console.log(chalk.gray('   • Validates YAML in spec.md files'));
-      console.log(chalk.gray('   • Protects against mass deletions'));
-      console.log('');
-
-      const shouldInstallHooks = await confirm({
-        message: locale.t('cli', 'init.gitHooks.prompt', { default: 'Install git hooks for quality enforcement?' }),
-        default: true
-      });
-
-      if (shouldInstallHooks) {
-        console.log('');
-        installGitHooks(targetDir, templatesDir);
-        console.log('');
-        console.log(chalk.gray('  To bypass hooks: git commit --no-verify'));
-        console.log(chalk.gray('  To remove hooks: rm .git/hooks/pre-commit'));
-      } else {
-        console.log('');
-        console.log(chalk.gray('  Skipped. Install later with: specweave install-hooks'));
-      }
-    } else if (!isGitRepo && !usedDotNotation) {
-      // Only show this message if we created a new directory (not using ".")
-      console.log('');
-      console.log(chalk.yellow('  ℹ Not a git repository - git hooks not installed'));
-      console.log(chalk.gray('    Run: git init && specweave install-hooks'));
+    if (isGitRepo && !continueExisting) {
+      installGitHooks(targetDir, templatesDir);
     }
 
-    // LSP Environment Variable Setup (v1.0.191)
-    // For Claude tool - LSP enhances code intelligence
-    // Uses unified isNonInteractive() instead of duplicate isQuickMode (0188)
-
-    // NON-INTERACTIVE MODE: Auto-enable LSP without prompts (v1.0.210)
-    if (toolName === 'claude' && isCI) {
-      // Silently enable LSP in config.json
-      const configPath = path.join(targetDir, '.specweave', 'config.json');
-      if (fs.existsSync(configPath)) {
+    // ========================================================================
+    // PHASE: Auto-enable LSP for Claude (0200 — no prompt)
+    // ========================================================================
+    if (toolName === 'claude') {
+      const lspConfigPath = path.join(targetDir, '.specweave', 'config.json');
+      if (fs.existsSync(lspConfigPath)) {
         try {
-          const config = await fs.readJson(configPath);
-          config.lsp = {
+          const lspConfig = await fs.readJson(lspConfigPath);
+          lspConfig.lsp = {
             enabled: true,
             autoInstallPlugins: true,
-            marketplace: 'boostvolt/claude-code-lsps'
+            marketplace: 'boostvolt/claude-code-lsps',
           };
-          await fs.writeJson(configPath, config, { spaces: 2 });
-          console.log(chalk.green('   ✓ LSP enabled in config'));
-        } catch {
-          // Non-critical, continue
-        }
+          await fs.writeJson(lspConfigPath, lspConfig, { spaces: 2 });
+        } catch { /* Non-critical */ }
       }
-
-      // Try to set up shell env var silently
-      const result = setupLspEnvVar();
-      if (result.success && !result.alreadyConfigured) {
-        console.log(chalk.green('   ✓ LSP shell config added'));
-        console.log(chalk.gray('     Restart terminal for LSP to take effect'));
-      }
+      setupLspEnvVar();
     }
 
-    // INTERACTIVE MODE: Prompt for LSP setup
-    if (toolName === 'claude' && !isCI) {
-      console.log('');
-      console.log(chalk.cyan('━━━ LSP Support ━━━'));
-      console.log('');
-      console.log(chalk.gray('  LSP (Language Server Protocol) enables advanced code intelligence:'));
-      console.log(chalk.gray('   • Find references across your codebase'));
-      console.log(chalk.gray('   • Go to definition'));
-      console.log(chalk.gray('   • Type information and diagnostics'));
-      console.log('');
+    // ========================================================================
+    // PHASE: Greenfield Detection + Summary Banner (0200)
+    // ========================================================================
+    {
+      const greenfieldStatus = isGreenfieldCheck(targetDir);
 
-      const shouldEnableLsp = await confirm({
-        message: 'Enable LSP support? (Adds ENABLE_LSP_TOOL=1 to your shell config)',
-        default: true
-      });
-
-      if (shouldEnableLsp) {
-        const result = setupLspEnvVar();
-
-        if (result.success) {
-          if (result.alreadyConfigured) {
-            console.log(chalk.green('  ✓ LSP already configured in ' + result.configPath));
-          } else {
-            console.log(chalk.green('  ✓ Added to ' + result.configPath + ':'));
-            console.log(chalk.gray('    ' + result.exportSyntax));
-            console.log('');
-            console.log(chalk.yellow('  ⚠ Restart your terminal for LSP to take effect'));
-          }
-
-          // Also add LSP config to project config.json
-          const configPath = path.join(targetDir, '.specweave', 'config.json');
-          if (fs.existsSync(configPath)) {
-            try {
-              const config = await fs.readJson(configPath);
-              config.lsp = {
-                enabled: true,
-                autoInstallPlugins: true,
-                marketplace: 'boostvolt/claude-code-lsps'
-              };
-              await fs.writeJson(configPath, config, { spaces: 2 });
-              console.log(chalk.gray('  ✓ LSP config added to .specweave/config.json'));
-            } catch {
-              // Non-critical, continue
-            }
-          }
-
-          // Offer to scan for languages and install LSP plugins (v1.0.203)
-          console.log('');
-          const runLspSetup = await confirm({
-            message: 'Scan project for languages and install LSP plugins now?',
-            default: true
-          });
-
-          if (runLspSetup) {
-            console.log('');
-            console.log(chalk.cyan('  Running language scan...'));
-            try {
-              const { scanLanguagesAcrossRepos } = await import('./lsp.js');
-              const scanResult = await scanLanguagesAcrossRepos(targetDir, { maxLanguages: 5, minFileCount: 5 });
-
-              if (scanResult.success && scanResult.languages.length > 0) {
-                console.log(chalk.gray(`  Found ${scanResult.languages.length} languages across ${scanResult.reposScanned.length} locations`));
-                console.log('');
-                console.log(chalk.cyan('  Run after restart to install LSP plugins:'));
-                console.log(chalk.white('    specweave lsp setup'));
-                console.log('');
-                console.log(chalk.gray('  Or run directly now (will need restart after):'));
-                const installNow = await confirm({
-                  message: 'Install LSP plugins now?',
-                  default: false
-                });
-
-                if (installNow) {
-                  const { handleLspSetup } = await import('./lsp.js');
-                  await handleLspSetup(targetDir, {
-                    maxLanguages: 5,
-                    minFileCount: 5,
-                    dryRun: false,
-                    scope: 'project'
-                  });
-                }
-              } else {
-                console.log(chalk.gray('  No supported languages detected (or not enough files)'));
-              }
-            } catch (scanError) {
-              console.log(chalk.yellow(`  ⚠ Language scan failed: ${scanError instanceof Error ? scanError.message : 'Unknown error'}`));
-              console.log(chalk.gray('    Run manually later: specweave lsp setup'));
-            }
-          } else {
-            console.log(chalk.gray('  Run later: specweave lsp setup'));
-          }
-        } else {
-          console.log(chalk.yellow('  ⚠ Could not auto-configure LSP: ' + result.error));
-          console.log(chalk.gray('    Manual setup: Add this to your shell config (~/.zshrc or ~/.bashrc):'));
-          console.log(chalk.white('    ' + result.exportSyntax));
-        }
+      // Build provider info for banner
+      let bannerProvider: { name: string; owner?: string; repo?: string; organization?: string } | undefined;
+      if (repoResult.hosting.startsWith('github')) {
+        bannerProvider = { name: 'GitHub', owner: gitHubRemote?.owner, repo: gitHubRemote?.repo };
+      } else if (repoResult.hosting.startsWith('ado')) {
+        bannerProvider = { name: 'Azure DevOps', organization: repoResult.adoProjectSelection?.org };
+      } else if (repoResult.hosting.startsWith('bitbucket')) {
+        bannerProvider = { name: 'Bitbucket' };
       } else {
-        console.log(chalk.gray('  Skipped. Enable later by adding to your shell config:'));
-        console.log(chalk.white('    export ENABLE_LSP_TOOL=1'));
+        bannerProvider = { name: 'Local' };
       }
+
+      // Read tracker from config
+      let bannerTracker: { name: string } | undefined;
+      const bannerConfigPath = path.join(targetDir, '.specweave', 'config.json');
+      if (fs.existsSync(bannerConfigPath)) {
+        try {
+          const bannerConfig = fs.readJsonSync(bannerConfigPath);
+          const syncCfg = bannerConfig?.sync;
+          if (syncCfg?.defaultProfile && syncCfg?.profiles) {
+            const profile = syncCfg.profiles[syncCfg.defaultProfile];
+            if (profile?.provider === 'github') bannerTracker = { name: 'GitHub Issues' };
+            else if (profile?.provider === 'jira') bannerTracker = { name: 'Jira' };
+            else if (profile?.provider === 'ado') bannerTracker = { name: 'Azure DevOps Boards' };
+          }
+        } catch { /* ignore */ }
+      }
+
+      // Read final config for defaults summary
+      let finalDefaults = {
+        testing: 'TDD',
+        qualityGates: 'standard',
+        lspEnabled: toolName === 'claude',
+        gitHooksInstalled: isGitRepo,
+        translationEnabled: false,
+      };
+      if (fs.existsSync(bannerConfigPath)) {
+        try {
+          const finalConfig = fs.readJsonSync(bannerConfigPath);
+          finalDefaults = {
+            testing: finalConfig?.testing?.defaultTestMode || 'TDD',
+            qualityGates: finalConfig?.qualityGates?.preset || 'standard',
+            lspEnabled: !!finalConfig?.lsp?.enabled,
+            gitHooksInstalled: isGitRepo,
+            translationEnabled: !!finalConfig?.translation?.enabled,
+          };
+        } catch { /* ignore */ }
+      }
+
+      displaySummaryBanner({
+        projectName: finalProjectName,
+        provider: bannerProvider,
+        tracker: bannerTracker,
+        repoCount: 1 + githubClonedRepos.length,
+        isGreenfield: greenfieldStatus,
+        hasPendingClones: pendingJobIds.length > 0,
+        adapter: toolName,
+        language,
+        defaults: finalDefaults,
+      });
     }
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);
@@ -1229,56 +1000,6 @@ async function setupIssueTrackerWrapper(
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
   }
-}
-
-/**
- * Save living docs configuration to state for later use
- * (NEW v1.0.103+: No background job spawning during init)
- */
-function saveLivingDocsConfig(
-  targetDir: string,
-  userInputs: import('../../core/background/types.js').LivingDocsUserInputs
-): void {
-  const stateDir = path.join(targetDir, '.specweave', 'state');
-  fs.ensureDirSync(stateDir);
-
-  const configPath = path.join(stateDir, 'living-docs-config.json');
-  fs.writeFileSync(
-    configPath,
-    JSON.stringify(
-      {
-        userInputs,
-        savedAt: new Date().toISOString(),
-      },
-      null,
-      2
-    )
-  );
-}
-
-/**
- * Display instructions to run /sw:living-docs interactively
- * (NEW v1.0.103+: Interactive mode instead of background job)
- */
-function displayLivingDocsInstructions(
-  estimatedDuration: string,
-  language: SupportedLanguage = 'en'
-): void {
-  console.log('');
-  console.log(chalk.green('  ✓ Living Docs configuration saved'));
-  console.log('');
-  console.log(chalk.cyan('  📚 Next: Build Living Documentation'));
-  console.log(chalk.gray(`     Estimated: ${estimatedDuration}`));
-  console.log('');
-  console.log(chalk.white('  To start the Living Docs builder:'));
-  console.log(chalk.cyan('  1. Open a NEW Claude Code window (separate conversation)'));
-  console.log(chalk.cyan('  2. Run: /sw:living-docs'));
-  console.log('');
-  console.log(chalk.gray('  💡 Why a separate window?'));
-  console.log(chalk.gray('     - You can monitor real-time progress'));
-  console.log(chalk.gray('     - Pause/resume by closing/reopening the window'));
-  console.log(chalk.gray('     - No background processes or orphaned jobs'));
-  console.log('');
 }
 
 /**

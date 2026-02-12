@@ -19,7 +19,7 @@ When user says "auto" or "autonomous" or "keep working" or provides a task descr
    - Activate increments by editing metadata.json via Edit tool
    - Write session marker (`.specweave/state/auto-mode.json`) via Write tool
    - Map quality flags to `successCriteria` in the marker
-4. **⚠️ MANDATORY: Display stop conditions banner** - Users MUST see when auto mode will stop BEFORE work begins! See "Step 1.5" in Execution section.
+4. **MANDATORY: Display stop conditions banner** - Users MUST see when auto mode will stop BEFORE work begins! See "Step 1.5" in Execution section.
 5. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
 
 Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
@@ -30,7 +30,7 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 /sw:auto [INCREMENT_IDS...] [OPTIONS]
 ```
 
-:::tip 🚀 Claude Code's Game-Changing Features for Auto Mode
+:::tip Claude Code's Game-Changing Features for Auto Mode
 **Compact Command (VSCode)** — Use `compact` mode to keep Claude Code inside your VSCode window. Work continuously for **hours** in the same session without context switching between terminal and editor. Perfect for long auto mode sessions!
 
 **STOP Hooks with Subagents** — Stop hooks now work with spawned subagents! This means `/sw:auto` can validate quality gates at EVERY level of execution. When auto mode spawns specialized agents (QA, Security, Performance), the stop hook validates their results before allowing the session to continue.
@@ -42,7 +42,7 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 - `INCREMENT_IDS`: One or more increment IDs to process (e.g., `0001`, `0001-feature`)
   - **NEW BEHAVIOR**: If omitted, auto mode will:
     1. Check for active/in-progress increments
-    2. If none found, **intelligently create increments** based on user context/prompt
+    2. If none found, **intelligently create increments** based on user context
     3. Match existing planned increments to user intent OR extend them
 
 ## Options
@@ -55,7 +55,6 @@ Now work on the increment tasks. When you try to exit, the stop hook will check 
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
 | `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
-| `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
 | `--tdd`, `--strict` | Enable TDD strict mode - ALL tests must pass | false |
 | **`--build`** | Build must pass before completion | false |
@@ -156,9 +155,9 @@ Active increment exists? ──YES──> Use active increment
      │
      NO (DEFAULT)
      ▼
-🧠 INTELLIGENT INCREMENT CREATION
+INTELLIGENT INCREMENT CREATION
      │
-     ├─> Analyze user context/prompt
+     ├─> Analyze user context
      ├─> Check for matching planned/backlog increments
      ├─> Match existing OR create new increment(s)
      │
@@ -194,90 +193,6 @@ The LLM will analyze the context and decide:
 # User says: "Just work on what's already planned"
 /sw:auto --no-increment  # or --no-inc
 # → ERROR if no active increment (strict mode)
-```
-
-## Prompt-Based Chunking (--prompt)
-
-**Use `--prompt` to provide a feature description for intelligent chunking:**
-
-```bash
-# Analyze prompt and show increment plan for approval
-/sw:auto --prompt "Build e-commerce with auth, products, cart, checkout"
-
-# Auto-approve plan and start execution
-/sw:auto --prompt "Build e-commerce with auth, products, cart, checkout" --yes
-```
-
-### What Happens
-
-1. **Prompt Analysis**: The chunker extracts discrete features from your description
-2. **Plan Generation**: Features are grouped into right-sized increments (5-15 tasks each)
-3. **Dependency Detection**: Auth before checkout, database before API, etc.
-4. **User Approval**: Plan shown for review (unless `--yes` flag used)
-5. **Increment Creation**: Increments created via `/sw:increment`
-6. **Session Start**: Auto mode begins with the increment queue
-
-### Example Output
-
-```
-📋 Increment Plan
-══════════════════════════════════════════════════
-
-Total Features: 4
-Total Tasks: ~34
-Estimated Duration: 1-2 days
-Increments: 3
-
-Increments:
---------------------------------------------------
-  1. User Authentication
-     ID: 0001-user-authentication
-     Tasks: ~12
-     Features: auth
-     Depends on: (none)
-
-  2. Product Catalog
-     ID: 0002-product-catalog
-     Tasks: ~10
-     Features: products
-
-  3. Shopping Cart & Checkout
-     ID: 0003-shopping-cart-checkout
-     Tasks: ~12
-     Features: cart, checkout
-     Depends on: 0001-user-authentication, 0002-product-catalog
-
-💡 Review the plan above.
-
-Options:
-  1. Approve - Start execution with this plan
-  2. Modify  - Adjust increment structure
-  3. Cancel  - Abort and return to prompt
-
-To skip this prompt in future: use --yes flag
-```
-
-### Plan Approval Flow
-
-```
-/sw:auto --prompt "..."
-     │
-     ▼
-Analyze & Show Plan
-     │
-     ├─ --yes flag? ──YES──> Auto-approve
-     │       │
-     │       ▼
-     │    Create Increments → Start Session
-     │
-     └─ No --yes flag
-            │
-            ▼
-       Wait for User
-            │
-            ├─ Approve → Create Increments → Start Session
-            ├─ Modify  → LLM adjusts plan → Re-show
-            └─ Cancel  → Exit
 ```
 
 ## How It Works
@@ -415,7 +330,7 @@ The session ends when ANY of these occur:
 5. **User cancellation** - `/sw:cancel-auto`
 6. **Human gate timeout** - Gate pending too long
 
-**⚠️ IMPORTANT**: When tasks are all marked done, the stop hook approves exit. The model MUST verify quality criteria (from `--build`, `--tests`, etc. flags stored in `auto-mode.json`) before running `/sw:done`.
+**IMPORTANT**: When tasks are all marked done, the stop hook approves exit. The model MUST verify quality criteria (from `--build`, `--tests`, etc. flags stored in `auto-mode.json`) before running `/sw:done`.
 
 ## Simple Mode (--simple)
 
@@ -445,7 +360,7 @@ Pure stop hook loop behavior:
 
 | Event | Sound | Platforms | Meaning |
 |-------|-------|-----------|---------|
-| **Session Complete (Success)** ✅ | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | All tasks done, tests passing - work finished! |
+| **Session Complete (Success)** | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | All tasks done, tests passing - work finished! |
 
 **Sound plays ONLY on complete success** - when all tasks are done AND all tests pass. This way you know when to check back without being interrupted during ongoing work.
 
@@ -458,7 +373,7 @@ The sound notification works automatically on:
 
 Sounds fail gracefully on systems without audio support.
 
-## 🔧 v2.3 Per-Agent Stop Hook Behavior (NEW!)
+## v2.3 Per-Agent Stop Hook Behavior (NEW!)
 
 **CRITICAL: The stop hook runs PER AGENT, not globally!**
 
@@ -507,7 +422,7 @@ To enable stop hooks for subagents (advanced):
 - Use `--max-turns` as a safety net, not a target
 - Primary completion = tasks complete + ACs satisfied
 
-## 🔧 v2.1 Reliability Improvements
+## v2.1 Reliability Improvements
 
 Auto mode includes reliability features for long-running sessions:
 
@@ -531,11 +446,11 @@ Auto mode includes reliability features for long-running sessions:
 
 **Logs**: `.specweave/logs/auto-iterations.log`
 
-## 🔧 v2.2 TDD Strict Mode & Stop Reason Tracking
+## v2.2 TDD Strict Mode & Stop Reason Tracking
 
 ### TDD Strict Mode
 
-**Enable TDD strict mode for RED→GREEN→REFACTOR discipline:**
+**Enable TDD strict mode for RED->GREEN->REFACTOR discipline:**
 
 ```bash
 /sw:auto --tdd 0001-feature   # or --strict
@@ -566,13 +481,13 @@ Stop reasons logged to `.specweave/logs/auto-stop-reasons.log`:
 
 | Category | Success | Description |
 |----------|---------|-------------|
-| `all_tasks_complete` | ✅ | All tests pass, all tasks done |
-| `completion_promise` | ✅ | `<!-- auto-complete:DONE -->` |
-| `max_iterations_reached` | ❌ | Safety limit hit |
-| `test_failures_exhausted` | ❌ | 3 retry attempts failed |
-| `human_gate_pending` | ⏸️ | Waiting for approval |
+| `all_tasks_complete` | Yes | All tests pass, all tasks done |
+| `completion_promise` | Yes | `<!-- auto-complete:DONE -->` |
+| `max_iterations_reached` | No | Safety limit hit |
+| `test_failures_exhausted` | No | 3 retry attempts failed |
+| `human_gate_pending` | Paused | Waiting for approval |
 
-## ♿ UI/UX Quality Gates (NEW!)
+## UI/UX Quality Gates (NEW!)
 
 Auto mode now includes comprehensive UI/UX quality gates that run automatically when E2E tests are detected.
 
@@ -638,9 +553,9 @@ Auto mode detects and reports on UI state test coverage:
 | Error | Error boundaries, 404/500 pages | Test error handling |
 | Empty | No data, no results | Test empty state displays |
 
-Shows ⚠️ warning if states are detected but not explicitly tested.
+Shows warning if states are detected but not explicitly tested.
 
-## 🔄 Increment Queue Transition (NEW!)
+## Increment Queue Transition (NEW!)
 
 Auto mode now handles multi-increment queues with smooth transitions.
 
@@ -648,19 +563,15 @@ Auto mode now handles multi-increment queues with smooth transitions.
 
 When an increment completes, auto mode shows:
 ```
-✅ INCREMENT COMPLETE: 0001-user-auth
+INCREMENT COMPLETE: 0001-user-auth
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SUMMARY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📋 Tasks: 15/15 | Duration: 45m
-  🧪 Tests: 42 passed, 0 failed
-  ✅ Status: All acceptance criteria met
+  Tasks: 15/15 | Duration: 45m
+  Tests: 42 passed, 0 failed
+  Status: All acceptance criteria met
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 NEXT INCREMENT: 0002-notifications
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📊 Queue: 2 increment(s) remaining
+  Queue: 2 increment(s) remaining
 ```
 
 ### Skip Failed Increments
@@ -682,18 +593,18 @@ This will:
 - You want to prioritize other work
 - The issue needs human investigation
 
-## 🔐 Auto-Execute with Credentials (MANDATORY)
+## Auto-Execute with Credentials (MANDATORY)
 
 **In auto mode, ALL agents MUST follow the auto-execute skill rules:**
 
 ### The Golden Rule
 
 ```
-❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
-❌ FORBIDDEN: "Execute the schema in Supabase SQL Editor"
-❌ FORBIDDEN: "Set secret via: wrangler secret put..."
+FORBIDDEN: "Next Steps: Run wrangler deploy"
+FORBIDDEN: "Execute the schema in Supabase SQL Editor"
+FORBIDDEN: "Set secret via: wrangler secret put..."
 
-✅ REQUIRED: Execute commands DIRECTLY using available credentials
+REQUIRED: Execute commands DIRECTLY using available credentials
 ```
 
 ### Credential Lookup Order
@@ -705,7 +616,7 @@ Before ANY deployment task, check for credentials:
 3. **CLI tool auth** - `wrangler whoami`, `gh auth status`, etc.
 4. **Config files** - `wrangler.toml`, `.specweave/config.json`
 
-### If Credentials Found → AUTO-EXECUTE
+### If Credentials Found -> AUTO-EXECUTE
 
 ```bash
 # Example: Supabase migration
@@ -720,10 +631,10 @@ if wrangler whoami 2>/dev/null; then
 fi
 ```
 
-### If Credentials Missing → ASK, Don't Show Manual Steps
+### If Credentials Missing -> ASK, Don't Show Manual Steps
 
 ```markdown
-🔐 **Credential Required for Auto-Execution**
+**Credential Required for Auto-Execution**
 
 I need your Supabase database URL to execute the migration.
 
@@ -835,7 +746,7 @@ Ensure `.specweave/state/` directory exists (create with Bash `mkdir -p` if need
 
 ### Step 1.5: MANDATORY - Analyze Tests & Display Stop Conditions
 
-**⚠️ CRITICAL: You MUST analyze the test situation and output SPECIFIC stop conditions BEFORE starting any task work!**
+**CRITICAL: You MUST analyze the test situation and output SPECIFIC stop conditions BEFORE starting any task work!**
 
 #### Step 1.5a: Detect Existing Tests
 
@@ -872,42 +783,41 @@ Based on what you find, determine:
 **Output this banner with SPECIFIC test information:**
 
 ```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  🚀 AUTO MODE STARTING                                                        ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  Increment: [INCREMENT_ID]                                                    ║
-║  Tasks: [X] pending                                                           ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  🧪 TESTS THAT MUST PASS FOR COMPLETION:                                      ║
-║                                                                               ║
-║  Unit/Integration Tests:                                                      ║
-║    Command: [EXACT_TEST_COMMAND]                                              ║
-║    Files:                                                                     ║
-║      • [test-file-1.test.ts] - [what it tests]                               ║
-║      • [test-file-2.test.ts] - [what it tests]                               ║
-║      • [NEW] [test-file-3.test.ts] - [will be created for X]                 ║
-║                                                                               ║
-║  E2E Tests (if applicable):                                                   ║
-║    Command: [EXACT_E2E_COMMAND]                                               ║
-║    Files:                                                                     ║
-║      • [auth.e2e.ts] - [login/logout flows]                                  ║
-║      • [NEW] [checkout.e2e.ts] - [will be created for payment flow]          ║
-║                                                                               ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  🎯 SESSION WILL COMPLETE WHEN:                                               ║
-║    ✅ All [X] tasks marked complete                                           ║
-║    ✅ [TEST_COMMAND] passes (0 failures)                                      ║
-║    ✅ [E2E_COMMAND] passes (if E2E tests exist)                               ║
-║    ✅ /sw:done validation passes                                              ║
-║                                                                               ║
-║  🛑 SESSION WILL PAUSE/STOP IF:                                               ║
-║    • Tests fail 3 times in a row → pauses for human review                   ║
-║    • User runs /sw:cancel-auto                                                ║
-║    • Max iterations reached (safety limit)                                    ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  💡 Check progress: /sw:auto-status                                           ║
-║  💡 Cancel: close session or /sw:cancel-auto                                  ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+AUTO MODE STARTING
+══════════════════════════════════════════════════════════════════════════════
+Increment: [INCREMENT_ID]
+Tasks: [X] pending
+══════════════════════════════════════════════════════════════════════════════
+TESTS THAT MUST PASS FOR COMPLETION:
+
+Unit/Integration Tests:
+  Command: [EXACT_TEST_COMMAND]
+  Files:
+    - [test-file-1.test.ts] - [what it tests]
+    - [test-file-2.test.ts] - [what it tests]
+    - [NEW] [test-file-3.test.ts] - [will be created for X]
+
+E2E Tests (if applicable):
+  Command: [EXACT_E2E_COMMAND]
+  Files:
+    - [auth.e2e.ts] - [login/logout flows]
+    - [NEW] [checkout.e2e.ts] - [will be created for payment flow]
+
+══════════════════════════════════════════════════════════════════════════════
+SESSION WILL COMPLETE WHEN:
+  - All [X] tasks marked complete
+  - [TEST_COMMAND] passes (0 failures)
+  - [E2E_COMMAND] passes (if E2E tests exist)
+  - /sw:done validation passes
+
+SESSION WILL PAUSE/STOP IF:
+  - Tests fail 3 times in a row → pauses for human review
+  - User runs /sw:cancel-auto
+  - Max iterations reached (safety limit)
+══════════════════════════════════════════════════════════════════════════════
+Check progress: /sw:auto-status
+Cancel: close session or /sw:cancel-auto
+══════════════════════════════════════════════════════════════════════════════
 ```
 
 #### Step 1.5d: Fill in ALL placeholders with REAL values
@@ -922,24 +832,24 @@ Based on what you find, determine:
 
 **Examples of GOOD vs BAD:**
 
-❌ **BAD (vague):**
+BAD (vague):
 ```
 Tests: All tests passing (unit + E2E if present)
 ```
 
-✅ **GOOD (specific):**
+GOOD (specific):
 ```
 Unit Tests:
   Command: npm test
   Files:
-    • src/auth/auth.service.test.ts - JWT token generation
-    • src/auth/login.test.ts - login validation
-    • [NEW] src/auth/logout.test.ts - will create for logout flow
+    - src/auth/auth.service.test.ts - JWT token generation
+    - src/auth/login.test.ts - login validation
+    - [NEW] src/auth/logout.test.ts - will create for logout flow
 
 E2E Tests:
   Command: npx playwright test
   Files:
-    • tests/auth.e2e.ts - full login/logout user journey
+    - tests/auth.e2e.ts - full login/logout user journey
 ```
 
 **DO NOT SKIP THIS STEP!** Users MUST see the EXACT tests that will determine success.
@@ -968,33 +878,33 @@ echo "TDD Marker Check: RED=$RED_COUNT, GREEN=$GREEN_COUNT, REFACTOR=$REFACTOR_C
 **If TDD_MODE == true BUT TOTAL_MARKERS == 0:**
 
 ```
-⚠️  TDD MODE ENABLED BUT NO TDD MARKERS IN TASKS
+TDD MODE ENABLED BUT NO TDD MARKERS IN TASKS
 
 Your configuration has TDD mode enabled:
-  • --tdd flag: [yes/no]
-  • config.json: testing.defaultTestMode = "TDD"
-  • Enforcement level: [strict/warn/off]
+  - --tdd flag: [yes/no]
+  - config.json: testing.defaultTestMode = "TDD"
+  - Enforcement level: [strict/warn/off]
 
 But tasks.md contains NO [RED], [GREEN], [REFACTOR] markers:
-  • [RED] markers found: 0
-  • [GREEN] markers found: 0
-  • [REFACTOR] markers found: 0
+  - [RED] markers found: 0
+  - [GREEN] markers found: 0
+  - [REFACTOR] markers found: 0
 
-⚠️  TDD ORDER ENFORCEMENT WILL BE BYPASSED!
+TDD ORDER ENFORCEMENT WILL BE BYPASSED!
 
-The enforcement checks for task markers to validate RED→GREEN→REFACTOR order.
+The enforcement checks for task markers to validate RED->GREEN->REFACTOR order.
 Without markers, tasks can be completed in ANY order - defeating TDD discipline.
 
 CAUSE: Tasks were likely created:
-  • Manually (without using /sw:increment)
-  • Before TDD mode was enabled in config
-  • By copying from a non-TDD template
+  - Manually (without using /sw:increment)
+  - Before TDD mode was enabled in config
+  - By copying from a non-TDD template
 
-💡 FIX OPTIONS:
+FIX OPTIONS:
 
 1. (Recommended) Regenerate tasks with TDD structure:
    /sw:increment "your-feature"
-   This will create proper RED→GREEN→REFACTOR triplets
+   This will create proper RED->GREEN->REFACTOR triplets
 
 2. Add markers manually to existing tasks:
    ### T-001: [RED] Write failing test for feature
@@ -1012,13 +922,13 @@ CAUSE: Tasks were likely created:
 
 | Enforcement | TDD Enabled + No Markers | Action |
 |-------------|--------------------------|--------|
-| `strict` | **BLOCKS** | ❌ Cannot proceed - fix tasks.md first |
-| `warn` | **WARNS** | ⚠️ Shows warning, continues without enforcement |
+| `strict` | **BLOCKS** | Cannot proceed - fix tasks.md first |
+| `warn` | **WARNS** | Shows warning, continues without enforcement |
 | `off` | **Silent** | Skips all TDD checks |
 
 **Example (strict mode, no markers):**
 ```
-❌ TDD MARKER VALIDATION FAILED (strict mode)
+TDD MARKER VALIDATION FAILED (strict mode)
 
 Cannot start auto mode with TDD enabled but no task markers.
 Run /sw:increment to regenerate tasks with TDD structure.
@@ -1057,19 +967,17 @@ fi
 **If TDD_MODE == true, add TDD enforcement to stop conditions banner:**
 
 ```
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  🔴 TDD MODE ACTIVE - RED→GREEN→REFACTOR ENFORCEMENT                         ║
-║                                                                               ║
-║  TDD Task Order Enforcement:                                                  ║
-║    Enforcement Level: [strict|warn|off]                                       ║
-║                                                                               ║
-║    [RED] tasks can be completed freely                                        ║
-║    [GREEN] tasks REQUIRE their [RED] counterpart completed first              ║
-║    [REFACTOR] tasks REQUIRE their [GREEN] counterpart completed first         ║
-║                                                                               ║
-║  ⚠️  strict mode: BLOCKS completion of out-of-order tasks                     ║
-║  ⚠️  warn mode: Shows warning but allows (not recommended)                    ║
-╠══════════════════════════════════════════════════════════════════════════════╣
+TDD MODE ACTIVE - RED->GREEN->REFACTOR ENFORCEMENT
+
+TDD Task Order Enforcement:
+  Enforcement Level: [strict|warn|off]
+
+  [RED] tasks can be completed freely
+  [GREEN] tasks REQUIRE their [RED] counterpart completed first
+  [REFACTOR] tasks REQUIRE their [GREEN] counterpart completed first
+
+  strict mode: BLOCKS completion of out-of-order tasks
+  warn mode: Shows warning but allows (not recommended)
 ```
 
 **TDD Enforcement during task execution:**
@@ -1089,7 +997,7 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
       if (enforcement === 'strict') {
         throw new Error(msg); // BLOCKS completion
       } else {
-        console.warn(`⚠️ ${msg}`); // Warns but allows
+        console.warn(`${msg}`); // Warns but allows
       }
     }
   }
@@ -1101,7 +1009,7 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
       if (enforcement === 'strict') {
         throw new Error(msg); // BLOCKS completion
       } else {
-        console.warn(`⚠️ ${msg}`); // Warns but allows
+        console.warn(`${msg}`); // Warns but allows
       }
     }
   }
@@ -1156,7 +1064,7 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
 
    **E. Ask user (if ambiguous):**
    ```markdown
-   🤔 I found several potential matches for your request:
+   I found several potential matches for your request:
 
    1. **0002-user-authentication** (planned) - Add auth system
    2. **0005-oauth-integration** (backlog) - Third-party auth
@@ -1185,18 +1093,19 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
 
 2. **On completion**:
    ```
-   ✅ Auto Session Complete!
+   Auto Session Complete!
    <!-- auto-complete:DONE -->
 
-   Session: auto-2025-12-29-abc123
    Duration: 2h 34m
    Iterations: 47
    Tasks Completed: 42/42
    Tests Passed: 156/156
    Coverage: 87%
-
-   Summary saved to: .specweave/logs/auto-2025-12-29-abc123-summary.md
    ```
+
+## Multi-Agent Work
+
+For coordinated multi-agent execution across different workstreams (frontend, backend, database, etc.), use `/sw:team-lead` instead. It provides structured orchestration of specialized agents working on the same increment.
 
 ## Related Commands
 
@@ -1207,15 +1116,4 @@ function enforceTDDOrder(task: Task, allTasks: Task[], enforcement: string): voi
 | `/sw:skip-increment` | Skip failed increment and continue queue |
 | `/sw:do` | Execute tasks (also works standalone) |
 | `/sw:progress` | Show increment progress |
-
----
-
-## 🔀 Parallel Execution Mode
-
-**For parallel multi-agent execution, see: `/sw:auto-parallel`**
-
-Parallel mode spawns specialized agents (Frontend, Backend, Database, DevOps, QA) that work simultaneously in isolated git worktrees.
-
-```bash
-/sw:auto --parallel --frontend --backend 0170-auth-feature
-```
+| `/sw:team-lead` | Multi-agent orchestration |
