@@ -3,14 +3,31 @@
  *
  * Tests pure/standalone functions directly.
  * Tests PlatformUtils class with real OS operations (temp files, current PID).
- * Tests escape functions via sendNotification side effects.
+ * Tests sendNotification with mocked exec (no real OS notifications).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs/promises';
 import { mkdirSync, writeFileSync, existsSync, rmdirSync } from 'fs';
 import path from 'path';
 import os from 'os';
+
+// Mock exec from child_process to prevent real OS notifications
+const { mockExec } = vi.hoisted(() => ({
+  mockExec: vi.fn((_cmd: string, cb?: (err: Error | null, stdout: string, stderr: string) => void) => {
+    if (typeof cb === 'function') cb(null, '', '');
+    return {} as any;
+  }),
+}));
+
+vi.mock('child_process', async (importActual) => {
+  const actual = await importActual<typeof import('child_process')>();
+  return {
+    ...actual,
+    exec: mockExec,
+  };
+});
+
 import {
   getCurrentPlatform,
   checkProcessExists,
@@ -248,11 +265,31 @@ describe('platform-utils', () => {
     });
 
     describe('sendNotification', () => {
+      beforeEach(() => {
+        mockExec.mockClear();
+      });
+
       it('should not throw regardless of platform', async () => {
-        // Fire-and-forget, should always succeed gracefully
         await expect(
           utils.sendNotification('SpecWeave: Test', 'Test body', 'Pop')
         ).resolves.not.toThrow();
+      });
+
+      it('should call exec with osascript on macOS', async () => {
+        if (process.platform !== 'darwin') return;
+        await utils.sendNotification('SpecWeave: Test', 'Test body', 'Pop');
+        expect(mockExec).toHaveBeenCalledWith(
+          expect.stringContaining('osascript'),
+          expect.any(Function)
+        );
+      });
+
+      it('should escape special characters in title and body', async () => {
+        if (process.platform !== 'darwin') return;
+        await utils.sendNotification('Title with "quotes"', 'Body with \\ backslash', 'Pop');
+        const cmd = mockExec.mock.calls[0][0] as string;
+        expect(cmd).toContain('\\"quotes\\"');
+        expect(cmd).toContain('\\\\');
       });
     });
   });
