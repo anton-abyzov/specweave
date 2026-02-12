@@ -146,6 +146,18 @@ if [ "$LAZY_MODE" = true ]; then
     done <<< "$INSTALLED_SW_PLUGINS"
 
     echo -e "${GREEN}✓ Existing plugins uninstalled${NC}"
+
+    # CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
+    # claude plugin uninstall can corrupt the entire enabledPlugins object as a side effect
+    USER_SETTINGS="$HOME/.claude/settings.json"
+    if [[ -f "$USER_SETTINGS" ]]; then
+      SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
+      if [[ "$SW_ENABLED" != "true" ]]; then
+        jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" && \
+          mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+        echo -e "${GREEN}  ✓ Restored sw@specweave enabled state${NC}"
+      fi
+    fi
   else
     echo -e "${BLUE}  No existing SpecWeave plugins to remove${NC}"
   fi

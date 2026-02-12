@@ -104,6 +104,25 @@ fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8')
 
 **Gap (NOW FIXED)**: Previously no protection for `sw@specweave` after uninstall operations. Now explicitly restored.
 
+### Case 4: Refresh Marketplace Script (FIXED in v1.0.250)
+
+**Location**: `scripts/refresh-marketplace.sh` (line 144)
+
+**Context**: Contributor-only script (users should use `specweave refresh-marketplace` CLI)
+
+```bash
+# Uninstall existing SpecWeave plugins before refresh
+while IFS= read -r plugin; do
+  if [ -n "$plugin" ]; then
+    claude plugin uninstall "$plugin" 2>/dev/null || true
+  fi
+done <<< "$INSTALLED_SW_PLUGINS"
+```
+
+**Risk**: Contributors running this script could corrupt `sw@specweave` enabled state.
+
+**Fix**: Added shell-based restoration pattern (lines 150-159) to restore `sw@specweave=true` after uninstall loop completes.
+
 ## General Pattern: All `claude plugin uninstall` Calls
 
 **Search Pattern**:
@@ -115,6 +134,7 @@ grep -r "claude plugin uninstall" --include="*.ts" --include="*.sh"
 - `plugins/specweave/hooks/user-prompt-submit.sh` - ✅ FIXED
 - `src/utils/cleanup-stale-plugins.ts` - ✅ FIXED
 - `src/cli/commands/refresh-marketplace.ts` - ✅ FIXED
+- `scripts/refresh-marketplace.sh` - ✅ FIXED (contributor script)
 - Tests (not production risk)
 
 ## Recommended Fixes
@@ -228,10 +248,11 @@ When reviewing code that manipulates plugins:
 
 ## Version History
 
-- **v1.0.250**: Fixed all 3 cases
+- **v1.0.250**: Fixed all 4 cases
   - Case 1: user-prompt-submit hook (shell restoration pattern)
   - Case 2: cleanup-stale-plugins.ts (TypeScript restoration in both code paths)
   - Case 3: refresh-marketplace.ts (atomic settings update in both minimal and lazy/all modes)
+  - Case 4: refresh-marketplace.sh (shell restoration pattern for contributors)
 
 ## See Also
 
