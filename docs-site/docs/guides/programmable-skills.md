@@ -16,14 +16,18 @@ tags: ["programmable-skills", "open-closed-principle", "SOLID", "skill-memories"
 
 ## Executive Summary
 
-Most AI coding assistants (GitHub Copilot, Cursor, etc.) are **black boxes** — you cannot see their logic or customize their behavior. SpecWeave introduces **Programmable Skills**, applying the **Open/Closed Principle** from SOLID design to AI:
+Most AI coding assistants (GitHub Copilot, Cursor, etc.) are **black boxes** — you cannot see their logic or customize their behavior.
+
+Claude Code pioneered **Skills** — transparent, programmable AI where behavior is defined in readable markdown files.
+
+SpecWeave builds on this foundation by applying the **Open/Closed Principle** from SOLID design to make Claude Code skills **extendable**:
 
 - **Closed for modification**: Core skill logic in `SKILL.md` (stable, tested)
 - **Open for extension**: User customizations in `.specweave/skill-memories/*.md`
 
 This architecture delivers:
-- ✅ **Transparency** — See exactly what skills do
-- ✅ **Customization** — Add your rules without forking
+- ✅ **Transparency** — See exactly what skills do (Claude Code)
+- ✅ **Extendability** — Customize without forking (SpecWeave innovation)
 - ✅ **Persistence** — Corrections become permanent knowledge
 - ✅ **No vendor lock-in** — You control the behavior
 
@@ -56,9 +60,9 @@ Every AI coding session starts from zero. No memory. No learning. No customizati
 
 | Day | What Happens |
 |-----|-------------|
-| **Monday** | You: "Use our design system from `@/components/ui`"<br>AI: *regenerates with design system* |
-| **Tuesday** | AI: *suggests inline styles*<br>You: "I told you yesterday — use `@/components/ui`!" |
-| **Wednesday** | AI: *suggests inline styles again*<br>You: *considers rage-quitting* |
+| **Monday** | You: "Use our design system from `@/components/ui`" — AI: *regenerates with design system* |
+| **Tuesday** | AI: *suggests inline styles* — You: "I told you yesterday — use `@/components/ui`!" |
+| **Wednesday** | AI: *suggests inline styles again* — You: *considers rage-quitting* |
 
 This isn't a flaw in one tool. **Every AI assistant has this problem**:
 - GitHub Copilot: Resets each session
@@ -99,7 +103,9 @@ This is **vendor lock-in** in AI clothing.
 
 ## The Solution: Open/Closed Principle for AI
 
-SpecWeave applies the **Open/Closed Principle** (SOLID) to AI skills:
+Claude Code pioneered transparent AI through **Skills** — behavior defined in readable markdown files.
+
+SpecWeave extends this foundation by applying the **Open/Closed Principle** (SOLID) to make skills customizable:
 
 > **Software entities should be open for extension, but closed for modification.**
 > — Bertrand Meyer, 1988
@@ -943,16 +949,20 @@ But Git provides versioning, rollback, and team collaboration.
 
 ## Conclusion
 
-**Programmable Skills** represent a fundamental shift in AI tool design:
+**Extendable Skills** represent a fundamental shift in AI tool design:
 
-**From**: AI as a service (you consume)
-**To**: AI as a platform (you program)
+**From**: AI as a black box (closed)
+**To**: AI as a platform (transparent + extendable)
 
-By applying the **Open/Closed Principle** from SOLID design, SpecWeave delivers:
-- **Transparency** — See exactly what skills do (SKILL.md)
-- **Customization** — Add your rules (skill-memories)
-- **Persistence** — Corrections become permanent knowledge
-- **No vendor lock-in** — You control the behavior
+**Claude Code** pioneered transparent AI:
+- SKILL.md shows the logic
+- Behavior is readable, not obfuscated
+
+**SpecWeave** adds extendability via SOLID principles:
+- skill-memories/*.md for customizations
+- Extend without forking
+- Corrections become permanent knowledge
+- No vendor lock-in
 
 **This is the future**: AI tools that are transparent, extensible, and fully under your control.
 

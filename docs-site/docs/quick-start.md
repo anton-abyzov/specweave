@@ -255,7 +255,7 @@ Each agent has its own spec, plan, and task list. No overlap, no conflicts. Chec
 
 ### Power Features to Explore Next
 
-**🎛️ Programmable Skills (Open/Closed Principle)**
+**🎛️ Extensible Skills (Open/Closed Principle)**
 
 Skills aren't just prompts — they're **programs you can customize** without forking source code.
 

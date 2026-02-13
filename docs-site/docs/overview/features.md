@@ -201,6 +201,45 @@ User: "Create authentication system"
 → Generates complete spec + architecture + plan
 \`\`\`
 
+## 🔌 Extensible Skills (Open/Closed Principle)
+
+**Skills are programs written in human language. SpecWeave makes them extensible — without forking.**
+
+Claude Code Skills (`SKILL.md`) define AI behavior using instructions, conditionals, and logic flow — all in English. SpecWeave applies the **SOLID Open/Closed Principle** to these human-language programs:
+
+- **SKILL.md** = core program (closed for modification — stable, tested, version-controlled)
+- **skill-memories/*.md** = your extensions (open for extension — your rules, your patterns)
+
+Claude reads both at runtime. Your extensions override defaults. The original skill keeps getting updates. You never have merge conflicts.
+
+**Example:**
+```markdown
+# .specweave/skill-memories/frontend.md
+
+### Form Handling
+- Use React Hook Form for all forms
+- Combine with Zod for validation schemas
+
+### Component Rules
+When generating components:
+1. Check design system first (src/components/ui/)
+2. If component exists, import it — don't recreate
+3. Extract to custom hooks if logic >50 lines
+```
+
+You correct Claude once. It remembers forever. That's not configuration — that's **programming the AI in English**.
+
+| Tool | Can You Customize AI Behavior? |
+|------|-------------------------------|
+| **SpecWeave** | Yes — extend via skill-memories (SOLID Open/Closed) |
+| **ChatGPT** | Text box. No structure. Resets per conversation |
+| **GitHub Copilot** | No — black box reasoning |
+| **Cursor** | No — proprietary, locked logic |
+
+**Enable auto-learning:** `/sw:reflect-on` captures corrections as permanent skill-memories.
+
+See [Extensible Skills deep-dive](/docs/guides/programmable-skills) and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for full details.
+
 ## 🧪 Test-Validated Development
 
 ### Test-Aware Planning
