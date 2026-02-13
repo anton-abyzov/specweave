@@ -94,7 +94,7 @@ flowchart LR
 3. **Context Precision** - Load only what's needed (70%+ token reduction)
 4. **Test-Validated Features** - Every feature proven through automated tests
 5. **Regression Prevention** - Document existing code before modification
-6. **Framework Agnostic** - Works with ANY tech stack
+6. **Stack Agnostic** - Works with ANY tech stack
 
 ## How It Works
 

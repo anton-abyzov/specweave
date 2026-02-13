@@ -424,7 +424,7 @@ JIRA_TOKEN=xxxxx          # For JIRA sync (optional)
 | **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
 | **Traceability** | Every line traces to a requirement | Partial | Partial |
 | **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |
-| **Proven at scale** | Framework builds itself | Community projects | New |
+| **Proven at scale** | Builds itself | Community projects | New |
 
 ---
 

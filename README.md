@@ -231,7 +231,7 @@ When you close an increment, external tools update automatically.
 
 ## Built With SpecWeave
 
-> This framework builds itself. Every feature, bug fix, and release is spec-driven.
+> SpecWeave builds itself. Every feature, bug fix, and release is spec-driven.
 
 **[Browse increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — see how SpecWeave develops SpecWeave.
 

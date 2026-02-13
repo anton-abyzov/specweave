@@ -10,7 +10,7 @@
 
 - ✅ **Agents build agents** - Core agents create custom domain experts
 - ✅ **Skills build skills** - Core skills generate specialized capabilities
-- ✅ **SpecWeave builds SpecWeave** - The framework uses itself to add new features
+- ✅ **SpecWeave builds SpecWeave** - The skill layer uses itself to add new features
 - ✅ **You control everything** - No autonomous changes, always approved
 
 **In other words**: The factory builds factories, and you're the architect.
@@ -22,21 +22,21 @@
 ### Traditional Frameworks
 
 ```
-Framework provides tools
+Traditional framework provides tools
    ↓
 You use tools to build app
    ↓
 Framework stays static
    ↓
-You're limited to what framework provides
+You're limited to what the framework provides
 ```
 
-❌ **Problem**: Framework can't adapt to YOUR domain, YOUR company, YOUR needs.
+❌ **Problem**: Traditional frameworks can't adapt to YOUR domain, YOUR company, YOUR needs.
 
 ### SpecWeave's Meta-Capability
 
 ```
-Framework provides core agents/skills
+Skill layer provides core agents/skills
    ↓
 You use them to build app
    ↓
@@ -44,7 +44,7 @@ You create custom agents/skills for YOUR domain
    ↓
 Custom agents create MORE tools
    ↓
-Framework evolves with YOUR needs
+Skill layer evolves with YOUR needs
 ```
 
 ✅ **Solution**: Infinite extensibility tailored to your exact requirements.
@@ -112,7 +112,7 @@ Catches violations BEFORE code review
 
 ### 3. SpecWeave Builds SpecWeave
 
-**Scenario**: The framework needs diagram generation capabilities.
+**Scenario**: The skill layer needs diagram generation capabilities.
 
 **How it's built**:
 ```
@@ -124,12 +124,12 @@ architect agent: Designs architecture (HOW)
    ↓
 docs-writer agent: Creates documentation
    ↓
-Result: diagrams-architect agent added to framework
+Result: diagrams-architect agent added to skill layer
    ↓
 SpecWeave now has diagram capabilities (built by SpecWeave!)
 ```
 
-**The framework uses itself to improve itself** - continuous evolution.
+**The skill layer uses itself to improve itself** - continuous evolution.
 
 ---
 
@@ -247,13 +247,13 @@ audit-log-validator skill:
 
 ### 🚀 Infinite Extensibility
 
-**No framework limits**:
+**No limits**:
 - Healthcare? Create `hipaa-compliance` agent
 - Gaming? Create `game-balance` agent
 - IoT? Create `iot-protocol` skill
 - Finance? Create `financial-reporting` agent
 
-**Any domain, any niche, any requirement** - the framework adapts.
+**Any domain, any niche, any requirement** - the skill layer adapts.
 
 ---
 
@@ -293,18 +293,18 @@ Result: Entire team benefits from improvement
 
 ---
 
-### 📈 Framework Evolution
+### 📈 Skill Layer Evolution
 
 **How SpecWeave grows**:
 
 | Contribution | Result |
 |-------------|--------|
 | User feedback | New agents/skills added |
-| Community contributions | Framework capabilities expand |
+| Community contributions | Skill layer capabilities expand |
 | Best practices emerge | Codified in agents |
 | Edge cases discovered | Skills improved |
 
-**The framework gets better every day** - driven by real-world usage.
+**The skill layer gets better every day** - driven by real-world usage.
 
 ---
 
@@ -447,7 +447,7 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 **A**: They're in your repo - you control visibility.
 
 - ✅ Keep in private repo → Only your team has access
-- ✅ Keep in `.claude/agents/` → Not published to framework
+- ✅ Keep in `.claude/agents/` → Not published to skill layer
 - ✅ Use `.gitignore` → Don't even commit to git
 
 **Full control over distribution.**
@@ -456,14 +456,14 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 ### Q: How do I contribute custom agents back to SpecWeave?
 
-**A**: Submit a PR to the framework!
+**A**: Submit a PR to the skill layer!
 
 **Steps**:
 1. Create custom agent in your project
 2. Test thoroughly in production
 3. Move to SpecWeave's `src/agents/`
 4. Submit PR with test cases
-5. If accepted → Added to framework for everyone
+5. If accepted → Added to skill layer for everyone
 
 **Community-driven growth.**
 
@@ -494,15 +494,15 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 ## The Bottom Line
 
-**SpecWeave is not just a framework** - it's a **self-improving ecosystem** where:
+**SpecWeave is not just a skill layer** - it's a **self-improving ecosystem** where:
 
 - ✅ Agents build agents
 - ✅ Skills build skills
-- ✅ The framework uses itself to grow
+- ✅ The skill layer uses itself to grow
 - ✅ You control every step
 - ✅ Knowledge compounds over time
 
-**Other frameworks give you tools.**
+**Other tools give you static prompts.**
 
 **SpecWeave gives you a factory that builds MORE tools.**
 
