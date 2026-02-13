@@ -1,5 +1,5 @@
 ---
-description: Parallel code review with confidence scoring and spec compliance. Use when saying "review code", "code review", "PR review", "review my changes", "review the PR", "check my code", "review increment code", "audit the code". Spawns 3-5 subagents for bug detection, security, performance, quality, and spec compliance.
+description: Parallel code review with confidence scoring and spec compliance. Use when saying "review code", "PR review", "check my code", or "audit the code".
 allowed-tools: Read, Bash, Grep, Glob, Task
 model: opus
 context: fork
