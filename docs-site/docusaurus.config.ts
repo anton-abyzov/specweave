@@ -157,6 +157,20 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            from: '/docs/guides/programmable-skills',
+            to: '/docs/guides/extensible-skills',
+          },
+        ],
+      },
+    ],
+  ],
+
   themeConfig: {
     image: 'img/specweave-social-card-v2.jpg',
 
@@ -204,15 +218,15 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'academySidebar',
+          sidebarId: 'skillsSidebar',
           position: 'left',
-          label: 'Academy',
+          label: 'Extensible Skills',
         },
         {
           type: 'docSidebar',
-          sidebarId: 'glossarySidebar',
+          sidebarId: 'academySidebar',
           position: 'left',
-          label: 'Glossary',
+          label: 'Academy',
         },
         // {
         //   type: 'docSidebar',

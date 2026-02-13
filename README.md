@@ -1,6 +1,6 @@
 # SpecWeave
 
-**The spec-driven framework for AI coding agents.** First-class support for Claude Code — compatible with any LLM-powered coding tool.
+**The spec-driven skill layer for AI coding agents.** First-class support for Claude Code — compatible with any LLM-powered coding tool.
 
 *Coordinate parallel AI agents. Prevent task overlap. Quality gates. Ship features while you sleep.*
 

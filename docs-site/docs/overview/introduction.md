@@ -1,10 +1,10 @@
 # What is SpecWeave?
 
-**SpecWeave is the AI development framework that doesn't lose your work.**
+**SpecWeave is the AI development layer that doesn't lose your work.**
 
 Every AI coding tool promises productivity. But after the chat ends, your specs disappear into chat history, your architecture decisions are forgotten, and new team members start from zero.
 
-**SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
+**SpecWeave is the only tool where AI decisions become permanent, searchable documentation.**
 
 ## Stop Repeating Yourself
 
@@ -43,7 +43,7 @@ SpecWeave isn't just shortcuts - it's **encapsulated expertise**:
 - **Skills auto-activate** - mention "security" and security expertise loads
 - **Quality gates** enforce what senior devs know: tests before merge, docs before close
 
-**Real result**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to do the same - because the expertise is in the framework, not in knowing what to ask.
+**Real result**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to do the same - because the expertise is built in, not in knowing what to ask.
 
 ## The Problem: Lost Work
 

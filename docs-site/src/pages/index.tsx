@@ -126,7 +126,7 @@ function HomepageHeader() {
             </Heading>
 
             <p className={styles.heroSubtitle}>
-              The spec-driven framework for AI coding agents. First-class support for <strong>Claude Code</strong> — compatible with any LLM-powered coding tool. Persistent memory, autonomous execution, quality gates, and living documentation.
+              The spec-driven skill layer for AI coding agents. First-class support for <strong>Claude Code</strong> — compatible with any LLM-powered coding tool. Persistent memory, autonomous execution, quality gates, and living documentation.
             </p>
 
             <div className={styles.heroButtons}>
@@ -296,14 +296,14 @@ function FeaturesSection(): ReactNode {
 
         <div className={styles.featuresGrid}>
           <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.extensible}</div>
+            <h3>Extensible Skills (SOLID)</h3>
+            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules.</p>
+          </div>
+          <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.agents}</div>
             <h3>Multi-Agent Orchestration</h3>
             <p>Specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables. Powered by Claude Opus 4.6.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
-            <h3>Living Documentation</h3>
-            <p>Specifications, ADRs, and runbooks synchronized automatically after every task completion.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.memory}</div>
@@ -311,9 +311,9 @@ function FeaturesSection(): ReactNode {
             <p>AI learns from corrections and retains context. Fix once — remembered permanently.</p>
           </div>
           <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.sync}</div>
-            <h3>Bidirectional Sync</h3>
-            <p>GitHub Issues, JIRA, Azure DevOps — real-time synchronization across platforms.</p>
+            <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
+            <h3>Living Documentation</h3>
+            <p>Specifications, ADRs, and runbooks synchronized automatically after every task completion.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.qualityGates}</div>
@@ -321,9 +321,9 @@ function FeaturesSection(): ReactNode {
             <p>Enforced validation: tests passing, docs current, acceptance criteria satisfied before release.</p>
           </div>
           <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.extensible}</div>
-            <h3>Extensible Skills (SOLID)</h3>
-            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules.</p>
+            <div className={styles.featureIconWrapper}>{Icons.sync}</div>
+            <h3>Bidirectional Sync</h3>
+            <p>GitHub Issues, JIRA, Azure DevOps — real-time synchronization across platforms.</p>
           </div>
         </div>
       </div>
@@ -409,7 +409,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Ship Features While You Sleep"
-      description="The spec-driven framework for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Ship features while you sleep.">
+      description="The spec-driven skill layer for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Ship features while you sleep.">
       <HomepageHeader />
       <main>
         <ProblemSection />

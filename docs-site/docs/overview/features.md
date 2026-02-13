@@ -20,7 +20,7 @@ SpecWeave provides a comprehensive suite of tools and workflows for building pro
 - Quality gates enforce senior dev practices automatically
 - Patterns learned once become defaults everywhere
 
-**Real-world proof**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to build apps too - because the expertise is in the framework, not in knowing what to ask.
+**Real-world proof**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to build apps too - because the expertise is built in, not in knowing what to ask.
 
 ---
 
@@ -238,7 +238,7 @@ You correct Claude once. It remembers forever. That's not configuration — that
 
 **Enable auto-learning:** `/sw:reflect-on` captures corrections as permanent skill-memories.
 
-See [Extensible Skills deep-dive](/docs/guides/programmable-skills) and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for full details.
+See [Extensible Skills deep-dive](/docs/guides/extensible-skills) and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for full details.
 
 ## 🧪 Test-Validated Development
 
@@ -409,7 +409,7 @@ Brownfield projects are the **ultimate challenge** in software development:
 
 - ❌ **Living documentation** that stays current as code evolves
 
-**Most frameworks give up here. SpecWeave excels.**
+**Most tools give up here. SpecWeave excels.**
 
 ### Intelligent Documentation Merging
 
