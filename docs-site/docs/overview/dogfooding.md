@@ -73,7 +73,7 @@ SpecWeave tracks its own DORA metrics in real-time:
 
 SpecWeave has been used to build 5+ production applications:
 
-### 1. SpecWeave (This Framework)
+### 1. SpecWeave (Built With Itself)
 - **186K+ lines** of TypeScript
 - **1,327 commits** over 52 days
 - **24 plugins**, **47 CLI commands**, **65 hooks**
@@ -142,7 +142,7 @@ Every crash, every bug, every friction point — we experienced it ourselves:
 3. **Sync failures** led to circuit breaker patterns
 4. **Zombie processes** led to automatic cleanup hooks
 
-**We didn't just build a framework. We used it to build a framework.**
+**We didn't just build a skill layer. We used it to build itself.**
 
 ### Real Lessons Learned
 
