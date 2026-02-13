@@ -12,7 +12,7 @@ Understanding machine learning, artificial intelligence, and LLM-powered applica
 
 ## Overview
 
-ML/AI terms cover machine learning models, training, inference, and AI-powered application development. These concepts enable teams to integrate intelligent features, from simple predictions to complex LLM-powered assistants. SpecWeave itself is an AI-native framework designed to work seamlessly with Claude Code and other AI tools.
+ML/AI terms cover machine learning models, training, inference, and AI-powered application development. These concepts enable teams to integrate intelligent features, from simple predictions to complex LLM-powered assistants. SpecWeave itself is an AI-native skill layer designed to work seamlessly with Claude Code and other AI tools.
 
 ## Core Concepts
 
@@ -435,7 +435,7 @@ Be concise. Only report significant issues.
 
 ## How SpecWeave Uses ML/AI Terms
 
-### 1. LLM-Native Framework
+### 1. LLM-Native Skill Layer
 
 SpecWeave is designed for LLM-powered development:
 
@@ -449,7 +449,7 @@ Architecture:
 └─────────────────┬───────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────┐
-│  SpecWeave Framework                        │
+│  SpecWeave Skill Layer                      │
 │  - Plugin system (modular capabilities)    │
 │  - Context optimization (75% reduction)    │
 │  - Living docs (always up-to-date)         │

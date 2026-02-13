@@ -145,7 +145,7 @@ Power users can manually manage plugin loading using Claude's native plugin comm
 
 ```bash
 # Install plugins using SHORT names (RECOMMENDED)
-claude plugin install sw@specweave           # Core framework
+claude plugin install sw@specweave           # Core skill layer
 claude plugin install sw-frontend@specweave  # Frontend development
 claude plugin install sw-github@specweave    # GitHub integration
 claude plugin install sw-jira@specweave      # JIRA integration
