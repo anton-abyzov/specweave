@@ -62,7 +62,7 @@ draft: true
 >
 > I'd finish a feature on Monday and by Thursday couldn't remember why I made certain decisions. Sound familiar?
 >
-> So I asked myself: what would a framework look like that solves these problems for good? Not just for this project, but for the next ten projects. Something I could rely on for months and years, not just days.
+> So I asked myself: what would a tool look like that solves these problems for good? Not just for this project, but for the next ten projects. Something I could rely on for months and years, not just days.
 >
 > That question became SpecWeave."
 
@@ -104,7 +104,7 @@ draft: true
 >
 > SpecWeave leverages both models — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is devastatingly powerful.
 >
-> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire framework to harness exactly this power.
+> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire skill layer to harness exactly this power.
 >
 > If you want to see these apps in detail, I'll walk through them at the end of this video. But for now, understand this: all of these were built with SpecWeave. Every feature spec'd. Every decision documented. Every change traceable.
 >
@@ -1221,7 +1221,7 @@ specweave init .
 
 **[SCREEN: Navigate to docs/guides/lessons/06-tdd-workflow]**
 
-> "And here's a major change — TDD is now the DEFAULT in SpecWeave, not optional. Test-Driven Development with strict enforcement. Red-green-refactor discipline, enforced by the framework."
+> "And here's a major change — TDD is now the DEFAULT in SpecWeave, not optional. Test-Driven Development with strict enforcement. Red-green-refactor discipline, enforced by the skill layer."
 
 ```bash
 /sw:tdd-cycle  # Full red-green-refactor workflow
@@ -1269,7 +1269,7 @@ specweave init .
 
 > "Nearly 2,000 commits over 14 months. 1,986 commits to be exact. At peak velocity — 100 commits in a single day.
 >
-> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession. And with the recent Skill Enrichment update, we added 25 new skills across 8 plugin domains in one increment — mobile, AI/ML, infrastructure, backend, desktop, and blockchain. The framework keeps growing."
+> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession. And with the recent Skill Enrichment update, we added 25 new skills across 8 plugin domains in one increment — mobile, AI/ML, infrastructure, backend, desktop, and blockchain. The skill layer keeps growing."
 
 **[Point to DORA metrics]**
 
@@ -1281,7 +1281,7 @@ specweave init .
 
 > "5+ production applications built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
 >
-> This isn't a demo framework. It's production-tested — on itself.
+> This isn't a demo project. It's production-tested — on itself.
 >
 > And speaking of real-world AI automation — Boris Cherny, the creator of Claude Code at Anthropic, recently shared something remarkable: he didn't open his IDE even once for an entire month. Every commit — 259 pull requests, 497 commits, 40,000 lines added — was written entirely by Claude Code using autonomous execution with stop hooks.
 >
@@ -2702,7 +2702,7 @@ ls .specweave/docs/internal/architecture/adr/ | wc -l
 >
 > **Mean Time to Recovery**: When things break, how fast do you fix them? SpecWeave: not applicable — nothing has broken in production."
 
-> "These aren't aspirational numbers. This is SpecWeave building SpecWeave. The framework proves itself."
+> "These aren't aspirational numbers. This is SpecWeave building SpecWeave. The skill layer proves itself."
 
 ---
 
@@ -2902,7 +2902,7 @@ specweave init .
 
 **[SCREEN: Intro slide]**
 
-> "Okay, we've covered the entire SpecWeave framework. Now let me show you exactly what you can build with it.
+> "Okay, we've covered the entire SpecWeave skill layer. Now let me show you exactly what you can build with it.
 >
 > Earlier I mentioned five production apps shipped in the past month. Let me walk you through each one — not just showing the UI, but the architecture, the key decisions, and how SpecWeave organized the complexity.
 >
@@ -3086,7 +3086,7 @@ specweave init .
 
 **[SCREEN: Back to your face]**
 
-> "Five apps. Different domains, different stacks, different complexity levels. All built with the same framework — SpecWeave.
+> "Five apps. Different domains, different stacks, different complexity levels. All built with the same skill layer — SpecWeave.
 >
 > The mobile apps prove it works for React Native and native Swift. The enterprise platform proves it scales to 20+ microservices. The ML integration proves it handles complex pipelines.
 >
@@ -3244,7 +3244,7 @@ cat .specweave/increments/0089-github-sync/spec.md  # View increment
 ### YouTube Description Template
 
 ```
-SpecWeave: Finally. A Spec-Driven AI Framework. | 100% Free & Open Source
+SpecWeave: Program Your AI in English. | 100% Free & Open Source
 
 Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on your weekend MVP, or scale it to 50 teams. 3 commands to ship. 190+ self-built features. 0% change failure rate.
 
@@ -3304,7 +3304,7 @@ Dogfooding stats:
 - Nearly 2,000 commits over 14 months
 - 5+ production applications built in 1 month
 
-This isn't a demo framework — it's production-tested on itself and real businesses.
+This isn't a demo — it's production-tested on itself and real businesses.
 Powered by Claude Opus 4.6 — the most emotional technology moment in 18+ years of software engineering.
 
 #ai #coding #developer #programming #typescript #nodejs #claude #specweave #autonomous #reactnative #stripe #cloudflare #opus4 #tdd
