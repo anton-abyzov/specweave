@@ -1,12 +1,12 @@
 ---
-title: "Programmable Skills: The Open/Closed Principle for AI"
+title: "Extensible Skills: The Open/Closed Principle for AI"
 description: "How SpecWeave makes AI skills transparent, customizable, and extensible using SOLID principles"
 date: "2026-02-12"
 authors: ["Anton Abyzov"]
-tags: ["programmable-skills", "open-closed-principle", "SOLID", "skill-memories", "reflection", "customization"]
+tags: ["extensible-skills", "open-closed-principle", "SOLID", "skill-memories", "reflection", "customization"]
 ---
 
-# Programmable Skills: The Open/Closed Principle for AI
+# Extensible Skills: The Open/Closed Principle for AI
 
 **Making AI tools transparent, customizable, and extensible**
 
