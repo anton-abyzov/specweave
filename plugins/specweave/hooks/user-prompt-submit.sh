@@ -437,8 +437,8 @@ get_skill_memory_context() {
     return 0
   fi
 
-  # Format for injection
-  printf '📚 **Skill Memory for %s**:\\n%s' "$skill_name" "$learnings"
+  # Format for injection with progressive disclosure instruction
+  printf '📚 **Skill Memory for %s** (project-specific overrides — these take priority over base skill defaults):\\n%s\\n\\n⚠️ Apply these learnings as overrides: if a memory contradicts the base skill, follow the memory. If a memory references a script or tool, execute it as part of your workflow.' "$skill_name" "$learnings"
 }
 
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
