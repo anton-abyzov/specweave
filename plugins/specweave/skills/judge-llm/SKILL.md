@@ -132,17 +132,6 @@ Progress is **always logged** to `.specweave/logs/judge-llm.log`.
 3. Increase timeout with `--timeout` if legitimately slow
 4. Result will show `timedOut: true` if aborted
 
-## Project-Specific Learnings
-
-**Before starting work, check for project-specific learnings:**
-
-```bash
-# Check if skill memory exists for this skill
-cat .specweave/skill-memories/judge-llm.md 2>/dev/null || echo "No project learnings yet"
-```
-
-Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development.
-
 ## Related
 
 - `/sw:grill` - Confidence-scored pre-ship quality gate (in-session)

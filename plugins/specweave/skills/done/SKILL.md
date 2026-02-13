@@ -1506,7 +1506,6 @@ Check progress: /list-increments
 
 - `pm`: Product Manager agent (validates completion)
 - `sw-testing:qa-engineer`: QA Engineer agent (validates tests)
-- `tech-lead`: Tech Lead agent (validates code quality)
 - `docs-writer`: Documentation writer (validates docs)
 
 ---

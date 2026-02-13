@@ -512,7 +512,6 @@ function getAgentEmoji(name: string): string {
   const emojiMap: Record<string, string> = {
     pm: '🎯',
     architect: '🏗️',
-    'tech-lead': '👨‍💻',
     'github-manager': '🐙',
   };
   return emojiMap[name.toLowerCase()] || '🤖';

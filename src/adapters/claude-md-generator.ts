@@ -143,7 +143,6 @@ ${agentsTable}
       'security': 'Security review',
       'qa-engineer': 'Testing',
       'devops': 'Deployment needed',
-      'tech-lead': 'Code review',
       'sre': 'Troubleshooting',
       'docs-writer': 'Writing docs',
       'performance': 'Optimization needed',

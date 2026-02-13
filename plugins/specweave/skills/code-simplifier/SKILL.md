@@ -4,14 +4,6 @@ description: Expert code refinement agent that simplifies and improves code clar
 
 # Code Simplifier
 
-## Project-Specific Learnings
-
-Before starting work, check for project-specific learnings:
-
-```bash
-cat .specweave/skill-memories/code-simplifier.md 2>/dev/null || echo "No project learnings yet"
-```
-
 ## Approach
 
 Refine code for clarity and maintainability without changing behavior:

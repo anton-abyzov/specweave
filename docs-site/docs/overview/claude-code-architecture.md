@@ -567,7 +567,7 @@ SpecWeave now leverages these Claude Code 2.1.x features:
 
 | Optimization | Skills Affected | Benefit |
 |--------------|-----------------|---------|
-| **`context: fork`** | pm, architect, tech-lead, increment-planner | Prevents context pollution in main conversation |
+| **`context: fork`** | pm, architect, increment-planner | Prevents context pollution in main conversation |
 | **`model: opus`** | pm, architect, increment-planner | Ensures highest quality for critical decisions |
 | **Skill-scoped hooks** | /sw:do, /sw:done, /sw:validate, /sw:increment | ~50% fewer hook invocations (only fire when skill active) |
 | **Agent-type init** | SessionStart hook | Agent-specific startup messages and context |
