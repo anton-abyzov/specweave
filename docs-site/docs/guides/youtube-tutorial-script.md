@@ -110,15 +110,23 @@ draft: true
 >
 > Without SpecWeave, I'd still be on app number two, trying to remember why I chose one authentication pattern over another."
 
-**[BRIEF NOTE - OUT OF SCOPE]**
+**[BRIEF NOTE - BEYOND CODE]**
 
-> "Now, you might be wondering about the marketing side of these apps — how do I create ad creatives, test them, optimize conversion rates? That's a whole separate video.
+> "Now here's something I want to plant in your mind before we go deeper.
 >
-> We're talking about generating production-ready video ads using the latest AI tools — not just 5-second clips, but full ad sequences that reference previous frames for continuity. Then running A/B tests through Meta Ads, analyzing the usage stats, and automatically choosing the best performing creative out of 5 AI-generated variants.
+> SpecWeave isn't just about building apps. The same spec-plan-tasks model that coordinated these five applications works for ANY structured work.
 >
-> It's a complete chain from generation to deployment to optimization. But that's not what this video is about. Leave a comment if you want to see that workflow — I'll make a dedicated video on AI-powered marketing automation.
+> I automate my Obsidian vault reviews — the AI goes through every document and if something's in the wrong place, it reorganizes it into the right structure. All tracked, all traceable.
 >
-> For now, let's focus on what matters for developers: building the actual products. Not marketing them — building them."
+> I set up research increments — deep dives on competitors, market trends, even my favorite sports teams. The AI gathers data, cross-references sources, and produces a permanent report. Not a chat message that vanishes — a documented, searchable artifact.
+>
+> I build quick solutions on the fly — need a landing page? A webhook endpoint? A personal tool? The models can build and deploy your website in several minutes. Then you share the URL, get feedback, iterate, and close the loop. That's incredibly powerful.
+>
+> You could automate your YouTube publishing pipeline, your content calendar, your weekly knowledge reviews. If you can describe acceptance criteria for it, SpecWeave can coordinate AI to deliver it.
+>
+> I have a full guide on this at spec-weave.com — link in the description. Check out the Life Automation guide for concrete examples.
+>
+> But for this video, let's focus on the core developer workflow. That's where the foundation is."
 
 **[EXCALIDRAW TRANSITION: "Vibe Coding" crossed out → "Spec-Driven Development"]**
 
@@ -2017,7 +2025,17 @@ wrangler deploy
 >
 > Phase 4: Every single increment goes through quality gates. The grill doesn't care if Claude Code or OpenClaw or Copilot wrote the code. Same standards. Same rigor.
 >
-> Phase 5: Ship. All five features, living docs updated, GitHub synced. Five features in 9 hours instead of 15."
+> Phase 5: Ship. All five features, living docs updated, GitHub synced. Five features in 9 hours instead of 15.
+>
+> And here's something that expands this even further — agents aren't just for code.
+>
+> I run agent swarms where one session reorganizes my Obsidian vault — scanning hundreds of notes, classifying them, moving them into the right folders, fixing broken links. Another session researches competitor pricing for a side project. A third builds a landing page and deploys it to Cloudflare. All three are SpecWeave increments. All three have specs, plans, and tasks. All three go through quality gates.
+>
+> The increment model doesn't care what the output is. Code, research documents, reorganized file systems, published content — the structure is the same: define it in a spec, break it into tasks, execute, validate.
+>
+> We have a full Life Automation guide at spec-weave.com covering Obsidian automation, internet research, rapid prototyping, publishing workflows, and more. Link in the description.
+>
+> And the beautiful part? Quality gates work the same way for all of it."
 
 **[EXCALIDRAW: Agent Team Primitives — The Three Pillars]**
 
@@ -2853,6 +2871,10 @@ specweave init .
 > Stop vibe coding. Start spec-driven development.
 >
 > **100% free. 100% open source. Works with any AI tool. Forever.**
+>
+> And one more thing — you don't have to be a professional developer to use this. If you do knowledge work, research, content creation, personal automation — SpecWeave works for all of it. Automate your Obsidian reviews. Set up research pipelines. Build and deploy solutions in minutes. Manage your publishing workflow. If you can describe what you want in a spec, SpecWeave can coordinate AI to build it.
+>
+> Check out our Life Automation guide at spec-weave.com for concrete examples and a step-by-step walkthrough. Link in the description.
 >
 > Install SpecWeave today. Build your first increment. Run your first agent swarm. See the difference.
 >

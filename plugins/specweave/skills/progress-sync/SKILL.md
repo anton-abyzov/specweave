@@ -1,5 +1,6 @@
 ---
-description: Comprehensive progress sync - tasks.md to living docs to external tools (GitHub/JIRA/ADO). AUTO-CREATES missing external issues. Use when syncing progress, saying "sync progress", "update all systems", or "push progress to GitHub". Args: [INCREMENT_ID] [--dry-run] [--no-create] [--no-github] [--no-jira].
+description: Sync progress from tasks.md to living docs and external tools (GitHub/JIRA/ADO). Use when saying "sync progress" or "push progress".
+argument-hint: "[INCREMENT_ID] [--dry-run] [--no-create] [--no-github] [--no-jira]"
 ---
 
 # Progress Sync (Multi-System)

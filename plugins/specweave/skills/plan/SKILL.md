@@ -1,5 +1,5 @@
 ---
-description: Generate plan.md and tasks.md for PLANNING increment using Architect Agent
+description: Generate plan.md and tasks.md for increment. Use when saying "create plan", "generate tasks", or "plan the increment".
 ---
 
 # /sw:plan - Generate Implementation Plan

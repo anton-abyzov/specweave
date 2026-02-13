@@ -1,5 +1,5 @@
 ---
-description: Refactor code with confidence using comprehensive test safety net. Applies design patterns, improves code quality, and optimizes performance while keeping all tests green.
+description: Refactor code with test safety net to improve quality. Use when saying "TDD refactor", "refactor with tests", or "improve code quality".
 ---
 
 # TDD Refactor Phase - Improve Code Quality
