@@ -1,8 +1,12 @@
 ---
-description: Implement minimal code to make failing tests pass in TDD green phase. Focuses on simplicity and making tests green without over-engineering.
+description: Write minimal code to make failing tests pass. Use when saying "TDD green", "make tests pass", or "implement for tests".
 ---
 
 # TDD Green Phase - Make Tests Pass
+
+## Project Overrides
+
+!`s="tdd-green"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 Implement minimal code to make failing tests pass in TDD green phase:
 

@@ -1,9 +1,14 @@
 ---
 disable-model-invocation: true
-description: SMART save - auto-generates commit messages, handles git pull/merge/rebase automatically, resolves divergent branches, stashes dirty work. Works for single repos and umbrella multi-repo setups. Run with no args for fully automatic save.
+description: Smart auto-commit with remote sync (handles pull/rebase/stash, auto-generates messages, supports multi-repo).
+argument-hint: "[message]"
 ---
 
 # /sw:save - Smart Save with Auto-Sync
+
+## Project Overrides
+
+!`s="save"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 **SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/sw:save` and it figures out what to do!
 

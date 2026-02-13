@@ -1,6 +1,6 @@
 ---
-disable-model-invocation: true
-description: Execute increment implementation following spec and plan - hooks run after EVERY task
+description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment".
+argument-hint: "<increment-id>"
 hooks:
   PostToolUse:
     - matcher: Edit
@@ -14,6 +14,10 @@ hooks:
 ---
 
 # Do Increment
+
+## Project Overrides
+
+!`s="do"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 **Implementation Execution**: Following spec.md and plan.md to execute the increment work.
 

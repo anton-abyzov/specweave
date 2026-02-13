@@ -1,5 +1,6 @@
 ---
-description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
+description: Validate increment with rule-based checks and AI quality assessment. Use when saying "validate", "check quality", or "verify increment".
+argument-hint: "[increment-id]"
 hooks:
   Stop:
     - hooks:
@@ -8,6 +9,10 @@ hooks:
 ---
 
 # Validate Increment
+
+## Project Overrides
+
+!`s="validate"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 You are helping the user validate a SpecWeave increment with optional AI-powered quality assessment.
 

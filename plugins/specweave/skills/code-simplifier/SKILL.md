@@ -1,8 +1,12 @@
 ---
-description: Expert code refinement agent that simplifies and improves code clarity, consistency, and maintainability while preserving exact functionality. Operates proactively on recently modified code. Based on Anthropic's official code-simplifier with SpecWeave enhancements. Never alters WHAT code does, only HOW. Activates for simplify code, clean up code, improve readability, refactor for clarity, reduce complexity, make code cleaner.
+description: Simplify and improve code clarity without changing behavior. Use when saying "simplify code", "clean up code", "improve readability", or "reduce complexity".
 ---
 
 # Code Simplifier
+
+## Project Overrides
+
+!`s="code-simplifier"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 ## Approach
 

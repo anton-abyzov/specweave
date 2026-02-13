@@ -1,8 +1,12 @@
 ---
-description: Write comprehensive failing tests following TDD red phase principles. Generates failing tests that properly define expected behavior.
+description: Write failing tests that define expected behavior. Use when saying "TDD red", "write failing tests", or "test first".
 ---
 
 # TDD Red Phase - Write Failing Tests
+
+## Project Overrides
+
+!`s="tdd-red"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 Write comprehensive failing tests following TDD red phase principles.
 

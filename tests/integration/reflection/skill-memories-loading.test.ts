@@ -3,14 +3,14 @@
  *
  * Tests the FULL skill-memories lifecycle:
  * 1. Learnings are written to CLAUDE.md (auto-loaded by Claude Code)
- * 2. Learnings are written to .specweave/skill-memories/{skill}.md
- * 3. Hook (user-prompt-submit.sh) injects memories when skills are invoked
+ * 2. Learnings are written to skill-memories/{skill}.md
+ * 3. DCI in SKILL.md loads memories via cascading lookup (first-match-wins)
  * 4. A specific instruction is actually applied when skill loads
  *
- * ARCHITECTURE (v1.0.198+):
+ * ARCHITECTURE (DCI-based, v1.0.254+):
  * - CLAUDE.md "Skill Memories" section → Auto-loaded by Claude Code
- * - .specweave/skill-memories/{skill}.md → Injected by user-prompt-submit.sh hook
- *   via get_skill_memory_context() (no longer via cat instructions in SKILL.md)
+ * - skill-memories/{skill}.md → Loaded by DCI one-liner in SKILL.md
+ *   Cascade: .specweave/ → .claude/ → ~/.claude/ (first match wins)
  *
  * @module tests/integration/reflection/skill-memories-loading
  */
@@ -176,11 +176,9 @@ describe('Skill Memories Loading Integration', () => {
       expect(files.sort()).toEqual(['architect', 'devops', 'pm']);
     });
 
-    it('simulates skill loading and memory retrieval', () => {
-      // This simulates what happens when a skill loads:
-      // 1. Skill SKILL.md has instruction: cat .specweave/skill-memories/pm.md
-      // 2. Claude executes the cat command
-      // 3. Memory content is available in context
+    it('simulates DCI-based skill memory loading', () => {
+      // This simulates what happens when DCI runs in SKILL.md:
+      // !`s="pm"; ... awk reads ## Learnings section ... `
 
       // Setup: Write a learning
       writeSkillMemoryFile(projectRoot, {
@@ -188,52 +186,52 @@ describe('Skill Memories Loading Integration', () => {
         learning: 'Enable interview process during increment creation for SpecWeave projects',
       });
 
-      // Simulate the `cat` command the skill would execute
+      // Simulate the awk command the DCI would execute
       const memoryPath = path.join(projectRoot, SKILL_MEMORY_DIR, 'pm.md');
-      const catOutput = fs.existsSync(memoryPath)
+      const content = fs.existsSync(memoryPath)
         ? fs.readFileSync(memoryPath, 'utf-8')
-        : 'No project learnings yet';
+        : '';
 
       // Verify the learning is accessible
-      expect(catOutput).toContain('Enable interview process during increment creation');
-      expect(catOutput).toContain('## Learnings');
+      expect(content).toContain('Enable interview process during increment creation');
+      expect(content).toContain('## Learnings');
     });
   });
 
-  describe('Hook-Based Memory Loading Verification', () => {
-    // Since v1.0.198, skill memories are injected by user-prompt-submit.sh hook
-    // via get_skill_memory_context(), not by cat instructions in SKILL.md
+  describe('DCI Architecture Verification', () => {
+    it('SKILL.md files should have DCI blocks (not hook injection)', () => {
+      const pmSkillPath = path.join(
+        process.cwd(),
+        'plugins/specweave/skills/pm/SKILL.md'
+      );
 
-    const hooksDir = path.join(process.cwd(), 'plugins/specweave/hooks');
+      if (fs.existsSync(pmSkillPath)) {
+        const content = fs.readFileSync(pmSkillPath, 'utf-8');
 
-    it('hook has get_skill_memory_context function for skill memory injection', () => {
-      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
-      expect(fs.existsSync(hookPath)).toBe(true);
-
-      const content = fs.readFileSync(hookPath, 'utf-8');
-      expect(content).toContain('get_skill_memory_context()');
+        // DCI block must be present
+        expect(content).toContain('## Project Overrides');
+        expect(content).toContain('.specweave/skill-memories');
+        expect(content).toContain('.claude/skill-memories');
+      }
     });
 
-    it('hook injects memory during skill invocation', () => {
-      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
-      const content = fs.readFileSync(hookPath, 'utf-8');
+    it('hook should NOT contain memory injection functions', () => {
+      const hookPath = path.join(
+        process.cwd(),
+        'plugins/specweave/hooks/user-prompt-submit.sh'
+      );
 
-      // When a skill is invoked, the hook calls get_skill_memory_context
-      expect(content).toContain('SKILL_MEMORY_RAW=$(get_skill_memory_context');
+      if (fs.existsSync(hookPath)) {
+        const content = fs.readFileSync(hookPath, 'utf-8');
+
+        // Hook-based injection was removed in favor of DCI
+        expect(content).not.toContain('get_skill_memory_context');
+        expect(content).not.toContain('SKILL_MEMORY_RAW');
+      }
     });
   });
 
   describe('Instruction Execution Verification', () => {
-    /**
-     * Verify that a specific learning instruction would actually be executed.
-     *
-     * The learning "Enable interview process during increment creation for SpecWeave projects"
-     * should result in the PM skill checking for deep interview mode.
-     *
-     * Architecture: Hook injects memory BEFORE skill content is processed,
-     * so learnings are available when the PM skill runs its deep interview check.
-     */
-
     it('verifies PM learning about interview process is actionable', () => {
       // Write the specific learning we want to verify
       writeSkillMemoryFile(projectRoot, {
@@ -250,7 +248,6 @@ describe('Skill Memories Loading Integration', () => {
       );
 
       // Verify the PM skill has the Deep Interview Mode Check section
-      // (the hook injects the memory content before the skill processes this)
       const pmSkillPath = path.join(
         process.cwd(),
         'plugins/specweave/skills/pm/SKILL.md'
@@ -261,52 +258,17 @@ describe('Skill Memories Loading Integration', () => {
 
         // The skill MUST have deep interview check instructions
         expect(skillContent).toContain('Deep Interview Mode Check');
-        expect(skillContent).toContain('jq -r \'.planning.deepInterview.enabled');
         expect(skillContent).toContain('phases/00-deep-interview.md');
-      }
-    });
-
-    it('verifies hook injects memory before skill invocation', () => {
-      // The hook injects skill memory BEFORE the skill content is processed.
-      // This ensures learnings can influence skill behavior (e.g., interview mode).
-
-      const hookPath = path.join(
-        process.cwd(),
-        'plugins/specweave/hooks/user-prompt-submit.sh'
-      );
-
-      const content = fs.readFileSync(hookPath, 'utf-8');
-
-      // The hook should call get_skill_memory_context during skill invocation
-      const memoryInjectionPos = content.indexOf('SKILL_MEMORY_RAW=$(get_skill_memory_context');
-      expect(memoryInjectionPos).toBeGreaterThan(-1);
-
-      // The PM skill should still have Deep Interview Mode Check
-      const pmSkillPath = path.join(
-        process.cwd(),
-        'plugins/specweave/skills/pm/SKILL.md'
-      );
-
-      if (fs.existsSync(pmSkillPath)) {
-        const pmContent = fs.readFileSync(pmSkillPath, 'utf-8');
-        expect(pmContent).toContain('Deep Interview Mode Check');
       }
     });
   });
 
   describe('CLAUDE.md Skill Memories Integration', () => {
-    /**
-     * Tests that learnings in CLAUDE.md (which IS auto-loaded by Claude Code)
-     * are properly formatted and accessible.
-     */
-
     it('verifies real CLAUDE.md has Skill Memories section', () => {
       const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
 
       if (fs.existsSync(claudeMdPath)) {
         const content = fs.readFileSync(claudeMdPath, 'utf-8');
-
-        // Should have Skill Memories section
         expect(content).toContain('## Skill Memories');
       }
     });
@@ -316,17 +278,11 @@ describe('Skill Memories Loading Integration', () => {
 
       if (fs.existsSync(claudeMdPath)) {
         const content = fs.readFileSync(claudeMdPath, 'utf-8');
-
-        // The specific PM learning should be present
-        // This is what makes it AUTO-LOADED by Claude Code
         expect(content).toContain('Enable interview during increment creation');
       }
     });
 
     it('verifies CLAUDE.md and skill-memories have same learning', () => {
-      // This tests the dual-write architecture:
-      // Same learning should be in both locations
-
       const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
       const pmMemoryPath = path.join(process.cwd(), SKILL_MEMORY_DIR, 'pm.md');
 
@@ -334,8 +290,6 @@ describe('Skill Memories Loading Integration', () => {
         const claudeMdContent = fs.readFileSync(claudeMdPath, 'utf-8');
         const pmMemoryContent = fs.readFileSync(pmMemoryPath, 'utf-8');
 
-        // Both locations should reference the interview + increment creation learning
-        // (wording may differ slightly between CLAUDE.md and skill-memories)
         expect(claudeMdContent).toContain('interview');
         expect(claudeMdContent).toContain('increment creation');
         expect(pmMemoryContent).toContain('interview');
@@ -345,14 +299,6 @@ describe('Skill Memories Loading Integration', () => {
   });
 
   describe('End-to-End Learning Flow Simulation', () => {
-    /**
-     * Simulates the complete flow:
-     * 1. Reflection extracts a learning
-     * 2. Learning is written to both locations
-     * 3. Skill loads and reads the learning
-     * 4. Learning influences skill behavior
-     */
-
     it('simulates full learning lifecycle', () => {
       // Create CLAUDE.md for the test project
       const claudeMdPath = path.join(projectRoot, 'CLAUDE.md');
@@ -364,7 +310,7 @@ describe('Skill Memories Loading Integration', () => {
         learning: 'Always run unit tests before E2E tests',
       };
 
-      // Step 2: Write to skill-memories (simulates reflect-handler.ts writeSkillMemories)
+      // Step 2: Write to skill-memories
       const writeResult = writeSkillMemoryFile(projectRoot, extractedLearning);
       expect(writeResult.written).toBe(true);
 
@@ -372,17 +318,12 @@ describe('Skill Memories Loading Integration', () => {
       const loadedLearnings = readSkillMemoryFile(projectRoot, 'testing');
       expect(loadedLearnings).toContain('Always run unit tests before E2E tests');
 
-      // Step 4: Simulate skill executing the cat command
+      // Step 4: Simulate DCI reading the file
       const skillMemoryPath = path.join(projectRoot, SKILL_MEMORY_DIR, 'testing.md');
-      const catSimulation = fs.readFileSync(skillMemoryPath, 'utf-8');
+      const dciOutput = fs.readFileSync(skillMemoryPath, 'utf-8');
 
-      // The learning should be visible in the cat output
-      expect(catSimulation).toContain('Always run unit tests before E2E tests');
-
-      // Step 5: Verify the skill would find this instruction actionable
-      // (In real usage, Claude would parse this and apply it)
-      const hasActionableInstruction = catSimulation.includes('run unit tests before E2E');
-      expect(hasActionableInstruction).toBe(true);
+      // The learning should be visible in the output
+      expect(dciOutput).toContain('Always run unit tests before E2E tests');
     });
 
     it('verifies learning persistence across sessions', () => {
@@ -393,7 +334,6 @@ describe('Skill Memories Loading Integration', () => {
       });
 
       // Simulate "new session" by re-reading from disk
-      // (In reality, Claude Code restarts and reloads context)
       const learningsAfterRestart = readSkillMemoryFile(projectRoot, 'general');
 
       expect(learningsAfterRestart).toContain('User prefers small increments (max 5 tasks)');
@@ -401,9 +341,6 @@ describe('Skill Memories Loading Integration', () => {
   });
 });
 
-/**
- * Tests specifically for verifying instruction execution patterns
- */
 describe('Instruction Execution Pattern Tests', () => {
   it('extracts actionable instructions from PM memory', () => {
     const pmMemoryPath = path.join(process.cwd(), SKILL_MEMORY_DIR, 'pm.md');
@@ -427,7 +364,6 @@ describe('Instruction Execution Pattern Tests', () => {
       );
 
       if (interviewLearning) {
-        // Verify it's an actionable instruction
         expect(interviewLearning).toContain('interview');
         expect(interviewLearning).toContain('increment');
       }
@@ -440,22 +376,16 @@ describe('Instruction Execution Pattern Tests', () => {
       'plugins/specweave/skills/pm/phases/00-deep-interview.md'
     );
 
-    // The phase file should exist (this is what the learning refers to)
     expect(fs.existsSync(deepInterviewPath)).toBe(true);
   });
 
   it('verifies config can enable deep interview', () => {
-    // The learning says to "Enable interview process"
-    // This should be configurable via .specweave/config.json
-
     const configPath = path.join(process.cwd(), '.specweave/config.json');
 
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
-      // Check if planning.deepInterview.enabled exists in config
       if (config.planning?.deepInterview?.enabled !== undefined) {
-        // The config has the setting - verify it can be true
         expect(typeof config.planning.deepInterview.enabled).toBe('boolean');
       }
     }

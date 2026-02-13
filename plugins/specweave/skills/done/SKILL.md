@@ -1,6 +1,6 @@
 ---
-disable-model-invocation: true
-description: Close increment with PM validation - checks tasks, tests, and docs before closing
+description: Close increment with PM 3-gate validation (tasks, tests, docs). Use when all tasks complete and saying "close increment", "we're done", or "finish up".
+argument-hint: "<increment-id>"
 hooks:
   Stop:
     - hooks:
@@ -9,6 +9,10 @@ hooks:
 ---
 
 # Close Increment (PM Validated)
+
+## Project Overrides
+
+!`s="done"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 **Product Manager-Led Closure**: PM validates tasks, tests, and docs before closing.
 

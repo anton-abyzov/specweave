@@ -1,242 +1,223 @@
 /**
- * Integration tests for Skill Memory Hook Injection
+ * Integration tests for DCI-based Skill Memory Cascade
  *
- * Tests that skill memories are automatically injected into additionalContext
- * when a skill is detected by the user-prompt-submit hook.
- *
- * TDD RED Phase: These tests define the expected behavior.
+ * Tests the DCI one-liner that each SKILL.md uses to load memories.
+ * Cascade priority (first-match-wins):
+ *   1. .specweave/skill-memories/{skill}.md
+ *   2. .claude/skill-memories/{skill}.md
+ *   3. ~/.claude/skill-memories/{skill}.md
  *
  * @module tests/integration/hooks/skill-memory-injection
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { execSync, spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-// Import from the actual implementation module (TDD RED: this will fail until implemented)
-import {
-  extractSkillName,
-  buildSkillMemoryContext,
-} from '../../../src/core/reflection/skill-memory-injector.js';
+/**
+ * Build the DCI command for a given skill and project root.
+ * This mirrors the exact command in each SKILL.md.
+ */
+function buildDciCommand(skillName: string, projectRoot: string): string {
+  // The DCI one-liner from SKILL.md, adapted for testing with explicit paths
+  return `s="${skillName}"; for d in "${projectRoot}/.specweave/skill-memories" "${projectRoot}/.claude/skill-memories" "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`;
+}
 
-describe('Skill Memory Hook Injection', () => {
+/**
+ * Create a skill memory file with learnings content.
+ */
+function createMemoryFile(dir: string, skillName: string, learnings: string[]): void {
+  fs.mkdirSync(dir, { recursive: true });
+  const lines = [
+    `# ${skillName} Memory`,
+    '',
+    '## Learnings',
+    '',
+    ...learnings.map(l => `- ${l}`),
+    '',
+  ];
+  fs.writeFileSync(path.join(dir, `${skillName}.md`), lines.join('\n'));
+}
+
+describe('DCI Skill Memory Cascade', () => {
   let tmpDir: string;
   let projectRoot: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-memory-hook-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dci-cascade-test-'));
     projectRoot = path.join(tmpDir, 'project');
-    fs.mkdirSync(path.join(projectRoot, '.specweave', 'skill-memories'), { recursive: true });
+    fs.mkdirSync(projectRoot, { recursive: true });
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  describe('extractSkillName', () => {
-    it('extracts skill name from sw:pm format', () => {
-      expect(extractSkillName('sw:pm')).toBe('pm');
+  describe('cascade priority', () => {
+    it('loads from .specweave/skill-memories/ first when present', () => {
+      // Create memories at all 3 levels
+      createMemoryFile(
+        path.join(projectRoot, '.specweave', 'skill-memories'),
+        'pm', ['specweave-level learning']
+      );
+      createMemoryFile(
+        path.join(projectRoot, '.claude', 'skill-memories'),
+        'pm', ['claude-project-level learning']
+      );
+
+      const cmd = buildDciCommand('pm', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
+
+      expect(output).toContain('specweave-level learning');
+      expect(output).not.toContain('claude-project-level learning');
     });
 
-    it('extracts skill name from sw-frontend:frontend-architect format', () => {
-      expect(extractSkillName('sw-frontend:frontend-architect')).toBe('frontend-architect');
+    it('falls back to .claude/skill-memories/ when .specweave/ is absent', () => {
+      // Only create at .claude/ level
+      createMemoryFile(
+        path.join(projectRoot, '.claude', 'skill-memories'),
+        'pm', ['claude-project-level learning']
+      );
+
+      const cmd = buildDciCommand('pm', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
+
+      expect(output).toContain('claude-project-level learning');
     });
 
-    it('handles skill name without plugin prefix', () => {
-      expect(extractSkillName('architect')).toBe('architect');
-    });
+    it('returns empty when no memory files exist', () => {
+      const cmd = buildDciCommand('pm', projectRoot);
+      // When no files match, the for loop exits with status 1 (no break).
+      // Use spawnSync to avoid throwing on non-zero exit.
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
-    it('extracts skill name from sw:increment-planner format', () => {
-      expect(extractSkillName('sw:increment-planner')).toBe('increment-planner');
+      expect((result.stdout || '').trim()).toBe('');
     });
   });
 
-  describe('buildSkillMemoryContext', () => {
-    it('returns null when skill memory file does not exist', () => {
-      const result = buildSkillMemoryContext(projectRoot, 'nonexistent');
-      expect(result).toBeNull();
-    });
+  describe('awk learnings extraction', () => {
+    it('extracts only content between ## Learnings and next heading', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      fs.mkdirSync(memDir, { recursive: true });
 
-    it('returns formatted context when skill memory exists', () => {
-      // Create skill memory file
-      const memoryContent = `# Pm Memory
-
-<!-- Project-specific learnings for this skill -->
+      const content = `# Pm Memory
 
 ## Learnings
 
-- **2026-02-01**: Enable interview process during increment creation for SpecWeave projects
-- **2026-01-15**: Always chunk specs with 6+ user stories
+- Learning one
+- Learning two
+
+## Other Section
+
+- Should not appear
 `;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'pm.md'),
-        memoryContent
-      );
+      fs.writeFileSync(path.join(memDir, 'pm.md'), content);
 
-      const result = buildSkillMemoryContext(projectRoot, 'pm');
+      const cmd = buildDciCommand('pm', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
 
-      expect(result).not.toBeNull();
-      expect(result).toContain('📚 **Skill Memory for pm**');
-      expect(result).toContain('Enable interview process');
-      expect(result).toContain('Always chunk specs');
+      expect(output).toContain('Learning one');
+      expect(output).toContain('Learning two');
+      expect(output).not.toContain('Should not appear');
     });
 
-    it('returns null when learnings section is empty', () => {
-      const memoryContent = `# Pm Memory
+    it('handles learnings section at end of file (no next heading)', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      fs.mkdirSync(memDir, { recursive: true });
+
+      const content = `# Test Memory
 
 ## Learnings
 
+- Only learning
 `;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'pm.md'),
-        memoryContent
-      );
+      fs.writeFileSync(path.join(memDir, 'test.md'), content);
 
-      const result = buildSkillMemoryContext(projectRoot, 'pm');
-      expect(result).toBeNull();
+      const cmd = buildDciCommand('test', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
+
+      expect(output).toContain('Only learning');
+    });
+
+    it('handles empty learnings section gracefully', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      fs.mkdirSync(memDir, { recursive: true });
+
+      const content = `# Test Memory
+
+## Learnings
+
+## Other Section
+`;
+      fs.writeFileSync(path.join(memDir, 'test.md'), content);
+
+      const cmd = buildDciCommand('test', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
+
+      expect(output).toBe('');
     });
   });
 
-  describe('Hook Integration Scenarios', () => {
-    /**
-     * This test verifies the expected behavior when the hook detects a skill.
-     * The hook should:
-     * 1. Extract skill name from skillInvocation.skill
-     * 2. Check for .specweave/skill-memories/{skill}.md
-     * 3. If exists, inject content into additionalContext
-     */
+  describe('cross-platform compatibility', () => {
+    it('awk command works without errors', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      createMemoryFile(memDir, 'test', ['Cross-platform learning']);
 
-    it('injects PM skill memory when sw:pm is detected', () => {
-      // Setup: Create PM skill memory
-      const pmMemory = `# Pm Memory
+      // Should not throw
+      const cmd = buildDciCommand('test', projectRoot);
+      expect(() => {
+        execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' });
+      }).not.toThrow();
+    });
+
+    it('handles special characters in learnings', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      fs.mkdirSync(memDir, { recursive: true });
+
+      const content = `# Test Memory
 
 ## Learnings
 
-- **2026-02-01**: Enable interview process during increment creation for SpecWeave projects
+- Use "quotes" and 'apostrophes' safely
+- Handle paths like /usr/local/bin
+- Dollar signs $VAR should work
 `;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'pm.md'),
-        pmMemory
-      );
+      fs.writeFileSync(path.join(memDir, 'test.md'), content);
 
-      // Simulate skill detection
-      const detectedSkill = 'sw:pm';
-      const skillName = extractSkillName(detectedSkill);
-      const memoryContext = buildSkillMemoryContext(projectRoot, skillName);
+      const cmd = buildDciCommand('test', projectRoot);
+      const output = execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' }).trim();
 
-      // Verify memory would be injected
-      expect(memoryContext).not.toBeNull();
-      expect(memoryContext).toContain('Enable interview process');
-    });
-
-    it('injects frontend skill memory when sw-frontend:frontend-architect is detected', () => {
-      // Setup: Create frontend-architect skill memory
-      const frontendMemory = `# Frontend Architect Memory
-
-## Learnings
-
-- **2026-01-20**: Use Tailwind CSS for this project
-- **2026-01-18**: Prefer server components over client components
-`;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'frontend-architect.md'),
-        frontendMemory
-      );
-
-      const detectedSkill = 'sw-frontend:frontend-architect';
-      const skillName = extractSkillName(detectedSkill);
-      const memoryContext = buildSkillMemoryContext(projectRoot, skillName);
-
-      expect(memoryContext).not.toBeNull();
-      expect(memoryContext).toContain('Tailwind CSS');
-      expect(memoryContext).toContain('server components');
-    });
-
-    it('handles skill without memory file gracefully', () => {
-      // No memory file created
-      const detectedSkill = 'sw:architect';
-      const skillName = extractSkillName(detectedSkill);
-      const memoryContext = buildSkillMemoryContext(projectRoot, skillName);
-
-      // Should return null, not throw
-      expect(memoryContext).toBeNull();
-    });
-
-    it('injects increment-planner skill memory for feature requests', () => {
-      // Setup: Create increment-planner skill memory
-      const incrementMemory = `# Increment Planner Memory
-
-## Learnings
-
-- **2026-01-25**: Skip deep interview for simple bug fixes
-- **2026-01-20**: Always suggest TDD mode for new features
-`;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'increment-planner.md'),
-        incrementMemory
-      );
-
-      const detectedSkill = 'sw:increment-planner';
-      const skillName = extractSkillName(detectedSkill);
-      const memoryContext = buildSkillMemoryContext(projectRoot, skillName);
-
-      expect(memoryContext).not.toBeNull();
-      expect(memoryContext).toContain('Skip deep interview');
-      expect(memoryContext).toContain('TDD mode');
-    });
-  });
-
-  describe('Real Project Skill Memories', () => {
-    /**
-     * Tests against the actual SpecWeave project's skill memories
-     * to ensure the injection would work in production.
-     */
-
-    it('can load real PM skill memory from current project', () => {
-      const realProjectRoot = process.cwd();
-      const skillName = 'pm';
-      const memoryContext = buildSkillMemoryContext(realProjectRoot, skillName);
-
-      // The real project should have PM skill memory
-      if (fs.existsSync(path.join(realProjectRoot, '.specweave', 'skill-memories', 'pm.md'))) {
-        expect(memoryContext).not.toBeNull();
-        expect(memoryContext).toContain('📚 **Skill Memory for pm**');
-      }
+      expect(output).toContain('quotes');
+      expect(output).toContain('apostrophes');
     });
   });
 });
 
-describe('Hook Output Format Verification', () => {
-  /**
-   * Tests that verify the additionalContext format is correct
-   * for Claude Code to process.
-   */
+describe('Real SKILL.md DCI Blocks', () => {
+  const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
-  it('produces valid JSON-escapable skill memory context', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-memory-json-test-'));
-    const projectRoot = path.join(tmpDir, 'project');
-    fs.mkdirSync(path.join(projectRoot, '.specweave', 'skill-memories'), { recursive: true });
+  it('pm SKILL.md has valid DCI block', () => {
+    const content = fs.readFileSync(
+      path.join(pluginsDir, 'pm', 'SKILL.md'),
+      'utf-8'
+    );
 
-    try {
-      const memoryContent = `# Test Memory
+    expect(content).toContain('## Project Overrides');
+    expect(content).toContain('s="pm"');
+    expect(content).toContain('.specweave/skill-memories');
+    expect(content).toContain('.claude/skill-memories');
+    expect(content).toContain('awk');
+  });
 
-## Learnings
+  it('grill SKILL.md has valid DCI block', () => {
+    const content = fs.readFileSync(
+      path.join(pluginsDir, 'grill', 'SKILL.md'),
+      'utf-8'
+    );
 
-- **2026-02-01**: Use "quotes" and 'apostrophes' safely
-- **2026-01-15**: Handle special chars: \\ / \n \t
-`;
-      fs.writeFileSync(
-        path.join(projectRoot, '.specweave', 'skill-memories', 'test.md'),
-        memoryContent
-      );
-
-      const context = buildSkillMemoryContext(projectRoot, 'test');
-
-      // Should be JSON-serializable
-      expect(() => JSON.stringify({ context })).not.toThrow();
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    }
+    expect(content).toContain('## Project Overrides');
+    expect(content).toContain('s="grill"');
   });
 });

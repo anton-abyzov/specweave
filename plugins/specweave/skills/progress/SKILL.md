@@ -1,9 +1,13 @@
 ---
-description: Show detailed progress for active increments with task/AC completion, priority, and type
+description: Show progress for active increments with task/AC completion. Use when saying "show progress", "status", or "how far along".
 argument-hint: "[incrementId]"
 ---
 
 # Increment Progress
+
+## Project Overrides
+
+!`s="progress"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 Shows detailed progress information for active increments including:
 - **Task completion** with progress bars
