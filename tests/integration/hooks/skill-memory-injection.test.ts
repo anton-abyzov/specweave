@@ -299,3 +299,144 @@ describe('Real SKILL.md DCI Blocks', () => {
     expect(content).toContain('; true`');
   });
 });
+
+/**
+ * Full-cycle E2E: extract the actual DCI command from real SKILL.md files
+ * and execute it in a simulated project, verifying exit code and output.
+ */
+describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
+  const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+  let tmpDir: string;
+  let projectRoot: string;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dci-e2e-'));
+    projectRoot = path.join(tmpDir, 'project');
+    fs.mkdirSync(projectRoot, { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  /**
+   * Extract the raw DCI bash command from a SKILL.md file.
+   * Finds the `!`...`` line and returns the command inside backticks.
+   */
+  function extractDciCommand(skillDir: string): string | null {
+    const skillPath = path.join(pluginsDir, skillDir, 'SKILL.md');
+    if (!fs.existsSync(skillPath)) return null;
+
+    const content = fs.readFileSync(skillPath, 'utf-8');
+    const match = content.match(/^!`(.+)`$/m);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Adapt a DCI command for testing: replace relative paths with absolute
+   * project root paths so the command runs against our temp directory.
+   */
+  function adaptCommandForTestRoot(cmd: string, root: string): string {
+    return cmd
+      .replace(/\.specweave\/skill-memories/g, `${root}/.specweave/skill-memories`)
+      .replace(/\.claude\/skill-memories/g, `${root}/.claude/skill-memories`);
+  }
+
+  it('pm DCI command succeeds with exit 0 when no memory files exist', () => {
+    const cmd = extractDciCommand('pm');
+    expect(cmd).not.toBeNull();
+
+    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
+    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+
+    expect(result.status).toBe(0);
+    expect((result.stdout || '').trim()).toBe('');
+  });
+
+  it('pm DCI command loads learnings from .specweave/skill-memories/', () => {
+    const cmd = extractDciCommand('pm');
+    expect(cmd).not.toBeNull();
+
+    createMemoryFile(
+      path.join(projectRoot, '.specweave', 'skill-memories'),
+      'pm', ['Always interview stakeholders before writing specs']
+    );
+
+    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
+    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+
+    expect(result.status).toBe(0);
+    expect((result.stdout || '').trim()).toContain('Always interview stakeholders');
+  });
+
+  it('grill DCI command succeeds with exit 0 when no memory files exist', () => {
+    const cmd = extractDciCommand('grill');
+    expect(cmd).not.toBeNull();
+
+    const adapted = adaptCommandForTestRoot(cmd!, projectRoot);
+    const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+
+    expect(result.status).toBe(0);
+    expect((result.stdout || '').trim()).toBe('');
+  });
+
+  it('every skill DCI command exits 0 with no memory files', () => {
+    const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    const failures: string[] = [];
+
+    for (const dir of skillDirs) {
+      const cmd = extractDciCommand(dir);
+      if (!cmd) continue;
+
+      const adapted = adaptCommandForTestRoot(cmd, projectRoot);
+      const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+
+      if (result.status !== 0) {
+        failures.push(`${dir}: exit code ${result.status}`);
+      }
+    }
+
+    expect(failures).toEqual([]);
+  });
+
+  it('every skill DCI command returns learnings when memory file exists', () => {
+    const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    const failures: string[] = [];
+
+    for (const dir of skillDirs) {
+      const cmd = extractDciCommand(dir);
+      if (!cmd) continue;
+
+      // Extract skill name from the s="..." variable in the command
+      const nameMatch = cmd.match(/^s="([^"]+)"/);
+      if (!nameMatch) continue;
+      const skillName = nameMatch[1];
+
+      // Create a memory file for this skill
+      createMemoryFile(
+        path.join(projectRoot, '.specweave', 'skill-memories'),
+        skillName, [`E2E test learning for ${skillName}`]
+      );
+
+      const adapted = adaptCommandForTestRoot(cmd, projectRoot);
+      const result = spawnSync('bash', ['-c', adapted], { encoding: 'utf-8' });
+
+      if (result.status !== 0) {
+        failures.push(`${dir}: exit code ${result.status}`);
+      } else if (!(result.stdout || '').includes(`E2E test learning for ${skillName}`)) {
+        failures.push(`${dir}: missing expected learning in output`);
+      }
+
+      // Clean up for next skill
+      fs.rmSync(path.join(projectRoot, '.specweave'), { recursive: true, force: true });
+    }
+
+    expect(failures).toEqual([]);
+  });
+});
