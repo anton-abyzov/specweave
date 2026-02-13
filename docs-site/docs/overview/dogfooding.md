@@ -142,7 +142,7 @@ Every crash, every bug, every friction point — we experienced it ourselves:
 3. **Sync failures** led to circuit breaker patterns
 4. **Zombie processes** led to automatic cleanup hooks
 
-**We didn't just build a skill layer. We used it to build itself.**
+**We didn't just build a Skill Fabric. We used it to build itself.**
 
 ### Real Lessons Learned
 
