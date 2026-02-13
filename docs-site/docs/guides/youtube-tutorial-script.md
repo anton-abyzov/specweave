@@ -138,55 +138,67 @@ draft: true
 
 **[SCREEN: Navigate to spec-weave.com homepage]**
 
-> "SpecWeave is the spec-driven AI framework. That's the key word — spec-driven. Not vibe-driven. Not chat-driven. Spec-driven."
+> "SpecWeave is the spec-driven skill layer for AI coding agents. And the key idea is this: **skills are programs written in English**.
+>
+> Not prompts. Not templates. Programs — reusable, extensible, shareable. You describe what you want in plain English, AI asks the right questions, builds it while you sleep. You review finished work in the morning."
 
-**[EXCALIDRAW: 3 Commands to Ship]**
+**[EXCALIDRAW: The Workflow]**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                 3 COMMANDS TO SHIP                           │
+│                  THE WORKFLOW                                 │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│   1. /sw:increment "Add OAuth"                              │
-│      → Creates spec.md + plan.md + tasks.md                 │
-│                                                              │
-│   2. /sw:auto                                               │
-│      → Autonomous execution for HOURS                       │
-│                                                              │
-│   3. /sw:done 0001                                          │
-│      → Quality gates: tasks ✓ tests 90%+ ✓ docs ✓          │
-│                                                              │
-│   Every feature = permanent documentation.                   │
-│   Searchable. Traceable. Always in sync.                    │
+│   You: "Build a checkout flow with Stripe"                  │
+│     ↓                                                        │
+│   SpecWeave PM: asks 5-10 clarifying questions              │
+│     (Payment methods? Guest checkout? Subscriptions?)        │
+│     ↓                                                        │
+│   Creates: spec.md → plan.md → tasks.md                     │
+│     ↓                                                        │
+│   /sw:auto — autonomous execution for HOURS                 │
+│     ↓                                                        │
+│   You wake up. Review finished work.                        │
+│   Tests cover technical correctness. You check UI and UX.   │
+│     ↓                                                        │
+│   /sw:done — validated, documented, shipped.                │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-> "Three commands. That's all it takes. Define what you want, let AI build it, validate and ship. Every feature becomes permanent documentation — searchable, traceable, always in sync."
+> "That's the workflow. Describe what you want. AI interviews you — asks clarifying questions like a good PM would. Then you go to sleep. `/sw:auto` runs for hours autonomously — writing code, running tests, fixing failures, syncing to GitHub or JIRA.
+>
+> In the morning, you review. Tests already cover the technical scenarios. You focus on UI, UX, and business logic. Then `/sw:done` validates everything and ships."
 
 **[SCREEN: Navigate to docs/intro.md - scroll to workflow diagram]**
 
 ```
-Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
+Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → Review in Morning
 ```
 
-> "See these checkmarks? Every step creates a permanent file. Not chat history. Permanent, version-controlled documentation."
+> "See this flow? Every step creates permanent files. Not chat history. Permanent, version-controlled documentation that compounds over time."
 
-**[SCROLL to "What You Get" comparison table]**
+**[Point to three pillars]**
 
-> "Before SpecWeave: specs in chat, manual JIRA updates, tests maybe later, architecture in your head, onboarding takes forever.
+> "SpecWeave is built on three pillars:
 >
-> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks with 90% coverage enforced, ADRs captured automatically, onboarding becomes trivial."
+> **Programmable AI** — Skills are programs in English. 100+ skills for PM, Architect, QA, Security, DevOps. All customizable without forking.
+>
+> **Autonomous Teams** — Agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts.
+>
+> **Enterprise Ready** — Compliance audit trails in git. Brownfield analysis. JIRA/ADO sync. Multi-repo coordination.
+>
+> And here's the best part: **you don't need to learn Claude Code docs.** SpecWeave handles hooks, plugins, CLAUDE.md, context management — all of it. Install, describe your feature, skills do the rest."
 
 **[Point to key positioning]**
 
-> "And here's the positioning that matters: Legacy. Startup. Enterprise.
+> "Legacy. Startup. Enterprise.
 >
 > Drop it into a **10-year-old codebase** — it understands everything.
 > Use it on your **weekend MVP** — specs write themselves.
 > Scale it to **50 teams** — JIRA, GitHub, Azure DevOps sync automatically.
 >
-> **100% free and open source.** Not freemium. Not 'free tier with limits.' Fully open source, MIT license, forever."
+> **100% free and open source.** MIT license, forever."
 
 **[SCROLL to DORA badges]**
 
@@ -194,50 +206,50 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 ---
 
-## SECTION 1.25: WHY SPECWEAVE ISN'T A "FRAMEWORK" (4:00 - 4:30)
+## SECTION 1.25: WHY SPECWEAVE IS A "SKILL LAYER" (4:00 - 4:30)
 
 **[SCREEN: Show the word "Framework" with negative associations crossed out]**
 
-> "Now, when you hear 'framework,' you might think Angular — heavy, opinionated, lots of rules. That's NOT what SpecWeave is.
+> "Now, I call SpecWeave a 'skill layer' — not a framework. Here's the difference.
 >
-> SpecWeave is more like... steroids for your AI. A lightweight layer that gives Claude Code — or any AI tool — enterprise capabilities:
+> A framework constrains you. Angular — heavy, opinionated, lots of rules. SpecWeave is the opposite. It's a lightweight layer of skills — programs written in English — that sit on top of Claude Code and give it superpowers:
 >
-> - **Permanent memory** instead of chat that disappears
+> - **Programmable skills** instead of one-off prompts
+> - **Guided interviews** instead of guessing what the AI needs
 > - **GitHub/JIRA sync** instead of manual ticket updates
 > - **Quality gates** instead of 'we'll add tests later'
 > - **Autonomous execution** instead of babysitting every prompt"
 
-**[EXCALIDRAW: "Framework" crossed out → "AI Supercharger"]**
+**[EXCALIDRAW: "Framework" crossed out → "Skill Layer"]**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│         SPECWEAVE IS NOT A CONSTRAINING FRAMEWORK            │
+│         SPECWEAVE: A SKILL LAYER, NOT A FRAMEWORK            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ❌ NOT Angular vibes — heavy, opinionated, many rules      │
 │  ❌ NOT a walled garden — delete it tomorrow, specs remain   │
 │  ❌ NOT proprietary — just markdown files (spec.md, etc.)   │
 │                                                              │
-│  ✅ IS a lightweight layer — 3 markdown files per feature   │
-│  ✅ IS an amplifier — makes your AI 10x more capable        │
+│  ✅ IS a skill layer — programs in English that control AI  │
+│  ✅ IS zero-config — no hooks, no CLAUDE.md, no plugins     │
 │  ✅ IS team-agnostic — Claude, GPT-4, Copilot, any AI works │
 │                                                              │
-│  THE POSITIONING:                                            │
-│  "The Enterprise Layer for AI Coding"                        │
-│  — enterprise capabilities without enterprise complexity     │
+│  THREE PILLARS:                                              │
+│  Programmable AI | Autonomous Teams | Enterprise Ready       │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 > "It's three markdown files — spec.md, plan.md, tasks.md. That's it. You can delete SpecWeave tomorrow and your specs still exist. No lock-in. No database. No server.
 >
-> The truth? Claude Code by itself is already incredible. But it lacks enterprise features — external tool sync, multi-project coordination, quality enforcement, long-term memory.
+> The truth? Claude Code by itself is already incredible. But it has a learning curve — hooks, CLAUDE.md files, plugins, MCP servers, context management. Most developers never configure these properly.
 >
-> SpecWeave adds those missing pieces. Think of it as Claude Code on steroids — for enterprises, for bigger solutions. It's a wrapper around Claude Code's raw power that organizes everything into one easy-to-execute solution.
+> SpecWeave handles all of that for you. You don't need to read Claude Code documentation. Skills auto-activate based on your project. Install, describe your feature, the skills do the rest.
 >
 > It's the difference between:
-> - A powerful tool you use session by session
-> - An AI development system that compounds over time"
+> - A powerful tool you need to learn and configure
+> - A skill layer that programs the AI for you"
 
 **[Quick mention of Claude Code velocity]**
 
@@ -1287,17 +1299,17 @@ specweave init .
 
 ---
 
-## SECTION 12.5: PROGRAMMABLE SKILLS - THE SPECWEAVE ADVANTAGE (33:30 - 35:30)
+## SECTION 12.5: SKILLS ARE PROGRAMS IN ENGLISH (33:30 - 35:30)
 
 **[SCREEN: Navigate to .specweave/skill-memories/ directory]**
 
-> "Now here's something that sets SpecWeave apart from every other AI tool. And I mean EVERY other tool. Programmable skills."
+> "Now here's the core idea behind SpecWeave. The thing that sets it apart from every other AI tool. **Skills are programs written in English.**"
 
 **[PAUSE for emphasis]**
 
-> "Skills aren't just prompts. They're programs. And like any program, you can customize them.
+> "Not prompts. Not templates. Programs — with logic, conditions, extension points, and memory. You write them in English, and AI executes them like code.
 >
-> But here's where it gets revolutionary — unlike traditional software where behavior is locked and obfuscated, SpecWeave skills follow the **Open/Closed Principle** from SOLID design."
+> And here's where it gets revolutionary — unlike traditional software where behavior is locked and obfuscated, SpecWeave skills follow the **Open/Closed Principle** from SOLID design."
 
 **[EXCALIDRAW: Traditional Software vs SpecWeave Skills]**
 
@@ -2828,55 +2840,59 @@ specweave init .
 **[EXCALIDRAW: Final slide with logo and call to action]**
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                                                          │
-│                    SpecWeave                             │
-│     The Coordination Layer for AI Agent Swarms.         │
-│     Legacy. Startup. Enterprise.                        │
-│                                                          │
-│     100% FREE & OPEN SOURCE                             │
-│                                                          │
-│    ┌────────────────────────────────────────────┐       │
-│    │  3 COMMANDS TO SHIP:                       │       │
-│    │                                            │       │
-│    │  /sw:increment "Add OAuth"                │       │
-│    │  /sw:auto                                  │       │
-│    │  /sw:done 0001                            │       │
-│    └────────────────────────────────────────────┘       │
-│                                                          │
-│    Works with: Claude Code | OpenClaw | Copilot | Codex │
-│    190+ self-built increments | 0% across 235 releases   │
-│    136 skills | 68 agents | 209 ADRs | TDD by default   │
-│    Powered by Claude Opus 4.6 & Sonnet 4.5              │
-│                                                          │
-│    📖 spec-weave.com                                     │
-│    💬 discord.gg/UYg4BGJ65V                              │
-│    ⭐ github.com/anton-abyzov/specweave                  │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                                                              │
+│                    SpecWeave                                 │
+│     Program Your AI in English.                             │
+│     Ship Features While You Sleep.                          │
+│                                                              │
+│     100% FREE & OPEN SOURCE                                 │
+│                                                              │
+│    ┌────────────────────────────────────────────┐           │
+│    │  THE WORKFLOW:                              │           │
+│    │                                             │           │
+│    │  Describe → AI Interviews You → Sleep       │           │
+│    │  → Review in Morning → Ship                 │           │
+│    └────────────────────────────────────────────┘           │
+│                                                              │
+│    THREE PILLARS:                                           │
+│    Programmable AI | Autonomous Teams | Enterprise Ready    │
+│                                                              │
+│    100+ skills | Agent swarms | Zero config                 │
+│    Powered by Claude Opus 4.6 & Sonnet 4.5                 │
+│                                                              │
+│    spec-weave.com                                           │
+│    discord.gg/UYg4BGJ65V                                    │
+│    github.com/anton-abyzov/specweave                        │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them. Powered by Claude Opus 4.6 — the model that changed everything for me after 18 years in this industry.
+> "Let me leave you with the three pillars.
 >
-> Three commands to ship. 190+ increments built with full traceability. Zero change failures across 235 releases. 209 architectural decisions documented. TDD by default with 90% coverage.
+> **Programmable AI** — skills are programs written in English. 100+ skills for PM, Architect, QA, Security, DevOps. Customize any skill without forking. Fix something once, it's remembered permanently.
 >
-> And now — agent swarm coordination. Run Claude Code, OpenClaw, GitHub Copilot, Codex, Cursor — any combination of AI tools — on the same codebase. SpecWeave's increment files are the universal coordination layer. Each agent gets its own scope. No overlap. No conflicts. Quality gates for everyone.
+> **Autonomous Teams** — agent swarms across iTerm and tmux. Run Claude Code, OpenClaw, GitHub Copilot, Codex — any combination of AI tools — on the same codebase. Each agent owns an increment. File-based coordination prevents conflicts. Quality gates for everyone.
 >
-> Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice. Without a system, that knowledge disappears. With SpecWeave, it becomes permanent — and shared across every agent in your swarm.
+> **Enterprise Ready** — compliance audit trails in git. Brownfield analysis for 10-year-old codebases. JIRA, GitHub, Azure DevOps sync automatically. Multi-repo coordination. Production-grade from day one.
 >
-> I told you at the beginning — Opus 4.6 was the most emotional technology moment of my career. But that's only half the story. The other half is what you do with that power. Opus 4.6 without structure is still vibe coding — just faster vibe coding. Three OpenClaw instances without structure? That's three times the chaos. SpecWeave turns that chaos into coordinated, traceable, quality-gated delivery.
+> And you don't need to learn Claude Code documentation. No hooks to configure. No CLAUDE.md to write. No plugins to install. SpecWeave handles the complexity. Install, describe your feature, skills do the rest.
 >
-> We're entering the era of agent swarms. Multiple AI agents, multiple tools, multiple machines — all working on your codebase simultaneously. The frameworks that win will be the ones that solve coordination, not just generation. SpecWeave is built for that future.
+> The workflow is simple: describe what you want, AI interviews you with clarifying questions, you go to sleep, you review finished work in the morning. Tests cover technical correctness. You check UI, UX, and business logic.
 >
-> Stop vibe coding. Start spec-driven development.
+> 190+ increments built with full traceability. Zero change failures across 235 releases. 209 architectural decisions documented. TDD by default with 90% coverage.
+>
+> We're entering the era of agent swarms. The tools that win will be the ones that solve coordination, not just generation. SpecWeave is built for that future.
+>
+> Stop vibe coding. Start programming your AI in English.
 >
 > **100% free. 100% open source. Works with any AI tool. Forever.**
 >
-> And one more thing — you don't have to be a professional developer to use this. If you do knowledge work, research, content creation, personal automation — SpecWeave works for all of it. Automate your Obsidian reviews. Set up research pipelines. Build and deploy solutions in minutes. Manage your publishing workflow. If you can describe what you want in a spec, SpecWeave can coordinate AI to build it.
+> And one more thing — you don't have to be a professional developer to use this. If you do knowledge work, research, content creation, personal automation — SpecWeave works for all of it. If you can describe what you want in a spec, SpecWeave can coordinate AI to build it.
 >
-> Check out our Life Automation guide at spec-weave.com for concrete examples and a step-by-step walkthrough. Link in the description.
+> Check out our Life Automation guide at spec-weave.com for concrete examples. Link in the description.
 >
-> Install SpecWeave today. Build your first increment. Run your first agent swarm. See the difference.
+> Install SpecWeave today. Describe your first feature. Go to sleep. Review in the morning.
 >
 > I'm Anton Abyzov. Thanks for watching. Star the repo, join the Discord, and let me know what you build."
 

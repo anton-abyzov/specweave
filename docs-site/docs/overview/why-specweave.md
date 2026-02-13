@@ -60,6 +60,18 @@ SpecWeave:
 
 SpecWeave wraps every AI coding session in a **spec-driven workflow** that turns conversations into permanent, searchable documentation.
 
+### Skills Are Programs in English
+
+Unlike prompts that you copy-paste, SpecWeave skills are reusable programs — each one controls how AI thinks and acts for a specific domain. 100+ skills ship out of the box. Customize any skill without forking via `skill-memories/`. [Deep dive →](./skills-as-programs)
+
+### You Don't Need Claude Code Expertise
+
+SpecWeave abstracts Claude Code's complexity — hooks, plugins, CLAUDE.md, context management. Install, describe your feature, skills handle the rest. [Learn more →](./no-docs-needed)
+
+### Enterprise Ready from Day One
+
+Compliance audit trails in git. Brownfield codebase analysis. Bidirectional sync with GitHub, JIRA, Azure DevOps. Multi-repo coordination. [Enterprise overview →](/docs/enterprise)
+
 ### The Three Files
 
 Every feature produces three files that persist across sessions:

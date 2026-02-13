@@ -8,7 +8,11 @@ description: "Start shipping features with SpecWeave in 5 minutes"
 
 **From zero to shipping in 5 minutes.**
 
-SpecWeave is the AI development framework that doesn't lose your work. Every AI decision becomes permanent, searchable documentation.
+SpecWeave is the spec-driven skill layer for AI coding agents. Skills are programs in English — describe what you want, AI asks the right questions, builds it while you sleep.
+
+:::tip Enterprise teams
+Building for enterprise? See [compliance, brownfield, and multi-repo guides](/docs/enterprise).
+:::
 
 ---
 
