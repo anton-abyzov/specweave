@@ -201,11 +201,11 @@ User: "Create authentication system"
 → Generates complete spec + architecture + plan
 \`\`\`
 
-## 🔌 Extensible Skills (Open/Closed Principle)
+## 🔌 Skills Are Programs in English
 
-**Skills are programs written in human language. SpecWeave makes them extensible — without forking.**
+**Skills are not prompts — they are reusable programs written in English.** Each skill controls how AI thinks, decides, and acts for a specific domain. 100+ skills ship with SpecWeave.
 
-Claude Code Skills (`SKILL.md`) define AI behavior using instructions, conditionals, and logic flow — all in English. SpecWeave applies the **SOLID Open/Closed Principle** to these human-language programs:
+SpecWeave applies the **SOLID Open/Closed Principle** to these human-language programs:
 
 - **SKILL.md** = core program (closed for modification — stable, tested, version-controlled)
 - **skill-memories/*.md** = your extensions (open for extension — your rules, your patterns)
@@ -238,7 +238,7 @@ You correct Claude once. It remembers forever. That's not configuration — that
 
 **Enable auto-learning:** `/sw:reflect-on` captures corrections as permanent skill-memories.
 
-See [Extensible Skills deep-dive](/docs/guides/extensible-skills) and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for full details.
+See [Skills Are Programs in English](/docs/overview/skills-as-programs) for a full overview, [Extensible Skills deep-dive](/docs/guides/extensible-skills) for customization patterns, and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for design principles.
 
 ## 🧪 Test-Validated Development
 
