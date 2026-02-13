@@ -59,28 +59,7 @@ fi
 | Structure | Command | Issue Format |
 |-----------|---------|--------------|
 | **Living docs exist** (`.specweave/docs/internal/specs/FS-XXX/`) | Use `github-feature-sync-cli.ts` | `[FS-XXX][US-YYY] Title` |
-| **Increment only** (brownfield, no living docs) | Use `github-increment-sync-cli.ts` | `[FS-XXX] Title` with ACs |
-
-### For Brownfield Projects (No Living Docs):
-
-Use the Increment Sync CLI directly:
-
-```bash
-# Set token (read from .env without displaying value)
-export GITHUB_TOKEN=$(grep -oP '(?<=^GITHUB_TOKEN=).+' .env 2>/dev/null || grep '^GITHUB_TOKEN=' .env | cut -d'=' -f2-)
-
-# Run increment sync
-node dist/plugins/specweave-github/lib/github-increment-sync-cli.js <increment-id>
-
-# Example
-node dist/plugins/specweave-github/lib/github-increment-sync-cli.js 0002
-```
-
-This creates issues with:
-- ✅ Proper format: `[FS-002] Increment Title`
-- ✅ User Stories listed with checkbox headers
-- ✅ All ACs as checkable items
-- ✅ Links to increment files
+| **Increment only** (brownfield, no living docs) | Use `github-feature-sync-cli.ts` | `[FS-XXX] Title` with ACs |
 
 ### For Projects with Living Docs:
 
