@@ -289,7 +289,7 @@ C4Context
     title System Context Diagram for SpecWeave
 
     Person(user, "Developer", "Uses SpecWeave to build software")
-    System(specweave, "SpecWeave", "Spec-Driven Skill Layer for AI Coding Agents")
+    System(specweave, "SpecWeave", "Spec-Driven Skill Fabric for AI Coding Agents")
     System_Ext(claude, "Claude Code", "AI coding assistant")
     System_Ext(github, "GitHub", "Version control and [CI/CD](/docs/glossary/terms/ci-cd)")
 

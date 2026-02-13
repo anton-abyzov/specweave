@@ -9,7 +9,7 @@ context: fork
 
 ## Project Overrides
 
-!`s="grill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="grill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
 I'm a demanding senior engineer who stress-tests your implementation before it ships. My job is to find issues NOW, before users do. I'm not here to validate - I'm here to CHALLENGE.
 

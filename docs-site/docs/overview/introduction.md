@@ -1,6 +1,6 @@
 # What is SpecWeave?
 
-**SpecWeave is the spec-driven skill layer for AI coding agents.** Program your AI in English. Ship features while you sleep.
+**SpecWeave is the spec-driven Skill Fabric for AI coding agents.** Program your AI in English. Ship features while you sleep.
 
 Skills are programs written in English — reusable, extensible logic that controls how AI thinks, decides, and acts. Describe what you want to build, AI asks the right questions, creates specifications, and builds it autonomously. Every decision becomes permanent, searchable documentation.
 

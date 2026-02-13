@@ -104,7 +104,7 @@ draft: true
 >
 > SpecWeave leverages both models — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is devastatingly powerful.
 >
-> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire skill layer to harness exactly this power.
+> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire Skill Fabric to harness exactly this power.
 >
 > If you want to see these apps in detail, I'll walk through them at the end of this video. But for now, understand this: all of these were built with SpecWeave. Every feature spec'd. Every decision documented. Every change traceable.
 >
@@ -138,7 +138,7 @@ draft: true
 
 **[SCREEN: Navigate to spec-weave.com homepage]**
 
-> "SpecWeave is the spec-driven skill layer for AI coding agents. And the key idea is this: **skills are programs written in English**.
+> "SpecWeave is the spec-driven Skill Fabric for AI coding agents. And the key idea is this: **skills are programs written in English**.
 >
 > Not prompts. Not templates. Programs — reusable, extensible, shareable. You describe what you want in plain English, AI asks the right questions, builds it while you sleep. You review finished work in the morning."
 
@@ -206,11 +206,11 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 
 ---
 
-## SECTION 1.25: WHY SPECWEAVE IS A "SKILL LAYER" (4:00 - 4:30)
+## SECTION 1.25: WHY SPECWEAVE IS A "SKILL FABRIC" (4:00 - 4:30)
 
 **[SCREEN: Show the word "Framework" with negative associations crossed out]**
 
-> "Now, I call SpecWeave a 'skill layer' — not a framework. Here's the difference.
+> "Now, I call SpecWeave a 'Skill Fabric' — not a framework. Here's the difference.
 >
 > A framework constrains you. Angular — heavy, opinionated, lots of rules. SpecWeave is the opposite. It's a lightweight layer of skills — programs written in English — that sit on top of Claude Code and give it superpowers:
 >
@@ -220,18 +220,18 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 > - **Quality gates** instead of 'we'll add tests later'
 > - **Autonomous execution** instead of babysitting every prompt"
 
-**[EXCALIDRAW: "Framework" crossed out → "Skill Layer"]**
+**[EXCALIDRAW: "Framework" crossed out → "Skill Fabric"]**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│         SPECWEAVE: A SKILL LAYER, NOT A FRAMEWORK            │
+│         SPECWEAVE: A SKILL FABRIC, NOT A FRAMEWORK           │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ❌ NOT Angular vibes — heavy, opinionated, many rules      │
 │  ❌ NOT a walled garden — delete it tomorrow, specs remain   │
 │  ❌ NOT proprietary — just markdown files (spec.md, etc.)   │
 │                                                              │
-│  ✅ IS a skill layer — programs in English that control AI  │
+│  ✅ IS a Skill Fabric — programs in English that control AI │
 │  ✅ IS zero-config — no hooks, no CLAUDE.md, no plugins     │
 │  ✅ IS team-agnostic — Claude, GPT-4, Copilot, any AI works │
 │                                                              │
@@ -249,7 +249,7 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 >
 > It's the difference between:
 > - A powerful tool you need to learn and configure
-> - A skill layer that programs the AI for you"
+> - A Skill Fabric that programs the AI for you"
 
 **[Quick mention of Claude Code velocity]**
 
@@ -1221,7 +1221,7 @@ specweave init .
 
 **[SCREEN: Navigate to docs/guides/lessons/06-tdd-workflow]**
 
-> "And here's a major change — TDD is now the DEFAULT in SpecWeave, not optional. Test-Driven Development with strict enforcement. Red-green-refactor discipline, enforced by the skill layer."
+> "And here's a major change — TDD is now the DEFAULT in SpecWeave, not optional. Test-Driven Development with strict enforcement. Red-green-refactor discipline, enforced by the Skill Fabric."
 
 ```bash
 /sw:tdd-cycle  # Full red-green-refactor workflow
@@ -1269,7 +1269,7 @@ specweave init .
 
 > "Nearly 2,000 commits over 14 months. 1,986 commits to be exact. At peak velocity — 100 commits in a single day.
 >
-> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession. And with the recent Skill Enrichment update, we added 25 new skills across 8 plugin domains in one increment — mobile, AI/ML, infrastructure, backend, desktop, and blockchain. The skill layer keeps growing."
+> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession. And with the recent Skill Enrichment update, we added 25 new skills across 8 plugin domains in one increment — mobile, AI/ML, infrastructure, backend, desktop, and blockchain. The Skill Fabric keeps growing."
 
 **[Point to DORA metrics]**
 
@@ -2702,7 +2702,7 @@ ls .specweave/docs/internal/architecture/adr/ | wc -l
 >
 > **Mean Time to Recovery**: When things break, how fast do you fix them? SpecWeave: not applicable — nothing has broken in production."
 
-> "These aren't aspirational numbers. This is SpecWeave building SpecWeave. The skill layer proves itself."
+> "These aren't aspirational numbers. This is SpecWeave building SpecWeave. The Skill Fabric proves itself."
 
 ---
 
@@ -2902,7 +2902,7 @@ specweave init .
 
 **[SCREEN: Intro slide]**
 
-> "Okay, we've covered the entire SpecWeave skill layer. Now let me show you exactly what you can build with it.
+> "Okay, we've covered the entire SpecWeave Skill Fabric. Now let me show you exactly what you can build with it.
 >
 > Earlier I mentioned five production apps shipped in the past month. Let me walk you through each one — not just showing the UI, but the architecture, the key decisions, and how SpecWeave organized the complexity.
 >
@@ -3086,7 +3086,7 @@ specweave init .
 
 **[SCREEN: Back to your face]**
 
-> "Five apps. Different domains, different stacks, different complexity levels. All built with the same skill layer — SpecWeave.
+> "Five apps. Different domains, different stacks, different complexity levels. All built with the same Skill Fabric — SpecWeave.
 >
 > The mobile apps prove it works for React Native and native Swift. The enterprise platform proves it scales to 20+ microservices. The ML integration proves it handles complex pipelines.
 >

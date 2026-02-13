@@ -278,7 +278,7 @@ The CLI (v0.1.0+, Feb 2026) keeps browser state external and returns file refere
 
 **Configure**: Set `testing.playwright.preferCli: true` in `.specweave/config.json`
 
-The skill layer (`sw-testing`) routes automatically: CLI for automation tasks (80%), MCP for inspection tasks (20%). Falls back to MCP if CLI is not installed.
+The Skill Fabric (`sw-testing`) routes automatically: CLI for automation tasks (80%), MCP for inspection tasks (20%). Falls back to MCP if CLI is not installed.
 
 ### SpecWeave E2E Test Requirements
 

@@ -1,6 +1,6 @@
 ---
 increment: 0202-cli-coverage-to-50
-status: active
+status: completed
 type: feature
 ---
 

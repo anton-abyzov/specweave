@@ -58,7 +58,7 @@ Priority 3: ~/.claude/skill-memories/{skill}.md    ← User global level
 
 ```markdown
 ## Project Overrides
-!`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 ```
 
 **Key properties**:
@@ -200,7 +200,7 @@ Add this block to your `SKILL.md`, right after the title — change only the `s=
 
 ```markdown
 ## Project Overrides
-!`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 ```
 
 This is a POSIX shell one-liner using [awk](https://en.wikipedia.org/wiki/AWK) (a standard Unix text-processing utility). Claude Code runs it before loading the skill, injecting the `## Learnings` content from the first matching memory file. It works on macOS, Linux, and WSL — no dependencies to install.

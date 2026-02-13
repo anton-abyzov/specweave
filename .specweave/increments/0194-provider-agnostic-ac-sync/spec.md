@@ -39,12 +39,12 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** GitHub, JIRA, and ADO all reflect real-time AC progress without manual commands
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: Given `syncACProgressToProviders(incrementId, affectedUSIds, specPath, config)` is called, then it reads `sync.{provider}.enabled` from config and only processes enabled providers
-- [ ] **AC-US1-02**: Given the function builds `ACProgressContext` from spec.md, then it parses AC states per US (id, description, completed) and resolves per-US external links from `externalLinks.{provider}.userStories[US-XXX]`
-- [ ] **AC-US1-03**: Given GitHub is enabled, then it delegates to existing `postACProgressComments()` and `autoCloseCompletedUserStories()` from increment 0193 (direct call, no wrapper)
-- [ ] **AC-US1-04**: Given one provider throws an error, then it is caught and recorded in the result, and remaining providers still execute (error isolation)
-- [ ] **AC-US1-05**: Given the function completes, then it returns `ACProgressSyncResult` with per-provider results containing posted comments, errors, and close actions
-- [ ] **AC-US1-06**: Given a new provider needs to be added, then it requires adding one function to the provider map — no interface or class needed
+- [x] **AC-US1-01**: Given `syncACProgressToProviders(incrementId, affectedUSIds, specPath, config)` is called, then it reads `sync.{provider}.enabled` from config and only processes enabled providers
+- [x] **AC-US1-02**: Given the function builds `ACProgressContext` from spec.md, then it parses AC states per US (id, description, completed) and resolves per-US external links from `externalLinks.{provider}.userStories[US-XXX]`
+- [x] **AC-US1-03**: Given GitHub is enabled, then it delegates to existing `postACProgressComments()` and `autoCloseCompletedUserStories()` from increment 0193 (direct call, no wrapper)
+- [x] **AC-US1-04**: Given one provider throws an error, then it is caught and recorded in the result, and remaining providers still execute (error isolation)
+- [x] **AC-US1-05**: Given the function completes, then it returns `ACProgressSyncResult` with per-provider results containing posted comments, errors, and close actions
+- [x] **AC-US1-06**: Given a new provider needs to be added, then it requires adding one function to the provider map — no interface or class needed
 
 ---
 
@@ -56,11 +56,11 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** JIRA boards reflect actual AC completion state without manual sync
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Given JIRA is enabled, then a progress comment is posted via `JiraClient.addComment(issueKey, text)` using `formatForJira()` output with AC names, percentage, and timestamp
-- [ ] **AC-US2-02**: Given ACs are synced, then the JIRA issue description is updated with checkboxes in JIRA markup: `(/) AC-ID: description` for completed, `(x) AC-ID: description` for pending
-- [ ] **AC-US2-03**: Given all ACs for a user story are complete, then a completion comment is posted and the issue is transitioned to "Done" via `JiraStatusSync.updateStatus(issueKey, { state: 'Done' })`
-- [ ] **AC-US2-04**: Given the issue is already in a done status, then the transition is skipped with `reason: 'already-closed'`
-- [ ] **AC-US2-05**: Given the JIRA API fails (429, network error), then the error is recorded non-blocking and the circuit breaker increments
+- [x] **AC-US2-01**: Given JIRA is enabled, then a progress comment is posted via `JiraClient.addComment(issueKey, text)` using `formatForJira()` output with AC names, percentage, and timestamp
+- [x] **AC-US2-02**: Given ACs are synced, then the JIRA issue description is updated with checkboxes in JIRA markup: `(/) AC-ID: description` for completed, `(x) AC-ID: description` for pending
+- [x] **AC-US2-03**: Given all ACs for a user story are complete, then a completion comment is posted and the issue is transitioned to "Done" via `JiraStatusSync.updateStatus(issueKey, { state: 'Done' })`
+- [x] **AC-US2-04**: Given the issue is already in a done status, then the transition is skipped with `reason: 'already-closed'`
+- [x] **AC-US2-05**: Given the JIRA API fails (429, network error), then the error is recorded non-blocking and the circuit breaker increments
 
 ---
 
@@ -72,11 +72,11 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** ADO boards reflect actual AC completion state without manual sync
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Given ADO is enabled, then a progress comment is posted via `AdoClient.addComment(workItemId, text)` with markdown containing AC names, percentage, and timestamp
-- [ ] **AC-US3-02**: Given ACs are synced, then the work item description is updated with checkboxes in HTML: `<li>☑ AC-ID: description</li>` for completed, `<li>☐ AC-ID: description</li>` for pending
-- [ ] **AC-US3-03**: Given all ACs for a user story are complete, then a completion comment is posted and the work item state is set to "Closed" via `AdoStatusSync.updateStatus(workItemId, { state: 'Closed' })`
-- [ ] **AC-US3-04**: Given the work item is already closed, then the transition is skipped with `reason: 'already-closed'`
-- [ ] **AC-US3-05**: Given the ADO API fails (auth, network error), then the error is recorded non-blocking and the circuit breaker increments
+- [x] **AC-US3-01**: Given ADO is enabled, then a progress comment is posted via `AdoClient.addComment(workItemId, text)` with markdown containing AC names, percentage, and timestamp
+- [x] **AC-US3-02**: Given ACs are synced, then the work item description is updated with checkboxes in HTML: `<li>☑ AC-ID: description</li>` for completed, `<li>☐ AC-ID: description</li>` for pending
+- [x] **AC-US3-03**: Given all ACs for a user story are complete, then a completion comment is posted and the work item state is set to "Closed" via `AdoStatusSync.updateStatus(workItemId, { state: 'Closed' })`
+- [x] **AC-US3-04**: Given the work item is already closed, then the transition is skipped with `reason: 'already-closed'`
+- [x] **AC-US3-05**: Given the ADO API fails (auth, network error), then the error is recorded non-blocking and the circuit breaker increments
 
 ---
 
@@ -88,12 +88,12 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** I don't need provider-specific hook handlers
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Given `ac-sync-dispatcher.sh` replaces `github-ac-sync-handler.sh`, then it calls `syncACProgressToProviders()` which handles all enabled providers
-- [ ] **AC-US4-02**: Given `post-tool-use.sh` is updated to reference `ac-sync-dispatcher.sh`, then the old handler reference is removed
-- [ ] **AC-US4-03**: Given the dispatcher preserves existing infrastructure: 5s debounce, per-provider circuit breaker, file locking, background execution, non-blocking errors
-- [ ] **AC-US4-04**: Given `JiraUserStoryLink` type is added with `{ issueKey: string; issueUrl: string; syncedAt: string }`, then it can be stored at `externalLinks.jira.userStories[US-XXX]`
-- [ ] **AC-US4-05**: Given `AdoUserStoryLink` type is added with `{ workItemId: number; workItemUrl: string; syncedAt: string }`, then it can be stored at `externalLinks.ado.userStories[US-XXX]`
-- [ ] **AC-US4-06**: Given a provider has no per-US links for an affected US, then that US is skipped with `reason: 'no-issue-link'`
+- [x] **AC-US4-01**: Given `ac-sync-dispatcher.sh` replaces `github-ac-sync-handler.sh`, then it calls `syncACProgressToProviders()` which handles all enabled providers
+- [x] **AC-US4-02**: Given `post-tool-use.sh` is updated to reference `ac-sync-dispatcher.sh`, then the old handler reference is removed
+- [x] **AC-US4-03**: Given the dispatcher preserves existing infrastructure: 5s debounce, per-provider circuit breaker, file locking, background execution, non-blocking errors
+- [x] **AC-US4-04**: Given `JiraUserStoryLink` type is added with `{ issueKey: string; issueUrl: string; syncedAt: string }`, then it can be stored at `externalLinks.jira.userStories[US-XXX]`
+- [x] **AC-US4-05**: Given `AdoUserStoryLink` type is added with `{ workItemId: number; workItemUrl: string; syncedAt: string }`, then it can be stored at `externalLinks.ado.userStories[US-XXX]`
+- [x] **AC-US4-06**: Given a provider has no per-US links for an affected US, then that US is skipped with `reason: 'no-issue-link'`
 
 ---
 
@@ -105,15 +105,15 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** the multi-provider AC sync chain is verified and regressions are caught
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Tests exist for: `syncACProgressToProviders()` dispatches to all enabled providers and aggregates results
-- [ ] **AC-US5-02**: Tests exist for: error isolation — one provider failure does not block others
-- [ ] **AC-US5-03**: Tests exist for: disabled providers are skipped
-- [ ] **AC-US5-04**: Tests exist for: GitHub delegates to existing 0193 functions unchanged
-- [ ] **AC-US5-05**: Tests exist for: JIRA posts comment in JIRA markup, updates description with `(/)/(x)`, transitions to Done
-- [ ] **AC-US5-06**: Tests exist for: ADO posts markdown comment, updates description with `☑/☐` HTML, transitions to Closed
-- [ ] **AC-US5-07**: Tests exist for: per-provider circuit breaker opens after 3 failures
-- [ ] **AC-US5-08**: Tests exist for: format-specific assertions per provider
-- [ ] **AC-US5-09**: All 31 existing GitHub AC sync tests pass unchanged
+- [x] **AC-US5-01**: Tests exist for: `syncACProgressToProviders()` dispatches to all enabled providers and aggregates results
+- [x] **AC-US5-02**: Tests exist for: error isolation — one provider failure does not block others
+- [x] **AC-US5-03**: Tests exist for: disabled providers are skipped
+- [x] **AC-US5-04**: Tests exist for: GitHub delegates to existing 0193 functions unchanged
+- [x] **AC-US5-05**: Tests exist for: JIRA posts comment in JIRA markup, updates description with `(/)/(x)`, transitions to Done
+- [x] **AC-US5-06**: Tests exist for: ADO posts markdown comment, updates description with `☑/☐` HTML, transitions to Closed
+- [x] **AC-US5-07**: Tests exist for: per-provider circuit breaker opens after 3 failures
+- [x] **AC-US5-08**: Tests exist for: format-specific assertions per provider
+- [x] **AC-US5-09**: All 31 existing GitHub AC sync tests pass unchanged
 
 ---
 
@@ -125,13 +125,13 @@ Additionally, the sync layer has accumulated dead code from multiple architectur
 **So that** the codebase is leaner and the sync architecture is less confusing
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: `plugins/specweave-github/lib/ThreeLayerSyncManager.ts` (+ compiled artifacts) is removed — no production imports
-- [ ] **AC-US6-02**: `plugins/specweave-github/lib/github-increment-sync-cli.ts` (+ compiled) is removed — orphaned CLI
-- [ ] **AC-US6-03**: `plugins/specweave-github/lib/increment-issue-builder.ts` (+ compiled) is removed — only used by dead CLI
-- [ ] **AC-US6-04**: `plugins/specweave-github/lib/github-status-sync.ts` (+ compiled) is removed — no production imports
-- [ ] **AC-US6-05**: `plugins/specweave-github/lib/github-sync-increment-changes.ts` and `cli-sync-increment-changes.ts` (+ compiled) are removed — orphaned CLI pair
-- [ ] **AC-US6-06**: `plugins/specweave-github/hooks/github-ac-sync-handler.sh` is removed after `ac-sync-dispatcher.sh` is verified working
-- [ ] **AC-US6-07**: All tests still pass after dead code removal
+- [x] **AC-US6-01**: `plugins/specweave-github/lib/ThreeLayerSyncManager.ts` (+ compiled artifacts) is removed — no production imports
+- [x] **AC-US6-02**: `plugins/specweave-github/lib/github-increment-sync-cli.ts` (+ compiled) is removed — orphaned CLI
+- [x] **AC-US6-03**: `plugins/specweave-github/lib/increment-issue-builder.ts` (+ compiled) is removed — only used by dead CLI
+- [x] **AC-US6-04**: `plugins/specweave-github/lib/github-status-sync.ts` (+ compiled) is removed — no production imports
+- [x] **AC-US6-05**: `plugins/specweave-github/lib/github-sync-increment-changes.ts` and `cli-sync-increment-changes.ts` (+ compiled) are removed — orphaned CLI pair
+- [x] **AC-US6-06**: `plugins/specweave-github/hooks/github-ac-sync-handler.sh` is removed after `ac-sync-dispatcher.sh` is verified working
+- [x] **AC-US6-07**: All tests still pass after dead code removal
 
 ## Out of Scope
 

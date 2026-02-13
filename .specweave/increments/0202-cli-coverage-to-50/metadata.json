@@ -1,8 +1,35 @@
 {
   "id": "0202-cli-coverage-to-50",
-  "status": "ready_for_review",
+  "status": "completed",
   "type": "feature",
   "created": "2026-02-11T20:10:00.000Z",
-  "lastActivity": "2026-02-11T20:10:00.000Z",
-  "updated": "2026-02-12T07:25:36.000Z"
+  "lastActivity": "2026-02-13T20:44:17.334Z",
+  "updated": "2026-02-12T07:25:36.000Z",
+  "approvedAt": "2026-02-13T20:44:17.335Z",
+  "github": {
+    "issue": 1160,
+    "url": "https://github.com/anton-abyzov/specweave/issues/1160",
+    "synced": "2026-02-13T20:44:24.505Z",
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 1160,
+        "url": "https://github.com/anton-abyzov/specweave/issues/1160",
+        "createdAt": "2026-02-13T20:44:29.005Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 1161,
+        "url": "https://github.com/anton-abyzov/specweave/issues/1161",
+        "createdAt": "2026-02-13T20:44:35.896Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 1162,
+        "url": "https://github.com/anton-abyzov/specweave/issues/1162",
+        "createdAt": "2026-02-13T20:44:42.964Z"
+      }
+    ],
+    "lastSync": "2026-02-13T20:44:42.964Z"
+  }
 }

@@ -1,15 +1,15 @@
 ---
 id: US-005
 feature: FS-195
-title: "Skill Layer CLI Guidance"
+title: "Skill Fabric CLI Guidance"
 status: completed
 priority: P1
 created: 2026-02-10
-tldr: "Skill Layer CLI Guidance"
+tldr: "Skill Fabric CLI Guidance"
 project: specweave
 ---
 
-# US-005: Skill Layer CLI Guidance
+# US-005: Skill Fabric CLI Guidance
 
 **Feature**: [FS-195](./FEATURE.md)
 

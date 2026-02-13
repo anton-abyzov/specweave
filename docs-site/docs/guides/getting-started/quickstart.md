@@ -267,7 +267,7 @@ integrations:
 
 ## Customization (CLAUDE.md)
 
-SpecWeave is an **open skill layer, not a locked product**. Customize workflows through your project's `CLAUDE.md`:
+SpecWeave is an **open Skill Fabric, not a locked product**. Customize workflows through your project's `CLAUDE.md`:
 
 ```markdown
 # In your CLAUDE.md:

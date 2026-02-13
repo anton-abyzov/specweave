@@ -1,6 +1,6 @@
 # SpecWeave
 
-**The spec-driven skill layer for AI coding agents.** Program your AI in English. Ship features while you sleep.
+**The spec-driven Skill Fabric for AI coding agents.** Program your AI in English. Ship features while you sleep.
 
 *First-class support for Claude Code — compatible with any LLM-powered coding tool.*
 
@@ -22,10 +22,10 @@ npm install -g specweave   # Requires Node.js 20.12.0+
 ```
 Without SpecWeave:                          With SpecWeave:
 ─────────────────                           ───────────────
-"Use React Hook Form with Zod..."           /sw:increment "Add login form"
-"Remember, we use Tailwind..."              /sw:auto
-"Don't forget the test pattern..."          # AI already knows your patterns.
-"Wait, I told you this yesterday..."        # It remembered from last time.
+"Use React Hook Form with Zod..."           "Add a login form"
+"Remember, we use Tailwind..."              → AI already knows your patterns.
+"Don't forget the test pattern..."          → It remembered from last time.
+"Wait, I told you this yesterday..."        → Fix once, learned permanently.
 ```
 
 Each skill is a **programmable AI behavior** you can customize without forking. Fix once, remembered permanently. 100+ skills ship out of the box — PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML.
@@ -36,41 +36,64 @@ Each skill is a **programmable AI behavior** you can customize without forking. 
 
 ## The Workflow
 
+Just describe what you want. SpecWeave handles the rest.
+
 ```
 You: "Build me a checkout flow with Stripe"
   ↓
-SpecWeave PM: asks 5-10 clarifying questions
+SpecWeave asks 5-10 clarifying questions
   (What payment methods? Guest checkout? Subscriptions? Which UI library?)
   ↓
 Creates: spec.md → plan.md → tasks.md
   ↓
-/sw:auto — autonomous execution for hours
+You: "Go ahead and build it"
+  → autonomous execution for hours
   (writes code, runs tests, fixes failures, syncs to GitHub/JIRA)
   ↓
 You wake up. Review finished work.
   Tests cover technical correctness. You check the UI and UX.
   ↓
-/sw:done — validated, documented, shipped.
+You: "Looks good, ship it"
+  → validated, documented, shipped.
 ```
 
 **Solo developer:**
-```bash
-/sw:increment "User authentication"   # AI interviews you, creates spec + plan + tasks
-/sw:auto                               # Go to sleep. AI builds it.
-/sw:done 0001                          # Review and ship in the morning.
+```
+You: "I need user authentication with OAuth and magic links"
+  → SpecWeave interviews you, creates spec + plan + tasks
+You: "Build it"
+  → AI works autonomously for hours
+You: "Ship it"
+  → reviewed, validated, done.
 ```
 
 **Agent team (parallel):**
-```bash
-/sw:team-lead "E-commerce MVP"         # Splits into auth, payments, catalog
-# 3 agents run /sw:auto in iTerm/tmux panes simultaneously
+```
+You: "Build an e-commerce MVP"
+  → SpecWeave splits into auth, payments, catalog
+  → 3 agents work in parallel across iTerm/tmux panes
 ```
 
 **Brownfield project:**
-```bash
-/sw:increment "Migrate checkout to React"  # Analyzes existing code first
-/sw:auto --tdd                             # TDD-first, strangler fig pattern
 ```
+You: "Migrate the checkout page to React"
+  → SpecWeave analyzes existing code, plans strangler fig migration
+  → TDD-first autonomous execution
+```
+
+<details>
+<summary><strong>Under the hood</strong> — SpecWeave auto-activates these skills from natural language:</summary>
+
+| You say | SpecWeave runs |
+|---------|---------------|
+| "Build me X" | `/sw:increment` → spec + plan + tasks |
+| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
+| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
+| "Split this into teams" | `/sw:team-lead` → parallel agents |
+| "Review the code" | `/sw:grill` → critical code review |
+
+You can also invoke commands directly for fine-grained control.
+</details>
 
 ---
 
@@ -173,9 +196,9 @@ specweave init .
 ```
 
 Then in Claude Code:
-```bash
-/sw:increment "Add dark mode"   # Describe your feature
-/sw:auto                        # Ship while you sleep
+```
+You: "Add dark mode to the app"
+→ SpecWeave creates spec, plans architecture, builds it autonomously.
 ```
 
 > **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
@@ -184,15 +207,17 @@ Then in Claude Code:
 
 ## Core Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sw:increment "feature"` | Create spec + plan + tasks |
-| `/sw:auto` | Autonomous execution |
-| `/sw:do` | Execute one task at a time |
-| `/sw:grill` | Code review before close |
-| `/sw:done` | Close with quality validation |
-| `/sw:progress-sync` | Push to GitHub / JIRA / ADO |
-| `/sw:next` | Auto-close + suggest next |
+All commands activate automatically from natural language. Use directly for fine-grained control.
+
+| Command | Purpose | Natural trigger |
+|---------|---------|----------------|
+| `/sw:increment "feature"` | Create spec + plan + tasks | "Build me X" |
+| `/sw:auto` | Autonomous execution | "Go ahead and build it" |
+| `/sw:do` | Execute one task at a time | "Do the next task" |
+| `/sw:grill` | Code review before close | "Review the code" |
+| `/sw:done` | Close with quality validation | "Ship it" |
+| `/sw:progress-sync` | Push to GitHub / JIRA / ADO | "Sync progress" |
+| `/sw:next` | Auto-close + suggest next | "What's next?" |
 
 **[Full command reference](https://spec-weave.com/docs/commands/overview)**
 

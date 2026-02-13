@@ -20,7 +20,7 @@ A unit of work in SpecWeave representing a feature, enhancement, or fix. Each in
 Self-updating documentation that stays synchronized with code through SpecWeave's sync system. Living docs include specs, ADRs, and architecture documentation.
 
 ### SpecWeave
-The spec-driven skill layer for AI coding agents — program your AI in English with 100+ reusable skills, autonomous workflows, and enterprise-grade coordination.
+The spec-driven Skill Fabric for AI coding agents — program your AI in English with 100+ reusable skills, autonomous workflows, and enterprise-grade coordination.
 
 ### User Story (US)
 A high-level description of a feature from the user's perspective, typically following the format: "As a [user], I want [feature], so that [benefit]."

@@ -235,7 +235,7 @@ Integrate `@playwright/cli` as a **complementary** tool alongside the existing P
 
 ### Routing Logic
 
-The `sw-testing` skill layer routes automatically:
+The `sw-testing` Skill Fabric routes automatically:
 - **CLI preferred** (80% of tasks): `ui-automate`, `e2e-test-run`, `screenshot`, `form-automation`, `ci-testing`
 - **MCP preferred** (20% of tasks): `ui-inspect`, `page-exploration`, `self-healing-test`
 - **Fallback**: If CLI is not installed, all tasks route to MCP (graceful degradation)
