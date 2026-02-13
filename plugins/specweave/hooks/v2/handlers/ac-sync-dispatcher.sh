@@ -56,6 +56,11 @@ if [[ -z "$INC_ID" ]]; then
   exit 0
 fi
 
+# Validate INC_ID format (defense-in-depth against injection)
+if [[ ! "$INC_ID" =~ ^[0-9]{4}[A-Za-z0-9_-]*$ ]]; then
+  exit 0
+fi
+
 SPEC_PATH="$PROJECT_ROOT/.specweave/increments/$INC_ID/spec.md"
 METADATA_PATH="$PROJECT_ROOT/.specweave/increments/$INC_ID/metadata.json"
 CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
@@ -114,7 +119,7 @@ for i in {1..10}; do
 
   # Check for stale lock
   if [[ -d "$LOCK_FILE" ]]; then
-    LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
+    LOCK_AGE=$(($(date +%s) - $(stat -f%m "$LOCK_FILE" 2>/dev/null || stat -c%Y "$LOCK_FILE" 2>/dev/null || echo 0)))
     if (( LOCK_AGE > LOCK_TIMEOUT )); then
       rmdir "$LOCK_FILE" 2>/dev/null || true
       continue
@@ -136,7 +141,7 @@ fi
 SIGNAL_FILE="$STATE_DIR/.ac-sync-pending-$INC_ID"
 
 if [[ -f "$SIGNAL_FILE" ]]; then
-  SIGNAL_AGE=$(($(date +%s) - $(stat -f "%m" "$SIGNAL_FILE" 2>/dev/null || echo 0)))
+  SIGNAL_AGE=$(($(date +%s) - $(stat -f%m "$SIGNAL_FILE" 2>/dev/null || stat -c%Y "$SIGNAL_FILE" 2>/dev/null || echo 0)))
   if (( SIGNAL_AGE < 5 )); then
     log "Debounce: signal file age ${SIGNAL_AGE}s < 5s. Deferring."
     exit 0
@@ -188,6 +193,12 @@ fi
 
 if [[ "$AFFECTED_US_IDS" == "[]" || -z "$AFFECTED_US_IDS" ]]; then
   log "No affected US IDs found. Skipping."
+  exit 0
+fi
+
+# Validate AFFECTED_US_IDS is valid JSON (defense-in-depth against injection)
+if ! echo "$AFFECTED_US_IDS" | jq empty 2>/dev/null; then
+  log "Invalid US IDs JSON. Skipping."
   exit 0
 fi
 
@@ -246,8 +257,7 @@ try {
   console.error('AC sync dispatcher error:', err.message || err);
   process.exit(1);
 }
-" 2>&1) || true
-
+" 2>&1)
 EXIT_CODE=$?
 
 if [[ $EXIT_CODE -ne 0 ]]; then
