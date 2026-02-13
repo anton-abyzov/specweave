@@ -6,6 +6,10 @@ argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 
 # Auto Command
 
+## Project Overrides
+
+!`s="auto"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+
 **Start autonomous execution session using Claude Code's Stop Hook.**
 
 ## How to Use

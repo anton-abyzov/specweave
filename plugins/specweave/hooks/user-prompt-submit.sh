@@ -405,42 +405,6 @@ truncate_and_escape_prompt() {
   printf '%s' "$truncated" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' '
 }
 
-# Helper: Get skill memory content for injection (v1.0.198)
-# Reads .specweave/skill-memories/{skill}.md and extracts learnings.
-# Args: $1=full skill name (e.g., "sw:pm", "sw-frontend:frontend-architect")
-# Returns: Formatted memory content on stdout, or empty string if not found
-get_skill_memory_context() {
-  local full_skill="$1"
-  local project_root="${SW_PROJECT_ROOT:-${PROJECT_ROOT:-$(pwd)}}"
-
-  # Not a SpecWeave project — no skill memories to load
-  [[ ! -d "$project_root/.specweave" ]] && return 0
-
-  # Extract skill name (part after colon, or whole string if no colon)
-  local skill_name="${full_skill##*:}"
-
-  local memory_file="$project_root/.specweave/skill-memories/${skill_name}.md"
-
-  if [[ ! -f "$memory_file" ]]; then
-    return 0
-  fi
-
-  # Read the file and extract learnings section
-  local content
-  content=$(cat "$memory_file" 2>/dev/null)
-
-  # Extract lines between "## Learnings" and next heading or EOF
-  local learnings
-  learnings=$(echo "$content" | sed -n '/^## Learnings$/,/^## /{ /^## Learnings$/d; /^## /d; p; }' | sed '/^$/d')
-
-  if [[ -z "$learnings" ]]; then
-    return 0
-  fi
-
-  # Format for injection with progressive disclosure instruction
-  printf '📚 **Skill Memory for %s** (project-specific overrides — these take priority over base skill defaults):\\n%s\\n\\n⚠️ Apply these learnings as overrides: if a memory contradicts the base skill, follow the memory. If a memory references a script or tool, execute it as part of your workflow.' "$skill_name" "$learnings"
-}
-
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
 # This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
 # Args: $1=plugin name (e.g., "sw-frontend"), $2=marketplace (e.g., "specweave")
@@ -1332,25 +1296,12 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 # Build agent spawn directive if routing skills available (v1.0.155)
                 AGENT_DIRECTIVE=""
                 # v1.0.168: Skill invocation directive (takes precedence over routing)
-                # v1.0.198: Added skill memory injection
+                # Skill memories now loaded via DCI in SKILL.md (no hook injection)
                 if [[ -n "$SKILL_INVOCATION" ]]; then
-                  # Get skill memory for injection (v1.0.198)
-                  SKILL_MEMORY=""
-                  SKILL_MEMORY_RAW=$(get_skill_memory_context "$SKILL_INVOCATION")
-                  if [[ -n "$SKILL_MEMORY_RAW" ]]; then
-                    SKILL_MEMORY="
-
-${SKILL_MEMORY_RAW}
-
----
-"
-                  fi
-
                   if [[ "$SKILL_MANDATORY" == "true" ]]; then
                     AGENT_DIRECTIVE="
 
 ---
-${SKILL_MEMORY}
 <skill_invocation_required>
 ### 🎯 MANDATORY: Use ${SKILL_INVOCATION} Skill
 
@@ -1370,7 +1321,6 @@ ${SKILL_REASON:-This skill provides specialized support for your task.}
                     AGENT_DIRECTIVE="
 
 ---
-${SKILL_MEMORY}
 ### 💡 Recommended: Use ${SKILL_INVOCATION} Skill
 
 Consider invoking this skill for better results:
@@ -1444,18 +1394,7 @@ Consider ALL prior messages in this conversation.
 - NEVER ask 10+ questions. NEVER repeat what the user already said."
                       fi
 
-                      # v1.0.198: Get skill memory for increment-planner
-                      INC_PLANNER_MEMORY=""
-                      INC_PLANNER_MEMORY_RAW=$(get_skill_memory_context "sw:increment-planner")
-                      if [[ -n "$INC_PLANNER_MEMORY_RAW" ]]; then
-                        INC_PLANNER_MEMORY="
-${INC_PLANNER_MEMORY_RAW}
-
----
-"
-                      fi
-
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}${INC_PLANNER_MEMORY}╔══════════════════════════════════════════════════════════════════════════════╗
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
 ║  🎯 SKILL FIRST - Call Skill tool BEFORE implementation                      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 

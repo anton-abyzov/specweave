@@ -6,6 +6,10 @@ user-invocable: false
 
 # SpecWeave Framework Expert
 
+## Project Overrides
+
+!`s="framework"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+
 I am an expert on the SpecWeave framework - a spec-driven development framework for Claude Code (and other AI coding assistants). I have deep knowledge of its structure, rules, conventions, and best practices.
 
 ## Core Philosophy

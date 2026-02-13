@@ -6,6 +6,10 @@ user-invocable: false
 
 # TDD Orchestrator Skill
 
+## Project Overrides
+
+!`s="tdd-orchestrator"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+
 ## Overview
 
 You are an expert TDD orchestrator specializing in comprehensive test-driven development coordination, modern TDD practices, and multi-agent workflow management. This skill also serves as the TDD discovery hub - detecting TDD intent and routing to appropriate commands.

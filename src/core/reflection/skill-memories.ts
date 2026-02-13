@@ -14,9 +14,28 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Directory for skill-specific memory files (relative to project root)
+ * Default directory for skill-specific memory files (relative to project root)
  */
 export const SKILL_MEMORY_DIR = '.specweave/skill-memories';
+
+/**
+ * Resolve the skill memory directory for a project.
+ *
+ * Cascading priority (first existing dir wins):
+ *   1. .specweave/skill-memories/ — SpecWeave project level
+ *   2. .claude/skill-memories/    — Claude Code project level
+ *
+ * For writes, returns the first path whose parent dir exists
+ * (.specweave/ or .claude/). Falls back to .claude/skill-memories/
+ * so the feature works without SpecWeave.
+ */
+export function getSkillMemoryDir(projectRoot: string): string {
+  const specweaveDir = path.join(projectRoot, '.specweave');
+  if (fs.existsSync(specweaveDir)) {
+    return '.specweave/skill-memories';
+  }
+  return '.claude/skill-memories';
+}
 
 /**
  * A single learning to be written
@@ -67,7 +86,8 @@ export function readSkillMemoryFile(
   projectRoot: string,
   skillName: string
 ): string[] {
-  const filePath = path.join(projectRoot, SKILL_MEMORY_DIR, `${skillName}.md`);
+  const memDir = getSkillMemoryDir(projectRoot);
+  const filePath = path.join(projectRoot, memDir, `${skillName}.md`);
 
   if (!fs.existsSync(filePath)) {
     return [];
@@ -122,7 +142,8 @@ export function writeSkillMemoryFile(
   projectRoot: string,
   learning: SkillLearning
 ): { written: boolean; reason?: string } {
-  const dirPath = path.join(projectRoot, SKILL_MEMORY_DIR);
+  const memDir = getSkillMemoryDir(projectRoot);
+  const dirPath = path.join(projectRoot, memDir);
   const filePath = path.join(dirPath, `${learning.skill}.md`);
 
   // Ensure directory exists
@@ -183,7 +204,8 @@ export function writeSkillMemories(
  * Get all skill memory files in a project
  */
 export function listSkillMemoryFiles(projectRoot: string): string[] {
-  const dirPath = path.join(projectRoot, SKILL_MEMORY_DIR);
+  const memDir = getSkillMemoryDir(projectRoot);
+  const dirPath = path.join(projectRoot, memDir);
 
   if (!fs.existsSync(dirPath)) {
     return [];
@@ -213,7 +235,8 @@ export function readAllSkillMemories(projectRoot: string): ParsedLearning[] {
   const allLearnings: ParsedLearning[] = [];
 
   for (const skill of skills) {
-    const filePath = path.join(projectRoot, SKILL_MEMORY_DIR, `${skill}.md`);
+    const memDir = getSkillMemoryDir(projectRoot);
+    const filePath = path.join(projectRoot, memDir, `${skill}.md`);
     if (!fs.existsSync(filePath)) continue;
 
     const content = fs.readFileSync(filePath, 'utf-8');
@@ -280,7 +303,8 @@ export function pruneSkillMemories(
   const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
 
   for (const skill of skills) {
-    const filePath = path.join(projectRoot, SKILL_MEMORY_DIR, `${skill}.md`);
+    const memDir = getSkillMemoryDir(projectRoot);
+    const filePath = path.join(projectRoot, memDir, `${skill}.md`);
 
     try {
       const content = fs.readFileSync(filePath, 'utf-8');
