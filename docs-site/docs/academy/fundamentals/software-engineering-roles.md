@@ -39,11 +39,11 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Activates**: When designing architecture, making technical decisions
 - **Output**: `plan.md`, Architecture Decision Records (ADRs), diagrams
 
-**3. Tech Lead Agent** (`tech-lead`)
-- **Role**: Technical Lead
-- **Expertise**: Implementation planning, task breakdown, code review
-- **Activates**: When creating tasks, reviewing code, planning sprints
-- **Output**: `tasks.md` with implementation steps
+**3. Code Simplifier Agent** (`code-simplifier`)
+- **Role**: Code Quality Lead
+- **Expertise**: Code clarity, SOLID principles, refactoring, maintainability
+- **Activates**: When reviewing code quality, simplifying implementations
+- **Output**: Improved code with better readability and patterns
 
 ### Quality & Testing Agents
 
@@ -234,13 +234,13 @@ Architect Agent stores [ADRs](/docs/glossary/terms/adr) permanently in [living d
 - Unblock developers
 - Track sprint progress
 
-**SpecWeave Agent: Tech Lead Agent** (`tech-lead`)
+**SpecWeave Agent: Architect Agent** (`architect`) + **Grill Agent** (`grill`)
 
-**How Tech Lead Agent Helps**:
+**How These Agents Help**:
 
 ```markdown
-# Tech Lead creates tasks.md (implementation breakdown)
-# After Architect creates plan.md, Tech Lead Agent:
+# Architect creates tasks.md (implementation breakdown)
+# After creating plan.md, Architect Agent:
 
 1. Breaks down architecture into tasks
 2. Assigns priorities (P1, P2, P3)

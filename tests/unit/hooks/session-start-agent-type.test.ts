@@ -122,8 +122,6 @@ describe('SessionStart hook agent_type feature', () => {
       'sw-pm': 'PM Agent: Product Management context loaded',
       'sw:architect': 'Architect Agent: Technical design context loaded',
       'sw-architect': 'Architect Agent: Technical design context loaded',
-      'sw:tech-lead': 'Tech Lead Agent: Implementation context loaded',
-      'sw-tech-lead': 'Tech Lead Agent: Implementation context loaded'
     };
 
     it('should return PM message for sw:pm agent', () => {
@@ -147,14 +145,6 @@ describe('SessionStart hook agent_type feature', () => {
 
       expect(message).toContain('Architect Agent');
       expect(message).toContain('Technical design');
-    });
-
-    it('should return Tech Lead message for sw:tech-lead agent', () => {
-      const agentType = 'sw:tech-lead';
-      const message = AGENT_MESSAGES[agentType] || '';
-
-      expect(message).toContain('Tech Lead Agent');
-      expect(message).toContain('Implementation');
     });
 
     it('should return empty message for unknown agent type', () => {

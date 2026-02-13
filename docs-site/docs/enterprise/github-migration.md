@@ -433,7 +433,7 @@ Duration: 7 days, 7.5 hours
 
 Author: john.doe@company.com
 Reviewer: jane.smith@company.com
-Approver: tech-lead@company.com
+Approver: architect@company.com
 
 GitHub Issue: #145
 GitHub Repo: myorg/web-app
