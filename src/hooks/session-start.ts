@@ -23,6 +23,7 @@ import {
   consumeStdin,
   appendLog,
 } from './platform.js';
+import { cleanOrphanedStateFiles } from '../utils/state-cleanup.js';
 
 // Proper cross-platform URL-to-path conversion
 const __filename = fileURLToPath(import.meta.url);
@@ -56,6 +57,14 @@ async function main(): Promise<void> {
   await consumeStdin();
 
   const logFile = path.join(projectRoot, '.specweave', 'logs', 'session-start.log');
+
+  // v1.0.254: Clean up orphaned state files on session start
+  const stateDir = path.join(projectRoot, '.specweave', 'state');
+  const cleaned = cleanOrphanedStateFiles(stateDir);
+  if (cleaned > 0) {
+    appendLog(logFile, `Cleaned ${cleaned} orphaned state files`);
+  }
+
   const distHooksDir = path.join(projectRoot, 'node_modules', 'specweave', 'dist', 'hooks');
 
   // Check for processor script

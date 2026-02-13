@@ -33,4 +33,4 @@ Traditional documentation becomes outdated quickly. Living docs solve this by:
 
 - `/sw:living-docs` - Generate comprehensive docs from codebase
 - `/sw:sync-docs update` - Sync implementation learnings to living docs
-- `/sw:context <topic>` - Load relevant docs into conversation
+- `/sw:docs <topic>` - Load relevant docs into conversation

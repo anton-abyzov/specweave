@@ -803,7 +803,7 @@ cat .specweave/docs/changelog/2025-10.md
 - Use progressive disclosure (70%+ reduction via on-demand skill loading)
 - Set reasonable max_tokens (8000-16000)
 - Use Haiku for simple tasks
-- Use `/sw:context` to load only relevant living docs
+- Use `/sw:docs` to load only relevant living docs
 
 ---
 

@@ -1349,7 +1349,7 @@ With SpecWeave:
 
 2. **Selective Context Loading**
    ```bash
-   /sw:context authentication
+   /sw:docs authentication
 
    Searching living docs...
    Found 3 relevant files:

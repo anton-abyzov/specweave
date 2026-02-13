@@ -414,7 +414,7 @@ Sync and manage documentation.
 | `/sw:sync-docs` | Sync living docs | `/sw:sync-docs` |
 | `/sw:sync-specs` | Sync specs only | `/sw:sync-specs` |
 | `/sw:import-docs` | Import external docs | `/sw:import-docs` |
-| `/sw:context` | Load project context | `/sw:context auth` |
+| `/sw:docs` | Load project context | `/sw:docs auth` |
 
 ### /sw:sync-docs
 
@@ -426,13 +426,13 @@ Sync and manage documentation.
 
 Syncs: ADRs, specs, runbooks to external systems.
 
-### /sw:context
+### /sw:docs
 
 **Load relevant project context.**
 
 ```bash
-/sw:context auth        # Load auth-related docs
-/sw:context database    # Load DB architecture
+/sw:docs auth        # Load auth-related docs
+/sw:docs database    # Load DB architecture
 ```
 
 ---

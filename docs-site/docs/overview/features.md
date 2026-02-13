@@ -141,7 +141,7 @@ SpecWeave uses Claude's native progressive disclosure mechanism - no RAG or vect
 - **CLAUDE.md**: Always visible reference with living docs locations
 - **Skills**: Metadata loads first (~75 tokens), full content on-demand
 - **Living Docs Navigator**: Built-in skill that teaches Claude WHERE to look and HOW to search
-- **Explicit Loading**: `/sw:context <topic>` loads relevant docs into conversation
+- **Explicit Loading**: `/sw:docs <topic>` loads relevant docs into conversation
 
 ### How It Works
 

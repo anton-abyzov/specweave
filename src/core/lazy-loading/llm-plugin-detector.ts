@@ -22,6 +22,50 @@ import { consoleLogger as logger } from '../../utils/logger.js';
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
 import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
 
+// ============================================================
+// Prompt safety constants and truncation utilities (v1.0.254)
+//
+// Prevents "Prompt is too long" errors by enforcing size limits
+// on user prompts passed to internal Haiku calls and on the
+// additionalContext injected by the UserPromptSubmit hook.
+// ============================================================
+
+/** Max chars of user prompt sent to Haiku for intent detection */
+export const MAX_DETECTION_USER_PROMPT_LENGTH = 3000;
+
+/** Max chars for the additionalContext returned from the UserPromptSubmit hook */
+export const MAX_ADDITIONAL_CONTEXT_LENGTH = 8000;
+
+/** Max chars of user prompt embedded in SKILL FIRST args */
+export const MAX_SKILL_FIRST_PROMPT_LENGTH = 2000;
+
+/**
+ * Truncate a user prompt for the detect-intent Haiku call.
+ * The first N chars are sufficient for intent classification.
+ */
+export function truncateForDetection(prompt: string): string {
+  if (prompt.length <= MAX_DETECTION_USER_PROMPT_LENGTH) return prompt;
+  return prompt.substring(0, MAX_DETECTION_USER_PROMPT_LENGTH) + '... [truncated]';
+}
+
+/**
+ * Truncate a user prompt for embedding in SKILL FIRST args.
+ * The original prompt is already in the user message — no need to duplicate it fully.
+ */
+export function truncateForSkillFirstArgs(prompt: string): string {
+  if (prompt.length <= MAX_SKILL_FIRST_PROMPT_LENGTH) return prompt;
+  return prompt.substring(0, MAX_SKILL_FIRST_PROMPT_LENGTH) + '... [truncated — see original prompt above]';
+}
+
+/**
+ * Truncate the additionalContext output from the UserPromptSubmit hook.
+ * Prevents context inflation that can push the main model past limits.
+ */
+export function truncateAdditionalContext(context: string): string {
+  if (context.length <= MAX_ADDITIONAL_CONTEXT_LENGTH) return context;
+  return context.substring(0, MAX_ADDITIONAL_CONTEXT_LENGTH) + '... [context truncated for safety]';
+}
+
 /**
  * Plugin auto-load configuration from .specweave/config.json
  */
@@ -623,56 +667,23 @@ EXPLICIT OPT-OUT → action: "none":
 - "just a quick fix", "without tracking", "already tracking"
 
 ═══════════════════════════════════════════════════════════════
-EXAMPLES (with increment field + mandatory)
+EXAMPLES (one per action type — keep prompt size minimal)
 ═══════════════════════════════════════════════════════════════
 
 "Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["sw-frontend","sw-backend","sw-payments"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature - MANDATORY"}}
-
-"Build Go microservice with PostgreSQL"
-{"plugins":["sw-backend"],"confidence":0.95,"reasoning":"Go→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"go-microservice-postgres","reasoning":"New service implementation - MANDATORY"}}
-
-"Fix the login bug"
-{"plugins":[],"confidence":0.9,"reasoning":"Generic bug fix","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"fix-login-bug","reasoning":"Bug fix requiring investigation and code changes"}}
-
-"Add error handling to the API"
-{"plugins":[],"confidence":0.8,"reasoning":"API improvement","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"api-error-handling","reasoning":"Feature enhancement — adding error handling logic"}}
-
-"Refactor the auth module"
-{"plugins":[],"confidence":0.8,"reasoning":"Refactoring work","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"refactor-auth-module","reasoning":"Refactoring work that changes code structure"}}
+{"plugins":["sw-frontend","sw-backend","sw-payments"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→sw-payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature"}}
 
 "The auth feature is broken again"
 {"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
 
-"How do I use React hooks?"
-{"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Question, no implementation"}}
-
-"Update the package version to 2.0"
-{"plugins":[],"confidence":0.9,"reasoning":"Version bump","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"version-bump-2.0","reasoning":"Simple version string change, trivial edit"}}
-
 "Urgent: production checkout is failing"
-{"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue requires immediate attention - MANDATORY"}}
+{"plugins":["sw-payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue"}}
 
 "Fix typo in README"
-{"plugins":[],"confidence":0.9,"reasoning":"Typo fix","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"fix-readme-typo","reasoning":"Literal typo fix, trivial 1-line change"}}
+{"plugins":[],"confidence":0.9,"reasoning":"Typo fix","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"fix-readme-typo","reasoning":"Trivial 1-line change"}}
 
-"Just fix the typo in README, don't track it"
-{"plugins":[],"confidence":0.95,"reasoning":"Typo fix","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"User explicitly opted out of tracking"}}
-
-"Hello" / "Thanks" / "What's up?"
-{"plugins":[],"confidence":0.95,"reasoning":"Greeting/chat","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Conversational, no implementation work"}}
-
-"The search is returning wrong results"
-{"plugins":[],"confidence":0.8,"reasoning":"Bug report","increment":{"action":"new","confidence":0.85,"mandatory":true,"suggestedName":"fix-search-results","reasoning":"Bug report indicating broken functionality — requires investigation and code fix"}}
-
-"It's not respecting the folder structure, repositories are in the wrong place"
-{"plugins":[],"confidence":0.8,"reasoning":"Bug report about folder structure","increment":{"action":"new","confidence":0.85,"mandatory":true,"suggestedName":"fix-repository-folder-structure","reasoning":"Complaint about broken behavior — requires code investigation and fix"}}
-
-"The database queries are too slow, we need to optimize them"
-{"plugins":["sw-backend"],"confidence":0.85,"reasoning":"Database optimization","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"optimize-database-queries","reasoning":"Performance improvement requiring investigation and implementation"}}
-
-"We need better error messages when the API fails"
-{"plugins":[],"confidence":0.8,"reasoning":"Error handling improvement","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"improve-api-error-messages","reasoning":"UX improvement requiring code changes across error handlers"}}
+"How do I use React hooks?"
+{"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Question, no implementation"}}
 
 ═══════════════════════════════════════════════════════════════
 SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
@@ -689,50 +700,20 @@ ALSO specify which skills Claude SHOULD invoke for this task.
 LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
 
 SKILL INVOCATION RULES:
-┌──────────────────────┬──────────────────────────────────────────────────┐
-│ Domain Skills        │ MANDATORY for specialized work                   │
-│ (sw-backend, sw-ml)  │ "Use dotnet-backend skill for .NET patterns"     │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ Testing Skills       │ MANDATORY for testing/QA work                    │
-│ (sw-testing)         │ "Use unit-testing for Jest/Vitest patterns"      │
-│                      │ "Use e2e-testing for Playwright/Cypress"         │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ Payment Skills       │ MANDATORY for payment integration                │
-│ (sw-payments)        │ "Use stripe-integration for Stripe patterns"     │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ Architecture Skills  │ Recommended for design decisions                 │
-│ (sw-frontend:frontend-architect)   │ "Consider frontend-architect for component design│
-└──────────────────────┴──────────────────────────────────────────────────┘
-
-WHEN TO MAKE SKILL MANDATORY:
-- .NET/C# work → sw-backend:dotnet-backend is MANDATORY
-- ML/AI work → sw-ml:ml-engineer is MANDATORY
-- Payment integration → sw-payments:stripe-integration is MANDATORY
-- Testing/QA work → sw-testing:unit-testing or sw-testing:e2e-testing is MANDATORY
-- Complex architecture → relevant architect skill is recommended
-
-NOTE: LSP is handled separately (boostvolt/claude-code-lsps marketplace).
-DO NOT include any *-lsp plugins in your response.
+- .NET/C# → sw-backend:dotnet-backend MANDATORY
+- ML/AI → sw-ml:ml-engineer MANDATORY
+- Payments → sw-payments:stripe-integration MANDATORY
+- Testing → sw-testing:unit-testing or sw-testing:e2e-testing MANDATORY
+- Architecture → relevant architect skill recommended
+- DO NOT suggest *-lsp plugins (broken in marketplace)
 
 SKILL EXAMPLES:
 
 "Build .NET API with Entity Framework"
-{"plugins":["sw-backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API implementation"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":"Use dotnet-backend skill for .NET patterns, EF Core best practices, and API design","mandatory":true}}
-
-"Train a machine learning model for image classification"
-{"plugins":["sw-ml"],"confidence":0.95,"reasoning":"ML model training","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"image-classifier","reasoning":"ML model implementation"},"skillInvocation":{"skill":"sw-ml:ml-engineer","reason":"Use ML engineer skill for model architecture, training, and optimization","mandatory":true}}
-
-"Implement Stripe checkout flow"
-{"plugins":["sw-payments","sw-frontend"],"confidence":0.95,"reasoning":"Stripe checkout","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"stripe-checkout","reasoning":"Payment integration"},"skillInvocation":{"skill":"sw-payments:stripe-integration","reason":"Use Stripe integration skill for secure checkout implementation","mandatory":true}}
+{"plugins":["sw-backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API"},"skillInvocation":{"skill":"sw-backend:dotnet-backend","reason":".NET patterns and EF Core","mandatory":true}}
 
 "Write unit tests for the auth service"
-{"plugins":["sw-testing"],"confidence":0.95,"reasoning":"Unit testing task","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing task, likely extends existing work"},"skillInvocation":{"skill":"sw-testing:unit-testing","reason":"Use unit-testing skill for Vitest/Jest patterns, mocking strategies, and TDD workflow","mandatory":true}}
-
-"Set up E2E tests with Playwright"
-{"plugins":["sw-testing"],"confidence":0.95,"reasoning":"E2E test setup","increment":{"action":"new","confidence":0.8,"mandatory":false,"suggestedName":"e2e-test-setup","reasoning":"Test infrastructure setup"},"skillInvocation":{"skill":"sw-testing:e2e-testing","reason":"Use E2E testing skill for Playwright setup, page objects, and CI integration","mandatory":true}}
-
-"Add test coverage for the API endpoints"
-{"plugins":["sw-testing"],"confidence":0.9,"reasoning":"Test coverage work","increment":{"action":"small_fix","confidence":0.6,"mandatory":false,"reasoning":"Adding tests to existing code"},"skillInvocation":{"skill":"sw-testing:unit-testing","reason":"Use unit-testing skill for API test patterns and coverage strategies","mandatory":false}}
+{"plugins":["sw-testing"],"confidence":0.95,"reasoning":"Unit testing","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing extends existing work"},"skillInvocation":{"skill":"sw-testing:unit-testing","reason":"Vitest/Jest patterns and TDD","mandatory":true}}
 
 ═══════════════════════════════════════════════════════════════
 LSP OPERATION DETECTION (v1.0.198 - unified detection)
@@ -746,39 +727,13 @@ ALSO analyze if the prompt requires LSP (Language Server Protocol) operations.
 - language: "typescript" | "python" | "rust" | "go" | "csharp" | "java" | null
 - warmupRequired: true (always true - session state unknown)
 
-WHEN lsp.needed = true:
-┌──────────────────────┬──────────────────────────────────────────────────┐
-│ "find references"    │ operation: "references"                          │
-│ "who calls", "usages"│                                                  │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ "go to definition"   │ operation: "definition"                          │
-│ "where defined"      │                                                  │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ "show type", "hover" │ operation: "hover"                               │
-│ "type signature"     │                                                  │
-├──────────────────────┼──────────────────────────────────────────────────┤
-│ "list symbols"       │ operation: "symbols"                             │
-│ "exports", "functions│                                                  │
-└──────────────────────┴──────────────────────────────────────────────────┘
-
-WHEN lsp.needed = false (default):
-- Building features, writing code, fixing bugs (no LSP keywords)
-- General questions, discussions
-- If NO LSP operation keywords, omit lsp field entirely
+WHEN lsp.needed = true: "find references"→references, "go to definition"→definition, "show type"→hover, "list symbols"→symbols
+WHEN lsp.needed = false (default): building features, general questions, no LSP keywords → omit lsp field
 
 LSP EXAMPLES:
 
-"Find all references to handleRequest function"
+"Find all references to handleRequest"
 {"plugins":[],"confidence":0.95,"reasoning":"Code navigation","lsp":{"needed":true,"operation":"references","language":"typescript","warmupRequired":true}}
-
-"Go to the definition of UserService"
-{"plugins":[],"confidence":0.95,"reasoning":"Code navigation","lsp":{"needed":true,"operation":"definition","language":null,"warmupRequired":true}}
-
-"What is the type of processData?"
-{"plugins":[],"confidence":0.95,"reasoning":"Type inspection","lsp":{"needed":true,"operation":"hover","language":null,"warmupRequired":true}}
-
-"List all exports in src/api/users.ts"
-{"plugins":[],"confidence":0.95,"reasoning":"Symbol listing","lsp":{"needed":true,"operation":"symbols","language":"typescript","warmupRequired":true}}
 
 "Build a React dashboard" (NO LSP needed)
 {"plugins":["sw-frontend"],"confidence":0.95,"reasoning":"React development"}`;
@@ -974,10 +929,14 @@ export async function detectPluginsViaLLM(
     incrementContext = `\n\nACTIVE INCREMENTS (consider reopening one of these if the user's request relates to existing work):\n${incList}\n\nIf the user's prompt relates to any of these active increments, use action "reopen" with the relatedKeyword matching the increment name. Only suggest "new" if the work is clearly unrelated to ALL active increments.`;
   }
 
+  // v1.0.254: Truncate user prompt to prevent "Prompt is too long" errors
+  // The first 3000 chars are sufficient for intent/plugin detection
+  const safePrompt = truncateForDetection(userPrompt);
+
   const fullPrompt = `${systemPrompt}${incrementContext}
 
 User prompt to analyze:
-"${userPrompt.replace(/"/g, '\\"')}"
+"${safePrompt.replace(/"/g, '\\"')}"
 
 Which plugins should be loaded?`;
 
