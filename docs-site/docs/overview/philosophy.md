@@ -92,7 +92,7 @@ Loading entire specifications wastes tokens and money. SpecWeave uses:
 - **Explicit loading**: `/sw:docs <topic>` loads relevant docs into conversation
 - **Scalable**: Works with 10 pages or 1000+ pages
 
-### 5. Programmable Skills (Open/Closed Principle)
+### 5. Extensible Skills (Open/Closed Principle)
 
 **Skills are transparent programs you can customize without forking.**
 

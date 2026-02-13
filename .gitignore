@@ -235,3 +235,5 @@ dist-backup/
 
 # External content (marketing/non-technical content)
 youtube-content/
+SOCIAL_MEDIA_*.md
+docs-site/docs/guides/social-media-launch.md
