@@ -24,8 +24,18 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'overview/skills-as-programs',
+          label: 'Skills Are Programs in English',
+        },
+        {
+          type: 'doc',
           id: 'overview/why-specweave',
           label: 'Why SpecWeave?',
+        },
+        {
+          type: 'doc',
+          id: 'overview/no-docs-needed',
+          label: "You Don't Need Claude Code Docs",
         },
         {
           type: 'doc',
@@ -215,6 +225,11 @@ const sidebars: SidebarsConfig = {
 
   // Enterprise sidebar
   enterpriseSidebar: [
+    {
+      type: 'doc',
+      id: 'enterprise/index',
+      label: 'Enterprise Overview',
+    },
     {
       type: 'category',
       label: 'Enterprise Migration',
@@ -429,7 +444,7 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
-  // Reference sidebar
+  // Reference sidebar (includes commands, previously separate navbar item)
   referenceSidebar: [
     {
       type: 'doc',
@@ -438,7 +453,24 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Skills & Commands',
+      label: 'Commands',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'commands/overview',
+          label: 'Command Overview',
+        },
+        {
+          type: 'doc',
+          id: 'commands/command-decision-tree',
+          label: 'Command Decision Tree',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Skills & Catalog',
       collapsed: false,
       items: [
         {
@@ -520,12 +552,12 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
-  // Academy sidebar (consolidated learning)
+  // Learn sidebar (was Academy — consolidated learning)
   academySidebar: [
     {
       type: 'doc',
       id: 'academy/index',
-      label: 'Academy Overview',
+      label: 'Learning Center',
     },
     {
       type: 'category',
