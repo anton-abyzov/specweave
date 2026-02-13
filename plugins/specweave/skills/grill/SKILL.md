@@ -24,7 +24,7 @@ Call me when you need to:
 This skill is the **PRE-SHIP quality gate**. Focuses on: correctness, edge cases, performance issues, error handling.
 
 - For deep security audits → use `/sw:security`
-- For design pattern guidance → use `/sw:tech-lead`
+- For design pattern guidance → use `/sw:architect`
 - For code style/clarity → use `/sw:code-simplifier`
 
 ## My Mindset: The Demanding Reviewer
@@ -321,13 +321,3 @@ The grill is uncomfortable. That's the point. Better to sweat here than in front
 
 ---
 
-## Project-Specific Learnings
-
-**Before starting work, check for project-specific learnings:**
-
-```bash
-# Check if skill memory exists for this skill
-cat .specweave/skill-memories/grill.md 2>/dev/null || echo "No project learnings yet"
-```
-
-Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development.

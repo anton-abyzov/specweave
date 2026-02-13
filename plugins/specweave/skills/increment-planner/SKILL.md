@@ -196,10 +196,3 @@ Skill({ skill: "sw:increment-planner", args: "--description=\"Add auth\"" })
 /sw:increment "Add user authentication"
 ```
 
-## Project-Specific Learnings
-
-**Before starting work, check for project-specific learnings:**
-
-```bash
-cat .specweave/skill-memories/increment-planner.md 2>/dev/null || echo "No project learnings yet"
-```

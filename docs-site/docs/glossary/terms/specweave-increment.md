@@ -15,7 +15,7 @@ The **`/sw:increment`** command is SpecWeave's primary planning command that cre
 - Generates [spec.md](/docs/glossary/terms/spec-md) with [user stories](/docs/glossary/terms/user-stories) and [acceptance criteria](/docs/glossary/terms/acceptance-criteria)
 - Generates [plan.md](/docs/glossary/terms/plan-md) with architecture and [ADRs](/docs/glossary/terms/adr)
 - Generates [tasks.md](/docs/glossary/terms/tasks-md) with embedded [BDD](/docs/glossary/terms/bdd) tests
-- Runs strategic agent review ([Architect](/docs/glossary/terms/architect-agent), [QA Lead](/docs/glossary/terms/qa-lead-agent), [Tech Lead](/docs/glossary/terms/tech-lead-agent))
+- Runs strategic agent review ([Architect](/docs/glossary/terms/architect-agent), [QA Lead](/docs/glossary/terms/qa-lead-agent))
 
 ## Usage
 

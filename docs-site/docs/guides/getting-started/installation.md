@@ -124,7 +124,7 @@ your-project/
 │   ├── agents/               # 11 specialized agents (installed from plugins)
 │   │   ├── pm/               # Product Manager AI
 │   │   ├── architect/        # System Architect
-│   │   ├── tech-lead/        # Tech Lead
+│   │   ├── code-simplifier/  # Code Simplifier
 │   │   ├── qa-engineer/      # QA Engineer (sw-testing plugin)
 │   │   ├── security/         # Security Engineer
 │   │   ├── performance/      # Performance Engineer

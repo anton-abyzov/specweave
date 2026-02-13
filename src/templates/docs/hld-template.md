@@ -4,7 +4,7 @@
 **Author**: [Your Name]
 **Created**: YYYY-MM-DD
 **Last Updated**: YYYY-MM-DD
-**Reviewers**: @architect, @tech-lead
+**Reviewers**: @architect
 
 ---
 

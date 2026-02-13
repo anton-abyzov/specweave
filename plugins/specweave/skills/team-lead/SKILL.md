@@ -42,7 +42,7 @@ Analyze the feature request and map affected domains to SpecWeave skills.
 | **Frontend** | `sw-frontend:frontend-architect` | `sw-frontend:nextjs`, `sw-frontend:frontend-design` | UI components, pages, client-side state |
 | **Backend** | `sw:architect` | `sw-infra:devops` | API endpoints, services, business logic |
 | **Database** | `sw:architect` | | Schema design, migrations, seed data |
-| **Shared/Types** | `sw:architect` | `sw:tech-lead` | TypeScript interfaces, shared constants, API contracts |
+| **Shared/Types** | `sw:architect` | `sw:code-simplifier` | TypeScript interfaces, shared constants, API contracts |
 | **Testing** | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | Test strategy, E2E suites, integration tests |
 | **Security** | `sw:security` | `sw:security-patterns` | Auth, authorization, threat modeling, OWASP |
 | **DevOps** | `sw-infra:devops` | `sw-k8s:deployment-generate`, `sw-infra:observability` | CI/CD, Docker, K8s, monitoring |
@@ -646,7 +646,7 @@ Team Orchestration Plan (DRY RUN)
 Feature: Build checkout flow | Domains: 4
 
 Phase 1 (upstream):
-  1. shared-types -> sw:architect, sw:tech-lead  | Increment: 0200-checkout-shared
+  1. shared-types -> sw:architect, sw:code-simplifier  | Increment: 0200-checkout-shared
   2. database     -> sw:architect                 | Increment: 0201-checkout-database
 
 Phase 2 (downstream, parallel):

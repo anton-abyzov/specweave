@@ -4,7 +4,7 @@
 **Author**: [Your Name]
 **Created**: YYYY-MM-DD
 **Last Updated**: YYYY-MM-DD
-**Reviewers**: @tech-lead, @senior-engineer
+**Reviewers**: @architect, @senior-engineer
 
 **Related HLD**: [Link to HLD](hld-{system-name}.md)
 
@@ -553,7 +553,7 @@ Response:
 ## Open Questions / TODOs
 
 - [ ] **Q1**: Should we support OAuth 2.0 providers (Google, GitHub)?
-  - **Owner**: @tech-lead
+  - **Owner**: @architect
   - **Due Date**: YYYY-MM-DD
 
 - [ ] **Q2**: Should we implement passwordless login (magic links)?

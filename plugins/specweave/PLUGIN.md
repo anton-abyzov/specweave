@@ -14,7 +14,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 |-------|-------------|
 | pm | Product Manager for spec-driven development with user stories, acceptance criteria, and MVP planning |
 | architect | System architect for scalable, maintainable technical designs and ADRs |
-| tech-lead | Technical lead for code quality, design patterns, and implementation guidance |
 | pm-closure-validation | PM validation for increment closure with 3-gate quality checks |
 | roadmap-planner | Product roadmap and feature prioritization with RICE, MoSCoW, and Kano frameworks |
 | spec-generator | Generates comprehensive specifications (spec.md, plan.md, tasks.md) for increments |

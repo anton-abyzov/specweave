@@ -4,14 +4,6 @@ description: Security engineer for vulnerability assessment, penetration testing
 
 # Security Review
 
-## Project-Specific Learnings
-
-Before starting work, check for project-specific learnings:
-
-```bash
-cat .specweave/skill-memories/security.md 2>/dev/null || echo "No project learnings yet"
-```
-
 ## Security Assessment
 
 Perform security assessment:

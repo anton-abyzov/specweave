@@ -4,14 +4,6 @@ description: System architect for scalable, maintainable technical designs and a
 
 # Architect
 
-## Project-Specific Learnings
-
-Before starting work, check for project-specific learnings:
-
-```bash
-cat .specweave/skill-memories/architect.md 2>/dev/null || echo "No project learnings yet"
-```
-
 ## Design Approach
 
 Design system architecture with focus on:

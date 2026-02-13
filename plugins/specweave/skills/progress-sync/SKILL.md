@@ -461,14 +461,4 @@ Ask me:
 - "Why did my GitHub sync fail?"
 - "When should I use --dry-run?"
 
-## Project-Specific Learnings
-
-**Before starting work, check for project-specific learnings:**
-
-```bash
-# Check if skill memory exists for this skill
-cat .specweave/skill-memories/progress-sync.md 2>/dev/null || echo "No project learnings yet"
-```
-
-Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
 
