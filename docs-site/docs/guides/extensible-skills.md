@@ -23,7 +23,7 @@ Claude Code pioneered **Skills** — transparent, programmable AI where behavior
 SpecWeave builds on this foundation by applying the **Open/Closed Principle** from SOLID design to make Claude Code skills **extendable**:
 
 - **Closed for modification**: Core skill logic in `SKILL.md` (stable, tested)
-- **Open for extension**: User customizations in `.specweave/skill-memories/*.md`
+- **Open for extension**: User customizations in `.claude/skill-memories/*.md`
 
 This architecture delivers:
 - ✅ **Transparency** — See exactly what skills do (Claude Code)
@@ -64,10 +64,11 @@ Every AI coding session starts from zero. No memory. No learning. No customizati
 | **Tuesday** | AI: *suggests inline styles* — You: "I told you yesterday — use `@/components/ui`!" |
 | **Wednesday** | AI: *suggests inline styles again* — You: *considers rage-quitting* |
 
-This isn't a flaw in one tool. **Every AI assistant has this problem**:
+This isn't a flaw in one tool. **Every AI assistant has this problem by default**:
+- Claude Code: Stateless by default (until you add skill-memories)
+- ChatGPT: Custom instructions per conversation, but no persistence across sessions
 - GitHub Copilot: Resets each session
 - Cursor: Limited context memory
-- Claude Code: Stateless by default
 
 You're stuck in an infinite loop of corrections.
 
@@ -86,11 +87,11 @@ Because they're designed like **traditional compiled software**:
 └─────────────────────────┘
 ```
 
+**ChatGPT**: Custom instructions help, but no version control, no composability, no extension mechanism.
+
 **GitHub Copilot**: Black box. You get suggestions. Can't customize how it reasons.
 
 **Cursor**: Proprietary. Great UX, but locked into their decisions.
-
-**Every other AI tool**: Same problem. No transparency. No extensibility.
 
 **Want different behavior?**
 - ❌ Fork the code? (If even open source)
@@ -269,7 +270,7 @@ function LoginForm() {
 
 SpecWeave's Reflect system detects the correction and saves it:
 
-**.specweave/skill-memories/frontend.md**:
+**.claude/skill-memories/frontend.md**:
 ```markdown
 ### Form Handling
 - Use React Hook Form for all forms
@@ -327,7 +328,7 @@ You're not limited to preferences. Add **custom logic** that the skill developer
 
 ### Example: Complex Component Generation Rules
 
-**.specweave/skill-memories/frontend.md**:
+**.claude/skill-memories/frontend.md**:
 ```markdown
 ### Custom Component Generation Logic
 
@@ -421,7 +422,7 @@ Claude will:
 
 **User Customizations** (open for extension):
 ```
-.specweave/skill-memories/
+.claude/skill-memories/
 ├── frontend.md       # Frontend skill customizations
 ├── backend.md        # Backend skill customizations
 ├── testing.md        # Testing skill customizations
@@ -484,13 +485,13 @@ Skill memories are **plain Markdown** in your repo:
 
 ```bash
 # See learning history
-git log --oneline .specweave/skill-memories/frontend.md
+git log --oneline .claude/skill-memories/frontend.md
 
 # View what changed
-git diff HEAD~1 .specweave/skill-memories/frontend.md
+git diff HEAD~1 .claude/skill-memories/frontend.md
 
 # Rollback a wrong learning
-git checkout HEAD~1 -- .specweave/skill-memories/frontend.md
+git checkout HEAD~1 -- .claude/skill-memories/frontend.md
 
 # Share with team
 git push  # Everyone gets the learnings
@@ -541,7 +542,7 @@ If you're building SpecWeave skills, design them for extensibility:
 
 **Extension Points:**
 
-Users can customize via `.specweave/skill-memories/{skill-name}.md`:
+Users can customize via `.claude/skill-memories/{skill-name}.md`:
 
 - `component.framework` → React | Vue | Angular | Svelte
 - `component.exportStyle` → default | named
@@ -600,7 +601,7 @@ Rationale: These ensure correctness and safety regardless of project preferences
 
 ### 4. Provide Skill Memory Templates
 
-Create `.specweave/skill-memories/.templates/{skill-name}.md`:
+Create `.claude/skill-memories/.templates/{skill-name}.md`:
 
 ```markdown
 # {skill-name} Skill Memory Template
@@ -667,18 +668,18 @@ describe('Frontend Skill', () => {
 
 ## Comparison with Other Tools
 
-| Feature | GitHub Copilot | Cursor | SpecWeave |
-|---------|---------------|--------|-----------|
-| **Transparency** | ❌ Black box | ❌ Proprietary | ✅ SKILL.md shows logic |
-| **Customization** | ❌ None | ⚠️ Limited settings | ✅ Full (skill-memories) |
-| **Memory** | ❌ Resets each session | ⚠️ Limited context | ✅ Permanent learnings |
-| **Team Sharing** | ❌ N/A | ⚠️ Manual export/import | ✅ Git-versioned |
-| **Extensibility** | ❌ Locked | ❌ Locked | ✅ Open/Closed Principle |
-| **Version Control** | ❌ N/A | ❌ N/A | ✅ Git integration |
-| **Rollback Learnings** | ❌ N/A | ❌ N/A | ✅ `git checkout` |
-| **Open Source** | ❌ No | ❌ No | ✅ Yes (MIT) |
-| **Custom Logic** | ❌ Impossible | ❌ Impossible | ✅ Markdown rules |
-| **SOLID Principles** | ❌ N/A | ❌ N/A | ✅ Open/Closed |
+| Feature | Claude Code | ChatGPT | GitHub Copilot | Cursor | SpecWeave |
+|---------|------------|---------|---------------|--------|-----------|
+| **Transparency** | ✅ SKILL.md readable | ⚠️ Instructions visible | ❌ Black box | ❌ Proprietary | ✅ SKILL.md shows logic |
+| **Customization** | ✅ Skills + CLAUDE.md | ⚠️ Custom instructions | ❌ None | ⚠️ Limited settings | ✅ Full (skill-memories) |
+| **Memory** | ⚠️ Stateless by default | ❌ Resets per conversation | ❌ Resets each session | ⚠️ Limited context | ✅ Permanent learnings |
+| **Team Sharing** | ⚠️ Manual | ❌ N/A | ❌ N/A | ⚠️ Manual export/import | ✅ Git-versioned |
+| **Extensibility** | ⚠️ No extension mechanism | ❌ Locked | ❌ Locked | ❌ Locked | ✅ Open/Closed Principle |
+| **Version Control** | ✅ Git | ❌ N/A | ❌ N/A | ❌ N/A | ✅ Git integration |
+| **Rollback Learnings** | ❌ N/A | ❌ N/A | ❌ N/A | ❌ N/A | ✅ `git checkout` |
+| **Open Source** | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes (MIT) |
+| **Custom Logic** | ⚠️ Basic CLAUDE.md | ❌ Impossible | ❌ Impossible | ❌ Impossible | ✅ Markdown rules with branching |
+| **SOLID Principles** | ❌ N/A | ❌ N/A | ❌ N/A | ❌ N/A | ✅ Open/Closed applied |
 
 ---
 
@@ -686,12 +687,12 @@ describe('Frontend Skill', () => {
 
 ### Solo Developer
 
-**Before (without programmable skills):**
+**Before (without extensible skills):**
 - Repeat same corrections daily
 - Inconsistent code patterns across codebase
 - Waste time re-explaining preferences
 
-**After (with programmable skills):**
+**After (with extensible skills):**
 - Correct once → applied forever
 - Consistent patterns automatically
 - AI adapts to YOUR style
@@ -789,7 +790,7 @@ You: "No, use React Hook Form with Zod validation"
 /sw:reflect-status
 
 # View skill memories
-cat .specweave/skill-memories/frontend.md
+cat .claude/skill-memories/frontend.md
 ```
 
 ### 5. Customize Manually (Optional)
@@ -798,7 +799,7 @@ Edit skill memories directly:
 
 ```bash
 # Edit frontend skill memory
-code .specweave/skill-memories/frontend.md
+code .claude/skill-memories/frontend.md
 ```
 
 Add your rules:
@@ -817,7 +818,7 @@ Add your rules:
 ### 6. Share with Team
 
 ```bash
-git add .specweave/skill-memories/
+git add .claude/skill-memories/
 git commit -m "Add frontend skill customizations"
 git push
 ```
@@ -833,8 +834,8 @@ Team members pull and automatically get your learnings.
 **A**: Skill memories are Git-versioned. Roll back:
 
 ```bash
-git log .specweave/skill-memories/frontend.md
-git checkout <commit-hash> -- .specweave/skill-memories/frontend.md
+git log .claude/skill-memories/frontend.md
+git checkout <commit-hash> -- .claude/skill-memories/frontend.md
 ```
 
 Or edit manually and remove the incorrect rule.
@@ -908,10 +909,10 @@ Look for "Extension Points" section.
 
 ```bash
 # In your projects
-ln -s ~/shared-skill-memories .specweave/skill-memories
+ln -s ~/shared-skill-memories .claude/skill-memories
 
 # Or use Git submodules
-git submodule add <shared-repo-url> .specweave/skill-memories
+git submodule add <shared-repo-url> .claude/skill-memories
 ```
 
 ---
@@ -925,14 +926,11 @@ git submodule add <shared-repo-url> .specweave/skill-memories
 
 ---
 
-### Q: Can I use this with Copilot/Cursor?
+### Q: Can I use this with ChatGPT/Copilot/Cursor?
 
-**A**: No. Programmable skills require:
-1. Access to skill source (SKILL.md)
-2. Ability to read skill-memories at runtime
-3. Open architecture for extensions
+**A**: Currently, extensible skills work best with **Claude Code** — it has native SKILL.md support and an open architecture. **ChatGPT** supports custom instructions but lacks the extension mechanism (no skill-memories pattern yet). **Copilot** and **Cursor** are closed systems with no skill extensibility.
 
-Copilot and Cursor are closed systems.
+The standard is open — any AI tool that supports reading SKILL.md and skill-memories at runtime can adopt it.
 
 ---
 
@@ -975,7 +973,7 @@ But Git provides versioning, rollback, and team collaboration.
 - **Documentation**: https://spec-weave.com
 - **GitHub**: https://github.com/anton-abyzov/specweave
 - **Discord**: https://discord.gg/UYg4BGJ65V
-- **Twitter**: [@antonabyzov](https://twitter.com/antonabyzov)
+- **Twitter**: [@aabyzov](https://x.com/aabyzov)
 
 ---
 
@@ -995,7 +993,7 @@ Each skill has ONE job:
 
 ### Open/Closed Principle ✅
 
-**Core insight of Programmable Skills.**
+**Core insight of Extensible Skills.**
 
 Skills are:
 - **Closed** for modification (SKILL.md is stable)
@@ -1078,7 +1076,7 @@ Concrete implementation → skill-memories
 
 ---
 
-*This document was published on February 12, 2026 as the canonical reference for Programmable Skills in SpecWeave.*
+*This document was published on February 12, 2026 as the canonical reference for Extensible Skills in SpecWeave.*
 
 ---
 

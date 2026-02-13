@@ -886,7 +886,7 @@ Skills aren't black boxes. They're programs. **And you can program them.**
 - **Docs**: https://spec-weave.com
 - **GitHub**: https://github.com/anton-abyzov/specweave
 - **Discord**: https://discord.gg/UYg4BGJ65V
-- **Twitter**: [@antonabyzov](https://twitter.com/antonabyzov)
+- **Twitter**: [@aabyzov](https://x.com/aabyzov)
 
 ---
 
