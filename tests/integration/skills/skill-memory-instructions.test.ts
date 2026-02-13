@@ -1,10 +1,16 @@
 /**
- * Integration tests for SKILL.md skill memory instructions
+ * Integration tests for skill memory loading architecture
+ *
+ * ARCHITECTURE (v1.0.198+):
+ * Skill memories are loaded by the user-prompt-submit.sh hook via
+ * get_skill_memory_context(). SKILL.md files no longer contain
+ * `cat .specweave/skill-memories/` instructions. The hook injects
+ * skill memory content automatically when a skill is invoked.
  *
  * Tests that:
- * 1. All SKILL.md files have instruction to read skill memories
- * 2. Instruction uses correct path format
- * 3. Instruction explains the purpose
+ * 1. The hook-based loading function exists in user-prompt-submit.sh
+ * 2. SKILL.md files do NOT contain legacy cat instructions (cleanup verified)
+ * 3. CLAUDE.md Skill Memories section exists (auto-loaded by Claude Code)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -12,8 +18,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
 
-describe('SKILL.md skill memory instructions', () => {
+describe('Skill memory loading architecture', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+  const hooksDir = path.join(process.cwd(), 'plugins/specweave/hooks');
 
   // Get all SKILL.md files
   const getSkillFiles = (): string[] => {
@@ -21,99 +28,64 @@ describe('SKILL.md skill memory instructions', () => {
     return glob.sync(pattern);
   };
 
-  describe('skill memory instruction presence', () => {
+  describe('hook-based skill memory loading', () => {
     it('should find SKILL.md files in plugins directory', () => {
       const skillFiles = getSkillFiles();
       expect(skillFiles.length).toBeGreaterThan(0);
     });
 
-    it('should have skill memory instruction in each SKILL.md', () => {
-      const skillFiles = getSkillFiles();
-      const missingInstructions: string[] = [];
+    it('user-prompt-submit.sh should have get_skill_memory_context function', () => {
+      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
+      expect(fs.existsSync(hookPath)).toBe(true);
 
-      // Operational/utility skills that don't need project-specific learnings
-      const operationalSkills = new Set([
-        'auto', 'auto-status', 'cancel-auto', 'do', 'done',
-        'increment', 'next', 'npm', 'plan', 'progress',
-        'save', 'status', 'validate', 'context', 'sync-setup',
-        'update-instructions', 'lsp', 'detector', 'framework',
-        'increment-work-router', 'smart-reopen-detector',
-        'docs-updater', 'progress-sync', 'tdd-cycle',
-        'tdd-red', 'tdd-green', 'tdd-refactor',
-        'team-status', 'team-lead', 'team-merge', 'team-build',
-      ]);
+      const content = fs.readFileSync(hookPath, 'utf-8');
+      expect(content).toContain('get_skill_memory_context()');
+    });
+
+    it('hook should inject skill memory during skill invocation', () => {
+      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
+      const content = fs.readFileSync(hookPath, 'utf-8');
+
+      // The hook calls get_skill_memory_context when a skill is invoked
+      expect(content).toContain('SKILL_MEMORY_RAW=$(get_skill_memory_context');
+    });
+
+    it('hook should read from .specweave/skill-memories/ directory', () => {
+      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
+      const content = fs.readFileSync(hookPath, 'utf-8');
+
+      // The function reads skill memory files from the correct directory
+      expect(content).toContain('skill-memories');
+    });
+  });
+
+  describe('legacy cat instructions removed from SKILL.md files', () => {
+    it('no SKILL.md should contain cat .specweave/skill-memories/ instructions', () => {
+      const skillFiles = getSkillFiles();
+      const legacyInstructions: string[] = [];
 
       for (const filePath of skillFiles) {
         const content = fs.readFileSync(filePath, 'utf-8');
         const skillName = path.basename(path.dirname(filePath));
 
-        // Skip operational skills that don't need memory instructions
-        if (operationalSkills.has(skillName)) {
-          continue;
-        }
-
-        // Check for skill memory instruction section
-        const hasInstruction =
-          content.includes('.specweave/skill-memories/') ||
-          content.includes('skill-memories') ||
-          content.includes('Project-Specific Learnings');
-
-        if (!hasInstruction) {
-          missingInstructions.push(skillName);
+        if (content.includes('cat .specweave/skill-memories/')) {
+          legacyInstructions.push(skillName);
         }
       }
 
-      expect(missingInstructions).toEqual([]);
+      // No SKILL.md should have legacy cat instructions (handled by hooks now)
+      expect(legacyInstructions).toEqual([]);
     });
   });
 
-  describe('skill memory instruction format', () => {
-    it('should reference the correct skill memory path format', () => {
-      const skillFiles = getSkillFiles();
-      const incorrectFormat: string[] = [];
+  describe('CLAUDE.md skill memories section', () => {
+    it('CLAUDE.md should have Skill Memories section for auto-loading', () => {
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
 
-      for (const filePath of skillFiles) {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        const skillName = path.basename(path.dirname(filePath));
-
-        // Check for correct path format (should use {skill-name} placeholder or actual skill name)
-        if (content.includes('.specweave/skill-memories/')) {
-          const hasCorrectFormat =
-            content.includes(`.specweave/skill-memories/${skillName}.md`) ||
-            content.includes('.specweave/skill-memories/{skill-name}.md') ||
-            content.includes('.specweave/skill-memories/');
-
-          if (!hasCorrectFormat) {
-            incorrectFormat.push(skillName);
-          }
-        }
+      if (fs.existsSync(claudeMdPath)) {
+        const content = fs.readFileSync(claudeMdPath, 'utf-8');
+        expect(content).toContain('Skill Memories');
       }
-
-      // All referenced paths should be in correct format
-      expect(incorrectFormat).toEqual([]);
     });
-  });
-
-  describe('specific skill instruction verification', () => {
-    // Test a few specific skills to ensure proper instruction format
-    const testSkills = ['pm', 'architect', 'tech-lead', 'security', 'reflect'];
-
-    for (const skillName of testSkills) {
-      it(`should have instruction in ${skillName} skill`, () => {
-        const filePath = path.join(pluginsDir, skillName, 'SKILL.md');
-
-        if (fs.existsSync(filePath)) {
-          const content = fs.readFileSync(filePath, 'utf-8');
-
-          // Check for project learnings section
-          const hasLearningsSection =
-            content.includes('Project-Specific Learnings') ||
-            content.includes('Project Learnings') ||
-            content.includes('skill-memories');
-
-          expect(hasLearningsSection).toBe(true);
-        }
-      });
-    }
   });
 });
