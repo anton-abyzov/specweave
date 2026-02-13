@@ -45,6 +45,7 @@ Each increment is a self-contained scope. Each agent knows exactly what's taken 
 
 ### What Makes It Different
 
+- **Extensible skills (SOLID Open/Closed)** — skills are programs written in human language. Customize any skill's behavior via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates. No other AI tool lets you do this.
 - **Plan as source of truth** — spec.md + plan.md + tasks.md drive all implementation. Code is a derivative of the plan, never the other way around. Change your mind mid-build? Update the plan first, then regenerate code.
 - **Parallel agent coordination** — multiple Claude Code sessions, OpenClaw instances, or remote agents work on different increments without stepping on each other.
 - **Autonomous execution** — runs for hours, not minutes. Write, test, fix, repeat.
@@ -58,7 +59,7 @@ Each increment is a self-contained scope. Each agent knows exactly what's taken 
 
 ---
 
-## Programmable Skills (Open/Closed Principle)
+## Extensible Skills (Open/Closed Principle)
 
 **Skills are programs you can customize without forking.**
 

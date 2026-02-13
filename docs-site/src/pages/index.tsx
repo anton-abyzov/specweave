@@ -74,6 +74,16 @@ const Icons = {
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
     </svg>
   ),
+  extensible: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15.5 2H18a2 2 0 0 1 2 2v2.5"/>
+      <path d="M20 13.5V18a2 2 0 0 1-2 2h-2.5"/>
+      <path d="M8.5 22H6a2 2 0 0 1-2-2v-2.5"/>
+      <path d="M4 10.5V6a2 2 0 0 1 2-2h2.5"/>
+      <path d="M12 8v8"/>
+      <path d="M8 12h8"/>
+    </svg>
+  ),
   // Integration icons
   github: (
     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -311,9 +321,9 @@ function FeaturesSection(): ReactNode {
             <p>Enforced validation: tests passing, docs current, acceptance criteria satisfied before release.</p>
           </div>
           <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.setup}</div>
-            <h3>Zero-Config Setup</h3>
-            <p>Single command installation. Framework-agnostic. Production-ready in minutes.</p>
+            <div className={styles.featureIconWrapper}>{Icons.extensible}</div>
+            <h3>Extensible Skills (SOLID)</h3>
+            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules.</p>
           </div>
         </div>
       </div>
