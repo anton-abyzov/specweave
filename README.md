@@ -260,7 +260,7 @@ Users can customize:
 See `.specweave/skill-memories/{skill-name}.md` for customizations.
 ```
 
-**skill-memories/{skill-name}.md** (open for extension)
+`skill-memories/{skill-name}.md` (open for extension)
 ```markdown
 ### Component Preferences
 - Use Material UI instead of Chakra
