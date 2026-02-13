@@ -1,8 +1,13 @@
 ---
-description: Browse and load SpecWeave living docs (public, internal, architecture, ADRs). Use when saying "show docs", "browse docs", "find docs about", "what docs exist", "load docs", "read ADR", "architecture docs", "troubleshooting docs". Args: [topic] [--public] [--internal] [--adr] [--list].
+description: Browse and load SpecWeave living docs (public, internal, architecture, ADRs). Use when saying "show docs", "browse docs", "find docs about", "load docs", or "read ADR".
+argument-hint: "[topic] [--public] [--internal] [--adr] [--list]"
 ---
 
 # Living Docs Browser
+
+## Project Overrides
+
+!`s="docs"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 Browse, search, and load SpecWeave living documentation into the conversation.
 

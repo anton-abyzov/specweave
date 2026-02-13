@@ -1,11 +1,16 @@
 ---
-description: Product Manager for spec-driven development with SpecWeave conventions. Use when writing user stories, defining acceptance criteria, planning MVPs, or prioritizing features. Creates specs with proper AC-IDs, manages requirements, and maintains product roadmaps.
+description: Product Manager for spec-driven development. Use when saying "write specs", "define requirements", "plan MVP", or "prioritize features".
+argument-hint: "[topic]"
 allowed-tools: Read, Write, Grep, Glob
 context: fork
 model: opus
 ---
 
 # Product Manager Skill
+
+## Project Overrides
+
+!`s="pm"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
 
 ## Overview
 
