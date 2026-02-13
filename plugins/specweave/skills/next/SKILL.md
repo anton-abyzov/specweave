@@ -1,5 +1,5 @@
 ---
-description: Smart increment transition - auto-close current if ready, intelligently suggest next work (backlog or new feature)
+description: Close current increment if ready and suggest next work. Use when saying "what's next", "next increment", or "move on".
 ---
 
 # Next Increment (Smart Workflow Transition)

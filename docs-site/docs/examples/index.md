@@ -506,6 +506,9 @@ Not seeing your scenario? SpecWeave handles:
 - ✅ Libraries & SDKs (published to npm/PyPI)
 - ✅ Documentation sites (Docusaurus, VitePress)
 - ✅ Infrastructure (Terraform, Kubernetes)
+- ✅ Non-code automation (research, knowledge management, publishing workflows)
+
+**Not building software?** See our [Life Automation guide](/docs/guides/life-automation) for non-code use cases — Obsidian automation, internet research, rapid prototyping, and more.
 
 [Contact us](https://discord.gg/UYg4BGJ65V) to discuss your specific use case!
 

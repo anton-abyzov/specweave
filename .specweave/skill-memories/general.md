@@ -14,5 +14,3 @@
 - **2026-02-13**: Task tool subagents do NOT inherit skills by default - skills must be listed explicitly or injected via prompt. Native Agent Teams (experimental) DO inherit skills automatically as full Claude Code sessions. Custom subagent definitions (.claude/agents/*.md) support native `skills` frontmatter field as alternative to prompt injection.
 - **2026-02-13**: Use /sw:grill before completing features to validate quality and identify issues before shipping - grill output determines if increment is ready for /sw:done
 - **2026-02-13**: User prompt can be duplicated in additionalContext when skill invocation is triggered, causing context bloat - always truncate user prompts in hook additionalContext to max 2000 chars and in detect-intent calls to max 3000 chars
-- **2026-02-13**: Detect-intent system prompt should be slimmed down by reducing JSON/skill/LSP examples from 17/8/4 to ~5 representative examples each to save ~1500 tokens per call
-- **2026-02-13**: Add size guards in additionalContext output - truncate total context to max 8000 chars before sending to prevent 'Prompt is too long' errors in long sessions
