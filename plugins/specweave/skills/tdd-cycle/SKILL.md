@@ -6,7 +6,7 @@ description: Execute full TDD red-green-refactor cycle with validation gates. Us
 
 ## Project Overrides
 
-!`s="tdd-cycle"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="tdd-cycle"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
 Execute a comprehensive Test-Driven Development (TDD) workflow with strict red-green-refactor discipline:
 

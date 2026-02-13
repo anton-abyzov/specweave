@@ -37,6 +37,6 @@ SpecWeave currently uses the Playwright MCP plugin (`playwright@claude-plugins-o
 - [US-002: Smart Routing Between CLI and MCP](./us-002-smart-routing-between-cli-and-mcp.md)
 - [US-003: Hook-Layer Installation Support](./us-003-hook-layer-installation-support.md)
 - [US-004: CI/CD Compatibility](./us-004-ci-cd-compatibility.md)
-- [US-005: Skill Layer CLI Guidance](./us-005-skill-layer-cli-guidance.md)
+- [US-005: Skill Fabric CLI Guidance](./us-005-skill-layer-cli-guidance.md)
 - [US-006: CLAUDE.md and Template Updates](./us-006-claude-md-and-template-updates.md)
 - [US-007: Public Documentation and Content](./us-007-public-documentation-and-content.md)

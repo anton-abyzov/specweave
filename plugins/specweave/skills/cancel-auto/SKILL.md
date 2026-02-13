@@ -7,7 +7,7 @@ description: EMERGENCY ONLY - Cancel running auto session and generate summary r
 
 ## Project Overrides
 
-!`s="cancel-auto"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="cancel-auto"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
 **⚠️ EMERGENCY USE ONLY - Manually cancel the running auto session.**
 

@@ -22,7 +22,7 @@ import * as os from 'os';
  */
 function buildDciCommand(skillName: string, projectRoot: string): string {
   // The DCI one-liner from SKILL.md, adapted for testing with explicit paths
-  return `s="${skillName}"; for d in "${projectRoot}/.specweave/skill-memories" "${projectRoot}/.claude/skill-memories" "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`;
+  return `s="${skillName}"; for d in "${projectRoot}/.specweave/skill-memories" "${projectRoot}/.claude/skill-memories" "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`;
 }
 
 /**
@@ -89,11 +89,17 @@ describe('DCI Skill Memory Cascade', () => {
 
     it('returns empty when no memory files exist', () => {
       const cmd = buildDciCommand('pm', projectRoot);
-      // When no files match, the for loop exits with status 1 (no break).
-      // Use spawnSync to avoid throwing on non-zero exit.
       const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
 
+      expect(result.status).toBe(0);
       expect((result.stdout || '').trim()).toBe('');
+    });
+
+    it('does not throw when no memory files exist', () => {
+      const cmd = buildDciCommand('nonexistent', projectRoot);
+      expect(() => {
+        execSync(cmd, { encoding: 'utf-8', shell: '/bin/bash' });
+      }).not.toThrow();
     });
   });
 
@@ -193,10 +199,80 @@ describe('DCI Skill Memory Cascade', () => {
       expect(output).toContain('apostrophes');
     });
   });
+
+  describe('exit code safety', () => {
+    it('exits 0 when skill-memories directories do not exist', () => {
+      // projectRoot has no .specweave/ or .claude/ dirs at all
+      const cmd = buildDciCommand('any-skill', projectRoot);
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
+
+      expect(result.status).toBe(0);
+      expect((result.stdout || '').trim()).toBe('');
+    });
+
+    it('exits 0 when directories exist but skill file is missing', () => {
+      // Create directories but no matching skill file
+      fs.mkdirSync(path.join(projectRoot, '.specweave', 'skill-memories'), { recursive: true });
+      fs.mkdirSync(path.join(projectRoot, '.claude', 'skill-memories'), { recursive: true });
+
+      const cmd = buildDciCommand('missing-skill', projectRoot);
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
+
+      expect(result.status).toBe(0);
+      expect((result.stdout || '').trim()).toBe('');
+    });
+
+    it('exits 0 when file exists but has no Learnings section', () => {
+      const memDir = path.join(projectRoot, '.specweave', 'skill-memories');
+      fs.mkdirSync(memDir, { recursive: true });
+      fs.writeFileSync(path.join(memDir, 'test.md'), '# Test Memory\n\nNo learnings here.\n');
+
+      const cmd = buildDciCommand('test', projectRoot);
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
+
+      expect(result.status).toBe(0);
+      expect((result.stdout || '').trim()).toBe('');
+    });
+
+    it('exits 0 and returns content when file exists with learnings', () => {
+      createMemoryFile(
+        path.join(projectRoot, '.specweave', 'skill-memories'),
+        'test', ['A real learning']
+      );
+
+      const cmd = buildDciCommand('test', projectRoot);
+      const result = spawnSync('bash', ['-c', cmd], { encoding: 'utf-8' });
+
+      expect(result.status).toBe(0);
+      expect((result.stdout || '').trim()).toContain('A real learning');
+    });
+  });
 });
 
 describe('Real SKILL.md DCI Blocks', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+
+  it('all invocable SKILL.md files have ; true guard for exit code safety', () => {
+    const skillDirs = fs.readdirSync(pluginsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    const missing: string[] = [];
+    for (const dir of skillDirs) {
+      const skillPath = path.join(pluginsDir, dir, 'SKILL.md');
+      if (!fs.existsSync(skillPath)) continue;
+
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      // Only check skills that have DCI blocks
+      if (content.includes('## Project Overrides') && content.includes('!`s=')) {
+        if (!content.includes('; true`')) {
+          missing.push(dir);
+        }
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
 
   it('pm SKILL.md has valid DCI block', () => {
     const content = fs.readFileSync(
@@ -209,6 +285,7 @@ describe('Real SKILL.md DCI Blocks', () => {
     expect(content).toContain('.specweave/skill-memories');
     expect(content).toContain('.claude/skill-memories');
     expect(content).toContain('awk');
+    expect(content).toContain('; true`');
   });
 
   it('grill SKILL.md has valid DCI block', () => {
@@ -219,5 +296,6 @@ describe('Real SKILL.md DCI Blocks', () => {
 
     expect(content).toContain('## Project Overrides');
     expect(content).toContain('s="grill"');
+    expect(content).toContain('; true`');
   });
 });
