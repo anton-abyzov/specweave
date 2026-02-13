@@ -194,6 +194,33 @@ The DCI one-liner extracts **only** the content between `## Learnings` and the n
 
 ## FAQ
 
+### Q: How do I make my skill extensible?
+
+Add this block to your `SKILL.md`, right after the title — change only the `s=` value to your skill's name:
+
+```markdown
+## Project Overrides
+!`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+```
+
+This is a POSIX shell one-liner using [awk](https://en.wikipedia.org/wiki/AWK) (a standard Unix text-processing utility). Claude Code runs it before loading the skill, injecting the `## Learnings` content from the first matching memory file. It works on macOS, Linux, and WSL — no dependencies to install.
+
+Then create a memory file for your skill:
+
+```bash
+mkdir -p .claude/skill-memories
+cat > .claude/skill-memories/my-skill.md << 'EOF'
+# My Skill Memory
+
+## Learnings
+
+- Use TypeScript strict mode in all generated code
+- Prefer functional components over class components
+EOF
+```
+
+That's it. Next time the skill runs, those learnings are automatically loaded.
+
 ### Q: What if I make a wrong correction?
 
 Skill memories are plain Markdown in Git. Roll back:
