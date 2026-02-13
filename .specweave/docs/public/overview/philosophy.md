@@ -4,11 +4,30 @@ SpecWeave is built on a set of core principles that guide every design decision.
 
 ## Core Principles
 
-### 1. Specification Before Implementation
+### 1. Plan as Source of Truth
+
+**The plan is the source of truth. Code is a derivative.**
+
+Every line of code traces back to a specification. The three-file structure (spec.md, plan.md, tasks.md) is not just documentation — it is the **single source of truth** that drives implementation:
+
+```
+Plan → Code (always)
+Code → Plan (never)
+```
+
+**What this means in practice:**
+- **Before implementing**: Read and understand the current plan
+- **Mid-implementation discovery**: If you find a better approach, **stop coding**, update the plan first, then resume implementation based on the updated plan
+- **Bug fixes**: Assess impact on the plan before writing a fix — update tasks.md if the fix changes scope
+- **Code and plan must always match**: If they diverge, update the plan first, then adjust code to follow — never retrofit the plan to match code you've already written
+
+**Why this matters**: Plans are cheap to change. Code is expensive to change. By keeping the plan as the authoritative source, you catch design problems early (in the plan) rather than late (in code review or production). AI agents working with Claude Code are most efficient in plan mode — skipping planning wastes more tokens on rework than planning costs upfront.
+
+### 2. Specification Before Implementation
 
 **Define WHAT and WHY before HOW.**
 
-Traditional development often jumps straight to implementation without clear specifications. This leads to:
+While Principle 1 governs the *ongoing relationship* between plan and code, this principle governs the *order of work*. Traditional development often jumps straight to implementation without clear specifications. This leads to:
 - Unclear requirements
 - Scope creep
 - Missing features
@@ -20,7 +39,7 @@ SpecWeave enforces specification-first development:
 Specification → Architecture → Implementation → Testing
 \`\`\`
 
-### 2. Append-Only Snapshots + Living Documentation
+### 3. Append-Only Snapshots + Living Documentation
 
 **Historical audit trails + current state = complete context.**
 
@@ -63,7 +82,7 @@ Specification → Architecture → Implementation → Testing
 - Living docs = working directory (current state)
 - Both essential for different purposes
 
-### 3. Context Precision
+### 4. Context Precision
 
 **Load only what's needed (70%+ token reduction).**
 
@@ -73,7 +92,7 @@ Loading entire specifications wastes tokens and money. SpecWeave uses:
 - **Cache-friendly**: Reuse frequently-loaded context
 - **Scalable**: Works with 10 pages or 1000+ pages
 
-### 4. Test-Validated Features
+### 5. Test-Validated Features
 
 **Every feature proven through automated tests.**
 
@@ -85,7 +104,7 @@ Four levels of testing ensure quality:
 
 **Truth-telling requirement**: E2E tests MUST tell the truth—no false positives.
 
-### 5. Regression Prevention
+### 6. Regression Prevention
 
 **Document existing code before modification.**
 
@@ -97,7 +116,7 @@ Modifying [brownfield](/docs/glossary/terms/brownfield) code without documentati
 4. User reviews and approves
 5. Implement modifications safely
 
-### 6. Scalable from Solo to Enterprise
+### 7. Scalable from Solo to Enterprise
 
 **Modular structure that grows with project size.**
 
@@ -107,7 +126,7 @@ Whether you're a solo developer or a 100-person team, SpecWeave scales:
 - **Enterprise**: Create 500-600+ pages upfront
 - **Both approaches supported**: Comprehensive or incremental
 
-### 7. Auto-Role Routing
+### 8. Auto-Role Routing
 
 **Skills detect expertise automatically.**
 
@@ -123,7 +142,7 @@ User: "Create payment integration"
 
 >90% routing accuracy.
 
-### 8. Closed-Loop Validation
+### 9. Closed-Loop Validation
 
 **[E2E](/docs/glossary/terms/e2e) tests must tell the truth (no false positives).**
 
@@ -266,20 +285,22 @@ SpecWeave supports TWO valid approaches:
 ### ❌ What SpecWeave Prevents
 
 1. **Vibe Coding**: Implementing without specifications
-2. **Documentation Divergence**: Code and docs out of sync
-3. **Context Bloat**: Loading entire specs unnecessarily
-4. **Regression Bugs**: Modifying code without tests
-5. **Tech Debt**: Missing architecture decisions
-6. **False Confidence**: Tests that lie about functionality
+2. **Plan Drift**: Code diverging from the plan without updating specs first
+3. **Documentation Divergence**: Code and docs out of sync
+4. **Context Bloat**: Loading entire specs unnecessarily
+5. **Regression Bugs**: Modifying code without tests
+6. **Tech Debt**: Missing architecture decisions
+7. **False Confidence**: Tests that lie about functionality
 
 ### ✅ What SpecWeave Enforces
 
-1. **Specification-First**: Always define before implementing
-2. **Living Documentation**: Auto-update via hooks
-3. **Context Precision**: Load only what's needed
-4. **Regression Prevention**: Document before modifying
-5. **Architecture Clarity**: ADRs for all major decisions
-6. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
+1. **Plan as Source of Truth**: Plan drives code, never the reverse
+2. **Specification-First**: Always define before implementing
+3. **Living Documentation**: Auto-update via hooks
+4. **Context Precision**: Load only what's needed
+5. **Regression Prevention**: Document before modifying
+6. **Architecture Clarity**: ADRs for all major decisions
+7. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
 
 ## Success Metrics
 

@@ -371,15 +371,38 @@ escape_json_early() {
   fi
 }
 
+# v1.0.254: Prompt safety limits to prevent "Prompt is too long" errors
+# These must match the constants in src/core/lazy-loading/llm-plugin-detector.ts
+MAX_ADDITIONAL_CONTEXT_LENGTH=8000
+MAX_SKILL_FIRST_PROMPT_LENGTH=2000
+
 # Helper: Output approve response with context (Claude Code hook format v1.0.166)
 # CRITICAL: systemMessage is NOT a valid field for UserPromptSubmit hooks!
 # Use hookSpecificOutput.additionalContext instead.
 # See: https://docs.claude.com/en/docs/claude-code/hooks
+#
+# v1.0.254: Added size guard — truncates additionalContext if it exceeds
+# MAX_ADDITIONAL_CONTEXT_LENGTH to prevent "Prompt is too long" errors.
 output_approve_with_context() {
   local context="$1"
+  # v1.0.254: Safety truncation to prevent prompt overflow
+  if [[ ${#context} -gt $MAX_ADDITIONAL_CONTEXT_LENGTH ]]; then
+    context="${context:0:$MAX_ADDITIONAL_CONTEXT_LENGTH}... [context truncated for safety]"
+  fi
   local escaped
   escaped=$(escape_json_early "$context")
   printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$escaped"
+}
+
+# Helper: Truncate and escape a prompt for SKILL FIRST args (v1.0.254)
+# Truncates to MAX_SKILL_FIRST_PROMPT_LENGTH, escapes for JSON embedding.
+# Args: $1=raw prompt text
+# Returns: Escaped, truncated prompt on stdout
+truncate_and_escape_prompt() {
+  local prompt="$1"
+  local truncated="${prompt:0:$MAX_SKILL_FIRST_PROMPT_LENGTH}"
+  [[ ${#prompt} -gt $MAX_SKILL_FIRST_PROMPT_LENGTH ]] && truncated="${truncated}... [truncated - see original prompt above]"
+  printf '%s' "$truncated" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' '
 }
 
 # Helper: Get skill memory content for injection (v1.0.198)
@@ -1386,12 +1409,11 @@ Task({
                     [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
 
                     # v1.0.169: Call sw:increment-planner DIRECTLY (not wrapper)
-                    # Pass FULL user prompt so skill can extract all context
+                    # Pass user prompt so skill can extract context
                     # INC_MANDATORY comes from detect-intent LLM response
                     if [[ "$INC_MANDATORY" == "true" ]]; then
-                      # Escape the full prompt for JSON embedding
-                      # Use printf to handle special chars, then escape for nested JSON
-                      ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+                      # v1.0.254: Truncate + escape to prevent "Prompt is too long"
+                      ESCAPED_PROMPT=$(truncate_and_escape_prompt "$PROMPT")
 
                       # v1.0.243: Smart interview gate — LLM assesses prompt completeness
                       # before blindly calling increment-planner. If details are missing,
@@ -1466,7 +1488,7 @@ See CLAUDE.md section \"MANDATORY: Skill Chaining\" for full pattern."
                       exit 0
                     else
                       # v1.0.169: Also suggest direct skill call for non-mandatory
-                      ESCAPED_PROMPT_SUGGEST=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+                      ESCAPED_PROMPT_SUGGEST=$(truncate_and_escape_prompt "$PROMPT")
                       MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
 
 Consider creating an increment first:
@@ -1488,7 +1510,7 @@ Or via command: \`$CMD\`
 
                   hotfix)
                     # v1.0.169: Direct skill call for hotfix too
-                    ESCAPED_PROMPT_HOTFIX=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+                    ESCAPED_PROMPT_HOTFIX=$(truncate_and_escape_prompt "$PROMPT")
                     MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
 
 Create a hotfix increment:
@@ -1530,7 +1552,7 @@ specweave resume <id>  # Reopen it
                   small_fix)
                     # v1.0.241: small_fix still suggests increment (non-mandatory)
                     # Previously small_fix fell through with no output at all
-                    ESCAPED_PROMPT_SMALLFIX=$(printf '%s' "$PROMPT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+                    ESCAPED_PROMPT_SMALLFIX=$(truncate_and_escape_prompt "$PROMPT")
                     CMD_SMALLFIX="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
 

@@ -152,11 +152,12 @@ SpecWeave validates:
 
 You just experienced **spec-driven development**:
 
-1. **Spec First** → Defined WHAT before HOW
-2. **Traceability** → Every line of code traces to a requirement
-3. **Test Validated** → Tests embedded in tasks, run automatically
-4. **Living Docs** → Documentation auto-updated as you worked
-5. **Permanent Record** → Increment files stay forever (searchable)
+1. **Plan as Source of Truth** → The spec/plan/tasks drove implementation, not the other way around
+2. **Spec First** → Defined WHAT before HOW
+3. **Traceability** → Every line of code traces to a requirement
+4. **Test Validated** → Tests embedded in tasks, run automatically
+5. **Living Docs** → Documentation auto-updated as you worked
+6. **Permanent Record** → Increment files stay forever (searchable)
 
 **Six months from now**, you can search "click counter" and find:
 - Why it was built
@@ -185,6 +186,10 @@ You just experienced **spec-driven development**:
 /sw:grill XXXX                        # Review fix quality
 /sw:done XXXX
 ```
+
+:::tip Plan First, Always
+Even for bug fixes, SpecWeave creates a spec and plan before implementation. If you discover mid-implementation that the approach needs to change, **update the plan first** — then adjust the code. The plan is always the source of truth. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
+:::
 
 ### Parallel Development (Multiple Agents)
 
@@ -250,11 +255,53 @@ Each agent has its own spec, plan, and task list. No overlap, no conflicts. Chec
 
 ### Power Features to Explore Next
 
-**Self-Improving AI (Reflect)**
+**🎛️ Programmable Skills (Open/Closed Principle)**
+
+Skills aren't just prompts — they're **programs you can customize** without forking source code.
+
+**Example: Teaching the Frontend Skill**
 ```bash
-/sw:reflect-on    # Enable automatic learning from corrections
+# During development
+You: "Generate a Button component"
+Claude: *creates component with inline styles*
+You: "No, use our design system from @/components/ui"
+
+# SpecWeave automatically learns this correction
+# Saves to .specweave/skill-memories/frontend.md
+
+# Next session (new conversation)
+You: "Generate a Card component"
+Claude: *automatically uses @/components/ui* ✓
 ```
-Claude will learn your patterns and preferences, getting smarter over time. [Learn more →](./guides/self-improving-skills)
+
+**Your customizations live here:**
+```bash
+.specweave/skill-memories/
+├── frontend.md      # Frontend skill customizations
+├── pm.md           # Product management preferences
+├── tdd.md          # Testing approach overrides
+└── general.md      # Cross-cutting rules
+```
+
+**Why this matters:**
+- ✅ **Transparent** — See exactly what skills do (SKILL.md)
+- ✅ **Customizable** — Add YOUR rules (skill-memories/*.md)
+- ✅ **Self-improving** — Corrections persist across sessions
+- ✅ **No vendor lock-in** — You control the behavior
+
+**Open/Closed Principle (SOLID):**
+- **Closed for modification** — Don't edit SKILL.md
+- **Open for extension** — Customize via skill-memories
+
+Unlike Copilot or Cursor which you can't customize, SpecWeave skills are **programs you can reprogram**.
+
+**Enable auto-learning:**
+```bash
+/sw:reflect-on      # Corrections become permanent knowledge
+/sw:reflect-status  # See what Claude has learned
+```
+
+[Learn more →](./guides/self-improving-skills)
 
 **Hooks System**
 Customize behavior at every phase — session start, prompt submit, tool calls, and session end. Hooks enable autonomous validation and quality gates. [Learn more →](/docs/glossary/terms/hooks)

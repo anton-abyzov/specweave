@@ -2,6 +2,10 @@
 
 The planning phase transforms a feature idea into a **complete, executable implementation plan** with specifications, architecture, tasks, and tests.
 
+:::info Core Principle
+**The plan is the source of truth. Code is a derivative.** All implementation flows from spec.md → plan.md → tasks.md → code. If the plan changes, code follows. If you discover something during implementation that invalidates the plan, stop and update the plan first. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
+:::
+
 ## Overview
 
 ```mermaid
@@ -491,10 +495,11 @@ Would you like to:
 test_mode: TDD  # or "standard"
 ```
 
-### Q: What if requirements change during planning?
+### Q: What if requirements change during planning or implementation?
 
-**A**: Update spec.md and regenerate:
+**A**: The plan is the source of truth — update the plan first, then adjust code:
 
+**During planning** (before implementation starts):
 ```bash
 # 1. Edit spec.md (modify user stories, AC-IDs)
 vim .specweave/increments/0012-chat/spec.md
@@ -506,6 +511,16 @@ rm .specweave/increments/0012-chat/tasks.md
 # 3. Regenerate with updated spec
 /sw:increment "0012-real-time-chat" --regenerate
 ```
+
+**During implementation** (mid-coding discovery):
+```bash
+# 1. Stop coding — don't push through with a known-bad plan
+# 2. Update spec.md/plan.md/tasks.md to reflect new understanding
+# 3. Review changes for consistency across all three files
+# 4. Resume implementation with /sw:do
+```
+
+The key rule: **never let code drift from the plan**. If they diverge, fix one to match the other immediately.
 
 ## Planning Checklist
 
