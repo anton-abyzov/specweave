@@ -931,3 +931,100 @@ describe('formatHookOutput', () => {
     expect(parsed.continue).toBe(true);
   });
 });
+
+// ============================================================
+// Prompt safety constants and truncation utilities
+// ============================================================
+import {
+  MAX_DETECTION_USER_PROMPT_LENGTH,
+  MAX_ADDITIONAL_CONTEXT_LENGTH,
+  MAX_SKILL_FIRST_PROMPT_LENGTH,
+  truncateForDetection,
+  truncateForSkillFirstArgs,
+  truncateAdditionalContext,
+} from '../../../../src/core/lazy-loading/llm-plugin-detector.js';
+
+describe('Prompt safety constants', () => {
+  it('MAX_DETECTION_USER_PROMPT_LENGTH should be a reasonable limit', () => {
+    expect(MAX_DETECTION_USER_PROMPT_LENGTH).toBeGreaterThanOrEqual(1000);
+    expect(MAX_DETECTION_USER_PROMPT_LENGTH).toBeLessThanOrEqual(5000);
+  });
+
+  it('MAX_ADDITIONAL_CONTEXT_LENGTH should limit additionalContext size', () => {
+    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeGreaterThanOrEqual(4000);
+    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeLessThanOrEqual(10000);
+  });
+
+  it('MAX_SKILL_FIRST_PROMPT_LENGTH should limit prompt in SKILL FIRST args', () => {
+    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeGreaterThanOrEqual(1000);
+    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeLessThanOrEqual(3000);
+  });
+});
+
+describe('truncateForDetection', () => {
+  it('should return short prompts unchanged', () => {
+    const short = 'Build a React dashboard';
+    expect(truncateForDetection(short)).toBe(short);
+  });
+
+  it('should truncate prompts exceeding MAX_DETECTION_USER_PROMPT_LENGTH', () => {
+    const long = 'x'.repeat(MAX_DETECTION_USER_PROMPT_LENGTH + 500);
+    const result = truncateForDetection(long);
+    expect(result.length).toBeLessThanOrEqual(MAX_DETECTION_USER_PROMPT_LENGTH + 50); // allow for suffix
+    expect(result).toContain('... [truncated]');
+  });
+
+  it('should preserve the beginning of the prompt when truncating', () => {
+    const prefix = 'IMPORTANT_START ';
+    const long = prefix + 'x'.repeat(MAX_DETECTION_USER_PROMPT_LENGTH + 500);
+    const result = truncateForDetection(long);
+    expect(result.startsWith(prefix)).toBe(true);
+  });
+
+  it('should handle empty string', () => {
+    expect(truncateForDetection('')).toBe('');
+  });
+
+  it('should handle prompts exactly at the limit', () => {
+    const exact = 'y'.repeat(MAX_DETECTION_USER_PROMPT_LENGTH);
+    expect(truncateForDetection(exact)).toBe(exact);
+  });
+});
+
+describe('truncateForSkillFirstArgs', () => {
+  it('should return short prompts unchanged', () => {
+    const short = 'Add a login page';
+    expect(truncateForSkillFirstArgs(short)).toBe(short);
+  });
+
+  it('should truncate prompts exceeding MAX_SKILL_FIRST_PROMPT_LENGTH', () => {
+    const long = 'z'.repeat(MAX_SKILL_FIRST_PROMPT_LENGTH + 1000);
+    const result = truncateForSkillFirstArgs(long);
+    expect(result.length).toBeLessThanOrEqual(MAX_SKILL_FIRST_PROMPT_LENGTH + 80);
+    expect(result).toContain('[truncated');
+  });
+
+  it('should include a hint that original prompt is available above', () => {
+    const long = 'a'.repeat(MAX_SKILL_FIRST_PROMPT_LENGTH + 500);
+    const result = truncateForSkillFirstArgs(long);
+    expect(result).toMatch(/see original prompt|original prompt above/i);
+  });
+});
+
+describe('truncateAdditionalContext', () => {
+  it('should return small context unchanged', () => {
+    const small = 'Some context here';
+    expect(truncateAdditionalContext(small)).toBe(small);
+  });
+
+  it('should truncate context exceeding MAX_ADDITIONAL_CONTEXT_LENGTH', () => {
+    const large = 'c'.repeat(MAX_ADDITIONAL_CONTEXT_LENGTH + 2000);
+    const result = truncateAdditionalContext(large);
+    expect(result.length).toBeLessThanOrEqual(MAX_ADDITIONAL_CONTEXT_LENGTH + 80);
+    expect(result).toContain('[context truncated');
+  });
+
+  it('should handle empty string', () => {
+    expect(truncateAdditionalContext('')).toBe('');
+  });
+});

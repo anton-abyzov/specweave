@@ -4,11 +4,30 @@ SpecWeave is built on a set of core principles that guide every design decision.
 
 ## Core Principles
 
-### 1. Specification Before Implementation
+### 1. Plan as Source of Truth
+
+**The plan is the source of truth. Code is a derivative.**
+
+Every line of code traces back to a specification. The three-file structure (spec.md, plan.md, tasks.md) is not just documentation — it is the **single source of truth** that drives implementation:
+
+```
+Plan → Code (always)
+Code → Plan (never)
+```
+
+**What this means in practice:**
+- **Before implementing**: Read and understand the current plan
+- **Mid-implementation discovery**: If you find a better approach, **stop coding**, update the plan first, then resume implementation based on the updated plan
+- **Bug fixes**: Assess impact on the plan before writing a fix — update tasks.md if the fix changes scope
+- **Code and plan must always match**: If they diverge, update the plan first, then adjust code to follow — never retrofit the plan to match code you've already written
+
+**Why this matters**: Plans are cheap to change. Code is expensive to change. By keeping the plan as the authoritative source, you catch design problems early (in the plan) rather than late (in code review or production). AI agents working with Claude Code are most efficient in plan mode — skipping planning wastes more tokens on rework than planning costs upfront.
+
+### 2. Specification Before Implementation
 
 **Define WHAT and WHY before HOW.**
 
-Traditional development often jumps straight to implementation without clear specifications. This leads to:
+While Principle 1 governs the *ongoing relationship* between plan and code, this principle governs the *order of work*. Traditional development often jumps straight to implementation without clear specifications. This leads to:
 - Unclear requirements
 - Scope creep
 - Missing features
@@ -20,7 +39,7 @@ SpecWeave enforces specification-first development:
 Specification → Architecture → Implementation → Testing
 \`\`\`
 
-### 2. Append-Only Snapshots + Living Documentation
+### 3. Append-Only Snapshots + Living Documentation
 
 **Historical audit trails + current state = complete context.**
 
@@ -63,17 +82,85 @@ Specification → Architecture → Implementation → Testing
 - Living docs = working directory (current state)
 - Both essential for different purposes
 
-### 3. Context Precision
+### 4. Context Precision
 
 **Load only what's needed (70%+ token reduction).**
 
 Loading entire specifications wastes tokens and money. SpecWeave uses:
 - **Progressive disclosure**: Skills metadata loads first (~75 tokens), full content on-demand
 - **CLAUDE.md guidance**: Teaches Claude WHERE to look and HOW to search living docs
-- **Explicit loading**: `/sw:context <topic>` loads relevant docs into conversation
+- **Explicit loading**: `/sw:docs <topic>` loads relevant docs into conversation
 - **Scalable**: Works with 10 pages or 1000+ pages
 
-### 4. Test-Validated Features
+### 5. Programmable Skills (Open/Closed Principle)
+
+**Skills are transparent programs you can customize without forking.**
+
+Unlike traditional software where behavior is compiled and locked, SpecWeave skills follow the **Open/Closed Principle** from SOLID design:
+
+**Closed for modification**
+- Skill logic defined in `SKILL.md` (stable core)
+- Don't fork or edit skill source
+- Predictable, tested behavior
+
+**Open for extension**
+- Add YOUR rules in `.specweave/skill-memories/*.md`
+- Override defaults without touching source
+- Extend logic the original developer never imagined
+
+**Self-improving**
+- Corrections during sessions → permanent knowledge
+- Claude reads SKILL.md + your skill-memories
+- Auto-learning enabled with `/sw:reflect-on`
+
+**Example: Customizing the Frontend Skill**
+
+```markdown
+# .specweave/skill-memories/frontend.md
+
+### Component Preferences
+- Always use our Button component from @/components/ui
+- Never use inline styles — Tailwind utilities only
+
+### Form Handling
+- React Hook Form + Zod validation
+- Display errors with toast notifications, not inline
+
+### Custom Logic
+When generating components:
+1. Check design system directory first
+2. Use composition over prop drilling
+3. Extract to custom hooks if logic >50 lines
+```
+
+Next session, Claude automatically follows these rules — you've **programmed the skill** to match your project's needs.
+
+**Traditional Tools vs SpecWeave:**
+
+| Tool | Behavior |
+|------|----------|
+| **GitHub Copilot** | Black box — can't customize reasoning |
+| **Cursor** | Proprietary — take it or leave it |
+| **SpecWeave** | Transparent SKILL.md + customizable skill-memories |
+
+**Why this matters:**
+- 🎯 **No vendor lock-in** — You control behavior
+- 🧠 **Knowledge compounds** — Corrections persist forever
+- 🔍 **Full transparency** — See exactly what skills do
+- 🎨 **Infinite extensibility** — Add logic developers never planned
+
+**Skills as Programs, Not Prompts**
+
+Think of skill-memories as "runtime configuration" for Claude's expertise:
+- `SKILL.md` = compiled program (closed)
+- `skill-memories/*.md` = your config file (open)
+- Claude reads both and applies your overrides
+
+This is the power of programmable AI — you're not using tools, you're **programming the tools themselves**.
+
+**For skill developers:** Design skills with clear extension points. Document what users can customize. See [Skill Development Guidelines](https://github.com/anton-abyzov/specweave#skill-development-guidelines).
+
+### 6. Test-Validated Features
 
 **Every feature proven through automated tests.**
 
@@ -85,7 +172,7 @@ Four levels of testing ensure quality:
 
 **Truth-telling requirement**: E2E tests MUST tell the truth—no false positives.
 
-### 5. Regression Prevention
+### 7. Regression Prevention
 
 **Document existing code before modification.**
 
@@ -97,7 +184,7 @@ Modifying [brownfield](/docs/glossary/terms/brownfield) code without documentati
 4. User reviews and approves
 5. Implement modifications safely
 
-### 6. Scalable from Solo to Enterprise
+### 8. Scalable from Solo to Enterprise
 
 **Modular structure that grows with project size.**
 
@@ -107,7 +194,7 @@ Whether you're a solo developer or a 100-person team, SpecWeave scales:
 - **Enterprise**: Create 500-600+ pages upfront
 - **Both approaches supported**: Comprehensive or incremental
 
-### 7. Auto-Role Routing
+### 9. Auto-Role Routing
 
 **Skills detect expertise automatically.**
 
@@ -123,7 +210,7 @@ User: "Create payment integration"
 
 >90% routing accuracy.
 
-### 8. Closed-Loop Validation
+### 10. Closed-Loop Validation
 
 **[E2E](/docs/glossary/terms/e2e) tests must tell the truth (no false positives).**
 
@@ -266,20 +353,22 @@ SpecWeave supports TWO valid approaches:
 ### ❌ What SpecWeave Prevents
 
 1. **Vibe Coding**: Implementing without specifications
-2. **Documentation Divergence**: Code and docs out of sync
-3. **Context Bloat**: Loading entire specs unnecessarily
-4. **Regression Bugs**: Modifying code without tests
-5. **Tech Debt**: Missing architecture decisions
-6. **False Confidence**: Tests that lie about functionality
+2. **Plan Drift**: Code diverging from the plan without updating specs first
+3. **Documentation Divergence**: Code and docs out of sync
+4. **Context Bloat**: Loading entire specs unnecessarily
+5. **Regression Bugs**: Modifying code without tests
+6. **Tech Debt**: Missing architecture decisions
+7. **False Confidence**: Tests that lie about functionality
 
 ### ✅ What SpecWeave Enforces
 
-1. **Specification-First**: Always define before implementing
-2. **Living Documentation**: Auto-update via hooks
-3. **Context Precision**: Load only what's needed
-4. **Regression Prevention**: Baseline tests + living docs
-5. **Architecture Clarity**: ADRs for all major decisions
-6. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
+1. **Plan as Source of Truth**: Plan drives code, never the reverse
+2. **Specification-First**: Always define before implementing
+3. **Living Documentation**: Auto-update via hooks
+4. **Context Precision**: Load only what's needed
+5. **Regression Prevention**: Document before modifying
+6. **Architecture Clarity**: ADRs for all major decisions
+7. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
 
 ## Success Metrics
 

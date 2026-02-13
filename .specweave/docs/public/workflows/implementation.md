@@ -279,6 +279,39 @@ Progress: 3/8 tasks (37%)
 ⏱️  Estimated Remaining: 2-3 days
 ```
 
+## Plan Is the Source of Truth
+
+During implementation, the plan (spec.md + plan.md + tasks.md) remains the **single source of truth**. Code is always a derivative of the plan:
+
+```
+Plan → Code (always)
+Code → Plan (never)
+```
+
+### Mid-Implementation Course Corrections
+
+If you discover a better approach, a missing requirement, or a flaw in the design **while coding**:
+
+1. **Stop coding immediately** — don't push through with a known-bad plan
+2. **Update the plan** — edit spec.md, plan.md, or tasks.md to reflect the new understanding
+3. **Review the updated plan** — ensure changes are consistent across all three files
+4. **Resume implementation** — now working from the corrected plan
+
+```bash
+# Example: You discover WebSocket needs a different auth strategy
+
+# 1. Stop current task
+# 2. Update plan.md with new auth approach
+# 3. Update tasks.md if task breakdown changes
+# 4. Resume /specweave:do with updated plan
+```
+
+**Why this matters**: Plans are cheap to change (a few lines of markdown). Code is expensive to change (refactoring, re-testing, debugging). Catching design problems in the plan prevents costly rework later. AI agents are also most token-efficient when working from a clear, accurate plan.
+
+> **Tip (Claude Code Users)**: If using Claude Code, entering plan mode (`EnterPlanMode`) before making changes is the most efficient workflow — it prevents wasted tokens on implementation that will need to be redone.
+
+---
+
 ## Implementation Patterns
 
 ### Pattern 1: Straight-Through Execution
@@ -393,22 +426,25 @@ While implementing ChatService, you discover:
 - Need admin monitoring dashboard (not in spec)
 ```
 
-**Solution**:
+**Solution** (plan first!):
 ```bash
-# 1. Evaluate criticality
+# 1. STOP coding — don't add unplanned work inline
+# 2. Evaluate criticality
 # - Is it required for MVP? (P1)
 # - Or nice-to-have? (P2/P3)
 
-# 2a. If P1 (must-have):
+# 3a. If P1 (must-have) — update the plan first:
 /specweave:update-scope "Added rate limiting (required for security)"
 # Updates spec.md, plan.md, tasks.md
 # Regenerates with new tasks
 
-# 2b. If P2/P3 (nice-to-have):
+# 3b. If P2/P3 (nice-to-have):
 # Document in "Future Enhancements" section
 # Create new increment for next iteration
 /specweave:increment "0013-chat-admin-dashboard"
 ```
+
+**Remember**: Never add unplanned work directly to code. Update the plan first, then implement from the updated plan.
 
 ### Challenge 3: Blocked by Dependencies
 
@@ -597,7 +633,7 @@ Implementation complete? Move to validation:
 
 **Learn more:**
 - [Validation Workflow](/docs/workflows/validation)
-- [TDD with SpecWeave](/docs/guides/testing/tdd-workflow)
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---
@@ -605,4 +641,4 @@ Implementation complete? Move to validation:
 **Related:**
 - [Planning Workflow](/docs/workflows/planning)
 - [Workflows Overview](/docs/workflows/overview)
-- [Post-Task-Completion Hook](/docs/guides/advanced/hooks)
+- [Hooks](/docs/glossary/terms/hooks)
