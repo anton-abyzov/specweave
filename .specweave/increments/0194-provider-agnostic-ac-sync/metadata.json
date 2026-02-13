@@ -1,10 +1,11 @@
 {
   "id": "0194-provider-agnostic-ac-sync",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2026-02-08T22:59:04.910Z",
-  "lastActivity": "2026-02-08T22:59:04.911Z",
+  "lastActivity": "2026-02-13T23:10:00.000Z",
+  "completedAt": "2026-02-13T23:10:00.000Z",
   "testMode": "TDD",
   "coverageTarget": 80,
   "feature_id": null,

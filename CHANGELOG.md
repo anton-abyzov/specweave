@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.256] - 2026-02-13
+
+### Changes
+- **Provider-agnostic AC sync**: AC completion now syncs to GitHub, JIRA, and ADO simultaneously via `syncACProgressToProviders()`
+- **AC checkbox formatter**: Provider-specific checkbox markup (GitHub markdown, JIRA `(/)/(x)`, ADO HTML `☑/☐`)
+- **Unified dispatcher**: Replaced `github-ac-sync-handler.sh` with `ac-sync-dispatcher.sh` supporting all providers
+- **Per-provider circuit breakers**: 3-failure threshold with 5-minute auto-reset, independent per provider
+- **Dead code cleanup**: Removed 6 orphaned sync modules (~2,900 lines)
+
+---
+
 ## [1.0.250] - 2026-02-11
 
 ### Changes

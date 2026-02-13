@@ -3,7 +3,7 @@ increment: 0194-provider-agnostic-ac-sync
 title: "Provider-Agnostic AC Progress Sync (GitHub + JIRA + ADO)"
 type: feature
 priority: P1
-status: active
+status: completed
 created: 2026-02-08
 structure: user-stories
 test_mode: TDD
