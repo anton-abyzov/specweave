@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'AI That Remembers Everything You Build - Ship Features While You Sleep',
+  tagline: 'Program Your AI in English — Skills, Agent Swarms, Enterprise Ready',
   // Use proper favicon.ico for broad compatibility (Teams, etc.)
   favicon: 'favicon.ico',
 
@@ -179,12 +179,12 @@ const config: Config = {
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@aabyzov' },
       { name: 'twitter:creator', content: '@aabyzov' },
-      { name: 'twitter:title', content: 'SpecWeave - AI That Remembers Everything You Build' },
-      { name: 'twitter:description', content: 'Ship features while you sleep. Spec-driven development with Claude Code.' },
+      { name: 'twitter:title', content: 'SpecWeave - Program Your AI in English' },
+      { name: 'twitter:description', content: 'Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { name: 'twitter:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: 'SpecWeave - AI That Remembers Everything You Build' },
-      { property: 'og:description', content: 'Ship features while you sleep. Spec-driven development with Claude Code.' },
+      { property: 'og:title', content: 'SpecWeave - Program Your AI in English' },
+      { property: 'og:description', content: 'Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code.' },
       { property: 'og:image', content: 'https://spec-weave.com/img/specweave-social-card-v2.jpg' },
     ],
 
@@ -212,33 +212,21 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'guidesSidebar',
+          sidebarId: 'academySidebar',
           position: 'left',
-          label: 'Guides',
+          label: 'Learn',
         },
         {
           type: 'docSidebar',
           sidebarId: 'skillsSidebar',
           position: 'left',
-          label: 'Extensible Skills',
+          label: 'Skills',
         },
         {
           type: 'docSidebar',
-          sidebarId: 'academySidebar',
+          sidebarId: 'enterpriseSidebar',
           position: 'left',
-          label: 'Academy',
-        },
-        // {
-        //   type: 'docSidebar',
-        //   sidebarId: 'apiSidebar',
-        //   position: 'left',
-        //   label: 'API',
-        // },
-        {
-          type: 'docSidebar',
-          sidebarId: 'commandsSidebar',
-          position: 'left',
-          label: 'Commands',
+          label: 'Enterprise',
         },
         {
           type: 'docSidebar',

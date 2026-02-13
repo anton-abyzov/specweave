@@ -1,10 +1,12 @@
 # What is SpecWeave?
 
-**SpecWeave is the AI development layer that doesn't lose your work.**
+**SpecWeave is the spec-driven skill layer for AI coding agents.** Program your AI in English. Ship features while you sleep.
 
-Every AI coding tool promises productivity. But after the chat ends, your specs disappear into chat history, your architecture decisions are forgotten, and new team members start from zero.
+Skills are programs written in English — reusable, extensible logic that controls how AI thinks, decides, and acts. Describe what you want to build, AI asks the right questions, creates specifications, and builds it autonomously. Every decision becomes permanent, searchable documentation.
 
-**SpecWeave is the only tool where AI decisions become permanent, searchable documentation.**
+**You don't need to learn Claude Code docs.** SpecWeave handles hooks, plugins, CLAUDE.md, and context management for you. [Learn more](./no-docs-needed).
+
+**Enterprise ready.** Compliance audit trails, brownfield analysis, JIRA/ADO sync, multi-repo coordination. [Enterprise overview](/docs/enterprise).
 
 ## Stop Repeating Yourself
 
@@ -37,11 +39,12 @@ Every app needs the same things: auth, tests, docs, deployment. Without SpecWeav
 
 ### Built-In Expertise
 
-SpecWeave isn't just shortcuts - it's **encapsulated expertise**:
+SpecWeave isn't just shortcuts — it's **programs in English** that encapsulate expert knowledge:
 
-- **68+ AI agents** (PM, Architect, QA, Security) work in parallel, powered by Claude Opus 4.6
-- **Skills auto-activate** - mention "security" and security expertise loads
+- **100+ skills** (PM, Architect, QA, Security, Frontend, Backend, ML) — each one a reusable program you can customize
+- **Skills auto-activate** — mention "security" and security expertise loads automatically
 - **Quality gates** enforce what senior devs know: tests before merge, docs before close
+- **Agent swarms** — run parallel agents across iTerm/tmux panes for maximum throughput
 
 **Real result**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to do the same - because the expertise is built in, not in knowing what to ask.
 

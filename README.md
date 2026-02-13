@@ -1,8 +1,8 @@
 # SpecWeave
 
-**The spec-driven skill layer for AI coding agents.** First-class support for Claude Code — compatible with any LLM-powered coding tool.
+**The spec-driven skill layer for AI coding agents.** Program your AI in English. Ship features while you sleep.
 
-*Coordinate parallel AI agents. Prevent task overlap. Quality gates. Ship features while you sleep.*
+*First-class support for Claude Code — compatible with any LLM-powered coding tool.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -15,16 +15,62 @@ npm install -g specweave   # Requires Node.js 20.12.0+
 
 ---
 
-## Quick Demo
+## What Are Skills?
 
-```bash
-/sw:increment "User authentication"   # AI creates spec + plan + tasks
-/sw:auto                               # Autonomous execution for hours
-/sw:grill 0001                         # Senior-level code review
-/sw:done 0001                          # Validate and complete
+**Skills are programs written in English** — not prompts, not templates, but reusable logic that controls how AI thinks, decides, and acts.
+
+```
+Without SpecWeave:                          With SpecWeave:
+─────────────────                           ───────────────
+"Use React Hook Form with Zod..."           /sw:increment "Add login form"
+"Remember, we use Tailwind..."              /sw:auto
+"Don't forget the test pattern..."          # AI already knows your patterns.
+"Wait, I told you this yesterday..."        # It remembered from last time.
 ```
 
-**What happens:** Claude creates a full specification, executes tasks autonomously, runs tests, fixes failures, and syncs progress to GitHub/JIRA. You review finished work.
+Each skill is a **programmable AI behavior** you can customize without forking. Fix once, remembered permanently. 100+ skills ship out of the box — PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML.
+
+**You don't need to learn Claude Code docs.** SpecWeave handles hooks, plugins, CLAUDE.md, and context management for you. Install, describe your feature, skills do the rest.
+
+---
+
+## The Workflow
+
+```
+You: "Build me a checkout flow with Stripe"
+  ↓
+SpecWeave PM: asks 5-10 clarifying questions
+  (What payment methods? Guest checkout? Subscriptions? Which UI library?)
+  ↓
+Creates: spec.md → plan.md → tasks.md
+  ↓
+/sw:auto — autonomous execution for hours
+  (writes code, runs tests, fixes failures, syncs to GitHub/JIRA)
+  ↓
+You wake up. Review finished work.
+  Tests cover technical correctness. You check the UI and UX.
+  ↓
+/sw:done — validated, documented, shipped.
+```
+
+**Solo developer:**
+```bash
+/sw:increment "User authentication"   # AI interviews you, creates spec + plan + tasks
+/sw:auto                               # Go to sleep. AI builds it.
+/sw:done 0001                          # Review and ship in the morning.
+```
+
+**Agent team (parallel):**
+```bash
+/sw:team-lead "E-commerce MVP"         # Splits into auth, payments, catalog
+# 3 agents run /sw:auto in iTerm/tmux panes simultaneously
+```
+
+**Brownfield project:**
+```bash
+/sw:increment "Migrate checkout to React"  # Analyzes existing code first
+/sw:auto --tdd                             # TDD-first, strangler fig pattern
+```
 
 ---
 
@@ -41,62 +87,65 @@ SpecWeave solves this with **file-based coordination**:
 └── tasks.md   ← DO: Implementation tasks with tests
 ```
 
-Each increment is a self-contained scope. Each agent knows exactly what's taken and what's available. No overlap. No conflicts. Six months later, search "OAuth" and find exactly what was decided, who approved it, and why.
+### Three Pillars
 
-### What Makes It Different
+**Programmable AI** — Skills are programs in English. Customize any skill's behavior via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates.
 
-- **Extensible skills (SOLID Open/Closed)** — skills are programs written in human language. Customize any skill's behavior via `skill-memories/*.md` without forking. Your rules override defaults. Original skills keep getting updates. No other AI tool lets you do this.
-- **Plan as source of truth** — spec.md + plan.md + tasks.md drive all implementation. Code is a derivative of the plan, never the other way around. Change your mind mid-build? Update the plan first, then regenerate code.
-- **Parallel agent coordination** — multiple Claude Code sessions, OpenClaw instances, or remote agents work on different increments without stepping on each other.
-- **Autonomous execution** — runs for hours, not minutes. Write, test, fix, repeat.
-- **Persistent memory** — AI learns from corrections. Fix once, remembered permanently.
-- **Quality gates** — Code Grill reviews code like a demanding senior engineer before every release.
-- **Living documentation** — specs, ADRs, and runbooks sync automatically after every task.
-- **100+ specialized skills** — PM, Architect, QA, Security, DevOps, Frontend, Mobile, ML, and more collaborate on deliverables.
-- **External sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time.
-- **Self-improving** — captures what works and what doesn't. Gets smarter over time.
-- **LSP integration** — semantic code intelligence for TypeScript, Python, Go, Rust, Java, C#.
+**Autonomous Teams** — Run agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts. Work on auth, payments, and notifications simultaneously.
+
+**Enterprise Ready** — Compliance audit trails in git. Brownfield analysis for legacy code. Bidirectional sync with GitHub, JIRA, Azure DevOps. Multi-repo coordination. Production-grade from day one.
+
+---
+
+## Agent Swarms
+
+Run multiple AI agents on the same repository — locally, in the cloud, or with [OpenClaw](https://openclaw.ai). Each agent owns an isolated increment. No conflicts.
+
+```
+iTerm2 / tmux split panes:
+┌──────────────────┬──────────────────┬──────────────────┐
+│  Agent 1 (auth)  │ Agent 2 (payments)│ Agent 3 (catalog)│
+│  /sw:auto        │  /sw:auto         │  /sw:auto        │
+│  ████████░░ 80%  │  ██████░░░░ 60%   │  ████░░░░░░ 40%  │
+└──────────────────┴──────────────────┴──────────────────┘
+```
+
+`/sw:team-lead "feature"` splits work → each agent runs `/sw:auto` → quality gates ensure consistency → progress syncs to GitHub/JIRA.
+
+**[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
+
+---
+
+## Enterprise Ready
+
+SpecWeave is built for the reality of enterprise development.
+
+- **Compliance audit trails** — every decision tracked in version-controlled spec files. SOC 2, HIPAA, FDA ready.
+- **Brownfield excellence** — automated codebase analysis, strangler fig migrations, knowledge preservation. 90%+ of enterprise work is brownfield.
+- **Multi-repo coordination** — specs reference cross-repo dependencies. Agent teams work across repositories.
+- **External sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time. Local-first, works offline.
+- **Multi-environment** — dev, QA, staging, UAT, production deployment pipelines.
+
+**[Enterprise documentation](https://spec-weave.com/docs/enterprise)**
 
 ---
 
 ## Extensible Skills (Open/Closed Principle)
 
-**Skills are programs you can customize without forking.**
-
-Unlike traditional tools where behavior is locked, SpecWeave skills follow the **Open/Closed Principle** from SOLID:
-- **Closed for modification** — don't edit SKILL.md
-- **Open for extension** — customize via `.specweave/skill-memories/*.md`
-
-**Example: Teaching the Frontend Skill**
+**Customize any skill without forking.**
 
 ```bash
 # First time
 You: "Generate a login form"
 Claude: *creates form with useState*
-You: "No, we always use React Hook Form + Zod validation"
+You: "No, we always use React Hook Form + Zod"
 
 # SpecWeave learns this → .specweave/skill-memories/frontend.md
 
-# Next session
+# Next session — any agent, any skill
 You: "Generate a signup form"
-Claude: *automatically uses React Hook Form + Zod* ✓
+Claude: *automatically uses React Hook Form + Zod*
 ```
-
-**Your customizations:**
-```markdown
-# .specweave/skill-memories/frontend.md
-
-### Form Handling
-- Use React Hook Form for all forms
-- Combine with Zod for validation schemas
-- Never use plain useState for form state
-
-### Component Preferences
-- Import from @/components/ui design system
-- Tailwind utilities only, no inline styles
-```
-
-**Why this matters:**
 
 | Traditional Tools | SpecWeave Skills |
 |------------------|------------------|
@@ -111,9 +160,7 @@ Claude: *automatically uses React Hook Form + Zod* ✓
 /sw:reflect-status   # See what Claude has learned
 ```
 
-Every skill (PM, Architect, QA, Security, DevOps, Frontend, Backend) can be customized. You're not using tools — you're **programming them** to match your exact patterns.
-
-**For skill developers:** Design skills with extension points. See [Skill Development Guidelines](#skill-development-guidelines) for SOLID patterns.
+**[Skills deep dive](https://spec-weave.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://spec-weave.com/docs/guides/skill-development-guidelines)**
 
 ---
 
@@ -135,43 +182,6 @@ Then in Claude Code:
 
 ---
 
-## Parallel Development
-
-Run multiple AI agents on the same repository — locally, in the cloud, or with [OpenClaw](https://openclaw.ai). SpecWeave's increment files are the coordination layer:
-
-```
-Agent 1 (local Claude Code)    Agent 2 (cloud)           Agent 3 (OpenClaw)
-working on: 0001-auth          working on: 0002-payments  working on: 0003-notifications
-         │                              │                           │
-         └──────────────────────────────┼───────────────────────────┘
-                                        │
-                           .specweave/increments/
-                           ├── 0001-auth/tasks.md           ← Agent 1's scope
-                           ├── 0002-payments/tasks.md       ← Agent 2's scope
-                           └── 0003-notifications/tasks.md  ← Agent 3's scope
-```
-
-**How it works:**
-1. Create increments for each feature: `/sw:increment "auth"`, `/sw:increment "payments"`
-2. Each agent picks an increment and runs `/sw:auto` — tasks.md tracks exactly what's done
-3. Agents work in isolated scopes — different files, different specs, different tests
-4. Quality gates (`/sw:grill`) ensure consistent standards regardless of which agent built it
-5. Progress syncs to GitHub/JIRA so you see everything in one place
-
-**Why this matters:** OpenClaw and Claude Code sessions are stateless by default. SpecWeave's spec/plan/tasks files persist across sessions and agents — your coordination layer survives restarts, crashes, and context window limits.
-
-**Agent team commands:**
-
-| Command | Purpose |
-|---------|---------|
-| `/sw:team-lead "feature"` | Split feature across parallel agents |
-| `/sw:team-status` | Monitor all agent progress |
-| `/sw:team-merge` | Merge completed work in dependency order |
-
-**[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
-
----
-
 ## Core Commands
 
 | Command | Purpose |
@@ -181,7 +191,7 @@ working on: 0001-auth          working on: 0002-payments  working on: 0003-notif
 | `/sw:do` | Execute one task at a time |
 | `/sw:grill` | Code review before close |
 | `/sw:done` | Close with quality validation |
-| `/sw:sync-progress` | Push to GitHub / JIRA / ADO |
+| `/sw:progress-sync` | Push to GitHub / JIRA / ADO |
 | `/sw:next` | Auto-close + suggest next |
 
 **[Full command reference](https://spec-weave.com/docs/commands/overview)**
@@ -206,12 +216,14 @@ When you close an increment, external tools update automatically.
 |------------|-----------|-------------|----------------|
 | **Parallel agent coordination** | Increment-scoped isolation | No | No |
 | **Autonomous execution** | Hours of unattended `/sw:auto` | No | No |
+| **Agent swarms (iTerm/tmux)** | Visual parallel monitoring | No | No |
 | **Quality gates** | Code Grill before every release | No | No |
 | **Living documentation** | Auto-updated after every task | Manual | Manual |
 | **Self-improving AI** | Learns from corrections | No | No |
+| **Enterprise compliance** | SOC 2, HIPAA, FDA audit trails | No | No |
 | **External sync** | GitHub / JIRA / ADO bidirectional | No | No |
+| **Brownfield support** | Analyzer + migration patterns | No | No |
 | **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
-| **Works with OpenClaw** | Yes | Partial | Partial |
 | **Spec/plan/tasks workflow** | Yes | Yes | Yes |
 | **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |
 
@@ -232,108 +244,6 @@ When you close an increment, external tools update automatically.
 ## Community
 
 [Discord](https://discord.gg/UYg4BGJ65V) · [YouTube](https://www.youtube.com/@antonabyzov) · [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
-
-## Skill Development Guidelines
-
-**Design skills that users can extend without modification.**
-
-When creating SpecWeave skills, follow the **Open/Closed Principle** (SOLID):
-
-### Structure for Extension
-
-**SKILL.md** (closed for modification)
-```markdown
-# Your Skill
-
-## Core Behavior
-1. Always do X
-2. Check for Y
-3. Output Z format
-
-## Extension Points
-Users can customize:
-- Component preferences
-- Validation rules
-- Output formatting
-- Error handling
-
-See `.specweave/skill-memories/{skill-name}.md` for customizations.
-```
-
-`skill-memories/{skill-name}.md` (open for extension)
-```markdown
-### Component Preferences
-- Use Material UI instead of Chakra
-- Dark mode by default
-
-### Custom Validation
-When validating forms:
-1. Check email domain against allowlist
-2. Require 2FA for admin roles
-```
-
-### SOLID Principles for Skills
-
-| Principle | Application |
-|-----------|-------------|
-| **Single Responsibility** | One skill = one domain (Frontend, Backend, Testing, etc.) |
-| **Open/Closed** | Core logic in SKILL.md (closed), customizations in skill-memories (open) |
-| **Liskov Substitution** | Customizations shouldn't break skill contracts (output format, interface) |
-| **Interface Segregation** | Expose clear extension points, don't force users to override large blocks |
-| **Dependency Inversion** | Depend on patterns/abstractions, let skill-memories provide concrete implementations |
-
-### Design Patterns
-
-**✓ DO:**
-- Expose clear extension points in SKILL.md
-- Document what users can customize
-- Provide examples in skill-memories templates
-- Read skill-memories at runtime before executing logic
-- Use conditional logic: "If skill-memories defines X, use X; else default behavior"
-
-**✗ DON'T:**
-- Hard-code preferences that vary by project
-- Make users fork SKILL.md to customize behavior
-- Ignore skill-memories content
-- Create monolithic skills that do everything
-
-### Example: Extensible Frontend Skill
-
-```markdown
-# SKILL.md (core logic)
-
-## Component Generation
-
-**Default behavior:**
-1. Use React functional components
-2. TypeScript with Props interface
-3. Export as default
-
-**Extension points (check skill-memories/frontend.md):**
-- component.framework (React | Vue | Angular)
-- component.exportStyle (default | named)
-- component.testFramework (Vitest | Jest | Testing Library)
-- styling.approach (Tailwind | CSS Modules | Styled Components)
-
-**Logic:**
-```typescript
-// Read skill-memories first
-const userPrefs = readSkillMemories('frontend');
-
-// Apply customizations or use defaults
-const framework = userPrefs?.component?.framework || 'React';
-const styling = userPrefs?.styling?.approach || 'CSS Modules';
-```
-```
-
-### Testing Your Skill's Extensibility
-
-1. **Write SKILL.md** with default behavior
-2. **Create skill-memories template** showing extension points
-3. **Test with customizations** - does the skill respect user preferences?
-4. **Document limitations** - what CAN'T be customized?
-
-**Good skill design = Users extend your logic without ever touching your source.**
 
 ## License
 
