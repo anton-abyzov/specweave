@@ -8,7 +8,7 @@ argument-hint: "[message]"
 
 ## Project Overrides
 
-!`s="save"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null`
+!`s="save"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
 **SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/sw:save` and it figures out what to do!
 

@@ -692,6 +692,6 @@ Need help? We've got you covered:
 
 ---
 
-**SpecWeave** - The Spec-Driven Skill Layer for AI Coding Agents
+**SpecWeave** - The Spec-Driven Skill Fabric for AI Coding Agents
 
 🚀 **Install now:** `npm install -g specweave` (requires Node.js 20.12.0+)

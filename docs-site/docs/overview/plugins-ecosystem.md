@@ -564,7 +564,7 @@ Tracks AI costs, suggests optimizations.
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
-| **sw** | Core skill layer | 68+ agents, 40+ commands, increment lifecycle |
+| **sw** | Core Skill Fabric | 68+ agents, 40+ commands, increment lifecycle |
 | **sw-github** | GitHub sync | Bidirectional sync, auto-issue creation |
 | **sw-jira** | JIRA sync | Epic/Story sync, status mapping |
 | **sw-ado** | Azure DevOps | Work items, multi-project strategies |
@@ -640,7 +640,7 @@ For large projects with 100+ files:
 
 ## 🔧 Extensibility via CLAUDE.md
 
-SpecWeave is an **open skill layer, not a locked product**. Beyond plugins, you can customize behavior through your project's `CLAUDE.md` file:
+SpecWeave is an **open Skill Fabric, not a locked product**. Beyond plugins, you can customize behavior through your project's `CLAUDE.md` file:
 
 ### Custom Sync Rules
 ```markdown
