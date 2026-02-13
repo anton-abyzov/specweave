@@ -312,11 +312,11 @@ case "$FILE_PATH" in
       fi
 
       # ========================================================================
-      # GITHUB AC SYNC (v1.0.236+): Post progress to GitHub after AC sync
+      # PROVIDER-AGNOSTIC AC SYNC (v1.0.255+): Sync progress to all providers
       # ========================================================================
-      GITHUB_AC_HANDLER="${HOOK_DIR}/../../../specweave-github/hooks/github-ac-sync-handler.sh"
-      if [[ -f "$GITHUB_AC_HANDLER" ]]; then
-        safe_run_background "$GITHUB_AC_HANDLER" "github-ac-sync" "$INC_ID"
+      AC_SYNC_DISPATCHER="${HOOK_DIR}/../handlers/ac-sync-dispatcher.sh"
+      if [[ -f "$AC_SYNC_DISPATCHER" ]]; then
+        safe_run_background "$AC_SYNC_DISPATCHER" "ac-sync" "$INC_ID"
       fi
 
       # ========================================================================

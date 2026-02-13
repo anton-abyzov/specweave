@@ -226,10 +226,7 @@ describe('File Implementation Verification', () => {
       // 'github-sync-bidirectional.ts', // Removed - deprecated module deleted
       'github-board-resolver.ts',
       'github-hierarchical-sync.ts',
-      'github-increment-sync-cli.ts',
-      'github-sync-increment-changes.ts',
       'duplicate-detector.ts',
-      'ThreeLayerSyncManager.ts',
     ];
 
     for (const file of filesToCheck) {
