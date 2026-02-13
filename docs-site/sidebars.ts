@@ -303,6 +303,11 @@ const sidebars: SidebarsConfig = {
       ],
     },
     {
+      type: 'doc',
+      id: 'guides/life-automation',
+      label: 'Life Automation',
+    },
+    {
       type: 'category',
       label: 'Workflows',
       collapsed: false,

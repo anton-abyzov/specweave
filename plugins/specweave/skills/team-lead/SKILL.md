@@ -1,5 +1,5 @@
 ---
-description: Orchestrate multi-agent parallel development using Claude Code Agent Teams. Spawns domain-specialized agents (frontend, backend, database, testing, security, DevOps, mobile, ML) with contract-first coordination. Activates for: team setup, parallel agents, multi-repo work, team lead, agent teams.
+description: Orchestrate multi-agent parallel development with domain-specialized agents. Use when saying "team setup", "parallel agents", "team lead", or "agent teams".
 ---
 
 # Team Lead
