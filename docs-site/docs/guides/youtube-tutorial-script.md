@@ -794,29 +794,31 @@ cat ~/.claude/settings.json
 
 **[SCREEN: Navigate to docs/overview/philosophy]**
 
-> "Let me explain the eight principles that guide everything in SpecWeave."
+> "Let me explain the nine principles that guide everything in SpecWeave."
 
 **[READ through principles]**
 
-> "**Principle 1: Specification Before Implementation**. Define WHAT and WHY before HOW. No more jumping straight to code.
+> "**Principle 1: Plan as Source of Truth**. This is the big one. The plan — spec.md, plan.md, tasks.md — is the single source of truth. Code is a derivative. If you change your mind mid-build, you update the plan first, then adjust code. Never the other way around.
 >
-> **Principle 2: Append-Only Snapshots + Living Documentation**. This is revolutionary — most systems make you choose between historical context OR current docs. SpecWeave gives you BOTH."
+> **Principle 2: Specification Before Implementation**. Define WHAT and WHY before HOW. No more jumping straight to code.
+>
+> **Principle 3: Append-Only Snapshots + Living Documentation**. This is revolutionary — most systems make you choose between historical context OR current docs. SpecWeave gives you BOTH."
 
 **[Point to the table explaining increments vs living docs]**
 
 > "Increments are immutable snapshots — like Git commits for features. Living docs are always current, auto-updated by hooks. Both are essential.
 >
-> **Principle 3: Context Precision**. 70% token reduction. Load only what you need.
+> **Principle 4: Context Precision**. 70% token reduction. Load only what you need.
 >
-> **Principle 4: Test-Validated Features**. Every feature proven through tests. Embedded in your tasks.
+> **Principle 5: Test-Validated Features**. Every feature proven through tests. Embedded in your tasks.
 >
-> **Principle 5: Regression Prevention**. Document before you modify brownfield code.
+> **Principle 6: Regression Prevention**. Document before you modify brownfield code.
 >
-> **Principle 6: Scalable**. Works for solo developers or 100-person teams.
+> **Principle 7: Scalable**. Works for solo developers or 100-person teams.
 >
-> **Principle 7: Auto-Role Routing**. Skills detect what you need automatically. Over 90% routing accuracy.
+> **Principle 8: Auto-Role Routing**. Skills detect what you need automatically. Over 90% routing accuracy.
 >
-> **Principle 8: Closed-Loop Validation**. E2E tests must tell the truth. No false positives."
+> **Principle 9: Closed-Loop Validation**. E2E tests must tell the truth. No false positives."
 
 ---
 
@@ -1277,117 +1279,231 @@ specweave init .
 
 ---
 
-## SECTION 12.5: SELF-IMPROVING SKILLS (33:30 - 35:30)
+## SECTION 12.5: PROGRAMMABLE SKILLS - THE SPECWEAVE ADVANTAGE (33:30 - 35:30)
 
-**[SCREEN: Navigate to docs/guides/self-improving-skills]**
+**[SCREEN: Navigate to .specweave/skill-memories/ directory]**
 
-> "Now here's something truly game-changing — and I saved the best for almost last. Self-improving skills."
+> "Now here's something that sets SpecWeave apart from every other AI tool. And I mean EVERY other tool. Programmable skills."
 
-**[EXCALIDRAW: The Memory Problem diagram]**
+**[PAUSE for emphasis]**
+
+> "Skills aren't just prompts. They're programs. And like any program, you can customize them.
+>
+> But here's where it gets revolutionary — unlike traditional software where behavior is locked and obfuscated, SpecWeave skills follow the **Open/Closed Principle** from SOLID design."
+
+**[EXCALIDRAW: Traditional Software vs SpecWeave Skills]**
 
 ```
-┌─────────────────────────────────────────────────────┐
-│              THE MEMORY PROBLEM                      │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│   Monday: "Don't use that button, use our component"│
-│                      ↓                               │
-│   Tuesday: [Same mistake]                            │
-│                      ↓                               │
-│   Wednesday: [Same correction]                       │
-│                      ↓                               │
-│   Forever: Repeating yourself                        │
-│                                                      │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│              TRADITIONAL SOFTWARE                         │
+├──────────────────────────────────────────────────────────┤
+│                                                           │
+│   ┌─────────────────┐                                    │
+│   │ Compiled Binary │  ← You can't change this           │
+│   │  (Obfuscated)   │  ← Vendor lock-in                  │
+│   └─────────────────┘  ← Take it or leave it             │
+│                                                           │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│              SPECWEAVE SKILLS                             │
+├──────────────────────────────────────────────────────────┤
+│                                                           │
+│   ┌──────────────┐     ┌─────────────────┐               │
+│   │  SKILL.md    │  +  │ skill-memories/ │               │
+│   │ (Base Logic) │     │ (Your Rules)    │               │
+│   │  CLOSED ⛔   │     │   OPEN ✅       │               │
+│   └──────────────┘     └─────────────────┘               │
+│          ↓                      ↓                         │
+│      ┌─────────────────────────────┐                     │
+│      │   Claude applies both       │                     │
+│      │   = Customized behavior     │                     │
+│      └─────────────────────────────┘                     │
+│                                                           │
+└──────────────────────────────────────────────────────────┘
 ```
 
-> "Every LLM session starts from zero. Monday you correct Claude about button usage. Tuesday, same mistake. Wednesday, same correction. Without memory, you're repeating yourself forever.
+**[POINT to the contrast]**
+
+> "See the difference?
 >
-> This isn't a Claude problem — it's every AI tool. Naming conventions, logging patterns, component usage — you correct once, but tomorrow it forgets."
-
-**[SCROLL to How It Works section]**
-
-> "SpecWeave's Reflect system solves this with a deceptively simple approach."
-
-**[READ the flow]**
-
-> "When you make a correction during a session — 'No, always use our Button component' — Reflect detects that signal. It extracts the learning, categorizes it, and saves it to a skill memory file.
+> **Traditional software**: Closed for modification. You're stuck with what the developer built. Want different behavior? Fork the code, maintain your own version, good luck.
 >
-> Next session, when that skill loads, Claude reads both the SKILL.md AND the MEMORY.md. Your correction is now permanent knowledge."
+> **SpecWeave skills**: SKILL.md is closed — the core logic is stable. But skill-memories are OPEN for extension. You add YOUR rules, YOUR preferences, YOUR custom logic. And Claude reads both."
 
-**[TERMINAL: Show commands]**
+**[OPEN: .specweave/skill-memories/frontend.md]**
+
+> "Let me show you what this looks like in practice."
+
+**[LIVE DEMO: TYPE in Claude Code]**
+
+```
+You: "Generate a login form"
+Claude: *creates form with useState*
+```
+
+**[SCREEN: Show the generated code with useState]**
+
+> "First try. Claude uses useState for form state. But that's not how we do it here."
+
+**[TYPE]**
+
+```
+You: "No, we always use React Hook Form with Zod validation"
+```
+
+**[SCREEN: Show Claude regenerating with React Hook Form]**
+
+> "Watch what happens behind the scenes."
+
+**[SCREEN SPLIT: Left = conversation, Right = file system]**
+
+**[SHOW: .specweave/skill-memories/frontend.md being updated]**
+
+```markdown
+# frontend Skill Memory
+
+### Form Handling
+- Use React Hook Form for all forms
+- Combine with Zod for validation schemas
+- Never use plain useState for form state
+```
+
+> "SpecWeave detected the correction. It extracted the learning. It saved it to the skill memory file.
+>
+> This isn't just a note. This is **programming the skill**. Next session, Claude automatically follows this rule."
+
+**[NEW SESSION - demonstrate]**
+
+```
+You: "Generate a signup form"
+Claude: *automatically uses React Hook Form + Zod*
+```
+
+**[SCREEN: Show the generated code already using React Hook Form]**
+
+> "No reminder needed. No repeating yourself. Claude read the SKILL.md AND your skill-memories.
+>
+> You've **programmed the frontend skill** to match your project's patterns."
+
+**[DRIVE HOME THE DIFFERENTIATOR]**
+
+> "This is fundamentally different from GitHub Copilot, Cursor, or any other code assistant.
+>
+> **Copilot**: Suggests code. Black box. Can't customize how it thinks.
+>
+> **Cursor**: Similar. Proprietary. You get what they give you.
+>
+> **SpecWeave**: Every skill is transparent (SKILL.md) AND customizable (skill-memories/*.md).
+>
+> Think about that. Every skill you use — PM, Architect, Frontend, Backend, Testing, Security — is fully visible and extensible.
+>
+> **You're not locked into what the skill developer decided.**"
+
+**[SHOW ADVANCED EXAMPLE]**
+
+> "And here's where it gets really powerful. You're not limited to simple preferences.
+>
+> You can add LOGIC the original developer never imagined."
+
+**[SCREEN: Show advanced customization]**
+
+```markdown
+# .specweave/skill-memories/frontend.md
+
+### Custom Component Generation Logic
+When generating components:
+1. Check design system directory first (@/components/ui)
+2. If component exists, import it instead of creating
+3. If creating new:
+   - Extract to custom hooks if logic >50 lines
+   - Use composition over prop drilling
+   - Add Storybook story automatically
+
+### Context-Aware Behavior
+When user mentions "admin":
+- Add role-based access control checks
+- Include audit logging
+- Use stricter validation schemas
+```
+
+> "This is custom LOGIC. Not just preferences. Conditional behavior based on context.
+>
+> The frontend skill developer never thought of this. But you can add it. And Claude follows it. Every time."
+
+**[CONNECT TO OPEN/CLOSED PRINCIPLE]**
+
+> "This is the **Open/Closed Principle** in action.
+>
+> - **Closed for modification** — you never touch SKILL.md
+> - **Open for extension** — you add behavior through skill-memories
+>
+> Software engineering principles from the 1980s, applied to AI tools in 2026. And it works beautifully."
+
+**[SHOW THE COMMANDS]**
 
 ```bash
-# Enable auto-learning
+# Enable auto-learning from corrections
 /sw:reflect-on
 
 # Manual reflection after any session
 /sw:reflect
 
-# Check what Claude has learned
+# See what Claude has learned
 /sw:reflect-status
+
+# View your customizations
+ls .specweave/skill-memories/
+cat .specweave/skill-memories/frontend.md
 ```
 
-**[Point to the memory file example]**
+**[CONNECT TO AUTO MODE]**
 
-```markdown
-# frontend Skill Memory
-
-### component-usage
-
-#### LRN-2026-01-05-abc (High Confidence)
-**Context**: User corrected button component usage
-**Learning**: Always use `<Button variant='primary'>` for primary actions
-**Triggers**: button, primary, action
-```
-
-> "This is just markdown. No embeddings, no vector databases, no complex infrastructure. Plain text files that Claude reads naturally.
+> "When you combine this with auto mode, it's magical.
 >
-> And here's the beautiful part — these files are version controlled. You can see how your AI evolves over time, roll back wrong learnings, share team knowledge."
-
-**[EXCALIDRAW: Categories diagram]**
-
-```
-┌───────────────────────────────────────────────────────┐
-│                 LEARNING CATEGORIES                    │
-├───────────────────────────────────────────────────────┤
-│                                                        │
-│  🎨 component-usage    →  UI patterns, design system  │
-│  🔌 api-patterns       →  REST, GraphQL, error codes  │
-│  🧪 testing            →  Vitest, Playwright, mocks   │
-│  🚀 deployment         →  Wrangler, Vercel, Supabase  │
-│  🔐 security           →  Auth, validation, secrets   │
-│  🗄️ database           →  Queries, schema, migrations │
-│  📝 naming             →  Conventions, file structure │
-│  🏗️ architecture       →  Patterns, design decisions  │
-│                                                        │
-└───────────────────────────────────────────────────────┘
-```
-
-> "Learnings are automatically categorized. Button corrections go to component-usage. API feedback goes to api-patterns. Test corrections go to testing.
+> Run `/sw:auto`, Claude works autonomously for hours. When it finishes, the session-end hook triggers Reflect automatically.
 >
-> Each category maps to a skill, and each skill has its own memory file."
-
-**[Point to Auto Mode integration]**
-
-> "The magic happens when you combine this with auto mode. You run `/sw:auto`, Claude works autonomously. When the session ends, the stop hook triggers Reflect automatically. Any corrections you made during the session become permanent learning.
+> Any corrections you made during autonomous work? Permanent learning. Saved to skill-memories. Applied next session.
 >
-> Correct once, never again. That's the promise — and SpecWeave delivers."
+> **Correct once. Never again.**"
 
-**[TERMINAL: Show git integration]**
+**[SHOW GIT INTEGRATION]**
 
 ```bash
 # See learning history
-git log --oneline .specweave/skills/frontend/MEMORY.md
+git log --oneline .specweave/skill-memories/frontend.md
 
 # View recent learnings
-git diff HEAD~1 .specweave/skills/frontend/MEMORY.md
+git diff HEAD~1 .specweave/skill-memories/frontend.md
 
-# Rollback a wrong learning
-git checkout HEAD~1 -- .specweave/skills/frontend/MEMORY.md
+# Share team knowledge
+git push  # Skill memories sync to team
 ```
 
-> "Git integration means full traceability. You can see exactly when and why Claude learned something. If a learning was wrong, roll it back."
+> "And because these are just markdown files in Git, you get:
+>
+> - **Version control** — see how your AI evolved
+> - **Rollback** — undo wrong learnings
+> - **Team sharing** — everyone benefits from corrections
+> - **Transparency** — exactly what Claude knows"
+
+**[FINAL POINT - position against competitors]**
+
+> "This is why SpecWeave is different.
+>
+> It's not just smarter. It's **programmable**.
+>
+> Every skill you use is a tool you can customize, extend, and improve.
+>
+> You're not using software. You're **programming it** to match your exact needs.
+>
+> No vendor lock-in. No black boxes. Full transparency. Full control.
+>
+> **Skills are programs. And you control the programs.**"
+
+**[TRANSITION]**
+
+> "Skills as programmable tools. That's the SpecWeave philosophy. Now let's talk about where to deploy your work..."
 
 ---
 
@@ -3013,7 +3129,7 @@ specweave init .
 /sw:next
 
 # Living docs context
-/sw:context authentication   # Load relevant docs
+/sw:docs authentication   # Load relevant docs
 grep -ril "auth" .specweave/docs/internal/  # Search docs
 
 # External sync
@@ -3058,7 +3174,7 @@ cat .specweave/increments/0089-github-sync/spec.md  # View increment
 1:30 - Quick Preview: 5 Production Apps Built in a Month (100x faster)
 2:30 - What is SpecWeave? (3 Commands to Ship, Legacy/Startup/Enterprise)
 4:30 - THE CLAUDE CODE FOUNDATION (136 Skills, 68 Agents, 53 Commands, 24 Plugins)
-8:00 - Core Philosophy (8 Principles)
+8:00 - Core Philosophy (9 Principles)
 10:30 - Why Not BMAD or SpecKit? (4 Key Differences)
 12:00 - The Three-File Structure (spec.md, plan.md, tasks.md)
 14:30 - What is an Increment?

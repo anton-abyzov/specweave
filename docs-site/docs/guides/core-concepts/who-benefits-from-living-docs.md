@@ -10,7 +10,7 @@ Living documentation provides different levels of value to different stakeholder
 | **Human Auditors** | 🟢 HIGH | Compliance, traceability | Git history + structure |
 | **External Tool Sync** | 🟢 HIGH | Source of truth for GitHub/JIRA/ADO | Bidirectional sync |
 | **LLM during Planning** | 🟢 HIGH | Context injection via `/sw:increment` | Auto-injected context |
-| **LLM during Execution** | 🟡 MEDIUM | Context available via `/sw:context` | On-demand retrieval |
+| **LLM during Execution** | 🟡 MEDIUM | Context available via `/sw:docs` | On-demand retrieval |
 | **LLM during General Chat** | 🔴 LOW | Must explicitly reference docs | Manual file reads |
 
 ---
@@ -135,7 +135,7 @@ During `/sw:do`, agents work primarily from increment files (spec.md, tasks.md),
 
 ```bash
 # Explicit context loading
-/sw:context auth
+/sw:docs auth
 
 # Loads relevant living docs:
 # - .specweave/docs/internal/specs/*auth*
@@ -170,7 +170,7 @@ During general conversation, Claude doesn't automatically know about living docs
 
 ```bash
 # Before working on a feature, load its context
-/sw:context authentication
+/sw:docs authentication
 
 # Output: Relevant living docs content injected into conversation
 ```
@@ -277,18 +277,18 @@ Claude: *living-docs-navigator skill activates*
 
 ---
 
-## The `/sw:context` Command
+## The `/sw:docs` Command
 
 To bridge the gap, use the context loading command:
 
 ```bash
 # Load context for a topic
-/sw:context <topic>
+/sw:docs <topic>
 
 # Examples:
-/sw:context authentication    # Load auth-related docs
-/sw:context database          # Load DB-related docs
-/sw:context api               # Load API-related docs
+/sw:docs authentication    # Load auth-related docs
+/sw:docs database          # Load DB-related docs
+/sw:docs api               # Load API-related docs
 ```
 
 **What it does**:
@@ -331,7 +331,7 @@ To bridge the gap, use the context loading command:
 ### For Maximum Value Today
 
 1. **Use `/sw:increment`** for planning (auto-context)
-2. **Use `/sw:context`** before implementation work
+2. **Use `/sw:docs`** before implementation work
 3. **Reference living docs paths** in prompts
 4. **Keep CLAUDE.md updated** with docs references
 
@@ -375,10 +375,10 @@ authentication specs or ADRs in .specweave/docs/internal/"
 
 Claude will search and avoid contradicting existing decisions.
 
-### Tip 4: Use /sw:context for Explicit Loading
+### Tip 4: Use /sw:docs for Explicit Loading
 
 ```bash
-/sw:context authentication
+/sw:docs authentication
 ```
 
 Loads all auth-related living docs into conversation.
@@ -413,7 +413,7 @@ Claude follows links when exploring context.
 |-----------|--------------|-------------------|
 | **CLAUDE.md** | References living docs structure | Always visible |
 | **living-docs-navigator skill** | Progressive disclosure | When context needed |
-| **/sw:context command** | Explicit search + load | User invokes |
+| **/sw:docs command** | Explicit search + load | User invokes |
 | **/sw:increment planning** | Auto-injects existing specs | During planning |
 | **/sw:do workflow** | Loads relevant ADRs | During execution |
 
