@@ -3,13 +3,14 @@
  *
  * Tests the FULL skill-memories lifecycle:
  * 1. Learnings are written to CLAUDE.md (auto-loaded by Claude Code)
- * 2. Learnings are written to .specweave/skill-memories/{skill}.md (manual read)
- * 3. Skills have instructions to read their memory files
+ * 2. Learnings are written to .specweave/skill-memories/{skill}.md
+ * 3. Hook (user-prompt-submit.sh) injects memories when skills are invoked
  * 4. A specific instruction is actually applied when skill loads
  *
- * ARCHITECTURE:
+ * ARCHITECTURE (v1.0.198+):
  * - CLAUDE.md "Skill Memories" section → Auto-loaded by Claude Code
- * - .specweave/skill-memories/{skill}.md → Manual read via `cat` in SKILL.md
+ * - .specweave/skill-memories/{skill}.md → Injected by user-prompt-submit.sh hook
+ *   via get_skill_memory_context() (no longer via cat instructions in SKILL.md)
  *
  * @module tests/integration/reflection/skill-memories-loading
  */
@@ -199,43 +200,38 @@ describe('Skill Memories Loading Integration', () => {
     });
   });
 
-  describe('SKILL.md Memory Instructions Verification', () => {
-    // This tests that the SKILL.md files have correct instructions
-    // to read skill memories when they load
+  describe('Hook-Based Memory Loading Verification', () => {
+    // Since v1.0.198, skill memories are injected by user-prompt-submit.sh hook
+    // via get_skill_memory_context(), not by cat instructions in SKILL.md
 
-    const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+    const hooksDir = path.join(process.cwd(), 'plugins/specweave/hooks');
 
-    it('PM skill has memory read instruction', () => {
-      const pmSkillPath = path.join(pluginsDir, 'pm', 'SKILL.md');
+    it('hook has get_skill_memory_context function for skill memory injection', () => {
+      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
+      expect(fs.existsSync(hookPath)).toBe(true);
 
-      if (fs.existsSync(pmSkillPath)) {
-        const content = fs.readFileSync(pmSkillPath, 'utf-8');
-
-        // Must have the memory read instruction
-        expect(content).toContain('cat .specweave/skill-memories/pm.md');
-        expect(content).toContain('Project-Specific Learnings');
-      }
+      const content = fs.readFileSync(hookPath, 'utf-8');
+      expect(content).toContain('get_skill_memory_context()');
     });
 
-    it('Architect skill has memory read instruction', () => {
-      const architectSkillPath = path.join(pluginsDir, 'architect', 'SKILL.md');
+    it('hook injects memory during skill invocation', () => {
+      const hookPath = path.join(hooksDir, 'user-prompt-submit.sh');
+      const content = fs.readFileSync(hookPath, 'utf-8');
 
-      if (fs.existsSync(architectSkillPath)) {
-        const content = fs.readFileSync(architectSkillPath, 'utf-8');
-
-        expect(content).toContain('.specweave/skill-memories/');
-        expect(content).toContain('Project-Specific Learnings');
-      }
+      // When a skill is invoked, the hook calls get_skill_memory_context
+      expect(content).toContain('SKILL_MEMORY_RAW=$(get_skill_memory_context');
     });
   });
 
   describe('Instruction Execution Verification', () => {
     /**
-     * This is the KEY TEST the user requested:
      * Verify that a specific learning instruction would actually be executed.
      *
      * The learning "Enable interview process during increment creation for SpecWeave projects"
      * should result in the PM skill checking for deep interview mode.
+     *
+     * Architecture: Hook injects memory BEFORE skill content is processed,
+     * so learnings are available when the PM skill runs its deep interview check.
      */
 
     it('verifies PM learning about interview process is actionable', () => {
@@ -253,8 +249,8 @@ describe('Skill Memories Loading Integration', () => {
         'Enable interview process during increment creation for SpecWeave projects'
       );
 
-      // Now verify the PM skill would ACT on this learning:
-      // The PM SKILL.md has a "Deep Interview Mode Check" section
+      // Verify the PM skill has the Deep Interview Mode Check section
+      // (the hook injects the memory content before the skill processes this)
       const pmSkillPath = path.join(
         process.cwd(),
         'plugins/specweave/skills/pm/SKILL.md'
@@ -267,35 +263,33 @@ describe('Skill Memories Loading Integration', () => {
         expect(skillContent).toContain('Deep Interview Mode Check');
         expect(skillContent).toContain('jq -r \'.planning.deepInterview.enabled');
         expect(skillContent).toContain('phases/00-deep-interview.md');
-
-        // And it must read skill memories BEFORE starting work
-        expect(skillContent).toContain('Before starting work');
-        expect(skillContent).toContain('cat .specweave/skill-memories/pm.md');
       }
     });
 
-    it('verifies skill memory is loaded before interview check', () => {
-      // The PM skill should load memories BEFORE doing the interview check
-      // This ensures learnings can influence interview behavior
+    it('verifies hook injects memory before skill invocation', () => {
+      // The hook injects skill memory BEFORE the skill content is processed.
+      // This ensures learnings can influence skill behavior (e.g., interview mode).
 
+      const hookPath = path.join(
+        process.cwd(),
+        'plugins/specweave/hooks/user-prompt-submit.sh'
+      );
+
+      const content = fs.readFileSync(hookPath, 'utf-8');
+
+      // The hook should call get_skill_memory_context during skill invocation
+      const memoryInjectionPos = content.indexOf('SKILL_MEMORY_RAW=$(get_skill_memory_context');
+      expect(memoryInjectionPos).toBeGreaterThan(-1);
+
+      // The PM skill should still have Deep Interview Mode Check
       const pmSkillPath = path.join(
         process.cwd(),
         'plugins/specweave/skills/pm/SKILL.md'
       );
 
       if (fs.existsSync(pmSkillPath)) {
-        const content = fs.readFileSync(pmSkillPath, 'utf-8');
-
-        // Find positions of key sections
-        const memoryReadPosition = content.indexOf('cat .specweave/skill-memories/pm.md');
-        const deepInterviewCheckPosition = content.indexOf('Deep Interview Mode Check');
-
-        // Memory read should exist
-        expect(memoryReadPosition).toBeGreaterThan(-1);
-
-        // Both sections exist (we test presence, not order, since the skill
-        // may be structured differently)
-        expect(deepInterviewCheckPosition).toBeGreaterThan(-1);
+        const pmContent = fs.readFileSync(pmSkillPath, 'utf-8');
+        expect(pmContent).toContain('Deep Interview Mode Check');
       }
     });
   });

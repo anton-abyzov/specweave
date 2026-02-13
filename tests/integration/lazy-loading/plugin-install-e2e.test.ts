@@ -65,6 +65,26 @@ function isClaudeCliAvailable(): boolean {
  * at the top level, before any describe blocks register tests.
  */
 const CLI_AVAILABLE_AT_LOAD = isClaudeCliAvailable();
+
+/**
+ * Check if plugin subcommand works at MODULE LOAD TIME.
+ * claude --version may work but `claude plugin --help` can fail in
+ * some environments (VSCode debug, vitest runner context).
+ */
+function checkPluginCommandWorks(): boolean {
+  try {
+    const result = execFileNoThrowSync('claude', ['plugin', '--help'], {
+      timeout: 10000,
+      shell: true,
+    });
+    return result.success;
+  } catch {
+    return false;
+  }
+}
+
+const PLUGIN_CMD_WORKS = CLI_AVAILABLE_AT_LOAD && checkPluginCommandWorks();
+
 if (!CLI_AVAILABLE_AT_LOAD) {
   console.log('⚠️  Claude CLI not available - tests will be skipped');
   console.log('   Install: npm install -g @anthropic-ai/claude-code');
@@ -332,7 +352,7 @@ describe('Direct CLI Plugin Install Test', () => {
     clearCliCache();
   });
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should enable and disable plugin via claude CLI', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should enable and disable plugin via claude CLI', () => {
     // Use sw@specweave which is always installed as the core plugin
     const pluginKey = 'sw@specweave';
 
@@ -401,7 +421,7 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   🧹 Plugin disabled (cleanup complete)\n');
   }, 90000);
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin from official Claude marketplace', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin from official Claude marketplace', () => {
     // Test with a plugin from the SpecWeave marketplace (reliable for CI/CD)
     // Skip if external marketplace is unavailable
     const pluginKey = 'sw-testing@specweave';
@@ -434,7 +454,7 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   ✅ Marketplace plugin install worked!\n');
   }, 90000);
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install and uninstall SpecWeave plugin using SHORT name', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should install and uninstall SpecWeave plugin using SHORT name', () => {
     // Test the CORRECT way to install SpecWeave plugins:
     // Use SHORT name from marketplace.json (sw-testing), NOT folder name (specweave-testing)
     //
@@ -556,7 +576,7 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log('   ✅ Full install/uninstall cycle completed!\n');
   }, 120000);
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should list installed plugins via claude plugin list', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should list installed plugins via claude plugin list', () => {
     console.log('\n📋 Testing: claude plugin list');
 
     const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
@@ -575,7 +595,7 @@ describe('Direct CLI Plugin Install Test', () => {
     console.log(`   Found ${pluginCount} SpecWeave plugins\n`);
   });
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should show plugin version via claude --version', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should show plugin version via claude --version', () => {
     console.log('\n🔍 Testing: claude --version');
 
     const result = execFileNoThrowSync('claude', ['--version'], {
@@ -598,11 +618,11 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('Prerequisites', () => {
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should have Claude CLI installed', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should have Claude CLI installed', () => {
       expect(CLI_AVAILABLE_AT_LOAD).toBe(true);
     });
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should have core plugins available', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should have core plugins available', () => {
       // Check that specweave-router is registered (required for lazy loading)
       // Try both sw-router (marketplace name) and specweave-router (directory name)
       const routerRegistered = isPluginInstalled('sw-router') || isPluginInstalled('specweave-router');
@@ -620,7 +640,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('LLM Detection Flow', () => {
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect frontend plugins for React prompt', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should detect frontend plugins for React prompt', async () => {
       const prompt = 'Build a React dashboard with TypeScript';
 
       const detection = await runDetectIntent(prompt);
@@ -635,7 +655,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000); // 30s timeout for LLM
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect backend plugins for API prompt', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should detect backend plugins for API prompt', async () => {
       const prompt = 'Create a REST API with Express and PostgreSQL';
 
       const detection = await runDetectIntent(prompt);
@@ -648,7 +668,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000);
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should detect testing plugins for test prompt', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should detect testing plugins for test prompt', async () => {
       const prompt = 'Write E2E tests with Playwright for the login flow';
 
       const detection = await runDetectIntent(prompt);
@@ -661,7 +681,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 30000);
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should return empty for non-dev prompt', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should return empty for non-dev prompt', async () => {
       const prompt = 'What is the weather today?';
 
       const detection = await runDetectIntent(prompt);
@@ -747,7 +767,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // SETUP: Just log - don't uninstall anything before test
     // We'll track what we install and clean up ONLY those
     beforeAll(() => {
-      if (!CLI_AVAILABLE_AT_LOAD) return;
+      if (!PLUGIN_CMD_WORKS) return;
       console.log('\n📋 E2E SETUP: Starting clean test - will track installed plugins for cleanup');
       pluginsInstalledByTest.clear();
     });
@@ -755,7 +775,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // TEARDOWN: Clean up ONLY plugins that THIS TEST installed
     // This is safe because we tracked exactly what we installed
     afterAll(() => {
-      if (!CLI_AVAILABLE_AT_LOAD) return;
+      if (!PLUGIN_CMD_WORKS) return;
 
       if (pluginsInstalledByTest.size === 0) {
         console.log('\n✨ E2E TEARDOWN: No plugins were installed by this test - nothing to clean up');
@@ -784,7 +804,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       console.log('   ✅ Cleanup complete');
     });
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin via detect-intent --install and VERIFY installation', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin via detect-intent --install and VERIFY installation', async () => {
       // Use React prompt which should detect specweave-frontend
       // This is the ONLY plugin this test will install
       const prompt = 'Build a React dashboard with TypeScript and Material UI';
@@ -860,7 +880,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       }
     }, 90000); // 90s timeout for LLM + install + verification
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should handle already-installed plugins gracefully', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should handle already-installed plugins gracefully', async () => {
       // Use same React prompt - if frontend plugin was installed in previous test,
       // this should report "already installed"
       const prompt = 'Create a Vue.js component for user profile';
@@ -892,7 +912,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
   });
 
   describe('Direct Plugin Installation via Claude CLI', () => {
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should install plugin via claude plugin install', async () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin via claude plugin install', async () => {
       // Use Claude's native CLI: `claude plugin install sw-frontend@specweave`
       const result = installPluginViaClaude(TEST_PLUGIN);
 
@@ -927,7 +947,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(registered || exists).toBe(true);
     }, 90000); // Extend timeout for marketplace operations
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should report plugin already installed on repeat install', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should report plugin already installed on repeat install', () => {
       // Claude CLI gracefully handles already-installed plugins
       const result = installPluginViaClaude(TEST_PLUGIN);
 
@@ -966,7 +986,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     // Tests that use Claude CLI directly (not through specweave)
     // Claude CLI has: enable, disable, install, uninstall, list
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should enable plugin via claude plugin enable', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should enable plugin via claude plugin enable', () => {
       // Use Claude CLI directly to enable a plugin
       const result = enablePluginViaClaude(TEST_PLUGIN);
 
@@ -980,7 +1000,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(enabled).toBe(true);
     });
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should list plugins via claude plugin list', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should list plugins via claude plugin list', () => {
       const result = execFileNoThrowSync('claude', ['plugin', 'list'], {
         timeout: 15000,
         shell: true,
@@ -992,7 +1012,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       console.log(`📦 Found ${(result.stdout.match(/specweave/g) || []).length} specweave plugins`);
     });
 
-    it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should show enabled plugins in settings.json', () => {
+    it.skipIf(!PLUGIN_CMD_WORKS)('should show enabled plugins in settings.json', () => {
       // Verify Claude's enabledPlugins tracking works
       if (!fs.existsSync(CLAUDE_SETTINGS_PATH)) {
         console.log('⚠️  settings.json not found, skipping');
@@ -1037,7 +1057,7 @@ describe('Config Toggle Tests', () => {
     }
   });
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should skip detection when pluginAutoLoad.enabled: false', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should skip detection when pluginAutoLoad.enabled: false', () => {
     // Write config with autoload disabled
     fs.writeFileSync(
       TEST_CONFIG_PATH,
@@ -1073,7 +1093,7 @@ describe('Config Toggle Tests', () => {
     }
   });
 
-  it.skipIf(!CLI_AVAILABLE_AT_LOAD)('should run detection when pluginAutoLoad.enabled: true', () => {
+  it.skipIf(!PLUGIN_CMD_WORKS)('should run detection when pluginAutoLoad.enabled: true', () => {
     // Write config with autoload enabled
     fs.writeFileSync(
       TEST_CONFIG_PATH,
