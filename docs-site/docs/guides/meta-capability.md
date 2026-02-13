@@ -6,7 +6,7 @@
 
 ## What Is Meta-Capability?
 
-**SpecWeave isn't just a framework** - it's a **self-extending system** where:
+**SpecWeave isn't just a tool** - it's a **self-extending system** where:
 
 - ✅ **Agents build agents** - Core agents create custom domain experts
 - ✅ **Skills build skills** - Core skills generate specialized capabilities

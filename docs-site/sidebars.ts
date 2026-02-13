@@ -477,6 +477,44 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
+  // Extensible Skills sidebar
+  skillsSidebar: [
+    {
+      type: 'doc',
+      id: 'guides/extensible-skills',
+      label: 'The Standard',
+    },
+    {
+      type: 'category',
+      label: 'Skill System',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/claude-skills-deep-dive',
+          label: 'Claude Skills Deep Dive',
+        },
+        {
+          type: 'doc',
+          id: 'guides/self-improving-skills',
+          label: 'Self-Improving Skills',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Reference',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'reference/skills',
+          label: 'All Skills (100+)',
+        },
+      ],
+    },
+  ],
+
   // Academy sidebar (consolidated learning)
   academySidebar: [
     {
