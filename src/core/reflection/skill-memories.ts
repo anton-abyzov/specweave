@@ -141,9 +141,16 @@ export function writeSkillMemoryFile(
   // Add new learning
   const allLearnings = [...existingLearnings, learning.learning];
 
-  // Generate and write content
+  // Generate and write content atomically (temp file + rename)
   const content = generateSkillMemoryContent(learning.skill, allLearnings);
-  fs.writeFileSync(filePath, content);
+  const tempFile = `${filePath}.tmp.${Date.now()}`;
+  try {
+    fs.writeFileSync(tempFile, content);
+    fs.renameSync(tempFile, filePath);
+  } catch (err) {
+    try { fs.unlinkSync(tempFile); } catch { /* ignore cleanup failure */ }
+    throw err;
+  }
 
   return { written: true };
 }
@@ -307,12 +314,19 @@ export function pruneSkillMemories(
       const prunedInSkill = originalCount - filtered.length;
 
       if (prunedInSkill > 0) {
-        // Regenerate file content
+        // Regenerate file content atomically (temp file + rename)
         const newContent = generateSkillMemoryContent(
           skill,
           filtered.map((l) => `**${l.date}**: ${l.learning}`)
         );
-        fs.writeFileSync(filePath, newContent);
+        const tempFile = `${filePath}.tmp.${Date.now()}`;
+        try {
+          fs.writeFileSync(tempFile, newContent);
+          fs.renameSync(tempFile, filePath);
+        } catch (writeErr) {
+          try { fs.unlinkSync(tempFile); } catch { /* ignore cleanup failure */ }
+          throw writeErr;
+        }
 
         result.prunedCount += prunedInSkill;
         result.skillsAffected.push(skill);

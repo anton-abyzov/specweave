@@ -68,9 +68,6 @@ if [[ -n "$AGENT_TYPE" ]]; then
     sw:architect|sw-architect)
       echo '{"continue":true,"systemMessage":"🏗️ Architect Agent: Technical design context loaded. Focus on ADRs, system design, and architecture patterns."}'
       ;;
-    sw:tech-lead|sw-tech-lead)
-      echo '{"continue":true,"systemMessage":"👨‍💻 Tech Lead Agent: Implementation context loaded. Focus on code quality, best practices, and task execution."}'
-      ;;
   esac
 fi
 

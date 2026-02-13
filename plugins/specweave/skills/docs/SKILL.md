@@ -6,14 +6,6 @@ description: Browse and load SpecWeave living docs (public, internal, architectu
 
 Browse, search, and load SpecWeave living documentation into the conversation.
 
-## Project-Specific Learnings
-
-Before starting work, check for project-specific learnings:
-
-```bash
-cat .specweave/skill-memories/docs.md 2>/dev/null || echo "No project learnings yet"
-```
-
 ## Documentation Structure
 
 ```

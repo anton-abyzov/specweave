@@ -39,7 +39,6 @@ These skills form the foundation of spec-driven development.
 | [`sw:increment-planner`](#increment-planner) | Plan and create increments with PM/Architect collaboration | Starting any new feature |
 | [`sw:pm`](#pm) | Product Manager for specs, user stories, acceptance criteria | Writing requirements |
 | [`sw:architect`](#architect) | System architect for technical designs and ADRs | Architecture decisions |
-| [`sw:tech-lead`](#tech-lead) | Technical lead for code quality and implementation guidance | Code reviews, refactoring |
 | [`sw:role-orchestrator`](#role-orchestrator) | Multi-agent coordination (PM, Architect, DevOps, QA) | Complex full-stack features |
 | [`sw:roadmap-planner`](#roadmap-planner) | Product roadmap and feature prioritization | Quarterly planning |
 | [`sw:spec-generator`](#spec-generator) | Generate spec.md, plan.md, tasks.md from ideas | Converting ideas to specs |
@@ -86,20 +85,6 @@ These skills form the foundation of spec-driven development.
 - Microservices vs monolith decisions
 - Database schema design
 - Technology selection trade-offs
-
-### tech-lead
-
-**Purpose**: Technical lead bridging architecture and implementation.
-
-```bash
-/sw:tech-lead  # Code quality guidance
-```
-
-**Covers:**
-- Code review best practices
-- SOLID principles
-- Design patterns
-- Technical debt management
 
 ### role-orchestrator
 

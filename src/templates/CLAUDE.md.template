@@ -38,7 +38,7 @@ plugins/specweave/
 └── skills/            # Auto-activating expertise (keyword-triggered)
     ├── architect/     # → activates on "architecture", "system design"
     ├── pm/            # → activates on "product", "requirements", "MVP"
-    └── tech-lead/     # → activates on "code review", "best practices"
+    └── code-simplifier/  # → activates on "simplify code", "clean up code"
 ```
 
 ### Quick Examples

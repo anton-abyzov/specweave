@@ -364,9 +364,9 @@ plugins:
         - type: "pr_merged"
           required: true
 
-        # Require approval from tech lead
+        # Require approval from architect
         - type: "approval"
-          approvers: ["@tech-lead"]
+          approvers: ["@architect"]
           required: true
 ```
 

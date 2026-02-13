@@ -242,14 +242,4 @@ I'm successful when:
 **Commands**: `/sw:reopen`, `/sw:status`
 **Related Skills**: `increment-planner`, `tdd-workflow`
 
-## Project-Specific Learnings
-
-**Before starting work, check for project-specific learnings:**
-
-```bash
-# Check if skill memory exists for this skill
-cat .specweave/skill-memories/smart-reopen-detector.md 2>/dev/null || echo "No project learnings yet"
-```
-
-Project learnings are automatically captured by the reflection system when corrections or patterns are identified during development. These learnings help you understand project-specific conventions and past decisions.
 

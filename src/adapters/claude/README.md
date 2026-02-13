@@ -51,7 +51,6 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 | `devops` | DevOps Engineer | Infrastructure, deployment |
 | `sw-testing:qa-engineer` | QA Engineer | Test strategy, test cases |
 | `security` | Security Engineer | Threat modeling, audits |
-| `tech-lead` | Technical Lead | Code review, best practices |
 | `frontend` | Frontend Developer | UI implementation |
 | `python-backend` | Python Backend Dev | FastAPI, Django APIs |
 | `nodejs-backend` | Node.js Backend Dev | Express, NestJS APIs |

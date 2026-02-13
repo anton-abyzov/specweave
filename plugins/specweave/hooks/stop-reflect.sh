@@ -194,7 +194,8 @@ run_reflection() {
                 log_reflect "warn" "Reflection completed with exit code $result"
             fi
         ) &
-        log_reflect "info" "Reflection started in background"
+        disown 2>/dev/null
+        log_reflect "info" "Reflection started in background (detached)"
     else
         log_reflect "warn" "specweave CLI not found"
     fi
@@ -269,7 +270,8 @@ run_reflection_with_logging() {
 
             rm -f "$temp_output" 2>/dev/null
         ) &
-        log_reflect "info" "Reflection started in background"
+        disown 2>/dev/null
+        log_reflect "info" "Reflection started in background (detached)"
     else
         log_reflect "warn" "specweave CLI not found"
         log_reflect_decision "error" "specweave CLI not found" "$transcript_lines" true 0 "[]"

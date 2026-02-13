@@ -91,7 +91,7 @@ Three specialized reviewers examine the codebase simultaneously from different a
 | # | Role | Skill(s) | Owns | Responsibility |
 |---|------|----------|------|----------------|
 | 1 | Security | `sw:security` + `sw:security-patterns` | All files (read-only analysis) | Audit for vulnerabilities, injection vectors, auth flaws, secrets exposure, dependency CVEs |
-| 2 | Quality | `sw:grill` + `sw:tech-lead` + `sw:code-simplifier` | All files (read-only analysis) | Review code quality, complexity, naming, duplication, SOLID violations, performance anti-patterns |
+| 2 | Quality | `sw:grill` + `sw:code-simplifier` | All files (read-only analysis) | Review code quality, complexity, naming, duplication, SOLID violations, performance anti-patterns |
 | 3 | Docs | `sw:docs-updater` | All files (read-only analysis) | Check doc coverage, stale comments, missing JSDoc, README accuracy, spec-to-code alignment |
 
 #### Execution Chain
