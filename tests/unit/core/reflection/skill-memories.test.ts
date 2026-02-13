@@ -16,6 +16,7 @@ import {
   writeSkillMemoryFile,
   readSkillMemoryFile,
   SKILL_MEMORY_DIR,
+  getSkillMemoryDir,
   generateSkillMemoryContent,
   readAllSkillMemories,
   pruneSkillMemories,
@@ -28,6 +29,8 @@ describe('skill-memories', () => {
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-mem-test-'));
+    // Create .specweave/ so getSkillMemoryDir returns .specweave/skill-memories
+    fs.mkdirSync(path.join(tempDir, '.specweave'), { recursive: true });
     skillMemoriesDir = path.join(tempDir, '.specweave', 'skill-memories');
   });
 
@@ -35,6 +38,34 @@ describe('skill-memories', () => {
     if (tempDir && fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
+  });
+
+  describe('getSkillMemoryDir', () => {
+    it('returns .specweave/skill-memories when .specweave/ exists', () => {
+      fs.mkdirSync(path.join(tempDir, '.specweave'), { recursive: true });
+      expect(getSkillMemoryDir(tempDir)).toBe('.specweave/skill-memories');
+    });
+
+    it('returns .claude/skill-memories when .specweave/ does not exist', () => {
+      // Use a fresh dir without .specweave/
+      const plainDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-mem-plain-'));
+      try {
+        expect(getSkillMemoryDir(plainDir)).toBe('.claude/skill-memories');
+      } finally {
+        fs.rmSync(plainDir, { recursive: true, force: true });
+      }
+    });
+
+    it('write then read round-trips through .claude/ when no .specweave/', () => {
+      const plainDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-mem-plain-'));
+      try {
+        writeSkillMemoryFile(plainDir, { skill: 'test', learning: 'round-trip check' });
+        const learnings = readSkillMemoryFile(plainDir, 'test');
+        expect(learnings).toContain('round-trip check');
+      } finally {
+        fs.rmSync(plainDir, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('writeSkillMemoryFile', () => {

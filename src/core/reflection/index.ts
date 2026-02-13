@@ -44,6 +44,7 @@ export {
   formatMemoriesForPrompt,
   generateSkillMemoryContent,
   SKILL_MEMORY_DIR,
+  getSkillMemoryDir,
   DEFAULT_PRUNE_CONFIG,
   type PruneConfig,
   type ParsedLearning,
