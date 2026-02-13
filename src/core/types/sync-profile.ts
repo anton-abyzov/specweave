@@ -720,6 +720,60 @@ export interface GitHubSyncMetadata {
 }
 
 /**
+ * Per-User-Story link to a JIRA Issue
+ * Stored in metadata: externalLinks.jira.userStories[US-XXX]
+ */
+export interface JiraUserStoryLink {
+  /** JIRA issue key (e.g., PROJ-123) */
+  issueKey: string;
+
+  /** Full URL to the JIRA issue */
+  issueUrl: string;
+
+  /** When this user story was last synced */
+  syncedAt: string;
+}
+
+/**
+ * JIRA sync metadata stored in metadata.json
+ * under externalLinks.jira
+ */
+export interface JiraSyncMetadata {
+  /** Overall sync status */
+  syncStatus: string;
+
+  /** Per-User-Story issue links */
+  userStories: Record<string, JiraUserStoryLink>;
+}
+
+/**
+ * Per-User-Story link to an ADO Work Item
+ * Stored in metadata: externalLinks.ado.userStories[US-XXX]
+ */
+export interface AdoUserStoryLink {
+  /** ADO work item ID */
+  workItemId: number;
+
+  /** Full URL to the ADO work item */
+  workItemUrl: string;
+
+  /** When this user story was last synced */
+  syncedAt: string;
+}
+
+/**
+ * ADO sync metadata stored in metadata.json
+ * under externalLinks.ado
+ */
+export interface AdoSyncMetadata {
+  /** Overall sync status */
+  syncStatus: string;
+
+  /** Per-User-Story work item links */
+  userStories: Record<string, AdoUserStoryLink>;
+}
+
+/**
  * Check if GitHub config has Projects V2 enabled
  */
 export function hasGitHubProjectsV2(config: GitHubConfig): boolean {

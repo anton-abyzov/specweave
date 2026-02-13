@@ -933,78 +933,21 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 
 **If status sync enabled AND external links exist**:
 
-1. **GitHub Status Sync** (if GitHub issue linked):
-   ```typescript
-   // Use StatusSyncEngine to sync status
-   import { StatusSyncEngine } from '../../../src/core/sync/status-sync-engine.js';
-   import { GitHubStatusSync } from '../../../plugins/specweave-github/lib/github-status-sync.js';
+Uses provider-agnostic AC sync to post final progress to all enabled providers:
 
-   const engine = new StatusSyncEngine(config);
-   const githubSync = new GitHubStatusSync(token, owner, repo);
+```typescript
+import { syncACProgressToProviders } from '../../../src/core/ac-progress-sync.js';
 
-   // Prompt user
-   const shouldSync = await promptUser("Update GitHub issue #42 to 'closed'?");
+// Builds config from .specweave/config.json + metadata.json externalLinks
+// Syncs to ALL enabled providers (GitHub, JIRA, ADO) in a single call
+const result = await syncACProgressToProviders(
+  incrementId, affectedUSIds, specPath, config,
+);
 
-   if (shouldSync) {
-     const result = await engine.syncToExternal({
-       incrementId: '0001-user-authentication',
-       tool: 'github',
-       localStatus: 'completed',
-       localTimestamp: new Date().toISOString()
-     });
-
-     if (result.success) {
-       await githubSync.updateStatus(42, result.externalMapping);
-       await githubSync.postStatusComment(42, 'active', 'completed');
-     }
-   }
-   ```
-
-2. **JIRA Status Sync** (if JIRA issue linked):
-   ```typescript
-   import { JiraStatusSync } from '../../../plugins/specweave-jira/lib/jira-status-sync.js';
-
-   const jiraSync = new JiraStatusSync(domain, email, apiToken, projectKey);
-
-   const shouldSync = await promptUser("Update JIRA issue PROJ-123 to 'Done'?");
-
-   if (shouldSync) {
-     const result = await engine.syncToExternal({
-       incrementId: '0001-user-authentication',
-       tool: 'jira',
-       localStatus: 'completed',
-       localTimestamp: new Date().toISOString()
-     });
-
-     if (result.success) {
-       await jiraSync.updateStatus('PROJ-123', result.externalMapping);
-       await jiraSync.postStatusComment('PROJ-123', 'In Progress', 'completed');
-     }
-   }
-   ```
-
-3. **Azure DevOps Status Sync** (if ADO work item linked):
-   ```typescript
-   import { AdoStatusSync } from '../../../plugins/specweave-ado/lib/ado-status-sync.js';
-
-   const adoSync = new AdoStatusSync(organization, project, pat);
-
-   const shouldSync = await promptUser("Update ADO work item #456 to 'Closed'?");
-
-   if (shouldSync) {
-     const result = await engine.syncToExternal({
-       incrementId: '0001-user-authentication',
-       tool: 'ado',
-       localStatus: 'completed',
-       localTimestamp: new Date().toISOString()
-     });
-
-     if (result.success) {
-       await adoSync.updateStatus(456, result.externalMapping);
-       await adoSync.postStatusComment(456, 'Active', 'completed');
-     }
-   }
-   ```
+// result.github — posted comments, auto-closed issues
+// result.jira   — posted comments, transitioned to Done
+// result.ado    — posted comments, transitioned to Closed
+```
 
 **Report results**:
 ```
