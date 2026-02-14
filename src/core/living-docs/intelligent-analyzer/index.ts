@@ -37,6 +37,7 @@ import type {
   LLMProvider,
   ProgressCallback,
 } from './types.js';
+import type { LspContext } from '../lsp-bootstrapper.js';
 
 export interface IntelligentAnalysisOptions {
   projectPath: string;
@@ -54,12 +55,16 @@ export interface IntelligentAnalysisOptions {
   enableDiagrams?: boolean;
   /** Enable governance/standards detection (Phase G.4) */
   enableGovernance?: boolean;
+  /** LSP context from bootstrapper (v1.0.258+, used by downstream phases) */
+  lspContext?: LspContext;
 }
 
 export interface IntelligentAnalysisResult {
   repoAnalyses: Map<string, RepoAnalysis>;
   savedFiles: string[];
   checkpoint: IntelligentAnalysisCheckpoint;
+  /** LSP context passed through for downstream consumers */
+  lspContext?: LspContext;
 }
 
 export async function runIntelligentAnalysis(
@@ -77,6 +82,7 @@ export async function runIntelligentAnalysis(
     enableDeliveryOps = true,
     enableDiagrams = true,
     enableGovernance = true,
+    lspContext,
   } = options;
 
   const savedFiles: string[] = [];
@@ -84,7 +90,7 @@ export async function runIntelligentAnalysis(
 
   log('==========================================================');
   log('INTELLIGENT CODEBASE ANALYSIS');
-  log(`Repos: ${repos.length} | LLM: ${llmProvider ? 'enabled' : 'basic'}`);
+  log(`Repos: ${repos.length} | LLM: ${llmProvider ? 'enabled' : 'basic'} | LSP: ${lspContext?.availableLanguages.length ? lspContext.availableLanguages.join(', ') : 'none'}`);
   log('==========================================================');
 
   // Phase B: Deep Repo Analysis
@@ -301,7 +307,7 @@ export async function runIntelligentAnalysis(
   log(`Generated ${savedFiles.length} files`);
   log('==========================================================');
 
-  return { repoAnalyses, savedFiles, checkpoint };
+  return { repoAnalyses, savedFiles, checkpoint, lspContext };
 }
 
 function buildRepoOverview(analysis: RepoAnalysis): string {

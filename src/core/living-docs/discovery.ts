@@ -87,6 +87,9 @@ export interface DiscoveryResult {
   samplingConfig: SamplingConfig;
   discoveredAt: string;
 
+  /** Languages detected from file extensions (v1.0.258+) */
+  languagesDetected: string[];
+
   /** Umbrella detection result (v0.31.0+) */
   umbrella?: {
     /** Is this an umbrella project */
@@ -192,6 +195,88 @@ const TEST_PATTERNS = [
 ];
 
 /**
+ * Extension to language name mapping for LSP bootstrap
+ */
+const EXTENSION_TO_LANGUAGE: Record<string, string> = {
+  '.ts': 'typescript',
+  '.tsx': 'typescript',
+  '.js': 'javascript',
+  '.jsx': 'javascript',
+  '.mjs': 'javascript',
+  '.cjs': 'javascript',
+  '.py': 'python',
+  '.go': 'go',
+  '.rs': 'rust',
+  '.java': 'java',
+  '.kt': 'kotlin',
+  '.cs': 'csharp',
+  '.swift': 'swift',
+  '.php': 'php',
+  '.rb': 'ruby',
+  '.cpp': 'cpp',
+  '.c': 'c',
+  '.h': 'c',
+  '.hpp': 'cpp',
+  '.scala': 'scala',
+  '.vue': 'typescript', // Vue uses TS/JS
+  '.svelte': 'typescript', // Svelte uses TS/JS
+};
+
+/** Minimum file count per language to include in languagesDetected */
+const LANGUAGE_DETECTION_THRESHOLD = 5;
+
+/**
+ * Count actual lines of code in a file, excluding blank lines and comment-only lines.
+ *
+ * @param filePath - Absolute path to the file
+ * @returns Number of non-blank, non-comment lines, or 0 on error
+ */
+function countCodeLines(filePath: string): number {
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const lines = content.split('\n');
+    let count = 0;
+    let inBlockComment = false;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (inBlockComment) {
+        if (trimmed.includes('*/')) inBlockComment = false;
+        continue;
+      }
+      if (trimmed === '') continue; // blank line
+      if (trimmed.startsWith('//')) continue; // single-line comment (JS/TS/Go/Rust/Java/C#)
+      if (trimmed.startsWith('#') && !trimmed.startsWith('#!')) continue; // Python/Ruby comment (not shebang)
+      if (trimmed.startsWith('/*')) {
+        if (!trimmed.endsWith('*/')) inBlockComment = true;
+        continue;
+      }
+      count++;
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Derive languagesDetected from byExtension frequency data.
+ * Only includes languages with files >= LANGUAGE_DETECTION_THRESHOLD.
+ */
+function deriveLanguagesDetected(byExtension: Record<string, number>): string[] {
+  const langCounts: Record<string, number> = {};
+  for (const [ext, count] of Object.entries(byExtension)) {
+    const lang = EXTENSION_TO_LANGUAGE[ext];
+    if (lang) {
+      langCounts[lang] = (langCounts[lang] || 0) + count;
+    }
+  }
+  return Object.entries(langCounts)
+    .filter(([, count]) => count >= LANGUAGE_DETECTION_THRESHOLD)
+    .map(([lang]) => lang)
+    .sort();
+}
+
+/**
  * Progress callback type
  */
 export type DiscoveryProgressCallback = (
@@ -239,6 +324,7 @@ export async function runDiscovery(
     tier: 'small',
     samplingConfig: calculateTier(0),
     discoveredAt: new Date().toISOString(),
+    languagesDetected: [],
   };
 
   // First pass: count directories for progress
@@ -302,6 +388,9 @@ export async function runDiscovery(
   // Calculate sampling tier
   result.tier = calculateTier(result.codebaseStats.totalFiles).tier;
   result.samplingConfig = calculateTier(result.codebaseStats.totalFiles);
+
+  // Derive detected languages from extension frequency
+  result.languagesDetected = deriveLanguagesDetected(result.codebaseStats.byExtension);
 
   return result;
 }
@@ -367,15 +456,9 @@ async function scanDirectory(
           result.codebaseStats.byType[fileType]++;
         }
 
-        // Estimate LOC for code files
+        // Count actual lines of code (excluding blanks and comments)
         if (fileType === 'code' && !isTest) {
-          try {
-            const stat = fs.statSync(fullPath);
-            // Rough estimate: average 40 bytes per line of code
-            result.codebaseStats.estimatedLOC += Math.round(stat.size / 40);
-          } catch {
-            // Ignore stat errors
-          }
+          result.codebaseStats.estimatedLOC += countCodeLines(fullPath);
         }
       }
     }
@@ -859,14 +942,9 @@ function analyzeModule(modulePath: string, relativePath: string): ModuleInfo {
             info.entryPoints.push(path.relative(modulePath, fullPath));
           }
 
-          // Estimate LOC
+          // Count actual lines of code
           if (EXTENSION_TYPES[ext] === 'code') {
-            try {
-              const stat = fs.statSync(fullPath);
-              info.estimatedLOC += Math.round(stat.size / 40);
-            } catch {
-              // Ignore stat errors
-            }
+            info.estimatedLOC += countCodeLines(fullPath);
           }
         }
       }
