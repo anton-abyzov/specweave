@@ -192,6 +192,60 @@ The DCI one-liner extracts **only** the content between `## Learnings` and the n
 
 ---
 
+## Beyond Memories: Project Context
+
+DCI blocks aren't limited to skill memories — they can load **any shell command output**. SpecWeave uses this to give skills awareness of the project environment.
+
+### How It Works
+
+Skills can have multiple DCI blocks. The first loads memories (user corrections), the second loads project context (config, tech stack, active increment):
+
+```markdown
+## Project Overrides
+!`s="my-skill"; for d in ... done 2>/dev/null; true`
+
+## Project Context
+!`.specweave/scripts/skill-context.sh my-skill 2>/dev/null; true`
+```
+
+The context script reads `.specweave/config.json`, detects tech stack from filesystem markers, and finds the active increment — all in a single POSIX shell script. Output is plain key-value pairs:
+
+```
+[config]
+testing.mode=TDD
+testing.enforcement=strict
+
+[project]
+tech=node,typescript,react
+multi-repo=false
+
+[increment]
+active=0205-my-feature
+status=in-progress
+completion=35%
+```
+
+### Why This Matters
+
+Without project context, every skill starts from zero — it doesn't know if you're using TDD, what your tech stack is, or which increment you're working on. With DCI-based context loading, skills adapt their behavior automatically:
+
+- **`/sw:do`** knows to follow TDD discipline when `testing.mode=TDD`
+- **`/sw:auto`** reads session limits from config instead of hardcoded defaults
+- **`/sw:validate`** knows what type of project it's validating
+
+### Creating Custom Context Loaders
+
+You can create your own context scripts. Any executable that outputs text works:
+
+```bash
+## My Custom Context
+!`./scripts/my-context.sh 2>/dev/null; true`
+```
+
+The `2>/dev/null; true` suffix ensures graceful degradation — if the script doesn't exist or fails, the skill still loads normally.
+
+---
+
 ## FAQ
 
 ### Q: How do I make my skill extensible?
@@ -220,6 +274,10 @@ EOF
 ```
 
 That's it. Next time the skill runs, those learnings are automatically loaded.
+
+### Q: Can I add my own DCI blocks?
+
+Yes. Any `!`command`` line in a `SKILL.md` is executed by Claude Code before loading the skill. You can add multiple DCI blocks — each one is an independent "sensor" that injects context. Always add `2>/dev/null; true` at the end for graceful degradation.
 
 ### Q: What if I make a wrong correction?
 

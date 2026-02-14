@@ -151,6 +151,153 @@ describe('ProjectService', () => {
     });
   });
 
+  describe('getProjectForIncrement Fallback Chain', () => {
+    it('should fall back to config project when spec.md has no project field', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+
+      // Mock: spec.md exists but has NO project field
+      vi.mocked(fsNative.existsSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) return true;
+        if (s.endsWith('config.json')) return true;
+        if (s.endsWith('.env')) return false;
+        return false;
+      });
+      vi.mocked(fsNative.readFileSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) {
+          return '# 0206: Test Increment\n\n## User Stories\n\n### US-001: Test\n';
+        }
+        if (s.endsWith('config.json')) {
+          return JSON.stringify({
+            project: { name: 'specweave' },
+            sync: {
+              enabled: true,
+              github: { enabled: true, owner: 'test-owner', repo: 'test-repo' },
+            },
+          });
+        }
+        return '';
+      });
+
+      await service.initialize();
+
+      // Spy on registry.requestSync
+      const registry = service.getRegistry();
+      const requestSyncSpy = vi.spyOn(registry, 'requestSync').mockResolvedValue();
+
+      await service.emitIncrementEvent('increment.done', '0206-test-increment');
+
+      // MUST call requestSync - not silently drop the event
+      expect(requestSyncSpy).toHaveBeenCalled();
+    });
+
+    it('should derive project ID from sync.github.owner/repo when project.name is missing', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+
+      vi.mocked(fsNative.existsSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) return true;
+        if (s.endsWith('config.json')) return true;
+        if (s.endsWith('.env')) return false;
+        return false;
+      });
+      vi.mocked(fsNative.readFileSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) {
+          return '# Test\n\nNo project field here.\n';
+        }
+        if (s.endsWith('config.json')) {
+          return JSON.stringify({
+            sync: {
+              enabled: true,
+              github: { enabled: true, owner: 'my-org', repo: 'my-repo' },
+            },
+          });
+        }
+        return '';
+      });
+
+      await service.initialize();
+
+      const registry = service.getRegistry();
+      const requestSyncSpy = vi.spyOn(registry, 'requestSync').mockResolvedValue();
+
+      await service.emitIncrementEvent('increment.created', '0206-test');
+
+      // Should derive project from github owner/repo, not return null
+      expect(requestSyncSpy).toHaveBeenCalled();
+    });
+
+    it('should still work when spec.md HAS a project field (no regression)', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+
+      vi.mocked(fsNative.existsSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) return true;
+        if (s.endsWith('config.json')) return true;
+        if (s.endsWith('.env')) return false;
+        return false;
+      });
+      vi.mocked(fsNative.readFileSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) {
+          return 'project: my-existing-project\n\n# Test Increment\n';
+        }
+        if (s.endsWith('config.json')) {
+          return JSON.stringify({ sync: { enabled: true } });
+        }
+        return '';
+      });
+
+      await service.initialize();
+
+      const registry = service.getRegistry();
+      const requestSyncSpy = vi.spyOn(registry, 'requestSync').mockResolvedValue();
+
+      await service.emitIncrementEvent('increment.done', '0206-test');
+
+      // Should find project from spec.md field
+      expect(requestSyncSpy).toHaveBeenCalledWith('my-existing-project', expect.any(Array));
+    });
+
+    it('should handle increment.sync event type as catch-all', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+
+      vi.mocked(fsNative.existsSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) return true;
+        if (s.endsWith('config.json')) return true;
+        if (s.endsWith('.env')) return false;
+        return false;
+      });
+      vi.mocked(fsNative.readFileSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) {
+          return 'project: test-project\n\n# Test\n';
+        }
+        if (s.endsWith('config.json')) {
+          return JSON.stringify({ sync: { enabled: true } });
+        }
+        return '';
+      });
+
+      await service.initialize();
+
+      const registry = service.getRegistry();
+      const requestSyncSpy = vi.spyOn(registry, 'requestSync').mockResolvedValue();
+
+      // increment.sync is sent by stop-sync.sh - must be handled
+      await service.emitIncrementEvent('increment.sync' as any, '0206-test');
+
+      expect(requestSyncSpy).toHaveBeenCalledWith('test-project', ['github', 'ado', 'jira']);
+    });
+  });
+
   describe('Instance Cleanup', () => {
     it('should clear specific instance', () => {
       const instance = ProjectService.getInstance(testProjectRoot, mockLogger as any);

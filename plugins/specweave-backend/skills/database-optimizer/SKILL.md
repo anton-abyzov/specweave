@@ -1,5 +1,5 @@
 ---
-description: Expert database optimizer for query performance, indexing strategies, and schema design across PostgreSQL, MySQL, and MongoDB. Use when optimizing slow queries, fixing N+1 problems, or analyzing EXPLAIN plans. Covers connection pooling, caching strategies, partitioning, and database scaling patterns.
+description: Database optimizer for PostgreSQL, MySQL, MongoDB. Use for slow queries, N+1 problems, EXPLAIN plans, indexing, connection pooling, caching, partitioning, scaling.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

@@ -1,5 +1,5 @@
 ---
-description: Expert frontend architect for React, Next.js, Vue, and Angular with Atomic Design and state management patterns. Use when designing component architecture, building dashboards, or implementing complex frontend features. Covers TanStack Query, Zustand/Redux, routing strategies, and performance optimization.
+description: Frontend architect for React, Next.js, Vue, Angular. Use for component architecture, dashboards, Atomic Design, TanStack Query, Zustand/Redux, routing, performance.
 context: fork
 model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep

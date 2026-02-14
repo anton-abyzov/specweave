@@ -1,5 +1,5 @@
 ---
-description: GraphQL API expert across all major stacks (Node.js, Python, Java, .NET, Rust). Use when designing GraphQL schemas, building resolvers, implementing DataLoader, setting up federation, or optimizing GraphQL performance. Activates for: GraphQL, Apollo Server, Apollo Client, schema, resolvers, DataLoader, federation, subscriptions, Pothos, Strawberry, Hot Chocolate, urql, Relay.
+description: GraphQL API expert for Node.js, Python, Java, .NET, Rust. Use for schemas, resolvers, DataLoader, federation, subscriptions, Apollo, Pothos, Strawberry, urql, Relay.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---

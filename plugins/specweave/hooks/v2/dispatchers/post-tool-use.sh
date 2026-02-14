@@ -292,6 +292,20 @@ case "$FILE_PATH" in
           )
           log_debug "IMMEDIATE SYNC completed for $INC_ID"
         fi
+
+        # ========================================================================
+        # EXPLICIT CLOSURE (v1.0.257+): Close external issues on completion
+        # ========================================================================
+        # Only on completed/done - triggers provider-agnostic closure for ALL
+        # user stories, ensuring external issues are closed even if AC sync
+        # missed them. NOT called on reopened or on every AC change.
+        if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]]; then
+          AC_CLOSE_DISPATCHER="${HOOK_DIR}/../handlers/ac-sync-dispatcher.sh"
+          if [[ -f "$AC_CLOSE_DISPATCHER" ]]; then
+            log_debug "EXPLICIT CLOSURE: Triggering provider-agnostic closure for $INC_ID"
+            SPECWEAVE_CLOSE_ALL=1 safe_run_background "$AC_CLOSE_DISPATCHER" "ac-close" "$INC_ID"
+          fi
+        fi
       fi
     fi
     ;;
@@ -358,14 +372,14 @@ case "$FILE_PATH" in
     fi
 
     # ========================================================================
-    # GITHUB AUTO-CREATE (v1.0.237+): Create issues when spec.md is written
+    # UNIVERSAL AUTO-CREATE (v1.0.256+): Create items in ALL enabled providers
     # ========================================================================
     # When spec.md is created/updated AND has user stories, auto-create
-    # GitHub issues if autoSync or auto_create_github_issue is enabled.
+    # items in GitHub/JIRA/ADO if autoSync or auto_create is enabled.
     if [[ "$FILE_PATH" == *spec.md ]]; then
-      GITHUB_AUTO_CREATE="${HOOK_DIR}/../../../specweave-github/hooks/github-auto-create-handler.sh"
-      if [[ -f "$GITHUB_AUTO_CREATE" ]]; then
-        safe_run_background "$GITHUB_AUTO_CREATE" "github-auto-create" "$INC_ID"
+      UNIVERSAL_AUTO_CREATE="${HOOK_DIR}/../handlers/universal-auto-create-dispatcher.sh"
+      if [[ -f "$UNIVERSAL_AUTO_CREATE" ]]; then
+        safe_run_background "$UNIVERSAL_AUTO_CREATE" "universal-auto-create" "$INC_ID"
       fi
     fi
 

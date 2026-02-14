@@ -12,7 +12,9 @@
     "sw-github@specweave": true,
     "sw-payments@specweave": true,
     "sw-testing@specweave": true,
-    "sw-frontend@specweave": true
+    "sw-frontend@specweave": true,
+    "sw-jira@specweave": true,
+    "sw-ado@specweave": true
   },
   "pluginConfigs": {
     "supabase@claude-plugins-official": {

@@ -1,5 +1,5 @@
 ---
-description: Expert in frontend internationalization (i18n) and localization (l10n) covering i18next/react-i18next setup, Next.js i18n routing, RTL support, date/number/currency formatting with Intl APIs, translation management workflows, and performance optimization. Use when implementing multilingual apps, adding locale support, handling RTL layouts, or managing translation pipelines.
+description: Frontend i18n and l10n expert. Use for multilingual apps, i18next/react-i18next, Next.js i18n routing, RTL layouts, Intl APIs, date/number/currency formatting, translation pipelines.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 context: fork
