@@ -261,6 +261,9 @@ describe('discovery', () => {
      * Sets up a minimal mock filesystem for discovery scans.
      * The project root has one .ts file and one .md file.
      */
+    /** Default mock file content for app.ts (3 code lines) */
+    const defaultAppTsContent = 'import { x } from "./x.js";\n\nexport function main() {\n  return x;\n}\n';
+
     function setupMinimalProject() {
       // readdirSync returns entries based on path
       mockReaddirSync.mockImplementation((dirPath: string, opts?: any) => {
@@ -282,6 +285,11 @@ describe('discovery', () => {
 
       mockStatSync.mockImplementation((p: string) => {
         return { size: 400, isDirectory: () => false, isFile: () => true, birthtime: new Date(), mtime: new Date() };
+      });
+
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (p.endsWith('app.ts')) return defaultAppTsContent;
+        throw new Error('not found');
       });
     }
 
@@ -329,13 +337,163 @@ describe('discovery', () => {
       expect(result.codebaseStats.byType.docs).toBe(1);
     });
 
-    it('should estimate LOC for code files', async () => {
-      setupMinimalProject();
+    it('should count actual lines of code (not use filesize heuristic)', async () => {
+      // A file with 5 real code lines but 200 bytes (would be 5 LOC from size/40)
+      // vs actual content has exactly 8 non-blank, non-comment lines
+      const fileContent = [
+        'import { foo } from "./bar.js";',
+        '',
+        '// This is a comment',
+        'export function hello() {',
+        '  const x = 1;',
+        '  const y = 2;',
+        '  return x + y;',
+        '}',
+        '',
+        '/* block comment */',
+        'export const NAME = "test";',
+      ].join('\n');
+
+      mockReaddirSync.mockImplementation((dirPath: string) => {
+        if (dirPath === projectPath) {
+          return [dirent('app.ts', false)];
+        }
+        return [];
+      });
+      mockExistsSync.mockReturnValue(false);
+      mockStatSync.mockReturnValue({
+        size: fileContent.length,
+        isDirectory: () => false,
+        isFile: () => true,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (p.endsWith('app.ts')) return fileContent;
+        throw new Error('not found');
+      });
 
       const result = await runDiscovery(projectPath, []);
 
-      // 400 bytes / 40 = 10 LOC
-      expect(result.codebaseStats.estimatedLOC).toBe(10);
+      // Should count actual non-blank, non-comment lines: 7
+      // (import, export function, const x, const y, return, }, export const)
+      // NOT filesize/40 which would give Math.round(fileContent.length / 40)
+      expect(result.codebaseStats.estimatedLOC).toBe(7);
+    });
+
+    it('should count LOC excluding blank lines and single-line comments', async () => {
+      // Build a file with lots of comments and blanks but only 3 real code lines
+      // Total byte size ~500 → filesize/40 = 13, but real LOC = 3
+      const fileContent = [
+        '// This is a very long comment line that takes up a lot of space in the file for padding purposes here',
+        '// Another very long comment line that adds bytes without adding real code lines to the final count',
+        '// Yet another comment line that makes the file bigger in bytes but not in actual code lines at all',
+        '',
+        '',
+        '',
+        '  ',
+        '    ',
+        'const a = 1;',
+        '// comment between code',
+        '',
+        'const b = 2;',
+        '// trailing comment',
+        '',
+        '',
+        'const c = 3;',
+      ].join('\n');
+
+      mockReaddirSync.mockImplementation((dirPath: string) => {
+        if (dirPath === projectPath) return [dirent('code.ts', false)];
+        return [];
+      });
+      mockExistsSync.mockReturnValue(false);
+      mockStatSync.mockReturnValue({
+        size: fileContent.length,
+        isDirectory: () => false,
+        isFile: () => true,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (p.endsWith('code.ts')) return fileContent;
+        throw new Error('not found');
+      });
+
+      const result = await runDiscovery(projectPath, []);
+
+      // Only 3 real code lines: 'const a = 1;', 'const b = 2;', 'const c = 3;'
+      // filesize/40 would give ~13, which is wrong
+      expect(result.codebaseStats.estimatedLOC).toBe(3);
+    });
+
+    it('should count LOC excluding multi-line block comments', async () => {
+      // File with multi-line block comment (JSDoc) and real code
+      const fileContent = [
+        '/**',
+        ' * This is a JSDoc comment',
+        ' * spanning multiple lines',
+        ' * with lots of detail',
+        ' */',
+        'function foo() {',
+        '  return 42;',
+        '}',
+        '/* single-line block comment */',
+        'const bar = 1;',
+      ].join('\n');
+
+      mockReaddirSync.mockImplementation((dirPath: string) => {
+        if (dirPath === projectPath) return [dirent('module.ts', false)];
+        return [];
+      });
+      mockExistsSync.mockReturnValue(false);
+      mockStatSync.mockReturnValue({
+        size: fileContent.length,
+        isDirectory: () => false,
+        isFile: () => true,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (p.endsWith('module.ts')) return fileContent;
+        throw new Error('not found');
+      });
+
+      const result = await runDiscovery(projectPath, []);
+
+      // 3 code lines: 'function foo() {', '  return 42;', '}', 'const bar = 1;'
+      // Excluded: 5 lines in block comment, 1 single-line block comment
+      expect(result.codebaseStats.estimatedLOC).toBe(4);
+    });
+
+    it('should include languagesDetected in DiscoveryResult', async () => {
+      // Create a project with 10 .ts files and 6 .py files (both above threshold of 5)
+      const tsFiles = Array.from({ length: 10 }, (_, i) => dirent(`file${i}.ts`, false));
+      const pyFiles = Array.from({ length: 6 }, (_, i) => dirent(`script${i}.py`, false));
+      const fewGoFiles = [dirent('main.go', false), dirent('util.go', false)]; // below threshold
+
+      mockReaddirSync.mockImplementation((dirPath: string) => {
+        if (dirPath === projectPath) return [...tsFiles, ...pyFiles, ...fewGoFiles];
+        return [];
+      });
+      mockExistsSync.mockReturnValue(false);
+      mockStatSync.mockReturnValue({
+        size: 100,
+        isDirectory: () => false,
+        isFile: () => true,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+      mockReadFileSync.mockImplementation(() => 'const x = 1;\n');
+
+      const result = await runDiscovery(projectPath, []);
+
+      // languagesDetected should exist and include languages with 5+ files
+      expect(result).toHaveProperty('languagesDetected');
+      expect(result.languagesDetected).toContain('typescript');
+      expect(result.languagesDetected).toContain('python');
+      // Go has only 2 files, below the 5-file threshold
+      expect(result.languagesDetected).not.toContain('go');
     });
 
     it('should classify test files correctly', async () => {
@@ -1063,7 +1221,7 @@ describe('discovery', () => {
       expect(result.codebaseStats.totalFiles).toBe(0);
     });
 
-    it('should handle statSync errors gracefully during LOC estimation', async () => {
+    it('should handle readFileSync errors gracefully during LOC counting', async () => {
       mockReaddirSync.mockImplementation((dirPath: string) => {
         if (dirPath === projectPath) {
           return [dirent('app.ts', false)];
@@ -1071,13 +1229,20 @@ describe('discovery', () => {
         return [];
       });
       mockExistsSync.mockReturnValue(false);
-      mockStatSync.mockImplementation(() => {
+      mockStatSync.mockReturnValue({
+        size: 100,
+        isDirectory: () => false,
+        isFile: () => true,
+        birthtime: new Date(),
+        mtime: new Date(),
+      });
+      mockReadFileSync.mockImplementation(() => {
         throw new Error('ENOENT');
       });
 
       const result = await runDiscovery(projectPath, []);
 
-      // Should count the file but not crash on stat error
+      // Should count the file but not crash on read error
       expect(result.codebaseStats.totalFiles).toBe(1);
       expect(result.codebaseStats.estimatedLOC).toBe(0);
     });
