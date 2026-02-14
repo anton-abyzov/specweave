@@ -36,6 +36,7 @@ export type IncrementEventType =
   | 'increment.done'
   | 'increment.archived'
   | 'increment.reopened'
+  | 'increment.sync'
   | 'user-story.completed'
   | 'user-story.reopened'
   | 'spec.updated'
@@ -384,6 +385,12 @@ export class ProjectService {
         // v1.0.144: NEW - ensures metadata changes propagate universally
         await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
+
+      case 'increment.sync':
+        // Catch-all sync event - sent by stop-sync.sh at session end
+        // v1.0.257: NEW - ensures queued events are processed
+        await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
+        break;
     }
   }
 
@@ -426,10 +433,46 @@ export class ProjectService {
         return projectField.toLowerCase().replace(/\s+/g, '-');
       }
 
-      return null;
+      // Fallback: derive project from config when spec.md has no project field
+      return this.getProjectIdFromConfig();
     } catch {
-      return null;
+      // Even on read error, try config-based fallback
+      return this.getProjectIdFromConfig();
     }
+  }
+
+  /**
+   * Derive a project ID from .specweave/config.json
+   *
+   * Fallback chain:
+   * 1. project.name from config
+   * 2. sync.github.owner/repo -> "owner/repo" slug
+   * 3. null if nothing configured
+   */
+  private getProjectIdFromConfig(): string | null {
+    const config = this.loadSpecweaveConfig();
+
+    // Try project.name first
+    if (config.project?.name) {
+      return config.project.name.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    // Derive from GitHub owner/repo
+    if (config.sync?.github?.owner && config.sync?.github?.repo) {
+      return `${config.sync.github.owner}/${config.sync.github.repo}`;
+    }
+
+    // Derive from JIRA project key
+    if (config.sync?.jira?.projectKey) {
+      return config.sync.jira.projectKey.toLowerCase();
+    }
+
+    // Derive from ADO organization/project
+    if (config.sync?.ado?.organization && config.sync?.ado?.project) {
+      return `${config.sync.ado.organization}/${config.sync.ado.project}`.toLowerCase();
+    }
+
+    return null;
   }
 
   /**

@@ -440,3 +440,87 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
     expect(failures).toEqual([]);
   });
 });
+
+/**
+ * Verify that priority skills have the ## Project Context DCI block
+ * for loading project context via skill-context.sh.
+ */
+describe('Project Context DCI Blocks', () => {
+  const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
+
+  const CONTEXT_SKILLS = ['do', 'auto', 'increment-planner', 'validate'];
+
+  it('priority skills have ## Project Context section', () => {
+    const missing: string[] = [];
+
+    for (const skill of CONTEXT_SKILLS) {
+      const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      if (!fs.existsSync(filePath)) {
+        missing.push(`${skill} (file not found)`);
+        continue;
+      }
+
+      const content = fs.readFileSync(filePath, 'utf-8');
+      if (!content.includes('## Project Context')) {
+        missing.push(skill);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+
+  it('Project Context DCI blocks reference skill-context.sh', () => {
+    const missing: string[] = [];
+
+    for (const skill of CONTEXT_SKILLS) {
+      const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      if (!fs.existsSync(filePath)) continue;
+
+      const content = fs.readFileSync(filePath, 'utf-8');
+      if (!content.includes('.specweave/scripts/skill-context.sh')) {
+        missing.push(skill);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+
+  it('Project Context DCI blocks have ; true exit guard', () => {
+    const missing: string[] = [];
+
+    for (const skill of CONTEXT_SKILLS) {
+      const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      if (!fs.existsSync(filePath)) continue;
+
+      const content = fs.readFileSync(filePath, 'utf-8');
+      // Find the context DCI line
+      const contextLine = content.split('\n').find(l =>
+        l.includes('skill-context.sh')
+      );
+      if (contextLine && !contextLine.includes('; true`')) {
+        missing.push(skill);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+
+  it('Project Context DCI blocks pass the correct skill name', () => {
+    const mismatches: string[] = [];
+
+    for (const skill of CONTEXT_SKILLS) {
+      const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      if (!fs.existsSync(filePath)) continue;
+
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const contextLine = content.split('\n').find(l =>
+        l.includes('skill-context.sh')
+      );
+      if (contextLine && !contextLine.includes(`skill-context.sh ${skill}`)) {
+        mismatches.push(`${skill}: DCI block doesn't pass "${skill}" as argument`);
+      }
+    }
+
+    expect(mismatches).toEqual([]);
+  });
+});

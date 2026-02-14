@@ -1,5 +1,5 @@
 ---
-description: Frontend design expert for polished, production-ready UIs with distinctive visual characteristics and micro-interactions. Use when improving visual design, adding CSS animations, or polishing the UI with shadows, gradients, and transitions. Rejects generic AI aesthetics in favor of bold, distinctive design choices.
+description: Frontend design expert for polished UIs with micro-interactions. Use for visual design, CSS animations, shadows, gradients, transitions. Bold, distinctive design choices.
 allowed-tools: Read, Write, Edit, Glob, Grep
 model: opus
 context: fork

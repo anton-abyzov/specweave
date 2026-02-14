@@ -1,5 +1,5 @@
 ---
-description: System architect for scalable, maintainable technical designs and architectural decisions. Use when designing system architecture, writing ADRs (Architecture Decision Records), or planning microservices and database structures. Covers trade-off analysis, component diagrams, and technology selection.
+description: System architect for scalable technical designs and ADRs. Use for system architecture, microservices, database design, trade-off analysis, component diagrams, tech selection.
 ---
 
 # Architect

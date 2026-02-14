@@ -1,5 +1,5 @@
 ---
-description: Expert on SpecWeave framework structure, rules, and spec-driven development conventions. Use when learning SpecWeave best practices, understanding increment lifecycle, or configuring hooks. Covers source-of-truth discipline, tasks.md/spec.md formats, living docs sync, and file organization patterns.
+description: SpecWeave framework expert for structure, rules, spec-driven conventions. Use for SpecWeave best practices, increment lifecycle, hooks, tasks.md/spec.md, living docs sync.
 allowed-tools: Read, Grep, Glob
 user-invocable: false
 ---

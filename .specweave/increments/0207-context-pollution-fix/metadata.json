@@ -1,0 +1,8 @@
+{
+  "id": "0207",
+  "name": "context-pollution-fix",
+  "type": "improvement",
+  "status": "in-progress",
+  "createdAt": "2026-02-13T00:00:00.000Z",
+  "description": "Fix 'Prompt is too long' errors by reducing SpecWeave context footprint: hook output, CLAUDE.md, MEMORY.md, SKILL.md files"
+}

@@ -1,5 +1,5 @@
 ---
-description: Accessibility testing expert for WCAG compliance, axe-core, pa11y, Lighthouse, screen reader testing, keyboard navigation, and CI/CD a11y gates. Use for accessibility audits, a11y test automation, WCAG compliance, screen reader testing, keyboard navigation, color contrast, ARIA patterns, or form accessibility.
+description: Accessibility testing for WCAG compliance, axe-core, pa11y, Lighthouse, screen readers, keyboard nav, CI/CD a11y gates. Use for a11y audits, ARIA, color contrast.
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 context: fork

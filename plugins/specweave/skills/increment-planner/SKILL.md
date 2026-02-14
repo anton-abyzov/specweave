@@ -23,27 +23,31 @@ hooks:
 
 !`s="increment-planner"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
+## Project Context
+
+!`.specweave/scripts/skill-context.sh increment-planner 2>/dev/null; true`
+
 **Self-contained increment planning for ANY user project after `specweave init`.**
 
 ## Workflow Overview
 
 ```
-STEP 0: Pre-flight (TDD mode, multi-project, Deep Interview)
+STEP 1: Pre-flight (TDD mode, multi-project, Deep Interview)
         -> CHECK: Deep Interview Mode enabled?
 
-STEP 0.5: Deep Interview (if enabled)
-        -> PM skill loads phases/00-deep-interview.md
-        -> ASSESS complexity first, then ask right number of questions
-        -> Skip categories that don't apply to this feature
+STEP 1a: Deep Interview (if enabled)
+         -> PM skill loads phases/00-deep-interview.md
+         -> ASSESS complexity first, then ask right number of questions
+         -> Skip categories that don't apply to this feature
 
-STEP 1: Project Context (resolve project/board)
+STEP 2: Project Context (resolve project/board)
 
-STEP 2: Create Increment (via Template API)
+STEP 3: Create Increment (via Template API)
 
-STEP 3: Guide User (complete in main conversation)
+STEP 4: Guide User (complete in main conversation)
 ```
 
-## Step 0: Pre-flight Checks
+## Step 1: Pre-flight Checks
 
 ```bash
 # 1. Check TDD mode
@@ -59,7 +63,7 @@ jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/n
 find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status":"active"' {} \; 2>/dev/null | wc -l
 ```
 
-## Step 0.5: Deep Interview Mode (if enabled)
+## Step 1a: Deep Interview Mode (if enabled)
 
 **If deep interview is enabled, delegate to PM skill:**
 
@@ -70,7 +74,7 @@ Skill({ skill: "sw:pm", args: "Deep interview mode for: <user description>" })
 **THINK about complexity first** - assess before asking:
 - Trivial: 0-3 questions | Small: 4-8 | Medium: 9-18 | Large: 19-40+
 
-## Step 1: Project Context
+## Step 2: Project Context
 
 ```bash
 # Get project/board values for spec.md
@@ -79,9 +83,9 @@ specweave context projects
 
 Every US MUST have `**Project**:` field. For 2-level structures, also `**Board**:`.
 
-## Step 2: Create Increment
+## Step 3: Create Increment
 
-### 2a. Determine Increment Location
+### 3a. Determine Increment Location
 
 **CRITICAL for multi-repo setups:**
 
@@ -108,7 +112,7 @@ fi
 - Run `specweave init` in each repo if `.specweave/` doesn't exist
 - Repos MUST be at `repositories/{ORG}/{repo-name}/` — NEVER directly under `repositories/`
 
-### 2b. Get Unique ID
+### 3b. Get Unique ID
 
 ```bash
 # Check ALL folders for existing IDs
@@ -118,13 +122,13 @@ find .specweave/increments -maxdepth 2 -type d -name "[0-9]*" 2>/dev/null | grep
 find repositories -path "*/specweave/increments/*" -maxdepth 5 -type d -name "[0-9]*" 2>/dev/null | grep -oE '[0-9]{4}E?' | sort -u | tail -5
 ```
 
-### 2c. Create via CLI (preferred)
+### 3c. Create via CLI (preferred)
 
 ```bash
 specweave create-increment --id "XXXX-name" --project "my-app"
 ```
 
-### 2d. Create manually (if CLI unavailable)
+### 3d. Create manually (if CLI unavailable)
 
 ```bash
 mkdir -p .specweave/increments/XXXX-name
