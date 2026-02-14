@@ -562,8 +562,6 @@ Some repositories may be missing from analysis.
 
 - `/sw:jobs` - Monitor all background jobs
 - `/sw:import-docs` - Import existing documentation
-- `specweave:brownfield-analyzer` skill - Analyze doc gaps
-- `specweave:brownfield-onboarder` skill - Merge existing docs
 
 ---
 

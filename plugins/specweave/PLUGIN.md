@@ -103,12 +103,9 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | /sw:grill | Comprehensive implementation auditor |
 | /sw:feature-dev | Feature Development Workflow (7-phase structured approach) |
 | /sw:role-orchestrator | Multi-agent orchestration for complex tasks |
-| /sw:brownfield-analyzer | Analyze brownfield projects for SpecWeave migration |
-| /sw:brownfield-onboarder | Onboard brownfield projects with CLAUDE.md merge |
 | /sw:docs-writer | Technical documentation writer |
 | /sw:translate | Translate SpecWeave project content |
 | /sw:skill | Create and validate Claude Code skills |
-| /sw:export-skills | Export skills to Agent Skills open standard format |
 | /sw:check-hooks | Comprehensive hook health check |
 | /sw:validate-features | Validate feature folder consistency |
 | /sw:api-docs | Generate API documentation (OpenAPI, Postman) |

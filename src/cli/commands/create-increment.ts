@@ -1,0 +1,77 @@
+/**
+ * Create Increment Command
+ *
+ * CLI bridge for createIncrementTemplates() - creates template files
+ * for new increments that must be completed via PM/Architect skills.
+ *
+ * This command is invoked by the increment-planner SKILL.md:
+ *   specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"
+ *
+ * @module create-increment
+ */
+
+import chalk from 'chalk';
+import { createIncrementTemplates } from '../../core/increment/template-creator.js';
+
+export interface CreateIncrementOptions {
+  id: string;
+  title: string;
+  description: string;
+  project: string;
+  board?: string;
+  type?: string;
+  priority?: string;
+  json?: boolean;
+  projectRoot?: string;
+}
+
+export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
+  const {
+    id,
+    title,
+    description,
+    project,
+    board,
+    type,
+    priority,
+    json = false,
+    projectRoot = process.cwd(),
+  } = options;
+
+  const result = await createIncrementTemplates({
+    incrementId: id,
+    title,
+    description,
+    projectId: project,
+    boardId: board,
+    type,
+    priority,
+    projectRoot,
+  });
+
+  if (!result.success) {
+    if (json) {
+      console.log(JSON.stringify({ success: false, error: result.error }));
+    } else {
+      console.error(chalk.red(`Failed to create increment: ${result.error}`));
+    }
+    throw new Error(result.error);
+  }
+
+  if (json) {
+    console.log(JSON.stringify({
+      success: true,
+      incrementPath: result.incrementPath,
+      createdFiles: result.createdFiles,
+      nextSteps: result.nextSteps,
+    }));
+  } else {
+    console.log(chalk.green(`\nIncrement created: ${id}`));
+    console.log(`  Path: ${result.incrementPath}`);
+    console.log(`  Files: ${result.createdFiles.join(', ')}`);
+    console.log(chalk.blue('\nNext steps:'));
+    result.nextSteps.forEach((step, i) => {
+      console.log(`  ${i + 1}. ${step}`);
+    });
+  }
+}

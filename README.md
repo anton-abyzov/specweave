@@ -153,6 +153,36 @@ SpecWeave is built for the reality of enterprise development.
 
 ---
 
+## LSP Code Intelligence
+
+AI agents waste tokens on grep — slow, noisy, full of false positives. SpecWeave ships with **LSP integration** that gives agents semantic understanding of your codebase.
+
+```
+                    Grep (text search)          LSP (semantic)
+                    ──────────────────          ──────────────
+Speed:              69ms                        0.35ms (198x faster)
+"read" symbol:      254 matches                 32 references
+False positives:    222 noise results            0
+```
+
+Grep matches `read`, `readFile`, `readFileSync`, `readdir`, and every comment containing "read". LSP resolves the actual `MetadataManager.read()` calls — nothing else.
+
+![LSP Benchmark Results](docs/assets/lsp-benchmark.png)
+
+**Supported languages:** TypeScript, Python, Go, Rust, Java, C#
+
+**How it works:** SpecWeave starts a language server alongside your agent session. Every "find references", "go to definition", and "show type" query goes through the LSP instead of grep — 198x faster with zero false positives.
+
+```bash
+specweave lsp refs src/core/metadata.ts read     # Semantic references
+specweave lsp def src/cli/commands/init.ts init   # Go to definition
+specweave lsp hover src/core/config.ts Config     # Type information
+```
+
+**[LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
+
+---
+
 ## Extensible Skills (Open/Closed Principle)
 
 **Customize any skill without forking.**
@@ -248,6 +278,7 @@ When you close an increment, external tools update automatically.
 | **Enterprise compliance** | SOC 2, HIPAA, FDA audit trails | No | No |
 | **External sync** | GitHub / JIRA / ADO bidirectional | No | No |
 | **Brownfield support** | Analyzer + migration patterns | No | No |
+| **LSP code intelligence** | 198x faster, semantic accuracy | No | No |
 | **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
 | **Spec/plan/tasks workflow** | Yes | Yes | Yes |
 | **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |

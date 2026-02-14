@@ -243,14 +243,14 @@ Bug fixes ARE product increments when they restore or improve product value:
 
 ### Using CLI (Recommended)
 ```bash
-specweave increment create "Add payment processing"
+specweave create-increment --id "0003-payment-processing" --title "Add payment processing" --description "Integrate Stripe for payment flow" --project "my-app"
 ```
 
 This will:
-1. Auto-number the increment (e.g., `003-payment-processing`)
+1. Validate the increment ID is unique
 2. Create directory structure
-3. Generate spec.md template
-4. Create tasks.md template
+3. Generate spec.md, plan.md, tasks.md templates (with markers for PM/Architect skills)
+4. Create metadata.json with status "planned"
 
 ### Manual Creation
 1. Find highest number in `.specweave/increments/` directory
@@ -460,11 +460,11 @@ dependencies:
 
 | Command | Purpose | Documentation |
 |---------|---------|---------------|
-| `/create-increment` | Create new increment (checks WIP limit) | [create-increment.md](../../.claude/commands/create-increment.md) |
-| `/start-increment` | Start planned increment (checks WIP limit) | [start-increment.md](../../.claude/commands/start-increment.md) |
-| `/add-tasks` | Add tasks to existing increment | [add-tasks.md](../../.claude/commands/add-tasks.md) |
-| `/close-increment` | Close with leftover transfer | [close-increment.md](../../.claude/commands/close-increment.md) |
-| `/list-increments` | View all increments and WIP status | [list-increments.md](../../.claude/commands/list-increment.md) |
+| `/sw:increment` | Create new increment (checks WIP limit) | Skill: `sw:increment-planner` |
+| `/sw:do` | Execute increment tasks | Skill: `sw:do` |
+| `/sw:progress` | View progress and status | Skill: `sw:progress` |
+| `/sw:done` | Close increment with validation | Skill: `sw:done` |
+| `specweave status` | View all increments and WIP status | CLI command |
 
 ---
 

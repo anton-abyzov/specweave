@@ -19,6 +19,10 @@ hooks:
 
 # Increment Planner Skill
 
+## CRITICAL: Plan Mode Required
+
+**Before executing this skill, you MUST be in plan mode.** If you are not currently in plan mode, call `EnterPlanMode` first. Increment planning is ALWAYS a planning activity — never skip straight to implementation.
+
 ## Project Overrides
 
 !`s="increment-planner"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
@@ -125,8 +129,10 @@ find repositories -path "*/specweave/increments/*" -maxdepth 5 -type d -name "[0
 ### 3c. Create via CLI (preferred)
 
 ```bash
-specweave create-increment --id "XXXX-name" --project "my-app"
+specweave create-increment --id "XXXX-name" --title "Feature Title" --description "Brief description" --project "my-app"
 ```
+
+**Optional flags**: `--type hotfix` | `--priority P1` | `--board "team-name"` | `--json`
 
 ### 3d. Create manually (if CLI unavailable)
 
@@ -177,7 +183,7 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 ## Critical Rules
 
 1. **Project field is MANDATORY** - Every US MUST have `**Project**:` field
-2. **Use Template Creator API** when available: `specweave create-increment --id "XXXX-name" --project "my-app"`
+2. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
 3. **NO agent spawning** - Skills MUST NOT spawn Task() agents (causes crashes). Guide user in main conversation.
 4. **Increment naming** - Format: `####-descriptive-kebab-case`
 5. **Multi-repo** - In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
@@ -198,7 +204,7 @@ Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX
 
 ```typescript
 // Called by hook system (primary path)
-Skill({ skill: "sw:increment-planner", args: "--description=\"Add auth\"" })
+Skill({ skill: "sw:increment-planner", args: "Add user authentication" })
 
 // Via command (handles pre-flight checks too)
 /sw:increment "Add user authentication"

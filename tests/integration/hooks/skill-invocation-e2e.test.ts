@@ -745,10 +745,11 @@ exit 1
 
         const additionalContext = extractAdditionalContext(result.parsed);
 
-        // Should suggest LSP skill
+        // Should suggest LSP skill via compact one-liner format (SKILL-ONLY path)
+        // increment.action=none hits the skill-only invocation path (v1.0.196)
         expect(additionalContext).toBeTruthy();
         expect(additionalContext).toContain('sw:lsp');
-        expect(additionalContext).toContain('skill_invocation_required');
+        expect(additionalContext).toContain('SKILL REQUIRED');
       });
     }
 
@@ -803,9 +804,10 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should mention specweave lsp command
+      // Should mention specweave lsp command via compact SKILL REQUIRED format
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('sw:lsp');
+      expect(additionalContext).toContain('SKILL REQUIRED');
 
       // The skill invocation should include the reason which mentions specweave lsp
       expect(additionalContext).toMatch(/specweave lsp|SpecWeave LSP/i);

@@ -236,7 +236,6 @@ async function writeSyncConfigHelper(
 
   config.hooks = {
     post_task_completion: {
-      sync_living_docs: true,
       sync_tasks_md: true,
       external_tracker_sync: true
     },

@@ -139,8 +139,6 @@ export class AgentsMdGenerator {
       'skill-router': 'Ambiguous requests that need routing to specific skills',
       'spec-driven-debugging': 'Bug investigation, test failures, unexpected behavior',
       'spec-driven-brainstorming': 'Brainstorming ideas, refining concepts, design thinking',
-      'brownfield-analyzer': 'Analyzing existing projects for SpecWeave migration',
-      'brownfield-onboarder': 'Onboarding existing projects to SpecWeave',
       'nodejs-backend': 'Node.js/Express/NestJS backend development',
       'python-backend': 'Python/FastAPI/Django backend development',
       'nextjs': 'Next.js App Router application development',

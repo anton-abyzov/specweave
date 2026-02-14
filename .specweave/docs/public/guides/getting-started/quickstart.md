@@ -112,6 +112,25 @@ After `specweave init .`:
 | **Commands** | 53 | Slash commands for workflow control |
 | **Hooks** | 3+ | Event-driven automation (lifecycle, sync, status) |
 | **CLAUDE.md** | 1 | Your project reference guide |
+| **LSP** | 6 languages | Semantic code intelligence (TypeScript, Python, Go, Rust, Java, C#) |
+
+---
+
+## LSP Code Intelligence (Recommended)
+
+SpecWeave includes LSP integration that replaces grep-based code search with **semantic analysis** — 198x faster with zero false positives.
+
+Instead of grep matching every occurrence of "read" (254 hits including `readFile`, `readdir`, comments), LSP resolves only the 32 actual `MetadataManager.read()` references.
+
+```bash
+specweave lsp refs src/file.ts SymbolName    # Find all references
+specweave lsp def src/file.ts SymbolName     # Go to definition
+specweave lsp hover src/file.ts SymbolName   # Type information
+```
+
+LSP activates automatically for supported languages. No configuration needed.
+
+**[Full LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
 
 ---
 

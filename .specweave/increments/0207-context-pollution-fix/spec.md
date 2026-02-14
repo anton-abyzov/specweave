@@ -26,4 +26,4 @@ Users get "Prompt is too long" errors because SpecWeave's context contributions 
 - [x] AC-US4-02: Examples, error handling, config reference removed
 
 ### US-005: As a developer, I want skill descriptions to use minimal budget
-- [ ] AC-US5-01: Total skill descriptions under 16K chars (from 24K)
+- [x] AC-US5-01: Total skill descriptions under 16K chars (from 24K)

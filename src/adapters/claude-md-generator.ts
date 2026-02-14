@@ -197,7 +197,7 @@ ${this.generateIntegrationSkillsTable(skills)}
   private generateFrameworkSkillsTable(skills: any[]): string {
     const frameworkSkills = skills.filter(s =>
       ['specweave-detector', 'increment-planner', 'context-loader', 'skill-router',
-       'spec-driven-debugging', 'spec-driven-brainstorming', 'brownfield-analyzer'].includes(s.name)
+       'spec-driven-debugging', 'spec-driven-brainstorming'].includes(s.name)
     );
 
     let table = '| Skill | Purpose | Activates When |\n';

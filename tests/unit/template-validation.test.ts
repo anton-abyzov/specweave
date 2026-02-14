@@ -96,19 +96,21 @@ describe('Template Validation Tests', () => {
       expect(claudeContent).toMatch(/Emergency.*emergency mode/);
     });
 
-    test('should contain Skill Chaining section', () => {
-      // v1.0.177: MANDATORY skill chaining guidance
-      expect(claudeContent).toContain('## ⚠️ MANDATORY: Skill Chaining During Implementation');
+    test('should contain skill chaining guidance in Skills & Plugins section', () => {
+      // Trimmed template consolidates chaining into Skills & Plugins section
+      expect(claudeContent).toContain('## Skills & Plugins');
+      expect(claudeContent).toMatch(/Skill chaining/);
     });
 
-    test('should explain skill chaining pattern with planning, implementation, and code intelligence phases', () => {
-      expect(claudeContent).toContain('PLANNING PHASE');
-      expect(claudeContent).toContain('IMPLEMENTATION PHASE');
-      expect(claudeContent).toContain('CODE INTELLIGENCE');
+    test('should explain skill chaining with planning, implementation, and closure phases', () => {
+      // Trimmed template uses compact phase descriptions
+      expect(claudeContent).toContain('Planning');
+      expect(claudeContent).toContain('Implementation');
+      expect(claudeContent).toContain('Closure');
     });
 
-    test('should warn that SKILL FIRST does not mean only one skill', () => {
-      expect(claudeContent).toMatch(/Skills are NOT.*one and done/);
+    test('should warn that skills are not one and done', () => {
+      expect(claudeContent).toMatch(/skills are NOT.*one and done/i);
     });
 
     test('should mention domain skills for different tech stacks', () => {
@@ -117,23 +119,20 @@ describe('Template Validation Tests', () => {
       expect(claudeContent).toContain('sw-payments:stripe-integration');
     });
 
-    test('should include skill usage checklist', () => {
-      expect(claudeContent).toContain('### Skill Usage Checklist');
-      expect(claudeContent).toMatch(/Used planning skills.*PM.*Architect/);
-      expect(claudeContent).toMatch(/Used domain skills/);
+    test('should explain auto-activation fallback', () => {
+      // Trimmed template mentions explicit invocation when auto-activation fails
+      expect(claudeContent).toMatch(/auto-activation fails.*invoke explicitly/i);
     });
 
-    test('should explain why auto-activation may not trigger', () => {
-      expect(claudeContent).toContain('### Why Auto-Activation May Not Trigger');
-      expect(claudeContent).toMatch(/Description keywords.*match/);
-      expect(claudeContent).toMatch(/Character budget exceeded/);
+    test('should mention explicit skill invocation syntax', () => {
+      // Template shows how to invoke skills explicitly
+      expect(claudeContent).toContain('Skill({ skill: "name" })');
     });
 
-    test('should document LSP integration correctly', () => {
-      // LSP requires explicit setup (not automatic)
-      // Template should clarify that LSP is different from skills
-      expect(claudeContent).toMatch(/LSP.*REQUIRES.*SETUP/i);
-      expect(claudeContent).toMatch(/LSP.*operations.*goToDefinition|findReferences/i);
+    test('should document LSP as code intelligence tool', () => {
+      // Trimmed template has compact LSP section
+      expect(claudeContent).toContain('## LSP');
+      expect(claudeContent).toMatch(/specweave lsp/);
     });
   });
 

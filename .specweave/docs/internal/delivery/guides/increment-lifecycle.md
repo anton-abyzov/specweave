@@ -581,14 +581,14 @@ _backlog/ file archived (kept for history)
 
 ### Enforcement
 
-- ✅ `/create-increment` checks WIP limit before creating
-- ✅ `/start-increment` checks WIP limit before starting
+- ✅ `/sw:increment` checks WIP limit before creating
+- ✅ `/sw:do` checks WIP limit before starting
 - ✅ Must close increment to free WIP slot
 
 ### Override
 
 ```bash
-/create-increment "..." --force  # Override WIP limit (use sparingly)
+/sw:increment "..." --force  # Override WIP limit (use sparingly)
 ```
 
 **When to override** ✅:
@@ -960,11 +960,11 @@ Your choice? [A]
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/create-increment` | Create new increment (checks WIP) | `/create-increment "JIRA Integration"` |
-| `/start-increment` | Start planned increment (checks WIP) | `/start-increment 002` |
-| `/add-tasks` | Add tasks to existing increment | `/add-tasks 001 "Fix bug in context-loader"` |
-| `/close-increment` | Close with leftover transfer | `/close-increment 001` |
-| `/list-increments` | View all increments and WIP status | `/list-increments --status in-progress` |
+| `/sw:increment` | Create new increment (checks WIP) | `/sw:increment "JIRA Integration"` |
+| `/sw:do` | Execute increment tasks | `/sw:do` |
+| `/sw:progress` | View progress and WIP status | `/sw:progress` |
+| `/sw:done` | Close increment with validation | `/sw:done 001` |
+| `specweave status` | View all increments CLI | `specweave status` |
 
 ---
 
@@ -1013,16 +1013,16 @@ wip_slot: 1               # Which WIP slot (1, 2, or 3)
 
 ```bash
 # Week 1: Create and start core framework
-/create-increment "Core Framework"     # Creates 001
-/start-increment 001                   # Status: planned → in-progress
+/sw:increment "Core Framework"         # Creates 001
+/sw:do                                 # Status: planned → in-progress
 # WIP: 1/2
 
-# Week 2-12: Add tasks as discovered
-/add-tasks 001 "Fix error in context-loader"
-/add-tasks 001 "Add retry logic"
+# Week 2-12: Implement tasks
+/sw:do                                 # Continue executing tasks
+/sw:progress                           # Check progress
 
 # Week 12: 88% done, ready to move on
-/close-increment 001
+/sw:done 001
 
 # System prompts:
 → Completion: 88% (44/50 tasks)
@@ -1033,18 +1033,18 @@ wip_slot: 1               # Which WIP slot (1, 2, or 3)
 → WIP freed: 1/2 → 0/2
 
 # Week 13: Start new work
-/create-increment "JIRA Integration"   # Creates 003
-/start-increment 003
+/sw:increment "JIRA Integration"   # Creates 003
+/sw:do
 # WIP: 1/2
 
 # Week 14: Can start another (independent work)
-/create-increment "Analytics Dashboard"  # Creates 004
-/start-increment 004
+/sw:increment "Analytics Dashboard"  # Creates 004
+/sw:do
 # WIP: 2/2 (at limit)
 
 # Week 15: Try to start third
-/create-increment "GitHub Sync"        # Creates 005
-/start-increment 005
+/sw:increment "GitHub Sync"        # Creates 005
+/sw:do
 # ⚠️ WIP limit reached (2/2)
 # Options:
 # A) Close 003 or 004 first

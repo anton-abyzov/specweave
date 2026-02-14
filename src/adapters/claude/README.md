@@ -61,9 +61,9 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 ### Slash Commands
 | Command | Purpose |
 |---------|---------|
-| `/create-increment` | Create new feature increment |
-| `/sync-docs` | Review strategic documentation |
-| `/sync-github` | Sync to GitHub issues |
+| `/sw:increment` | Create new feature increment |
+| `/sw:progress` | Show increment progress |
+| `/sw-github:push` | Sync to GitHub issues |
 | `specweave init` | Bootstrap new project |
 
 **Plus more commands** (see `.claude/commands/`)

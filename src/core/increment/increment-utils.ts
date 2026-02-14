@@ -24,6 +24,13 @@ import * as path from 'path';
 import { findNextAvailableIdForProject } from '../../utils/feature-id-collision.js';
 
 /**
+ * Recognized lifecycle sub-folders under .specweave/increments/
+ * Any underscore-prefixed folder not in this list is considered invalid.
+ */
+export const RECOGNIZED_LIFECYCLE_FOLDERS = ['_archive', '_abandoned', '_paused', '_backlog'] as const;
+export type LifecycleFolder = typeof RECOGNIZED_LIFECYCLE_FOLDERS[number];
+
+/**
  * Centralized manager for increment number generation and validation.
  *
  * Scans ALL increment directories to ensure sequential numbering and
