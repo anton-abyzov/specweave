@@ -48,12 +48,16 @@ export async function writeSyncConfig(
   // Add hooks configuration (enables auto-sync!)
   config.hooks = {
     post_task_completion: {
-      sync_living_docs: true,
       sync_tasks_md: true,
       external_tracker_sync: true
     },
     post_increment_planning: {
       auto_create_github_issue: tracker === 'github' // Only for GitHub
+    },
+    post_increment_done: {
+      sync_living_docs: true,
+      sync_to_github_project: true,
+      close_github_issue: true
     }
   };
 
@@ -109,7 +113,7 @@ export async function writeSyncConfig(
   logger.log(chalk.gray(`   Auto-sync: enabled`));
   logger.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
   logger.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
-  logger.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
+  logger.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning, post_increment_done`));
 }
 
 /**

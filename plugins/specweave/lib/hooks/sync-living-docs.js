@@ -27,10 +27,12 @@ async function syncLivingDocs(incrementId) {
       console.error("   To fix: Check .specweave/config.json for syntax errors");
       config = { sync: { settings: {} } };
     }
-    const syncEnabled = config.hooks?.post_task_completion?.sync_living_docs ?? false;
+    const syncEnabled = config.hooks?.post_increment_done?.sync_living_docs
+      ?? config.hooks?.post_task_completion?.sync_living_docs // legacy fallback
+      ?? false;
     if (!syncEnabled) {
       console.log("\u2139\uFE0F  Living docs sync disabled in config");
-      console.log("   To enable: Set hooks.post_task_completion.sync_living_docs = true");
+      console.log("   To enable: Set hooks.post_increment_done.sync_living_docs = true");
       return;
     }
     console.log("\u2705 Living docs sync enabled");

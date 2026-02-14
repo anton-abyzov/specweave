@@ -190,5 +190,131 @@ describe('summary-banner', () => {
       expect(output).not.toContain('Existing code');
       expect(output).not.toContain('cloning');
     });
+
+    // ─── Adapter info ──────────────────────────────────────────
+
+    it('should show adapter display name for claude', () => {
+      const output = strip(formatSummaryBanner(makeOptions({ adapter: 'claude' })));
+      expect(output).toContain('Adapter:');
+      expect(output).toContain('Claude Code');
+    });
+
+    it('should show adapter display name for cursor', () => {
+      const output = strip(formatSummaryBanner(makeOptions({ adapter: 'cursor' })));
+      expect(output).toContain('Adapter:');
+      expect(output).toContain('Cursor');
+    });
+
+    it('should show adapter display name for generic', () => {
+      const output = strip(formatSummaryBanner(makeOptions({ adapter: 'generic' })));
+      expect(output).toContain('Adapter:');
+      expect(output).toContain('Generic');
+    });
+
+    // ─── Config path ───────────────────────────────────────────
+
+    it('should show config file path', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).toContain('Config:');
+      expect(output).toContain('.specweave/config.json');
+    });
+
+    // ─── Help reference ────────────────────────────────────────
+
+    it('should show help reference commands', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).toContain('specweave help');
+      expect(output).toContain('specweave doctor');
+    });
+
+    it('should show quick reference header', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).toContain('Quick reference:');
+    });
+
+    // ─── Coverage targets ──────────────────────────────────────
+
+    it('should show coverage targets when TDD with coverageTargets', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        defaults: {
+          ...makeOptions().defaults,
+          testing: 'TDD',
+          coverageTargets: { unit: 80, integration: 60, e2e: 40 },
+        },
+      })));
+      expect(output).toContain('TDD mode (coverage: 80% unit, 60% integration, 40% e2e)');
+      expect(output).not.toContain('TDD mode (testing)');
+    });
+
+    it('should fall back to "TDD mode (testing)" when no coverageTargets', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        defaults: { ...makeOptions().defaults, testing: 'TDD' },
+      })));
+      expect(output).toContain('TDD mode (testing)');
+    });
+
+    it('should not show coverage for non-TDD modes', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        defaults: {
+          ...makeOptions().defaults,
+          testing: 'test-after',
+          coverageTargets: { unit: 80, integration: 60, e2e: 40 },
+        },
+      })));
+      expect(output).toContain('test-after (testing)');
+      expect(output).not.toContain('coverage:');
+    });
+
+    // ─── Sync permissions ──────────────────────────────────────
+
+    it('should show sync permissions when provided', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        syncPermissions: { canCreate: true, canUpdate: true, canUpdateStatus: true },
+      })));
+      expect(output).toContain('Sync:');
+      expect(output).toContain('create');
+      expect(output).toContain('update');
+      expect(output).toContain('status');
+    });
+
+    it('should show partial sync permissions', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        syncPermissions: { canCreate: true, canUpdate: false, canUpdateStatus: true },
+      })));
+      expect(output).toContain('create + status');
+    });
+
+    it('should omit sync line when no permissions provided', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).not.toContain('Sync:');
+    });
+
+    // ─── External plugin health ────────────────────────────────
+
+    it('should show plugin pending warning when external plugin failed', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        tracker: { name: 'GitHub Issues' },
+        externalPluginInstalled: false,
+      })));
+      expect(output).toContain('GitHub Issues');
+      expect(output).toMatch(/plugin pending/);
+    });
+
+    it('should NOT show warning when external plugin succeeded', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        tracker: { name: 'GitHub Issues' },
+        externalPluginInstalled: true,
+      })));
+      expect(output).toContain('GitHub Issues');
+      expect(output).not.toContain('plugin pending');
+    });
+
+    it('should NOT show warning when externalPluginInstalled is undefined', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        tracker: { name: 'GitHub Issues' },
+      })));
+      expect(output).toContain('GitHub Issues');
+      expect(output).not.toContain('plugin pending');
+    });
   });
 });

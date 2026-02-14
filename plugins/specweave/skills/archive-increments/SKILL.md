@@ -22,10 +22,19 @@ Expert at keeping the `.specweave/increments/` folder clean and organized throug
 .specweave/increments/
 ├── 0023-0032 (Active)          ← Last 10 increments
 ├── _archive/                   ← Completed/old increments
-│   ├── 0001-0022              ← Historical increments
-│   └── 0029                   ← Abandoned experiments
-└── _abandoned/                 ← Failed/obsolete increments
+├── _abandoned/                 ← Failed/obsolete increments
+├── _paused/                    ← Paused increments (blocked on dependency)
+└── _backlog/                   ← Planned but not started (future work)
 ```
+
+Only these 4 underscore folders are recognized lifecycle folders. Unknown folders (e.g. `_analysis`, `_temp`) are flagged by `specweave doctor` and auto-cleaned by `specweave update`.
+
+### Auto-Archive Trigger (v1.0.257+)
+
+When `archiving.autoArchiveThreshold` (default: 10) numbered increment directories exist:
+- **Interactive mode**: LLM is prompted to suggest `specweave archive --keep-last 10`
+- **Auto mode**: Archiving runs automatically in the background
+- **Rate-limited**: Once per day to avoid noise
 
 ### Smart Detection Rules
 
@@ -87,6 +96,7 @@ Expert at keeping the `.specweave/increments/` folder clean and organized throug
   "archiving": {
     "keepLast": 10,              // Keep last 10 increments
     "autoArchive": false,        // Manual by default
+    "autoArchiveThreshold": 10,  // Suggest archive when >= 10 increments
     "archiveAfterDays": 60,      // Archive after 60 days
     "preserveActive": true,      // Never archive active
     "archiveCompleted": false    // Manual control

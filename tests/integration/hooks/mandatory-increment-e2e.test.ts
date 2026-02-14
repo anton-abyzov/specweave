@@ -207,11 +207,12 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // SKILL FIRST message should be present (v1.0.170+ format)
+      // SKILL FIRST message should be present (compact format v1.0.254+)
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('SKILL FIRST');
       expect(additionalContext).toContain('sw:increment-planner');
-      expect(additionalContext).toContain('Feature request');
+      // Compact format includes reasoning from detect-intent in Detection line
+      expect(additionalContext).toContain('Multi-file full-stack feature');
     });
 
     it('should include Skill tool invocation syntax in MANDATORY message', async () => {
@@ -253,9 +254,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should include explicit ordering (v1.0.170+ format)
-      expect(additionalContext).toContain('Order matters');
-      expect(additionalContext).toContain('Call Skill tool FIRST');
+      // Compact format (v1.0.254+): one-liner with "call BEFORE implementation"
+      expect(additionalContext).toContain('call BEFORE implementation');
+      expect(additionalContext).toContain('SKILL FIRST');
     });
 
     it('should NOT generate SKILL FIRST when LLM says mandatory: false', async () => {
@@ -307,7 +308,7 @@ exit 1
   });
 
   describe('MANDATORY Message Format - Claude Compliance', () => {
-    it('should use structured markdown format for instructions', async () => {
+    it('should use compact one-liner format for instructions', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -324,9 +325,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // v1.0.170+ uses structured markdown format with ASCII box
-      expect(additionalContext).toContain('═');  // ASCII box border
-      expect(additionalContext).toContain('**Your FIRST tool call must be:**');
+      // Compact format (v1.0.254+): one-liner with SKILL FIRST and Skill() call
+      expect(additionalContext).toContain('SKILL FIRST');
+      expect(additionalContext).toContain('call BEFORE implementation');
       expect(additionalContext).toContain('Skill(');
     });
 
@@ -351,7 +352,7 @@ exit 1
       expect(additionalContext).toContain('0.89');
     });
 
-    it('should include reasoning in the detection section', async () => {
+    it('should include reasoning in the detection line', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -368,8 +369,8 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should include detection reason (v1.0.170+ format)
-      expect(additionalContext).toContain('**Reason**:');
+      // Compact format (v1.0.254+): Detection line includes reason inline
+      expect(additionalContext).toContain('Detection:');
       expect(additionalContext).toContain('Payment integration');
     });
   });
@@ -438,8 +439,9 @@ exit 1
       const additionalContext = extractAdditionalContext(result.parsed);
 
       // small_fix should now produce a suggestion (not silent skip)
+      // Compact format (v1.0.254+): "Small change — consider tracking" with skill reference
       expect(additionalContext).toBeTruthy();
-      expect(additionalContext).toContain('Increment Suggestion');
+      expect(additionalContext).toContain('Small change');
       expect(additionalContext).toContain('sw:increment-planner');
     });
 
@@ -463,7 +465,8 @@ exit 1
       // small_fix should be a suggestion, not mandatory SKILL FIRST
       if (additionalContext) {
         expect(additionalContext).not.toContain('SKILL FIRST');
-        expect(additionalContext).toContain('Increment Suggestion');
+        // Compact format (v1.0.254+): "Small change — consider tracking"
+        expect(additionalContext).toContain('Small change');
       }
     });
 
@@ -778,6 +781,210 @@ export async function incrementExists(testRoot: string, pattern: string | RegExp
 
   return entries.some(e => pattern.test(e));
 }
+
+/**
+ * Tests for keyword-based increment discipline fallback when LLM detection fails.
+ *
+ * When specweave detect-intent times out or returns empty, the hook should
+ * still enforce increment discipline using keyword matching as a fallback.
+ *
+ * @since 1.0.257
+ */
+describe('Keyword Fallback for Increment Discipline (LLM failure)', () => {
+  const hookPath = path.join(
+    projectRoot,
+    'plugins/specweave/hooks/user-prompt-submit.sh'
+  );
+
+  let testRoot: string;
+  let mockBinDir: string;
+  let testCounter = 0;
+
+  beforeEach(async () => {
+    testCounter++;
+    testRoot = path.join(
+      os.tmpdir(),
+      `keyword-fallback-e2e-${Date.now()}-${testCounter}-${Math.random().toString(36).substring(7)}`
+    );
+
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'increments'));
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'state'));
+    await fs.ensureDir(path.join(testRoot, '.specweave', 'logs'));
+
+    mockBinDir = path.join(testRoot, 'mock-bin');
+    await fs.ensureDir(mockBinDir);
+
+    // Config: incrementAssist enabled + mandatory
+    await fs.writeJSON(
+      path.join(testRoot, '.specweave', 'config.json'),
+      {
+        pluginAutoLoad: { enabled: false },
+        incrementAssist: {
+          enabled: true,
+          mandatory: true,
+          confidenceThreshold: 0.7
+        },
+        testing: { defaultTestMode: 'test-after' }
+      },
+      { spaces: 2 }
+    );
+
+    vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (testRoot && await fs.pathExists(testRoot)) {
+      await fs.remove(testRoot);
+    }
+  });
+
+  /**
+   * Create a mock specweave CLI that simulates LLM detection FAILURE.
+   * detect-intent returns empty output (simulating timeout or error).
+   */
+  async function createFailingMockCli(): Promise<void> {
+    const mockScript = `#!/bin/bash
+# Mock specweave CLI - simulates LLM detection failure
+if [[ "$1" == "detect-intent" ]]; then
+  # Simulate timeout/failure: empty output
+  exit 1
+fi
+echo "Mock: Unknown command $1"
+exit 1
+`;
+    const mockPath = path.join(mockBinDir, 'specweave');
+    await fs.writeFile(mockPath, mockScript);
+    await fs.chmod(mockPath, 0o755);
+  }
+
+  function executeHook(prompt: string): {
+    raw: string;
+    parsed: unknown;
+    exitCode: number;
+    stderr: string;
+  } {
+    const env = {
+      ...getCleanEnv(),
+      SPECWEAVE_DISABLE_AUTO_LOAD: '0',
+      SPECWEAVE_DISABLE_HOOKS: '0',
+      PWD: testRoot,
+      PATH: `${mockBinDir}:${process.env.PATH}`,
+    };
+
+    const input = JSON.stringify({ prompt });
+
+    try {
+      const result = spawnSync('bash', [hookPath], {
+        input,
+        encoding: 'utf8',
+        cwd: testRoot,
+        env,
+        timeout: 15000
+      });
+
+      const raw = result.stdout?.trim() || '';
+      let parsed: unknown = null;
+      try { parsed = JSON.parse(raw); } catch { /* not JSON */ }
+      return { raw, parsed, exitCode: result.status ?? -1, stderr: result.stderr || '' };
+    } catch (err) {
+      return { raw: '', parsed: null, exitCode: -1, stderr: String(err) };
+    }
+  }
+
+  function extractAdditionalContext(parsed: unknown): string | null {
+    if (!parsed || typeof parsed !== 'object') return null;
+    const output = parsed as Record<string, unknown>;
+    if ('hookSpecificOutput' in output && typeof output.hookSpecificOutput === 'object') {
+      const hookOutput = output.hookSpecificOutput as Record<string, unknown>;
+      if ('additionalContext' in hookOutput && typeof hookOutput.additionalContext === 'string') {
+        return hookOutput.additionalContext;
+      }
+    }
+    if ('decision' in output && typeof output.reason === 'string') {
+      return output.reason;
+    }
+    return null;
+  }
+
+  describe('implementation prompts trigger fallback', () => {
+    it('should suggest increment for "big test react component" when LLM fails', async () => {
+      await createFailingMockCli();
+      const result = executeHook('big test react component');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      expect(context).not.toBeNull();
+      expect(context).toContain('sw:increment-planner');
+    });
+
+    it('should suggest increment for "write auth middleware" when LLM fails', async () => {
+      await createFailingMockCli();
+      const result = executeHook('write auth middleware');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      expect(context).not.toBeNull();
+      expect(context).toContain('sw:increment-planner');
+    });
+
+    it('should suggest increment for "refactor the database layer" when LLM fails', async () => {
+      await createFailingMockCli();
+      const result = executeHook('refactor the database layer');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      expect(context).not.toBeNull();
+      expect(context).toContain('sw:increment-planner');
+    });
+
+    it('should show SKILL FIRST when mandatory=true in config', async () => {
+      await createFailingMockCli();
+      const result = executeHook('build a payment dashboard');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      expect(context).not.toBeNull();
+      expect(context).toContain('SKILL FIRST');
+    });
+  });
+
+  describe('questions should NOT trigger fallback', () => {
+    it('should NOT suggest increment for "what is React?"', async () => {
+      await createFailingMockCli();
+      const result = executeHook('what is React?');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      // Should be plain approve with no increment suggestion
+      if (context) {
+        expect(context).not.toContain('sw:increment-planner');
+      }
+    });
+
+    it('should NOT suggest increment for "how do I deploy?"', async () => {
+      await createFailingMockCli();
+      const result = executeHook('how do I deploy?');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      if (context) {
+        expect(context).not.toContain('sw:increment-planner');
+      }
+    });
+
+    it('should NOT suggest increment for "explain the architecture"', async () => {
+      await createFailingMockCli();
+      const result = executeHook('explain the architecture');
+
+      expect(result.exitCode).toBe(0);
+      const context = extractAdditionalContext(result.parsed);
+      if (context) {
+        expect(context).not.toContain('sw:increment-planner');
+      }
+    });
+  });
+});
 
 /**
  * Integration test helper: Count increments matching pattern

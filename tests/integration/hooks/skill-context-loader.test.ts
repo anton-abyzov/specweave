@@ -338,6 +338,122 @@ describe('skill-context.sh', () => {
     });
   });
 
+  describe('hardening: single-line JSON', () => {
+    it('detects in-progress from compact (single-line) metadata.json', () => {
+      createConfig(tmpDir, {});
+      const incDir = path.join(tmpDir, '.specweave', 'increments', '0010-compact');
+      fs.mkdirSync(incDir, { recursive: true });
+      // Minified JSON — no newlines, no indentation
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        '{"id":"0010-compact","status":"in-progress"}'
+      );
+
+      const { stdout } = runScript(tmpDir);
+      expect(stdout).toContain('[increment]');
+      expect(stdout).toContain('active=0010-compact');
+    });
+  });
+
+  describe('hardening: empty config', () => {
+    it('does not emit [config] header for empty config {}', () => {
+      createConfig(tmpDir, {});
+
+      const { stdout } = runScript(tmpDir);
+      expect(stdout).not.toContain('[config]');
+    });
+  });
+
+  describe('hardening: C# detection', () => {
+    it('detects C# from .csproj file', () => {
+      createConfig(tmpDir, {});
+      fs.writeFileSync(path.join(tmpDir, 'MyApp.csproj'), '<Project></Project>');
+
+      const { stdout } = runScript(tmpDir);
+      expect(stdout).toContain('csharp');
+    });
+
+    it('detects C# from .sln file', () => {
+      createConfig(tmpDir, {});
+      fs.writeFileSync(path.join(tmpDir, 'MyApp.sln'), 'Microsoft Visual Studio Solution File');
+
+      const { stdout } = runScript(tmpDir);
+      expect(stdout).toContain('csharp');
+    });
+  });
+
+  describe('hardening: multi-tech simultaneous detection', () => {
+    it('detects 5+ techs when all markers present', () => {
+      createConfig(tmpDir, {});
+      fs.writeFileSync(path.join(tmpDir, 'package.json'), '{"dependencies":{"react":"18"}}');
+      fs.writeFileSync(path.join(tmpDir, 'tsconfig.json'), '{}');
+      fs.writeFileSync(path.join(tmpDir, 'go.mod'), 'module app\n');
+      fs.writeFileSync(path.join(tmpDir, 'Cargo.toml'), '[package]\n');
+      fs.writeFileSync(path.join(tmpDir, 'pom.xml'), '<project/>');
+
+      const { stdout } = runScript(tmpDir);
+      const techLine = stdout.split('\n').find(l => l.startsWith('tech=')) || '';
+      expect(techLine).toContain('node');
+      expect(techLine).toContain('typescript');
+      expect(techLine).toContain('go');
+      expect(techLine).toContain('rust');
+      expect(techLine).toContain('java');
+      expect(techLine).toContain('react');
+    });
+  });
+
+  describe('hardening: grep fallback (no jq)', () => {
+    function runScriptNoJq(cwd: string, skill = 'test'): { stdout: string; status: number } {
+      // Override PATH to hide jq — only keep essential system dirs
+      const minimalPath = '/usr/bin:/bin:/usr/sbin:/sbin';
+      const result = spawnSync('sh', [SCRIPT_PATH, skill], {
+        cwd,
+        encoding: 'utf-8',
+        env: { ...process.env, PATH: minimalPath, HOME: os.homedir() },
+      });
+      return {
+        stdout: (result.stdout || '').trim(),
+        status: result.status ?? 1,
+      };
+    }
+
+    it('extracts config values without jq via grep fallback', () => {
+      createConfig(tmpDir, {
+        testing: { defaultTestMode: 'TDD', tddEnforcement: 'strict' },
+        auto: { maxRetries: 10 },
+        sync: { github: { owner: 'my-org' } },
+      });
+      fs.writeFileSync(path.join(tmpDir, 'package.json'), '{}');
+
+      const { stdout, status } = runScriptNoJq(tmpDir);
+      expect(status).toBe(0);
+      expect(stdout).toContain('testing.mode=TDD');
+      expect(stdout).toContain('testing.enforcement=strict');
+      expect(stdout).toContain('auto.maxIterations=10');
+      expect(stdout).toContain('org=my-org');
+    });
+
+    it('exits 0 without jq and with empty config', () => {
+      createConfig(tmpDir, {});
+
+      const { status } = runScriptNoJq(tmpDir);
+      expect(status).toBe(0);
+    });
+
+    it('prefers sync.github.owner over other owner keys', () => {
+      createConfig(tmpDir, {
+        sync: {
+          jira: { owner: 'jira-owner' },
+          github: { owner: 'github-owner' },
+        },
+      });
+      fs.writeFileSync(path.join(tmpDir, 'package.json'), '{}');
+
+      const { stdout } = runScriptNoJq(tmpDir);
+      expect(stdout).toContain('org=github-owner');
+    });
+  });
+
   describe('output size', () => {
     it('total output stays under 500 chars', () => {
       createConfig(tmpDir, {

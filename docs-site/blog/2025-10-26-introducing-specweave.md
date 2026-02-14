@@ -38,8 +38,8 @@ Traditional development with AI assistants suffers from:
 
 ```bash
 specweave init --type python --framework fastapi
-/create-increment "user authentication"
-/sync-docs --increment 003
+/sw:increment "user authentication"
+/sw:progress
 ```
 
 Commands detect your tech stack and adapt automatically.
@@ -110,7 +110,7 @@ npx specweave init
 specweave init --type python --framework fastapi
 
 # Start building
-/create-increment "user authentication"
+/sw:increment "user authentication"
 ```
 
 ## What's Next?
