@@ -13,6 +13,8 @@ HAS_JQ=false
 command -v jq >/dev/null 2>&1 && HAS_JQ=true
 
 # --- Parse all config values in ONE jq call ---
+# ASSUMPTION: No config value contains literal '|' (pipe).
+# If this changes, switch to per-field jq calls (~120ms slower).
 _test_mode="" _test_enforce="" _deep_interview="" _auto_max=""
 _multi_project="" _org=""
 
@@ -47,6 +49,10 @@ fi
 emit_config() {
   [ -f "$CONFIG" ] || return 0
 
+  # Only emit header if at least one field has a value
+  [ -n "$_test_mode" ] || [ -n "$_test_enforce" ] || \
+    [ -n "$_deep_interview" ] || [ -n "$_auto_max" ] || return 0
+
   echo "[config]"
   [ -n "$_test_mode" ] && echo "testing.mode=$_test_mode"
   [ -n "$_test_enforce" ] && echo "testing.enforcement=$_test_enforce"
@@ -70,8 +76,12 @@ emit_project() {
 
   # Shell glob for C# — no subprocess needed
   _saved="$1"
-  set -- *.csproj *.sln
-  [ -e "$1" ] && tech="${tech}csharp,"
+  _found_cs=false
+  set -- *.csproj
+  [ -e "$1" ] && _found_cs=true
+  set -- *.sln
+  [ -e "$1" ] && _found_cs=true
+  $_found_cs && tech="${tech}csharp,"
   set -- "$_saved"
 
   # Detect React/Next/Vue from package.json (one grep each, fast)
@@ -103,15 +113,20 @@ emit_increment() {
   inc_dir=".specweave/increments"
   [ -d "$inc_dir" ] || return 0
 
-  # Find active increment. Anchor grep to "status" field to avoid
-  # false matches on previousStatus or other fields containing "in-progress".
+  # Find active increment. Fast grep pre-filter eliminates non-candidates,
+  # then jq verifies precisely (handles single-line JSON, avoids false
+  # matches on previousStatus). Without jq, grep alone is best-effort.
   active=""
   for meta in "$inc_dir"/*/metadata.json; do
     [ -f "$meta" ] || continue
-    if grep -q '^[[:space:]]*"status"[[:space:]]*:[[:space:]]*"in-progress"' "$meta" 2>/dev/null; then
-      active=$(basename "$(dirname "$meta")")
-      break
+    # Fast pre-filter: skip files that don't mention in-progress at all
+    grep -q '"in-progress"' "$meta" 2>/dev/null || continue
+    # Precise check: jq validates the status field specifically
+    if $HAS_JQ; then
+      jq -e '.status == "in-progress"' "$meta" >/dev/null 2>&1 || continue
     fi
+    active=$(basename "$(dirname "$meta")")
+    break
   done
 
   [ -z "$active" ] && return 0

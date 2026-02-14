@@ -202,6 +202,42 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 2.5b: Clean up invalid folders in .specweave/increments/ (v1.0.257+)
+  // Removes: unrecognized underscore folders (_analysis, etc.) and nested .specweave
+  if (isSpecWeaveProject) {
+    const { RECOGNIZED_LIFECYCLE_FOLDERS } = await import('../../core/increment/increment-utils.js');
+    const incrementsDir = path.join(projectPath, '.specweave', 'increments');
+    if (fs.existsSync(incrementsDir)) {
+      const recognizedSet = new Set<string>(RECOGNIZED_LIFECYCLE_FOLDERS);
+      const entries = fs.readdirSync(incrementsDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        const fullPath = path.join(incrementsDir, entry.name);
+
+        // Remove nested .specweave folder (accidental init artifact)
+        if (entry.name === '.specweave') {
+          if (options.check) {
+            console.log(chalk.yellow(`  ⚠️  Nested .specweave/ inside increments will be removed`));
+          } else {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+            console.log(chalk.green(`  ✓ Removed nested .specweave/ from increments/`));
+          }
+          continue;
+        }
+
+        // Remove unrecognized underscore folders
+        if (entry.name.startsWith('_') && !recognizedSet.has(entry.name)) {
+          if (options.check) {
+            console.log(chalk.yellow(`  ⚠️  Unrecognized folder ${entry.name} will be removed`));
+          } else {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+            console.log(chalk.green(`  ✓ Removed unrecognized folder: increments/${entry.name}`));
+          }
+        }
+      }
+    }
+  }
+
   // Step 2.6: Migrate reflect-config.json to enable autoReflect by default (v1.0.173+)
   // Projects initialized before v1.0.96 may have autoReflect: false
   if (isSpecWeaveProject && !options.check) {

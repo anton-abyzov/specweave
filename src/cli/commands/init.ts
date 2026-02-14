@@ -777,8 +777,9 @@ export async function initCommand(
     // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
     // Based on issue tracker selection, pre-load the appropriate plugin
     // This saves tokens by NOT loading all 24 plugins - just router + selected tool
+    let externalPluginInstalled: boolean | undefined;
     if (toolName === 'claude' && autoInstallSucceeded) {
-      await autoInstallSelectedExternalPlugin(targetDir);
+      externalPluginInstalled = await autoInstallSelectedExternalPlugin(targetDir);
     }
 
     // Multi-project folders
@@ -850,41 +851,60 @@ export async function initCommand(
         bannerProvider = { name: 'Local' };
       }
 
-      // Read tracker from config
-      let bannerTracker: { name: string } | undefined;
+      // Single config read for banner data
       const bannerConfigPath = path.join(targetDir, '.specweave', 'config.json');
+      let bannerConfig: Record<string, any> | undefined;
       if (fs.existsSync(bannerConfigPath)) {
-        try {
-          const bannerConfig = fs.readJsonSync(bannerConfigPath);
-          const syncCfg = bannerConfig?.sync;
-          if (syncCfg?.defaultProfile && syncCfg?.profiles) {
-            const profile = syncCfg.profiles[syncCfg.defaultProfile];
-            if (profile?.provider === 'github') bannerTracker = { name: 'GitHub Issues' };
-            else if (profile?.provider === 'jira') bannerTracker = { name: 'Jira' };
-            else if (profile?.provider === 'ado') bannerTracker = { name: 'Azure DevOps Boards' };
-          }
-        } catch { /* ignore */ }
+        try { bannerConfig = fs.readJsonSync(bannerConfigPath); } catch { /* ignore */ }
       }
 
-      // Read final config for defaults summary
-      let finalDefaults = {
+      // Read tracker from config
+      let bannerTracker: { name: string } | undefined;
+      if (bannerConfig) {
+        const syncCfg = bannerConfig.sync;
+        if (syncCfg?.defaultProfile && syncCfg?.profiles) {
+          const profile = syncCfg.profiles[syncCfg.defaultProfile];
+          if (profile?.provider === 'github') bannerTracker = { name: 'GitHub Issues' };
+          else if (profile?.provider === 'jira') bannerTracker = { name: 'Jira' };
+          else if (profile?.provider === 'ado') bannerTracker = { name: 'Azure DevOps Boards' };
+        }
+      }
+
+      // Read sync permissions
+      let syncPermissions: { canCreate: boolean; canUpdate: boolean; canUpdateStatus: boolean } | undefined;
+      if (bannerConfig?.sync?.settings) {
+        const s = bannerConfig.sync.settings;
+        syncPermissions = {
+          canCreate: !!s.canUpsertInternalItems,
+          canUpdate: !!s.canUpdateExternalItems,
+          canUpdateStatus: !!s.canUpdateStatus,
+        };
+      }
+
+      // Read defaults (including coverage targets)
+      let finalDefaults: {
+        testing: string;
+        qualityGates: string;
+        lspEnabled: boolean;
+        gitHooksInstalled: boolean;
+        translationEnabled: boolean;
+        coverageTargets?: { unit: number; integration: number; e2e: number };
+      } = {
         testing: 'TDD',
         qualityGates: 'standard',
         lspEnabled: toolName === 'claude',
         gitHooksInstalled: isGitRepo,
         translationEnabled: false,
       };
-      if (fs.existsSync(bannerConfigPath)) {
-        try {
-          const finalConfig = fs.readJsonSync(bannerConfigPath);
-          finalDefaults = {
-            testing: finalConfig?.testing?.defaultTestMode || 'TDD',
-            qualityGates: finalConfig?.qualityGates?.preset || 'standard',
-            lspEnabled: !!finalConfig?.lsp?.enabled,
-            gitHooksInstalled: isGitRepo,
-            translationEnabled: !!finalConfig?.translation?.enabled,
-          };
-        } catch { /* ignore */ }
+      if (bannerConfig) {
+        finalDefaults = {
+          testing: bannerConfig.testing?.defaultTestMode || 'TDD',
+          qualityGates: bannerConfig.qualityGates?.preset || 'standard',
+          lspEnabled: !!bannerConfig.lsp?.enabled,
+          gitHooksInstalled: isGitRepo,
+          translationEnabled: !!bannerConfig.translation?.enabled,
+          coverageTargets: bannerConfig.testing?.coverageTargets,
+        };
       }
 
       displaySummaryBanner({
@@ -897,6 +917,8 @@ export async function initCommand(
         adapter: toolName,
         language,
         defaults: finalDefaults,
+        externalPluginInstalled,
+        syncPermissions,
       });
     }
 
@@ -1040,11 +1062,11 @@ async function setupIssueTrackerWrapper(
  *
  * Result: ~30K max instead of ~60K (50% token savings)
  */
-async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<void> {
+async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<boolean> {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
   if (!fs.existsSync(configPath)) {
-    return;
+    return false;
   }
 
   try {
@@ -1052,12 +1074,12 @@ async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<voi
     const syncConfig = config.sync as { defaultProfile?: string; profiles?: Record<string, { provider?: string }> } | undefined;
 
     if (!syncConfig?.defaultProfile || !syncConfig?.profiles) {
-      return;
+      return false;
     }
 
     const defaultProfile = syncConfig.profiles[syncConfig.defaultProfile];
     if (!defaultProfile?.provider) {
-      return;
+      return false;
     }
 
     // Map provider to plugin name
@@ -1069,7 +1091,7 @@ async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<voi
 
     const pluginToInstall = providerToPlugin[defaultProfile.provider];
     if (!pluginToInstall) {
-      return;
+      return false;
     }
 
     // Install plugin via Claude CLI directly (v1.0.210 - removed PluginCacheManager)
@@ -1079,14 +1101,17 @@ async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<voi
     const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', `${pluginToInstall}@specweave`, ...scopeArgs]);
     if (cliResult.success) {
       console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
+      return true;
     } else {
       console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
       console.log(chalk.gray(`   → Install manually: claude plugin install ${pluginToInstall}@specweave`));
+      return false;
     }
   } catch (error) {
     // Non-blocking - just log and continue
     if (process.env.DEBUG) {
       console.log(chalk.gray(`   → Auto-install skipped: ${error instanceof Error ? error.message : String(error)}`));
     }
+    return false;
   }
 }

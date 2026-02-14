@@ -11,13 +11,17 @@ argument-hint: "[topic] [--serve] [--status] [--public] [--internal] [--adr] [--
 
 Browse, search, load, and serve SpecWeave living documentation.
 
-## Documentation Structure
+## Config-Driven Directories
 
+Read configured doc directories before any operation:
+
+```bash
+# Read configured doc directories (default: .specweave/docs)
+DOC_DIRS=$(jq -r '(.documentation.directories // [".specweave/docs"])[]' .specweave/config.json 2>/dev/null)
+[ -z "$DOC_DIRS" ] && DOC_DIRS=".specweave/docs"
 ```
-.specweave/docs/
-  public/          # User-facing docs (guides, workflows, troubleshooting, API)
-  internal/        # Developer docs (specs, architecture, ADRs, operations)
-```
+
+All search/list commands below MUST iterate over `$DOC_DIRS` instead of hardcoding `.specweave/docs`.
 
 ## Behavior
 
@@ -26,8 +30,18 @@ Browse, search, load, and serve SpecWeave living documentation.
 Run these diagnostic commands:
 
 ```bash
-# Count documents
-DOC_COUNT=$(find .specweave/docs -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+# Read configured doc directories
+DOC_DIRS=$(jq -r '(.documentation.directories // [".specweave/docs"])[]' .specweave/config.json 2>/dev/null)
+[ -z "$DOC_DIRS" ] && DOC_DIRS=".specweave/docs"
+
+# Count documents across all directories
+DOC_COUNT=0
+for dir in $DOC_DIRS; do
+  if [ -d "$dir" ]; then
+    C=$(find "$dir" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+    DOC_COUNT=$((DOC_COUNT + C))
+  fi
+done
 echo "DOC_COUNT:$DOC_COUNT"
 
 # Check Docusaurus install status
@@ -37,40 +51,36 @@ echo "DOC_COUNT:$DOC_COUNT"
 SERVER_INFO=$(lsof -i :3000-3010 -sTCP:LISTEN 2>/dev/null | grep -i node | head -1 | awk '{print $9}' | cut -d: -f2)
 [ -n "$SERVER_INFO" ] && echo "SERVER:running:$SERVER_INFO" || echo "SERVER:stopped"
 
-# List topics
-echo "=== Public ==="
-ls .specweave/docs/public/ 2>/dev/null || echo "(none)"
-echo "=== Internal ==="
-ls .specweave/docs/internal/ 2>/dev/null || echo "(none)"
-echo "=== ADRs ==="
-ls .specweave/docs/internal/architecture/adr/ 2>/dev/null || echo "(none)"
+# List topics per directory
+for dir in $DOC_DIRS; do
+  echo "=== $dir ==="
+  if [ -d "$dir/public" ]; then
+    echo "  Public:"
+    ls "$dir/public/" 2>/dev/null || echo "  (none)"
+  fi
+  if [ -d "$dir/internal" ]; then
+    echo "  Internal:"
+    ls "$dir/internal/" 2>/dev/null || echo "  (none)"
+  fi
+  if [ -d "$dir/internal/architecture/adr" ]; then
+    echo "  ADRs:"
+    ls "$dir/internal/architecture/adr/" 2>/dev/null || echo "  (none)"
+  fi
+  # For non-standard directories (e.g., docs/), list top-level folders
+  if [ "$dir" != ".specweave/docs" ] && [ -d "$dir" ]; then
+    echo "  Folders:"
+    ls -d "$dir"/*/ 2>/dev/null | xargs -I{} basename {} || echo "  (none)"
+  fi
+done
 ```
 
-Present as a clean dashboard:
+Present as a clean dashboard.
 
-```
-Documentation Hub
+**Then ALWAYS include serve guidance** (same as `--serve` behavior):
+- If server is already running: "Docs server running at http://localhost:<port>"
+- If server is NOT running: Show the `specweave docs preview` instructions (see section 4 below)
 
-  Documents: <count> markdown files
-  Server:    Running at http://localhost:<port> | Not running
-  Docusaurus: Installed | Will auto-install on first serve
-
-  Public:
-    <folder>/  - <brief description>
-    ...
-
-  Internal:
-    <folder>/  - <brief description>
-    ...
-
-  Actions:
-    /sw:docs <topic>              Load docs into conversation
-    /sw:docs --serve              Check server status & serve guide
-    specweave docs preview        Launch browser preview (hot reload)
-    specweave docs build          Build static site for deployment
-    specweave docs validate       Check for markdown errors
-    specweave docs kill           Stop running servers
-```
+This ensures every `/sw:docs` invocation gives the user a clear path to browse docs in their browser.
 
 ### 2. `--list`: List topics only
 
@@ -80,10 +90,14 @@ Same as dashboard but skip server/Docusaurus diagnostics. Just list folder names
 
 When user provides a topic (e.g., `/sw:docs sync`, `/sw:docs troubleshooting`):
 
-1. **Search** for matching docs:
+1. **Search** across all configured directories:
    ```bash
-   find .specweave/docs -type d -iname "*<topic>*" -maxdepth 4
-   find .specweave/docs -type f -iname "*<topic>*.md" -maxdepth 5
+   DOC_DIRS=$(jq -r '(.documentation.directories // [".specweave/docs"])[]' .specweave/config.json 2>/dev/null)
+   [ -z "$DOC_DIRS" ] && DOC_DIRS=".specweave/docs"
+   for dir in $DOC_DIRS; do
+     find "$dir" -type d -iname "*<topic>*" -maxdepth 4 2>/dev/null
+     find "$dir" -type f -iname "*<topic>*.md" -maxdepth 5 2>/dev/null
+   done
    ```
 
 2. **If found**: Read the most relevant files (up to 3-5) and present a summary
@@ -135,10 +149,14 @@ specweave docs status
 
 ### 7. ADR Mode (`--adr` or "ADR" in topic)
 
-List all ADRs with their titles:
+List all ADRs with their titles across all directories:
 ```bash
-for f in .specweave/docs/internal/architecture/adr/*.md; do
-  [ -f "$f" ] && echo "$(basename "$f"): $(head -1 "$f" | sed 's/^# //')"
+DOC_DIRS=$(jq -r '(.documentation.directories // [".specweave/docs"])[]' .specweave/config.json 2>/dev/null)
+[ -z "$DOC_DIRS" ] && DOC_DIRS=".specweave/docs"
+for dir in $DOC_DIRS; do
+  for f in "$dir"/internal/architecture/adr/*.md; do
+    [ -f "$f" ] && echo "$(basename "$f"): $(head -1 "$f" | sed 's/^# //')"
+  done
 done
 ```
 

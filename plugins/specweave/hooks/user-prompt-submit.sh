@@ -1508,14 +1508,34 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
         fi
 
         # ==================================================================
-        # KEYWORD FALLBACK REMOVED (v1.0.159)
+        # KEYWORD FALLBACK FOR INCREMENT DISCIPLINE (v1.0.257)
         # ==================================================================
-        # Keyword fallback was too aggressive - it matched "test" for simple
-        # test runs, "database" for any database mention, etc.
+        # Plugin keyword fallback was removed in v1.0.159 (too aggressive for
+        # auto-installing plugins). But INCREMENT DISCIPLINE still needs a
+        # fallback when LLM detection fails/times out. Without this, prompts
+        # like "big test react component" silently bypass spec-first discipline.
         #
-        # Now we ONLY use LLM-based detection. If LLM returns empty,
-        # no plugins are installed. This is intentional - user can
-        # manually install with: claude plugin install sw-frontend@specweave
+        # This fallback ONLY handles increment suggestions (not plugin installs).
+        if [[ "$LLM_DETECTION_FAILED" == "true" && "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
+          # Check for implementation-intent keywords
+          if echo "$PROMPT" | grep -qiE "(test|component|feature|fix|refactor|setup|configure|integrate|migrate|upgrade|write|style|design|add|create|implement|build|develop|deploy|scaffold|generate)"; then
+            # Exclude questions (starting with question words or ending with ?)
+            if ! echo "$PROMPT" | grep -qiE "^[[:space:]]*(what|how|why|explain|tell me|can you|does|should|is there|where|when|which)" && \
+               ! echo "$PROMPT" | grep -qE "\?[[:space:]]*$"; then
+              FALLBACK_ESCAPED=$(truncate_and_escape_prompt "$PROMPT")
+              if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
+                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\", args: \"${FALLBACK_ESCAPED}\" })\` — call BEFORE implementation.
+Detection: Implementation keywords detected (LLM unavailable, keyword fallback).
+After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
+              else
+                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment-planner\", args: \"${FALLBACK_ESCAPED}\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
+              fi
+              echo "[$(date -Iseconds)] keyword-fallback | prompt_keywords_matched=true | mandatory=$INCREMENT_MANDATORY_CONFIG" >> "$LAZY_LOAD_LOG"
+              output_approve_with_context "$FALLBACK_MSG"
+              exit 0
+            fi
+          fi
+        fi
       fi
     fi
   fi
@@ -1625,7 +1645,8 @@ fi
 # This covers 90%+ of prompts with <5ms overhead
 # v1.0.144: Still show plugin autoload message if plugins are being loaded
 # v1.0.155: AUTOLOAD_PLUGINS_MSG now includes new plugin warnings from helper function
-if ! echo "$PROMPT" | grep -qE "(specweave|/sw:|increment|add|create|implement|build|develop)"; then
+# v1.0.257: Expanded keywords to catch implementation prompts that bypass LLM detection
+if ! echo "$PROMPT" | grep -qiE "(specweave|/sw:|increment|add|create|implement|build|develop|test|component|feature|fix|refactor|write|style|setup|configure|migrate|deploy|scaffold)"; then
   if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
     # Show plugin loading feedback even for non-SpecWeave prompts
     output_approve_with_context "$AUTOLOAD_PLUGINS_MSG"
@@ -1913,6 +1934,59 @@ if [[ "$ACTIVE_COUNT" -gt 0 ]]; then
 fi
 
 # ==============================================================================
+# ARCHIVE SUGGESTION (v1.0.257 - Auto-archive when too many increments)
+# ==============================================================================
+# When total numbered increment directories exceed threshold, suggest archiving.
+# In auto mode: archive silently. Interactive: inject suggestion for LLM.
+# Rate-limited: once per day via marker file.
+ARCHIVE_SUGGESTION_MSG=""
+if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
+  TOTAL_INCREMENT_DIRS=$(ls -d "$SPECWEAVE_DIR/increments"/[0-9]* 2>/dev/null | wc -l | tr -d ' ')
+
+  # Read threshold from config (default: 10)
+  _ARCHIVE_THRESHOLD=10
+  if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+    _ARCHIVE_THRESHOLD=$(jq -r '.archiving.autoArchiveThreshold // 10' "$CONFIG_PATH" 2>/dev/null || echo "10")
+  fi
+  [[ ! "$_ARCHIVE_THRESHOLD" =~ ^[0-9]+$ ]] && _ARCHIVE_THRESHOLD=10
+
+  if [[ "$TOTAL_INCREMENT_DIRS" -ge "$_ARCHIVE_THRESHOLD" ]]; then
+    # Rate limit: once per day via marker file
+    ARCHIVE_MARKER="$SPECWEAVE_DIR/state/archive-suggestion.marker"
+    SHOULD_SUGGEST=true
+    if [[ -f "$ARCHIVE_MARKER" ]]; then
+      MARKER_DATE=$(cat "$ARCHIVE_MARKER" 2>/dev/null | head -1)
+      TODAY=$(date +%Y-%m-%d)
+      [[ "$MARKER_DATE" == "$TODAY" ]] && SHOULD_SUGGEST=false
+    fi
+
+    if [[ "$SHOULD_SUGGEST" == "true" ]]; then
+      # Check if in auto mode
+      AUTO_STATE_FILE="$SPECWEAVE_DIR/state/auto.json"
+      IN_AUTO_MODE=false
+      if [[ -f "$AUTO_STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
+        AUTO_STATUS=$(jq -r '.status // "idle"' "$AUTO_STATE_FILE" 2>/dev/null)
+        [[ "$AUTO_STATUS" == "running" ]] && IN_AUTO_MODE=true
+      fi
+
+      if [[ "$IN_AUTO_MODE" == "true" ]]; then
+        # Auto mode: archive silently in background
+        if command -v specweave >/dev/null 2>&1; then
+          specweave archive --keep-last 10 2>/dev/null &
+        fi
+      else
+        # Interactive: suggest to LLM
+        ARCHIVE_SUGGESTION_MSG="⚠️ **Archive suggested**: ${TOTAL_INCREMENT_DIRS} increments in workspace (threshold: ${_ARCHIVE_THRESHOLD}). Run: \`specweave archive --keep-last 10\`\n\n"
+      fi
+
+      # Write today's date as marker
+      mkdir -p "$(dirname "$ARCHIVE_MARKER")" 2>/dev/null
+      echo "$(date +%Y-%m-%d)" > "$ARCHIVE_MARKER" 2>/dev/null || true
+    fi
+  fi
+fi
+
+# ==============================================================================
 # SMART INTERVIEW GATE (v1.0.243 - LLM-Driven Prompt Assessment)
 # ==============================================================================
 # When Deep Interview Mode is enabled AND no active increment exists,
@@ -2188,6 +2262,11 @@ fi
 # v1.0.180: Add explicit LSP request explanation if detected
 if [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]]; then
   FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_EXPLICIT_REQUEST_MSG}"
+fi
+
+# v1.0.257: Archive suggestion when too many increments
+if [[ -n "$ARCHIVE_SUGGESTION_MSG" ]]; then
+  FINAL_MESSAGE="${FINAL_MESSAGE}${ARCHIVE_SUGGESTION_MSG}"
 fi
 
 # v1.0.243: Smart Interview Gate for non-incrementAssist paths
