@@ -97,7 +97,7 @@ If detection fails, ask user.
 ```typescript
 Skill({
   skill: "sw:increment-planner",
-  args: "--id=XXXX-name --description=\"...\" --project=my-project"
+  args: "<user's feature description>"
 });
 ```
 

@@ -159,11 +159,6 @@
           "type": "object",
           "description": "Post-task completion hook settings",
           "properties": {
-            "sync_living_docs": {
-              "type": "boolean",
-              "description": "Automatically sync increment specs to living docs after task completion",
-              "default": true
-            },
             "sync_tasks_md": {
               "type": "boolean",
               "description": "Update tasks.md with completion status",
@@ -193,6 +188,11 @@
           "type": "object",
           "description": "Post-increment done hook settings (MANDATORY for GitHub Project sync)",
           "properties": {
+            "sync_living_docs": {
+              "type": "boolean",
+              "description": "Sync specs to living docs when increment closes",
+              "default": true
+            },
             "sync_to_github_project": {
               "type": "boolean",
               "description": "MANDATORY: Automatically sync living docs spec to GitHub Project when increment closes (ensures source of truth integrity)",
@@ -448,8 +448,14 @@
     },
     "documentation": {
       "type": "object",
-      "description": "Documentation preview configuration (Docusaurus local server)",
+      "description": "Documentation configuration — directories and preview",
       "properties": {
+        "directories": {
+          "type": "array",
+          "description": "Directories to search for documentation (relative to project root)",
+          "items": { "type": "string" },
+          "default": [".specweave/docs"]
+        },
         "preview": {
           "type": "object",
           "description": "Local documentation preview settings",

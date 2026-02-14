@@ -66,7 +66,7 @@
 - TC-033: Leftover transfer when closing incomplete increments
 
 **Acceptance Criteria**:
-- `/create-increment` auto-numbers next available
+- `/sw:increment` auto-numbers next available
 - WIP limit check before starting new increment
 - Status progression tracked in frontmatter
 - Leftover tasks transferable to new/existing increments

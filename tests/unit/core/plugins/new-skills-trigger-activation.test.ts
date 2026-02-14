@@ -243,9 +243,11 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
       expect(fqns).toContain('specweave-backend:rust-backend');
     });
 
-    it('GraphQL: "Set up Apollo Server with schema federation"', () => {
+    it('GraphQL: "Set up a GraphQL API with Apollo Server and federation"', () => {
+      // Prompt updated: trimmed description no longer has "Apollo Server" as trigger,
+      // but "graphql" is extracted as a technology term from the description
       const matches = extractor.matchPrompt(
-        'Set up Apollo Server with schema federation',
+        'Set up a GraphQL API with Apollo Server and federation',
         index
       );
       const fqns = matches.map((m) => m.fqn);

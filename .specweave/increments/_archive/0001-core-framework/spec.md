@@ -173,7 +173,7 @@ auto_refresh: false
 - [ ] **TC-041**: Creates `logs/`, `scripts/`, `reports/` directories
 - [ ] **TC-042**: Generic output (shows DETECTED tech stack, not assumed)
 
-**Slash Command**: `/create-increment`
+**Slash Command**: `/sw:increment` (was `/create-increment` in early specs)
 **Skill**: `increment-planner`
 
 ### US7: Strategic Analysis from Expert Agents (P1)
@@ -473,7 +473,7 @@ All commands adapt to ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.):
    - Creates framework-specific structure
    - Installs skills, hooks, commands
 
-2. **`/create-increment`** - Create new product increment
+2. **`/sw:increment`** - Create new product increment (was `/create-increment` in early specs)
    - Arguments: Feature description, `--priority`, `--brownfield`, `--autonomous`
    - Auto-increments number
    - Detects tech stack

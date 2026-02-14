@@ -6,14 +6,19 @@
 
 import { FabricSecurityScanResult, FabricSecurityFinding } from './registry-schema.js';
 
-/** Context for safe-path detection (rm in temp dirs, etc.) */
-const SAFE_RM_CONTEXTS = [
-  /rm\s+-rf?\s+["']?\$\{?TMPDIR\}?/i,
-  /rm\s+-rf?\s+["']?\$\{?TMP\}?/i,
-  /rm\s+-rf?\s+["']?\/tmp\//i,
-  /rm\s+-rf?\s+["']?\$\{?tmpdir\}?/i,
-  /rm\s+-rf?\s+["']?os\.tmpdir/i,
+/** Temp-dir path patterns (reused across short-form and long-form rm) */
+const TEMP_DIR_PATTERNS = [
+  /\$\{?TMPDIR\}?/i,
+  /\$\{?TMP\}?/i,
+  /\/tmp\//i,
+  /os\.tmpdir/i,
 ];
+
+/** Context for safe-path detection (rm in temp dirs, etc.) */
+const SAFE_RM_CONTEXTS = TEMP_DIR_PATTERNS.map(p => new RegExp(`rm\\s+-rf?\\s+["']?${p.source}`, p.flags));
+
+/** Safe contexts for long-form rm flags (--force, --recursive) */
+const SAFE_RM_LONG_FORM_CONTEXTS = TEMP_DIR_PATTERNS.map(p => new RegExp(`rm\\s+--(?:force|recursive)\\b[^\\n]*${p.source}`, p.flags));
 
 interface PatternCheck {
   pattern: RegExp;
@@ -34,6 +39,13 @@ const PATTERN_CHECKS: PatternCheck[] = [
     safeContexts: SAFE_RM_CONTEXTS,
   },
   {
+    pattern: /\brm\s+--force\b|\brm\s+--recursive\b/,
+    severity: 'critical',
+    category: 'destructive-command',
+    message: 'Destructive rm command detected (long-form flags)',
+    safeContexts: SAFE_RM_LONG_FORM_CONTEXTS,
+  },
+  {
     pattern: /\bformat\s+[a-zA-Z]:/i,
     severity: 'critical',
     category: 'destructive-command',
@@ -44,6 +56,24 @@ const PATTERN_CHECKS: PatternCheck[] = [
     severity: 'critical',
     category: 'destructive-command',
     message: 'SQL DROP statement detected',
+  },
+  {
+    pattern: /\bdd\s+if=.*\bof=\/dev\//,
+    severity: 'critical',
+    category: 'destructive-command',
+    message: 'dd disk wipe command detected',
+  },
+  {
+    pattern: /\bmkfs\b/,
+    severity: 'critical',
+    category: 'destructive-command',
+    message: 'mkfs filesystem format command detected',
+  },
+  {
+    pattern: /\bRemove-Item\b.*-Recurse.*-Force|\bRemove-Item\b.*-Force.*-Recurse/i,
+    severity: 'critical',
+    category: 'destructive-command',
+    message: 'PowerShell Remove-Item -Recurse -Force detected',
   },
 
   // --- Remote code execution (critical) ---
@@ -76,6 +106,12 @@ const PATTERN_CHECKS: PatternCheck[] = [
     severity: 'critical',
     category: 'remote-code-execution',
     message: 'child_process usage detected',
+  },
+  {
+    pattern: /\bInvoke-Expression\b/i,
+    severity: 'critical',
+    category: 'remote-code-execution',
+    message: 'PowerShell Invoke-Expression detected (remote code execution)',
   },
 
   // --- Credential access (high) ---
@@ -116,9 +152,17 @@ const PATTERN_CHECKS: PatternCheck[] = [
     message: 'secrets.yaml file access detected',
   },
 
+  // --- Dangerous permissions (high) ---
+  {
+    pattern: /\bchmod\s+(-R\s+)?777\b/,
+    severity: 'high',
+    category: 'dangerous-permissions',
+    message: 'chmod 777 detected (world-writable permissions)',
+  },
+
   // --- Prompt injection (high) ---
   {
-    pattern: /^<\/?system>/,
+    pattern: /^\s*<\/?system>/,
     severity: 'high',
     category: 'prompt-injection',
     message: 'System tag detected (potential prompt injection)',
@@ -134,6 +178,9 @@ const PATTERN_CHECKS: PatternCheck[] = [
     severity: 'high',
     category: 'prompt-injection',
     message: '"You are now" detected (potential prompt injection)',
+    safeContexts: [
+      /\byou\s+are\s+now\s+(ready|done|in|able|going|set|finished|complete|configured|running|connected|logged|signed|inside|using|looking|viewing|working|editing|on)\b/i,
+    ],
   },
   {
     pattern: /\boverride\s+system\s+prompt\b/i,
@@ -213,10 +260,29 @@ export function scanSkillContent(content: string): FabricSecurityScanResult {
     findings.push(frontmatterFinding);
   }
 
+  // Pre-scan: check if fenced code blocks are balanced.
+  // If unclosed (odd number of ``` lines), downgrading is disabled to prevent bypass.
+  const fenceCount = lines.filter(l => /^```/.test(l)).length;
+  const codeBlocksBalanced = fenceCount % 2 === 0;
+
   // Scan each line against pattern checks
+  let inCodeBlock = false;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const lineNum = i + 1;
+
+    // Track fenced code blocks (``` with optional language specifier)
+    if (/^```/.test(line)) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+
+    // Check for inline suppression comment on previous line
+    const prevLine = i > 0 ? lines[i - 1] : '';
+    if (/<!--\s*scanner:ignore-next-line\s*-->/.test(prevLine)) {
+      continue;
+    }
 
     for (const check of PATTERN_CHECKS) {
       if (check.pattern.test(line)) {
@@ -226,8 +292,11 @@ export function scanSkillContent(content: string): FabricSecurityScanResult {
           if (isSafe) continue;
         }
 
+        // Downgrade severity inside balanced fenced code blocks only
+        const severity = (inCodeBlock && codeBlocksBalanced) ? 'info' as const : check.severity;
+
         findings.push({
-          severity: check.severity,
+          severity,
           category: check.category,
           message: check.message,
           line: lineNum,

@@ -31,8 +31,24 @@ export interface SummaryBannerOptions {
     lspEnabled: boolean;
     gitHooksInstalled: boolean;
     translationEnabled: boolean;
+    coverageTargets?: { unit: number; integration: number; e2e: number };
+  };
+  externalPluginInstalled?: boolean;
+  syncPermissions?: {
+    canCreate: boolean;
+    canUpdate: boolean;
+    canUpdateStatus: boolean;
   };
 }
+
+const adapterDisplayNames: Record<string, string> = {
+  claude: 'Claude Code',
+  cursor: 'Cursor',
+  copilot: 'GitHub Copilot',
+  gemini: 'Gemini CLI',
+  codex: 'Codex',
+  generic: 'Generic',
+};
 
 /**
  * Format the summary banner as a string (pure function).
@@ -55,10 +71,32 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
     lines.push(chalk.cyan('  Provider:  ') + `${options.provider.name} ${providerDetail}`.trim());
   }
 
-  // Tracker info
+  // Tracker info (with plugin health indicator)
   if (options.tracker) {
-    lines.push(chalk.cyan('  Tracker:   ') + options.tracker.name);
+    let trackerLine = options.tracker.name;
+    if (options.externalPluginInstalled === false) {
+      trackerLine += chalk.yellow(' (\u26A0 plugin pending)');
+    }
+    lines.push(chalk.cyan('  Tracker:   ') + trackerLine);
   }
+
+  // Sync permissions
+  if (options.syncPermissions) {
+    const perms: string[] = [];
+    if (options.syncPermissions.canCreate) perms.push('create');
+    if (options.syncPermissions.canUpdate) perms.push('update');
+    if (options.syncPermissions.canUpdateStatus) perms.push('status');
+    if (perms.length > 0) {
+      lines.push(chalk.cyan('  Sync:      ') + perms.join(' + '));
+    }
+  }
+
+  // Adapter info
+  const adapterLabel = adapterDisplayNames[options.adapter] || options.adapter;
+  lines.push(chalk.cyan('  Adapter:   ') + adapterLabel);
+
+  // Config path
+  lines.push(chalk.cyan('  Config:    ') + '.specweave/config.json');
 
   // Repo count
   const repoLabel = options.repoCount === 1 ? 'single repo' : 'multi-repo';
@@ -69,7 +107,16 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
   // Enabled defaults
   lines.push(chalk.cyan('  Enabled by default:'));
 
-  const testLabel = options.defaults.testing === 'TDD' ? 'TDD mode (testing)' : `${options.defaults.testing} (testing)`;
+  // Testing line with optional coverage targets
+  let testLabel: string;
+  if (options.defaults.testing === 'TDD' && options.defaults.coverageTargets) {
+    const ct = options.defaults.coverageTargets;
+    testLabel = `TDD mode (coverage: ${ct.unit}% unit, ${ct.integration}% integration, ${ct.e2e}% e2e)`;
+  } else if (options.defaults.testing === 'TDD') {
+    testLabel = 'TDD mode (testing)';
+  } else {
+    testLabel = `${options.defaults.testing} (testing)`;
+  }
   lines.push(`    • ${testLabel}`);
 
   const gateLabel = options.defaults.qualityGates.charAt(0).toUpperCase() + options.defaults.qualityGates.slice(1);
@@ -91,6 +138,12 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
 
   // Customize instruction
   lines.push(chalk.gray('  Customize anytime: specweave config <section>'));
+
+  // Quick reference
+  lines.push('');
+  lines.push(chalk.cyan('  Quick reference:'));
+  lines.push(`    specweave help              Full command reference`);
+  lines.push(`    specweave doctor            Verify project health`);
 
   // Brownfield / living docs hint
   if (!options.isGreenfield && !options.hasPendingClones) {

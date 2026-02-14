@@ -43,6 +43,17 @@ export async function createDirectoryStructure(
   _adapterName: string,
   options?: { projectName?: string; scanExistingDocs?: boolean }
 ): Promise<void> {
+  // Guard: Prevent creating .specweave inside an existing .specweave/increments/ path
+  const resolvedTarget = path.resolve(targetDir);
+  const incrementsSegment = path.join('.specweave', 'increments');
+  if (resolvedTarget.includes(incrementsSegment)) {
+    throw new Error(
+      'Cannot initialize SpecWeave inside .specweave/increments/. ' +
+      'This would create a nested .specweave folder. ' +
+      'Run specweave init from your project root directory.'
+    );
+  }
+
   // Core directories (created first for immediate availability)
   // NOTE: .specweave/memory/ is DEPRECATED (v2.0) - learnings now go to CLAUDE.md
   const coreDirectories = [
@@ -384,12 +395,16 @@ export function createConfigFile(
     },
     hooks: {
       post_task_completion: {
-        sync_living_docs: true,
         sync_tasks_md: true,
         external_tracker_sync: true
       },
       post_increment_planning: {
         auto_create_github_issue: true
+      },
+      post_increment_done: {
+        sync_living_docs: true,
+        sync_to_github_project: true,
+        close_github_issue: true
       }
     },
     // Auto mode configuration (stop hook behavior)

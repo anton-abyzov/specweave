@@ -300,6 +300,23 @@ program
     await completeCommand(incrementId, options);
   });
 
+// Create Increment command - Create template files for a new increment
+program
+  .command('create-increment')
+  .description('Create increment template files (metadata.json, spec.md, plan.md, tasks.md)')
+  .requiredOption('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
+  .requiredOption('--title <title>', 'Feature title')
+  .requiredOption('--description <description>', 'Feature description')
+  .requiredOption('--project <project-id>', 'Project ID from specweave context projects')
+  .option('--board <board-id>', 'Board ID for 2-level structures')
+  .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
+  .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
+  .option('--json', 'Output result as JSON (for programmatic use)')
+  .action(async (options) => {
+    const { createIncrementCommand } = await import('../dist/src/cli/commands/create-increment.js');
+    await createIncrementCommand(options);
+  });
+
 // Archive command - Archive completed increments and sync living docs
 program
   .command('archive [increments...]')

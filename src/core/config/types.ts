@@ -243,12 +243,33 @@ export interface SyncConfiguration {
  */
 export interface HookConfiguration {
   post_task_completion?: {
-    sync_living_docs?: boolean;
     sync_tasks_md?: boolean;
     external_tracker_sync?: boolean;
   };
   post_increment_planning?: {
     auto_create_github_issue?: boolean;
+  };
+  post_increment_done?: {
+    sync_living_docs?: boolean;
+    sync_to_github_project?: boolean;
+    close_github_issue?: boolean;
+    update_living_docs_first?: boolean;
+  };
+}
+
+/**
+ * Documentation configuration
+ */
+export interface DocumentationConfig {
+  /** Directories to search for documentation (default: [".specweave/docs"]) */
+  directories?: string[];
+  preview?: {
+    enabled?: boolean;
+    autoInstall?: boolean;
+    port?: number;
+    openBrowser?: boolean;
+    theme?: string;
+    excludeFolders?: string[];
   };
 }
 
@@ -595,6 +616,7 @@ export interface DeduplicationConfig {
 export interface ArchivingConfig {
   keepLast?: number;
   autoArchive?: boolean;
+  autoArchiveThreshold?: number;
   archiveAfterDays?: number;
   preserveActive?: boolean;
   archiveCompleted?: boolean;
@@ -839,6 +861,9 @@ export interface SpecWeaveConfig {
   /** API documentation configuration (v1.0.58+) */
   apiDocs?: ApiDocsConfig;
 
+  /** Documentation configuration — directories, preview (v1.0.258+) */
+  documentation?: DocumentationConfig;
+
   /** Plugin auto-load configuration (v1.0.140+) */
   pluginAutoLoad?: PluginAutoLoadConfig;
 
@@ -926,6 +951,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   archiving: {
     keepLast: 5,
     autoArchive: false,
+    autoArchiveThreshold: 10,
     archiveAfterDays: 60,
     preserveActive: true,
     archiveCompleted: false,
@@ -960,9 +986,13 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   },
   hooks: {
     post_task_completion: {
-      sync_living_docs: true,
       sync_tasks_md: true,
       external_tracker_sync: true,
+    },
+    post_increment_done: {
+      sync_living_docs: true,
+      sync_to_github_project: true,
+      close_github_issue: true,
     },
   },
   sync: {

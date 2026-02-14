@@ -113,10 +113,11 @@ describe('TDD Workflow Integration', () => {
 
       // Check for TDD mode detection
       expect(doContent).toContain('testMode');
-      expect(doContent).toContain('TDD MODE');
+      // Trimmed skill uses "TDD mode active" and "TDD Setup" instead of "TDD MODE"
+      expect(doContent).toMatch(/TDD mode active|TDD Setup/);
 
-      // Check for TDD banner
-      expect(doContent).toContain('TDD MODE ACTIVE');
+      // Check for TDD phase references
+      expect(doContent).toContain('TDD reminder banner');
       expect(doContent).toContain('RED');
       expect(doContent).toContain('GREEN');
       expect(doContent).toContain('REFACTOR');
