@@ -67,6 +67,7 @@ import { readFile } from 'fs/promises';
 import {
   syncACProgressToProviders,
   buildACProgressContext,
+  closeIncrementIssues,
   resetCircuitBreakers,
   type ACProgressSyncConfig,
   type ACProgressSyncResult,
@@ -561,5 +562,95 @@ describe('buildACProgressContext', () => {
     const ctx = await buildACProgressContext('/fake/spec.md', ['US-999']);
 
     expect(ctx.userStories.get('US-999')?.acStates).toHaveLength(0);
+  });
+});
+
+// ============================================================================
+// closeIncrementIssues Tests (Phase 3)
+// ============================================================================
+
+describe('closeIncrementIssues', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetCircuitBreakers();
+  });
+
+  it('should parse all user story IDs from spec.md and sync all providers', async () => {
+    // Spec has US-001 and US-002 with all ACs complete
+    vi.mocked(readFile).mockResolvedValue(
+      '# Test\n\n### US-001: First Story\n\n' +
+      '- [x] **AC-US1-01**: Done\n- [x] **AC-US1-02**: Done\n\n' +
+      '### US-002: Second Story\n\n' +
+      '- [x] **AC-US2-01**: Done\n'
+    );
+
+    mockPostACProgressComments.mockResolvedValue({ posted: [], errors: [] });
+    mockAutoCloseCompletedUserStories.mockResolvedValue({
+      closed: [{ usId: 'US-001', issueNumber: 100 }, { usId: 'US-002', issueNumber: 101 }],
+      skipped: [],
+      errors: [],
+    });
+
+    const config: any = {
+      sync: { github: { enabled: true } },
+      github: { owner: 'test', repo: 'test' },
+      externalLinks: {
+        github: {
+          issues: {
+            'US-001': { issueNumber: 100, issueUrl: 'https://...' },
+            'US-002': { issueNumber: 101, issueUrl: 'https://...' },
+          },
+        },
+      },
+    };
+
+    const result = await closeIncrementIssues('0206-test', '/fake/spec.md', config);
+
+    // Should have called auto-close with BOTH user stories
+    expect(mockAutoCloseCompletedUserStories).toHaveBeenCalledWith(
+      '0206-test',
+      expect.arrayContaining(['US-001', 'US-002']),
+      '/fake/spec.md',
+      expect.any(Object),
+    );
+    expect(result.github?.closed).toHaveLength(2);
+  });
+
+  it('should work with all three providers', async () => {
+    vi.mocked(readFile).mockResolvedValue(
+      '### US-001: Story\n\n- [x] **AC-US1-01**: Done\n'
+    );
+
+    mockPostACProgressComments.mockResolvedValue({ posted: [], errors: [] });
+    mockAutoCloseCompletedUserStories.mockResolvedValue({
+      closed: [{ usId: 'US-001', issueNumber: 1 }], skipped: [], errors: [],
+    });
+    mockJiraPostStatusComment.mockResolvedValue(undefined);
+    mockJiraUpdateStatus.mockResolvedValue(true);
+    mockAdoAddComment.mockResolvedValue(undefined);
+    mockAdoGetStatus.mockResolvedValue({ state: 'Active' });
+    mockAdoUpdateStatus.mockResolvedValue(undefined);
+
+    const config: any = {
+      sync: {
+        github: { enabled: true },
+        jira: { enabled: true },
+        ado: { enabled: true },
+      },
+      github: { owner: 'test', repo: 'test' },
+      jira: { domain: 'test.atlassian.net', projectKey: 'TEST' },
+      ado: { organization: 'test', project: 'test' },
+      externalLinks: {
+        github: { issues: { 'US-001': { issueNumber: 1, issueUrl: '' } } },
+        jira: { userStories: { 'US-001': { issueKey: 'TEST-1', issueUrl: '' } } },
+        ado: { userStories: { 'US-001': { workItemId: 1, workItemUrl: '' } } },
+      },
+    };
+
+    const result = await closeIncrementIssues('0206-test', '/fake/spec.md', config);
+
+    expect(result.github?.closed).toHaveLength(1);
+    expect(result.jira?.closed).toHaveLength(1);
+    expect(result.ado?.closed).toHaveLength(1);
   });
 });

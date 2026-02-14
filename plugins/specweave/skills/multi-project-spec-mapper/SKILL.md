@@ -1,5 +1,5 @@
 ---
-description: Intelligent multi-project specification splitting that maps user stories to correct projects (FE, BE, MOBILE, INFRA). Use when working with multiple JIRA/GitHub projects, microservices architecture, or brownfield projects with multiple teams. Analyzes content and tech stack for automatic classification.
+description: Multi-project spec splitting that maps user stories to correct projects (FE, BE, MOBILE, INFRA). Use for microservices, multiple JIRA/GitHub projects, multi-team setups.
 user-invocable: false
 ---
 

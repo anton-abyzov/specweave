@@ -74,7 +74,7 @@ describe('Judge LLM: integration in /sw:done', () => {
 
   it('should run judge-llm AFTER grill passes', () => {
     const content = readFileSync(donePath, 'utf-8');
-    const grillIndex = content.search(/Step 0\.5.*Grill/i);
+    const grillIndex = content.search(/Step 2.*Grill/i);
     const judgeLlmIndex = content.search(/Judge.LLM|judge-llm/i);
     expect(grillIndex).toBeGreaterThan(-1);
     expect(judgeLlmIndex).toBeGreaterThan(-1);

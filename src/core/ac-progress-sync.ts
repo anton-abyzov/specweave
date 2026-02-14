@@ -363,6 +363,42 @@ export async function syncACProgressToProviders(
 }
 
 /**
+ * Close all external tool issues for a completed increment.
+ *
+ * Unlike syncACProgressToProviders (which operates on recently-changed US IDs),
+ * this function parses ALL user story IDs from spec.md and attempts to close
+ * their corresponding external issues. Used when increment status -> "completed".
+ */
+export async function closeIncrementIssues(
+  incrementId: string,
+  specPath: string,
+  config: ACProgressSyncConfig,
+): Promise<ACProgressSyncResult> {
+  const content = await readFile(specPath, 'utf-8');
+  const allUSIds = parseAllUserStoryIds(content);
+
+  if (allUSIds.length === 0) {
+    return {};
+  }
+
+  return syncACProgressToProviders(incrementId, allUSIds, specPath, config);
+}
+
+/**
+ * Parse all user story IDs from spec.md content.
+ * Matches patterns like "### US-001:", "### US-002:" etc.
+ */
+export function parseAllUserStoryIds(content: string): string[] {
+  const ids: string[] = [];
+  const pattern = /###\s+(US-\d+):/g;
+  let match;
+  while ((match = pattern.exec(content)) !== null) {
+    ids.push(match[1]);
+  }
+  return ids;
+}
+
+/**
  * Reset all circuit breakers (for testing only).
  */
 export function resetCircuitBreakers(): void {

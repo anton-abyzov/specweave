@@ -1,5 +1,5 @@
 ---
-description: Detects when user reports issues with recently completed work and suggests reopening relevant tasks or increments. Use when reporting bugs, regressions, or problems with recently finished features. Scans completed work from last 7 days and provides relevance-scored suggestions while checking WIP limits.
+description: Detects issues with recently completed work and suggests reopening tasks/increments. Use for bugs, regressions, or problems with recently finished features.
 user-invocable: false
 ---
 

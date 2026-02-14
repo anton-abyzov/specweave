@@ -373,8 +373,8 @@ escape_json_early() {
 
 # v1.0.254: Prompt safety limits to prevent "Prompt is too long" errors
 # These must match the constants in src/core/lazy-loading/llm-plugin-detector.ts
-MAX_ADDITIONAL_CONTEXT_LENGTH=8000
-MAX_SKILL_FIRST_PROMPT_LENGTH=2000
+MAX_ADDITIONAL_CONTEXT_LENGTH=3000
+MAX_SKILL_FIRST_PROMPT_LENGTH=800
 
 # Helper: Output approve response with context (Claude Code hook format v1.0.166)
 # CRITICAL: systemMessage is NOT a valid field for UserPromptSubmit hooks!
@@ -525,17 +525,7 @@ if [[ -f "$LSP_STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
     MISSING_SERVERS=$(jq -r '.missing[] | "- **\(.language)**: `\(.install)`"' "$LSP_STATE_FILE" 2>/dev/null)
 
     if [[ -n "$MISSING_SERVERS" ]]; then
-      LSP_WARNING_MSG="⚡ **LSP: Install language servers for 100x faster code intelligence**
-
-The following language servers are not installed:
-$MISSING_SERVERS
-
-LSP provides semantic code understanding (findReferences, goToDefinition, diagnostics).
-Without it, Claude uses text search which is slower and less accurate.
-
-📖 Guide: https://spec-weave.com/docs/guides/lsp-integration
-
----
+      LSP_WARNING_MSG="LSP missing: ${MISSING_SERVERS}. Install for semantic code intelligence. Guide: https://spec-weave.com/docs/guides/lsp-integration
 
 "
       # Mark as warned so we don't show again this session
@@ -1370,57 +1360,12 @@ Task({
                       # ask targeted questions first. If complete, proceed directly.
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
-                        DEEP_INTERVIEW_MSG="
-
-🧠 **SMART INTERVIEW GATE** (Deep Interview Mode active)
-
-BEFORE calling sw:increment-planner, assess this prompt for completeness.
-Consider ALL prior messages in this conversation.
-
-**Assess complexity:**
-- Trivial → need almost nothing, call increment-planner now
-- Small (single component) → need: tech stack + basic flow
-- Medium (multiple components) → need: stack + integrations + user flows + auth
-- Large (platform/multi-service) → need: architecture + security + deployment + edge cases
-
-**Check signals (weight by project type):**
-- Technical: stack, frameworks, DB, auth, API integrations, deployment target
-- Product: target users, core flows, business model, MVP scope
-- Operational: env vars/keys, CI/CD, monitoring
-
-**Decision:**
-- Sufficient detail → call increment-planner immediately with full context
-- Gaps detected → ask 2-5 targeted questions about ONLY what is missing, then call increment-planner after answers received
-- NEVER ask 10+ questions. NEVER repeat what the user already said."
+                        DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
                       fi
 
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
-║  🎯 SKILL FIRST - Call Skill tool BEFORE implementation                      ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-**Your FIRST tool call must be:**
-\`\`\`
-Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT}\" })
-\`\`\`
-
-**Order matters:**
-1. ✅ Call Skill tool FIRST (as shown above)
-2. ✅ THEN proceed with implementation normally
-
-**Detection**: Feature request (confidence: ${INC_CONF})
-**Reason**: ${INC_REASON}${AGENT_DIRECTIVE}${DEEP_INTERVIEW_MSG}
-
----
-
-⚠️ **SKILL CHAINING REQUIRED** - \"SKILL FIRST\" does NOT mean \"only one skill\"!
-
-After sw:increment-planner, ALSO invoke domain skills for your tech stack:
-- React/Vue/Angular → \`sw-frontend:frontend-architect\`
-- .NET/C# → \`sw-backend:dotnet-backend\`
-- Stripe → \`sw-payments:stripe-integration\`
-- After code → LSP works automatically (use findReferences, goToDefinition)
-
-See CLAUDE.md section \"MANDATORY: Skill Chaining\" for full pattern."
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT}\" })\` — call BEFORE implementation.
+Detection: ${INC_REASON} (confidence: ${INC_CONF}).${AGENT_DIRECTIVE}${DEEP_INTERVIEW_MSG}
+After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
                       # Use approve+additionalContext so Claude can read and follow
                       # the SKILL FIRST instructions (block erases prompt from context)
                       output_approve_with_context "$MSG"
@@ -1428,20 +1373,7 @@ See CLAUDE.md section \"MANDATORY: Skill Chaining\" for full pattern."
                     else
                       # v1.0.169: Also suggest direct skill call for non-mandatory
                       ESCAPED_PROMPT_SUGGEST=$(truncate_and_escape_prompt "$PROMPT")
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like new feature work.
-
-Consider creating an increment first:
-\`\`\`
-Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SUGGEST}\" })
-\`\`\`
-
-Or via command: \`$CMD\`
-
-*Reason: $INC_REASON*${AGENT_DIRECTIVE}
-
----
-
-*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Increment suggested: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SUGGEST}\" })\` or \`$CMD\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                       output_approve_with_context "$MSG"
                       exit 0
                     fi
@@ -1450,20 +1382,7 @@ Or via command: \`$CMD\`
                   hotfix)
                     # v1.0.169: Direct skill call for hotfix too
                     ESCAPED_PROMPT_HOTFIX=$(truncate_and_escape_prompt "$PROMPT")
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}🚨 **Hotfix Detected**: Urgent production issue.
-
-Create a hotfix increment:
-\`\`\`
-Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix ${ESCAPED_PROMPT_HOTFIX}\" })
-\`\`\`
-
-Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
-
-*Reason: $INC_REASON*
-
----
-
-*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Hotfix detected: \`Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix ${ESCAPED_PROMPT_HOTFIX}\" })\`. Reason: $INC_REASON"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1471,19 +1390,7 @@ Or via command: \`/sw:increment --type=hotfix \"${INC_NAME:-urgent-fix}\"\`
                   reopen)
                     HINT=""
                     [[ -n "$INC_KEYWORD" ]] && HINT=" (look for: *$INC_KEYWORD*)"
-                    MSG="${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks related to previous work$HINT.
-
-Consider reopening the existing increment:
-\`\`\`
-/sw:status  # Find the related increment
-specweave resume <id>  # Reopen it
-\`\`\`
-
-*Reason: $INC_REASON*
-
----
-
-*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    MSG="${AUTOLOAD_PREFIX}Related to previous work$HINT. Consider: \`/sw:status\` then \`specweave resume <id>\`. Reason: $INC_REASON"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1495,20 +1402,7 @@ specweave resume <id>  # Reopen it
                     CMD_SMALLFIX="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
 
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}💡 **Increment Suggestion**: This looks like a small change worth tracking.
-
-Consider creating an increment:
-\`\`\`
-Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SMALLFIX}\" })
-\`\`\`
-
-Or via command: \`$CMD_SMALLFIX\`
-
-*Reason: $INC_REASON*${AGENT_DIRECTIVE}
-
----
-
-*Tip: Disable with \`incrementAssist.enabled: false\` in config.json*"
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Small change — consider tracking: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SMALLFIX}\" })\` or \`$CMD_SMALLFIX\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1527,37 +1421,11 @@ Or via command: \`$CMD_SMALLFIX\`
                 [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]] && SKILL_ONLY_PREFIX="${SKILL_ONLY_PREFIX}${LSP_EXPLICIT_REQUEST_MSG}"
 
                 if [[ "$SKILL_MANDATORY" == "true" ]]; then
-                  MSG="${SKILL_ONLY_PREFIX}╔══════════════════════════════════════════════════════════════════════════════╗
-║  🎯 SKILL REQUIRED - This task needs specialized skill support               ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-<skill_invocation_required>
-### 🎯 MANDATORY: Use ${SKILL_INVOCATION} Skill
-
-You MUST use this skill for this task. Do NOT proceed without loading it first.
-
-**Invoke NOW using Skill tool:**
-\`\`\`typescript
-Skill({ skill: \"${SKILL_INVOCATION}\" })
-\`\`\`
-
-**Why this skill is required:**
-${SKILL_REASON:-This skill provides specialized support for your task.}
-
-⚠️ **Do NOT skip this** - the skill has domain expertise needed for this operation.
-</skill_invocation_required>"
+                  MSG="${SKILL_ONLY_PREFIX}SKILL REQUIRED: \`Skill({ skill: \"${SKILL_INVOCATION}\" })\` — call before proceeding. ${SKILL_REASON:-Specialized support needed.}"
                   output_approve_with_context "$MSG"
                   exit 0
                 else
-                  # Non-mandatory skill recommendation
-                  MSG="${SKILL_ONLY_PREFIX}💡 **Skill Recommended**: Consider using a specialized skill.
-
-Use \`${SKILL_INVOCATION}\` for better results:
-\`\`\`typescript
-Skill({ skill: \"${SKILL_INVOCATION}\" })
-\`\`\`
-
-*${SKILL_REASON:-This skill provides specialized support for your task.}*"
+                  MSG="${SKILL_ONLY_PREFIX}Skill recommended: \`Skill({ skill: \"${SKILL_INVOCATION}\" })\`. ${SKILL_REASON:-Specialized support for this task.}"
                   output_approve_with_context "$MSG"
                   exit 0
                 fi
@@ -1595,126 +1463,29 @@ Skill({ skill: \"${SKILL_INVOCATION}\" })
             if [[ "$ROUTING_SKILLS_COUNT" -gt 0 || -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
               BRAIN_MSG=""
 
-              # Header
-              BRAIN_MSG="# 🧠 Router Brain Active\\n\\n"
+              # Compact router output — one line per decision
+              [[ -n "$PLUGINS_INSTALLED" ]] && BRAIN_MSG+="Plugins loaded: ${PLUGINS_INSTALLED}. "
+              [[ -n "$PLUGINS_ALREADY" ]] && BRAIN_MSG+="Plugins active: ${PLUGINS_ALREADY}. "
 
-              # Analysis summary table
-              BRAIN_MSG+="## Analysis\\n"
-              BRAIN_MSG+="| Aspect | Decision |\\n"
-              BRAIN_MSG+="|--------|----------|\\n"
-
-              # Plugins row
-              if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                BRAIN_MSG+="| Plugins | ✅ Loaded: ${PLUGINS_INSTALLED} |\\n"
-              elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                BRAIN_MSG+="| Plugins | ✅ Using: ${PLUGINS_ALREADY} |\\n"
-              fi
-
-              # Increment row
               if [[ "$INC_ACTION" == "new" || "$INC_ACTION" == "hotfix" ]]; then
-                BRAIN_MSG+="| Increment | 📋 Create: \\\"${INC_NAME:-new-feature}\\\" |\\n"
+                BRAIN_MSG+="Increment: create \\\"${INC_NAME:-new-feature}\\\" (${INC_ACTION}). "
               elif [[ "$INC_ACTION" == "reopen" ]]; then
-                BRAIN_MSG+="| Increment | 🔄 Reopen existing |\\n"
+                BRAIN_MSG+="Increment: reopen existing"
+                [[ -n "$INC_KEYWORD" ]] && BRAIN_MSG+=" (${INC_KEYWORD})"
+                BRAIN_MSG+=". "
               fi
 
-              # Primary skill row
               if [[ -n "$PRIMARY_SKILL" ]]; then
-                BRAIN_MSG+="| Primary Skill | \`${PRIMARY_SKILL}\` |\\n"
-              fi
-
-              # Secondary skills row
-              if [[ -n "$SECONDARY_SKILLS" ]]; then
-                BRAIN_MSG+="| Supporting | ${SECONDARY_SKILLS} |\\n"
-              fi
-
-              BRAIN_MSG+="\\n"
-
-              # Workflow section
-              BRAIN_MSG+="## Workflow\\n\\n"
-
-              STEP_NUM=1
-
-              # Step: Create increment (if needed)
-              if [[ "$INC_ACTION" == "new" ]]; then
-                CMD="/sw:increment"
-                [[ -n "$INC_NAME" ]] && CMD="/sw:increment \\\"$INC_NAME\\\""
-                BRAIN_MSG+="### Step ${STEP_NUM}: Create Increment\\n"
-                BRAIN_MSG+="\\\`\\\`\\\`\\n${CMD}\\n\\\`\\\`\\\`\\n"
-                BRAIN_MSG+="*${INC_REASON:-Tracks this feature work with specs}*\\n\\n"
-                STEP_NUM=$((STEP_NUM + 1))
-              elif [[ "$INC_ACTION" == "hotfix" ]]; then
-                CMD="/sw:increment --type=hotfix \\\"${INC_NAME:-urgent-fix}\\\""
-                BRAIN_MSG+="### Step ${STEP_NUM}: Create Hotfix Increment\\n"
-                BRAIN_MSG+="\\\`\\\`\\\`\\n${CMD}\\n\\\`\\\`\\\`\\n"
-                BRAIN_MSG+="*${INC_REASON:-Urgent production issue}*\\n\\n"
-                STEP_NUM=$((STEP_NUM + 1))
-              elif [[ "$INC_ACTION" == "reopen" ]]; then
-                BRAIN_MSG+="### Step ${STEP_NUM}: Find & Reopen Increment\\n"
-                BRAIN_MSG+="\\\`\\\`\\\`\\n/sw:status  # Find related increment\\nspecweave resume <id>\\n\\\`\\\`\\\`\\n"
-                [[ -n "$INC_KEYWORD" ]] && BRAIN_MSG+="*Look for: ${INC_KEYWORD}*\\n"
-                BRAIN_MSG+="\\n"
-                STEP_NUM=$((STEP_NUM + 1))
-              fi
-
-              # Step: SPAWN AGENTS (v1.0.155 - Task tool directive)
-              if [[ -n "$PRIMARY_SKILL" ]]; then
-                BRAIN_MSG+="### Step ${STEP_NUM}: 🚀 SPAWN SPECIALIZED AGENTS\\n\\n"
-
-                # Build agent subagent_type from skill info
-                # Format: plugin:skill:skill (e.g., sw-frontend:frontend-architect:frontend-architect)
+                # Extract agent type for Task tool
                 PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
                 PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
-
-                if [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]]; then
-                  AGENT_TYPE="${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME}"
-
-                  BRAIN_MSG+="**⚠️ MANDATORY: Use Task tool to spawn agent for implementation**\\n\\n"
-                  BRAIN_MSG+="\\\`\\\`\\\`typescript\\n"
-                  BRAIN_MSG+="Task({\\n"
-                  BRAIN_MSG+="  subagent_type: \\\"${AGENT_TYPE}\\\",\\n"
-                  BRAIN_MSG+="  prompt: \\\"Implement [describe task]...\\\",\\n"
-                  BRAIN_MSG+="  description: \\\"[short description]\\\"\\n"
-                  BRAIN_MSG+="})\\n"
-                  BRAIN_MSG+="\\\`\\\`\\\`\\n\\n"
-
-                  BRAIN_MSG+="**Why**: Specialized agents have deep domain knowledge and produce better code than direct implementation.\\n\\n"
-                  [[ -n "$PRIMARY_REASON" ]] && BRAIN_MSG+="**Agent expertise**: *${PRIMARY_REASON}*\\n\\n"
-                fi
-
-                # Add secondary agents if present
-                if [[ -n "$SECONDARY_SKILLS" ]]; then
-                  BRAIN_MSG+="**Additional agents available**:\\n"
-                  # Parse each secondary skill
-                  echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "secondary") | "\(.plugin):\(.name):\(.name)"' 2>/dev/null | while read -r sec_agent; do
-                    [[ -n "$sec_agent" ]] && BRAIN_MSG+="- \`${sec_agent}\`\\n"
-                  done
-                  BRAIN_MSG+="\\n"
-                fi
-
-                # Add invoke timing hint
-                case "$PRIMARY_INVOKE" in
-                  immediate)
-                    BRAIN_MSG+="**Timing**: Spawn agent NOW - task is self-contained\\n\\n"
-                    ;;
-                  after_increment)
-                    BRAIN_MSG+="**Timing**: Spawn agent AFTER creating increment\\n\\n"
-                    ;;
-                  after_planning)
-                    BRAIN_MSG+="**Timing**: Enter plan mode first, THEN spawn agent\\n\\n"
-                    ;;
-                esac
-
-                STEP_NUM=$((STEP_NUM + 1))
+                BRAIN_MSG+="Primary skill: ${PRIMARY_SKILL}"
+                [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]] && BRAIN_MSG+=" (agent: ${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME})"
+                BRAIN_MSG+=", invoke: ${PRIMARY_INVOKE:-after_increment}. "
+                [[ -n "$SECONDARY_SKILLS" ]] && BRAIN_MSG+="Also: ${SECONDARY_SKILLS}. "
               fi
 
-              # Add plan mode suggestion if recommended
-              if [[ "$SUGGEST_PLAN" == "true" ]]; then
-                BRAIN_MSG+="### 💡 Suggestion: Use Plan Mode\\n"
-                BRAIN_MSG+="This task appears complex. Consider entering plan mode first.\\n\\n"
-              fi
-
-              # Footer
-              BRAIN_MSG+="---\\n*Router Brain v1.0.150*"
+              [[ "$SUGGEST_PLAN" == "true" ]] && BRAIN_MSG+="Suggest plan mode. "
 
               output_approve_with_context "$BRAIN_MSG"
               exit 0
@@ -1823,35 +1594,7 @@ if [[ -n "$SW_PROJECT_ROOT" ]] && [[ -d "$SW_PROJECT_ROOT/.specweave" ]]; then
 
     # v1.0.160: STRICT TDD adds mandatory blocking directive
     if [[ "$TDD_ENFORCEMENT" == "strict" ]]; then
-      TDD_MSG="🚫 **STRICT TDD MODE - MANDATORY ENFORCEMENT**
-
-⚠️ **YOU MUST FOLLOW RED→GREEN→REFACTOR OR YOUR CHANGES WILL BE REJECTED**
-
-**MANDATORY WORKFLOW (NO EXCEPTIONS):**
-1. **[RED]** Write failing test FIRST → Run test → Verify it FAILS
-2. **[GREEN]** Write MINIMAL code to pass → Run test → Verify it PASSES
-3. **[REFACTOR]** Improve code quality → Tests must stay green
-
-**STRICT RULES - VIOLATIONS ARE BLOCKED:**
-- ❌ CANNOT write implementation before test exists
-- ❌ CANNOT mark [GREEN] task complete before [RED] is done
-- ❌ CANNOT skip the test-failure verification step
-- ❌ CANNOT implement features without corresponding tests
-
-**BEFORE ANY IMPLEMENTATION:**
-1. Find or create the [RED] test task
-2. Write the test
-3. Run the test and confirm it FAILS
-4. Only THEN proceed to [GREEN] implementation
-
-**COMMANDS:** Use \`/sw:tdd-cycle\` for guided workflow
-
----
-
-**COMMANDS:** \`/sw:tdd-cycle\` for guided workflow | \`/sw:tdd-red\`, \`/sw:tdd-green\`, \`/sw:tdd-refactor\` for phases
-
----
-"
+      TDD_MSG="STRICT TDD ACTIVE (source: ${TDD_SOURCE}). RED->GREEN->REFACTOR enforced. No implementation before failing test. Use /sw:tdd-cycle."
     fi
 
     # v1.0.201: Include LSP instructions BEFORE TDD message
@@ -2189,31 +1932,7 @@ if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; th
   fi
 
   if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
-    SMART_INTERVIEW_GATE_MSG="
-🧠 **SMART INTERVIEW GATE** (Deep Interview Mode active, no increment yet)
-
-Before proceeding, assess this conversation for completeness. Consider ALL prior messages.
-
-**Assess complexity first:**
-- Trivial (config change, typo) → need almost nothing, proceed immediately
-- Small (single component) → need: tech stack + basic flow
-- Medium (multiple components) → need: stack + integrations + user flows + auth approach
-- Large (platform/multi-service) → need: architecture + security + deployment + edge cases + monitoring
-
-**Check for these signals (weight by project type):**
-- Technical: tech stack, frameworks, database, auth method, API integrations, deployment target
-- Product: target users, core flows, business model, MVP scope, timeline
-- Operational: env vars/keys, CI/CD, monitoring needs
-
-**Your decision:**
-- If sufficient detail for the detected complexity → call \`Skill({ skill: \\\"sw:increment-planner\\\", args: \\\"<summarize all gathered context>\\\" })\`
-- If gaps exist → ask 2-5 targeted questions about ONLY what is missing. Do NOT repeat questions already answered in prior messages. Do NOT run a full category-by-category interview.
-
-**Rules:**
-- NEVER overwhelm with 10+ questions at once
-- NEVER ask about things the user already explained
-- Simple projects need fewer signals than complex platforms
-- When in doubt about one detail, ask — but don't block on nice-to-haves"
+    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment-planner."
   fi
 fi
 
@@ -2412,16 +2131,7 @@ fi
 # COMMAND SUGGESTIONS: Guide users to structured workflow
 # ==============================================================================
 
-if echo "$PROMPT" | grep -qiE "(add|create|implement|build|develop)" && ! echo "$PROMPT" | grep -q "/sw:"; then
-  if [[ -n "$CONTEXT" ]]; then
-    CONTEXT="$CONTEXT
-
-💡 TIP: Consider using SpecWeave commands for structured development:
-  - /sw:increment \"feature name\"  # Plan new increment
-  - /sw:do                         # Execute current tasks
-  - /sw:progress                   # Check progress"
-  fi
-fi
+# Command suggestions removed (v1.0.257) — already in CLAUDE.md, reduces per-turn context
 
 # ==============================================================================
 # STATUS LINE REFRESH (v0.26.13 - CONDITIONAL + ASYNC)
