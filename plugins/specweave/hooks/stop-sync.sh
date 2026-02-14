@@ -93,24 +93,31 @@ run_with_timeout() {
 
 INCREMENTS_TO_SYNC=""
 PROCESSED_FILE="$QUEUE_DIR/.processed-$$"
+EVENT_TYPES_FILE="$QUEUE_DIR/.event-types-$$"
+> "$EVENT_TYPES_FILE" 2>/dev/null || true
 
 # Process new-style pending.jsonl
 if [ -f "$PENDING_FILE" ] && [ -s "$PENDING_FILE" ]; then
     log "Processing pending.jsonl..."
 
-    # Extract unique increment IDs from pending events
+    # Extract unique increment IDs and track event types
     while IFS= read -r line; do
         [ -z "$line" ] && continue
 
         # Extract increment ID from event data
         # Format: {"type":"task.updated","data":"0001-feature-name","ts":"..."}
         INC_ID=$(echo "$line" | grep -o '"data":"[^"]*"' | cut -d'"' -f4 | grep -o '^[0-9][0-9][0-9][0-9]-[^:]*' | head -1)
+        EVENT_TYPE=$(echo "$line" | grep -o '"type":"[^"]*"' | cut -d'"' -f4)
 
         if [ -n "$INC_ID" ]; then
             # Add to list if not already present
             if ! echo "$INCREMENTS_TO_SYNC" | grep -q "$INC_ID"; then
                 INCREMENTS_TO_SYNC="$INCREMENTS_TO_SYNC $INC_ID"
                 log "Queued for sync: $INC_ID"
+            fi
+            # Track event type for this increment
+            if [ -n "$EVENT_TYPE" ]; then
+                echo "${INC_ID}|${EVENT_TYPE}" >> "$EVENT_TYPES_FILE" 2>/dev/null
             fi
         fi
     done < "$PENDING_FILE"
@@ -144,14 +151,33 @@ shopt -u nullglob  # Restore default glob behavior
 SYNC_COUNT=0
 SYNC_FAILED=0
 
+# Determine best event type for an increment from queued events
+# Priority: done/completed > created > reopened > sync (catch-all)
+get_best_event_type() {
+    local inc_id="$1"
+    if [ -f "$EVENT_TYPES_FILE" ]; then
+        if grep -q "^${inc_id}|increment\.done$" "$EVENT_TYPES_FILE" 2>/dev/null; then
+            echo "increment.done"
+        elif grep -q "^${inc_id}|increment\.created$" "$EVENT_TYPES_FILE" 2>/dev/null; then
+            echo "increment.created"
+        elif grep -q "^${inc_id}|increment\.reopened$" "$EVENT_TYPES_FILE" 2>/dev/null; then
+            echo "increment.reopened"
+        else
+            echo "increment.sync"
+        fi
+    else
+        echo "increment.sync"
+    fi
+}
+
 for INC_ID in $INCREMENTS_TO_SYNC; do
     [ -z "$INC_ID" ] && continue
 
-    log "Syncing increment: $INC_ID"
+    # Preserve original event type from pending.jsonl (best priority wins)
+    EVENT_TYPE=$(get_best_event_type "$INC_ID")
+    log "Syncing increment: $INC_ID (event: $EVENT_TYPE)"
 
-    # Call project-bridge-handler with generic "sync" event
-    # The handler will determine what needs syncing based on current state
-    if run_with_timeout 30 bash "$BRIDGE_HANDLER" "increment.sync" "$INC_ID"; then
+    if run_with_timeout 30 bash "$BRIDGE_HANDLER" "$EVENT_TYPE" "$INC_ID"; then
         SYNC_COUNT=$((SYNC_COUNT + 1))
         log "Sync succeeded: $INC_ID"
     else
@@ -178,6 +204,9 @@ if [ -f "$PROCESSED_FILE" ]; then
     rm -f "$PROCESSED_FILE"
     log "Cleaned up legacy .event files"
 fi
+
+# Clean up event-types temp file
+rm -f "$EVENT_TYPES_FILE" 2>/dev/null
 
 # ============================================================================
 # REPORT RESULTS

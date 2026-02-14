@@ -1,5 +1,5 @@
 ---
-description: Expert frontend developer for React, Vue, Angular, and modern JavaScript/TypeScript. Use when creating components, implementing hooks, handling state management, or building responsive web interfaces. Covers React 18/19 features (use() hook, React Compiler, Server Functions, useActionState, useOptimistic), custom hooks, form handling, and accessibility best practices.
+description: Frontend developer for React, Vue, Angular, TypeScript. Use for components, hooks, state management, responsive UIs. Covers React 18/19, custom hooks, forms, a11y.
 ---
 
 # Frontend Development Expert

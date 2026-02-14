@@ -1,0 +1,11 @@
+{
+  "id": "0206-universal-external-sync-fix",
+  "type": "bug",
+  "priority": "P1",
+  "status": "active",
+  "created": "2026-02-13T22:00:00.000Z",
+  "testing": {
+    "mode": "TDD",
+    "coverageTarget": 80
+  }
+}
