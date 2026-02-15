@@ -26,8 +26,15 @@ export {
   generateIndexPage,
   writeIndexPage,
   generateIndexModuleCSS,
-  writeIndexModuleCSS
+  writeIndexModuleCSS,
+  generateLogoSVG,
+  generateFaviconSVG
 } from './config-generator.js';
+
+export {
+  detectProjectMetadata,
+  detectDocCategories
+} from './project-detector.js';
 
 export {
   checkNodeVersion,
