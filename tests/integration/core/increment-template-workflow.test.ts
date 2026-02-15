@@ -7,7 +7,7 @@
  * 3. Validation detects incomplete templates
  * 4. PM/Architect skills can complete templates
  *
- * This test ensures the fix for "increment-planner bypassing skill system"
+ * This test ensures the fix for "increment skill bypassing skill system"
  * is working correctly.
  *
  * @module increment-template-workflow.test

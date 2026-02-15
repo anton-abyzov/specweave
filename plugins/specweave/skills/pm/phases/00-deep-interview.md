@@ -13,7 +13,7 @@ The gate instructs the LLM to **assess prompt completeness** before deciding whe
 **How it works:**
 - Gate fires on every prompt, accumulating context across messages
 - LLM evaluates technical signals (stack, integrations, auth, deployment) AND product signals (users, flows, business model)
-- If the user's prompt is comprehensive enough for the detected complexity → skip interview, proceed to `sw:increment-planner`
+- If the user's prompt is comprehensive enough for the detected complexity → skip interview, proceed to `sw:increment`
 - If gaps exist → ask 2-5 targeted questions about what's missing (NOT a full interview)
 
 **As PM skill, your role when gate is active:**
@@ -45,7 +45,7 @@ When `enforcement: "strict"` is configured, spec.md creation is BLOCKED by `inte
 
 **To track category completion:**
 
-1. **Initialize interview state** (done by increment-planner):
+1. **Initialize interview state** (done by increment skill):
    ```bash
    mkdir -p .specweave/state
    echo '{"incrementId":"XXXX-name","startedAt":"'$(date -Iseconds)'","coveredCategories":{}}' > .specweave/state/interview-XXXX-name.json

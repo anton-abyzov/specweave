@@ -40,6 +40,8 @@ async function createProjectTree(): Promise<{ tmpBase: string; projectRoot: stri
   const nestedDir = path.join(srcDir, 'nested');
 
   await fsPromises.mkdir(specweaveDir, { recursive: true });
+  // config.json is required for findProjectRoot to recognize a valid project
+  await fsPromises.writeFile(path.join(specweaveDir, 'config.json'), '{}');
   await fsPromises.mkdir(nestedDir, { recursive: true });
 
   return { tmpBase, projectRoot, nestedDir };
@@ -122,6 +124,45 @@ describe('find-project-root', () => {
 
       const result = findProjectRoot(nestedDir);
       expect(result).toBe(projectRoot);
+    });
+
+    it('should not match a stale .specweave directory (no config.json)', async () => {
+      const tmpBase = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'sw-fpr-stale-'));
+      tempDirs.push(tmpBase);
+
+      const staleRoot = path.join(tmpBase, 'stale-project');
+      const specweaveDir = path.join(staleRoot, '.specweave');
+      await fsPromises.mkdir(path.join(specweaveDir, 'logs'), { recursive: true });
+      await fsPromises.mkdir(path.join(specweaveDir, 'state'), { recursive: true });
+      // No config.json — this is a stale folder
+
+      const result = findProjectRoot(staleRoot);
+      expect(result).toBeNull();
+    });
+
+    it('should skip stale parent .specweave and find valid child project', async () => {
+      const tmpBase = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'sw-fpr-skip-'));
+      tempDirs.push(tmpBase);
+
+      // Parent has stale .specweave (no config.json)
+      const parentDir = path.join(tmpBase, 'parent');
+      await fsPromises.mkdir(path.join(parentDir, '.specweave', 'state'), { recursive: true });
+
+      // Child has valid .specweave/config.json
+      const childDir = path.join(parentDir, 'child-project');
+      const childSpecweave = path.join(childDir, '.specweave');
+      await fsPromises.mkdir(childSpecweave, { recursive: true });
+      await fsPromises.writeFile(path.join(childSpecweave, 'config.json'), '{}');
+
+      // From inside child, should find child (not stale parent)
+      const result = findProjectRoot(childDir);
+      expect(result).toBe(childDir);
+
+      // From inside a nested dir in child, should still find child
+      const nestedDir = path.join(childDir, 'src', 'deep');
+      await fsPromises.mkdir(nestedDir, { recursive: true });
+      const nestedResult = findProjectRoot(nestedDir);
+      expect(nestedResult).toBe(childDir);
     });
 
     it('should not match a .specweave file (only directories)', async () => {

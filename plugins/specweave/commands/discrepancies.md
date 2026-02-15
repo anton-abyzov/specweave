@@ -140,4 +140,3 @@ Remaining: 4 discrepancies
 ## Related
 
 - `/sw:sync-monitor`: Dashboard showing discrepancy count
-- `/sw:notifications`: View discrepancy notifications

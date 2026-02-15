@@ -14,28 +14,7 @@
 #      source /path/to/specweave.zsh
 #
 
-# Plugin groups for lazy loading commands
-local -a plugin_groups
-plugin_groups=(
-    'core:Core SpecWeave functionality'
-    'github:GitHub integration'
-    'jira:JIRA integration'
-    'ado:Azure DevOps integration'
-    'frontend:Frontend development tools'
-    'backend:Backend & database tools'
-    'infra:Infrastructure & Kubernetes'
-    'ml:Machine learning tools'
-    'kafka:Apache Kafka'
-    'confluent:Confluent Cloud'
-    'mobile:Mobile development'
-    'payments:Payment processing'
-    'release:Release management'
-    'testing:Testing & QA'
-    'diagrams:Diagrams & visualization'
-    'all:All available plugins'
-)
-
-# Main commands
+# Main commands (synced with bin/specweave.js)
 local -a commands
 commands=(
     'init:Initialize a new SpecWeave project'
@@ -44,39 +23,41 @@ commands=(
     'pause:Pause an active increment'
     'resume:Resume a paused increment'
     'abandon:Abandon an increment'
+    'complete:Complete an increment'
+    'create-increment:Create increment template files'
     'archive:Archive completed increments'
+    'save:Smart save with auto-sync'
     'status:Show increment status overview'
     'progress:Show increment status (alias for status)'
-    'status-line:Display current increment status line'
+    'interview:Manage Deep Interview Mode'
     'logs:View hook execution logs'
+    'decision-log:Query structured decision logs'
+    'status-line:Display current increment status line'
     'auto:Start autonomous execution'
     'auto-status:Check auto session status'
     'cancel-auto:Cancel running auto session'
+    'team:Launch Claude Code with agent teams'
     'update-instructions:Update CLAUDE.md and AGENTS.md'
+    'update:Update SpecWeave CLI and project files'
     'check-discipline:Validate increment discipline'
     'revert-wip-limit:Revert WIP limit to original'
     'qa:Run quality assessment'
-    'validate-plugins:Validate plugin installation'
     'validate-jira:Validate Jira configuration'
     'jobs:Monitor background jobs'
     'living-docs:Launch Living Docs Builder'
     'cache:Manage dashboard cache'
+    'analytics:Show usage analytics dashboard'
+    'lsp:LSP code intelligence'
     'commits:Display last git commits'
     'sync-scheduled:Execute scheduled sync jobs'
     'sync-progress:Comprehensive progress sync'
     'docs:Documentation preview and build'
     'context:Get project/board context'
-    'enable-multiproject:Enable multi-project mode'
-    'switch-project:Switch active project'
     'refresh-marketplace:Refresh marketplace plugins'
-    'cache-status:Display cache health status'
-    'cache-refresh:Refresh plugin cache'
+    'doctor:Run comprehensive health check'
     'export-skills:Export skills to Agent Skills format'
     'set-sync-target:Set sync target for increment'
-    'migrate-memory:Migrate legacy memory files'
-    'load-plugins:Load plugin groups (lazy loading)'
-    'unload-plugins:Unload plugin groups'
-    'save:Smart save with auto-sync'
+    'dashboard:Launch real-time observability dashboard'
 )
 
 _specweave() {
@@ -92,34 +73,6 @@ _specweave() {
             ;;
         args)
             case $line[1] in
-                load-plugins)
-                    _arguments \
-                        '1: :->group' \
-                        '--force[Force reinstall even if already loaded]' \
-                        '--background[Run installation in background]' \
-                        '--verbose[Show detailed output]' \
-                        '--list-groups[Show available plugin groups]' \
-                        '--help[Show help]'
-                    case $state in
-                        group)
-                            _describe -t plugin_groups 'plugin groups' plugin_groups
-                            ;;
-                    esac
-                    ;;
-                unload-plugins)
-                    _arguments \
-                        '1: :->group' \
-                        '--no-keep-router[Also unload the router skill]' \
-                        '--verbose[Show detailed output]' \
-                        '--dry-run[Preview without unloading]' \
-                        '--list-groups[Show available plugin groups]' \
-                        '--help[Show help]'
-                    case $state in
-                        group)
-                            _describe -t plugin_groups 'plugin groups' plugin_groups
-                            ;;
-                    esac
-                    ;;
                 init)
                     _arguments \
                         '1:project name:' \
@@ -135,8 +88,8 @@ _specweave() {
                     ;;
                 refresh-marketplace)
                     _arguments \
-                        '--local[Use local development version]' \
-                        '--github[Pull from GitHub (default)]' \
+                        '--all[Install ALL plugins (legacy mode)]' \
+                        '--minimal[Remove marketplace, install only core]' \
                         '--force[Force reinstall all plugins]' \
                         '--verbose[Show detailed errors]' \
                         '--help[Show help]'

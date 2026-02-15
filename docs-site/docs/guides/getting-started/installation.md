@@ -129,12 +129,12 @@ your-project/
 │   │   ├── security/         # Security Engineer
 │   │   ├── performance/      # Performance Engineer
 │   │   ├── docs-writer/      # Technical Documentation
-│   │   ├── tdd-orchestrator/ # TDD Master
+│   │   ├── tdd-cycle/        # TDD Workflow
 │   │   ├── test-aware-planner/ # Test Planning
 │   │   ├── translator/       # Multilingual Support
 │   │   └── code-reviewer.md  # Code Review (standalone file)
 │   ├── skills/               # 17 development skills (installed from plugins)
-│   │   ├── increment-planner/
+│   │   ├── increment/
 │   │   ├── spec-generator/
 │   │   ├── context-loader/
 │   │   ├── tdd-workflow/
@@ -531,7 +531,7 @@ ls -la .claude/skills/
 # Should see 17 skills with SKILL.md files
 
 # Check a specific skill
-cat .claude/skills/increment-planner/SKILL.md
+cat .claude/skills/increment/SKILL.md
 
 # If missing, safe reinstall (keeps all your data)
 npx specweave init .

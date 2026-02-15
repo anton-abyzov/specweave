@@ -88,10 +88,6 @@ export function displayStatusSection(summary: ExternalItemsSummary): void {
 
   console.log(chalk.cyan.bold(`📋 External: ${countText} open`) + chalk.gray(` (${breakdown})`));
 
-  // Show hint for large counts
-  if (total > 50) {
-    console.log(chalk.gray(`   Run /sw:external for details (paginated)`));
-  }
   console.log('');
 }
 
@@ -174,13 +170,6 @@ export function displayDashboardHeader(summary: ExternalItemsSummary): void {
 
   console.log('');
 
-  // Usage hints
-  if (total > 0) {
-    console.log(chalk.gray('View items:'));
-    console.log(chalk.gray('  /sw:external --provider github --limit 20'));
-    console.log(chalk.gray('  /sw:external --provider jira --offset 20'));
-  }
-
   // Last updated
   const lastUpdated = new Date(summary.lastUpdated);
   const minutesAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
@@ -194,7 +183,7 @@ export function displayDashboardHeader(summary: ExternalItemsSummary): void {
  */
 export function formatPlanningNotification(counts: ExternalItemsCounts): string | null {
   if (counts.grandTotal === 0) return null;
-  return `⚠️ ${formatCount(counts.grandTotal)} unaddressed external items. Run /sw:external to view.`;
+  return `⚠️ ${formatCount(counts.grandTotal)} unaddressed external items.`;
 }
 
 /**

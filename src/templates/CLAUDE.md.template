@@ -208,7 +208,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 |-------|-----|
 | Skills missing | Restart Claude Code |
 | Plugins outdated | `specweave refresh-marketplace` |
-| Out of sync | `/sw:sync-tasks` |
+| Out of sync | `/sw:sync-progress` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
 <!-- /SECTION -->
 

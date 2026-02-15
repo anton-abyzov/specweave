@@ -60,7 +60,7 @@ When no ID provided, auto-select (NEVER ask user for ID):
    ```bash
    bash plugins/specweave/hooks/pre-increment-start.sh <increment-path>
    ```
-   If fails: run `/sw:embed-acs`, then retry. Do NOT proceed without ACs in spec.md.
+   If fails: manually add ACs to spec.md, then retry. Do NOT proceed without ACs in spec.md.
 
 ### Step 2.5: Execution Strategy Check
 

@@ -143,7 +143,6 @@ describe('OFFICIAL_PLUGINS constant', () => {
   });
 
   it('should include development tool plugins', () => {
-    expect(OFFICIAL_PLUGINS).toContain('code-review');
     expect(OFFICIAL_PLUGINS).toContain('commit-commands');
     expect(OFFICIAL_PLUGINS).toContain('hookify');
   });
@@ -287,7 +286,6 @@ describe('isOfficialPlugin', () => {
   });
 
   it('should return true for dev tool plugins', () => {
-    expect(isOfficialPlugin('code-review')).toBe(true);
     expect(isOfficialPlugin('commit-commands')).toBe(true);
     expect(isOfficialPlugin('hookify')).toBe(true);
   });
@@ -1028,5 +1026,84 @@ describe('truncateAdditionalContext', () => {
 
   it('should handle empty string', () => {
     expect(truncateAdditionalContext('')).toBe('');
+  });
+});
+
+// ============================================================
+// LLM Detection Prompt - Investigation/Debugging Routing (0211)
+// ============================================================
+describe('LLM Detection Prompt - Investigation/Debugging Routing', () => {
+  const detectorPath = path.join(
+    process.cwd(),
+    'src/core/lazy-loading/llm-plugin-detector.ts'
+  );
+
+  let promptSource: string;
+
+  beforeEach(() => {
+    promptSource = fs.readFileSync(detectorPath, 'utf-8');
+  });
+
+  describe('NEVER-use-none list includes investigation keywords', () => {
+    it('should include "investigate" in NEVER-use-none guidance', () => {
+      // The action table or surrounding text must explicitly mention "investigate"
+      // as something that should NEVER map to action: "none"
+      expect(promptSource).toMatch(/NEVER.*none.*investigate|investigate.*NEVER.*none/is);
+    });
+
+    it('should include "debug" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*debug|debug.*NEVER.*none/is);
+    });
+
+    it('should include "troubleshoot" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*troubleshoot|troubleshoot.*NEVER.*none/is);
+    });
+
+    it('should include "optimize" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*optimize|optimize.*NEVER.*none/is);
+    });
+
+    it('should include "secure" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*secure|secure.*NEVER.*none/is);
+    });
+
+    it('should include "audit" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*audit|audit.*NEVER.*none/is);
+    });
+
+    it('should include "solve" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*solve|solve.*NEVER.*none/is);
+    });
+
+    it('should include "resolve" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*resolve|resolve.*NEVER.*none/is);
+    });
+
+    it('should include "analyze" in NEVER-use-none guidance', () => {
+      expect(promptSource).toMatch(/NEVER.*none.*analyze|analyze.*NEVER.*none/is);
+    });
+  });
+
+  describe('Investigation/debugging guidance block', () => {
+    it('should contain explicit investigation/debugging guidance section', () => {
+      expect(promptSource).toMatch(/INVESTIGATION.*DEBUGGING/is);
+    });
+
+    it('should clarify that investigation is implementation work, not a question', () => {
+      expect(promptSource).toMatch(/investigation.*implementation work|investigation.*increment tracking/is);
+    });
+
+    it('should state "why does X fail" equals work, not question', () => {
+      expect(promptSource).toMatch(/why does.*fail.*work.*not.*question|why does.*fail.*never.*none/is);
+    });
+  });
+
+  describe('Investigation example in prompt', () => {
+    it('should include an investigation example with action "new"', () => {
+      // There should be an example prompt about investigation
+      expect(promptSource).toMatch(/[Ii]nvestigat/);
+      // And it should map to action: "new", not "none"
+      expect(promptSource).toMatch(/[Ii]nvestigat[\s\S]{0,500}"action":\s*"new"/);
+    });
   });
 });

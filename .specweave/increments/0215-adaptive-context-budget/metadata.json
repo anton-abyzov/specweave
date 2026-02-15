@@ -1,0 +1,7 @@
+{
+  "id": "0215-adaptive-context-budget",
+  "type": "feature",
+  "status": "active",
+  "created": "2026-02-15T00:00:00Z",
+  "title": "Adaptive context budget to prevent Prompt Too Long errors"
+}
