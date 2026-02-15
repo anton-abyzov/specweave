@@ -1,0 +1,8 @@
+{
+  "id": "0213",
+  "name": "cleanup-dead-cli-commands",
+  "type": "hotfix",
+  "status": "active",
+  "priority": "P2",
+  "createdAt": "2026-02-15T00:00:00Z"
+}

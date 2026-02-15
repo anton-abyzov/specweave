@@ -19,7 +19,7 @@ A skill is a specialized capability that activates automatically when relevant.
 **In Claude Code**: Skills are native (.claude/skills/)
 **In Cursor**: You simulate by reading relevant workflow instructions
 
-## increment-planner Skill
+## increment Skill
 When user says "create increment":
 2. Auto-increment number
 3. Create spec.md (act as PM role)
@@ -37,7 +37,7 @@ Cursor can discover SpecWeave skills by scanning SKILL.md frontmatter directly.
 
 **How it works**:
 1. Scan `.claude/skills/*/SKILL.md` files for frontmatter (name + description)
-2. Match task to activation keywords in description (e.g., "feature planning" → increment-planner)
+2. Match task to activation keywords in description (e.g., "feature planning" → increment)
 3. Load specific SKILL.md when relevant
 4. Follow proven workflows
 
@@ -50,8 +50,8 @@ Cursor can discover SpecWeave skills by scanning SKILL.md frontmatter directly.
 ```markdown
 # When user asks: "Plan a new feature for auth"
 # 1. Scan .claude/skills/*/SKILL.md frontmatter
-# 2. Find "increment-planner" (description contains "Activates for: feature planning")
-# 3. Load .claude/skills/increment-planner/SKILL.md
+# 2. Find "increment" (description contains "Plan and create SpecWeave increments")
+# 3. Load .claude/skills/increment/SKILL.md
 # 4. Follow the increment planning workflow
 # Result: Proper spec.md, plan.md, tasks.md creation
 ```
@@ -88,8 +88,8 @@ Cursor can discover SpecWeave skills by scanning SKILL.md frontmatter directly.
 // Skills auto-activate
 User: "create increment for auth"
 → specweave-detector activates
-→ skill-router routes to increment-planner
-→ increment-planner creates increment
+→ skill-router routes to increment skill
+→ increment skill creates increment
 ```
 
 **Cursor (manual simulation)**:
@@ -98,7 +98,7 @@ User: "create increment for auth"
 User: "create increment for auth"
 → You read .cursorrules
 → Follow workflow: check config → create folders → create files
-→ Act like increment-planner by following those steps
+→ Act like increment skill by following those steps
 ```
 
 ### Simulating Skills

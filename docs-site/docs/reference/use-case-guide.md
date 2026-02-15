@@ -44,7 +44,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Validate quickly (rules) | `/sw:validate` | Command |
 | AI quality assessment | `/sw:qa --gate` | Command |
 | Deep implementation audit | `/sw:grill` | Command |
-| Follow TDD strictly | `/sw:tdd-orchestrator` | Skill |
+| Follow TDD strictly | `/sw:tdd-cycle` | Skill |
 | Write failing tests first | `/sw:tdd-red` | Skill |
 | Get test strategy help | `/sw-testing:qa-engineer` | Skill |
 | Write E2E tests | `/sw-testing:e2e-testing` | Skill |
@@ -153,7 +153,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 /sw-testing:qa-engineer             # Test strategy
 /sw-testing:e2e-testing            # Playwright E2E
 /sw-testing:unit-testing           # Unit test patterns
-/sw:tdd-orchestrator               # TDD workflow
+/sw:tdd-cycle               # TDD workflow
 /sw:grill                          # Implementation audit
 ```
 
@@ -275,7 +275,7 @@ graph TD
 /sw:increment "Payment processing"
 
 # 2. TDD cycle
-/sw:tdd-orchestrator
+/sw:tdd-cycle
 
 # OR step by step:
 /sw:tdd-red        # Write failing tests
@@ -410,7 +410,7 @@ Skills activate automatically when you mention these keywords:
 | "database", "SQL", "query optimization" | `sw-backend:database-optimizer` |
 | "Kubernetes", "K8s", "pods", "deployment" | `sw-kubernetes:*` |
 | "Kafka", "events", "streaming" | `sw-kafka:kafka-architect` |
-| "test", "TDD", "unit test", "E2E" | `sw:tdd-orchestrator` |
+| "test", "TDD", "unit test", "E2E" | `sw:tdd-cycle` |
 | "security", "OWASP", "vulnerability" | `sw:security` |
 | "compliance", "SOC 2", "HIPAA", "GDPR" | `sw:compliance-architecture` |
 

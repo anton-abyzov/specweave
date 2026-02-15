@@ -113,7 +113,7 @@ QUICK START:
 2. Create your first feature:
    Just ask Claude: "Create increment for user authentication"
    - specweave-detector skill activates automatically
-   - skill-router routes to increment-planner
+   - skill-router routes to increment skill
    - PM agent creates spec.md
    - Architect agent creates plan.md
 
@@ -124,7 +124,7 @@ QUICK START:
 
 WHAT THIS PROVIDES:
 
-- Skills (Auto-Activating): specweave-detector, skill-router, context-loader, increment-planner
+- Skills (Auto-Activating): specweave-detector, skill-router, context-loader, increment
 - Agents (Specialized Roles): PM, Architect, DevOps, QA, Security, and 14 more
 - Slash Commands: /specweave inc, /specweave do, /specweave validate, /specweave sync-github
 - Hooks (Auto-Update): post-task-completion, pre-implementation, docs-changed

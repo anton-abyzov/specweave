@@ -18,23 +18,12 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    # Plugin groups for load-plugins and unload-plugins
-    local plugin_groups="core github jira ado frontend backend infra ml kafka confluent mobile payments release testing diagrams all"
-
-    # Main commands
-    local main_commands="init install list pause resume abandon archive status progress status-line logs auto auto-status cancel-auto update-instructions check-discipline revert-wip-limit qa validate-plugins validate-jira jobs living-docs cache commits sync-scheduled sync-progress docs context enable-multiproject switch-project refresh-marketplace cache-status cache-refresh export-skills set-sync-target migrate-memory load-plugins unload-plugins save"
+    # Main commands (synced with bin/specweave.js)
+    local main_commands="init install list pause resume abandon complete create-increment archive save status progress interview logs decision-log status-line auto auto-status cancel-auto team update-instructions update check-discipline revert-wip-limit qa validate-jira jobs living-docs cache analytics lsp commits sync-scheduled sync-progress docs context refresh-marketplace doctor export-skills set-sync-target dashboard"
 
     case "${prev}" in
         specweave)
             COMPREPLY=( $(compgen -W "${main_commands}" -- "${cur}") )
-            return 0
-            ;;
-        load-plugins)
-            COMPREPLY=( $(compgen -W "${plugin_groups} --force --background --verbose --list-groups --help" -- "${cur}") )
-            return 0
-            ;;
-        unload-plugins)
-            COMPREPLY=( $(compgen -W "${plugin_groups} --no-keep-router --verbose --dry-run --list-groups --help" -- "${cur}") )
             return 0
             ;;
         init)
@@ -42,7 +31,7 @@ _specweave_completions() {
             return 0
             ;;
         refresh-marketplace)
-            COMPREPLY=( $(compgen -W "--local --github --force --verbose --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--all --minimal --force --verbose --help" -- "${cur}") )
             return 0
             ;;
         status)
@@ -77,17 +66,7 @@ _specweave_completions() {
 
     # Handle options
     if [[ "${cur}" == -* ]]; then
-        case "${COMP_WORDS[1]}" in
-            load-plugins)
-                COMPREPLY=( $(compgen -W "--force --background --verbose --list-groups --help" -- "${cur}") )
-                ;;
-            unload-plugins)
-                COMPREPLY=( $(compgen -W "--no-keep-router --verbose --dry-run --list-groups --help" -- "${cur}") )
-                ;;
-            *)
-                COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
-                ;;
-        esac
+        COMPREPLY=( $(compgen -W "--help" -- "${cur}") )
         return 0
     fi
 

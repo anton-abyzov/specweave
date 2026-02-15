@@ -54,9 +54,22 @@ log() {
 command -v gh &>/dev/null || { log "gh CLI not found"; exit 0; }
 command -v jq &>/dev/null || { log "jq not found"; exit 0; }
 
-# Check GitHub sync enabled
-GH_ENABLED=$(jq -r '.sync.github.enabled // false' "$CONFIG_PATH" 2>/dev/null)
-[[ "$GH_ENABLED" != "true" ]] && { log "GitHub sync not enabled"; exit 0; }
+# Check GitHub sync enabled (shared 3-method detection)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHARED_LIB_PATHS=(
+  "$SCRIPT_DIR/../../specweave/hooks/v2/lib/check-provider-enabled.sh"
+  "$SCRIPT_DIR/../../../specweave/hooks/v2/lib/check-provider-enabled.sh"
+)
+for _lib in "${SHARED_LIB_PATHS[@]}"; do
+  [[ -f "$_lib" ]] && { source "$_lib"; break; }
+done
+
+if type check_provider_enabled &>/dev/null; then
+  check_provider_enabled "$CONFIG_PATH" "github" || { log "GitHub sync not enabled"; exit 0; }
+else
+  GH_ENABLED=$(jq -r '.sync.github.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+  [[ "$GH_ENABLED" != "true" ]] && { log "GitHub sync not enabled"; exit 0; }
+fi
 
 # Check auto-create enabled (either autoSync OR auto_create_github_issue)
 AUTO_SYNC=$(jq -r '.sync.autoSync // false' "$CONFIG_PATH" 2>/dev/null)
@@ -125,8 +138,13 @@ fi
 # ============================================================================
 
 if [[ -f "$META_PATH" ]]; then
-  # Check if there are actual issues with issueNumber values (not just empty {})
-  ISSUE_COUNT=$(jq '[.externalLinks.github.issues // {} | to_entries[] | select(.value.issueNumber != null)] | length' "$META_PATH" 2>/dev/null || echo 0)
+  # Check BOTH new (externalLinks) and old (github.issues[]) formats for existing issues
+  ISSUE_COUNT=$(jq '
+    [
+      (.externalLinks.github.issues // {} | to_entries[] | select(.value.issueNumber != null)),
+      (.github.issues // [] | .[] | select(.number != null))
+    ] | length
+  ' "$META_PATH" 2>/dev/null || echo 0)
   if (( ISSUE_COUNT > 0 )); then
     log "Issues already exist for $INC_ID ($ISSUE_COUNT). Skipping."
     exit 0

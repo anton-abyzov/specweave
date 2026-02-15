@@ -561,7 +561,6 @@ Some repositories may be missing from analysis.
 ## See Also
 
 - `/sw:jobs` - Monitor all background jobs
-- `/sw:import-docs` - Import existing documentation
 
 ---
 

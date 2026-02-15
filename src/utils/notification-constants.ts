@@ -87,7 +87,7 @@ export function buildNotificationMessage(
       return `Sync finished. ${context.items ? `Updated ${context.items} items.` : 'All items synced.'}`;
 
     case 'import_complete':
-      return `Import finished. ${context.items ? `Imported ${context.items} items.` : 'Check /sw:external for results.'}`;
+      return `Import finished. ${context.items ? `Imported ${context.items} items.` : 'Import complete.'}`;
 
     case 'error':
       return `Error: ${context.reason ?? 'Unknown error'}. Check logs for details.`;

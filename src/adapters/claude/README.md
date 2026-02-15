@@ -37,7 +37,7 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 | `specweave-detector` | Detect SpecWeave projects | Always (proactive) |
 | `skill-router` | Route requests to appropriate skills/agents | Automatic |
 | `context-loader` | Load context manifests (70%+ token savings) | When loading context |
-| `increment-planner` | Plan features with context awareness | When creating features |
+| `increment` | Plan features with context awareness | When creating features |
 | `role-orchestrator` | Coordinate multi-agent workflows | Complex tasks |
 | `brownfield-analyzer` | Analyze existing codebases | Brownfield projects |
 
@@ -122,12 +122,12 @@ npm run install:agents
 
 **What Happens** (Automatic):
 1. ✅ `specweave-detector` skill activates (detects SpecWeave project)
-2. ✅ `skill-router` routes to `increment-planner`
-3. ✅ `increment-planner` invokes `pm` agent
+2. ✅ `skill-router` routes to `increment` skill
+3. ✅ `increment` invokes `pm` agent
 4. ✅ `pm` agent creates `spec.md` (WHAT/WHY)
-5. ✅ `increment-planner` invokes `architect` agent
+5. ✅ `increment` invokes `architect` agent
 6. ✅ `architect` agent creates `plan.md` (HOW)
-7. ✅ `increment-planner` creates `tasks.md` (implementation steps)
+7. ✅ `increment` creates `tasks.md` (implementation steps)
 
 **Result**: Complete increment ready for implementation!
 
@@ -179,12 +179,12 @@ Skills activate automatically based on:
 **Example**:
 ```yaml
 ---
-name: increment-planner
-description: Plan features with context awareness. Activates for: create feature, plan increment, new feature.
+description: Plan and create SpecWeave increments with PM and Architect agent collaboration.
+argument-hint: "<feature-description>"
 ---
 ```
 
-When user says "create feature", Claude Code automatically activates `increment-planner` skill.
+When user says "create feature", Claude Code automatically activates `increment` skill.
 
 ### Skills Invocation
 

@@ -40,6 +40,13 @@ if [[ -f "$AUTO_MODE_FILE" ]]; then
 fi
 
 # ============================================================================
+# CONTEXT PRESSURE RESET: Clear pressure state for fresh session budget (v1.0.262)
+# Ensures new sessions start at user's configured base budget level
+# ============================================================================
+rm -f "$STATE_DIR/context-pressure.json" 2>/dev/null
+rm -f "$STATE_DIR/.context-hash" 2>/dev/null
+
+# ============================================================================
 # PLUGIN CACHE: Do NOT delete - Claude Code manages its own plugin cache
 # v1.0.206: (REVERTED) Cache deletion broke plugin loading - installed_plugins.json
 #           still referenced deleted paths, causing all commands/skills to fail

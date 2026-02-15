@@ -196,7 +196,7 @@ Skills automatically detect expertise and route requests:
 \`\`\`
 User: "Create authentication system"
 → specweave-detector activates
-→ Routes to increment-planner
+→ Routes to increment skill
 → Invokes PM, Architect, Tech Lead agents
 → Generates complete spec + architecture + plan
 \`\`\`
@@ -723,8 +723,7 @@ All commands adapt to detected tech stack.
   - Skills cache at `~/.specweave/skills-cache/` for instant activation
   - Hot-reload leverages Claude Code 2.1.0+ skill activation
   - Context forking for heavy skills (PM, Architect) in isolated sub-agents
-  - Migration path: `specweave migrate-lazy` for existing installations
-  - See [increment 0171](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0171-lazy-plugin-loading) for full specification
+  - Lazy loading is enabled by default for new installations
 
 - **Vector search**: Semantic spec search across all increments (v2.0)
 - **Enterprise analytics**: Advanced compliance tracking and team metrics
