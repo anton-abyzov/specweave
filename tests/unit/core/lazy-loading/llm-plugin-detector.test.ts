@@ -951,13 +951,15 @@ describe('Prompt safety constants', () => {
   });
 
   it('MAX_ADDITIONAL_CONTEXT_LENGTH should limit additionalContext size', () => {
-    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeGreaterThanOrEqual(4000);
-    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeLessThanOrEqual(10000);
+    // v1.0.260: Reduced to 3000 to prevent prompt overflow (was 4000-10000 range)
+    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeGreaterThanOrEqual(2500);
+    expect(MAX_ADDITIONAL_CONTEXT_LENGTH).toBeLessThanOrEqual(4000);
   });
 
   it('MAX_SKILL_FIRST_PROMPT_LENGTH should limit prompt in SKILL FIRST args', () => {
-    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeGreaterThanOrEqual(1000);
-    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeLessThanOrEqual(3000);
+    // v1.0.260: Reduced to 800 to match hook (was 1000-3000 range)
+    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeGreaterThanOrEqual(500);
+    expect(MAX_SKILL_FIRST_PROMPT_LENGTH).toBeLessThanOrEqual(1000);
   });
 });
 

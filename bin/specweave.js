@@ -1308,6 +1308,17 @@ async function checkForDuplicates() {
   }
 }
 
+// Dashboard command - Real-time observability dashboard
+program
+  .command('dashboard')
+  .description('Launch real-time observability dashboard in browser')
+  .option('-p, --port <number>', 'Port number (default: 3456)')
+  .option('--no-browser', 'Do not open browser automatically')
+  .action(async (options) => {
+    const { dashboardCommand } = await import('../dist/src/cli/commands/dashboard.js');
+    await dashboardCommand(options);
+  });
+
 // Run startup check, then parse arguments
 (async () => {
   await checkForDuplicates();

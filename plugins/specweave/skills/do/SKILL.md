@@ -55,12 +55,42 @@ When no ID provided, auto-select (NEVER ask user for ID):
 2. **Load files**: Read `spec.md`, `plan.md`, `tasks.md`, `tests.md`
 3. **Load living docs**: Check ADRs and specs in `.specweave/docs/internal/` for related context
 4. **Verify readiness**: Status is planned/in-progress, no blocking deps, tasks exist
-5. **Task count validation**: If >25 tasks, warn and offer to split or phase execution
+5. **Task count validation**: If >25 tasks, warn and offer to split, phase, or use `/sw:auto`/`/sw:team-lead`
 6. **Validate AC presence** (MANDATORY):
    ```bash
    bash plugins/specweave/hooks/pre-increment-start.sh <increment-path>
    ```
    If fails: run `/sw:embed-acs`, then retry. Do NOT proceed without ACs in spec.md.
+
+### Step 2.5: Execution Strategy Check
+
+**Skip this step if already running inside `/sw:auto` or `/sw:team-lead`.** Check `.specweave/state/auto-mode.json` — if `active: true`, skip.
+
+Assess increment complexity to recommend the best execution mode:
+
+1. **Count pending tasks**: `grep -c '^\- \[ \]\|Status\*\*: \[ \]' tasks.md`
+2. **Count domains**: Scan spec.md and plan.md for distinct technology areas (frontend, backend, database, API, DevOps, security, mobile, ML/AI). Each distinct area = 1 domain.
+3. **Count ACs**: `grep -c 'AC-US' spec.md`
+
+**Recommendation matrix** (see CLAUDE.md Execution Strategy):
+
+| Tasks | Domains | Action |
+|-------|---------|--------|
+| ≤8 | 1 | Proceed with `/sw:do` silently |
+| 9-15 | 1-2 | Suggest `/sw:auto` for unattended execution |
+| >15 | 1-2 | Recommend `/sw:auto` (many tasks benefit from autonomous loop) |
+| any | 3+ | Recommend `/sw:team-lead` for parallel multi-agent execution |
+
+**When recommending (non-auto mode)**, use `AskUserQuestion` with these options:
+- `/sw:do` — Continue manual step-by-step (current mode)
+- `/sw:auto` — Autonomous sequential execution (unattended, stop-hook loop)
+- `/sw:team-lead` — Parallel multi-agent execution (higher quality for multi-domain, uses more tokens)
+
+Include trade-off note: "Team-lead and auto modes consume more tokens but deliver higher precision and quality for complex work."
+
+If user chooses auto or team-lead, invoke the chosen skill with the increment ID and **stop /sw:do execution**.
+
+**In auto mode (`.specweave/state/auto-mode.json` active)**: If 3+ domains detected, automatically invoke `/sw:team-lead` instead of proceeding sequentially.
 
 ### Step 3: TDD Setup
 

@@ -126,7 +126,7 @@ After skill completes:
 
    Files: spec.md, plan.md, tasks.md, metadata.json
 
-   Next: /sw:do 0003 (start implementation)
+   Next: /sw:do 0003 | /sw:auto 0003 | /sw:team-lead (see Execution Strategy)
 ```
 
 ## Error Handling

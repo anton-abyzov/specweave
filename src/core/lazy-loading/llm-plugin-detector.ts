@@ -33,11 +33,16 @@ import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
 /** Max chars of user prompt sent to Haiku for intent detection */
 export const MAX_DETECTION_USER_PROMPT_LENGTH = 3000;
 
-/** Max chars for the additionalContext returned from the UserPromptSubmit hook */
-export const MAX_ADDITIONAL_CONTEXT_LENGTH = 8000;
+/** Max chars for the additionalContext returned from the UserPromptSubmit hook.
+ * v1.0.260: Synced with hook (was 8000, reduced to 3000 to prevent prompt overflow).
+ * Must match MAX_ADDITIONAL_CONTEXT_LENGTH in user-prompt-submit.sh. */
+export const MAX_ADDITIONAL_CONTEXT_LENGTH = 3000;
 
-/** Max chars of user prompt embedded in SKILL FIRST args */
-export const MAX_SKILL_FIRST_PROMPT_LENGTH = 2000;
+/** Max chars of user prompt embedded in SKILL FIRST args.
+ * v1.0.260: Synced with hook (was 2000, reduced to 800).
+ * Note: v1.0.260 removed prompt embedding from SKILL FIRST entirely,
+ * but this constant is kept for any remaining truncation use. */
+export const MAX_SKILL_FIRST_PROMPT_LENGTH = 800;
 
 /**
  * Truncate a user prompt for the detect-intent Haiku call.

@@ -550,10 +550,9 @@ exit 1
       expect(additionalContext).toBeTruthy();
 
       // The rendered Skill call must contain proper syntax:
-      // Skill({ skill: "sw:increment-planner", args: "..." })
+      // v1.0.260+: Skill({ skill: "sw:increment-planner" }) — no args (prompt removed)
       // After JSON unescaping, quotes should be proper double quotes
       expect(additionalContext).toMatch(/Skill\(\{.*skill:.*"sw:increment-planner"/);
-      expect(additionalContext).toMatch(/args:.*"/);
 
       // Must NOT contain broken escape sequences that would confuse Claude
       expect(additionalContext).not.toContain('\\\\\"');  // double-escaped quotes

@@ -107,6 +107,29 @@ Compare user's request against active increment:
 - **Medium match (40-70%)**: Related area → Ask confirmation
 - **Low match (<40%)**: Unrelated → Suggest new increment
 
+### Step 3.5: Assess Complexity (before routing)
+
+**Before routing to `/sw:do`, assess the target increment's complexity:**
+
+```bash
+# Count pending tasks
+PENDING=$(grep -c '^\- \[ \]\|Status\*\*: \[ \]' "$INCREMENT_PATH/tasks.md" 2>/dev/null || echo 0)
+
+# Count domains from spec.md + plan.md
+DOMAINS=$(grep -ciE 'frontend|backend|database|api|devops|security|mobile|ml|ai' "$INCREMENT_PATH/spec.md" "$INCREMENT_PATH/plan.md" 2>/dev/null | sort -u | wc -l)
+```
+
+**Modify routing based on complexity** (see CLAUDE.md Execution Strategy):
+
+| Tasks | Domains | Routing Modification |
+|-------|---------|---------------------|
+| ≤8 | 1 | Route to `/sw:do` as usual |
+| 9-15 | 1-2 | Route to `/sw:do` + add tip: "Tip: use `/sw:auto <id>` for unattended execution" |
+| >15 | 1-2 | Suggest `/sw:auto <id>` — "This increment has [N] tasks. Consider `/sw:auto` for autonomous execution." |
+| any | 3+ | Suggest `/sw:team-lead` — "This increment spans [M] domains. Consider `/sw:team-lead` for parallel multi-agent execution (higher quality, uses more tokens)." |
+
+In non-auto mode: always ask user before switching mode. In auto mode: use team-lead automatically for 3+ domains.
+
 ### Step 4: Route Intelligently
 
 **Scenario A: High relevance to active increment**
@@ -286,15 +309,20 @@ Would you like to:
 
 ## Decision Matrix
 
-| User Intent | Active Increments | Relevance | Action |
-|-------------|------------------|-----------|--------|
-| "Implement auth" | 1 (auth-related) | High (>70%) | Auto `/sw:do` |
-| "Implement auth" | 1 (unrelated) | Low (<40%) | Ask: New or add to current? |
-| "Implement auth" | 0 | N/A | Auto `/sw:increment` |
-| "Implement auth" | 2+ | N/A | Ask which increment |
-| "Let's continue" | 1 | N/A | Auto `/sw:do` |
-| "Let's continue" | 2+ | N/A | Ask which increment |
-| "Let's continue" | 0 | N/A | "No active increment. What should we build?" |
+| User Intent | Active Increments | Relevance | Complexity | Action |
+|-------------|------------------|-----------|------------|--------|
+| "Implement auth" | 1 (auth-related) | High (>70%) | Low | Auto `/sw:do` |
+| "Implement auth" | 1 (auth-related) | High (>70%) | Medium | Auto `/sw:do` + suggest `/sw:auto` |
+| "Implement auth" | 1 (auth-related) | High (>70%) | High | Suggest `/sw:auto` or `/sw:team-lead` |
+| "Implement auth" | 1 (unrelated) | Low (<40%) | Any | Ask: New or add to current? |
+| "Implement auth" | 0 | N/A | Any | Auto `/sw:increment` |
+| "Implement auth" | 2+ | N/A | Any | Ask which increment |
+| "Let's continue" | 1 | N/A | Low/Med | Auto `/sw:do` |
+| "Let's continue" | 1 | N/A | High | Auto `/sw:do` + suggest mode switch |
+| "Let's continue" | 2+ | N/A | Any | Ask which increment |
+| "Let's continue" | 0 | N/A | Any | "No active increment. What should we build?" |
+
+**Complexity**: Low (≤8 tasks, 1 domain) | Medium (9-15 tasks, 1-2 domains) | High (>15 tasks OR 3+ domains)
 
 ## Relevance Matching Logic
 

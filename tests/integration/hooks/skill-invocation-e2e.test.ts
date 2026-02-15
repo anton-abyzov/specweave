@@ -3,7 +3,7 @@
  *
  * Tests that:
  * 1. Hook generates skill invocation directive when LLM recommends a skill
- * 2. MANDATORY skills use `<skill_invocation_required>` tags
+ * 2. MANDATORY skills use compact `MANDATORY:` prefix format
  * 3. Skill({ skill: "..." }) syntax is correctly generated
  * 4. Non-mandatory skills show as recommendations (not required)
  *
@@ -173,7 +173,7 @@ exit 1
   }
 
   describe('MANDATORY Skill Invocation', () => {
-    it('should generate skill_invocation_required tag for mandatory skill', async () => {
+    it('should generate MANDATORY directive for mandatory skill', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -197,9 +197,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should contain skill_invocation_required tag
+      // Compact format (v1.0.260+): uses "MANDATORY: Also call" prefix
       expect(additionalContext).toBeTruthy();
-      expect(additionalContext).toContain('skill_invocation_required');
+      expect(additionalContext).toContain('MANDATORY');
       expect(additionalContext).toContain('sw-ml:ml-engineer');
     });
 
@@ -230,7 +230,7 @@ exit 1
       expect(additionalContext).toContain('sw-backend:dotnet-backend');
     });
 
-    it('should include MANDATORY label and "Do NOT skip" warning', async () => {
+    it('should include MANDATORY label and call BEFORE instruction', async () => {
       await createMockSpecweaveCli({
         plugins: [],
         increment: {
@@ -252,9 +252,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should have strong warning language
+      // Compact format (v1.0.260+): SKILL FIRST + MANDATORY with "call BEFORE implementation"
       expect(additionalContext).toContain('MANDATORY');
-      expect(additionalContext).toMatch(/Do NOT skip|Do NOT implement directly/i);
+      expect(additionalContext).toContain('call BEFORE implementation');
     });
   });
 
@@ -282,8 +282,8 @@ exit 1
       const additionalContext = extractAdditionalContext(result.parsed);
 
       if (additionalContext) {
-        // Should NOT use skill_invocation_required tag
-        expect(additionalContext).not.toContain('skill_invocation_required');
+        // Compact format (v1.0.260+): should NOT use MANDATORY prefix
+        expect(additionalContext).not.toContain('MANDATORY');
 
         // Should show as recommendation
         expect(additionalContext).toContain('sw-testing:qa-engineer');
@@ -342,9 +342,9 @@ exit 1
 
       const additionalContext = extractAdditionalContext(result.parsed);
 
-      // Should NOT contain specific skill invocation directive
+      // Should NOT contain domain skill invocation directive
       if (additionalContext) {
-        expect(additionalContext).not.toContain('skill_invocation_required');
+        expect(additionalContext).not.toContain('MANDATORY: Also call');
         // But should still contain increment planning info (v1.0.170+ uses SKILL FIRST)
         expect(additionalContext).toContain('SKILL FIRST');
       }
@@ -405,8 +405,9 @@ exit 1
       const additionalContext = extractAdditionalContext(result.parsed);
 
       // Should use skillInvocation (kubernetes-architect) not routing (devops)
+      // Compact format (v1.0.260+): uses "MANDATORY: Also call" prefix
       expect(additionalContext).toContain('sw-k8s:kubernetes-architect');
-      expect(additionalContext).toContain('skill_invocation_required');
+      expect(additionalContext).toContain('MANDATORY');
     });
 
     it('should use routing when skillInvocation is empty', async () => {
@@ -511,9 +512,10 @@ exit 1
 
         const additionalContext = extractAdditionalContext(result.parsed);
 
+        // Compact format (v1.0.260+): uses "MANDATORY: Also call" prefix
         expect(additionalContext).toBeTruthy();
         expect(additionalContext).toContain(scenario.skill);
-        expect(additionalContext).toContain('skill_invocation_required');
+        expect(additionalContext).toContain('MANDATORY');
       });
     }
   });
