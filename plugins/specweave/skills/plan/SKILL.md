@@ -77,6 +77,43 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
    - PLANNING → ACTIVE transition (tasks.md now exists)
    - Update lastUpdated timestamp
 
+6. **Execution Strategy Recommendation** (MANDATORY):
+   After generating tasks.md, analyze complexity and output a recommendation:
+
+   **6a. Count pending tasks** in the generated tasks.md (count `[ ]` markers)
+
+   **6b. Detect domains** from file paths and task descriptions:
+   - Frontend: `src/components/`, `src/pages/`, `src/hooks/`, `src/styles/`, `.tsx`, `.css`, React/Vue/Angular keywords
+   - Backend: `src/api/`, `src/services/`, `src/middleware/`, `src/routes/`, Express/Fastify/NestJS keywords
+   - Database: `prisma/`, `src/db/`, `migrations/`, `schema`, SQL/Prisma keywords
+   - DevOps: `Dockerfile`, `.github/`, `k8s/`, `terraform/`, CI/CD keywords
+   - Testing: `tests/`, `e2e/`, `.test.`, `.spec.`, test framework keywords
+   - Security: `src/auth/`, authentication, authorization keywords
+   - Mobile: `ios/`, `android/`, React Native keywords
+
+   **6c. Apply execution strategy matrix** and output:
+   ```
+   EXECUTION STRATEGY
+   ══════════════════════════════════════════
+   Tasks: [N] pending | Domains: [N] ([list])
+   ──────────────────────────────────────────
+   Recommended: /sw:do        (≤8 tasks, 1 domain)
+   Recommended: /sw:auto      (9-15 tasks, 1-2 domains)
+   Recommended: /sw:team-lead (>15 tasks OR 3+ domains)
+   ══════════════════════════════════════════
+   ⚠️  /sw:team-lead uses more tokens but produces higher quality
+      through parallel domain-specialized agents.
+
+   Next: /sw:team-lead [ID] | /sw:auto [ID] | /sw:do [ID]
+   ```
+
+   Show ONLY the matching recommendation line (not all three).
+   For 3+ domains, add a stronger nudge:
+   ```
+   ⚡ This is a multi-domain feature. /sw:team-lead is strongly recommended
+      for parallel execution across [domain1], [domain2], [domain3].
+   ```
+
 ## Options
 
 - `--force`: Overwrite existing plan.md/tasks.md

@@ -96,6 +96,41 @@ Map flags to extra `successCriteria` entries:
 
 Always include `tasks_complete` and `acs_satisfied` as base criteria. Ensure `.specweave/state/` dir exists.
 
+### Step 1.5a: MANDATORY - Complexity Check for Team-Lead Routing
+
+**Before starting autonomous execution, check if this increment needs team-lead:**
+
+1. Count pending tasks in tasks.md (count `[ ]` markers)
+2. Detect domains from file paths in tasks.md and plan.md:
+   - Frontend: `.tsx`, `src/components/`, `src/pages/`, React/Vue keywords
+   - Backend: `src/api/`, `src/services/`, `src/routes/`, Express/NestJS keywords
+   - Database: `prisma/`, `migrations/`, SQL keywords
+   - DevOps: `Dockerfile`, `.github/`, `k8s/` keywords
+   - Testing: `tests/`, `e2e/`, `.test.` keywords
+   - Security: `src/auth/`, auth keywords
+   - Mobile: `ios/`, `android/`, React Native keywords
+
+3. **If 3+ domains detected OR domain count suggests multi-agent benefit:**
+
+   ```
+   ⚠️  COMPLEXITY ASSESSMENT
+   ══════════════════════════════════════════
+   Tasks: [N] pending | Domains: [N] ([list])
+   ──────────────────────────────────────────
+   This increment spans 3+ domains. /sw:team-lead is recommended
+   for parallel execution with higher quality results.
+   ⚡ Trade-off: ~2-3x more tokens, but parallel agents
+      produce better results for multi-domain work.
+   ══════════════════════════════════════════
+   ```
+
+   Then use AskUserQuestion:
+   - Option A: "Use /sw:team-lead (Recommended)" — invoke team-lead and stop auto
+   - Option B: "Continue with /sw:auto (sequential)" — proceed normally
+
+   **In auto mode** (no user present): Auto-invoke `/sw:team-lead` for 3+ domains.
+   This is the default behavior per CLAUDE.md execution strategy.
+
 ### Step 1.5: MANDATORY - Display Stop Conditions
 
 **You MUST output a stop conditions banner BEFORE starting work.** Detect test frameworks, count test files, then show:
