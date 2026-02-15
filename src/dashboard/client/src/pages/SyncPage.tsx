@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { useCommand } from '../hooks/useCommand';
-import { Badge, statusBadgeVariant } from '../components/ui/Badge';
-import { KpiCard } from '../components/ui/KpiCard';
-import { PageLoader } from '../components/ui/Spinner';
+import { Link } from 'react-router-dom';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useCommand } from '../hooks/useCommand.js';
+import { Badge } from '../components/ui/Badge.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { PageLoader } from '../components/ui/Spinner.js';
+
+interface PlatformInfo {
+  connectionStatus?: string;
+  diagnosticMessage?: string;
+  configDetail?: string;
+  lastImport?: string;
+  lastImportCount?: number;
+  lastSkippedCount?: number;
+  lastSyncResult?: string;
+}
 
 interface SyncData {
-  platforms: Record<string, {
-    lastImport: string;
-    lastImportCount?: number;
-    lastSkippedCount?: number;
-    lastSyncResult?: string;
-  }>;
+  platforms: Record<string, PlatformInfo>;
   lastUpdated?: string;
 }
 
@@ -39,6 +45,26 @@ interface AuditSummary {
 
 type Tab = 'health' | 'audit' | 'conflicts';
 
+function connectionBadgeVariant(status?: string): 'default' | 'success' | 'warning' | 'error' | 'info' {
+  switch (status) {
+    case 'connected': return 'success';
+    case 'sync_failed': return 'warning';
+    case 'configured_never_synced': return 'info';
+    case 'not_configured':
+    default: return 'default';
+  }
+}
+
+function connectionLabel(status?: string): string {
+  switch (status) {
+    case 'connected': return 'Connected';
+    case 'sync_failed': return 'Sync Failed';
+    case 'configured_never_synced': return 'Ready';
+    case 'not_configured': return 'Not Configured';
+    default: return status || 'Unknown';
+  }
+}
+
 export function SyncPage() {
   const [tab, setTab] = useState<Tab>('health');
   const { data, loading, error } = useProjectApi<SyncData>('/api/sync/status');
@@ -58,6 +84,8 @@ export function SyncPage() {
   const errorCount = audit?.filter(e => e.result === 'error').length || 0;
   const conflicts = audit?.filter(e => e.conflict) || [];
 
+  const connectedCount = platforms.filter(([, info]) => info.connectionStatus === 'connected').length;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -73,7 +101,7 @@ export function SyncPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Platforms" value={platforms.length} color="indigo" />
+        <KpiCard title="Platforms" value={platforms.length} subtitle={`${connectedCount} connected`} color="indigo" />
         <KpiCard title="Audit Entries" value={totalAudit} color="cyan" />
         <KpiCard title="Errors" value={errorCount} color="rose" />
         <KpiCard title="Conflicts" value={conflicts.length} color="amber" />
@@ -105,31 +133,80 @@ export function SyncPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {platforms.map(([platform, info]) => {
                 const summary = auditSummary?.[platform];
+                const status = info.connectionStatus || 'unknown';
+
                 return (
                   <div key={platform} className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <PlatformIcon platform={platform} />
-                        <span className="text-sm font-medium text-gray-300 capitalize">{platform}</span>
+                        <div>
+                          <span className="text-sm font-medium text-gray-300 capitalize">{platform}</span>
+                          {info.configDetail && (
+                            <div className="text-[10px] text-gray-600 mt-0.5">{info.configDetail}</div>
+                          )}
+                        </div>
                       </div>
                       <Badge
-                        label={info.lastSyncResult || 'unknown'}
-                        variant={statusBadgeVariant(info.lastSyncResult || '')}
+                        label={connectionLabel(status)}
+                        variant={connectionBadgeVariant(status)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <InfoRow label="Last Import" value={info.lastImport ? new Date(info.lastImport).toLocaleString() : 'Never'} />
-                      {info.lastImportCount != null && (
-                        <InfoRow label="Items Imported" value={String(info.lastImportCount)} />
+
+                    {/* Diagnostic message */}
+                    {info.diagnosticMessage && (
+                      <div className="text-xs text-gray-500 mb-3 p-2 bg-gray-800/30 rounded-lg">
+                        {info.diagnosticMessage}
+                      </div>
+                    )}
+
+                    {/* Action area based on connection status */}
+                    {status === 'not_configured' && (
+                      <Link
+                        to="/config"
+                        className="block text-center text-xs text-indigo-400 hover:text-indigo-300 py-2 border border-gray-800 rounded-lg hover:border-indigo-500/30 transition-colors"
+                      >
+                        Configure in Settings
+                      </Link>
+                    )}
+                    {status === 'configured_never_synced' && (
+                      <button
+                        onClick={() => execute('sync-push')}
+                        disabled={running}
+                        className="w-full text-xs text-indigo-400 hover:text-indigo-300 py-2 border border-gray-800 rounded-lg hover:border-indigo-500/30 transition-colors disabled:opacity-50"
+                      >
+                        {running ? 'Syncing...' : 'Run First Sync'}
+                      </button>
+                    )}
+                    {status === 'sync_failed' && (
+                      <button
+                        onClick={() => execute('sync-push')}
+                        disabled={running}
+                        className="w-full text-xs text-amber-400 hover:text-amber-300 py-2 border border-amber-500/20 rounded-lg hover:border-amber-500/40 transition-colors disabled:opacity-50"
+                      >
+                        {running ? 'Retrying...' : 'Retry Sync'}
+                      </button>
+                    )}
+
+                    {/* Connection details */}
+                    <div className="space-y-2 mt-3">
+                      {info.lastImport && (
+                        <InfoRow label="Last Import" value={new Date(info.lastImport).toLocaleString()} />
                       )}
-                      {info.lastSkippedCount != null && (
-                        <InfoRow label="Skipped" value={String(info.lastSkippedCount)} />
+                      {status === 'connected' && !info.lastImport && (
+                        <InfoRow label="Status" value="Connected, no imports yet" />
+                      )}
+                      {info.lastImportCount != null && (
+                        <InfoRow label="Items Imported" value={info.lastImportCount.toLocaleString()} />
+                      )}
+                      {info.lastSkippedCount != null && info.lastSkippedCount > 0 && (
+                        <InfoRow label="Skipped" value={info.lastSkippedCount.toLocaleString()} />
                       )}
                       {summary && (
                         <>
                           <div className="border-t border-gray-800 my-2" />
-                          <InfoRow label="Total Ops" value={String(summary.total)} />
-                          <InfoRow label="Success" value={String(summary.success)} />
+                          <InfoRow label="Total Ops" value={summary.total.toLocaleString()} />
+                          <InfoRow label="Success" value={summary.success.toLocaleString()} />
                           {summary.errors > 0 && (
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-gray-500">Errors</span>
@@ -247,12 +324,16 @@ function PlatformIcon({ platform }: { platform: string }) {
 
 function timeAgo(ts: string): string {
   if (!ts) return '-';
-  const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  try {
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  } catch {
+    return '-';
+  }
 }

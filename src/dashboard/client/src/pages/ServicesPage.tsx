@@ -1,8 +1,9 @@
-import { useProjectApi } from '../hooks/useProjectApi';
-import { useCommand } from '../hooks/useCommand';
-import { PageLoader } from '../components/ui/Spinner';
-import { Badge } from '../components/ui/Badge';
-import { KpiCard } from '../components/ui/KpiCard';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useCommand } from '../hooks/useCommand.js';
+import { PageLoader } from '../components/ui/Spinner.js';
+import { Badge } from '../components/ui/Badge.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { CommandOutput } from '../components/ui/CommandOutput.js';
 
 interface LinkItem {
   name: string;
@@ -20,26 +21,29 @@ interface ServiceInfo {
 export function ServicesPage() {
   const { data: links, loading: ll } = useProjectApi<LinkItem[]>('/api/links');
   const { data: services, loading: sl, refetch } = useProjectApi<ServiceInfo[]>('/api/services');
-  const { execute, running } = useCommand();
+  const { execute, running, output, status: cmdStatus, reset } = useCommand();
 
   if (ll || sl) return <PageLoader />;
 
   const runningCount = (services || []).filter(s => s.status === 'running').length;
   const totalServices = (services || []).length;
 
-  const handleDocsStart = async () => {
-    await execute('docs-preview-start');
+  const handleStart = async (commandName: string) => {
+    await execute(commandName);
     setTimeout(() => refetch(), 3000);
   };
 
-  const handleDocsStop = async () => {
-    await execute('docs-preview-stop');
+  const handleStop = async (commandName: string) => {
+    await execute(commandName);
     setTimeout(() => refetch(), 2000);
   };
 
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-lg font-semibold text-gray-200">Services & Links</h2>
+
+      {/* Command Output */}
+      <CommandOutput lines={output} status={cmdStatus} onDismiss={reset} />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -59,11 +63,31 @@ export function ServicesPage() {
                 <div className={`w-2 h-2 rounded-full ${svc.status === 'running' ? 'bg-emerald-400' : 'bg-gray-600'}`} />
                 <div>
                   <span className="text-sm text-gray-300">{svc.name}</span>
-                  <div className="text-[10px] text-gray-600">{svc.detail}</div>
+                  <div className="text-[10px] text-gray-600">
+                    {svc.status === 'running' && svc.detail ? (
+                      <a
+                        href={svc.detail}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-400 hover:text-indigo-300 underline transition-colors"
+                      >
+                        {svc.detail}
+                      </a>
+                    ) : (
+                      svc.detail
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge label={svc.status} variant={svc.status === 'running' ? 'success' : 'default'} />
+                {svc.status === 'running' && svc.port > 0 && (
+                  <Badge label={`Port ${svc.port}`} variant="info" />
+                )}
+                {svc.status === 'running' ? (
+                  <Badge label="Running" variant="success" />
+                ) : (
+                  <Badge label="Stopped" variant="default" />
+                )}
                 {svc.name === 'Docs Preview' && (
                   svc.status === 'running' ? (
                     <div className="flex items-center gap-1">
@@ -76,7 +100,7 @@ export function ServicesPage() {
                         Open
                       </a>
                       <button
-                        onClick={handleDocsStop}
+                        onClick={() => handleStop('docs-preview-stop')}
                         disabled={running}
                         className="px-2 py-1 text-[10px] text-rose-400 hover:text-rose-300 border border-rose-500/30 rounded transition-colors disabled:opacity-50"
                       >
@@ -85,7 +109,7 @@ export function ServicesPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={handleDocsStart}
+                      onClick={() => handleStart('docs-preview-start')}
                       disabled={running}
                       className="px-2 py-1 text-[10px] text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 rounded transition-colors disabled:opacity-50"
                     >

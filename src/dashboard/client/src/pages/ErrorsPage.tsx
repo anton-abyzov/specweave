@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { KpiCard } from '../components/ui/KpiCard';
-import { Badge } from '../components/ui/Badge';
-import { PageLoader } from '../components/ui/Spinner';
-import { EmptyState } from '../components/ui/EmptyState';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useUrlState } from '../hooks/useUrlState.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { Badge } from '../components/ui/Badge.js';
+import { PageLoader } from '../components/ui/Spinner.js';
+import { EmptyState } from '../components/ui/EmptyState.js';
 
 interface SessionError {
   timestamp: string;
@@ -34,9 +34,20 @@ interface SessionSummary {
 
 type Tab = 'groups' | 'timeline' | 'sessions';
 
+const TYPE_COLORS: Record<string, string> = {
+  prompt_too_long: 'error',
+  api_error: 'warning',
+  tool_failure: 'info',
+  hook_error: 'default',
+  rate_limit: 'warning',
+  unknown: 'default',
+};
+
 export function ErrorsPage() {
-  const [tab, setTab] = useState<Tab>('groups');
-  const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [tab, setTab] = useUrlState('tab', 'groups');
+  const [typeFilter, setTypeFilter] = useUrlState('type', '');
+  const [selectedSession, setSelectedSession] = useUrlState('session', '');
+
   const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>('/api/errors/groups');
   const { data: errors, loading: el } = useProjectApi<SessionError[]>('/api/errors/recent?limit=100');
   const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>('/api/errors/sessions?limit=30');
@@ -51,6 +62,34 @@ export function ErrorsPage() {
   const sessionDetail = selectedSession
     ? sessions?.find(s => s.sessionId === selectedSession)
     : null;
+
+  // Filter errors/sessions by type if a type filter is set
+  const filteredErrors = typeFilter
+    ? (errors || []).filter(e => e.type === typeFilter)
+    : (errors || []);
+
+  const filteredSessions = typeFilter
+    ? (sessions || []).filter(s => s.errors.some(e => e.type === typeFilter))
+    : (sessions || []);
+
+  const handleGroupCountClick = (errorType: string) => {
+    setTypeFilter(errorType);
+    setTab('sessions');
+    setSelectedSession('');
+  };
+
+  const handleTabChange = (newTab: string) => {
+    setTab(newTab);
+    setSelectedSession('');
+  };
+
+  const handleSessionSelect = (sessionId: string) => {
+    setSelectedSession(sessionId);
+  };
+
+  const handleBackFromSession = () => {
+    setSelectedSession('');
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -68,39 +107,52 @@ export function ErrorsPage() {
       </div>
 
       {/* Tab Bar */}
-      <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
-        {(['groups', 'timeline', 'sessions'] as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => { setTab(t); setSelectedSession(null); }}
-            className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
-              tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            {t === 'groups' ? 'Error Groups' : t === 'timeline' ? 'Timeline' : 'Sessions'}
-          </button>
-        ))}
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
+          {(['groups', 'timeline', 'sessions'] as Tab[]).map(t => (
+            <button
+              key={t}
+              onClick={() => handleTabChange(t)}
+              className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
+                tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              {t === 'groups' ? 'Error Groups' : t === 'timeline' ? 'Timeline' : 'Sessions'}
+            </button>
+          ))}
+        </div>
+        {typeFilter && (
+          <div className="flex items-center gap-1">
+            <Badge label={`type: ${typeFilter.replace(/_/g, ' ')}`} variant="info" />
+            <button
+              onClick={() => setTypeFilter('')}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Session Detail Overlay */}
       {selectedSession && sessionDetail && (
         <SessionDetailPanel
           session={sessionDetail}
-          onClose={() => setSelectedSession(null)}
+          onClose={handleBackFromSession}
         />
       )}
 
       {/* Tab Content */}
       {!selectedSession && tab === 'groups' && (
-        <ErrorGroupTable groups={groups || []} />
+        <ErrorGroupTable groups={groups || []} onGroupClick={handleGroupCountClick} />
       )}
 
       {!selectedSession && tab === 'timeline' && (
-        <ErrorTimeline errors={errors || []} onSessionClick={setSelectedSession} />
+        <ErrorTimeline errors={filteredErrors} onSessionClick={handleSessionSelect} />
       )}
 
       {!selectedSession && tab === 'sessions' && (
-        <SessionList sessions={sessions || []} onSelect={setSelectedSession} />
+        <SessionList sessions={filteredSessions} onSelect={handleSessionSelect} />
       )}
 
       {totalErrors === 0 && !selectedSession && (
@@ -110,17 +162,8 @@ export function ErrorsPage() {
   );
 }
 
-function ErrorGroupTable({ groups }: { groups: ErrorGroup[] }) {
+function ErrorGroupTable({ groups, onGroupClick }: { groups: ErrorGroup[]; onGroupClick: (type: string) => void }) {
   if (groups.length === 0) return null;
-
-  const typeColors: Record<string, string> = {
-    prompt_too_long: 'error',
-    api_error: 'warning',
-    tool_failure: 'info',
-    hook_error: 'default',
-    rate_limit: 'warning',
-    unknown: 'default',
-  };
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
@@ -143,10 +186,18 @@ function ErrorGroupTable({ groups }: { groups: ErrorGroup[] }) {
               <td className="px-4 py-2">
                 <Badge
                   label={g.type.replace(/_/g, ' ')}
-                  variant={(typeColors[g.type] || 'default') as any}
+                  variant={(TYPE_COLORS[g.type] || 'default') as any}
                 />
               </td>
-              <td className="px-4 py-2 text-sm text-gray-300 text-right font-mono">{g.count}</td>
+              <td className="px-4 py-2 text-right">
+                <button
+                  onClick={() => onGroupClick(g.type)}
+                  className="text-sm text-indigo-400 hover:text-indigo-300 font-mono transition-colors"
+                  title="View sessions with this error type"
+                >
+                  {g.count}
+                </button>
+              </td>
               <td className="px-4 py-2 text-xs text-gray-500 text-right">{g.sessions}</td>
               <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(g.lastSeen)}</td>
               <td className="px-4 py-2 text-xs text-gray-500 max-w-xs truncate">
