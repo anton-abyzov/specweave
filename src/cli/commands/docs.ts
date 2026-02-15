@@ -38,7 +38,7 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
   const projectRoot = process.cwd();
   const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
 
-  console.log(chalk.blue('\n📚 SpecWeave Documentation Preview\n'));
+  console.log(chalk.blue('\n\u{1F4DA} Documentation Preview\n'));
 
   // Check if internal docs exist
   if (!fs.existsSync(docsPath)) {
@@ -154,7 +154,7 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
   const projectRoot = process.cwd();
   const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
 
-  console.log(chalk.blue('\n📦 SpecWeave Documentation Build\n'));
+  console.log(chalk.blue('\n\u{1F4E6} Documentation Build\n'));
 
   // Check if internal docs exist
   if (!fs.existsSync(docsPath)) {
@@ -223,7 +223,7 @@ export async function docsValidateCommand(options: DocsValidateOptions = {}): Pr
   const projectRoot = process.cwd();
   const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
 
-  console.log(chalk.blue('\n🔍 SpecWeave Documentation Validation\n'));
+  console.log(chalk.blue('\n\u{1F50D} Documentation Validation\n'));
 
   // Check if internal docs exist
   if (!fs.existsSync(docsPath)) {
@@ -336,7 +336,7 @@ export async function docsStatusCommand(): Promise<void> {
   const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
   const docsSitePath = path.join(projectRoot, '.specweave', 'docs-site-internal');
 
-  console.log(chalk.blue('\n📚 SpecWeave Documentation Status\n'));
+  console.log(chalk.blue('\n\u{1F4DA} Documentation Status\n'));
 
   // Check docs exist
   const docsExist = fs.existsSync(docsPath);
