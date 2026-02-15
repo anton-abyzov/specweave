@@ -12,6 +12,7 @@ import { ClaudeLogParser } from './data/claude-log-parser.js';
 import { PluginScanner } from './data/plugin-scanner.js';
 import { SyncAuditReader } from './data/sync-audit-reader.js';
 import { ActivityStream } from './data/activity-stream.js';
+import { CostAggregator } from './data/cost-aggregator.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +50,7 @@ export class DashboardServer {
     root: string;
     watcher: FileWatcher;
     aggregator: DashboardDataAggregator;
+    costAggregator: CostAggregator;
     commandRunner: CommandRunner;
     logParser: ClaudeLogParser;
     pluginScanner: PluginScanner;
@@ -76,6 +78,7 @@ export class DashboardServer {
     }
 
     const aggregator = new DashboardDataAggregator(projectRoot);
+    const costAggregator = new CostAggregator(projectRoot);
     const logParser = new ClaudeLogParser(projectRoot);
     const pluginScanner = new PluginScanner(projectRoot);
     const auditReader = new SyncAuditReader(projectRoot);
@@ -99,7 +102,7 @@ export class DashboardServer {
       });
     });
 
-    this.projects.set(id, { root: projectRoot, watcher, aggregator, commandRunner, logParser, pluginScanner, auditReader, activityStream });
+    this.projects.set(id, { root: projectRoot, watcher, aggregator, costAggregator, commandRunner, logParser, pluginScanner, auditReader, activityStream });
     return this.getProjectInfo(id, projectRoot);
   }
 
@@ -200,6 +203,7 @@ export class DashboardServer {
   /** Resolve project from query string ?project=<id> */
   private resolveProject(req: http.IncomingMessage): {
     aggregator: DashboardDataAggregator;
+    costAggregator: CostAggregator;
     commandRunner: CommandRunner;
     logParser: ClaudeLogParser;
     pluginScanner: PluginScanner;
@@ -213,6 +217,7 @@ export class DashboardServer {
 
     const pick = (id: string, p: typeof this.projects extends Map<string, infer V> ? V : never) => ({
       aggregator: p.aggregator,
+      costAggregator: p.costAggregator,
       commandRunner: p.commandRunner,
       logParser: p.logParser,
       pluginScanner: p.pluginScanner,
@@ -290,7 +295,8 @@ export class DashboardServer {
     this.router.get('/api/overview', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const data = await project.aggregator.getOverview();
+      const costData = await project.costAggregator.getTokenSummaries();
+      const data = await project.aggregator.getOverview(costData);
       sendJson(res, { ok: true, data });
     });
 
@@ -321,7 +327,7 @@ export class DashboardServer {
     this.router.get('/api/costs/summary', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const data = await project.aggregator.getCostsSummary();
+      const data = await project.costAggregator.getTokenSummaries();
       sendJson(res, { ok: true, data });
     });
 
@@ -573,9 +579,8 @@ export class DashboardServer {
     this.router.get('/api/costs/sessions', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const costs = await project.aggregator.getCostsSummary() as any;
-      const sessions = costs?.sessions || [];
-      sendJson(res, { ok: true, data: sessions });
+      const costs = await project.costAggregator.getTokenSummaries();
+      sendJson(res, { ok: true, data: costs.sessions });
     });
 
     // === Phase 4: Config Write ===
@@ -835,50 +840,110 @@ async function getIncrementDetail(projectRoot: string, incrementId: string): Pro
   };
 }
 
-/** Scan repositories/ directory for cloned repos */
+/** Scan repositories/ directory for cloned repos, with single-repo git fallback */
 function scanRepositories(projectRoot: string): Array<{
   name: string;
   org: string;
   path: string;
+  remote?: string;
+  branch?: string;
   hasSpecweave: boolean;
-  lastModified: string;
+  isCurrent?: boolean;
+  lastModified?: string;
 }> {
   const reposDir = path.join(projectRoot, 'repositories');
-  if (!fs.existsSync(reposDir)) return [];
-
   const repos: Array<{
     name: string;
     org: string;
     path: string;
+    remote?: string;
+    branch?: string;
     hasSpecweave: boolean;
-    lastModified: string;
+    isCurrent?: boolean;
+    lastModified?: string;
   }> = [];
 
-  try {
-    const orgs = fs.readdirSync(reposDir, { withFileTypes: true });
-    for (const org of orgs) {
-      if (!org.isDirectory()) continue;
-      const orgDir = path.join(reposDir, org.name);
-      const repoEntries = fs.readdirSync(orgDir, { withFileTypes: true });
-      for (const repo of repoEntries) {
-        if (!repo.isDirectory()) continue;
-        const repoPath = path.join(orgDir, repo.name);
-        const hasSpecweave = fs.existsSync(path.join(repoPath, '.specweave'));
-        let lastModified = '';
-        try {
-          const stat = fs.statSync(repoPath);
-          lastModified = stat.mtime.toISOString();
-        } catch { /* */ }
-        repos.push({
-          name: repo.name,
-          org: org.name,
-          path: repoPath,
-          hasSpecweave,
-          lastModified,
-        });
+  // Multi-repo: scan repositories/ directory
+  if (fs.existsSync(reposDir)) {
+    try {
+      const orgs = fs.readdirSync(reposDir, { withFileTypes: true });
+      for (const org of orgs) {
+        if (!org.isDirectory()) continue;
+        const orgDir = path.join(reposDir, org.name);
+        const repoEntries = fs.readdirSync(orgDir, { withFileTypes: true });
+        for (const repo of repoEntries) {
+          if (!repo.isDirectory()) continue;
+          const repoPath = path.join(orgDir, repo.name);
+          const hasSpecweave = fs.existsSync(path.join(repoPath, '.specweave'));
+          let lastModified = '';
+          try {
+            const stat = fs.statSync(repoPath);
+            lastModified = stat.mtime.toISOString();
+          } catch { /* */ }
+          repos.push({
+            name: repo.name,
+            org: org.name,
+            path: repoPath,
+            hasSpecweave,
+            lastModified,
+          });
+        }
       }
-    }
-  } catch { /* */ }
+    } catch { /* */ }
+  }
+
+  // Single-repo fallback: if no repos found, check if projectRoot itself is a git repo
+  if (repos.length === 0 && fs.existsSync(path.join(projectRoot, '.git'))) {
+    try {
+      let remote = '';
+      let repoName = path.basename(projectRoot);
+      let org = 'local';
+
+      // Parse remote origin URL from .git/config
+      const gitConfigPath = path.join(projectRoot, '.git/config');
+      if (fs.existsSync(gitConfigPath)) {
+        const gitConfig = fs.readFileSync(gitConfigPath, 'utf-8');
+        const urlMatch = gitConfig.match(/\[remote "origin"\][^[]*url\s*=\s*(.+)/m);
+        if (urlMatch) {
+          remote = urlMatch[1].trim();
+          // Parse SSH: git@github.com:org/repo.git
+          const sshMatch = remote.match(/git@[^:]+:([^/]+)\/([^/.]+?)(?:\.git)?$/);
+          if (sshMatch) {
+            org = sshMatch[1];
+            repoName = sshMatch[2];
+          } else {
+            // Parse HTTPS: https://github.com/org/repo.git
+            const httpsMatch = remote.match(/https?:\/\/[^/]+\/([^/]+)\/([^/.]+?)(?:\.git)?$/);
+            if (httpsMatch) {
+              org = httpsMatch[1];
+              repoName = httpsMatch[2];
+            }
+          }
+        }
+      }
+
+      // Parse current branch from .git/HEAD
+      let branch = 'main';
+      const headPath = path.join(projectRoot, '.git/HEAD');
+      if (fs.existsSync(headPath)) {
+        const headContent = fs.readFileSync(headPath, 'utf-8').trim();
+        const branchMatch = headContent.match(/^ref: refs\/heads\/(.+)$/);
+        if (branchMatch) {
+          branch = branchMatch[1];
+        }
+      }
+
+      repos.push({
+        name: repoName,
+        org,
+        path: projectRoot,
+        remote,
+        branch,
+        hasSpecweave: fs.existsSync(path.join(projectRoot, '.specweave')),
+        isCurrent: true,
+      });
+    } catch { /* */ }
+  }
 
   return repos.sort((a, b) => a.name.localeCompare(b.name));
 }

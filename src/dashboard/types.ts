@@ -177,6 +177,21 @@ export interface LspStatus {
   };
 }
 
+// Repo info (single-repo and multi-repo support)
+export interface RepoInfo {
+  name: string;
+  org: string;
+  path: string;
+  remote?: string;
+  branch?: string;
+  hasSpecweave: boolean;
+  isCurrent?: boolean;
+  lastModified?: string;
+}
+
+// Re-export CostsSummaryPayload for client access
+export type { CostsSummaryPayload, SessionTokenSummary } from './server/data/cost-aggregator.js';
+
 // Config (just use Record for flexibility)
 export type ConfigPayload = Record<string, unknown>;
 
