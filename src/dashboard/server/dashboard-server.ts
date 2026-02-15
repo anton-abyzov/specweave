@@ -532,7 +532,8 @@ export class DashboardServer {
     this.router.get('/api/plugins/full', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const data = project.pluginScanner.getFullPluginData();
+      const skills = await project.aggregator.getSkillUsage();
+      const data = project.pluginScanner.getFullPluginData(skills);
       sendJson(res, { ok: true, data });
     });
 

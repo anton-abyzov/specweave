@@ -78,7 +78,7 @@ export class PluginScanner {
   }
 
   /** Combined plugins + LSP response */
-  getFullPluginData(): {
+  getFullPluginData(skillUsage?: SkillUsage[]): {
     plugins: PluginInfo[];
     skills: SkillUsage[];
     lsp: LspStatus | null;
@@ -87,7 +87,7 @@ export class PluginScanner {
   } {
     return {
       plugins: this.getInstalledPlugins(),
-      skills: this.getSkillUsage(),
+      skills: skillUsage || this.getSkillUsage(),
       lsp: this.getLspStatus(),
       warmup: this.getLspWarmup(),
       triggerCount: Object.keys(this.getSkillTriggers()).length,
