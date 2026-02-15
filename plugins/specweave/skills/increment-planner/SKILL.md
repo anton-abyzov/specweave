@@ -200,6 +200,32 @@ Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX" })
 Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX" })
 ```
 
+## Step 5: Execution Strategy Recommendation
+
+After delegation completes (architect + test-aware-planner have created plan.md and tasks.md), analyze the increment:
+
+1. **Count tasks**: `grep -c '^\- \[ \]\|^### T-' tasks.md`
+2. **Count domains** from spec.md user stories and plan.md architecture (frontend, backend, database, API, DevOps, security, mobile, ML/AI)
+3. **Classify**: Low (≤8 tasks, 1 domain) | Medium (9-15, 1-2 domains) | High (>15 OR 3+ domains)
+
+**Show recommendation in output:**
+
+```
+EXECUTION STRATEGY
+================================================
+Tasks: [N] | Domains: [M] | Complexity: [Low/Medium/High]
+
+  /sw:do <id>         - Step-by-step, full control
+  /sw:auto <id>       - Autonomous sequential (unattended)
+  /sw:team-lead       - Parallel multi-agent (best quality for multi-domain, higher token cost)
+```
+
+- **Low**: Show `/sw:do <id>` as next step (default behavior)
+- **Medium**: Show `/sw:do <id>` and recommend `/sw:auto <id>` for unattended execution
+- **High**: Recommend `/sw:team-lead` as primary, with `/sw:auto` and `/sw:do` as alternatives
+
+See CLAUDE.md Execution Strategy section for the full decision matrix.
+
 ## Usage
 
 ```typescript
