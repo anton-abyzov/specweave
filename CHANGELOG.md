@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.262] - 2026-02-15
+
+### Changes
+- **Enterprise dashboard**: KPI cards, analytics page, costs page, services page with API hooks
+- **Skill consolidation**: Merged redundant skills (archive-increments, code-review, increment-planner, etc.) into core skills
+- **Context budget**: Adaptive context budget configuration with priority-based assembly
+- **Plugin detection**: Improved LLM plugin detector with better matching
+- **GitHub sync**: Fixed sync metadata formats and event routing gaps
+- **Pre-compact hook**: Added hook for context compaction events
+- **Dead command cleanup**: Removed 14 unused CLI commands (api-docs, check-hooks, embed-acs, etc.)
+
+---
+
 ## [1.0.256] - 2026-02-13
 
 ### Changes
