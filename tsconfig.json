@@ -39,6 +39,7 @@
     "src/core/llm/providers/openai-provider.ts",
     "src/core/llm/providers/azure-openai-provider.ts",
     "src/core/llm/providers/bedrock-provider.ts",
-    "src/core/llm/providers/vertex-ai-provider.ts"
+    "src/core/llm/providers/vertex-ai-provider.ts",
+    "src/dashboard/client/**"
   ]
 }

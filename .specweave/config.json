@@ -2,7 +2,7 @@
   "version": "2.0",
   "project": {
     "name": "specweave",
-    "version": "0.1.0"
+    "version": "1.0.1"
   },
   "pluginAutoLoad": {
     "enabled": true,
@@ -78,7 +78,9 @@
     }
   },
   "documentation": {
-    "directories": [".specweave/docs"],
+    "directories": [
+      ".specweave/docs"
+    ],
     "preview": {
       "enabled": false,
       "autoInstall": false,
