@@ -4,7 +4,7 @@ title: "GitHub Sync V2: Spec-to-Issue, Projects V2, Multi-Repo & Agent Teams"
 type: feature
 status: completed
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 lastUpdated: 2026-02-10
 tldr: "Complete the GitHub sync implementation to support real-world multi-repository microservices teams."
 complexity: high

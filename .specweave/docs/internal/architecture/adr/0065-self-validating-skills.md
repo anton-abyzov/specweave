@@ -1,3 +1,7 @@
+---
+id: adr-0065-self-validating-skills
+---
+
 # ADR-0065: Self-Validating Skills Architecture
 
 ## Status

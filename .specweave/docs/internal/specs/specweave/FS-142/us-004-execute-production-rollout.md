@@ -9,7 +9,7 @@ project: specweave
 external:
   github:
     issue: 921
-    url: https://github.com/anton-abyzov/specweave/issues/921
+    url: "https://github.com/anton-abyzov/specweave/issues/921"
 ---
 
 # US-004: Execute Production Rollout

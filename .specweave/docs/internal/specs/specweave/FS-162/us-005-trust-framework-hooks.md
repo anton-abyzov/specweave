@@ -9,7 +9,7 @@ project: specweave-dev
 external:
   github:
     issue: 1000
-    url: https://github.com/anton-abyzov/specweave/issues/1000
+    url: "https://github.com/anton-abyzov/specweave/issues/1000"
 ---
 
 # US-005: Update Explore Agent with LSP Navigation

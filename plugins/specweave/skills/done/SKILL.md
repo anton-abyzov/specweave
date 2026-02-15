@@ -43,10 +43,11 @@ If closing a SpecWeave framework increment, show post-closure reminders: update 
 
 ### Step 3: Judge LLM Validation (MANDATORY)
 
-1. Invoke `Skill({ skill: "sw:judge-llm" })` with `--last-commit` (or `--staged`)
-2. Uses ultrathink extended thinking via separate Opus API call
-3. **APPROVED** -> continue | **CONCERNS** -> show, allow continuation | **REJECTED** -> STOP closure
-4. No ANTHROPIC_API_KEY -> falls back to pattern matching, does not block
+1. **Consent check first**: Judge-LLM uses the Anthropic API (costs extra). Check `externalModels` in config. If consent not granted, ask user or skip to pattern matching fallback. See `/sw:judge-llm` consent section for full flow.
+2. Invoke `Skill({ skill: "sw:judge-llm" })` with `--last-commit` (or `--staged`)
+3. Uses ultrathink extended thinking via separate Opus API call
+4. **APPROVED** -> continue | **CONCERNS** -> show, allow continuation | **REJECTED** -> STOP closure
+5. No ANTHROPIC_API_KEY or consent denied -> falls back to pattern matching, does not block
 
 ### Step 4: Status Validation
 

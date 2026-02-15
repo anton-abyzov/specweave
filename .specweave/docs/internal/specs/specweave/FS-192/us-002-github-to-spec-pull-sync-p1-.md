@@ -4,7 +4,7 @@ feature: FS-192
 title: "GitHub-to-Spec Pull Sync (P1)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** team lead reviewing work on GitHub,
 **I want** status changes made in GitHub (issue closed, labels changed, checkbox toggles) to flow back into SpecWeave specs,
 **So that** the local spec."

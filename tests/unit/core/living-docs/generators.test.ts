@@ -287,7 +287,7 @@ describe('generateFeatureFile', () => {
 
   it('should link increment with relative path by default', () => {
     const result = generateFeatureFile('FS-001', makeParsedSpec(), '0001-my-feature');
-    expect(result).toContain('(../../../../increments/0001-my-feature/spec.md)');
+    expect(result).toContain('(../../../../../increments/0001-my-feature/spec.md)');
   });
 
   it('should include created date in history table', () => {
@@ -409,7 +409,7 @@ describe('generateFeatureFile', () => {
     const result = generateFeatureFile('FS-001', makeParsedSpec(), '0001-x', {
       useRelativeLinks: true,
     });
-    expect(result).toContain('(../../../../increments/0001-x/spec.md)');
+    expect(result).toContain('(../../../../../increments/0001-x/spec.md)');
   });
 });
 
@@ -736,7 +736,7 @@ describe('generateUserStoryFile', () => {
   it('should include increment link with relative path by default', () => {
     const result = generateUserStoryFile(makeStory(), 'FS-001', '0042-auth', baseSpec);
     expect(result).toContain('**Increment**: [0042-auth]');
-    expect(result).toContain('(../../../../increments/0042-auth/spec.md)');
+    expect(result).toContain('(../../../../../increments/0042-auth/spec.md)');
   });
 
   it('should use absolute path when useRelativeLinks is false', () => {
@@ -1038,8 +1038,8 @@ describe('generateUserStoryFile', () => {
 describe('Context handling', () => {
   it('should use default context when none is provided', () => {
     const result = generateFeatureFile('FS-001', makeParsedSpec(), '0001-x');
-    // Default uses relative links with ../../../../increments path
-    expect(result).toContain('../../../../increments/0001-x/spec.md');
+    // Default uses relative links with ../../../../../increments path
+    expect(result).toContain('../../../../../increments/0001-x/spec.md');
   });
 
   it('should merge partial context with defaults', () => {
@@ -1050,7 +1050,7 @@ describe('Context handling', () => {
     // Project should appear
     expect(result).toContain('project: my-app');
     // Still uses default relative path
-    expect(result).toContain('../../../../increments/0001-x/spec.md');
+    expect(result).toContain('../../../../../increments/0001-x/spec.md');
   });
 
   it('should override incrementsRelativePath while keeping other defaults', () => {
@@ -1080,7 +1080,7 @@ describe('Context handling', () => {
       context: { useRelativeLinks: false },
     });
     expect(result).toContain('(/.specweave/increments/0005-auth/spec.md)');
-    expect(result).not.toContain('../../../../increments');
+    expect(result).not.toContain('../../../../../increments');
   });
 
   it('should pass context to README generator correctly', () => {

@@ -4,7 +4,7 @@ feature: FS-183
 title: "Modular Code Architecture (P2)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** SpecWeave maintainer
 **I want** the LSP code refactored to modular structure
 **So that** it's easier to maintain, test, and extend with new languages."

@@ -4,7 +4,7 @@ title: "Multi-Language LSP Warm-up & Configurable Timeouts"
 type: feature
 status: completed
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 lastUpdated: 2026-02-10
 tldr: "The current SpecWeave LSP implementation has critical limitations for non-TypeScript projects:
 1."

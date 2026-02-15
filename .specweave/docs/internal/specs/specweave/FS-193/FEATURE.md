@@ -4,7 +4,7 @@ title: "Wire AC Completion to GitHub Comments & Fix Bidirectional Multi-Repo Syn
 type: feature
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 lastUpdated: 2026-02-10
 tldr: "A comprehensive grill of the external tool integration revealed the 'last mile' is missing from the sync chain."
 complexity: high

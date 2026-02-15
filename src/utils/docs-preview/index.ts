@@ -53,6 +53,7 @@ export {
   startDevServer,
   openBrowserUrl,
   killAllDocusaurusProcesses,
+  killProcessOnPort,
   isDocusaurusRunning,
   getServerUrl
 } from './server-manager.js';

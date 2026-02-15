@@ -4,7 +4,7 @@ feature: FS-190
 title: "Config Consistency and Self-Healing (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user
 **I want** sync config to be internally consistent and self-healing
 **So that** contradictory settings (like `sync."

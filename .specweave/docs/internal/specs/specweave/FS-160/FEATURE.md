@@ -10,7 +10,7 @@ external_tools:
   github:
     type: milestone
     id: 68
-    url: https://github.com/anton-abyzov/specweave/milestone/68
+    url: "https://github.com/anton-abyzov/specweave/milestone/68"
 ---
 
 # Plugin Cache Health Monitoring System

@@ -4,7 +4,7 @@ feature: FS-190
 title: "Clean Issue Title Format (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** developer viewing GitHub/JIRA/ADO issues
 **I want** clean issue titles without redundant prefixes
 **So that** I can read what the issue is about at a glance."

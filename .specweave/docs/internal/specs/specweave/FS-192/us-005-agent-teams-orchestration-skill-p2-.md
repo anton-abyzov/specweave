@@ -4,7 +4,7 @@ feature: FS-192
 title: "Agent Teams Orchestration Skill (P2)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** developer using Claude Code Agent Teams,
 **I want** a `/sw:team-orchestrate` skill that spawns parallel agents per microservice, each working on their own increment and syncing to their own GitHub repo/board,
 **So that** I can build full-stack features with multiple agents working simultaneously while tracking progress on GitHub."

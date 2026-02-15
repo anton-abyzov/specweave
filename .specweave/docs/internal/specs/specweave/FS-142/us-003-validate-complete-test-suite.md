@@ -9,7 +9,7 @@ project: specweave
 external:
   github:
     issue: 920
-    url: https://github.com/anton-abyzov/specweave/issues/920
+    url: "https://github.com/anton-abyzov/specweave/issues/920"
 ---
 
 # US-003: Validate Complete Test Suite
