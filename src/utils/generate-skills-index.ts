@@ -283,9 +283,9 @@ function generateIndexMarkdown(skills: SkillMetadata[]): string {
 \`\`\`
 User asks: "Plan a new feature for user authentication"
 
-Step 1: Scan this index → Find "increment-planner" skill
+Step 1: Scan this index → Find "increment" skill
 Step 2: Check keywords → Matches "feature planning", "create increment"
-Step 3: Load skill → cat .claude/skills/increment-planner/SKILL.md
+Step 3: Load skill → cat .claude/skills/increment/SKILL.md
 Step 4: Execute → Follow the increment planning workflow
 \`\`\`
 
@@ -360,7 +360,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 | Your Task | Relevant Skill | Keywords |
 |-----------|---------------|----------|
-| "Plan a new feature" | \`increment-planner\` | "feature planning", "create increment" |
+| "Plan a new feature" | \`increment\` | "feature planning", "create increment" |
 | "Sync to JIRA" | \`jira-sync\` | "JIRA sync", "create JIRA issue" |
 | "Create diagram" | \`diagrams-architect\` | "architecture diagram", "C4 diagram" |
 | "Build React UI" | \`frontend\` | "React", "components", "UI" |

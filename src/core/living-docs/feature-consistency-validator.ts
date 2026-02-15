@@ -346,7 +346,7 @@ export class FeatureConsistencyValidator {
 
         case 'missing_feature_md':
           // Cannot auto-repair missing FEATURE.md
-          result.action = 'Cannot auto-repair - FEATURE.md must be created manually or via /sw:sync-specs';
+          result.action = 'Cannot auto-repair - FEATURE.md must be created manually or via /sw:sync-docs';
           result.success = false;
           break;
 

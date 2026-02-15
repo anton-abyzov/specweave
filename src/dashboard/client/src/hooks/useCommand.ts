@@ -22,31 +22,29 @@ export function useCommand() {
   useSSE({
     onEvent: {
       'command-output': (data: unknown) => {
-        const evt = data as { commandId?: string; line?: string; lines?: string[] };
-        if (activeCommandRef.current && evt.commandId === activeCommandRef.current) {
+        const evt = data as { executionId?: string; line?: string };
+        if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
           if (evt.line) {
             setOutput(prev => [...prev, evt.line as string]);
-          }
-          if (evt.lines) {
-            setOutput(prev => [...prev, ...(evt.lines as string[])]);
           }
         }
       },
       'command-complete': (data: unknown) => {
-        const evt = data as { commandId?: string; success?: boolean; error?: string };
-        if (activeCommandRef.current && evt.commandId === activeCommandRef.current) {
+        const evt = data as { executionId?: string; exitCode?: number | null };
+        if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = null;
           }
           setRunning(false);
-          if (evt.success) {
+          if (evt.exitCode === 0) {
             setStatus('success');
             setOutput(prev => [...prev, 'Command completed successfully.']);
           } else {
             setStatus('error');
-            setError(evt.error || 'Command failed');
-            setOutput(prev => [...prev, `Error: ${evt.error || 'Command failed'}`]);
+            const msg = `Command failed (exit code ${evt.exitCode ?? 'unknown'})`;
+            setError(msg);
+            setOutput(prev => [...prev, msg]);
           }
           activeCommandRef.current = null;
         }

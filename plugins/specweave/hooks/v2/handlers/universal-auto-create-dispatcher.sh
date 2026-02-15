@@ -90,9 +90,27 @@ rm -f "$DEBOUNCE_FILE" 2>/dev/null || true
 
 command -v jq >/dev/null 2>&1 || exit 0
 
-GH_ENABLED=$(jq -r '.sync.github.enabled // false' "$CONFIG_PATH" 2>/dev/null)
-JIRA_ENABLED=$(jq -r '.sync.jira.enabled // false' "$CONFIG_PATH" 2>/dev/null)
-ADO_ENABLED=$(jq -r '.sync.ado.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+# Use shared provider detection (supports PROFILES, LEGACY DIRECT, LEGACY PROVIDER formats)
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHARED_LIB="$HANDLER_DIR/../lib/check-provider-enabled.sh"
+if [[ -f "$SHARED_LIB" ]]; then
+  source "$SHARED_LIB"
+fi
+
+GH_ENABLED="false"
+JIRA_ENABLED="false"
+ADO_ENABLED="false"
+
+if type check_provider_enabled &>/dev/null; then
+  check_provider_enabled "$CONFIG_PATH" "github" && GH_ENABLED="true"
+  check_provider_enabled "$CONFIG_PATH" "jira" && JIRA_ENABLED="true"
+  check_provider_enabled "$CONFIG_PATH" "ado" && ADO_ENABLED="true"
+else
+  # Fallback to legacy jq check if shared lib not available
+  GH_ENABLED=$(jq -r '.sync.github.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+  JIRA_ENABLED=$(jq -r '.sync.jira.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+  ADO_ENABLED=$(jq -r '.sync.ado.enabled // false' "$CONFIG_PATH" 2>/dev/null)
+fi
 
 if [[ "$GH_ENABLED" != "true" && "$JIRA_ENABLED" != "true" && "$ADO_ENABLED" != "true" ]]; then
   log "No providers enabled. Skipping."

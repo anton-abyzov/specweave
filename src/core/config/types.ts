@@ -746,6 +746,24 @@ export interface AdapterConfig {
   [key: string]: any;
 }
 
+/**
+ * Context budget level for hook output size
+ */
+export type ContextBudgetLevel = 'full' | 'compact' | 'minimal' | 'off';
+
+/**
+ * Context budget configuration (v1.0.262+)
+ *
+ * Controls how much context the UserPromptSubmit hook injects per turn.
+ * Reduces "Prompt is too long" errors, especially with image attachments.
+ */
+export interface ContextBudgetConfig {
+  /** Base context budget level. Default: 'full' (2500 chars) */
+  level?: ContextBudgetLevel;
+  /** Auto-reduce budget when PreCompact fires (context pressure). Default: true */
+  autoAdapt?: boolean;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // End consolidated interfaces
 // ═══════════════════════════════════════════════════════════════════
@@ -875,6 +893,9 @@ export interface SpecWeaveConfig {
 
   /** CI/CD configuration (v1.0.231+) */
   cicd?: CiCdConfig;
+
+  /** Context budget configuration for hook output size (v1.0.262+) */
+  contextBudget?: ContextBudgetConfig;
 
   /** Allow additional properties for forward compatibility */
   [key: string]: any;
@@ -1039,6 +1060,10 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
       maxRetries: 1,
       allowedBranches: ['develop', 'main'],
     },
+  },
+  contextBudget: {
+    level: 'full',
+    autoAdapt: true,
   },
 };
 

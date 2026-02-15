@@ -1,0 +1,13 @@
+{
+  "id": "0216-fix-github-sync-gap",
+  "status": "planned",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2026-02-15T06:33:53.536Z",
+  "lastActivity": "2026-02-15T06:33:53.536Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

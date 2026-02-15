@@ -134,7 +134,7 @@ export class AgentsMdGenerator {
   private getSkillActivation(skillName: string): string {
     const activations: Record<string, string> = {
       'specweave-detector': 'User asks about SpecWeave commands or workflows',
-      'increment-planner': 'Creating new feature increments (/inc command)',
+      'increment': 'Creating new feature increments (/sw:increment command)',
       'context-loader': 'Working on increments, need to load relevant context',
       'skill-router': 'Ambiguous requests that need routing to specific skills',
       'spec-driven-debugging': 'Bug investigation, test failures, unexpected behavior',

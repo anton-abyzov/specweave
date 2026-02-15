@@ -152,7 +152,7 @@ SYNC_COUNT=0
 SYNC_FAILED=0
 
 # Determine best event type for an increment from queued events
-# Priority: done/completed > created > reopened > sync (catch-all)
+# Priority: done > created > user-story.completed > reopened > user-story.reopened > sync (catch-all)
 get_best_event_type() {
     local inc_id="$1"
     if [ -f "$EVENT_TYPES_FILE" ]; then
@@ -160,8 +160,12 @@ get_best_event_type() {
             echo "increment.done"
         elif grep -q "^${inc_id}|increment\.created$" "$EVENT_TYPES_FILE" 2>/dev/null; then
             echo "increment.created"
+        elif grep -q "^${inc_id}|user-story\.completed$" "$EVENT_TYPES_FILE" 2>/dev/null; then
+            echo "user-story.completed"
         elif grep -q "^${inc_id}|increment\.reopened$" "$EVENT_TYPES_FILE" 2>/dev/null; then
             echo "increment.reopened"
+        elif grep -q "^${inc_id}|user-story\.reopened$" "$EVENT_TYPES_FILE" 2>/dev/null; then
+            echo "user-story.reopened"
         else
             echo "increment.sync"
         fi
@@ -169,6 +173,9 @@ get_best_event_type() {
         echo "increment.sync"
     fi
 }
+
+# Resolve github-sync-handler path (for user-story event routing)
+GITHUB_SYNC_HANDLER="$HANDLER_DIR/github-sync-handler.sh"
 
 for INC_ID in $INCREMENTS_TO_SYNC; do
     [ -z "$INC_ID" ] && continue
@@ -183,6 +190,21 @@ for INC_ID in $INCREMENTS_TO_SYNC; do
     else
         SYNC_FAILED=$((SYNC_FAILED + 1))
         log "Sync failed: $INC_ID"
+    fi
+
+    # Route user-story events to github-sync-handler (v1.0.262+)
+    # github-sync-handler understands user-story.completed/reopened with INC_ID:US_ID data
+    if [ -f "$GITHUB_SYNC_HANDLER" ] && [ -f "$EVENT_TYPES_FILE" ]; then
+        while IFS='|' read -r _inc_id us_event_type; do
+            [ -z "$us_event_type" ] && continue
+            # Extract US data (INC_ID:US_ID) from pending.jsonl for this event
+            US_DATA=$(grep -o "\"type\":\"${us_event_type}\"[^}]*\"data\":\"[^\"]*\"" "$PENDING_FILE" 2>/dev/null \
+                | grep -o '"data":"[^"]*"' | cut -d'"' -f4 | head -1)
+            if [ -n "$US_DATA" ]; then
+                log "Routing user-story event to github-sync-handler: $us_event_type $US_DATA"
+                run_with_timeout 30 bash "$GITHUB_SYNC_HANDLER" "$us_event_type" "$US_DATA"
+            fi
+        done < <(grep "^${INC_ID}|user-story\." "$EVENT_TYPES_FILE" 2>/dev/null | sort -u)
     fi
 done
 

@@ -116,7 +116,7 @@ These smoke tests verify that SpecWeave framework:
 - `specweave-detector` - Auto-detection and routing
 - `skill-router` - Request routing
 - `context-loader` - Context management
-- `increment-planner` - Feature planning
+- `increment` - Feature planning
 - `hetzner-provisioner` - Deployment (Hetzner)
 - And more...
 
@@ -170,7 +170,7 @@ These smoke tests verify that SpecWeave framework:
 
 ✅ **Skills installed correctly**:
 - `specweave-detector` - Auto-detection
-- `increment-planner` - Feature planning
+- `increment` - Feature planning
 - `skill-router` - Request routing
 - `context-loader` - Context management
 - `hetzner-provisioner` - Deployment (for Hetzner scenarios)

@@ -51,7 +51,7 @@ A **lazy loading architecture** that:
 │  │  (~500 tokens)   │     │  ~/.specweave/skills-cache/           │ │
 │  │                  │     │                                        │ │
 │  │  - Keyword       │────▶│  ├── specweave/                       │ │
-│  │    detection     │     │  │   ├── increment-planner/           │ │
+│  │    detection     │     │  │   ├── increment/                   │ │
 │  │  - Install       │     │  │   ├── architect/                   │ │
 │  │    trigger       │     │  │   └── ... (50+ skills)             │ │
 │  │  - State track   │     │  ├── specweave-github/                │ │
@@ -121,22 +121,10 @@ After v1.1, `specweave init` will:
 
 ### For Existing Users
 
-Migration command:
+Lazy loading is now enabled by default. To force a full refresh:
 
 ```bash
-specweave migrate-lazy
-```
-
-This will:
-1. Backup current plugins
-2. Cache current plugins to `~/.specweave/skills-cache/`
-3. Replace active plugins with router skill
-4. Preserve user memories
-
-Rollback if needed:
-
-```bash
-specweave migrate-lazy --rollback
+specweave refresh-marketplace --force
 ```
 
 ### Manual Control

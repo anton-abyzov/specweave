@@ -54,7 +54,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Commands**: `/specweave:check-tests`, `/specweave:qa`
 - **Output**: Test plans, quality assessment reports
 
-**5. TDD Orchestrator Agent** (`tdd-orchestrator`)
+**5. TDD Cycle Agent** (`tdd-cycle`)
 - **Role**: TDD (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow

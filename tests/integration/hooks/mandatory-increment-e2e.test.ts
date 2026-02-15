@@ -210,7 +210,7 @@ exit 1
       // SKILL FIRST message should be present (compact format v1.0.254+)
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('SKILL FIRST');
-      expect(additionalContext).toContain('sw:increment-planner');
+      expect(additionalContext).toContain('sw:increment');
       // Compact format includes reasoning from detect-intent in Detection line
       expect(additionalContext).toContain('Multi-file full-stack feature');
     });
@@ -442,7 +442,7 @@ exit 1
       // Compact format (v1.0.254+): "Small change — consider tracking" with skill reference
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('Small change');
-      expect(additionalContext).toContain('sw:increment-planner');
+      expect(additionalContext).toContain('sw:increment');
     });
 
     it('should NOT include SKILL FIRST for small_fix (non-mandatory)', async () => {
@@ -496,7 +496,7 @@ exit 1
       // So we get SKILL FIRST (block) instead of suggestion
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('SKILL FIRST');
-      expect(additionalContext).toContain('sw:increment-planner');
+      expect(additionalContext).toContain('sw:increment');
     });
 
     it('should suggest increment for refactoring classified as new', async () => {
@@ -550,9 +550,9 @@ exit 1
       expect(additionalContext).toBeTruthy();
 
       // The rendered Skill call must contain proper syntax:
-      // v1.0.260+: Skill({ skill: "sw:increment-planner" }) — no args (prompt removed)
+      // v1.0.260+: Skill({ skill: "sw:increment" }) — no args (prompt removed)
       // After JSON unescaping, quotes should be proper double quotes
-      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*"sw:increment-planner"/);
+      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*"sw:increment"/);
 
       // Must NOT contain broken escape sequences that would confuse Claude
       expect(additionalContext).not.toContain('\\\\\"');  // double-escaped quotes
@@ -583,7 +583,7 @@ exit 1
       expect(additionalContext).toBeTruthy();
 
       // Content should contain skill reference (may be escaped differently in block vs approve)
-      expect(additionalContext).toContain('sw:increment-planner');
+      expect(additionalContext).toContain('sw:increment');
       // In block format, the MSG has intentional escape sequences for Skill syntax
       // so we only check for broken double-escaping, not normal escaping
       expect(additionalContext).not.toContain('\\\\\"');
@@ -611,7 +611,7 @@ exit 1
       expect(additionalContext).toBeTruthy();
 
       // Mandatory uses triple-escaped backticks but should still render clean
-      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*sw:increment-planner/);
+      expect(additionalContext).toMatch(/Skill\(\{.*skill:.*sw:increment/);
       expect(additionalContext).not.toContain('\\\\\"');
     });
 
@@ -914,7 +914,7 @@ exit 1
       expect(result.exitCode).toBe(0);
       const context = extractAdditionalContext(result.parsed);
       expect(context).not.toBeNull();
-      expect(context).toContain('sw:increment-planner');
+      expect(context).toContain('sw:increment');
     });
 
     it('should suggest increment for "write auth middleware" when LLM fails', async () => {
@@ -924,7 +924,7 @@ exit 1
       expect(result.exitCode).toBe(0);
       const context = extractAdditionalContext(result.parsed);
       expect(context).not.toBeNull();
-      expect(context).toContain('sw:increment-planner');
+      expect(context).toContain('sw:increment');
     });
 
     it('should suggest increment for "refactor the database layer" when LLM fails', async () => {
@@ -934,7 +934,7 @@ exit 1
       expect(result.exitCode).toBe(0);
       const context = extractAdditionalContext(result.parsed);
       expect(context).not.toBeNull();
-      expect(context).toContain('sw:increment-planner');
+      expect(context).toContain('sw:increment');
     });
 
     it('should show SKILL FIRST when mandatory=true in config', async () => {
@@ -957,7 +957,7 @@ exit 1
       const context = extractAdditionalContext(result.parsed);
       // Should be plain approve with no increment suggestion
       if (context) {
-        expect(context).not.toContain('sw:increment-planner');
+        expect(context).not.toContain('sw:increment');
       }
     });
 
@@ -968,7 +968,7 @@ exit 1
       expect(result.exitCode).toBe(0);
       const context = extractAdditionalContext(result.parsed);
       if (context) {
-        expect(context).not.toContain('sw:increment-planner');
+        expect(context).not.toContain('sw:increment');
       }
     });
 
@@ -979,7 +979,7 @@ exit 1
       expect(result.exitCode).toBe(0);
       const context = extractAdditionalContext(result.parsed);
       if (context) {
-        expect(context).not.toContain('sw:increment-planner');
+        expect(context).not.toContain('sw:increment');
       }
     });
   });

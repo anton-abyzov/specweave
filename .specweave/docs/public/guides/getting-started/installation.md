@@ -115,7 +115,7 @@ your-project/
 │   │   ├── security/         # Security Engineer
 │   │   ├── performance/      # Performance Engineer
 │   │   ├── docs-writer/      # Technical Documentation
-│   │   ├── tdd-orchestrator/ # TDD Master
+│   │   ├── tdd-cycle/        # TDD Workflow
 │   │   ├── test-aware-planner/ # Test Planning
 │   │   ├── translator/       # Multilingual Support
 │   │   └── code-reviewer.md  # Code Review (standalone file)

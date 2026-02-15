@@ -70,9 +70,7 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 ### ❌ Don't use when:
 
-1. **Only want to sync ACs**: Use `/sw:sync-acs` instead (faster, more targeted)
-2. **Only want to sync docs**: Use `/sw:sync-specs` instead
-3. **Only want to sync GitHub (issue already exists)**: Use `/sw-github:sync` instead
+1. **Only want to sync GitHub (issue already exists)**: Use `/sw-github:sync` instead
 4. **Increment not started**: No tasks to sync yet
 5. **Don't want auto-create**: Use `--no-create` flag or manual commands
 
@@ -236,15 +234,12 @@ Run without --dry-run to execute sync.
 
 | Command | Scope | Auto-Create? | When to Use |
 |---------|-------|--------------|-------------|
-| `/sw:sync-acs` | Tasks → ACs only | ❌ | Quick AC update |
-| `/sw:sync-specs` | Spec → Docs only | ❌ | After spec changes |
 | `/sw-github:create` | Create GitHub issue | ✅ | Manual issue creation |
 | `/sw-github:sync` | Docs → GitHub only | ❌ | GitHub-only sync (issue must exist) |
 | `/sw:sync-progress` | **Tasks → Docs → Create → Sync** | ✅ | **Complete sync** ✅ (RECOMMENDED!) |
 
 **Rule of thumb**:
 - Need **complete sync** (just works) → Use `/sw:sync-progress` ✅
-- Need **targeted sync** → Use specific command (`sync-acs`, `sync-specs`)
 - Need **sync only** (no auto-create) → Use `/sw:sync-progress --no-create`
 
 ---
@@ -329,10 +324,7 @@ The command checks `.specweave/config.json` for:
 
 **Fix**:
 ```bash
-# Embed ACs from living docs into spec.md
-/sw:embed-acs 0053
-
-# Then retry sync
+# Manually add ACs to spec.md, then retry sync
 /sw:sync-progress 0053
 ```
 
@@ -411,10 +403,9 @@ The command checks `.specweave/config.json` for:
 ```
 Problem: Manual multi-step sync is error-prone
   1. Update spec.md ACs manually
-  2. Run /sw:sync-specs
-  3. Run /sw-github:sync
-  4. Run /sw:update-status
-  5. Check each system for correctness
+  2. Sync living docs
+  3. Sync GitHub/JIRA/ADO
+  4. Check each system for correctness
 
 Solution: Single command orchestrates all steps
   /sw:sync-progress → Does all 4 steps automatically
@@ -431,21 +422,12 @@ Solution: Single command orchestrates all steps
 
 ## Background
 
-Before this command, users had to manually:
-1. Run `/sw:sync-acs`
-2. Run `/sw:sync-specs`
-3. Run `/sw-github:sync`
-4. Run `/sw:update-status`
-
-Now: **One command does all 4 steps** ✅
+Before this command, users had to manually sync ACs, docs, and external tools separately. Now: **One command does everything** ✅
 
 ---
 
 ## Related Commands
 
-- `/sw:sync-acs` - Sync tasks → ACs only
-- `/sw:sync-specs` - Sync spec → living docs only
-- `/sw:sync-tasks` - Sync external → tasks (bidirectional)
 - `/sw-github:sync` - Sync docs → GitHub only
 - `/sw-jira:sync` - Sync docs → JIRA only
 - `/sw-ado:sync` - Sync docs → ADO only
@@ -457,7 +439,7 @@ Now: **One command does all 4 steps** ✅
 
 Ask me:
 - "How do I sync progress to GitHub?"
-- "What's the difference between sync-progress and sync-acs?"
+- "What does sync-progress do exactly?"
 - "How do I preview sync without executing?"
 - "Why did my GitHub sync fail?"
 - "When should I use --dry-run?"

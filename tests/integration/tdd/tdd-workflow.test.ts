@@ -54,11 +54,11 @@ describe('TDD Workflow Integration', () => {
       expect(shouldIncludeTDDContract(config)).toBe(false);
     });
 
-    // Templates moved/removed — increment-planner/templates directory no longer exists
+    // Templates moved/removed — increment/templates directory no longer exists
     it.skip('should load TDD contract template with correct content (templates dir removed)', () => {
       const templatesDir = path.join(
         process.cwd(),
-        'plugins/specweave/skills/increment-planner/templates'
+        'plugins/specweave/skills/increment/templates'
       );
 
       const contract = loadTDDContractTemplate(templatesDir);
@@ -70,11 +70,11 @@ describe('TDD Workflow Integration', () => {
       expect(contract).toContain('REFACTOR');
     });
 
-    // Templates moved/removed — increment-planner/templates directory no longer exists
+    // Templates moved/removed — increment/templates directory no longer exists
     it.skip('should have TDD task template with proper structure (templates dir removed)', () => {
       const templatePath = path.join(
         process.cwd(),
-        'plugins/specweave/skills/increment-planner/templates/tasks-tdd-single-project.md'
+        'plugins/specweave/skills/increment/templates/tasks-tdd-single-project.md'
       );
 
       expect(fs.existsSync(templatePath)).toBe(true);

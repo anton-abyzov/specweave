@@ -6,7 +6,7 @@
  * content directly and bypassing the skill system.
  *
  * CRITICAL: This is the ONLY sanctioned way to create increment files
- * during the increment-planner skill execution.
+ * during the increment skill execution.
  *
  * @module template-creator
  * @since 1.0.162
@@ -353,7 +353,7 @@ ${description}
   TEMPLATE FILE - MUST BE COMPLETED VIA PM/ARCHITECT SKILLS
 ====================================================================
 
-This is a TEMPLATE created by increment-planner.
+This is a TEMPLATE created by increment skill.
 DO NOT manually fill in the placeholders below.
 
 To complete this specification, run:
@@ -426,7 +426,7 @@ function generatePlanTemplate(options: { title: string }): string {
   TEMPLATE FILE - MUST BE COMPLETED VIA ARCHITECT SKILL
 ====================================================================
 
-This is a TEMPLATE created by increment-planner.
+This is a TEMPLATE created by increment skill.
 DO NOT manually fill in the placeholders below.
 
 To complete this plan, run:
@@ -529,7 +529,7 @@ function generateStandardTasksTemplate(title: string): string {
   TEMPLATE FILE - MUST BE COMPLETED VIA TASK BUILDER SKILL
 ====================================================================
 
-This is a TEMPLATE created by increment-planner.
+This is a TEMPLATE created by increment skill.
 DO NOT manually fill in the tasks below.
 
 To complete this task list, run:

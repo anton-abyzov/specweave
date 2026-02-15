@@ -17,7 +17,7 @@
  * - Config controls (pluginAutoLoad.enabled, incrementAssist.enabled)
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -224,7 +224,7 @@ describe('User Prompt Submit Hook - LLM-Based Plugin Auto-Loading (v1.0.147+)', 
 
       // Should have documentation of skip scenarios
       expect(hookContent).toContain('WHEN NOT TO CREATE INCREMENT');
-      expect(hookContent).toContain('Questions');
+      expect(hookContent).toContain('questions');
       expect(hookContent).toContain('Exploration');
       expect(hookContent).toContain('Commands');
       // v1.0.241: small_fix now suggests increments, documented in STILL SUGGEST section
@@ -290,5 +290,150 @@ describe('LLM Detection Response Handling', () => {
 
     // Should have timeout protection
     expect(hookContent).toContain('timeout');
+  });
+});
+
+// ============================================================
+// Keyword Fallback - Investigation/Debugging Routing (0211)
+// ============================================================
+describe('Keyword Fallback - Investigation/Work-Intent Patterns (0211)', () => {
+  const hookPath = path.join(
+    process.cwd(),
+    'plugins/specweave/hooks/user-prompt-submit.sh'
+  );
+
+  let hookContent: string;
+
+  beforeEach(() => {
+    hookContent = fs.readFileSync(hookPath, 'utf-8');
+  });
+
+  // Helper: extract the keyword fallback regex from the hook
+  function extractKeywordRegex(): string {
+    const match = hookContent.match(
+      /KEYWORD FALLBACK[\s\S]*?grep -qiE "\(([^"]+)\)"/
+    );
+    return match ? match[1] : '';
+  }
+
+  // Helper: extract the question exclusion regex
+  function extractQuestionExclusionRegex(): string {
+    const match = hookContent.match(
+      /Exclude.*questions[\s\S]*?grep -qiE "\^?\[?\[?:space:\]?\]?\*?\(([^"]+)\)"/
+    );
+    return match ? match[1] : '';
+  }
+
+  describe('Investigation keywords in fallback regex', () => {
+    it.each([
+      'investigate', 'debug', 'troubleshoot', 'diagnose',
+      'trace', 'profile', 'examine', 'inspect',
+      'reproduce', 'replicate',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Analysis/assessment keywords in fallback regex', () => {
+    it.each([
+      'analyze', 'assess', 'audit', 'evaluate',
+      'benchmark', 'measure', 'validate',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Problem-solving keywords in fallback regex', () => {
+    it.each([
+      'solve', 'resolve', 'address', 'tackle', 'determine',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Optimization keywords in fallback regex', () => {
+    it.each([
+      'optimize', 'improve', 'reduce', 'minimize',
+      'eliminate', 'simplify', 'streamline',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Security keywords in fallback regex', () => {
+    it.each([
+      'secure', 'harden', 'patch', 'sanitize', 'encrypt',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('DevOps/data keywords in fallback regex', () => {
+    it.each([
+      'containerize', 'dockerize', 'provision',
+      'seed', 'populate', 'transform', 'batch',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Structural keywords in fallback regex', () => {
+    it.each([
+      'remove', 'delete', 'replace', 'convert',
+      'extract', 'merge', 'split', 'decouple', 'modularize',
+    ])('should include "%s" in keyword regex', (keyword) => {
+      const regex = extractKeywordRegex();
+      expect(regex).toContain(keyword);
+    });
+  });
+
+  describe('Question exclusion refinement', () => {
+    it('should NOT exclude "why" prompts from increment detection', () => {
+      // "why" often implies work intent: "why does X fail" = investigation
+      const exclusionRegex = extractQuestionExclusionRegex();
+      // Should not have bare "why" as an exclusion word
+      expect(exclusionRegex).not.toMatch(/\bwhy\b(?!\s+does)/i);
+    });
+
+    it('should NOT exclude "how" prompts from increment detection', () => {
+      // "how do I fix X" = work intent
+      const exclusionRegex = extractQuestionExclusionRegex();
+      // Should not have bare "how" as an exclusion word
+      expect(exclusionRegex).not.toMatch(/\bhow\b(?!\s+do)/i);
+    });
+
+    it('should still exclude pure question patterns', () => {
+      const exclusionRegex = extractQuestionExclusionRegex();
+      expect(exclusionRegex).toMatch(/explain/i);
+    });
+  });
+
+  describe('Error-state secondary detection', () => {
+    it('should have error-state symptom detection', () => {
+      // Should detect symptom-based prompts like "is broken", "keeps failing"
+      expect(hookContent).toMatch(/is broken|keeps? failing|crash/);
+    });
+
+    it('should have symptom-fallback logging', () => {
+      expect(hookContent).toContain('symptom-fallback');
+    });
+  });
+
+  describe('Documentation update', () => {
+    it('should document that investigation prompts are NOT questions', () => {
+      expect(hookContent).toMatch(/investigate.*NOT.*question|NOT.*question.*investigat/is);
+    });
+
+    it('should list investigation work patterns in documentation', () => {
+      expect(hookContent).toContain('debug');
+      expect(hookContent).toContain('troubleshoot');
+      expect(hookContent).toContain('optimize');
+    });
   });
 });

@@ -9,7 +9,7 @@
 # user stories directly to spec.md without using PM expertise.
 #
 # WORKFLOW ENFORCED:
-# 1. increment-planner creates TEMPLATE via createIncrementTemplates() API
+# 1. increment skill creates TEMPLATE via createIncrementTemplates() API
 # 2. Templates have markers like [Story Title], [user type], etc.
 # 3. User invokes PM skill to complete the template
 # 4. Direct full-content writes are BLOCKED

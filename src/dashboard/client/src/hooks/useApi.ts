@@ -5,6 +5,7 @@ interface UseApiResult<T> {
   loading: boolean;
   error: string | null;
   refetch: () => void;
+  fetchedAt: Date | null;
 }
 
 export function useApi<T>(url: string): UseApiResult<T> {
@@ -12,6 +13,7 @@ export function useApi<T>(url: string): UseApiResult<T> {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState(0);
+  const [fetchedAt, setFetchedAt] = useState<Date | null>(null);
 
   const refetch = useCallback(() => setTrigger((t) => t + 1), []);
 
@@ -28,6 +30,7 @@ export function useApi<T>(url: string): UseApiResult<T> {
         if (!cancelled) {
           setData(json.data ?? json);
           setError(null);
+          setFetchedAt(new Date());
         }
       })
       .catch((err) => {
@@ -40,5 +43,5 @@ export function useApi<T>(url: string): UseApiResult<T> {
     return () => { cancelled = true; };
   }, [url, trigger]);
 
-  return { data, loading, error, refetch };
+  return { data, loading, error, refetch, fetchedAt };
 }

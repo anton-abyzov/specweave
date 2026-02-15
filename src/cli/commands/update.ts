@@ -69,7 +69,7 @@ interface UpdateResult {
 export async function updateCommand(options: UpdateOptions = {}): Promise<void> {
   const projectPath = process.cwd();
   const version = getPackageVersion();
-  const isSpecWeaveProject = fs.existsSync(path.join(projectPath, '.specweave'));
+  const isSpecWeaveProject = fs.existsSync(path.join(projectPath, '.specweave', 'config.json'));
 
   console.log(chalk.blue.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.blue.bold('  SpecWeave Update'));
@@ -290,6 +290,26 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 2.11: Clean up stale .specweave/ folders in parent directories (v1.0.262+)
+  // These are created by bugs in hooks that use process.cwd() without config.json validation
+  if (isSpecWeaveProject) {
+    const staleFolders = findStaleSpecweaveFolders(projectPath);
+    if (staleFolders.length > 0) {
+      for (const staleDir of staleFolders) {
+        if (options.check) {
+          console.log(chalk.yellow(`  ⚠️  Stale .specweave/ found at ${staleDir} (will be removed)`));
+        } else {
+          try {
+            fs.rmSync(staleDir, { recursive: true, force: true });
+            console.log(chalk.green(`  ✓ Removed stale .specweave/ at ${staleDir}`));
+          } catch {
+            console.log(chalk.yellow(`  ⚠️  Could not remove stale .specweave/ at ${staleDir}`));
+          }
+        }
+      }
+    }
+  }
+
   // Step 3: Validate project health (quick checks)
   if (isSpecWeaveProject && !options.check) {
     spinner.start('Validating project health...');
@@ -443,6 +463,59 @@ async function cleanupStaleAutoState(
   }
 
   return result;
+}
+
+/**
+ * Find stale .specweave/ folders in parent directories (no config.json = stale)
+ *
+ * These are typically created by bugs in hooks that use process.cwd() or
+ * ${SW_PROJECT_ROOT:-.} before project root detection runs. They contain
+ * only logs/ and state/ subdirectories but no config.json.
+ *
+ * Only scans UP to 3 levels above the project, plus $HOME/.specweave.
+ */
+function findStaleSpecweaveFolders(projectPath: string): string[] {
+  const staleFolders: string[] = [];
+  const projectResolved = path.resolve(projectPath);
+
+  // Scan parent directories (up to 3 levels)
+  let current = path.dirname(projectResolved);
+  const root = path.parse(current).root;
+  let depth = 0;
+
+  while (current !== root && depth < 3) {
+    const candidate = path.join(current, '.specweave');
+    if (
+      fs.existsSync(candidate) &&
+      fs.statSync(candidate).isDirectory() &&
+      !fs.existsSync(path.join(candidate, 'config.json'))
+    ) {
+      staleFolders.push(candidate);
+    }
+    current = path.dirname(current);
+    depth++;
+  }
+
+  // Also check $HOME/.specweave (created by hooks using $HOME paths)
+  const homeSpecweave = path.join(process.env.HOME || '', '.specweave');
+  if (
+    homeSpecweave &&
+    fs.existsSync(homeSpecweave) &&
+    fs.statSync(homeSpecweave).isDirectory() &&
+    !fs.existsSync(path.join(homeSpecweave, 'config.json'))
+  ) {
+    // Don't remove ~/.specweave if it's the user-level config dir
+    // Only remove if it just has logs/state (no meaningful content)
+    const entries = fs.readdirSync(homeSpecweave);
+    const onlyRuntimeDirs = entries.every(e =>
+      ['logs', 'state', 'cache'].includes(e)
+    );
+    if (onlyRuntimeDirs && entries.length > 0) {
+      staleFolders.push(homeSpecweave);
+    }
+  }
+
+  return staleFolders;
 }
 
 /**

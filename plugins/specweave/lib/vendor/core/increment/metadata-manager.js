@@ -220,7 +220,7 @@ export class MetadataManager {
                 this.logger.log(`   Living docs sync will trigger when spec.md is ready`);
                 // Don't trigger sync yet - will happen via:
                 // 1. AutoTransitionManager.handleTasksCreated() → updateStatus() → StatusChangeSyncTrigger
-                // 2. Or manual /sw:sync-specs command
+                // 2. Or manual /sw:sync-docs command
             }
             else {
                 this.logger.log(`📚 New active increment detected - triggering living docs sync...`);
@@ -241,7 +241,7 @@ export class MetadataManager {
                     }
                     catch (error) {
                         this.logger.error(`❌ Living docs sync failed for ${incrementId}:`, error);
-                        this.logger.log(`💡 Run /sw:sync-specs ${incrementId} to retry`);
+                        this.logger.log(`💡 Run /sw:sync-docs ${incrementId} to retry`);
                     }
                 })();
             }

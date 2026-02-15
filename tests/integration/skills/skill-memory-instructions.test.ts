@@ -28,8 +28,8 @@ describe('Skill memory loading architecture', () => {
   const DCI_SKILLS = [
     'architect', 'auto', 'cancel-auto', 'code-simplifier', 'do', 'docs',
     'docs-updater', 'done', 'framework', 'grill', 'increment',
-    'increment-planner', 'lsp', 'pm', 'progress', 'save', 'security',
-    'security-patterns', 'tdd-cycle', 'tdd-green', 'tdd-orchestrator',
+    'lsp', 'pm', 'progress', 'save', 'security',
+    'security-patterns', 'tdd-cycle', 'tdd-green',
     'tdd-red', 'validate',
   ];
 

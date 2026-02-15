@@ -248,7 +248,7 @@
 
 ### T-017: Fix analytics data pipeline
 **User Story**: US-003 | **Satisfies ACs**: AC-US3-01
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Analytics page shows all 0s because it reads non-existent `cache.json`. Fix to aggregate from `events.jsonl` directly. Replace `getAnalyticsSummary()` in data aggregator.
 
@@ -256,7 +256,7 @@
 
 ### T-018: Fix cost extraction pipeline
 **User Story**: US-004 | **Satisfies ACs**: AC-US4-01
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Costs page shows $0 because it reads non-existent `costs.json`. Fix to parse Claude Code session JSONL logs with streaming readline. Add incremental cost cache, model pricing table, and Max plan detection.
 
@@ -264,7 +264,7 @@
 
 ### T-019: Fix sync page UX
 **User Story**: US-006 | **Satisfies ACs**: AC-US6-04
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Sync page shows "failed" (red) when `lastImportCount === 0`. Should show "Not synced yet" (neutral gray). Add remediation links.
 
@@ -272,7 +272,7 @@
 
 ### T-020: Fix repos page single-repo fallback
 **User Story**: US-009 | **Satisfies ACs**: AC-US9-04
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Repos page is empty because `scanRepositories()` only checks `repositories/` dir. Add single-repo fallback: detect current project as git repo.
 
@@ -280,7 +280,7 @@
 
 ### T-021: Activity expandable rows
 **User Story**: US-007 | **Satisfies ACs**: AC-US7-01
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Activity rows are flat with truncated text. Add expandable detail rows showing full metadata as formatted JSON.
 
@@ -288,7 +288,7 @@
 
 ### T-022: Plugin command feedback
 **User Story**: US-009 | **Satisfies ACs**: AC-US9-03
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Plugin page buttons are silent — no error/result rendering. Add command output display, error banners, and spinner states.
 
@@ -296,7 +296,7 @@
 
 ### T-023: Config validation before save
 **User Story**: US-008 | **Satisfies ACs**: AC-US8-02
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Config page saves without validation. Add pre-save validation call to `POST /api/config/validate` with inline error display.
 
@@ -304,6 +304,6 @@
 
 ### T-024: Costs pagination
 **User Story**: US-004 | **Satisfies ACs**: AC-US4-02
-**Status**: [ ] Not Started
+**Status**: [x] completed
 
 **Description**: Add client-side pagination for sessions table (30 per page) and server-side `?limit=` param support.

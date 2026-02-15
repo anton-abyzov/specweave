@@ -116,12 +116,12 @@ cd .specweave/increments/0001-user-authentication
 **In Claude Code**: Auto-activating capabilities
 **In Generic**: YOU follow skill workflows manually
 
-### Example: increment-planner Skill
+### Example: increment Skill
 
 **Claude Code (automatic)**:
 ```
 User: "create increment for auth"
-→ increment-planner skill auto-activates
+→ increment skill auto-activates
 → Creates spec, plan, tasks in 30 seconds
 ```
 

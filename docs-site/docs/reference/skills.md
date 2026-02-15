@@ -36,7 +36,7 @@ These skills form the foundation of spec-driven development.
 
 | Skill | Description | When to Use |
 |-------|-------------|-------------|
-| [`sw:increment-planner`](#increment-planner) | Plan and create increments with PM/Architect collaboration | Starting any new feature |
+| [`sw:increment`](#increment) | Plan and create increments with PM/Architect collaboration | Starting any new feature |
 | [`sw:pm`](#pm) | Product Manager for specs, user stories, acceptance criteria | Writing requirements |
 | [`sw:architect`](#architect) | System architect for technical designs and ADRs | Architecture decisions |
 | [`sw:role-orchestrator`](#role-orchestrator) | Multi-agent coordination (PM, Architect, DevOps, QA) | Complex full-stack features |
@@ -44,12 +44,12 @@ These skills form the foundation of spec-driven development.
 | [`sw:spec-generator`](#spec-generator) | Generate spec.md, plan.md, tasks.md from ideas | Converting ideas to specs |
 | [`sw:test-aware-planner`](#test-aware-planner) | Tasks with embedded BDD test plans | Test-first planning |
 
-### increment-planner
+### increment
 
 **Purpose**: Plan and create SpecWeave increments with PM and Architect collaboration.
 
 ```bash
-/sw:increment-planner "User authentication with JWT"
+/sw:increment "User authentication with JWT"
 ```
 
 **What it does:**
@@ -163,7 +163,6 @@ Ensure code quality and test coverage.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `sw:tdd-orchestrator` | core | Master TDD red-green-refactor discipline |
 | `sw:tdd-red` | core | Write failing tests first |
 | `sw:tdd-green` | core | Minimal implementation to pass |
 | `sw:tdd-refactor` | core | Improve code quality |
@@ -187,19 +186,6 @@ Ensure code quality and test coverage.
 - Coverage targets (80%+ for critical paths)
 - Playwright, Jest, Vitest patterns
 - BDD scenarios (Given/When/Then)
-
-### tdd-orchestrator
-
-**Purpose**: Enforce strict TDD discipline.
-
-```bash
-/sw:tdd-orchestrator  # Start TDD workflow
-```
-
-**Workflow:**
-1. **RED**: Write failing test first
-2. **GREEN**: Minimal code to pass
-3. **REFACTOR**: Improve without changing behavior
 
 ### code-reviewer
 

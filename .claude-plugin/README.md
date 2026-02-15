@@ -149,8 +149,6 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - `close-previous` - Close incomplete increments
 
 **Skills**:
-- `increment-planner` - PM-led planning workflow
-- `increment-work-router` - Smart work continuation
 - `spec-generator` - Specification creation
 - `context-loader` - Context management
 - `brownfield-analyzer` - Existing project analysis

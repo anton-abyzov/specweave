@@ -129,7 +129,6 @@ export async function printNotificationSummary(
 
   if (result.output) {
     console.log(result.output);
-    console.log("Run '/sw:notifications' to view");
     return true;
   }
 

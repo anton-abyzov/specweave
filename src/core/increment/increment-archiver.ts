@@ -600,7 +600,7 @@ export class IncrementArchiver {
     } catch (error) {
       // Log error but don't fail archiving - living docs sync is best-effort
       this.logger.warn(`   ⚠️  Could not sync to living docs: ${error}`);
-      this.logger.info(`   ℹ️  You can manually sync later with: /sw:sync-specs ${increment}`);
+      this.logger.info(`   ℹ️  You can manually sync later with: /sw:sync-docs ${increment}`);
     }
   }
 

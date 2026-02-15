@@ -413,7 +413,7 @@ The reconcile command should:
 
 - `/sw:fix-duplicates` - Remove actual duplicates (same increment in multiple locations)
 - `/sw:status` - View all increments
-- `/sw:sync-specs` - Sync living docs after reconciliation
+- `/sw:sync-docs` - Sync living docs after reconciliation
 - `/sw-github:sync` - Update GitHub references after reconciliation
 
 ## Best Practices

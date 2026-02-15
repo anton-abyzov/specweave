@@ -28,6 +28,17 @@ export function ServicesPage() {
   const runningCount = (services || []).filter(s => s.status === 'running').length;
   const totalServices = (services || []).length;
 
+  // Detect port conflicts among running services
+  const portConflicts: Map<number, string[]> = new Map();
+  for (const svc of (services || [])) {
+    if (svc.port > 0 && svc.status === 'running') {
+      const existing = portConflicts.get(svc.port) || [];
+      existing.push(svc.name);
+      portConflicts.set(svc.port, existing);
+    }
+  }
+  const conflicts = Array.from(portConflicts.entries()).filter(([, names]) => names.length > 1);
+
   const handleStart = async (commandName: string) => {
     await execute(commandName);
     setTimeout(() => refetch(), 3000);
@@ -45,12 +56,31 @@ export function ServicesPage() {
       {/* Command Output */}
       <CommandOutput lines={output} status={cmdStatus} onDismiss={reset} />
 
+      {/* Port Conflict Warning */}
+      {conflicts.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+          <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <div className="text-sm font-medium text-amber-300">Port Conflict Detected</div>
+            <div className="text-xs text-amber-400/80 mt-1">
+              {conflicts.map(([port, names]) => (
+                <span key={port} className="block">
+                  Port {port} is used by: {names.join(', ')}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Services" value={totalServices} color="indigo" />
-        <KpiCard title="Running" value={runningCount} color="emerald" />
-        <KpiCard title="External Links" value={(links || []).length} color="cyan" />
-        <KpiCard title="Stopped" value={totalServices - runningCount} color="rose" />
+        <KpiCard title="Services" value={totalServices} color="indigo" tooltip={`${totalServices} managed services`} />
+        <KpiCard title="Running" value={runningCount} color="emerald" tooltip={`${runningCount} services currently active`} />
+        <KpiCard title="External Links" value={(links || []).length} color="cyan" tooltip="Configured external links (docs, repos, etc.)" />
+        <KpiCard title="Stopped" value={totalServices - runningCount} color="rose" tooltip={`${totalServices - runningCount} services not running`} />
       </div>
 
       {/* Service Status */}

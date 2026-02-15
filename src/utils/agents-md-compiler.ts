@@ -137,7 +137,7 @@ export function getSpecweaveInstallPath(): string {
       const skillsPath = path.join(p, 'skills');
       if (fs.existsSync(skillsPath)) {
         // Verify it's a valid SpecWeave installation
-        const testSkill = path.join(skillsPath, 'increment-planner', 'SKILL.md');
+        const testSkill = path.join(skillsPath, 'increment', 'SKILL.md');
         if (fs.existsSync(testSkill)) {
           return p;
         }

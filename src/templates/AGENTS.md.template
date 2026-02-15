@@ -304,7 +304,7 @@ git diff  # Review what actually changed
 | `/sw:done 0001` | Close increment (validates gates) |
 | `/sw:progress` | Show task completion status |
 | `/sw:validate 0001` | Quality check before closing |
-| `/sw:sync-tasks` | Sync tasks.md with reality |
+| `/sw:progress-sync` | Sync tasks.md with reality |
 | `/sw:sync-docs update` | Sync to living docs |
 
 ### Plugin Commands (when installed)
@@ -444,7 +444,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # Change: - [ ] AC-US1-01 → - [x] AC-US1-01
 
 # Step 3: Sync to external tools (if configured)
-/sw:sync-tasks
+/sw:progress-sync
 /sw-github:sync <increment-id>   # If GitHub enabled
 /sw-jira:sync <increment-id>     # If Jira enabled
 ```
@@ -482,7 +482,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # After any edit to spec.md or tasks.md:
 
 # Sync status line cache
-/sw:sync-tasks
+/sw:progress-sync
 
 # If external tools configured, sync progress
 /sw-github:sync <increment-id>
@@ -560,7 +560,7 @@ cat plugins/specweave/commands/increment.md
 ├─────────────────────────────────────────────────────────────┤
 │ 1. Update tasks.md: [ ] → [x]                               │
 │ 2. Update spec.md ACs if satisfied: [ ] → [x]               │
-│ 3. Run: /sw:sync-tasks                               │
+│ 3. Run: /sw:progress-sync                               │
 │ 4. Run: /sw-github:sync <id>  (if GitHub configured) │
 │ 5. If all ACs for US done: /sw:sync-docs update      │
 └─────────────────────────────────────────────────────────────┘
@@ -609,7 +609,7 @@ cat plugins/specweave/commands/increment.md
 
 | Command | What It Does | When to Run |
 |---------|--------------|-------------|
-| `/sw:sync-tasks` | Recalculates progress from tasks.md | After editing tasks.md |
+| `/sw:progress-sync` | Recalculates progress from tasks.md | After editing tasks.md |
 | `/sw:sync-docs update` | Updates living docs from increment | After US complete |
 | `/sw-github:sync <id>` | Syncs progress to GitHub issue | After each task |
 | `/sw-github:close-issue <id>` | Closes GitHub issue | On increment done |
@@ -635,7 +635,7 @@ TASK COMPLETED
      │
      ▼
 ┌─────────────────────────────┐
-│ 3. /sw:sync-tasks    │
+│ 3. /sw:progress-sync    │
 │    Updates progress cache   │
 └─────────────────────────────┘
      │
@@ -755,10 +755,10 @@ Skills don't auto-activate. You must manually load them:
 ls plugins/specweave*/skills/
 
 # Step 2: Read the skill file
-cat plugins/specweave/skills/increment-planner/SKILL.md
+cat plugins/specweave/skills/increment/SKILL.md
 
 # Step 3: Tell AI to follow the skill's workflow
-"Follow the increment-planner skill workflow to create my feature"
+"Follow the increment skill workflow to create my feature"
 
 # Step 4: AI reads skill content and follows instructions
 ```
@@ -782,7 +782,7 @@ AI: [Gets output: {"level":1,"projects":[{"id":"my-app"}]}]
 AI: [Stores: RESOLVED_PROJECT = "my-app"]
 
 # Then follow the skill workflow
-AI: [Reads plugins/specweave/skills/increment-planner/SKILL.md]
+AI: [Reads plugins/specweave/skills/increment/SKILL.md]
 AI: [Follows PM workflow: research → spec → plan → tasks]
 AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app per US!]
 ```
@@ -935,7 +935,7 @@ cat plugins/specweave/commands/increment.md
 
 **Solution** (run after EVERY task in non-Claude tools):
 ```bash
-/sw:sync-tasks                  # Update tasks.md
+/sw:progress-sync                  # Update tasks.md
 /sw:sync-docs update            # Sync living docs
 /sw-github:sync <increment-id>  # Sync to GitHub
 ```
@@ -959,7 +959,7 @@ mv *.md .specweave/increments/$CURRENT/reports/
 **Status**: [ ] pending  →  **Status**: [x] completed
 ```
 
-Or run: `/sw:sync-tasks`
+Or run: `/sw:progress-sync`
 
 ### Context Explosion / Crashes
 

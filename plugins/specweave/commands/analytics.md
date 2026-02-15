@@ -95,7 +95,7 @@ Success Rate: 98.5%
       28 │ /sw:validate
 
 ⚡ Top Skills:
-      45 │ increment-planner
+      45 │ increment
       34 │ spec-generator
       28 │ qa-engineer
 

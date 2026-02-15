@@ -233,7 +233,7 @@ src/                         ← SOURCE OF TRUTH (version controlled)
 **Example Workflow**:
 ```bash
 # CORRECT: Edit source
-vim src/skills/increment-planner/SKILL.md
+vim plugins/specweave/skills/increment/SKILL.md
 
 # Sync to .claude/
 npm run install:skills
@@ -242,7 +242,7 @@ npm run install:skills
 /sw:inc "test feature"
 
 # WRONG: Edit installed file
-vim .claude/skills/increment-planner/SKILL.md  # ❌ Gets overwritten!
+vim .claude/skills/increment/SKILL.md  # ❌ Gets overwritten!
 ```
 
 ### File Organization Rules
@@ -347,7 +347,7 @@ Until hooks are fully automated, **YOU MUST**:
 ### Core vs. Plugin
 
 **Core Framework** (always loaded):
-- 8 core skills (increment-planner, spec-generator, context-loader, etc.)
+- 8 core skills (increment, spec-generator, context-loader, etc.)
 - 3 core agents (PM, Architect, Tech Lead)
 - 7 core commands (/sw:inc, /sw:do, etc.)
 
@@ -514,7 +514,7 @@ I activate when you ask about:
 
 ## When to Use Other Skills/Agents
 
-- **increment-planner** - Planning NEW increments (/sw:inc)
+- **increment** - Planning NEW increments (/sw:increment)
 - **PM agent** - Leading increment creation (auto-invoked by /sw:inc)
 - **Architect agent** - Designing system architecture
 - **Tech Lead agent** - Code review, best practices

@@ -210,7 +210,6 @@ export const OFFICIAL_PLUGINS = [
   'laravel-boost',    // Laravel (PHP)
 
   // Development Tools
-  'code-review',      // Code review
   'commit-commands',  // Git commit workflows
   'hookify',          // Git hooks
 ] as const;
@@ -611,7 +610,6 @@ Framework-specific:
   laravel-boost: Laravel (PHP framework)
 
 Development Tools:
-  code-review: Code review, PR review
   commit-commands: Git commit workflows
   hookify: Git hooks, pre-commit hooks
 
@@ -642,10 +640,13 @@ WHEN TO USE EACH ACTION:
 │ reopen      │ "fix the X feature", work related to recent increment      │
 │ small_fix   │ ONLY: literal typo fix, version bump, single config value  │
 │             │ change, comment update — truly trivial, <5 min changes     │
-│ none        │ ONLY: questions, exploration, "how do I", general chat,    │
-│             │ greetings, or user explicitly opted out of tracking.        │
+│ none        │ ONLY: pure questions ("what is X?"), exploration ("show me"),│
+│             │ general chat, greetings, or explicit user opt-out.          │
 │             │ NEVER use "none" for: "fix this", "it's broken",           │
-│             │ "not working", "improve X", "change Y" — these are work!   │
+│             │ "not working", "improve X", "change Y", "investigate",     │
+│             │ "debug", "troubleshoot", "optimize", "secure", "audit",    │
+│             │ "why does X fail/break", "think hard on why",              │
+│             │ "solve", "resolve", "analyze" — these are work!            │
 └─────────────┴─────────────────────────────────────────────────────────────┘
 
 ⚠️ IMPORTANT: When in doubt between "new" and "small_fix", ALWAYS choose "new".
@@ -653,6 +654,12 @@ Bug fixes, refactoring, adding error handling, improving validation, updating
 tests, fixing logic errors — these are ALL "new", NOT "small_fix".
 "small_fix" is ONLY for changes where you literally change 1-2 lines with zero
 investigation needed (typo, version string, config value).
+
+⚠️ INVESTIGATION/DEBUGGING/ANALYSIS: Prompts containing "investigate", "debug",
+"troubleshoot", "diagnose", "trace", "profile", "root cause", "analyze", "audit",
+"optimize", "improve", "secure", "harden", "solve", "resolve" are ALWAYS "new"
+(NEVER "none"). Investigation across multiple components is implementation work
+that needs increment tracking. "why does X fail" = work, NOT a question.
 
 WHEN mandatory: true (Claude MUST create increment before implementing):
 - Multi-file feature work (React + API + Database)
@@ -689,6 +696,9 @@ EXAMPLES (one per action type — keep prompt size minimal)
 
 "How do I use React hooks?"
 {"plugins":[],"confidence":0.95,"reasoning":"Question only","increment":{"action":"none","confidence":0.99,"mandatory":false,"reasoning":"Question, no implementation"}}
+
+"Investigate why the API sync keeps failing across multiple services"
+{"plugins":[],"confidence":0.8,"reasoning":"Investigation/debugging work","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"investigate-api-sync-failure","reasoning":"Multi-component investigation requiring structured tracking"}}
 
 ═══════════════════════════════════════════════════════════════
 SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)

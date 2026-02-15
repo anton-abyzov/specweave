@@ -203,7 +203,7 @@ No manual agent selection—SpecWeave routes intelligently:
 \`\`\`
 User: "Create payment integration"
 → specweave-detector activates
-→ Routes to increment-planner
+→ Routes to increment skill
 → Invokes PM, Architect, Security agents
 → Generates complete specification
 \`\`\`

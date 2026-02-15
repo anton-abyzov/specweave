@@ -23,7 +23,7 @@
 #   * Key insight: Users shouldn't need to know about LSP to benefit from it
 # - v1.0.177: SKILL CHAINING REMINDER - Add explicit guidance in SKILL FIRST message
 #   * "SKILL FIRST" does NOT mean "only one skill"
-#   * Shows domain skills to use after sw:increment-planner
+#   * Shows domain skills to use after sw:increment
 #   * Points to CLAUDE.md "MANDATORY: Skill Chaining" section
 # - v1.0.175: CRITICAL FIX - Use installed_plugins.json as SOURCE OF TRUTH
 #   * Reads ~/.claude/plugins/installed_plugins.json directly (eliminates false restart warnings)
@@ -33,8 +33,8 @@
 #   * Post-install verification: re-checks registry after install to confirm success
 #   * Increased timeouts: 5s → 10s for CLI operations (reduces timing issues)
 #   * Guard against false positives: if install says "success" but not in registry → treat as already installed
-# - v1.0.169: DIRECT SKILL INVOCATION - Call sw:increment-planner directly (not wrapper)
-#   * Skips 2-level indirection (hook → sw:increment command → sw:increment-planner skill)
+# - v1.0.169: DIRECT SKILL INVOCATION - Call sw:increment skill directly
+#   * Originally skipped wrapper indirection; increment-planner merged into increment in v1.0.261
 #   * Passes FULL user prompt as args (not just extracted name)
 #   * Uses <system><rules> tags (Claude-trained) instead of custom <mandatory_instruction>
 #   * More concise, imperative instruction text
@@ -193,6 +193,21 @@ EOF
 fi
 
 # ==============================================================================
+# PROJECT ROOT DETECTION (walk up to find .specweave/config.json)
+# ==============================================================================
+# MUST run BEFORE any code that uses SW_PROJECT_ROOT (scope guard, logging, etc.)
+# Checks for config.json to distinguish real projects from stale folders.
+SW_PROJECT_ROOT=""
+_swdir="$PWD"
+while [[ "$_swdir" != "/" ]]; do
+  if [[ -f "$_swdir/.specweave/config.json" ]]; then
+    SW_PROJECT_ROOT="$_swdir"
+    break
+  fi
+  _swdir=$(dirname "$_swdir")
+done
+
+# ==============================================================================
 # USER-LEVEL PLUGIN SCOPE GUARD (v1.0.249)
 # ==============================================================================
 # Prevents SpecWeave domain plugins (sw-*) and LSP plugins (*-lsp) from
@@ -211,16 +226,21 @@ fi
 # 4. Uses a daily marker file to avoid running on every prompt
 #
 # Rate limit: runs at most once per day per project (marker in .specweave/state/)
-SCOPE_GUARD_MARKER="${SW_PROJECT_ROOT:-.}/.specweave/state/scope-guard.marker"
+# GUARD: Only run if inside a valid SpecWeave project (prevents stale folder creation)
 SCOPE_GUARD_RUN=false
+SCOPE_GUARD_MARKER=""
 
-if [[ -f "$SCOPE_GUARD_MARKER" ]]; then
-  # Check if marker is from today (skip if already ran today)
-  MARKER_DATE=$(cat "$SCOPE_GUARD_MARKER" 2>/dev/null)
-  TODAY=$(date +%Y-%m-%d)
-  [[ "$MARKER_DATE" != "$TODAY" ]] && SCOPE_GUARD_RUN=true
-else
-  SCOPE_GUARD_RUN=true
+if [[ -n "$SW_PROJECT_ROOT" ]]; then
+  SCOPE_GUARD_MARKER="$SW_PROJECT_ROOT/.specweave/state/scope-guard.marker"
+
+  if [[ -f "$SCOPE_GUARD_MARKER" ]]; then
+    # Check if marker is from today (skip if already ran today)
+    MARKER_DATE=$(cat "$SCOPE_GUARD_MARKER" 2>/dev/null)
+    TODAY=$(date +%Y-%m-%d)
+    [[ "$MARKER_DATE" != "$TODAY" ]] && SCOPE_GUARD_RUN=true
+  else
+    SCOPE_GUARD_RUN=true
+  fi
 fi
 
 if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && command -v claude >/dev/null 2>&1; then
@@ -251,7 +271,7 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
       done
 
       if [[ -n "$MIGRATED" ]]; then
-        echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "${SW_PROJECT_ROOT:-.}/.specweave/state/hook.log" 2>/dev/null || true
+        echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
       fi
 
       # CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
@@ -263,7 +283,7 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
           # Re-enable core plugin (preserves all other settings)
           jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
             mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
-          echo "[$(date -Iseconds)] scope-guard | restored sw@specweave enabled state" >> "${SW_PROJECT_ROOT:-.}/.specweave/state/hook.log" 2>/dev/null || true
+          echo "[$(date -Iseconds)] scope-guard | restored sw@specweave enabled state" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
         fi
       fi
     fi
@@ -290,18 +310,7 @@ fi
 #
 # When both disabled: NO detection, NO LLM calls, fastest response time (~5-7s saved)
 
-# ==============================================================================
-# PROJECT ROOT DETECTION (walk up to find .specweave/ — prevents folder pollution)
-# ==============================================================================
-SW_PROJECT_ROOT=""
-_swdir="$PWD"
-while [[ "$_swdir" != "/" ]]; do
-  if [[ -d "$_swdir/.specweave" ]]; then
-    SW_PROJECT_ROOT="$_swdir"
-    break
-  fi
-  _swdir=$(dirname "$_swdir")
-done
+# PROJECT ROOT DETECTION was moved earlier (before scope guard) to prevent stale folder creation
 
 # Check config for pluginAutoLoad.enabled, suggestOnly and incrementAssist.enabled settings
 PLUGIN_AUTOLOAD_ENABLED=true
@@ -453,16 +462,17 @@ check_plugin_installed_from_json() {
 #
 # WHEN NOT TO CREATE INCREMENT (action: "none" ONLY):
 # ┌─────────────────────────────────────────────────────────────────────────────┐
-# │ • Questions: "how do I", "what is", "explain", "why does"                  │
-# │ • Exploration: "show me", "find", "search for", "list"                     │
-# │ • Commands: "run tests", "build", "deploy", "commit"                       │
-# │ • Already in workflow: prompt starts with /sw:                              │
-# │ • Chat/greetings: "hello", "thanks", general conversation                  │
-# │ • EXPLICIT OPT-OUT:                                                         │
-# │   - "don't create an increment", "no increment needed", "skip workflow"    │
-# │   - "just a quick fix", "without tracking", "no spec needed"               │
-# │   - "don't reopen", "leave it closed" (for completed increments)           │
-# │   - "I'll track it myself", "already in an increment"                      │
+# │ • Pure questions: "what is X?", "explain Y", "tell me about Z"            │
+# │ • Exploration: "show me", "list", "search for"                            │
+# │ • Commands: "run tests", "build", "deploy", "commit"                      │
+# │ • Already in workflow: prompt starts with /sw:                             │
+# │ • Chat/greetings: "hello", "thanks", general conversation                 │
+# │ • EXPLICIT OPT-OUT: "don't create an increment", "skip workflow"          │
+# │                                                                            │
+# │ NOTE: These are NOT questions — they are WORK requiring increments:        │
+# │   "investigate", "debug", "troubleshoot", "why does X fail",              │
+# │   "optimize", "improve", "secure", "audit", "solve", "resolve",          │
+# │   "analyze", "root cause", "X is broken", "X keeps failing"              │
 # └─────────────────────────────────────────────────────────────────────────────┘
 #
 # STILL SUGGEST INCREMENT (action: "small_fix"):
@@ -1004,13 +1014,21 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
       # Check if specweave CLI is available
       if command -v specweave >/dev/null 2>&1; then
-        # Setup logging
-        LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
-        mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+        # Setup logging (use project root, never create dirs at $HOME)
+        if [[ -n "$SW_PROJECT_ROOT" ]]; then
+          LAZY_LOAD_LOG="$SW_PROJECT_ROOT/.specweave/logs/lazy-loading.log"
+        else
+          LAZY_LOAD_LOG="/dev/null"
+        fi
 
         # Per-session cache to avoid redundant LLM calls (30 min TTL)
-        PROMPT_CACHE_DIR="$HOME/.specweave/state/prompt-cache"
-        mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+        if [[ -n "$SW_PROJECT_ROOT" ]]; then
+          PROMPT_CACHE_DIR="$SW_PROJECT_ROOT/.specweave/state/prompt-cache"
+          mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+        else
+          PROMPT_CACHE_DIR="${TMPDIR:-/tmp}/specweave-prompt-cache"
+          mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+        fi
         PROMPT_HASH=$(echo "$PROMPT" | md5sum 2>/dev/null | cut -c1-16 || md5 -qs "$PROMPT" 2>/dev/null | cut -c1-16 || echo "nohash")
         CACHE_FILE="$PROMPT_CACHE_DIR/${PROMPT_HASH}.json"
 
@@ -1287,7 +1305,7 @@ Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NA
                     CMD="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD="/sw:increment \"$INC_NAME\""
 
-                    # v1.0.169: Call sw:increment-planner DIRECTLY (not wrapper)
+                    # v1.0.169+: Call sw:increment skill directly
                     # Pass user prompt so skill can extract context
                     # INC_MANDATORY comes from detect-intent LLM response
                     if [[ "$INC_MANDATORY" == "true" ]]; then
@@ -1300,14 +1318,14 @@ Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NA
                         DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
                       fi
 
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\" })\` — call BEFORE implementation.
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
 Detection: ${INC_REASON} (confidence: ${INC_CONF}).${AGENT_DIRECTIVE}${DEEP_INTERVIEW_MSG}
-After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
+After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
                       output_approve_with_context "$MSG"
                       exit 0
                     else
                       # v1.0.260: Removed prompt embedding to save context budget
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Increment suggested: \`Skill({ skill: \"sw:increment-planner\" })\` or \`$CMD\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Increment suggested: \`Skill({ skill: \"sw:increment\" })\` or \`$CMD\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                       output_approve_with_context "$MSG"
                       exit 0
                     fi
@@ -1315,7 +1333,7 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
 
                   hotfix)
                     # v1.0.260: Removed prompt embedding to save context budget
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Hotfix detected: \`Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix\" })\`. Reason: $INC_REASON"
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Hotfix detected: \`Skill({ skill: \"sw:increment\", args: \"--type=hotfix\" })\`. Reason: $INC_REASON"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1333,7 +1351,7 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
                     CMD_SMALLFIX="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
 
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Small change — consider tracking: \`Skill({ skill: \"sw:increment-planner\" })\` or \`$CMD_SMALLFIX\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Small change — consider tracking: \`Skill({ skill: \"sw:increment\" })\` or \`$CMD_SMALLFIX\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1449,19 +1467,48 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
         # This fallback ONLY handles increment suggestions (not plugin installs).
         if [[ "$LLM_DETECTION_FAILED" == "true" && "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
           # Check for implementation-intent keywords
-          if echo "$PROMPT" | grep -qiE "(test|component|feature|fix|refactor|setup|configure|integrate|migrate|upgrade|write|style|design|add|create|implement|build|develop|deploy|scaffold|generate)"; then
-            # Exclude questions (starting with question words or ending with ?)
-            if ! echo "$PROMPT" | grep -qiE "^[[:space:]]*(what|how|why|explain|tell me|can you|does|should|is there|where|when|which)" && \
+          # v1.0.261: Expanded from 20 to 65+ keywords across 9 categories:
+          # Original, Investigation, Analysis, Problem-solving, Optimization,
+          # Security, Documentation, DevOps/Data, Structural
+          if echo "$PROMPT" | grep -qiE "(test|component|feature|fix|refactor|setup|configure|integrate|migrate|upgrade|write|style|design|add|create|implement|build|develop|deploy|scaffold|generate|investigate|debug|troubleshoot|diagnose|trace|profile|examine|inspect|reproduce|replicate|analyze|assess|audit|evaluate|benchmark|measure|validate|solve|resolve|address|tackle|determine|optimize|improve|reduce|minimize|eliminate|simplify|streamline|secure|harden|patch|sanitize|encrypt|document|provision|containerize|dockerize|seed|populate|import|export|transform|sync|batch|remove|delete|replace|convert|extract|merge|split|wrap|unwrap|decouple|modularize)"; then
+            # Exclude PURE questions but NOT investigation/work prompts
+            # v1.0.261: "why" and "how" removed — they almost always imply work intent
+            # ("why does X fail" = investigation, "how do I fix X" = work)
+            # Patterns made more specific to avoid false negatives
+            if ! echo "$PROMPT" | grep -qiE "^[[:space:]]*(what is|what are|explain|tell me about|can you explain|does .* support|should I use|is there a|where is|when did|which one)" && \
                ! echo "$PROMPT" | grep -qE "\?[[:space:]]*$"; then
               # v1.0.260: Removed prompt embedding to save context budget
               if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
-                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\" })\` — call BEFORE implementation.
+                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
 Detection: Implementation keywords detected (LLM unavailable, keyword fallback).
-After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
+After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
               else
-                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment-planner\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
+                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
               fi
               echo "[$(date -Iseconds)] keyword-fallback | prompt_keywords_matched=true | mandatory=$INCREMENT_MANDATORY_CONFIG" >> "$LAZY_LOAD_LOG"
+              output_approve_with_context "$FALLBACK_MSG"
+              exit 0
+            fi
+          fi
+
+          # ==================================================================
+          # ERROR-STATE DETECTION: symptom-based prompts (v1.0.261)
+          # ==================================================================
+          # Catches prompts describing failure states without action verbs:
+          # "the dashboard is broken", "login keeps failing", "app crashes on mobile"
+          # Only runs when LLM failed AND primary keyword regex didn't match.
+          if echo "$PROMPT" | grep -qiE "(is broken|keeps? failing|crash(es|ing)|hang(s|ing)|times? out|is slow|memory leak|performance issue|not working|throwing error|exception|stack trace|segfault|deadlock|race condition)"; then
+            # Require 3+ words for context (not just bare "is broken")
+            WORD_COUNT=$(echo "$PROMPT" | wc -w | tr -d ' ')
+            if [[ "$WORD_COUNT" -ge 3 ]]; then
+              if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
+                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
+Detection: Error/failure state detected (LLM unavailable, symptom fallback).
+After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
+              else
+                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment\" })\`. Reason: Error/failure state detected (LLM unavailable, symptom fallback)."
+              fi
+              echo "[$(date -Iseconds)] symptom-fallback | prompt_symptom_matched=true | mandatory=$INCREMENT_MANDATORY_CONFIG" >> "$LAZY_LOAD_LOG"
               output_approve_with_context "$FALLBACK_MSG"
               exit 0
             fi
@@ -1565,10 +1612,11 @@ if [[ -n "$SW_PROJECT_ROOT" ]] && [[ -d "$SW_PROJECT_ROOT/.specweave" ]]; then
       AUTOLOAD_PLUGINS_MSG="$TDD_MSG"
     fi
 
-    # Log TDD activation
-    TDD_LOG="$HOME/.specweave/logs/tdd-enforcement.log"
-    mkdir -p "$(dirname "$TDD_LOG")" 2>/dev/null
-    echo "[$(date -Iseconds)] TDD_MODE=$TDD_MODE | enforcement=$TDD_ENFORCEMENT | source=$TDD_SOURCE" >> "$TDD_LOG" 2>/dev/null
+    # Log TDD activation (use project root, never create dirs at $HOME)
+    if [[ -n "$SW_PROJECT_ROOT" ]]; then
+      TDD_LOG="$SW_PROJECT_ROOT/.specweave/logs/tdd-enforcement.log"
+      echo "[$(date -Iseconds)] TDD_MODE=$TDD_MODE | enforcement=$TDD_ENFORCEMENT | source=$TDD_SOURCE" >> "$TDD_LOG" 2>/dev/null
+    fi
   fi
 fi
 
@@ -1592,7 +1640,12 @@ fi
 # ==============================================================================
 # Even if prompt contains SpecWeave keywords, exit if no .specweave directory
 # v1.0.144: Still show plugin autoload message for non-SpecWeave projects
-SPECWEAVE_DIR=".specweave"
+# Use SW_PROJECT_ROOT to avoid creating dirs relative to CWD
+if [[ -n "$SW_PROJECT_ROOT" ]]; then
+  SPECWEAVE_DIR="$SW_PROJECT_ROOT/.specweave"
+else
+  SPECWEAVE_DIR=".specweave"
+fi
 if [[ ! -d "$SPECWEAVE_DIR" ]]; then
   if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
     # Show plugin loading feedback even for non-SpecWeave projects
@@ -1937,7 +1990,7 @@ if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; th
   fi
 
   if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
-    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment-planner."
+    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment."
   fi
 fi
 
@@ -2174,7 +2227,60 @@ fi
 #   P2 (important): LSP explicit request, WIP/interview gate
 #   P3 (informational): LSP setup/install suggestions, archive suggestion
 
-CONTEXT_BUDGET=2500  # Leave 500 chars headroom below 3000 max
+# ==============================================================================
+# CONTEXT BUDGET RESOLUTION (v1.0.262)
+# ==============================================================================
+# 1. Read base level from config.json (contextBudget.level)
+# 2. If autoAdapt=true, check context-pressure.json and step down
+# 3. Map level to char budget
+# 4. Environment override: SPECWEAVE_CONTEXT_BUDGET
+
+BUDGET_LEVEL="full"
+AUTO_ADAPT=true
+if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
+  BUDGET_LEVEL=$(jq -r '.contextBudget.level // "full"' "$CONFIG_PATH" 2>/dev/null || echo "full")
+  AUTO_ADAPT_VAL=$(jq -r '.contextBudget.autoAdapt // true' "$CONFIG_PATH" 2>/dev/null || echo "true")
+  [[ "$AUTO_ADAPT_VAL" == "false" ]] && AUTO_ADAPT=false
+fi
+
+# Environment override (for quick testing without config changes)
+[[ -n "${SPECWEAVE_CONTEXT_BUDGET:-}" ]] && BUDGET_LEVEL="$SPECWEAVE_CONTEXT_BUDGET"
+
+# Auto-adapt: check pressure state from PreCompact hook
+if [[ "$AUTO_ADAPT" == "true" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
+  PRESSURE_FILE="$SW_PROJECT_ROOT/.specweave/state/context-pressure.json"
+  if [[ -f "$PRESSURE_FILE" ]] && command -v jq >/dev/null 2>&1; then
+    PRESSURE_LEVEL=$(jq -r '.level // "normal"' "$PRESSURE_FILE" 2>/dev/null || echo "normal")
+    case "$PRESSURE_LEVEL" in
+      elevated)
+        # Step down one level
+        case "$BUDGET_LEVEL" in
+          full) BUDGET_LEVEL="compact" ;;
+          compact) BUDGET_LEVEL="minimal" ;;
+        esac
+        ;;
+      critical)
+        # Jump to minimal regardless of base
+        [[ "$BUDGET_LEVEL" != "off" ]] && BUDGET_LEVEL="minimal"
+        ;;
+    esac
+  fi
+fi
+
+# Map level to char budget
+case "$BUDGET_LEVEL" in
+  full)    CONTEXT_BUDGET=2500 ;;
+  compact) CONTEXT_BUDGET=1000 ;;
+  minimal) CONTEXT_BUDGET=300  ;;
+  off)     CONTEXT_BUDGET=0    ;;
+  *)       CONTEXT_BUDGET=2500 ;;
+esac
+
+# If budget is 0, skip all context assembly
+if [[ "$CONTEXT_BUDGET" -eq 0 ]]; then
+  echo '{"decision":"approve"}'
+  exit 0
+fi
 
 # Helper: Append message to FINAL_MESSAGE if it fits within budget
 # Args: $1=message to append
@@ -2207,6 +2313,34 @@ _budget_append "$LSP_ENV_SETUP_MSG"
 _budget_append "$LSP_INSTALL_MSG"
 _budget_append "$LSP_SETUP_SUGGESTION_MSG"
 _budget_append "$ARCHIVE_SUGGESTION_MSG"
+
+# ==============================================================================
+# TURN DEDUPLICATION: Skip identical context to save tokens (v1.0.262)
+# ==============================================================================
+# If this turn's context is identical to last turn's, don't re-inject it.
+# Claude already has it in history. Saves ~2500 chars per duplicate turn.
+if [[ -n "$FINAL_MESSAGE" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
+  DEDUP_HASH_FILE="$SW_PROJECT_ROOT/.specweave/state/.context-hash"
+  CURRENT_HASH=""
+  if command -v md5sum >/dev/null 2>&1; then
+    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5sum | cut -d' ' -f1)
+  elif command -v md5 >/dev/null 2>&1; then
+    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5)
+  fi
+
+  if [[ -n "$CURRENT_HASH" ]]; then
+    if [[ -f "$DEDUP_HASH_FILE" ]]; then
+      PREV_HASH=$(cat "$DEDUP_HASH_FILE" 2>/dev/null)
+      if [[ "$CURRENT_HASH" == "$PREV_HASH" ]]; then
+        # Identical to last turn — skip injection
+        echo '{"decision":"approve"}'
+        exit 0
+      fi
+    fi
+    # Save hash for next turn
+    echo "$CURRENT_HASH" > "$DEDUP_HASH_FILE" 2>/dev/null
+  fi
+fi
 
 if [[ -n "$FINAL_MESSAGE" ]]; then
   output_approve_with_context "$FINAL_MESSAGE"

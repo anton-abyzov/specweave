@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
@@ -29,8 +28,9 @@ type Tab = 'commands' | 'skills' | 'agents' | 'daily';
 
 export function AnalyticsPage() {
   const [tab, setTab] = useState<Tab>('commands');
-  const { data, loading, error } = useProjectApi<AnalyticsData>('/api/analytics/summary');
-  const { data: skills, loading: sl } = useProjectApi<SkillUsage[]>('/api/analytics/skills');
+  const [refreshing, setRefreshing] = useState(false);
+  const { data, loading, error, refetch, fetchedAt } = useProjectApi<AnalyticsData>('/api/analytics/summary');
+  const { data: skills, loading: sl, refetch: refetchSkills } = useProjectApi<SkillUsage[]>('/api/analytics/skills');
 
   if (loading || sl) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
@@ -44,15 +44,32 @@ export function AnalyticsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-200">Analytics</h2>
-        <span className="text-sm text-gray-500">{data.totalEvents.toLocaleString()} total events</span>
+        <div className="flex items-center gap-3">
+          {fetchedAt && (
+            <span className="text-[10px] text-gray-600">
+              Updated {fetchedAt.toLocaleTimeString()}
+            </span>
+          )}
+          <span className="text-sm text-gray-500">{data.totalEvents.toLocaleString()} total events</span>
+          <button
+            onClick={() => { setRefreshing(true); refetch(); refetchSkills(); setTimeout(() => setRefreshing(false), 600); }}
+            disabled={refreshing}
+            className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh analytics"
+          >
+            <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* KPI Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Total Events" value={data.totalEvents.toLocaleString()} subtitle={`${data.successRate}% success rate`} color="indigo" />
-        <KpiCard title="Commands" value={commandCount.toLocaleString()} subtitle={`${data.topCommands?.length || 0} unique`} color="cyan" />
-        <KpiCard title="Skills" value={skillCount.toLocaleString()} subtitle={`${data.topSkills?.length || 0} unique`} color="emerald" />
-        <KpiCard title="Agents" value={agentCount.toLocaleString()} subtitle={`${data.topAgents?.length || 0} unique`} color="amber" />
+        <KpiCard title="Total Events" value={data.totalEvents.toLocaleString()} subtitle={`${data.successRate}% success rate`} color="indigo" tooltip={`${data.totalEvents} events tracked from analytics JSONL`} />
+        <KpiCard title="Commands" value={commandCount.toLocaleString()} subtitle={`${data.topCommands?.length || 0} unique`} color="cyan" tooltip={`${commandCount} total command invocations across ${data.topCommands?.length || 0} distinct commands`} />
+        <KpiCard title="Skills" value={skillCount.toLocaleString()} subtitle={`${data.topSkills?.length || 0} unique`} color="emerald" tooltip={`${skillCount} total skill activations across ${data.topSkills?.length || 0} distinct skills`} />
+        <KpiCard title="Agents" value={agentCount.toLocaleString()} subtitle={`${data.topAgents?.length || 0} unique`} color="amber" tooltip={`${agentCount} agent spawns across ${data.topAgents?.length || 0} distinct agent types`} />
       </div>
 
       {/* Tab Bar */}
@@ -185,12 +202,7 @@ function SkillLeaderboard({ skills }: { skills: SkillUsage[] }) {
               <tr key={skill.name} className="border-b border-gray-800/50 hover:bg-gray-800/30">
                 <td className="px-4 py-2.5 text-xs text-gray-600">#{i + 1}</td>
                 <td className="px-4 py-2.5">
-                  <Link
-                    to={`/analytics?skill=${encodeURIComponent(skill.name)}`}
-                    className="text-sm text-indigo-400 hover:text-indigo-300 hover:underline font-mono"
-                  >
-                    {skill.name}
-                  </Link>
+                  <span className="text-sm text-gray-300 font-mono">{skill.name}</span>
                 </td>
                 <td className="px-4 py-2.5">
                   {skill.plugin && (

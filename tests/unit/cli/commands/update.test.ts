@@ -1150,15 +1150,15 @@ describe('update command', () => {
       expect(output).toContain('config.json is invalid JSON');
     });
 
-    it('should report missing config.json', async () => {
+    it('should treat .specweave without config.json as non-project', async () => {
       const specweaveDir = path.join(tempDir, '.specweave');
       fs.mkdirSync(specweaveDir, { recursive: true });
-      // No config.json
+      // No config.json — stale folder, not a real project
 
       await updateCommand({ noSelf: true, noPlugins: true });
 
       const output = consoleLogs.join('\n');
-      expect(output).toContain('config.json not found');
+      expect(output).toContain('Not a SpecWeave project');
     });
 
     it('should warn about too many active increments', async () => {

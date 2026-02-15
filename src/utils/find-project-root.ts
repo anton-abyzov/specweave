@@ -17,10 +17,11 @@ import * as fs from 'fs';
 import path from 'path';
 
 /**
- * Find project root by searching for .specweave directory
+ * Find project root by searching for .specweave/config.json
  *
  * Walks up the directory tree from startDir until it finds a directory
- * containing .specweave folder.
+ * containing .specweave/config.json. Requires config.json to distinguish
+ * real projects from stale .specweave/ folders (created by runtime bugs).
  *
  * @param startDir - Directory to start searching from (defaults to process.cwd())
  * @returns Project root path or null if not found
@@ -28,10 +29,10 @@ import path from 'path';
  * @example
  * // From /projects/my-app/src/components
  * findProjectRoot()
- * // Returns: "/projects/my-app" (if .specweave exists there)
+ * // Returns: "/projects/my-app" (if .specweave/config.json exists there)
  *
  * @example
- * // No .specweave found anywhere in tree
+ * // No .specweave/config.json found anywhere in tree
  * findProjectRoot()
  * // Returns: null
  */
@@ -41,16 +42,14 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
 
   while (current !== root) {
     const specweavePath = path.join(current, '.specweave');
-    if (fs.existsSync(specweavePath) && fs.statSync(specweavePath).isDirectory()) {
+    if (
+      fs.existsSync(specweavePath) &&
+      fs.statSync(specweavePath).isDirectory() &&
+      fs.existsSync(path.join(specweavePath, 'config.json'))
+    ) {
       return current;
     }
     current = path.dirname(current);
-  }
-
-  // Check root directory as well
-  const rootSpecweave = path.join(root, '.specweave');
-  if (fs.existsSync(rootSpecweave) && fs.statSync(rootSpecweave).isDirectory()) {
-    return root;
   }
 
   return null;

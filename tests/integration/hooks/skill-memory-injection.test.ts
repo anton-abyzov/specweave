@@ -448,7 +448,7 @@ describe('DCI Full Cycle (E2E from real SKILL.md)', () => {
 describe('Project Context DCI Blocks', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
 
-  const CONTEXT_SKILLS = ['do', 'auto', 'increment-planner', 'validate'];
+  const CONTEXT_SKILLS = ['do', 'auto', 'increment', 'validate'];
 
   it('priority skills have ## Project Context section', () => {
     const missing: string[] = [];

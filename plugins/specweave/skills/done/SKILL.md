@@ -120,7 +120,7 @@ Runs automatically after successful closure:
 
 ### Step 10: Sync Living Docs (MANDATORY)
 
-Execute: `Skill({ skill: "sw:sync-specs" })` with increment-id. Do NOT just mention it -- actually invoke it.
+Execute: `Skill({ skill: "sw:sync-docs" })` with "review" mode. Do NOT just mention it -- actually invoke it.
 
 ### Step 11: Post-Closure Quality Assessment
 
