@@ -4,7 +4,7 @@ feature: FS-192
 title: "GitHub Projects V2 Board Integration (P1)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "GitHub Projects V2 Board Integration (P1)"
 project: specweave
 ---

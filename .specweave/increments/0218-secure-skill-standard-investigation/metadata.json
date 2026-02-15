@@ -1,0 +1,14 @@
+{
+  "id": "0218-secure-skill-standard-investigation",
+  "status": "completed",
+  "completedAt": "2026-02-15T21:30:00.000Z",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-15T20:32:43.262Z",
+  "lastActivity": "2026-02-15T20:32:43.263Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

@@ -1,3 +1,7 @@
+---
+id: adr-0200-self-validating-skills
+---
+
 # ADR-0200: Self-Validating Skills Architecture
 
 **Status**: Proposed

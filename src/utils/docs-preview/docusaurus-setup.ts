@@ -108,7 +108,7 @@ module.exports = sidebars;
   // Step 9: Create landing page
   console.log('8. Creating landing page...');
   const categories = config.projectMetadata?.categories || [];
-  await writeIndexPage(targetDir, config.title, config.tagline, categories);
+  await writeIndexPage(targetDir, config.title, config.tagline, categories, config.projectMetadata?.name);
   await writeIndexModuleCSS(targetDir);
   console.log('   \u2705 Landing page created\n');
 
@@ -124,13 +124,42 @@ module.exports = sidebars;
 
   const metadata = config.projectMetadata;
   if (metadata) {
-    const logoSvg = generateLogoSVG(metadata.initials, PRIMARY_COLOR);
-    await fs.writeFile(path.join(staticImgDir, 'logo.svg'), logoSvg, 'utf-8');
+    // Use custom logo if available, otherwise generate from initials
+    if (metadata.logoPath && await fs.pathExists(metadata.logoPath)) {
+      await fs.copyFile(metadata.logoPath, path.join(staticImgDir, 'logo.svg'));
+    } else {
+      const logoSvg = generateLogoSVG(metadata.initials, PRIMARY_COLOR);
+      await fs.writeFile(path.join(staticImgDir, 'logo.svg'), logoSvg, 'utf-8');
+    }
 
     const faviconSvg = generateFaviconSVG(metadata.initials, PRIMARY_COLOR);
     await fs.writeFile(path.join(staticImgDir, 'favicon.svg'), faviconSvg, 'utf-8');
   }
   console.log('   \u2705 Assets generated\n');
+
+  // Step 12: Copy increment specs for link resolution in Docusaurus
+  console.log('11. Copying increment specs for link resolution...');
+  const incrementsSource = path.join(projectRoot, '.specweave', 'increments');
+  const incrementsStaticDest = path.join(targetDir, 'static', 'increments');
+
+  if (await fs.pathExists(incrementsSource)) {
+    let copiedCount = 0;
+    const incrementDirs = await fs.readdir(incrementsSource, { withFileTypes: true });
+
+    for (const dir of incrementDirs) {
+      if (!dir.isDirectory() || dir.name.startsWith('_')) continue;
+      const specFile = path.join(incrementsSource, dir.name, 'spec.md');
+      if (await fs.pathExists(specFile)) {
+        const destDir = path.join(incrementsStaticDest, dir.name);
+        await fs.ensureDir(destDir);
+        await fs.copyFile(specFile, path.join(destDir, 'spec.md'));
+        copiedCount++;
+      }
+    }
+    console.log(`   \u2705 Copied ${copiedCount} increment spec(s)\n`);
+  } else {
+    console.log('   \u2705 No increments to copy\n');
+  }
 
   console.log('\u2705 Setup complete!\n');
 }
@@ -162,7 +191,7 @@ export async function quickSetup(projectRoot: string): Promise<void> {
     docsPath: '../docs/internal',
     port: DEFAULT_PORT_START,
     theme: 'default',
-    excludeFolders: ['legacy', 'node_modules'],
+    excludeFolders: ['legacy', 'node_modules', '_archive'],
     projectMetadata: metadata
   };
 
@@ -199,7 +228,7 @@ export async function launchPreview(
       docsPath: '../docs/internal',
       port: DEFAULT_PORT_START,
       theme: 'default',
-      excludeFolders: ['legacy', 'node_modules'],
+      excludeFolders: ['legacy', 'node_modules', '_archive'],
       projectMetadata: metadata
     };
     await setupDocusaurus({

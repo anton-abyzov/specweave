@@ -10,7 +10,7 @@ project: specweave
 external:
   github:
     issue: 1167
-    url: https://github.com/anton-abyzov/specweave/issues/1167
+    url: "https://github.com/anton-abyzov/specweave/issues/1167"
 ---
 
 # US-005: Comprehensive Test Coverage

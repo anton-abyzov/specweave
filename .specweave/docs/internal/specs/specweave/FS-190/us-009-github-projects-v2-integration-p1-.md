@@ -4,7 +4,7 @@ feature: FS-190
 title: "GitHub Projects v2 Integration (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user managing work in GitHub Projects v2
 **I want** synced issues to be added to a GitHub Project board with custom fields
 **So that** I can track SpecWeave increments on a modern kanban/board view."

@@ -4,7 +4,7 @@ feature: FS-183
 title: "Error Handling & Fallback (P1)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer when LSP fails
 **I want** graceful fallback and clear error messages
 **So that** I can still get results and troubleshoot."

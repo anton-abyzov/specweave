@@ -10,7 +10,7 @@ project: specweave
 external:
   github:
     issue: 1163
-    url: https://github.com/anton-abyzov/specweave/issues/1163
+    url: "https://github.com/anton-abyzov/specweave/issues/1163"
 ---
 
 # US-001: Fix Silent Event Drop in ProjectService
