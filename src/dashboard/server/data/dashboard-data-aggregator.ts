@@ -36,15 +36,18 @@ export class DashboardDataAggregator {
     const analytics = await this.aggregateEventsFromJsonl();
     const config = this.readConfig();
 
+    // Use cache summary, or fall back to filesystem scan
+    const summary = dashboard?.summary ?? this.buildSummaryFromIncrements(this.scanIncrementsFromFilesystem());
+
     return {
       project: {
         name: config?.project?.name,
-        totalIncrements: dashboard?.summary?.total ?? 0,
-        activeIncrements: dashboard?.summary?.active ?? 0,
-        completedIncrements: dashboard?.summary?.completed ?? 0,
-        statusBreakdown: this.extractStatusBreakdown(dashboard?.summary),
-        typeBreakdown: dashboard?.summary?.byType ?? {},
-        priorityBreakdown: dashboard?.summary?.byPriority ?? {},
+        totalIncrements: summary.total ?? 0,
+        activeIncrements: summary.active ?? 0,
+        completedIncrements: summary.completed ?? 0,
+        statusBreakdown: this.extractStatusBreakdown(summary),
+        typeBreakdown: summary.byType ?? {},
+        priorityBreakdown: summary.byPriority ?? {},
       },
       analytics: {
         totalEvents: analytics.totalEvents,
@@ -75,7 +78,7 @@ export class DashboardDataAggregator {
   /** Get increments list */
   async getIncrements(): Promise<IncrementListPayload> {
     const dashboard = this.readDashboardJson();
-    const increments: IncrementSummary[] = [];
+    let increments: IncrementSummary[] = [];
 
     if (dashboard?.increments) {
       for (const [id, data] of Object.entries(dashboard.increments) as [string, any][]) {
@@ -92,6 +95,9 @@ export class DashboardDataAggregator {
           lastActivity: data.lastActivity || '',
         });
       }
+    } else {
+      // Fallback: scan filesystem directly when cache is missing
+      increments = this.scanIncrementsFromFilesystem();
     }
 
     // Sort: active first, then by last activity descending
@@ -103,9 +109,11 @@ export class DashboardDataAggregator {
       return (b.lastActivity || '').localeCompare(a.lastActivity || '');
     });
 
+    const summary = dashboard?.summary ?? this.buildSummaryFromIncrements(increments);
+
     return {
       increments,
-      summary: dashboard?.summary ?? {},
+      summary,
     };
   }
 
@@ -230,13 +238,13 @@ export class DashboardDataAggregator {
           const name = event.name || '';
           const type = event.type || '';
 
-          // Command counts
-          if (name) {
+          // Command counts (only actual command events)
+          if (name && type === 'command') {
             commandCounts.set(name, (commandCounts.get(name) || 0) + 1);
           }
 
-          // Skill tracking (commands starting with /sw:)
-          if (name.startsWith('/sw:') || type === 'skill_activation') {
+          // Skill tracking
+          if (type === 'skill') {
             const existing = skillMap.get(name);
             if (existing) {
               existing.count++;
@@ -255,7 +263,7 @@ export class DashboardDataAggregator {
           }
 
           // Agent tracking
-          if (type === 'agent_spawn') {
+          if (type === 'agent') {
             agentCounts.set(name, (agentCounts.get(name) || 0) + 1);
           }
 
@@ -368,6 +376,128 @@ export class DashboardDataAggregator {
     }
 
     return platforms;
+  }
+
+  // --- Filesystem fallback (when dashboard.json cache is missing) ---
+
+  /** Scan increment directories directly from filesystem */
+  scanIncrementsFromFilesystem(): IncrementSummary[] {
+    const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+    if (!fs.existsSync(incrementsDir)) return [];
+
+    const increments: IncrementSummary[] = [];
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(incrementsDir, { withFileTypes: true });
+    } catch {
+      return [];
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !/^\d/.test(entry.name)) continue;
+      // Skip archive directories
+      if (entry.name.startsWith('_')) continue;
+
+      const dir = path.join(incrementsDir, entry.name);
+      const metadataPath = path.join(dir, 'metadata.json');
+      if (!fs.existsSync(metadataPath)) continue;
+
+      try {
+        const raw = fs.readFileSync(metadataPath, 'utf-8');
+        const meta = JSON.parse(raw);
+
+        const tasksPath = path.join(dir, 'tasks.md');
+        const specPath = path.join(dir, 'spec.md');
+        const tasks = this.countTasksFromFile(tasksPath);
+        const acs = this.countAcsFromFile(specPath);
+
+        // Get last activity from metadata mtime
+        let lastActivity = meta.lastActivity || '';
+        if (!lastActivity) {
+          try {
+            const stat = fs.statSync(metadataPath);
+            lastActivity = stat.mtime.toISOString();
+          } catch { /* ignore */ }
+        }
+
+        increments.push({
+          id: entry.name,
+          title: meta.title || entry.name,
+          status: meta.status || 'unknown',
+          type: meta.type || 'feature',
+          priority: meta.priority || 'P2',
+          project: meta.project,
+          tasks: tasks.total > 0 ? tasks : (meta.tasks || { total: 0, completed: 0 }),
+          acs: acs.total > 0 ? acs : (meta.acceptanceCriteria
+            ? { total: meta.acceptanceCriteria.total || 0, completed: meta.acceptanceCriteria.satisfied || 0 }
+            : { total: 0, completed: 0 }),
+          createdAt: meta.createdAt || meta.created || '',
+          lastActivity,
+        });
+      } catch { /* skip invalid metadata */ }
+    }
+
+    return increments;
+  }
+
+  /** Count tasks from tasks.md file */
+  private countTasksFromFile(tasksPath: string): { total: number; completed: number } {
+    if (!fs.existsSync(tasksPath)) return { total: 0, completed: 0 };
+    try {
+      const content = fs.readFileSync(tasksPath, 'utf-8');
+      const lines = content.split('\n');
+      let total = 0;
+      let completed = 0;
+
+      for (const line of lines) {
+        // Heading-based: ## T-001, ### T-001, #### T-001
+        if (/^#{2,}\s+T-\d/.test(line)) {
+          total++;
+        }
+        // Checklist-based: - [x] T-001 or - [ ] T-001
+        if (/^- \[[x ]\] T-\d/.test(line)) {
+          total++;
+          if (/^- \[x\] T-\d/.test(line)) completed++;
+        }
+        // Status checkbox: **Status**: [x]
+        if (/\*\*Status\*\*:\s*\[x\]/.test(line)) {
+          completed++;
+        }
+      }
+      return { total, completed };
+    } catch {
+      return { total: 0, completed: 0 };
+    }
+  }
+
+  /** Count acceptance criteria from spec.md file */
+  private countAcsFromFile(specPath: string): { total: number; completed: number } {
+    if (!fs.existsSync(specPath)) return { total: 0, completed: 0 };
+    try {
+      const content = fs.readFileSync(specPath, 'utf-8');
+      const lines = content.split('\n');
+      let total = 0;
+      let completed = 0;
+
+      for (const line of lines) {
+        if (/- \[.\] \*\*AC-/.test(line)) {
+          total++;
+          if (/- \[x\] \*\*AC-/.test(line)) completed++;
+        }
+      }
+      return { total, completed };
+    } catch {
+      return { total: 0, completed: 0 };
+    }
+  }
+
+  /** Build summary counts from increment list */
+  private buildSummaryFromIncrements(increments: IncrementSummary[]): Record<string, number> {
+    const summary: Record<string, number> = { total: increments.length };
+    for (const inc of increments) {
+      summary[inc.status] = (summary[inc.status] || 0) + 1;
+    }
+    return summary;
   }
 
   // --- Private helpers ---
