@@ -9,18 +9,16 @@ argument-hint: "[incrementId]"
 
 !`s="progress"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 
-Shows detailed progress information for active increments including:
-- **Task completion** with progress bars
-- **Acceptance Criteria (AC)** completion percentages
-- **Priority** indicators (P0/P1/P2)
-- **Type** badges (feature/bug/hotfix/refactor)
-- **Status** grouping (ready for review → active → paused)
-
 ## Hook Execution (Default)
 
 This command is intercepted by the **UserPromptSubmit hook** for instant execution (<10ms). The hook reads from `.specweave/state/dashboard.json` cache.
 
-**No action needed** - the hook output appears automatically in `<system-reminder>` tags.
+**CRITICAL**: The hook output in `<system-reminder>` is ALREADY FORMATTED for the user. You MUST:
+1. Present the hook output VERBATIM — copy it exactly as-is
+2. Do NOT reformat into a markdown table
+3. Do NOT re-summarize or paraphrase the data
+4. Do NOT add interpretation unless the user asks a follow-up question
+5. If the user asks "what should I work on next?" THEN add recommendations
 
 ## CLI Fallback
 
@@ -30,24 +28,12 @@ If hook output isn't displayed (rare), execute:
 specweave status --verbose
 ```
 
-Note: The CLI command is `specweave status` (with `progress` as an alias).
-
 ## Arguments
 
 - `/sw:progress` - Show all active increments
 - `/sw:progress 0042` - Show specific increment details (partial ID match supported)
 
-## Data Shown
-
-| Field | Description |
-|-------|-------------|
-| Tasks | `X/Y (Z%)` with progress bar |
-| ACs | `A/B (C%)` acceptance criteria completion |
-| Priority | P0 (critical), P1 (high), P2 (normal) |
-| Type | feature, bug, hotfix, refactor, experiment |
-| Status | ready_for_review, active, planning, paused |
-
 ## Related Commands
 
-- `/sw:status` - Macro view (all increments grouped by status)
 - `/sw:done <id>` - Close increment after review
+- `/sw:increment` - Start new work

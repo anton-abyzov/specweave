@@ -2,7 +2,11 @@
   "id": "0205",
   "name": "skill-fabric",
   "type": "feature",
-  "status": "active",
+  "status": "abandoned",
   "priority": "P1",
-  "createdAt": "2026-02-13T00:00:00.000Z"
+  "created": "2026-02-13T00:00:00.000Z",
+  "updated": "2026-02-15T19:07:44.627Z",
+  "lastActivity": "2026-02-15T19:07:44.627Z",
+  "abandonedReason": "Foundation work (security scanner, registry, schema) already shipped in codebase. Remaining tasks superseded by 0217-skill-security-extensibility-standard.",
+  "abandonedAt": "2026-02-15T19:07:44.627Z"
 }

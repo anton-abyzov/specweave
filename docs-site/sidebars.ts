@@ -319,6 +319,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'doc',
+      id: 'guides/ai-coding-benchmarks',
+      label: 'AI Coding Benchmarks',
+    },
+    {
+      type: 'doc',
       id: 'guides/life-automation',
       label: 'Life Automation',
     },

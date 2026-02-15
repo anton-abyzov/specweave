@@ -1,3 +1,6 @@
+---
+status: abandoned
+---
 # Skill Fabric — Terminology, Marketplace Foundation & Natural Language UX
 
 ## Overview

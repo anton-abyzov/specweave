@@ -151,12 +151,30 @@ for increment_dir in "$INCREMENTS_DIR"/[0-9]*/; do
     completed_acs="${completed_acs:-0}"
   fi
 
-  # Get last activity from file mtime
+  # Collect file mtimes for stale detection and lastActivity
+  meta_mtime=0
+  tasks_mtime=0
+  spec_mtime=0
+  if [[ "$(uname)" == "Darwin" ]]; then
+    [[ -f "$metadata_file" ]] && meta_mtime=$(stat -f "%m" "$metadata_file" 2>/dev/null || echo "0")
+    [[ -f "$tasks_file" ]] && tasks_mtime=$(stat -f "%m" "$tasks_file" 2>/dev/null || echo "0")
+    [[ -f "$spec_file" ]] && spec_mtime=$(stat -f "%m" "$spec_file" 2>/dev/null || echo "0")
+  else
+    [[ -f "$metadata_file" ]] && meta_mtime=$(stat -c "%Y" "$metadata_file" 2>/dev/null || echo "0")
+    [[ -f "$tasks_file" ]] && tasks_mtime=$(stat -c "%Y" "$tasks_file" 2>/dev/null || echo "0")
+    [[ -f "$spec_file" ]] && spec_mtime=$(stat -c "%Y" "$spec_file" 2>/dev/null || echo "0")
+  fi
+
+  # Derive lastActivity from MAX of all file mtimes (not just metadata.json)
+  max_mtime="$meta_mtime"
+  [[ "$tasks_mtime" -gt "$max_mtime" ]] && max_mtime="$tasks_mtime"
+  [[ "$spec_mtime" -gt "$max_mtime" ]] && max_mtime="$spec_mtime"
+
   last_activity=""
   if [[ "$(uname)" == "Darwin" ]]; then
-    last_activity=$(stat -f "%Sm" -t "%Y-%m-%dT%H:%M:%SZ" "$metadata_file" 2>/dev/null || echo "")
+    last_activity=$(date -u -r "$max_mtime" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")
   else
-    last_activity=$(stat -c "%y" "$metadata_file" 2>/dev/null | sed 's/ /T/' | cut -d. -f1)Z || echo ""
+    last_activity=$(date -u -d "@$max_mtime" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")
   fi
 
   # Build increment JSON
@@ -172,6 +190,7 @@ for increment_dir in "$INCREMENTS_DIR"/[0-9]*/; do
     --argjson completed_acs "$completed_acs" \
     --arg created_at "$created_at" \
     --arg last_activity "$last_activity" \
+    --argjson last_activity_epoch "$max_mtime" \
     --argjson user_stories "$user_stories" \
     '{
       status: $status,
@@ -183,25 +202,12 @@ for increment_dir in "$INCREMENTS_DIR"/[0-9]*/; do
       acs: { total: $total_acs, completed: $completed_acs },
       createdAt: $created_at,
       lastActivity: $last_activity,
+      lastActivityEpoch: $last_activity_epoch,
       userStories: $user_stories
     }')
 
   # Add to increments object
   increments_json=$(echo "$increments_json" | jq --arg id "$increment_id" --argjson inc "$increment_json" '.[$id] = $inc')
-
-  # Collect mtimes for stale detection
-  meta_mtime=0
-  tasks_mtime=0
-  spec_mtime=0
-  if [[ "$(uname)" == "Darwin" ]]; then
-    [[ -f "$metadata_file" ]] && meta_mtime=$(stat -f "%m" "$metadata_file" 2>/dev/null || echo "0")
-    [[ -f "$tasks_file" ]] && tasks_mtime=$(stat -f "%m" "$tasks_file" 2>/dev/null || echo "0")
-    [[ -f "$spec_file" ]] && spec_mtime=$(stat -f "%m" "$spec_file" 2>/dev/null || echo "0")
-  else
-    [[ -f "$metadata_file" ]] && meta_mtime=$(stat -c "%Y" "$metadata_file" 2>/dev/null || echo "0")
-    [[ -f "$tasks_file" ]] && tasks_mtime=$(stat -c "%Y" "$tasks_file" 2>/dev/null || echo "0")
-    [[ -f "$spec_file" ]] && spec_mtime=$(stat -c "%Y" "$spec_file" 2>/dev/null || echo "0")
-  fi
 
   mtimes_json=$(echo "$mtimes_json" | jq --arg id "$increment_id" \
     --argjson meta "$meta_mtime" \
