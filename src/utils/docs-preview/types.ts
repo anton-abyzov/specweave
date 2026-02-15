@@ -1,3 +1,29 @@
+export interface DocCategory {
+  /** Folder name (e.g., 'strategy') */
+  id: string;
+  /** Human-readable label (e.g., 'Strategy') */
+  label: string;
+  /** Short description for landing page */
+  description: string;
+  /** Emoji icon for the category */
+  icon: string;
+  /** Number of markdown documents found */
+  docCount: number;
+}
+
+export interface ProjectMetadata {
+  /** Project name */
+  name: string;
+  /** Project description / tagline */
+  description: string;
+  /** 1-2 letter initials for logo generation */
+  initials: string;
+  /** Detected doc categories that actually exist */
+  categories: DocCategory[];
+  /** Source of the project name detection */
+  source: 'config' | 'package' | 'directory';
+}
+
 export interface DocusaurusConfig {
   title: string;
   tagline: string;
@@ -7,6 +33,8 @@ export interface DocusaurusConfig {
   port?: number;
   theme?: 'default' | 'classic' | 'dark';
   excludeFolders?: string[];
+  /** Auto-detected project metadata */
+  projectMetadata?: ProjectMetadata;
 }
 
 export interface SidebarItem {
