@@ -10,7 +10,7 @@ project: specweave
 external:
   github:
     issue: 1164
-    url: https://github.com/anton-abyzov/specweave/issues/1164
+    url: "https://github.com/anton-abyzov/specweave/issues/1164"
 ---
 
 # US-002: Universal Auto-Create for All Providers

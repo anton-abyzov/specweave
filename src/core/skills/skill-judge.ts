@@ -309,6 +309,20 @@ export class SkillJudge {
       return this.basicEvaluation(input, startTime, logger);
     }
 
+    // Check external API consent before making paid API call
+    try {
+      const { checkConsent } = await import('../llm/consent.js');
+      const consent = checkConsent('anthropic', process.cwd());
+      if (consent !== 'granted') {
+        logger.log(`External API consent not granted (status: ${consent}) - falling back to basic evaluation`, 'WARN');
+        return this.basicEvaluation(input, startTime, logger);
+      }
+    } catch {
+      // If consent module fails to load, fall back to basic evaluation
+      logger.log('Consent check failed - falling back to basic evaluation', 'WARN');
+      return this.basicEvaluation(input, startTime, logger);
+    }
+
     // Build evaluation prompt
     const criteria = DOMAIN_CRITERIA[input.domain] || DOMAIN_CRITERIA.backend;
     const userPrompt = this.buildPrompt(input, criteria);

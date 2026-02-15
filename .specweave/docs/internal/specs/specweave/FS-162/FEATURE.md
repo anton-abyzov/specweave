@@ -10,7 +10,7 @@ external_tools:
   github:
     type: milestone
     id: 80
-    url: https://github.com/anton-abyzov/specweave/milestone/80
+    url: "https://github.com/anton-abyzov/specweave/milestone/80"
 ---
 
 # LSP Integration Across Skills and Agents

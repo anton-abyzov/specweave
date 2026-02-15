@@ -133,6 +133,26 @@ export interface JSONSchemaType<T> {
 }
 
 /**
+ * External model API consent mode
+ */
+export type ConsentMode = 'ask' | 'always-allow' | 'never';
+
+/**
+ * Consent check result status
+ */
+export type ConsentStatus = 'granted' | 'denied' | 'ask';
+
+/**
+ * External model API consent configuration
+ */
+export interface ExternalModelsConfig {
+  /** Consent mode: ask (prompt user), always-allow (skip consent), never (block all) */
+  consent: ConsentMode;
+  /** Providers with standing consent (skip future prompts) */
+  allowedProviders: string[];
+}
+
+/**
  * Cost tracking data
  */
 export interface CostTrackingData {

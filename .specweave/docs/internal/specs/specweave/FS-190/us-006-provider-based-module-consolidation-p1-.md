@@ -4,7 +4,7 @@ feature: FS-190
 title: "Provider-Based Module Consolidation (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave contributor
 **I want** the 17+ sync files consolidated into ~5 provider-based modules
 **So that** the codebase is maintainable and new contributors can understand the sync system."

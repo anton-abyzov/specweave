@@ -53,17 +53,55 @@ export async function startDevServer(targetDir: string, options: ServerOptions):
   }
 
   // Start Docusaurus dev server
-  const process = spawn('npm', ['run', 'start', '--', '--port', port.toString(), '--host', host], {
+  const childProc = spawn('npm', ['run', 'start', '--', '--port', port.toString(), '--host', host], {
     cwd: targetDir,
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: true
   });
 
+  // Collect stderr for diagnostics on failure (capped to prevent unbounded growth)
+  const STDERR_MAX = 8192;
+  let stderrOutput = '';
+  childProc.stderr?.on('data', (data: Buffer) => {
+    if (stderrOutput.length < STDERR_MAX) {
+      stderrOutput += data.toString();
+    }
+  });
+
+  // Forward key stdout lines so users see Docusaurus compilation progress
+  // Filter out verbose warnings (broken links, deprecations) to keep output clean
+  childProc.stdout?.on('data', (data: Buffer) => {
+    const lines = data.toString().split('\n');
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      // Only show progress-relevant lines, skip verbose warnings
+      if (line.includes('[WARNING]')) continue;
+      console.log(`   ${line}`);
+    }
+  });
+
+  // Track whether the process has exited
+  let processExited = false;
+  let exitCode: number | null = null;
+  childProc.on('exit', (code) => {
+    processExited = true;
+    exitCode = code;
+  });
+
   const url = `http://${host}:${port}`;
 
-  // Wait for server to be ready
-  // Increased timeout to 120s for large documentation sites (744+ docs)
-  await waitForServer(url, 120000); // 120 second timeout
+  // Wait for server to be ready (fail fast if process crashes)
+  // 180s timeout for very large doc sites on slow machines; crash detection makes this a soft ceiling
+  await waitForServer(url, 180000, () => {
+    if (processExited) {
+      const errorSnippet = extractErrorFromOutput(stderrOutput);
+      throw new Error(
+        `Docusaurus process exited with code ${exitCode} before server was ready.` +
+        (errorSnippet ? `\n\nError details:\n${errorSnippet}` : '\n\nRun manually for full output: cd .specweave/docs-site-internal && npx docusaurus start')
+      );
+    }
+  });
 
   // Open browser if requested
   if (openBrowser) {
@@ -71,23 +109,52 @@ export async function startDevServer(targetDir: string, options: ServerOptions):
   }
 
   return {
-    pid: process.pid!,
+    pid: childProc.pid!,
     port,
     url,
     stop: async () => {
-      await stopServer(process);
+      await stopServer(childProc);
     }
   };
 }
 
 /**
- * Wait for server to be ready
+ * Extract meaningful error message from Docusaurus stderr output
  */
-function waitForServer(url: string, timeout: number): Promise<void> {
+function extractErrorFromOutput(output: string): string {
+  if (!output) return '';
+
+  // Look for [ERROR] lines which Docusaurus uses for fatal errors
+  const errorLines = output.split('\n').filter(line =>
+    line.includes('[ERROR]') || line.includes('Error:') || line.includes('YAMLException')
+  );
+
+  if (errorLines.length > 0) {
+    return errorLines.slice(0, 5).join('\n');
+  }
+
+  // Return last meaningful lines if no specific error pattern found
+  const lines = output.trim().split('\n').filter(l => l.trim());
+  return lines.slice(-5).join('\n');
+}
+
+/**
+ * Wait for server to be ready
+ * @param checkProcessAlive - Optional callback that throws if the server process has crashed
+ */
+function waitForServer(url: string, timeout: number, checkProcessAlive?: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
 
     const check = async () => {
+      // Check if process crashed before making HTTP request
+      try {
+        checkProcessAlive?.();
+      } catch (err) {
+        reject(err);
+        return;
+      }
+
       try {
         const http = await import('http');
         const urlObj = new URL(url);
@@ -229,6 +296,43 @@ export async function killAllDocusaurusProcesses(): Promise<number> {
   } catch (error) {
     // No processes found or error occurred
     return 0;
+  }
+}
+
+/**
+ * Kill process occupying a specific port
+ */
+export async function killProcessOnPort(port: number): Promise<boolean> {
+  const platform = process.platform;
+
+  try {
+    if (platform === 'win32') {
+      const result = await execFileNoThrow('netstat', ['-ano']);
+      if (!result.success) return false;
+
+      const lines = result.stdout.split('\n')
+        .filter(line => line.includes(`:${port}`) && line.includes('LISTENING'));
+
+      for (const line of lines) {
+        const parts = line.trim().split(/\s+/);
+        const pid = parts[parts.length - 1];
+        if (pid && /^\d+$/.test(pid)) {
+          await execFileNoThrow('taskkill', ['/F', '/PID', pid]);
+        }
+      }
+      return lines.length > 0;
+    } else {
+      const result = await execFileNoThrow('lsof', ['-ti', `:${port}`]);
+      if (!result.success || !result.stdout.trim()) return false;
+
+      const pids = result.stdout.trim().split('\n').filter(p => p.trim());
+      for (const pid of pids) {
+        await execFileNoThrow('kill', ['-9', pid.trim()]);
+      }
+      return pids.length > 0;
+    }
+  } catch {
+    return false;
   }
 }
 

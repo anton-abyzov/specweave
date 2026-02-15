@@ -14,7 +14,7 @@ external_tools:
   github:
     type: milestone
     id: 100
-    url: https://github.com/anton-abyzov/specweave/milestone/100
+    url: "https://github.com/anton-abyzov/specweave/milestone/100"
 ---
 
 # 0206: Universal External Sync Fix

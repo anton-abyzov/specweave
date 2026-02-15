@@ -72,7 +72,7 @@ export function createDefaultContext(projectId: string): TemplateContext {
     projectName: projectId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     createdDate: today,
     lastUpdatedDate: today,
-    incrementsRelativePath: '../../../../increments',
+    incrementsRelativePath: '../../../../../increments',
   };
 }
 

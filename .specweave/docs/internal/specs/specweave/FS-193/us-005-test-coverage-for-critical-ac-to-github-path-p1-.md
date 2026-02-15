@@ -4,7 +4,7 @@ feature: FS-193
 title: "Test Coverage for Critical AC-to-GitHub Path (P1)"
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 tldr: "**As a** contributor to the SpecWeave sync system
 **I want** comprehensive tests covering the AC-completion-to-GitHub-update chain
 **So that** the critical sync path is verified and regressions are caught."

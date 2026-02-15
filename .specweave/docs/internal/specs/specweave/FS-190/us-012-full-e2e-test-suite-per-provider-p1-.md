@@ -4,7 +4,7 @@ feature: FS-190
 title: "Full E2E Test Suite Per Provider (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave contributor
 **I want** real E2E tests that exercise actual GitHub/JIRA/ADO APIs
 **So that** sync changes are validated against real platforms before release."

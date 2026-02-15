@@ -4,7 +4,7 @@ feature: FS-183
 title: "Custom LSP Server Registration (P2)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer using uncommon languages
 **I want** to register custom LSP servers via configuration
 **So that** I can use SpecWeave with any language that has an LSP server."

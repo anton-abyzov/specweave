@@ -4,7 +4,7 @@ feature: FS-192
 title: "Deprecated Code Cleanup (P3)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave contributor,
 **I want** deprecated GitHub sync code removed and replaced with clear migration paths,
 **So that** the codebase has a single canonical sync path and no confusion between old and new systems."

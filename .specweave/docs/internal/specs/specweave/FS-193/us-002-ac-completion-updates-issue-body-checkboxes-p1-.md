@@ -4,7 +4,7 @@ feature: FS-193
 title: "AC Completion Updates Issue Body Checkboxes (P1)"
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 tldr: "**As a** developer viewing a GitHub issue
 **I want** the AC checkboxes in the issue body to reflect the current spec state
 **So that** the issue shows accurate completion status without manual sync."

@@ -9,7 +9,7 @@ project: specweave-dev
 external:
   github:
     issue: 999
-    url: https://github.com/anton-abyzov/specweave/issues/999
+    url: "https://github.com/anton-abyzov/specweave/issues/999"
 ---
 
 # US-004: Update Living Docs Command with LSP Instructions

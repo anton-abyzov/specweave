@@ -91,12 +91,21 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
 
   // Launch preview
   try {
-    const { launchPreview, killAllDocusaurusProcesses } = await import('../../utils/docs-preview/index.js');
+    const { launchPreview, killAllDocusaurusProcesses, killProcessOnPort } = await import('../../utils/docs-preview/index.js');
 
     // Kill any existing Docusaurus processes to avoid port conflicts
     const killed = await killAllDocusaurusProcesses();
     if (killed > 0) {
       console.log(chalk.dim(`   Stopped ${killed} existing Docusaurus process(es)\n`));
+    }
+
+    // Kill any process occupying the target port (default 3016 if not specified)
+    const targetPort = options.port || 3016;
+    const portKilled = await killProcessOnPort(targetPort);
+    if (portKilled) {
+      console.log(chalk.dim(`   Freed port ${targetPort}\n`));
+      // Brief wait for OS to release the port
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     console.log(chalk.cyan('🚀 Starting documentation server...\n'));

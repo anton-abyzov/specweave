@@ -13,7 +13,7 @@ external_tools:
   github:
     type: milestone
     id: 99
-    url: https://github.com/anton-abyzov/specweave/milestone/99
+    url: "https://github.com/anton-abyzov/specweave/milestone/99"
 ---
 
 # CLI Test Coverage to 50%

@@ -4,7 +4,7 @@ feature: FS-190
 title: "E-to-Platform Suffix Migration (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user with existing E-suffix items
 **I want** automatic migration from E suffix to the correct platform suffix
 **So that** my existing data transitions cleanly to the new convention."

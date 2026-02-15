@@ -4,7 +4,7 @@ feature: FS-190
 title: "Flexible Hierarchy Mapping (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user integrating with diverse JIRA/ADO setups
 **I want** the hierarchy to auto-detect and adapt to the external tool's structure
 **So that** flat-task teams, standard Scrum teams, and SAFe orgs can all sync correctly."

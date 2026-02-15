@@ -34,7 +34,7 @@ export interface GeneratorContext {
 const DEFAULT_CONTEXT: GeneratorContext = {
   projectId: 'default',
   projectName: 'Project',
-  incrementsRelativePath: '../../../../increments',
+  incrementsRelativePath: '../../../../../increments',
   useRelativeLinks: true,
 };
 

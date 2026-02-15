@@ -518,7 +518,7 @@ success_criteria:
 2. **Use templates** if available
 3. **Add backwards links** to related docs
 4. **Update sidebar** if adding new files (see `docs-site/sidebars.ts`)
-5. **Test locally**: `npm run docs:dev`
+5. **Test locally**: `specweave docs preview` (internal docs) or `cd docs-site && npm start` (public site)
 
 ### Code Style
 
@@ -827,17 +827,17 @@ See [.specweave/docs/README.md](../.specweave/docs/README.md) for complete 5-pil
 ### Building Documentation
 
 ```bash
-# Install dependencies
+# Internal docs (living docs from .specweave/docs/internal/)
+specweave docs preview
+specweave docs build
+
+# Public site (docs-site/ - product website)
 cd docs-site && npm install
-
-# Serve locally (development mode with hot-reload)
-npm run docs:dev
-
-# Build (production build)
-npm run docs:build
+cd docs-site && npm start        # dev server with hot-reload
+cd docs-site && npm run build    # production build
 
 # Deploy (maintainers only - via GitHub Actions)
-# Automatically deployed to Vercel/GitHub Pages on push
+# Automatically deployed to GitHub Pages on push
 ```
 
 ---

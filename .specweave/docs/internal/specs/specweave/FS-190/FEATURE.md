@@ -4,7 +4,7 @@ title: "Sync Architecture Redesign"
 type: feature
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 lastUpdated: 2026-02-10
 tldr: "SpecWeave's external sync system (GitHub, JIRA, A."
 complexity: high

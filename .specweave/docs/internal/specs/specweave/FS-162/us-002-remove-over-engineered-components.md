@@ -9,7 +9,7 @@ project: specweave-dev
 external:
   github:
     issue: 997
-    url: https://github.com/anton-abyzov/specweave/issues/997
+    url: "https://github.com/anton-abyzov/specweave/issues/997"
 ---
 
 # US-002: Update Frontend Architect Agent with LSP

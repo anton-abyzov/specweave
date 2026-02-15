@@ -585,6 +585,29 @@
       },
       "additionalProperties": false
     },
+    "externalModels": {
+      "type": "object",
+      "description": "External model API consent configuration. Controls user consent for paid API calls (Anthropic, OpenAI, Azure, etc.)",
+      "properties": {
+        "consent": {
+          "type": "string",
+          "description": "Consent mode: ask (prompt user before external API calls), always-allow (skip consent), never (block all external APIs, use fallbacks)",
+          "enum": ["ask", "always-allow", "never"],
+          "default": "ask"
+        },
+        "allowedProviders": {
+          "type": "array",
+          "description": "Providers with standing consent (skip future prompts)",
+          "items": {
+            "type": "string",
+            "enum": ["anthropic", "openai", "azure-openai", "bedrock", "vertex-ai"]
+          },
+          "uniqueItems": true,
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
     "testing": {
       "type": "object",
       "description": "Testing configuration including TDD mode, coverage targets, and browser automation",

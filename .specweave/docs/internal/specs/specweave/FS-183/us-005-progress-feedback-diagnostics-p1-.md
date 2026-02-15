@@ -4,7 +4,7 @@ feature: FS-183
 title: "Progress Feedback & Diagnostics (P1)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer waiting for LSP indexing
 **I want** progress feedback and diagnostic tools
 **So that** I know what's happening and can troubleshoot issues."

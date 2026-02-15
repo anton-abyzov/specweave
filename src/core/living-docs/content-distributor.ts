@@ -337,7 +337,7 @@ export class ContentDistributor {
 
     // Add footer
     content += `---\n\n`;
-    content += `**Source**: [Increment ${incrementId}](../../../increments/${incrementId}/spec.md)\n`;
+    content += `**Source**: [Increment ${incrementId}](../../../../increments/${incrementId}/spec.md)\n`;
     content += `**Project**: ${project.name}\n`;
     content += `**Last Updated**: ${new Date().toISOString().split('T')[0]}\n`;
 

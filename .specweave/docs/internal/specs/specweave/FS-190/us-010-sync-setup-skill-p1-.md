@@ -4,7 +4,7 @@ feature: FS-190
 title: "Sync Setup Skill (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user
 **I want** an interactive `/sw:sync-setup` skill that configures sync in one guided flow
 **So that** I don't need to manually edit config."

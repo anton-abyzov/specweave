@@ -4,7 +4,7 @@ feature: FS-192
 title: "Multi-Repo Distributed Sync (P2)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "Multi-Repo Distributed Sync (P2)"
 project: specweave
 ---

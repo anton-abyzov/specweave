@@ -4,7 +4,7 @@ feature: FS-193
 title: "Auto-Close Issue When All ACs Done (P2)"
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 tldr: "**As a** project manager viewing the GitHub project board
 **I want** issues to auto-close when all their acceptance criteria are completed
 **So that** the board reflects accurate per-user-story completion status."

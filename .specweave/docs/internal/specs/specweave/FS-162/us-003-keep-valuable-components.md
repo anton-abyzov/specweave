@@ -9,7 +9,7 @@ project: specweave-dev
 external:
   github:
     issue: 998
-    url: https://github.com/anton-abyzov/specweave/issues/998
+    url: "https://github.com/anton-abyzov/specweave/issues/998"
 ---
 
 # US-003: Update Database Optimizer Agent with LSP

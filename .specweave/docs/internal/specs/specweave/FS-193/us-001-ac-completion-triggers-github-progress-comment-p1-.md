@@ -4,7 +4,7 @@ feature: FS-193
 title: "AC Completion Triggers GitHub Progress Comment (P1)"
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 tldr: "**As a** team lead tracking progress on GitHub
 **I want** a progress comment automatically posted to the GitHub issue when acceptance criteria are completed
 **So that** I see real-time progress without running manual sync commands."

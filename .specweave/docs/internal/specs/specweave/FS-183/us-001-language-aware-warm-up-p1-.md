@@ -4,7 +4,7 @@ feature: FS-183
 title: "Language-Aware Warm-up (P1)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer working on C#/Python/Go/Rust projects
 **I want** LSP warm-up to detect my project's language and use appropriate strategy
 **So that** semantic code intelligence works on first invocation without manual configuration."

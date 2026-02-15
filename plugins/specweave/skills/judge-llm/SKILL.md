@@ -53,6 +53,24 @@ allowed-tools: Read, Grep, Glob, Bash
 /sw:judge-llm src/file.ts --verbose  # Show progress to console
 ```
 
+## External API Cost Consent (MANDATORY)
+
+**This skill uses the Anthropic API directly (NOT your Claude Code subscription).** Each evaluation costs approximately $0.01-0.05 depending on code size.
+
+**Before invoking the Anthropic API, you MUST check consent:**
+
+1. Read `.specweave/config.json` → check `externalModels.consent` field
+2. If `"always-allow"` → proceed silently
+3. If `"never"` → skip API call, use in-session ultrathink evaluation instead
+4. If `"ask"` (default):
+   - Check if `"anthropic"` is in `externalModels.allowedProviders`
+   - If YES → proceed silently (standing permission)
+   - If NO → **ASK USER**: "Judge-LLM will call the Anthropic API using your ANTHROPIC_API_KEY. This costs ~$0.01-0.05 per evaluation. Proceed? (yes/no/always)"
+     - "yes" → proceed this time only
+     - "no" → skip API call, use in-session ultrathink instead
+     - "always" → run: `grantStandingConsent('anthropic', projectRoot)` from `src/core/llm/consent.ts`, then proceed
+5. No `ANTHROPIC_API_KEY` set → falls back to pattern matching automatically (no cost, no consent needed)
+
 ## Workflow
 
 ### Step 1: Gather Input

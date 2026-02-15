@@ -10,6 +10,7 @@ import * as path from 'path';
 import type { LLMConfig, LLMProvider, LLMProviderType } from './types.js';
 import { isClaudeCodeAvailable, getClaudeCodeStatus } from './providers/claude-code-provider.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { isExternalProvider, checkConsent, ExternalApiConsentDeniedError } from './consent.js';
 
 // Re-export for convenience
 export { isClaudeCodeAvailable, getClaudeCodeStatus };
@@ -19,6 +20,8 @@ export { isClaudeCodeAvailable, getClaudeCodeStatus };
  */
 export interface ProviderFactoryOptions {
   logger?: Logger;
+  /** Project root for consent config lookup (defaults to cwd) */
+  projectRoot?: string;
 }
 
 /**
@@ -63,6 +66,18 @@ export async function createProvider(
   options: ProviderFactoryOptions = {}
 ): Promise<LLMProvider> {
   const logger = options.logger ?? consoleLogger;
+
+  // Consent gate: check before creating paid providers
+  if (isExternalProvider(config.provider)) {
+    const projectRoot = options.projectRoot ?? process.cwd();
+    const consent = checkConsent(config.provider, projectRoot);
+    if (consent === 'denied') {
+      throw new ExternalApiConsentDeniedError(config.provider);
+    }
+    if (consent === 'ask') {
+      throw new ExternalApiConsentDeniedError(config.provider);
+    }
+  }
 
   switch (config.provider) {
     case 'claude-code':

@@ -12,7 +12,7 @@ project: specweave
 external:
   github:
     issue: 1162
-    url: https://github.com/anton-abyzov/specweave/issues/1162
+    url: "https://github.com/anton-abyzov/specweave/issues/1162"
 ---
 
 # US-003: As a developer, I want obsolete skipped tests cleaned up so test stats are accurate

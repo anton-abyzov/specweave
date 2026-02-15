@@ -4,7 +4,7 @@ feature: FS-190
 title: "Increment Folder Platform Suffix (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user
 **I want** increment folders to carry the platform suffix (e."
 project: specweave

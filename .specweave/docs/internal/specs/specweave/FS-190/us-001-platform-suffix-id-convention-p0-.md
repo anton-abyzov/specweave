@@ -4,7 +4,7 @@ feature: FS-190
 title: "Platform Suffix ID Convention (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave developer
 **I want** external items identified by platform-specific suffixes (G/J/A) instead of generic E
 **So that** I can see at a glance where an item originated and eliminate cross-namespace collision complexity."
