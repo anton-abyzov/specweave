@@ -1,11 +1,12 @@
-import { useProjectApi } from '../hooks/useProjectApi';
-import { useSSE } from '../hooks/useSSE';
+import { Link } from 'react-router-dom';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSE } from '../hooks/useSSE.js';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { KpiCard } from '../components/ui/KpiCard';
-import { StatusDonut, buildDonutSegments } from '../components/charts/StatusDonut';
-import { Badge, statusBadgeVariant } from '../components/ui/Badge';
-import { PageLoader } from '../components/ui/Spinner';
-import { useProject } from '../hooks/useProject';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { StatusDonut, buildDonutSegments } from '../components/charts/StatusDonut.js';
+import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
+import { PageLoader } from '../components/ui/Spinner.js';
+import { useProject } from '../hooks/useProject.js';
 
 interface OverviewData {
   project: {
@@ -15,6 +16,7 @@ interface OverviewData {
     completedIncrements: number;
     statusBreakdown: Record<string, number>;
     typeBreakdown: Record<string, number>;
+    priorityBreakdown?: Record<string, number>;
   };
   analytics: {
     totalEvents: number;
@@ -32,7 +34,15 @@ interface OverviewData {
     criticalCount: number;
   };
   sync: {
-    platforms: Record<string, { lastImport: string; lastSyncResult: string }>;
+    platforms: Record<string, {
+      connectionStatus?: string;
+      diagnosticMessage?: string;
+      configDetail?: string;
+      lastImport?: string;
+      lastSyncResult?: string;
+      lastImportCount?: number;
+      lastSkippedCount?: number;
+    }>;
   };
 }
 
@@ -42,6 +52,29 @@ interface ActivityItem {
   title: string;
   timestamp?: string;
 }
+
+function syncStatusVariant(status?: string): 'default' | 'success' | 'warning' | 'error' | 'info' {
+  switch (status) {
+    case 'connected': return 'success';
+    case 'sync_failed': return 'warning';
+    case 'configured_never_synced': return 'info';
+    case 'not_configured':
+    default: return 'default';
+  }
+}
+
+function syncStatusLabel(status?: string): string {
+  switch (status) {
+    case 'connected': return 'Connected';
+    case 'sync_failed': return 'Sync Failed';
+    case 'configured_never_synced': return 'Ready';
+    case 'not_configured': return 'Not Configured';
+    default: return status || 'Unknown';
+  }
+}
+
+const isMaxPlan = (costs: OverviewData['costs']): boolean =>
+  costs.totalCost === 0 && costs.sessionCount > 0;
 
 export function OverviewPage() {
   const { data, loading, error } = useProjectApi<OverviewData>('/api/overview');
@@ -89,31 +122,49 @@ export function OverviewPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          title="Active Increments"
-          value={data.project.activeIncrements}
-          subtitle={`${data.project.totalIncrements} total`}
-          color="indigo"
-        />
-        <KpiCard
-          title="Completed"
-          value={data.project.completedIncrements}
-          subtitle={`${Math.round((data.project.completedIncrements / Math.max(data.project.totalIncrements, 1)) * 100)}% done`}
-          color="emerald"
-        />
-        <KpiCard
-          title="Total Cost"
-          value={`$${data.costs.totalCost.toFixed(2)}`}
-          subtitle={`${data.costs.sessionCount} sessions`}
-          color="amber"
-        />
-        <KpiCard
-          title="Events Today"
-          value={data.analytics.last24hEvents}
-          subtitle={`${data.analytics.totalEvents} total`}
-          color="cyan"
-        />
+        <Link to="/increments?status=active" className="group">
+          <KpiCard
+            title="Active Increments"
+            value={data.project.activeIncrements}
+            subtitle={`${data.project.totalIncrements} total`}
+            color="indigo"
+          />
+        </Link>
+        <Link to="/increments?status=completed" className="group">
+          <KpiCard
+            title="Completed"
+            value={data.project.completedIncrements}
+            subtitle={`${Math.round((data.project.completedIncrements / Math.max(data.project.totalIncrements, 1)) * 100)}% done`}
+            color="emerald"
+          />
+        </Link>
+        <Link to="/costs" className="group">
+          <KpiCard
+            title="Total Cost"
+            value={isMaxPlan(data.costs) ? '$0.00' : `$${data.costs.totalCost.toFixed(2)}`}
+            subtitle={isMaxPlan(data.costs) ? 'Max Plan' : `${data.costs.sessionCount.toLocaleString()} sessions`}
+            color="amber"
+          />
+        </Link>
+        <Link to="/analytics" className="group">
+          <KpiCard
+            title="Events Today"
+            value={data.analytics.last24hEvents}
+            subtitle={`${data.analytics.totalEvents.toLocaleString()} total`}
+            color="cyan"
+          />
+        </Link>
       </div>
+
+      {/* Max Plan Banner */}
+      {isMaxPlan(data.costs) && (
+        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
+          <Badge label="Max Plan" variant="info" />
+          <span className="text-xs text-gray-300">
+            API costs included in subscription. Token usage tracked for analytics.
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Status Donut */}
@@ -128,16 +179,20 @@ export function OverviewPage() {
           </div>
           <div className="flex flex-wrap gap-2 mt-4 justify-center">
             {donutSegments.map((s) => (
-              <div key={s.label} className="flex items-center gap-1.5">
+              <Link
+                key={s.label}
+                to={`/increments?status=${s.label.toLowerCase()}`}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                <span className="text-xs text-gray-500">{s.label} ({s.value})</span>
-              </div>
+                <span className="text-xs text-gray-500 hover:text-gray-300">{s.label} ({s.value})</span>
+              </Link>
             ))}
           </div>
         </div>
 
         {/* Sync Platforms */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+        <Link to="/sync" className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors block">
           <h3 className="text-sm font-medium text-gray-300 mb-4">Sync Health</h3>
           <div className="space-y-3">
             {Object.entries(data.sync.platforms).length === 0 ? (
@@ -147,11 +202,21 @@ export function OverviewPage() {
                 <div key={platform} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                   <div>
                     <span className="text-sm text-gray-300 capitalize">{platform}</span>
-                    <div className="text-xs text-gray-600 mt-0.5">
-                      {info.lastImport ? `Last: ${new Date(info.lastImport).toLocaleDateString()}` : 'Never synced'}
-                    </div>
+                    {info.configDetail && (
+                      <div className="text-[10px] text-gray-600 mt-0.5">{info.configDetail}</div>
+                    )}
+                    {!info.configDetail && info.lastImport && (
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        Last: {new Date(info.lastImport).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
-                  <Badge label={info.lastSyncResult || 'unknown'} variant={statusBadgeVariant(info.lastSyncResult)} />
+                  <Badge
+                    label={syncStatusLabel(info.connectionStatus || info.lastSyncResult)}
+                    variant={syncStatusVariant(info.connectionStatus) !== 'default'
+                      ? syncStatusVariant(info.connectionStatus)
+                      : statusBadgeVariant(info.lastSyncResult || '')}
+                  />
                 </div>
               ))
             )}
@@ -163,20 +228,29 @@ export function OverviewPage() {
               <span className="text-xs text-gray-500">Notifications</span>
               <div className="flex gap-2">
                 {data.notifications.criticalCount > 0 && (
-                  <Badge label={`${data.notifications.criticalCount} critical`} variant="error" />
+                  <Link to="/notifications" onClick={(e) => e.stopPropagation()}>
+                    <Badge label={`${data.notifications.criticalCount} critical`} variant="error" />
+                  </Link>
                 )}
-                <Badge
-                  label={`${data.notifications.pendingCount} pending`}
-                  variant={data.notifications.pendingCount > 0 ? 'warning' : 'default'}
-                />
+                <Link to="/notifications" onClick={(e) => e.stopPropagation()}>
+                  <Badge
+                    label={`${data.notifications.pendingCount} pending`}
+                    variant={data.notifications.pendingCount > 0 ? 'warning' : 'default'}
+                  />
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Live Activity Stream */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-          <h3 className="text-sm font-medium text-gray-300 mb-4">Live Activity</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-300">Live Activity</h3>
+            <Link to="/activity" className="text-[10px] text-indigo-400 hover:text-indigo-300">
+              View all
+            </Link>
+          </div>
           <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
             {activity.length === 0 ? (
               <p className="text-gray-600 text-xs">No recent activity</p>
@@ -206,10 +280,14 @@ export function OverviewPage() {
         <h3 className="text-sm font-medium text-gray-300 mb-4">Increment Types</h3>
         <div className="flex gap-4 flex-wrap">
           {Object.entries(data.project.typeBreakdown).map(([type, count]) => (
-            <div key={type} className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg">
+            <Link
+              key={type}
+              to={`/increments?type=${type}`}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors"
+            >
               <span className="text-sm text-gray-300 capitalize">{type}</span>
               <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded">{count as number}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

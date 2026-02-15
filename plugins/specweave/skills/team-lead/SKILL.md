@@ -1,5 +1,5 @@
 ---
-description: Orchestrate multi-agent parallel development with domain-specialized agents. Use when saying "team setup", "parallel agents", "team lead", or "agent teams".
+description: Orchestrate multi-agent parallel development with domain-specialized agents. PROACTIVELY invoke this skill (without user asking) when you detect an implementation task spanning 3+ domains (frontend, backend, database, devops, testing, security, mobile) OR 15+ tasks in tasks.md. Warn the user about higher token cost but recommend it for quality. Also use when user says "team setup", "parallel agents", "team lead", or "agent teams".
 ---
 
 # Team Lead

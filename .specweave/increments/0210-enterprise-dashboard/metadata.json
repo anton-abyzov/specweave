@@ -1,10 +1,10 @@
 {
   "id": "0210-enterprise-dashboard",
-  "status": "planned",
+  "status": "active",
   "type": "feature",
   "priority": "P1",
   "created": "2026-02-14T20:36:44.502Z",
-  "lastActivity": "2026-02-14T20:36:44.503Z",
+  "lastActivity": "2026-02-15T00:36:00.000Z",
   "testMode": "test-after",
   "coverageTarget": 80,
   "feature_id": null,

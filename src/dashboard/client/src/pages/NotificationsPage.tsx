@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { useProject } from '../hooks/useProject';
-import { Badge } from '../components/ui/Badge';
-import { KpiCard } from '../components/ui/KpiCard';
-import { PageLoader } from '../components/ui/Spinner';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useProject } from '../hooks/useProject.js';
+import { Badge } from '../components/ui/Badge.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { PageLoader } from '../components/ui/Spinner.js';
 
 interface Notification {
   id: string;
@@ -18,6 +18,8 @@ interface Notification {
 }
 
 type FilterMode = 'pending' | 'dismissed' | 'all';
+
+const SEVERITY_ORDER: Record<string, number> = { critical: 0, warning: 1, info: 2 };
 
 export function NotificationsPage() {
   const [filter, setFilter] = useState<FilterMode>('pending');
@@ -36,6 +38,14 @@ export function NotificationsPage() {
 
   const filtered = filter === 'pending' ? pending :
     filter === 'dismissed' ? dismissed : notifications;
+
+  // Sort by severity (critical first, then warning, then info)
+  const sorted = [...filtered].sort((a, b) => {
+    const aOrder = SEVERITY_ORDER[a.severity] ?? 3;
+    const bOrder = SEVERITY_ORDER[b.severity] ?? 3;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const handleDismiss = async (id: string) => {
     setDismissing(id);
@@ -73,6 +83,23 @@ export function NotificationsPage() {
     if (sev === 'critical') return 'border-l-rose-500';
     if (sev === 'warning') return 'border-l-amber-500';
     return 'border-l-blue-500';
+  };
+
+  // Group by severity for display
+  const groupedBySeverity = (items: Notification[]) => {
+    const groups: Record<string, Notification[]> = {};
+    for (const n of items) {
+      if (!groups[n.severity]) groups[n.severity] = [];
+      groups[n.severity].push(n);
+    }
+    return groups;
+  };
+
+  const groups = groupedBySeverity(sorted);
+  const severityLabels: Record<string, string> = {
+    critical: 'Critical',
+    warning: 'Warnings',
+    info: 'Informational',
   };
 
   return (
@@ -119,56 +146,77 @@ export function NotificationsPage() {
         )}
       </div>
 
-      {/* Notification List */}
-      <div className="space-y-2">
-        {filtered.length === 0 ? (
-          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
-            <p className="text-gray-500 text-sm">
-              {filter === 'pending' ? 'No pending notifications' : 'No notifications'}
-            </p>
-            <p className="text-gray-600 text-xs mt-1">
-              Notifications appear here when imports complete, discrepancies are found, or syncs fail
-            </p>
+      {/* Notification List - Grouped by Severity */}
+      {sorted.length === 0 ? (
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
           </div>
-        ) : (
-          filtered.map(n => (
-            <div
-              key={n.id}
-              className={`bg-gray-900/50 border border-gray-800 border-l-4 ${severityColor(n.severity)} rounded-xl p-4 flex items-start gap-4 ${
-                n.dismissedAt ? 'opacity-60' : ''
-              }`}
-            >
-              <SeverityIcon severity={n.severity} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-200">{n.title}</span>
-                  <Badge label={n.severity} variant={severityVariant(n.severity)} />
-                  {n.type && (
-                    <Badge label={n.type} variant="default" />
-                  )}
+          <p className="text-gray-400 text-sm font-medium">
+            {filter === 'pending' ? 'No pending notifications' : 'No notifications'}
+          </p>
+          <p className="text-gray-600 text-xs mt-1 max-w-xs mx-auto">
+            Notifications appear here when imports complete, discrepancies are found, or syncs fail
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {['critical', 'warning', 'info'].map(sev => {
+            const items = groups[sev];
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={sev}>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs font-medium text-gray-400 uppercase">
+                    {severityLabels[sev] || sev}
+                  </h3>
+                  <span className="text-[10px] text-gray-600">({items.length})</span>
                 </div>
-                {n.message && (
-                  <p className="text-xs text-gray-400 mb-2">{n.message}</p>
-                )}
-                <div className="flex items-center gap-3 text-[10px] text-gray-600">
-                  <span>{new Date(n.createdAt).toLocaleString()}</span>
-                  {n.source && <span>via {n.source}</span>}
-                  {n.dismissedAt && <span>Dismissed {new Date(n.dismissedAt).toLocaleString()}</span>}
+                <div className="space-y-2">
+                  {items.map(n => (
+                    <div
+                      key={n.id}
+                      className={`bg-gray-900/50 border border-gray-800 border-l-4 ${severityColor(n.severity)} rounded-xl p-4 flex items-start gap-4 ${
+                        n.dismissedAt ? 'opacity-60' : ''
+                      }`}
+                    >
+                      <SeverityIcon severity={n.severity} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-gray-200">{n.title}</span>
+                          <Badge label={n.severity} variant={severityVariant(n.severity)} />
+                          {n.type && (
+                            <Badge label={n.type} variant="default" />
+                          )}
+                        </div>
+                        {n.message && (
+                          <p className="text-xs text-gray-400 mb-2">{n.message}</p>
+                        )}
+                        <div className="flex items-center gap-3 text-[10px] text-gray-600">
+                          <span>{new Date(n.createdAt).toLocaleString()}</span>
+                          {n.source && <span>via {n.source}</span>}
+                          {n.dismissedAt && <span>Dismissed {new Date(n.dismissedAt).toLocaleString()}</span>}
+                        </div>
+                      </div>
+                      {!n.dismissedAt && (
+                        <button
+                          onClick={() => handleDismiss(n.id)}
+                          disabled={dismissing === n.id}
+                          className="px-2 py-1 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded transition-colors disabled:opacity-50 flex-shrink-0"
+                        >
+                          {dismissing === n.id ? '...' : 'Dismiss'}
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-              {!n.dismissedAt && (
-                <button
-                  onClick={() => handleDismiss(n.id)}
-                  disabled={dismissing === n.id}
-                  className="px-2 py-1 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded transition-colors disabled:opacity-50 flex-shrink-0"
-                >
-                  {dismissing === n.id ? '...' : 'Dismiss'}
-                </button>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

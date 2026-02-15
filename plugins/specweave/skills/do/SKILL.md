@@ -1,5 +1,5 @@
 ---
-description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment".
+description: Execute increment tasks following spec and plan with sync hooks. Use when saying "implement", "start working", "execute tasks", or "continue increment". IMPORTANT - Before starting, check task count and domain count. If 3+ domains or 15+ tasks, recommend /sw:team-lead instead (ask user for confirmation, or auto-invoke in auto mode).
 argument-hint: "<increment-id>"
 hooks:
   PostToolUse:

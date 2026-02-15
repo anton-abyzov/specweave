@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { KpiCard } from '../components/ui/KpiCard';
-import { Badge } from '../components/ui/Badge';
-import { BarChart } from '../components/charts/BarChart';
-import { PageLoader } from '../components/ui/Spinner';
+import { Link } from 'react-router-dom';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { Badge } from '../components/ui/Badge.js';
+import { PageLoader } from '../components/ui/Spinner.js';
 
 interface AnalyticsData {
   totalEvents: number;
+  successRate: number;
+  last24hEvents: number;
   topCommands?: Array<{ name: string; count: number }>;
-  topSkills?: Array<{ name: string; count: number }>;
+  topSkills?: Array<{ name: string; plugin?: string; count: number; successCount?: number; failureCount?: number; lastUsed?: string }>;
   topAgents?: Array<{ name: string; count: number }>;
   dailySummaries?: Array<{ date: string; totalEvents: number }>;
 }
@@ -23,10 +25,10 @@ interface SkillUsage {
   lastUsed: string;
 }
 
-type Tab = 'overview' | 'skills';
+type Tab = 'commands' | 'skills' | 'agents' | 'daily';
 
 export function AnalyticsPage() {
-  const [tab, setTab] = useState<Tab>('overview');
+  const [tab, setTab] = useState<Tab>('commands');
   const { data, loading, error } = useProjectApi<AnalyticsData>('/api/analytics/summary');
   const { data: skills, loading: sl } = useProjectApi<SkillUsage[]>('/api/analytics/skills');
 
@@ -42,69 +44,105 @@ export function AnalyticsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-200">Analytics</h2>
-        <span className="text-sm text-gray-500">{data.totalEvents} total events</span>
+        <span className="text-sm text-gray-500">{data.totalEvents.toLocaleString()} total events</span>
       </div>
 
       {/* KPI Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Total Events" value={data.totalEvents} color="indigo" />
-        <KpiCard title="Commands" value={commandCount} color="cyan" />
-        <KpiCard title="Skills" value={skillCount} color="emerald" />
-        <KpiCard title="Agents" value={agentCount} color="amber" />
+        <KpiCard title="Total Events" value={data.totalEvents.toLocaleString()} subtitle={`${data.successRate}% success rate`} color="indigo" />
+        <KpiCard title="Commands" value={commandCount.toLocaleString()} subtitle={`${data.topCommands?.length || 0} unique`} color="cyan" />
+        <KpiCard title="Skills" value={skillCount.toLocaleString()} subtitle={`${data.topSkills?.length || 0} unique`} color="emerald" />
+        <KpiCard title="Agents" value={agentCount.toLocaleString()} subtitle={`${data.topAgents?.length || 0} unique`} color="amber" />
       </div>
 
       {/* Tab Bar */}
       <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
-        {(['overview', 'skills'] as Tab[]).map(t => (
+        {([
+          { key: 'commands' as Tab, label: 'Commands' },
+          { key: 'skills' as Tab, label: 'Skills' },
+          { key: 'agents' as Tab, label: 'Agents' },
+          { key: 'daily' as Tab, label: 'Daily Trends' },
+        ]).map(t => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={t.key}
+            onClick={() => setTab(t.key)}
             className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
-              tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              tab === t.key ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            {t === 'overview' ? 'Usage Charts' : 'Skill Leaderboard'}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartSection title="Top Commands" items={data.topCommands} color="#6366f1" />
-          <ChartSection title="Top Skills" items={data.topSkills} color="#10b981" />
-          <ChartSection title="Top Agents" items={data.topAgents} color="#06b6d4" />
-
-          {/* Daily Events */}
-          {data.dailySummaries && data.dailySummaries.length > 0 && (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-              <h3 className="text-sm font-medium text-gray-300 mb-4">Daily Events (Last 14 Days)</h3>
-              <DailyBarChart days={data.dailySummaries.slice(-14)} />
-            </div>
-          )}
-        </div>
+      {tab === 'commands' && (
+        <CommandsTab commands={data.topCommands || []} />
       )}
 
       {tab === 'skills' && (
         <SkillLeaderboard skills={skills || []} />
       )}
+
+      {tab === 'agents' && (
+        <AgentsTab agents={data.topAgents || []} />
+      )}
+
+      {tab === 'daily' && (
+        <DailyTrendsTab days={data.dailySummaries || []} />
+      )}
     </div>
   );
 }
 
-function ChartSection({ title, items, color }: {
-  title: string;
-  items?: Array<{ name: string; count: number }>;
-  color: string;
-}) {
-  const barItems = (items || []).map((i) => ({ label: i.name, value: i.count, color }));
+function CommandsTab({ commands }: { commands: Array<{ name: string; count: number }> }) {
+  if (commands.length === 0) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+        <p className="text-gray-500 text-sm">No command data available</p>
+      </div>
+    );
+  }
+
+  const sorted = [...commands].sort((a, b) => b.count - a.count);
+  const maxCount = sorted[0]?.count || 1;
+
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-medium text-gray-300 mb-4">{title}</h3>
-      {barItems.length > 0 ? (
-        <BarChart items={barItems} />
-      ) : (
-        <p className="text-gray-600 text-xs">No data available</p>
-      )}
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="px-5 py-3 border-b border-gray-800">
+        <h3 className="text-sm font-medium text-gray-300">Top Commands</h3>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-800">
+            <th className="text-left px-4 py-2 text-xs text-gray-500 w-12">Rank</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Command</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Usage</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((cmd, i) => {
+            const barWidth = Math.max(2, (cmd.count / maxCount) * 100);
+            return (
+              <tr key={cmd.name} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                <td className="px-4 py-2.5 text-xs text-gray-600">#{i + 1}</td>
+                <td className="px-4 py-2.5">
+                  <span className="text-sm text-gray-300 font-mono">{cmd.name}</span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-indigo-500/60 transition-all"
+                      style={{ width: `${barWidth}%` }}
+                    />
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-sm font-mono text-gray-400 text-right">{cmd.count.toLocaleString()}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -114,98 +152,183 @@ function SkillLeaderboard({ skills }: { skills: SkillUsage[] }) {
 
   if (sorted.length === 0) {
     return (
-      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-        <p className="text-gray-600 text-xs">No skill usage data available</p>
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+        <p className="text-gray-500 text-sm">No skill usage data available</p>
       </div>
     );
   }
-
-  const maxCount = sorted[0]?.count || 1;
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
       <div className="px-5 py-3 border-b border-gray-800">
         <h3 className="text-sm font-medium text-gray-300">Skill Usage Leaderboard</h3>
       </div>
-      <div className="divide-y divide-gray-800/50">
-        {sorted.map((skill, i) => {
-          const successRate = skill.count > 0
-            ? Math.round((skill.successCount / skill.count) * 100)
-            : 100;
-          const barWidth = Math.max(2, (skill.count / maxCount) * 100);
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-800">
+            <th className="text-left px-4 py-2 text-xs text-gray-500 w-12">Rank</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Skill Name</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Plugin</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Invocations</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Success Rate</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Last Used</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((skill, i) => {
+            const successRate = skill.count > 0
+              ? Math.round((skill.successCount / skill.count) * 100)
+              : 100;
+            const rateBadgeVariant = successRate >= 90 ? 'success' as const : successRate >= 70 ? 'warning' as const : 'error' as const;
 
-          return (
-            <div key={skill.name} className="px-5 py-3 hover:bg-gray-800/20 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600 w-5 text-right">#{i + 1}</span>
-                  <span className="text-sm text-gray-300">{skill.name}</span>
+            return (
+              <tr key={skill.name} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                <td className="px-4 py-2.5 text-xs text-gray-600">#{i + 1}</td>
+                <td className="px-4 py-2.5">
+                  <Link
+                    to={`/analytics?skill=${encodeURIComponent(skill.name)}`}
+                    className="text-sm text-indigo-400 hover:text-indigo-300 hover:underline font-mono"
+                  >
+                    {skill.name}
+                  </Link>
+                </td>
+                <td className="px-4 py-2.5">
                   {skill.plugin && (
                     <span className="text-[10px] text-gray-600 bg-gray-800 px-1.5 py-0.5 rounded">
                       {skill.plugin}
                     </span>
                   )}
-                </div>
-                <div className="flex items-center gap-3">
-                  {skill.avgDuration != null && (
-                    <span className="text-[10px] text-gray-600">{(skill.avgDuration / 1000).toFixed(1)}s avg</span>
-                  )}
-                  <Badge
-                    label={`${successRate}%`}
-                    variant={successRate >= 90 ? 'success' : successRate >= 70 ? 'warning' : 'error'}
-                  />
-                  <span className="text-sm font-mono text-gray-400 w-12 text-right">{skill.count}</span>
-                </div>
-              </div>
-              {/* Progress bar */}
-              <div className="flex items-center gap-2 ml-7">
-                <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-emerald-500/60 transition-all"
-                    style={{ width: `${barWidth}%` }}
-                  />
-                </div>
-                {skill.lastUsed && (
-                  <span className="text-[10px] text-gray-700 whitespace-nowrap">{timeAgo(skill.lastUsed)}</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                </td>
+                <td className="px-4 py-2.5 text-sm font-mono text-gray-400 text-right">{skill.count.toLocaleString()}</td>
+                <td className="px-4 py-2.5 text-right">
+                  <Badge label={`${successRate}%`} variant={rateBadgeVariant} />
+                </td>
+                <td className="px-4 py-2.5 text-xs text-gray-600 text-right whitespace-nowrap">
+                  {skill.lastUsed ? timeAgo(skill.lastUsed) : '-'}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-function DailyBarChart({ days }: { days: Array<{ date: string; totalEvents: number }> }) {
-  const max = Math.max(...days.map(d => d.totalEvents), 1);
+function AgentsTab({ agents }: { agents: Array<{ name: string; count: number }> }) {
+  if (agents.length === 0) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+        <p className="text-gray-500 text-sm">No agent data available</p>
+      </div>
+    );
+  }
+
+  const sorted = [...agents].sort((a, b) => b.count - a.count);
+  const maxCount = sorted[0]?.count || 1;
 
   return (
-    <div className="flex items-end gap-1 h-24">
-      {days.map((d) => {
-        const height = Math.max(2, (d.totalEvents / max) * 100);
-        return (
-          <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-            <div
-              className="w-full bg-indigo-500/40 rounded-t hover:bg-indigo-500/60 transition-colors"
-              style={{ height: `${height}%` }}
-              title={`${d.date}: ${d.totalEvents} events`}
-            />
-            <span className="text-[8px] text-gray-700">{d.date.slice(-2)}</span>
-          </div>
-        );
-      })}
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="px-5 py-3 border-b border-gray-800">
+        <h3 className="text-sm font-medium text-gray-300">Top Agents</h3>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-800">
+            <th className="text-left px-4 py-2 text-xs text-gray-500 w-12">Rank</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Agent</th>
+            <th className="text-left px-4 py-2 text-xs text-gray-500">Usage</th>
+            <th className="text-right px-4 py-2 text-xs text-gray-500">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((agent, i) => {
+            const barWidth = Math.max(2, (agent.count / maxCount) * 100);
+            return (
+              <tr key={agent.name} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                <td className="px-4 py-2.5 text-xs text-gray-600">#{i + 1}</td>
+                <td className="px-4 py-2.5">
+                  <span className="text-sm text-gray-300">{agent.name}</span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-cyan-500/60 transition-all"
+                      style={{ width: `${barWidth}%` }}
+                    />
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-sm font-mono text-gray-400 text-right">{agent.count.toLocaleString()}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function DailyTrendsTab({ days }: { days: Array<{ date: string; totalEvents: number }> }) {
+  const recent = days.slice(-14);
+
+  if (recent.length === 0) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+        <p className="text-gray-500 text-sm">No daily data available</p>
+      </div>
+    );
+  }
+
+  const max = Math.max(...recent.map(d => d.totalEvents), 1);
+  const total = recent.reduce((s, d) => s + d.totalEvents, 0);
+  const avg = Math.round(total / recent.length);
+
+  return (
+    <div className="space-y-6">
+      {/* Summary stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard title="Period Total" value={total.toLocaleString()} subtitle={`Last ${recent.length} days`} color="indigo" />
+        <KpiCard title="Daily Average" value={avg.toLocaleString()} color="cyan" />
+        <KpiCard title="Peak Day" value={max.toLocaleString()} subtitle={recent.find(d => d.totalEvents === max)?.date || ''} color="emerald" />
+      </div>
+
+      {/* Bar chart */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+        <h3 className="text-sm font-medium text-gray-300 mb-4">Daily Events (Last {recent.length} Days)</h3>
+        <div className="flex items-end gap-1.5 h-40">
+          {recent.map((d) => {
+            const height = Math.max(2, (d.totalEvents / max) * 100);
+            const dateLabel = d.date.slice(5); // MM-DD
+            return (
+              <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-[9px] text-gray-500">{d.totalEvents}</span>
+                <div
+                  className="w-full bg-indigo-500/40 rounded-t hover:bg-indigo-500/60 transition-colors cursor-default"
+                  style={{ height: `${height}%` }}
+                  title={`${d.date}: ${d.totalEvents} events`}
+                />
+                <span className="text-[8px] text-gray-700">{dateLabel}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
 
 function timeAgo(ts: string): string {
   if (!ts) return '';
-  const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  try {
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  } catch {
+    return '';
+  }
 }

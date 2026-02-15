@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { useSSE } from '../hooks/useSSE';
-import { Badge, statusBadgeVariant } from '../components/ui/Badge';
-import { KpiCard } from '../components/ui/KpiCard';
-import { PageLoader } from '../components/ui/Spinner';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSE } from '../hooks/useSSE.js';
+import { useUrlState } from '../hooks/useUrlState.js';
+import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
+import { KpiCard } from '../components/ui/KpiCard.js';
+import { PageLoader } from '../components/ui/Spinner.js';
 
 interface ActivityEvent {
   timestamp: string;
@@ -34,13 +35,18 @@ const SEVERITIES: { value: SeverityFilter; label: string }[] = [
 ];
 
 export function ActivityPage() {
-  const [category, setCategory] = useState<CategoryFilter>('all');
-  const [severity, setSeverity] = useState<SeverityFilter>('all');
+  const [categoryUrl, setCategoryUrl] = useUrlState('category', 'all');
+  const [severityUrl, setSeverityUrl] = useUrlState('severity', 'all');
+  const category = (categoryUrl || 'all') as CategoryFilter;
+  const severity = (severityUrl || 'all') as SeverityFilter;
+
   const [liveEvents, setLiveEvents] = useState<ActivityEvent[]>([]);
+  const [limit, setLimit] = useState(200);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // Load historical events from API
   const params = new URLSearchParams();
-  params.set('limit', '200');
+  params.set('limit', String(limit));
   if (category !== 'all') params.set('categories', category);
   if (severity !== 'all') params.set('severity', severity);
   const { data: historical, loading } = useProjectApi<ActivityEvent[]>(
@@ -80,6 +86,14 @@ export function ActivityPage() {
   const warningCount = deduped.filter(e => e.severity === 'warning').length;
   const sourceSet = new Set(deduped.map(e => e.source));
 
+  const toggleRow = (key: string) => {
+    setExpandedRow(prev => prev === key ? null : key);
+  };
+
+  const handleLoadMore = () => {
+    setLimit(prev => prev + 200);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -104,7 +118,7 @@ export function ActivityPage() {
           {CATEGORIES.map(c => (
             <button
               key={c.value}
-              onClick={() => setCategory(c.value)}
+              onClick={() => setCategoryUrl(c.value)}
               className={`px-3 py-1 text-xs rounded-md transition-colors ${
                 category === c.value
                   ? 'bg-gray-700 text-white'
@@ -119,7 +133,7 @@ export function ActivityPage() {
           {SEVERITIES.map(s => (
             <button
               key={s.value}
-              onClick={() => setSeverity(s.value)}
+              onClick={() => setSeverityUrl(s.value)}
               className={`px-3 py-1 text-xs rounded-md transition-colors ${
                 severity === s.value
                   ? 'bg-gray-700 text-white'
@@ -141,16 +155,37 @@ export function ActivityPage() {
             <p className="text-gray-600 text-xs mt-1">Try adjusting category or severity filters</p>
           </div>
         ) : (
-          filtered.slice(0, 200).map((event, i) => (
-            <EventRow key={`${event.timestamp}-${i}`} event={event} />
-          ))
+          <>
+            {filtered.slice(0, limit).map((event, i) => {
+              const rowKey = `${event.timestamp}-${i}`;
+              const isExpanded = expandedRow === rowKey;
+              return (
+                <EventRow
+                  key={rowKey}
+                  event={event}
+                  isExpanded={isExpanded}
+                  onToggle={() => toggleRow(rowKey)}
+                />
+              );
+            })}
+            {filtered.length >= limit && (
+              <div className="p-4 text-center">
+                <button
+                  onClick={handleLoadMore}
+                  className="px-4 py-2 text-xs text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 rounded-lg transition-colors"
+                >
+                  Load more events
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
 
-function EventRow({ event }: { event: ActivityEvent }) {
+function EventRow({ event, isExpanded, onToggle }: { event: ActivityEvent; isExpanded: boolean; onToggle: () => void }) {
   const severityColor = event.severity === 'error' ? 'bg-rose-400' :
     event.severity === 'warning' ? 'bg-amber-400' : 'bg-gray-600';
 
@@ -162,30 +197,67 @@ function EventRow({ event }: { event: ActivityEvent }) {
     sync: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581',
   };
 
+  const hasExpandableContent = event.detail || (event.metadata && Object.keys(event.metadata).length > 0);
+
   return (
-    <div className="px-4 py-3 flex items-start gap-3 hover:bg-gray-800/20 transition-colors">
-      <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${severityColor}`} />
-      <div className="w-5 h-5 flex-shrink-0 mt-0.5 text-gray-500">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d={categoryIcon[event.category] || categoryIcon.command} />
-        </svg>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-300">{event.title}</span>
-          <Badge label={event.category} variant={statusBadgeVariant(event.severity)} />
+    <div>
+      <div
+        className={`px-4 py-3 flex items-start gap-3 transition-colors ${
+          hasExpandableContent ? 'cursor-pointer hover:bg-gray-800/20' : ''
+        }`}
+        onClick={hasExpandableContent ? onToggle : undefined}
+      >
+        <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${severityColor}`} />
+        <div className="w-5 h-5 flex-shrink-0 mt-0.5 text-gray-500">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d={categoryIcon[event.category] || categoryIcon.command} />
+          </svg>
         </div>
-        {event.detail && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{event.detail}</p>
-        )}
-        {event.source && (
-          <span className="text-[10px] text-gray-600 mt-0.5 block">via {event.source}</span>
-        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-300">{event.title}</span>
+            <Badge label={event.category} variant={statusBadgeVariant(event.severity)} />
+          </div>
+          {event.detail && !isExpanded && (
+            <p className="text-xs text-gray-500 mt-0.5 truncate">{event.detail}</p>
+          )}
+          {event.source && (
+            <span className="text-[10px] text-gray-600 mt-0.5 block">via {event.source}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {event.timestamp && (
+            <span className="text-[10px] text-gray-600 whitespace-nowrap">
+              {timeAgo(event.timestamp)}
+            </span>
+          )}
+          {hasExpandableContent && (
+            <svg
+              className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          )}
+        </div>
       </div>
-      {event.timestamp && (
-        <span className="text-[10px] text-gray-600 whitespace-nowrap flex-shrink-0">
-          {timeAgo(event.timestamp)}
-        </span>
+      {isExpanded && (
+        <div className="px-4 pb-3 ml-10 space-y-2">
+          {event.detail && (
+            <div className="bg-gray-800/50 rounded p-3">
+              <span className="text-[10px] text-gray-500 uppercase block mb-1">Detail</span>
+              <p className="text-xs text-gray-300 whitespace-pre-wrap">{event.detail}</p>
+            </div>
+          )}
+          {event.metadata && Object.keys(event.metadata).length > 0 && (
+            <div className="bg-gray-800/50 rounded p-3">
+              <span className="text-[10px] text-gray-500 uppercase block mb-1">Metadata</span>
+              <pre className="text-xs text-gray-400 font-mono whitespace-pre-wrap overflow-x-auto">
+                {JSON.stringify(event.metadata, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

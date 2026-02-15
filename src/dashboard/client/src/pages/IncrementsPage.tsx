@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProjectApi } from '../hooks/useProjectApi';
-import { Badge, statusBadgeVariant } from '../components/ui/Badge';
-import { PageLoader } from '../components/ui/Spinner';
-import { EmptyState } from '../components/ui/EmptyState';
+import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useUrlState } from '../hooks/useUrlState.js';
+import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
+import { PageLoader } from '../components/ui/Spinner.js';
+import { EmptyState } from '../components/ui/EmptyState.js';
 
 interface IncrementSummary {
   id: string;
@@ -25,8 +25,8 @@ interface IncrementsData {
 
 export function IncrementsPage() {
   const { data, loading, error } = useProjectApi<IncrementsData>('/api/increments');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useUrlState('status', 'all');
+  const [typeFilter, setTypeFilter] = useUrlState('type', 'all');
   const navigate = useNavigate();
 
   if (loading) return <PageLoader />;
@@ -49,10 +49,51 @@ export function IncrementsPage() {
         <span className="text-sm text-gray-500">{data.increments.length} total</span>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 flex-wrap">
-        <FilterSelect label="Status" value={statusFilter} options={statuses} onChange={setStatusFilter} />
-        <FilterSelect label="Type" value={typeFilter} options={types} onChange={setTypeFilter} />
+      {/* Filter Chips */}
+      <div className="space-y-3">
+        {/* Status Filters */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-gray-500 w-14">Status:</span>
+          <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
+            <FilterChip
+              label="All"
+              active={statusFilter === 'all'}
+              onClick={() => setStatusFilter('all')}
+            />
+            {statuses.map(s => (
+              <FilterChip
+                key={s}
+                label={s}
+                active={statusFilter === s}
+                onClick={() => setStatusFilter(s)}
+                count={data.increments.filter(inc => inc.status === s).length}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Type Filters */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-gray-500 w-14">Type:</span>
+          <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
+            <FilterChip
+              label="All"
+              active={typeFilter === 'all'}
+              onClick={() => setTypeFilter('all')}
+            />
+            {types.map(t => (
+              <FilterChip
+                key={t}
+                label={t}
+                active={typeFilter === t}
+                onClick={() => setTypeFilter(t)}
+                count={data.increments.filter(inc => inc.type === t).length}
+              />
+            ))}
+          </div>
+        </div>
+
+        <span className="text-xs text-gray-500">{filteredIncrements.length} matching</span>
       </div>
 
       {/* Table */}
@@ -112,23 +153,26 @@ export function IncrementsPage() {
   );
 }
 
-function FilterSelect({ label, value, options, onChange }: {
+function FilterChip({ label, active, onClick, count }: {
   label: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
+  active: boolean;
+  onClick: () => void;
+  count?: number;
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded-lg px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 text-xs rounded-md transition-colors capitalize ${
+        active
+          ? 'bg-gray-700 text-white'
+          : 'text-gray-400 hover:text-gray-300'
+      }`}
     >
-      <option value="all">{label}: All</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>{opt}</option>
-      ))}
-    </select>
+      {label}
+      {count !== undefined && (
+        <span className="ml-1 text-[10px] text-gray-500">{count}</span>
+      )}
+    </button>
   );
 }
 
