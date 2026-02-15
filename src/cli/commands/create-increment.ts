@@ -4,7 +4,7 @@
  * CLI bridge for createIncrementTemplates() - creates template files
  * for new increments that must be completed via PM/Architect skills.
  *
- * This command is invoked by the increment-planner SKILL.md:
+ * This command is invoked by the increment SKILL.md:
  *   specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"
  *
  * @module create-increment

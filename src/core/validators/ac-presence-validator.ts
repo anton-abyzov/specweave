@@ -26,7 +26,7 @@ export interface ACPresenceValidationResult {
   errors: string[];
   warnings: string[];
   /**
-   * Suggested fix (e.g., "Run /sw:embed-acs 0050")
+   * Suggested fix for missing ACs
    */
   suggestedFix?: string;
 }
@@ -73,7 +73,7 @@ export function validateACPresence(
   if (!specContent.includes('## Acceptance Criteria')) {
     result.valid = false;
     result.errors.push('spec.md missing "## Acceptance Criteria" section');
-    result.suggestedFix = `Add ACs to spec.md or run: /sw:embed-acs ${incrementPath.split('/').pop()}`;
+    result.suggestedFix = `Add ACs inline to spec.md (format: - [ ] **AC-US1-01**: Title)`;
   }
 
   // 3. Count ACs in spec.md
@@ -83,7 +83,7 @@ export function validateACPresence(
   if (result.acCount === 0) {
     result.valid = false;
     result.errors.push('spec.md contains 0 Acceptance Criteria');
-    result.suggestedFix = `Add ACs to spec.md or run: /sw:embed-acs ${incrementPath.split('/').pop()}`;
+    result.suggestedFix = `Add ACs inline to spec.md (format: - [ ] **AC-US1-01**: Title)`;
   }
 
   // 4. Check metadata.json for expected AC count
@@ -139,7 +139,7 @@ export function validateACPresence(
       result.errors.push(
         '   AC sync hooks require ACs in spec.md even when using external living docs'
       );
-      result.suggestedFix = `Run: /sw:embed-acs ${incrementPath.split('/').pop()} to auto-embed ACs from living docs`;
+      result.suggestedFix = `Add ACs inline to spec.md from living docs (format: - [ ] **AC-US1-01**: Title)`;
       result.valid = false;
     }
   }

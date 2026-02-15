@@ -54,6 +54,7 @@ export function CostsPage() {
   const totalOutput = sessions.reduce((s, c) => s + (c.outputTokens || 0), 0);
   const totalCacheRead = sessions.reduce((s, c) => s + (c.cacheReadTokens || 0), 0);
   const totalCacheWrite = sessions.reduce((s, c) => s + (c.cacheWriteTokens || 0), 0);
+  const grandTotalTokens = totalInput + totalOutput + totalCacheRead + totalCacheWrite;
 
   return (
     <div className="p-6 space-y-6">
@@ -119,13 +120,13 @@ export function CostsPage() {
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
             <h3 className="text-sm font-medium text-gray-300 mb-4">Token Breakdown</h3>
             <div className="space-y-3">
-              <TokenBar label="Input" value={totalInput} total={data.totalTokens} color="bg-indigo-500" />
-              <TokenBar label="Output" value={totalOutput} total={data.totalTokens} color="bg-cyan-500" />
+              <TokenBar label="Input" value={totalInput} total={grandTotalTokens} color="bg-indigo-500" />
+              <TokenBar label="Output" value={totalOutput} total={grandTotalTokens} color="bg-cyan-500" />
               {totalCacheRead > 0 && (
-                <TokenBar label="Cache Read" value={totalCacheRead} total={data.totalTokens} color="bg-emerald-500" />
+                <TokenBar label="Cache Read" value={totalCacheRead} total={grandTotalTokens} color="bg-emerald-500" />
               )}
               {totalCacheWrite > 0 && (
-                <TokenBar label="Cache Write" value={totalCacheWrite} total={data.totalTokens} color="bg-amber-500" />
+                <TokenBar label="Cache Write" value={totalCacheWrite} total={grandTotalTokens} color="bg-amber-500" />
               )}
             </div>
           </div>
@@ -176,11 +177,15 @@ export function CostsPage() {
   );
 }
 
+const PAGE_SIZE = 30;
+
 function SessionsTable({ sessions, expandedSession, onToggle }: {
   sessions: SessionCost[];
   expandedSession: string | null;
   onToggle: (id: string) => void;
 }) {
+  const [page, setPage] = useState(0);
+
   if (sessions.length === 0) {
     return (
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
@@ -189,10 +194,18 @@ function SessionsTable({ sessions, expandedSession, onToggle }: {
     );
   }
 
+  const totalPages = Math.ceil(sessions.length / PAGE_SIZE);
+  const pageStart = page * PAGE_SIZE;
+  const pageEnd = pageStart + PAGE_SIZE;
+  const pageSessions = sessions.slice(pageStart, pageEnd);
+
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
-      <div className="px-5 py-3 border-b border-gray-800">
+      <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-300">Recent Sessions</h3>
+        <span className="text-xs text-gray-500">
+          {pageStart + 1}-{Math.min(pageEnd, sessions.length)} of {sessions.length}
+        </span>
       </div>
       <table className="w-full">
         <thead>
@@ -209,7 +222,7 @@ function SessionsTable({ sessions, expandedSession, onToggle }: {
           </tr>
         </thead>
         <tbody>
-          {sessions.slice(0, 50).map((s) => {
+          {pageSessions.map((s) => {
             const id = s.sessionId || '-';
             const isExpanded = expandedSession === id;
             const totalCache = (s.cacheReadTokens || 0) + (s.cacheWriteTokens || 0);
@@ -289,6 +302,51 @@ function SessionsTable({ sessions, expandedSession, onToggle }: {
           })}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="px-5 py-3 border-t border-gray-800 flex items-center justify-between">
+          <button
+            onClick={() => setPage(p => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="px-3 py-1 text-xs text-gray-400 hover:text-gray-200 border border-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 7) {
+                pageNum = i;
+              } else if (page < 3) {
+                pageNum = i;
+              } else if (page > totalPages - 4) {
+                pageNum = totalPages - 7 + i;
+              } else {
+                pageNum = page - 3 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-7 h-7 text-xs rounded transition-colors ${
+                    page === pageNum
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="px-3 py-1 text-xs text-gray-400 hover:text-gray-200 border border-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -342,9 +400,10 @@ function formatTokensLong(n: number): string {
 }
 
 function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const rounded = Math.round(seconds);
+  if (rounded < 60) return `${rounded}s`;
+  const mins = Math.floor(rounded / 60);
+  const secs = rounded % 60;
   if (mins < 60) return `${mins}m ${secs}s`;
   const hours = Math.floor(mins / 60);
   return `${hours}h ${mins % 60}m`;

@@ -196,7 +196,7 @@ ${this.generateIntegrationSkillsTable(skills)}
    */
   private generateFrameworkSkillsTable(skills: any[]): string {
     const frameworkSkills = skills.filter(s =>
-      ['specweave-detector', 'increment-planner', 'context-loader', 'skill-router',
+      ['specweave-detector', 'increment', 'context-loader', 'skill-router',
        'spec-driven-debugging', 'spec-driven-brainstorming'].includes(s.name)
     );
 
@@ -257,7 +257,7 @@ ${this.generateIntegrationSkillsTable(skills)}
   private getSkillActivation(skillName: string): string {
     const activations: Record<string, string> = {
       'specweave-detector': 'User asks about SpecWeave',
-      'increment-planner': '/pi or feature planning',
+      'increment': '/sw:increment or feature planning',
       'context-loader': 'Working on increments',
       'skill-router': 'Ambiguous requests',
       'spec-driven-debugging': 'Bug or test failure',

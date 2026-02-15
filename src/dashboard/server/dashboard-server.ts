@@ -327,7 +327,9 @@ export class DashboardServer {
     this.router.get('/api/costs/summary', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const data = await project.costAggregator.getTokenSummaries();
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const limit = safeParseInt(url.searchParams.get('limit'), 200, 1, 500);
+      const data = await project.costAggregator.getTokenSummaries(limit);
       sendJson(res, { ok: true, data });
     });
 
@@ -403,21 +405,21 @@ export class DashboardServer {
         if (!body || typeof body !== 'object') return sendJson(res, { ok: false, error: 'Invalid body' }, 400);
         // Read schema expectations from existing config structure
         const currentConfig = await project.aggregator.getConfig();
-        const errors: string[] = [];
+        const errors: Array<{ path: string; message: string }> = [];
         // Validate known typed fields
         if (body.testing && typeof body.testing === 'object') {
           const testing = body.testing as Record<string, unknown>;
           if (testing.defaultTestMode && !['test-after', 'TDD', 'coverage-only'].includes(String(testing.defaultTestMode))) {
-            errors.push('testing.defaultTestMode must be one of: test-after, TDD, coverage-only');
+            errors.push({ path: 'testing.defaultTestMode', message: 'must be one of: test-after, TDD, coverage-only' });
           }
           if (testing.tddEnforcement && !['strict', 'warn', 'off'].includes(String(testing.tddEnforcement))) {
-            errors.push('testing.tddEnforcement must be one of: strict, warn, off');
+            errors.push({ path: 'testing.tddEnforcement', message: 'must be one of: strict, warn, off' });
           }
         }
         if (body.limits && typeof body.limits === 'object') {
           const limits = body.limits as Record<string, unknown>;
           if (limits.maxActiveIncrements != null && (typeof limits.maxActiveIncrements !== 'number' || limits.maxActiveIncrements < 1)) {
-            errors.push('limits.maxActiveIncrements must be a positive number');
+            errors.push({ path: 'limits.maxActiveIncrements', message: 'must be a positive number' });
           }
         }
         sendJson(res, { ok: errors.length === 0, errors, currentConfig });
@@ -445,7 +447,7 @@ export class DashboardServer {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-      const limit = Math.min(parseInt(url.searchParams.get('limit') || '200', 10) || 200, 1000);
+      const limit = safeParseInt(url.searchParams.get('limit'), 200, 1, 1000);
       const type = url.searchParams.get('type') || undefined;
       const since = url.searchParams.get('since') || undefined;
 
@@ -474,7 +476,7 @@ export class DashboardServer {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-      const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+      const limit = safeParseInt(url.searchParams.get('limit'), 50, 1, 500);
       const data = await project.logParser.getRecentErrors(limit);
       sendJson(res, { ok: true, data });
     });
@@ -490,7 +492,7 @@ export class DashboardServer {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-      const limit = parseInt(url.searchParams.get('limit') || '30', 10);
+      const limit = safeParseInt(url.searchParams.get('limit'), 30, 1, 500);
       const data = await project.logParser.getSessionSummaries(limit);
       sendJson(res, { ok: true, data });
     });
@@ -510,7 +512,7 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const data = await project.auditReader.getRecentEntries({
-        limit: parseInt(url.searchParams.get('limit') || '100', 10),
+        limit: safeParseInt(url.searchParams.get('limit'), 100, 1, 1000),
         platform: url.searchParams.get('platform') || undefined,
         result: url.searchParams.get('result') || undefined,
         since: url.searchParams.get('since') || undefined,
@@ -542,7 +544,7 @@ export class DashboardServer {
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const categoriesParam = url.searchParams.get('categories');
       const data = await project.activityStream.getRecentActivity({
-        limit: parseInt(url.searchParams.get('limit') || '100', 10),
+        limit: safeParseInt(url.searchParams.get('limit'), 100, 1, 1000),
         categories: categoriesParam ? categoriesParam.split(',') : undefined,
         severity: url.searchParams.get('severity') || undefined,
         since: url.searchParams.get('since') || undefined,
@@ -729,6 +731,14 @@ export class DashboardServer {
     };
     return map[eventType] || 'command';
   }
+}
+
+/** Safely parse an integer query parameter with min/max bounds */
+function safeParseInt(raw: string | null, defaultVal: number, min: number, max: number): number {
+  if (raw == null) return defaultVal;
+  const parsed = parseInt(raw, 10);
+  if (Number.isNaN(parsed) || parsed < min) return defaultVal;
+  return Math.min(parsed, max);
 }
 
 function pathToProjectId(p: string): string {

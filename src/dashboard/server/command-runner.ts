@@ -10,7 +10,6 @@ const ALLOWED_COMMANDS: Record<string, { cmd: string; args: string[] }> = {
   'lsp-status': { cmd: 'specweave', args: ['lsp', 'status'] },
   'analytics': { cmd: 'specweave', args: ['analytics'] },
   'doctor': { cmd: 'specweave', args: ['doctor'] },
-  'cache-refresh': { cmd: 'specweave', args: ['cache-refresh'] },
   'docs-preview-start': { cmd: 'specweave', args: ['docs', 'preview'] },
   'docs-preview-stop': { cmd: 'specweave', args: ['docs', 'kill'] },
   'clone-repos': { cmd: 'specweave', args: ['clone'] },
@@ -63,7 +62,8 @@ export class CommandRunner {
 
     const handleData = (stream: 'stdout' | 'stderr') => (data: Buffer) => {
       const lines = data.toString().split('\n').filter(Boolean);
-      for (const line of lines) {
+      for (const rawLine of lines) {
+        const line = rawLine.length > 5000 ? rawLine.slice(0, 5000) + '... [truncated]' : rawLine;
         execution.output.push(line);
         // Keep output bounded
         if (execution.output.length > 1000) execution.output.shift();

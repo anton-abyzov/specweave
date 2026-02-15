@@ -146,7 +146,7 @@ Copy spec.md, plan.md, and tasks.md from your increment folder.
 
 ### Claude Code (Native Slash Commands)
 - User types `/sw:increment "user auth"` in Claude chat
-- Skill `sw:increment-planner` is loaded via plugin system
+- Skill `sw:increment` is loaded via plugin system
 - Skill executes with full project context
 
 ### Cursor (Instruction-Based)

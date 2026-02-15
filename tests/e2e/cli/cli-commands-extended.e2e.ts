@@ -279,6 +279,30 @@ describe('Extended CLI Commands', { timeout: CLI_TIMEOUT }, () => {
       expect(output).toContain('save');
       expect(output).toContain('doctor');
     });
+
+    it('should not list removed commands in --help', async () => {
+      const result = await sw('--help', env, workDir);
+      const output = normalizeOutput(result.stdout);
+
+      // Dead commands removed in past increments (0125, 0182, 0171)
+      expect(output).not.toContain('enable-multiproject');
+      expect(output).not.toContain('switch-project');
+      expect(output).not.toContain('cache-status');
+      expect(output).not.toContain('cache-refresh');
+      expect(output).not.toContain('migrate-lazy');
+      expect(output).not.toContain('delete-feature');
+    });
+
+    it('should not list internal-only commands in --help', async () => {
+      const result = await sw('--help', env, workDir);
+      const output = normalizeOutput(result.stdout);
+
+      // Hook-internal commands should be hidden from user-facing help
+      expect(output).not.toContain('detect-intent');
+      expect(output).not.toContain('evaluate-completion');
+      expect(output).not.toContain('reflect-stop');
+      expect(output).not.toContain('detect-project');
+    });
   });
 
   // =========================================================================

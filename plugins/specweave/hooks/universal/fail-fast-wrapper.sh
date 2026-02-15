@@ -49,6 +49,10 @@ case "$script_name" in
     # May run tests + LLM evaluation + validation
     HOOK_TIMEOUT="${HOOK_TIMEOUT_STOP_AUTO:-120}"
     ;;
+  pre-compact.sh)
+    # Pressure signal is ultra-fast (just writes a JSON file)
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_PRE_COMPACT:-5}"
+    ;;
   stop-*.sh)
     # Other stop hooks (reflect, sync, grill) are usually fast
     HOOK_TIMEOUT="${HOOK_TIMEOUT_STOP:-15}"

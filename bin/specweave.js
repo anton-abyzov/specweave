@@ -963,29 +963,6 @@ contextCmd
     await contextSelectCommand();
   });
 
-// Enable multi-project command - Migrate from single-project to multi-project mode
-program
-  .command('enable-multiproject')
-  .description('Enable multi-project mode (explicit opt-in from single-project)')
-  .option('-y, --yes', 'Skip confirmation prompt')
-  .action(async (options) => {
-    const { enableMultiProject } = await import('../dist/src/cli/commands/enable-multiproject.js');
-    await enableMultiProject({
-      skipConfirmation: options.yes
-    });
-  });
-
-// Switch project command - Change active project (multi-project mode)
-program
-  .command('switch-project [project-id]')
-  .description('Switch active project (multi-project mode only)')
-  .action(async (projectId) => {
-    const { switchProject } = await import('../dist/src/cli/commands/switch-project.js');
-    await switchProject({
-      projectId
-    });
-  });
-
 // Refresh marketplace command - Update marketplace with lazy loading support
 program
   .command('refresh-marketplace')
@@ -997,40 +974,6 @@ program
   .action(async (options) => {
     const { refreshMarketplaceCommand } = await import('../dist/src/cli/commands/refresh-marketplace.js');
     await refreshMarketplaceCommand(options);
-  });
-
-// Cache status command - Display plugin cache health status
-program
-  .command('cache-status')
-  .description('Display plugin cache health status and detect issues')
-  .argument('[plugin]', 'Check specific plugin (optional)')
-  .option('--verbose', 'Show detailed information')
-  .option('--check-github', 'Check GitHub for updates (uses API)')
-  .action(async (pluginName, options) => {
-    const { cacheStatus } = await import('../dist/src/cli/commands/cache-status.js');
-    await cacheStatus({
-      pluginName,
-      verbose: options.verbose,
-      checkGithub: options.checkGithub,
-    });
-  });
-
-// Cache refresh command - Refresh plugin cache with skill memory preservation
-program
-  .command('cache-refresh')
-  .description('Refresh plugin cache with skill memory preservation')
-  .argument('[plugin]', 'Refresh specific plugin (optional)')
-  .option('--force', 'Hard refresh (delete cache)')
-  .option('--all', 'Refresh all plugins (even healthy)')
-  .option('--verify', 'Verify cache health after refresh')
-  .action(async (pluginName, options) => {
-    const { cacheRefresh } = await import('../dist/src/cli/commands/cache-refresh.js');
-    await cacheRefresh({
-      pluginName,
-      force: options.force,
-      all: options.all,
-      verify: options.verify,
-    });
   });
 
 // Doctor command - Comprehensive health check
@@ -1058,10 +1001,11 @@ program
     }
   });
 
-// Detect intent command - Hook helper for automatic plugin loading
+// Detect intent command - Hook helper for automatic plugin loading (internal)
 program
   .command('detect-intent [prompt]')
   .description('Detect SpecWeave intent from a prompt and optionally install plugins')
+
   .option('--install', 'Also install detected plugins after detection')
   .option('--silent', 'Silent mode - no stdout output (for hooks)')
   .option('--file <path>', 'Read prompt from file instead of argument (avoids shell escaping issues)')
@@ -1094,10 +1038,11 @@ program
     process.exit(result.detected ? 0 : 1);
   });
 
-// Evaluate completion command - LLM-based completion evaluation for auto mode
+// Evaluate completion command - LLM-based completion evaluation for auto mode (internal)
 program
   .command('evaluate-completion <increment-id>')
   .description('Evaluate whether an auto mode session should be considered complete')
+
   .option('--model <model>', 'Model for LLM evaluation: haiku or sonnet (default: sonnet)')
   .option('--timeout <ms>', 'Timeout in milliseconds (default: 45000)', parseInt)
   .option('--silent', 'Minimal output')
@@ -1111,10 +1056,11 @@ program
     process.exit(result.complete ? 0 : 1);
   });
 
-// Reflect stop command - Extract learnings at session end (called by stop hook)
+// Reflect stop command - Extract learnings at session end (internal, called by stop hook)
 program
   .command('reflect-stop <transcript-path>')
   .description('Extract learnings from session transcript (called by stop hook)')
+
   .option('-s, --silent', 'Silent mode - output JSON only')
   .option('-m, --model <model>', 'Model to use (haiku, sonnet, opus)')
   .option('--migrate', 'Run migration of old memory files first')
@@ -1123,10 +1069,11 @@ program
     await reflectStopCommand(transcriptPath, options);
   });
 
-// Detect project command - Analyze project files and suggest plugins
+// Detect project command - Analyze project files and suggest plugins (internal)
 program
   .command('detect-project [path]')
   .description('Detect project type from files and suggest plugins to install')
+
   .option('--name <name>', 'Increment name for legacy name-based detection')
   .option('--description <text>', 'Description for legacy name-based detection')
   .option('--install', 'Also install detected plugins after detection')
@@ -1136,19 +1083,6 @@ program
     const result = await detectProjectCommand(path, options);
     // Exit code: 0 if types detected, 1 if none
     process.exit(result.types.length > 0 ? 0 : 1);
-  });
-
-// Migrate to lazy loading command
-program
-  .command('migrate-lazy')
-  .description('Migrate to lazy loading mode (router-only, on-demand plugins)')
-  .option('--rollback', 'Rollback to pre-migration full installation')
-  .option('-y, --yes', 'Skip confirmation prompt')
-  .option('-v, --verbose', 'Show detailed output')
-  .option('--dry-run', 'Preview without making changes')
-  .action(async (options) => {
-    const { migrateLazyCommand } = await import('../dist/src/cli/commands/migrate-lazy.js');
-    await migrateLazyCommand(options);
   });
 
 // Export skills command - Export to Agent Skills open standard
@@ -1242,8 +1176,8 @@ program.on('--help', () => {
   console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
   console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
   console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
-  console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 tokens)');
-  console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K tokens)');
+  console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 chars)');
+  console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K chars)');
   console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
   console.log('  $ specweave update                          # Update CLI + instructions + config');
   console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
@@ -1323,15 +1257,10 @@ program
 (async () => {
   await checkForDuplicates();
 
-  // Register delete-feature command
-  try {
-    const { registerDeleteFeatureCommand } = await import('../dist/src/cli/commands/delete-feature.js');
-    registerDeleteFeatureCommand(program);
-  } catch (error) {
-    // Silently fail if command not available (may not be built yet)
-    if (process.env.DEBUG) {
-      console.error(chalk.dim(`[DEBUG] Failed to register delete-feature command: ${error}`));
-    }
+  // Hide internal-only commands from --help (still callable by hooks)
+  for (const name of ['detect-intent', 'evaluate-completion', 'reflect-stop', 'detect-project']) {
+    const cmd = program.commands.find(c => c.name() === name);
+    if (cmd) cmd._hidden = true;
   }
 
   // Parse arguments
