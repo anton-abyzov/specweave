@@ -372,9 +372,8 @@ escape_json_early() {
 }
 
 # v1.0.254: Prompt safety limits to prevent "Prompt is too long" errors
-# These must match the constants in src/core/lazy-loading/llm-plugin-detector.ts
+# Must match MAX_ADDITIONAL_CONTEXT_LENGTH in src/core/lazy-loading/llm-plugin-detector.ts
 MAX_ADDITIONAL_CONTEXT_LENGTH=3000
-MAX_SKILL_FIRST_PROMPT_LENGTH=800
 
 # Helper: Output approve response with context (Claude Code hook format v1.0.166)
 # CRITICAL: systemMessage is NOT a valid field for UserPromptSubmit hooks!
@@ -386,7 +385,10 @@ MAX_SKILL_FIRST_PROMPT_LENGTH=800
 output_approve_with_context() {
   local context="$1"
   # v1.0.254: Safety truncation to prevent prompt overflow
+  # v1.0.260: Added overflow logging for debugging context budget issues
   if [[ ${#context} -gt $MAX_ADDITIONAL_CONTEXT_LENGTH ]]; then
+    local overflow_by=$(( ${#context} - MAX_ADDITIONAL_CONTEXT_LENGTH ))
+    echo "[$(date -Iseconds)] CONTEXT OVERFLOW | size=${#context} | max=$MAX_ADDITIONAL_CONTEXT_LENGTH | overflow_by=$overflow_by | truncating" >> "${LAZY_LOAD_LOG:-/dev/null}" 2>/dev/null
     context="${context:0:$MAX_ADDITIONAL_CONTEXT_LENGTH}... [context truncated for safety]"
   fi
   local escaped
@@ -394,16 +396,9 @@ output_approve_with_context() {
   printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$escaped"
 }
 
-# Helper: Truncate and escape a prompt for SKILL FIRST args (v1.0.254)
-# Truncates to MAX_SKILL_FIRST_PROMPT_LENGTH, escapes for JSON embedding.
-# Args: $1=raw prompt text
-# Returns: Escaped, truncated prompt on stdout
-truncate_and_escape_prompt() {
-  local prompt="$1"
-  local truncated="${prompt:0:$MAX_SKILL_FIRST_PROMPT_LENGTH}"
-  [[ ${#prompt} -gt $MAX_SKILL_FIRST_PROMPT_LENGTH ]] && truncated="${truncated}... [truncated - see original prompt above]"
-  printf '%s' "$truncated" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' '
-}
+# v1.0.260: truncate_and_escape_prompt() removed — prompt embedding in SKILL FIRST
+# was eliminated to save ~800 chars of context budget per turn. The skill reads
+# the user's prompt from conversation context (it's already there).
 
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
 # This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
@@ -1169,48 +1164,28 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
                   # Build feedback message
                   if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                    # v1.0.171: STRICT BLOCKING restart warning with explicit tool blocklist
-                    # Truncate prompt for display (max 500 chars to avoid bloat)
-                    PROMPT_DISPLAY="${PROMPT:0:500}"
-                    [[ ${#PROMPT} -gt 500 ]] && PROMPT_DISPLAY="${PROMPT_DISPLAY}..."
-                    # Escape for JSON/markdown
-                    PROMPT_DISPLAY=$(echo "$PROMPT_DISPLAY" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g')
-
-                    AUTOLOAD_PLUGINS_MSG="\\n╔══════════════════════════════════════════════════════════════════════════════╗\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}║  🛑 FULL STOP - RESTART REQUIRED - DO NOT PROCEED                             ║\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}╚══════════════════════════════════════════════════════════════════════════════╝\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**Plugins installed**: ${PLUGINS_INSTALLED}\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}These plugins are NOT available in the current session. A restart is MANDATORY.\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}┌──────────────────────────────────────────────────────────────────────────────┐\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ⛔ YOU ARE BLOCKED FROM THE FOLLOWING ACTIONS:                              │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}├──────────────────────────────────────────────────────────────────────────────┤\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ❌ Write tool      - BLOCKED (cannot create files)                          │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ❌ Edit tool       - BLOCKED (cannot modify files)                          │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ❌ Bash tool       - BLOCKED (except read-only commands)                    │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ❌ Task tool       - BLOCKED (agents need plugins)                          │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ❌ Implementation  - BLOCKED (no coding until restart)                      │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}└──────────────────────────────────────────────────────────────────────────────┘\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}┌──────────────────────────────────────────────────────────────────────────────┐\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  ✅ YOUR ONLY ALLOWED ACTIONS:                                               │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}├──────────────────────────────────────────────────────────────────────────────┤\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  1. Display this restart warning to user                                     │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  2. Provide the prompt below for user to copy                                │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}│  3. STOP and wait for user to restart                                        │\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}└──────────────────────────────────────────────────────────────────────────────┘\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**To restart:**\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}  • VSCode: \\\`Cmd+Shift+P\\\` → 'Claude: New Session'\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}  • CLI: Exit and run \\\`claude\\\` again\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**Your prompt (copy this):**\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}\\\`\\\`\\\`\\n${PROMPT_DISPLAY}\\n\\\`\\\`\\\`\\n\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════════════════════════\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}**Claude: DO NOT ignore this. DO NOT 'help anyway'. STOP COMPLETELY.**\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}════════════════════════════════════════════════════════════════════════════════\\n"
+                    # v1.0.260: Compacted RESTART message (~400 chars vs ~2000 chars)
+                    # ASCII art boxes were wasting ~1600 chars of the 3000-char context budget.
+                    AUTOLOAD_PLUGINS_MSG="RESTART REQUIRED: Plugins installed (${PLUGINS_INSTALLED}) but NOT loaded in current session.\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}ALL tools BLOCKED (Write, Edit, Bash, Task). DO NOT proceed.\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Restart: VSCode \\\`Cmd+Shift+P\\\` > 'Claude: New Session' | CLI: exit + \\\`claude\\\`\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}STOP COMPLETELY. Do NOT help, do NOT implement, do NOT ignore this.\\n"
                   elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                    AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
+                    # v1.0.260: Daily caching — "Using plugins" shown once per day
+                    # Uses date-based marker (like archive-suggestion) to auto-reset daily
+                    _PLUGINS_SHOWN_FLAG="${SPECWEAVE_DIR}/state/plugins-shown.marker"
+                    _TODAY=$(date +%Y-%m-%d)
+                    _LAST_SHOWN=""
+                    [[ -f "$_PLUGINS_SHOWN_FLAG" ]] && _LAST_SHOWN=$(cat "$_PLUGINS_SHOWN_FLAG" 2>/dev/null)
+                    if [[ "$_LAST_SHOWN" != "$_TODAY" ]]; then
+                      AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
+                      mkdir -p "$(dirname "$_PLUGINS_SHOWN_FLAG")" 2>/dev/null
+                      echo "$_TODAY" > "$_PLUGINS_SHOWN_FLAG" 2>/dev/null
+                    fi
                   fi
                   if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
-                    LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
-                    [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
+                    # v1.0.260: Skip LLM reasoning to save context budget — it's informational only
+                    :
                   fi
 
                   echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
@@ -1287,59 +1262,23 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 AGENT_DIRECTIVE=""
                 # v1.0.168: Skill invocation directive (takes precedence over routing)
                 # Skill memories now loaded via DCI in SKILL.md (no hook injection)
+                # v1.0.260: Compacted AGENT_DIRECTIVE to save context budget
                 if [[ -n "$SKILL_INVOCATION" ]]; then
                   if [[ "$SKILL_MANDATORY" == "true" ]]; then
                     AGENT_DIRECTIVE="
-
----
-<skill_invocation_required>
-### 🎯 MANDATORY: Use ${SKILL_INVOCATION} Skill
-
-You MUST invoke this skill for this task. Do NOT implement directly without using this skill.
-
-**Invoke NOW using Skill tool:**
-\`\`\`typescript
-Skill({ skill: \"${SKILL_INVOCATION}\" })
-\`\`\`
-
-**Why this skill is required:**
-${SKILL_REASON:-This skill provides specialized support for your task.}
-
-⚠️ **Do NOT skip this** - the skill has domain expertise needed for quality implementation.
-</skill_invocation_required>"
+MANDATORY: Also call \`Skill({ skill: \"${SKILL_INVOCATION}\" })\` — ${SKILL_REASON:-specialized support needed}."
                   else
                     AGENT_DIRECTIVE="
-
----
-### 💡 Recommended: Use ${SKILL_INVOCATION} Skill
-
-Consider invoking this skill for better results:
-\`\`\`typescript
-Skill({ skill: \"${SKILL_INVOCATION}\" })
-\`\`\`
-*${SKILL_REASON:-This skill provides specialized support for your task.}*"
+Recommended: \`Skill({ skill: \"${SKILL_INVOCATION}\" })\` — ${SKILL_REASON:-specialized support for this task}."
                   fi
                 elif [[ "$ROUTING_SKILLS_COUNT" -gt 0 ]]; then
                   PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
                   PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
                   PRIMARY_REASON=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .reason // empty' 2>/dev/null | head -1)
                   if [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]]; then
-                    AGENT_TYPE="${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME}"
+                    # v1.0.260: Compacted routing directive to save context budget
                     AGENT_DIRECTIVE="
-
----
-
-### 🚀 Then SPAWN Specialized Agent
-
-**After creating increment, use Task tool:**
-\`\`\`typescript
-Task({
-  subagent_type: \"${AGENT_TYPE}\",
-  prompt: \"Implement the feature...\",
-  description: \"${PRIMARY_REASON:-Implementation}\"
-})
-\`\`\`
-*Specialized agents produce better code than direct implementation.*"
+Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}\", description: \"${PRIMARY_REASON:-Implementation}\" })\`"
                   fi
                 fi
 
@@ -1352,37 +1291,31 @@ Task({
                     # Pass user prompt so skill can extract context
                     # INC_MANDATORY comes from detect-intent LLM response
                     if [[ "$INC_MANDATORY" == "true" ]]; then
-                      # v1.0.254: Truncate + escape to prevent "Prompt is too long"
-                      ESCAPED_PROMPT=$(truncate_and_escape_prompt "$PROMPT")
+                      # v1.0.260: Removed prompt embedding from SKILL FIRST args to save ~800 chars.
+                      # The skill reads the user's prompt from conversation context (it's already there).
 
                       # v1.0.243: Smart interview gate — LLM assesses prompt completeness
-                      # before blindly calling increment-planner. If details are missing,
-                      # ask targeted questions first. If complete, proceed directly.
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
                         DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
                       fi
 
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT}\" })\` — call BEFORE implementation.
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\" })\` — call BEFORE implementation.
 Detection: ${INC_REASON} (confidence: ${INC_CONF}).${AGENT_DIRECTIVE}${DEEP_INTERVIEW_MSG}
 After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
-                      # Use approve+additionalContext so Claude can read and follow
-                      # the SKILL FIRST instructions (block erases prompt from context)
                       output_approve_with_context "$MSG"
                       exit 0
                     else
-                      # v1.0.169: Also suggest direct skill call for non-mandatory
-                      ESCAPED_PROMPT_SUGGEST=$(truncate_and_escape_prompt "$PROMPT")
-                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Increment suggested: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SUGGEST}\" })\` or \`$CMD\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
+                      # v1.0.260: Removed prompt embedding to save context budget
+                      MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Increment suggested: \`Skill({ skill: \"sw:increment-planner\" })\` or \`$CMD\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                       output_approve_with_context "$MSG"
                       exit 0
                     fi
                     ;;
 
                   hotfix)
-                    # v1.0.169: Direct skill call for hotfix too
-                    ESCAPED_PROMPT_HOTFIX=$(truncate_and_escape_prompt "$PROMPT")
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Hotfix detected: \`Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix ${ESCAPED_PROMPT_HOTFIX}\" })\`. Reason: $INC_REASON"
+                    # v1.0.260: Removed prompt embedding to save context budget
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Hotfix detected: \`Skill({ skill: \"sw:increment-planner\", args: \"--type=hotfix\" })\`. Reason: $INC_REASON"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1396,13 +1329,11 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
                     ;;
 
                   small_fix)
-                    # v1.0.241: small_fix still suggests increment (non-mandatory)
-                    # Previously small_fix fell through with no output at all
-                    ESCAPED_PROMPT_SMALLFIX=$(truncate_and_escape_prompt "$PROMPT")
+                    # v1.0.260: Removed prompt embedding to save context budget
                     CMD_SMALLFIX="/sw:increment"
                     [[ -n "$INC_NAME" ]] && CMD_SMALLFIX="/sw:increment \"$INC_NAME\""
 
-                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Small change — consider tracking: \`Skill({ skill: \"sw:increment-planner\", args: \"${ESCAPED_PROMPT_SMALLFIX}\" })\` or \`$CMD_SMALLFIX\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
+                    MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}Small change — consider tracking: \`Skill({ skill: \"sw:increment-planner\" })\` or \`$CMD_SMALLFIX\`. Reason: $INC_REASON${AGENT_DIRECTIVE}"
                     output_approve_with_context "$MSG"
                     exit 0
                     ;;
@@ -1522,13 +1453,13 @@ After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill
             # Exclude questions (starting with question words or ending with ?)
             if ! echo "$PROMPT" | grep -qiE "^[[:space:]]*(what|how|why|explain|tell me|can you|does|should|is there|where|when|which)" && \
                ! echo "$PROMPT" | grep -qE "\?[[:space:]]*$"; then
-              FALLBACK_ESCAPED=$(truncate_and_escape_prompt "$PROMPT")
+              # v1.0.260: Removed prompt embedding to save context budget
               if [[ "$INCREMENT_MANDATORY_CONFIG" == "true" ]]; then
-                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\", args: \"${FALLBACK_ESCAPED}\" })\` — call BEFORE implementation.
+                FALLBACK_MSG="SKILL FIRST: \`Skill({ skill: \"sw:increment-planner\" })\` — call BEFORE implementation.
 Detection: Implementation keywords detected (LLM unavailable, keyword fallback).
 After increment-planner, chain domain skills per tech stack (see CLAUDE.md Skill Chaining)."
               else
-                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment-planner\", args: \"${FALLBACK_ESCAPED}\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
+                FALLBACK_MSG="Increment suggested: \`Skill({ skill: \"sw:increment-planner\" })\`. Reason: Implementation keywords detected (LLM unavailable, keyword fallback)."
               fi
               echo "[$(date -Iseconds)] keyword-fallback | prompt_keywords_matched=true | mandatory=$INCREMENT_MANDATORY_CONFIG" >> "$LAZY_LOAD_LOG"
               output_approve_with_context "$FALLBACK_MSG"
@@ -2232,56 +2163,50 @@ if echo "$PROMPT" | grep -qE "^/sw:[a-z]"; then
 fi
 
 # ==============================================================================
-# OUTPUT: Approve with context or no context
+# OUTPUT: Priority-based context assembly with budget (v1.0.260)
 # ==============================================================================
-# v1.0.144: Prepend plugin auto-loading message if plugins are being loaded
-# This gives users visible feedback that plugins are being auto-loaded
+# Assembles final message by adding context items in priority order,
+# stopping when the budget is exhausted. This prevents blind concatenation
+# that wastes budget on low-priority items while truncating critical ones.
+#
+# Priority tiers:
+#   P1 (critical): Plugin status (RESTART/Using), active increment status
+#   P2 (important): LSP explicit request, WIP/interview gate
+#   P3 (informational): LSP setup/install suggestions, archive suggestion
+
+CONTEXT_BUDGET=2500  # Leave 500 chars headroom below 3000 max
+
+# Helper: Append message to FINAL_MESSAGE if it fits within budget
+# Args: $1=message to append
+# Returns: 0 if appended, 1 if skipped (budget exceeded)
+_budget_append() {
+  local msg="$1"
+  [[ -z "$msg" ]] && return 0
+  local new_len=$(( ${#FINAL_MESSAGE} + ${#msg} ))
+  if [[ $new_len -le $CONTEXT_BUDGET ]]; then
+    FINAL_MESSAGE="${FINAL_MESSAGE}${msg}"
+    return 0
+  fi
+  return 1
+}
 
 FINAL_MESSAGE=""
 
-# Add plugin auto-loading message if set (from earlier keyword detection)
-if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
-  FINAL_MESSAGE="$AUTOLOAD_PLUGINS_MSG"
-fi
+# P1: Critical — plugin status and active increment
+_budget_append "$AUTOLOAD_PLUGINS_MSG"
+_budget_append "$CONTEXT"
 
-# v1.0.191: Add LSP environment setup warning if needed
-if [[ -n "$LSP_ENV_SETUP_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_ENV_SETUP_MSG}"
-fi
-
-# v1.0.191: Add LSP marketplace/plugin installation message if installed
-if [[ -n "$LSP_INSTALL_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_INSTALL_MSG}"
-fi
-
-# v1.0.203: Add LSP setup suggestion if languages detected but plugins not installed
-if [[ -n "$LSP_SETUP_SUGGESTION_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_SETUP_SUGGESTION_MSG}"
-fi
-
-# v1.0.180: Add explicit LSP request explanation if detected
-if [[ -n "$LSP_EXPLICIT_REQUEST_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${LSP_EXPLICIT_REQUEST_MSG}"
-fi
-
-# v1.0.257: Archive suggestion when too many increments
-if [[ -n "$ARCHIVE_SUGGESTION_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${ARCHIVE_SUGGESTION_MSG}"
-fi
-
-# v1.0.243: Smart Interview Gate for non-incrementAssist paths
-# When deep interview is enabled but incrementAssist didn't trigger SKILL FIRST,
-# still inject the gate so LLM can gather context across conversational prompts.
+# P2: Important — LSP explicit request, interview gate
+_budget_append "$LSP_EXPLICIT_REQUEST_MSG"
 if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}
-
-${SMART_INTERVIEW_GATE_MSG}"
+  _budget_append "\\n${SMART_INTERVIEW_GATE_MSG}"
 fi
 
-# Add context if available
-if [[ -n "$CONTEXT" ]]; then
-  FINAL_MESSAGE="${FINAL_MESSAGE}${CONTEXT}"
-fi
+# P3: Informational — LSP setup, archive, environment
+_budget_append "$LSP_ENV_SETUP_MSG"
+_budget_append "$LSP_INSTALL_MSG"
+_budget_append "$LSP_SETUP_SUGGESTION_MSG"
+_budget_append "$ARCHIVE_SUGGESTION_MSG"
 
 if [[ -n "$FINAL_MESSAGE" ]]; then
   output_approve_with_context "$FINAL_MESSAGE"
