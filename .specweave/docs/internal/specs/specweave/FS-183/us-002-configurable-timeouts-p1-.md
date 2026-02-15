@@ -4,7 +4,7 @@ feature: FS-183
 title: "Configurable Timeouts (P1)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer with large projects
 **I want** to configure LSP timeouts globally and per-language
 **So that** I can accommodate slow-indexing language servers like csharp-ls."

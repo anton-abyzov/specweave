@@ -10,7 +10,7 @@ project: specweave
 external:
   github:
     issue: 1165
-    url: https://github.com/anton-abyzov/specweave/issues/1165
+    url: "https://github.com/anton-abyzov/specweave/issues/1165"
 ---
 
 # US-003: Explicit Closure on Increment Completion

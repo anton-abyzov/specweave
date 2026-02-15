@@ -44,8 +44,9 @@ export async function detectProjectMetadata(
   const { name, description, source } = await detectNameAndDescription(projectRoot);
   const initials = extractInitials(name);
   const categories = await detectDocCategories(docsPath);
+  const logoPath = await detectCustomLogo(projectRoot);
 
-  return { name, description, initials, categories, source };
+  return { name, description, initials, categories, source, logoPath: logoPath ?? undefined };
 }
 
 /**
@@ -65,7 +66,7 @@ async function detectNameAndDescription(
       if (configName && typeof configName === 'string') {
         const description = raw.project?.description
           || raw.research?.vision?.rawVision
-          || `${configName} — Project Documentation`;
+          || 'Project Documentation';
         return { name: configName, description: truncateDescription(description), source: 'config' };
       }
     } catch {
@@ -80,7 +81,7 @@ async function detectNameAndDescription(
       const pkg = JSON.parse(await fs.readFile(packagePath, 'utf-8'));
       if (pkg.name && typeof pkg.name === 'string') {
         const name = formatPackageName(pkg.name);
-        const description = pkg.description || `${name} — Project Documentation`;
+        const description = pkg.description || 'Project Documentation';
         return { name, description: truncateDescription(description), source: 'package' };
       }
     } catch {
@@ -88,10 +89,10 @@ async function detectNameAndDescription(
     }
   }
 
-  // Source 3: directory name
-  const dirName = path.basename(projectRoot);
+  // Source 3: directory name (resolve first so "." becomes actual dir name)
+  const dirName = path.basename(path.resolve(projectRoot));
   const name = formatDirectoryName(dirName);
-  return { name, description: `${name} — Project Documentation`, source: 'directory' };
+  return { name, description: 'Project Documentation', source: 'directory' };
 }
 
 /**
@@ -224,6 +225,27 @@ function formatLabel(folderName: string): string {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
+}
+
+/**
+ * Detect a custom logo file in the project
+ * Checks common locations in priority order
+ */
+async function detectCustomLogo(projectRoot: string): Promise<string | null> {
+  const candidates = [
+    path.join(projectRoot, '.specweave', 'logo.svg'),
+    path.join(projectRoot, '.specweave', 'logo.png'),
+    path.join(projectRoot, 'logo.svg'),
+    path.join(projectRoot, 'logo.png'),
+  ];
+
+  for (const candidate of candidates) {
+    if (await fs.pathExists(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 /**

@@ -4,7 +4,7 @@ feature: FS-190
 title: "Permission Presets (P1)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user configuring sync
 **I want** to choose from named permission presets instead of configuring 8+ booleans
 **So that** I can set up sync correctly without understanding every flag."

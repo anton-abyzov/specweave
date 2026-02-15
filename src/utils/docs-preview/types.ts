@@ -22,6 +22,8 @@ export interface ProjectMetadata {
   categories: DocCategory[];
   /** Source of the project name detection */
   source: 'config' | 'package' | 'directory';
+  /** Path to custom logo file if found */
+  logoPath?: string;
 }
 
 export interface DocusaurusConfig {

@@ -14,6 +14,10 @@ export function generateDocusaurusConfig(config: DocusaurusConfig): string {
   const { title, tagline, url, baseUrl, docsPath } = config;
   const projectName = config.projectMetadata?.name || title;
 
+  // Build Docusaurus exclude patterns from excludeFolders
+  const excludeFolders = config.excludeFolders || [];
+  const excludePatterns = excludeFolders.map(f => `'**/${f.replace(/'/g, "\\'")}/**'`).join(', ');
+
   // Generate footer links from detected categories (max 4)
   const categories = config.projectMetadata?.categories || [];
   const footerItems = categories.slice(0, 4).map(cat =>
@@ -48,7 +52,6 @@ const config = {
   baseUrl: '${baseUrl}',
 
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
   onBrokenAnchors: 'warn',
 
   // Internationalization
@@ -67,7 +70,7 @@ const config = {
           path: '${docsPath}',
           sidebarPath: './sidebars.js',
           editUrl: undefined,
-          exclude: [],
+          exclude: [${excludePatterns}],
           remarkPlugins: [],
           rehypePlugins: [],
           beforeDefaultRemarkPlugins: [],
@@ -85,19 +88,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: '${title}',
+        title: '${projectName} Docs',
         logo: {
           alt: '${projectName} Logo',
           src: 'img/logo.svg',
         },
-        items: [
-          {
-            type: 'docSidebar',
-            sidebarId: 'docs',
-            position: 'left',
-            label: 'Documentation',
-          },
-        ],
+        items: [],
       },
 
       footer: {
@@ -122,6 +118,9 @@ const config = {
   markdown: {
     mermaid: true,
     format: 'md',
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 };
@@ -552,7 +551,7 @@ export async function writeCustomCSS(targetDir: string, theme: string): Promise<
 /**
  * Generate index page (landing page) with dynamic categories
  */
-export function generateIndexPage(title: string, tagline: string, categories: DocCategory[]): string {
+export function generateIndexPage(title: string, tagline: string, categories: DocCategory[], projectName?: string): string {
   const firstCategoryLink = categories.length > 0 ? `/${categories[0].id}` : '/';
 
   // Build category cards JSX
@@ -566,6 +565,8 @@ export function generateIndexPage(title: string, tagline: string, categories: Do
           </a>`;
   }).join('\n');
 
+  const brandName = projectName ? escapeQuotes(projectName) : '';
+
   return `import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
@@ -578,7 +579,7 @@ function HomepageHeader() {
   return (
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
-        <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+        <h1 className={styles.heroTitle}>${brandName ? `<span className={styles.brandName}>${brandName}</span> Documentation` : '{siteConfig.title}'}</h1>
         <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link
@@ -619,10 +620,11 @@ export async function writeIndexPage(
   targetDir: string,
   title: string,
   tagline: string,
-  categories: DocCategory[] = []
+  categories: DocCategory[] = [],
+  projectName?: string
 ): Promise<void> {
   const indexPath = path.join(targetDir, 'src', 'pages', 'index.js');
-  const content = generateIndexPage(title, tagline, categories);
+  const content = generateIndexPage(title, tagline, categories, projectName);
   await fs.ensureDir(path.dirname(indexPath));
   await fs.writeFile(indexPath, content, 'utf-8');
 }
@@ -646,10 +648,16 @@ export function generateIndexModuleCSS(): string {
 
 .heroTitle {
   font-size: 3rem;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.03em;
   margin-bottom: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.brandName {
+  font-weight: 800;
   color: white;
+  letter-spacing: -0.04em;
 }
 
 .heroSubtitle {
@@ -763,6 +771,12 @@ export function generateIndexModuleCSS(): string {
 @media screen and (max-width: 600px) {
   .heroTitle {
     font-size: 1.75rem;
+  }
+
+  .brandName {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
   }
 
   .heroSubtitle {

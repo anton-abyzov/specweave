@@ -12,7 +12,7 @@ project: specweave
 external:
   github:
     issue: 1160
-    url: https://github.com/anton-abyzov/specweave/issues/1160
+    url: "https://github.com/anton-abyzov/specweave/issues/1160"
 ---
 
 # US-001: As a developer, I want unit tests for existing CLI command handlers so coverage reaches 50%+

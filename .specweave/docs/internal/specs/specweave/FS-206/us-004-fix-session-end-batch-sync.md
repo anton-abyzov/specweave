@@ -10,7 +10,7 @@ project: specweave
 external:
   github:
     issue: 1166
-    url: https://github.com/anton-abyzov/specweave/issues/1166
+    url: "https://github.com/anton-abyzov/specweave/issues/1166"
 ---
 
 # US-004: Fix Session-End Batch Sync

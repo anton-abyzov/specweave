@@ -4,7 +4,7 @@ feature: FS-190
 title: "Fix Broken Label Generation (P0)"
 status: completed
 priority: P0
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** SpecWeave user syncing to GitHub
 **I want** labels to correctly reflect item priority and avoid redundancy
 **So that** GitHub Issues are properly categorized and filterable."

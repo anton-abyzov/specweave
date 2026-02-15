@@ -4,7 +4,7 @@ feature: FS-193
 title: "Multi-Repo Pull Sync with All-Repos-Must-Agree (P2)"
 status: completed
 priority: P1
-created: 2026-02-07T00:00:00.000Z
+created: "2026-02-07T00:00:00.000Z"
 tldr: "**As a** developer working in a microservices architecture with distributed repos
 **I want** to pull AC changes from multiple GitHub repos back to the spec with all-repos-must-agree semantics
 **So that** the spec reflects verified completion across all teams."

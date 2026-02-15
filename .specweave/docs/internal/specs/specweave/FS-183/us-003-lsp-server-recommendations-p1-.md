@@ -4,7 +4,7 @@ feature: FS-183
 title: "LSP Server Recommendations (P1)"
 status: not_started
 priority: P1
-created: 2026-02-04T00:00:00.000Z
+created: "2026-02-04T00:00:00.000Z"
 tldr: "**As a** developer in a multi-language project
 **I want** SpecWeave to analyze my project and suggest top 3 LSP servers
 **So that** I don't need to manually research language server options."

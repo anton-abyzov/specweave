@@ -9,7 +9,7 @@ project: specweave
 external:
   github:
     issue: 919
-    url: https://github.com/anton-abyzov/specweave/issues/919
+    url: "https://github.com/anton-abyzov/specweave/issues/919"
 ---
 
 # US-002: Complete Comprehensive Documentation

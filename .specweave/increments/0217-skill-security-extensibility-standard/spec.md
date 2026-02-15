@@ -1,6 +1,6 @@
 ---
 increment: 0217-skill-security-extensibility-standard
-title: "Skill Security, Extensibility Standard & skill-weave.com"
+title: "Skill Security, Extensibility Standard & verified-skill.com"
 type: feature
 priority: P1
 status: planned
@@ -10,11 +10,11 @@ test_mode: TDD
 coverage_target: 80
 ---
 
-# Feature: Skill Security, Extensibility Standard & skill-weave.com
+# Feature: Skill Security, Extensibility Standard & verified-skill.com
 
 ## Overview
 
-The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5, 2026) found 36.82% of skills have security flaws, 76 confirmed malicious payloads, and 13.4% contain critical issues. This increment establishes SpecWeave as the authority on AI skill security by: publishing comprehensive security analysis, designing a Secure Skill Factory standard with three-tier verification, launching the skill-weave.com product vision with `npx skill-weave` CLI, and solving the contradiction/versioning problems that no platform addresses.
+The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5, 2026) found 36.82% of skills have security flaws, 76 confirmed malicious payloads, and 13.4% contain critical issues. This increment establishes SpecWeave as the authority on AI skill security by: publishing comprehensive security analysis, designing a Secure Skill Factory standard with three-tier verification, launching the verified-skill.com product vision with `npx vskill` CLI, and solving the contradiction/versioning problems that no platform addresses.
 
 **Key data points**:
 - [Snyk ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/): 3,984 skills scanned, 1,467 flawed
@@ -53,7 +53,7 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 - [ ] **AC-US2-02**: Script includes Smithery breach, Snyk findings, base64 exfiltration example
 - [ ] **AC-US2-03**: Contrasts SpecWeave's transparent markdown approach vs executable skill platforms
 - [ ] **AC-US2-04**: Follows existing script format (narrator voice `> "quotes"`, screen directions `**[SCREEN:]**`, timestamps)
-- [ ] **AC-US2-05**: Introduces skill-weave.com as the solution
+- [ ] **AC-US2-05**: Introduces verified-skill.com as the solution
 
 ---
 
@@ -108,7 +108,7 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 **Project**: specweave
 
 **As a** platform integrator
-**I want** to understand how universal the Agent Skills format truly is across 30+ platforms
+**I want** to understand how universal the Agent Skills format truly is across 39 platforms
 **So that** I can build skills that work everywhere without platform-specific forks
 
 **Acceptance Criteria**:
@@ -119,11 +119,11 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 
 ---
 
-### US-007: skill-weave.com Product Vision (P1)
+### US-007: verified-skill.com Product Vision (P1)
 **Project**: specweave
 
 **As a** product owner
-**I want** a full product spec for skill-weave.com
+**I want** a full product spec for verified-skill.com
 **So that** we can build the secure skill factory as a standalone product
 
 **Acceptance Criteria**:
@@ -135,6 +135,12 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 - [ ] **AC-US7-06**: Private repo structure designed (monorepo: packages/cli + packages/web + packages/scanner)
 - [ ] **AC-US7-07**: Website architecture (Next.js 14+, search, skill pages, badge API)
 - [ ] **AC-US7-08**: Business model consideration (free tier, pro scanning, enterprise)
+- [ ] **AC-US7-09**: Landing page onboarding flow — clear step-by-step: init → find → install/verify → update, positioned prominently on homepage
+- [ ] **AC-US7-10**: Agent registry visualization — card/grid layout showing all 39 supported agents with universal/non-universal badges and platform icons
+- [ ] **AC-US7-11**: UI design direction document — minimalistic, verification-first, distinctive identity (NOT default dark theme), UI8 expert-level craft, unique color palette and typography
+- [ ] **AC-US7-12**: Popularity signals aggregation — GitHub stars/forks, npm weekly downloads, vskill install counts, commit recency — displayed on each skill page
+- [ ] **AC-US7-13**: Trending algorithm design — weighted composite (install velocity + stars growth + recency + verification tier) with configurable time windows (7d/30d), powering "Trending" section on homepage
+- [ ] **AC-US7-14**: Skill comparison/ranking — sortable leaderboard by category (security, coding, writing, etc.) with filters for verification tier, popularity, recency
 
 ---
 
@@ -142,17 +148,18 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 **Project**: specweave
 
 **As a** developer installing skills from any source
-**I want** a CLI that scans skills before installing and works across all 35+ agent platforms
+**I want** a CLI that scans skills before installing and works across all 39 agent platforms
 **So that** I never install a malicious or vulnerable skill unknowingly
 
 **Acceptance Criteria**:
-- [ ] **AC-US8-01**: `npx skill-weave add owner/repo` command design (mirrors `npx skills add` API)
-- [ ] **AC-US8-02**: Auto-detection of installed agents (Claude, Cursor, Windsurf, Gemini, Codex, Copilot, etc. — 35+ agents)
+- [ ] **AC-US8-01**: `npx vskill add owner/repo` command design (mirrors `npx skills add` API)
+- [ ] **AC-US8-02**: Auto-detection of all 39 installed agents (verified from `skills@1.3.9` source)
 - [ ] **AC-US8-03**: Security scan runs automatically before install (Tier 1 minimum)
 - [ ] **AC-US8-04**: Security score displayed with findings summary, user chooses to proceed or abort
 - [ ] **AC-US8-05**: Vendor auto-verification skips scan for trusted orgs (anthropics/, openai/, google/)
-- [ ] **AC-US8-06**: npm package `skill-weave` reserved and scaffold published
-- [ ] **AC-US8-07**: CLI design document with full command reference (`add`, `scan`, `list`, `compare`, `update`)
+- [ ] **AC-US8-06**: npm package `vskill` reserved and scaffold published
+- [ ] **AC-US8-07**: CLI design document with full command reference (`add`, `scan`, `list`, `compare`, `update`, `submit`)
+- [ ] **AC-US8-08**: 39-agent registry data model with paths, detection logic, universal/non-universal classification
 
 ---
 
@@ -164,11 +171,71 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 **So that** a malicious update can't silently compromise my agents after the initial verification
 
 **Acceptance Criteria**:
-- [ ] **AC-US9-01**: Lock file design (`skill-weave.lock`) recording version/SHA, scan date, tier, findings per installed skill
+- [ ] **AC-US9-01**: Lock file design (`vskill.lock`) recording version/SHA, scan date, tier, findings per installed skill
 - [ ] **AC-US9-02**: Update flow with diff scan — highlights NEW patterns added since last verified version
 - [ ] **AC-US9-03**: Badge is per-version: "verified at v1.3.0" not just "verified"
 - [ ] **AC-US9-04**: Continuous monitoring design — downgrade badge if suspicious update detected
 - [ ] **AC-US9-05**: CLI shows warnings for downgraded skills on next run
+
+---
+
+### US-010: Skill Submission Request System (P1)
+**Project**: specweave
+
+**As a** skill author who has built a useful AI skill
+**I want** to submit my skill for verification and inclusion on verified-skill.com
+**So that** my skill gets a trust badge and reaches a wider audience through a curated marketplace
+
+**Acceptance Criteria**:
+- [ ] **AC-US10-01**: Web form accepts GitHub repo URL, skill name, optional email for notification
+- [ ] **AC-US10-02**: API endpoint `POST /api/v1/submissions` accepts same data programmatically
+- [ ] **AC-US10-03**: Submission immediately triggers Tier 1 scan (deterministic patterns)
+- [ ] **AC-US10-04**: If Tier 1 passes, Tier 2 LLM judge runs automatically
+- [ ] **AC-US10-05**: If both tiers pass (score >= 80), skill is auto-approved and published with v1.0.0
+- [ ] **AC-US10-06**: If either tier has doubts/failures, submission flagged for admin review
+- [ ] **AC-US10-07**: Submitter can check status via `GET /api/v1/submissions/:id`
+- [ ] **AC-US10-08**: Optional email notification on approval or rejection (email not mandatory)
+- [ ] **AC-US10-09**: Submission state machine has full audit trail (state transitions logged)
+- [ ] **AC-US10-10**: Vendor auto-verification for trusted orgs bypasses scanning
+
+---
+
+### US-011: Admin Management Dashboard (P1)
+**Project**: specweave
+
+**As a** platform admin
+**I want** a dashboard to manage skill submission requests and monitor platform health
+**So that** I can review flagged submissions, approve/reject skills, and ensure quality
+
+**Acceptance Criteria**:
+- [ ] **AC-US11-01**: Admin login with JWT-based authentication (email/password)
+- [ ] **AC-US11-02**: Dashboard shows submission queue with status filters (pending, needs-review, approved, rejected)
+- [ ] **AC-US11-03**: Admin can approve a submission (moves to published, assigns version)
+- [ ] **AC-US11-04**: Admin can reject a submission with a reason text (submitter notified)
+- [ ] **AC-US11-05**: Admin can escalate auto-flagged submission to Tier 3 manual review
+- [ ] **AC-US11-06**: Dashboard shows scan results per submission (Tier 1 findings, Tier 2 judge verdict)
+- [ ] **AC-US11-07**: Dashboard shows platform stats: total skills, approval rate, scan metrics
+- [ ] **AC-US11-08**: Version history visible per skill with badge status per version
+- [ ] **AC-US11-09**: Admin roles: super_admin (full access), reviewer (approve/reject only)
+- [ ] **AC-US11-10**: All admin actions logged in audit trail
+
+---
+
+### US-012: Skill Versioning Mechanism (P1)
+**Project**: specweave
+
+**As a** skill author updating my previously verified skill
+**I want** my updates to be independently verified and assigned a new semantic version
+**So that** users know which version was verified and can track changes
+
+**Acceptance Criteria**:
+- [ ] **AC-US12-01**: First verified version is always 1.0.0
+- [ ] **AC-US12-02**: Subsequent submissions for same skill trigger diff analysis against previous version
+- [ ] **AC-US12-03**: Version bump type (major/minor/patch) determined by diff analysis rules
+- [ ] **AC-US12-04**: Each version independently scanned — badge = "verified at v1.2.0"
+- [ ] **AC-US12-05**: Version history tracked per skill with scan results per version
+- [ ] **AC-US12-06**: Git SHA recorded per version for content integrity
+- [ ] **AC-US12-07**: Content hash stored for future diff analysis
 
 ## Functional Requirements
 
@@ -176,7 +243,7 @@ The AI Skills ecosystem is a security disaster. Snyk's ToxicSkills study (Feb 5,
 Build on `src/core/fabric/security-scanner.ts` (26 patterns, 6 severity levels) and `src/core/fabric/registry-schema.ts` (3 trust tiers) from 0205-skill-fabric.
 
 ### FR-002: Standards-first, implementation phased
-This increment delivers specs, architecture docs, PRD, public docs, YouTube content, schema extensions, and code skeletons. Full skill-weave.com implementation deferred to follow-up increment.
+This increment delivers specs, architecture docs, PRD, public docs, YouTube content, schema extensions, and code skeletons. Full verified-skill.com implementation deferred to follow-up increment.
 
 ### FR-003: Three-tier verification addresses scanner limitations
 Snyk proved regex-only scanners give false security. Three tiers: deterministic rules (fast, cheap) → LLM intent analysis (catches obfuscation) → human review (catches everything).
@@ -187,13 +254,19 @@ Snyk proved regex-only scanners give false security. Three tiers: deterministic 
 - YouTube script section integrated with existing tutorial
 - Registry schema extended with backward-compatible TypeScript interfaces
 - Contradiction detector skeleton with >80% test coverage
-- skill-weave.com PRD complete with architecture, tech stack, business model
-- skill-weave private repo scaffolded as monorepo
+- verified-skill.com PRD complete with architecture, tech stack, business model
+- vskill private repo scaffolded as monorepo
+- Submission system design doc with state machine, API spec, decision logic
+- Admin dashboard design doc with auth flow, wireframes, role matrix
+- Versioning mechanism design doc with diff rules and content hashing
+- Prisma schema validates with all entities (submissions, skills, versions, admins)
+- Submission state machine TypeScript skeleton compiles
+- 39-agent registry data file with all agent paths and detection logic
 
 ## Out of Scope
 
-- Full skill-weave.com website implementation (follow-up increment)
-- Full `npx skill-weave` CLI implementation (follow-up increment)
+- Full verified-skill.com website implementation (follow-up increment)
+- Full `npx vskill` CLI implementation (follow-up increment)
 - Continuous scanning daemon runtime (design only)
 - Runtime contradiction resolution (skeleton only)
 - npm package publishing (scaffold only)

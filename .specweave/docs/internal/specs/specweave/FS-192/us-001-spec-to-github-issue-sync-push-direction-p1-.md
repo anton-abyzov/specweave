@@ -4,7 +4,7 @@ feature: FS-192
 title: "Spec-to-GitHub Issue Sync (Push Direction) (P1)"
 status: not_started
 priority: P1
-created: 2026-02-06T00:00:00.000Z
+created: "2026-02-06T00:00:00.000Z"
 tldr: "**As a** developer using SpecWeave with GitHub,
 **I want** my User Stories from spec."
 project: specweave
