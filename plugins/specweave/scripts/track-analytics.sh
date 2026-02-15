@@ -26,6 +26,10 @@ EVENTS_FILE="$ANALYTICS_DIR/events.jsonl"
 mkdir -p "$ANALYTICS_DIR" 2>/dev/null
 
 # Parse arguments
+# IMPORTANT: Event type values ("command", "skill", "agent") are consumed by:
+#   - src/dashboard/server/data/dashboard-data-aggregator.ts (aggregation)
+#   - src/core/analytics/analytics-aggregator.ts (CLI analytics)
+# If you change these type names, update the TypeScript consumers.
 EVENT_TYPE="${1:-command}"
 EVENT_NAME="${2:-unknown}"
 shift 2 2>/dev/null || true
