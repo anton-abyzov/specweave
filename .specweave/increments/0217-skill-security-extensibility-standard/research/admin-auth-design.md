@@ -1,7 +1,7 @@
 # Admin Authentication Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US11-01, AC-US11-09 (T-032)
 **Dependencies**: T-030 (Database Schema)

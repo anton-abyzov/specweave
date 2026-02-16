@@ -27,13 +27,39 @@ if [[ -f "$PRESSURE_FILE" ]] && command -v jq >/dev/null 2>&1; then
 fi
 NEW_COUNT=$((PREV_COUNT + 1))
 
-# Determine level: 1 compaction = elevated, 2+ = critical
+# Determine level: 1 = elevated, 2 = critical, 3+ = emergency
 LEVEL="elevated"
 [[ "$NEW_COUNT" -ge 2 ]] && LEVEL="critical"
+[[ "$NEW_COUNT" -ge 3 ]] && LEVEL="emergency"
 
 cat > "$PRESSURE_FILE" <<EOF
 {"level":"$LEVEL","compactionCount":$NEW_COUNT,"lastCompaction":"$(date -Iseconds)"}
 EOF
+
+# Write prompt-health-alert.json with remediation advice (v1.0.268)
+ADVICE=""
+case "$LEVEL" in
+  elevated)
+    ADVICE="Context budget reduced to compact. Session is running long."
+    ;;
+  critical)
+    ADVICE="Context budget at minimal. Consider starting a new session or setting contextBudget.level to off."
+    ;;
+  emergency)
+    ADVICE="Context budget stripped to off (3+ compactions). Strongly recommend starting a new session."
+    ;;
+esac
+
+ALERT_FILE="$STATE_DIR/prompt-health-alert.json"
+cat > "$ALERT_FILE" <<EOF
+{"level":"$LEVEL","compactionCount":$NEW_COUNT,"advice":"$ADVICE","timestamp":"$(date -Iseconds)"}
+EOF
+
+# Log compaction event for dashboard activity stream
+mkdir -p "$(dirname "$STATE_DIR")/.specweave/logs" 2>/dev/null
+_LOG_DIR="$STATE_DIR/../logs"
+mkdir -p "$_LOG_DIR" 2>/dev/null
+echo "[$(date -Iseconds)] COMPACTION #$NEW_COUNT | level=$LEVEL | $ADVICE" >> "$_LOG_DIR/prompt-health.log" 2>/dev/null
 
 echo '{"continue":true}'
 exit 0

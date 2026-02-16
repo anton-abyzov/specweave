@@ -21,7 +21,7 @@
 **Invoke**: `/skill-name` | auto-trigger by keywords | `Skill({ skill: "name" })`
 **Parallel work**: Append "use subagents" to requests
 
-**Key skills**: `sw:pm`, `sw:architect`, `sw:grill`, `sw:tdd-orchestrator`, `sw-frontend:*`, `sw-backend:*`, `sw-testing:*`
+**Key skills**: `sw:pm`, `sw:architect`, `sw:grill`, `sw:tdd-cycle`, `sw-frontend:*`, `sw-backend:*`, `sw-testing:*`
 
 **Skill chaining** — skills are NOT "one and done":
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)

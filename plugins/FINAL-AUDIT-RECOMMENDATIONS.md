@@ -73,7 +73,7 @@ These have **explicit task instructions** (e.g., "create tests", "generate code"
 | `devops` (sw-infra) | ✅ "Generates IaC ONE LAYER AT A TIME" | ✅ Keep |
 | `increment` | ✅ Creates increment structure | ✅ Keep |
 | `test-aware-planner` | ✅ Generates tasks.md with tests | ✅ Keep |
-| `tdd-orchestrator` | ✅ Coordinates TDD workflow | ✅ Keep |
+| `tdd-cycle` | ✅ Coordinates TDD workflow | ✅ Keep |
 | (etc.) | | |
 
 ### Fix Script

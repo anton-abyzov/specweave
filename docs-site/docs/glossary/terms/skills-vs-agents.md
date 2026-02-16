@@ -31,7 +31,7 @@ SpecWeave uses two types of AI components: **Skills** (auto-activating knowledge
 ```mermaid
 graph LR
     A[User: "How do I plan an increment?"] --> B{Keyword Match}
-    B -->|"plan", "increment"| C[increment-planner SKILL]
+    B -->|"plan", "increment"| C[increment SKILL]
     C --> D[Knowledge loaded into context]
     D --> E[Claude responds with guidance]
 ```
@@ -46,7 +46,7 @@ graph LR
 ### Example Skills
 
 ```
-specweave:increment-planner    # Activates for "plan increment"
+specweave:increment            # Activates for "plan increment"
 specweave:brownfield-analyzer  # Activates for "existing project"
 specweave:tdd-workflow         # Activates for "TDD", "red-green"
 specweave:serverless-recommender  # Activates for "serverless", "Lambda"
@@ -56,13 +56,12 @@ specweave:serverless-recommender  # Activates for "serverless", "Lambda"
 
 ```markdown
 ---
-name: increment-planner
-description: Creates implementation plans for SpecWeave increments.
-             Activates for: increment planning, feature planning,
-             hotfix, MVP, new product.
+description: Plan and create SpecWeave increments with PM and Architect
+             agent collaboration. Activates for: increment planning,
+             feature planning, hotfix, MVP, new product.
 ---
 
-# Increment Planner
+# Increment
 
 ## When to Activate
 [Keywords and scenarios...]

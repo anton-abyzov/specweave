@@ -1,7 +1,7 @@
 # Registry Schema Extensions Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Architecture Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US4-05 (T-013)
 **Dependencies**: T-008 (Three-Tier Certification), T-009 (Trust Labels & Badges)

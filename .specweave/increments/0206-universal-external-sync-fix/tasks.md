@@ -11,7 +11,7 @@
 **Depends On**: T-001
 
 ### T-003: [GREEN] Add increment.sync case to emitIncrementEvent()
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-02 | **Status**: [x] completed
+**User Story**: US-001, US-004 | **Satisfies ACs**: AC-US1-03, AC-US4-02 | **Status**: [x] completed
 **Depends On**: T-002
 
 ## Phase 2: Universal Auto-Create

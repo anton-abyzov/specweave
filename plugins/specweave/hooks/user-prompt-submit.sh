@@ -2263,6 +2263,10 @@ if [[ "$AUTO_ADAPT" == "true" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
         # Jump to minimal regardless of base
         [[ "$BUDGET_LEVEL" != "off" ]] && BUDGET_LEVEL="minimal"
         ;;
+      emergency)
+        # Nuclear option: strip ALL context (v1.0.268 - 3+ compactions)
+        BUDGET_LEVEL="off"
+        ;;
     esac
   fi
 fi

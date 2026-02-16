@@ -257,9 +257,9 @@ sequenceDiagram
 
 SpecWeave is **optimized for greenfield development** with smart increment planning.
 
-### Increment Planner Skill
+### Increment Skill
 
-The `increment-planner` skill automatically detects product descriptions and routes to increment planning.
+The `increment` skill automatically detects product descriptions and routes to increment planning.
 
 **Capabilities**:
 - Generate project structure from business requirements

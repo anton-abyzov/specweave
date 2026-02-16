@@ -482,11 +482,10 @@ Skills use structured prompts:
 
 ```markdown
 ---
-name: increment-planner
-description: Plans development increments with spec generation. Activates when user says: "create increment", "plan feature", "/inc", "new increment".
+description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Activates for: increment planning, feature planning, hotfix, MVP, new product.
 ---
 
-# Increment Planner Skill
+# Increment Skill
 
 ## Prompt Structure
 

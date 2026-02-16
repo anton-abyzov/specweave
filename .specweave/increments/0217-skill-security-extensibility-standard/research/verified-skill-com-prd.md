@@ -1,7 +1,7 @@
 # verified-skill.com — Product Requirements Document
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US7-01 through AC-US7-14 (T-015)
 **Dependencies**: T-006 (Competitive Analysis), T-008 (Three-Tier Certification), T-009 (Trust Labels & Badges)
@@ -53,7 +53,7 @@ verified-skill.com becomes the **shields.io for AI agent skills** — the canoni
 
 > "Get verified, get discovered. Submit your skill, pass our three-tier review, and earn a badge that GitHub, npm, and every agent marketplace recognizes."
 
-- **Free Tier 1 scanning**: Automated pattern check, instant results
+- **Free scanning (all tiers)**: Automated pattern check + AI analysis, instant results
 - **Verified badge**: Embeddable SVG for README, website, docs
 - **Version tracking**: Semantic versioning with diff analysis
 - **Discoverability**: Listed in curated registry with popularity signals
@@ -135,8 +135,8 @@ flowchart TD
 | Tier | Name | Method | Cost | Latency | Badge |
 |------|------|--------|------|---------|-------|
 | **1** | Scanned | 37 regex patterns + structural checks | Free | < 500ms | `scanned` |
-| **2** | Verified | Tier 1 + LLM judge (Claude Sonnet) | ~$0.03/skill | 5-15s | `verified` |
-| **3** | Certified | Tier 1 + 2 + human review + sandbox | $50-200/skill | 1-5 days | `certified` |
+| **2** | Verified | Tier 1 + LLM judge (Workers AI Llama 3.1 70B) | ~$0.003/skill | 5-15s | `verified` |
+| **3** | Certified | Tier 1 + 2 + human review + sandbox | Free (volunteer) | 1-5 days | `certified` |
 
 ### 5.2 Vendor Auto-Verification
 
@@ -159,16 +159,18 @@ Reference: [trust-labels-badges.md](./trust-labels-badges.md)
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| **Framework** | Next.js 14+ App Router | SSR for SEO, Server Components for performance, React ecosystem |
+| **Framework** | Next.js 15+ App Router | SSR for SEO, Server Components for performance, React ecosystem |
 | **Language** | TypeScript (strict) | Type safety, shared types with CLI |
-| **Database** | PostgreSQL (Neon or Supabase) | SKIP LOCKED for job queue, JSONB for flexible metadata |
-| **ORM** | Prisma | Type-safe queries, migration management |
-| **Hosting** | Vercel | Zero-config deployment, edge functions, preview deploys |
+| **Hosting** | Cloudflare Workers (via @opennextjs/cloudflare) | Serverless, auto-scaling, native Queues and Workers AI integration |
+| **Database** | PostgreSQL (Neon) | JSONB for flexible metadata, data storage only |
+| **ORM** | Prisma (client engine, @prisma/adapter-neon) | Type-safe queries, no Rust binary (Workers-compatible) |
+| **Job Queue** | Cloudflare Queues | Push-based, durable, at-least-once delivery, free tier: 10K ops/day |
+| **LLM (Tier 2)** | Cloudflare Workers AI (`@cf/meta/llama-3.1-70b-instruct`) | Serverless, no API key, ~$0.003/scan |
 | **Email** | Resend (resend.com) | Modern API, React Email templates, 100/day free tier |
 | **Auth** | JWT (Phase 1) → NextAuth (Phase 2) | Simple admin auth first, OAuth later |
 | **CI/CD** | GitHub Actions | Standard, free for public repos |
-| **Monitoring** | Vercel Analytics + Sentry | Built-in performance + error tracking |
-| **CDN/Storage** | Vercel Blob or Cloudflare R2 | Badge SVG caching, scan result storage |
+| **Monitoring** | Cloudflare Analytics + Sentry | Built-in performance + error tracking |
+| **CDN/Storage** | Cloudflare R2 | Badge SVG caching, scan result storage |
 
 ---
 
@@ -635,33 +637,31 @@ function computeRankingScore(skill: SkillWithSignals, sortBy: SortOption): numbe
 
 ---
 
-## 15. Business Model
+## 15. Licensing & Cost Model
 
-### 15.1 Tiers
+### 15.1 Open Source (MIT License)
 
-| Plan | Price | Includes |
-|------|-------|---------|
-| **Free** | $0/mo | Tier 1 automated scan, basic listing, badge API, 5 submissions/month |
-| **Pro** | $19/mo | Tier 1 + Tier 2 verified scan, priority queue, analytics dashboard, unlimited submissions, private badge customization |
-| **Enterprise** | $99/mo | All Pro features + Tier 3 certification (1/month), custom trusted orgs, SSO/SAML, SLA, dedicated support, self-hosted option |
+verified-skill.com is fully open source and free to use:
 
-### 15.2 Revenue Streams
+| Feature | Cost | Notes |
+|---------|------|-------|
+| Tier 1 scanning | Free | Deterministic, no external API |
+| Tier 2 scanning | Free* | Via Cloudflare Workers AI (operator's account) |
+| Tier 3 certification | Free | Community volunteer reviewers |
+| Badge API | Free | Unlimited |
+| Skill submission | Free | Unlimited |
+| CLI (npx vskill) | Free | MIT licensed |
+| Self-hosting | Free | Full source available |
 
-| Stream | Description | Target |
-|--------|------------|--------|
-| **Pro subscriptions** | Skill authors who want verified badges | $19/mo per author |
-| **Enterprise** | Organizations with internal skill governance | $99/mo per org |
-| **Tier 3 certification** | Pay-per-certification for enterprise skills | $150 per certification |
-| **API access** | High-volume API access for integrators | Usage-based |
-| **Sponsorship** | "Sponsored by" badges on trending page | $500/mo |
+*Workers AI cost at scale: ~$45/month at 500 scans/day (Llama 3.1 70B at $0.293/M input, $2.253/M output tokens). Free tier covers ~10,000 neurons/day. Cloudflare Queues stays within free tier at this volume.
 
-### 15.3 Monetization Timeline
+### 15.2 Sustainability
 
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **1. Build** | Months 1-3 | Free tier, Tier 1 scanning, basic registry |
-| **2. Grow** | Months 4-6 | Tier 2 scanning, Pro plan, badge API |
-| **3. Monetize** | Months 7-12 | Enterprise plan, Tier 3 certification, API pricing |
+Revenue is not a goal. The project is sustained by:
+- Open-source community contributions
+- Volunteer Tier 3 reviewers
+- Cloudflare's generous free tier for Workers, Queues, and Workers AI
+- Neon PostgreSQL free tier (0.5 GB storage)
 
 ---
 
@@ -727,7 +727,7 @@ Dynamic SVG generation following shields.io visual language:
 
 - `Cache-Control: max-age=3600` (1 hour)
 - `ETag` for conditional requests
-- Edge-cached via Vercel CDN
+- Edge-cached via Cloudflare CDN
 
 ---
 
@@ -749,7 +749,7 @@ Dynamic SVG generation following shields.io visual language:
 |--------|--------|
 | Skills indexed | 5,000+ |
 | Monthly active CLI users | 2,000+ |
-| Pro subscribers | 50+ |
+| Community contributors | 100+ |
 | Tier 2 verifications | 500+ |
 | Badge API requests/day | 10,000+ |
 
@@ -760,7 +760,7 @@ Dynamic SVG generation following shields.io visual language:
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|-----------|------------|
 | **Snyk adds registry** | High | Medium | Move fast, brand recognition first |
-| **LLM costs spike** | Medium | Low | Sonnet for volume, Opus for escalation |
+| **Workers AI costs at scale** | Low | Medium | ~$45/mo at 500/day; Cloudflare manages scaling; no API key needed |
 | **False negative** (miss malware) | Very High | Medium | Three-tier defense-in-depth, continuous monitoring |
 | **False positive** (block good skill) | Medium | Medium | Appeal process, human review for borderline |
 | **Gaming** (fake installs/stars) | Medium | Medium | Deduplication, anomaly detection |

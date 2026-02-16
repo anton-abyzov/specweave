@@ -3,7 +3,8 @@
   "slug": "jobs-visibility-clone-tests",
   "type": "bug",
   "priority": "P1",
-  "status": "active",
+  "status": "completed",
+  "completedDate": "2026-02-15",
   "createdAt": "2026-02-14T00:00:00Z",
-  "updatedAt": "2026-02-14T00:00:00Z"
+  "updatedAt": "2026-02-15T00:00:00Z"
 }
