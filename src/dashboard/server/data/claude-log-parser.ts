@@ -42,7 +42,7 @@ export class ClaudeLogParser {
   }
 
   /** Get paginated errors with real total count */
-  async getRecentErrors(limit = 50, offset = 0, typeFilter?: string): Promise<PaginatedErrors> {
+  async getRecentErrors(limit = 50, offset = 0, typeFilter?: string, search?: string): Promise<PaginatedErrors> {
     // Parse enough sessions to get a comprehensive error view
     const summaries = await this.getSessionSummaries(200);
     let allErrors: SessionError[] = [];
@@ -56,6 +56,17 @@ export class ClaudeLogParser {
     // Apply type filter
     if (typeFilter) {
       allErrors = allErrors.filter(e => e.type === typeFilter);
+    }
+
+    // Apply search filter (case-insensitive match on message, tool name, tool input)
+    if (search) {
+      const needle = search.toLowerCase();
+      allErrors = allErrors.filter(e =>
+        e.message.toLowerCase().includes(needle) ||
+        e.context?.toolName?.toLowerCase().includes(needle) ||
+        e.context?.toolInput?.toLowerCase().includes(needle) ||
+        e.context?.precedingAction?.toLowerCase().includes(needle),
+      );
     }
 
     const total = allErrors.length;
@@ -175,6 +186,11 @@ export class ClaudeLogParser {
     // Track tool_use blocks for name resolution: tool_use_id -> { name, input }
     const toolUseMap = new Map<string, { name: string; input: string }>();
 
+    // Track recent tool calls for causal context (ring buffer of last 5)
+    const recentToolCalls: Array<{ name: string; input: string }> = [];
+    // Track what the assistant was last doing (text output or tool call)
+    let lastAssistantAction = '';
+
     for await (const line of rl) {
       if (!line.trim()) continue;
       try {
@@ -199,10 +215,25 @@ export class ClaudeLogParser {
                 toolCallCount++;
                 const inputSummary = this.summarizeToolInput(block.name, block.input);
                 toolUseMap.set(block.id, { name: block.name, input: inputSummary });
+                // Track for causal context
+                recentToolCalls.push({ name: block.name, input: inputSummary });
+                if (recentToolCalls.length > 5) recentToolCalls.shift();
+                lastAssistantAction = `Tool: ${block.name}(${inputSummary.slice(0, 80)})`;
+              } else if (block.type === 'text' && block.text) {
+                const text = block.text.slice(0, 120).replace(/\n/g, ' ');
+                if (text.trim()) lastAssistantAction = text;
               }
             }
           }
         }
+
+        // Build context snapshot for errors
+        const buildContext = (extra?: Partial<SessionError['context']>): SessionError['context'] => ({
+          messageIndex: messageCount,
+          precedingAction: lastAssistantAction || undefined,
+          recentTools: recentToolCalls.length > 0 ? [...recentToolCalls.slice(-3)] : undefined,
+          ...extra,
+        });
 
         // Detect system-level errors (API errors, overloaded, etc.)
         if (entry.type === 'system' && entry.level === 'error') {
@@ -213,7 +244,7 @@ export class ClaudeLogParser {
             sessionId,
             type: errorType,
             message: errorMsg,
-            context: { messageIndex: messageCount },
+            context: buildContext(),
           });
         }
 
@@ -237,11 +268,10 @@ export class ClaudeLogParser {
                   sessionId,
                   type: this.classifyToolError(msg),
                   message: msg,
-                  context: {
+                  context: buildContext({
                     toolName: toolInfo?.name,
                     toolInput: toolInfo?.input,
-                    messageIndex: messageCount,
-                  },
+                  }),
                 });
               }
             }

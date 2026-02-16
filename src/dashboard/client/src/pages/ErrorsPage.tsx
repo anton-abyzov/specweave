@@ -16,6 +16,8 @@ interface SessionError {
     toolName?: string;
     toolInput?: string;
     messageIndex?: number;
+    precedingAction?: string;
+    recentTools?: Array<{ name: string; input: string }>;
   };
 }
 
@@ -68,11 +70,14 @@ const PAGE_SIZE = 50;
 export function ErrorsPage() {
   const [tab, setTab] = useUrlState('tab', 'groups');
   const [typeFilter, setTypeFilter] = useUrlState('type', '');
+  const [searchQuery, setSearchQuery] = useUrlState('q', '');
   const [selectedSession, setSelectedSession] = useUrlState('session', '');
   const [page, setPage] = useState(0);
+  const [searchInput, setSearchInput] = useState(searchQuery);
 
   const offset = page * PAGE_SIZE;
   const typeParam = typeFilter ? `&type=${encodeURIComponent(typeFilter)}` : '';
+  const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
 
   // SSE-triggered refresh counter for real-time error updates
   const [refreshKey, setRefreshKey] = useState(0);
@@ -84,10 +89,16 @@ export function ErrorsPage() {
 
   const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>(`/api/errors/groups?_r=${refreshKey}`);
   const { data: paginated, loading: el } = useProjectApi<PaginatedErrors>(
-    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}&_r=${refreshKey}`,
+    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}${searchParam}&_r=${refreshKey}`,
   );
   const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>(`/api/errors/sessions?limit=50&_r=${refreshKey}`);
   const { data: timeline, loading: tl } = useProjectApi<ErrorTimelineBucket[]>(`/api/errors/timeline?bucket=60&_r=${refreshKey}`);
+
+  const handleSearch = useCallback(() => {
+    setSearchQuery(searchInput.trim());
+    setPage(0);
+    if (searchInput.trim()) setTab('errors');
+  }, [searchInput, setSearchQuery, setTab]);
 
   if (gl || el || sl || tl) return <PageLoader />;
 
@@ -122,6 +133,8 @@ export function ErrorsPage() {
 
   const handleClearFilter = () => {
     setTypeFilter('');
+    setSearchQuery('');
+    setSearchInput('');
     setPage(0);
   };
 
@@ -130,6 +143,34 @@ export function ErrorsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-200">Error Tracing</h2>
         <span className="text-xs text-gray-500">Observability for Claude Code sessions</span>
+      </div>
+
+      {/* Search Bar */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="Search errors by message, tool name, or context..."
+            className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); setSearchInput(''); setPage(0); }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs"
+            >
+              clear
+            </button>
+          )}
+        </div>
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
+        >
+          Search
+        </button>
       </div>
 
       {/* KPI Summary */}
@@ -155,14 +196,19 @@ export function ErrorsPage() {
             </button>
           ))}
         </div>
-        {typeFilter && (
-          <div className="flex items-center gap-1">
-            <Badge label={`type: ${typeFilter.replace(/_/g, ' ')}`} variant="info" />
+        {(typeFilter || searchQuery) && (
+          <div className="flex items-center gap-2">
+            {typeFilter && (
+              <Badge label={`type: ${typeFilter.replace(/_/g, ' ')}`} variant="info" />
+            )}
+            {searchQuery && (
+              <Badge label={`search: ${searchQuery.slice(0, 20)}`} variant="default" />
+            )}
             <button
               onClick={handleClearFilter}
               className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
-              clear
+              clear all
             </button>
           </div>
         )}
@@ -250,7 +296,7 @@ function ErrorGroupTable({ groups, onGroupClick }: { groups: ErrorGroup[]; onGro
                 </button>
               </td>
               <td className="px-4 py-2 text-xs text-gray-500 text-right">{g.sessions}</td>
-              <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(g.lastSeen)}</td>
+              <td className="px-4 py-2 text-xs text-gray-300 font-mono" title={timeAgo(g.lastSeen)}>{formatExactTime(g.lastSeen)}</td>
               <td className="px-4 py-2 text-xs text-gray-500 max-w-xs truncate">
                 {g.recentMessages[0] || '-'}
               </td>
@@ -328,8 +374,8 @@ function ErrorList({
                 <div className="flex-1 min-w-0">
                   <div
                     className={`text-xs text-gray-300 ${expanded ? 'whitespace-pre-wrap break-words' : 'truncate'} ${isLong ? 'cursor-pointer' : ''}`}
-                    onClick={isLong ? () => toggleRow(i) : undefined}
-                    title={isLong && !expanded ? 'Click to expand full message' : undefined}
+                    onClick={() => toggleRow(i)}
+                    title={!expanded ? 'Click to expand details' : 'Click to collapse'}
                   >
                     {expanded ? err.message : err.message.slice(0, 200)}
                     {!expanded && isLong && (
@@ -350,10 +396,18 @@ function ErrorList({
                       )}
                     </div>
                   )}
+
+                  {/* Expanded: Preceding action & recent tool chain */}
+                  {expanded && (
+                    <ErrorContextDetail context={err.context} />
+                  )}
                 </div>
 
                 <div className="flex-shrink-0 text-right">
-                  <div className="text-[10px] text-gray-500">{timeAgo(err.timestamp)}</div>
+                  <div className="text-[10px] text-gray-300 font-mono" title={timeAgo(err.timestamp)}>
+                    {formatExactTime(err.timestamp)}
+                  </div>
+                  <div className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</div>
                   <button
                     onClick={() => onSessionClick(err.sessionId)}
                     className="text-[10px] text-indigo-400 hover:text-indigo-300 font-mono mt-0.5 transition-colors"
@@ -373,6 +427,43 @@ function ErrorList({
       {totalPages > 1 && (
         <div className="px-5 py-3 border-t border-gray-800 flex justify-end">
           <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Error Context Detail (causal chain) ─── */
+
+function ErrorContextDetail({ context }: { context?: SessionError['context'] }) {
+  if (!context) return null;
+  const { precedingAction, recentTools } = context;
+  if (!precedingAction && (!recentTools || recentTools.length === 0)) return null;
+
+  return (
+    <div className="mt-2 p-2 bg-gray-900/60 border border-gray-800 rounded-lg space-y-1.5">
+      {precedingAction && (
+        <div>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">What preceded this error:</span>
+          <div className="text-[11px] text-gray-400 font-mono mt-0.5">
+            {precedingAction}
+          </div>
+        </div>
+      )}
+      {recentTools && recentTools.length > 0 && (
+        <div>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Recent tool chain:</span>
+          <div className="flex flex-col gap-0.5 mt-0.5">
+            {recentTools.map((t, j) => (
+              <div key={j} className="flex items-center gap-1.5 text-[10px]">
+                <span className="text-gray-600">{recentTools.length - j}.</span>
+                <span className="font-mono text-amber-400/80">{t.name}</span>
+                {t.input && (
+                  <span className="text-gray-600 font-mono truncate max-w-sm">{t.input}</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -524,9 +615,15 @@ function ErrorTimelineDensity({
                       {err.context.toolName}
                     </span>
                   )}
+                  <span className="text-[10px] text-gray-300 font-mono">{formatExactTime(err.timestamp)}</span>
                   <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
                 </div>
                 <div className="text-xs text-gray-500 truncate mt-0.5">{err.message}</div>
+                {err.context?.precedingAction && (
+                  <div className="text-[10px] text-gray-600 mt-0.5 truncate">
+                    After: {err.context.precedingAction}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -575,7 +672,7 @@ function SessionList({ sessions, onSelect }: { sessions: SessionSummary[]; onSel
                   <span className="text-xs text-gray-600">0</span>
                 )}
               </td>
-              <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(s.startTime)}</td>
+              <td className="px-4 py-2 text-xs text-gray-300 font-mono" title={timeAgo(s.startTime)}>{formatExactTime(s.startTime)}</td>
             </tr>
           ))}
         </tbody>
@@ -648,12 +745,14 @@ function SessionDetailPanel({ session, onClose }: { session: SessionSummary; onC
                       {err.context.toolName}
                     </span>
                   )}
+                  <span className="text-[10px] text-gray-300 font-mono">{formatExactTime(err.timestamp)}</span>
                   <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
                 </div>
 
                 <div
                   className={`text-xs text-gray-400 ${expanded ? 'whitespace-pre-wrap break-words' : ''} ${isLong ? 'cursor-pointer' : ''}`}
-                  onClick={isLong ? () => toggleError(i) : undefined}
+                  onClick={() => toggleError(i)}
+                  title={!expanded ? 'Click to expand' : 'Click to collapse'}
                 >
                   {expanded ? err.message : err.message.slice(0, 300)}
                   {!expanded && isLong && (
@@ -672,6 +771,9 @@ function SessionDetailPanel({ session, onClose }: { session: SessionSummary; onC
                     At message #{err.context.messageIndex}
                   </div>
                 )}
+
+                {/* Causal context */}
+                {expanded && <ErrorContextDetail context={err.context} />}
               </div>
             );
           })}
@@ -693,4 +795,20 @@ function timeAgo(ts: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+}
+
+function formatExactTime(ts: string): string {
+  if (!ts) return '-';
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  } catch {
+    return ts;
+  }
 }

@@ -575,7 +575,8 @@ export class DashboardServer {
       const limit = safeParseInt(url.searchParams.get('limit'), 50, 1, 500);
       const offset = safeParseInt(url.searchParams.get('offset'), 0, 0, 100000);
       const typeFilter = url.searchParams.get('type') || undefined;
-      const data = await project.logParser.getRecentErrors(limit, offset, typeFilter);
+      const search = url.searchParams.get('search') || undefined;
+      const data = await project.logParser.getRecentErrors(limit, offset, typeFilter, search);
       sendJson(res, { ok: true, data });
     });
 
