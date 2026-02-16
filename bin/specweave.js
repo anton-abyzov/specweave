@@ -870,7 +870,8 @@ const docsCmd = program
 docsCmd
   .command('preview')
   .description('Start documentation preview server with hot reload')
-  .option('-p, --port <number>', 'Port number (default: auto-find 3000-3010)')
+  .option('-p, --port <number>', 'Port number (default: 3015 internal, 3016 public)')
+  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
   .option('-f, --force', 'Force reinstall Docusaurus')
   .option('--no-browser', 'Do not open browser automatically')
   .option('--no-validate', 'Skip pre-flight validation')
@@ -883,12 +884,14 @@ docsCmd
       noBrowser: !options.browser,
       validate: options.validate,
       autoFix: options.autoFix,
+      scope: options.scope || 'internal',
     });
   });
 
 docsCmd
   .command('build')
   .description('Build static documentation site for deployment')
+  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
   .option('--no-validate', 'Skip pre-build validation')
   .option('--no-auto-fix', 'Do not auto-fix validation issues')
   .option('-o, --output <path>', 'Output directory')
@@ -898,17 +901,43 @@ docsCmd
       validate: options.validate,
       autoFix: options.autoFix,
       output: options.output,
+      scope: options.scope || 'internal',
     });
   });
 
 docsCmd
   .command('validate')
   .description('Validate documentation without starting server')
+  .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
   .option('--auto-fix', 'Auto-fix common issues')
   .option('-v, --verbose', 'Show all issues (not just errors)')
   .action(async (options) => {
     const { docsValidateCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsValidateCommand(options);
+    await docsValidateCommand({
+      autoFix: options.autoFix,
+      verbose: options.verbose,
+      scope: options.scope || 'internal',
+    });
+  });
+
+docsCmd
+  .command('public')
+  .description('Preview public documentation (shorthand for preview --scope public)')
+  .option('-p, --port <number>', 'Port number (default: 3016)')
+  .option('-f, --force', 'Force reinstall Docusaurus')
+  .option('--no-browser', 'Do not open browser automatically')
+  .option('--no-validate', 'Skip pre-flight validation')
+  .option('--no-auto-fix', 'Do not auto-fix validation issues')
+  .action(async (options) => {
+    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsPreviewCommand({
+      port: options.port ? parseInt(options.port, 10) : undefined,
+      force: options.force,
+      noBrowser: !options.browser,
+      validate: options.validate,
+      autoFix: options.autoFix,
+      scope: 'public',
+    });
   });
 
 docsCmd
@@ -927,10 +956,10 @@ docsCmd
     await docsStatusCommand();
   });
 
-// Default action for 'specweave docs' without subcommand
+// Default action for 'specweave docs' without subcommand — launches internal preview
 docsCmd.action(async () => {
-  const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
-  await docsStatusCommand();
+  const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
+  await docsPreviewCommand({ scope: 'internal' });
 });
 
 // Context command - Get project/board context for increment planning
@@ -1166,12 +1195,12 @@ program.on('--help', () => {
   console.log('  $ specweave context projects                # Get available projects as JSON');
   console.log('  $ specweave context boards --project myapp  # Get boards for a project');
   console.log('  $ specweave context select                  # Interactive project/board selection');
-  console.log('  $ specweave docs                            # Show docs status and help');
-  console.log('  $ specweave docs preview                    # Start docs server with hot reload');
-  console.log('  $ specweave docs preview --port 3015        # Start on specific port');
-  console.log('  $ specweave docs build                      # Build static site for deployment');
+  console.log('  $ specweave docs                            # Preview internal docs (port 3015)');
+  console.log('  $ specweave docs public                     # Preview public docs (port 3016)');
+  console.log('  $ specweave docs build                      # Build internal site');
+  console.log('  $ specweave docs build --scope public       # Build public site');
   console.log('  $ specweave docs validate                   # Check for docs errors');
-  console.log('  $ specweave docs validate --auto-fix        # Fix common issues automatically');
+  console.log('  $ specweave docs status                     # Show docs status');
   console.log('  $ specweave docs kill                       # Stop all docs servers');
   console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
   console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
