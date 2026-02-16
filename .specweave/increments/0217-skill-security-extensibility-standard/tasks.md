@@ -131,25 +131,25 @@ Public: POST /api/v1/submissions, GET /api/v1/submissions/:id, GET /api/v1/skill
 JWT email/password, bcrypt, 24h access / 7d refresh tokens. Roles: super_admin, reviewer.
 
 ### T-033: Design admin dashboard architecture
-**User Story**: US-011 | **Satisfies ACs**: AC-US11-02, AC-US11-03, AC-US11-04, AC-US11-05, AC-US11-06, AC-US11-07, AC-US11-08 | **Status**: [ ] pending
+**User Story**: US-011 | **Satisfies ACs**: AC-US11-02, AC-US11-03, AC-US11-04, AC-US11-05, AC-US11-06, AC-US11-07, AC-US11-08 | **Status**: [x] completed
 **Depends On**: T-031, T-032
 **Test**: Given API and auth designed → When dashboard designed → Then component hierarchy, data flow, admin actions, and stats views documented
 Submission queue, status filters, approve/reject/escalate, scan results display, platform stats, version history.
 
 ### T-034: Design auto-approve vs manual-review decision logic
-**User Story**: US-010 | **Satisfies ACs**: AC-US10-05, AC-US10-06 | **Status**: [ ] pending
+**User Story**: US-010 | **Satisfies ACs**: AC-US10-05, AC-US10-06 | **Status**: [x] completed
 **Depends On**: T-008, T-029
 **Test**: Given certification tiers and state machine designed → When decision logic designed → Then thresholds, vendor fast-path, and edge cases documented
 Auto-approve: Tier 1 PASS + Tier 2 PASS (score >= 80). Vendor fast-path: trusted orgs skip scanning. Edge cases: borderline scores, mixed signals.
 
 ### T-035: Design semantic versioning engine
-**User Story**: US-012 | **Satisfies ACs**: AC-US12-01, AC-US12-02, AC-US12-03, AC-US12-06, AC-US12-07 | **Status**: [ ] pending
+**User Story**: US-012 | **Satisfies ACs**: AC-US12-01, AC-US12-02, AC-US12-03, AC-US12-06, AC-US12-07 | **Status**: [x] completed
 **Depends On**: T-015c
 **Test**: Given version-pinning designed → When versioning engine designed → Then diff analysis rules, bump classification, and content comparison documented
 MAJOR: new permissions/scope. MINOR: new capabilities. PATCH: typos/formatting. Content hash (SHA-256) per version.
 
 ### T-036: Design email notification system
-**User Story**: US-010 | **Satisfies ACs**: AC-US10-08 | **Status**: [ ] pending
+**User Story**: US-010 | **Satisfies ACs**: AC-US10-08 | **Status**: [x] completed
 **Depends On**: T-029
 **Test**: Given submission pipeline designed → When email system designed → Then service choice, templates, triggers, and opt-in flow documented
 Resend (resend.com), React Email templates, 5 triggers, opt-in (email field optional).
