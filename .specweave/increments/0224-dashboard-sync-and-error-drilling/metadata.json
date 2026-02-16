@@ -1,0 +1,13 @@
+{
+  "id": "0224-dashboard-sync-and-error-drilling",
+  "status": "planned",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2026-02-16T00:12:49.775Z",
+  "lastActivity": "2026-02-16T00:12:49.776Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
