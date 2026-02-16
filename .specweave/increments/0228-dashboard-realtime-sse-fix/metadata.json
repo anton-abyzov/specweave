@@ -1,0 +1,13 @@
+{
+  "id": "0228-dashboard-realtime-sse-fix",
+  "status": "active",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2026-02-16T08:07:50.835Z",
+  "lastActivity": "2026-02-16T08:07:50.836Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

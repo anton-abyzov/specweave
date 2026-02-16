@@ -34,7 +34,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 | **Smithery** | Partial (post-incident) | Server-level | API key management added post-breach | Reactive — improvements after disclosure | API key exposure; path traversal (Jun 2025); 3,000+ MCP servers compromised | 3,000+ MCP servers |
 | **ClawHub** | None built-in | Git-based (community forks) | Community submissions; no formal verification | None — open contribution model | ClawHavoc campaign: 335 infostealer packages deploying Atomic macOS Stealer | 500+ community-submitted skills |
 | **SkillsDirectory.com** | 50+ rules (automated) | Unclear (directory model) | Opaque review criteria | Automated + manual review (details undisclosed) | None publicly reported | ~36K skills indexed |
-| **SpecWeave Fabric** | 26 patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review | None | Growing marketplace |
+| **SpecWeave Fabric** | 41 patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review | None | Growing marketplace |
 | **Vendor Skills** (Anthropic, OpenAI, Google, Microsoft) | Internal code review; sandbox testing | Version-pinned to platform releases | Trusted organization model — vendor-authored or vendor-reviewed | Internal engineering review | None publicly disclosed | ~200 skills total across vendors |
 
 ### Key Observations
@@ -297,18 +297,21 @@ SpecWeave takes a defense-in-depth approach to skill security. No single mechani
 
 ### 1. Deterministic Security Scanner
 
-The `security-scanner.ts` module implements **26 regex-based pattern checks** across **6 detection categories**. Every skill submitted to the SpecWeave Fabric marketplace is scanned before it can be listed.
+The `security-scanner.ts` module implements **41 regex-based pattern checks** across **9 detection categories**. Every skill submitted to the SpecWeave Fabric marketplace is scanned before it can be listed.
 
 | Category | Pattern Count | Severity | Examples |
 |----------|--------------|----------|----------|
 | **Destructive commands** | 7 | Critical | `rm -rf`, `format C:`, `DROP TABLE`, `dd if=`, `mkfs`, `Remove-Item -Recurse -Force` |
-| **Remote code execution** | 6 | Critical | `curl \| bash`, `wget \| sh`, `eval()`, `exec()`, `child_process`, `Invoke-Expression` |
-| **Credential access** | 6 | High | `.env` file reads, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`, `credentials.json`, `secrets.yaml` |
+| **Remote code execution** | 8 | Critical | `curl \| bash`, `wget \| sh`, `\| bash` (generic), `eval()`, `exec()`, `child_process`, `Invoke-Expression`, `new Function()` |
+| **Obfuscation** | 5 | Critical | `atob()`, `btoa()`, `base64 -d/-D`, hex escape sequences, password-protected archives (`unzip -P`, `7z -p`) |
+| **Memory poisoning** | 2 | Critical | Writes to `CLAUDE.md`/`AGENTS.md`/`.claude/`, writes to `SOUL.md`/`MEMORY.md` |
+| **Credential access** | 9 | High | `.env` file reads, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`, `credentials.json`, `secrets.yaml`, `~/.ssh/`, `~/.aws/`, crypto wallet paths |
+| **Data exfiltration** | 1 | High | `curl --data` / `curl -d` (data upload to external endpoints) |
 | **Prompt injection** | 4 | High | `<system>` tags, "ignore previous instructions", "you are now", "override system prompt" |
 | **Dangerous permissions** | 1 | High | `chmod 777` |
 | **Network access** | 4 | Info | `fetch()`, `http.get()`, `axios`, external URL references |
 
-The scanner also includes two additional checks beyond the 26 regex patterns:
+The scanner also includes two additional checks beyond the 41 regex patterns:
 
 - **Frontmatter `name:` field detection** — catches the namespace-stripping issue that can cause plugin conflicts (medium severity)
 - **Unbalanced code fence detection** — prevents attackers from using unclosed code blocks to hide patterns from naive line-by-line scanners
@@ -341,7 +344,7 @@ SpecWeave classifies every skill into one of three trust tiers. Higher tiers req
 
 | Tier | Label | Requirements | Cost | Latency |
 |------|-------|-------------|------|---------|
-| **Tier 1** | Scanned | Pass all 26+ deterministic patterns | Free | < 500ms |
+| **Tier 1** | Scanned | Pass all 41 deterministic patterns | Free | < 500ms |
 | **Tier 2** | Verified | Tier 1 + LLM judge intent analysis | ~$0.03/skill | 5-15 seconds |
 | **Tier 3** | Certified | Tier 1 + Tier 2 + human security review | $50-200/skill | 1-5 business days |
 
@@ -380,20 +383,21 @@ Beyond pattern matching, the skill validator checks structural integrity across 
 | **Frontmatter** | Required fields present, no `name:` field, valid YAML syntax |
 | **Scope declaration** | Languages, frameworks, tools, file patterns, "Does NOT" clause |
 | **Permissions** | Every tool usage justified, permissions match `allowed-tools` |
-| **Security patterns** | The 26-pattern scanner results |
+| **Security patterns** | The 41-pattern scanner results |
 | **Content quality** | Description length (10-1024 chars), section completeness |
 | **Cross-references** | No circular dependencies, no coupling to specific skill names |
 
 ### 6. LLM Judge for Intent Analysis
 
-Tier 2 verification uses an LLM to analyze skill intent beyond what regex patterns can detect. The judge evaluates:
+Tier 2 verification uses an LLM to analyze skill intent beyond what regex patterns can detect. The `SecurityJudge` class (`src/core/fabric/security-judge.ts`) evaluates five threat categories:
 
-- Whether the skill's stated purpose matches its actual instructions
-- Whether instructions could be interpreted as harmful under adversarial conditions
-- Whether the skill requests permissions disproportionate to its stated scope
-- Whether hidden instructions exist in locations a human reviewer might skip (deep nesting, HTML comments, Unicode tricks)
+1. **Social engineering** — Instructions that trick users into downloading, installing, or running untrusted software
+2. **Scope inflation** — Skill claims to do X but instructions actually do Y
+3. **Obfuscated intent** — Indirect language achieving dangerous outcomes without obvious commands
+4. **Multi-step attack chains** — Individually safe steps composing into an attack
+5. **Chained skill attacks** — Instructions to install or invoke other potentially malicious skills
 
-The LLM judge is not a replacement for deterministic scanning — it is a complementary layer that catches semantic attacks that pattern matching cannot.
+The judge uses the LLM provider abstraction (`src/core/llm/`) for multi-provider support (Anthropic, OpenAI, Azure, Bedrock, Ollama, Vertex AI) and respects the consent gate — no API calls are made without explicit user permission. When no LLM is configured, the judge returns a CONCERNS verdict recommending manual review.
 
 ### How the Layers Compose
 
@@ -414,6 +418,31 @@ The following table shows which attack types each security layer is designed to 
 
 No single layer covers all attack types. The defense-in-depth strategy ensures that an attack must evade multiple independent detection mechanisms simultaneously. A semantic prompt injection (no keywords) evades Tier 1 but is caught by the LLM judge. A trojanized archive evades both Tier 1 and the LLM judge but is caught by human review. The probability of an attack evading all layers simultaneously decreases with each additional layer.
 
+### Real-World Validation: Snyk ToxicSkills PoC
+
+To validate the scanner against real malicious skills, we ran it against four samples from [Snyk's ToxicSkills proof-of-concept repository](https://github.com/snyk-labs/toxicskills-goof). These samples reproduce the exact attack patterns found in the wild during Snyk's audit.
+
+| Sample | Result | Critical | High | Attack Vector |
+|--------|--------|----------|------|---------------|
+| **clawhub/skill.md** | **FAIL** | 2 | 0 | Base64-obfuscated reverse shell (`base64 -D \| bash`) |
+| **vercel/SKILL.md** (.agents) | **FAIL** | 0 | 2 | Data exfiltration via `curl --data` sending `uname -a` to paste service |
+| **vercel/SKILL.md** (.gemini) | **FAIL** | 0 | 2 | Same exfiltration pattern, targeting Gemini agents |
+| **google/SKILL.md** | **PASS** | 0 | 0 | Social engineering — natural language instructions to download and run malware |
+
+**Detection rate**: 75% (3 of 4) via Tier 1 pattern scanning alone.
+
+**What Tier 1 caught**: The clawhub skill contained a base64-encoded reverse shell payload (`echo '...' | base64 -D | bash`) that the scanner flagged with two critical findings: obfuscation (base64 decode) and remote code execution (pipe to shell). The vercel skills used `curl --data` to exfiltrate host information to an attacker-controlled paste service, caught by the data exfiltration pattern.
+
+**What Tier 1 missed**: The google skill uses pure social engineering — it tells users in natural language to "download from here, extract with pass `openclaw`, and run openclaw-core file." No shell command syntax appears directly; the attack relies on the agent convincing the user to execute a malicious binary.
+
+**Tier 2 LLM Judge closes the gap**: The `specweave judge-skill` command combines Tier 1 pattern scanning with Tier 2 LLM intent analysis. When Tier 1 finds critical/high findings, the verdict is BLOCKED and LLM analysis is skipped (saving cost). When Tier 1 passes, the LLM judge evaluates the skill for semantic threats including social engineering, scope inflation, obfuscated intent, multi-step attack chains, and chained skill attacks. The google skill's social engineering — which evades all regex patterns — is detected by the LLM judge's semantic analysis of the download-and-execute instructions.
+
+**CLI commands**:
+- `specweave scan-skill <file>` — Tier 1 pattern scanning only
+- `specweave judge-skill <file>` — Combined Tier 1 + Tier 2 LLM analysis
+- `specweave judge-skill --scan-only <file>` — Tier 1 only via judge pipeline
+- `specweave judge-skill --json <file>` — Machine-readable output with both tier results
+
 ---
 
 ## Three-Tier Verification Vision
@@ -428,7 +457,7 @@ flowchart LR
 
     subgraph Tier1["Tier 1: Scanned"]
         direction TB
-        T1A["26+ regex patterns"]
+        T1A["41 regex patterns"]
         T1B["Frontmatter validation"]
         T1C["Code fence analysis"]
         T1D["Safe context detection"]

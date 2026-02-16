@@ -247,6 +247,28 @@ program
     await installCommand(componentName, options);
   });
 
+// Scan skill command - Security scan a skill file
+program
+  .command('scan-skill <file>')
+  .description('Scan a skill file for security issues (Tier 1 pattern scanning)')
+  .option('--json', 'Output results as JSON', false)
+  .action(async (file, options) => {
+    const { scanSkillCommand } = await import('../dist/src/cli/commands/scan-skill.js');
+    await scanSkillCommand(file, options);
+  });
+
+// Judge skill command - Combined Tier 1 + Tier 2 LLM security analysis
+program
+  .command('judge-skill <file>')
+  .description('Judge a skill file for security threats (Tier 1 patterns + Tier 2 LLM)')
+  .option('--json', 'Output results as JSON', false)
+  .option('--model <model>', 'LLM model to use (e.g., sonnet, opus)')
+  .option('--scan-only', 'Run Tier 1 only, skip LLM analysis', false)
+  .action(async (file, options) => {
+    const { judgeSkillCommand } = await import('../dist/src/cli/commands/judge-skill.js');
+    await judgeSkillCommand(file, options);
+  });
+
 // List command - List available/installed components
 program
   .command('list')

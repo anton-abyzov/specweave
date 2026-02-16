@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
 import { PageLoader } from '../components/ui/Spinner.js';
@@ -29,8 +30,10 @@ type Tab = 'commands' | 'skills' | 'agents' | 'daily';
 export function AnalyticsPage() {
   const [tab, setTab] = useState<Tab>('commands');
   const [refreshing, setRefreshing] = useState(false);
-  const { data, loading, error, refetch, fetchedAt } = useProjectApi<AnalyticsData>('/api/analytics/summary');
-  const { data: skills, loading: sl, refetch: refetchSkills } = useProjectApi<SkillUsage[]>('/api/analytics/skills');
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('analytics-event', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error, refetch, fetchedAt } = useProjectApi<AnalyticsData>(`/api/analytics/summary?_r=${refreshKey}`);
+  const { data: skills, loading: sl, refetch: refetchSkills } = useProjectApi<SkillUsage[]>(`/api/analytics/skills?_r=${refreshKey}`);
 
   if (loading || sl) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;

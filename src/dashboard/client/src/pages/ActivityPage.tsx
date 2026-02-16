@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
-import { useSSE } from '../hooks/useSSE.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
@@ -58,7 +58,7 @@ export function ActivityPage() {
     setLiveEvents((prev) => [item as ActivityEvent, ...prev].slice(0, 50));
   }, []);
 
-  useSSE({ onEvent: { activity: handleActivity } });
+  useSSEEvent('activity', handleActivity);
 
   if (loading) return <PageLoader />;
 
