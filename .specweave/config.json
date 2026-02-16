@@ -11,6 +11,10 @@
   "multiProject": {
     "enabled": false
   },
+  "billing": {
+    "planType": "subscription",
+    "monthlyAmount": 200
+  },
   "adapters": {
     "default": "claude"
   },

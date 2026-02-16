@@ -158,6 +158,13 @@ export interface PaginatedErrors {
   limit: number;
 }
 
+export interface ErrorTimelineBucket {
+  start: string;
+  end: string;
+  count: number;
+  byType: Record<string, number>;
+}
+
 // Plugin info
 export interface PluginInfo {
   name: string;

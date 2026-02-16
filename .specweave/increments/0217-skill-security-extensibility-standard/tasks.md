@@ -155,7 +155,7 @@ MAJOR: new permissions/scope. MINOR: new capabilities. PATCH: typos/formatting. 
 Resend (resend.com), React Email templates, 5 triggers, opt-in (email field optional).
 
 ### T-037: Design 39-agent registry data model
-**User Story**: US-008 | **Satisfies ACs**: AC-US8-08 | **Status**: [ ] pending
+**User Story**: US-008 | **Satisfies ACs**: AC-US8-08 | **Status**: [x] completed
 **Depends On**: T-006b
 **Test**: Given installer research complete → When data model designed → Then AgentDefinition interface with all 39 agents documented
 Interface: id, displayName, localSkillsDir, globalSkillsDir, detectInstalled(), isUniversal. All 39 agents from `skills@1.3.9`.

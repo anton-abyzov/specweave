@@ -5,6 +5,7 @@
  * Handles parallel execution, progress tracking, and result aggregation.
  */
 
+import { consoleLogger as logger } from '../utils/logger.js';
 import type { Importer, ExternalItem, ImportConfig, ImportResult } from './external-importer.js';
 import { GitHubImporter } from './github-importer.js';
 import { JiraImporter } from './jira-importer.js';
@@ -181,8 +182,8 @@ export class ImportCoordinator {
                           this.config.github?.token ? 'coordinatorConfig.github.token' :
                           auth.token ? `getGitHubAuthFromProject(${auth.source})` : 'none';
       const tokenPrefix = token ? token.slice(0, 8) + '...' : 'none';
-      console.log(`   🔐 ImportCoordinator token: ${tokenPrefix} (from ${tokenSource})`);
-      console.log(`   📁 projectRoot: ${this.projectRoot}`);
+      logger.debug(`ImportCoordinator token: ${tokenPrefix} (from ${tokenSource})`);
+      logger.debug(`projectRoot: ${this.projectRoot}`);
 
       for (const repo of this.config.githubRepositories) {
         try {
@@ -458,8 +459,8 @@ export class ImportCoordinator {
         }
       }
 
-      // Update sync metadata if enabled
-      if (this.config.enableSyncMetadata && items.length > 0) {
+      // Update sync metadata if enabled (always write on success, even with 0 items)
+      if (this.config.enableSyncMetadata) {
         const metadata: PlatformSyncMetadata = {
           lastImport: new Date().toISOString(),
           lastImportCount: items.length,
@@ -543,8 +544,8 @@ export class ImportCoordinator {
         }
       }
 
-      // Update sync metadata if enabled
-      if (this.config.enableSyncMetadata && items.length > 0) {
+      // Update sync metadata if enabled (always write on success, even with 0 items)
+      if (this.config.enableSyncMetadata) {
         const metadata: PlatformSyncMetadata = {
           lastImport: new Date().toISOString(),
           lastImportCount: items.length,
@@ -634,8 +635,8 @@ export class ImportCoordinator {
         }
       }
 
-      // Update sync metadata if enabled
-      if (this.config.enableSyncMetadata && items.length > 0) {
+      // Update sync metadata if enabled (always write on success, even with 0 items)
+      if (this.config.enableSyncMetadata) {
         const metadata: PlatformSyncMetadata = {
           lastImport: new Date().toISOString(),
           lastImportCount: items.length,
@@ -694,8 +695,8 @@ export class ImportCoordinator {
         }
       }
 
-      // Update sync metadata if enabled
-      if (this.config.enableSyncMetadata && items.length > 0) {
+      // Update sync metadata if enabled (always write on success, even with 0 items)
+      if (this.config.enableSyncMetadata) {
         const metadata: PlatformSyncMetadata = {
           lastImport: new Date().toISOString(),
           lastImportCount: items.length,

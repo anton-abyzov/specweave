@@ -33,6 +33,13 @@ interface PaginatedErrors {
   limit: number;
 }
 
+interface ErrorTimelineBucket {
+  start: string;
+  end: string;
+  count: number;
+  byType: Record<string, number>;
+}
+
 interface SessionSummary {
   sessionId: string;
   startTime: string;
@@ -71,8 +78,9 @@ export function ErrorsPage() {
     `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}`,
   );
   const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>('/api/errors/sessions?limit=50');
+  const { data: timeline, loading: tl } = useProjectApi<ErrorTimelineBucket[]>('/api/errors/timeline?bucket=60');
 
-  if (gl || el || sl) return <PageLoader />;
+  if (gl || el || sl || tl) return <PageLoader />;
 
   const totalErrors = paginated?.total || 0;
   const errors = paginated?.errors || [];

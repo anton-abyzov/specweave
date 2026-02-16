@@ -28,6 +28,7 @@ interface OverviewData {
     totalSavings: number;
     totalTokens: number;
     sessionCount: number;
+    billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   };
   notifications: {
     pendingCount: number;
@@ -73,8 +74,8 @@ function syncStatusLabel(status?: string): string {
   }
 }
 
-const isMaxPlan = (costs: OverviewData['costs']): boolean =>
-  costs.totalCost === 0 && costs.sessionCount > 0;
+const isSubscriptionPlan = (costs: OverviewData['costs']): boolean =>
+  costs.billingContext?.planType === 'subscription';
 
 export function OverviewPage() {
   const { data, loading, error } = useProjectApi<OverviewData>('/api/overview');
@@ -140,9 +141,11 @@ export function OverviewPage() {
         </Link>
         <Link to="/costs" className="group">
           <KpiCard
-            title="Total Cost"
-            value={isMaxPlan(data.costs) ? '$0.00' : `$${data.costs.totalCost.toFixed(2)}`}
-            subtitle={isMaxPlan(data.costs) ? 'Max Plan' : `${data.costs.sessionCount.toLocaleString()} sessions`}
+            title={isSubscriptionPlan(data.costs) ? 'Usage Value' : 'Total Cost'}
+            value={`$${data.costs.totalCost.toFixed(2)}`}
+            subtitle={isSubscriptionPlan(data.costs)
+              ? `$${data.costs.billingContext?.monthlyAmount ?? '?'}/mo plan`
+              : `${data.costs.sessionCount.toLocaleString()} sessions`}
             color="amber"
           />
         </Link>
@@ -156,12 +159,12 @@ export function OverviewPage() {
         </Link>
       </div>
 
-      {/* Max Plan Banner */}
-      {isMaxPlan(data.costs) && (
+      {/* Subscription Banner */}
+      {isSubscriptionPlan(data.costs) && (
         <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
-          <Badge label="Max Plan" variant="info" />
+          <Badge label="Subscription" variant="info" />
           <span className="text-xs text-gray-300">
-            API costs included in subscription. Token usage tracked for analytics.
+            Costs shown as API-equivalent usage value.
           </span>
         </div>
       )}
