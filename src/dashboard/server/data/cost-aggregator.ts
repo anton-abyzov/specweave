@@ -15,6 +15,11 @@ export interface SessionTokenSummary {
   duration?: number;
 }
 
+export interface BillingContext {
+  planType: 'api' | 'subscription';
+  monthlyAmount?: number;
+}
+
 export interface CostsSummaryPayload {
   totalCost: number;
   totalSavings: number;
@@ -23,6 +28,7 @@ export interface CostsSummaryPayload {
   sessions: SessionTokenSummary[];
   modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }>;
   isMaxPlan: boolean;
+  billingContext: BillingContext;
 }
 
 // Pricing per million tokens (as of Feb 2026)
@@ -56,7 +62,7 @@ export class CostAggregator {
     this.logDir = path.join(process.env.HOME || '', '.claude/projects', `-${slug}`);
   }
 
-  async getTokenSummaries(limit = 200): Promise<CostsSummaryPayload> {
+  async getTokenSummaries(limit = 200, billingConfig?: { planType?: string; monthlyAmount?: number }): Promise<CostsSummaryPayload> {
     if (this.cache && Date.now() - this.cacheTime < this.cacheTTL) {
       return this.cache;
     }
@@ -86,6 +92,14 @@ export class CostAggregator {
     const totalSavings = sessions.reduce((s, x) => s + x.savings, 0);
     const totalTokens = sessions.reduce((s, x) => s + x.inputTokens + x.outputTokens, 0);
 
+    const planType = billingConfig?.planType === 'subscription' ? 'subscription' as const : 'api' as const;
+    const billingContext: BillingContext = {
+      planType,
+      ...(planType === 'subscription' && billingConfig?.monthlyAmount != null
+        ? { monthlyAmount: billingConfig.monthlyAmount }
+        : {}),
+    };
+
     const result: CostsSummaryPayload = {
       totalCost,
       totalSavings,
@@ -93,7 +107,8 @@ export class CostAggregator {
       sessionCount: sessions.length,
       sessions,
       modelBreakdown,
-      isMaxPlan: sessions.length > 0 && totalCost === 0,
+      isMaxPlan: planType === 'subscription',
+      billingContext,
     };
 
     this.cache = result;
