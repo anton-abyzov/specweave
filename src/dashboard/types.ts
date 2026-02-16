@@ -41,6 +41,7 @@ export interface OverviewPayload {
     totalSavings: number;
     totalTokens: number;
     sessionCount: number;
+    billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   };
   notifications: {
     pendingCount: number;

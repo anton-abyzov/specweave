@@ -59,6 +59,7 @@ export class DashboardDataAggregator {
         totalSavings: costData?.totalSavings ?? 0,
         totalTokens: costData?.totalTokens ?? 0,
         sessionCount: costData?.sessionCount ?? 0,
+        billingContext: costData?.billingContext ?? { planType: 'api' },
       },
       notifications: {
         pendingCount: Array.isArray(notifications)
