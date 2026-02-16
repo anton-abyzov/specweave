@@ -184,7 +184,11 @@ export function ErrorsPage() {
       )}
 
       {!selectedSession && tab === 'timeline' && (
-        <ErrorTimeline errors={errors} onSessionClick={id => setSelectedSession(id)} />
+        <ErrorTimelineDensity
+          buckets={timeline || []}
+          errors={errors}
+          onSessionClick={id => setSelectedSession(id)}
+        />
       )}
 
       {!selectedSession && tab === 'sessions' && (
@@ -392,58 +396,132 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
   );
 }
 
-/* ─── Error Timeline ─── */
+/* ─── Error Timeline with Density Chart ─── */
 
-function ErrorTimeline({ errors, onSessionClick }: { errors: SessionError[]; onSessionClick: (id: string) => void }) {
-  if (errors.length === 0) return null;
+function ErrorTimelineDensity({
+  buckets,
+  errors,
+  onSessionClick,
+}: {
+  buckets: ErrorTimelineBucket[];
+  errors: SessionError[];
+  onSessionClick: (id: string) => void;
+}) {
+  const [selectedBucket, setSelectedBucket] = useState<ErrorTimelineBucket | null>(null);
 
-  const severityDot: Record<string, string> = {
-    prompt_too_long: 'bg-rose-400',
-    api_error: 'bg-amber-400',
-    tool_failure: 'bg-blue-400',
-    hook_error: 'bg-gray-400',
+  const maxCount = Math.max(...buckets.map(b => b.count), 1);
+
+  const typeColors: Record<string, string> = {
+    tool_failure: 'bg-blue-500',
+    prompt_too_long: 'bg-rose-500',
+    api_error: 'bg-amber-500',
+    hook_error: 'bg-gray-500',
     rate_limit: 'bg-amber-400',
-    unknown: 'bg-gray-500',
+    unknown: 'bg-gray-600',
+  };
+
+  const filteredErrors = selectedBucket
+    ? errors.filter(e => {
+        const ts = new Date(e.timestamp).getTime();
+        return ts >= new Date(selectedBucket.start).getTime() && ts < new Date(selectedBucket.end).getTime();
+      })
+    : errors;
+
+  const formatBucketTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return iso; }
   };
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-medium text-gray-300 mb-4">Error Timeline</h3>
-      <div className="space-y-1 max-h-[600px] overflow-y-auto custom-scrollbar">
-        {errors.map((err, i) => (
-          <div
-            key={i}
-            className="flex items-start gap-3 py-2 px-2 hover:bg-gray-800/30 rounded cursor-pointer"
-            onClick={() => onSessionClick(err.sessionId)}
-          >
-            <div className="flex flex-col items-center mt-1">
-              <div className={`w-2 h-2 rounded-full ${severityDot[err.type] || 'bg-gray-500'}`} />
-              {i < errors.length - 1 && <div className="w-px h-full bg-gray-800 mt-1" />}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 font-mono">
-                  {err.type.replace(/_/g, ' ')}
-                </span>
-                {err.context?.toolName && (
-                  <span className="text-[10px] font-mono px-1 py-0.5 bg-gray-800 border border-gray-700 rounded text-amber-400">
-                    {err.context.toolName}
-                  </span>
-                )}
-                <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
-              </div>
-              <div className="text-xs text-gray-500 truncate mt-0.5">{err.message}</div>
-              {err.context?.toolInput && (
-                <div className="text-[10px] text-gray-600 font-mono truncate mt-0.5">
-                  {err.context.toolInput}
-                </div>
-              )}
-              <div className="text-[10px] text-gray-700 font-mono mt-0.5">
-                Session: {err.sessionId.slice(0, 8)}
-              </div>
-            </div>
+    <div className="space-y-4">
+      {/* Density Chart */}
+      {buckets.length > 0 && (
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-300">Error Density (per hour)</h3>
+            {selectedBucket && (
+              <button
+                onClick={() => setSelectedBucket(null)}
+                className="text-[10px] text-indigo-400 hover:text-indigo-300"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
-        ))}
+          <div className="flex items-end gap-px h-24">
+            {buckets.map((bucket, i) => {
+              const pct = (bucket.count / maxCount) * 100;
+              const isSelected = selectedBucket?.start === bucket.start;
+              return (
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center justify-end cursor-pointer group relative"
+                  onClick={() => setSelectedBucket(isSelected ? null : bucket)}
+                  title={`${formatBucketTime(bucket.start)}: ${bucket.count} errors`}
+                >
+                  <div
+                    className={`w-full min-h-[2px] rounded-t transition-all ${
+                      isSelected ? 'bg-indigo-400' : 'bg-rose-500/70 group-hover:bg-rose-400'
+                    }`}
+                    style={{ height: `${Math.max(pct, 2)}%` }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[9px] text-gray-600">{buckets.length > 0 ? formatBucketTime(buckets[0].start) : ''}</span>
+            <span className="text-[9px] text-gray-600">{buckets.length > 0 ? formatBucketTime(buckets[buckets.length - 1].start) : ''}</span>
+          </div>
+          {/* Type breakdown legend */}
+          <div className="flex gap-3 mt-2">
+            {Object.entries(typeColors).map(([type, color]) => (
+              <div key={type} className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${color}`} />
+                <span className="text-[9px] text-gray-600">{type.replace(/_/g, ' ')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filtered error list below chart */}
+      {selectedBucket && (
+        <div className="text-xs text-gray-400 px-1">
+          Showing {filteredErrors.length} errors from {formatBucketTime(selectedBucket.start)}
+        </div>
+      )}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+        <h3 className="text-sm font-medium text-gray-300 mb-4">
+          {selectedBucket ? 'Filtered Errors' : 'Recent Errors'}
+        </h3>
+        <div className="space-y-1 max-h-[400px] overflow-y-auto custom-scrollbar">
+          {filteredErrors.length === 0 && (
+            <p className="text-xs text-gray-600">No errors in this time range</p>
+          )}
+          {filteredErrors.slice(0, 100).map((err, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 py-2 px-2 hover:bg-gray-800/30 rounded cursor-pointer"
+              onClick={() => onSessionClick(err.sessionId)}
+            >
+              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${typeColors[err.type] || 'bg-gray-500'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 font-mono">{err.type.replace(/_/g, ' ')}</span>
+                  {err.context?.toolName && (
+                    <span className="text-[10px] font-mono px-1 py-0.5 bg-gray-800 border border-gray-700 rounded text-amber-400">
+                      {err.context.toolName}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
+                </div>
+                <div className="text-xs text-gray-500 truncate mt-0.5">{err.message}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

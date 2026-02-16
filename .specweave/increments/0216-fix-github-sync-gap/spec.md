@@ -3,7 +3,7 @@ increment: 0216-fix-github-sync-gap
 title: "Fix GitHub Issues Sync Gap"
 type: bug
 priority: P1
-status: active
+status: completed
 created: 2026-02-15
 structure: user-stories
 test_mode: TDD

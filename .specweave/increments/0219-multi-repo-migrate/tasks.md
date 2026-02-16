@@ -10,7 +10,7 @@
 ## Phase 1: Foundation
 
 ### T-001: Create migration types
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [x] completed
 **File**: `src/core/migration/types.ts`
 **Test**: Given types.ts exists -> When imported -> Then MigrationCandidate, MigrationPlan, MigrationStep, MigrationResult, MigrationOptions types compile correctly
 
@@ -23,7 +23,7 @@
 ---
 
 ### T-002: Implement single-repo detection
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-08 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-08 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a project with `.specweave/config.json` and no `umbrella.enabled` -> When `detectSingleRepoProject()` runs -> Then returns valid MigrationCandidate with project metadata
 
@@ -37,7 +37,7 @@
 ---
 
 ### T-003: Implement dry-run plan generation
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-02 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-02 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a valid MigrationCandidate -> When `generateMigrationPlan()` runs -> Then returns ordered steps listing all directory, file, and config operations
 
@@ -49,7 +49,7 @@
 ## Phase 2: Core Migration
 
 ### T-004: Implement backup creation
-**User Story**: US-001, US-003 | **Satisfies ACs**: AC-US1-11, AC-US3-03 | **Status**: [ ] pending
+**User Story**: US-001, US-003 | **Satisfies ACs**: AC-US1-11, AC-US3-03 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a project with `.specweave/` -> When backup runs -> Then `.specweave/backups/pre-migration-{timestamp}/` contains a complete copy and migration.log is created
 
@@ -62,7 +62,7 @@
 ---
 
 ### T-005: Implement migration execution
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-03, AC-US1-04, AC-US1-05, AC-US1-06, AC-US1-07, AC-US1-08, AC-US1-09 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-03, AC-US1-04, AC-US1-05, AC-US1-06, AC-US1-07, AC-US1-08, AC-US1-09 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a migration plan with `--execute` -> When `executeMigration()` runs -> Then sibling umbrella exists, original project untouched, `.specweave/` + `CLAUDE.md` + `docs-site/` moved to umbrella, config.json has `umbrella.enabled = true` with childRepo pointing to `../specweave`
 
@@ -80,7 +80,7 @@
 ---
 
 ### T-006: Implement uncommitted changes guard
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-10 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-10 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a project with uncommitted changes -> When migration is attempted -> Then it fails with "Uncommitted changes detected" error
 
@@ -92,7 +92,7 @@
 ---
 
 ### T-007: Implement rollback
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given a completed migration with backup -> When `--rollback` runs -> Then original structure is restored exactly
 
@@ -106,7 +106,7 @@
 ---
 
 ### T-008: Create CLI command handler
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-02, AC-US1-03 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-02, AC-US1-03 | **Status**: [x] completed
 **File**: `src/cli/commands/migrate-to-umbrella.ts`
 **Test**: Given the CLI is invoked -> When no `--execute` flag -> Then dry-run output displayed; When `--execute` -> Then migration proceeds with prompts
 
@@ -119,7 +119,7 @@
 ---
 
 ### T-009: Register command in bin/specweave.js
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [x] completed
 **File**: `bin/specweave.js`
 **Test**: Given `specweave --help` -> When displayed -> Then `migrate-to-umbrella` appears in command list
 
@@ -130,7 +130,7 @@
 ## Phase 3: Extensions
 
 ### T-010: Implement create-repos via gh CLI
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05 | **Status**: [x] completed
 **File**: `src/core/migration/umbrella-migrator.ts`
 **Test**: Given an umbrella project -> When user defines new repos -> Then repos are created on GitHub (if `gh` available) and cloned into umbrella
 

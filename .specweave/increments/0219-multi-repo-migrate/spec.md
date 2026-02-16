@@ -3,7 +3,7 @@ increment: 0219-multi-repo-migrate
 title: "Multi-Repo Migration Tool"
 type: feature
 priority: P1
-status: planned
+status: in-progress
 created: 2026-02-15
 structure: user-stories
 test_mode: test-after
