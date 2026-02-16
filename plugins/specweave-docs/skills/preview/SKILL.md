@@ -22,7 +22,7 @@ I help you view your SpecWeave living documentation with Docusaurus:
 ## How It Works
 
 1. **First run (~30 seconds)**:
-   - Creates Docusaurus in `.specweave/cache/docs-site/` (internal) or `.specweave/cache/docs-site-public/` (public)
+   - Creates Docusaurus in `.specweave/docs-site-internal/` or `.specweave/docs-site-public/`
    - Installs dependencies from public npm registry
    - Configures to read from `.specweave/docs/internal/` or `.specweave/docs/public/`
 
@@ -34,25 +34,29 @@ I help you view your SpecWeave living documentation with Docusaurus:
 
 ### View Internal Documentation (Default)
 ```bash
-/sw-docs:view
+specweave docs          # simplest — launches internal preview
+specweave docs preview  # explicit form
+/sw-docs:view           # via skill
 ```
 
 **What it does:**
 1. Checks if `.specweave/docs/internal/` exists
 2. Runs pre-flight validation (auto-fixes common issues)
-3. Sets up Docusaurus in cache (if first run)
+3. Sets up Docusaurus in `.specweave/docs-site-internal/` (if first run)
 4. Starts dev server on **http://localhost:3015**
 5. Enables hot reload
 
 ### View Public Documentation
 ```bash
-/sw-docs:view --public
+specweave docs public               # simplest
+specweave docs preview --scope public  # explicit form
+/sw-docs:view --scope public        # via skill
 ```
 
 **What it does:**
 1. Checks if `.specweave/docs/public/` exists
 2. Runs pre-flight validation (auto-fixes common issues)
-3. Sets up Docusaurus in cache (if first run)
+3. Sets up Docusaurus in `.specweave/docs-site-public/` (if first run)
 4. Starts dev server on **http://localhost:3016**
 5. Enables hot reload
 
@@ -113,12 +117,12 @@ lsof -i :3016 && kill -9 $(lsof -t -i :3016)
 ### Reinstall from scratch
 ```bash
 # For internal docs
-rm -rf .specweave/cache/docs-site
-# Then run /sw-docs:view again
+rm -rf .specweave/docs-site-internal
+# Then run specweave docs again
 
 # For public docs
-rm -rf .specweave/cache/docs-site-public
-# Then run /sw-docs:view --public again
+rm -rf .specweave/docs-site-public
+# Then run specweave docs public again
 ```
 
 ### npm registry issues

@@ -3,57 +3,57 @@
 ## Phase A: Research
 
 ### T-001: Research platform security postures
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-06 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-06 | **Status**: [x] completed
 **Test**: Given 5+ platforms researched → When findings compiled → Then each platform has security posture, breach history, trust model documented
 Research: Skills.sh, Smithery, SkillsDirectory, ClawHub, Fabric, vendor skills. Compile Snyk ToxicSkills data (36.82%, 76 payloads, threat actors). Document breach history.
 
 ### T-002: Build Agent Skills format compatibility matrix
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01, AC-US6-02 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01, AC-US6-02 | **Status**: [x] completed
 **Test**: Given 15+ platforms investigated → When matrix built → Then each shows format support level (full/partial/none) with variations noted
 All 39 agents from `skills@1.3.9`: 7 universal (Amp, Codex, Gemini CLI, GitHub Copilot, Kimi Code CLI, OpenCode, Replit) + 32 non-universal.
 
 ### T-003: Catalog skill discovery sources and quality rubric
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02 | **Status**: [x] completed
 **Test**: Given 6+ sources identified → When rubric created → Then rubric has 6 scoring dimensions with measurable criteria
 6 dimensions: transparency (0-5), security scan (0-5), author reputation (0-5), update frequency (0-5), test coverage (0-5), portability (0-5).
 
 ### T-004: Identify real-world skill contradictions
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 | **Status**: [x] completed
 **Depends On**: T-003
 **Test**: Given skills from multiple providers compared → When conflicts categorized → Then 4 types documented with 2+ real examples each
 Document behavioral, configuration, dependency, and precedence contradictions with real examples.
 
 ### T-005: Audit SpecWeave's existing security infrastructure
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-04 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-04 | **Status**: [x] completed
 **Test**: Given existing code reviewed → When capabilities documented → Then complete inventory exists
 Audit: security-scanner.ts (26 patterns), registry-schema.ts (3 tiers), skill-validator.ts (6 domains), skill-judge.ts, security skills, 14 pre-commit hooks.
 
 ### T-006: Competitive analysis for verified-skill.com
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 | **Status**: [x] completed
 **Test**: Given 6+ competitors analyzed → When feature/gap comparison built → Then verified-skill.com differentiators are clear
 Analyze: SkillsDirectory.com (36K skills, 50+ rules), Cisco Skill Scanner, SkillCheck, SkillAudit, SkillScan, Alice.io.
 
 ### T-006b: Research Skills.sh installer internals
-**User Story**: US-008 | **Satisfies ACs**: AC-US8-02 | **Status**: [ ] pending
+**User Story**: US-008 | **Satisfies ACs**: AC-US8-02 | **Status**: [x] completed
 **Test**: Given installer source analyzed → When agent detection mapped → Then all 39 agent paths documented with vskill equivalents
 Research: agent detection filesystem paths, symlink vs copy mechanics, SKILL.md discovery locations. Map to vskill.
 
 ## Phase B: Architecture & Product Design
 
 ### T-007: Design Secure Skill Factory specification
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-06 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-06 | **Status**: [x] completed
 **Depends On**: T-001, T-005
 **Test**: Given research complete → When spec authored → Then defines mandatory sections, forbidden patterns, security prompt template
 Mandatory SKILL.md sections: description, scope, permissions, security-notes. Forbidden patterns: eval, exec, credential access outside safe contexts. Built-in security prompt.
 
 ### T-008: Design three-tier certification system
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-02 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-02 | **Status**: [x] completed
 **Depends On**: T-005
 **Test**: Given trust model designed → When 3 levels defined → Then each has clear pass criteria and escalation rules
 Scanned (rules) → Verified (rules + LLM) → Certified (rules + LLM + human). Define pass criteria per tier.
 
 ### T-009: Design trust label and badge system
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-03, AC-US4-04 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-03, AC-US4-04 | **Status**: [x] completed
 **Depends On**: T-005
 **Test**: Given labels designed → When 5+ labels defined → Then each has visual spec and vendor auto-verification rules
 Labels: extensible, safe, portable, deprecated, warning. Vendor auto-verification: anthropics/, openai/, google/.
@@ -77,7 +77,7 @@ Source adapters (Skills.sh, ClawHub, GitHub), crawl schedule (daily/weekly), res
 `specweave fabric compare <skill-name> --sources github,npm,registry`. Side-by-side comparison.
 
 ### T-013: Design registry schema extensions
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-05 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-05 | **Status**: [x] completed
 **Depends On**: T-008, T-009
 **Test**: Given certification + trust labels designed → When TypeScript interfaces drafted → Then all new fields are optional for backward compat
 New types: CertificationLevel, TrustLabel, SecurityScanRecord, ContradictionRecord. Extend FabricRegistryEntry.

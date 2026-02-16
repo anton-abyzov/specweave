@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
@@ -10,7 +11,11 @@ interface SessionError {
   sessionId: string;
   type: string;
   message: string;
-  context?: { lastToolCall?: string; messageIndex?: number };
+  context?: {
+    toolName?: string;
+    toolInput?: string;
+    messageIndex?: number;
+  };
 }
 
 interface ErrorGroup {
@@ -19,6 +24,13 @@ interface ErrorGroup {
   lastSeen: string;
   sessions: number;
   recentMessages: string[];
+}
+
+interface PaginatedErrors {
+  total: number;
+  errors: SessionError[];
+  offset: number;
+  limit: number;
 }
 
 interface SessionSummary {
@@ -32,7 +44,7 @@ interface SessionSummary {
   gitBranch: string;
 }
 
-type Tab = 'groups' | 'timeline' | 'sessions';
+type Tab = 'groups' | 'errors' | 'timeline' | 'sessions';
 
 const TYPE_COLORS: Record<string, string> = {
   prompt_too_long: 'error',
@@ -43,59 +55,64 @@ const TYPE_COLORS: Record<string, string> = {
   unknown: 'default',
 };
 
+const PAGE_SIZE = 50;
+
 export function ErrorsPage() {
   const [tab, setTab] = useUrlState('tab', 'groups');
   const [typeFilter, setTypeFilter] = useUrlState('type', '');
   const [selectedSession, setSelectedSession] = useUrlState('session', '');
+  const [page, setPage] = useState(0);
+
+  const offset = page * PAGE_SIZE;
+  const typeParam = typeFilter ? `&type=${encodeURIComponent(typeFilter)}` : '';
 
   const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>('/api/errors/groups');
-  const { data: errors, loading: el } = useProjectApi<SessionError[]>('/api/errors/recent?limit=100');
-  const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>('/api/errors/sessions?limit=30');
+  const { data: paginated, loading: el } = useProjectApi<PaginatedErrors>(
+    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}`,
+  );
+  const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>('/api/errors/sessions?limit=50');
 
   if (gl || el || sl) return <PageLoader />;
 
-  const totalErrors = errors?.length || 0;
+  const totalErrors = paginated?.total || 0;
+  const errors = paginated?.errors || [];
   const errorTypes = groups?.length || 0;
-  const affectedSessions = new Set(errors?.map(e => e.sessionId)).size;
+  const affectedSessions = groups?.reduce((sum, g) => sum + g.sessions, 0) || 0;
   const mostCommon = groups?.[0]?.type || '-';
 
   const sessionDetail = selectedSession
     ? sessions?.find(s => s.sessionId === selectedSession)
     : null;
 
-  // Filter errors/sessions by type if a type filter is set
-  const filteredErrors = typeFilter
-    ? (errors || []).filter(e => e.type === typeFilter)
-    : (errors || []);
-
   const filteredSessions = typeFilter
     ? (sessions || []).filter(s => s.errors.some(e => e.type === typeFilter))
     : (sessions || []);
 
-  const handleGroupCountClick = (errorType: string) => {
+  const totalPages = Math.ceil(totalErrors / PAGE_SIZE);
+
+  const handleGroupClick = (errorType: string) => {
     setTypeFilter(errorType);
-    setTab('sessions');
+    setTab('errors');
     setSelectedSession('');
+    setPage(0);
   };
 
   const handleTabChange = (newTab: string) => {
     setTab(newTab);
     setSelectedSession('');
+    if (newTab !== 'errors') setPage(0);
   };
 
-  const handleSessionSelect = (sessionId: string) => {
-    setSelectedSession(sessionId);
-  };
-
-  const handleBackFromSession = () => {
-    setSelectedSession('');
+  const handleClearFilter = () => {
+    setTypeFilter('');
+    setPage(0);
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-200">Error Tracing</h2>
-        <span className="text-xs text-gray-500">New Relic-style error investigation</span>
+        <span className="text-xs text-gray-500">Observability for Claude Code sessions</span>
       </div>
 
       {/* KPI Summary */}
@@ -109,7 +126,7 @@ export function ErrorsPage() {
       {/* Tab Bar */}
       <div className="flex items-center gap-3">
         <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
-          {(['groups', 'timeline', 'sessions'] as Tab[]).map(t => (
+          {(['groups', 'errors', 'timeline', 'sessions'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => handleTabChange(t)}
@@ -117,7 +134,7 @@ export function ErrorsPage() {
                 tab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              {t === 'groups' ? 'Error Groups' : t === 'timeline' ? 'Timeline' : 'Sessions'}
+              {t === 'groups' ? 'Error Groups' : t === 'errors' ? 'All Errors' : t === 'timeline' ? 'Timeline' : 'Sessions'}
             </button>
           ))}
         </div>
@@ -125,7 +142,7 @@ export function ErrorsPage() {
           <div className="flex items-center gap-1">
             <Badge label={`type: ${typeFilter.replace(/_/g, ' ')}`} variant="info" />
             <button
-              onClick={() => setTypeFilter('')}
+              onClick={handleClearFilter}
               className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
               clear
@@ -138,21 +155,32 @@ export function ErrorsPage() {
       {selectedSession && sessionDetail && (
         <SessionDetailPanel
           session={sessionDetail}
-          onClose={handleBackFromSession}
+          onClose={() => setSelectedSession('')}
         />
       )}
 
       {/* Tab Content */}
       {!selectedSession && tab === 'groups' && (
-        <ErrorGroupTable groups={groups || []} onGroupClick={handleGroupCountClick} />
+        <ErrorGroupTable groups={groups || []} onGroupClick={handleGroupClick} />
+      )}
+
+      {!selectedSession && tab === 'errors' && (
+        <ErrorList
+          errors={errors}
+          total={totalErrors}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onSessionClick={id => { setSelectedSession(id); }}
+        />
       )}
 
       {!selectedSession && tab === 'timeline' && (
-        <ErrorTimeline errors={filteredErrors} onSessionClick={handleSessionSelect} />
+        <ErrorTimeline errors={errors} onSessionClick={id => setSelectedSession(id)} />
       )}
 
       {!selectedSession && tab === 'sessions' && (
-        <SessionList sessions={filteredSessions} onSelect={handleSessionSelect} />
+        <SessionList sessions={filteredSessions} onSelect={id => setSelectedSession(id)} />
       )}
 
       {totalErrors === 0 && !selectedSession && (
@@ -161,6 +189,8 @@ export function ErrorsPage() {
     </div>
   );
 }
+
+/* ─── Error Groups Table ─── */
 
 function ErrorGroupTable({ groups, onGroupClick }: { groups: ErrorGroup[]; onGroupClick: (type: string) => void }) {
   if (groups.length === 0) return null;
@@ -193,7 +223,7 @@ function ErrorGroupTable({ groups, onGroupClick }: { groups: ErrorGroup[]; onGro
                 <button
                   onClick={() => onGroupClick(g.type)}
                   className="text-sm text-indigo-400 hover:text-indigo-300 font-mono transition-colors"
-                  title="View sessions with this error type"
+                  title={`View all ${g.count} errors of this type`}
                 >
                   {g.count}
                 </button>
@@ -211,6 +241,151 @@ function ErrorGroupTable({ groups, onGroupClick }: { groups: ErrorGroup[]; onGro
   );
 }
 
+/* ─── Individual Error List (the core observability view) ─── */
+
+function ErrorList({
+  errors,
+  total,
+  page,
+  totalPages,
+  onPageChange,
+  onSessionClick,
+}: {
+  errors: SessionError[];
+  total: number;
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+  onSessionClick: (id: string) => void;
+}) {
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const toggleRow = useCallback((i: number) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+
+  if (errors.length === 0) {
+    return <EmptyState title="No errors" description="No errors match the current filter" />;
+  }
+
+  const start = page * PAGE_SIZE + 1;
+  const end = Math.min(page * PAGE_SIZE + errors.length, total);
+
+  return (
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-300">
+          Errors {start}–{end} of {total}
+        </h3>
+        {totalPages > 1 && (
+          <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
+        )}
+      </div>
+      <div className="divide-y divide-gray-800/50">
+        {errors.map((err, i) => {
+          const expanded = expandedRows.has(i);
+          const isLong = err.message.length > 120;
+
+          return (
+            <div
+              key={`${err.sessionId}-${err.timestamp}-${i}`}
+              className="px-4 py-3 hover:bg-gray-800/20 transition-colors"
+            >
+              {/* Row header */}
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <Badge
+                    label={err.type.replace(/_/g, ' ')}
+                    variant={(TYPE_COLORS[err.type] || 'default') as any}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`text-xs text-gray-300 ${expanded ? 'whitespace-pre-wrap break-words' : 'truncate'} ${isLong ? 'cursor-pointer' : ''}`}
+                    onClick={isLong ? () => toggleRow(i) : undefined}
+                    title={isLong && !expanded ? 'Click to expand full message' : undefined}
+                  >
+                    {expanded ? err.message : err.message.slice(0, 200)}
+                    {!expanded && isLong && (
+                      <span className="text-indigo-400 ml-1">...more</span>
+                    )}
+                  </div>
+
+                  {/* Tool context */}
+                  {err.context?.toolName && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-amber-400">
+                        {err.context.toolName}
+                      </span>
+                      {err.context.toolInput && (
+                        <span className="text-[10px] text-gray-500 font-mono truncate max-w-md">
+                          {err.context.toolInput}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-shrink-0 text-right">
+                  <div className="text-[10px] text-gray-500">{timeAgo(err.timestamp)}</div>
+                  <button
+                    onClick={() => onSessionClick(err.sessionId)}
+                    className="text-[10px] text-indigo-400 hover:text-indigo-300 font-mono mt-0.5 transition-colors"
+                    title="View full session"
+                  >
+                    {err.sessionId.slice(0, 8)}
+                  </button>
+                  {err.context?.messageIndex != null && (
+                    <div className="text-[10px] text-gray-600">msg #{err.context.messageIndex}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {totalPages > 1 && (
+        <div className="px-5 py-3 border-t border-gray-800 flex justify-end">
+          <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Pagination ─── */
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => onChange(Math.max(0, page - 1))}
+        disabled={page === 0}
+        className="px-2 py-1 text-xs rounded transition-colors disabled:text-gray-700 text-gray-400 hover:text-white hover:bg-gray-700"
+      >
+        Prev
+      </button>
+      <span className="text-[10px] text-gray-500 px-2">
+        {page + 1} / {totalPages}
+      </span>
+      <button
+        onClick={() => onChange(Math.min(totalPages - 1, page + 1))}
+        disabled={page >= totalPages - 1}
+        className="px-2 py-1 text-xs rounded transition-colors disabled:text-gray-700 text-gray-400 hover:text-white hover:bg-gray-700"
+      >
+        Next
+      </button>
+    </div>
+  );
+}
+
+/* ─── Error Timeline ─── */
+
 function ErrorTimeline({ errors, onSessionClick }: { errors: SessionError[]; onSessionClick: (id: string) => void }) {
   if (errors.length === 0) return null;
 
@@ -226,7 +401,7 @@ function ErrorTimeline({ errors, onSessionClick }: { errors: SessionError[]; onS
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
       <h3 className="text-sm font-medium text-gray-300 mb-4">Error Timeline</h3>
-      <div className="space-y-1 max-h-[500px] overflow-y-auto custom-scrollbar">
+      <div className="space-y-1 max-h-[600px] overflow-y-auto custom-scrollbar">
         {errors.map((err, i) => (
           <div
             key={i}
@@ -242,9 +417,19 @@ function ErrorTimeline({ errors, onSessionClick }: { errors: SessionError[]; onS
                 <span className="text-xs text-gray-400 font-mono">
                   {err.type.replace(/_/g, ' ')}
                 </span>
+                {err.context?.toolName && (
+                  <span className="text-[10px] font-mono px-1 py-0.5 bg-gray-800 border border-gray-700 rounded text-amber-400">
+                    {err.context.toolName}
+                  </span>
+                )}
                 <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
               </div>
               <div className="text-xs text-gray-500 truncate mt-0.5">{err.message}</div>
+              {err.context?.toolInput && (
+                <div className="text-[10px] text-gray-600 font-mono truncate mt-0.5">
+                  {err.context.toolInput}
+                </div>
+              )}
               <div className="text-[10px] text-gray-700 font-mono mt-0.5">
                 Session: {err.sessionId.slice(0, 8)}
               </div>
@@ -255,6 +440,8 @@ function ErrorTimeline({ errors, onSessionClick }: { errors: SessionError[]; onS
     </div>
   );
 }
+
+/* ─── Session List ─── */
 
 function SessionList({ sessions, onSelect }: { sessions: SessionSummary[]; onSelect: (id: string) => void }) {
   if (sessions.length === 0) return null;
@@ -302,7 +489,20 @@ function SessionList({ sessions, onSelect }: { sessions: SessionSummary[]; onSel
   );
 }
 
+/* ─── Session Detail Panel ─── */
+
 function SessionDetailPanel({ session, onClose }: { session: SessionSummary; onClose: () => void }) {
+  const [expandedErrors, setExpandedErrors] = useState<Set<number>>(new Set());
+
+  const toggleError = (i: number) => {
+    setExpandedErrors(prev => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  };
+
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
@@ -337,29 +537,56 @@ function SessionDetailPanel({ session, onClose }: { session: SessionSummary; onC
         <p className="text-gray-600 text-xs">No errors in this session</p>
       ) : (
         <div className="space-y-2">
-          {session.errors.map((err, i) => (
-            <div key={i} className="p-3 bg-gray-800/50 rounded-lg border-l-2 border-rose-500/50">
-              <div className="flex items-center gap-2 mb-1">
-                <Badge
-                  label={err.type.replace(/_/g, ' ')}
-                  variant="error"
-                />
-                <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
-              </div>
-              <div className="text-xs text-gray-400 break-words">{err.message}</div>
-              {err.context?.messageIndex != null && (
-                <div className="text-[10px] text-gray-600 mt-1">
-                  At message #{err.context.messageIndex}
-                  {err.context.lastToolCall && ` | Tool: ${err.context.lastToolCall.slice(0, 20)}`}
+          {session.errors.map((err, i) => {
+            const expanded = expandedErrors.has(i);
+            const isLong = err.message.length > 150;
+
+            return (
+              <div key={i} className="p-3 bg-gray-800/50 rounded-lg border-l-2 border-rose-500/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge
+                    label={err.type.replace(/_/g, ' ')}
+                    variant="error"
+                  />
+                  {err.context?.toolName && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-amber-400">
+                      {err.context.toolName}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-gray-600">{timeAgo(err.timestamp)}</span>
                 </div>
-              )}
-            </div>
-          ))}
+
+                <div
+                  className={`text-xs text-gray-400 ${expanded ? 'whitespace-pre-wrap break-words' : ''} ${isLong ? 'cursor-pointer' : ''}`}
+                  onClick={isLong ? () => toggleError(i) : undefined}
+                >
+                  {expanded ? err.message : err.message.slice(0, 300)}
+                  {!expanded && isLong && (
+                    <span className="text-indigo-400 ml-1">...more</span>
+                  )}
+                </div>
+
+                {err.context?.toolInput && (
+                  <div className="text-[10px] text-gray-500 font-mono mt-1.5 bg-gray-900/50 px-2 py-1 rounded">
+                    {err.context.toolInput}
+                  </div>
+                )}
+
+                {err.context?.messageIndex != null && (
+                  <div className="text-[10px] text-gray-600 mt-1">
+                    At message #{err.context.messageIndex}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
+
+/* ─── Helpers ─── */
 
 function timeAgo(ts: string): string {
   if (!ts) return '-';

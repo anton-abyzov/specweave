@@ -135,7 +135,26 @@ export interface SessionError {
   sessionId: string;
   type: 'prompt_too_long' | 'api_error' | 'tool_failure' | 'hook_error' | 'rate_limit' | 'unknown';
   message: string;
-  context?: { lastToolCall?: string; messageIndex?: number };
+  context?: {
+    toolName?: string;
+    toolInput?: string;
+    messageIndex?: number;
+  };
+}
+
+export interface ErrorGroup {
+  type: string;
+  count: number;
+  lastSeen: string;
+  sessions: number;
+  recentMessages: string[];
+}
+
+export interface PaginatedErrors {
+  total: number;
+  errors: SessionError[];
+  offset: number;
+  limit: number;
 }
 
 // Plugin info
