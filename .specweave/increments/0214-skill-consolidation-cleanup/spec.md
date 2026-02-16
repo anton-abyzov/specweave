@@ -3,7 +3,7 @@ increment: 0214-skill-consolidation-cleanup
 title: "Skill Consolidation & Cleanup"
 type: refactor
 priority: P2
-status: active
+status: ready_for_review
 created: 2026-02-15
 structure: user-stories
 test_mode: test-after
@@ -26,10 +26,10 @@ Reduce 45 skills to 41 by deleting 3 orphaned skills and merging `increment-plan
 **So that** the skill inventory is accurate, system context is smaller, and contributors aren't confused by dead code
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: `increment-work-router` skill directory deleted
-- [ ] **AC-US1-02**: `tdd-orchestrator` skill directory deleted
-- [ ] **AC-US1-03**: `pm-closure-validation` skill directory deleted
-- [ ] **AC-US1-04**: No remaining references to deleted skills in any SKILL.md, hook, or source file
+- [x] **AC-US1-01**: `increment-work-router` skill directory deleted
+- [x] **AC-US1-02**: `tdd-orchestrator` skill directory deleted
+- [x] **AC-US1-03**: `pm-closure-validation` skill directory deleted
+- [x] **AC-US1-04**: No remaining references to deleted skills in any SKILL.md, hook, or source file
 
 ---
 
@@ -41,11 +41,11 @@ Reduce 45 skills to 41 by deleting 3 orphaned skills and merging `increment-plan
 **So that** increment creation doesn't go through unnecessary 2-level indirection
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: `increment` SKILL.md contains merged planner logic (pre-flights + planning + delegation)
-- [ ] **AC-US2-02**: `increment-planner` skill directory deleted
-- [ ] **AC-US2-03**: Hook references updated from `sw:increment-planner` to `sw:increment`
-- [ ] **AC-US2-04**: All source code references to `increment-planner` updated
-- [ ] **AC-US2-05**: Plugin cache rebuilt and verified
+- [x] **AC-US2-01**: `increment` SKILL.md contains merged planner logic (pre-flights + planning + delegation)
+- [x] **AC-US2-02**: `increment-planner` skill directory deleted
+- [x] **AC-US2-03**: Hook references updated from `sw:increment-planner` to `sw:increment`
+- [x] **AC-US2-04**: All source code references to `increment-planner` updated
+- [x] **AC-US2-05**: Plugin cache rebuilt and verified
 
 ## Out of Scope
 

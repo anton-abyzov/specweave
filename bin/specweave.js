@@ -1282,6 +1282,28 @@ program
     await dashboardCommand(options);
   });
 
+// Migrate-to-umbrella command - Convert single-repo to umbrella workspace
+program
+  .command('migrate-to-umbrella')
+  .description('Convert single-repo project to umbrella/multi-repo workspace')
+  .option('--execute', 'Execute migration (default is dry-run)')
+  .option('--umbrella-path <path>', 'Custom umbrella directory path')
+  .option('--org <name>', 'GitHub organization name')
+  .option('--rollback', 'Rollback a previous migration')
+  .option('--add-repo <name>', 'Add a new repo to existing umbrella (name or org/name)')
+  .option('--yes', 'Skip confirmation prompts')
+  .action(async (opts) => {
+    const { migrateToUmbrellaCommand } = await import('../dist/src/cli/commands/migrate-to-umbrella.js');
+    await migrateToUmbrellaCommand({
+      execute: opts.execute,
+      umbrellaPath: opts.umbrellaPath,
+      orgName: opts.org,
+      rollback: opts.rollback,
+      addRepo: opts.addRepo,
+      yes: opts.yes,
+    });
+  });
+
 // Run startup check, then parse arguments
 (async () => {
   await checkForDuplicates();

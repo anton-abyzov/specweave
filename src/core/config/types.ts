@@ -344,6 +344,8 @@ export interface ChildRepoConfig {
   id: string;
   /** Path to repo (relative or absolute) */
   path: string;
+  /** Display name (defaults to id if not set) */
+  name?: string;
   /**
    * User story prefix for US-{PREFIX}-001 format.
    * Can be short (FE, BE) even if id is long.
