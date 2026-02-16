@@ -4,7 +4,7 @@
 # Fires when Claude Code approaches context limits (before compaction).
 # Writes pressure state for UserPromptSubmit hook to read and reduce budget.
 #
-# Escalation: 1st compaction → "elevated", 2nd+ → "critical"
+# Escalation: 1st → "elevated", 2nd → "critical", 3+ → "emergency"
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"continue":true}' && exit 0
@@ -56,8 +56,7 @@ cat > "$ALERT_FILE" <<EOF
 EOF
 
 # Log compaction event for dashboard activity stream
-mkdir -p "$(dirname "$STATE_DIR")/.specweave/logs" 2>/dev/null
-_LOG_DIR="$STATE_DIR/../logs"
+_LOG_DIR="$PROJECT_ROOT/.specweave/logs"
 mkdir -p "$_LOG_DIR" 2>/dev/null
 echo "[$(date -Iseconds)] COMPACTION #$NEW_COUNT | level=$LEVEL | $ADVICE" >> "$_LOG_DIR/prompt-health.log" 2>/dev/null
 
