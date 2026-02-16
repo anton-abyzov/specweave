@@ -32,7 +32,7 @@ npx specweave init .
 The foundation of SpecWeave, always loaded in every project.
 
 **Key Capabilities:**
-- 🎯 **9 Skills**: increment-planner, spec-generator, tdd-workflow, brownfield-analyzer, context-optimizer
+- 🎯 **9 Skills**: increment, spec-generator, tdd-workflow, brownfield-analyzer, context-optimizer
 - 🤖 **22 Agents**: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer
 - ⚡ **22 Commands**: Full increment lifecycle management
 
@@ -49,7 +49,7 @@ The foundation of SpecWeave, always loaded in every project.
 ```
 
 **Skills Highlight:**
-- **increment-planner**: Automatically activates when you say "plan feature", "new increment", "build X"
+- **increment**: Automatically activates when you say "plan feature", "new increment", "build X"
 - **tdd-workflow**: Activates on "TDD", "test-driven", "red-green-refactor"
 - **brownfield-analyzer**: Detects existing projects and maps documentation to SpecWeave structure
 

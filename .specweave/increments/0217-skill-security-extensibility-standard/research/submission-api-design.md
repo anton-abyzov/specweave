@@ -1,7 +1,7 @@
 # Submission API Endpoints Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US10-01, AC-US10-02, AC-US10-07 (T-031)
 **Dependencies**: T-029 (Submission State Machine), T-030 (Database Schema)

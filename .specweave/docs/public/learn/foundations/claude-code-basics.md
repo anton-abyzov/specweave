@@ -112,13 +112,12 @@ A skill can run as an isolated subagent by adding `context: fork`:
 
 ```yaml
 ---
-name: increment-planner
 context: fork
 model: opus
 ---
 ```
 
-This gives the skill its own context window while still being invocable as `/increment-planner`.
+This gives the skill its own context window while still being invocable as `/increment`.
 
 ---
 

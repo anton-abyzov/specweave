@@ -1,7 +1,7 @@
 # Admin Dashboard Architecture Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US11-02 through AC-US11-08 (T-033)
 **Dependencies**: T-031 (Submission API), T-032 (Admin Authentication)

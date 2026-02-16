@@ -45,6 +45,68 @@ fi
 # ============================================================================
 rm -f "$STATE_DIR/context-pressure.json" 2>/dev/null
 rm -f "$STATE_DIR/.context-hash" 2>/dev/null
+rm -f "$STATE_DIR/prompt-health-alert.json" 2>/dev/null
+
+# ============================================================================
+# PROMPT BASELINE HEALTH CHECK (v1.0.268)
+# Calculates approximate baseline prompt size from controllable factors.
+# Warns user if baseline is dangerously high (>80K warning, >120K critical).
+# Writes prompt-health.json for dashboard consumption.
+# ============================================================================
+CLAUDE_MD_SIZE=0
+MEMORY_MD_SIZE=0
+SKILL_BUDGET="${SLASH_COMMAND_TOOL_CHAR_BUDGET:-15000}"
+SYSTEM_ESTIMATE=12000
+HOOK_PER_TURN=3000
+
+# Measure CLAUDE.md
+if [[ -f "$PROJECT_ROOT/CLAUDE.md" ]]; then
+  CLAUDE_MD_SIZE=$(wc -c < "$PROJECT_ROOT/CLAUDE.md" 2>/dev/null | tr -d ' ')
+  [[ ! "$CLAUDE_MD_SIZE" =~ ^[0-9]+$ ]] && CLAUDE_MD_SIZE=0
+fi
+
+# Measure global CLAUDE.md (user's global instructions)
+GLOBAL_CLAUDE="$HOME/.claude/CLAUDE.md"
+if [[ -f "$GLOBAL_CLAUDE" ]]; then
+  _GC_SIZE=$(wc -c < "$GLOBAL_CLAUDE" 2>/dev/null | tr -d ' ')
+  [[ "$_GC_SIZE" =~ ^[0-9]+$ ]] && MEMORY_MD_SIZE=$((_GC_SIZE))
+fi
+
+# Measure project-specific MEMORY.md
+_PROJECT_SLUG=$(echo "$PROJECT_ROOT" | sed 's|^/||;s|/|-|g')
+_PROJECT_MEMORY="$HOME/.claude/projects/-${_PROJECT_SLUG}/memory/MEMORY.md"
+if [[ -f "$_PROJECT_MEMORY" ]]; then
+  _PM_SIZE=$(wc -c < "$_PROJECT_MEMORY" 2>/dev/null | tr -d ' ')
+  [[ "$_PM_SIZE" =~ ^[0-9]+$ ]] && MEMORY_MD_SIZE=$((MEMORY_MD_SIZE + _PM_SIZE))
+fi
+
+BASELINE=$((CLAUDE_MD_SIZE + MEMORY_MD_SIZE + SKILL_BUDGET + SYSTEM_ESTIMATE + HOOK_PER_TURN))
+
+# Determine warning level
+WARNING_THRESHOLD=80000
+CRITICAL_THRESHOLD=120000
+WARNING_LEVEL="normal"
+if [[ $BASELINE -gt $CRITICAL_THRESHOLD ]]; then
+  WARNING_LEVEL="critical"
+elif [[ $BASELINE -gt $WARNING_THRESHOLD ]]; then
+  WARNING_LEVEL="warning"
+fi
+
+# Write health check to state for dashboard
+cat > "$STATE_DIR/prompt-health.json" <<EOF
+{"baseline":$BASELINE,"claudeMdSize":$CLAUDE_MD_SIZE,"memoryMdSize":$MEMORY_MD_SIZE,"skillBudget":$SKILL_BUDGET,"systemEstimate":$SYSTEM_ESTIMATE,"hookPerTurn":$HOOK_PER_TURN,"warningLevel":"$WARNING_LEVEL","checkedAt":"$(date -Iseconds)"}
+EOF
+
+# Emit warnings
+if [[ "$WARNING_LEVEL" == "critical" ]]; then
+  echo "{\"continue\":true,\"systemMessage\":\"PROMPT HEALTH: CRITICAL - Baseline prompt size is ${BASELINE} chars ($((BASELINE / 1000))KB). CLAUDE.md=${CLAUDE_MD_SIZE}, MEMORY.md=${MEMORY_MD_SIZE}, Skills=${SKILL_BUDGET}. Risk of 'Prompt is too long' errors. Reduce MEMORY.md (<5KB), lower contextBudget.level, or reduce SLASH_COMMAND_TOOL_CHAR_BUDGET.\"}"
+elif [[ "$WARNING_LEVEL" == "warning" ]]; then
+  echo "{\"continue\":true,\"systemMessage\":\"PROMPT HEALTH: Elevated baseline prompt size (${BASELINE} chars / $((BASELINE / 1000))KB). CLAUDE.md=${CLAUDE_MD_SIZE}, MEMORY.md=${MEMORY_MD_SIZE}. Consider reducing MEMORY.md or lowering contextBudget level if you see compaction warnings.\"}"
+fi
+
+# Log health check
+mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+echo "[$(date -Iseconds)] HEALTH_CHECK | baseline=$BASELINE | level=$WARNING_LEVEL | claude_md=$CLAUDE_MD_SIZE | memory_md=$MEMORY_MD_SIZE | skills=$SKILL_BUDGET" >> "$PROJECT_ROOT/.specweave/logs/prompt-health.log" 2>/dev/null
 
 # ============================================================================
 # PLUGIN CACHE: Do NOT delete - Claude Code manages its own plugin cache

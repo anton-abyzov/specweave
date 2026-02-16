@@ -1,7 +1,7 @@
 # Version-Pinned Verification Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US9-01, AC-US9-02, AC-US9-03, AC-US9-04, AC-US9-05 (T-015c)
 **Dependencies**: T-008 (Three-Tier Certification), T-015b (vskill CLI Design)

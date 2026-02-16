@@ -120,7 +120,7 @@ Comprehensive overview of what SpecWeave supports.
 
 | Skill | Activation Keywords |
 |-------|---------------------|
-| `increment-planner` | "plan increment", "new feature", "build" |
+| `increment` | "plan increment", "new feature", "build" |
 | `spec-generator` | "spec", "requirements", "user stories" |
 | `brownfield-analyzer` | "existing project", "legacy", "migrate" |
 | `tdd-workflow` | "TDD", "test-driven", "red-green" |

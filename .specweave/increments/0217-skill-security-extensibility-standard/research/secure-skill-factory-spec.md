@@ -1,7 +1,7 @@
 # RFC: Secure Skill Factory Standard
 
 **Status**: DRAFT
-**Authors**: SpecWeave Architecture Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US4-01, AC-US4-06 (T-007)
 
