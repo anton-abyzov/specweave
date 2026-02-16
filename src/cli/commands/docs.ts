@@ -11,6 +11,8 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import * as fs from '../../utils/fs-native.js';
+import type { DocScope } from '../../utils/docs-preview/types.js';
+import { SCOPE_PORTS, SCOPE_SITE_DIRS, SCOPE_DOC_DIRS } from '../../utils/docs-preview/types.js';
 
 export interface DocsPreviewOptions {
   port?: number;
@@ -18,17 +20,20 @@ export interface DocsPreviewOptions {
   noBrowser?: boolean;
   validate?: boolean;
   autoFix?: boolean;
+  scope?: DocScope;
 }
 
 export interface DocsBuildOptions {
   validate?: boolean;
   autoFix?: boolean;
   output?: string;
+  scope?: DocScope;
 }
 
 export interface DocsValidateOptions {
   autoFix?: boolean;
   verbose?: boolean;
+  scope?: DocScope;
 }
 
 /**
@@ -36,17 +41,23 @@ export interface DocsValidateOptions {
  */
 export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
-  const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
+  const scope: DocScope = options.scope || 'internal';
+  const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
+  const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue('\n\u{1F4DA} Documentation Preview\n'));
+  console.log(chalk.blue(`\n\u{1F4DA} Documentation Preview (${scopeLabel})\n`));
 
-  // Check if internal docs exist
+  // Check if docs exist
   if (!fs.existsSync(docsPath)) {
-    console.log(chalk.red('❌ No internal documentation found.'));
+    console.log(chalk.red(`❌ No ${scopeLabel} documentation found.`));
     console.log(chalk.dim(`   Expected: ${docsPath}`));
-    console.log(chalk.dim('\n   Run one of these commands first:'));
-    console.log(chalk.dim('   • specweave init (for new projects)'));
-    console.log(chalk.dim('   • /sw:increment "feature" (to create docs)\n'));
+    if (scope === 'public') {
+      console.log(chalk.dim('\n   Create public docs in .specweave/docs/public/\n'));
+    } else {
+      console.log(chalk.dim('\n   Run one of these commands first:'));
+      console.log(chalk.dim('   • specweave init (for new projects)'));
+      console.log(chalk.dim('   • /sw:increment "feature" (to create docs)\n'));
+    }
     process.exit(1);
   }
 
@@ -99,8 +110,8 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
       console.log(chalk.dim(`   Stopped ${killed} existing Docusaurus process(es)\n`));
     }
 
-    // Kill any process occupying the target port (default 3016 if not specified)
-    const targetPort = options.port || 3016;
+    // Kill any process occupying the target port
+    const targetPort = options.port || SCOPE_PORTS[scope];
     const portKilled = await killProcessOnPort(targetPort);
     if (portKilled) {
       console.log(chalk.dim(`   Freed port ${targetPort}\n`));
@@ -114,12 +125,13 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
       port: options.port,
       openBrowser: !options.noBrowser,
       force: options.force,
+      scope,
     });
 
     console.log(chalk.green('━'.repeat(50)));
-    console.log(chalk.green.bold('\n📚 Documentation Preview Server Started!\n'));
+    console.log(chalk.green.bold(`\n📚 ${scopeLabel.charAt(0).toUpperCase() + scopeLabel.slice(1)} Documentation Preview Server Started!\n`));
     console.log(chalk.white(`   URL: ${chalk.cyan.underline(server.url)}`));
-    console.log(chalk.white(`   Content: ${chalk.dim('.specweave/docs/internal/')}`));
+    console.log(chalk.white(`   Content: ${chalk.dim(`.specweave/docs/${SCOPE_DOC_DIRS[scope]}/`)}`));
     console.log(chalk.dim(`   Port: ${server.port}`));
     console.log();
     console.log(chalk.white('   Features:'));
@@ -148,7 +160,7 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
 
     if (error instanceof Error && error.message.includes('No available ports')) {
       console.log(chalk.dim('\n   Try killing existing processes:'));
-      console.log(chalk.dim('   lsof -i :3000-3010 | grep node'));
+      console.log(chalk.dim('   lsof -i :3015-3020 | grep node'));
       console.log(chalk.dim('   kill -9 <PID>'));
     }
 
@@ -161,13 +173,15 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
  */
 export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
-  const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
+  const scope: DocScope = options.scope || 'internal';
+  const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
+  const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue('\n\u{1F4E6} Documentation Build\n'));
+  console.log(chalk.blue(`\n\u{1F4E6} Documentation Build (${scopeLabel})\n`));
 
-  // Check if internal docs exist
+  // Check if docs exist
   if (!fs.existsSync(docsPath)) {
-    console.log(chalk.red('❌ No internal documentation found.'));
+    console.log(chalk.red(`❌ No ${scopeLabel} documentation found.`));
     console.log(chalk.dim(`   Expected: ${docsPath}\n`));
     process.exit(1);
   }
@@ -205,14 +219,14 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
     const { buildStaticSite, isSetupNeeded, quickSetup } = await import('../../utils/docs-preview/index.js');
 
     // Setup if needed
-    if (await isSetupNeeded(projectRoot)) {
+    if (await isSetupNeeded(projectRoot, scope)) {
       console.log(chalk.cyan('📦 First-time setup: Installing Docusaurus...\n'));
-      await quickSetup(projectRoot);
+      await quickSetup(projectRoot, scope);
     }
 
-    await buildStaticSite(projectRoot);
+    await buildStaticSite(projectRoot, scope);
 
-    const outputPath = options.output || path.join(projectRoot, '.specweave', 'docs-site-internal', 'build');
+    const outputPath = options.output || path.join(projectRoot, '.specweave', SCOPE_SITE_DIRS[scope], 'build');
 
     console.log(chalk.green('\n✅ Build complete!'));
     console.log(chalk.dim(`   Output: ${outputPath}`));
@@ -230,13 +244,15 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
  */
 export async function docsValidateCommand(options: DocsValidateOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
-  const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
+  const scope: DocScope = options.scope || 'internal';
+  const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
+  const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue('\n\u{1F50D} Documentation Validation\n'));
+  console.log(chalk.blue(`\n\u{1F50D} Documentation Validation (${scopeLabel})\n`));
 
-  // Check if internal docs exist
+  // Check if docs exist
   if (!fs.existsSync(docsPath)) {
-    console.log(chalk.red('❌ No internal documentation found.'));
+    console.log(chalk.red(`❌ No ${scopeLabel} documentation found.`));
     console.log(chalk.dim(`   Expected: ${docsPath}\n`));
     process.exit(1);
   }
@@ -342,49 +358,50 @@ export async function docsKillCommand(): Promise<void> {
  */
 export async function docsStatusCommand(): Promise<void> {
   const projectRoot = process.cwd();
-  const docsPath = path.join(projectRoot, '.specweave', 'docs', 'internal');
-  const docsSitePath = path.join(projectRoot, '.specweave', 'docs-site-internal');
 
   console.log(chalk.blue('\n\u{1F4DA} Documentation Status\n'));
 
-  // Check docs exist
-  const docsExist = fs.existsSync(docsPath);
-  const siteSetup = fs.existsSync(path.join(docsSitePath, 'node_modules'));
-
-  console.log(chalk.white('   Status:'));
-  console.log(`   • Internal docs: ${docsExist ? chalk.green('✓ Found') : chalk.red('✗ Not found')}`);
-  console.log(`   • Docusaurus: ${siteSetup ? chalk.green('✓ Installed') : chalk.yellow('○ Not installed (will auto-setup)')}`);
-
-  if (docsExist) {
-    // Count docs
-    const countMd = (dir: string): number => {
-      if (!fs.existsSync(dir)) return 0;
-      let count = 0;
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          count += countMd(path.join(dir, entry.name));
-        } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
-          count++;
-        }
+  // Count markdown files recursively
+  const countMd = (dir: string): number => {
+    if (!fs.existsSync(dir)) return 0;
+    let count = 0;
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        count += countMd(path.join(dir, entry.name));
+      } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
+        count++;
       }
-      return count;
-    };
+    }
+    return count;
+  };
 
-    const docCount = countMd(docsPath);
-    console.log(`   • Documents: ${chalk.cyan(docCount)} files`);
+  // Show status for both scopes
+  const scopes: DocScope[] = ['internal', 'public'];
+  for (const scope of scopes) {
+    const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
+    const sitePath = path.join(projectRoot, '.specweave', SCOPE_SITE_DIRS[scope]);
+    const docsExist = fs.existsSync(docsPath);
+    const siteSetup = fs.existsSync(path.join(sitePath, 'node_modules'));
+    const label = scope.charAt(0).toUpperCase() + scope.slice(1);
+
+    console.log(chalk.white(`   ${label} docs:`));
+    console.log(`     Source: ${docsExist ? chalk.green('✓ Found') : chalk.red('✗ Not found')} ${chalk.dim(`.specweave/docs/${SCOPE_DOC_DIRS[scope]}/`)}`);
+    if (docsExist) {
+      const docCount = countMd(docsPath);
+      console.log(`     Documents: ${chalk.cyan(docCount)} files`);
+    }
+    console.log(`     Docusaurus: ${siteSetup ? chalk.green('✓ Installed') : chalk.yellow('○ Not installed (will auto-setup)')}`);
+    console.log(`     Port: ${chalk.dim(String(SCOPE_PORTS[scope]))}`);
+    console.log();
   }
 
-  console.log(chalk.white('\n   Commands:'));
-  console.log(chalk.dim('   • specweave docs preview   - Start dev server with hot reload'));
-  console.log(chalk.dim('   • specweave docs build     - Build static site for deployment'));
-  console.log(chalk.dim('   • specweave docs validate  - Check for errors'));
-  console.log(chalk.dim('   • specweave docs kill      - Stop all running servers'));
-  console.log();
-
-  console.log(chalk.white('   Paths:'));
-  console.log(chalk.dim(`   • Docs source: .specweave/docs/internal/`));
-  console.log(chalk.dim(`   • Docusaurus: .specweave/docs-site-internal/`));
-  console.log(chalk.dim(`   • Build output: .specweave/docs-site-internal/build/`));
+  console.log(chalk.white('   Commands:'));
+  console.log(chalk.dim('   • specweave docs                        - Preview internal docs (port 3015)'));
+  console.log(chalk.dim('   • specweave docs public                 - Preview public docs (port 3016)'));
+  console.log(chalk.dim('   • specweave docs build                  - Build internal site'));
+  console.log(chalk.dim('   • specweave docs build --scope public   - Build public site'));
+  console.log(chalk.dim('   • specweave docs validate               - Check for errors'));
+  console.log(chalk.dim('   • specweave docs kill                   - Stop all running servers'));
   console.log();
 }

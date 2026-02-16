@@ -77,6 +77,7 @@ export interface JudgeOptions {
   verbose?: boolean;
   logFile?: string;
   model?: string;  // Default opus
+  projectRoot?: string;  // Project root for config lookup (defaults to cwd)
 }
 
 /**
@@ -273,16 +274,17 @@ export class SkillJudge {
   private verbose: boolean;
   private logPath: string;
   private model: string;
+  private projectRoot: string;
 
   constructor(options?: JudgeOptions) {
     this.timeout_ms = options?.timeout_ms ?? 60000;  // 60s default
     this.verbose = options?.verbose ?? false;
     this.model = options?.model ?? 'opus';  // Use generic model name
+    this.projectRoot = options?.projectRoot ?? process.cwd();
 
     // Default log path
-    const projectRoot = process.cwd();
     this.logPath = options?.logFile ??
-      path.join(projectRoot, '.specweave', 'logs', 'judge-llm.log');
+      path.join(this.projectRoot, '.specweave', 'logs', 'judge-llm.log');
 
     // Initialize Anthropic client
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -312,14 +314,13 @@ export class SkillJudge {
     // Check external API consent before making paid API call
     try {
       const { checkConsent } = await import('../llm/consent.js');
-      const consent = checkConsent('anthropic', process.cwd());
+      const consent = checkConsent('anthropic', this.projectRoot);
       if (consent !== 'granted') {
         logger.log(`External API consent not granted (status: ${consent}) - falling back to basic evaluation`, 'WARN');
         return this.basicEvaluation(input, startTime, logger);
       }
-    } catch {
-      // If consent module fails to load, fall back to basic evaluation
-      logger.log('Consent check failed - falling back to basic evaluation', 'WARN');
+    } catch (error) {
+      logger.log(`Consent check failed: ${error instanceof Error ? error.message : String(error)} - falling back to basic evaluation`, 'WARN');
       return this.basicEvaluation(input, startTime, logger);
     }
 

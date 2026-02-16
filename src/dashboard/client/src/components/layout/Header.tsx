@@ -1,15 +1,16 @@
 import { useApi } from '../../hooks/useApi';
+import { useProject } from '../../hooks/useProject';
 
 interface HealthData {
   uptime: number;
   connections: number;
-  projectRoot: string;
 }
 
 export function Header() {
   const { data } = useApi<HealthData>('/api/health');
+  const { activeProject } = useProject();
 
-  const projectName = data?.projectRoot?.split('/').pop() || 'Project';
+  const projectName = activeProject?.name || 'Project';
   const uptime = data?.uptime
     ? formatUptime(data.uptime)
     : '...';
