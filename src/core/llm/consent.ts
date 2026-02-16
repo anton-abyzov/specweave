@@ -86,7 +86,9 @@ export class ExternalApiConsentDeniedError extends Error {
       `External API consent denied for provider "${provider}". ` +
       'Configure externalModels.consent in .specweave/config.json or grant standing permission.'
     );
+    this.name = 'ExternalApiConsentDeniedError';
     this.provider = provider;
+    Object.setPrototypeOf(this, ExternalApiConsentDeniedError.prototype);
   }
 }
 

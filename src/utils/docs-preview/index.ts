@@ -58,4 +58,6 @@ export {
   getServerUrl
 } from './server-manager.js';
 
+export type { DocScope } from './types.js';
+export { SCOPE_PORTS, SCOPE_SITE_DIRS, SCOPE_DOC_DIRS } from './types.js';
 export * from './types.js';

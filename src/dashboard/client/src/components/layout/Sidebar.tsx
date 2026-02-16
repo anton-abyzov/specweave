@@ -66,7 +66,7 @@ export function Sidebar() {
       </div>
 
       {/* Project Selector */}
-      {projects.length > 0 && (
+      {projects.length > 1 ? (
         <div className="px-3 py-3 border-b border-gray-800">
           <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
           <select
@@ -79,7 +79,21 @@ export function Sidebar() {
             ))}
           </select>
         </div>
-      )}
+      ) : projects.length === 1 ? (
+        <div className="px-3 py-3 border-b border-gray-800">
+          <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
+          <div className="text-gray-300 text-xs px-2 py-1.5 truncate" title={projects[0].path}>
+            {projects[0].name}
+          </div>
+        </div>
+      ) : projectParam ? (
+        <div className="px-3 py-3 border-b border-gray-800">
+          <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
+          <div className="text-gray-500 text-xs px-2 py-1.5 truncate">
+            {decodeURIComponent(projectParam).split(/[-/]/).pop() || 'Loading...'}
+          </div>
+        </div>
+      ) : null}
 
       <nav className="flex-1 overflow-y-auto py-3 px-2">
         {NAV_ITEMS.map((item) => (

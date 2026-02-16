@@ -58,6 +58,21 @@ export { OllamaProvider } from './providers/ollama-provider.js';
 export { BedrockProvider } from './providers/bedrock-provider.js';
 export { VertexAIProvider } from './providers/vertex-ai-provider.js';
 
+// Consent management for external API providers
+export {
+  isExternalProvider,
+  checkConsent,
+  grantStandingConsent,
+  FREE_PROVIDERS,
+  ExternalApiConsentDeniedError,
+} from './consent.js';
+
+export type {
+  ConsentMode,
+  ConsentStatus,
+  ExternalModelsConfig,
+} from './types.js';
+
 // Robust JSON extraction for LLM responses (handles prose + JSON, code blocks, etc.)
 export {
   extractJson,

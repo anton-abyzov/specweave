@@ -17,6 +17,7 @@ const {
   MockDocsValidator,
   mockLaunchPreview,
   mockKillAllDocusaurusProcesses,
+  mockKillProcessOnPort,
   mockBuildStaticSite,
   mockIsSetupNeeded,
   mockQuickSetup,
@@ -37,6 +38,7 @@ const {
 
   const _mockLaunchPreview = vi.fn();
   const _mockKillAllDocusaurusProcesses = vi.fn();
+  const _mockKillProcessOnPort = vi.fn();
   const _mockBuildStaticSite = vi.fn();
   const _mockIsSetupNeeded = vi.fn();
   const _mockQuickSetup = vi.fn();
@@ -50,6 +52,7 @@ const {
     MockDocsValidator: _MockDocsValidator,
     mockLaunchPreview: _mockLaunchPreview,
     mockKillAllDocusaurusProcesses: _mockKillAllDocusaurusProcesses,
+    mockKillProcessOnPort: _mockKillProcessOnPort,
     mockBuildStaticSite: _mockBuildStaticSite,
     mockIsSetupNeeded: _mockIsSetupNeeded,
     mockQuickSetup: _mockQuickSetup,
@@ -71,6 +74,7 @@ vi.mock('../../../../src/utils/docs-validator.js', () => ({
 vi.mock('../../../../src/utils/docs-preview/index.js', () => ({
   launchPreview: mockLaunchPreview,
   killAllDocusaurusProcesses: mockKillAllDocusaurusProcesses,
+  killProcessOnPort: mockKillProcessOnPort,
   buildStaticSite: mockBuildStaticSite,
   isSetupNeeded: mockIsSetupNeeded,
   quickSetup: mockQuickSetup,
@@ -88,6 +92,7 @@ import {
 // ── Test helpers ───────────────────────────────────────────────────
 const FAKE_CWD = '/fake/project';
 const DOCS_PATH = path.join(FAKE_CWD, '.specweave', 'docs', 'internal');
+const PUBLIC_DOCS_PATH = path.join(FAKE_CWD, '.specweave', 'docs', 'public');
 
 function makeValidationResult(overrides: Record<string, any> = {}) {
   return {
@@ -120,6 +125,7 @@ describe('docs commands', () => {
     mockExistsSync.mockReturnValue(true);
     mockValidate.mockResolvedValue(makeValidationResult());
     mockKillAllDocusaurusProcesses.mockResolvedValue(0);
+    mockKillProcessOnPort.mockResolvedValue(false);
   });
 
   afterEach(() => {
@@ -216,7 +222,7 @@ describe('docs commands', () => {
       expect(mockKillAllDocusaurusProcesses).toHaveBeenCalled();
     });
 
-    it('should pass port and browser options to launchPreview', async () => {
+    it('should pass port, browser, and scope options to launchPreview', async () => {
       mockLaunchPreview.mockRejectedValue(new Error('abort'));
 
       await expect(
@@ -227,6 +233,7 @@ describe('docs commands', () => {
         port: 4000,
         openBrowser: false,
         force: true,
+        scope: 'internal',
       });
     });
 
@@ -240,6 +247,48 @@ describe('docs commands', () => {
       mockLaunchPreview.mockRejectedValue('string error');
 
       await expect(docsPreviewCommand({ validate: false })).rejects.toThrow('process.exit(1)');
+    });
+
+    // ── Scope tests ────────────────────────────────────────────────
+    it('should use public docs path when scope is public', async () => {
+      mockExistsSync.mockReturnValue(false);
+
+      await expect(docsPreviewCommand({ scope: 'public' })).rejects.toThrow('process.exit(1)');
+      expect(mockExistsSync).toHaveBeenCalledWith(PUBLIC_DOCS_PATH);
+    });
+
+    it('should pass scope=public to launchPreview', async () => {
+      mockLaunchPreview.mockRejectedValue(new Error('abort'));
+
+      await expect(
+        docsPreviewCommand({ validate: false, scope: 'public' })
+      ).rejects.toThrow('process.exit(1)');
+
+      expect(mockLaunchPreview).toHaveBeenCalledWith(FAKE_CWD, expect.objectContaining({
+        scope: 'public',
+      }));
+    });
+
+    it('should use port 3016 for public scope by default', async () => {
+      mockLaunchPreview.mockRejectedValue(new Error('abort'));
+
+      await expect(
+        docsPreviewCommand({ validate: false, scope: 'public' })
+      ).rejects.toThrow('process.exit(1)');
+
+      // killProcessOnPort should be called with 3016 (public default port)
+      expect(mockKillProcessOnPort).toHaveBeenCalledWith(3016);
+    });
+
+    it('should use port 3015 for internal scope by default', async () => {
+      mockLaunchPreview.mockRejectedValue(new Error('abort'));
+
+      await expect(
+        docsPreviewCommand({ validate: false })
+      ).rejects.toThrow('process.exit(1)');
+
+      // killProcessOnPort should be called with 3015 (internal default port)
+      expect(mockKillProcessOnPort).toHaveBeenCalledWith(3015);
     });
   });
 
@@ -261,7 +310,7 @@ describe('docs commands', () => {
       await docsBuildCommand();
 
       expect(mockValidate).toHaveBeenCalled();
-      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD);
+      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD, 'internal');
     });
 
     it('should skip validation when validate is false', async () => {
@@ -305,8 +354,8 @@ describe('docs commands', () => {
 
       await docsBuildCommand({ validate: false });
 
-      expect(mockQuickSetup).toHaveBeenCalledWith(FAKE_CWD);
-      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD);
+      expect(mockQuickSetup).toHaveBeenCalledWith(FAKE_CWD, 'internal');
+      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD, 'internal');
     });
 
     it('should skip quickSetup when setup is not needed', async () => {
@@ -326,7 +375,7 @@ describe('docs commands', () => {
       await docsBuildCommand({ validate: false, output: '/custom/output' });
 
       // Build should succeed (output is only used for display, not passed to buildStaticSite)
-      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD);
+      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD, 'internal');
     });
 
     it('should use default output path when not specified', async () => {
@@ -360,6 +409,26 @@ describe('docs commands', () => {
 
       // Validator should have been constructed; autoFix defaults to true when not explicitly set
       expect(mockValidate).toHaveBeenCalled();
+    });
+
+    // ── Scope tests ────────────────────────────────────────────────
+    it('should use public docs path when scope is public', async () => {
+      mockExistsSync.mockReturnValue(false);
+
+      await expect(docsBuildCommand({ scope: 'public' })).rejects.toThrow('process.exit(1)');
+      expect(mockExistsSync).toHaveBeenCalledWith(PUBLIC_DOCS_PATH);
+    });
+
+    it('should pass scope=public to buildStaticSite and quickSetup', async () => {
+      mockIsSetupNeeded.mockResolvedValue(true);
+      mockQuickSetup.mockResolvedValue(undefined);
+      mockBuildStaticSite.mockResolvedValue(undefined);
+
+      await docsBuildCommand({ validate: false, scope: 'public' });
+
+      expect(mockIsSetupNeeded).toHaveBeenCalledWith(FAKE_CWD, 'public');
+      expect(mockQuickSetup).toHaveBeenCalledWith(FAKE_CWD, 'public');
+      expect(mockBuildStaticSite).toHaveBeenCalledWith(FAKE_CWD, 'public');
     });
   });
 
@@ -559,6 +628,14 @@ describe('docs commands', () => {
       await expect(docsValidateCommand({ verbose: true })).rejects.toThrow('process.exit(0)');
       expect(mockValidate).toHaveBeenCalled();
     });
+
+    // ── Scope tests ────────────────────────────────────────────────
+    it('should use public docs path when scope is public', async () => {
+      mockExistsSync.mockReturnValue(false);
+
+      await expect(docsValidateCommand({ scope: 'public' })).rejects.toThrow('process.exit(1)');
+      expect(mockExistsSync).toHaveBeenCalledWith(PUBLIC_DOCS_PATH);
+    });
   });
 
   // ════════════════════════════════════════════════════════════════
@@ -598,22 +675,23 @@ describe('docs commands', () => {
   // docsStatusCommand
   // ════════════════════════════════════════════════════════════════
   describe('docsStatusCommand', () => {
-    it('should show status when docs exist', async () => {
-      // existsSync calls: docsPath=true, docsSitePath/node_modules=true, then recursive countMd calls
+    it('should show status for both internal and public scopes', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('node_modules')) return true;
         return true;
       });
 
-      // Mock readdirSync for the recursive countMd function
-      mockReaddirSync.mockImplementation((_dir: string, _opts: any) => {
-        // Return empty directory entries to stop recursion
-        return [];
-      });
+      mockReaddirSync.mockReturnValue([]);
 
       await docsStatusCommand();
 
-      expect(mockExistsSync).toHaveBeenCalled();
+      // Should check both internal and public docs paths
+      expect(mockExistsSync).toHaveBeenCalledWith(
+        path.join(FAKE_CWD, '.specweave', 'docs', 'internal')
+      );
+      expect(mockExistsSync).toHaveBeenCalledWith(
+        path.join(FAKE_CWD, '.specweave', 'docs', 'public')
+      );
     });
 
     it('should show status when docs do not exist', async () => {
@@ -627,8 +705,7 @@ describe('docs commands', () => {
     it('should show Docusaurus not installed status', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('node_modules')) return false;
-        // docs path exists
-        if (typeof p === 'string' && p.includes('internal')) return true;
+        if (typeof p === 'string' && (p.includes('internal') || p.includes('public'))) return true;
         return true;
       });
 

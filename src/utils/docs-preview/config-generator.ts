@@ -43,7 +43,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: '${title}',
+  title: '${escapeQuotes(title)}',
   tagline: '${escapeQuotes(tagline)}',
   favicon: 'img/favicon.svg',
 
@@ -88,9 +88,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: '${projectName} Docs',
+        title: '${escapeQuotes(projectName)} Docs',
         logo: {
-          alt: '${projectName} Logo',
+          alt: '${escapeQuotes(projectName)} Logo',
           src: 'img/logo.svg',
         },
         items: [],
@@ -208,9 +208,9 @@ export function generateLogoSVG(initials: string, primaryColor: string = '#4f46e
     </linearGradient>
   </defs>
   <rect x="8" y="8" width="184" height="184" rx="44" ry="44" fill="url(#logo-bg)" />
-  <text x="100" y="100" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+  <text x="100" y="100" dy="0.35em" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="${fontSize}" font-weight="700" fill="white"
-        text-anchor="middle" dominant-baseline="central" letter-spacing="-2">${initials}</text>
+        text-anchor="middle" letter-spacing="-2">${initials}</text>
 </svg>`;
 }
 
@@ -229,9 +229,9 @@ export function generateFaviconSVG(initials: string, primaryColor: string = '#4f
     </linearGradient>
   </defs>
   <rect x="1" y="1" width="30" height="30" rx="7" ry="7" fill="url(#fav-bg)" />
-  <text x="16" y="16" font-family="system-ui, sans-serif"
+  <text x="16" y="16" dy="0.35em" font-family="system-ui, sans-serif"
         font-size="18" font-weight="700" fill="white"
-        text-anchor="middle" dominant-baseline="central">${firstChar}</text>
+        text-anchor="middle">${firstChar}</text>
 </svg>`;
 }
 
@@ -319,12 +319,19 @@ ${selected.dark}
 }
 
 /* ===== Global ===== */
-* {
-  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
 html {
   scroll-behavior: smooth;
+}
+
+.navbar,
+.menu__link,
+.pagination-nav__link,
+.footer,
+pre,
+blockquote,
+table tbody tr,
+.categoryCard {
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* ===== Navbar ===== */
@@ -335,12 +342,31 @@ html {
 }
 
 .navbar__title {
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='dark'] .navbar__title {
+  background: linear-gradient(135deg, var(--ifm-color-primary-light) 0%, var(--ifm-color-primary-lighter) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .navbar__logo img {
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.navbar__logo img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 /* ===== Sidebar ===== */
@@ -378,6 +404,7 @@ html {
   --ifm-h1-font-size: 2rem;
   --ifm-h2-font-size: 1.5rem;
   --ifm-h3-font-size: 1.25rem;
+  max-width: 48rem;
 }
 
 .markdown h1, .markdown h2, .markdown h3 {
@@ -503,14 +530,19 @@ blockquote {
 
 /* ===== Footer ===== */
 .footer--dark {
-  background: #1e1e2e;
+  background: var(--ifm-color-emphasis-900, #1e1e2e);
 }
 
 [data-theme='dark'] .footer--dark {
-  background: #111118;
+  background: var(--ifm-color-emphasis-1000, #111118);
 }
 
 /* ===== Scrollbar ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ifm-color-emphasis-300) transparent;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -557,12 +589,12 @@ export function generateIndexPage(title: string, tagline: string, categories: Do
   // Build category cards JSX
   const categoryCards = categories.map(cat => {
     const escapedDesc = escapeQuotes(cat.description);
-    return `          <a href="${cat.id}" className={styles.categoryCard} key="${cat.id}">
+    return `          <Link to="/${cat.id}" className={styles.categoryCard} key="${cat.id}">
             <span className={styles.categoryIcon}>${cat.icon}</span>
             <h3>${cat.label}</h3>
             <p>${escapedDesc}</p>
             <span className={styles.docCount}>${cat.docCount} document${cat.docCount !== 1 ? 's' : ''}</span>
-          </a>`;
+          </Link>`;
   }).join('\n');
 
   const brandName = projectName ? escapeQuotes(projectName) : '';
@@ -579,7 +611,7 @@ function HomepageHeader() {
   return (
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
-        <h1 className={styles.heroTitle}>${brandName ? `<span className={styles.brandName}>${brandName}</span> Documentation` : '{siteConfig.title}'}</h1>
+        <h1 className={styles.heroTitle}>${brandName ? `<span className={styles.brandName}>${brandName}</span>{' '}<span className={styles.heroWord}>Documentation</span>` : '{siteConfig.title}'}</h1>
         <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link
@@ -604,7 +636,14 @@ export default function Home() {
         <div className="container" style={{padding: '3rem 0'}}>
 ${categories.length > 0 ? `          <div className={styles.categoryGrid}>
 ${categoryCards}
-          </div>` : ''}
+          </div>` : `          <div className={styles.emptyState}>
+            <p>Documentation folders will appear here as you add content.</p>
+            <Link
+              className="button button--primary button--lg"
+              to="/">
+              Browse All Docs
+            </Link>
+          </div>`}
         </div>
       </main>
     </Layout>
@@ -633,70 +672,136 @@ export async function writeIndexPage(
  * Generate index.module.css for landing page styles
  */
 export function generateIndexModuleCSS(): string {
-  return `.heroBanner {
-  padding: 5rem 0 4rem;
+  return `/* ===== Animations ===== */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Hero Banner ===== */
+.heroBanner {
+  padding: 6rem 0 5rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+  background: linear-gradient(135deg, #3730a3 0%, #4f46e5 30%, #6366f1 60%, #818cf8 100%);
   color: white;
+}
+
+.heroBanner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
+  pointer-events: none;
 }
 
 [data-theme='dark'] .heroBanner {
-  background: linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4338ca 100%);
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #3730a3 60%, #4338ca 100%);
 }
 
+/* ===== Hero Title ===== */
 .heroTitle {
-  font-size: 3rem;
+  font-size: 1.5rem;
   font-weight: 400;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
+  color: white;
+  line-height: 1.2;
+  position: relative;
+  animation: fadeInUp 0.6s ease-out;
 }
 
+/* ===== Brand Name — gradient shimmer text ===== */
 .brandName {
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.04em;
+  display: block;
+  font-size: 4.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    #e0e7ff 25%,
+    #ffffff 50%,
+    #c7d2fe 75%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s linear infinite, fadeInUp 0.5s ease-out;
+  filter: drop-shadow(0 2px 30px rgba(255, 255, 255, 0.2));
 }
 
+/* ===== "DOCUMENTATION" label ===== */
+.heroWord {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.2rem;
+  animation: fadeInUp 0.7s ease-out;
+}
+
+/* ===== Tagline ===== */
 .heroSubtitle {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto 1.5rem;
-  color: white;
+  font-size: 1.15rem;
+  opacity: 0;
+  max-width: 500px;
+  margin: 1.5rem auto;
+  padding: 0 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  animation: fadeInUp 0.8s ease-out 0.1s forwards;
 }
 
+/* ===== CTA Button ===== */
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
   margin-top: 2rem;
+  animation: fadeInUp 0.9s ease-out 0.2s both;
 }
 
 .buttons a {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   color: #4f46e5;
   border: none;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 0.85rem 2.5rem;
+  border-radius: 12px;
   font-size: 1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  letter-spacing: -0.01em;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .buttons a:hover {
-  background: #f8fafc;
-  color: #4338ca;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  background: white;
+  color: #3730a3;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
   text-decoration: none;
 }
 
-/* Category Grid */
+/* ===== Category Grid ===== */
 .categoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -707,25 +812,43 @@ export function generateIndexModuleCSS(): string {
 .categoryCard {
   background: var(--ifm-card-background-color, white);
   border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1.75rem;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none !important;
   color: inherit;
   display: block;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.categoryCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-primary-light));
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .categoryCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
-  border-color: var(--ifm-color-primary);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+  border-color: var(--ifm-color-primary-lightest);
   text-decoration: none !important;
   color: inherit;
 }
 
+.categoryCard:hover::after {
+  opacity: 1;
+}
+
 [data-theme='dark'] .categoryCard:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 .categoryCard h3 {
@@ -753,30 +876,50 @@ export function generateIndexModuleCSS(): string {
   font-weight: 500;
 }
 
-/* Responsive */
+/* ===== Empty State ===== */
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Responsive ===== */
 @media screen and (max-width: 996px) {
   .heroBanner {
-    padding: 3rem 1.5rem;
+    padding: 3.5rem 1.5rem 3rem;
   }
 
-  .heroTitle {
-    font-size: 2.25rem;
+  .brandName {
+    font-size: 3.25rem;
+  }
+
+  .heroWord {
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
   }
 
   .categoryGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media screen and (max-width: 600px) {
-  .heroTitle {
-    font-size: 1.75rem;
+  .categoryGrid {
+    grid-template-columns: 1fr;
   }
 
   .brandName {
-    display: block;
-    font-size: 2rem;
-    margin-bottom: 0.25rem;
+    font-size: 2.5rem;
+  }
+
+  .heroWord {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
   }
 
   .heroSubtitle {

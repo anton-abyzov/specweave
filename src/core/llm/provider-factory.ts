@@ -71,10 +71,7 @@ export async function createProvider(
   if (isExternalProvider(config.provider)) {
     const projectRoot = options.projectRoot ?? process.cwd();
     const consent = checkConsent(config.provider, projectRoot);
-    if (consent === 'denied') {
-      throw new ExternalApiConsentDeniedError(config.provider);
-    }
-    if (consent === 'ask') {
+    if (consent !== 'granted') {
       throw new ExternalApiConsentDeniedError(config.provider);
     }
   }

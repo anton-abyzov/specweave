@@ -117,11 +117,27 @@ export class DashboardServer {
   }
 
   private getProjectInfo(id: string, projectRoot: string): ProjectInfo {
-    let name = path.basename(projectRoot);
+    let name = '';
+
+    // Priority 1: .specweave/config.json project.name
     try {
       const config = JSON.parse(fs.readFileSync(path.join(projectRoot, '.specweave/config.json'), 'utf-8'));
       if (config?.project?.name) name = config.project.name;
-    } catch { /* use dir name */ }
+    } catch { /* fallthrough */ }
+
+    // Priority 2: package.json name
+    if (!name) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf-8'));
+        if (pkg?.name && typeof pkg.name === 'string') name = pkg.name;
+      } catch { /* fallthrough */ }
+    }
+
+    // Priority 3: directory basename (cleaned up)
+    if (!name) {
+      name = path.basename(projectRoot);
+    }
+
     return { id, path: projectRoot, name, hasSpecweave: true };
   }
 
@@ -297,6 +313,9 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const costData = await project.costAggregator.getTokenSummaries();
       const data = await project.aggregator.getOverview(costData);
+      // Ensure project name is always set using the resolved project info
+      const info = this.getProjectInfo(project.id, project.root);
+      data.project.name = data.project.name || info.name;
       sendJson(res, { ok: true, data });
     });
 
@@ -477,7 +496,9 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const limit = safeParseInt(url.searchParams.get('limit'), 50, 1, 500);
-      const data = await project.logParser.getRecentErrors(limit);
+      const offset = safeParseInt(url.searchParams.get('offset'), 0, 0, 100000);
+      const typeFilter = url.searchParams.get('type') || undefined;
+      const data = await project.logParser.getRecentErrors(limit, offset, typeFilter);
       sendJson(res, { ok: true, data });
     });
 

@@ -1,3 +1,24 @@
+/** Documentation scope: internal team docs vs public-facing docs */
+export type DocScope = 'internal' | 'public';
+
+/** Default port per scope */
+export const SCOPE_PORTS: Record<DocScope, number> = {
+  internal: 3015,
+  public: 3016,
+};
+
+/** Docusaurus site directory name per scope */
+export const SCOPE_SITE_DIRS: Record<DocScope, string> = {
+  internal: 'docs-site-internal',
+  public: 'docs-site-public',
+};
+
+/** Docs source subdirectory under .specweave/docs/ */
+export const SCOPE_DOC_DIRS: Record<DocScope, string> = {
+  internal: 'internal',
+  public: 'public',
+};
+
 export interface DocCategory {
   /** Folder name (e.g., 'strategy') */
   id: string;
@@ -37,6 +58,8 @@ export interface DocusaurusConfig {
   excludeFolders?: string[];
   /** Auto-detected project metadata */
   projectMetadata?: ProjectMetadata;
+  /** Documentation scope */
+  scope?: DocScope;
 }
 
 export interface SidebarItem {

@@ -55,5 +55,5 @@ Add consent reference to `plugins/specweave/skills/done/SKILL.md`.
 ## Phase 5: Verification
 
 ### T-009: Build and run all tests
-**Status**: [ ] not started
+**Status**: [x] completed
 **Test**: Given all changes → When npm run rebuild && npm test → Then all pass
