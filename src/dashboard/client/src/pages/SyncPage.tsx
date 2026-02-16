@@ -67,10 +67,22 @@ function connectionLabel(status?: string): string {
 
 export function SyncPage() {
   const [tab, setTab] = useState<Tab>('health');
-  const { data, loading, error } = useProjectApi<SyncData>('/api/sync/status');
+  const [verifying, setVerifying] = useState<string | null>(null);
+  const { data, loading, error, refetch } = useProjectApi<SyncData>('/api/sync/status');
   const { data: audit, loading: al } = useProjectApi<AuditEntry[]>('/api/sync/audit?limit=100');
   const { data: auditSummary, loading: asl } = useProjectApi<AuditSummary>('/api/sync/audit/summary');
   const { execute, running } = useCommand();
+
+  const verifyPlatform = async (platform: string) => {
+    setVerifying(platform);
+    try {
+      const projectParam = new URLSearchParams(window.location.search).get('project') || '';
+      const qs = projectParam ? `?platform=${platform}&project=${projectParam}` : `?platform=${platform}`;
+      await fetch(`/api/sync/verify${qs}`, { method: 'POST' });
+      refetch();
+    } catch { /* ignore */ }
+    setVerifying(null);
+  };
 
   if (loading || al || asl) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
@@ -171,20 +183,20 @@ export function SyncPage() {
                     )}
                     {status === 'configured_never_synced' && (
                       <button
-                        onClick={() => execute('sync-push')}
-                        disabled={running}
+                        onClick={() => verifyPlatform(platform)}
+                        disabled={verifying === platform}
                         className="w-full text-xs text-indigo-400 hover:text-indigo-300 py-2 border border-gray-800 rounded-lg hover:border-indigo-500/30 transition-colors disabled:opacity-50"
                       >
-                        {running ? 'Syncing...' : 'Run First Sync'}
+                        {verifying === platform ? 'Verifying...' : 'Verify Connection'}
                       </button>
                     )}
                     {status === 'sync_failed' && (
                       <button
-                        onClick={() => execute('sync-push')}
-                        disabled={running}
+                        onClick={() => verifyPlatform(platform)}
+                        disabled={verifying === platform}
                         className="w-full text-xs text-amber-400 hover:text-amber-300 py-2 border border-amber-500/20 rounded-lg hover:border-amber-500/40 transition-colors disabled:opacity-50"
                       >
-                        {running ? 'Retrying...' : 'Retry Sync'}
+                        {verifying === platform ? 'Verifying...' : 'Retry Sync'}
                       </button>
                     )}
 

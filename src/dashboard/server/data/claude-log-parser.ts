@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-import type { SessionSummary, SessionError, ErrorGroup, PaginatedErrors } from '../../types.js';
+import type { SessionSummary, SessionError, ErrorGroup, PaginatedErrors, ErrorTimelineBucket } from '../../types.js';
 
 /**
  * Parses Claude Code JSONL session logs from ~/.claude/projects/<slug>/
@@ -20,6 +20,8 @@ export class ClaudeLogParser {
   constructor(projectRoot: string) {
     const slug = projectRoot.replace(/^\//, '').replace(/\//g, '-');
     this.logDir = path.join(process.env.HOME || '', '.claude/projects', `-${slug}`);
+    const fileCount = this.getSessionFiles().length;
+    console.log(`[LogParser] logDir=${this.logDir} files=${fileCount}`);
   }
 
   /** Get recent session summaries with error counts */
@@ -105,6 +107,37 @@ export class ClaudeLogParser {
     const filePath = path.join(this.logDir, `${sessionId}.jsonl`);
     if (!fs.existsSync(filePath)) return null;
     return this.parseSessionFileCached(filePath);
+  }
+
+  /** Get errors grouped into time buckets for timeline visualization */
+  async getErrorTimeline(bucketMinutes = 60): Promise<ErrorTimelineBucket[]> {
+    const { errors: allErrors } = await this.getRecentErrors(10000, 0);
+    if (allErrors.length === 0) return [];
+
+    const bucketMs = bucketMinutes * 60 * 1000;
+    const buckets = new Map<number, { count: number; byType: Record<string, number> }>();
+
+    for (const err of allErrors) {
+      const ts = new Date(err.timestamp).getTime();
+      if (isNaN(ts)) continue;
+      const bucketStart = Math.floor(ts / bucketMs) * bucketMs;
+      const existing = buckets.get(bucketStart);
+      if (existing) {
+        existing.count++;
+        existing.byType[err.type] = (existing.byType[err.type] || 0) + 1;
+      } else {
+        buckets.set(bucketStart, { count: 1, byType: { [err.type]: 1 } });
+      }
+    }
+
+    return Array.from(buckets.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([start, data]) => ({
+        start: new Date(start).toISOString(),
+        end: new Date(start + bucketMs).toISOString(),
+        count: data.count,
+        byType: data.byType,
+      }));
   }
 
   /** Parse with mtime-based caching */
