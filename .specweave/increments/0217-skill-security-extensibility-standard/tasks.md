@@ -59,19 +59,19 @@ Scanned (rules) → Verified (rules + LLM) → Certified (rules + LLM + human). 
 Labels: extensible, safe, portable, deprecated, warning. Vendor auto-verification: anthropics/, openai/, google/.
 
 ### T-010: Design contradiction detection system
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04 | **Status**: [x] completed
 **Depends On**: T-004
 **Test**: Given conflict taxonomy from research → When system designed → Then covers detection heuristics, priority chain, merge strategies
 4 types, priority chain (local > project > vendor > community), 3 merge strategies. Integration point with existing scanner.
 
 ### T-011: Design continuous scanning pipeline
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-04 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-04 | **Status**: [x] completed
 **Depends On**: T-001, T-003
 **Test**: Given sources cataloged → When pipeline designed → Then shows source adapters, schedule, storage, and alert mechanism
 Source adapters (Skills.sh, ClawHub, GitHub), crawl schedule (daily/weekly), result storage, alert mechanism. Design only.
 
 ### T-012: Design specweave fabric compare CLI
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-04 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-04 | **Status**: [x] completed
 **Depends On**: T-003, T-004
 **Test**: Given sources and contradictions known → When CLI designed → Then shows command syntax, comparison algorithm, output format
 `specweave fabric compare <skill-name> --sources github,npm,registry`. Side-by-side comparison.
@@ -83,7 +83,7 @@ Source adapters (Skills.sh, ClawHub, GitHub), crawl schedule (daily/weekly), res
 New types: CertificationLevel, TrustLabel, SecurityScanRecord, ContradictionRecord. Extend FabricRegistryEntry.
 
 ### T-014: Design portability guidelines
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-03, AC-US6-04 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-03, AC-US6-04 | **Status**: [x] completed
 **Depends On**: T-002
 **Test**: Given compat matrix complete → When guidelines authored → Then covers universal features, platform-specific extensions, testing checklist
 What works universally vs varies. Reference `agentSkillsCompat` field.
