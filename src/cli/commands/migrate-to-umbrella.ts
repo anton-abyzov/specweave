@@ -232,28 +232,3 @@ async function handleAddRepo(
   }
 }
 
-/**
- * Commander.js command definition.
- */
-export function createMigrateToUmbrellaCommand(program: any): void {
-  program
-    .command('migrate-to-umbrella')
-    .description('Convert single-repo project to umbrella/multi-repo workspace')
-    .option('--execute', 'Execute migration (default is dry-run)')
-    .option('--umbrella-path <path>', 'Custom umbrella directory path')
-    .option('--org <name>', 'GitHub organization name')
-    .option('--rollback', 'Rollback a previous migration')
-    .option('--add-repo <name>', 'Add a new repo to existing umbrella (name or org/name)')
-    .option('--yes', 'Skip confirmation prompts')
-    .action(async (opts: any) => {
-      await migrateToUmbrellaCommand({
-        execute: opts.execute,
-        umbrellaPath: opts.umbrellaPath,
-        umbrellaName: opts.umbrellaPath ? undefined : undefined,
-        orgName: opts.org,
-        rollback: opts.rollback,
-        addRepo: opts.addRepo,
-        yes: opts.yes,
-      });
-    });
-}
