@@ -2280,9 +2280,13 @@ case "$BUDGET_LEVEL" in
   *)       CONTEXT_BUDGET=2500 ;;
 esac
 
-# If budget is 0, skip all context assembly
+# If budget is 0, send remediation message if pressure-triggered, then exit
 if [[ "$CONTEXT_BUDGET" -eq 0 ]]; then
-  echo '{"decision":"approve"}'
+  if [[ "${PRESSURE_LEVEL:-}" == "emergency" || "${PRESSURE_LEVEL:-}" == "critical" ]]; then
+    output_approve_with_context "Context budget auto-reduced due to prompt pressure. Consider starting a fresh session."
+  else
+    echo '{"decision":"approve"}'
+  fi
   exit 0
 fi
 
