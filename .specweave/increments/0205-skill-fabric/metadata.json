@@ -7,6 +7,6 @@
   "created": "2026-02-13T00:00:00.000Z",
   "updated": "2026-02-15T19:07:44.627Z",
   "lastActivity": "2026-02-15T19:07:44.627Z",
-  "abandonedReason": "Foundation work (security scanner, registry, schema) already shipped in codebase. Remaining tasks superseded by 0217-skill-security-extensibility-standard.",
+  "abandonedReason": "Foundation code (security-scanner.ts, registry-schema.ts, registry.json) shipped. Brand direction pivoted from 'Skill Fabric' docs branding to verified-skill.com product identity in 0217. YouTube NL notes superseded by 0217 T-017 supply chain risk section. Only orphan: README natural-language-UX rewrite (standalone task, not increment-worthy).",
   "abandonedAt": "2026-02-15T19:07:44.627Z"
 }
