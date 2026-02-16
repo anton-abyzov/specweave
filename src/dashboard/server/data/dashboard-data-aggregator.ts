@@ -359,10 +359,14 @@ export class DashboardDataAggregator {
         diagnosticMessage = `${pConfig.label} configured for ${configDetail}. No sync attempted yet.`;
       } else if (lastSyncResult === 'success') {
         connectionStatus = 'connected';
-        diagnosticMessage = `${pConfig.label} connected to ${configDetail}. Last sync: ${lastImportCount} items.`;
+        diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Last sync: ${lastImportCount} items.`;
+      } else if (lastSyncResult === 'partial') {
+        connectionStatus = 'connected';
+        diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Last sync: ${lastImportCount} items (some warnings).`;
       } else {
         connectionStatus = 'sync_failed';
-        diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Last sync attempt failed at ${new Date(lastImport).toLocaleString()}.`;
+        const errorDetail = meta?.lastError ? ` Error: ${meta.lastError}` : '';
+        diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Last sync attempt failed at ${new Date(lastImport).toLocaleString()}.${errorDetail}`;
       }
 
       platforms[key] = {

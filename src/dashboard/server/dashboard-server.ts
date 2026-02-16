@@ -350,7 +350,9 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const limit = safeParseInt(url.searchParams.get('limit'), 200, 1, 500);
-      const data = await project.costAggregator.getTokenSummaries(limit);
+      const config = await project.aggregator.getConfig();
+      const billingConfig = (config as any)?.billing;
+      const data = await project.costAggregator.getTokenSummaries(limit, billingConfig);
       sendJson(res, { ok: true, data });
     });
 
@@ -360,6 +362,79 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const data = await project.aggregator.getSyncStatus();
       sendJson(res, { ok: true, data });
+    });
+
+    // Sync verify — lightweight per-platform connectivity check
+    this.router.post('/api/sync/verify', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const platform = url.searchParams.get('platform') || '';
+      if (!['github', 'jira', 'ado'].includes(platform)) {
+        return sendJson(res, { ok: false, error: 'Invalid platform. Use: github, jira, ado' }, 400);
+      }
+
+      try {
+        const config = await project.aggregator.getConfig();
+        const syncConfig = (config as any)?.sync?.[platform];
+        if (!syncConfig) {
+          return sendJson(res, { ok: false, error: `${platform} is not configured` }, 400);
+        }
+
+        let connected = false;
+        let detail = '';
+
+        if (platform === 'github') {
+          const { Octokit } = await import('@octokit/rest');
+          const token = syncConfig.token || process.env.GITHUB_TOKEN || '';
+          const octokit = new Octokit({ auth: token });
+          try {
+            const resp = await octokit.rest.repos.get({ owner: syncConfig.owner, repo: syncConfig.repo });
+            connected = true;
+            detail = `${resp.data.full_name} (${resp.data.open_issues_count} open issues)`;
+          } catch (e: any) {
+            detail = e.message || 'Connection failed';
+          }
+        } else if (platform === 'jira') {
+          const domain = syncConfig.domain || syncConfig.host || '';
+          const email = syncConfig.email || process.env.JIRA_EMAIL || '';
+          const apiToken = syncConfig.apiToken || process.env.JIRA_API_TOKEN || '';
+          try {
+            const resp = await fetch(`https://${domain}/rest/api/3/myself`, {
+              headers: { Authorization: `Basic ${Buffer.from(`${email}:${apiToken}`).toString('base64')}` },
+            });
+            connected = resp.ok;
+            detail = connected ? `Authenticated as ${(await resp.json() as any).displayName || email}` : `HTTP ${resp.status}`;
+          } catch (e: any) {
+            detail = e.message || 'Connection failed';
+          }
+        } else if (platform === 'ado') {
+          const org = syncConfig.organization || '';
+          const project = syncConfig.project || '';
+          const pat = syncConfig.pat || process.env.ADO_PAT || '';
+          try {
+            const resp = await fetch(`https://dev.azure.com/${org}/${project}/_apis/projects/${project}?api-version=7.0`, {
+              headers: { Authorization: `Basic ${Buffer.from(`:${pat}`).toString('base64')}` },
+            });
+            connected = resp.ok;
+            detail = connected ? `Connected to ${org}/${project}` : `HTTP ${resp.status}`;
+          } catch (e: any) {
+            detail = e.message || 'Connection failed';
+          }
+        }
+
+        // Update sync metadata with verification result
+        const { updateSyncMetadata } = await import('../../sync/sync-metadata.js');
+        await updateSyncMetadata(project.root, platform as 'github' | 'jira' | 'ado', {
+          lastImport: new Date().toISOString(),
+          lastImportCount: 0,
+          lastSyncResult: connected ? 'success' : 'failed',
+        });
+
+        sendJson(res, { ok: true, data: { platform, connected, detail } });
+      } catch (e: any) {
+        sendJson(res, { ok: false, error: e.message || 'Verification failed' }, 500);
+      }
     });
 
     // Notifications
@@ -525,6 +600,15 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const data = await project.logParser.getSessionDetail(params.sessionId);
       if (!data) return sendJson(res, { ok: false, error: 'Session not found' }, 404);
+      sendJson(res, { ok: true, data });
+    });
+
+    this.router.get('/api/errors/timeline', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const bucket = safeParseInt(url.searchParams.get('bucket'), 60, 1, 1440);
+      const data = await project.logParser.getErrorTimeline(bucket);
       sendJson(res, { ok: true, data });
     });
 

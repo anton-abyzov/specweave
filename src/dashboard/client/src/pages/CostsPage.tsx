@@ -11,6 +11,7 @@ interface CostsData {
   totalTokens: number;
   sessionCount: number;
   isMaxPlan?: boolean;
+  billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   sessions?: SessionCost[];
   modelBreakdown?: Record<string, { cost: number; tokens: number; sessions: number }>;
 }
@@ -40,7 +41,7 @@ export function CostsPage() {
   if (!data) return null;
 
   const sessions = data.sessions || [];
-  const isMaxPlan = data.isMaxPlan === true;
+  const isSubscription = data.billingContext?.planType === 'subscription';
 
   // Use server-provided model breakdown if available, otherwise compute from sessions
   const modelBreakdown = data.modelBreakdown
@@ -60,12 +61,15 @@ export function CostsPage() {
     <div className="p-6 space-y-6">
       <h2 className="text-lg font-semibold text-gray-200">Token Usage & Costs</h2>
 
-      {/* Max Plan Banner */}
-      {isMaxPlan && (
+      {/* Subscription Banner */}
+      {isSubscription && (
         <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
-          <Badge label="Max Plan" variant="info" />
+          <Badge label="Subscription" variant="info" />
           <span className="text-xs text-gray-300">
-            API costs included in subscription. Token usage tracked for analytics.
+            {data.billingContext?.monthlyAmount
+              ? `$${data.billingContext.monthlyAmount}/mo plan. `
+              : ''}
+            Costs shown as API-equivalent value for usage analytics.
           </span>
         </div>
       )}
@@ -73,12 +77,19 @@ export function CostsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          title="Total Cost"
-          value={isMaxPlan ? '$0.00' : `$${data.totalCost.toFixed(2)}`}
-          subtitle={isMaxPlan ? 'Included in plan' : undefined}
+          title={isSubscription ? 'API-Equivalent Value' : 'Total Cost'}
+          value={`$${data.totalCost.toFixed(2)}`}
+          subtitle={isSubscription && data.billingContext?.monthlyAmount
+            ? `Your plan: $${data.billingContext.monthlyAmount}/mo`
+            : undefined}
           color="amber"
         />
-        <KpiCard title="Cache Savings" value={`$${data.totalSavings.toFixed(2)}`} color="emerald" />
+        <KpiCard
+          title={isSubscription ? 'Cache Efficiency' : 'Cache Savings'}
+          value={`$${data.totalSavings.toFixed(2)}`}
+          subtitle={isSubscription ? 'API-equivalent savings from cache' : undefined}
+          color="emerald"
+        />
         <KpiCard title="Total Tokens" value={formatTokens(data.totalTokens)} subtitle={formatTokensLong(data.totalTokens)} color="indigo" />
         <KpiCard title="Sessions" value={data.sessionCount.toLocaleString()} color="cyan" />
       </div>
@@ -102,7 +113,9 @@ export function CostsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Model Breakdown Chart */}
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-            <h3 className="text-sm font-medium text-gray-300 mb-4">Cost by Model</h3>
+            <h3 className="text-sm font-medium text-gray-300 mb-4">
+              {isSubscription ? 'Usage Value by Model' : 'Cost by Model'}
+            </h3>
             {modelBreakdown.length > 0 ? (
               <BarChart
                 items={modelBreakdown.map(m => ({
