@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useProject } from '../hooks/useProject.js';
 import { PageLoader } from '../components/ui/Spinner.js';
 import { Badge } from '../components/ui/Badge.js';
@@ -10,7 +11,9 @@ interface ValidationError {
 }
 
 export function ConfigPage() {
-  const { data, loading, error, refetch } = useProjectApi<Record<string, unknown>>('/api/config');
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('config-changed', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error, refetch } = useProjectApi<Record<string, unknown>>(`/api/config?_r=${refreshKey}`);
   const { activeProject } = useProject();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [edits, setEdits] = useState<Record<string, unknown>>({});

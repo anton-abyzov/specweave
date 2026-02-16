@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useSSE } from './useSSE.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 
 type CommandStatus = 'idle' | 'running' | 'success' | 'error';
 
@@ -18,38 +18,35 @@ export function useCommand() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeCommandRef = useRef<string | null>(null);
 
-  // Listen for SSE command events
-  useSSE({
-    onEvent: {
-      'command-output': (data: unknown) => {
-        const evt = data as { executionId?: string; line?: string };
-        if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
-          if (evt.line) {
-            setOutput(prev => [...prev, evt.line as string]);
-          }
-        }
-      },
-      'command-complete': (data: unknown) => {
-        const evt = data as { executionId?: string; exitCode?: number | null };
-        if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-          setRunning(false);
-          if (evt.exitCode === 0) {
-            setStatus('success');
-            setOutput(prev => [...prev, 'Command completed successfully.']);
-          } else {
-            setStatus('error');
-            const msg = `Command failed (exit code ${evt.exitCode ?? 'unknown'})`;
-            setError(msg);
-            setOutput(prev => [...prev, msg]);
-          }
-          activeCommandRef.current = null;
-        }
-      },
-    },
+  // Listen for SSE command events via shared provider
+  useSSEEvent('command-output', (data: unknown) => {
+    const evt = data as { executionId?: string; line?: string };
+    if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
+      if (evt.line) {
+        setOutput(prev => [...prev, evt.line as string]);
+      }
+    }
+  });
+
+  useSSEEvent('command-complete', (data: unknown) => {
+    const evt = data as { executionId?: string; exitCode?: number | null };
+    if (activeCommandRef.current && evt.executionId === activeCommandRef.current) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setRunning(false);
+      if (evt.exitCode === 0) {
+        setStatus('success');
+        setOutput(prev => [...prev, 'Command completed successfully.']);
+      } else {
+        setStatus('error');
+        const msg = `Command failed (exit code ${evt.exitCode ?? 'unknown'})`;
+        setError(msg);
+        setOutput(prev => [...prev, msg]);
+      }
+      activeCommandRef.current = null;
+    }
   });
 
   // Cleanup timeout on unmount
