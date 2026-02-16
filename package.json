@@ -9,6 +9,8 @@
   },
   "scripts": {
     "preinstall": "node scripts/check-node-version.js || exit 0",
+    "version": "node scripts/build/auto-changelog.js && git add CHANGELOG.md",
+    "postversion": "echo '✅ Version bumped with CHANGELOG entry'",
     "clean": "rm -rf dist/",
     "build": "tsc && npm run build:dashboard && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps && npm run copy:adapters",
     "build:dashboard": "npx vite build --config src/dashboard/client/vite.config.ts",

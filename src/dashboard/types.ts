@@ -140,6 +140,10 @@ export interface SessionError {
     toolName?: string;
     toolInput?: string;
     messageIndex?: number;
+    /** What the assistant was doing right before this error */
+    precedingAction?: string;
+    /** Recent tool calls leading up to the error (last 3) */
+    recentTools?: Array<{ name: string; input: string }>;
   };
 }
 
