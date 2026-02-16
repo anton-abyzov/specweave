@@ -89,43 +89,43 @@ New types: CertificationLevel, TrustLabel, SecurityScanRecord, ContradictionReco
 What works universally vs varies. Reference `agentSkillsCompat` field.
 
 ### T-015: Write verified-skill.com PRD
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-05, AC-US7-06, AC-US7-07, AC-US7-08, AC-US7-09, AC-US7-10, AC-US7-11, AC-US7-12, AC-US7-13, AC-US7-14 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-05, AC-US7-06, AC-US7-07, AC-US7-08, AC-US7-09, AC-US7-10, AC-US7-11, AC-US7-12, AC-US7-13, AC-US7-14 | **Status**: [x] completed
 **Depends On**: T-006, T-008, T-009
 **Test**: Given competitive analysis and architecture complete → When PRD authored → Then covers mission, users, tech stack, repo structure, business model, onboarding flow, agent visualization, UI design direction, popularity signals, trending algorithm, skill ranking
 Mission, users, value prop, competitive positioning, tech stack (Next.js, PostgreSQL), repo structure (turbo monorepo), website architecture, badge API, business model. MUST include: (1) Landing page onboarding flow (init → find → install/verify → update) with clear step-by-step, (2) Agent registry visualization — card/grid layout for all 39 agents with universal/non-universal badges and platform icons, (3) UI design direction doc — minimalistic, verification-first, distinctive identity (NOT default dark theme), UI8 expert-level craft, unique color palette and typography, (4) Popularity signals aggregation — GitHub stars/forks, npm downloads, vskill install counts, commit recency per skill page, (5) Trending algorithm — weighted composite (install velocity + stars growth + recency + verification tier) with 7d/30d windows, (6) Skill ranking/leaderboard — sortable by category with filters for tier, popularity, recency.
 
 ### T-015b: Design npx vskill CLI
-**User Story**: US-008 | **Satisfies ACs**: AC-US8-01, AC-US8-03, AC-US8-04, AC-US8-05, AC-US8-07 | **Status**: [ ] pending
+**User Story**: US-008 | **Satisfies ACs**: AC-US8-01, AC-US8-03, AC-US8-04, AC-US8-05, AC-US8-07 | **Status**: [x] completed
 **Depends On**: T-006b, T-008
 **Test**: Given installer research and certification designed → When CLI designed → Then full command reference with scan-before-install flow documented
 Commands: `add`, `scan`, `list`, `compare`, `update`, `submit`. Agent auto-detection (39 agents). Security scan-before-install. Vendor fast-path. Output format.
 
 ### T-015c: Design version-pinned verification
-**User Story**: US-009 | **Satisfies ACs**: AC-US9-01, AC-US9-02, AC-US9-03, AC-US9-04, AC-US9-05 | **Status**: [ ] pending
+**User Story**: US-009 | **Satisfies ACs**: AC-US9-01, AC-US9-02, AC-US9-03, AC-US9-04, AC-US9-05 | **Status**: [x] completed
 **Depends On**: T-008, T-015b
 **Test**: Given certification and CLI designed → When versioning designed → Then lock file schema, diff scan flow, per-version badges, monitoring flow documented
 `vskill.lock` schema, diff scanning on updates, per-version badge system, continuous monitoring for badge downgrades.
 
 ### T-029: Design submission state machine and pipeline
-**User Story**: US-010 | **Satisfies ACs**: AC-US10-03, AC-US10-04, AC-US10-05, AC-US10-06, AC-US10-09, AC-US10-10 | **Status**: [ ] pending
+**User Story**: US-010 | **Satisfies ACs**: AC-US10-03, AC-US10-04, AC-US10-05, AC-US10-06, AC-US10-09, AC-US10-10 | **Status**: [x] completed
 **Depends On**: T-008
 **Test**: Given three-tier certification designed → When state machine designed → Then all states, transitions, worker architecture, and audit trail documented
 States: RECEIVED → TIER1_SCANNING → TIER2_SCANNING → AUTO_APPROVED/NEEDS_REVIEW → PUBLISHED/REJECTED. PostgreSQL job queue (SKIP LOCKED).
 
 ### T-030: Design database schema
-**User Story**: US-010, US-011, US-012 | **Satisfies ACs**: AC-US10-09, AC-US11-10, AC-US12-05 | **Status**: [ ] pending
+**User Story**: US-010, US-011, US-012 | **Satisfies ACs**: AC-US10-09, AC-US11-10, AC-US12-05 | **Status**: [x] completed
 **Depends On**: T-029
 **Test**: Given state machine designed → When Prisma schema drafted → Then all entities defined with relationships and constraints
 Entities: Submission, Skill, SkillVersion, ScanResult, Admin, SubmissionStateEvent, AgentCompat, EmailNotification.
 
 ### T-031: Design submission API endpoints
-**User Story**: US-010 | **Satisfies ACs**: AC-US10-01, AC-US10-02, AC-US10-07 | **Status**: [ ] pending
+**User Story**: US-010 | **Satisfies ACs**: AC-US10-01, AC-US10-02, AC-US10-07 | **Status**: [x] completed
 **Depends On**: T-029, T-030
 **Test**: Given schema and state machine designed → When API endpoints designed → Then public + admin endpoints documented with request/response schemas
 Public: POST /api/v1/submissions, GET /api/v1/submissions/:id, GET /api/v1/skills, GET /api/v1/skills/:name/badge. Admin: login, queue, approve, reject, escalate, stats.
 
 ### T-032: Design admin authentication
-**User Story**: US-011 | **Satisfies ACs**: AC-US11-01, AC-US11-09 | **Status**: [ ] pending
+**User Story**: US-011 | **Satisfies ACs**: AC-US11-01, AC-US11-09 | **Status**: [x] completed
 **Depends On**: T-030
 **Test**: Given database schema designed → When auth system designed → Then JWT flow, role-based middleware, and token refresh documented
 JWT email/password, bcrypt, 24h access / 7d refresh tokens. Roles: super_admin, reviewer.
@@ -169,13 +169,13 @@ Interface: id, displayName, localSkillsDir, globalSkillsDir, detectInstalled(), 
 File: `docs-site/docs/guides/skills-ecosystem-security.md`
 
 ### T-017: Write YouTube script section on supply chain risk
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05 | **Status**: [x] completed
 **Depends On**: T-001
 **Test**: Given research complete → When section authored → Then has narrator voice, screen directions, timestamps, covers breach + scanner + verified-skill.com
 Append to `docs-site/docs/guides/youtube-tutorial-script.md`. ~8 min section.
 
 ### T-018: Write Skill Discovery and Evaluation guide
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03 | **Status**: [x] completed
 **Depends On**: T-003, T-004
 **Test**: Given sources and rubric complete → When guide authored → Then covers 6+ sources, scoring rubric, discrepancy detection
 File: `docs-site/docs/guides/skill-discovery-evaluation.md`
@@ -187,13 +187,13 @@ File: `docs-site/docs/guides/skill-discovery-evaluation.md`
 File: `docs-site/docs/guides/secure-skill-factory-standard.md`
 
 ### T-020: Write Agent Skills Extensibility Analysis page
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03 | **Status**: [x] completed
 **Depends On**: T-002, T-014
 **Test**: Given compat matrix and portability guidelines complete → When page authored → Then has compat table, variation analysis, portability guidelines
 File: `docs-site/docs/guides/agent-skills-extensibility-analysis.md`
 
 ### T-021: Write Skill Contradiction Resolution design doc
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03 | **Status**: [x] completed
 **Depends On**: T-010
 **Test**: Given detection system designed → When doc authored → Then covers conflict types, heuristics, priority chain, merge strategies with Mermaid diagram
 File: `docs-site/docs/guides/skill-contradiction-resolution.md`

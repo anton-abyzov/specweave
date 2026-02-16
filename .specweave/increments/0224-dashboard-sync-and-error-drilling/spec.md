@@ -27,9 +27,9 @@ Fix broken sync status visualization (shows "0 connected" despite GitHub being c
 
 **Acceptance Criteria**:
 - [x] **AC-US1-01**: ImportCoordinator writes sync metadata on successful import even with 0 items
-- [ ] **AC-US1-02**: enrichSyncPlatforms() shows "connected" when platform is configured and reachable
-- [ ] **AC-US1-03**: "Retry Sync" triggers a connectivity check that updates metadata
-- [ ] **AC-US1-04**: Platform cards show diagnostic messages on failure (auth error, network error)
+- [x] **AC-US1-02**: enrichSyncPlatforms() shows "connected" when platform is configured and reachable
+- [x] **AC-US1-03**: "Retry Sync" triggers a connectivity check that updates metadata
+- [x] **AC-US1-04**: Platform cards show diagnostic messages on failure (auth error, network error)
 
 ---
 
@@ -41,10 +41,10 @@ Fix broken sync status visualization (shows "0 connected" despite GitHub being c
 **So that** I can identify patterns, debug issues, and drill into error details
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Errors page shows actual error count (2,493+) after server rebuild
-- [ ] **AC-US2-02**: Timeline tab shows error density per time bucket with visual bar chart
-- [ ] **AC-US2-03**: Time buckets are clickable to filter errors for that period
-- [ ] **AC-US2-04**: ClaudeLogParser includes diagnostic logging for troubleshooting
+- [x] **AC-US2-01**: Errors page shows actual error count (2,493+) after server rebuild
+- [x] **AC-US2-02**: Timeline tab shows error density per time bucket with visual bar chart
+- [x] **AC-US2-03**: Time buckets are clickable to filter errors for that period
+- [x] **AC-US2-04**: ClaudeLogParser includes diagnostic logging for troubleshooting
 
 ## Out of Scope
 
