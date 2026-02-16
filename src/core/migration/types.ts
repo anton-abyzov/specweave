@@ -104,6 +104,26 @@ export interface MigrationOptions {
 }
 
 /**
+ * Manifest written alongside backup to record what was moved and where.
+ * Enables full rollback including moved files (CLAUDE.md, AGENTS.md, docs-site).
+ */
+export interface MigrationManifest {
+  /** Timestamp of migration */
+  timestamp: string;
+  /** Absolute path to the umbrella directory */
+  umbrellaPath: string;
+  /** Absolute path to the original project */
+  projectRoot: string;
+  /** Files/dirs that were moved from project to umbrella */
+  movedItems: Array<{
+    /** Original path (relative to projectRoot) */
+    source: string;
+    /** Destination path (relative to umbrellaPath) */
+    destination: string;
+  }>;
+}
+
+/**
  * Result of adding a new repo to an umbrella
  */
 export interface AddRepoResult {
