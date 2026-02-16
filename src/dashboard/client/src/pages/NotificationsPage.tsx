@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useProject } from '../hooks/useProject.js';
 import { Badge } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
@@ -24,8 +25,10 @@ const SEVERITY_ORDER: Record<string, number> = { critical: 0, warning: 1, info: 
 export function NotificationsPage() {
   const [filter, setFilter] = useState<FilterMode>('pending');
   const [dismissing, setDismissing] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('notification', () => setRefreshKey((k) => k + 1));
   const { activeProject } = useProject();
-  const { data, loading, error, refetch } = useProjectApi<Notification[]>('/api/notifications');
+  const { data, loading, error, refetch } = useProjectApi<Notification[]>(`/api/notifications?_r=${refreshKey}`);
 
   if (loading) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;

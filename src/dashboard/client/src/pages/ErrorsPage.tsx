@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
-import { useSSE } from '../hooks/useSSE.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
@@ -81,11 +81,7 @@ export function ErrorsPage() {
 
   // SSE-triggered refresh counter for real-time error updates
   const [refreshKey, setRefreshKey] = useState(0);
-  useSSE({
-    onEvent: {
-      'error-detected': () => setRefreshKey((k) => k + 1),
-    },
-  });
+  useSSEEvent('error-detected', () => setRefreshKey((k) => k + 1));
 
   const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>(`/api/errors/groups?_r=${refreshKey}`);
   const { data: paginated, loading: el } = useProjectApi<PaginatedErrors>(

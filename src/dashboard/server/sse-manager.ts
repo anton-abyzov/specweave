@@ -32,9 +32,11 @@ export class SSEManager {
   broadcast(type: SSEEventType, data: unknown): void {
     const message = this.formatMessage(type, data);
     for (const conn of this.connections) {
-      if (!conn.destroyed) {
-        conn.write(message);
+      if (conn.destroyed) {
+        this.connections.delete(conn);
+        continue;
       }
+      conn.write(message);
     }
   }
 

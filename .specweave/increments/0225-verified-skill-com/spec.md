@@ -16,7 +16,7 @@ coverage_target: 80
 
 Full implementation and deployment of verified-skill.com — the trusted registry for AI agent skills. Built on architecture designs from increment 0217, this delivers: Next.js website on Cloudflare Workers via @opennextjs/cloudflare, Neon PostgreSQL + Prisma database, Cloudflare Workers AI for Tier 2 LLM security scanning, `npx vskill` CLI published to npm, Playwright E2E tests, cron-based skill scanning from 3 default marketplaces (Anthropic/Claude, OpenAI/Codex, Google/Gemini), skill submission with security verification pipeline, admin dashboard, and distinctive UI design.
 
-**Tech Stack**: Next.js 15+ App Router, @opennextjs/cloudflare, Neon PostgreSQL, Prisma (client engine), Cloudflare Workers AI, Turborepo, Tailwind CSS + shadcn/ui, Playwright, Resend email, npm package `vskill`
+**Tech Stack**: Next.js 15+ App Router, @opennextjs/cloudflare, Neon PostgreSQL, Prisma (client engine), Cloudflare Workers AI, Turborepo, Tailwind CSS + shadcn/ui, Playwright, SendGrid email, npm package `vskill`
 
 **Domain**: verified-skill.com (already purchased)
 
@@ -194,7 +194,7 @@ Full implementation and deployment of verified-skill.com — the trusted registr
 **So that** I know when my skill is approved or needs attention
 
 **Acceptance Criteria**:
-- [ ] **AC-US10-01**: Resend integration with React Email templates
+- [ ] **AC-US10-01**: SendGrid integration with HTML email templates
 - [ ] **AC-US10-02**: 5 triggers: submission_received, auto_approved, needs_review, rejected, version_published
 - [ ] **AC-US10-03**: Email is opt-in only (no email field = no notifications)
 
@@ -243,7 +243,7 @@ Use free Cloudflare Workers AI (`@cf/meta/llama-3.1-70b-instruct`) via `env.AI` 
 
 ## Out of Scope
 
-- Custom domain email (use resend.com transactional only)
+- Custom domain email (use SendGrid transactional only)
 - Payment/billing integration (all features are free under MIT license)
 - GitHub OAuth for admin (Phase 2 — email/password for now)
 - Mobile app
@@ -257,7 +257,7 @@ Use free Cloudflare Workers AI (`@cf/meta/llama-3.1-70b-instruct`) via `env.AI` 
 | Cloudflare Queues | Cloudflare | 10K ops/day | Free (4,500 ops/day) |
 | PostgreSQL | Neon | 0.5 GB storage | Free |
 | Workers compute | Cloudflare | 100K req/day | Free |
-| Email (Resend) | Resend | 100 emails/day | Free |
+| Email (SendGrid) | SendGrid | 100 emails/day | Free |
 | **Total** | | | **~$45/month** |
 
 Workers AI is the only component that exceeds free tier at scale. All other services stay within free tier at 500 submissions/day. No GPU management or instance scaling needed — Cloudflare handles this automatically.
@@ -268,5 +268,5 @@ Workers AI is the only component that exceeds free tier at scale. All other serv
 - Cloudflare account with Workers access
 - Neon PostgreSQL account
 - npm registry access for `vskill` package
-- Resend account for email
+- SendGrid account for email (EasyChamp account)
 - Domain verified-skill.com (already purchased)

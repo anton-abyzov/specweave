@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
 import { PageLoader } from '../components/ui/Spinner.js';
@@ -24,7 +26,9 @@ interface IncrementsData {
 }
 
 export function IncrementsPage() {
-  const { data, loading, error } = useProjectApi<IncrementsData>('/api/increments');
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('increment-update', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error } = useProjectApi<IncrementsData>(`/api/increments?_r=${refreshKey}`);
   const [statusFilter, setStatusFilter] = useUrlState('status', 'all');
   const [typeFilter, setTypeFilter] = useUrlState('type', 'all');
   const navigate = useNavigate();

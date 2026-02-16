@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useCommand } from '../hooks/useCommand.js';
 import { Badge } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
@@ -68,9 +69,11 @@ function connectionLabel(status?: string): string {
 export function SyncPage() {
   const [tab, setTab] = useState<Tab>('health');
   const [verifying, setVerifying] = useState<string | null>(null);
-  const { data, loading, error, refetch } = useProjectApi<SyncData>('/api/sync/status');
-  const { data: audit, loading: al } = useProjectApi<AuditEntry[]>('/api/sync/audit?limit=100');
-  const { data: auditSummary, loading: asl } = useProjectApi<AuditSummary>('/api/sync/audit/summary');
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('sync-update', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error, refetch } = useProjectApi<SyncData>(`/api/sync/status?_r=${refreshKey}`);
+  const { data: audit, loading: al } = useProjectApi<AuditEntry[]>(`/api/sync/audit?limit=100&_r=${refreshKey}`);
+  const { data: auditSummary, loading: asl } = useProjectApi<AuditSummary>(`/api/sync/audit/summary?_r=${refreshKey}`);
   const { execute, running } = useCommand();
 
   const verifyPlatform = async (platform: string) => {

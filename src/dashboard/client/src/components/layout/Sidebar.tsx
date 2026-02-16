@@ -2,7 +2,7 @@ import { NavLink, useSearchParams } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import { useProject } from '../../hooks/useProject';
 import { useProjectApi } from '../../hooks/useProjectApi';
-import { useSSE } from '../../hooks/useSSE';
+import { useSSEEvent, useSSEStatus } from '../../contexts/SSEContext';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Overview', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1' },
@@ -40,7 +40,8 @@ export function Sidebar() {
     const d = data as { pendingCount?: number };
     if (d?.pendingCount != null) setLiveNotifCount(d.pendingCount);
   }, []);
-  const { status: sseStatus } = useSSE({ onEvent: { notification: handleNotification } });
+  useSSEEvent('notification', handleNotification);
+  const sseStatus = useSSEStatus();
 
   const notifCount = liveNotifCount ?? overview?.notifications?.pendingCount ?? 0;
 

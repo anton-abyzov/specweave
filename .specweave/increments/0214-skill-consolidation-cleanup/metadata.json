@@ -1,6 +1,7 @@
 {
   "id": "0214-skill-consolidation-cleanup",
-  "status": "ready_for_review",
+  "status": "completed",
+  "completedAt": "2026-02-16T00:00:00.000Z",
   "type": "refactor",
   "priority": "P2",
   "created": "2026-02-15T06:13:32.625Z",

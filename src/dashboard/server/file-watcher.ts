@@ -7,21 +7,24 @@ export interface WatchEvent {
   data: Record<string, unknown>;
 }
 
+interface FileTarget {
+  relativePath: string;
+  eventType: SSEEventType;
+}
+
 export class FileWatcher {
   private watchers: fs.FSWatcher[] = [];
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private watchedFiles = new Set<string>();
+  private fileTargets: FileTarget[];
+  private retryInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private projectRoot: string,
     private onEvent: (event: WatchEvent) => void,
     private debounceMs = 300,
   ) {
-    this.startWatching();
-  }
-
-  private startWatching(): void {
-    // Watch specific state files
-    const targets: Array<{ relativePath: string; eventType: SSEEventType }> = [
+    this.fileTargets = [
       { relativePath: '.specweave/state/dashboard.json', eventType: 'increment-update' },
       { relativePath: '.specweave/state/notifications.json', eventType: 'notification' },
       { relativePath: '.specweave/state/analytics/events.jsonl', eventType: 'analytics-event' },
@@ -31,11 +34,18 @@ export class FileWatcher {
       { relativePath: '.specweave/state/prompt-health.json', eventType: 'error-detected' },
       { relativePath: '.specweave/state/prompt-health-alert.json', eventType: 'error-detected' },
     ];
+    this.startWatching();
+  }
 
-    for (const target of targets) {
+  private startWatching(): void {
+    // Watch specific state files (those that exist now)
+    for (const target of this.fileTargets) {
       const fullPath = path.join(this.projectRoot, target.relativePath);
       this.watchFile(fullPath, target.eventType);
     }
+
+    // Periodically retry missing files (every 30s, aligned with SSE heartbeat)
+    this.retryInterval = setInterval(() => this.retryMissingFiles(), 30_000);
 
     // Watch increments directory recursively for metadata/task changes
     const incDir = path.join(this.projectRoot, '.specweave/increments');
@@ -74,14 +84,28 @@ export class FileWatcher {
     }
   }
 
+  /** Retry watching files that didn't exist at startup */
+  private retryMissingFiles(): void {
+    for (const target of this.fileTargets) {
+      const fullPath = path.join(this.projectRoot, target.relativePath);
+      if (!this.watchedFiles.has(fullPath)) {
+        this.watchFile(fullPath, target.eventType);
+      }
+    }
+  }
+
   private watchFile(fullPath: string, eventType: SSEEventType): void {
+    if (this.watchedFiles.has(fullPath)) return;
     if (!fs.existsSync(fullPath)) return;
     try {
       const watcher = fs.watch(fullPath, () => {
         this.debouncedEmit(eventType, fullPath, { file: path.basename(fullPath) });
       });
       this.watchers.push(watcher);
-      watcher.on('error', () => {}); // Silently handle
+      this.watchedFiles.add(fullPath);
+      watcher.on('error', () => {
+        this.watchedFiles.delete(fullPath);
+      });
     } catch {
       // File may not be watchable
     }
@@ -110,10 +134,15 @@ export class FileWatcher {
 
   /** Stop all watchers and clear timers */
   close(): void {
+    if (this.retryInterval) {
+      clearInterval(this.retryInterval);
+      this.retryInterval = null;
+    }
     for (const w of this.watchers) {
       try { w.close(); } catch { /* already closed */ }
     }
     this.watchers = [];
+    this.watchedFiles.clear();
     for (const t of this.debounceTimers.values()) clearTimeout(t);
     this.debounceTimers.clear();
   }

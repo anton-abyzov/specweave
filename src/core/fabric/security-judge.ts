@@ -1,0 +1,201 @@
+/**
+ * Tier 2 LLM Security Judge
+ *
+ * Evaluates SKILL.md content for malicious INTENT using LLM analysis.
+ * Catches what Tier 1 regex patterns miss: social engineering, obfuscated intent,
+ * scope inflation, multi-step attack chains, and chained skill attacks.
+ *
+ * Uses the LLM provider abstraction (not direct Anthropic SDK) for multi-provider support.
+ * Respects consent gate — never makes API calls without explicit user permission.
+ *
+ * @since v1.0.268
+ */
+
+import { loadLLMConfig, createProvider } from '../llm/provider-factory.js';
+import { checkConsent, isExternalProvider } from '../llm/consent.js';
+import { extractJson } from '../../utils/llm-json-extractor.js';
+import type { LLMProvider } from '../llm/types.js';
+
+export interface SecurityThreat {
+  category: string;
+  severity: 'critical' | 'high' | 'medium';
+  description: string;
+  evidence: string;
+  line?: number;
+}
+
+export interface SecurityJudgeResult {
+  verdict: 'PASS' | 'CONCERNS' | 'FAIL';
+  score: number;
+  summary: string;
+  threats: SecurityThreat[];
+  mitigations: string[];
+  duration_ms: number;
+}
+
+interface SecurityJudgeOptions {
+  projectRoot?: string;
+  model?: string;
+  timeout_ms?: number;
+}
+
+interface LLMJudgeResponse {
+  verdict: string;
+  score: number;
+  summary: string;
+  threats: Array<{
+    category: string;
+    severity: string;
+    description: string;
+    evidence: string;
+    line?: number;
+  }>;
+  mitigations: string[];
+}
+
+const SECURITY_SYSTEM_PROMPT = `You are a security analyst evaluating AI agent skill files for malicious intent.
+
+Your job is to identify threats that REGEX PATTERNS CANNOT catch — focus on SEMANTIC MEANING, not syntax.
+
+## Threat Categories
+
+1. **social-engineering** — Instructions that trick users into downloading, installing, or running untrusted software/scripts. Look for: "download and run", "visit this link and execute", "copy this command", disguised as setup steps.
+
+2. **scope-inflation** — Skill claims to do X (e.g., "React component generator") but instructions actually do Y (e.g., access credentials, modify system files). The DESCRIPTION and the INSTRUCTIONS don't match.
+
+3. **obfuscated-intent** — Indirect language that achieves dangerous outcomes without using obvious dangerous commands. The intent is hidden behind innocuous-sounding instructions.
+
+4. **multi-step-attack** — Individually safe-looking steps that compose into an attack when executed in sequence. Each step seems harmless alone.
+
+5. **chained-skill-attack** — Instructions to install, invoke, or depend on other skills that may be malicious. Skill dependency chains used to distribute trust.
+
+## Scoring
+
+- **PASS** (80-100): No threats detected, skill does what it claims
+- **CONCERNS** (60-79): Minor issues found, manual review recommended
+- **FAIL** (0-59): Malicious intent detected or serious security risks
+
+## Response Format
+
+Respond with ONLY valid JSON:
+{
+  "verdict": "PASS" | "CONCERNS" | "FAIL",
+  "score": <0-100>,
+  "summary": "<one sentence summary>",
+  "threats": [
+    {
+      "category": "<threat-category>",
+      "severity": "critical" | "high" | "medium",
+      "description": "<what the threat is>",
+      "evidence": "<quote from the skill that proves it>"
+    }
+  ],
+  "mitigations": ["<suggested fix 1>", "<suggested fix 2>"]
+}
+
+If no threats found, return empty threats array and empty mitigations array.`;
+
+export class SecurityJudge {
+  private projectRoot: string;
+  private model?: string;
+  private timeout_ms: number;
+
+  constructor(options: SecurityJudgeOptions = {}) {
+    this.projectRoot = options.projectRoot ?? process.cwd();
+    this.model = options.model;
+    this.timeout_ms = options.timeout_ms ?? 60000;
+  }
+
+  async judge(skillContent: string): Promise<SecurityJudgeResult> {
+    const start = Date.now();
+
+    const provider = await this.getProvider();
+    if (!provider) {
+      return this.fallbackResult(start);
+    }
+
+    try {
+      const result = await provider.analyze(
+        `Analyze this AI agent skill file for security threats:\n\n${skillContent}`,
+        {
+          systemPrompt: SECURITY_SYSTEM_PROMPT,
+          temperature: 0.1,
+          maxTokens: 2048,
+          timeout: this.timeout_ms,
+          ...(this.model ? { model: this.model } : {}),
+        }
+      );
+
+      const extracted = extractJson<LLMJudgeResponse>(result.content, {
+        requiredFields: ['verdict', 'score', 'summary', 'threats'],
+      });
+
+      if (!extracted.success || !extracted.data) {
+        return this.fallbackResult(start);
+      }
+
+      const data = extracted.data;
+      const verdict = this.normalizeVerdict(data.verdict);
+
+      return {
+        verdict,
+        score: typeof data.score === 'number' ? data.score : 50,
+        summary: data.summary || 'Analysis complete',
+        threats: Array.isArray(data.threats)
+          ? data.threats.map(t => ({
+              category: t.category,
+              severity: this.normalizeSeverity(t.severity),
+              description: t.description,
+              evidence: t.evidence,
+              line: t.line,
+            }))
+          : [],
+        mitigations: Array.isArray(data.mitigations) ? data.mitigations : [],
+        duration_ms: Date.now() - start,
+      };
+    } catch {
+      return this.fallbackResult(start);
+    }
+  }
+
+  private async getProvider(): Promise<LLMProvider | null> {
+    const config = loadLLMConfig(this.projectRoot);
+    if (!config) return null;
+
+    if (isExternalProvider(config.provider)) {
+      const consent = checkConsent(config.provider, this.projectRoot);
+      if (consent !== 'granted') return null;
+    }
+
+    try {
+      return await createProvider(config, { projectRoot: this.projectRoot });
+    } catch {
+      return null;
+    }
+  }
+
+  private fallbackResult(start: number): SecurityJudgeResult {
+    return {
+      verdict: 'CONCERNS',
+      score: 50,
+      summary: 'LLM analysis unavailable — manual review recommended',
+      threats: [],
+      mitigations: [],
+      duration_ms: Date.now() - start,
+    };
+  }
+
+  private normalizeVerdict(v: string): 'PASS' | 'CONCERNS' | 'FAIL' {
+    const upper = String(v).toUpperCase();
+    if (upper === 'PASS') return 'PASS';
+    if (upper === 'FAIL') return 'FAIL';
+    return 'CONCERNS';
+  }
+
+  private normalizeSeverity(s: string): 'critical' | 'high' | 'medium' {
+    const lower = String(s).toLowerCase();
+    if (lower === 'critical') return 'critical';
+    if (lower === 'high') return 'high';
+    return 'medium';
+  }
+}
