@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
-import { useSSE } from '../hooks/useSSE.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { StatusDonut, buildDonutSegments } from '../components/charts/StatusDonut.js';
@@ -103,11 +103,7 @@ export function OverviewPage() {
     setActivity((prev) => [item as ActivityItem, ...prev].slice(0, 20));
   }, []);
 
-  useSSE({
-    onEvent: {
-      activity: handleActivity,
-    },
-  });
+  useSSEEvent('activity', handleActivity);
 
   if (loading) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;

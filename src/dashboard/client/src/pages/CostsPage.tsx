@@ -1,5 +1,6 @@
 import { useState, Fragment } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSEEvent } from '../contexts/SSEContext.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
 import { BarChart } from '../components/charts/BarChart.js';
@@ -34,7 +35,9 @@ type Tab = 'overview' | 'sessions';
 export function CostsPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
-  const { data, loading, error } = useProjectApi<CostsData>('/api/costs/summary');
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('cost-update', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error } = useProjectApi<CostsData>(`/api/costs/summary?_r=${refreshKey}`);
 
   if (loading) return <PageLoader />;
   if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;

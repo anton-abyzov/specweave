@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi';
+import { useSSEEvent } from '../contexts/SSEContext';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge';
 import { KpiCard } from '../components/ui/KpiCard';
 import { PageLoader } from '../components/ui/Spinner';
@@ -38,7 +40,9 @@ interface IncrementDetail {
 
 export function IncrementDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, loading, error } = useProjectApi<IncrementDetail>(`/api/increments/${id || '_none'}`);
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSEEvent('increment-update', () => setRefreshKey((k) => k + 1));
+  const { data, loading, error } = useProjectApi<IncrementDetail>(`/api/increments/${id || '_none'}?_r=${refreshKey}`);
 
   if (!id) return <div className="p-6 text-gray-500 text-sm">No increment ID specified</div>;
   if (loading) return <PageLoader />;

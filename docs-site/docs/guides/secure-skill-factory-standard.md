@@ -212,7 +212,7 @@ The following patterns constitute automatic failure of Tier 1 certification. Any
 |---------|-------|-----------|
 | Base64 decode (`atob`) | `\batob\s*\(` | Used to hide malicious payloads from scanners |
 | Base64 decode (`btoa`) | `\bbtoa\s*\(` | Encoding data for exfiltration |
-| Base64 CLI decode | `\bbase64\s+-d\b` | Command-line base64 decoding |
+| Base64 CLI decode | `\bbase64\s+(-[dD]\|--decode)\b` | Command-line base64 decoding (Linux `-d` and macOS `-D`) |
 | Hex-encoded content | `\\x[0-9a-fA-F]{2}(?:\\x[0-9a-fA-F]{2}){3,}` | Multi-byte hex sequences used for payload hiding |
 | Password-protected archives | `\bunzip\s+-P\b\|\b7z\s+x\s+-p` | Extracting archives with embedded passwords to evade scanning |
 
@@ -236,7 +236,13 @@ The following patterns constitute automatic failure of Tier 1 certification. Any
 | CLAUDE.md writes | `write.*CLAUDE\.md\|edit.*CLAUDE\.md\|create.*CLAUDE\.md` | Agent configuration tampering |
 | Agent config writes | `write.*\.claude\/\|edit.*\.claude\/` | Modifying agent settings to persist malicious behavior |
 
-#### 2.2.6 Destructive Commands
+#### 2.2.6 Data Exfiltration
+
+| Pattern | Regex | Rationale |
+|---------|-------|-----------|
+| `curl --data` / `curl -d` | `curl\s+.*(-d\b\|--data\b)` | Uploading data to external endpoints for exfiltration |
+
+#### 2.2.7 Destructive Commands
 
 | Pattern | Regex | Rationale |
 |---------|-------|-----------|
@@ -300,7 +306,7 @@ Certification is graduated. Higher tiers provide stronger trust guarantees at hi
 | Tier | Name | Method | Cost | Latency | Badge |
 |------|------|--------|------|---------|-------|
 | 0 | Unscanned | None | Free | 0 | None |
-| 1 | Scanned | 37 regex patterns + structural validation | Free | <500ms | `scanned` |
+| 1 | Scanned | 41 regex patterns + structural validation | Free | <500ms | `scanned` |
 | 2 | Verified | Tier 1 + LLM intent analysis (Claude Sonnet) | ~$0.03/skill | 5-15s | `verified` |
 | 3 | Certified | Tier 1 + Tier 2 + human review + sandbox execution | $50-200/skill | 1-5 business days | `certified` |
 
@@ -655,16 +661,21 @@ The standard recommends a three-phase rollout for platforms:
 
 ### 7.1 Scanner Implementation Reference
 
-SpecWeave provides a reference implementation of the Tier 1 scanner in `src/core/fabric/security-scanner.ts`. This scanner currently implements 26 regex patterns across 6 severity categories:
+SpecWeave provides a reference implementation of the Tier 1 scanner in `src/core/fabric/security-scanner.ts`. This scanner implements **41 regex patterns** across **9 detection categories**:
 
-- **Destructive commands** (critical): `rm -rf`, `format`, `DROP TABLE`, `dd`, `mkfs`
-- **Remote code execution** (critical): `curl | bash`, `eval()`, `exec()`, `child_process`
-- **Credential access** (high): `.env` reading, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`
+- **Destructive commands** (critical): `rm -rf`, `rm --force`, `format`, `DROP TABLE`, `dd`, `mkfs`, `Remove-Item -Recurse -Force`
+- **Remote code execution** (critical): `curl | bash`, `wget | bash`, `| bash` (generic pipe), `eval()`, `exec()`, `child_process`, `Invoke-Expression`, `new Function()`
+- **Obfuscation** (critical): `atob()`, `btoa()`, `base64 -d/-D/--decode`, hex escape sequences, password-protected archives
+- **Memory poisoning** (critical): writes to `CLAUDE.md`/`AGENTS.md`/`.claude/`, writes to `SOUL.md`/`MEMORY.md`
+- **Credential access** (high): `.env` reading, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`, `credentials.json`, `secrets.yaml`, `~/.ssh/`, `~/.aws/`, crypto wallet paths
+- **Data exfiltration** (high): `curl --data` / `curl -d`
 - **Dangerous permissions** (high): `chmod 777`
-- **Prompt injection** (high): `<system>` tags, "ignore previous instructions", "you are now"
+- **Prompt injection** (high): `<system>` tags, "ignore previous instructions", "you are now", "override system prompt"
 - **Network access** (info): `fetch()`, `http.get()`, `axios`, URL references
 
-The Secure Skill Factory Standard extends this to 37 patterns by adding the obfuscation and memory poisoning categories defined in Section 2.2.
+The scanner was validated against [Snyk's ToxicSkills PoC samples](https://github.com/snyk-labs/toxicskills-goof), achieving a 75% detection rate on real malicious skills via Tier 1 alone. The remaining 25% (social engineering attacks in natural language) require Tier 2 LLM analysis.
+
+**CLI**: Run `specweave scan-skill <file>` to scan any SKILL.md file. Add `--json` for machine-readable output.
 
 ### 7.2 Structural Validation Pseudocode
 
@@ -726,7 +737,7 @@ function validateStructure(skillContent: string): Finding[] {
 
 ## Appendix A: Complete Forbidden Patterns Reference
 
-The following table lists all 37 patterns checked by the Tier 1 scanner, organized by category. Each pattern includes the severity level and whether safe-context exceptions apply.
+The following table lists all 41 patterns checked by the Tier 1 scanner, organized by category. Each pattern includes the severity level and whether safe-context exceptions apply.
 
 | # | Category | Pattern | Severity | Safe Context |
 |---|----------|---------|----------|-------------|
@@ -737,9 +748,9 @@ The following table lists all 37 patterns checked by the Tier 1 scanner, organiz
 | 5 | Destructive | `dd if=... of=/dev/` | Critical | No |
 | 6 | Destructive | `mkfs` | Critical | No |
 | 7 | Destructive | `Remove-Item -Recurse -Force` | Critical | No |
-| 8 | Destructive | `chmod 777` | High | No |
-| 9 | RCE | `curl \| bash` | Critical | No |
-| 10 | RCE | `wget \| bash` | Critical | No |
+| 8 | RCE | `curl \| bash` | Critical | No |
+| 9 | RCE | `wget \| bash` | Critical | No |
+| 10 | RCE | `\| bash` / `\| sh` (generic pipe) | Critical | No |
 | 11 | RCE | `eval()` | Critical | No |
 | 12 | RCE | `exec()` | Critical | No |
 | 13 | RCE | `child_process` | Critical | No |
@@ -747,26 +758,30 @@ The following table lists all 37 patterns checked by the Tier 1 scanner, organiz
 | 15 | RCE | `new Function()` | Critical | No |
 | 16 | Obfuscation | `atob()` | Critical | No |
 | 17 | Obfuscation | `btoa()` | Critical | No |
-| 18 | Obfuscation | `base64 -d` | Critical | No |
-| 19 | Obfuscation | Hex-encoded sequences | Critical | No |
-| 20 | Obfuscation | Password-protected archives | Critical | No |
+| 18 | Obfuscation | `base64 -d/-D/--decode` | Critical | No |
+| 19 | Obfuscation | Hex-encoded sequences (4+ bytes) | Critical | No |
+| 20 | Obfuscation | Password-protected archives (`unzip -P`, `7z -p`) | Critical | No |
 | 21 | Credential | `.env` file reading | High | No |
 | 22 | Credential | `GITHUB_TOKEN` | High | No |
 | 23 | Credential | `AWS_SECRET` | High | No |
 | 24 | Credential | `API_KEY` | High | No |
 | 25 | Credential | `credentials.json` | High | No |
 | 26 | Credential | `secrets.yaml` | High | No |
-| 27 | Credential | `~/.ssh/` access | Critical | No |
-| 28 | Credential | `~/.aws/` access | Critical | No |
-| 29 | Credential | Wallet paths | Critical | No |
-| 30 | Memory | SOUL.md writes | Critical | No |
-| 31 | Memory | MEMORY.md writes | Critical | No |
-| 32 | Memory | CLAUDE.md writes | Critical | No |
-| 33 | Memory | Agent config writes | Critical | No |
+| 27 | Credential | `~/.ssh/` access | High | No |
+| 28 | Credential | `~/.aws/` access | High | No |
+| 29 | Credential | Crypto wallet paths (`.ethereum/`, `.solana/`, `wallet.dat`) | High | No |
+| 30 | Memory | `CLAUDE.md` / `AGENTS.md` / `.claude/` writes | Critical | No |
+| 31 | Memory | `SOUL.md` / `MEMORY.md` writes | Critical | No |
+| 32 | Exfiltration | `curl --data` / `curl -d` | High | No |
+| 33 | Permissions | `chmod 777` | High | No |
 | 34 | Injection | `<system>` tags | High | No |
 | 35 | Injection | "Ignore previous instructions" | High | No |
 | 36 | Injection | "You are now" | High | Safe verbs |
 | 37 | Injection | "Override system prompt" | High | No |
+| 38 | Network | `fetch()` | Info | N/A |
+| 39 | Network | `http.get()` | Info | N/A |
+| 40 | Network | `axios` | Info | N/A |
+| 41 | Network | External URL references | Info | N/A |
 
 ---
 

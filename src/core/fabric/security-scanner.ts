@@ -189,6 +189,96 @@ const PATTERN_CHECKS: PatternCheck[] = [
     message: '"Override system prompt" detected (prompt injection)',
   },
 
+  // --- Obfuscation (critical) ---
+  {
+    pattern: /\batob\s*\(/,
+    severity: 'critical',
+    category: 'obfuscation',
+    message: 'atob() base64 decode detected (potential obfuscation)',
+  },
+  {
+    pattern: /\bbtoa\s*\(/,
+    severity: 'critical',
+    category: 'obfuscation',
+    message: 'btoa() base64 encode detected (potential obfuscation)',
+  },
+  {
+    pattern: /\bbase64\s+(-[dD]|--decode)\b/,
+    severity: 'critical',
+    category: 'obfuscation',
+    message: 'Shell base64 decode command detected (potential obfuscation)',
+  },
+  {
+    pattern: /\\x[0-9a-fA-F]{2}(\\x[0-9a-fA-F]{2}){3,}/,
+    severity: 'critical',
+    category: 'obfuscation',
+    message: 'Hex escape sequence detected (potential obfuscation)',
+  },
+  {
+    pattern: /unzip\s+-P\b|7z\s+.*-p[^\s]/i,
+    severity: 'critical',
+    category: 'obfuscation',
+    message: 'Password-protected archive extraction detected',
+  },
+
+  // --- Credential path access (high) ---
+  {
+    pattern: /~\/\.ssh\/|\/\.ssh\//,
+    severity: 'high',
+    category: 'credential-access',
+    message: 'SSH directory access detected (~/.ssh/)',
+  },
+  {
+    pattern: /~\/\.aws\/|\/\.aws\//,
+    severity: 'high',
+    category: 'credential-access',
+    message: 'AWS credentials directory access detected (~/.aws/)',
+  },
+  {
+    pattern: /\.ethereum\/|\.solana\/|wallet\.dat/i,
+    severity: 'high',
+    category: 'credential-access',
+    message: 'Cryptocurrency wallet path access detected',
+  },
+
+  // --- Memory poisoning (critical) ---
+  {
+    pattern: /(?:write|echo|cat|>>?)\s+.*(?:CLAUDE\.md|AGENTS\.md|\.claude\/)/i,
+    severity: 'critical',
+    category: 'memory-poisoning',
+    message: 'Agent configuration file write detected (CLAUDE.md/.claude/)',
+  },
+  {
+    pattern: /(?:write|echo|cat|>>?)\s+.*(?:SOUL\.md|MEMORY\.md)/i,
+    severity: 'critical',
+    category: 'memory-poisoning',
+    message: 'Agent memory file write detected (SOUL.md/MEMORY.md)',
+  },
+
+  // --- Data exfiltration (high) ---
+  {
+    pattern: /curl\s+.*(-d\b|--data\b)/,
+    severity: 'high',
+    category: 'data-exfiltration',
+    message: 'curl data upload detected (potential exfiltration)',
+  },
+
+  // --- Generic pipe to shell (critical) ---
+  {
+    pattern: /\|\s*(ba)?sh\b/,
+    severity: 'critical',
+    category: 'remote-code-execution',
+    message: 'Pipe to shell detected (| bash / | sh)',
+  },
+
+  // --- Extended RCE (critical) ---
+  {
+    pattern: /new\s+Function\s*\(/,
+    severity: 'critical',
+    category: 'remote-code-execution',
+    message: 'new Function() constructor detected (dynamic code generation)',
+  },
+
   // --- Network access (info) ---
   {
     pattern: /\bfetch\s*\(/,
