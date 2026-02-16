@@ -55,17 +55,17 @@ The umbrella `config.json` references the original project by relative path:
 **So that** I can organize multiple repositories without disrupting my existing project
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: `specweave migrate-to-umbrella` detects the current project as a single-repo SpecWeave project (has `.specweave/config.json`, no `umbrella.enabled`)
-- [ ] **AC-US1-02**: Running without `--execute` shows a dry-run plan listing all operations (create directories, move files, update config) without modifying anything
-- [ ] **AC-US1-03**: Running with `--execute` creates the umbrella as a sibling folder next to the current project
-- [ ] **AC-US1-04**: The current project folder stays completely untouched — no rename, no git remote changes, folder name preserved
-- [ ] **AC-US1-05**: `.specweave/` directory is moved to the umbrella root with all contents preserved
-- [ ] **AC-US1-06**: `CLAUDE.md` and `AGENTS.md` are moved to the umbrella root (if they exist)
-- [ ] **AC-US1-07**: `docs-site/` is moved to the umbrella root (if it exists)
-- [ ] **AC-US1-08**: `config.json` at umbrella level has `umbrella.enabled = true` and the original project registered as first `childRepos[]` entry with relative path (e.g., `../specweave`)
-- [ ] **AC-US1-09**: The command suggests an umbrella folder name (e.g., `{project}-umb`) and lets user override
-- [ ] **AC-US1-10**: Migration refuses to proceed if the working directory has uncommitted changes
-- [ ] **AC-US1-11**: A backup of the original `.specweave/` is created before any changes
+- [x] **AC-US1-01**: `specweave migrate-to-umbrella` detects the current project as a single-repo SpecWeave project (has `.specweave/config.json`, no `umbrella.enabled`)
+- [x] **AC-US1-02**: Running without `--execute` shows a dry-run plan listing all operations (create directories, move files, update config) without modifying anything
+- [x] **AC-US1-03**: Running with `--execute` creates the umbrella as a sibling folder next to the current project
+- [x] **AC-US1-04**: The current project folder stays completely untouched — no rename, no git remote changes, folder name preserved
+- [x] **AC-US1-05**: `.specweave/` directory is moved to the umbrella root with all contents preserved
+- [x] **AC-US1-06**: `CLAUDE.md` and `AGENTS.md` are moved to the umbrella root (if they exist)
+- [x] **AC-US1-07**: `docs-site/` is moved to the umbrella root (if it exists)
+- [x] **AC-US1-08**: `config.json` at umbrella level has `umbrella.enabled = true` and the original project registered as first `childRepos[]` entry with relative path (e.g., `../specweave`)
+- [x] **AC-US1-09**: The command suggests an umbrella folder name (e.g., `{project}-umb`) and lets user override
+- [x] **AC-US1-10**: Migration refuses to proceed if the working directory has uncommitted changes
+- [x] **AC-US1-11**: A backup of the original `.specweave/` is created before any changes
 
 ---
 
@@ -78,11 +78,11 @@ The umbrella `config.json` references the original project by relative path:
 **So that** I can start a microservices architecture from the umbrella
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: After migration, the command prompts the user to define additional repositories (name, description, visibility)
-- [ ] **AC-US2-02**: If `gh` CLI is available and authenticated, repos are created on GitHub via `gh repo create`
-- [ ] **AC-US2-03**: If `gh` CLI is not available or not authenticated, provides clear setup instructions and falls back to creating local directories only
-- [ ] **AC-US2-04**: New repos are cloned/created into the umbrella's `repositories/{org}/{repo-name}/`
-- [ ] **AC-US2-05**: Each new repo is registered in `umbrella.childRepos[]` with prompted prefix and auto-detected metadata
+- [x] **AC-US2-01**: After migration, the command prompts the user to define additional repositories (name, description, visibility)
+- [x] **AC-US2-02**: If `gh` CLI is available and authenticated, repos are created on GitHub via `gh repo create`
+- [x] **AC-US2-03**: If `gh` CLI is not available or not authenticated, provides clear setup instructions and falls back to creating local directories only
+- [x] **AC-US2-04**: New repos are cloned/created into the umbrella's `repositories/{org}/{repo-name}/`
+- [x] **AC-US2-05**: Each new repo is registered in `umbrella.childRepos[]` with prompted prefix and auto-detected metadata
 
 ---
 
@@ -95,9 +95,9 @@ The umbrella `config.json` references the original project by relative path:
 **So that** I don't lose my project state
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: `specweave migrate-to-umbrella --rollback` restores the original single-repo structure from the backup
-- [ ] **AC-US3-02**: Rollback verifies the backup exists and is valid before proceeding
-- [ ] **AC-US3-03**: A migration log is maintained at `.specweave/logs/migration.log` recording all operations with timestamps
+- [x] **AC-US3-01**: `specweave migrate-to-umbrella --rollback` restores the original single-repo structure from the backup
+- [x] **AC-US3-02**: Rollback verifies the backup exists and is valid before proceeding
+- [x] **AC-US3-03**: A migration log is maintained at `.specweave/logs/migration.log` recording all operations with timestamps
 
 ---
 
@@ -126,10 +126,10 @@ The umbrella `config.json` references the original project by relative path:
 **So that** the migration is reliable and edge cases are handled
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Unit tests cover: single-repo detection, dry-run plan generation, config.json path updates, backup creation, rollback
-- [ ] **AC-US5-02**: Unit tests cover edge cases: uncommitted changes, missing config.json, already-umbrella project, invalid org/repo extraction
-- [ ] **AC-US5-03**: Tests use the existing Vitest + vi.mock() pattern
-- [ ] **AC-US5-04**: Coverage for the new migration module reaches 80%+
+- [x] **AC-US5-01**: Unit tests cover: single-repo detection, dry-run plan generation, config.json path updates, backup creation, rollback
+- [x] **AC-US5-02**: Unit tests cover edge cases: uncommitted changes, missing config.json, already-umbrella project, invalid org/repo extraction
+- [x] **AC-US5-03**: Tests use the existing Vitest + vi.mock() pattern
+- [x] **AC-US5-04**: Coverage for the new migration module reaches 80%+
 
 ## Out of Scope
 

@@ -20,6 +20,7 @@ import type {
   MigrationStep,
   MigrationResult,
   MigrationOptions,
+  MigrationManifest,
   AddRepoResult,
 } from './types.js';
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
@@ -167,24 +168,27 @@ export function generateMigrationPlan(
 // Backup (T-004)
 // ---------------------------------------------------------------------------
 
+/** Well-known backup directory name (outside .specweave/ so it survives the move) */
+const BACKUP_DIR_NAME = '.specweave-migration-backup';
+/** Manifest filename inside the backup directory */
+const MANIFEST_FILE = 'migration-manifest.json';
+
 /**
  * Creates a backup of .specweave/ before migration.
+ * Backup is stored at `{projectRoot}/.specweave-migration-backup/` — outside
+ * `.specweave/` so it survives when `.specweave/` is moved to the umbrella.
  */
 export async function createBackup(
   projectRoot: string,
   logger: Logger = consoleLogger,
 ): Promise<string> {
   const specweavePath = path.join(projectRoot, '.specweave');
-  const backupDir = path.join(
-    specweavePath,
-    'backups',
-    `pre-migration-${Date.now()}`,
-  );
+  const backupDir = path.join(projectRoot, BACKUP_DIR_NAME);
 
   await fs.promises.mkdir(backupDir, { recursive: true });
 
-  // Recursively copy .specweave/ contents (excluding backups/ to avoid recursion)
-  await copyDirRecursive(specweavePath, backupDir, ['backups']);
+  // Recursively copy .specweave/ contents
+  await copyDirRecursive(specweavePath, backupDir);
   logger.log(`   Backup created: ${backupDir}`);
 
   // Initialize migration log
@@ -195,6 +199,33 @@ export async function createBackup(
   await fs.promises.appendFile(logFile, entry);
 
   return backupDir;
+}
+
+/**
+ * Writes a migration manifest to the backup directory.
+ * Records what was moved and where, enabling full rollback.
+ */
+async function writeManifest(
+  backupDir: string,
+  manifest: MigrationManifest,
+): Promise<void> {
+  const manifestPath = path.join(backupDir, MANIFEST_FILE);
+  await fs.promises.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+}
+
+/**
+ * Reads the migration manifest from a backup directory.
+ */
+async function readManifest(
+  backupDir: string,
+): Promise<MigrationManifest | null> {
+  const manifestPath = path.join(backupDir, MANIFEST_FILE);
+  try {
+    const raw = await fs.promises.readFile(manifestPath, 'utf-8');
+    return JSON.parse(raw) as MigrationManifest;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -298,6 +329,23 @@ export async function executeMigration(
     `Migration ${success ? 'completed successfully' : 'failed'}`,
   );
 
+  // Write manifest to backup so rollback knows what was moved
+  if (success && backupPath) {
+    const movedItems: MigrationManifest['movedItems'] = plan.steps
+      .filter((s) => s.type === 'move' && s.source)
+      .map((s) => ({
+        source: path.relative(plan.candidate.projectRoot, s.source!),
+        destination: path.relative(plan.umbrellaPath, s.destination),
+      }));
+
+    await writeManifest(backupPath, {
+      timestamp: new Date().toISOString(),
+      umbrellaPath: plan.umbrellaPath,
+      projectRoot: plan.candidate.projectRoot,
+      movedItems,
+    });
+  }
+
   return {
     success,
     stepsCompleted: completed,
@@ -392,30 +440,16 @@ async function executeStep(
 
 /**
  * Rolls back a migration using the backup.
+ * Looks for backup at `{projectRoot}/.specweave-migration-backup/`.
+ * If a manifest exists, also restores moved files (CLAUDE.md, AGENTS.md, docs-site).
  */
 export async function rollbackMigration(
   projectRoot: string,
   logger: Logger = consoleLogger,
 ): Promise<MigrationResult> {
-  const backupsDir = path.join(projectRoot, '.specweave', 'backups');
+  const backupDir = path.join(projectRoot, BACKUP_DIR_NAME);
 
-  // Find the latest pre-migration backup
-  let latestBackup: string | null = null;
-  try {
-    const entries = await fs.promises.readdir(backupsDir);
-    const migrationBackups = entries
-      .filter((e) => e.startsWith('pre-migration-'))
-      .sort()
-      .reverse();
-
-    if (migrationBackups.length > 0) {
-      latestBackup = path.join(backupsDir, migrationBackups[0]);
-    }
-  } catch {
-    // No backups directory
-  }
-
-  if (!latestBackup) {
+  if (!fs.existsSync(backupDir)) {
     return {
       success: false,
       stepsCompleted: 0,
@@ -425,7 +459,7 @@ export async function rollbackMigration(
   }
 
   // Validate backup has config.json
-  const backupConfigPath = path.join(latestBackup, 'config.json');
+  const backupConfigPath = path.join(backupDir, 'config.json');
   if (!fs.existsSync(backupConfigPath)) {
     return {
       success: false,
@@ -435,24 +469,68 @@ export async function rollbackMigration(
     };
   }
 
-  logger.log(`Rolling back from backup: ${latestBackup}`);
+  logger.log(`Rolling back from backup: ${backupDir}`);
 
   try {
-    // Restore .specweave/ contents from backup
-    const specweavePath = path.join(projectRoot, '.specweave');
+    // Read manifest to know what was moved
+    const manifest = await readManifest(backupDir);
 
-    // Remove current contents except backups/
-    const currentEntries = await fs.promises.readdir(specweavePath);
-    for (const entry of currentEntries) {
-      if (entry === 'backups') continue;
-      const entryPath = path.join(specweavePath, entry);
-      await fs.promises.rm(entryPath, { recursive: true });
+    // If manifest exists, restore moved files from umbrella back to project
+    if (manifest) {
+      for (const item of manifest.movedItems) {
+        const umbrellaItem = path.join(manifest.umbrellaPath, item.destination);
+        const projectItem = path.join(projectRoot, item.source);
+
+        if (fs.existsSync(umbrellaItem)) {
+          // Ensure parent directory exists
+          await fs.promises.mkdir(path.dirname(projectItem), { recursive: true });
+          try {
+            await fs.promises.rename(umbrellaItem, projectItem);
+          } catch {
+            // Cross-device: copy then delete
+            const stat = await fs.promises.stat(umbrellaItem);
+            if (stat.isDirectory()) {
+              await fs.promises.mkdir(projectItem, { recursive: true });
+              await copyDirRecursive(umbrellaItem, projectItem);
+              await fs.promises.rm(umbrellaItem, { recursive: true });
+            } else {
+              await fs.promises.copyFile(umbrellaItem, projectItem);
+              await fs.promises.unlink(umbrellaItem);
+            }
+          }
+          logger.log(`   Restored: ${item.source}`);
+        }
+      }
+
+      // Clean up empty umbrella directory
+      if (fs.existsSync(manifest.umbrellaPath)) {
+        try {
+          await fs.promises.rm(manifest.umbrellaPath, { recursive: true });
+          logger.log(`   Removed umbrella directory: ${manifest.umbrellaPath}`);
+        } catch {
+          logger.warn('   Could not remove umbrella directory (may have user files)');
+        }
+      }
+    } else {
+      // Legacy fallback: no manifest, just restore .specweave/ from backup
+      const specweavePath = path.join(projectRoot, '.specweave');
+      await fs.promises.mkdir(specweavePath, { recursive: true });
+
+      // Remove current .specweave/ contents
+      const currentEntries = await fs.promises.readdir(specweavePath);
+      for (const entry of currentEntries) {
+        const entryPath = path.join(specweavePath, entry);
+        await fs.promises.rm(entryPath, { recursive: true });
+      }
+
+      // Copy backup contents back (skip manifest file)
+      await copyDirRecursive(backupDir, specweavePath, [MANIFEST_FILE]);
     }
 
-    // Copy backup contents back
-    await copyDirRecursive(latestBackup, specweavePath, ['backups']);
+    // Clean up backup directory
+    await fs.promises.rm(backupDir, { recursive: true });
 
-    await appendMigrationLog(projectRoot, `Rollback completed from ${latestBackup}`);
+    await appendMigrationLog(projectRoot, `Rollback completed from ${backupDir}`);
 
     logger.log('   Rollback completed successfully');
 
@@ -460,7 +538,7 @@ export async function rollbackMigration(
       success: true,
       stepsCompleted: 1,
       stepsTotal: 1,
-      backupPath: latestBackup,
+      backupPath: backupDir,
       errors: [],
     };
   } catch (err) {
