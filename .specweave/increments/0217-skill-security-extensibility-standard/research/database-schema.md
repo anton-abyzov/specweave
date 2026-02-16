@@ -1,7 +1,7 @@
 # Database Schema Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US10-09, AC-US11-10, AC-US12-05 (T-030)
 **Dependencies**: T-029 (Submission State Machine)
@@ -97,8 +97,8 @@ model Submission {
   /// State transition audit trail
   stateEvents   SubmissionStateEvent[]
 
-  /// Job queue entries
-  jobs          SubmissionJob[]
+  /// Job execution audit logs (scheduling via Cloudflare Queues)
+  jobLogs       JobLog[]
 
   /// Email notifications sent
   emails        EmailNotification[]
@@ -337,25 +337,24 @@ model EmailNotification {
   @@index([emailType])
 }
 
-// ─── Job Queue ──────────────────────────────────────────
+// ─── Job Audit Log ──────────────────────────────────────
+// NOTE: Job scheduling is handled by Cloudflare Queues (push-based).
+// This model is for audit logging only — not for job state management.
 
-/// Background job for async processing
-model SubmissionJob {
+/// Job execution log (audit only — Cloudflare Queues handles scheduling)
+model JobLog {
   id            String          @id @default(uuid())
   submissionId  String
   submission    Submission      @relation(fields: [submissionId], references: [id])
   jobType       String          /// 'tier1-scan', 'tier2-scan', 'publish'
-  status        String          @default("pending")  /// 'pending', 'processing', 'completed', 'failed'
-  payload       Json            @default("{}")
-  attempts      Int             @default(0)
-  maxAttempts   Int             @default(3)
+  status        String          /// 'completed', 'failed'
+  durationMs    Int?
   error         String?
-  startedAt     DateTime?
-  completedAt   DateTime?
+  completedAt   DateTime        @default(now())
   createdAt     DateTime        @default(now())
 
-  @@index([jobType, status, createdAt])
   @@index([submissionId])
+  @@index([jobType])
 }
 ```
 
@@ -367,7 +366,7 @@ model SubmissionJob {
 erDiagram
     Submission ||--o{ ScanResult : "has scans"
     Submission ||--o{ SubmissionStateEvent : "has audit trail"
-    Submission ||--o{ SubmissionJob : "has jobs"
+    Submission ||--o{ JobLog : "has job logs"
     Submission ||--o{ EmailNotification : "has notifications"
     Submission }o--|| Skill : "creates"
 
@@ -398,7 +397,7 @@ erDiagram
 | `ScanResult` | `submissionId` | Find scans for submission |
 | `ScanResult` | `skillVersionId` | Find scans for version |
 | `SubmissionStateEvent` | `submissionId` | Audit trail for submission |
-| `SubmissionJob` | `jobType, status, createdAt` | SKIP LOCKED job claiming |
+| `JobLog` | `submissionId`, `jobType` | Job execution audit trail |
 
 ---
 

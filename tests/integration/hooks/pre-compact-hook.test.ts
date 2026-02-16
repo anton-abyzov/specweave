@@ -79,7 +79,7 @@ describe('PreCompact Hook - Context Pressure Signal', () => {
     const pressureFile = path.join(tempDir, '.specweave', 'state', 'context-pressure.json');
     const data = JSON.parse(fs.readFileSync(pressureFile, 'utf-8'));
     expect(data.compactionCount).toBe(3);
-    expect(data.level).toBe('critical');
+    expect(data.level).toBe('emergency');
   });
 
   it('should include lastCompaction timestamp', () => {

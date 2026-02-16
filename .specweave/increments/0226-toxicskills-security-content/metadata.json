@@ -1,0 +1,11 @@
+{
+  "id": "0226-toxicskills-security-content",
+  "title": "ToxicSkills Security Content (Marketing + YouTube)",
+  "description": "Create public marketing content and YouTube script referencing the Snyk ToxicSkills research to motivate adoption of SpecWeave's verified skill ecosystem.",
+  "type": "feature",
+  "status": "active",
+  "priority": "P2",
+  "project": "specweave",
+  "created": "2026-02-15",
+  "updated": "2026-02-15"
+}

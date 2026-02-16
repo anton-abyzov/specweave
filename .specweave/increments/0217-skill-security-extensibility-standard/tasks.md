@@ -110,7 +110,7 @@ Commands: `add`, `scan`, `list`, `compare`, `update`, `submit`. Agent auto-detec
 **User Story**: US-010 | **Satisfies ACs**: AC-US10-03, AC-US10-04, AC-US10-05, AC-US10-06, AC-US10-09, AC-US10-10 | **Status**: [x] completed
 **Depends On**: T-008
 **Test**: Given three-tier certification designed → When state machine designed → Then all states, transitions, worker architecture, and audit trail documented
-States: RECEIVED → TIER1_SCANNING → TIER2_SCANNING → AUTO_APPROVED/NEEDS_REVIEW → PUBLISHED/REJECTED. PostgreSQL job queue (SKIP LOCKED).
+States: RECEIVED → TIER1_SCANNING → TIER2_SCANNING → AUTO_APPROVED/NEEDS_REVIEW → PUBLISHED/REJECTED. Cloudflare Queues for job distribution.
 
 ### T-030: Design database schema
 **User Story**: US-010, US-011, US-012 | **Satisfies ACs**: AC-US10-09, AC-US11-10, AC-US12-05 | **Status**: [x] completed

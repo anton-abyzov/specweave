@@ -28,6 +28,8 @@ export class FileWatcher {
       { relativePath: '.specweave/logs/costs.json', eventType: 'cost-update' },
       { relativePath: '.specweave/sync-metadata.json', eventType: 'sync-update' },
       { relativePath: '.specweave/config.json', eventType: 'config-changed' },
+      { relativePath: '.specweave/state/prompt-health.json', eventType: 'error-detected' },
+      { relativePath: '.specweave/state/prompt-health-alert.json', eventType: 'error-detected' },
     ];
 
     for (const target of targets) {

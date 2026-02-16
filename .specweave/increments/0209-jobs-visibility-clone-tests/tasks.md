@@ -1,7 +1,7 @@
 # Tasks: 0209 Jobs Visibility + Clone Tests
 
 ### T-001: Create /sw:jobs skill definition
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-02 | **Status**: [x] completed
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04 | **Status**: [x] completed
 **Test**: Given skill file at `plugins/specweave/skills/jobs/SKILL.md` → When frontmatter parsed → Then has description and argument-hint but NO name field
 
 ### T-002: Write job-dependency.test.ts

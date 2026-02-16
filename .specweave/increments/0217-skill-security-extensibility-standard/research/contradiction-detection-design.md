@@ -1,6 +1,6 @@
 # Contradiction Detection System Design
 
-Version: 1.0 | Author: SpecWeave Architecture | Date: 2026-02-15
+Version: 1.0 | Author: anton.abyzov@gmail.com | Date: 2026-02-15
 
 ---
 

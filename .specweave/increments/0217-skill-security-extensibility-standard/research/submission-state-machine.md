@@ -1,7 +1,7 @@
 # Submission State Machine & Pipeline Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US10-03, AC-US10-04, AC-US10-05, AC-US10-06, AC-US10-09, AC-US10-10 (T-029)
 **Dependencies**: T-008 (Three-Tier Certification)
@@ -163,7 +163,7 @@ async function processSubmission(submission: Submission): Promise<void> {
     trigger: 'non-vendor-submission',
     actor: 'system',
   });
-  await enqueueJob('tier1-scan', { submissionId: submission.id });
+  await env.SCAN_QUEUE.send({ submissionId: submission.id, jobType: 'tier1-scan' });
 }
 ```
 
@@ -173,90 +173,65 @@ async function processSubmission(submission: Submission): Promise<void> {
 
 ### 4.1 Job Queue
 
-The pipeline uses PostgreSQL with `SKIP LOCKED` for job processing — no external dependencies like Redis or RabbitMQ required.
+The pipeline uses **Cloudflare Queues** for job processing — native to the Workers platform, push-based, durable delivery.
 
-```sql
-CREATE TABLE submission_jobs (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  submission_id UUID NOT NULL REFERENCES submissions(id),
-  job_type      TEXT NOT NULL,        -- 'tier1-scan', 'tier2-scan', 'publish'
-  status        TEXT NOT NULL DEFAULT 'pending',  -- 'pending', 'processing', 'completed', 'failed'
-  payload       JSONB,
-  attempts      INT DEFAULT 0,
-  max_attempts  INT DEFAULT 3,
-  created_at    TIMESTAMPTZ DEFAULT now(),
-  started_at    TIMESTAMPTZ,
-  completed_at  TIMESTAMPTZ,
-  error         TEXT
-);
+```typescript
+// wrangler.toml queue configuration
+// [[queues.producers]]
+//   queue = "submission-pipeline"
+//   binding = "SCAN_QUEUE"
+//
+// [[queues.consumers]]
+//   queue = "submission-pipeline"
+//   max_batch_size = 10
+//   max_batch_timeout = 30
+//   max_retries = 3
+//   dead_letter_queue = "submission-dlq"
 
--- Index for efficient job claiming
-CREATE INDEX idx_jobs_pending ON submission_jobs (job_type, created_at)
-  WHERE status = 'pending';
+interface QueueMessage {
+  submissionId: string;
+  jobType: 'tier1-scan' | 'tier2-scan' | 'publish';
+  payload?: Record<string, unknown>;
+}
 ```
 
-### 4.2 Job Claiming (SKIP LOCKED)
+### 4.2 Message Processing
 
-```sql
--- Claim next available job (PostgreSQL advisory lock pattern)
-WITH next_job AS (
-  SELECT id
-  FROM submission_jobs
-  WHERE status = 'pending'
-    AND job_type = $1
-    AND attempts < max_attempts
-  ORDER BY created_at ASC
-  LIMIT 1
-  FOR UPDATE SKIP LOCKED
-)
-UPDATE submission_jobs
-SET status = 'processing',
-    started_at = now(),
-    attempts = attempts + 1
-FROM next_job
-WHERE submission_jobs.id = next_job.id
-RETURNING submission_jobs.*;
+Messages are pushed to the consumer Worker automatically by Cloudflare Queues. No polling required.
+
+```typescript
+export default {
+  async queue(batch: MessageBatch<QueueMessage>, env: Env): Promise<void> {
+    for (const msg of batch.messages) {
+      try {
+        await processSubmissionJob(msg.body, env);
+        msg.ack();
+      } catch (error) {
+        // Retry with exponential backoff (up to 3 retries)
+        msg.retry({ delaySeconds: 30 * (msg.attempts + 1) });
+      }
+    }
+  },
+};
 ```
 
 ### 4.3 Worker Process
 
-Single Node.js process with concurrent job type handling:
+Job routing by message type:
 
 ```typescript
-class SubmissionWorker {
-  private readonly pollInterval = 5000; // 5 seconds
-
-  async start(): Promise<void> {
-    while (true) {
-      await Promise.all([
-        this.processJob('tier1-scan'),
-        this.processJob('tier2-scan'),
-        this.processJob('publish'),
-      ]);
-      await sleep(this.pollInterval);
-    }
+async function processSubmissionJob(message: QueueMessage, env: Env): Promise<void> {
+  switch (message.jobType) {
+    case 'tier1-scan':
+      await runTier1Scan(message.submissionId, env);
+      break;
+    case 'tier2-scan':
+      await runTier2Scan(message.submissionId, env);
+      break;
+    case 'publish':
+      await publishSkill(message.submissionId, env);
+      break;
   }
-
-  private async processJob(jobType: string): Promise<void> {
-    const job = await claimJob(jobType);
-    if (!job) return;
-
-    try {
-      switch (jobType) {
-        case 'tier1-scan':
-          await this.runTier1Scan(job);
-          break;
-        case 'tier2-scan':
-          await this.runTier2Scan(job);
-          break;
-        case 'publish':
-          await this.publishSkill(job);
-          break;
-      }
-      await completeJob(job.id);
-    } catch (error) {
-      await failJob(job.id, error.message);
-    }
   }
 
   private async runTier1Scan(job: Job): Promise<void> {
@@ -296,7 +271,7 @@ class SubmissionWorker {
         actor: 'worker',
         metadata: { score: result.score },
       });
-      await enqueueJob('publish', { submissionId: submission.id });
+      await env.SCAN_QUEUE.send({ submissionId: submission.id, jobType: 'publish' });
     } else if (result.score >= 60) {
       await transitionTo(submission, 'NEEDS_REVIEW', {
         trigger: 'tier2-concerns',
@@ -321,8 +296,8 @@ class SubmissionWorker {
 | Tier 1 scan timeout | Retry up to 3 times with exponential backoff |
 | Tier 2 LLM API error | Retry up to 3 times, then fail with notification |
 | Git clone failure | Retry once, then mark as failed |
-| Worker crash | `SKIP LOCKED` ensures other workers can pick up pending jobs |
-| Job stuck in processing | Stale job reaper runs every 15 minutes, resets jobs stuck > 10 min |
+| Worker crash | Cloudflare Queues re-delivers unacknowledged messages automatically |
+| Job stuck in processing | Cloudflare Queues visibility timeout, then re-delivers |
 
 ---
 
@@ -377,7 +352,7 @@ interface SubmissionStateEvent {
     "toState": "AUTO_APPROVED",
     "trigger": "tier2-pass",
     "actor": "worker",
-    "metadata": { "score": 92, "model": "claude-sonnet-4-5" },
+    "metadata": { "score": 92, "model": "@cf/meta/llama-3.1-70b-instruct" },
     "createdAt": "2026-02-15T18:00:15Z"
   },
   {

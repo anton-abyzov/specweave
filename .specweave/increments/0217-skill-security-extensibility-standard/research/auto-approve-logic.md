@@ -1,7 +1,7 @@
 # Auto-Approve vs Manual-Review Decision Logic
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US10-05, AC-US10-06 (T-034)
 **Dependencies**: T-008 (Three-Tier Certification), T-029 (Submission State Machine)

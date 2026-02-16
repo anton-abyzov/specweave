@@ -1,7 +1,7 @@
 # npx vskill CLI — Design Document
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US8-01, AC-US8-03, AC-US8-04, AC-US8-05, AC-US8-07 (T-015b)
 **Dependencies**: T-006b (Skills.sh Installer Internals), T-008 (Three-Tier Certification)

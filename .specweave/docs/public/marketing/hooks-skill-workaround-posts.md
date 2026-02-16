@@ -48,7 +48,7 @@ In your `UserPromptSubmit` hook, inject context that INSTRUCTS Claude to use a s
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "IMPORTANT: Use the Skill tool to invoke sw:increment-planner for this request."
+    "additionalContext": "IMPORTANT: Use the Skill tool to invoke sw:increment for this request."
   }
 }
 ```

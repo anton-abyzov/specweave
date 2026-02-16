@@ -159,6 +159,9 @@ export function OverviewPage() {
         </Link>
       </div>
 
+      {/* Prompt Health Banner */}
+      <PromptHealthBanner />
+
       {/* Subscription Banner */}
       {isSubscriptionPlan(data.costs) && (
         <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
@@ -293,6 +296,64 @@ export function OverviewPage() {
             </Link>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface PromptHealthData {
+  health: {
+    baseline: number;
+    claudeMdSize: number;
+    memoryMdSize: number;
+    skillBudget: number;
+    warningLevel: string;
+  } | null;
+  alert: {
+    level: string;
+    compactionCount: number;
+    advice: string;
+  } | null;
+}
+
+function PromptHealthBanner() {
+  const { data } = useProjectApi<PromptHealthData>('/api/prompt-health');
+
+  if (!data?.health || data.health.warningLevel === 'normal') return null;
+
+  const { health, alert } = data;
+  const isEmergency = alert?.level === 'emergency';
+  const isCritical = health.warningLevel === 'critical' || isEmergency;
+
+  const borderColor = isCritical ? 'border-rose-500/30' : 'border-amber-500/20';
+  const bgColor = isCritical ? 'bg-rose-500/10' : 'bg-amber-500/10';
+  const textColor = isCritical ? 'text-rose-400' : 'text-amber-400';
+
+  const baselineKb = Math.round(health.baseline / 1000);
+  const pct = Math.min(Math.round((health.baseline / 200000) * 100), 100);
+  const barColor = isCritical ? 'bg-rose-500' : 'bg-amber-500';
+
+  return (
+    <div className={`${bgColor} border ${borderColor} rounded-xl px-4 py-3 space-y-2`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge label={isCritical ? 'Critical' : 'Warning'} variant={isCritical ? 'error' : 'warning'} />
+          <span className={`text-xs ${textColor}`}>
+            Prompt baseline: {baselineKb}KB ({pct}% of context window)
+          </span>
+        </div>
+        <Link to="/errors" className="text-[10px] text-gray-500 hover:text-gray-300">
+          Details
+        </Link>
+      </div>
+      <div className="w-full bg-gray-800 rounded-full h-1.5">
+        <div className={`${barColor} h-1.5 rounded-full`} style={{ width: `${pct}%` }} />
+      </div>
+      <div className="flex gap-4 text-[10px] text-gray-500">
+        <span>CLAUDE.md: {Math.round(health.claudeMdSize / 1000)}KB</span>
+        <span>MEMORY.md: {Math.round(health.memoryMdSize / 1000)}KB</span>
+        <span>Skills: {Math.round(health.skillBudget / 1000)}KB</span>
+        {alert && <span className={textColor}>Compactions: {alert.compactionCount}</span>}
       </div>
     </div>
   );

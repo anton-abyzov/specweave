@@ -1,7 +1,7 @@
 # Trust Labels and Badge System Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Architecture Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US4-03, AC-US4-04 (T-009)
 **Dependencies**: T-008 (Three-Tier Certification)

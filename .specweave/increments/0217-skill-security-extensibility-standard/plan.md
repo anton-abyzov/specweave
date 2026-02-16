@@ -117,7 +117,7 @@ RECEIVED → TIER1_SCANNING → TIER2_SCANNING → AUTO_APPROVED → PUBLISHED
 **Vendor fast-path**: Trusted orgs (AD-5) skip scanning entirely → `AUTO_APPROVED`.
 **Auto-approve threshold**: Tier 1 PASS + Tier 2 PASS (score >= 80) → auto-approved.
 **Escalation trigger**: Tier 2 CONCERNS or PASS with score < 80 → needs admin review.
-**Workers**: PostgreSQL-backed job queue (SKIP LOCKED), no external dependencies (no Redis/RabbitMQ).
+**Workers**: Cloudflare Queues for job distribution (push-based), PostgreSQL for result storage.
 **Audit trail**: Every state transition logged with timestamp, trigger, and actor.
 
 ### AD-10: Semantic Versioning Engine

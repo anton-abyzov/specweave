@@ -612,6 +612,33 @@ export class DashboardServer {
       sendJson(res, { ok: true, data });
     });
 
+    // === Prompt Health ===
+
+    this.router.get('/api/prompt-health', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+
+      const stateDir = path.join(project.root, '.specweave', 'state');
+      let health = null;
+      let alert = null;
+
+      try {
+        const healthPath = path.join(stateDir, 'prompt-health.json');
+        if (fs.existsSync(healthPath)) {
+          health = JSON.parse(fs.readFileSync(healthPath, 'utf-8'));
+        }
+      } catch { /* invalid json */ }
+
+      try {
+        const alertPath = path.join(stateDir, 'prompt-health-alert.json');
+        if (fs.existsSync(alertPath)) {
+          alert = JSON.parse(fs.readFileSync(alertPath, 'utf-8'));
+        }
+      } catch { /* invalid json */ }
+
+      sendJson(res, { ok: true, data: { health, alert } });
+    });
+
     // === Phase 2: Sync Audit ===
 
     this.router.get('/api/sync/audit', async (req, res) => {

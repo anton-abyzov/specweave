@@ -124,7 +124,7 @@ Even with 30K budget, **explicit skill invocation is more reliable** because:
 
 ```typescript
 // For multi-domain requests, ALWAYS invoke explicitly:
-Skill({ skill: "sw:increment-planner" })       // Planning
+Skill({ skill: "sw:increment" })                  // Planning
 Skill({ skill: "sw-frontend:frontend-architect" }) // React patterns
 Skill({ skill: "sw-backend:dotnet-backend" })     // .NET patterns
 Skill({ skill: "sw-payments:stripe-integration" }) // Stripe patterns
