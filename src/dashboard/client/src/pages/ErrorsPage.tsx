@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useSSE } from '../hooks/useSSE.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
@@ -73,12 +74,20 @@ export function ErrorsPage() {
   const offset = page * PAGE_SIZE;
   const typeParam = typeFilter ? `&type=${encodeURIComponent(typeFilter)}` : '';
 
-  const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>('/api/errors/groups');
+  // SSE-triggered refresh counter for real-time error updates
+  const [refreshKey, setRefreshKey] = useState(0);
+  useSSE({
+    onEvent: {
+      'error-detected': () => setRefreshKey((k) => k + 1),
+    },
+  });
+
+  const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>(`/api/errors/groups?_r=${refreshKey}`);
   const { data: paginated, loading: el } = useProjectApi<PaginatedErrors>(
-    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}`,
+    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}&_r=${refreshKey}`,
   );
-  const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>('/api/errors/sessions?limit=50');
-  const { data: timeline, loading: tl } = useProjectApi<ErrorTimelineBucket[]>('/api/errors/timeline?bucket=60');
+  const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>(`/api/errors/sessions?limit=50&_r=${refreshKey}`);
+  const { data: timeline, loading: tl } = useProjectApi<ErrorTimelineBucket[]>(`/api/errors/timeline?bucket=60&_r=${refreshKey}`);
 
   if (gl || el || sl || tl) return <PageLoader />;
 

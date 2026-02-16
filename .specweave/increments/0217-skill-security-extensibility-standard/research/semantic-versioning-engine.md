@@ -1,7 +1,7 @@
 # Semantic Versioning Engine Design
 
 **Status**: DRAFT
-**Authors**: SpecWeave Product Team
+**Author**: anton.abyzov@gmail.com
 **Date**: 2026-02-15
 **Satisfies**: AC-US12-01, AC-US12-02, AC-US12-03, AC-US12-06, AC-US12-07 (T-035)
 **Dependencies**: T-015c (Version-Pinned Verification)

@@ -300,7 +300,7 @@ case "$FILE_PATH" in
         # user stories, ensuring external issues are closed even if AC sync
         # missed them. NOT called on reopened or on every AC change.
         if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]]; then
-          AC_CLOSE_DISPATCHER="${HOOK_DIR}/../handlers/ac-sync-dispatcher.sh"
+          AC_CLOSE_DISPATCHER="${HOOK_DIR}/handlers/ac-sync-dispatcher.sh"
           if [[ -f "$AC_CLOSE_DISPATCHER" ]]; then
             log_debug "EXPLICIT CLOSURE: Triggering provider-agnostic closure for $INC_ID"
             SPECWEAVE_CLOSE_ALL=1 safe_run_background "$AC_CLOSE_DISPATCHER" "ac-close" "$INC_ID"

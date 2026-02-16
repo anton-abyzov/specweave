@@ -120,7 +120,7 @@ your-project/
 │   │   ├── translator/       # Multilingual Support
 │   │   └── code-reviewer.md  # Code Review (standalone file)
 │   ├── skills/               # 17 development skills (installed from plugins)
-│   │   ├── increment-planner/
+│   │   ├── increment/
 │   │   ├── spec-generator/
 │   │   ├── context-loader/
 │   │   ├── tdd-workflow/
@@ -472,7 +472,7 @@ ls -la .claude/skills/
 # Should see 17 skills with SKILL.md files
 
 # Check a specific skill
-cat .claude/skills/increment-planner/SKILL.md
+cat .claude/skills/increment/SKILL.md
 
 # If missing, reinstall
 npx specweave init . --force

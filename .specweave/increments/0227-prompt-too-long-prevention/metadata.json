@@ -1,0 +1,13 @@
+{
+  "id": "0227-prompt-too-long-prevention",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-16T05:42:40.813Z",
+  "lastActivity": "2026-02-16T05:42:40.814Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

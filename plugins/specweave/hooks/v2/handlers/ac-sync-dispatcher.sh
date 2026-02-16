@@ -241,19 +241,26 @@ log "Affected US IDs: $AFFECTED_US_IDS"
 # ============================================================================
 
 # Build inline Node.js script that constructs config and calls sync
-OUTPUT=$(node --input-type=module -e "
+# Pass all values via environment variables to prevent command injection
+OUTPUT=$(SW_SYNC_MODULE="$SYNC_MODULE" \
+  SW_CONFIG_PATH="$CONFIG_PATH" \
+  SW_METADATA_PATH="$METADATA_PATH" \
+  SW_SPEC_PATH="$SPEC_PATH" \
+  SW_INC_ID="$INC_ID" \
+  SW_AFFECTED_US_IDS="$AFFECTED_US_IDS" \
+  SW_CLOSE_ALL="${SPECWEAVE_CLOSE_ALL:-0}" \
+  node --input-type=module -e "
 import { readFile } from 'fs/promises';
-import { syncACProgressToProviders } from '${SYNC_MODULE}';
 
-const configPath = '${CONFIG_PATH}';
-const metadataPath = '${METADATA_PATH}';
-const specPath = '${SPEC_PATH}';
-const incrementId = '${INC_ID}';
-const affectedUSIds = ${AFFECTED_US_IDS};
+const { SW_SYNC_MODULE, SW_CONFIG_PATH, SW_METADATA_PATH,
+        SW_SPEC_PATH, SW_INC_ID, SW_AFFECTED_US_IDS, SW_CLOSE_ALL } = process.env;
+
+const mod = await import(SW_SYNC_MODULE);
+const affectedUSIds = JSON.parse(SW_AFFECTED_US_IDS);
 
 try {
-  const rawConfig = JSON.parse(await readFile(configPath, 'utf-8'));
-  const metadata = JSON.parse(await readFile(metadataPath, 'utf-8'));
+  const rawConfig = JSON.parse(await readFile(SW_CONFIG_PATH, 'utf-8'));
+  const metadata = JSON.parse(await readFile(SW_METADATA_PATH, 'utf-8'));
 
   const config = {
     sync: {
@@ -267,9 +274,15 @@ try {
     externalLinks: metadata?.externalLinks || {},
   };
 
-  const result = await syncACProgressToProviders(
-    incrementId, affectedUSIds, specPath, config,
-  );
+  let result;
+  if (SW_CLOSE_ALL === '1' && mod.closeIncrementIssues) {
+    // Force-close all external issues for completed increment
+    result = await mod.closeIncrementIssues(SW_INC_ID, SW_SPEC_PATH, config);
+  } else {
+    result = await mod.syncACProgressToProviders(
+      SW_INC_ID, affectedUSIds, SW_SPEC_PATH, config,
+    );
+  }
 
   console.log(JSON.stringify(result, null, 2));
 } catch (err) {

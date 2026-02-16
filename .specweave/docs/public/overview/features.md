@@ -156,7 +156,7 @@ Skills automatically detect expertise and route requests:
 \`\`\`
 User: "Create authentication system"
 → specweave-detector activates
-→ Routes to increment-planner
+→ Routes to increment skill
 → Invokes PM, Architect, Tech Lead agents
 → Generates complete spec + architecture + plan
 \`\`\`

@@ -158,21 +158,35 @@ if [[ "$JIRA_ENABLED" == "true" || "$ADO_ENABLED" == "true" ]]; then
     ADO_ORG=$(jq -r '.sync.ado.organization // .issueTracker.organization_ado // ""' "$CONFIG_PATH" 2>/dev/null)
     ADO_PROJECT=$(jq -r '.sync.ado.project // .issueTracker.project // ""' "$CONFIG_PATH" 2>/dev/null)
 
-    OUTPUT=$(node --input-type=module -e "
-import { createExternalIssuesForIncrement } from '${CREATE_MODULE}';
+    OUTPUT=$(SW_CREATE_MODULE="$CREATE_MODULE" \
+      SW_INC_ID="$INC_ID" \
+      SW_SPEC_PATH="$SPEC_PATH" \
+      SW_METADATA_PATH="$METADATA_PATH" \
+      SW_JIRA_ENABLED="$JIRA_ENABLED" \
+      SW_ADO_ENABLED="$ADO_ENABLED" \
+      SW_JIRA_DOMAIN="$JIRA_DOMAIN" \
+      SW_JIRA_PROJECT_KEY="$JIRA_PROJECT_KEY" \
+      SW_ADO_ORG="$ADO_ORG" \
+      SW_ADO_PROJECT="$ADO_PROJECT" \
+      node --input-type=module -e "
+const { SW_CREATE_MODULE, SW_INC_ID, SW_SPEC_PATH, SW_METADATA_PATH,
+        SW_JIRA_ENABLED, SW_ADO_ENABLED, SW_JIRA_DOMAIN,
+        SW_JIRA_PROJECT_KEY, SW_ADO_ORG, SW_ADO_PROJECT } = process.env;
+
+const mod = await import(SW_CREATE_MODULE);
 
 const config = {
   sync: {
-    jira: { enabled: ${JIRA_ENABLED} },
-    ado: { enabled: ${ADO_ENABLED} },
+    jira: { enabled: SW_JIRA_ENABLED === 'true' },
+    ado: { enabled: SW_ADO_ENABLED === 'true' },
   },
-  jira: { domain: '${JIRA_DOMAIN}', projectKey: '${JIRA_PROJECT_KEY}' },
-  ado: { organization: '${ADO_ORG}', project: '${ADO_PROJECT}' },
+  jira: { domain: SW_JIRA_DOMAIN, projectKey: SW_JIRA_PROJECT_KEY },
+  ado: { organization: SW_ADO_ORG, project: SW_ADO_PROJECT },
 };
 
 try {
-  const result = await createExternalIssuesForIncrement(
-    '${INC_ID}', '${SPEC_PATH}', '${METADATA_PATH}', config,
+  const result = await mod.createExternalIssuesForIncrement(
+    SW_INC_ID, SW_SPEC_PATH, SW_METADATA_PATH, config,
   );
   console.log(JSON.stringify(result, null, 2));
 } catch (err) {
