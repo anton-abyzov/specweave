@@ -5,6 +5,7 @@ import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 import { EmptyState } from '../components/ui/EmptyState.js';
 
 interface IncrementSummary {
@@ -28,13 +29,13 @@ interface IncrementsData {
 export function IncrementsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   useSSEEvent('increment-update', () => setRefreshKey((k) => k + 1));
-  const { data, loading, error } = useProjectApi<IncrementsData>(`/api/increments?_r=${refreshKey}`);
+  const { data, loading, error, refetch } = useProjectApi<IncrementsData>(`/api/increments?_r=${refreshKey}`);
   const [statusFilter, setStatusFilter] = useUrlState('status', 'all');
   const [typeFilter, setTypeFilter] = useUrlState('type', 'all');
   const navigate = useNavigate();
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const filteredIncrements = data.increments.filter((inc) => {

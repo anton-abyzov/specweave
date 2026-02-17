@@ -4,6 +4,7 @@ import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useProject } from '../hooks/useProject.js';
 import { PageLoader } from '../components/ui/Spinner.js';
 import { Badge } from '../components/ui/Badge.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface ValidationError {
   path: string;
@@ -22,7 +23,7 @@ export function ConfigPage() {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const toggleSection = (key: string) => {

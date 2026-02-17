@@ -6,6 +6,7 @@ import { KpiCard } from '../components/ui/KpiCard.js';
 import { StatusDonut, buildDonutSegments } from '../components/charts/StatusDonut.js';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 import { useProject } from '../hooks/useProject.js';
 
 interface OverviewData {
@@ -78,7 +79,7 @@ const isSubscriptionPlan = (costs: OverviewData['costs']): boolean =>
   costs.billingContext?.planType === 'subscription';
 
 export function OverviewPage() {
-  const { data, loading, error } = useProjectApi<OverviewData>('/api/overview');
+  const { data, loading, error, refetch } = useProjectApi<OverviewData>('/api/overview');
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const { activeProject } = useProject();
 
@@ -106,7 +107,7 @@ export function OverviewPage() {
   useSSEEvent('activity', handleActivity);
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const donutSegments = buildDonutSegments(data.project.statusBreakdown);

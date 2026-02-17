@@ -313,7 +313,7 @@ export class DashboardServer {
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const config = await project.aggregator.getConfig();
       const billingConfig = (config as any)?.billing;
-      const costData = await project.costAggregator.getTokenSummaries(200, billingConfig);
+      const costData = await project.costAggregator.getTokenSummaries(50, billingConfig);
       const data = await project.aggregator.getOverview(costData);
       // Ensure project name is always set using the resolved project info
       const info = this.getProjectInfo(project.id, project.root);

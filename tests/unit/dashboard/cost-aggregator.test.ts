@@ -195,4 +195,45 @@ describe('CostAggregator - billing context', () => {
       expect(result.billingContext.planType).toBe('api');
     });
   });
+
+  describe('parallel parsing', () => {
+    it('should parse multiple session files and aggregate correctly', async () => {
+      const ts = '2026-02-15T10:00:00Z';
+      for (let i = 0; i < 10; i++) {
+        writeSession(`session-${i}`, [
+          makeAssistantEntry('claude-sonnet-4-5-20250929', { input: 1000, output: 500 }, ts),
+        ]);
+      }
+
+      const result = await aggregator.getTokenSummaries(20);
+      expect(result.sessionCount).toBe(10);
+      expect(result.totalTokens).toBe(15000); // 10 * (1000 + 500)
+    });
+
+    it('should handle concurrent calls via caching', async () => {
+      writeSession('session-0', [
+        makeAssistantEntry('claude-sonnet-4-5-20250929', { input: 1000, output: 500 }, '2026-02-15T10:00:00Z'),
+      ]);
+
+      // Fire two calls concurrently -- second should hit cache
+      const [r1, r2] = await Promise.all([
+        aggregator.getTokenSummaries(10),
+        aggregator.getTokenSummaries(10),
+      ]);
+
+      expect(r1.sessionCount).toBe(1);
+      expect(r2.sessionCount).toBe(1);
+    });
+
+    it('should skip corrupted session files gracefully', async () => {
+      writeSession('good-session', [
+        makeAssistantEntry('claude-sonnet-4-5-20250929', { input: 1000, output: 500 }, '2026-02-15T10:00:00Z'),
+      ]);
+      // Write a corrupted file
+      fs.writeFileSync(path.join(logDir, 'bad-session.jsonl'), 'not valid json\n{broken');
+
+      const result = await aggregator.getTokenSummaries(10);
+      expect(result.sessionCount).toBe(1);
+    });
+  });
 });

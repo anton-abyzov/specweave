@@ -5,6 +5,7 @@ import { useProject } from '../hooks/useProject.js';
 import { Badge } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface Notification {
   id: string;
@@ -31,7 +32,7 @@ export function NotificationsPage() {
   const { data, loading, error, refetch } = useProjectApi<Notification[]>(`/api/notifications?_r=${refreshKey}`);
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
 
   const notifications = data || [];
   const pending = notifications.filter(n => !n.dismissedAt);

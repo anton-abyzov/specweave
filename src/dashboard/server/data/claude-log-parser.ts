@@ -17,6 +17,13 @@ export class ClaudeLogParser {
   /** Cache of parsed sessions keyed by file mtime to avoid re-parsing */
   private sessionCache = new Map<string, { mtime: number; summary: SessionSummary }>();
 
+  /** In-flight deduplication: concurrent calls share the same pending promise */
+  private pendingSummaries: Promise<SessionSummary[]> | null = null;
+  /** Aggregate-level cache to avoid re-parsing on rapid successive calls */
+  private summariesCache: SessionSummary[] | null = null;
+  private summariesCacheTime = 0;
+  private readonly summariesCacheTTL = 30_000; // 30 seconds
+
   constructor(projectRoot: string) {
     const slug = projectRoot.replace(/^\//, '').replace(/\//g, '-');
     this.logDir = path.join(process.env.HOME || '', '.claude/projects', `-${slug}`);
@@ -26,15 +33,45 @@ export class ClaudeLogParser {
 
   /** Get recent session summaries with error counts */
   async getSessionSummaries(limit = 50): Promise<SessionSummary[]> {
+    // Return cached aggregate if fresh
+    if (this.summariesCache && Date.now() - this.summariesCacheTime < this.summariesCacheTTL) {
+      return this.summariesCache.slice(0, limit);
+    }
+
+    // Deduplicate concurrent calls — share the same pending promise
+    if (this.pendingSummaries) {
+      const result = await this.pendingSummaries;
+      return result.slice(0, limit);
+    }
+
+    this.pendingSummaries = this.fetchSummaries(limit);
+    try {
+      const result = await this.pendingSummaries;
+      this.summariesCache = result;
+      this.summariesCacheTime = Date.now();
+      return result;
+    } finally {
+      this.pendingSummaries = null;
+    }
+  }
+
+  /** Internal: parallel-fetch session summaries */
+  private async fetchSummaries(limit: number): Promise<SessionSummary[]> {
     const files = this.getSessionFiles();
     const recent = files.slice(-limit);
     const summaries: SessionSummary[] = [];
 
-    for (const file of recent) {
-      try {
-        const summary = await this.parseSessionFileCached(file);
-        if (summary) summaries.push(summary);
-      } catch { /* skip corrupted files */ }
+    const CONCURRENCY = 15;
+    for (let i = 0; i < recent.length; i += CONCURRENCY) {
+      const batch = recent.slice(i, i + CONCURRENCY);
+      const settled = await Promise.allSettled(
+        batch.map(file => this.parseSessionFileCached(file)),
+      );
+      for (const result of settled) {
+        if (result.status === 'fulfilled' && result.value) {
+          summaries.push(result.value);
+        }
+      }
     }
 
     summaries.sort((a, b) => b.startTime.localeCompare(a.startTime));
