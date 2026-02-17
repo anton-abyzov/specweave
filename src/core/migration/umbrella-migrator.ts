@@ -26,6 +26,42 @@ import type {
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 
 // ---------------------------------------------------------------------------
+// Collision Classification
+// ---------------------------------------------------------------------------
+
+export type UmbrellaCollisionType = 'previous-migration' | 'partial-migration' | 'unrelated';
+
+/**
+ * Classifies an existing umbrella directory to determine how to handle the collision.
+ *
+ * @param umbrellaPath - Path to the existing umbrella directory
+ * @param projectRoot - Path to the original project (for checking backup manifest)
+ * @returns Classification or null if directory doesn't exist
+ */
+export async function classifyExistingUmbrella(
+  umbrellaPath: string,
+  projectRoot: string,
+): Promise<UmbrellaCollisionType | null> {
+  if (!fs.existsSync(umbrellaPath)) {
+    return null;
+  }
+
+  // Check for .specweave/ inside umbrella (previous successful migration)
+  if (fs.existsSync(path.join(umbrellaPath, '.specweave'))) {
+    return 'previous-migration';
+  }
+
+  // Check for backup manifest at projectRoot (partial/failed migration)
+  const manifestPath = path.join(projectRoot, BACKUP_DIR_NAME, MANIFEST_FILE);
+  if (fs.existsSync(manifestPath)) {
+    return 'partial-migration';
+  }
+
+  // Directory exists but no SpecWeave markers
+  return 'unrelated';
+}
+
+// ---------------------------------------------------------------------------
 // Detection (T-002)
 // ---------------------------------------------------------------------------
 
@@ -300,9 +336,12 @@ export async function executeMigration(
     };
   }
 
+  // Log target switches from projectRoot to umbrellaPath after .specweave/ moves
+  let logRoot = plan.candidate.projectRoot;
+
   // Log start
   await appendMigrationLog(
-    plan.candidate.projectRoot,
+    logRoot,
     `Migration started: ${plan.umbrellaName} at ${plan.umbrellaPath}`,
   );
 
@@ -310,22 +349,28 @@ export async function executeMigration(
     try {
       await executeStep(step, plan, logger);
       completed++;
+
+      // After .specweave/ move, switch log target to umbrella
+      if (step.type === 'move' && step.description.includes('.specweave')) {
+        logRoot = plan.umbrellaPath;
+      }
+
       await appendMigrationLog(
-        plan.candidate.projectRoot,
+        logRoot,
         `  Step ${completed}/${plan.steps.length}: ${step.description} — OK`,
       );
     } catch (err) {
       const msg = `Step "${step.description}" failed: ${err instanceof Error ? err.message : String(err)}`;
       errors.push(msg);
       logger.error(msg);
-      await appendMigrationLog(plan.candidate.projectRoot, `  FAILED: ${msg}`);
+      await appendMigrationLog(logRoot, `  FAILED: ${msg}`);
       break; // Stop on first failure
     }
   }
 
   const success = errors.length === 0;
   await appendMigrationLog(
-    plan.candidate.projectRoot,
+    logRoot,
     `Migration ${success ? 'completed successfully' : 'failed'}`,
   );
 
@@ -369,6 +414,13 @@ async function executeStep(
 
     case 'move':
       if (!step.source) throw new Error('Move step requires source');
+      // Safety: refuse to overwrite existing destination
+      if (fs.existsSync(step.destination)) {
+        throw new Error(
+          `Destination already exists: ${step.destination}. ` +
+          'Use collision handling or remove manually.',
+        );
+      }
       // Use rename for same-filesystem moves, fall back to copy+delete
       try {
         await fs.promises.rename(step.source, step.destination);
