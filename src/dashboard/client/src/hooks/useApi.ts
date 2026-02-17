@@ -18,10 +18,19 @@ export function useApi<T>(url: string): UseApiResult<T> {
   const refetch = useCallback(() => setTrigger((t) => t + 1), []);
 
   useEffect(() => {
+    if (!url) {
+      setLoading(false);
+      setData(null);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
 
-    fetch(url)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    fetch(url, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -34,13 +43,20 @@ export function useApi<T>(url: string): UseApiResult<T> {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(String(err.message || err));
+        if (!cancelled) {
+          if (err.name === 'AbortError') {
+            setError('Request timed out (15s)');
+          } else {
+            setError(String(err.message || err));
+          }
+        }
       })
       .finally(() => {
+        clearTimeout(timeout);
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
   }, [url, trigger]);
 
   return { data, loading, error, refetch, fetchedAt };

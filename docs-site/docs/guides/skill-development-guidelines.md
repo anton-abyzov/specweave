@@ -95,3 +95,11 @@ When validating forms:
 4. **Document limitations** — what CAN'T be customized?
 
 **Good skill design = Users extend your logic without ever touching your source.**
+
+---
+
+## See Also
+
+- **[Extensible Skills Standard](/docs/guides/extensible-skills)** — Full architecture of the Open/Closed Principle for skills
+- **[Verified Skills Standard](/docs/skills/verified-skills)** — Security certification requirements for publishable skills
+- **[Secure Skill Factory Standard](/docs/guides/secure-skill-factory-standard)** — Mandatory sections and forbidden patterns for SKILL.md files

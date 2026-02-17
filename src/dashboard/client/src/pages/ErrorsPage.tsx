@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
@@ -83,12 +83,23 @@ export function ErrorsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   useSSEEvent('error-detected', () => setRefreshKey((k) => k + 1));
 
-  const { data: groups, loading: gl } = useProjectApi<ErrorGroup[]>(`/api/errors/groups?_r=${refreshKey}`);
-  const { data: paginated, loading: el } = useProjectApi<PaginatedErrors>(
-    `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}${searchParam}&_r=${refreshKey}`,
+  // Lazy-load: only fetch data for the active tab (+ errors for KPI summary)
+  const { data: groups, loading: gl, error: ge } = useProjectApi<ErrorGroup[]>(
+    tab === 'groups' ? `/api/errors/groups?_r=${refreshKey}` : '',
   );
-  const { data: sessions, loading: sl } = useProjectApi<SessionSummary[]>(`/api/errors/sessions?limit=50&_r=${refreshKey}`);
-  const { data: timeline, loading: tl } = useProjectApi<ErrorTimelineBucket[]>(`/api/errors/timeline?bucket=60&_r=${refreshKey}`);
+  const { data: paginated, loading: el, error: ee } = useProjectApi<PaginatedErrors>(
+    tab === 'errors' || tab === 'groups'
+      ? `/api/errors/recent?limit=${PAGE_SIZE}&offset=${offset}${typeParam}${searchParam}&_r=${refreshKey}`
+      : '',
+  );
+  const { data: sessions, loading: sl, error: se } = useProjectApi<SessionSummary[]>(
+    tab === 'sessions' || selectedSession
+      ? `/api/errors/sessions?limit=50&_r=${refreshKey}`
+      : '',
+  );
+  const { data: timeline, loading: tl, error: te } = useProjectApi<ErrorTimelineBucket[]>(
+    tab === 'timeline' ? `/api/errors/timeline?bucket=60&_r=${refreshKey}` : '',
+  );
 
   const handleSearch = useCallback(() => {
     setSearchQuery(searchInput.trim());
@@ -96,7 +107,22 @@ export function ErrorsPage() {
     if (searchInput.trim()) setTab('errors');
   }, [searchInput, setSearchQuery, setTab]);
 
-  if (gl || el || sl || tl) return <PageLoader />;
+  // Auto-clear stale session param when session not found in loaded data
+  useEffect(() => {
+    if (selectedSession && sessions && !sessions.find(s => s.sessionId === selectedSession)) {
+      setSelectedSession('');
+    }
+  }, [selectedSession, sessions, setSelectedSession]);
+
+  // Per-tab loading: only block on the current tab's data
+  const currentTabLoading =
+    (tab === 'groups' && gl) ||
+    (tab === 'errors' && el) ||
+    (tab === 'timeline' && tl) ||
+    (tab === 'sessions' && sl);
+
+  // Collect errors from fetches
+  const fetchError = ge || ee || se || te;
 
   const totalErrors = paginated?.total || 0;
   const errors = paginated?.errors || [];
@@ -210,6 +236,19 @@ export function ErrorsPage() {
         )}
       </div>
 
+      {/* Fetch error banner */}
+      {fetchError && (
+        <div className="bg-rose-900/30 border border-rose-700 rounded-lg px-4 py-3 flex items-center justify-between">
+          <div className="text-sm text-rose-300">{fetchError}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs text-rose-400 hover:text-rose-200 px-2 py-1 border border-rose-700 rounded transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Session Detail Overlay */}
       {selectedSession && sessionDetail && (
         <SessionDetailPanel
@@ -218,23 +257,26 @@ export function ErrorsPage() {
         />
       )}
 
+      {/* Per-tab loading */}
+      {currentTabLoading && !selectedSession && <PageLoader />}
+
       {/* Tab Content */}
-      {!selectedSession && tab === 'groups' && (
+      {!selectedSession && !currentTabLoading && tab === 'groups' && (
         <ErrorGroupTable groups={groups || []} onGroupClick={handleGroupClick} />
       )}
 
-      {!selectedSession && tab === 'errors' && (
+      {!selectedSession && !currentTabLoading && tab === 'errors' && (
         <ErrorList
           errors={errors}
           total={totalErrors}
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
-          onSessionClick={id => { setSelectedSession(id); }}
+          onSessionClick={id => { setSelectedSession(id); setTab('sessions'); }}
         />
       )}
 
-      {!selectedSession && tab === 'timeline' && (
+      {!selectedSession && !currentTabLoading && tab === 'timeline' && (
         <ErrorTimelineDensity
           buckets={timeline || []}
           errors={errors}
@@ -242,11 +284,11 @@ export function ErrorsPage() {
         />
       )}
 
-      {!selectedSession && tab === 'sessions' && (
+      {!selectedSession && !currentTabLoading && tab === 'sessions' && (
         <SessionList sessions={filteredSessions} onSelect={id => setSelectedSession(id)} />
       )}
 
-      {totalErrors === 0 && !selectedSession && (
+      {!currentTabLoading && !fetchError && totalErrors === 0 && !selectedSession && (
         <EmptyState title="No errors detected" description="Claude Code session logs are clean" />
       )}
     </div>
@@ -370,9 +412,14 @@ function ErrorList({
                 <div className="flex-1 min-w-0">
                   <div
                     className={`text-xs text-gray-300 ${expanded ? 'whitespace-pre-wrap break-words' : 'truncate'} ${isLong ? 'cursor-pointer' : ''}`}
-                    onClick={() => toggleRow(i)}
-                    title={!expanded ? 'Click to expand details' : 'Click to collapse'}
+                    onClick={() => isLong && toggleRow(i)}
+                    title={isLong ? (expanded ? 'Click to collapse' : 'Click to expand details') : undefined}
                   >
+                    {isLong && (
+                      <span className="text-indigo-400 mr-1 text-[10px] inline-block w-3">
+                        {expanded ? '\u25BC' : '\u25B6'}
+                      </span>
+                    )}
                     {expanded ? err.message : err.message.slice(0, 200)}
                     {!expanded && isLong && (
                       <span className="text-indigo-400 ml-1">...more</span>
@@ -747,9 +794,14 @@ function SessionDetailPanel({ session, onClose }: { session: SessionSummary; onC
 
                 <div
                   className={`text-xs text-gray-400 ${expanded ? 'whitespace-pre-wrap break-words' : ''} ${isLong ? 'cursor-pointer' : ''}`}
-                  onClick={() => toggleError(i)}
-                  title={!expanded ? 'Click to expand' : 'Click to collapse'}
+                  onClick={() => isLong && toggleError(i)}
+                  title={isLong ? (expanded ? 'Click to collapse' : 'Click to expand') : undefined}
                 >
+                  {isLong && (
+                    <span className="text-indigo-400 mr-1 text-[10px] inline-block w-3">
+                      {expanded ? '\u25BC' : '\u25B6'}
+                    </span>
+                  )}
                   {expanded ? err.message : err.message.slice(0, 300)}
                   {!expanded && isLong && (
                     <span className="text-indigo-400 ml-1">...more</span>

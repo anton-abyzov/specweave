@@ -66,35 +66,33 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Project Selector */}
-      {projects.length > 1 ? (
+      {/* Project Selector — always show dropdown when projects exist or URL has project param */}
+      {(projects.length > 0 || projectParam) && (
         <div className="px-3 py-3 border-b border-gray-800">
           <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
           <select
-            value={activeProject?.id || ''}
-            onChange={(e) => setActiveProject(e.target.value)}
+            value={activeProject?.id || projectParam || ''}
+            onChange={(e) => {
+              if (e.target.value === '__add__') {
+                window.location.href = buildTo('/config');
+              } else {
+                setActiveProject(e.target.value);
+              }
+            }}
             className="w-full bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded-lg px-2 py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
+            {projectParam && !projects.find(p => p.id === projectParam) && (
+              <option value={projectParam}>
+                {decodeURIComponent(projectParam).split(/[-/]/).pop() || projectParam} (not registered)
+              </option>
+            )}
+            <option value="__add__">+ Add project...</option>
           </select>
         </div>
-      ) : projects.length === 1 ? (
-        <div className="px-3 py-3 border-b border-gray-800">
-          <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
-          <div className="text-gray-300 text-xs px-2 py-1.5 truncate" title={projects[0].path}>
-            {projects[0].name}
-          </div>
-        </div>
-      ) : projectParam ? (
-        <div className="px-3 py-3 border-b border-gray-800">
-          <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Project</label>
-          <div className="text-gray-500 text-xs px-2 py-1.5 truncate">
-            {decodeURIComponent(projectParam).split(/[-/]/).pop() || 'Loading...'}
-          </div>
-        </div>
-      ) : null}
+      )}
 
       <nav className="flex-1 overflow-y-auto py-3 px-2">
         {NAV_ITEMS.map((item) => (

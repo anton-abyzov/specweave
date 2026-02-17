@@ -13,6 +13,10 @@ According to Snyk's 2025 AI Agent Security Report, 36.82% of publicly listed ski
 
 This guide provides a systematic framework for discovering skills across every major source, evaluating their quality using a 6-dimension scoring rubric, detecting discrepancies between providers, and recognizing red flags before installation.
 
+:::tip Trusted Registry
+[verifiedskill.com](https://verifiedskill.com) provides a trusted source for discovering pre-verified skills with 3-tier certification. See the [Verified Skills Standard](/docs/skills/verified-skills) for how skills earn trust badges.
+:::
+
 ---
 
 ## Discovery Sources

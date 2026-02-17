@@ -16,6 +16,10 @@ keywords: [security, skills, RFC, standard, certification, trust labels, SKILL.m
 
 ---
 
+:::info Quick Overview
+For a concise overview of the Verified Skills Standard, see the [Verified Skills Standard](/docs/skills/verified-skills) page. This document is the full RFC specification.
+:::
+
 ## Abstract
 
 This document defines the **Secure Skill Factory Standard** for AI agent skills authored as SKILL.md files. The standard addresses the systemic security failures exposed by Snyk's ToxicSkills study, which found a 36.82% flaw rate across 3,984 publicly available skills, including 76 confirmed malicious payloads.
@@ -306,7 +310,7 @@ Certification is graduated. Higher tiers provide stronger trust guarantees at hi
 | Tier | Name | Method | Cost | Latency | Badge |
 |------|------|--------|------|---------|-------|
 | 0 | Unscanned | None | Free | 0 | None |
-| 1 | Scanned | 41 regex patterns + structural validation | Free | <500ms | `scanned` |
+| 1 | Scanned | 41 regex patterns + structural validation | Free | &lt;500ms | `scanned` |
 | 2 | Verified | Tier 1 + LLM intent analysis (Claude Sonnet) | ~$0.03/skill | 5-15s | `verified` |
 | 3 | Certified | Tier 1 + Tier 2 + human review + sandbox execution | $50-200/skill | 1-5 business days | `certified` |
 
