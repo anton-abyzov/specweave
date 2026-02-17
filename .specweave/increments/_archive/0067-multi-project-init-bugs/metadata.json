@@ -1,9 +1,0 @@
-{
-  "id": "0067-multi-project-init-bugs",
-  "title": "Fix Multi-Project Init Critical Bugs",
-  "type": "bug",
-  "status": "completed",
-  "priority": "critical",
-  "created_at": "2025-11-26T13:00:00Z",
-  "updated_at": "2025-11-26T13:00:00Z"
-}
