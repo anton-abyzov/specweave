@@ -13,7 +13,7 @@
  */
 
 import chalk from 'chalk';
-import { confirm, input } from '@inquirer/prompts';
+import { confirm, input, select } from '@inquirer/prompts';
 import {
   detectSingleRepoProject,
   generateMigrationPlan,
@@ -21,7 +21,9 @@ import {
   guardUncommittedChanges,
   rollbackMigration,
   addRepoToUmbrella,
+  classifyExistingUmbrella,
 } from '../../core/migration/umbrella-migrator.js';
+import * as fs from 'fs';
 import type { MigrationOptions, MigrationPlan } from '../../core/migration/types.js';
 
 /**
@@ -89,6 +91,30 @@ export async function migrateToUmbrellaCommand(
     return;
   }
 
+  // Step 5a: Collision check
+  const collision = await classifyExistingUmbrella(plan.umbrellaPath, projectRoot);
+  if (collision && !options.yes) {
+    const handled = await handleCollision(collision, plan, projectRoot);
+    if (handled === 'abort') {
+      console.log(chalk.dim('  Aborted.'));
+      return;
+    }
+    if (handled === 'rename') {
+      // Recursive call with new name — user already picked it
+      return;
+    }
+    // handled === 'wipe' — continue with execution
+  } else if (collision && options.yes) {
+    // --yes mode: wipe previous migrations, abort on unrelated
+    if (collision === 'unrelated') {
+      console.log(chalk.red(`\n  Target directory exists and is unrelated: ${plan.umbrellaPath}`));
+      console.log(chalk.red('  Cannot proceed with --yes. Use a different name.\n'));
+      process.exit(1);
+    }
+    console.log(chalk.yellow(`  Removing existing ${plan.umbrellaName}/ (${collision})...`));
+    await fs.promises.rm(plan.umbrellaPath, { recursive: true });
+  }
+
   // Guard: uncommitted changes
   try {
     await guardUncommittedChanges(projectRoot);
@@ -127,6 +153,85 @@ export async function migrateToUmbrellaCommand(
     console.log(chalk.dim('\n  Run --rollback to restore from backup.'));
     process.exit(1);
   }
+}
+
+/**
+ * Handle collision with existing umbrella directory.
+ * Returns 'wipe' to continue, 'rename' if user picked a new name, or 'abort'.
+ */
+async function handleCollision(
+  collision: 'previous-migration' | 'partial-migration' | 'unrelated',
+  plan: MigrationPlan,
+  projectRoot: string,
+): Promise<'wipe' | 'rename' | 'abort'> {
+  console.log(chalk.yellow(`\n  Target '${plan.umbrellaName}/' already exists.`));
+  console.log(chalk.dim(`  Detected: ${collision}\n`));
+
+  if (collision === 'previous-migration') {
+    const action = await select({
+      message: 'What would you like to do?',
+      choices: [
+        { value: 'wipe', name: 'Wipe and redo (remove existing, migrate fresh)' },
+        { value: 'rename', name: 'Choose a different name' },
+        { value: 'abort', name: 'Abort' },
+      ],
+    });
+
+    if (action === 'wipe') {
+      console.log(chalk.yellow(`  Removing existing ${plan.umbrellaName}/...`));
+      await fs.promises.rm(plan.umbrellaPath, { recursive: true });
+      return 'wipe';
+    }
+    if (action === 'rename') {
+      const newName = await input({ message: 'New umbrella directory name:' });
+      if (!newName) return 'abort';
+      console.log(chalk.dim(`  Re-run with: specweave migrate-to-umbrella --execute --umbrella-name ${newName}`));
+      return 'rename';
+    }
+    return 'abort';
+  }
+
+  if (collision === 'partial-migration') {
+    const action = await select({
+      message: 'A partial migration was detected. What would you like to do?',
+      choices: [
+        { value: 'rollback', name: 'Rollback first, then retry' },
+        { value: 'abort', name: 'Abort' },
+      ],
+    });
+
+    if (action === 'rollback') {
+      console.log(chalk.blue('  Rolling back previous migration first...\n'));
+      const rollResult = await rollbackMigration(projectRoot);
+      if (!rollResult.success) {
+        console.log(chalk.red('  Rollback failed:'));
+        for (const err of rollResult.errors) {
+          console.log(chalk.red(`   ${err}`));
+        }
+        return 'abort';
+      }
+      console.log(chalk.green('  Rollback complete. Proceeding with fresh migration.\n'));
+      return 'wipe';
+    }
+    return 'abort';
+  }
+
+  // unrelated
+  const action = await select({
+    message: 'Directory exists but is not a SpecWeave umbrella. What would you like to do?',
+    choices: [
+      { value: 'rename', name: 'Choose a different name' },
+      { value: 'abort', name: 'Abort' },
+    ],
+  });
+
+  if (action === 'rename') {
+    const newName = await input({ message: 'New umbrella directory name:' });
+    if (!newName) return 'abort';
+    console.log(chalk.dim(`  Re-run with: specweave migrate-to-umbrella --execute --umbrella-name ${newName}`));
+    return 'rename';
+  }
+  return 'abort';
 }
 
 /**
