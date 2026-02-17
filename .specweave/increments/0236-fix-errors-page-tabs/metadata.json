@@ -1,0 +1,13 @@
+{
+  "id": "0236-fix-errors-page-tabs",
+  "status": "active",
+  "type": "bug",
+  "priority": "P0",
+  "created": "2026-02-17T07:05:53.379Z",
+  "lastActivity": "2026-02-17T07:05:53.380Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
