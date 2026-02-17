@@ -1,0 +1,13 @@
+{
+  "id": "0234-fix-umbrella-migration-collision",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-17T06:10:07.854Z",
+  "lastActivity": "2026-02-17T06:10:07.855Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
