@@ -1,0 +1,13 @@
+{
+  "id": "0230-marketplace-scanner-dashboard",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-16T09:02:49.188Z",
+  "lastActivity": "2026-02-16T09:02:49.189Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

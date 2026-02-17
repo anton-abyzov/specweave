@@ -519,18 +519,23 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
-  // Extensible Skills sidebar
+  // Skills sidebar — two standards: Extensible Skills + Verified Skills
   skillsSidebar: [
     {
       type: 'doc',
-      id: 'guides/extensible-skills',
-      label: 'The Standard',
+      id: 'skills/index',
+      label: 'Skills Overview',
     },
     {
       type: 'category',
-      label: 'Skill System',
+      label: 'Extensible Skills Standard',
       collapsed: false,
       items: [
+        {
+          type: 'doc',
+          id: 'guides/extensible-skills',
+          label: 'The Standard (Open/Closed)',
+        },
         {
           type: 'doc',
           id: 'guides/claude-skills-deep-dive',
@@ -539,19 +544,73 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'guides/self-improving-skills',
-          label: 'Self-Improving Skills',
+          label: 'Self-Improving Skills (Reflect)',
+        },
+        {
+          type: 'doc',
+          id: 'guides/skill-development-guidelines',
+          label: 'Development Guidelines',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Verified Skills Standard',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'skills/verified-skills',
+          label: 'The Standard (3-Tier Trust)',
+        },
+        {
+          type: 'doc',
+          id: 'guides/secure-skill-factory-standard',
+          label: 'Skill Factory RFC (Full Spec)',
+        },
+        {
+          type: 'doc',
+          id: 'guides/skills-ecosystem-security',
+          label: 'Security Landscape',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Ecosystem',
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/skill-discovery-evaluation',
+          label: 'Discovery & Evaluation',
+        },
+        {
+          type: 'doc',
+          id: 'guides/agent-skills-extensibility-analysis',
+          label: 'Agent Compatibility (39 Agents)',
+        },
+        {
+          type: 'doc',
+          id: 'guides/skill-contradiction-resolution',
+          label: 'Contradiction Resolution',
         },
       ],
     },
     {
       type: 'category',
       label: 'Reference',
-      collapsed: false,
+      collapsed: true,
       items: [
         {
           type: 'doc',
           id: 'reference/skills',
           label: 'All Skills (100+)',
+        },
+        {
+          type: 'link',
+          label: 'verifiedskill.com',
+          href: 'https://verifiedskill.com',
         },
       ],
     },
