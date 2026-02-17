@@ -84,18 +84,25 @@ export class CostAggregator {
     const sessions: SessionTokenSummary[] = [];
     const modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }> = {};
 
-    for (const file of recent) {
-      try {
-        const summary = await this.extractTokensFromSession(file);
-        if (summary && summary.inputTokens + summary.outputTokens > 0) {
-          sessions.push(summary);
-          const model = summary.model || 'unknown';
-          if (!modelBreakdown[model]) modelBreakdown[model] = { cost: 0, tokens: 0, sessions: 0 };
-          modelBreakdown[model].cost += summary.cost;
-          modelBreakdown[model].tokens += summary.inputTokens + summary.outputTokens;
-          modelBreakdown[model].sessions++;
+    const CONCURRENCY = 15;
+    for (let i = 0; i < recent.length; i += CONCURRENCY) {
+      const batch = recent.slice(i, i + CONCURRENCY);
+      const settled = await Promise.allSettled(
+        batch.map(file => this.extractTokensFromSession(file)),
+      );
+      for (const result of settled) {
+        if (result.status === 'fulfilled' && result.value) {
+          const summary = result.value;
+          if (summary.inputTokens + summary.outputTokens > 0) {
+            sessions.push(summary);
+            const model = summary.model || 'unknown';
+            if (!modelBreakdown[model]) modelBreakdown[model] = { cost: 0, tokens: 0, sessions: 0 };
+            modelBreakdown[model].cost += summary.cost;
+            modelBreakdown[model].tokens += summary.inputTokens + summary.outputTokens;
+            modelBreakdown[model].sessions++;
+          }
         }
-      } catch { /* skip corrupted files */ }
+      }
     }
 
     sessions.sort((a, b) => b.timestamp.localeCompare(a.timestamp));

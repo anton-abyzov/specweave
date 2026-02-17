@@ -2,6 +2,7 @@ import { useProjectApi } from '../hooks/useProjectApi.js';
 import { Badge } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface RepoInfo {
   name: string;
@@ -35,10 +36,10 @@ function sshToHttps(remote?: string): string | null {
 }
 
 export function ReposPage() {
-  const { data, loading, error } = useProjectApi<RepoInfo[]>('/api/repos');
+  const { data, loading, error, refetch } = useProjectApi<RepoInfo[]>('/api/repos');
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
 
   const repos = data || [];
   const orgs = [...new Set(repos.map(r => r.org))];

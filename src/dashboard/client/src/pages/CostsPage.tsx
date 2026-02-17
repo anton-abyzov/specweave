@@ -5,6 +5,7 @@ import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
 import { BarChart } from '../components/charts/BarChart.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface CostsData {
   totalCost: number;
@@ -37,10 +38,10 @@ export function CostsPage() {
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   useSSEEvent('cost-update', () => setRefreshKey((k) => k + 1));
-  const { data, loading, error } = useProjectApi<CostsData>(`/api/costs/summary?_r=${refreshKey}`);
+  const { data, loading, error, refetch } = useProjectApi<CostsData>(`/api/costs/summary?_r=${refreshKey}`);
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const sessions = data.sessions || [];
