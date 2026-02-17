@@ -1,0 +1,13 @@
+{
+  "id": "0235-reconcile-vskill-repos",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-17T06:54:17.438Z",
+  "lastActivity": "2026-02-17T06:54:17.439Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
