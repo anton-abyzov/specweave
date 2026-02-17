@@ -1,0 +1,13 @@
+{
+  "id": "0233-github-oauth-registration",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-02-17T02:45:14.201Z",
+  "lastActivity": "2026-02-17T02:45:14.202Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

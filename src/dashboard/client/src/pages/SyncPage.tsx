@@ -6,6 +6,7 @@ import { useCommand } from '../hooks/useCommand.js';
 import { Badge } from '../components/ui/Badge.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface PlatformInfo {
   connectionStatus?: string;
@@ -88,7 +89,7 @@ export function SyncPage() {
   };
 
   if (loading || al || asl) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const platforms = Object.entries(data.platforms).filter(

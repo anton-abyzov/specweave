@@ -225,6 +225,8 @@ Plugins load automatically. Manual: `claude plugin install sw-frontend@specweave
 2. **Docs = truth**: Specs guide implementation
 3. **Simplicity First**: Minimal code, minimal impact
 4. **No Laziness**: Root causes, senior standards
+5. **DRY**: Don't Repeat Yourself — flag and eliminate repetitions aggressively
+6. **Plan Review**: Review the plan thoroughly before making any code changes
 <!-- /SECTION -->
 
 <!-- SECTION:linking -->

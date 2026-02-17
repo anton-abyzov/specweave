@@ -4,6 +4,7 @@ import { useSSEEvent } from '../contexts/SSEContext.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
 import { Badge } from '../components/ui/Badge.js';
 import { PageLoader } from '../components/ui/Spinner.js';
+import { ErrorAlert } from '../components/ui/ErrorAlert.js';
 
 interface AnalyticsData {
   totalEvents: number;
@@ -36,7 +37,7 @@ export function AnalyticsPage() {
   const { data: skills, loading: sl, refetch: refetchSkills } = useProjectApi<SkillUsage[]>(`/api/analytics/skills?_r=${refreshKey}`);
 
   if (loading || sl) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const commandCount = data.topCommands?.reduce((s, c) => s + c.count, 0) || 0;
