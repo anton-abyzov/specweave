@@ -1,0 +1,10 @@
+{
+  "id": "0231-docs-skills-standards-reorganization",
+  "title": "Skills Documentation Reorganization — Two Standards Hub",
+  "description": "Restructure Skills section into two-pillar hub: Extensible Skills Standard + Verified Skills Standard (V-Skills), with cross-references to verifiedskill.com",
+  "status": "active",
+  "type": "change-request",
+  "priority": "P2",
+  "created": "2026-02-16",
+  "project": "specweave"
+}
