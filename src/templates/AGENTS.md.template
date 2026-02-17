@@ -288,6 +288,18 @@ git diff  # Review what actually changed
 - Names should reveal intent
 - BUT: Don't over-abstract for hypothetical futures
 - Pragmatic > Perfect
+
+### DRY (Don't Repeat Yourself)
+- Flag repetitions aggressively — duplicated logic, config, or patterns
+- Extract shared code into reusable functions/modules
+- If you see the same block twice, refactor before adding a third
+- Applies to code, config, tests, and documentation alike
+
+### Plan Review Before Code
+- Review the full plan thoroughly before writing any code
+- Verify plan covers all ACs and edge cases before implementation
+- If the plan has gaps, fix the plan first — don't discover them mid-coding
+- Re-read the plan between tasks to stay aligned
 <!-- /SECTION -->
 
 ---

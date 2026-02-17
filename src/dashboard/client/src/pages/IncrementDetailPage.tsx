@@ -5,6 +5,7 @@ import { useSSEEvent } from '../contexts/SSEContext';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge';
 import { KpiCard } from '../components/ui/KpiCard';
 import { PageLoader } from '../components/ui/Spinner';
+import { ErrorAlert } from '../components/ui/ErrorAlert';
 
 interface Task {
   id: string;
@@ -42,11 +43,11 @@ export function IncrementDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [refreshKey, setRefreshKey] = useState(0);
   useSSEEvent('increment-update', () => setRefreshKey((k) => k + 1));
-  const { data, loading, error } = useProjectApi<IncrementDetail>(`/api/increments/${id || '_none'}?_r=${refreshKey}`);
+  const { data, loading, error, refetch } = useProjectApi<IncrementDetail>(`/api/increments/${id || '_none'}?_r=${refreshKey}`);
 
   if (!id) return <div className="p-6 text-gray-500 text-sm">No increment ID specified</div>;
   if (loading) return <PageLoader />;
-  if (error) return <div className="p-6 text-rose-400 text-sm">Error: {error}</div>;
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return <div className="p-6 text-gray-500 text-sm">Increment not found</div>;
 
   const taskPct = data.taskSummary.total > 0
