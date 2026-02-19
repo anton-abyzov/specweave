@@ -3,7 +3,6 @@
  *
  * Tests:
  * - Instruction file backup (.bak) creation before overwrite
- * - process.exit() removal from refresh-marketplace (source verification)
  * - Inline warning display (not hidden behind --verbose)
  * - Exit code set on errors
  */
@@ -15,7 +14,6 @@ import { tmpdir } from 'os';
 
 describe('Update Robustness - Source Code Verification', () => {
   const updateTsPath = path.join(process.cwd(), 'src/cli/commands/update.ts');
-  const refreshMarketplaceTsPath = path.join(process.cwd(), 'src/cli/commands/refresh-marketplace.ts');
   const updateInstructionsTsPath = path.join(process.cwd(), 'src/cli/commands/update-instructions.ts');
 
   describe('npm timeout protection', () => {
@@ -58,37 +56,6 @@ describe('Update Robustness - Source Code Verification', () => {
     });
   });
 
-  describe('process.exit() removal from refresh-marketplace', () => {
-    it('should NOT call process.exit() in refreshMarketplaceCommand', () => {
-      const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
-
-      // Find the refreshMarketplaceCommand function
-      const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
-      const funcBody = content.substring(funcStart);
-
-      // Count process.exit calls - should be zero in the main function
-      // (runMinimalMode may still have them as it's a separate flow)
-      const mainFuncEnd = funcBody.indexOf('\nexport ');
-      const mainFunc = mainFuncEnd > 0 ? funcBody.substring(0, mainFuncEnd) : funcBody;
-
-      // All process.exit(1) should have been replaced with throw
-      const exitCalls = (mainFunc.match(/process\.exit\(1\)/g) || []).length;
-      expect(exitCalls).toBe(0);
-    });
-
-    it('should delegate to refresh-plugins command', () => {
-      const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
-
-      // Find the refreshMarketplaceCommand function
-      const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
-      const funcBody = content.substring(funcStart);
-
-      // Should delegate to the refresh-plugins command
-      expect(funcBody).toContain('refreshPluginsCommand');
-      expect(funcBody).toContain('refresh-plugins.js');
-    });
-  });
-
   describe('instruction file backup', () => {
     it('should create .bak before overwriting instruction files', () => {
       const content = fs.readFileSync(updateInstructionsTsPath, 'utf-8');
@@ -125,42 +92,11 @@ describe('Update Robustness - Source Code Verification', () => {
     });
   });
 
-  describe('no duplicate auto-state cleanup', () => {
-    it('should NOT have auto mode state cleanup in refresh-marketplace', () => {
-      const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
-
-      // Find the refreshMarketplaceCommand function
-      const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
-      const funcBody = content.substring(funcStart);
-
-      // Should not contain the old cleanup block
-      expect(funcBody).not.toContain('Cleaning up auto mode state files');
-      expect(funcBody).not.toContain('auto-needs-increment.json');
-    });
-
+  describe('auto-state cleanup in update', () => {
     it('should still have auto-state cleanup in update.ts', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       expect(content).toContain('cleanupStaleAutoState');
       expect(content).toContain('auto-mode.json');
-    });
-  });
-
-  describe('step numbering consistency', () => {
-    it('should be a thin deprecation wrapper without complex logic', () => {
-      const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
-
-      // Find the refreshMarketplaceCommand function
-      const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
-      const funcBody = content.substring(funcStart);
-
-      // Should contain deprecation notice and reference to refresh-plugins
-      expect(funcBody).toContain('DEPRECATED');
-      expect(funcBody).toContain('refresh-plugins');
-
-      // Should NOT contain complex multi-step logic
-      expect(funcBody).not.toContain('Step 1:');
-      expect(funcBody).not.toContain('Step 2:');
-      expect(funcBody).not.toContain('throw new Error(');
     });
   });
 });
