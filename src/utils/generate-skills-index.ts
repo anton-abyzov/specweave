@@ -178,8 +178,7 @@ function categorizeSkill(name: string, description: string): SkillCategory {
     nameLower.includes('python') ||
     nameLower.includes('dotnet') ||
     nameLower.includes('nextjs') ||
-    nameLower.includes('figma-implementer') ||
-    nameLower.includes('figma-to-code')
+    nameLower.includes('figma')
   ) {
     return SkillCategory.DEVELOPMENT;
   }
@@ -212,7 +211,6 @@ function categorizeSkill(name: string, description: string): SkillCategory {
   if (
     nameLower.includes('docusaurus') ||
     nameLower.includes('docs') ||
-    nameLower.includes('figma-designer') ||
     descLower.includes('documentation') ||
     descLower.includes('generating documentation')
   ) {

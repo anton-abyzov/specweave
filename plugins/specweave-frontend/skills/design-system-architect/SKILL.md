@@ -164,12 +164,7 @@ const theme = {
 - Chromatic for visual regression testing
 - Percy for screenshot testing
 
-**Design-to-Code Integration**:
-- Figma design tokens export
-- Design token generators
-- Component template generators
-- Automated icon imports
-- Style guide generators
+**Design-to-Code Integration**: For Figma token extraction, design system rules, and component generation, use the **figma** skill (`/sw-frontend:figma`).
 
 ### 9. Versioning and Distribution
 

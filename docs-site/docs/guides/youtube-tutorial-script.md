@@ -124,6 +124,8 @@ draft: true
 >
 > You could automate your YouTube publishing pipeline, your content calendar, your weekly knowledge reviews. If you can describe acceptance criteria for it, SpecWeave can coordinate AI to deliver it.
 >
+> And here's one you might not expect — you can actually earn money with this. Platforms like Guidepoint pay for expert consultations and surveys based on your professional experience. I just earned $65 from a Generative AI survey — completely legitimate, based on my real 18 years of experience. No cheating, no faking anything. The AI just saved me time. It already has my knowledge in CLAUDE.md files, my project history, my architectural decisions — so when I need to fill out detailed survey responses about my expertise, it does the heavy lifting. It enters everything accurately because it already knows what I know. That's the kind of practical value people overlook — the AI doesn't replace your expertise, it makes monetizing it effortless.
+>
 > I have a full guide on this at spec-weave.com — link in the description. Check out the Life Automation guide for concrete examples.
 >
 > But for this video, let's focus on the core developer workflow. That's where the foundation is."

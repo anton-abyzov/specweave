@@ -88,7 +88,6 @@ EXTRA_PLUGINS=(
     "sw-diagrams"
     "sw-ui"
     "sw-docs"
-    "sw-figma"
     "sw-n8n"
     "sw-cost"
 )

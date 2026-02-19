@@ -175,8 +175,7 @@ describe('auto-install', () => {
     it('should detect Figma keyword', () => {
       const result = analyzeUserIntent('Convert Figma designs to code');
 
-      expect(result.skills).toContain('figma-implementer');
-      expect(result.skills).toContain('figma-designer');
+      expect(result.skills).toContain('figma');
     });
 
     it('should detect testing keywords', () => {

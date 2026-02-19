@@ -162,7 +162,6 @@ export const SPECWEAVE_PLUGINS = [
   // Additional plugins (in marketplace but less commonly used)
   'sw-kafka-streams', // Kafka Streams specific
   'sw-n8n',           // n8n workflow automation
-  'sw-figma',         // Figma design integration
   'sw-cost',           // Cloud cost optimization
   'sw-docs',          // Extended documentation
   'sw-diagrams',      // Extended diagram support (beyond core)
