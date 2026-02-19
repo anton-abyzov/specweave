@@ -110,7 +110,7 @@ Many AI frameworks install tools, MCP servers, or dependencies silently in the b
 **Nothing installs without your approval:**
 - When SpecWeave recommends MCP servers (like Context7 or Playwright), it shows you the exact install command and asks for consent — it does NOT run the command behind your back
 - When a skill needs an LSP server or CLI tool, it presents the installation options and lets YOU decide whether to proceed
-- Plugin marketplace refresh (`specweave refresh-marketplace`) only copies markdown files — no binaries, no compiled code, no network calls
+- Plugin refresh (`specweave refresh-plugins`) only copies markdown files — no binaries, no compiled code, no network calls
 
 **Why this matters for security:**
 - Prompt injection often comes through skills and plugins. A skill that can silently install software can also silently install malware

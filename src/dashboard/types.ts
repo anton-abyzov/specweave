@@ -12,7 +12,10 @@ export type SSEEventType =
   | 'activity'
   | 'command-output'
   | 'command-complete'
-  | 'job-progress';
+  | 'job-progress'
+  | 'marketplace-scan'
+  | 'submission-update'
+  | 'verification-complete';
 
 export interface SSEMessage {
   type: SSEEventType;

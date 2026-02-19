@@ -68,7 +68,7 @@ Good: npm run build → node script.js → Success
    ```
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run
-6. **Marketplace refresh**: Use `specweave refresh-marketplace` CLI (not `scripts/refresh-marketplace.sh`)
+6. **Plugin refresh**: Use `specweave refresh-plugins` CLI (not `scripts/refresh-marketplace.sh`)
 7. **Numbered folder collisions**: Before creating `docs/NN-*` folders, CHECK existing prefixes
 8. **Multi-repo**: ALL repos MUST be at `repositories/{org}/{repo-name}/` — NEVER directly under `repositories/`
 <!-- SW:END:rules -->
@@ -174,7 +174,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 | Issue | Fix |
 |-------|-----|
 | Skills missing | Restart Claude Code |
-| Plugins outdated | `specweave refresh-marketplace` |
+| Plugins outdated | `specweave refresh-plugins` |
 | Out of sync | `/sw:sync-progress` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
 <!-- SW:END:troubleshooting -->
@@ -182,7 +182,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 <!-- SW:SECTION:lazyloading version="1.0.272" -->
 ## Plugin Auto-Loading
 
-Plugins load automatically. Manual: `claude plugin install sw-frontend@specweave`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
+Plugins load automatically. Manual: `vskill add specweave --plugin sw-frontend`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
 <!-- SW:END:lazyloading -->
 
 <!-- SW:SECTION:principles version="1.0.272" -->

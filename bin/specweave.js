@@ -236,6 +236,19 @@ program
 //     await incrementCommand(action, name, options);
 //   });
 
+// Uninstall command - Remove SpecWeave from a project
+program
+  .command('uninstall')
+  .description('Remove SpecWeave from the current project')
+  .option('--global', 'Also clean global agent directories and plugin cache')
+  .option('--keep-data', 'Archive .specweave/ instead of deleting')
+  .option('--dry-run', 'Show what would be removed without deleting')
+  .option('-f, --force', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const { uninstallCommand } = await import('../dist/src/cli/commands/uninstall.js');
+    await uninstallCommand(process.cwd(), options);
+  });
+
 // Install command - Install agents/skills
 program
   .command('install [component-name]')

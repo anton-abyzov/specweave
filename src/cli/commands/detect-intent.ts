@@ -388,7 +388,7 @@ export async function detectIntentCommand(
   // The --install flag is deprecated but kept for backward compatibility
   if (options.install && result.plugins.length > 0) {
     result.installed = false;
-    result.installMessage = 'Plugin auto-install removed in v1.0.210. Use: claude plugin install <name>@specweave';
+    result.installMessage = 'Plugin auto-install removed in v1.0.210. Use: specweave migrate-to-vskill or vskill install <name>@specweave';
 
     logInfo('detect-intent', 'Plugin install requested but disabled', {
       plugins: result.plugins,

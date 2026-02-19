@@ -9,6 +9,7 @@
   },
   "scripts": {
     "preinstall": "node scripts/check-node-version.js || exit 0",
+    "preuninstall": "node scripts/preuninstall.cjs",
     "version": "node scripts/build/auto-changelog.js && git add CHANGELOG.md",
     "postversion": "echo '✅ Version bumped with CHANGELOG entry'",
     "clean": "rm -rf dist/",
@@ -80,6 +81,7 @@
     "dist",
     "bin",
     "scripts/check-node-version.js",
+    "scripts/preuninstall.cjs",
     ".claude-plugin",
     "plugins",
     "src/templates",
