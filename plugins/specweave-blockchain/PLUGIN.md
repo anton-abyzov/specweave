@@ -17,7 +17,7 @@ Blockchain and Web3 development expertise covering smart contracts, DeFi, NFTs, 
 ## Installation
 
 ```bash
-claude plugin install sw-blockchain@specweave
+vskill add specweave --plugin sw-blockchain
 ```
 
 ## Requirements

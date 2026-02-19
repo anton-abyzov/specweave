@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.235 - Project-Scope Initialization Guard)
+# SpecWeave UserPromptSubmit Hook (v1.0.272 - vskill Plugin Installation)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.272: VSKILL PLUGIN INSTALL - sw-* plugins now installed via vskill instead of
+#   `claude plugin install`. Includes security scanning (tier1 PASS/CONCERNS/FAIL) and
+#   vskill.lock fast-path for already-installed plugins. Non-specweave plugins (LSP, etc.)
+#   still use `claude plugin install`.
 # - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
 #   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
 #   analysis. Key fix: "find references" now gets semantic refs, not text matches!
@@ -261,11 +265,22 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
     if [[ -n "$POLLUTED_PLUGINS" ]]; then
       MIGRATED=""
       for plugin_key in $POLLUTED_PLUGINS; do
-        # Uninstall from user scope, reinstall at project scope
+        # Uninstall from user scope
         if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
-          if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
-            [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
-            MIGRATED="${MIGRATED}${plugin_key}"
+          # v1.0.272: sw-* plugins reinstall via vskill, LSP plugins via claude CLI
+          if [[ "$plugin_key" == sw-*@specweave ]]; then
+            # Extract plugin name from "sw-name@specweave" format
+            _sw_name="${plugin_key%%@*}"
+            if install_plugin_via_vskill "$_sw_name"; then
+              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
+              MIGRATED="${MIGRATED}${plugin_key}"
+            fi
+          else
+            # LSP and other plugins: reinstall via claude CLI at project scope
+            if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
+              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
+              MIGRATED="${MIGRATED}${plugin_key}"
+            fi
           fi
         fi
       done
@@ -408,6 +423,76 @@ output_approve_with_context() {
 # v1.0.260: truncate_and_escape_prompt() removed — prompt embedding in SKILL FIRST
 # was eliminated to save ~800 chars of context budget per turn. The skill reads
 # the user's prompt from conversation context (it's already there).
+
+# Helper: Check if sw-* plugin is in vskill.lock (fast-path skip) (v1.0.272)
+# vskill.lock is the SOURCE OF TRUTH for vskill-installed plugins.
+# Args: $1=plugin name (e.g., "sw-frontend")
+# Returns: 0 if in lockfile, 1 if not
+check_plugin_in_vskill_lock() {
+  local plugin="$1"
+  local lockfile="vskill.lock"
+
+  # Check project-local lockfile first
+  [[ ! -f "$lockfile" ]] && return 1
+
+  # Must have jq for reliable JSON parsing
+  if ! command -v jq >/dev/null 2>&1; then
+    # Fallback: grep for plugin name in lockfile
+    grep -q "\"${plugin}\"" "$lockfile" 2>/dev/null && return 0
+    return 1
+  fi
+
+  # Check if plugin exists in lockfile skills
+  local has_skill
+  has_skill=$(jq -r --arg key "$plugin" '.skills[$key] // null' "$lockfile" 2>/dev/null)
+
+  if [[ "$has_skill" != "null" ]] && [[ -n "$has_skill" ]]; then
+    return 0  # Already installed via vskill
+  else
+    return 1  # Not in lockfile
+  fi
+}
+
+# Helper: Install sw-* plugin via vskill (v1.0.272)
+# Uses npx vskill add with --plugin and --plugin-dir flags.
+# Args: $1=plugin name (e.g., "sw-frontend")
+# Returns: 0 if installed successfully, 1 if failed
+# Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
+install_plugin_via_vskill() {
+  local plugin="$1"
+  local plugin_dir="${HOME}/.claude/plugins/marketplaces/specweave"
+
+  # Verify marketplace directory exists
+  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$plugin_dir/.claude-plugin/marketplace.json" ]]; then
+    VSKILL_INSTALL_OUTPUT="marketplace directory not found at $plugin_dir"
+    return 1
+  fi
+
+  VSKILL_INSTALL_OUTPUT=""
+  if command -v npx >/dev/null 2>&1; then
+    if command -v timeout >/dev/null 2>&1; then
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    else
+      VSKILL_INSTALL_OUTPUT=$(npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    fi
+  else
+    # Fallback: try node with direct path
+    local vskill_js="${HOME}/.claude/plugins/marketplaces/specweave/node_modules/.bin/vskill"
+    if [[ -f "$vskill_js" ]]; then
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    else
+      VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
+      return 1
+    fi
+  fi
+
+  # Check if install succeeded
+  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
+    return 0
+  else
+    return 1
+  fi
+}
 
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
 # This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
@@ -1090,7 +1175,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
                   PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`claude plugin install <plugin>@specweave\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill add ~/.claude/plugins/marketplaces/specweave --plugin <plugin> --plugin-dir ~/.claude/plugins/marketplaces/specweave --force\`\\n"
                   AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
                   [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
@@ -1115,66 +1200,73 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                     [[ -z "$plugin" ]] && continue
 
                     # v1.0.159: Determine marketplace based on plugin name
-                    # sw-* plugins → @specweave, others → @claude-plugins-official
+                    # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
                     # v1.0.240 (0198): context7/playwright removed from auto-install
+                    # v1.0.272 (0232): sw-* plugins now installed via vskill instead of claude plugin install
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
-                      MARKETPLACE="specweave"
-                      PLUGIN_SCOPE="$SPECWEAVE_PLUGIN_SCOPE"
-                    else
-                      MARKETPLACE="claude-plugins-official"
-                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
-                    fi
-
-                    # v1.0.175: Check if plugin is ALREADY installed (SOURCE OF TRUTH)
-                    # Primary: Check installed_plugins.json (reliable, fast, no timing issues)
-                    # Fallback: Check `claude plugin list` if jq not available
-                    FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
-                    ALREADY_INSTALLED=false
-
-                    # Try JSON registry first (most reliable)
-                    if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
-                      ALREADY_INSTALLED=true
-                    else
-                      # Fallback to CLI check (if jq not available or registry file missing)
-                      # Give it a longer timeout (10s) to reduce timing issues
-                      CURRENT_PLUGINS=""
-                      if command -v timeout >/dev/null 2>&1; then
-                        CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                      # ---- SW-* PLUGINS: Install via vskill (v1.0.272) ----
+                      # Fast-path: check vskill.lock first (no CLI invocation needed)
+                      if check_plugin_in_vskill_lock "$plugin"; then
+                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                      elif check_plugin_installed_from_json "$plugin" "specweave"; then
+                        # Fallback: check installed_plugins.json (legacy installations)
+                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       else
-                        CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                      fi
-
-                      if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
-                        ALREADY_INSTALLED=true
-                      fi
-                    fi
-
-                    if [[ "$ALREADY_INSTALLED" == "true" ]]; then
-                      # Plugin already installed - no need to call install, just track it
-                      [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                      PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                    else
-                      # Plugin not installed - install it with appropriate scope
-                      # v1.0.198: Apply scope based on plugin type
-                      # Use longer timeout (10s) to ensure installation completes
-                      if command -v timeout >/dev/null 2>&1; then
-                        OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                      else
-                        OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                      fi
-
-                      # Only mark as installed if we see "success" or "installed" in output
-                      if echo "$OUT" | grep -qiE "(success|installed)"; then
-                        # Double-check: verify it actually got installed
-                        # Re-check the registry to confirm (guard against false positives)
-                        sleep 0.5  # Brief delay for registry to update
-                        if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                        # Not installed - install via vskill add
+                        if install_plugin_via_vskill "$plugin"; then
                           [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
                           PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+
+                          # Display scan result if available
+                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
+                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
+                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
+                          fi
                         else
-                          # Install claimed success but plugin not in registry - treat as already installed
-                          [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                          PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                          echo "[$(date -Iseconds)] vskill | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
+                        fi
+                      fi
+                    else
+                      # ---- NON-SW PLUGINS: Install via claude CLI (unchanged) ----
+                      MARKETPLACE="claude-plugins-official"
+                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
+                      FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
+                      ALREADY_INSTALLED=false
+
+                      if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                        ALREADY_INSTALLED=true
+                      else
+                        CURRENT_PLUGINS=""
+                        if command -v timeout >/dev/null 2>&1; then
+                          CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                        else
+                          CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                        fi
+                        if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
+                          ALREADY_INSTALLED=true
+                        fi
+                      fi
+
+                      if [[ "$ALREADY_INSTALLED" == "true" ]]; then
+                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                      else
+                        if command -v timeout >/dev/null 2>&1; then
+                          OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
+                        else
+                          OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
+                        fi
+                        if echo "$OUT" | grep -qiE "(success|installed)"; then
+                          sleep 0.5
+                          if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                            [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                            PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                          else
+                            [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                            PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                          fi
                         fi
                       fi
                     fi

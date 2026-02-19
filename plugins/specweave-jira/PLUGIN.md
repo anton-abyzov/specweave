@@ -19,7 +19,7 @@ JIRA integration plugin for bidirectional synchronization between SpecWeave incr
 ## Installation
 
 ```bash
-claude plugin install sw-jira@specweave
+vskill add specweave --plugin sw-jira
 ```
 
 ## Requirements

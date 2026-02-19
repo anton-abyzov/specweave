@@ -15,6 +15,7 @@ import { PluginsPage } from './pages/PluginsPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { ReposPage } from './pages/ReposPage';
+import { MarketplacePage } from './pages/MarketplacePage';
 import { IncrementDetailPage } from './pages/IncrementDetailPage';
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/repos" element={<ReposPage />} />
+              <Route path="/marketplace" element={<MarketplacePage />} />
               <Route path="*" element={
                 <div className="p-6 text-center">
                   <h2 className="text-lg font-semibold text-gray-200 mb-2">Page Not Found</h2>

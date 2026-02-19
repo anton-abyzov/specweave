@@ -3,6 +3,10 @@
  *
  * Enables installed plugins in .claude/settings.json
  * This is required after plugin installation for them to be active.
+ *
+ * Migration note: This module will be replaced by vskill settings module
+ * (vskill/src/settings/settings.ts) once vskill is a direct dependency.
+ * The vskill enablePlugin/disablePlugin API is a drop-in replacement.
  */
 
 import * as fs from '../../../utils/fs-native.js';
@@ -12,8 +16,8 @@ import * as os from 'os';
 /**
  * Enable installed SpecWeave plugins in Claude Code settings
  *
- * After installing plugins via `claude plugin install`, they must be
- * explicitly enabled in ~/.claude/settings.json for them to be active.
+ * After installing plugins via `vskill install` (or legacy `claude plugin install`),
+ * they must be explicitly enabled in ~/.claude/settings.json for them to be active.
  *
  * @param pluginNames - Array of plugin names to enable (e.g., ['sw', 'sw-github'])
  * @param marketplace - Marketplace name (default: 'specweave')

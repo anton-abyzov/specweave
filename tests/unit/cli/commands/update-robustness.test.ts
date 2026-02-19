@@ -76,18 +76,16 @@ describe('Update Robustness - Source Code Verification', () => {
       expect(exitCalls).toBe(0);
     });
 
-    it('should throw errors instead of exiting', () => {
+    it('should delegate to refresh-plugins command', () => {
       const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
 
       // Find the refreshMarketplaceCommand function
       const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
       const funcBody = content.substring(funcStart);
 
-      // Should have throw statements for error cases
-      expect(funcBody).toContain('throw new Error(');
-      expect(funcBody).toContain('Could not find marketplace install location');
-      expect(funcBody).toContain('Failed to read marketplace plugins');
-      expect(funcBody).toContain('Failed to add marketplace');
+      // Should delegate to the refresh-plugins command
+      expect(funcBody).toContain('refreshPluginsCommand');
+      expect(funcBody).toContain('refresh-plugins.js');
     });
   });
 
@@ -148,22 +146,21 @@ describe('Update Robustness - Source Code Verification', () => {
   });
 
   describe('step numbering consistency', () => {
-    it('should have sequential step numbers in refresh-marketplace', () => {
+    it('should be a thin deprecation wrapper without complex logic', () => {
       const content = fs.readFileSync(refreshMarketplaceTsPath, 'utf-8');
 
       // Find the refreshMarketplaceCommand function
       const funcStart = content.indexOf('export async function refreshMarketplaceCommand');
       const funcBody = content.substring(funcStart);
 
-      // Steps should go 1, 2, 3a-3d, 3.5, 4, 5 (no gap)
-      expect(funcBody).toContain('Step 1:');
-      expect(funcBody).toContain('Step 2:');
-      expect(funcBody).toContain('Step 3');
-      expect(funcBody).toContain('Step 4:');
-      expect(funcBody).toContain('Step 5:');
+      // Should contain deprecation notice and reference to refresh-plugins
+      expect(funcBody).toContain('DEPRECATED');
+      expect(funcBody).toContain('refresh-plugins');
 
-      // Should NOT have old Step 6 (renumbered to 5)
-      expect(funcBody).not.toContain('Step 6:');
+      // Should NOT contain complex multi-step logic
+      expect(funcBody).not.toContain('Step 1:');
+      expect(funcBody).not.toContain('Step 2:');
+      expect(funcBody).not.toContain('throw new Error(');
     });
   });
 });
