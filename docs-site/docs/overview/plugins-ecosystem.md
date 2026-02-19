@@ -168,16 +168,6 @@ Enterprise Azure DevOps sync with Work Items.
 
 ---
 
-#### **sw-figma** - Figma Design Integration
-Connect designs to implementation.
-
-**Skills:**
-- **figma-integration**: Extract design tokens, components, screens
-- Converts Figma → React components
-- Auto-generates prop types from Figma properties
-
----
-
 ### 💻 Tech Stack Plugins
 
 #### **sw-frontend** - Frontend Development
@@ -578,7 +568,6 @@ Tracks AI costs, suggests optimizations.
 | **sw-payments** | Payments | Stripe, PayPal, PCI compliance |
 | **sw-testing** | Testing & automation | Playwright, E2E testing |
 | **sw-diagrams** | Diagram generation | Mermaid, C4 Model |
-| **sw-figma** | Design integration | Figma → Components |
 | **sw-cost** | Cost tracking | AI cost optimization |
 | **sw-docs** | Documentation | Guides, API docs, Docusaurus preview |
 | **sw-confluent** | Kafka/Confluent | Streaming, Schema Registry |

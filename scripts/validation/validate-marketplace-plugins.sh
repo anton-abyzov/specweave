@@ -149,7 +149,6 @@ map_plugin_to_dir() {
         sw-payments) echo "specweave-payments" ;;
         sw-frontend) echo "specweave-frontend" ;;
         sw-testing) echo "specweave-testing" ;;
-        sw-figma) echo "specweave-figma" ;;
         sw-tooling) echo "specweave-tooling" ;;
         sw-diagrams) echo "specweave-diagrams" ;;
         sw-ui) echo "specweave-ui" ;;

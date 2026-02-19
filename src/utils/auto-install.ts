@@ -54,7 +54,7 @@ export const COMPONENT_MAPPING: Record<string, { skills: string[], agents: strin
   'playwright': { skills: ['e2e-playwright'], agents: ['qa-engineer'] },
 
   // Design detection
-  'figma': { skills: ['figma-implementer', 'figma-designer'], agents: [] },
+  'figma': { skills: ['figma'], agents: [] },
   'design system': { skills: ['design-system-architect'], agents: [] },
 
   // Integration detection

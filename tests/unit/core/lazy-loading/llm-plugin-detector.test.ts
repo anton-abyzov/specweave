@@ -91,7 +91,6 @@ describe('SPECWEAVE_PLUGINS constant', () => {
   it('should include additional marketplace plugins', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-kafka-streams');
     expect(SPECWEAVE_PLUGINS).toContain('sw-n8n');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-figma');
     expect(SPECWEAVE_PLUGINS).toContain('sw-cost');
     expect(SPECWEAVE_PLUGINS).toContain('sw-docs');
     expect(SPECWEAVE_PLUGINS).toContain('sw-diagrams');
