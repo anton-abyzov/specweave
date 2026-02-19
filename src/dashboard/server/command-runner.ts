@@ -5,7 +5,7 @@ import type { CommandExecution } from '../types.js';
 /** Whitelisted commands that can be executed from the dashboard */
 const ALLOWED_COMMANDS: Record<string, { cmd: string; args: string[] }> = {
   'sync-push': { cmd: 'specweave', args: ['sync-progress'] },
-  'refresh-marketplace': { cmd: 'specweave', args: ['refresh-marketplace'] },
+  'refresh-plugins': { cmd: 'specweave', args: ['refresh-plugins'] },
   'living-docs': { cmd: 'specweave', args: ['living-docs'] },
   'lsp-status': { cmd: 'specweave', args: ['lsp', 'status'] },
   'analytics': { cmd: 'specweave', args: ['analytics'] },

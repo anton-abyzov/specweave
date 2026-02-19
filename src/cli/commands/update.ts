@@ -30,7 +30,7 @@ import * as path from 'path';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { updateInstructionsCommand } from './update-instructions.js';
-import { refreshMarketplaceCommand } from './refresh-marketplace.js';
+import { refreshPluginsCommand } from './refresh-plugins.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { pruneSkillMemories, listSkillMemoryFiles } from '../../core/reflection/skill-memories.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
@@ -334,9 +334,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     spinner.stop();
 
     try {
-      await refreshMarketplaceCommand({
+      await refreshPluginsCommand({
         all: options.all,
-        minimal: options.minimal,
         force: options.force,
         verbose: options.verbose,
       });

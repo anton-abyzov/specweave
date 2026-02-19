@@ -1,7 +1,7 @@
 /**
  * Refresh SpecWeave Plugins via vskill
  *
- * New vskill-backed plugin refresh command that replaces refresh-marketplace.
+ * Refresh SpecWeave Plugins via vskill CLI.
  * Uses vskill CLI (shell-out) for plugin installation, scanning, and lockfile management.
  *
  * Modes:
@@ -190,19 +190,18 @@ function computePluginHash(pluginDir: string): string {
 function installPluginViaVskill(
   pluginName: string,
   pluginDirBase: string,
-  options: RefreshPluginsOptions,
-): { success: boolean; sha: string } {
+  _options: RefreshPluginsOptions,
+): { success: boolean; sha: string; error?: string } {
   // Shell out to vskill add with --plugin and --pluginDir flags
   const args = [
     'add',
     'specweave',         // source identifier
     '--plugin', pluginName,
     '--pluginDir', pluginDirBase,
+    // Always --force: these are first-party plugins from specweave's own repo.
+    // The security scanner is meant for untrusted third-party plugins.
+    '--force',
   ];
-
-  if (options.force) {
-    args.push('--force');
-  }
 
   // Try to find vskill CLI
   const vskillPaths = [
@@ -236,7 +235,8 @@ function installPluginViaVskill(
 
   const sha = computePluginHash(pluginSourceDir);
 
-  return { success: result?.success ?? false, sha };
+  const error = result?.success ? undefined : (result?.stderr || result?.stdout || 'Unknown error').trim();
+  return { success: result?.success ?? false, sha, error };
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +325,14 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     } else {
       failed++;
       console.log(chalk.red(`  x ${plugin.name} failed`));
+      if (result.error) {
+        // Show last meaningful line of error output
+        const lines = result.error.split('\n').filter(l => l.trim());
+        const lastLines = lines.slice(-3);
+        for (const line of lastLines) {
+          console.log(chalk.gray(`    ${line}`));
+        }
+      }
     }
   }
 

@@ -24,7 +24,7 @@ import * as os from 'os';
 
 const {
   mockUpdateInstructionsCommand,
-  mockRefreshMarketplaceCommand,
+  mockRefreshPluginsCommand,
   mockGetPackageVersion,
   mockPruneSkillMemories,
   mockListSkillMemoryFiles,
@@ -32,7 +32,7 @@ const {
   mockOraInstance,
 } = vi.hoisted(() => ({
   mockUpdateInstructionsCommand: vi.fn().mockResolvedValue(undefined),
-  mockRefreshMarketplaceCommand: vi.fn().mockResolvedValue(undefined),
+  mockRefreshPluginsCommand: vi.fn().mockResolvedValue(undefined),
   mockGetPackageVersion: vi.fn().mockReturnValue('1.0.100'),
   mockPruneSkillMemories: vi.fn().mockReturnValue({
     prunedCount: 0,
@@ -59,8 +59,8 @@ vi.mock('../../../../src/cli/commands/update-instructions.js', () => ({
   updateInstructionsCommand: mockUpdateInstructionsCommand,
 }));
 
-vi.mock('../../../../src/cli/commands/refresh-marketplace.js', () => ({
-  refreshMarketplaceCommand: mockRefreshMarketplaceCommand,
+vi.mock('../../../../src/cli/commands/refresh-plugins.js', () => ({
+  refreshPluginsCommand: mockRefreshPluginsCommand,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/instruction-file-merger.js', () => ({
@@ -179,7 +179,7 @@ describe('update command', () => {
     vi.clearAllMocks();
     mockGetPackageVersion.mockReturnValue('1.0.100');
     mockUpdateInstructionsCommand.mockResolvedValue(undefined);
-    mockRefreshMarketplaceCommand.mockResolvedValue(undefined);
+    mockRefreshPluginsCommand.mockResolvedValue(undefined);
     mockListSkillMemoryFiles.mockReturnValue([]);
     mockPruneSkillMemories.mockReturnValue({
       prunedCount: 0,
@@ -274,7 +274,7 @@ describe('update command', () => {
 
       await updateCommand({ noSelf: true });
 
-      expect(mockRefreshMarketplaceCommand).toHaveBeenCalledWith({
+      expect(mockRefreshPluginsCommand).toHaveBeenCalledWith({
         all: undefined,
         minimal: undefined,
         force: undefined,
@@ -287,31 +287,29 @@ describe('update command', () => {
 
       await updateCommand({ noSelf: true, noPlugins: true });
 
-      expect(mockRefreshMarketplaceCommand).not.toHaveBeenCalled();
+      expect(mockRefreshPluginsCommand).not.toHaveBeenCalled();
     });
 
-    it('should pass all/minimal/force/verbose to refreshMarketplaceCommand', async () => {
+    it('should pass all/force/verbose to refreshPluginsCommand', async () => {
       setupSpecWeaveProject();
 
       await updateCommand({
         noSelf: true,
         all: true,
-        minimal: true,
         force: true,
         verbose: true,
       });
 
-      expect(mockRefreshMarketplaceCommand).toHaveBeenCalledWith({
+      expect(mockRefreshPluginsCommand).toHaveBeenCalledWith({
         all: true,
-        minimal: true,
         force: true,
         verbose: true,
       });
     });
 
-    it('should handle refreshMarketplaceCommand failure gracefully', async () => {
+    it('should handle refreshPluginsCommand failure gracefully', async () => {
       setupSpecWeaveProject();
-      mockRefreshMarketplaceCommand.mockRejectedValue(
+      mockRefreshPluginsCommand.mockRejectedValue(
         new Error('refresh failed')
       );
 
@@ -352,14 +350,14 @@ describe('update command', () => {
 
         await updateCommand({ noSelf: true });
 
-        expect(mockRefreshMarketplaceCommand).toHaveBeenCalled();
+        expect(mockRefreshPluginsCommand).toHaveBeenCalled();
       });
 
       it('should return early if noPlugins and not SpecWeave project', async () => {
         await updateCommand({ noSelf: true, noPlugins: true });
 
         expect(mockUpdateInstructionsCommand).not.toHaveBeenCalled();
-        expect(mockRefreshMarketplaceCommand).not.toHaveBeenCalled();
+        expect(mockRefreshPluginsCommand).not.toHaveBeenCalled();
       });
 
       it('should skip instructions update for non-SpecWeave projects', async () => {

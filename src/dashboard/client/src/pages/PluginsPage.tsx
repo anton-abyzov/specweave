@@ -92,11 +92,11 @@ export function PluginsPage() {
             Check LSP
           </button>
           <button
-            onClick={() => execute('refresh-marketplace')}
+            onClick={() => execute('refresh-plugins')}
             disabled={running}
             className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs rounded-lg transition-colors"
           >
-            {running ? 'Running...' : 'Refresh Marketplace'}
+            {running ? 'Running...' : 'Refresh Plugins'}
           </button>
         </div>
       </div>

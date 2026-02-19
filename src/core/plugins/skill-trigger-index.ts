@@ -219,7 +219,7 @@ export async function testPromptMatchingCLI(
 
   const index = await manager.loadIndex();
   if (!index) {
-    console.error('❌ No skill triggers index found. Run refresh-marketplace.sh first.');
+    console.error('❌ No skill triggers index found. Run specweave refresh-plugins first.');
     process.exit(1);
   }
 

@@ -143,7 +143,7 @@ export class PluginsChecker implements HealthChecker {
           name: 'SpecWeave marketplace',
           status: 'warn',
           message: 'installed but empty',
-          fixSuggestion: 'Run: specweave refresh-marketplace',
+          fixSuggestion: 'Run: specweave refresh-plugins',
         };
       }
 
@@ -178,7 +178,7 @@ export class PluginsChecker implements HealthChecker {
         name: 'Core plugin (sw)',
         status: 'warn',
         message: 'not installed',
-        fixSuggestion: 'Run: specweave refresh-marketplace',
+        fixSuggestion: 'Run: specweave refresh-plugins',
       };
     }
 
@@ -194,7 +194,7 @@ export class PluginsChecker implements HealthChecker {
         name: 'Core plugin (sw)',
         status: 'fail',
         message: 'incomplete installation',
-        fixSuggestion: 'Run: specweave refresh-marketplace',
+        fixSuggestion: 'Run: specweave refresh-plugins',
       };
     }
 
