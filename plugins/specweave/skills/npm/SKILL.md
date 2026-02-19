@@ -102,6 +102,124 @@ Check flags in the command invocation:
 
 ---
 
+## STEP 0: REPOSITORY DISCOVERY (Multi-Repo Aware) — ALWAYS RUN FIRST!
+
+**This step runs BEFORE any workflow mode.** It determines which npm package to release.
+
+### Detection Logic
+
+```bash
+# Check if we're in an umbrella repo with nested repositories
+if [ -d "repositories" ]; then
+  UMBRELLA=true
+else
+  UMBRELLA=false
+fi
+```
+
+### If NOT an umbrella repo (`UMBRELLA=false`)
+
+Operate on CWD as normal. Set:
+```bash
+PKG_DIR="."
+PKG_NAME=$(node -p "require('./package.json').name")
+PKG_VERSION=$(node -p "require('./package.json').version")
+```
+
+### If umbrella repo (`UMBRELLA=true`)
+
+Scan for all publishable npm packages:
+
+```bash
+# Find all package.json files under repositories/ (skip node_modules)
+# For each one, check:
+#   1. Has "name" field
+#   2. Has "version" field
+#   3. NOT "private": true
+# Collect: directory path, package name, version
+```
+
+**Scanning script:**
+```bash
+PUBLISHABLE=()
+for pkg in $(find repositories -name "package.json" -not -path "*/node_modules/*" -not -path "*/docs-site/*" -maxdepth 4); do
+  IS_PRIVATE=$(node -p "try { require('./$pkg').private || false } catch(e) { true }")
+  if [ "$IS_PRIVATE" = "false" ]; then
+    NAME=$(node -p "require('./$pkg').name")
+    VERSION=$(node -p "require('./$pkg').version")
+    DIR=$(dirname "$pkg")
+    PUBLISHABLE+=("$DIR|$NAME|$VERSION")
+  fi
+done
+```
+
+**Decision:**
+
+| Found | Action |
+|-------|--------|
+| **0 packages** | STOP with error: "No publishable npm packages found under repositories/" |
+| **1 package** | Auto-select it, report: "Auto-selected `$PKG_NAME` (only publishable package)" |
+| **2+ packages** | Use `AskUserQuestion` to let the user choose |
+
+**AskUserQuestion format (when 2+ packages):**
+
+```
+Question: "Which npm package do you want to release?"
+Header: "Package"
+Options:
+  - label: "$NAME1 (v$VERSION1)"
+    description: "Path: $DIR1"
+  - label: "$NAME2 (v$VERSION2)"
+    description: "Path: $DIR2"
+  ... (one per publishable package)
+```
+
+### After Selection
+
+```bash
+# Navigate to the selected package directory
+cd "$PKG_DIR"
+
+# Set variables for use throughout the workflow
+PKG_NAME=$(node -p "require('./package.json').name")
+PKG_VERSION=$(node -p "require('./package.json').version")
+REPO_URL=$(node -p "try { const r = require('./package.json').repository; typeof r === 'string' ? r : r?.url?.replace(/\\.git$/, '') || '' } catch(e) { '' }")
+GH_REPO=$(echo "$REPO_URL" | sed 's|https://github.com/||')
+
+# Detect current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Validate branch is release-eligible (not a feature branch)
+if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" && "$BRANCH" != "master" ]]; then
+  echo "WARNING: Current branch '$BRANCH' is not a standard release branch (main/develop/master)"
+  # STOP and ask user to confirm before proceeding
+fi
+
+# Detect build command from package.json scripts
+if node -p "Object.keys(require('./package.json').scripts||{}).includes('rebuild')" | grep -q true; then
+  BUILD_CMD="npm run rebuild"
+elif node -p "Object.keys(require('./package.json').scripts||{}).includes('build')" | grep -q true; then
+  BUILD_CMD="npm run build"
+else
+  BUILD_CMD=""
+  echo "WARNING: No build or rebuild script found — skip build step"
+fi
+```
+
+**CRITICAL**: All subsequent commands in the chosen workflow run from `$PKG_DIR` as CWD.
+
+**Report the selection** before proceeding to the workflow:
+```
+Selected package: $PKG_NAME v$PKG_VERSION
+Directory: $PKG_DIR
+Repository: $REPO_URL
+Branch: $BRANCH
+Build command: $BUILD_CMD
+Mode: [DEFAULT|QUICK|CI|DIRECT|LOCAL]
+```
+
+---
+
 ## DEFAULT MODE WORKFLOW (no flags) - INSTANT RELEASE
 
 This is the **default** workflow when no flags are provided. Auto-commits any dirty changes, syncs git FIRST, then publishes to npmjs.org. One command does everything!
@@ -116,14 +234,14 @@ This is the **default** workflow when no flags are provided. Auto-commits any di
 ### 1. Pre-flight Check (Minimal)
 
 ```bash
-# Verify we're on develop branch
+# Verify we're on a release-eligible branch
 git rev-parse --abbrev-ref HEAD
 
 # Get current version
 node -p "require('./package.json').version"
 ```
 
-**STOP if**: Not on `develop` branch (ask user to switch)
+**STOP if**: Not on a release-eligible branch (`main`, `develop`, or `master`) — already validated in Step 0
 
 ### 2. Auto-Commit Dirty Changes (if any)
 
@@ -152,7 +270,7 @@ git commit -m "[auto-generated message based on changed files]"
 
 ```bash
 # Push dirty commit to remote FIRST - ensures code is safe before release
-git push origin develop
+git push origin $BRANCH
 ```
 
 **Why this order?**
@@ -197,7 +315,9 @@ This creates a NEW commit + tag locally.
 ### 5. Build Package
 
 ```bash
-npm run rebuild
+# Uses detected build command (rebuild if available, else build)
+# If $BUILD_CMD is empty, skip this step and warn user
+$BUILD_CMD
 ```
 
 ### 6. Publish to NPM (with explicit registry!)
@@ -211,7 +331,7 @@ npm publish --registry https://registry.npmjs.org
 
 ```bash
 # Push the version bump commit and tag
-git push origin develop --follow-tags
+git push origin $BRANCH --follow-tags
 ```
 
 ### 8. MANDATORY: Create GitHub Release
@@ -272,8 +392,8 @@ gh release view "v$NEW_VERSION" --json tagName,url
 **Full patch release complete!**
 
 **Version**: vX.Y.Z
-**NPM**: https://www.npmjs.com/package/specweave
-**GitHub Release**: https://github.com/anton-abyzov/specweave/releases/tag/vX.Y.Z
+**NPM**: https://www.npmjs.com/package/$PKG_NAME
+**GitHub Release**: https://github.com/$GH_REPO/releases/tag/vX.Y.Z
 
 **What happened**:
 - Dirty changes auto-committed
@@ -284,7 +404,7 @@ gh release view "v$NEW_VERSION" --json tagName,url
 - Version tag pushed to GitHub
 - GitHub Release created with release notes
 
-**Verify**: `npm view specweave version --registry https://registry.npmjs.org`
+**Verify**: `npm view $PKG_NAME version --registry https://registry.npmjs.org`
 ```
 
 ## Default Mode Success Criteria
@@ -314,14 +434,14 @@ Use this workflow when `--quick` flag is detected. This combines `/sw:save` beha
 ### 1. Pre-flight Check
 
 ```bash
-# Verify we're on develop branch
+# Verify we're on a release-eligible branch
 git rev-parse --abbrev-ref HEAD
 
 # Get current version
 node -p "require('./package.json').version"
 ```
 
-**STOP if**: Not on `develop` branch (ask user to switch)
+**STOP if**: Not on a release-eligible branch (`main`, `develop`, or `master`) — already validated in Step 0
 
 ### 2. Auto-Commit Dirty Changes (if any)
 
@@ -341,7 +461,7 @@ git commit -m "[auto-generated message based on changed files]"
 
 ```bash
 # Push dirty commit to remote - ensures code is safe before release
-git push origin develop
+git push origin $BRANCH
 ```
 
 ### 4. Smart Version Bump (Prerelease-Aware!)
@@ -363,7 +483,8 @@ This creates a NEW commit + tag locally.
 ### 5. Build Package
 
 ```bash
-npm run rebuild
+# Uses detected build command; skip if $BUILD_CMD is empty
+$BUILD_CMD
 ```
 
 ### 6. Publish to NPM Locally
@@ -378,7 +499,7 @@ npm publish --registry https://registry.npmjs.org
 ```bash
 # Push ONLY the version commit, NOT the tag
 # This prevents GitHub Actions release workflow from triggering
-git push origin develop
+git push origin $BRANCH
 ```
 
 **CRITICAL**: Do NOT use `--follow-tags`! We want local npm publish only.
@@ -389,7 +510,7 @@ git push origin develop
 **Quick release complete!**
 
 **Version**: vX.Y.Z
-**NPM**: https://www.npmjs.com/package/specweave
+**NPM**: https://www.npmjs.com/package/$PKG_NAME
 **Git Tag**: vX.Y.Z (local only - NOT pushed)
 
 **What happened**:
@@ -400,7 +521,7 @@ git push origin develop
 - Published to npmjs.org (locally)
 - Tag NOT pushed (no GitHub Actions triggered)
 
-**Verify**: `npm view specweave version --registry https://registry.npmjs.org`
+**Verify**: `npm view $PKG_NAME version --registry https://registry.npmjs.org`
 
 **If you want to push the tag later** (triggers GH release):
 `git push origin vX.Y.Z`
@@ -426,7 +547,7 @@ Use this workflow when `--ci` flag is detected. Push to git and let GitHub Actio
 ### 1. Pre-flight Checks
 
 ```bash
-# Verify we're on develop branch
+# Verify we're on a release-eligible branch
 git rev-parse --abbrev-ref HEAD
 
 # Check for uncommitted changes
@@ -437,7 +558,7 @@ node -p "require('./package.json').version"
 ```
 
 **STOP if**:
-- Not on `develop` branch (ask user to switch)
+- Not on a release-eligible branch — already validated in Step 0
 - Uncommitted changes exist (ask user to commit first)
 
 ### 2. Smart Version Bump (Prerelease-Aware!)
@@ -465,7 +586,7 @@ node -p "require('./package.json').version"
 
 ```bash
 # Push commit and tag to trigger GitHub Actions
-git push origin develop --follow-tags
+git push origin $BRANCH --follow-tags
 ```
 
 ### 5. Report Results
@@ -474,12 +595,12 @@ git push origin develop --follow-tags
 Release initiated successfully!
 
 **Version**: vX.Y.Z
-**Tag**: https://github.com/anton-abyzov/specweave/releases/tag/vX.Y.Z
-**GitHub Actions**: https://github.com/anton-abyzov/specweave/actions
+**Tag**: https://github.com/$GH_REPO/releases/tag/vX.Y.Z
+**GitHub Actions**: https://github.com/$GH_REPO/actions
 
 **Next steps**:
 1. Monitor GitHub Actions workflow (1-2 minutes)
-2. Verify npm publish: https://www.npmjs.com/package/specweave
+2. Verify npm publish: https://www.npmjs.com/package/$PKG_NAME
 3. Check GitHub release notes
 ```
 
@@ -500,7 +621,7 @@ Use this workflow when `--only` flag is detected. This publishes directly to npm
 ### 1. Pre-flight Checks (Same as Default)
 
 ```bash
-# Verify we're on develop branch
+# Verify we're on a release-eligible branch
 git rev-parse --abbrev-ref HEAD
 
 # Check for uncommitted changes
@@ -511,7 +632,7 @@ node -p "require('./package.json').version"
 ```
 
 **STOP if**:
-- Not on `develop` branch (ask user to switch)
+- Not on a release-eligible branch — already validated in Step 0
 - Uncommitted changes exist (ask user to commit first)
 
 ### 2. Smart Version Bump (Prerelease-Aware!)
@@ -538,8 +659,8 @@ node -p "require('./package.json').version"
 ### 4. Build Package
 
 ```bash
-# Build the package before publishing
-npm run rebuild
+# Build the package before publishing; skip if $BUILD_CMD is empty
+$BUILD_CMD
 ```
 
 ### 5. Publish to NPM Directly
@@ -556,22 +677,22 @@ npm publish --registry https://registry.npmjs.org
 **Published directly to npm!**
 
 **Version**: vX.Y.Z
-**NPM**: https://www.npmjs.com/package/specweave
+**NPM**: https://www.npmjs.com/package/$PKG_NAME
 **Git Tag**: vX.Y.Z (local only)
 
 **What happened**:
 - Version bumped and committed locally
 - Git tag created locally
-- Package built (npm run rebuild)
+- Package built ($BUILD_CMD)
 - Published to npm directly
-- Git NOT pushed (use `git push origin develop --follow-tags` later if needed)
+- Git NOT pushed (use `git push origin $BRANCH --follow-tags` later if needed)
 
 **Verify**:
-- Check npm: https://www.npmjs.com/package/specweave
-- Verify version: `npm view specweave version`
+- Check npm: https://www.npmjs.com/package/$PKG_NAME
+- Verify version: `npm view $PKG_NAME version`
 
 **Note**: Local release only. Push to GitHub manually when ready:
-`git push origin develop --follow-tags`
+`git push origin $BRANCH --follow-tags`
 ```
 
 ## Direct Mode Success Criteria
@@ -638,15 +759,15 @@ fi
 - NO git commit (use `git add . && git commit` later)
 - NO git tag (use `git tag vX.Y.Z` later)
 - NO npm publish (use `npm publish` later)
-- NO build (use `npm run rebuild` later)
+- NO build (use `$BUILD_CMD` later)
 
 **Next steps when ready to release**:
-1. Build: `npm run rebuild`
+1. Build: `$BUILD_CMD`
 2. Test: `npm test`
 3. Commit: `git add . && git commit -m "chore: bump version to X.Y.Z"`
 4. Tag: `git tag vX.Y.Z`
 5. Publish: `npm publish --registry https://registry.npmjs.org`
-6. Push: `git push origin develop --follow-tags`
+6. Push: `git push origin $BRANCH --follow-tags`
 
 **Or use**: `/sw:npm` (no flags) for full instant release
 ```

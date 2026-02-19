@@ -150,11 +150,8 @@ export class AgentsMdGenerator {
       'ado-sync': 'Azure DevOps synchronization',
       'hetzner-provisioner': 'Hetzner Cloud infrastructure provisioning',
       'cost-optimizer': 'Cloud cost optimization and platform comparison',
-      'figma-mcp-connector': 'Figma design integration via MCP',
+      'figma': 'Figma design-to-code, design tokens, Code Connect, design system rules',
       'design-system-architect': 'Design system and Atomic Design methodology',
-      'figma-designer': 'Figma design creation and design tokens',
-      'figma-implementer': 'Converting Figma designs to code',
-      'figma-to-code': 'Figma to React/Angular code generation',
       'role-orchestrator': 'Multi-agent orchestration for complex tasks',
       'increment-quality-judge': 'AI-powered quality assessment of specs and plans'
     };

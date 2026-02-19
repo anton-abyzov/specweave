@@ -44,7 +44,6 @@
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
 | **specweave-frontend** | React, Vue, Angular, Next.js, frontend, UI, components | Frontend architecture, design systems |
-| **specweave-figma** | Figma, design tokens, design-to-code | Figma integration |
 | **specweave-mobile** | React Native, mobile, iOS, Android | Mobile app development |
 
 ## Backend Plugins

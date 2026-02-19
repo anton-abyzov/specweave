@@ -317,4 +317,4 @@ When building UIs that display images, products, or media content:
 - Building component libraries
 - Implementing design systems
 - Visual refresh projects
-- Converting Figma designs to code
+- Converting Figma designs to code (see `/sw-frontend:figma` for MCP tools)

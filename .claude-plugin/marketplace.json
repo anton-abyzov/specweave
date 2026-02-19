@@ -195,17 +195,6 @@
       }
     },
     {
-      "name": "sw-figma",
-      "description": "Figma integration - Design import, component sync, design-to-code workflows",
-      "source": "./plugins/specweave-figma",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw-diagrams",
       "description": "Architecture diagram generation - Mermaid, C4 Model, sequence diagrams, ER diagrams, deployment diagrams",
       "source": "./plugins/specweave-diagrams",

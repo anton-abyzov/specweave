@@ -78,8 +78,7 @@ Type `/github:` to see GitHub commands (if installed):
 plugins/                  # Individual plugin locations
 ├── specweave/.claude-plugin/plugin.json       # Core plugin manifest
 ├── specweave-github/.claude-plugin/plugin.json     # GitHub plugin manifest
-├── specweave-figma/.claude-plugin/plugin.json      # Figma plugin manifest
-└── ... (18 plugins total, each with plugin.json)
+└── ... (17 plugins total, each with plugin.json)
 ```
 
 **Note**: The marketplace itself (`marketplace.json`) is a registry that points to plugins. Each individual plugin has its own `plugin.json` manifest in `plugins/*/.claude-plugin/`.
