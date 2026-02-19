@@ -121,12 +121,17 @@ fi
 
 Operate on CWD as normal. Set:
 ```bash
+UMBRELLA_ROOT=""
 PKG_DIR="."
 PKG_NAME=$(node -p "require('./package.json').name")
 PKG_VERSION=$(node -p "require('./package.json').version")
 ```
 
 ### If umbrella repo (`UMBRELLA=true`)
+
+```bash
+UMBRELLA_ROOT="$(pwd)"
+```
 
 Scan for all publishable npm packages:
 
@@ -417,6 +422,7 @@ gh release view "v$NEW_VERSION" --json tagName,url
 - Published to npmjs.org (explicit registry!)
 - Version commit + tag pushed to GitHub
 - **GitHub Release created with release notes**
+- **Umbrella sync**: all sibling repos committed+pushed, umbrella repo committed+pushed
 
 ---
 
@@ -537,6 +543,7 @@ git push origin $BRANCH
 - Published to npmjs.org (explicit registry!)
 - Version commit pushed to GitHub
 - Tag NOT pushed (no GitHub Actions)
+- **Umbrella sync**: all sibling repos committed+pushed, umbrella repo committed+pushed
 
 ---
 
@@ -785,6 +792,87 @@ fi
 
 ---
 
+## FINAL STEP: UMBRELLA SYNC (Multi-Repo) — RUNS AFTER EVERY MODE
+
+**Skip this step ONLY for `--only --local` mode.** For ALL other modes, this runs as the very last step.
+
+When operating inside an umbrella repo (`UMBRELLA=true` from Step 0), the release workflow only commits+pushes the **selected package repo**. But the umbrella typically has:
+- **Sibling repos** with their own uncommitted/unpushed work
+- **The umbrella repo itself** with `.specweave/` increments, docs, and config changes
+
+**All of these must be synced.** Otherwise the user sees dirty files after the release.
+
+### Umbrella Sync Procedure
+
+```bash
+# Save the release repo path
+RELEASE_REPO_DIR="$PKG_DIR"
+
+# Navigate to umbrella root
+cd "$UMBRELLA_ROOT"   # The original CWD where repositories/ was detected
+
+# 1. Sync ALL sibling repos under repositories/
+for repo_dir in repositories/*/*/; do
+  # Skip if no .git directory (not a git repo)
+  [ -d "$repo_dir/.git" ] || continue
+
+  # Skip the repo we already released (already pushed)
+  [ "$(cd "$repo_dir" && pwd)" = "$(cd "$RELEASE_REPO_DIR" && pwd)" ] && continue
+
+  cd "$repo_dir"
+  REPO_NAME=$(basename "$repo_dir")
+  REPO_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+  # Check for dirty files
+  if [ -n "$(git status --porcelain)" ]; then
+    git add -A
+    git commit -m "sync $REPO_NAME changes"
+    echo "Committed dirty changes in $REPO_NAME"
+  fi
+
+  # Check for unpushed commits
+  AHEAD=$(git rev-list @{u}..HEAD --count 2>/dev/null || echo "0")
+  if [ "$AHEAD" -gt 0 ]; then
+    git push origin "$REPO_BRANCH"
+    echo "Pushed $AHEAD commit(s) in $REPO_NAME -> $REPO_BRANCH"
+  fi
+
+  cd "$UMBRELLA_ROOT"
+done
+
+# 2. Sync the umbrella repo itself
+if [ -d ".git" ]; then
+  if [ -n "$(git status --porcelain)" ]; then
+    git add -A
+    git commit -m "sync umbrella after release"
+  fi
+
+  UMBRELLA_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  AHEAD=$(git rev-list @{u}..HEAD --count 2>/dev/null || echo "0")
+  if [ "$AHEAD" -gt 0 ]; then
+    git push origin "$UMBRELLA_BRANCH"
+    echo "Pushed umbrella repo -> $UMBRELLA_BRANCH"
+  fi
+fi
+```
+
+### Report Sync Results
+
+After syncing, append to the release report:
+
+```markdown
+**Umbrella sync**:
+- [repo-name]: [committed N files | already clean] + [pushed N commits | up to date]
+- ... (one line per repo)
+- umbrella: [committed N files | already clean] + [pushed | up to date]
+```
+
+### When NOT in an umbrella (`UMBRELLA=false`)
+
+Skip this step entirely — there's only one repo and it was already pushed.
+
+---
+
 ## Quick Reference
 
 ```bash
@@ -807,11 +895,11 @@ fi
 /sw:npm --stable
 ```
 
-| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release |
-|----------|---------|---------------------|------------|------------|------------|
-| **FULL RELEASE** | (no flags) | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes |
-| **QUICK RELEASE** | `--quick` | `rc.1`->`rc.2` (smart) | Yes | No | No |
-| CI release | `--ci` | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes (via CI) |
-| Local publish | `--only` | `rc.1`->`rc.2` (smart) | No | No | No |
-| Local bump | `--only --local` | `rc.1`->`rc.2` (smart) | No | No | No |
-| **PROMOTE** | `--stable` | `rc.X`->`X.Y.Z+1` | Yes | Yes | Yes |
+| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release | Umbrella Sync |
+|----------|---------|---------------------|------------|------------|------------|---------------|
+| **FULL RELEASE** | (no flags) | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes | Yes |
+| **QUICK RELEASE** | `--quick` | `rc.1`->`rc.2` (smart) | Yes | No | No | Yes |
+| CI release | `--ci` | `rc.1`->`rc.2` (smart) | Yes | Yes | Yes (via CI) | Yes |
+| Local publish | `--only` | `rc.1`->`rc.2` (smart) | No | No | No | Yes |
+| Local bump | `--only --local` | `rc.1`->`rc.2` (smart) | No | No | No | No |
+| **PROMOTE** | `--stable` | `rc.X`->`X.Y.Z+1` | Yes | Yes | Yes | Yes |
