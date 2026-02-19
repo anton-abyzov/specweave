@@ -653,20 +653,20 @@ rm -rf .specweave/state/.dedup-cache
 - Sync commands failing
 :::
 
-**Solution**: Use Claude CLI commands instead:
+**Solution**: Use the vskill CLI instead:
 ```bash
-# Uninstall broken plugin
-claude plugin uninstall sw-github
+# Remove broken plugin
+vskill remove sw-github
 
 # Reinstall plugin
-claude plugin install sw-github@specweave
+vskill add specweave --plugin sw-github
 
 # List installed plugins
-claude plugin list
+vskill list
 
-# If still broken, clear and reinstall
-claude plugin uninstall sw-github
-claude plugin install sw-github@specweave
+# If still broken, remove and reinstall
+vskill remove sw-github
+vskill add specweave --plugin sw-github
 ```
 
 **If all plugins broken**:

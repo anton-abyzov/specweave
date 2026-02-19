@@ -23,7 +23,7 @@ Event-driven workflow automation with Apache Kafka integration. Master Kafka tri
 ## Installation
 
 ```bash
-claude plugin install sw-n8n@specweave
+vskill add specweave --plugin sw-n8n
 ```
 
 ## Requirements

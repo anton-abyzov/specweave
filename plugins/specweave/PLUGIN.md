@@ -98,7 +98,7 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 ## Installation
 
 ```bash
-claude plugin install sw@specweave
+vskill add specweave --plugin sw
 ```
 
 ## Requirements

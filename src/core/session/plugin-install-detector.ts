@@ -65,7 +65,8 @@ const SPECWEAVE_INIT_MARKERS = [
 ];
 
 /**
- * Markers that indicate claude plugin install command was used
+ * Markers that indicate plugin install command was used
+ * (covers both legacy `claude plugin install` and `vskill install`)
  */
 const CLAUDE_PLUGIN_INSTALL_MARKERS = [
   'Plugin',
@@ -162,7 +163,7 @@ function detectTriggerType(output: string): PluginInstallTrigger {
     }
   }
 
-  // Check for claude plugin install markers (need both markers)
+  // Check for plugin install markers (need both markers)
   if (CLAUDE_PLUGIN_INSTALL_MARKERS.every(marker => output.includes(marker))) {
     return 'claude-plugin-install';
   }

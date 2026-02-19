@@ -21,7 +21,7 @@ Complete documentation ecosystem for technical writers, product teams, and devel
 ## Installation
 
 ```bash
-claude plugin install sw-docs@specweave
+vskill add specweave --plugin sw-docs
 ```
 
 ## Requirements

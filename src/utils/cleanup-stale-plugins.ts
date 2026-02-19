@@ -173,7 +173,7 @@ export interface ScopeMigrationResult {
  * Sources of user-level pollution:
  * - Claude Code's own plugin discovery (installs at user scope by default)
  * - Older SpecWeave versions (pre-v1.0.210)
- * - Manual `claude plugin install` without --scope flag
+ * - Manual `claude plugin install` / `vskill install` without --scope flag
  *
  * @param projectDir - Project directory with .claude/settings.json (optional, skips project migration if not provided)
  * @param verbose - Show detailed output

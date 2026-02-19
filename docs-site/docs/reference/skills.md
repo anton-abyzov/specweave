@@ -750,22 +750,22 @@ Skills are loaded from plugins. The core `sw` plugin is always installed. Domain
 
 ```bash
 # Install domain plugins
-claude plugin install sw-frontend@specweave
-claude plugin install sw-backend@specweave
-claude plugin install sw-infrastructure@specweave
-claude plugin install sw-testing@specweave
-claude plugin install sw-github@specweave
-claude plugin install sw-jira@specweave
-claude plugin install sw-ado@specweave
-claude plugin install sw-kafka@specweave
-claude plugin install sw-ml@specweave
-claude plugin install sw-mobile@specweave
-claude plugin install sw-payments@specweave
-claude plugin install sw-kubernetes@specweave
-claude plugin install sw-cost-optimizer@specweave
-claude plugin install sw-docs@specweave
-claude plugin install sw-diagrams@specweave
-claude plugin install sw-release@specweave
+vskill add specweave --plugin sw-frontend
+vskill add specweave --plugin sw-backend
+vskill add specweave --plugin sw-infrastructure
+vskill add specweave --plugin sw-testing
+vskill add specweave --plugin sw-github
+vskill add specweave --plugin sw-jira
+vskill add specweave --plugin sw-ado
+vskill add specweave --plugin sw-kafka
+vskill add specweave --plugin sw-ml
+vskill add specweave --plugin sw-mobile
+vskill add specweave --plugin sw-payments
+vskill add specweave --plugin sw-kubernetes
+vskill add specweave --plugin sw-cost-optimizer
+vskill add specweave --plugin sw-docs
+vskill add specweave --plugin sw-diagrams
+vskill add specweave --plugin sw-release
 ```
 
 ---

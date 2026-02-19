@@ -20,7 +20,7 @@ GitHub integration plugin for issue standardization, task tracking, multi-reposi
 ## Installation
 
 ```bash
-claude plugin install sw-github@specweave
+vskill add specweave --plugin sw-github
 ```
 
 ## Requirements

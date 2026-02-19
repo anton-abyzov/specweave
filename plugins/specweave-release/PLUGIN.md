@@ -28,7 +28,7 @@ Multi-repository release coordination with version alignment, release waves, RC 
 ## Installation
 
 ```bash
-claude plugin install sw-release@specweave
+vskill add specweave --plugin sw-release
 ```
 
 ## Requirements

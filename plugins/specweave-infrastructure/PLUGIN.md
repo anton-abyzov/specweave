@@ -26,7 +26,7 @@ Comprehensive infrastructure, DevOps, and cloud platform expertise. Covers Terra
 ## Installation
 
 ```bash
-claude plugin install sw-infra@specweave
+vskill add specweave --plugin sw-infra
 ```
 
 ## Requirements

@@ -353,7 +353,7 @@ specweave update
 # Then restart Claude Code extension
 ```
 
-If `specweave update` doesn't help, try `specweave refresh-marketplace` which fixes hook permissions and cleans up plugin state. See [Troubleshooting](#troubleshooting) for details.
+If `specweave update` doesn't help, try `specweave refresh-plugins` which fixes hook permissions and cleans up plugin state. See [Troubleshooting](#troubleshooting) for details.
 
 ### Auto Mode Issues
 

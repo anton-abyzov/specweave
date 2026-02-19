@@ -1,9 +1,9 @@
 /**
  * Tests for plugin-installer.ts
  *
- * Covers: installAllPlugins, refreshMarketplace, ensureOfficialMarketplace,
- * enableMarketplaceAutoUpdate, manuallyInstallSpecweavePlugin,
- * copyDirRecursive, getPluginVersion, installLazyMode, installPluginsWithRetry
+ * Covers: installAllPlugins, installLazyMode, installPluginsWithRetry
+ * (vskill-based plugin installation - see plugin-installer-vskill.test.ts for
+ *  TC-018/TC-019 vskill-specific integration tests)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -129,7 +129,7 @@ function stubExec(
   });
 }
 
-/** Setup mocks for a successful marketplace + plugin discovery flow */
+/** Setup mocks for a successful vskill-based plugin discovery flow */
 function setupHappyPath(overrides?: {
   plugins?: Array<{ name: string }>;
   cleanupResult?: { removedCount: number; removedPlugins: string[] };
@@ -146,8 +146,18 @@ function setupHappyPath(overrides?: {
   mockGetScopeArgs.mockReturnValue([]);
   mockEnablePluginsInSettings.mockReturnValue(true);
 
-  // Default exec stub: everything succeeds
-  stubExec([], { success: true, stdout: 'specweave', stderr: '' });
+  // Default exec stub: vskill add succeeds with scan output
+  mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+    const argsStr = (args || []).join(' ');
+    if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+      return {
+        success: true,
+        stdout: 'Score: 100/100  Verdict: PASS\nInstalled sw to 1 agent',
+        stderr: '',
+      };
+    }
+    return { success: true, stdout: '', stderr: '' };
+  });
 }
 
 // ---- tests ----
@@ -266,15 +276,14 @@ describe('plugin-installer', () => {
 
     it('should handle core plugin already installed', async () => {
       setupHappyPath();
-      // Plugin install fails but stdout contains "already"
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: 'specweave', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'update'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: false, stdout: 'already installed', stderr: '' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
+      // vskill add fails but stdout contains "already" -> treated as already installed
+      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return { success: false, stdout: 'already installed', stderr: '' };
+        }
+        return { success: true, stdout: '', stderr: '' };
+      });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -284,14 +293,14 @@ describe('plugin-installer', () => {
 
     it('should handle core plugin install failure in lazy mode', async () => {
       setupHappyPath();
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: 'specweave', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'update'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: false, stdout: '', stderr: 'install error' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
+      // vskill add fails with no "already" in output -> treated as failure
+      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return { success: false, stdout: '', stderr: 'install error' };
+        }
+        return { success: true, stdout: '', stderr: '' };
+      });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -320,14 +329,14 @@ describe('plugin-installer', () => {
 
     it('should handle "already" in stderr for already-installed plugins', async () => {
       setupHappyPath();
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: 'specweave', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'update'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: false, stdout: '', stderr: 'already installed' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
+      // vskill add fails but stderr contains "already" -> treated as already installed
+      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return { success: false, stdout: '', stderr: 'already installed' };
+        }
+        return { success: true, stdout: '', stderr: '' };
+      });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -353,16 +362,17 @@ describe('plugin-installer', () => {
 
     it('should report partial failures in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-      let installCallCount = 0;
+      let vskillCallCount = 0;
       mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          installCallCount++;
-          if (installCallCount === 1) {
-            return { success: true, stdout: '', stderr: '' };
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          vskillCallCount++;
+          if (vskillCallCount === 1) {
+            return { success: true, stdout: 'Installed sw-github to 1 agent', stderr: '' };
           }
           return { success: false, stdout: '', stderr: 'timeout' };
         }
-        return { success: true, stdout: 'specweave', stderr: '' };
+        return { success: true, stdout: '', stderr: '' };
       });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -373,26 +383,26 @@ describe('plugin-installer', () => {
       expect(result.failedPlugins).toContain('sw-jira');
     });
 
-    it('should sort plugins with "specweave" first', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'specweave' }, { name: 'sw-jira' }] });
-      // Track the order of plugin install calls
-      const installOrder: string[] = [];
+    it('should install all plugins via vskill in full mode', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
+      const installedPlugins: string[] = [];
       mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          installOrder.push(args[2]);
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          const pluginIdx = args.indexOf('--plugin');
+          if (pluginIdx !== -1 && args[pluginIdx + 1]) {
+            installedPlugins.push(args[pluginIdx + 1]);
+          }
+          return { success: true, stdout: 'Installed plugin to 1 agent', stderr: '' };
         }
         return { success: true, stdout: '', stderr: '' };
       });
 
-      // For the "specweave" plugin, manuallyInstallSpecweavePlugin needs fs mocks
-      // Since existsSync returns true, it will detect marketplace path exists
-      // and target path exists, so manual install returns true (already installed)
       await installAllPlugins({ dirname: '/test', lazyMode: false });
 
-      // "specweave" may be handled by manual install (no CLI call),
-      // but if it falls through, it should be first
-      // The key verification: the function sorts the array
-      expect(mockExecFileNoThrowSync).toHaveBeenCalled();
+      // Both plugins should have been installed via vskill
+      expect(installedPlugins).toContain('sw-github');
+      expect(installedPlugins).toContain('sw-jira');
     });
 
     it('should enable plugins after full mode installation', async () => {
@@ -414,342 +424,12 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // refreshMarketplace - marketplace already registered
+  // refreshMarketplace / ensureOfficialMarketplace / enableMarketplaceAutoUpdate
+  // REMOVED: These functions were replaced by vskill-based installation (v1.0.272)
+  // See plugin-installer-vskill.test.ts for TC-018/TC-019 tests
   // ============================================================
-  describe('refreshMarketplace (via installAllPlugins)', () => {
-    it('should update marketplace when already registered', async () => {
-      setupHappyPath();
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: 'specweave\nclaude-plugins-official', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'update'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: true, stdout: '', stderr: '' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
 
-      const result = await installAllPlugins({ dirname: '/test' });
 
-      expect(result.success).toBe(true);
-      expect(mockExecFileNoThrowSync).toHaveBeenCalledWith('claude', ['plugin', 'marketplace', 'update', 'specweave']);
-    });
-
-    it('should add marketplace when not registered', async () => {
-      setupHappyPath();
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'add'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: true, stdout: '', stderr: '' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      expect(mockExecFileNoThrowSync).toHaveBeenCalledWith('claude', [
-        'plugin', 'marketplace', 'add', 'https://github.com/anton-abyzov/specweave'
-      ]);
-    });
-
-    it('should handle marketplace add failure', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'add'], result: { success: false, stdout: '', stderr: 'network error' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should re-register with HTTPS when SSH auth fails during update', async () => {
-      setupHappyPath();
-      let addCallCount = 0;
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: 'SSH authentication failed' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          addCallCount++;
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      // Marketplace was re-added with HTTPS
-      expect(addCallCount).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should re-register when update fails with permission denied', async () => {
-      setupHappyPath();
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: 'Permission denied (publickey)' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-
-    it('should throw on non-SSH update failure', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: 'internal server error' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Should fail because the error is not SSH-related
-      expect(result.success).toBe(false);
-    });
-
-    it('should handle SSH re-add failure', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: 'SSH authentication failed' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          return { success: false, stdout: '', stderr: 'add failed too' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should handle remove failure during SSH workaround gracefully', async () => {
-      setupHappyPath();
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: 'SSH authentication failed' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          // Remove fails but add should still be attempted
-          return { success: false, stdout: '', stderr: 'remove failed' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  // ============================================================
-  // ensureOfficialMarketplace
-  // ============================================================
-  describe('ensureOfficialMarketplace (via installAllPlugins)', () => {
-    it('should skip adding official marketplace if already registered', async () => {
-      setupHappyPath();
-      stubExec(
-        [
-          { match: ['plugin', 'marketplace', 'list'], result: { success: true, stdout: 'specweave\nclaude-plugins-official', stderr: '' } },
-          { match: ['plugin', 'marketplace', 'update'], result: { success: true, stdout: '', stderr: '' } },
-          { match: ['plugin', 'install'], result: { success: true, stdout: '', stderr: '' } },
-        ],
-        { success: true, stdout: '', stderr: '' }
-      );
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      // Should NOT have called add for official marketplace
-      const addCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => call[1]?.[0] === 'plugin' && call[1]?.[1] === 'marketplace' && call[1]?.[2] === 'add'
-      );
-      // No add calls (marketplace list already has both)
-      expect(addCalls.length).toBe(0);
-    });
-
-    it('should add official marketplace if not registered', async () => {
-      setupHappyPath();
-      // First list call returns only specweave (for refreshMarketplace)
-      // Second list call returns only specweave (for ensureOfficialMarketplace)
-      let listCallCount = 0;
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          listCallCount++;
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      // Official marketplace add should have been called
-      const officialAddCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) =>
-          call[1]?.[0] === 'plugin' &&
-          call[1]?.[1] === 'marketplace' &&
-          call[1]?.[2] === 'add' &&
-          call[1]?.[3]?.includes('claude-plugins-official')
-      );
-      expect(officialAddCalls.length).toBe(1);
-    });
-
-    it('should continue gracefully when official marketplace add fails', async () => {
-      setupHappyPath();
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          // No official marketplace
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          if (args[3]?.includes('claude-plugins-official')) {
-            return { success: false, stdout: '', stderr: 'network error' };
-          }
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // Should still succeed because official marketplace is optional
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  // ============================================================
-  // enableMarketplaceAutoUpdate
-  // ============================================================
-  describe('enableMarketplaceAutoUpdate (via installAllPlugins)', () => {
-    it('should enable auto-update when specweave config exists without autoUpdate', async () => {
-      setupHappyPath();
-      // Mock known_marketplaces.json for enableMarketplaceAutoUpdate
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('known_marketplaces.json')) return true;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('known_marketplaces.json')) {
-          return JSON.stringify({ specweave: { url: 'https://github.com/...' } });
-        }
-        return marketplaceJson();
-      });
-
-      await installAllPlugins({ dirname: '/test' });
-
-      // Should have written auto-update config
-      expect(mockFs.writeFileSync).toHaveBeenCalled();
-    });
-
-    it('should skip writing if autoUpdate is already true', async () => {
-      setupHappyPath();
-      mockFs.existsSync.mockImplementation((p: string) => {
-        return true; // everything exists
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('known_marketplaces.json')) {
-          return JSON.stringify({ specweave: { url: 'https://github.com/...', autoUpdate: true } });
-        }
-        return marketplaceJson();
-      });
-
-      const writeCallsBefore = mockFs.writeFileSync.mock.calls.length;
-      await installAllPlugins({ dirname: '/test' });
-
-      // writeFileSync should NOT have been called for known_marketplaces.json
-      const knownMarketplaceWrites = mockFs.writeFileSync.mock.calls.filter(
-        (call: any[]) => typeof call[0] === 'string' && call[0].includes('known_marketplaces.json')
-      );
-      expect(knownMarketplaceWrites.length).toBe(0);
-    });
-
-    it('should handle missing known_marketplaces.json gracefully', async () => {
-      setupHappyPath();
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('known_marketplaces.json')) return false;
-        return true;
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Should still succeed
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle JSON parse error in known_marketplaces.json', async () => {
-      setupHappyPath();
-      mockFs.existsSync.mockImplementation(() => true);
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('known_marketplaces.json')) {
-          return 'invalid json{';
-        }
-        return marketplaceJson();
-      });
-
-      // Should not throw; enableMarketplaceAutoUpdate catches errors
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-  });
 
   // ============================================================
   // Stale plugin cleanup
@@ -776,36 +456,35 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // installPluginsWithRetry (full mode)
+  // installPluginsWithRetry via vskill (full mode)
   // ============================================================
-  describe('installPluginsWithRetry (via full mode)', () => {
-    it('should retry failed installations up to 3 times', async () => {
+  describe('installPluginsWithRetry via vskill (full mode)', () => {
+    it('should install plugin via vskill add in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      let installAttempts = 0;
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          installAttempts++;
-          if (installAttempts < 3) {
-            return { success: false, stdout: '', stderr: 'not found' };
-          }
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: 'specweave', stderr: '' };
-      });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
       expect(result.success).toBe(true);
-      expect(installAttempts).toBe(3);
+      expect(result.successCount).toBe(1);
+
+      // Verify vskill add was called
+      const vskillCalls = mockExecFileNoThrowSync.mock.calls.filter(
+        (call: any[]) => {
+          const args = (call[1] || []).join(' ');
+          return args.includes('add') && args.includes('--plugin');
+        }
+      );
+      expect(vskillCalls.length).toBeGreaterThan(0);
     });
 
-    it('should give up after 3 retries', async () => {
+    it('should handle vskill add failure in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }] });
       mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          return { success: false, stdout: '', stderr: 'not found' };
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return { success: false, stdout: '', stderr: 'plugin not found' };
         }
-        return { success: true, stdout: 'specweave', stderr: '' };
+        return { success: true, stdout: '', stderr: '' };
       });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -814,73 +493,13 @@ describe('plugin-installer', () => {
       expect(result.failedPlugins).toContain('sw-github');
     });
 
-    it('should not retry on non-"not found" errors', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      let installAttempts = 0;
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'install') {
-          installAttempts++;
-          return { success: false, stdout: '', stderr: 'permission denied' };
-        }
-        return { success: true, stdout: 'specweave', stderr: '' };
-      });
-
-      await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      // Should only try once for non-"not found" errors
-      expect(installAttempts).toBe(1);
-    });
-
-    it('should manually install "specweave" plugin via copy workaround', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-
-      // When manually installing: marketplace path exists, target does NOT exist
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplace.json') && p.includes('marketplaces')) {
-          return JSON.stringify({ plugins: [{ name: 'specweave', version: '1.2.3' }] });
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-      mockFs.readdirSync.mockReturnValue([]);
+    it('should install multiple plugins sequentially via vskill', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
       expect(result.success).toBe(true);
-      expect(mockFs.mkdirSync).toHaveBeenCalled();
-    });
-
-    it('should fall through to CLI install if manual specweave install fails', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-
-      // Marketplace plugin path does not exist -> manual install returns false
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/plugins/specweave')) return false;
-        return true;
-      });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      // Should still attempt CLI install
-      const installCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => call[1]?.[0] === 'plugin' && call[1]?.[1] === 'install'
-      );
-      expect(installCalls.length).toBeGreaterThan(0);
-    });
-
-    it('should skip manual install when target already exists', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-
-      // Both marketplace and target exist -> manual install returns true (already installed)
-      mockFs.existsSync.mockReturnValue(true);
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
+      expect(result.successCount).toBe(2);
     });
   });
 
@@ -962,189 +581,16 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // getPluginVersion (internal function, tested via full mode)
+  // getPluginVersion / manuallyInstallSpecweavePlugin / copyDirRecursive
+  // REMOVED: These functions were replaced by vskill-based installation (v1.0.272)
   // ============================================================
-  describe('getPluginVersion (via full mode specweave install)', () => {
-    it('should read version from marketplace.json', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/.claude-plugin/marketplace.json')) {
-          return JSON.stringify({ plugins: [{ name: 'specweave', version: '2.0.0' }] });
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-      mockFs.readdirSync.mockReturnValue([]);
 
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-      // Verify mkdirSync was called with a path containing the version
-      const mkdirCalls = mockFs.mkdirSync.mock.calls.filter(
-        (call: any[]) => typeof call[0] === 'string' && call[0].includes('2.0.0')
-      );
-      // The version should appear in the path used for manual install
-      // (dirname of targetPath contains version)
-      expect(mkdirCalls.length).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should default to 0.25.0 when marketplace.json read fails', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/plugins/specweave')) return true;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/.claude-plugin/marketplace.json')) {
-          throw new Error('file not found');
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-      mockFs.readdirSync.mockReturnValue([]);
-
-      // Should still work, falling back to version 0.25.0
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-    });
-
-    it('should default to 0.25.0 when plugin not found in marketplace.json', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/plugins/specweave')) return true;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/.claude-plugin/marketplace.json')) {
-          return JSON.stringify({ plugins: [{ name: 'other', version: '1.0.0' }] });
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-      mockFs.readdirSync.mockReturnValue([]);
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  // ============================================================
-  // copyDirRecursive (tested via manual specweave install in full mode)
-  // ============================================================
-  describe('copyDirRecursive (via manuallyInstallSpecweavePlugin)', () => {
-    it('should recursively copy directory entries', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-
-      // Setup for manual install path: marketplace exists, target does not
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/.claude-plugin/marketplace.json')) {
-          return JSON.stringify({ plugins: [{ name: 'specweave', version: '1.0.0' }] });
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-
-      // Create mock directory entries
-      const mockDirEntry = { name: 'subdir', isDirectory: () => true };
-      const mockFileEntry = { name: 'file.md', isDirectory: () => false };
-      let readdirCallCount = 0;
-      mockFs.readdirSync.mockImplementation(() => {
-        readdirCallCount++;
-        if (readdirCallCount === 1) {
-          // Root dir has one subdir and one file
-          return [mockDirEntry, mockFileEntry];
-        }
-        // Subdir is empty
-        return [];
-      });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-      expect(mockFs.copyFileSync).toHaveBeenCalled();
-      expect(mockFs.mkdirSync).toHaveBeenCalled();
-    });
-
-    it('should handle copy errors gracefully (manual install returns false)', async () => {
-      setupHappyPath({ plugins: [{ name: 'specweave' }] });
-
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('cache/specweave/specweave')) return false;
-        return true;
-      });
-      mockFs.readFileSync.mockImplementation((p: string | Buffer) => {
-        if (typeof p === 'string' && p.includes('marketplaces/specweave/.claude-plugin/marketplace.json')) {
-          return JSON.stringify({ plugins: [{ name: 'specweave', version: '1.0.0' }] });
-        }
-        return marketplaceJson([{ name: 'specweave' }]);
-      });
-
-      // Make mkdirSync throw to simulate copy failure
-      let mkdirCallCount = 0;
-      mockFs.mkdirSync.mockImplementation(() => {
-        mkdirCallCount++;
-        // Let early mkdirSync calls succeed, fail on the one inside copyDirRecursive
-        if (mkdirCallCount > 1) {
-          throw new Error('EACCES');
-        }
-      });
-
-      // Should fall through to CLI install
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      // The plugin install may still succeed or fail via CLI
-      expect(mockExecFileNoThrowSync).toHaveBeenCalled();
-    });
-  });
 
   // ============================================================
   // Plugin scope handling
+  // REMOVED: vskill does not use Claude's --scope args (v1.0.272)
+  // Scoping is handled by vskill's lockfile and agent detection
   // ============================================================
-  describe('plugin scope handling', () => {
-    it('should pass scope args to plugin install command in lazy mode', async () => {
-      setupHappyPath();
-      mockGetScopeArgs.mockReturnValue(['--scope', 'project']);
-
-      await installAllPlugins({ dirname: '/test' });
-
-      const installCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => call[1]?.[0] === 'plugin' && call[1]?.[1] === 'install'
-      );
-      expect(installCalls.length).toBeGreaterThan(0);
-      // Scope args should be included
-      expect(installCalls[0][1]).toContain('--scope');
-      expect(installCalls[0][1]).toContain('project');
-    });
-
-    it('should pass scope args to plugin install command in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      mockGetScopeArgs.mockReturnValue(['--scope', 'project']);
-
-      await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      const installCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => call[1]?.[0] === 'plugin' && call[1]?.[1] === 'install'
-      );
-      expect(installCalls.length).toBeGreaterThan(0);
-      expect(installCalls[0][1]).toContain('--scope');
-    });
-
-    it('should call getPluginScope with correct arguments', async () => {
-      setupHappyPath();
-
-      await installAllPlugins({ dirname: '/test' });
-
-      expect(mockGetPluginScope).toHaveBeenCalledWith('sw', 'specweave');
-    });
-  });
 
   // ============================================================
   // forceRefresh option (passed through options but used contextually)
@@ -1175,92 +621,9 @@ describe('plugin-installer', () => {
   // Edge cases
   // ============================================================
   describe('edge cases', () => {
-    it('should handle marketplace list returning failure', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: false, stdout: '', stderr: 'error' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(marketplaceJson());
-      mockCleanupStalePlugins.mockResolvedValue({ success: true, removedCount: 0, removedPlugins: [] });
-      mockGetPluginScope.mockReturnValue('user');
-      mockGetScopeArgs.mockReturnValue([]);
-      mockEnablePluginsInSettings.mockReturnValue(true);
-
-      // marketplace list fails -> marketplaceExists is false -> tries add
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle update error with Error object', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: '', error: new Error('SSH connection timed out') };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(marketplaceJson());
-      mockCleanupStalePlugins.mockResolvedValue({ success: true, removedCount: 0, removedPlugins: [] });
-      mockGetPluginScope.mockReturnValue('user');
-      mockGetScopeArgs.mockReturnValue([]);
-      mockEnablePluginsInSettings.mockReturnValue(true);
-
-      // Error message includes "ssh" so should trigger re-registration
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle update error with non-Error object', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'list') {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'update') {
-          return { success: false, stdout: '', stderr: '', error: 'string error with ssh in it' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'remove') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        if (args[0] === 'plugin' && args[1] === 'marketplace' && args[2] === 'add') {
-          return { success: true, stdout: '', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(marketplaceJson());
-      mockCleanupStalePlugins.mockResolvedValue({ success: true, removedCount: 0, removedPlugins: [] });
-      mockGetPluginScope.mockReturnValue('user');
-      mockGetScopeArgs.mockReturnValue([]);
-      mockEnablePluginsInSettings.mockReturnValue(true);
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-
     it('should handle marketplace.json with no plugins key', async () => {
       mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      stubExec([], { success: true, stdout: 'specweave\nclaude-plugins-official', stderr: '' });
+      mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '' });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(JSON.stringify({}));
@@ -1269,6 +632,43 @@ describe('plugin-installer', () => {
 
       // Empty plugins array from `marketplace.plugins || []`
       expect(result.success).toBe(false);
+    });
+
+    it('should handle vskill returning scan CONCERNS verdict', async () => {
+      setupHappyPath();
+      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return {
+            success: true,
+            stdout: 'Score: 70/100  Verdict: CONCERNS\n--force: installing despite CONCERNS.\nInstalled sw to 1 agent',
+            stderr: '',
+          };
+        }
+        return { success: true, stdout: '', stderr: '' };
+      });
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      // Still succeeds because --force was used
+      expect(result.success).toBe(true);
+      expect(result.successCount).toBe(1);
+    });
+
+    it('should handle vskill add returning no scan output', async () => {
+      setupHappyPath();
+      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
+        const argsStr = (args || []).join(' ');
+        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
+          return { success: true, stdout: 'Installed sw to 1 agent', stderr: '' };
+        }
+        return { success: true, stdout: '', stderr: '' };
+      });
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(true);
+      expect(result.successCount).toBe(1);
     });
   });
 });
