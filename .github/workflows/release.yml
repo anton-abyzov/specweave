@@ -85,7 +85,7 @@ jobs:
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+          if grep -q "## \[$VERSION\]" CHANGELOG.md && ! grep -A5 "## \[$VERSION\]" CHANGELOG.md | grep -q "TODO: Describe your changes here"; then
             echo "CHANGELOG entry found for $VERSION"
           else
             echo "Auto-generating CHANGELOG entry for $VERSION..."

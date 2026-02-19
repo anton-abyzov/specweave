@@ -25,7 +25,7 @@ Comprehensive AI/ML plugin covering traditional ML, LLM application development,
 ## Installation
 
 ```bash
-claude plugin install sw-ml@specweave
+vskill add specweave --plugin sw-ml
 ```
 
 ## Requirements

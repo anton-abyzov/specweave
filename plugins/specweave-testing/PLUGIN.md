@@ -22,7 +22,7 @@ Comprehensive testing infrastructure expert covering unit testing (Vitest/Jest),
 ## Installation
 
 ```bash
-claude plugin install sw-testing@specweave
+vskill add specweave --plugin sw-testing
 ```
 
 ## Requirements

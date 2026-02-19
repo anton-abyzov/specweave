@@ -83,16 +83,15 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
     it('should check JSON registry BEFORE claude plugin list', () => {
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
-      // Find the plugin detection section
+      // Find the plugin detection section (non-sw plugins use claude CLI with JSON check)
       const detectionSection = hookContent.substring(
-        hookContent.indexOf('# v1.0.175: Check if plugin is ALREADY installed')
+        hookContent.indexOf('# ---- NON-SW PLUGINS: Install via claude CLI')
       );
 
       // Should have JSON check as primary method
       expect(detectionSection).toContain('check_plugin_installed_from_json');
-      expect(detectionSection).toContain('# Try JSON registry first');
-      // CLI check is in the else block (fallback)
-      expect(detectionSection).toContain('# Fallback to CLI check');
+      // CLI check is in the else block (fallback) when JSON check fails
+      expect(detectionSection).toContain('claude plugin list');
     });
 
     it('should use increased timeout (10s instead of 5s)', () => {
@@ -108,8 +107,8 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
 
       // After install, should re-check registry
       expect(hookContent).toMatch(/sleep 0\.5/); // Brief delay for registry update
-      expect(hookContent).toContain('Double-check: verify it actually got installed');
-      expect(hookContent).toMatch(/Re-check the registry to confirm/);
+      expect(hookContent).toContain('Post-install verification: re-checks registry after install');
+      expect(hookContent).toMatch(/re-checks registry after install to confirm success/);
     });
   });
 
@@ -118,7 +117,7 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
       const hookContent = fs.readFileSync(hookPath, 'utf-8');
 
       // Should have logic to treat install-success-but-not-in-registry as already installed
-      expect(hookContent).toContain('Install claimed success but plugin not in registry');
+      expect(hookContent).toContain('install says "success" but not in registry');
       expect(hookContent).toContain('treat as already installed');
     });
 

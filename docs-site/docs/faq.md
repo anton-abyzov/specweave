@@ -929,28 +929,26 @@ specweave update
 - CLI self-update (npm)
 - Regenerates CLAUDE.md and AGENTS.md
 - Updates config with new defaults
-- Refreshes marketplace plugins (24 plugins, 136 skills, 68 agents)
+- Refreshes plugins (24 plugins, 136 skills, 68 agents)
 
-### When to use `refresh-marketplace` instead
+### When to use `refresh-plugins` instead
 
-Most users should use `specweave update`. The `refresh-marketplace` command exists for specific situations:
+Most users should use `specweave update`. The `refresh-plugins` command exists for specific situations:
 
 ```bash
-specweave refresh-marketplace
+specweave refresh-plugins
 ```
 
-**What it does beyond Claude Code's native auto-update:**
-- Fixes hook permissions (`chmod +x`) — Claude Code doesn't preserve executable bits on shell scripts
+**What it does beyond auto-update:**
+- Fixes hook permissions (`chmod +x`) — executable bits may not be preserved
 - Manages lazy loading state (router-only installation for token efficiency)
 - Cleans up orphaned cache/skills directories
 - Updates instruction files (CLAUDE.md, AGENTS.md)
 
 **When to use it:**
-- Hooks stopped working after Claude Code update (permission issue)
+- Hooks stopped working after an update (permission issue)
 - Skills not activating despite being installed
 - Want to refresh plugins without updating CLI version
-
-**Note:** You can enable Claude Code's native marketplace auto-update via `/plugin` → Marketplaces → Enable auto-update. However, native auto-update doesn't fix hook permissions or manage SpecWeave-specific state like lazy loading.
 
 ### Auto Mode Issues
 
@@ -987,7 +985,7 @@ ls -la .claude/skills/
 specweave update
 
 # If still not working (hook permissions issue):
-specweave refresh-marketplace
+specweave refresh-plugins
 ```
 
 ### Commands not found?
@@ -999,7 +997,7 @@ ls -la .claude/commands/
 specweave update
 
 # If still not working:
-specweave refresh-marketplace
+specweave refresh-plugins
 ```
 
 ### Hooks not firing?

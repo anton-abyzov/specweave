@@ -116,9 +116,9 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 ```bash
 # Plugins auto-install based on detected tech stack
 # Or install manually:
-claude plugin install sw-frontend@specweave
-claude plugin install sw-backend@specweave
-claude plugin install sw-github@specweave
+vskill add specweave --plugin sw-frontend
+vskill add specweave --plugin sw-backend
+vskill add specweave --plugin sw-github
 ```
 
 ---

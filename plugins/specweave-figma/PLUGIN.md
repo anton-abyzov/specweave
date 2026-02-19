@@ -23,7 +23,7 @@ No skills (commands-only plugin)
 ## Installation
 
 ```bash
-claude plugin install sw-figma@specweave
+vskill add specweave --plugin sw-figma
 ```
 
 ## Requirements

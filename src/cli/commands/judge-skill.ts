@@ -24,6 +24,18 @@ export async function judgeSkillCommand(filePath: string, options: JudgeSkillOpt
     return;
   }
 
+  const stat = fs.statSync(filePath);
+  if (!stat.isFile()) {
+    console.error(chalk.red(`Error: Not a regular file: ${filePath}`));
+    process.exit(1);
+    return;
+  }
+  if (stat.size > 1_000_000) {
+    console.error(chalk.red(`Error: File too large (${Math.round(stat.size / 1024)}KB). Max 1MB.`));
+    process.exit(1);
+    return;
+  }
+
   const content = fs.readFileSync(filePath, 'utf-8');
 
   // Tier 1: Pattern scan

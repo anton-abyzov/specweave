@@ -28,63 +28,52 @@ describe('Marketplace Protection - Source Code Verification', () => {
     it('should NOT contain marketplace remove command', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Extract refreshMarketplace function body
-      const functionStart = content.indexOf('async function refreshMarketplace');
-      const functionEnd = content.indexOf('\n}', functionStart) + 2;
-      const functionBody = content.substring(functionStart, functionEnd);
-
-      // CRITICAL: No marketplace remove command
-      expect(functionBody).not.toContain("'marketplace', 'remove'");
-      expect(functionBody).not.toContain('"marketplace", "remove"');
-      expect(functionBody).not.toMatch(/claude.*marketplace.*remove/);
+      // CRITICAL: No marketplace remove command anywhere in the file
+      expect(content).not.toContain("'marketplace', 'remove'");
+      expect(content).not.toContain('"marketplace", "remove"');
+      expect(content).not.toMatch(/claude.*marketplace.*remove/);
     });
 
-    it('should update marketplace when it exists (v0.35.2+)', async () => {
+    it('should use vskill-based installation instead of marketplace (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Extract refreshMarketplace function body
-      const functionStart = content.indexOf('async function refreshMarketplace');
-      const functionEnd = content.indexOf('\n}', functionStart) + 2;
-      const functionBody = content.substring(functionStart, functionEnd);
+      // 0232+: refreshMarketplace() removed, replaced with vskill-based approach
+      expect(content).not.toContain('async function refreshMarketplace');
 
-      // Must check if marketplace exists
-      expect(functionBody).toContain('if (marketplaceExists)');
+      // Must have vskill-based installer function
+      expect(content).toContain('function installPluginViaVskill');
 
-      // v0.35.2+: When marketplace exists, UPDATE it (better than early return!)
-      // This ensures users get latest plugins on each init
-      expect(functionBody).toContain("'update'");
-      expect(functionBody).toContain('Marketplace updated');
+      // Must resolve vskill path
+      expect(content).toContain('resolveVskillPath');
     });
 
-    it('should only add marketplace when it does NOT exist', async () => {
+    it('should install plugins via vskill add instead of marketplace add (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Extract refreshMarketplace function body
-      const functionStart = content.indexOf('async function refreshMarketplace');
-      const functionEnd = content.indexOf('\n}', functionStart) + 2;
-      const functionBody = content.substring(functionStart, functionEnd);
+      // 0232+: No marketplace CLI commands
+      expect(content).not.toContain("'marketplace', 'add'");
+      expect(content).not.toContain("'marketplace', 'update'");
 
-      // Must have marketplace add command
-      expect(functionBody).toContain("'marketplace'");
-      expect(functionBody).toContain("'add'");
-      // v1.0.24+: Uses SPECWEAVE_MARKETPLACE_URL constant instead of inline string
-      expect(functionBody).toContain('SPECWEAVE_MARKETPLACE_URL');
-      // Verify the constant is defined correctly at file level
-      expect(content).toContain("const SPECWEAVE_MARKETPLACE_REPO = 'anton-abyzov/specweave'");
+      // Uses vskill add instead
+      expect(content).toContain("vskill");
+      expect(content).toContain("'add'");
+
+      // Must resolve specweave plugin directory
+      expect(content).toContain('resolveSpecweavePluginDir');
     });
 
-    it('should have proper documentation for marketplace handling', async () => {
+    it('should have proper documentation for vskill-based installation (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Extract refreshMarketplace function and its JSDoc
-      const docStart = content.lastIndexOf('/**', content.indexOf('async function refreshMarketplace'));
-      const functionEnd = content.indexOf('\n}', content.indexOf('async function refreshMarketplace')) + 2;
+      // Extract installPluginViaVskill function and its JSDoc
+      const docStart = content.lastIndexOf('/**', content.indexOf('function installPluginViaVskill'));
+      const functionEnd = content.indexOf('\n}', content.indexOf('function installPluginViaVskill')) + 2;
       const functionWithDoc = content.substring(docStart, functionEnd);
 
-      // Must document the approach (v0.35.2+: simplified, no longer has CRITICAL FIX comment)
-      expect(functionWithDoc).toContain('marketplace');
+      // Must document the vskill approach
+      expect(functionWithDoc).toContain('vskill');
       expect(functionWithDoc).toContain('add');
-      expect(functionWithDoc).toContain('update');
+      expect(functionWithDoc).toContain('plugin');
     });
   });
 
@@ -98,21 +87,27 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(content).not.toContain('isSpecWeaveFrameworkRepository');
     });
 
-    it('should use marketplace list to check existence', async () => {
+    it('should use vskill to install plugins instead of marketplace list (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Check marketplace via CLI, not manual cache inspection
-      expect(content).toContain("'marketplace', 'list'");
-      expect(content).toContain('marketplaceExists');
+      // 0232+: No marketplace list command - vskill handles installation directly
+      expect(content).not.toContain("'marketplace', 'list'");
+
+      // Uses vskill for plugin installation
+      expect(content).toContain('installPluginViaVskill');
+
+      // Handles already-installed case via vskill output
+      expect(content).toContain('alreadyInstalled');
     });
 
-    it('should check core plugin by name when installing', async () => {
+    it('should install core sw plugin via vskill (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Must check core plugin by name (for sorting and special handling)
-      // v0.35.2+: Uses pluginName === 'specweave' for sorting and special install
-      expect(content).toContain("pluginName === 'specweave'");
-      expect(content).toContain("a.name === 'specweave'"); // Sort comparison
+      // 0232+: Core plugin is 'sw', installed via vskill with --plugin flag
+      expect(content).toContain("{ name: 'sw'");
+      expect(content).toContain("'--plugin'");
+
+      // No plugins.length >= 25 guard (removed as over-engineering)
       expect(content).not.toMatch(/plugins\.length\s*>=\s*25/);
     });
   });
@@ -204,50 +199,49 @@ describe('Marketplace Protection - Behavioral Verification', () => {
     expect(functionBody).not.toContain("'remove'");
   });
 
-  it('should check marketplace existence before any operations', async () => {
+  it('should use vskill add with plugin-dir flag (0232+)', async () => {
     const pluginInstallerPath = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
     );
     const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-    // Extract refreshMarketplace function
-    const functionStart = content.indexOf('async function refreshMarketplace');
+    // Extract installPluginViaVskill function body
+    const functionStart = content.indexOf('function installPluginViaVskill');
     const functionEnd = content.indexOf('\n}', functionStart) + 2;
     const functionBody = content.substring(functionStart, functionEnd);
 
-    // Must check existence first
-    const listIndex = functionBody.indexOf("'list'");
+    // Must use vskill add with --plugin and --plugin-dir flags
     const addIndex = functionBody.indexOf("'add'");
+    const pluginFlagIndex = functionBody.indexOf("'--plugin'");
+    const pluginDirFlagIndex = functionBody.indexOf("'--plugin-dir'");
 
-    // List (existence check) must come before add
-    expect(listIndex).toBeGreaterThan(0);
-    expect(addIndex).toBeGreaterThan(listIndex);
+    // vskill add must come first, then flags
+    expect(addIndex).toBeGreaterThan(0);
+    expect(pluginFlagIndex).toBeGreaterThan(addIndex);
+    expect(pluginDirFlagIndex).toBeGreaterThan(addIndex);
   });
 
-  it('should be idempotent - same result regardless of call count', async () => {
+  it('should be idempotent - same result regardless of call count (0232+)', async () => {
     const pluginInstallerPath = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
     );
     const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-    // Extract refreshMarketplace function
-    const functionStart = content.indexOf('async function refreshMarketplace');
-    const functionEnd = content.indexOf('\n}', functionStart) + 2;
-    const functionBody = content.substring(functionStart, functionEnd);
+    // 0232+: Idempotency guaranteed by vskill handling already-installed case
+    // - If plugin already installed → vskill returns "already" in output
+    // - installPluginViaVskill detects this and returns alreadyInstalled=true
+    // - No destructive remove/re-add cycle needed
 
-    // Idempotency is guaranteed by:
-    // 1. Checking if marketplace exists first
-    // 2. If exists → UPDATE (v0.35.2+: better than early return, gets latest)
-    // 3. If not exists → ADD
-    // 4. Remove ONLY for SSH auth failure recovery (v1.0.24) - then re-add with HTTPS
+    // Must have installPluginViaVskill function
+    expect(content).toContain('function installPluginViaVskill');
 
-    expect(functionBody).toContain('marketplaceExists');
-    expect(functionBody).toContain("'update'"); // Update if exists (v0.35.2+)
-    expect(functionBody).toContain("'add'"); // Add if not exists
-    // v1.0.24: Remove is now allowed in SSH failure recovery path
-    // (remove old SSH-based registration, re-add with HTTPS)
-    expect(functionBody).toContain('SSH authentication failed');
+    // Must handle already-installed case gracefully
+    expect(content).toContain('alreadyInstalled');
+    expect(content).toContain("'already'");
+
+    // No marketplace remove operations (idempotent: never destructive)
+    expect(content).not.toContain("'marketplace', 'remove'");
   });
 });

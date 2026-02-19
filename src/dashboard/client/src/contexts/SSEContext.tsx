@@ -17,6 +17,7 @@ const EVENT_TYPES = [
   'cost-update', 'notification', 'sync-update', 'sync-audit',
   'error-detected', 'config-changed', 'activity',
   'command-output', 'command-complete', 'job-progress',
+  'marketplace-scan', 'submission-update', 'verification-complete',
 ];
 
 export function SSEProvider({ url = '/api/events', children }: { url?: string; children: ReactNode }) {
@@ -37,16 +38,21 @@ export function SSEProvider({ url = '/api/events', children }: { url?: string; c
 
     for (const type of EVENT_TYPES) {
       es.addEventListener(type, (event: MessageEvent) => {
+        let data: unknown;
         try {
-          const data = JSON.parse(event.data);
-          const handlers = listenersRef.current.get(type);
-          if (handlers) {
-            for (const handler of handlers) {
+          data = JSON.parse(event.data);
+        } catch {
+          return; // Ignore parse errors
+        }
+        const handlers = listenersRef.current.get(type);
+        if (handlers) {
+          for (const handler of handlers) {
+            try {
               handler(data);
+            } catch {
+              // Isolate handler failures — one broken handler must not break others
             }
           }
-        } catch {
-          // Ignore parse errors
         }
       });
     }

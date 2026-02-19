@@ -82,38 +82,6 @@ describe('CostAggregator - billing context', () => {
     });
   });
 
-  describe('isMaxPlan config-driven detection', () => {
-    it('should set isMaxPlan to true when planType is "subscription"', async () => {
-      writeSession('session-001', [
-        makeAssistantEntry('claude-opus-4-6', { input: 1000, output: 500 }, '2026-02-15T10:00:00Z'),
-      ]);
-
-      const result = await aggregator.getTokenSummaries(200, { planType: 'subscription' });
-
-      expect(result.isMaxPlan).toBe(true);
-    });
-
-    it('should set isMaxPlan to false when planType is "api"', async () => {
-      writeSession('session-001', [
-        makeAssistantEntry('claude-opus-4-6', { input: 1000, output: 500 }, '2026-02-15T10:00:00Z'),
-      ]);
-
-      const result = await aggregator.getTokenSummaries(200, { planType: 'api' });
-
-      expect(result.isMaxPlan).toBe(false);
-    });
-
-    it('should set isMaxPlan to false when no billingConfig provided', async () => {
-      writeSession('session-001', [
-        makeAssistantEntry('claude-opus-4-6', { input: 1000, output: 500 }, '2026-02-15T10:00:00Z'),
-      ]);
-
-      const result = await aggregator.getTokenSummaries();
-
-      expect(result.isMaxPlan).toBe(false);
-    });
-  });
-
   describe('totalCost is always API-equivalent', () => {
     it('should compute non-zero totalCost even for subscription plans', async () => {
       writeSession('session-001', [
@@ -125,9 +93,9 @@ describe('CostAggregator - billing context', () => {
         monthlyAmount: 200,
       });
 
-      // Cost = (10000 * 15 + 5000 * 75) / 1_000_000 = (150000 + 375000) / 1_000_000 = 0.525
+      // Cost = (10000 * 5 + 5000 * 25) / 1_000_000 = (50000 + 125000) / 1_000_000 = 0.175
       expect(result.totalCost).toBeGreaterThan(0);
-      expect(result.totalCost).toBeCloseTo(0.525, 4);
+      expect(result.totalCost).toBeCloseTo(0.175, 4);
     });
   });
 
@@ -144,13 +112,13 @@ describe('CostAggregator - billing context', () => {
 
       const result = await aggregator.getTokenSummaries();
 
-      // Cost = (100000*15 + 50000*75 + 200000*18.75 + 1000000*1.50) / 1_000_000
-      //      = (1_500_000 + 3_750_000 + 3_750_000 + 1_500_000) / 1_000_000
-      //      = 10_500_000 / 1_000_000 = 10.50
-      expect(result.totalCost).toBeCloseTo(10.50, 4);
+      // Cost = (100000*5 + 50000*25 + 200000*6.25 + 1000000*0.50) / 1_000_000
+      //      = (500_000 + 1_250_000 + 1_250_000 + 500_000) / 1_000_000
+      //      = 3_500_000 / 1_000_000 = 3.50
+      expect(result.totalCost).toBeCloseTo(3.50, 4);
 
-      // Savings = 1000000 * (15 - 1.50) / 1_000_000 = 13.50
-      expect(result.totalSavings).toBeCloseTo(13.50, 4);
+      // Savings = 1000000 * (5 - 0.50) / 1_000_000 = 4.50
+      expect(result.totalSavings).toBeCloseTo(4.50, 4);
     });
 
     it('should calculate Sonnet costs correctly', async () => {
@@ -177,8 +145,8 @@ describe('CostAggregator - billing context', () => {
 
       const result = await aggregator.getTokenSummaries();
 
-      // Cost = (100000*0.80 + 50000*4) / 1_000_000 = (80_000 + 200_000) / 1_000_000 = 0.28
-      expect(result.totalCost).toBeCloseTo(0.28, 4);
+      // Cost = (100000*1 + 50000*5) / 1_000_000 = (100_000 + 250_000) / 1_000_000 = 0.35
+      expect(result.totalCost).toBeCloseTo(0.35, 4);
     });
   });
 

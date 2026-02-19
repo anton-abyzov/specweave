@@ -18,6 +18,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
+import { resolveVskillPath as _resolveVskillPath, resolveSpecweaveDir as _resolveSpecweaveDir } from '../../utils/vskill-resolver.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
 import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
@@ -1237,10 +1238,46 @@ Which plugins should be loaded?`;
 }
 
 /**
- * Install a SpecWeave plugin using Claude CLI
+ * Check if a plugin is already installed via vskill lockfile
  *
- * Uses `claude plugin install <name>` which is the official API.
- * This properly registers the plugin in installed_plugins.json.
+ * Reads vskill.lock from cwd and checks if the plugin has an entry.
+ * This provides a fast-path to skip installation when plugin is
+ * already present with a matching hash.
+ *
+ * @param pluginName - Name of the plugin to check
+ * @returns true if plugin is in the lockfile
+ */
+function isPluginInVskillLock(pluginName: string): boolean {
+  try {
+    const lockPath = path.join(process.cwd(), 'vskill.lock');
+    if (!fs.existsSync(lockPath)) {
+      return false;
+    }
+    const content = fs.readFileSync(lockPath, 'utf-8');
+    const lock = JSON.parse(content);
+    return lock.skills && pluginName in lock.skills;
+  } catch {
+    return false;
+  }
+}
+
+/** Resolve vskill path from this module's location */
+function resolveVskillCliPath(): string {
+  return _resolveVskillPath(__dirname);
+}
+
+/** Resolve specweave source directory */
+function resolveSpecweaveDir(): string {
+  return _resolveSpecweaveDir(__dirname);
+}
+
+/**
+ * Install a SpecWeave plugin using vskill
+ *
+ * Uses vskill add with --plugin and --plugin-dir flags for local
+ * plugin directory installation with security scanning.
+ *
+ * Fast-path: If plugin is already in vskill.lock, skip installation.
  *
  * @param pluginName - Name of the plugin to install
  * @param timeout - Timeout in milliseconds
@@ -1262,7 +1299,7 @@ export async function installPluginViaCli(
     };
   }
 
-  // Check CLI availability
+  // Check CLI availability (still needed for detect-intent etc.)
   const cliStatus = isClaudeCliAvailable();
   if (!cliStatus.available) {
     return {
@@ -1272,15 +1309,35 @@ export async function installPluginViaCli(
     };
   }
 
-  // Determine marketplace: sw-* → @specweave, others → @claude-plugins-official
-  const marketplace = isSW ? 'specweave' : 'claude-plugins-official';
-  const fullPluginName = `${pluginName}@${marketplace}`;
+  // Fast-path: Check vskill.lock - skip if already installed
+  if (isPluginInVskillLock(pluginName)) {
+    logger.debug(`Plugin ${pluginName} already in vskill.lock, skipping installation`);
+    return {
+      success: true,
+      plugin: pluginName,
+      alreadyInstalled: true,
+    };
+  }
 
+  // Install via vskill
   try {
-    // Domain plugins (sw-frontend, sw-github, etc.) → project scope
-    // Core plugin (sw) → user scope
-    const scopeArgs = getScopeArgs(getPluginScope(pluginName, marketplace));
-    const result = executeClaudeCli(['plugin', 'install', fullPluginName, ...scopeArgs], timeout);
+    const vskillPath = resolveVskillCliPath();
+    const pluginDir = resolveSpecweaveDir();
+
+    const result = spawnSync('node', [
+      vskillPath,
+      'add',
+      pluginDir,
+      '--plugin', pluginName,
+      '--plugin-dir', pluginDir,
+      '--force', // Auto-accept scan results during lazy loading
+    ], {
+      encoding: 'utf8',
+      timeout,
+      maxBuffer: 1024 * 1024,
+      windowsHide: true,
+      cwd: process.cwd(),
+    });
 
     // Handle spawn errors
     if (result.error) {
@@ -1297,7 +1354,7 @@ export async function installPluginViaCli(
     const combined = `${stdout} ${stderr}`.toLowerCase();
 
     // Already installed is a success
-    if (combined.includes('already installed')) {
+    if (combined.includes('already')) {
       return {
         success: true,
         plugin: pluginName,

@@ -5,7 +5,7 @@
  * that can run in background while user continues working.
  */
 
-export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder' | 'codebase-rescan';
+export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder' | 'codebase-rescan' | 'marketplace-scan';
 
 export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'completed_with_warnings' | 'failed';
 
@@ -228,7 +228,26 @@ export interface CodebaseRescanJobConfig {
   };
 }
 
-export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig | LivingDocsJobConfig | CodebaseRescanJobConfig;
+/**
+ * Marketplace scanner job configuration
+ *
+ * Scans GitHub for community Claude Code skills and feeds them
+ * through the submission queue for security verification.
+ */
+export interface MarketplaceScanJobConfig {
+  type: 'marketplace-scan';
+  projectPath: string;
+  searchTopics: string[];
+  searchFilenames: string[];
+  maxResultsPerScan: number;
+  intervalMinutes: number;
+  checkpoint?: {
+    lastCursor: string;
+    seenRepos: string[];
+  };
+}
+
+export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig | LivingDocsJobConfig | CodebaseRescanJobConfig | MarketplaceScanJobConfig;
 
 export interface JobState {
   jobs: BackgroundJob[];

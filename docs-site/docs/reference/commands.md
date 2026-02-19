@@ -505,7 +505,7 @@ Commands run directly in terminal (not slash commands).
 |---------|---------|
 | `specweave init .` | Initialize project |
 | `specweave update` | Full update (CLI + plugins + instructions) |
-| `specweave refresh-marketplace` | Plugin-only refresh |
+| `specweave refresh-plugins` | Plugin-only refresh |
 | `specweave lsp refs Symbol` | Find references (LSP workaround) |
 | `specweave lsp def Symbol` | Go to definition |
 

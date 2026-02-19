@@ -202,7 +202,7 @@ fi
 # When user submits a prompt like "Build React dashboard", the LLM analyzes
 # the request and installs relevant plugins (sw-frontend, etc.)
 #
-# To install plugins manually: claude plugin install sw-frontend@specweave
+# To install plugins manually: vskill install sw-frontend@specweave
 
 # === LEGACY STATE CLEANUP (v1.0.148) ===
 # Clean up old processor state files on session start

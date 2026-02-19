@@ -13,6 +13,7 @@ import { PluginScanner } from './data/plugin-scanner.js';
 import { SyncAuditReader } from './data/sync-audit-reader.js';
 import { ActivityStream } from './data/activity-stream.js';
 import { CostAggregator } from './data/cost-aggregator.js';
+import { MarketplaceAggregator } from './data/marketplace-aggregator.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,6 +57,7 @@ export class DashboardServer {
     pluginScanner: PluginScanner;
     auditReader: SyncAuditReader;
     activityStream: ActivityStream;
+    marketplaceAggregator: MarketplaceAggregator;
   }>();
 
   constructor(private options: DashboardServerOptions) {
@@ -83,6 +85,7 @@ export class DashboardServer {
     const pluginScanner = new PluginScanner(projectRoot);
     const auditReader = new SyncAuditReader(projectRoot);
     const activityStream = new ActivityStream(projectRoot);
+    const marketplaceAggregator = new MarketplaceAggregator(projectRoot);
     const commandRunner = new CommandRunner(projectRoot, {
       onOutput: (execId, line, stream) => {
         this.sseManager.broadcast('command-output', { projectId: id, executionId: execId, line, stream });
@@ -102,7 +105,7 @@ export class DashboardServer {
       });
     });
 
-    this.projects.set(id, { root: projectRoot, watcher, aggregator, costAggregator, commandRunner, logParser, pluginScanner, auditReader, activityStream });
+    this.projects.set(id, { root: projectRoot, watcher, aggregator, costAggregator, commandRunner, logParser, pluginScanner, auditReader, activityStream, marketplaceAggregator });
     return this.getProjectInfo(id, projectRoot);
   }
 
@@ -225,6 +228,7 @@ export class DashboardServer {
     pluginScanner: PluginScanner;
     auditReader: SyncAuditReader;
     activityStream: ActivityStream;
+    marketplaceAggregator: MarketplaceAggregator;
     id: string;
     root: string;
   } | null {
@@ -239,6 +243,7 @@ export class DashboardServer {
       pluginScanner: p.pluginScanner,
       auditReader: p.auditReader,
       activityStream: p.activityStream,
+      marketplaceAggregator: p.marketplaceAggregator,
       id,
       root: p.root,
     });
@@ -312,7 +317,7 @@ export class DashboardServer {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const config = await project.aggregator.getConfig();
-      const billingConfig = (config as any)?.billing;
+      const billingConfig = config.billing as { planType?: string; monthlyAmount?: number } | undefined;
       const costData = await project.costAggregator.getTokenSummaries(50, billingConfig);
       const data = await project.aggregator.getOverview(costData);
       // Ensure project name is always set using the resolved project info
@@ -351,7 +356,7 @@ export class DashboardServer {
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const limit = safeParseInt(url.searchParams.get('limit'), 200, 1, 500);
       const config = await project.aggregator.getConfig();
-      const billingConfig = (config as any)?.billing;
+      const billingConfig = config.billing as { planType?: string; monthlyAmount?: number } | undefined;
       const data = await project.costAggregator.getTokenSummaries(limit, billingConfig);
       sendJson(res, { ok: true, data });
     });
@@ -807,6 +812,112 @@ export class DashboardServer {
       }
       sendJson(res, { ok: true, data: links });
     });
+
+    // === Marketplace ===
+
+    // Scanner status
+    this.router.get('/api/marketplace/scanner/status', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.marketplaceAggregator.getScannerStatus();
+      sendJson(res, { ok: true, data });
+    });
+
+    // Start scanner
+    this.router.post('/api/marketplace/scanner/start', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      try {
+        const { launchMarketplaceScanJob } = await import('../../core/background/job-launcher.js');
+        const config = await project.aggregator.getConfig() as any;
+        const scannerConfig = config?.marketplace?.scanner || {};
+        const result = await launchMarketplaceScanJob({
+          projectPath: project.root,
+          searchTopics: scannerConfig.searchTopics || ['claude-code-skill', 'specweave-plugin'],
+          searchFilenames: scannerConfig.searchFilenames || ['SKILL.md'],
+          maxResultsPerScan: scannerConfig.maxResultsPerScan || 100,
+          intervalMinutes: scannerConfig.intervalMinutes || 60,
+        });
+        sendJson(res, { ok: true, data: result });
+      } catch (e: any) {
+        sendJson(res, { ok: false, error: e.message || 'Failed to start scanner' }, 500);
+      }
+    });
+
+    // Stop scanner
+    this.router.post('/api/marketplace/scanner/stop', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      try {
+        const { killJob } = await import('../../core/background/job-launcher.js');
+        const { getJobManager: getJM } = await import('../../core/background/job-manager.js');
+        const jobManager = getJM(project.root);
+        const activeJobs = jobManager.getActiveJobs();
+        const scannerJob = activeJobs.find(
+          j => j.type === 'marketplace-scan' && (j.status === 'running' || j.status === 'pending'),
+        );
+        if (scannerJob) {
+          killJob(project.root, scannerJob.id);
+        }
+        sendJson(res, { ok: true });
+      } catch (e: any) {
+        sendJson(res, { ok: false, error: e.message || 'Failed to stop scanner' }, 500);
+      }
+    });
+
+    // Queue (paginated, filterable)
+    this.router.get('/api/marketplace/queue', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const status = url.searchParams.get('status') || undefined;
+      const limit = safeParseInt(url.searchParams.get('limit'), 20, 1, 100);
+      const offset = safeParseInt(url.searchParams.get('offset'), 0, 0, 100000);
+      const data = await project.marketplaceAggregator.getQueue({ status: status as any, limit, offset });
+      sendJson(res, { ok: true, data });
+    });
+
+    // Single submission
+    this.router.get('/api/marketplace/queue/:id', async (req, res, params) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.marketplaceAggregator.getSubmission(params.id);
+      if (!data) return sendJson(res, { ok: false, error: 'Submission not found' }, 404);
+      sendJson(res, { ok: true, data });
+    });
+
+    // Approve
+    this.router.post('/api/marketplace/queue/:id/approve', async (req, res, params) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      await project.marketplaceAggregator.approveSubmission(params.id);
+      sendJson(res, { ok: true });
+    });
+
+    // Reject
+    this.router.post('/api/marketplace/queue/:id/reject', async (req, res, params) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const body = await readBody(req) as { reason?: string };
+      await project.marketplaceAggregator.rejectSubmission(params.id, body?.reason || 'No reason provided');
+      sendJson(res, { ok: true });
+    });
+
+    // Verified skills only
+    this.router.get('/api/marketplace/verified', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.marketplaceAggregator.getVerifiedSkills();
+      sendJson(res, { ok: true, data });
+    });
+
+    // Insights/analytics
+    this.router.get('/api/marketplace/insights', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.marketplaceAggregator.getInsights();
+      sendJson(res, { ok: true, data });
+    });
   }
 
   private async serveStaticFile(
@@ -864,6 +975,9 @@ export class DashboardServer {
       'sync-audit': 'sync',
       'config-changed': 'command',
       'error-detected': 'error',
+      'submission-update': 'command',
+      'marketplace-scan': 'command',
+      'verification-complete': 'command',
     };
     return map[eventType] || 'command';
   }

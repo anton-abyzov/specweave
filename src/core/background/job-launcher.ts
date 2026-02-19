@@ -11,7 +11,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { getJobManager } from './job-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
-import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs, CodebaseRescanJobConfig } from './types.js';
+import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs, CodebaseRescanJobConfig, MarketplaceScanJobConfig } from './types.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -532,6 +532,122 @@ export async function launchCodebaseRescanJob(options: CodebaseRescanLaunchOptio
   if (!workerPath) {
     // Fallback to foreground if worker not found
     moduleLogger.warn('Codebase rescan worker not found, will run in foreground');
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Spawn detached process
+  const child = spawn('node', [workerPath, job.id, projectPath], {
+    detached: true,
+    stdio: 'ignore',
+    cwd: projectPath,
+    windowsHide: true,
+    env: {
+      ...process.env,
+      SPECWEAVE_BACKGROUND_JOB: '1'
+    }
+  });
+
+  // Unref to allow parent to exit independently
+  child.unref();
+
+  // Validate worker actually started before reporting success
+  await validateWorkerStarted(projectPath, job.id, child.pid);
+
+  // Update job with PID
+  const updatedJob = jobManager.getJob(job.id);
+  if (updatedJob) {
+    (updatedJob as any).pid = child.pid;
+    (updatedJob as any).isBackground = true;
+  }
+
+  return {
+    job: updatedJob || job,
+    pid: child.pid,
+    isBackground: true
+  };
+}
+
+export interface MarketplaceScanLaunchOptions {
+  /** Project path */
+  projectPath: string;
+  /** GitHub topics to search for */
+  searchTopics: string[];
+  /** Filenames to search for in repos */
+  searchFilenames: string[];
+  /** Maximum results per scan cycle */
+  maxResultsPerScan?: number;
+  /** Minutes between scan cycles */
+  intervalMinutes?: number;
+  /** Run in foreground (blocking) instead of background */
+  foreground?: boolean;
+}
+
+/**
+ * Launch a marketplace scan job
+ *
+ * Scans GitHub for community Claude Code skills and feeds them
+ * through the submission queue for security verification.
+ *
+ * @param options Launch configuration
+ * @returns Job info and process details
+ */
+export async function launchMarketplaceScanJob(options: MarketplaceScanLaunchOptions): Promise<LaunchResult> {
+  const {
+    projectPath,
+    searchTopics,
+    searchFilenames,
+    maxResultsPerScan = 100,
+    intervalMinutes = 60,
+    foreground = false,
+  } = options;
+
+  // Create job via job manager
+  const jobManager = getJobManager(projectPath);
+
+  const jobConfig: MarketplaceScanJobConfig = {
+    type: 'marketplace-scan',
+    projectPath,
+    searchTopics,
+    searchFilenames,
+    maxResultsPerScan,
+    intervalMinutes,
+  };
+
+  const job = jobManager.createJob('marketplace-scan', jobConfig, maxResultsPerScan);
+
+  // Create job-specific directory for config and logs
+  const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
+  fs.ensureDirSync(jobDir);
+
+  // Write worker config
+  const configPath = path.join(jobDir, 'config.json');
+  fs.writeFileSync(configPath, JSON.stringify({
+    jobId: job.id,
+    projectPath,
+    searchTopics,
+    searchFilenames,
+    maxResultsPerScan,
+    intervalMinutes,
+    startedAt: new Date().toISOString()
+  }, null, 2));
+
+  // If foreground mode, return job without spawning worker
+  if (foreground) {
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Find marketplace scanner worker script path
+  const workerPath = findWorkerByName('marketplace-scanner-worker.js');
+
+  if (!workerPath) {
+    // Fallback to foreground if worker not found
+    moduleLogger.warn('Marketplace scanner worker not found, will run in foreground');
     return {
       job,
       isBackground: false

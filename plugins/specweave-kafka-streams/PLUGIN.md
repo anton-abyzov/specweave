@@ -17,7 +17,7 @@ Specialized plugin for Kafka Streams topology design and stream processing. Cove
 ## Installation
 
 ```bash
-claude plugin install sw-kafka-streams@specweave
+vskill add specweave --plugin sw-kafka-streams
 ```
 
 ## Requirements

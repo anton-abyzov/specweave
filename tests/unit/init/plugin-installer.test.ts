@@ -213,7 +213,7 @@ describe('Plugin Installer - Marketplace Protection', () => {
       // The actual test is that the mock throws if update is called
     });
 
-    it('should document the use of official marketplace commands', async () => {
+    it('should document the use of vskill-based plugin installation', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -222,20 +222,16 @@ describe('Plugin Installer - Marketplace Protection', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify the fix is documented with version
-        expect(content).toContain('CRITICAL FIX');
-        expect(content).toContain('v0.35.2');
+        // Verify vskill is used for installation
+        expect(content).toContain('vskill');
+        expect(content).toContain('installPluginViaVskill');
 
-        // Verify it uses official commands (array format in source)
-        expect(content).toContain("'marketplace',");
-        expect(content).toContain("'update',");
-        expect(content).toContain("'add',");
-        expect(content).toContain("'list'");
+        // Verify it uses vskill add command
+        expect(content).toContain("'add'");
 
         // Verify documentation explains the approach
-        // (v0.35.2+ uses simplified marketplace registration)
-        expect(content).toContain('Simplified marketplace registration');
-        expect(content).toContain('Claude CLI handles caching');
+        // (vskill-based installation with security scanning)
+        expect(content).toContain('via vskill');
       }
     });
 
@@ -416,9 +412,8 @@ describe('Stale Plugin Cleanup (v0.35.2)', () => {
 });
 
 describe('HTTPS URL for Public Repos (v0.35.3)', () => {
-  it('should use full HTTPS URL for marketplace add, NOT owner/repo format', async () => {
-    // CRITICAL: Claude CLI converts owner/repo to SSH URL which fails without SSH keys.
-    // We MUST use full HTTPS URL for public repos to work for all users.
+  it('should use vskill for plugin installation, NOT marketplace commands', async () => {
+    // vskill installs plugins from a local directory - no SSH keys or HTTPS URLs needed.
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -427,24 +422,20 @@ describe('HTTPS URL for Public Repos (v0.35.3)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify HTTPS URL constant is defined (DRY principle - better than hardcoded strings)
-      expect(content).toContain('SPECWEAVE_MARKETPLACE_URL');
-      expect(content).toContain('https://github.com');
-      expect(content).toContain('anton-abyzov/specweave');
+      // Verify vskill path resolver is used
+      expect(content).toContain('resolveVskillPath');
+      expect(content).toContain('resolveSpecweavePluginDir');
 
-      // Verify the constant is used in marketplace add commands
-      expect(content).toContain('SPECWEAVE_MARKETPLACE_URL');
+      // Verify the install uses plugin-dir flag (local path, not remote URL)
+      expect(content).toContain('--plugin-dir');
 
-      // Verify the old owner/repo format is NOT used directly in marketplace add
-      expect(content).not.toMatch(/'add',\s*\n\s*'anton-abyzov\/specweave'/);
-
-      // Verify the fix is documented
-      expect(content).toContain('HTTPS URL');
-      expect(content).toContain('SSH');
+      // Verify marketplace add/update commands are NOT used for plugin installation
+      expect(content).not.toContain("'marketplace add'");
+      expect(content).not.toContain('SPECWEAVE_MARKETPLACE_URL');
     }
   });
 
-  it('should document why HTTPS is required in comments', async () => {
+  it('should document the vskill-based installation approach in comments', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -453,16 +444,16 @@ describe('HTTPS URL for Public Repos (v0.35.3)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify the comment explains the issue
-      expect(content).toContain('Claude CLI converts owner/repo to SSH URL');
-      expect(content).toContain('SSH keys');
-      expect(content).toContain('public repo');
+      // Verify the comment explains the vskill approach
+      expect(content).toContain('vskill');
+      expect(content).toContain('security scan');
+      expect(content).toContain('plugin');
     }
   });
 });
 
 describe('Regression Prevention', () => {
-  it('should document the v0.35.2 fix in source code', async () => {
+  it('should document the vskill migration in source code', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -471,18 +462,16 @@ describe('Regression Prevention', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify the fix is documented with:
-      // 1. Version number
-      expect(content).toContain('v0.35.2');
+      // Verify the implementation uses vskill
+      expect(content).toContain('vskill');
 
-      // 2. Uses official Claude CLI commands (array format in source)
-      expect(content).toContain("'marketplace',");
-      expect(content).toContain("'update',");
-      expect(content).toContain("'add',");
+      // Verify vskill add command is used for installation
+      expect(content).toContain("'add'");
+      expect(content).toContain('installPluginViaVskill');
 
-      // 3. Documents the approach (simplified in v0.35.2)
-      expect(content).toContain('Simplified marketplace registration');
-      expect(content).toContain('Claude CLI handles caching');
+      // Verify it documents lazy loading mode
+      expect(content).toContain('lazy');
+      expect(content).toContain('on-demand');
     }
   });
 
@@ -539,7 +528,7 @@ describe('Regression Prevention', () => {
     }
   });
 
-  it('should NOT contain cache management logic (simplified in v0.35.2)', async () => {
+  it('should NOT contain cache management logic (removed with vskill migration)', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -548,14 +537,14 @@ describe('Regression Prevention', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // These patterns were removed in v0.35.2
+      // These patterns were removed with the vskill migration
       expect(content).not.toContain('cacheAge');
       expect(content).not.toContain('cacheTTL');
       expect(content).not.toContain('needsRefresh');
       expect(content).not.toContain('marketplaceCachePath');
 
-      // Verify comment about Claude CLI handling caching
-      expect(content).toContain('Claude CLI handles');
+      // Verify vskill handles installation directly (no cache management needed)
+      expect(content).toContain('installPluginViaVskill');
     }
   });
 });
@@ -641,7 +630,7 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       }
     });
 
-    it('should have fallback to CLI-based install if cache manager fails', async () => {
+    it('should install core plugin via vskill with alreadyInstalled handling', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -650,8 +639,11 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify fallback exists for core plugin
-        expect(content).toContain('/plugin install sw@specweave');
+        // Verify vskill is used for core plugin installation
+        expect(content).toContain('installPluginViaVskill');
+
+        // Verify already-installed case is handled gracefully
+        expect(content).toContain('alreadyInstalled');
       }
     });
   });

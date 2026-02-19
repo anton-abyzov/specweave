@@ -24,7 +24,7 @@ Create and manage architecture diagrams following C4 Model conventions and SpecW
 ## Installation
 
 ```bash
-claude plugin install sw-diagrams@specweave
+vskill add specweave --plugin sw-diagrams
 ```
 
 ## Requirements

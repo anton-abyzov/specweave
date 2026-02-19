@@ -235,6 +235,27 @@ export function mergeInstructionFile(
   };
 }
 
+/**
+ * Strip all SW-managed sections from an instruction file, returning only user content.
+ * Returns null if no user content remains (file was 100% SW-managed or empty).
+ */
+export function stripSwSections(content: string): string | null {
+  if (!content || !content.trim()) return null;
+
+  const parsed = parseFile(content);
+
+  // Legacy file or file with no SW markers — it's all user content
+  if (parsed.isLegacy && parsed.swSections.size === 0) {
+    return content.trim() || null;
+  }
+
+  // Has SW sections — extract only user segments
+  if (parsed.userSegments.length === 0) return null;
+
+  const userContent = parsed.userSegments.map(s => s.content).join('\n\n').trim();
+  return userContent || null;
+}
+
 export function parseTemplateSections(content: string): TemplateSection[] {
   const secs: TemplateSection[] = [];
   const lines = content.split('\n');

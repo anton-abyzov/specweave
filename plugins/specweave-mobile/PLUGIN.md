@@ -24,7 +24,7 @@ Comprehensive mobile development plugin covering native iOS (SwiftUI), native An
 ## Installation
 
 ```bash
-claude plugin install sw-mobile@specweave
+vskill add specweave --plugin sw-mobile
 ```
 
 ## Requirements

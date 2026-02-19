@@ -33,6 +33,7 @@ export class FileWatcher {
       { relativePath: '.specweave/config.json', eventType: 'config-changed' },
       { relativePath: '.specweave/state/prompt-health.json', eventType: 'error-detected' },
       { relativePath: '.specweave/state/prompt-health-alert.json', eventType: 'error-detected' },
+      { relativePath: '.specweave/state/skill-submissions.json', eventType: 'submission-update' },
     ];
     this.startWatching();
   }

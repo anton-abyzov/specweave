@@ -193,14 +193,15 @@ Runs deployment scripts and checks status.`;
     expect(result.summary).toContain('unavailable');
   });
 
-  it('handles malformed LLM response', async () => {
+  it('treats malformed LLM response as suspicious (FAIL)', async () => {
     setupMockProvider('This is not valid JSON at all');
 
     const judge = new SecurityJudge({ projectRoot: '/tmp/test' });
     const result = await judge.judge('Some skill content');
 
-    expect(result.verdict).toBe('CONCERNS');
-    expect(result.summary).toContain('unavailable');
+    expect(result.verdict).toBe('FAIL');
+    expect(result.score).toBe(30);
+    expect(result.summary).toContain('unparseable');
   });
 
   // --- System prompt verification ---
@@ -226,7 +227,62 @@ Runs deployment scripts and checks status.`;
 
     expect(options.systemPrompt).toContain('security');
     expect(options.systemPrompt).toContain('social-engineering');
+    expect(options.systemPrompt).toContain('prompt-injection');
+    expect(options.systemPrompt).toContain('SKILL_CONTENT_FOR_ANALYSIS');
+    // Verify content is wrapped in delimiters
+    expect(prompt).toContain('<SKILL_CONTENT_FOR_ANALYSIS>');
+    expect(prompt).toContain('</SKILL_CONTENT_FOR_ANALYSIS>');
     expect(prompt).toContain(skillContent);
+  });
+
+  it('rejects content exceeding size limit', async () => {
+    const hugeContent = 'x'.repeat(100_001);
+
+    const judge = new SecurityJudge({ projectRoot: '/tmp/test' });
+    const result = await judge.judge(hugeContent);
+
+    expect(result.verdict).toBe('FAIL');
+    expect(result.summary).toContain('too large');
+    expect(mockAnalyze).not.toHaveBeenCalled();
+  });
+
+  it('derives verdict from score, not LLM verdict (high score with threats = CONCERNS)', async () => {
+    setupMockProvider(makeLLMResponse({
+      verdict: 'PASS', // LLM says PASS but has threats
+      score: 85,
+      summary: 'Skill looks ok',
+      threats: [{
+        category: 'scope-inflation',
+        severity: 'medium',
+        description: 'Broad scope detected',
+        evidence: 'runs deployment',
+      }],
+      mitigations: [],
+    }));
+
+    const judge = new SecurityJudge({ projectRoot: '/tmp/test' });
+    const result = await judge.judge('skill content');
+
+    // Should be CONCERNS because threats exist, even though score is high
+    expect(result.verdict).toBe('CONCERNS');
+    expect(result.score).toBe(85);
+  });
+
+  it('derives verdict from score, not LLM verdict (low score overrides PASS)', async () => {
+    setupMockProvider(makeLLMResponse({
+      verdict: 'PASS', // LLM says PASS but score is low
+      score: 30,
+      summary: 'Looks fine',
+      threats: [],
+      mitigations: [],
+    }));
+
+    const judge = new SecurityJudge({ projectRoot: '/tmp/test' });
+    const result = await judge.judge('skill content');
+
+    // Should be FAIL because score < 60, regardless of LLM verdict
+    expect(result.verdict).toBe('FAIL');
+    expect(result.score).toBe(30);
   });
 
   it('includes duration_ms in result', async () => {

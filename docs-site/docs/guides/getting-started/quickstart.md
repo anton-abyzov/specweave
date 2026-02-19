@@ -342,22 +342,13 @@ specweave update
 
 If that doesn't help, use the plugin-only refresh:
 ```bash
-specweave refresh-marketplace
+specweave refresh-plugins
 ```
 
-**Why this exists:** Claude Code's native marketplace auto-update doesn't:
+**Why this exists:** Plugin refresh handles tasks that auto-update doesn't:
 - Fix hook permissions (`chmod +x`) — hooks may silently fail
 - Clean up orphaned cache/skills directories
 - Update instruction files (CLAUDE.md, AGENTS.md)
-
-### Enable Marketplace Auto-Update (Optional)
-
-You can enable Claude Code's native auto-update for the specweave marketplace:
-```bash
-/plugin → Marketplaces tab → Select specweave → Enable auto-update
-```
-
-This keeps marketplace.json and installed plugins updated automatically. However, you may still need `specweave refresh-marketplace` occasionally for hook permissions and instruction file updates.
 
 ---
 

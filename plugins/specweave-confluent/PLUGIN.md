@@ -25,7 +25,7 @@ Expert knowledge and guidance for Confluent Kafka ecosystem including Kafka Conn
 ## Installation
 
 ```bash
-claude plugin install sw-confluent@specweave
+vskill add specweave --plugin sw-confluent
 ```
 
 ## Requirements

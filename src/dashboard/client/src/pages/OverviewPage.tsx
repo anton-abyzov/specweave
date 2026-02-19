@@ -79,9 +79,16 @@ const isSubscriptionPlan = (costs: OverviewData['costs']): boolean =>
   costs.billingContext?.planType === 'subscription';
 
 export function OverviewPage() {
-  const { data, loading, error, refetch } = useProjectApi<OverviewData>('/api/overview');
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data, loading, error, refetch } = useProjectApi<OverviewData>(`/api/overview?_r=${refreshKey}`);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const { activeProject } = useProject();
+
+  // Refresh overview data when increments, notifications, or sync change
+  useSSEEvent('increment-update', () => setRefreshKey(k => k + 1));
+  useSSEEvent('notification', () => setRefreshKey(k => k + 1));
+  useSSEEvent('sync-update', () => setRefreshKey(k => k + 1));
+  useSSEEvent('cost-update', () => setRefreshKey(k => k + 1));
 
   // Seed with recent historical events; re-fetch when project changes
   const lastProjectId = useRef<string | null>(null);
@@ -314,7 +321,9 @@ interface PromptHealthData {
 }
 
 function PromptHealthBanner() {
-  const { data } = useProjectApi<PromptHealthData>('/api/prompt-health');
+  const [healthRefreshKey, setHealthRefreshKey] = useState(0);
+  useSSEEvent('error-detected', () => setHealthRefreshKey(k => k + 1));
+  const { data } = useProjectApi<PromptHealthData>(`/api/prompt-health?_r=${healthRefreshKey}`);
 
   if (!data?.health || data.health.warningLevel === 'normal') return null;
 

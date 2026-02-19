@@ -17,7 +17,7 @@ Desktop application development with Electron and Tauri. Build cross-platform de
 ## Installation
 
 ```bash
-claude plugin install sw-desktop@specweave
+vskill add specweave --plugin sw-desktop
 ```
 
 ## Requirements

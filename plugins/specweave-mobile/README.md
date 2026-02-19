@@ -90,8 +90,8 @@ claude plugin list --installed | grep sw-mobile
 To reinstall or update:
 
 ```bash
-# Reinstall from marketplace
-claude plugin install sw-mobile@specweave
+# Reinstall plugin
+vskill add specweave --plugin sw-mobile
 ```
 
 ## Usage

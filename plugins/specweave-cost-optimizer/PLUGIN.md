@@ -25,7 +25,7 @@ FinOps expertise for optimizing cloud costs across AWS, Azure, and GCP. Provides
 ## Installation
 
 ```bash
-claude plugin install sw-cost-optimizer@specweave
+vskill add specweave --plugin sw-cost-optimizer
 ```
 
 ## Requirements

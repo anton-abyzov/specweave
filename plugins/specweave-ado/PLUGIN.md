@@ -29,7 +29,7 @@ Seamless integration between SpecWeave increments and Azure DevOps work items. E
 ## Installation
 
 ```bash
-claude plugin install sw-ado@specweave
+vskill add specweave --plugin sw-ado
 ```
 
 ## Requirements

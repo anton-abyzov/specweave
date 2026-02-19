@@ -224,19 +224,19 @@ The release is incomplete without a GitHub Release on the repository's Releases 
 # Get the new version
 NEW_VERSION=$(node -p "require('./package.json').version")
 
-# Extract release notes from CHANGELOG.md (if available)
-if [ -f CHANGELOG.md ] && grep -q "## \[$NEW_VERSION\]" CHANGELOG.md; then
+# Extract release notes from CHANGELOG.md (if available and not a placeholder)
+if [ -f CHANGELOG.md ] && grep -q "## \[$NEW_VERSION\]" CHANGELOG.md && ! grep -A5 "## \[$NEW_VERSION\]" CHANGELOG.md | grep -q "TODO: Describe your changes here"; then
   # Extract notes between current version header and next version header
   awk "/## \[$NEW_VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
 else
-  # Generate minimal release notes from recent commits
-  echo "## What's Changed" > /tmp/release-notes.md
+  # Generate release notes from recent commits (CHANGELOG missing or has TODO placeholder)
+  echo "### Changes" > /tmp/release-notes.md
   echo "" >> /tmp/release-notes.md
   LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
   if [ -n "$LAST_TAG" ]; then
-    git log --oneline "$LAST_TAG"..HEAD~1 --no-merges | head -10 | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
+    git log --oneline "$LAST_TAG"..HEAD~1 --no-merges | head -15 | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
   else
-    git log --oneline -10 --no-merges | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
+    git log --oneline -15 --no-merges | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
   fi
 fi
 

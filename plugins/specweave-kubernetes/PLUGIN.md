@@ -20,7 +20,7 @@ Comprehensive Kubernetes orchestration plugin for manifest generation, Helm temp
 ## Installation
 
 ```bash
-claude plugin install sw-kubernetes@specweave
+vskill add specweave --plugin sw-kubernetes
 ```
 
 ## Requirements

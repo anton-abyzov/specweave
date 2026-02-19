@@ -27,7 +27,6 @@ export interface CostsSummaryPayload {
   sessionCount: number;
   sessions: SessionTokenSummary[];
   modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }>;
-  isMaxPlan: boolean;
   billingContext: BillingContext;
 }
 
@@ -126,7 +125,6 @@ export class CostAggregator {
       sessionCount: sessions.length,
       sessions,
       modelBreakdown,
-      isMaxPlan: planType === 'subscription',
       billingContext,
     };
 

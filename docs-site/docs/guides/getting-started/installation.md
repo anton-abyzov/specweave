@@ -120,7 +120,7 @@ After running `specweave init`, you get:
 ```
 your-project/
 ├── .claude/                  # Claude Code integration (if detected)
-│   ├── settings.json         # Plugin marketplace reference (GitHub remote)
+│   ├── settings.json         # Plugin configuration (vskill source)
 │   ├── agents/               # 11 specialized agents (installed from plugins)
 │   │   ├── pm/               # Product Manager AI
 │   │   ├── architect/        # System Architect
@@ -415,7 +415,7 @@ specweave update --no-self
 1. **Self-updates CLI** via `npm install -g specweave@latest`
 2. **Migrates config.json** - adds missing sections like `auto` for older projects
 3. **Updates instruction files** - CLAUDE.md, AGENTS.md with latest templates
-4. **Refreshes marketplace plugins** - router + context-detected plugins
+4. **Refreshes plugins** - router + context-detected plugins
 5. **Validates project health** - checks for stale files, missing config
 
 :::tip Config Migration

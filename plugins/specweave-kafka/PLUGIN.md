@@ -18,7 +18,7 @@ Expert-driven plugin for Apache Kafka architecture design and operations. Covers
 ## Installation
 
 ```bash
-claude plugin install sw-kafka@specweave
+vskill add specweave --plugin sw-kafka
 ```
 
 ## Requirements

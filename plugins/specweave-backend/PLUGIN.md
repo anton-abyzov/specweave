@@ -24,7 +24,7 @@ Full-stack backend development across 7 languages and frameworks: Node.js, .NET,
 ## Installation
 
 ```bash
-claude plugin install sw-backend@specweave
+vskill add specweave --plugin sw-backend
 ```
 
 ## Requirements

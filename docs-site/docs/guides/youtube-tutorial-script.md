@@ -487,19 +487,19 @@ Skill({
 >
 > **Why agents?** Context isolation — complex tasks don't pollute your main conversation. Tool restrictions — read-only agents can't modify files. Parallelization — multiple agents can run concurrently."
 
-### 4. Marketplace - One-Command Installation
+### 4. Plugins - One-Command Installation
 
-**[TERMINAL: Show marketplace refresh]**
+**[TERMINAL: Show plugin refresh]**
 
 ```bash
 # Full update: CLI + instructions + config + plugins (recommended)
 specweave update
 
-# For SpecWeave contributors (in the repo)
-bash scripts/refresh-marketplace.sh
+# Plugin-only refresh
+specweave refresh-plugins
 ```
 
-> "The marketplace lets you install all plugins with one command. Since v1.0.138, `specweave update` does everything — updates CLI, regenerates CLAUDE.md, migrates config, AND refreshes marketplace plugins. No separate commands needed.
+> "SpecWeave lets you install all plugins with one command. Since v1.0.138, `specweave update` does everything — updates CLI, regenerates CLAUDE.md, migrates config, AND refreshes plugins. No separate commands needed.
 >
 > Install SpecWeave, run `specweave update`, restart Claude Code. Done. 136 skills and 68 agents available instantly."
 

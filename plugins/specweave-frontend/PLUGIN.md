@@ -22,7 +22,7 @@ Complete frontend development ecosystem for React, Next.js, Vue, and Angular. Pr
 ## Installation
 
 ```bash
-claude plugin install sw-frontend@specweave
+vskill add specweave --plugin sw-frontend
 ```
 
 ## Requirements

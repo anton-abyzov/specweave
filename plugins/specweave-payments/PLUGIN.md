@@ -28,7 +28,7 @@ Complete payment processing expertise for Stripe, PayPal, and marketplace paymen
 ## Installation
 
 ```bash
-claude plugin install sw-payments@specweave
+vskill add specweave --plugin sw-payments
 ```
 
 ## Requirements

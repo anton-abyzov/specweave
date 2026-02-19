@@ -12,7 +12,6 @@ interface CostsData {
   totalSavings: number;
   totalTokens: number;
   sessionCount: number;
-  isMaxPlan?: boolean;
   billingContext?: { planType: 'api' | 'subscription'; monthlyAmount?: number };
   sessions?: SessionCost[];
   modelBreakdown?: Record<string, { cost: number; tokens: number; sessions: number }>;

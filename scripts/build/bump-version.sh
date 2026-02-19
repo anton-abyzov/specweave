@@ -91,12 +91,20 @@ if grep -q "## \[$NEW_VERSION\]" CHANGELOG.md; then
 else
   echo -e "${YELLOW}📝 Creating CHANGELOG entry for v${NEW_VERSION}...${NC}"
 
-  # Create the changelog entry
+  # Generate release notes from git commits
   TODAY=$(date +%Y-%m-%d)
+  LAST_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
+  if [ -n "$LAST_TAG" ]; then
+    COMMITS=$(git log --oneline --no-merges "$LAST_TAG"..HEAD | head -15 | sed 's/^[a-f0-9]* /- /')
+  else
+    COMMITS=$(git log --oneline --no-merges -10 | sed 's/^[a-f0-9]* /- /')
+  fi
+  [ -z "$COMMITS" ] && COMMITS="- Patch release"
+
   CHANGELOG_ENTRY="## [$NEW_VERSION] - $TODAY
 
 ### Changes
-- TODO: Describe your changes here
+$COMMITS
 
 ---
 
@@ -126,19 +134,11 @@ if [ "$AUTO_RELEASE" = true ]; then
   echo -e "${CYAN}🚀 Auto-release mode enabled${NC}"
   echo ""
 
-  # Check if CHANGELOG has placeholder content
+  # Verify CHANGELOG has real content (not a placeholder)
   CHANGELOG_CONTENT=$(awk "/## \[$NEW_VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
   if echo "$CHANGELOG_CONTENT" | grep -q "TODO: Describe your changes here"; then
-    echo -e "${RED}❌ CHANGELOG entry still has placeholder content${NC}"
-    echo ""
-    echo "   Please edit CHANGELOG.md first:"
-    echo "   - Replace 'TODO: Describe your changes here' with actual changes"
-    echo ""
-    echo "   Then run: $0 $BUMP_TYPE --release"
-    echo ""
-    # Revert version bump
-    npm version $CURRENT_VERSION --no-git-tag-version > /dev/null 2>&1 || true
-    exit 1
+    echo -e "${YELLOW}⚠️  CHANGELOG has placeholder content, regenerating from commits...${NC}"
+    node scripts/build/auto-changelog.js
   fi
 
   # Check for uncommitted changes

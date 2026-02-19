@@ -1,32 +1,28 @@
 /**
  * Plugin installation for Claude Code
- * Handles marketplace registration and plugin installation
+ * Uses vskill for plugin installation with security scanning
  */
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
-import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
 import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from '../../../utils/claude-cli-detector.js';
 import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
-import { getPluginScope, getScopeArgs } from '../../../core/types/plugin-scope.js';
 import { enablePluginsInSettings } from './claude-plugin-enabler.js';
+import { resolveVskillPath as _resolveVskillPath, resolveSpecweaveDir } from '../../../utils/vskill-resolver.js';
 
-/**
- * SpecWeave marketplace GitHub repository
- * Used for both CLI-based and fallback registration
- */
-const SPECWEAVE_MARKETPLACE_REPO = 'anton-abyzov/specweave';
-const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_REPO}`;
+/** Resolve vskill path from this module's location */
+function resolveVskillPath(): string {
+  return _resolveVskillPath(__dirname);
+}
 
-/**
- * Anthropic's official plugins marketplace
- * Optional — users can install plugins manually if needed
- */
-const OFFICIAL_MARKETPLACE_URL = 'https://github.com/anthropics/claude-plugins-official';
+/** Resolve specweave source directory */
+function resolveSpecweavePluginDir(): string {
+  return resolveSpecweaveDir(__dirname);
+}
 
 /**
  * Options for plugin installation
@@ -133,16 +129,8 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     return { success: false, successCount: 0, failCount: 0, failedPlugins: [] };
   }
 
-  // Claude CLI available - proceed with installation
+  // Claude CLI available - proceed with vskill-based installation
   try {
-    // CRITICAL FIX (v0.35.2): Simplified marketplace registration
-    // Just ensure marketplace is registered - Claude CLI handles caching internally
-    // No need for manual cache management - that was over-engineering!
-    await refreshMarketplace(spinner);
-
-    // Register official marketplace (optional — for user-installed plugins)
-    await ensureOfficialMarketplace(spinner);
-
     // Load marketplace.json to get ALL available plugins
     spinner.start('Loading available plugins...');
     const marketplaceJsonPath = findSourceDir('.claude-plugin/marketplace.json', dirname);
@@ -158,17 +146,15 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       throw new Error('No plugins found in marketplace.json');
     }
 
-    console.log(chalk.blue(`   📦 Found ${allPlugins.length} plugins to install`));
+    console.log(chalk.blue(`   Found ${allPlugins.length} plugins available`));
     spinner.succeed(`Found ${allPlugins.length} plugins`);
 
-    // CRITICAL FIX (v0.35.2): Clean up stale plugin references
-    // Remove plugins from ~/.claude/settings.json that no longer exist in marketplace
-    // This prevents "Plugin not found" errors for removed/renamed plugins
+    // Clean up stale plugin references
     spinner.start('Checking for stale plugin references...');
     const cleanupResult = await cleanupStalePlugins(marketplaceJsonPath, false);
 
     if (cleanupResult.removedCount > 0) {
-      console.log(chalk.yellow(`   🧹 Removed ${cleanupResult.removedCount} stale plugin reference(s)`));
+      console.log(chalk.yellow(`   Removed ${cleanupResult.removedCount} stale plugin reference(s)`));
       cleanupResult.removedPlugins.forEach(p => {
         console.log(chalk.gray(`      - ${p}`));
       });
@@ -178,49 +164,48 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     }
 
     // LAZY LOADING MODE (default)
-    // Install only router skill, cache the rest for on-demand loading
+    // Install only core plugin via vskill, cache the rest for on-demand loading
     if (lazyMode) {
       return await installLazyMode(allPlugins, spinner, dirname);
     }
 
     // FULL MODE (--full flag)
-    // Install ALL plugins with retry logic
+    // Install ALL plugins via vskill with security scanning
     const result = await installPluginsWithRetry(allPlugins, spinner);
 
     // Enable installed plugins in Claude settings
-    // CRITICAL FIX: Plugins must be enabled in ~/.claude/settings.json to be active
     if (result.installedPlugins.length > 0) {
       spinner.start('Enabling plugins in Claude Code...');
 
       const enabled = enablePluginsInSettings(result.installedPlugins, 'specweave');
       if (enabled) {
         spinner.succeed('Plugins enabled in Claude Code');
-        console.log(chalk.green('   ✓ All installed plugins are now active'));
+        console.log(chalk.green('   All installed plugins are now active'));
       } else {
         spinner.warn('Could not auto-enable plugins');
-        console.log(chalk.yellow('   → Manual: Enable plugins in /plugin menu'));
+        console.log(chalk.yellow('   Manual: Enable plugins in /plugin menu'));
       }
     }
 
     // Report results
     console.log('');
-    console.log(chalk.green.bold('✅ Plugin Installation Complete'));
+    console.log(chalk.green.bold('Plugin Installation Complete'));
     console.log(chalk.white(`   Installed: ${result.successCount}/${allPlugins.length} plugins`));
 
     if (result.failCount > 0) {
       console.log(chalk.yellow(`   Failed: ${result.failCount} plugins`));
       console.log(chalk.gray(`   Failed plugins: ${result.failedPlugins.join(', ')}`));
-      console.log(chalk.gray('   → You can install these manually later'));
+      console.log(chalk.gray('   You can install these manually later'));
     }
 
     console.log('');
-    console.log(chalk.cyan('📋 Available capabilities:'));
-    console.log(chalk.gray('   • /sw:increment - Plan new features'));
-    console.log(chalk.gray('   • /sw:do - Execute tasks'));
-    console.log(chalk.gray('   • /specweave-github:sync - GitHub integration'));
-    console.log(chalk.gray('   • /specweave-jira:sync - JIRA integration'));
-    console.log(chalk.gray('   • /sw:docs preview - Documentation preview'));
-    console.log(chalk.gray('   • ...and more!'));
+    console.log(chalk.cyan('Available capabilities:'));
+    console.log(chalk.gray('   /sw:increment - Plan new features'));
+    console.log(chalk.gray('   /sw:do - Execute tasks'));
+    console.log(chalk.gray('   /specweave-github:sync - GitHub integration'));
+    console.log(chalk.gray('   /specweave-jira:sync - JIRA integration'));
+    console.log(chalk.gray('   /sw:docs preview - Documentation preview'));
+    console.log(chalk.gray('   ...and more!'));
 
     return {
       success: result.successCount > 0,
@@ -238,23 +223,21 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     if (errorMessage.includes('not found') || errorMessage.includes('ENOENT')) {
-      console.log(chalk.yellow('   Reason: Claude CLI found but command failed'));
-      console.log(chalk.gray('   → Try manually: /plugin install specweave'));
+      console.log(chalk.yellow('   Reason: Plugin source not found'));
+      console.log(chalk.gray('   Try: vskill add --plugin sw --plugin-dir <specweave-dir>'));
     } else if (errorMessage.includes('EACCES') || errorMessage.includes('permission')) {
       console.log(chalk.yellow('   Reason: Permission denied'));
-      console.log(chalk.gray('   → Check file permissions or run with appropriate access'));
+      console.log(chalk.gray('   Check file permissions or run with appropriate access'));
     } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('network')) {
       console.log(chalk.yellow('   Reason: Network error'));
-      console.log(chalk.gray('   → Check internet connection and try again'));
+      console.log(chalk.gray('   Check internet connection and try again'));
     } else if (process.env.DEBUG) {
       console.log(chalk.gray(`   Error: ${errorMessage}`));
     }
 
     console.log('');
-    console.log(chalk.cyan('📦 Manual installation:'));
-    console.log(chalk.white('   /plugin install sw@specweave'));
-    console.log(chalk.white('   /plugin install sw-github@specweave'));
-    console.log(chalk.white('   ...etc.'));
+    console.log(chalk.cyan('Manual installation:'));
+    console.log(chalk.white('   vskill add --plugin sw --plugin-dir <specweave-dir>'));
     console.log('');
 
     return { success: false, successCount: 0, failCount: 0, failedPlugins: [] };
@@ -262,310 +245,10 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 }
 
 /**
- * Ensure SpecWeave marketplace is registered and updated
- *
- * Uses the proper Claude CLI commands:
- * 1. First checks if marketplace exists
- * 2. If not → adds it with `marketplace add` (HTTPS URL)
- * 3. If yes → tries `marketplace update`
- * 4. If update fails with SSH error → removes and re-adds with HTTPS
- *
- * This is the recommended approach per Claude Code documentation.
- *
- * CRITICAL FIX (v0.35.2): Simplified marketplace registration
- * Just ensure marketplace is registered - Claude CLI handles caching internally.
- * No need for manual cache management - that was over-engineering!
- *
- * CRITICAL FIX (v1.0.24): Handle Windows SSH authentication failures!
- * Previously registered marketplaces may use SSH URLs that fail on Windows.
- * When update fails with "SSH authentication failed", we remove the old
- * registration and re-add with HTTPS URL which works for everyone.
- */
-async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
-  spinner.start('Checking SpecWeave marketplace...');
-
-  // Check if marketplace is already registered
-  const listResult = execFileNoThrowSync('claude', ['plugin', 'marketplace', 'list']);
-  const marketplaceExists = listResult.success &&
-    (listResult.stdout || '').toLowerCase().includes('specweave');
-
-  if (marketplaceExists) {
-    // Marketplace exists - try UPDATE command first
-    spinner.text = 'Updating SpecWeave marketplace...';
-    const updateResult = execFileNoThrowSync('claude', [
-      'plugin',
-      'marketplace',
-      'update',
-      'specweave'
-    ]);
-
-    if (!updateResult.success) {
-      // Convert error to string for pattern matching
-      const errorStr = updateResult.error instanceof Error
-        ? updateResult.error.message
-        : String(updateResult.error || '');
-      const errorMsg = (updateResult.stderr || errorStr).toLowerCase();
-
-      // CRITICAL FIX (v1.0.24): Handle SSH authentication failures on Windows
-      // If the marketplace was previously registered with SSH URL (or owner/repo format
-      // which Claude CLI converts to SSH), the update will fail with SSH auth error.
-      // Solution: Remove the marketplace and re-add with HTTPS URL.
-      if (errorMsg.includes('ssh') ||
-          errorMsg.includes('permission denied') ||
-          errorMsg.includes('publickey') ||
-          errorMsg.includes('authentication failed')) {
-
-        spinner.text = 'Re-registering marketplace with HTTPS...';
-        console.log(chalk.yellow('\n   ⚠️  SSH authentication failed - switching to HTTPS'));
-
-        // Remove the old SSH-based registration
-        const removeResult = execFileNoThrowSync('claude', [
-          'plugin',
-          'marketplace',
-          'remove',
-          'specweave'
-        ]);
-
-        if (!removeResult.success) {
-          // If remove fails, try to add anyway (might work if it's just stale)
-          console.log(chalk.gray('   → Could not remove old registration, attempting fresh add...'));
-        }
-
-        // Re-add with HTTPS URL
-        const addResult = execFileNoThrowSync('claude', [
-          'plugin',
-          'marketplace',
-          'add',
-          SPECWEAVE_MARKETPLACE_URL
-        ]);
-
-        if (!addResult.success) {
-          throw new Error(`Failed to re-add marketplace with HTTPS: ${addResult.stderr || addResult.error}`);
-        }
-
-        console.log(chalk.green('   ✔ Marketplace re-registered with HTTPS (works on all platforms)'));
-
-        // Enable auto-update for seamless future updates
-        enableMarketplaceAutoUpdate(spinner);
-
-        spinner.succeed('SpecWeave marketplace ready');
-        return;
-      }
-
-      // Other error - throw as before (use original stderr for clear message)
-      throw new Error(`Failed to update marketplace: ${updateResult.stderr || errorStr}`);
-    }
-
-    console.log(chalk.green('   ✔ Marketplace updated (latest from GitHub)'));
-
-    // Enable auto-update for seamless future updates
-    enableMarketplaceAutoUpdate(spinner);
-
-    spinner.succeed('SpecWeave marketplace ready');
-  } else {
-    // Marketplace not registered - use ADD command with HTTPS URL
-    // CRITICAL (v0.35.3): Use full HTTPS URL, NOT owner/repo format!
-    // Claude CLI converts owner/repo to SSH URL (git@github.com:owner/repo.git)
-    // which fails for users without SSH keys configured.
-    // Using full HTTPS URL works for ALL users (public repo).
-    spinner.text = 'Adding SpecWeave marketplace...';
-    const addResult = execFileNoThrowSync('claude', [
-      'plugin',
-      'marketplace',
-      'add',
-      SPECWEAVE_MARKETPLACE_URL
-    ]);
-
-    if (!addResult.success) {
-      throw new Error(`Failed to add marketplace: ${addResult.stderr || addResult.error}`);
-    }
-
-    console.log(chalk.green('   ✔ Marketplace added from GitHub'));
-
-    // Enable auto-update for seamless future updates
-    enableMarketplaceAutoUpdate(spinner);
-
-    spinner.succeed('SpecWeave marketplace ready');
-  }
-}
-
-/**
- * Ensure Anthropic's official plugins marketplace is registered
- *
- * Optional — makes official plugins available for manual installation.
- *
- * v1.0.223: Added to fix missing marketplace during init
- * v1.0.240 (0198): context7/playwright no longer auto-installed
- */
-async function ensureOfficialMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
-  spinner.start('Checking official plugins marketplace...');
-
-  // Check if marketplace is already registered
-  const listResult = execFileNoThrowSync('claude', ['plugin', 'marketplace', 'list']);
-  const marketplaceExists = listResult.success &&
-    (listResult.stdout || '').toLowerCase().includes('claude-plugins-official');
-
-  if (marketplaceExists) {
-    spinner.succeed('Official plugins marketplace ready');
-    return;
-  }
-
-  // Marketplace not registered - add it
-  spinner.text = 'Adding official plugins marketplace...';
-  const addResult = execFileNoThrowSync('claude', [
-    'plugin',
-    'marketplace',
-    'add',
-    OFFICIAL_MARKETPLACE_URL
-  ]);
-
-  if (!addResult.success) {
-    // Non-fatal - warn but continue
-    spinner.warn('Could not add official marketplace');
-    console.log(chalk.gray('   → Manual: claude plugin marketplace add https://github.com/anthropics/claude-plugins-official'));
-    return;
-  }
-
-  console.log(chalk.green('   ✔ Official plugins marketplace added'));
-  spinner.succeed('Official plugins marketplace ready');
-}
-
-/**
- * Enable auto-update for the SpecWeave marketplace
- *
- * Modifies ~/.claude/plugins/known_marketplaces.json to set autoUpdate: true
- * for the specweave marketplace. This ensures plugins stay up-to-date automatically
- * when Claude Code starts.
- *
- * FEATURE: Added in Claude Code v2.0.70 - per-marketplace auto-update control
- * By default, third-party marketplaces have auto-update disabled.
- * We enable it during init for better UX.
- */
-function enableMarketplaceAutoUpdate(spinner: ReturnType<typeof ora>): void {
-  const knownMarketplacesPath = path.join(
-    os.homedir(),
-    '.claude/plugins/known_marketplaces.json'
-  );
-
-  try {
-    // Check if file exists
-    if (!fs.existsSync(knownMarketplacesPath)) {
-      // File doesn't exist yet - Claude CLI will create it
-      // Auto-update will be set on next init
-      return;
-    }
-
-    // Read current config
-    const content = fs.readFileSync(knownMarketplacesPath, 'utf-8');
-    const config = JSON.parse(content);
-
-    // Check if specweave marketplace exists and needs auto-update enabled
-    if (config.specweave && config.specweave.autoUpdate !== true) {
-      config.specweave.autoUpdate = true;
-
-      // Write updated config
-      fs.writeFileSync(knownMarketplacesPath, JSON.stringify(config, null, 2));
-      console.log(chalk.green('   ✔ Auto-update enabled for SpecWeave marketplace'));
-    } else if (config.specweave?.autoUpdate === true) {
-      // Already enabled, no action needed
-      // Don't log anything to avoid noise
-    }
-  } catch (error) {
-    // Non-critical - don't fail init if this doesn't work
-    // User can enable manually via /plugin menu
-    if (process.env.DEBUG) {
-      console.log(chalk.gray(`   → Could not enable auto-update: ${error instanceof Error ? error.message : String(error)}`));
-    }
-  }
-}
-
-/**
- * Work around Claude CLI bug where marketplace name = plugin name causes EINVAL.
- *
- * When the marketplace name matches a plugin name ("specweave"), Claude CLI:
- * 1. Creates cache/specweave/ with full marketplace content
- * 2. Tries to rename cache/specweave → cache/specweave/specweave/0.25.0
- * 3. Fails with EINVAL (can't move directory into itself)
- *
- * WORKAROUND: Manually install the "specweave" plugin by copying from marketplace.
- * Returns true if manual install succeeded, false if should use claude plugin install.
- */
-function manuallyInstallSpecweavePlugin(version: string): boolean {
-  const marketplacePath = path.join(
-    os.homedir(),
-    '.claude/plugins/marketplaces/specweave/plugins/specweave'
-  );
-  const targetPath = path.join(
-    os.homedir(),
-    '.claude/plugins/cache/specweave/specweave',
-    version
-  );
-
-  // Check if marketplace plugin exists
-  if (!fs.existsSync(marketplacePath)) {
-    return false;
-  }
-
-  // Check if already installed
-  if (fs.existsSync(targetPath)) {
-    return true;
-  }
-
-  try {
-    // Create target directory structure
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-
-    // Copy plugin files from marketplace to cache
-    copyDirRecursive(marketplacePath, targetPath);
-
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Recursively copy directory contents
- */
-function copyDirRecursive(src: string, dest: string): void {
-  fs.mkdirSync(dest, { recursive: true });
-
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      copyDirRecursive(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
-/**
- * Get the version of a plugin from marketplace.json
- */
-function getPluginVersion(pluginName: string): string {
-  try {
-    const marketplacePath = path.join(
-      os.homedir(),
-      '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
-    );
-    const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf-8'));
-    const plugin = marketplace.plugins?.find((p: { name: string }) => p.name === pluginName);
-    return plugin?.version || '0.25.0';
-  } catch {
-    return '0.25.0';
-  }
-}
-
-/**
- * Install in lazy mode - core plugin only, load others on-demand
+ * Install in lazy mode - core plugin only via vskill, load others on-demand
  *
  * Installs:
- * - sw@specweave (core SpecWeave framework)
+ * - sw (core SpecWeave framework) via vskill add
  *
  * Other SpecWeave plugins are loaded on-demand via detect-intent hook.
  * Official plugins (context7, playwright) are optional user installs.
@@ -584,27 +267,32 @@ async function installLazyMode(
   const failedPlugins: string[] = [];
   const successfullyInstalled: string[] = [];
 
-  spinner.start('Installing essential plugins...');
+  spinner.start('Installing essential plugins via vskill...');
   spinner.stop();
 
-  for (const plugin of essentialPlugins) {
-    const pluginKey = `${plugin.name}@${plugin.marketplace}`;
-    const scopeArgs = getScopeArgs(getPluginScope(plugin.name, plugin.marketplace));
-    console.log(chalk.blue(`  Installing ${pluginKey}...`));
+  const vskillPath = resolveVskillPath();
+  const pluginDir = resolveSpecweavePluginDir();
 
-    const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey, ...scopeArgs]);
+  for (const plugin of essentialPlugins) {
+    console.log(chalk.blue(`  Installing ${plugin.name} via vskill...`));
+
+    const result = installPluginViaVskill(vskillPath, pluginDir, plugin.name);
 
     if (result.success) {
-      console.log(chalk.green(`  ✓ ${pluginKey} installed`));
+      // Display scan result to user
+      if (result.scanOutput) {
+        console.log(chalk.gray(`  Security scan: ${result.scanOutput}`));
+      }
+      console.log(chalk.green(`  ${plugin.name} installed via vskill`));
       installedCount++;
       successfullyInstalled.push(plugin.name);
-    } else if (result.stderr?.includes('already') || result.stdout?.includes('already')) {
-      console.log(chalk.gray(`  ✓ ${pluginKey} (already installed)`));
+    } else if (result.alreadyInstalled) {
+      console.log(chalk.gray(`  ${plugin.name} (already installed)`));
       installedCount++;
       successfullyInstalled.push(plugin.name);
     } else {
-      console.log(chalk.yellow(`  ⚠ ${pluginKey} failed`));
-      console.log(chalk.gray(`    → Install manually: claude plugin install ${pluginKey}`));
+      console.log(chalk.yellow(`  ${plugin.name} failed`));
+      console.log(chalk.gray(`    Install manually: vskill add --plugin ${plugin.name} --plugin-dir ${pluginDir}`));
       failedPlugins.push(plugin.name);
     }
   }
@@ -612,34 +300,33 @@ async function installLazyMode(
   spinner.succeed(`Installed ${installedCount}/${essentialPlugins.length} essential plugins`);
 
   // Enable installed plugins in Claude settings
-  // CRITICAL FIX: Plugins must be enabled in ~/.claude/settings.json to be active
   if (successfullyInstalled.length > 0) {
     spinner.start('Enabling plugins in Claude Code...');
 
     const enabled = enablePluginsInSettings(successfullyInstalled, 'specweave');
     if (enabled) {
       spinner.succeed('Plugins enabled in Claude Code');
-      console.log(chalk.green('   ✓ All installed plugins are now active'));
+      console.log(chalk.green('   All installed plugins are now active'));
     } else {
       spinner.warn('Could not auto-enable plugins');
-      console.log(chalk.yellow('   → Manual: Enable plugins in /plugin menu'));
+      console.log(chalk.yellow('   Manual: Enable plugins in /plugin menu'));
     }
   }
 
   // Show summary
   console.log('');
-  console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
+  console.log(chalk.green.bold('Lazy Loading Enabled'));
   console.log('');
   console.log(chalk.cyan('Installed plugins:'));
   for (const plugin of essentialPlugins) {
-    console.log(chalk.gray(`   • ${plugin.name}@${plugin.marketplace} - ${plugin.description}`));
+    console.log(chalk.gray(`   ${plugin.name}@${plugin.marketplace} - ${plugin.description}`));
   }
   console.log('');
   console.log(chalk.cyan('On-demand plugins (loaded via keywords):'));
-  console.log(chalk.gray('   • "GitHub sync" → sw-github'));
-  console.log(chalk.gray('   • "JIRA" → sw-jira'));
-  console.log(chalk.gray('   • "Kubernetes" → sw-k8s'));
-  console.log(chalk.gray('   • "React/frontend" → sw-frontend'));
+  console.log(chalk.gray('   "GitHub sync" -> sw-github'));
+  console.log(chalk.gray('   "JIRA" -> sw-jira'));
+  console.log(chalk.gray('   "Kubernetes" -> sw-k8s'));
+  console.log(chalk.gray('   "React/frontend" -> sw-frontend'));
   console.log('');
 
   return {
@@ -652,7 +339,46 @@ async function installLazyMode(
 }
 
 /**
- * Install plugins with retry logic
+ * Install a single plugin via vskill add
+ *
+ * Uses execFileNoThrowSync to invoke the vskill CLI with
+ * --plugin and --plugin-dir flags for local plugin directory installation.
+ */
+function installPluginViaVskill(
+  vskillPath: string,
+  pluginDir: string,
+  pluginName: string
+): { success: boolean; alreadyInstalled?: boolean; scanOutput?: string } {
+  const result = execFileNoThrowSync('node', [
+    vskillPath,
+    'add',
+    pluginDir, // source (local path)
+    '--plugin', pluginName,
+    '--plugin-dir', pluginDir,
+    '--force', // Auto-accept scan results during init
+  ]);
+
+  if (result.success) {
+    // Extract scan output for user display
+    const stdout = result.stdout || '';
+    const scanMatch = stdout.match(/Score:.*Verdict:\s*\w+/);
+    return {
+      success: true,
+      scanOutput: scanMatch ? scanMatch[0] : undefined,
+    };
+  }
+
+  // Check if already installed
+  const combined = `${result.stdout || ''} ${result.stderr || ''}`.toLowerCase();
+  if (combined.includes('already')) {
+    return { success: true, alreadyInstalled: true };
+  }
+
+  return { success: false };
+}
+
+/**
+ * Install plugins via vskill with retry logic
  */
 async function installPluginsWithRetry(
   plugins: Array<{ name: string }>,
@@ -663,60 +389,21 @@ async function installPluginsWithRetry(
   const failedPlugins: string[] = [];
   const installedPlugins: string[] = [];
 
-  // Sort plugins to install "specweave" FIRST
-  // This prevents cache corruption from other plugin installs
-  const sortedPlugins = [...plugins].sort((a, b) => {
-    if (a.name === 'specweave') return -1;
-    if (b.name === 'specweave') return 1;
-    return 0;
-  });
+  const vskillPath = resolveVskillPath();
+  const pluginDir = resolveSpecweavePluginDir();
 
-  for (const plugin of sortedPlugins) {
+  for (const plugin of plugins) {
     const pluginName = plugin.name;
-    spinner.start(`Installing ${pluginName}...`);
+    spinner.start(`Installing ${pluginName} via vskill...`);
 
-    let installed = false;
+    const result = installPluginViaVskill(vskillPath, pluginDir, pluginName);
 
-    // Special handling for "specweave" plugin due to Claude CLI bug
-    // (marketplace name = plugin name causes EINVAL on rename)
-    if (pluginName === 'specweave') {
-      const version = getPluginVersion('specweave');
-      installed = manuallyInstallSpecweavePlugin(version);
-
-      if (installed) {
-        successCount++;
-        installedPlugins.push(pluginName);
-        spinner.succeed(`${pluginName} installed (manual workaround)`);
-        continue;
-      }
-      // Fall through to try claude plugin install if manual failed
-    }
-
-    // Determine installation scope (core 'sw' → user, domain plugins → project)
-    const scopeArgs = getScopeArgs(getPluginScope(pluginName, 'specweave'));
-
-    // Retry up to 3 times with exponential backoff
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginName, ...scopeArgs]);
-
-      if (installResult.success) {
-        installed = true;
-        break;
-      }
-
-      // If "not found" error and not last attempt, wait and retry
-      if (installResult.stderr?.includes('not found') && attempt < 3) {
-        spinner.text = `Installing ${pluginName}... (retry ${attempt}/3)`;
-        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-        continue;
-      }
-
-      break;
-    }
-
-    if (installed) {
+    if (result.success) {
       successCount++;
       installedPlugins.push(pluginName);
+      if (result.scanOutput) {
+        console.log(chalk.gray(`  Security scan: ${result.scanOutput}`));
+      }
       spinner.succeed(`${pluginName} installed`);
     } else {
       failCount++;
