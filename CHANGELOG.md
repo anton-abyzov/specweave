@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.274] - 2026-02-19
+
+### Changes
+- fix: call syncIncrementClosure instead of syncIncrementCompletion
+
+---
+
+
+
 ## [1.0.273] - 2026-02-19
 
 ### Changes
