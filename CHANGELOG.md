@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.276] - 2026-02-19
+
+### Changes
+- replace sw-figma plugin with figma skill in sw-frontend
+- chore: bump version to 1.0.275
+- fix: reconciler uses config repo instead of git remote
+- chore: bump version to 1.0.274
+- fix: call syncIncrementClosure instead of syncIncrementCompletion
+
+---
+
+
+
 ## [1.0.275] - 2026-02-19
 
 ### Changes
