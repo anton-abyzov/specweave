@@ -113,11 +113,31 @@ Runs automatically after successful closure:
 
 **B) Sync living docs to GitHub Project**: If `hooks.post_increment_done.sync_to_github_project` enabled, find living docs spec and run `/sw-github:sync-spec`.
 
-**C) Close GitHub issue**: If `hooks.post_increment_done.close_github_issue` enabled and metadata has `github.issue`, close via `gh issue close`.
+**C) Close ALL per-user-story GitHub issues**: If `hooks.post_increment_done.close_github_issue` enabled:
+
+1. Read `sync.github.owner` and `sync.github.repo` from config.json
+2. Extract the feature ID (e.g. `FS-237`) from spec.md frontmatter or increment ID
+3. For EACH user story in spec.md (US-001, US-002, etc.):
+   - Search GitHub by title pattern: `gh issue list -R {owner}/{repo} --search "[{feature_id}][{us_id}]" --state open --json number`
+   - Close each matching open issue: `gh issue close {number} -R {owner}/{repo} -c "Completed as part of increment {increment_id}"`
+4. Also close the single issue in `metadata.github.issue` if it exists and is still open
+5. Report: "Closed N of M user-story issues on GitHub"
+
+**IMPORTANT**: Do NOT rely only on `metadata.github.issue` — that field tracks only one issue. Always search by title pattern to find ALL per-user-story issues.
 
 **D) Close external-origin issue** (E-suffix increments only): Parse `metadata.external_ref` (format: `github#owner/repo#number`). Check `sync.settings.canUpdateStatus` permission. Close via `gh issue close -R`.
 
 **E) Sync to external tools**: If `sync.statusSync.enabled`, use `syncACProgressToProviders()` to sync to all enabled providers (GitHub, JIRA, ADO).
+
+**F) Sync Result Summary**: Display a summary of all closure operations:
+```
+| Tool   | Action              | Result                    |
+|--------|---------------------|---------------------------|
+| GitHub | Close N issues      | OK / FAILED: {reason}     |
+| JIRA   | Transition N issues | OK / SKIPPED              |
+| ADO    | Close N work items  | OK / SKIPPED              |
+```
+If any operation failed, display: "Run `/sw:progress-sync` to retry."
 
 ### Step 10: Sync Living Docs (MANDATORY)
 
