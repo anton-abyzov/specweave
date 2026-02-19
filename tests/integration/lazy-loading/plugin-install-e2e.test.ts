@@ -707,7 +707,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
      * - This prevents interference with other plugins the user may have installed
      *
      * REQUIREMENTS:
-     * - Marketplace must be populated: `specweave refresh-marketplace`
+     * - Marketplace must be populated: `specweave refresh-plugins`
      * - Claude CLI must be available
      */
 
@@ -872,7 +872,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
           if (detection.result.installMessage.includes('marketplace') ||
               detection.result.installMessage.includes('Source path does not exist') ||
               detection.result.installMessage.includes('Plugin not found')) {
-            console.log(`ℹ️  Run 'specweave refresh-marketplace' to enable installation`);
+            console.log(`ℹ️  Run 'specweave refresh-plugins' to enable installation`);
             // This is expected when marketplace isn't populated - don't fail the test
             return;
           }
@@ -923,7 +923,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
       // Skip gracefully if marketplace isn't populated
       if (result.output.includes('Source path does not exist')) {
         console.log('   ⚠️  Marketplace plugins folder not found. Skipping test.');
-        console.log('   Fix: specweave refresh-marketplace');
+        console.log('   Fix: specweave refresh-plugins');
         return; // Skip - marketplace not set up
       }
 
