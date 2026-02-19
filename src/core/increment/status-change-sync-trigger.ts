@@ -189,33 +189,41 @@ export class StatusChangeSyncTrigger {
     // Dynamic import to avoid circular dependency
     const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
 
-    // Non-blocking: Don't await
-    setTimeout(async () => {
-      try {
-        const projectRoot = process.cwd();
+    const syncFn = async () => {
+      const projectRoot = process.cwd();
 
-        // v1.0.19: Check if we need to auto-create external issues
-        await this.autoCreateIfNeeded(projectRoot, incrementId);
+      // v1.0.19: Check if we need to auto-create external issues
+      await this.autoCreateIfNeeded(projectRoot, incrementId);
 
-        // Run living docs sync
-        const sync = new LivingDocsSync(projectRoot, {
-          logger: this.logger
-        });
+      // Run living docs sync
+      const sync = new LivingDocsSync(projectRoot, {
+        logger: this.logger
+      });
 
-        await sync.syncIncrement(incrementId);
+      await sync.syncIncrement(incrementId);
 
-        // v1.0.19: Auto-close issues on completion
-        if (newStatus === IncrementStatus.COMPLETED) {
-          await this.autoCloseExternalIssues(projectRoot, incrementId);
-        }
-
-        this.circuitBreaker.recordSuccess();
-        this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
-      } catch (error) {
-        // Error will be caught by triggerIfNeeded()
-        throw error;
+      // v1.0.19: Auto-close issues on completion
+      if (newStatus === IncrementStatus.COMPLETED) {
+        await this.autoCloseExternalIssues(projectRoot, incrementId);
       }
-    }, 0);
+
+      this.circuitBreaker.recordSuccess();
+      this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
+    };
+
+    // Completion transitions run synchronously to ensure issue closure
+    // completes before the process exits. Other transitions stay non-blocking.
+    if (newStatus === IncrementStatus.COMPLETED) {
+      await syncFn();
+    } else {
+      setTimeout(async () => {
+        try {
+          await syncFn();
+        } catch (error) {
+          throw error;
+        }
+      }, 0);
+    }
   }
 
   /**
@@ -269,12 +277,12 @@ export class StatusChangeSyncTrigger {
         logger: this.logger,
       });
 
-      // This will close GitHub/JIRA/ADO issues with proper completion comments
-      const result = await coordinator.syncIncrementCompletion();
+      // Close GitHub/JIRA/ADO issues with proper completion comments
+      const result = await coordinator.syncIncrementClosure();
 
       if (result.success) {
         this.logger.log(
-          `🎉 Auto-closed external issues for ${incrementId} (${result.userStoriesSynced} synced)`
+          `🎉 Auto-closed external issues for ${incrementId} (${result.closedIssues.length} closed)`
         );
       }
     } catch (error) {
