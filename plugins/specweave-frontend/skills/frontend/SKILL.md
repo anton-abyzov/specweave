@@ -558,6 +558,10 @@ export function formatDate(date: string | Date | null | undefined): string {
 - Avatars: `https://i.pravatar.cc/150?u={id}`
 - Custom: invoke `/sw-media:image` for AI-generated visuals
 
+## Figma Integration
+
+For Figma design-to-code workflows, design tokens, and Code Connect, use the **figma** skill (`/sw-frontend:figma`).
+
 ## Tools and Libraries
 
 **React Ecosystem**:

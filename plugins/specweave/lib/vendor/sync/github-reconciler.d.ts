@@ -68,12 +68,21 @@ export declare class GitHubReconciler {
     private scanIncrements;
     /**
      * Initialize GitHub client
+     *
+     * Prefers sync.github.owner/repo from config (critical for umbrella repos
+     * where git remote points to a different repo than where issues live).
+     * Falls back to git remote detection.
      */
     private initClient;
     /**
      * Load config
      */
     private loadConfig;
+    /**
+     * Resolve GitHub owner/repo from config, falling back to git remote.
+     * Critical for umbrella repos where git remote != issue target repo.
+     */
+    private static resolveRepoInfo;
     /**
      * Reopen all GitHub issues for an increment
      * Called by post-increment-status-change.sh when resuming

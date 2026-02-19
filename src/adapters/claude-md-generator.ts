@@ -237,7 +237,7 @@ ${this.generateIntegrationSkillsTable(skills)}
   private generateIntegrationSkillsTable(skills: any[]): string {
     const integrationSkills = skills.filter(s =>
       ['jira-sync', 'github-sync', 'ado-sync', 'hetzner-provisioner',
-       'cost-optimizer', 'figma-mcp-connector'].includes(s.name)
+       'cost-optimizer', 'figma'].includes(s.name)
     );
 
     let table = '| Skill | Purpose | Activates When |\n';

@@ -340,10 +340,10 @@ src/
 - State management patterns
 - Responsive design helpers
 
-**sw-figma plugin**:
-- Design system integration
-- Component generation from Figma
-- Design token export
+**Figma integration** (via sw-frontend plugin, `/sw-frontend:figma` skill):
+- Design-to-code via official Figma MCP
+- Design token extraction and Code Connect
+- Responsive component generation
 
 ### 2. Increment Planning for Frontend Features
 
