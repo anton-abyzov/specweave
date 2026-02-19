@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.273] - 2026-02-19
+
+### Changes
+- feat: vskill migration, marketplace scanner, uninstall support
+- remove .specweave, managed at umbrella level
+- add increments 0235 and 0236
+- pre-migration snapshot
+
+---
+
+
+
 ## [1.0.272] - 2026-02-17
 
 ### Changes
