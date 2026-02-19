@@ -400,15 +400,26 @@ This typically happens when:
 
   /**
    * Initialize GitHub client
+   *
+   * Prefers sync.github.owner/repo from config (critical for umbrella repos
+   * where git remote points to a different repo than where issues live).
+   * Falls back to git remote detection.
    */
   private async initClient(): Promise<void> {
-    const repoInfo = await GitHubClientV2.detectRepo(this.projectRoot);
-    if (!repoInfo) {
-      throw new Error('Could not detect GitHub repository. Ensure you have a git remote configured.');
-    }
+    const config = await this.loadConfig();
+    const ghConfig = config.sync?.github;
 
-    this.client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
-    this.logger.log(`🔗 GitHub repository: ${repoInfo.owner}/${repoInfo.repo}`);
+    if (ghConfig?.owner && ghConfig?.repo) {
+      this.client = GitHubClientV2.fromRepo(ghConfig.owner, ghConfig.repo);
+      this.logger.log(`🔗 GitHub repository: ${ghConfig.owner}/${ghConfig.repo} (from config)`);
+    } else {
+      const repoInfo = await GitHubClientV2.detectRepo(this.projectRoot);
+      if (!repoInfo) {
+        throw new Error('Could not detect GitHub repository. Ensure sync.github.owner/repo is configured or a git remote exists.');
+      }
+      this.client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
+      this.logger.log(`🔗 GitHub repository: ${repoInfo.owner}/${repoInfo.repo} (from git remote)`);
+    }
   }
 
   /**
@@ -423,6 +434,28 @@ This typically happens when:
 
     const content = await fs.readFile(configPath, 'utf-8');
     return JSON.parse(content);
+  }
+
+  /**
+   * Resolve GitHub owner/repo from config, falling back to git remote.
+   * Critical for umbrella repos where git remote != issue target repo.
+   */
+  private static async resolveRepoInfo(
+    projectRoot: string
+  ): Promise<{ owner: string; repo: string } | null> {
+    try {
+      const configPath = path.join(projectRoot, '.specweave/config.json');
+      if (existsSync(configPath)) {
+        const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+        const ghConfig = config.sync?.github;
+        if (ghConfig?.owner && ghConfig?.repo) {
+          return { owner: ghConfig.owner, repo: ghConfig.repo };
+        }
+      }
+    } catch {
+      // Fall through to git detection
+    }
+    return GitHubClientV2.detectRepo(projectRoot);
   }
 
   // ==========================================================================
@@ -458,8 +491,8 @@ This typically happens when:
 
       const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
 
-      // Initialize client
-      const repoInfo = await GitHubClientV2.detectRepo(projectRoot);
+      // Initialize client (prefer config over git remote for umbrella repos)
+      const repoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
       if (!repoInfo) {
         result.errors.push('Could not detect GitHub repository');
         return result;
@@ -544,8 +577,8 @@ This issue was reopened because increment \`${incrementId}\` was resumed.
 
       const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
 
-      // Initialize client
-      const repoInfo = await GitHubClientV2.detectRepo(projectRoot);
+      // Initialize client (prefer config over git remote for umbrella repos)
+      const repoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
       if (!repoInfo) {
         result.errors.push('Could not detect GitHub repository');
         return result;
