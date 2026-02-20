@@ -102,21 +102,6 @@ export class LivingDocsSync {
   }
 
   /**
-   * Check if increment is archived
-   *
-   * @param incrementId - Increment ID (e.g., "0039-ultra-smart-next-command")
-   * @returns true if increment is in _archive/ folder, false otherwise
-   */
-  private async isIncrementArchived(incrementId: string): Promise<boolean> {
-    const archivePath = path.join(
-      this.projectRoot,
-      '.specweave/increments/_archive',
-      incrementId
-    );
-    return await pathExists(archivePath);
-  }
-
-  /**
    * Sync an increment to living docs
    */
   async syncIncrement(incrementId: string, options: SyncOptions = {}): Promise<SyncResult> {
@@ -130,17 +115,17 @@ export class LivingDocsSync {
     };
 
     try {
-      // P0-3: CRITICAL FIX - Atomic check to prevent TOCTOU race condition
-      // Instead of checking if archived, check if increment exists in ACTIVE folder
-      // This is atomic and prevents race where increment moves to archive between check and use
-      // See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md for full analysis
+      // P0-3: TOCTOU mitigation - check active folder BEFORE sync work.
+      // Not truly atomic (fs.access + later reads are separate syscalls), but narrows
+      // the race window. The outer try/catch (line ~493) is the real safety net if the
+      // folder moves between check and use. See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md
       const activeIncrementPath = path.join(
         this.projectRoot,
         '.specweave/increments',
         incrementId
       );
 
-      // Atomic existence check for active increment
+      // Early-exit check: is increment still in active folder?
       try {
         await fs.access(activeIncrementPath);
         // If we reach here, increment exists in active folder - proceed with sync
