@@ -48,8 +48,10 @@ interface UpdateOptions {
   verbose?: boolean;
   /** Force refresh even if up to date */
   force?: boolean;
-  /** Skip self-update of specweave CLI (default: false, CLI updates by default) */
+  /** Skip self-update of specweave CLI (--no-self sets self=false via Commander) */
   noSelf?: boolean;
+  /** Commander maps --no-self to self=false */
+  self?: boolean;
 }
 
 interface UpdateResult {
@@ -97,7 +99,10 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   const spinner = ora();
 
   // Step 0: Self-update SpecWeave CLI (default: ON, skip with --no-self)
-  if (!options.noSelf) {
+  // Commander maps --no-self to options.self=false (not options.noSelf=true)
+  // Also respect env guard to prevent infinite recursion from spawned child
+  const skipSelf = options.self === false || options.noSelf === true || process.env.SPECWEAVE_UPDATE_NO_SELF === '1';
+  if (!skipSelf) {
     const selfUpdateResult = await selfUpdateSpecWeave(version, options, spinner);
     result.selfUpdated = selfUpdateResult.updated;
     result.newVersion = selfUpdateResult.newVersion;
@@ -121,9 +126,11 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
       try {
         // Spawn NEW binary to run instructions/config/plugins update
+        // Guard against infinite recursion with env variable
         execSync(`specweave update ${flags.join(' ')}`, {
           stdio: 'inherit',
           cwd: projectPath,
+          env: { ...process.env, SPECWEAVE_UPDATE_NO_SELF: '1' },
         });
       } catch (error: any) {
         // Non-zero exit from spawned process - already printed output
@@ -762,7 +769,7 @@ async function selfUpdateSpecWeave(
 
       if (actualVersion !== latestVersion) {
         spinner.warn(`SpecWeave installed but version mismatch: expected v${latestVersion}, got v${actualVersion}`);
-        return { updated: true, newVersion: actualVersion };
+        return { updated: false, error: `Version mismatch after install: expected ${latestVersion}, got ${actualVersion}` };
       }
     } catch {
       spinner.warn('SpecWeave installed but could not verify new binary');
