@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.298] - 2026-02-20
+
+### Changes
+- fix: doctor checker improvements and tests
+
+---
+
+
+
 ## [1.0.297] - 2026-02-20
 
 ### Changes
