@@ -1,23 +1,21 @@
 /**
  * Tests for plugin-installer.ts
  *
- * Covers: installAllPlugins, installLazyMode, installPluginsWithRetry
- * (vskill-based plugin installation - see plugin-installer-vskill.test.ts for
- *  TC-018/TC-019 vskill-specific integration tests)
+ * Covers: installAllPlugins, installLazyMode, installPluginsFullMode
+ * (inline copier-based plugin installation via plugin-copier.ts)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // ---- hoisted mocks (ESM-safe) ----
 
-const mockExecFileNoThrowSync = vi.hoisted(() => vi.fn());
+const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
 const mockDetectClaudeCli = vi.hoisted(() => vi.fn());
 const mockGetClaudeCliDiagnostic = vi.hoisted(() => vi.fn());
 const mockGetClaudeCliSuggestions = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
 const mockCleanupStalePlugins = vi.hoisted(() => vi.fn());
-const mockGetPluginScope = vi.hoisted(() => vi.fn());
-const mockGetScopeArgs = vi.hoisted(() => vi.fn());
 const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 
 const mockFs = vi.hoisted(() => ({
@@ -68,8 +66,13 @@ vi.mock('chalk', () => {
   return { default: chalkProxy };
 });
 
-vi.mock('../../../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrowSync: mockExecFileNoThrowSync,
+vi.mock('../../../../../src/utils/plugin-copier.js', () => ({
+  copyPlugin: mockCopyPlugin,
+  findSpecweaveRoot: mockFindSpecweaveRoot,
+}));
+
+vi.mock('../../../../../src/utils/esm-helpers.js', () => ({
+  getDirname: () => '/mock/src/cli/helpers/init',
 }));
 
 vi.mock('../../../../../src/utils/claude-cli-detector.js', () => ({
@@ -86,11 +89,6 @@ vi.mock('../../../../../src/utils/cleanup-stale-plugins.js', () => ({
   cleanupStalePlugins: mockCleanupStalePlugins,
 }));
 
-vi.mock('../../../../../src/core/types/plugin-scope.js', () => ({
-  getPluginScope: mockGetPluginScope,
-  getScopeArgs: mockGetScopeArgs,
-}));
-
 vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
@@ -98,38 +96,15 @@ vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
 // ---- import under test (AFTER mocks) ----
 
 import { installAllPlugins } from '../../../../../src/cli/helpers/init/plugin-installer.js';
-import type { PluginInstallOptions, PluginInstallResult } from '../../../../../src/cli/helpers/init/plugin-installer.js';
 
 // ---- helpers ----
-
-function spinner() {
-  return mockOra();
-}
 
 /** Standard marketplace.json content */
 function marketplaceJson(plugins: Array<{ name: string }> = [{ name: 'sw' }, { name: 'sw-github' }]) {
   return JSON.stringify({ plugins });
 }
 
-/** Make execFileNoThrowSync return success/fail for specific args */
-function stubExec(
-  stubs: Array<{
-    /** Match when args[1] array starts with these values */
-    match: string[];
-    result: { success: boolean; stdout?: string; stderr?: string; error?: unknown };
-  }>,
-  fallback?: { success: boolean; stdout?: string; stderr?: string; error?: unknown }
-) {
-  mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-    for (const stub of stubs) {
-      const matches = stub.match.every((m, i) => args[i] === m);
-      if (matches) return stub.result;
-    }
-    return fallback ?? { success: true, stdout: '', stderr: '', exitCode: 0 };
-  });
-}
-
-/** Setup mocks for a successful vskill-based plugin discovery flow */
+/** Setup mocks for a successful inline copier flow */
 function setupHappyPath(overrides?: {
   plugins?: Array<{ name: string }>;
   cleanupResult?: { removedCount: number; removedPlugins: string[] };
@@ -142,21 +117,16 @@ function setupHappyPath(overrides?: {
   mockFs.existsSync.mockReturnValue(true);
   mockFs.readFileSync.mockReturnValue(marketplaceJson(plugins));
   mockCleanupStalePlugins.mockResolvedValue({ success: true, ...cleanup });
-  mockGetPluginScope.mockReturnValue('user');
-  mockGetScopeArgs.mockReturnValue([]);
   mockEnablePluginsInSettings.mockReturnValue(true);
 
-  // Default exec stub: vskill add succeeds with scan output
-  mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-    const argsStr = (args || []).join(' ');
-    if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-      return {
-        success: true,
-        stdout: 'Score: 100/100  Verdict: PASS\nInstalled sw to 1 agent',
-        stderr: '',
-      };
-    }
-    return { success: true, stdout: '', stderr: '' };
+  // Inline copier: findSpecweaveRoot returns valid root
+  mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
+
+  // Default copyPlugin: succeeds
+  mockCopyPlugin.mockReturnValue({
+    success: true,
+    sha: 'abc123def456',
+    targetDir: '/mock-home/.claude/commands/sw',
   });
 }
 
@@ -228,8 +198,6 @@ describe('plugin-installer', () => {
     it('should handle missing marketplace.json', async () => {
       mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      // marketplace list succeeds, marketplace add succeeds, but marketplace.json does not exist
-      stubExec([], { success: true, stdout: 'specweave', stderr: '' });
       mockFs.existsSync.mockReturnValue(false);
 
       const result = await installAllPlugins({ dirname: '/test' });
@@ -240,7 +208,6 @@ describe('plugin-installer', () => {
     it('should handle empty plugins array in marketplace.json', async () => {
       mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      stubExec([], { success: true, stdout: 'specweave', stderr: '' });
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(JSON.stringify({ plugins: [] }));
 
@@ -276,14 +243,8 @@ describe('plugin-installer', () => {
 
     it('should handle core plugin already installed', async () => {
       setupHappyPath();
-      // vskill add fails but stdout contains "already" -> treated as already installed
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return { success: false, stdout: 'already installed', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      // copyPlugin returns skipped=true for already-installed plugin
+      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -293,14 +254,7 @@ describe('plugin-installer', () => {
 
     it('should handle core plugin install failure in lazy mode', async () => {
       setupHappyPath();
-      // vskill add fails with no "already" in output -> treated as failure
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return { success: false, stdout: '', stderr: 'install error' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -329,14 +283,8 @@ describe('plugin-installer', () => {
 
     it('should handle "already" in stderr for already-installed plugins', async () => {
       setupHappyPath();
-      // vskill add fails but stderr contains "already" -> treated as already installed
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return { success: false, stdout: '', stderr: 'already installed' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      // copyPlugin returns skipped
+      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
@@ -362,17 +310,13 @@ describe('plugin-installer', () => {
 
     it('should report partial failures in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-      let vskillCallCount = 0;
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          vskillCallCount++;
-          if (vskillCallCount === 1) {
-            return { success: true, stdout: 'Installed sw-github to 1 agent', stderr: '' };
-          }
-          return { success: false, stdout: '', stderr: 'timeout' };
+      let callCount = 0;
+      mockCopyPlugin.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return { success: true, sha: 'abc123' };
         }
-        return { success: true, stdout: '', stderr: '' };
+        return { success: false, sha: '', error: 'timeout' };
       });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -383,26 +327,15 @@ describe('plugin-installer', () => {
       expect(result.failedPlugins).toContain('sw-jira');
     });
 
-    it('should install all plugins via vskill in full mode', async () => {
+    it('should install all plugins via copyPlugin in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-      const installedPlugins: string[] = [];
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          const pluginIdx = args.indexOf('--plugin');
-          if (pluginIdx !== -1 && args[pluginIdx + 1]) {
-            installedPlugins.push(args[pluginIdx + 1]);
-          }
-          return { success: true, stdout: 'Installed plugin to 1 agent', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
 
       await installAllPlugins({ dirname: '/test', lazyMode: false });
 
-      // Both plugins should have been installed via vskill
-      expect(installedPlugins).toContain('sw-github');
-      expect(installedPlugins).toContain('sw-jira');
+      // Both plugins should have been installed via copyPlugin
+      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
+      expect(calledPlugins).toContain('sw-github');
+      expect(calledPlugins).toContain('sw-jira');
     });
 
     it('should enable plugins after full mode installation', async () => {
@@ -422,14 +355,6 @@ describe('plugin-installer', () => {
       expect(result.success).toBe(true);
     });
   });
-
-  // ============================================================
-  // refreshMarketplace / ensureOfficialMarketplace / enableMarketplaceAutoUpdate
-  // REMOVED: These functions were replaced by vskill-based installation (v1.0.272)
-  // See plugin-installer-vskill.test.ts for TC-018/TC-019 tests
-  // ============================================================
-
-
 
   // ============================================================
   // Stale plugin cleanup
@@ -456,10 +381,10 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // installPluginsWithRetry via vskill (full mode)
+  // installPluginsFullMode via copyPlugin
   // ============================================================
-  describe('installPluginsWithRetry via vskill (full mode)', () => {
-    it('should install plugin via vskill add in full mode', async () => {
+  describe('installPluginsFullMode via copyPlugin (full mode)', () => {
+    it('should install plugin via copyPlugin in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }] });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -467,25 +392,13 @@ describe('plugin-installer', () => {
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
 
-      // Verify vskill add was called
-      const vskillCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('--plugin');
-        }
-      );
-      expect(vskillCalls.length).toBeGreaterThan(0);
+      // Verify copyPlugin was called
+      expect(mockCopyPlugin).toHaveBeenCalled();
     });
 
-    it('should handle vskill add failure in full mode', async () => {
+    it('should handle copyPlugin failure in full mode', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return { success: false, stdout: '', stderr: 'plugin not found' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'plugin not found' });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
@@ -493,7 +406,7 @@ describe('plugin-installer', () => {
       expect(result.failedPlugins).toContain('sw-github');
     });
 
-    it('should install multiple plugins sequentially via vskill', async () => {
+    it('should install multiple plugins sequentially via copyPlugin', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -507,93 +420,21 @@ describe('plugin-installer', () => {
   // Error handling in main try/catch
   // ============================================================
   describe('error handling', () => {
-    it('should handle ENOENT errors with appropriate messaging', async () => {
+    it('should handle marketplace.json with no plugins key', async () => {
       mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw new Error('ENOENT: command not found');
-      });
+      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({}));
 
       const result = await installAllPlugins({ dirname: '/test' });
 
-      expect(result.success).toBe(false);
-      expect(result.successCount).toBe(0);
-    });
-
-    it('should handle EACCES errors', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw new Error('EACCES: permission denied');
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should handle ECONNREFUSED errors', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw new Error('ECONNREFUSED: network error');
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should handle generic errors', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw new Error('unknown error');
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should show error details when DEBUG env is set', async () => {
-      const origDebug = process.env.DEBUG;
-      process.env.DEBUG = 'true';
-
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw new Error('some obscure error');
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-
-      process.env.DEBUG = origDebug;
-    });
-
-    it('should handle non-Error thrown values', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockImplementation(() => {
-        throw 'string error'; // eslint-disable-line no-throw-literal
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
+      // Empty plugins array from `marketplace.plugins || []`
       expect(result.success).toBe(false);
     });
   });
 
   // ============================================================
-  // getPluginVersion / manuallyInstallSpecweavePlugin / copyDirRecursive
-  // REMOVED: These functions were replaced by vskill-based installation (v1.0.272)
-  // ============================================================
-
-
-  // ============================================================
-  // Plugin scope handling
-  // REMOVED: vskill does not use Claude's --scope args (v1.0.272)
-  // Scoping is handled by vskill's lockfile and agent detection
-  // ============================================================
-
-  // ============================================================
-  // forceRefresh option (passed through options but used contextually)
+  // forceRefresh option
   // ============================================================
   describe('options handling', () => {
     it('should accept forceRefresh option without error', async () => {
@@ -621,49 +462,19 @@ describe('plugin-installer', () => {
   // Edge cases
   // ============================================================
   describe('edge cases', () => {
-    it('should handle marketplace.json with no plugins key', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
-      mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '' });
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(JSON.stringify({}));
+    it('should handle findSpecweaveRoot returning null', async () => {
+      setupHappyPath();
+      mockFindSpecweaveRoot.mockReturnValue(null);
 
       const result = await installAllPlugins({ dirname: '/test' });
 
-      // Empty plugins array from `marketplace.plugins || []`
       expect(result.success).toBe(false);
+      expect(mockCopyPlugin).not.toHaveBeenCalled();
     });
 
-    it('should handle vskill returning scan CONCERNS verdict', async () => {
+    it('should handle copyPlugin returning skipped=true', async () => {
       setupHappyPath();
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return {
-            success: true,
-            stdout: 'Score: 70/100  Verdict: CONCERNS\n--force: installing despite CONCERNS.\nInstalled sw to 1 agent',
-            stderr: '',
-          };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Still succeeds because --force was used
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-    });
-
-    it('should handle vskill add returning no scan output', async () => {
-      setupHappyPath();
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return { success: true, stdout: 'Installed sw to 1 agent', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
 
       const result = await installAllPlugins({ dirname: '/test' });
 

@@ -1,34 +1,23 @@
 /**
- * Plugin Installer Unit Tests
+ * Plugin Installer Source Code Validation Tests
  *
  * CRITICAL: These tests prevent regression of the marketplace deregistration bug
- * that caused users to lose all plugins when running `specweave init .` multiple times.
+ * and verify the plugin-installer.ts source code follows expected patterns.
  *
- * Bug History:
- * - v0.34.5 and earlier: refreshMarketplace() removed marketplace before re-adding
- * - v0.34.6: Added cache TTL logic (complex, still had issues)
- * - v0.35.2: Simplified to use official `marketplace update` command
- *
- * Current Implementation (v0.35.2):
- * - Uses `claude plugin marketplace list` to check if marketplace exists
- * - If exists → uses `marketplace update` (official refresh command, clean output)
- * - If not exists → uses `marketplace add` (first-time registration)
- * - No manual cache management - Claude CLI handles it internally
- * - Skip plugin ops entirely in "continue existing" mode
+ * Current Implementation (v1.0.278):
+ * - Uses inline copier (plugin-copier.ts) for first-party plugin installation
+ * - No vskill dependency, no external CLI shell-out
+ * - copyPlugin() copies files directly to ~/.claude/commands/<name>/
+ * - Hash-based skip for unchanged plugins
+ * - Lockfile (vskill.lock) updated with tier: 'BUNDLED'
  *
  * @see src/cli/helpers/init/plugin-installer.ts
- * @see ADR-0048 (marketplace symlink requirement)
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
-
-// Mock execFileNoThrowSync to prevent actual CLI calls
-vi.mock('../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrowSync: vi.fn(),
-}));
 
 // Mock ora spinner
 vi.mock('ora', () => ({
@@ -63,157 +52,8 @@ vi.mock('../../../src/utils/claude-cli-detector.js', () => ({
 }));
 
 describe('Plugin Installer - Marketplace Protection', () => {
-  let tempDir: string;
-  let mockExecFileNoThrowSync: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
-    // Create temp directory for tests
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-plugin-test-'));
-
-    // Get the mocked function
-    const execModule = await import('../../../src/utils/execFileNoThrow.js');
-    mockExecFileNoThrowSync = execModule.execFileNoThrowSync as ReturnType<typeof vi.fn>;
-    mockExecFileNoThrowSync.mockReset();
-  });
-
-  afterEach(async () => {
-    vi.clearAllMocks();
-    if (tempDir && await fs.pathExists(tempDir)) {
-      await fs.remove(tempDir);
-    }
-  });
-
-  describe('CRITICAL: Marketplace Deregistration Prevention', () => {
-    it('should NEVER call "marketplace remove" when marketplace exists', async () => {
-      // This is THE critical test - prevents the main bug from recurring
-
-      // Setup: Mock marketplace already exists
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: 'specweave (GitHub: anton-abyzov/specweave)', stderr: '' };
-        }
-        if (args.includes('marketplace') && args.includes('remove')) {
-          // THIS SHOULD NEVER BE CALLED!
-          throw new Error('BUG: marketplace remove was called when marketplace exists!');
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // Import after mocks are set up
-      const { installAllPlugins } = await import('../../../src/cli/helpers/init/plugin-installer.js');
-
-      // Create fake marketplace cache to trigger refresh logic
-      const marketplaceCachePath = path.join(tempDir, '.claude-plugin', 'marketplace.json');
-      await fs.ensureDir(path.dirname(marketplaceCachePath));
-      await fs.writeJson(marketplaceCachePath, {
-        plugins: Array(25).fill(null).map((_, i) => ({
-          name: `specweave-plugin-${i}`,
-          version: '1.0.0',
-          description: 'Test plugin',
-        })),
-      });
-
-      // Verify marketplace remove is never called
-      const calls = mockExecFileNoThrowSync.mock.calls;
-      const removeCall = calls.find(
-        (call: unknown[]) =>
-          Array.isArray(call[1]) &&
-          call[1].includes('marketplace') &&
-          call[1].includes('remove')
-      );
-
-      expect(removeCall).toBeUndefined();
-    });
-
-    it('should only add marketplace if it does NOT exist', async () => {
-      // Setup: Mock marketplace does NOT exist
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: '', stderr: '' }; // Empty = no marketplace
-        }
-        if (args.includes('marketplace') && args.includes('add')) {
-          return { success: true, stdout: 'Added marketplace', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // The add command should be called when marketplace doesn't exist
-      // This is tested by verifying the mock was called with correct args
-    });
-
-    it('should skip marketplace operations entirely when cache is fresh (< 24 hours)', async () => {
-      // This tests the cache TTL fix
-
-      // Create a fresh cache file (< 24 hours old)
-      const marketplaceCachePath = path.join(
-        os.homedir(),
-        '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
-      );
-
-      // If cache exists and is fresh, no marketplace ops should happen
-      if (await fs.pathExists(marketplaceCachePath)) {
-        const stats = await fs.stat(marketplaceCachePath);
-        const cacheAge = Date.now() - stats.mtimeMs;
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-
-        if (cacheAge < twentyFourHours) {
-          // Cache is fresh - no marketplace commands should be called
-          expect(mockExecFileNoThrowSync).not.toHaveBeenCalledWith(
-            'claude',
-            expect.arrayContaining(['marketplace', 'remove'])
-          );
-        }
-      }
-    });
-  });
-
-  describe('Marketplace Update Command (v0.35.2)', () => {
-    it('should use "marketplace update" when marketplace exists', async () => {
-      // Setup: Mock marketplace already exists
-      const updateCalled: string[][] = [];
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: 'specweave (GitHub: anton-abyzov/specweave)', stderr: '' };
-        }
-        if (args.includes('marketplace') && args.includes('update')) {
-          updateCalled.push(args);
-          return { success: true, stdout: 'Successfully updated', stderr: '' };
-        }
-        if (args.includes('marketplace') && args.includes('add')) {
-          throw new Error('BUG: marketplace add was called when marketplace exists!');
-        }
-        if (args.includes('plugin') && args.includes('install')) {
-          return { success: true, stdout: 'Successfully installed', stderr: '' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // After running, verify update was called, not add
-      // The actual test is that the mock throws if add is called
-    });
-
-    it('should use "marketplace add" when marketplace does NOT exist', async () => {
-      // Setup: Mock marketplace does NOT exist
-      const addCalled: string[][] = [];
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: '', stderr: '' }; // Empty = no marketplace
-        }
-        if (args.includes('marketplace') && args.includes('add')) {
-          addCalled.push(args);
-          return { success: true, stdout: 'Added marketplace', stderr: '' };
-        }
-        if (args.includes('marketplace') && args.includes('update')) {
-          throw new Error('BUG: marketplace update was called when marketplace does not exist!');
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // The add command should be called when marketplace doesn't exist
-      // The actual test is that the mock throws if update is called
-    });
-
-    it('should document the use of vskill-based plugin installation', async () => {
+  describe('CRITICAL: No marketplace deregistration', () => {
+    it('should NOT contain marketplace remove logic in plugin-installer.ts', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -222,20 +62,15 @@ describe('Plugin Installer - Marketplace Protection', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify vskill is used for installation
-        expect(content).toContain('vskill');
-        expect(content).toContain('installPluginViaVskill');
-
-        // Verify it uses vskill add command
-        expect(content).toContain("'add'");
-
-        // Verify documentation explains the approach
-        // (vskill-based installation with security scanning)
-        expect(content).toContain('via vskill');
+        // Verify no marketplace remove commands
+        expect(content).not.toContain("'marketplace remove'");
+        expect(content).not.toContain("marketplace', 'remove'");
       }
     });
+  });
 
-    it('should NOT contain cache TTL logic (removed in v0.35.2)', async () => {
+  describe('Inline Copier Implementation (v1.0.278)', () => {
+    it('should use inline copier (plugin-copier) for plugin installation', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -244,38 +79,49 @@ describe('Plugin Installer - Marketplace Protection', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify old cache logic is gone
-        expect(content).not.toContain('cacheAge < cacheTTL');
-        expect(content).not.toContain('24 * 60 * 60 * 1000'); // Old TTL constant
-        expect(content).not.toContain('needsRefresh = true');
+        // Verify inline copier is used
+        expect(content).toContain('copyPlugin');
+        expect(content).toContain('findSpecweaveRoot');
+        expect(content).toContain('plugin-copier');
+      }
+    });
+
+    it('should NOT contain vskill shell-out code', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify vskill shell-out is removed
+        expect(content).not.toContain('execFileNoThrowSync');
+        expect(content).not.toContain('resolveVskillPath');
+        expect(content).not.toContain('resolveSpecweavePluginDir');
+        expect(content).not.toContain('installPluginViaVskill');
+      }
+    });
+
+    it('should NOT contain cache management logic', async () => {
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
+      );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // These patterns were removed with the copier migration
+        expect(content).not.toContain('cacheAge');
+        expect(content).not.toContain('cacheTTL');
+        expect(content).not.toContain('needsRefresh');
         expect(content).not.toContain('marketplaceCachePath');
       }
     });
   });
 
   describe('Idempotency', () => {
-    it('should NOT call remove when update succeeds (normal path)', async () => {
-      // Setup: Marketplace exists and update succeeds
-      let removeWasCalled = false;
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: 'specweave', stderr: '' };
-        }
-        if (args.includes('marketplace') && args.includes('update')) {
-          return { success: true, stdout: '', stderr: '' }; // Success - no SSH error
-        }
-        if (args.includes('marketplace') && args.includes('remove')) {
-          removeWasCalled = true;
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // When update succeeds, remove should never be called
-      // (remove is ONLY called in SSH error recovery path)
-      // Note: This test verifies the idempotency guarantee for the normal path
-      expect(removeWasCalled).toBe(false);
-    });
-
     it('should not modify installed_plugins.json when marketplace exists', async () => {
       // The installed_plugins.json should remain unchanged when
       // marketplace is already registered and cache is fresh
@@ -283,46 +129,25 @@ describe('Plugin Installer - Marketplace Protection', () => {
   });
 
   describe('Error Handling', () => {
-    it('should not leave marketplace in broken state on network failure', async () => {
-      // This tests the atomic operation guarantee
-      // If add fails, we should NOT have removed the existing marketplace
-
-      mockExecFileNoThrowSync.mockImplementation((cmd: string, args: string[]) => {
-        if (args.includes('marketplace') && args.includes('list')) {
-          return { success: true, stdout: '', stderr: '' }; // No marketplace
-        }
-        if (args.includes('marketplace') && args.includes('add')) {
-          // Simulate network failure
-          return { success: false, stdout: '', stderr: 'Network error' };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      // Even on failure, there's nothing to break because we never removed first
-    });
-
     it('should handle Claude CLI not available gracefully', async () => {
-      // Mock Claude CLI not available
-      const cliDetector = await import('../../../src/utils/claude-cli-detector.js');
-      (cliDetector.detectClaudeCli as ReturnType<typeof vi.fn>).mockReturnValue({
-        available: false,
-        error: 'command_not_found',
-      });
-
-      const { installAllPlugins } = await import('../../../src/cli/helpers/init/plugin-installer.js');
-
-      // Should return early without calling any marketplace commands
-      expect(mockExecFileNoThrowSync).not.toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['marketplace'])
+      const sourceFile = path.join(
+        process.cwd(),
+        'src/cli/helpers/init/plugin-installer.ts'
       );
+
+      if (await fs.pathExists(sourceFile)) {
+        const content = await fs.readFile(sourceFile, 'utf-8');
+
+        // Verify detectClaudeCli is checked
+        expect(content).toContain('detectClaudeCli');
+        expect(content).toContain('claudeStatus.available');
+      }
     });
   });
 });
 
 describe('Plugin Installer - Continue Existing Mode', () => {
   it('should skip plugin installation in continue existing mode', async () => {
-    // Read init.ts to verify the fix
     const initFile = path.join(process.cwd(), 'src/cli/commands/init.ts');
 
     if (await fs.pathExists(initFile)) {
@@ -411,9 +236,8 @@ describe('Stale Plugin Cleanup (v0.35.2)', () => {
   });
 });
 
-describe('HTTPS URL for Public Repos (v0.35.3)', () => {
-  it('should use vskill for plugin installation, NOT marketplace commands', async () => {
-    // vskill installs plugins from a local directory - no SSH keys or HTTPS URLs needed.
+describe('Inline Copier Installation (v1.0.278)', () => {
+  it('should use copyPlugin for plugin installation, NOT vskill CLI', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -422,20 +246,18 @@ describe('HTTPS URL for Public Repos (v0.35.3)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify vskill path resolver is used
-      expect(content).toContain('resolveVskillPath');
-      expect(content).toContain('resolveSpecweavePluginDir');
+      // Verify inline copier is used
+      expect(content).toContain('copyPlugin');
+      expect(content).toContain('plugin-copier');
 
-      // Verify the install uses plugin-dir flag (local path, not remote URL)
-      expect(content).toContain('--plugin-dir');
-
-      // Verify marketplace add/update commands are NOT used for plugin installation
+      // Verify no vskill shell-out
+      expect(content).not.toContain('--plugin-dir');
       expect(content).not.toContain("'marketplace add'");
       expect(content).not.toContain('SPECWEAVE_MARKETPLACE_URL');
     }
   });
 
-  it('should document the vskill-based installation approach in comments', async () => {
+  it('should document the inline copier approach in comments', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -444,16 +266,15 @@ describe('HTTPS URL for Public Repos (v0.35.3)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify the comment explains the vskill approach
-      expect(content).toContain('vskill');
-      expect(content).toContain('security scan');
+      // Verify the comment explains the copier approach
+      expect(content).toContain('inline copier');
       expect(content).toContain('plugin');
     }
   });
 });
 
 describe('Regression Prevention', () => {
-  it('should document the vskill migration in source code', async () => {
+  it('should document the copier migration in source code', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -462,12 +283,8 @@ describe('Regression Prevention', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify the implementation uses vskill
-      expect(content).toContain('vskill');
-
-      // Verify vskill add command is used for installation
-      expect(content).toContain("'add'");
-      expect(content).toContain('installPluginViaVskill');
+      // Verify the implementation uses inline copier
+      expect(content).toContain('copyPlugin');
 
       // Verify it documents lazy loading mode
       expect(content).toContain('lazy');
@@ -475,7 +292,7 @@ describe('Regression Prevention', () => {
     }
   });
 
-  it('should use remove command ONLY for SSH recovery (v1.0.24 fix)', async () => {
+  it('should NOT contain cache management logic (removed with copier migration)', async () => {
     const sourceFile = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
@@ -484,107 +301,24 @@ describe('Regression Prevention', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Extract the refreshMarketplace function using multi-line regex
-      const functionStart = content.indexOf('async function refreshMarketplace');
-      if (functionStart !== -1) {
-        // Find the matching closing brace
-        let braceCount = 0;
-        let functionEnd = functionStart;
-        let foundFirstBrace = false;
-
-        for (let i = functionStart; i < content.length; i++) {
-          if (content[i] === '{') {
-            braceCount++;
-            foundFirstBrace = true;
-          } else if (content[i] === '}') {
-            braceCount--;
-            if (foundFirstBrace && braceCount === 0) {
-              functionEnd = i + 1;
-              break;
-            }
-          }
-        }
-
-        const functionBody = content.slice(functionStart, functionEnd);
-
-        // v1.0.24: Remove IS allowed now - but ONLY for SSH recovery
-        // The remove command is used when SSH authentication fails
-        expect(functionBody).toContain("'remove',");
-
-        // Verify the remove is ONLY used in the SSH error recovery path
-        expect(functionBody).toContain('SSH authentication failed');
-        expect(functionBody).toContain('v1.0.24');
-        expect(functionBody).toContain('switching to HTTPS');
-
-        // Verify it uses official commands (array format in source)
-        expect(functionBody).toContain("'marketplace',");
-        expect(functionBody).toContain("'update',");
-        expect(functionBody).toContain("'add',");
-        expect(functionBody).toContain("'list'");
-
-        // Verify it checks existence first
-        expect(functionBody).toContain('marketplaceExists');
-      }
-    }
-  });
-
-  it('should NOT contain cache management logic (removed with vskill migration)', async () => {
-    const sourceFile = path.join(
-      process.cwd(),
-      'src/cli/helpers/init/plugin-installer.ts'
-    );
-
-    if (await fs.pathExists(sourceFile)) {
-      const content = await fs.readFile(sourceFile, 'utf-8');
-
-      // These patterns were removed with the vskill migration
+      // These patterns were removed with the copier migration
       expect(content).not.toContain('cacheAge');
       expect(content).not.toContain('cacheTTL');
       expect(content).not.toContain('needsRefresh');
       expect(content).not.toContain('marketplaceCachePath');
 
-      // Verify vskill handles installation directly (no cache management needed)
-      expect(content).toContain('installPluginViaVskill');
+      // Verify inline copier handles installation directly (no cache management needed)
+      expect(content).toContain('copyPlugin');
     }
   });
 });
 
 /**
  * CRITICAL TEST: Verify INIT installs core plugin (sw)
- *
- * This test ensures that `specweave init` installs the essential core plugin:
- * 1. `sw` (core) - provides /sw:increment, /sw:do, /sw:done commands
- *
- * NOTE: As of v1.0.160, sw-router is OBSOLETE. Plugin detection is now handled
- * by the detect-intent command in user-prompt-submit.sh via LLM.
- *
- * The core plugin is the minimum required for SpecWeave to function.
- * Without it, users cannot create increments or execute tasks.
  */
 describe('Plugin Installer - Core Plugin Installation on INIT', () => {
-  let tempDir: string;
-  let mockExecFileNoThrowSync: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-core-plugin-test-'));
-
-    const execModule = await import('../../../src/utils/execFileNoThrow.js');
-    mockExecFileNoThrowSync = execModule.execFileNoThrowSync as ReturnType<typeof vi.fn>;
-    mockExecFileNoThrowSync.mockReset();
-  });
-
-  afterEach(async () => {
-    vi.clearAllMocks();
-    if (tempDir && await fs.pathExists(tempDir)) {
-      await fs.remove(tempDir);
-    }
-  });
-
   describe('Lazy Mode (Default) - installs sw core plugin only', () => {
     it('should install CORE plugin (sw) during lazy mode init', async () => {
-      // This test verifies the implementation installs sw via essentialPlugins array
-      // by checking the source code for the expected behavior
-
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -593,7 +327,7 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify lazy mode installs core plugin via essentialPlugins (v1.0.170+ pattern)
+        // Verify lazy mode installs core plugin via essentialPlugins
         expect(content).toContain("name: 'sw'");
         expect(content).toContain("marketplace: 'specweave'");
         expect(content).toContain('Core SpecWeave framework');
@@ -609,7 +343,7 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify detect-intent hook is documented for on-demand loading (v1.0.160+)
+        // Verify detect-intent hook is documented for on-demand loading
         expect(content).toContain('detect-intent');
         expect(content).toContain('on-demand');
       }
@@ -624,13 +358,13 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify sw-router is NOT being installed (no active install calls)
+        // Verify sw-router is NOT being installed
         expect(content).not.toContain("plugins: ['sw-router']");
         expect(content).not.toContain("const routerPlugin = allPlugins.find(p => p.name === 'sw-router')");
       }
     });
 
-    it('should install core plugin via vskill with alreadyInstalled handling', async () => {
+    it('should install core plugin via copyPlugin with result handling', async () => {
       const sourceFile = path.join(
         process.cwd(),
         'src/cli/helpers/init/plugin-installer.ts'
@@ -639,11 +373,11 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
       if (await fs.pathExists(sourceFile)) {
         const content = await fs.readFile(sourceFile, 'utf-8');
 
-        // Verify vskill is used for core plugin installation
-        expect(content).toContain('installPluginViaVskill');
+        // Verify copyPlugin is used for core plugin installation
+        expect(content).toContain('copyPlugin');
 
-        // Verify already-installed case is handled gracefully
-        expect(content).toContain('alreadyInstalled');
+        // Verify skipped case is handled gracefully
+        expect(content).toContain('result.skipped');
       }
     });
   });
@@ -697,14 +431,8 @@ describe('Plugin Installer - Core Plugin Installation on INIT', () => {
   });
 
   describe('Core plugin is defined in marketplace', () => {
-    // Skip: keyword-detector.js was never created
-    // Plugin detection now uses LLM-based detection in llm-plugin-detector.ts
-    // The PLUGIN_GROUPS concept was replaced by dynamic LLM detection
     it.skip('should have sw (core) plugin in PLUGIN_GROUPS.core', async () => {
-      const { PLUGIN_GROUPS } = await import('../../../src/core/lazy-loading/keyword-detector.js');
-
-      expect(PLUGIN_GROUPS.core).toBeDefined();
-      expect(PLUGIN_GROUPS.core).toContain('sw');
+      // keyword-detector.js was never created - skip
     });
 
     it('should have sw (core) plugin available in marketplace', async () => {

@@ -774,6 +774,7 @@ describe('Login Flow', () => {
 
 ## Related Skills
 
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata, signing)
 - `expo` - Expo managed workflow, EAS Build/Submit, OTA updates, config plugins
 - `mobile-testing` - Comprehensive testing strategies (XCTest, Espresso, Detox, Maestro)
 - `deep-linking-push` - Deep linking and push notification details

@@ -789,6 +789,7 @@ function trackNotificationTap(notificationId: string, action: string) {
 
 ## Related Skills
 
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata)
 - `expo` - Expo-specific notification and linking setup
 - `react-native-expert` - Navigation architecture for deep link routing
 - `mobile-testing` - Testing deep links and notifications

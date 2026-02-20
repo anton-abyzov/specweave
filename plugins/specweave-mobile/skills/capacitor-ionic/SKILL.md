@@ -794,6 +794,7 @@ describe('Product List', () => {
 
 ## Related Skills
 
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata, signing)
 - `expo` - Expo/React Native for comparison
 - `react-native-expert` - Architecture and RN/Expo expertise
 - `mobile-testing` - Testing Ionic/Capacitor apps
