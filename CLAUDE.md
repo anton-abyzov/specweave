@@ -33,16 +33,20 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 <!-- SW:SECTION:metarule version="1.0.272" -->
 ## Workflow Orchestration
 
-### 1. Plan Mode Default
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, **STOP and re-plan** - don't keep pushing
+### 1. Plan Mode Default (MANDATORY)
+- **ALWAYS enter plan mode** for ANY non-trivial task (3+ steps or architectural decisions)
+- Call `EnterPlanMode` BEFORE writing specs, plans, or task breakdowns
+- Do NOT start implementation until the plan is reviewed and approved
+- If something goes sideways, **STOP and re-plan** -- do not keep pushing
 - Write detailed specs upfront to reduce ambiguity
+- `/sw:increment` REQUIRES plan mode -- never skip it
 
 ### 2. Subagent Strategy
 - Use subagents liberally to keep main context clean
 - Offload research, exploration, and parallel analysis to subagents
 - One task per subagent for focused execution
 - Append "use subagents" to requests for safe parallelization
+- In team mode, sub-agents submit plans for team lead review before implementing
 
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
