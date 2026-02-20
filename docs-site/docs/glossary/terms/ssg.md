@@ -499,15 +499,15 @@ my-ssg-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "Marketing Site"] --> B[PM: Define Pages]
+    A[/specweave:increment "Marketing Site"] --> B[PM: Define Pages]
     B --> C[Architect: Design SSG Strategy]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Implement getStaticProps]
     E --> F[Generate All Paths]
     F --> G[Build Site]
     G --> H[Test Performance]
     H --> I[Deploy to CDN]
-    I --> J[/sw:done]
+    I --> J[/specweave:done]
 
     style B fill:#339af0
     style C fill:#339af0
@@ -798,7 +798,7 @@ export async function getStaticProps() {
 - **SSG Tutorial** - SpecWeave SSG guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSG
 - **[Docusaurus Guide](https://docusaurus.io)** - Documentation SSG
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SSG-specific features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSG-specific features
 
 ---
 

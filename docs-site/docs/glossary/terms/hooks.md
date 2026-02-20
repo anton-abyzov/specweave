@@ -35,10 +35,10 @@ sequenceDiagram
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| **post-increment-planning** | After `/sw:increment` | Auto-create GitHub issue, translate files |
+| **post-increment-planning** | After `/specweave:increment` | Auto-create GitHub issue, translate files |
 | **post-task-completion** | After task marked complete | Sync living docs, update external tools |
-| **post-increment-done** | After `/sw:done` | Close external issues, final sync |
-| **pre-implementation** | Before `/sw:do` | Validate environment |
+| **post-increment-done** | After `/specweave:done` | Close external issues, final sync |
+| **pre-implementation** | Before `/specweave:do` | Validate environment |
 
 ---
 
@@ -95,7 +95,7 @@ Fires after every task is marked complete (via TodoWrite):
 
 ### Post-Increment-Planning
 
-Fires after `/sw:increment` completes:
+Fires after `/specweave:increment` completes:
 
 1. Translate files (if multilingual)
 2. Check autoCreateIssue config
@@ -104,7 +104,7 @@ Fires after `/sw:increment` completes:
 
 ### Post-Increment-Done
 
-Fires after `/sw:done` completes:
+Fires after `/specweave:done` completes:
 
 1. Final living docs sync
 2. Close external issue (if linked)
@@ -200,8 +200,63 @@ rm -f .specweave/state/.hook-*
 
 ---
 
+## Claude Code Hook Output Format
+
+**CRITICAL**: Different hook events require different output formats!
+
+### UserPromptSubmit / SessionStart
+
+Use `additionalContext` to inject context into Claude:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": "Context to inject..."
+  }
+}
+```
+
+**Common Mistake**: Using `systemMessage` instead of `additionalContext` - this field does NOT exist for UserPromptSubmit hooks and will be silently ignored!
+
+### PreToolUse (Guards/Validators)
+
+Use `decision` to allow or block tool execution:
+
+```json
+{
+  "decision": "allow",
+  "reason": "Validation passed"
+}
+```
+
+Or to block:
+
+```json
+{
+  "decision": "block",
+  "reason": "Dangerous operation detected"
+}
+```
+
+### PostToolUse
+
+Use `continue` to signal completion:
+
+```json
+{
+  "continue": true
+}
+```
+
+### Official Documentation
+
+See [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks) for complete hook schema reference.
+
+---
+
 ## Related Terms
 
 - [Living Docs](/docs/glossary/terms/living-docs)
 - [Increments](/docs/glossary/terms/increments)
-- [Split-Source Sync](/docs/glossary/terms/split-source-sync)
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)

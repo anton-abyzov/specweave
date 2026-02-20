@@ -238,7 +238,7 @@ No specific command for ADRs. They're created manually during planning:
 
 ```bash
 # During increment planning
-/sw:increment "Add payment processing"
+/specweave:increment "Add payment processing"
 
 # PM agent asks Architect to create ADRs for major decisions
 # Architect creates: .specweave/docs/internal/architecture/adr/0015-payment-gateway-choice.md
@@ -365,7 +365,7 @@ Write for future developers who weren't at the meeting:
 
 - **[RFC (Request for Comments)](/docs/glossary/terms/rfc)** - Feature specification (WHAT), ADR is decision (WHY)
 - **HLD (High-Level Design)** - System architecture (HOW), ADR is rationale (WHY)
-- **[Architecture](/docs/glossary/categories/architecture-category)** - Category page
+- **[Architecture](/docs/glossary/categories/architecture)** - Category page
 - **[Living Documentation](/docs/guides/core-concepts/living-documentation)** - How docs stay current
 - **[Increment](/docs/guides/core-concepts/what-is-an-increment)** - SpecWeave's unit of work
 

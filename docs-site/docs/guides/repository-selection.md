@@ -1,525 +1,649 @@
 # Repository Selection Guide
 
-**Version**: 0.22.0+
-**Last Updated**: 2025-11-17
-**Feature**: GitHub Template Discovery (Strategic Init Phase 3)
+**Batch Select 10+ Repositories in Seconds with Smart Pattern Matching**
+
+Strategic Init's repository selection streamlines multi-repo setup by detecting patterns and allowing batch selection instead of manual URL entry - saving 5+ minutes when setting up projects with many repositories.
 
 ---
 
-## Overview
+## When Repository Selection Appears
 
-During Strategic Init Phase 3, SpecWeave discovers your GitHub template repositories and helps you select the right ones for your project. This guide explains the selection process, filtering techniques, and best practices.
+Repository selection is **Phase 6** of Strategic Init and triggers when:
 
-**Time Saved**: 2-4 hours of manual template searching
+1. You indicate **3+ repositories** in your project
+2. OR Strategic Init detects multi-repo architecture from your vision
+3. OR You explicitly choose multi-repo setup
 
----
-
-## What Are Template Repositories?
-
-**Template repositories** are GitHub repos marked as templates that can be used as starting points for new projects.
-
-**Why They Matter**:
-- ✅ **Proven patterns**: Battle-tested project structure
-- ✅ **Best practices**: Pre-configured linting, testing, CI/CD
-- ✅ **Faster setup**: Clone and start coding immediately
-- ✅ **Team consistency**: Everyone uses same foundation
-
-**How SpecWeave Uses Them**:
-1. Scans your GitHub for template repositories
-2. Filters by architecture (serverless vs traditional)
-3. Filters by tech stack (React, Node.js, Python, etc.)
-4. Recommends best matches for your vision
-
----
-
-## Template Discovery Process
-
-### Step 1: GitHub Scan
-
-SpecWeave connects to GitHub and scans:
-- ✅ Your personal repositories
-- ✅ Organization repositories (if you're a member)
-- ✅ Public templates from popular sources
-
-**Authentication**: Uses GitHub CLI (`gh auth status`) or OAuth token
-
-### Step 2: Template Classification
-
-Each repository is analyzed for:
-- **Is Template?**: Marked as template on GitHub
-- **Tech Stack**: Detected from `package.json`, `requirements.txt`, `go.mod`, etc.
-- **Architecture Type**: Serverless, traditional, monolithic, microservices
-- **Compliance**: HIPAA-ready, PCI-compliant, etc.
-- **Stars/Forks**: Popularity indicator
-
-**Example Detection**:
+**Example**:
 ```
-Repository: anton-abyzov/serverless-api-template
-- Template: Yes ✅
-- Tech Stack: Node.js, TypeScript, AWS Lambda
-- Architecture: Serverless
-- Stars: 127 ⭐
-- Compliance: SOC 2 ready
+Question: How many repositories are in this project?
+  ○ Single repository (monorepo)
+  ○ 2-5 repositories
+  ● 10+ repositories              ← Selected
+
+✓ Multi-repo detected → Repository selection enabled
 ```
-
-### Step 3: Filtering & Selection
-
-SpecWeave offers multiple selection methods based on repository count.
 
 ---
 
 ## Selection Methods
 
-### Method 1: Select All (≤5 Repositories)
+### Method 1: Pattern-Based Selection (RECOMMENDED for 10+ repos)
 
-**When**: You have 5 or fewer template repositories
+**Best for**: Repositories with consistent naming (prefix, keyword, owner)
 
-**Options**:
-```
-Detected Templates (4 total):
-1. serverless-api (Node.js, AWS Lambda)
-2. react-frontend (React, TypeScript)
-3. python-ml (Python, TensorFlow)
-4. go-microservice (Go, Docker)
+**How it works**:
+1. Specify a pattern (prefix, keyword, or owner)
+2. SpecWeave fetches matching repositories from GitHub
+3. Preview results and exclude unwanted repos
+4. Confirm selection
 
-Select:
-→ All 4 templates
-→ Manual selection
-```
-
-**Recommendation**: Select all if they're all relevant
+**Time saved**: ~5 minutes vs manual entry
 
 ---
 
-### Method 2: Prefix-Based Selection (6-20 Repositories)
+### Method 2: All Repositories from Account/Org
 
-**When**: You have 6-20 template repositories with naming patterns
+**Best for**: Small organizations (&lt;20 repos total)
+
+**How it works**:
+1. Provide GitHub username or org name
+2. SpecWeave fetches all repositories
+3. Preview and exclude unwanted repos
+4. Confirm selection
+
+---
+
+### Method 3: Manual Selection
+
+**Best for**: Irregular naming or few repositories (&lt;5 repos)
+
+**How it works**:
+1. Enter each repository URL manually
+2. SpecWeave validates each URL
+3. Confirm selection
+
+---
+
+## Pattern Types
+
+### Pattern 1: Prefix Match
+
+**Use case**: All repositories start with same prefix
+
+**Examples**:
+```
+Pattern: "myapp-"
+Matches:
+  ✓ myapp-frontend
+  ✓ myapp-backend
+  ✓ myapp-api
+  ✓ myapp-mobile
+  ✗ legacy-app
+  ✗ tools-monorepo
+```
+
+**Strategic Init flow**:
+```
+Question: What's the repository naming pattern?
+Examples:
+  - Prefix: "ec-" (e.g., ec-frontend, ec-backend)
+  - Owner: "my-company" (all repos from GitHub org)
+  - Keyword: "service" (all repos containing "service")
+
+Your pattern type: prefix
+Your prefix: myapp-
+
+Fetching repositories...
+
+✓ Found 12 repositories matching "myapp-*"
+```
+
+---
+
+### Pattern 2: Keyword Match
+
+**Use case**: Repositories contain specific keyword
+
+**Examples**:
+```
+Pattern: "service"
+Matches:
+  ✓ auth-service
+  ✓ payment-service
+  ✓ notification-service
+  ✓ user-service
+  ✗ frontend-web
+  ✗ admin-dashboard
+```
+
+**Strategic Init flow**:
+```
+Your pattern type: keyword
+Your keyword: service
+
+✓ Found 8 repositories containing "service"
+```
+
+---
+
+### Pattern 3: Owner/Org Match
+
+**Use case**: All repositories belong to specific GitHub user/org
+
+**Examples**:
+```
+Pattern: "my-company"
+Matches: ALL repositories in "my-company" GitHub organization
+  ✓ my-company/frontend
+  ✓ my-company/backend
+  ✓ my-company/api
+  ✓ my-company/mobile
+  ✓ my-company/infrastructure
+  ... (all repos in org)
+```
+
+**Strategic Init flow**:
+```
+Your pattern type: owner
+Your owner/org name: my-company
+
+✓ Found 47 repositories in "my-company" organization
+```
+
+---
+
+### Pattern 4: Combined Filters
+
+**Use case**: Complex selection (prefix + owner, keyword + owner, etc.)
+
+**Examples**:
+```
+Pattern: Prefix "api-" in owner "my-company"
+Matches:
+  ✓ my-company/api-gateway
+  ✓ my-company/api-auth
+  ✓ my-company/api-users
+  ✗ my-company/frontend
+  ✗ other-org/api-service
+```
+
+**Strategic Init flow**:
+```
+Your pattern type: combined
+Your prefix: api-
+Your owner: my-company
+
+✓ Found 5 repositories matching combined criteria
+```
+
+---
+
+## Exclusion Patterns
+
+After pattern matching, you can exclude repositories by keywords:
+
+**Common exclusions**:
+- `deprecated` - Old repositories no longer maintained
+- `archived` - Officially archived repositories
+- `test` - Test/sandbox repositories
+- `legacy` - Legacy code being phased out
+- `old` - Outdated versions
+- `backup` - Backup repositories
 
 **Example**:
 ```
-Detected Templates (12 total):
-- acme-corp/backend-*    (3 templates)
-- acme-corp/frontend-*   (2 templates)
-- acme-corp/mobile-*     (1 template)
-- acme-corp/infra-*      (4 templates)
-- community/*            (2 templates)
+Preview: Found 23 repositories matching "myapp-*"
+  • myapp-frontend (TypeScript, updated 2 days ago)
+  • myapp-backend (Node.js, updated 1 week ago)
+  • myapp-api (TypeScript, updated 3 days ago)
+  • myapp-deprecated-v1 (JavaScript, updated 2 years ago)    ← Will exclude
+  • myapp-archived-old (Python, updated 3 years ago)         ← Will exclude
+  ... (18 more)
 
-Select by prefix:
-1. acme-corp/backend-*   → 3 templates
-2. acme-corp/frontend-*  → 2 templates
-3. acme-corp/*           → 10 templates (all owned by acme-corp)
-4. Manual selection
-```
+Exclude any repositories? (optional)
+Enter keywords separated by commas: deprecated, archived
 
-**Best Practice**: Use prefixes if your organization follows naming conventions
-
----
-
-### Method 3: Keyword-Based Filtering (21+ Repositories)
-
-**When**: You have many template repositories
-
-**Filtering Options**:
-1. **By Name Keywords**:
-   ```
-   Filter by keyword: serverless
-   Matches: 8 repositories
-   - serverless-api-nodejs
-   - serverless-api-python
-   - serverless-frontend
-   ...
-   ```
-
-2. **By Tech Stack**:
-   ```
-   Filter by tech stack: React
-   Matches: 12 repositories
-   - react-spa-template
-   - react-native-mobile
-   - react-nextjs-ssr
-   ...
-   ```
-
-3. **By Owner**:
-   ```
-   Filter by owner: acme-corp
-   Matches: 18 repositories
-   (All templates owned by acme-corp organization)
-   ```
-
-4. **Combined Filters**:
-   ```
-   Filters:
-   - Owner: acme-corp
-   - Keyword: serverless
-   - Tech Stack: Node.js
-
-   Matches: 3 repositories
-   - acme-corp/serverless-api-nodejs
-   - acme-corp/serverless-worker-nodejs
-   - acme-corp/serverless-auth-nodejs
-   ```
-
----
-
-## Advanced Filtering Techniques
-
-### Filter by Architecture Match
-
-SpecWeave auto-filters templates based on Phase 4 architecture decision:
-
-**Serverless Architecture** (chosen in Phase 4):
-```
-Showing serverless-compatible templates only:
-✅ serverless-api-lambda (AWS Lambda + API Gateway)
-✅ serverless-frontend-s3 (S3 + CloudFront)
-✅ serverless-worker-sqs (SQS + Lambda)
-
-Hidden (traditional):
-❌ ec2-backend-api (doesn't match serverless)
-❌ kubernetes-microservice (doesn't match serverless)
-```
-
-**Traditional Architecture** (chosen in Phase 4):
-```
-Showing traditional infrastructure templates:
-✅ ec2-backend-api (EC2 + RDS)
-✅ kubernetes-microservice (K8s + PostgreSQL)
-✅ docker-compose-stack (Docker + Nginx)
-
-Hidden (serverless):
-❌ serverless-api-lambda (doesn't match traditional)
-```
-
-### Filter by Compliance
-
-For HIPAA/PCI-DSS/SOC 2 products:
-
-```
-Vision: "HIPAA-compliant telehealth platform"
-
-Showing HIPAA-ready templates:
-✅ hipaa-backend-api (Audit logging, encryption)
-✅ hipaa-auth-service (MFA, access controls)
-
-Hidden (not HIPAA-ready):
-❌ simple-api-starter (no audit trail)
-❌ quick-prototype (no encryption)
-```
-
-### Filter by Scale
-
-For high-scale products:
-
-```
-Vision: "Viral social network"
-
-Showing scalable templates:
-✅ scalable-api-nodejs (Auto-scaling, caching)
-✅ distributed-workers (SQS queues, Lambda)
-
-Hidden (not scalable):
-❌ sqlite-backend (single database)
-❌ in-memory-cache (not distributed)
+✓ Excluded 2 repositories
+Final selection: 21 repositories
 ```
 
 ---
 
-## Repository Preview
+## GitHub API Integration
 
-Before selection, SpecWeave shows metadata:
+SpecWeave uses GitHub API to fetch repository metadata:
 
-```
-📦 Repository Preview
-
-Name: acme-corp/serverless-api-nodejs
-URL: https://github.com/acme-corp/serverless-api-nodejs
-Description: Production-ready serverless API template
-
-Tech Stack:
-- Node.js 18.x
-- TypeScript 5.0
-- AWS Lambda
-- API Gateway
-- DynamoDB
-
-Features:
-✅ Authentication (JWT)
-✅ Rate limiting
-✅ API versioning
-✅ Unit tests (Jest)
-✅ E2E tests (Supertest)
-✅ CI/CD (GitHub Actions)
-
-Metrics:
-- Stars: 234 ⭐
-- Forks: 45
-- Last updated: 2 days ago
-- Contributors: 8
-
-Compliance:
-✅ SOC 2 ready
-⚠️ HIPAA (requires additional audit controls)
-❌ PCI-DSS (not payment-focused)
-
-Select this template? (y/N)
-```
-
----
-
-## Manual Exclusions
-
-After filtering, you can manually exclude specific templates:
-
-```
-Selected Templates (8 total):
-
-1. ✅ serverless-api-nodejs
-2. ✅ serverless-frontend-react
-3. ❌ serverless-legacy-v1 (exclude - outdated)
-4. ✅ serverless-worker-sqs
-5. ❌ serverless-experimental (exclude - not production-ready)
-6. ✅ serverless-auth-service
-7. ✅ serverless-data-pipeline
-8. ❌ serverless-test-template (exclude - only for testing)
-
-Final selection: 5 templates
-```
-
----
-
-## What If I Don't Have Templates?
-
-**SpecWeave recommends popular templates** based on your architecture:
-
-### Serverless Recommendations
-
-**AWS Lambda**:
-- `serverless/serverless-starter` - Official Serverless Framework starter
-- `aws-samples/serverless-patterns` - AWS serverless patterns
-
-**Firebase**:
-- `firebase/quickstart-nodejs` - Firebase Cloud Functions
-- `firebase/functions-samples` - Firebase examples
-
-**Supabase**:
-- `supabase/supabase` - Complete Supabase stack
-- `supabase-community/auth-helpers` - Auth templates
-
-### Traditional Recommendations
-
-**Node.js**:
-- `microsoft/TypeScript-Node-Starter` - Express + TypeScript
-- `hagopj13/node-express-boilerplate` - Production-ready Express
-
-**Python**:
-- `tiangolo/full-stack-fastapi-postgresql` - FastAPI + PostgreSQL
-- `cookiecutter/cookiecutter-django` - Django template
-
-**Go**:
-- `golang-standards/project-layout` - Standard Go project structure
-- `evrone/go-clean-template` - Clean architecture Go
-
-**Kubernetes**:
-- `GoogleCloudPlatform/microservices-demo` - Microservices reference
-- `kubernetes/examples` - K8s examples
-
----
-
-## Best Practices
-
-### 1. Organize Templates by Purpose
-
-**Good Naming**:
-```
-✅ backend-api-nodejs
-✅ frontend-react-spa
-✅ mobile-react-native
-✅ infra-terraform-aws
-✅ ml-python-tensorflow
-```
-
-**Bad Naming**:
-```
-❌ template-1
-❌ project-starter
-❌ new-app
-❌ copy-of-backend
-```
-
-### 2. Mark Repositories as Templates
-
-On GitHub:
-1. Go to repository Settings
-2. Check "Template repository"
-3. SpecWeave will auto-discover it
-
-### 3. Maintain Template READMEs
-
-**Include**:
-- Tech stack versions
-- Setup instructions
-- Compliance notes
+**Fetched metadata**:
+- Repository name
+- Owner
+- Description
+- Primary language
+- Star count
 - Last updated date
-- Maintainer contact
+- Active branches
+
+**Authentication**:
+```bash
+# Set GitHub token (optional, increases rate limit)
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+
+# Or use GitHub CLI authentication
+gh auth login
+```
+
+**Rate limits**:
+- **Without auth**: 60 requests/hour
+- **With auth**: 5,000 requests/hour
+
+**Tip**: For large organizations (100+ repos), use GitHub token to avoid rate limiting.
+
+---
+
+## Selection Preview
+
+Strategic Init shows a detailed preview before finalizing:
+
+```
+📦 Repository Selection Preview
+══════════════════════════════════════════════════════════════════
+
+Pattern: Prefix "myapp-"
+Owner: my-company
+Exclusions: deprecated, archived
+
+Found: 21 repositories
+
+Top 10 (sorted by last updated):
+  1. myapp-frontend
+     Language: TypeScript
+     Stars: 145
+     Last updated: 2 days ago
+     Description: React web application
+
+  2. myapp-backend
+     Language: Node.js
+     Stars: 89
+     Last updated: 1 week ago
+     Description: Express REST API
+
+  3. myapp-api
+     Language: TypeScript
+     Stars: 67
+     Last updated: 3 days ago
+     Description: GraphQL API gateway
+
+  ... (18 more)
+
+══════════════════════════════════════════════════════════════════
+
+Confirm selection? (y/n/modify)
+  y - Accept and save selection
+  n - Cancel and restart
+  modify - Adjust exclusions or pattern
+```
+
+---
+
+## Saved Configuration
+
+Selection is saved to `.specweave/config.json` for future reference:
+
+```json
+{
+  "repositories": {
+    "selectionRules": {
+      "type": "prefix",
+      "pattern": "myapp-",
+      "owner": "my-company",
+      "excludePatterns": ["deprecated", "archived"]
+    },
+    "repositories": [
+      {
+        "name": "myapp-frontend",
+        "url": "https://github.com/my-company/myapp-frontend",
+        "owner": "my-company",
+        "description": "React web application",
+        "language": "TypeScript",
+        "stars": 145,
+        "lastUpdated": "2025-11-15T10:30:00Z"
+      },
+      {
+        "name": "myapp-backend",
+        "url": "https://github.com/my-company/myapp-backend",
+        "owner": "my-company",
+        "description": "Express REST API",
+        "language": "Node.js",
+        "stars": 89,
+        "lastUpdated": "2025-11-08T14:22:00Z"
+      }
+      // ... (19 more)
+    ]
+  }
+}
+```
+
+**Why save rules?** Future increments can reference this data for repository-specific tasks.
+
+---
+
+## Linking Projects to Repositories
+
+After selection, Strategic Init links repositories to projects:
+
+**Automatic linking** (based on repository names):
+```
+Repositories with "frontend" → frontend project
+Repositories with "backend" → backend project
+Repositories with "api" → backend project
+Repositories with "mobile", "ios", "android" → mobile project
+```
 
 **Example**:
-```markdown
-# Serverless API Template
+```
+Projects detected:
+  • frontend project
+    Repositories:
+      - myapp-frontend
+      - myapp-web
 
-**Tech Stack**: Node.js 18, TypeScript 5, AWS Lambda
-**Architecture**: Serverless
-**Compliance**: SOC 2 ready
-**Last Updated**: 2025-11-15
-**Maintainer**: platform-team@acme.com
+  • backend project
+    Repositories:
+      - myapp-backend
+      - myapp-api
+      - myapp-services
 
-## Quick Start
-1. Clone template
-2. Run `npm install`
-3. Configure `.env`
-4. Deploy: `npm run deploy`
+  • mobile project
+    Repositories:
+      - myapp-mobile
+      - myapp-ios
+      - myapp-android
 ```
 
-### 4. Version Your Templates
-
-**Approach 1: Branches**:
-```
-- main (latest stable)
-- v2.0 (major version 2)
-- v1.0 (legacy version 1)
-```
-
-**Approach 2: Tags**:
-```
-git tag v2.1.0
-git push --tags
-```
-
-**Approach 3: Separate Repos**:
-```
-- backend-api-v2 (current)
-- backend-api-v1 (legacy)
+**Manual override**:
+```json
+{
+  "projects": {
+    "backend": {
+      "repositories": [
+        { "url": "https://github.com/my-company/myapp-backend" },
+        { "url": "https://github.com/my-company/myapp-api" }
+      ]
+    }
+  }
+}
 ```
 
-### 5. Archive Outdated Templates
+---
 
-Mark deprecated templates:
-1. GitHub: Archive repository
-2. README: Add deprecation notice
-3. SpecWeave: Will hide archived templates
+## Advanced Patterns
+
+### Pattern: Monorepo with Multiple Services
+
+**Scenario**: Single repository, multiple services in subdirectories
+
+**Solution**: Use single repository with project folders
+```
+Repository: myapp-monorepo
+Projects defined by folders:
+  • backend/ → backend project
+  • frontend/ → frontend project
+  • mobile/ → mobile project
+```
+
+**Config**:
+```json
+{
+  "repositories": {
+    "type": "monorepo",
+    "url": "https://github.com/my-company/myapp-monorepo",
+    "projects": {
+      "backend": { "path": "backend/" },
+      "frontend": { "path": "frontend/" },
+      "mobile": { "path": "mobile/" }
+    }
+  }
+}
+```
+
+---
+
+### Pattern: Microservices (100+ repositories)
+
+**Scenario**: Large microservices architecture with many repos
+
+**Solution**: Use combined pattern with strict prefix
+```
+Pattern: Prefix "service-"
+Owner: "my-company"
+Exclusions: test, sandbox, deprecated
+
+Result: Selects only production services
+```
+
+**Tip**: Create GitHub topics/tags and filter by topic
+```
+Pattern: Topic "production-service"
+Matches: Only repositories tagged "production-service"
+```
+
+---
+
+### Pattern: Multi-Organization
+
+**Scenario**: Repositories across multiple GitHub orgs
+
+**Solution**: Run repository selection multiple times
+```bash
+# First organization
+specweave init
+# Select repositories from "company-frontend-org"
+
+# Add second organization
+specweave init --add-repos
+# Select repositories from "company-backend-org"
+```
+
+**Config**:
+```json
+{
+  "repositories": [
+    { "owner": "company-frontend-org", "pattern": "web-*" },
+    { "owner": "company-backend-org", "pattern": "api-*" }
+  ]
+}
+```
+
+---
+
+## Use Cases & Examples
+
+### Use Case 1: Bootstrapped Startup (5 repos)
+
+**Scenario**: Small team, 5 repositories, simple names
+
+**Selection method**: Manual selection (fastest for &lt;5 repos)
+```
+Repositories:
+1. https://github.com/myorg/frontend
+2. https://github.com/myorg/backend
+3. https://github.com/myorg/mobile
+4. https://github.com/myorg/infrastructure
+5. https://github.com/myorg/shared-utils
+```
+
+**Time**: 2 minutes
+
+---
+
+### Use Case 2: E-Commerce Platform (23 repos)
+
+**Scenario**: Medium company, consistent naming "ec-*"
+
+**Selection method**: Prefix pattern
+```
+Pattern: "ec-"
+Exclusions: deprecated
+
+Found: 23 repositories
+  • ec-frontend
+  • ec-backend
+  • ec-api-gateway
+  • ec-auth-service
+  • ec-payment-service
+  ... (18 more)
+```
+
+**Time**: 30 seconds (vs 10 minutes manual)
+
+---
+
+### Use Case 3: Enterprise Microservices (150 repos)
+
+**Scenario**: Large company, 150+ repositories in org
+
+**Selection method**: Owner + exclusions
+```
+Owner: "enterprise-corp"
+Exclusions: test, sandbox, archived, deprecated, backup
+
+Found: 87 production repositories
+  (excluded 63 non-production repos)
+```
+
+**Time**: 1 minute (vs 45 minutes manual!)
 
 ---
 
 ## Troubleshooting
 
-### Problem: No templates found
+### "No repositories found"
 
 **Causes**:
-- No repositories marked as templates
-- GitHub authentication failed
-- Organization permissions missing
+1. Pattern doesn't match any repositories
+2. GitHub API authentication failed
+3. Repository is private and token lacks access
 
-**Solution**:
+**Fixes**:
 ```bash
-# Verify GitHub authentication
+# Check GitHub authentication
 gh auth status
 
-# Login if needed
+# Try different pattern
+Pattern: myapp-   → Try: my-app- or app-
+
+# Verify organization name
+Owner: mycompany  → Try: my-company (with hyphen)
+
+# Check token permissions
+GITHUB_TOKEN must have "repo" scope for private repos
+```
+
+---
+
+### "Rate limit exceeded"
+
+**Cause**: GitHub API rate limit hit (60 requests/hour without auth)
+
+**Fix**:
+```bash
+# Authenticate with GitHub
 gh auth login
 
-# Check organization access
-gh repo list your-org
+# Or set token
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+
+# Retry
+specweave init
 ```
-
-### Problem: Wrong templates recommended
-
-**Cause**: Architecture mismatch
-
-**Solution**: SpecWeave filters templates by architecture from Phase 4. If recommendations don't match, review Phase 4 decision.
-
-### Problem: Can't access organization templates
-
-**Cause**: Missing organization permissions
-
-**Solution**:
-1. Join GitHub organization
-2. Request "Member" role (minimum)
-3. Re-run `specweave init`
 
 ---
 
-## Integration with Multi-Project Mode
+### "Excluded too many repos"
 
-When using multi-project mode, select templates per project:
+**Cause**: Exclusion pattern is too broad
 
+**Example**:
+```
+Pattern: "service"
+Exclusions: "old"
+
+Result: Excludes "user-service-old" but also "user-service-v2-old-api"
+```
+
+**Fix**: Be more specific with exclusions
+```
+Exclusions: "-old", "-deprecated-old"
+```
+
+---
+
+## Best Practices
+
+### 1. Use Consistent Naming
+
+**Good naming patterns**:
+```
+✅ myapp-frontend, myapp-backend, myapp-api
+✅ service-auth, service-payment, service-notification
+✅ web-portal, web-admin, web-api
+```
+
+**Bad naming patterns**:
+```
+❌ frontend, backend-service, the-api, mobile2
+❌ proj1, proj2, new-project, project-final
+```
+
+### 2. Tag Repositories with Topics
+
+GitHub topics enable advanced filtering:
+```
+Topics: production, microservice, nodejs, typescript
+
+Pattern: Topic "production" + Topic "microservice"
+Result: Only production microservices
+```
+
+### 3. Maintain .specweave/config.json
+
+Keep repository list updated:
 ```bash
-# Switch to backend project
-/sw:switch-project backend-api
+# Refresh repository list
+specweave update-repos
 
-# Run init (will prompt for templates)
-specweave init
+# Add new repository
+specweave add-repo https://github.com/org/new-service
 
-# Select backend templates only:
-✅ backend-api-nodejs
-✅ backend-worker-sqs
-❌ frontend-react (skip - not backend)
+# Remove archived repository
+specweave remove-repo old-service
+```
 
-# Switch to frontend project
-/sw:switch-project frontend-app
+### 4. Document Selection Rules
 
-# Run init
-specweave init
-
-# Select frontend templates:
-✅ frontend-react-spa
-✅ frontend-component-library
-❌ backend-api-nodejs (skip - not frontend)
+Add comments to config.json:
+```json
+{
+  "repositories": {
+    "selectionRules": {
+      "type": "prefix",
+      "pattern": "service-",
+      "rationale": "All microservices follow 'service-*' naming convention",
+      "excludePatterns": ["test", "deprecated"],
+      "lastUpdated": "2025-11-17"
+    }
+  }
+}
 ```
 
 ---
 
-## FAQ
+## Learn More
 
-### Can I use templates from other organizations?
-
-**Yes**, if they're public. SpecWeave scans:
-- ✅ Your personal repos
-- ✅ Your organization repos
-- ✅ Public templates you've starred
-- ❌ Private repos from other orgs (permission required)
-
-### Can I skip template selection?
-
-**Yes**. During Phase 3:
-```
-Select templates? (Y/n): n
-✅ Skipped template selection
-```
-
-You can manually clone templates later.
-
-### Can I add templates after init?
-
-**Yes**. Re-run Strategic Init:
-```bash
-specweave init
-
-# Select different templates during Phase 3
-```
-
-### Do templates affect architecture decision?
-
-**No**. Architecture decision (Phase 4) comes AFTER template selection. SpecWeave will filter templates to match chosen architecture.
+- [Strategic Init Guide](./strategic-init.md) - Full Strategic Init flow
+- [Multi-Project Setup](./multi-project-setup.md) - Link repositories to projects
+- [GitHub Integration](../internal/integrations/github.md) - Sync with GitHub Issues
 
 ---
 
-## See Also
-
-- [Strategic Init Guide](./strategic-init.md) - Complete Phase 0-6 process
-- [Multi-Project Setup](./multi-project-setup.md) - Organize templates by project
-- [Compliance Standards Reference](../reference/compliance-standards.md) - Compliance-aware template selection
-
----
-
-**Last Updated**: 2025-11-17
-**Version**: 0.22.0+
+**Ready to select your repositories?** Run `specweave init` and answer the multi-repo questions!

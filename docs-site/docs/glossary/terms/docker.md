@@ -555,7 +555,7 @@ After Docker implementation, update docs:
 
 ```bash
 # Sync Docker setup to architecture docs
-/sw:sync-docs update
+/specweave:sync-docs update
 
 # Results in:
 # - Updated README with Docker instructions
@@ -699,7 +699,7 @@ docker system prune -a --volumes
 - [CI/CD](/docs/glossary/terms/ci-cd) - Automated Docker image builds
 - Container Registry - Docker image storage
 - [Microservices](/docs/glossary/terms/microservices) - Architecture Docker enables
-- DevOps - Docker in DevOps workflows
+- [DevOps](/docs/glossary/terms/devops) - Docker in DevOps workflows
 
 ## Resources
 

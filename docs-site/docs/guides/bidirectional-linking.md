@@ -14,12 +14,12 @@ SpecWeave automatically creates **bidirectional links** between tasks and user s
 
 ## How It Works
 
-### Automatic During `/sw:done`
+### Automatic During `/specweave:done`
 
 When you complete an increment:
 
 ```bash
-/sw:done 0031
+/specweave:done 0031
 ```
 
 SpecWeave automatically:
@@ -200,7 +200,7 @@ AI assistants (Claude, GitHub Copilot, ChatGPT) can:
 
 ### 3. Zero Manual Work ✅
 
-- Links created automatically during `/sw:done`
+- Links created automatically during `/specweave:done`
 - No manual linking needed
 - Idempotent (safe to run sync multiple times)
 
@@ -279,7 +279,7 @@ To disable bidirectional linking (not recommended):
 
 ### Duplicate Prevention
 
-**Scenario**: Run `/sw:done` twice on same increment
+**Scenario**: Run `/specweave:done` twice on same increment
 
 **Behavior**: Checks if `**User Story**:` already exists → Skip
 
@@ -326,7 +326,7 @@ To disable bidirectional linking (not recommended):
 
 ## Manual Sync
 
-If automatic sync didn't work during `/sw:done`:
+If automatic sync didn't work during `/specweave:done`:
 
 ```bash
 node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {
@@ -518,10 +518,11 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 ## See Also
 
 - [Living Docs Sync Guide](intelligent-living-docs-sync.md) - Complete living docs architecture
-- [Test-Aware Planning](/docs/academy/specweave-essentials/06-tdd-workflow) - AC-ID format explanation
+- [Test-Aware Planning](../../../increments/0003-intelligent-model-selection/reports/TEST-AWARE-PLANNING.md) - AC-ID format explanation
 - [Multi-Project Setup](multi-project-setup.md) - Multi-project configuration
 
 ---
 
 **Last Updated**: 2025-11-13
+**Version**: v0.18.0
 **Status**: Production Ready

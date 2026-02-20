@@ -7,11 +7,10 @@
 ## Overview
 
 SpecWeave automatically optimizes your AI costs by intelligently routing work to the most cost-effective model:
-- **Opus 4.6** (or Opus 4.5) for planning, architecture, and complex reasoning (default)
-- **Sonnet 4.5** for balanced speed and capability on routine implementation
-- **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple tasks
+- **Opus 4.5** ($15/$75 per 1M tokens) for planning, architecture, and complex reasoning (default)
+- **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple implementation
 
-**Result**: Maximum quality with Opus 4.6 as default, with Sonnet/Haiku optimization for routine tasks.
+**Result**: Maximum quality with Opus 4.5 as default, with Haiku optimization for routine tasks.
 
 ---
 
@@ -73,7 +72,7 @@ Every agent invocation is tracked:
 ### Quick Summary
 
 ```bash
-/sw:costs
+/specweave:costs
 ```
 
 **Output**:
@@ -106,7 +105,7 @@ COST BY INCREMENT
 ### Increment-Specific Report
 
 ```bash
-/sw:costs 0003
+/specweave:costs 0003
 ```
 
 **Output**:
@@ -155,38 +154,49 @@ RECENT SESSIONS
 
 **Task**: Build authentication system
 
-**With SpecWeave** (Opus 4.5 default):
-- PM planning: $8.00 (Opus)
-- Architect design: $12.00 (Opus)
-- Frontend implementation: $4.00 (Haiku - mechanical) 💰 **saves $8**
-- Backend implementation: $5.00 (Haiku - mechanical) 💰 **saves $10**
-- QA testing: $8.00 (Opus)
-- **Total: $37.00**
+**Without SpecWeave** (all Sonnet):
+- PM planning: $5.00
+- Architect design: $8.00
+- Frontend implementation: $12.00
+- Backend implementation: $15.00
+- QA testing: $5.00
+- **Total: $45.00**
 
-**Benefit**: Maximum quality reasoning with Opus 4.5, Haiku for routine implementation.
+**With SpecWeave** (intelligent selection):
+- PM planning: $5.00 (Sonnet)
+- Architect design: $8.00 (Sonnet)
+- Frontend implementation: $4.00 (Haiku) 💰 **saves $8**
+- Backend implementation: $5.00 (Haiku) 💰 **saves $10**
+- QA testing: $5.00 (Sonnet)
+- **Total: $27.00**
+- **Savings: $18.00 (40%)**
 
 ### Scenario 2: Refactoring Sprint
 
 **Task**: Refactor legacy code
 
-**With SpecWeave**:
-- Initial analysis: $8.00 (Opus - architecture decisions)
-- Code refactoring: $15.00 (Haiku - mechanical execution) 💰 **saves $30**
-- Final review: $8.00 (Opus - quality assurance)
-- **Total: $31.00**
+**Without SpecWeave**:
+- All refactoring: $50.00 (Sonnet)
 
-**Benefit**: Deep architectural reasoning with Opus, efficient execution with Haiku.
+**With SpecWeave**:
+- Initial analysis: $5.00 (Sonnet - architecture)
+- Code refactoring: $15.00 (Haiku - execution) 💰 **saves $30**
+- Final review: $5.00 (Sonnet - quality)
+- **Total: $25.00**
+- **Savings: $25.00 (50%)**
 
 ### Scenario 3: Documentation Generation
 
 **Task**: Generate API documentation
 
-**With SpecWeave**:
-- Strategic docs: $5.00 (Opus - planning structure)
-- API reference: $2.00 (Haiku - mechanical generation) 💰 **saves $5**
-- **Total: $7.00**
+**Without SpecWeave**:
+- Documentation: $10.00 (Sonnet)
 
-**Benefit**: Quality documentation structure with Opus, efficient generation with Haiku.
+**With SpecWeave**:
+- Strategic docs: $3.00 (Sonnet - planning)
+- API reference: $2.00 (Haiku - execution) 💰 **saves $5**
+- **Total: $5.00**
+- **Savings: $5.00 (50%)**
 
 ---
 
@@ -197,11 +207,14 @@ RECENT SESSIONS
 Need Opus for complex reasoning? Use `--model`:
 
 ```bash
-# Opus is the default for all tasks (best quality)
-/sw:do "Design distributed consensus algorithm"
+# Force Opus for extremely complex task
+/specweave:do --model opus "Design distributed consensus algorithm"
 
-# Force Haiku for simple mechanical task
-/sw:do --model haiku "Generate test data"
+# Force Sonnet when uncertain
+/specweave:do --model sonnet "Implement feature X"
+
+# Force Haiku for simple task
+/specweave:do --model haiku "Generate test data"
 ```
 
 ### Per-Agent Override
@@ -223,7 +236,7 @@ Task tool: agent=diagrams-architect, model=haiku
 ### JSON Export (Machine-Readable)
 
 ```bash
-/sw:costs 0003
+/specweave:costs 0003
 # Select: Export to JSON
 
 # Output: .specweave/increments/0003/reports/cost-analysis.json
@@ -238,7 +251,7 @@ Task tool: agent=diagrams-architect, model=haiku
 ### CSV Export (Spreadsheet-Friendly)
 
 ```bash
-/sw:costs 0003
+/specweave:costs 0003
 # Select: Export to CSV
 
 # Output: .specweave/increments/0003/reports/cost-history.csv
@@ -258,27 +271,27 @@ Task tool: agent=diagrams-architect, model=haiku
 
 ❌ **Don't**: Force model for every task
 ```bash
-/sw:do --model sonnet "implement X"  # Unnecessary
+/specweave:do --model sonnet "implement X"  # Unnecessary
 ```
 
 ✅ **Do**: Trust automatic selection
 ```bash
-/sw:do "implement X"  # SpecWeave chooses Haiku
+/specweave:do "implement X"  # SpecWeave chooses Haiku
 ```
 
 ### 2. Monitor Costs Regularly
 
 ```bash
 # Check costs after each increment
-/sw:done 0003
-/sw:costs 0003
+/specweave:done 0003
+/specweave:costs 0003
 ```
 
 ### 3. Review Most Expensive Agents
 
 ```bash
 # Identify cost hotspots
-/sw:costs
+/specweave:costs
 # Look at "Most Expensive" agent
 ```
 
@@ -287,14 +300,14 @@ Task tool: agent=diagrams-architect, model=haiku
 When iterating rapidly:
 ```bash
 # Initial implementation (auto-selects Haiku)
-/sw:do "implement feature X"
+/specweave:do "implement feature X"
 
 # Refinements (also Haiku)
-/sw:do "add error handling"
-/sw:do "improve performance"
+/specweave:do "add error handling"
+/specweave:do "improve performance"
 
 # Final review (auto-selects Sonnet)
-/sw:validate
+/specweave:validate
 ```
 
 ---
@@ -343,9 +356,9 @@ Since we store NO personal data:
 **Cause**: No tracked sessions yet
 
 **Solution**:
-1. Run `/sw:do` to execute tasks
+1. Run `/specweave:do` to execute tasks
 2. Wait for agent completion
-3. Run `/sw:costs` again
+3. Run `/specweave:costs` again
 
 ### Savings Seem Low
 
@@ -361,12 +374,12 @@ Since we store NO personal data:
 **Option 1**: Use more execution agents
 ```bash
 # Instead of architect (Sonnet)
-/sw:do with agent=frontend  # Uses Haiku
+/specweave:do with agent=frontend  # Uses Haiku
 ```
 
 **Option 2**: Force Haiku for simple planning
 ```bash
-/sw:increment --model haiku "simple feature"
+/specweave:increment --model haiku "simple feature"
 ```
 
 ---
@@ -379,7 +392,7 @@ Since we store NO personal data:
 
 ### Q: Is quality affected?
 
-**A**: No. Opus 4.5 is used for all complex planning and analysis. Haiku 4.5 is used for mechanical execution tasks where quality is consistent.
+**A**: No. Haiku 4.5 matches Sonnet 3.5 quality, perfect for execution tasks. Sonnet 4.5 is still used for all complex planning.
 
 ### Q: Can I opt out?
 
@@ -387,17 +400,17 @@ Since we store NO personal data:
 
 ### Q: How accurate is phase detection?
 
-**A**: >95% accuracy on typical prompts. When uncertain, defaults to Opus 4.5 (maximum quality).
+**A**: >95% accuracy on typical prompts. When uncertain, defaults to Opus (maximum quality).
 
-### Q: Why is Opus 4.5 the default?
+### Q: Does this work with Opus?
 
-**A**: Opus 4.5 provides the highest quality reasoning and analysis. It's the default for all complex work (planning, architecture, security). Haiku is automatically used for simple mechanical tasks to save costs.
+**A**: Yes! Opus 4.0 will be supported when released. Currently: planning=Sonnet, execution=Haiku.
 
 ---
 
 ## Next Steps
 
-- [Model Selection Guide](/docs/glossary/terms/intelligent-model-selection) - Deep dive into how model selection works
+- [Model Selection Guide](/docs/glossary/terms/model-selection) - Deep dive into how model selection works
 - [Cost Tracking Reference](../reference/cost-tracking) - Technical details on cost tracking
 
 ---
@@ -407,4 +420,4 @@ Since we store NO personal data:
 
 ---
 
-*Last updated: 2025-10-31*
+*Last updated: 2025-10-31 | SpecWeave v0.4.0*

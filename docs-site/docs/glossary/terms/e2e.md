@@ -510,14 +510,19 @@ test.afterEach(async () => {
 
 **Solution**: Run E2E tests in CI/CD pipeline (GitHub Actions, CircleCI).
 
-### Browser Automation Modes
+## Playwright CLI for Token-Efficient E2E (Feb 2026+)
 
-When running E2E tests with SpecWeave, two browser automation modes are available:
+SpecWeave supports **dual-mode** browser automation via `@playwright/cli` and the Playwright MCP plugin. For E2E testing in AI-assisted workflows, the CLI mode provides **~98% token reduction** compared to MCP:
 
-- **`@playwright/cli`**: Token-efficient CLI for automated test runs and CI/CD (see [Playwright glossary entry](./playwright.md#cli-vs-mcp-mode-selection))
-- **Playwright MCP plugin**: Rich DOM inspection for interactive debugging and self-healing tests
+| Mode | Token Cost | Best For |
+|------|-----------|----------|
+| **CLI** (`@playwright/cli`) | ~250 chars/action | Test execution, CI/CD, automation |
+| **MCP** (Playwright plugin) | ~5-8K chars/action | Page exploration, DOM inspection |
 
-Most E2E test execution uses CLI mode for efficiency. Switch to MCP mode when you need to interactively explore page structure or debug failing selectors.
+**Install**: `npm install -g @playwright/cli@latest`
+**Config**: Set `testing.playwright.preferCli: true` in `.specweave/config.json`
+
+See [Playwright glossary entry](/docs/glossary/terms/playwright) for full dual-mode documentation.
 
 ## Related Terms
 
@@ -526,7 +531,7 @@ Most E2E test execution uses CLI mode for efficiency. Switch to MCP mode when yo
 - **[TDD (Test-Driven Development)](/docs/glossary/terms/tdd)** - Write tests before code
 - **[BDD (Behavior-Driven Development)](/docs/glossary/terms/bdd)** - Write tests in Given/When/Then format
 - **[Test Coverage](/docs/glossary/terms/test-coverage)** - Percentage of code tested
-- **[Playwright](/docs/glossary/terms/playwright)** - E2E testing framework for web apps
+- **[Playwright](/docs/glossary/terms/playwright)** - E2E testing framework with dual-mode CLI/MCP support
 - **Cypress** - Alternative E2E testing framework
 
 ## Learn More

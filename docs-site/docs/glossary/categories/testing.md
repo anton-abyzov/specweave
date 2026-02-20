@@ -73,13 +73,13 @@ Testing and quality terms cover the practices, tools, and methodologies for veri
 - Fast, reliable, auto-wait
 - SpecWeave uses Playwright for E2E tests
 
-**Jest**
+**[Jest](/docs/glossary/terms/jest)**
 - JavaScript testing framework
 - Zero-config, snapshot testing, mocking
 - Most popular for React/Node.js
 - SpecWeave uses Jest for unit tests
 
-**Pytest**
+**[Pytest](/docs/glossary/terms/pytest)**
 - Python testing framework
 - Simple syntax, powerful fixtures
 - Best for: Python backend testing
@@ -320,7 +320,7 @@ npm test  # ✅ Still passes
 ### 3. Test Validation Command
 
 ```bash
-/sw:check-tests 0025
+/specweave:check-tests 0025
 ```
 
 **Output**:
@@ -430,7 +430,7 @@ Test strategy is documented in:
 ## Learn More
 
 ### Guides
-- Testing Strategy (coming soon)
+- [Testing Strategy (comprehensive)](/docs/delivery/guides/testing-strategy)
 - TDD Workflow (coming soon)
 - E2E Testing with Playwright (coming soon)
 
@@ -452,4 +452,4 @@ Test strategy is documented in:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

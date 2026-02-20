@@ -71,8 +71,8 @@ graph LR
 **Components**:
 - **AC** = Acceptance Criteria prefix
 - **US** = User Story
-- **`{story}`** = User story number (1, 2, 3, ..., no zero-padding for brevity)
-- **`{number}`** = Sequential AC number within story (01, 02, 03, ..., zero-padded)
+- **{story}** = User story number (1, 2, 3, ..., no zero-padding for brevity)
+- **{number}** = Sequential AC number within story (01, 02, 03, ..., zero-padded)
 
 **Examples**:
 - ✅ `AC-US1-01` (First AC for User Story 1)
@@ -107,10 +107,8 @@ US-001: AC-US1-01, AC-US1-02, AC-US1-03
 US-002: AC-US2-01, AC-US2-02, AC-US2-03
 
 # SPEC-002: User Profile
-US-001: AC-US1-01, AC-US1-02
+US-001: AC-US1-01, AC-US1-02  # ← Same AC-US1-01, but different spec (context makes it unique)
 ```
-
-Note: Same `AC-US1-01`, but different spec (context makes it unique)
 
 ---
 
@@ -344,7 +342,7 @@ SpecWeave validates AC coverage automatically:
 ### Validation Command
 
 ```bash
-/sw:check-tests 0008
+/specweave:check-tests 0008
 
 # Output:
 ## AC Coverage Report
@@ -549,7 +547,7 @@ SpecWeave validates AC coverage automatically:
 ### Creation (PM Agent)
 
 ```bash
-/sw:increment "user authentication"
+/specweave:increment "user authentication"
 
 # PM Agent generates spec.md with:
 # - User stories (US-001, US-002, US-003)
@@ -560,7 +558,7 @@ SpecWeave validates AC coverage automatically:
 ### Implementation (Developer)
 
 ```bash
-/sw:do
+/specweave:do
 
 # Developer implements tasks:
 # T-001: Implement AuthService
@@ -571,7 +569,7 @@ SpecWeave validates AC coverage automatically:
 ### Validation (QA)
 
 ```bash
-/sw:check-tests 0008
+/specweave:check-tests 0008
 
 # Validates:
 # ✅ All AC-IDs have tests?

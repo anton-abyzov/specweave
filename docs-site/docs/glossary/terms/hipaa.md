@@ -399,7 +399,7 @@ File: .specweave/increments/0025-encryption-upgrade/spec.md
 1. Spec.md includes HIPAA control IDs in acceptance criteria
 2. Tasks.md maps AC-IDs to implementation files
 3. Tests prove controls work (embedded test results)
-4. `/sw:compliance-matrix` command auto-generates traceability matrix
+4. `/specweave:compliance-matrix` command auto-generates traceability matrix
 
 ---
 
@@ -459,13 +459,13 @@ File: .specweave/increments/0025-encryption-upgrade/spec.md
 
 ```bash
 # Generate compliance traceability matrix
-/sw:compliance-matrix --standard=hipaa
+/specweave:compliance-matrix --standard=hipaa
 
 # Validate HIPAA requirements coverage
-/sw:compliance-check --standard=hipaa --increment=0012
+/specweave:compliance-check --standard=hipaa --increment=0012
 
 # Auto-generate compliance documentation
-/sw:compliance-report --standard=hipaa --output=reports/hipaa-compliance-2025.pdf
+/specweave:compliance-report --standard=hipaa --output=reports/hipaa-compliance-2025.pdf
 ```
 
 ---

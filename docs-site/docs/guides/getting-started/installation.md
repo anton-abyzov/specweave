@@ -7,22 +7,8 @@ Comprehensive installation guide for all scenarios.
 Before installing SpecWeave, ensure you have:
 
 **Required:**
-- **[Node.js](/docs/glossary/terms/nodejs) 20.12.0+** (we recommend Node.js 22 LTS) - Check with `node --version`
+- [Node.js](/docs/glossary/terms/nodejs) 18+ - Check with `node --version`
 - npm 9+ - Check with `npm --version`
-
-:::danger Node.js Version Critical
-SpecWeave requires **Node.js 20.12.0 or higher**. If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old.
-
-```bash
-# Check your version
-node --version
-
-# If below v20.12.0, upgrade:
-nvm install 22 && nvm use 22 && nvm alias default 22
-```
-
-See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms.
-:::
 
 **Recommended:**
 - Claude Code (best experience)
@@ -120,11 +106,11 @@ After running `specweave init`, you get:
 ```
 your-project/
 ├── .claude/                  # Claude Code integration (if detected)
-│   ├── settings.json         # Plugin configuration (vskill source)
+│   ├── settings.json         # Plugin marketplace reference (GitHub remote)
 │   ├── agents/               # 11 specialized agents (installed from plugins)
 │   │   ├── pm/               # Product Manager AI
 │   │   ├── architect/        # System Architect
-│   │   ├── code-simplifier/  # Code Simplifier
+│   │   ├── tech-lead/        # Tech Lead
 │   │   ├── qa-engineer/      # QA Engineer (sw-testing plugin)
 │   │   ├── security/         # Security Engineer
 │   │   ├── performance/      # Performance Engineer
@@ -302,7 +288,7 @@ ls -la .claude/hooks/       # Should have 8 hooks
 cat AGENTS.md               # Should exist
 
 # Test a command (Claude Code only)
-# Open Claude Code and type: /sw:progress
+# Open Claude Code and type: /specweave:progress
 ```
 
 ### Verification Checklist
@@ -338,7 +324,7 @@ cat AGENTS.md               # Should exist
 
 ```bash
 # In Claude Code:
-/sw:increment "my first feature"
+/specweave:increment "my first feature"
 
 # This creates:
 # ✅ .specweave/increments/0001-my-first-feature/
@@ -390,39 +376,7 @@ integrations:
 
 ## Upgrading
 
-### Recommended: `specweave update` (v1.0.131+)
-
-The easiest way to upgrade SpecWeave:
-
-```bash
-# Full update: CLI + instructions + config + plugins
-specweave update
-
-# Skip plugins refresh
-specweave update --no-plugins
-
-# Full update with ALL 24 plugins (not just router)
-specweave update --all
-
-# Dry run - see what would change
-specweave update --check
-
-# Skip CLI self-update (only update project files)
-specweave update --no-self
-```
-
-**What `specweave update` does:**
-1. **Self-updates CLI** via `npm install -g specweave@latest`
-2. **Migrates config.json** - adds missing sections like `auto` for older projects
-3. **Updates instruction files** - CLAUDE.md, AGENTS.md with latest templates
-4. **Refreshes plugins** - router + context-detected plugins
-5. **Validates project health** - checks for stale files, missing config
-
-:::tip Config Migration
-Projects created before v1.0.131 may be missing the `auto` config section. Running `specweave update` automatically adds default values without affecting existing settings.
-:::
-
-### Alternative: Manual npm Update
+### Global Installation
 
 ```bash
 # Check current version
@@ -449,27 +403,14 @@ If you need to reinstall SpecWeave in a project:
 ```bash
 cd your-project
 
-# Safe reinstall (keeps all increments and docs)
-specweave init .
-# When prompted, select: "Continue working"
-# This updates files without deleting your data
+# Backup your .specweave/ if needed
+cp -r .specweave .specweave.backup
+
+# Reinstall (will prompt for confirmation)
+specweave init . --force
 
 # Or with npm
-npx specweave init .
-```
-
-**⚠️ WARNING about `--force` flag:**
-```bash
-# ⛔ DANGER: --force DELETES ALL DATA!
-# This will permanently delete:
-# - All increments (.specweave/increments/)
-# - All documentation (.specweave/docs/)
-# - All configuration
-# ONLY use --force if you want to start completely fresh!
-
-# If you must use --force, backup first:
-cp -r .specweave .specweave.backup-$(date +%Y%m%d)
-specweave init . --force
+npx specweave init . --force
 ```
 
 ## Uninstallation
@@ -533,11 +474,8 @@ ls -la .claude/skills/
 # Check a specific skill
 cat .claude/skills/increment/SKILL.md
 
-# If missing, safe reinstall (keeps all your data)
-npx specweave init .
-# When prompted, select: "Continue working"
-
-# ⚠️ DO NOT use --force (deletes all increments/docs)
+# If missing, reinstall
+npx specweave init . --force
 ```
 
 ### Commands not found (Claude Code)
@@ -550,11 +488,8 @@ ls -la .claude/commands/
 # Check a specific command
 cat .claude/commands/increment.md
 
-# If missing, safe reinstall (keeps all your data)
-npx specweave init .
-# When prompted, select: "Continue working"
-
-# ⚠️ DO NOT use --force (deletes all increments/docs)
+# If missing, reinstall
+npx specweave init . --force
 ```
 
 ### Hooks not running
@@ -571,24 +506,84 @@ ls -la .claude/hooks/
 ./.claude/hooks/post-task-completion.sh
 ```
 
-### Node.js version too old / "SyntaxError: Unexpected token 'with'"
-
-SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
+### Node.js version too old
 
 ```bash
 # Check version
 node --version
 
-# If below v20.12.0, upgrade using nvm (recommended):
-nvm install 22
-nvm use 22
-nvm alias default 22
+# If < 18, upgrade using nvm (recommended)
+# Install nvm: https://github.com/nvm-sh/nvm
+nvm install 18
+nvm use 18
 
-# Verify
-node --version  # Should show v22.x.x
+# Or upgrade Node.js directly
+# See: https://nodejs.org/
 ```
 
-**Other upgrade methods:** See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms (macOS, Linux, Windows) and version managers (nvm, fnm, Volta, asdf, Homebrew).
+### ⚠️ CRITICAL: Global packages lost after Node upgrade (nvm)
+
+**If you use nvm and upgrade Node versions, all global packages are LOST!**
+
+This is the most common issue users face. When you switch from Node 18 to Node 22, your `specweave` and `claude` commands will disappear.
+
+**Symptoms:**
+```bash
+$ nvm use 22
+# Now using node v22.0.0
+
+$ specweave --version
+bash: specweave: command not found
+
+$ claude --version
+bash: claude: command not found
+```
+
+**Solution 1: Reinstall packages (Quick Fix)**
+```bash
+# After switching to new Node version
+nvm use 22
+
+# Reinstall global packages
+npm install -g specweave
+npm install -g @anthropic-ai/claude-code
+
+# Verify
+specweave --version
+claude --version
+```
+
+**Solution 2: Auto-copy during upgrade (Recommended)**
+```bash
+# Copy all global packages from Node 18 to Node 22
+nvm install 22 --reinstall-packages-from=18
+
+# Or after install:
+nvm use 22
+nvm reinstall-packages 18
+```
+
+**Solution 3: Backup/restore script (Best Practice)**
+```bash
+# BEFORE switching (save current globals)
+npm list -g --depth=0 --parseable | sed '1d' | awk '{gsub(/.*\//,"",$1); print}' > ~/.nvm-global-packages.txt
+
+# AFTER switching (restore globals)
+nvm use 22
+cat ~/.nvm-global-packages.txt | xargs npm install -g
+```
+
+**Why this happens:**
+
+Each Node version managed by nvm has its own separate `node_modules` directory:
+```
+~/.nvm/versions/node/
+├── v18.20.0/lib/node_modules/  ← Node 18 globals
+├── v20.11.0/lib/node_modules/  ← Node 20 globals (empty!)
+└── v22.0.0/lib/node_modules/   ← Node 22 globals (empty!)
+```
+
+**See detailed guide:** [Node Version Management Runbook](../../internal/operations/runbook-node-version-management.md)
 
 ### npm version too old
 
@@ -659,7 +654,7 @@ EOF
 
 ### Windows
 
-- ✅ Full support with v0.3.3+
+- ✅ Full support
 - ✅ UNC paths supported (e.g., `\\Mac\Home\...`)
 - ✅ Network drives supported
 - ⚠️ Hooks may require WSL or Git Bash
@@ -692,6 +687,6 @@ Need help? We've got you covered:
 
 ---
 
-**SpecWeave** - The Spec-Driven Skill Fabric for AI Coding Agents
+**SpecWeave** - Spec-Driven Development Framework
 
-🚀 **Install now:** `npm install -g specweave` (requires Node.js 20.12.0+)
+🚀 **Install now:** `npm install -g specweave`

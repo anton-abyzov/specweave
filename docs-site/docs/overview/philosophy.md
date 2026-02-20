@@ -1,6 +1,6 @@
 # Philosophy
 
-SpecWeave is built on a set of core principles that guide every design decision. Understanding these principles will help you get the most out of SpecWeave.
+SpecWeave is built on a set of core principles that guide every design decision. Understanding these principles will help you get the most out of the framework.
 
 ## Core Principles
 
@@ -87,80 +87,12 @@ Specification → Architecture → Implementation → Testing
 **Load only what's needed (70%+ token reduction).**
 
 Loading entire specifications wastes tokens and money. SpecWeave uses:
-- **Progressive disclosure**: Skills metadata loads first (~75 tokens), full content on-demand
-- **CLAUDE.md guidance**: Teaches Claude WHERE to look and HOW to search living docs
-- **Explicit loading**: `/sw:docs <topic>` loads relevant docs into conversation
+- **Selective loading**: Load specific sections
+- **Context manifests**: Declare required context
+- **Cache-friendly**: Reuse frequently-loaded context
 - **Scalable**: Works with 10 pages or 1000+ pages
 
-### 5. Extensible Skills (Open/Closed Principle)
-
-**Skills are transparent programs you can customize without forking.**
-
-Unlike traditional software where behavior is compiled and locked, SpecWeave skills follow the **Open/Closed Principle** from SOLID design:
-
-**Closed for modification**
-- Skill logic defined in `SKILL.md` (stable core)
-- Don't fork or edit skill source
-- Predictable, tested behavior
-
-**Open for extension**
-- Add YOUR rules in `.specweave/skill-memories/*.md`
-- Override defaults without touching source
-- Extend logic the original developer never imagined
-
-**Self-improving**
-- Corrections during sessions → permanent knowledge
-- Claude reads SKILL.md + your skill-memories
-- Auto-learning enabled with `/sw:reflect-on`
-
-**Example: Customizing the Frontend Skill**
-
-```markdown
-# .specweave/skill-memories/frontend.md
-
-### Component Preferences
-- Always use our Button component from @/components/ui
-- Never use inline styles — Tailwind utilities only
-
-### Form Handling
-- React Hook Form + Zod validation
-- Display errors with toast notifications, not inline
-
-### Custom Logic
-When generating components:
-1. Check design system directory first
-2. Use composition over prop drilling
-3. Extract to custom hooks if logic >50 lines
-```
-
-Next session, Claude automatically follows these rules — you've **programmed the skill** to match your project's needs.
-
-**Traditional Tools vs SpecWeave:**
-
-| Tool | Behavior |
-|------|----------|
-| **GitHub Copilot** | Black box — can't customize reasoning |
-| **Cursor** | Proprietary — take it or leave it |
-| **SpecWeave** | Transparent SKILL.md + customizable skill-memories |
-
-**Why this matters:**
-- 🎯 **No vendor lock-in** — You control behavior
-- 🧠 **Knowledge compounds** — Corrections persist forever
-- 🔍 **Full transparency** — See exactly what skills do
-- 🎨 **Infinite extensibility** — Add logic developers never planned
-
-**Skills as Programs, Not Prompts**
-
-Think of skill-memories as "runtime configuration" for Claude's expertise:
-- `SKILL.md` = compiled program (closed)
-- `skill-memories/*.md` = your config file (open)
-- Claude reads both and applies your overrides
-
-This is the power of programmable AI — you're not using tools, you're **programming the tools themselves**.
-
-**For skill developers:** Design skills with clear extension points. Document what users can customize. See [Skill Development Guidelines](https://github.com/anton-abyzov/specweave#skill-development-guidelines).
-
-### 6. Test-Validated Features
+### 5. Test-Validated Features
 
 **Every feature proven through automated tests.**
 
@@ -172,7 +104,7 @@ Four levels of testing ensure quality:
 
 **Truth-telling requirement**: E2E tests MUST tell the truth—no false positives.
 
-### 7. Regression Prevention
+### 6. Regression Prevention
 
 **Document existing code before modification.**
 
@@ -184,7 +116,7 @@ Modifying [brownfield](/docs/glossary/terms/brownfield) code without documentati
 4. User reviews and approves
 5. Implement modifications safely
 
-### 8. Scalable from Solo to Enterprise
+### 7. Scalable from Solo to Enterprise
 
 **Modular structure that grows with project size.**
 
@@ -194,7 +126,7 @@ Whether you're a solo developer or a 100-person team, SpecWeave scales:
 - **Enterprise**: Create 500-600+ pages upfront
 - **Both approaches supported**: Comprehensive or incremental
 
-### 9. Auto-Role Routing
+### 8. Auto-Role Routing
 
 **Skills detect expertise automatically.**
 
@@ -210,7 +142,7 @@ User: "Create payment integration"
 
 >90% routing accuracy.
 
-### 10. Closed-Loop Validation
+### 9. Closed-Loop Validation
 
 **[E2E](/docs/glossary/terms/e2e) tests must tell the truth (no false positives).**
 
@@ -280,7 +212,7 @@ SpecWeave doesn't impose technology choices:
 
 **Best AI coding assistant for production software.**
 
-- Opus 4.5: Best-in-class for coding and complex agents
+- Sonnet 4.5: Best for coding and complex agents
 - Agentic workflows: Multi-agent orchestration
 - Tool use: Read, Write, Edit, Bash, etc.
 - Context awareness: Large context window
@@ -402,7 +334,7 @@ How do you know SpecWeave is working?
 
 **Ready to get started?**
 
-- [Quick Start](/docs/getting-started/) - Get up and running in 5 minutes
-- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment) - Understand the fundamentals
+- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
+- [Core Concepts](/docs/guides/core-concepts/specifications) - Understand the fundamentals
 
 **Previous**: [Key Features](/docs/overview/features) ←

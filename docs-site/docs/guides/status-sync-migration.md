@@ -4,7 +4,7 @@
 
 ## Overview
 
-The status synchronization system provides:
+The new status synchronization system provides:
 
 ✅ **Bidirectional sync** - Changes flow both ways (SpecWeave ↔ External)
 ✅ **Conflict resolution** - Smart handling of simultaneous changes
@@ -22,7 +22,7 @@ The status synchronization system provides:
 specweave --version
 ```
 
-If using an older version, upgrade first:
+If < v0.20.0, upgrade first:
 
 ```bash
 npm install -g specweave@latest
@@ -108,13 +108,13 @@ Create a test increment to verify mappings work:
 
 ```bash
 # 1. Create test increment
-/sw:increment "Test status sync"
+/specweave:increment "Test status sync"
 
 # 2. Link to GitHub (creates issue)
-/sw-github:create-issue 0999-test-status-sync
+/specweave-github:create-issue 0999-test-status-sync
 
 # 3. Complete increment
-/sw:done 0999
+/specweave:done 0999
 
 # 4. Verify prompt appears
 # Output should show:
@@ -284,17 +284,17 @@ Conflicts detected and resolved based on strategy:
 
 1. **Create test increment**
    ```bash
-   /sw:increment "Migration test"
+   /specweave:increment "Migration test"
    ```
 
 2. **Link to external tool**
    ```bash
-   /sw-github:create-issue 0998-migration-test
+   /specweave-github:create-issue 0998-migration-test
    ```
 
 3. **Complete increment**
    ```bash
-   /sw:done 0998
+   /specweave:done 0998
    ```
 
 4. **Verify sync**
@@ -306,7 +306,7 @@ Conflicts detected and resolved based on strategy:
    ```bash
    # Close GitHub issue manually
    # Then sync from external:
-   /sw-github:sync-from 0998
+   /specweave-github:sync-from 0998
    ```
    - ✅ Prompt appears about SpecWeave status change
    - ✅ Selecting "Yes" updates SpecWeave to `completed`
@@ -316,7 +316,7 @@ Conflicts detected and resolved based on strategy:
    # Change SpecWeave status to "active"
    # Change GitHub status to "closed"
    # Then sync:
-   /sw-github:sync 0998
+   /specweave-github:sync 0998
    ```
    - ✅ Conflict detected
    - ✅ Prompt shows both statuses with timestamps
@@ -328,7 +328,7 @@ Conflicts detected and resolved based on strategy:
 
 ### What Still Works
 
-✅ **Old sync commands** - `/sw-github:sync` still works
+✅ **Old sync commands** - `/specweave-github:sync` still works
 ✅ **Existing metadata** - Old `metadata.json` files compatible
 ✅ **Profiles** - Sync profiles unchanged
 
@@ -366,7 +366,7 @@ If you need to revert to old sync:
 
 3. **Use old sync commands**
    ```bash
-   /sw-github:sync 0001 --legacy-mode
+   /specweave-github:sync 0001 --legacy-mode
    ```
 
 ---
@@ -448,7 +448,7 @@ If you need to revert to old sync:
 
 ### Q: Can I use both old and new sync?
 
-**A**: No. Old sync has been removed as of v1.0.0. All increments now use the new sync system.
+**A**: Yes, but not recommended. Old sync is deprecated and will be removed in v1.0.0.
 
 ### Q: What happens to old sync logs?
 
@@ -458,7 +458,7 @@ If you need to revert to old sync:
 
 **A**: Use test increments (e.g., `0999-test-sync`) or dry-run mode:
 ```bash
-/sw-github:sync 0001 --dry-run
+/specweave-github:sync 0001 --dry-run
 ```
 
 ---
@@ -466,8 +466,8 @@ If you need to revert to old sync:
 ## Next Steps
 
 1. [Status Sync Guide](./status-sync-guide.md) - Complete user guide
-2. [External Tools](/docs/academy/specweave-essentials/07-external-tools) - Integration guide
-3. [Troubleshooting](/docs/academy/specweave-essentials/09-troubleshooting) - Fix sync issues
+2. [Architecture](../internal/architecture/adr/0031-status-sync-architecture.md) - Technical details
+3. [API Reference](../api/status-sync-api.md) - Programmatic usage
 
 ---
 

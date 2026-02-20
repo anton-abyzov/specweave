@@ -115,7 +115,7 @@ graph LR
 - plan.md (architecture, approach)
 - tasks.md (checklist, embedded tests)
 
-**Command**: `/sw:increment "feature name"`
+**Command**: `/specweave:increment "feature name"`
 
 **[→ Full Planning Workflow](/docs/workflows/planning)**
 
@@ -147,7 +147,7 @@ graph LR
 - Updated documentation
 - Completed tasks
 
-**Command**: `/sw:do`
+**Command**: `/specweave:do`
 
 **[→ Full Implementation Workflow](/docs/workflows/implementation)**
 
@@ -179,7 +179,7 @@ graph LR
 - Completion summary
 - Deployment readiness
 
-**Command**: `/sw:validate`
+**Command**: `/specweave:validate`
 
 **[→ Full Validation Workflow](/docs/workflows/validation)**
 
@@ -219,11 +219,11 @@ graph LR
 
 | Phase | Command | What It Does |
 |-------|---------|--------------|
-| **Planning** | `/sw:increment "feature"` | Creates spec, plan, tasks |
-| **Implementation** | `/sw:do` | Executes tasks, auto-resumes |
-| **Progress Check** | `/sw:progress` | Shows status, next task |
-| **Validation** | `/sw:validate` | Quality checks |
-| **Completion** | `/sw:done` | Closes increment |
+| **Planning** | `/specweave:increment "feature"` | Creates spec, plan, tasks |
+| **Implementation** | `/specweave:do` | Executes tasks, auto-resumes |
+| **Progress Check** | `/specweave:progress` | Shows status, next task |
+| **Validation** | `/specweave:validate` | Quality checks |
+| **Completion** | `/specweave:done` | Closes increment |
 
 ## Workflow Patterns
 
@@ -257,37 +257,24 @@ graph TB
 
 ```mermaid
 graph TB
-    A[Existing Code] --> B{Project Size?}
-    B -->|Large 50k+ LOC| C[Quick Start Path]
-    B -->|Small <50k LOC| D[Comprehensive Path]
-
-    C --> E[Init + Core Docs Only]
-    E --> F[Create Increment]
-    F --> G[Implement with Existing Code Context]
-    G --> H[Document What You Changed]
-    H --> I{More Features?}
-    I -->|Yes| F
-    I -->|No| J[Complete]
-
-    D --> K[Full Documentation Upfront]
-    K --> L[Create Increment]
-    L --> M[Implement]
-    M --> I
+    A[Existing Code] --> B[Document Current State]
+    B --> C[Analyze Module]
+    C --> D[Plan Modifications]
+    D --> E[Implement Safely]
+    E --> F[Validate No Regression]
+    F --> G{More Modules?}
+    G -->|Yes| C
+    G -->|No| H[Complete]
 
     style A fill:#ffccbc
-    style C fill:#e8f5e9
-    style D fill:#fff9c4
-    style J fill:#c8e6c9
+    style H fill:#c8e6c9
 ```
 
-**Two Paths** (choose based on project size):
-
-| Path | Best For | Upfront Work | How It Works |
-|------|----------|--------------|--------------|
-| **Quick Start** | Large (50k+ LOC) | 1-2 hours | Document core, start immediately, docs grow with changes |
-| **Comprehensive** | Small (under 50k LOC) | 1-2 weeks | Full docs upfront, then increments |
-
-**Key Point**: SpecWeave **considers existing code** when planning increments—no mandatory module-by-module documentation loop!
+**Characteristics:**
+- Start with existing code
+- Document before modifying
+- Prevent regressions
+- Gradual modernization
 
 **[→ Brownfield Guide](/docs/workflows/brownfield)**
 
@@ -323,7 +310,7 @@ graph TB
 | Workflow | Duration | Planning | Testing | Use When |
 |----------|----------|----------|---------|----------|
 | **[Greenfield](/docs/glossary/terms/greenfield)** | Weeks-Months | Comprehensive | Full [TDD](/docs/glossary/terms/tdd) | New project |
-| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Quick Start or Comprehensive | Regression focus | Existing code |
+| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Document first | Regression focus | Existing code |
 | **Hotfix** | Hours-Days | Minimal | Critical paths | Production bug |
 | **Experiment** | Days | Lightweight | Basic | POC/spike |
 
@@ -441,7 +428,7 @@ Solution: Define test strategy in plan.md
 ```
 Problem: Mark tasks done without checking
 Result: Incomplete features, failing tests
-Solution: Run /sw:validate before /sw:done
+Solution: Run /specweave:validate before /specweave:done
 ```
 
 ## Real-World Workflow Example
@@ -458,7 +445,7 @@ Solution: Run /sw:validate before /sw:done
 
 ### Week 2: Planning
 ```bash
-/sw:increment "0015-payment-processing"
+/specweave:increment "0015-payment-processing"
 # PM agent creates:
 # ✅ spec.md (5 user stories, 15 AC-IDs)
 # ✅ plan.md (Stripe architecture, test strategy)
@@ -467,7 +454,7 @@ Solution: Run /sw:validate before /sw:done
 
 ### Week 3-4: Implementation
 ```bash
-/sw:do
+/specweave:do
 # Implement task by task:
 # T-001: Stripe client ✅
 # T-002: Payment endpoint ✅
@@ -475,13 +462,13 @@ Solution: Run /sw:validate before /sw:done
 # ...
 # T-018: E2E payment flow ✅
 
-/sw:progress
+/specweave:progress
 # Shows: 18/18 tasks (100%)
 ```
 
 ### Week 5: Validation & Deploy
 ```bash
-/sw:validate 0015
+/specweave:validate 0015
 # ✅ All AC-IDs validated
 # ✅ Test coverage: 92%
 # ✅ Quality checks passed
@@ -506,4 +493,4 @@ Ready to dive deeper? Choose your path:
 **Learn More:**
 - [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
 - [Command Reference](/docs/commands/status-management)
-- Best Practices
+- [Best Practices](/docs/guides/best-practices) - Claude Code + SpecWeave optimization tips

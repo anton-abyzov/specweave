@@ -640,15 +640,15 @@ X-RateLimit-Remaining: 999
 - **[Node.js](/docs/glossary/terms/nodejs)** - Popular runtime for REST APIs
 - **Express** - Node.js framework for REST
 - **Backend** - REST APIs are backend code
-- **HTTP** - Protocol REST is built on
-- **JSON** - Common REST response format
+- **[HTTP](/docs/glossary/terms/http)** - Protocol REST is built on
+- **[JSON](/docs/glossary/terms/json)** - Common REST response format
 
 ## Learn More
 
 - **REST API Design Guide** - Best practices
 - **[Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html)** - REST maturity levels
 - **[RESTful Web APIs Book](http://restfulwebapis.org/)** - Comprehensive guide
-- **[SpecWeave API Development](/docs/overview/introduction)** - Building REST APIs with SpecWeave
+- **[SpecWeave API Development](/docs/guides/api-development)** - Building REST APIs with SpecWeave
 
 ---
 

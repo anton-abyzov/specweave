@@ -6,42 +6,20 @@
 
 ```bash
 npm install -g specweave
-```
-
----
-
-## Starting a New Project (Greenfield)
-
-The simplest way to start — just describe what you want to build:
-
-```bash
-mkdir my-app && cd my-app
-specweave init .
-```
-
-Then in Claude Code, simply say:
-```
-"Build a calculator app with React"
-```
-
-SpecWeave guides you through features, tech stack, and approach — then creates your first increment automatically.
-
-**Perfect for prototypes, learning, and weekend MVPs.**
-
----
-
-## Adding Features to Existing Projects
-
-For existing codebases, use explicit commands:
-
-```bash
 cd your-project
 specweave init .
 ```
 
-Then in Claude Code:
+**That's it.** SpecWeave is ready.
+
+---
+
+## Your First Feature (2 minutes)
+
+Open Claude Code and run:
+
 ```bash
-/sw:increment "Add dark mode toggle"
+/specweave:increment "Add dark mode toggle"
 ```
 
 **SpecWeave creates:**
@@ -52,59 +30,74 @@ Then in Claude Code:
 └── tasks.md   <- DO: Tasks with embedded tests
 ```
 
----
-
-## Execution Options
-
-### Ship While You Sleep (Auto Mode)
-
-For autonomous execution that can run for **hours**:
+Then build it:
 ```bash
-/sw:auto
+/specweave:do
 ```
 
-Auto mode executes tasks, runs tests, fixes failures, and syncs to GitHub/JIRA — completely hands-off. Check progress with `/sw:auto-status` or stop with `/sw:cancel-auto`.
-
-### Step-by-Step Control
-
-For manual control:
+When done, validate and close:
 ```bash
-/sw:do           # Execute one task
-/sw:done 0001    # Quality-validated completion
+/specweave:done 0001
 ```
 
-**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **Your specs, architecture, and tests are now permanent documentation.**
 
-:::tip 💡 VSCode Users: Use Compact Mode!
-Claude Code now supports **compact mode** — keep the AI assistant inside your editor window instead of a separate terminal.
-
-```
-Just type: compact
-```
-
-This lets you work **continuously for hours** in the same VSCode window without context switching. Combined with `/sw:auto`, you can ship entire features while focusing on other work.
-
-**Bonus**: Stop hooks now work with subagents, so SpecWeave's quality gates validate every level of autonomous execution automatically.
-:::
-
 ---
 
-## When to Use Increments
+## Two Approaches
 
-Not every change needs an increment. **The rule of thumb:**
+### Option A: Quick Build (Fastest)
 
-| Change Type | Use Increment? | Why |
-|-------------|----------------|-----|
-| **Typo fix, version bump** | No | Zero learning, purely mechanical |
-| **Bug fix that taught you something** | **Yes** | Capture the knowledge for future devs |
-| **Any user-facing change** | **Yes** | Track delivery, enable DORA metrics |
-| **Architecture decision** | **Yes** | Needs ADR for future understanding |
+Just describe what you want:
+```
+"build a calculator app with React"
+```
 
-**The principle**: *If you'd explain this change to a colleague, document it in an increment.*
+SpecWeave's assistant guides you through features, tech stack, and approach. **Perfect for prototypes and learning.**
 
-Increments capture **knowledge**. Ad-hoc work is **ephemeral**. Quick check before doing ad-hoc work: *"Will I remember why I made this change in 6 months?"* If no → create an increment.
+### Option B: Spec-First (Recommended)
+
+Use explicit commands for full control:
+```bash
+/specweave:increment "payment processing with Stripe"  # Plan
+/specweave:do                                          # Build
+/specweave:done 0002                                   # Close
+```
+
+**Perfect for production features and team projects.**
+
+### Option C: Deep Interview Mode (v1.0.195+)
+
+For complex features, enable **Deep Interview Mode** during `specweave init`:
+
+```
+Deep Interview Mode
+
+Claude asks 5-40 questions (scaled to complexity) about architecture,
+integrations, UI/UX, and tradeoffs before creating specifications.
+
+Enable Deep Interview Mode? [y/N]
+```
+
+When enabled, Claude assesses feature complexity and asks the right number of questions:
+- **Trivial** (0-3): Config changes, typo fixes
+- **Small** (4-8): Single component features
+- **Medium** (9-18): Multiple components with integrations
+- **Large** (19-40): Architectural, cross-cutting, high-risk
+
+Questions cover:
+- Architecture & system design patterns
+- External integrations (APIs, databases, auth)
+- UI/UX concerns and tradeoffs
+- Performance & scalability requirements
+- Security considerations
+- Edge cases & error handling
+
+**Perfect for complex features where upfront planning saves time.**
+
+See [Deep Interview Mode Guide](../deep-interview-mode.md) for details.
 
 ---
 
@@ -119,32 +112,25 @@ After `specweave init .`:
 | **Commands** | 53 | Slash commands for workflow control |
 | **Hooks** | 3+ | Event-driven automation (lifecycle, sync, status) |
 | **CLAUDE.md** | 1 | Your project reference guide |
+| **LSP** | 6 languages | Semantic code intelligence (TypeScript, Python, Go, Rust, Java, C#) |
 
-:::tip Context Efficiency with MCP Tool Search
-Claude Code 2.1.7+ includes **MCP Tool Search** (lazy loading) — SpecWeave's 24 plugins load on-demand instead of all at once.
+---
 
-**Result**: 85%+ context reduction (~100k → ~5-10k tokens at startup), enabling longer `/sw:auto` sessions and more complex increments.
+## LSP Code Intelligence (Recommended)
 
-No configuration needed — enabled by default when MCP tools exceed 10% of context.
+SpecWeave includes LSP integration that replaces grep-based code search with **semantic analysis** — 198x faster with zero false positives.
 
-**Coming in v1.1**: [Native Lazy Plugin Loading](/docs/guides/lazy-plugin-loading) — 99% token savings for non-SpecWeave work via router-based architecture.
-:::
+Instead of grep matching every occurrence of "read" (254 hits including `readFile`, `readdir`, comments), LSP resolves only the 32 actual `MetadataManager.read()` references.
 
-:::info Optional MCP Servers
-Two optional MCP servers that can enhance SpecWeave (not auto-installed):
-
-**Context7** — Real-time docs for any library (no more hallucinated APIs):
 ```bash
-claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp
+specweave lsp refs src/file.ts SymbolName    # Find all references
+specweave lsp def src/file.ts SymbolName     # Go to definition
+specweave lsp hover src/file.ts SymbolName   # Type information
 ```
 
-**Playwright** — Browser automation for E2E testing (Claude sees your app):
-```bash
-claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp
-```
+LSP activates automatically for supported languages. No configuration needed.
 
-These are **optional** and user-installed. SpecWeave works without them, but they add capabilities like current documentation lookup and visual verification when needed.
-:::
+**[Full LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
 
 ---
 
@@ -152,17 +138,14 @@ These are **optional** and user-installed. SpecWeave works without them, but the
 
 | Command | Purpose |
 |---------|---------|
-| `/sw:increment "..."` | Create new feature with AI agents |
-| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
-| `/sw:do` | Execute one task at a time |
-| `/sw:done <id>` | Complete with quality gates |
-| `/sw:next` | Auto-close + suggest next (one-click flow) |
-| `/sw:progress` | Check status |
-| `/sw:auto-status` | Check autonomous session progress |
-| `/sw:cancel-auto` | Stop autonomous session |
-| `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/sw:sync-monitor` | Dashboard: jobs, notifications |
-| `/sw:discrepancies` | View code-to-spec drift |
+| `/specweave:increment "..."` | Create new feature with AI agents |
+| `/specweave:do` | Execute all tasks autonomously |
+| `/specweave:done <id>` | Complete with quality gates |
+| `/specweave:next` | Auto-close + suggest next (one-click flow) |
+| `/specweave:progress` | Check status |
+| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/specweave:sync-monitor` | Dashboard: jobs, notifications |
+| `/specweave:discrepancies` | View code-to-spec drift |
 
 ---
 
@@ -208,14 +191,14 @@ specweave init .
 
 After analysis completes:
 ```bash
-/sw:discrepancies                    # View all documentation gaps
-/sw:discrepancies --module auth      # Filter by module
-/sw:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
+/specweave:discrepancies                    # View all documentation gaps
+/specweave:discrepancies --module auth      # Filter by module
+/specweave:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
 ```
 
 The background analysis runs while you continue working. Check progress with:
 ```bash
-/sw:jobs
+/specweave:jobs
 ```
 
 ---
@@ -225,15 +208,15 @@ The background analysis runs while you continue working. Check progress with:
 SpecWeave provides **sync monitoring** for external tools (GitHub/JIRA/ADO):
 
 ```bash
-/sw:sync-progress    # Push updates to external tools
-/sw:sync-monitor     # See sync status dashboard
-/sw:notifications    # View/dismiss sync alerts
+/specweave:sync-progress    # Push updates to external tools
+/specweave:sync-monitor     # See sync status dashboard
+/specweave:notifications    # View/dismiss sync alerts
 ```
 
 **Code is the source of truth.** When docs drift from reality, you get notified:
 ```bash
-/sw:discrepancies    # See code-to-spec drift
-/sw:discrepancies accept DISC-0001  # Update specs from code
+/specweave:discrepancies    # See code-to-spec drift
+/specweave:discrepancies accept DISC-0001  # Update specs from code
 ```
 
 ---
@@ -267,7 +250,7 @@ integrations:
 
 ## Customization (CLAUDE.md)
 
-SpecWeave is an **open Skill Fabric, not a locked product**. Customize workflows through your project's `CLAUDE.md`:
+SpecWeave is a **framework, not a locked product**. Customize workflows through your project's `CLAUDE.md`:
 
 ```markdown
 # In your CLAUDE.md:
@@ -298,15 +281,7 @@ After completing a task:
 
 ## Requirements
 
-:::caution Node.js Version Required
-SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
-
-Check your version: `node --version`
-
-If you see an error like `SyntaxError: Unexpected token 'with'`, your Node.js is too old. See [how to upgrade](/docs/guides/troubleshooting/common-errors#node-version-error).
-:::
-
-- **[Node.js](/docs/glossary/terms/nodejs) 20.12.0+** (`node --version`) — [upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error)
+- **[Node.js](/docs/glossary/terms/nodejs) 20+** (`node --version`)
 - **npm 9+** (`npm --version`)
 - **Claude Code** (recommended) or any AI tool
 - **[Git](/docs/glossary/terms/git)** (for version control)
@@ -315,49 +290,46 @@ If you see an error like `SyntaxError: Unexpected token 'with'`, your Node.js is
 
 ## Troubleshooting
 
-### Quick Recovery (Most Issues)
-
-If commands, skills, or hooks stop working:
+### Skills not activating?
 ```bash
-specweave update      # Full update: CLI + plugins + instructions
+ls -la .claude/skills/
+# Should see 17 SpecWeave skills
 ```
 
-This fixes 98% of issues. It updates everything: CLI version, plugins, instruction files.
-
-### Auto Mode Issues
-
-Session stuck or not completing?
+If missing, safe reinstall:
 ```bash
-/sw:auto-status   # Check what's happening
-/sw:cancel-auto   # Cancel if needed
-/sw:auto          # Resume with fresh session
+specweave init .
+# Select: "Continue working"
 ```
 
-### Skills or Hooks Not Working?
-
-First, try the full update:
+### Commands not found?
 ```bash
-specweave update
+ls -la .claude/commands/
+# Should see 22 command files
 ```
 
-If that doesn't help, use the plugin-only refresh:
-```bash
-specweave refresh-plugins
-```
+---
 
-**Why this exists:** Plugin refresh handles tasks that auto-update doesn't:
-- Fix hook permissions (`chmod +x`) — hooks may silently fail
-- Clean up orphaned cache/skills directories
-- Update instruction files (CLAUDE.md, AGENTS.md)
+## Staying Updated
+
+AI tooling moves fast. Claude Code ships updates constantly. Here's how to stay on top of it:
+
+| Resource | URL | Why It Matters |
+|----------|-----|----------------|
+| **Boris Cherny (Twitter)** | [x.com/bcherny](https://x.com/bcherny) | Creator of Claude Code at Anthropic. Follow for early insights on new features before they hit the changelog. |
+| **Claude Code Changelog** | [CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) | Source of truth for what's shipping. Check daily for new features, changes, and deprecations. |
+| **Anthropic Engineering Blog** | [anthropic.com/engineering](https://www.anthropic.com/engineering) | Deep dives into Claude capabilities. New articles are rare but invaluable when they drop. |
+
+**Bookmark these. Check them regularly.** The AI landscape changes weekly.
 
 ---
 
 ## Next Steps
 
 - **[Installation Guide](installation)** - Detailed setup options
-- **[Core Concepts](/docs/overview/introduction)** - Understanding specs
+- **[Core Concepts](../../guides/core-concepts/specifications)** - Understanding specs
 - **[Key Features](../../overview/features)** - Full capabilities
-- **[Examples](/docs/examples/)** - Real project walkthroughs
+- **[Examples](../examples/)** - Real project walkthroughs
 
 ---
 
