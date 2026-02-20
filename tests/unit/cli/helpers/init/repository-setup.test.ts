@@ -79,6 +79,7 @@ vi.mock('../../../../../src/cli/helpers/selection-strategy.js', () => ({
   validateRegex: mockValidateRegex,
 }));
 
+
 vi.mock('../../../../../src/utils/auth-helpers.js', () => ({
   getAzureDevOpsAuth: mockGetAzureDevOpsAuth,
 }));
@@ -240,6 +241,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         // Step 3b: pattern strategy = all
         .mockResolvedValueOnce('all');
 
@@ -264,6 +266,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('https')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('pattern-glob');
 
       mockInput
@@ -289,6 +292,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('pattern-regex');
 
       mockInput
@@ -312,6 +316,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('skip');
 
       mockInput.mockResolvedValueOnce('my-org');
@@ -331,6 +336,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockReadEnvFile.mockReturnValue('GITHUB_ORG=env-org\nGITHUB_TOKEN=env-token');
@@ -353,6 +359,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockReadEnvFile.mockReturnValue('');
@@ -830,6 +837,84 @@ describe('repository-setup', () => {
   });
 
   // ----------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Umbrella repository selection
+  // ----------------------------------------------------------------
+  describe('umbrella repository selection', () => {
+    it('should ask about umbrella repo and store selection when user picks one', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')    // repo structure
+        .mockResolvedValueOnce('github')       // provider
+        .mockResolvedValueOnce('https')        // url format
+        .mockResolvedValueOnce('select')       // umbrella: select from GitHub
+        .mockResolvedValueOnce('specweave-umb') // which repo is umbrella
+        .mockResolvedValueOnce('all');          // nested repo pattern
+
+      mockInput.mockResolvedValueOnce('test-org');
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      // Mock fetch for umbrella repo selection (fetchGitHubReposForSelection uses global fetch)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: vi.fn().mockReturnValue(null) },
+        json: async () => [
+          { name: 'specweave-umb', owner: { login: 'test-org' }, archived: false, fork: false },
+          { name: 'specweave', owner: { login: 'test-org' }, archived: false, fork: false },
+          { name: 'vskill', owner: { login: 'test-org' }, archived: false, fork: false },
+        ],
+      });
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      const result = await setupRepositoryHosting(makeOptions());
+
+      expect(result.umbrellaRepo).toBe('specweave-umb');
+      expect(result.adoClonePatternResult?.strategy).toBe('all');
+    });
+
+    it('should skip umbrella when user says no', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')    // repo structure
+        .mockResolvedValueOnce('github')       // provider
+        .mockResolvedValueOnce('https')        // url format
+        .mockResolvedValueOnce('none')         // no umbrella repo
+        .mockResolvedValueOnce('all');          // pattern
+
+      mockInput.mockResolvedValueOnce('test-org');
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      const result = await setupRepositoryHosting(makeOptions());
+
+      expect(result.umbrellaRepo).toBeUndefined();
+      expect(result.adoClonePatternResult?.strategy).toBe('all');
+    });
+
+    it('should allow using current directory as umbrella via gitHubRemote', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')    // repo structure
+        .mockResolvedValueOnce('github')       // provider
+        .mockResolvedValueOnce('https')        // url format
+        .mockResolvedValueOnce('current-dir')  // use current directory as umbrella
+        .mockResolvedValueOnce('all');          // nested repo pattern
+
+      mockInput.mockResolvedValueOnce('test-org');
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      const result = await setupRepositoryHosting(makeOptions({
+        gitHubRemote: { owner: 'test-org', repo: 'specweave-umb' },
+      }));
+
+      expect(result.umbrellaRepo).toBe('specweave-umb');
+    });
+  });
+
   // Pattern selection edge cases
   // ----------------------------------------------------------------
   describe('pattern selection edge cases', () => {
@@ -838,6 +923,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('skip');
 
       mockInput.mockResolvedValueOnce('skip-test-org');
@@ -857,11 +943,46 @@ describe('repository-setup', () => {
       expect(hasOrgGuidance).toBe(true);
     });
 
+    it('should handle manual strategy with checkbox repo selection', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')
+        .mockResolvedValueOnce('github')
+        .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
+        .mockResolvedValueOnce('manual');
+
+      mockInput.mockResolvedValueOnce('manual-test-org');
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      // Mock fetchGitHubRepos response (used by manual selection)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: vi.fn().mockReturnValue(null) },
+        json: async () => [
+          { name: 'repo-a', full_name: 'manual-test-org/repo-a', owner: { login: 'manual-test-org' }, archived: false, fork: false },
+          { name: 'repo-b', full_name: 'manual-test-org/repo-b', owner: { login: 'manual-test-org' }, archived: false, fork: false },
+          { name: 'repo-c', full_name: 'manual-test-org/repo-c', owner: { login: 'manual-test-org' }, archived: false, fork: false },
+        ],
+      });
+
+      // User selects repo-a and repo-c from checkbox
+      mockCheckbox.mockResolvedValueOnce(['repo-a', 'repo-c']);
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      const result = await setupRepositoryHosting(makeOptions());
+
+      expect(result.adoClonePatternResult?.strategy).toBe('manual');
+      expect(result.adoClonePatternResult?.selectedRepos).toEqual(['repo-a', 'repo-c']);
+    });
+
     it('should use parsePatternShortcut for glob patterns', async () => {
       mockSelect
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('pattern-glob');
 
       mockInput
@@ -973,6 +1094,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockInput.mockResolvedValueOnce('org-name');
@@ -994,6 +1116,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('https')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockInput.mockResolvedValueOnce('org-name');
@@ -1019,6 +1142,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockReadEnvFile.mockReturnValue('');
@@ -1043,6 +1167,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockReadEnvFile.mockReturnValue('GITHUB_PAT=pat-value\nGITHUB_TOKEN=token-value');
@@ -1136,6 +1261,7 @@ describe('repository-setup', () => {
         .mockResolvedValueOnce('multirepo')
         .mockResolvedValueOnce('github')
         .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('none')          // no umbrella
         .mockResolvedValueOnce('all');
 
       mockInput.mockResolvedValueOnce('org');

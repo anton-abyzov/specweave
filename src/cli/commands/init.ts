@@ -720,6 +720,7 @@ export async function initCommand(
               ...config.repository,
               provider: 'github',
               ...(org && { organization: org }),
+              ...(repoResult.umbrellaRepo && { umbrellaRepo: repoResult.umbrellaRepo }),
             };
           } else if (hosting.startsWith('ado')) {
             const org = repoResult.adoProjectSelection?.org || config.repository?.organization;

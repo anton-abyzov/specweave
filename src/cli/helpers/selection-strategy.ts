@@ -893,9 +893,11 @@ export function toSelectableItemsFromObjects<T extends { name: string; [key: str
  * Clone pattern result (from repository-setup.ts)
  */
 export interface ClonePatternResult {
-  strategy: 'all' | 'pattern-glob' | 'pattern-regex' | 'skip';
+  strategy: 'all' | 'pattern-glob' | 'pattern-regex' | 'manual' | 'skip';
   pattern?: string;
   isRegex?: boolean;
+  /** Explicitly selected repo names (for 'manual' strategy) */
+  selectedRepos?: string[];
 }
 
 /**
@@ -925,6 +927,12 @@ export function filterRepositoriesByPattern<T extends { name: string }>(
 
     case 'skip':
       return [];
+
+    case 'manual': {
+      if (!clonePattern.selectedRepos || clonePattern.selectedRepos.length === 0) return [];
+      const selectedSet = new Set(clonePattern.selectedRepos);
+      return repos.filter(r => selectedSet.has(r.name));
+    }
 
     case 'pattern-glob': {
       if (!clonePattern.pattern) return repos;
