@@ -12,6 +12,19 @@ import { parsePatternShortcut, validateRegex } from '../selection-strategy.js';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import { parseEnvFile, readEnvFile } from '../../../utils/env-file.js';
 import { cloneUmbrellaIntoCurrentDir } from './umbrella-cloning.js';
+import { existsSync } from 'fs';
+import path from 'path';
+import os from 'os';
+
+/**
+ * Detect if the user has an SSH key available.
+ * Checks common SSH key file locations (~/.ssh/).
+ */
+function detectSshKey(): boolean {
+  const sshDir = path.join(os.homedir(), '.ssh');
+  const keyFiles = ['id_ed25519', 'id_rsa', 'id_ecdsa', 'id_dsa'];
+  return keyFiles.some(f => existsSync(path.join(sshDir, f)));
+}
 
 /**
  * Lightweight GitHub repo list fetcher for interactive selection prompts.
@@ -1485,19 +1498,26 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   // Step 2b: Ask about git URL format (SSH or HTTPS) for remote providers (v1.0.7+)
   let gitUrlFormat: GitUrlFormat | undefined;
   if (provider !== 'local' && provider !== 'other') {
+    // Smart default: detect if SSH key is available
+    const hasSshKey = detectSshKey();
+    const defaultFormat: GitUrlFormat = hasSshKey ? 'ssh' : 'https';
+
+    const sshSuffix = hasSshKey ? chalk.green(' (SSH key detected)') : '';
+    const httpsSuffix = !hasSshKey ? chalk.green(' (recommended)') : '';
+
     const urlFormat = await select<GitUrlFormat>({
       message: strings.gitUrlFormatQuestion,
       choices: [
         {
-          name: `🔑 ${strings.gitUrlFormatSsh} ${chalk.gray(`- ${strings.gitUrlFormatSshDesc}`)}`,
+          name: `🔑 ${strings.gitUrlFormatSsh} ${chalk.gray(`- ${strings.gitUrlFormatSshDesc}`)}${sshSuffix}`,
           value: 'ssh' as const
         },
         {
-          name: `🔗 ${strings.gitUrlFormatHttps} ${chalk.gray(`- ${strings.gitUrlFormatHttpsDesc}`)}`,
+          name: `🔗 ${strings.gitUrlFormatHttps} ${chalk.gray(`- ${strings.gitUrlFormatHttpsDesc}`)}${httpsSuffix}`,
           value: 'https' as const
         }
       ],
-      default: 'ssh'  // SSH is recommended for development
+      default: defaultFormat
     });
     gitUrlFormat = urlFormat;
   }

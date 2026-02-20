@@ -102,10 +102,10 @@ describe('umbrella-cloning', () => {
       expect(cloneUrl).toContain('my-org');
       expect(cloneUrl).toContain('my-umbrella');
 
-      // Verify checkout runs in project dir with timeout
+      // Verify checkout reads from HEAD (not index) — critical for --no-checkout clones
       const checkoutCall = mockExecFileNoThrow.mock.calls[1];
       expect(checkoutCall[0]).toBe('git');
-      expect(checkoutCall[1]).toEqual(['checkout', '.']);
+      expect(checkoutCall[1]).toEqual(['checkout', 'HEAD', '--', '.']);
       expect(checkoutCall[2]).toMatchObject({ cwd: '/project', timeout: 60_000 });
 
       // Verify .git was moved from temp to project root
