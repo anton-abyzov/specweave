@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.283] - 2026-02-20
+
+### Changes
+- clone umbrella repo into current dir during init
+- chore: bump version to 1.0.282
+- add manual repo selection and umbrella repo prompt to init
+
+---
+
+
+
 ## [1.0.282] - 2026-02-20
 
 ### Changes
