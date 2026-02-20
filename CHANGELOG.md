@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.295] - 2026-02-20
+
+### Changes
+- fix: update living-docs sync and templates
+- update description: add Codex, Antigravity, verified skills, CLI tools
+
+---
+
+
+
 ## [1.0.294] - 2026-02-20
 
 ### Changes
