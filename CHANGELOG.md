@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.296] - 2026-02-20
+
+### Changes
+- fix: hook sync permissions now respect presets and default to true
+- docs: add prior art section to extensible skills guide
+- sync specweave changes
+
+---
+
+
+
 ## [1.0.295] - 2026-02-20
 
 ### Changes
