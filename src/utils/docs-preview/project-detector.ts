@@ -46,7 +46,63 @@ export async function detectProjectMetadata(
   const categories = await detectDocCategories(docsPath);
   const logoPath = await detectCustomLogo(projectRoot);
 
-  return { name, description, initials, categories, source, logoPath: logoPath ?? undefined };
+  // In umbrella mode, add child repos as additional categories
+  const childRepoCategories = await detectUmbrellaChildCategories(projectRoot);
+
+  return {
+    name,
+    description,
+    initials,
+    categories: [...categories, ...childRepoCategories],
+    source,
+    logoPath: logoPath ?? undefined,
+  };
+}
+
+/**
+ * Detect child repo categories for umbrella projects.
+ * Each child repo with docs becomes a top-level category.
+ */
+async function detectUmbrellaChildCategories(projectRoot: string): Promise<DocCategory[]> {
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!await fs.pathExists(configPath)) return [];
+
+  let config: Record<string, unknown>;
+  try {
+    config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+  } catch {
+    return [];
+  }
+
+  const umbrella = config.umbrella as Record<string, unknown> | undefined;
+  if (!umbrella?.enabled || !Array.isArray(umbrella.childRepos)) return [];
+
+  const categories: DocCategory[] = [];
+
+  for (const repo of umbrella.childRepos as Record<string, unknown>[]) {
+    const repoPath = repo.path as string | undefined;
+    const repoId = repo.id as string | undefined;
+    if (!repoPath || !repoId) continue;
+
+    const childRoot = path.resolve(projectRoot, repoPath);
+    const childDocsPath = path.join(childRoot, '.specweave', 'docs');
+
+    if (!await fs.pathExists(childDocsPath)) continue;
+
+    const docCount = await countMarkdownFiles(childDocsPath);
+    if (docCount === 0) continue;
+
+    const repoName = (repo.name as string | undefined) || repoId;
+    categories.push({
+      id: repoId,
+      label: formatLabel(repoName),
+      description: `Documentation from ${repoName} repository`,
+      icon: '\u{1F4E6}',
+      docCount,
+    });
+  }
+
+  return categories;
 }
 
 /**
