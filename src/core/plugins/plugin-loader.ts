@@ -254,42 +254,18 @@ export class PluginLoader {
           const content = await fs.readFile(skillMdPath, 'utf-8');
           const description = this.extractDescription(content);
           const testCases = await this.loadTestCases(skillPath);
-          const visibility = this.extractSkillVisibility(content);
 
           skills.push({
             name: entry.name,
             path: skillPath,
             description,
             testCases,
-            visibility
           });
         }
       }
     }
 
     return skills;
-  }
-
-  /**
-   * Extract visibility from SKILL.md frontmatter
-   *
-   * @param content - SKILL.md file content
-   * @returns Visibility value or undefined
-   */
-  private extractSkillVisibility(content: string): 'public' | 'internal' | undefined {
-    const frontmatterMatch = content.match(/^---\n([\s\S]+?)\n---/);
-    if (!frontmatterMatch) {
-      return undefined;
-    }
-
-    const frontmatter = frontmatterMatch[1];
-
-    // Extract visibility field - only accept 'public' or 'internal'
-    const visibilityMatch = frontmatter.match(/^visibility:\s*(\w+)/m);
-    const rawVisibility = visibilityMatch?.[1];
-    return rawVisibility === 'public' || rawVisibility === 'internal'
-      ? rawVisibility
-      : undefined;
   }
 
   /**

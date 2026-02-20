@@ -412,7 +412,6 @@ describe('PluginLoader', () => {
       expect(plugin.skills).toHaveLength(1);
       expect(plugin.skills[0].name).toBe('pm');
       expect(plugin.skills[0].description).toBe('Product Manager');
-      expect(plugin.skills[0].visibility).toBe('public');
 
       // Agents
       expect(plugin.agents).toHaveLength(1);
@@ -717,43 +716,6 @@ describe('PluginLoader', () => {
       expect(plugin.skills[0].description).toHaveLength(200);
     });
 
-    it('should extract visibility: public from frontmatter', async () => {
-      setupPluginWithSkill(
-        `---\ndescription: Test\nvisibility: public\n---\n\n# Test`
-      );
-
-      const plugin = await loader.loadFromDirectory(pluginPath);
-
-      expect(plugin.skills[0].visibility).toBe('public');
-    });
-
-    it('should extract visibility: internal from frontmatter', async () => {
-      setupPluginWithSkill(
-        `---\ndescription: Test\nvisibility: internal\n---\n\n# Test`
-      );
-
-      const plugin = await loader.loadFromDirectory(pluginPath);
-
-      expect(plugin.skills[0].visibility).toBe('internal');
-    });
-
-    it('should return undefined for unknown visibility values', async () => {
-      setupPluginWithSkill(
-        `---\ndescription: Test\nvisibility: secret\n---\n\n# Test`
-      );
-
-      const plugin = await loader.loadFromDirectory(pluginPath);
-
-      expect(plugin.skills[0].visibility).toBeUndefined();
-    });
-
-    it('should return undefined visibility when no frontmatter exists', async () => {
-      setupPluginWithSkill(`# No Frontmatter\n\nContent here.`);
-
-      const plugin = await loader.loadFromDirectory(pluginPath);
-
-      expect(plugin.skills[0].visibility).toBeUndefined();
-    });
   });
 
   // =========================================================================

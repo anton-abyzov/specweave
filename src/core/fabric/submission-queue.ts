@@ -161,6 +161,20 @@ export class SubmissionQueue {
   }
 
   /**
+   * Update data fields on a submission (skillContent, tier1Result, etc.).
+   * Does NOT change status — use updateStatus() for that.
+   */
+  updateFields(id: string, fields: Partial<Pick<SkillSubmission, 'skillContent' | 'tier1Result' | 'tier2Result'>>): SkillSubmission | null {
+    const submission = this.data.submissions.find(s => s.id === id);
+    if (!submission) return null;
+
+    Object.assign(submission, fields);
+    submission.updatedAt = new Date().toISOString();
+    this.save();
+    return submission;
+  }
+
+  /**
    * Get a single submission by ID.
    */
   getById(id: string): SkillSubmission | null {

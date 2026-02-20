@@ -350,6 +350,19 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     } catch (error) {
       result.errors.push(`Plugin refresh failed: ${error}`);
     }
+
+    // Step 4b: Ensure plugins are enabled in project settings
+    // init.ts does this but update.ts didn't — projects created before this fix
+    // may have .claude/settings.json without enabledPlugins
+    if (isSpecWeaveProject) {
+      try {
+        const { enablePlugin } = await import('../helpers/init/claude-plugin-enabler.js');
+        const projectSettingsPath = path.join(projectPath, '.claude', 'settings.json');
+        enablePlugin('sw', 'specweave', projectSettingsPath);
+      } catch {
+        // Non-critical
+      }
+    }
   }
 
   // Summary

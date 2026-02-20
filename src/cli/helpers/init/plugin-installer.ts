@@ -277,6 +277,16 @@ async function installLazyMode(
     }
   }
 
+  // Register with Claude Code plugin system via CLI (non-fatal)
+  if (successfullyInstalled.length > 0) {
+    try {
+      const { registerPluginsWithClaudeCli } = await import('../../../utils/claude-plugin-cli.js');
+      registerPluginsWithClaudeCli(specweaveRoot, successfullyInstalled);
+    } catch {
+      // Non-fatal: Claude CLI may not be available
+    }
+  }
+
   // Show summary
   console.log('');
   console.log(chalk.green.bold('Lazy Loading Enabled'));
@@ -334,6 +344,16 @@ async function installPluginsFullMode(
       failCount++;
       failedPlugins.push(pluginName);
       spinner.warn(`${pluginName} failed: ${result.error || 'unknown'}`);
+    }
+  }
+
+  // Register with Claude Code plugin system via CLI (non-fatal)
+  if (installedPlugins.length > 0) {
+    try {
+      const { registerPluginsWithClaudeCli } = await import('../../../utils/claude-plugin-cli.js');
+      registerPluginsWithClaudeCli(specweaveRoot, installedPlugins);
+    } catch {
+      // Non-fatal: Claude CLI may not be available
     }
   }
 

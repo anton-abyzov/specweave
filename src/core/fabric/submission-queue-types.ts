@@ -38,6 +38,7 @@ export interface SkillSubmission {
   status: SubmissionStatus;
   tier1Result?: Tier1Result;
   tier2Result?: Tier2Result;
+  skillContent?: string;
   discoveredAt: string;
   updatedAt: string;
   rejectedReason?: string;

@@ -499,6 +499,11 @@ export class SkillTriggerExtractor {
       const filePath = path.join(componentDir, entry.name, fileName);
       if (await fs.pathExists(filePath)) {
         const content = await fs.readFile(filePath, 'utf-8');
+        // Skip skills marked as non-user-invokable (internal tools)
+        if (type === 'skill' && /^---\n[\s\S]+?\n---/.test(content)) {
+          const fm = content.match(/^---\n([\s\S]+?)\n---/);
+          if (fm && /^user-invokable:\s*false$/m.test(fm[1])) continue;
+        }
         triggers.push(this.extractFromContent(content, entry.name, pluginName, type, filePath));
       }
     }

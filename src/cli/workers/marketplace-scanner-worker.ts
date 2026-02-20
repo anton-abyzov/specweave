@@ -42,6 +42,7 @@ const DEFAULT_SCANNER_CONFIG = {
   autoScanOnDiscover: true,
   autoTier2: false,
   githubToken: '',
+  sources: ['github', 'skillssh', 'npm'],
 };
 
 interface WorkerJobConfig {
@@ -371,9 +372,40 @@ async function main(): Promise<void> {
 
         const result = await scanGitHub(configWithCheckpoint, githubToken, log);
 
-        // Process discovered repos
+        // Also discover from additional sources (skills.sh, npm, broader GitHub)
+        const additionalRepos: typeof result.repos = [];
+        try {
+          const { SourceRegistry } = await import('../../core/fabric/discovery/source-registry.js');
+          const { GitHubProvider } = await import('../../core/fabric/discovery/github-provider.js');
+          const { SkillsShProvider } = await import('../../core/fabric/discovery/skillssh-provider.js');
+          const { NpmProvider } = await import('../../core/fabric/discovery/npm-provider.js');
+
+          const registry = new SourceRegistry();
+          const enabledSources = marketplaceConfig.sources || ['github', 'skillssh', 'npm'];
+
+          if (enabledSources.includes('github')) registry.register(new GitHubProvider({ token: githubToken }));
+          if (enabledSources.includes('skillssh')) registry.register(new SkillsShProvider());
+          if (enabledSources.includes('npm')) registry.register(new NpmProvider());
+
+          for await (const repo of registry.discoverAll()) {
+            additionalRepos.push({
+              fullName: repo.fullName,
+              htmlUrl: repo.htmlUrl,
+              description: repo.description,
+              owner: repo.owner,
+              stars: repo.stars,
+              lastUpdated: repo.lastUpdated,
+            });
+          }
+          log(`Additional sources found ${additionalRepos.length} repos`);
+        } catch (providerError: any) {
+          log(`Provider discovery error (non-fatal): ${providerError.message}`);
+        }
+
+        // Process discovered repos (legacy + provider results)
+        const allRepos = [...result.repos, ...additionalRepos];
         let cycleNew = 0;
-        for (const repo of result.repos) {
+        for (const repo of allRepos) {
           totalDiscovered++;
 
           if (seenRepos.has(repo.fullName)) {
@@ -403,13 +435,16 @@ async function main(): Promise<void> {
             // Auto-trigger Tier 1 scan if enabled
             if (marketplaceConfig.autoScanOnDiscover) {
               try {
-                const { scanSkillContent } = await import('../../core/fabric/security-scanner.js');
-                // Note: In a real implementation, we would fetch the SKILL.md content
-                // from the repo. For now, we just mark it as queued for scanning.
+                const { ScanPipeline } = await import('../../core/fabric/discovery/scan-pipeline.js');
                 queue.updateStatus(submission.id, 'queued');
-                log(`Queued ${repo.fullName} for Tier 1 scan`);
+                queue.updateStatus(submission.id, 'scanning');
+                const pipeline = new ScanPipeline(queue, { token: githubToken });
+                const scanResult = await pipeline.scanSubmission(submission.id);
+                if (scanResult) {
+                  log(`Scanned ${repo.fullName}: ${scanResult.status} (score: ${scanResult.tier1Result?.score ?? 'N/A'})`);
+                }
               } catch (scanError: any) {
-                log(`Failed to queue scan for ${repo.fullName}: ${scanError.message}`);
+                log(`Failed to scan ${repo.fullName}: ${scanError.message}`);
               }
             }
           }

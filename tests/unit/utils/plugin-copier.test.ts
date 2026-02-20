@@ -19,6 +19,7 @@ import {
   readLockfile,
   writeLockfile,
   ensureLockfile,
+  isNonInvokableSkill,
 } from '../../../src/utils/plugin-copier.js';
 
 // ---------------------------------------------------------------------------
@@ -372,6 +373,74 @@ describe('plugin-copier', () => {
       const lock = readLockfile(tmpDir);
       expect(lock!.skills.sw).toBeDefined();
       expect(lock!.skills['sw-frontend']).toBeDefined();
+    });
+
+    it('should not copy SKILL.md files marked as user-invokable: false', () => {
+      // Create a skill with user-invokable: false
+      const skillDir = path.join(specweaveRoot, 'plugins', 'specweave', 'skills', 'internal-tool');
+      fs.mkdirSync(skillDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(skillDir, 'SKILL.md'),
+        '---\ndescription: Internal tool\nuser-invokable: false\n---\n# Internal\n',
+      );
+
+      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
+      expect(result.success).toBe(true);
+
+      // The non-invokable SKILL.md should NOT be copied
+      expect(fs.existsSync(path.join(targetDir, 'sw', 'skills', 'internal-tool', 'SKILL.md'))).toBe(false);
+
+      // The root SKILL.md (no frontmatter restriction) should still be there
+      expect(fs.existsSync(path.join(targetDir, 'sw', 'SKILL.md'))).toBe(true);
+    });
+
+    it('should still copy SKILL.md files without user-invokable restriction', () => {
+      // Create a normal skill (user-invokable by default)
+      const skillDir = path.join(specweaveRoot, 'plugins', 'specweave', 'skills', 'public-tool');
+      fs.mkdirSync(skillDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(skillDir, 'SKILL.md'),
+        '---\ndescription: Public tool\n---\n# Public\n',
+      );
+
+      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
+      expect(result.success).toBe(true);
+
+      // Normal skill should be copied
+      expect(fs.existsSync(path.join(targetDir, 'sw', 'skills', 'public-tool', 'SKILL.md'))).toBe(true);
+    });
+  });
+
+  // =========================================================================
+  // isNonInvokableSkill
+  // =========================================================================
+  describe('isNonInvokableSkill', () => {
+    it('should return true for user-invokable: false', () => {
+      const filePath = path.join(tmpDir, 'internal-SKILL.md');
+      fs.writeFileSync(filePath, '---\ndescription: Internal\nuser-invokable: false\n---\n# Skill\n');
+      expect(isNonInvokableSkill(filePath)).toBe(true);
+    });
+
+    it('should return false for normal skills', () => {
+      const filePath = path.join(tmpDir, 'normal-SKILL.md');
+      fs.writeFileSync(filePath, '---\ndescription: Normal skill\n---\n# Skill\n');
+      expect(isNonInvokableSkill(filePath)).toBe(false);
+    });
+
+    it('should return false for skills without frontmatter', () => {
+      const filePath = path.join(tmpDir, 'no-fm-SKILL.md');
+      fs.writeFileSync(filePath, '# Skill without frontmatter\n');
+      expect(isNonInvokableSkill(filePath)).toBe(false);
+    });
+
+    it('should return false for non-existent file', () => {
+      expect(isNonInvokableSkill(path.join(tmpDir, 'does-not-exist.md'))).toBe(false);
+    });
+
+    it('should return false for user-invokable: true', () => {
+      const filePath = path.join(tmpDir, 'explicit-true-SKILL.md');
+      fs.writeFileSync(filePath, '---\ndescription: Explicit\nuser-invokable: true\n---\n# Skill\n');
+      expect(isNonInvokableSkill(filePath)).toBe(false);
     });
   });
 });
