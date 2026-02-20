@@ -15,6 +15,7 @@ import { HooksChecker } from './checkers/hooks-checker.js';
 import { PluginsChecker } from './checkers/plugins-checker.js';
 import { IncrementsChecker } from './checkers/increments-checker.js';
 import { GitChecker } from './checkers/git-checker.js';
+import { InstallationHealthChecker } from './checkers/installation-health-checker.js';
 
 /**
  * Run all diagnostic checks and return a comprehensive report
@@ -31,6 +32,7 @@ export async function runDoctor(
     new PluginsChecker(),
     new IncrementsChecker(),
     new GitChecker(),
+    new InstallationHealthChecker(),
   ];
 
   const categories: CategoryResult[] = [];
@@ -129,9 +131,19 @@ function determineFix(categories: CategoryResult[]): string {
       c.checks.some((ch) => ch.status === 'fail')
   );
 
+  const hasInstallationIssues = categories.some(
+    (c) =>
+      c.category === 'Installation Health' &&
+      c.checks.some((ch) => ch.status === 'fail' || ch.status === 'warn')
+  );
+
   // Prioritize fixes
   if (hasStructureIssues) {
     return 'specweave init';
+  }
+
+  if (hasInstallationIssues) {
+    return 'specweave doctor --fix';
   }
 
   if (hasConfigIssues || hasPluginIssues) {

@@ -11,3 +11,4 @@ export { HooksChecker } from './checkers/hooks-checker.js';
 export { PluginsChecker } from './checkers/plugins-checker.js';
 export { IncrementsChecker } from './checkers/increments-checker.js';
 export { GitChecker } from './checkers/git-checker.js';
+export { InstallationHealthChecker } from './checkers/installation-health-checker.js';
