@@ -348,5 +348,77 @@ describe('github-repo-cloning', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(mockFetch.mock.calls[1][0]).toContain('page=2');
     });
+
+    it('excludes repos listed in excludeRepos', async () => {
+      const repos = [
+        createRepo('umbrella-repo'),
+        createRepo('nested-repo-a'),
+        createRepo('nested-repo-b'),
+      ];
+      mockFetch.mockResolvedValueOnce(createMockResponse(repos));
+      mockFilterRepositoriesByPattern.mockImplementation((repos: any[]) => repos);
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-123' },
+        isBackground: true,
+        pid: 1234
+      });
+
+      const result = await triggerGitHubRepoCloning(
+        '/project',
+        { org: 'test-org', pat: 'ghp_test' },
+        { strategy: 'all' },
+        'https',
+        ['umbrella-repo']
+      );
+
+      // launchCloneJob should only get nested repos (umbrella excluded)
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories).toHaveLength(2);
+      expect(launchCall.repositories.map((r: any) => r.name)).toEqual(['nested-repo-a', 'nested-repo-b']);
+      // clonedRepos should also exclude umbrella
+      expect(result.clonedRepos).toEqual(['nested-repo-a', 'nested-repo-b']);
+    });
+
+    it('works normally when excludeRepos is empty', async () => {
+      const repos = [createRepo('repo-a'), createRepo('repo-b')];
+      mockFetch.mockResolvedValueOnce(createMockResponse(repos));
+      mockFilterRepositoriesByPattern.mockReturnValue(repos);
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-123' },
+        isBackground: true,
+        pid: 1234
+      });
+
+      await triggerGitHubRepoCloning(
+        '/project',
+        { org: 'test-org', pat: 'ghp_test' },
+        { strategy: 'all' },
+        'https',
+        []
+      );
+
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories).toHaveLength(2);
+    });
+
+    it('works normally when excludeRepos is undefined (backward compat)', async () => {
+      const repos = [createRepo('repo-a')];
+      mockFetch.mockResolvedValueOnce(createMockResponse(repos));
+      mockFilterRepositoriesByPattern.mockReturnValue(repos);
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-123' },
+        isBackground: true,
+        pid: 1234
+      });
+
+      await triggerGitHubRepoCloning(
+        '/project',
+        { org: 'test-org', pat: 'ghp_test' },
+        { strategy: 'all' }
+      );
+
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories).toHaveLength(1);
+    });
   });
 });
