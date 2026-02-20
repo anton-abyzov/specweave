@@ -559,6 +559,18 @@ export async function initCommand(
       spinner.start('Using ' + toolName + '...');
     }
 
+    // ========================================================================
+    // INTERACTIVE: Repository hosting + umbrella selection (BEFORE file creation)
+    // v1.0.286: Moved BEFORE directory structure creation so that:
+    // - Umbrella clone runs on a clean slate (no .specweave/ to conflict with)
+    // - No git init needed if umbrella provides .git
+    // - No file merging or .git replacement required
+    // ========================================================================
+    spinner.stop();
+    const gitHubRemote = detectGitHubRemote(targetDir);
+    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
+    spinner.start('Creating project files...');
+
     // Create directory structure
     if (!continueExisting) {
       await createDirectoryStructure(targetDir, toolName);
@@ -654,15 +666,6 @@ export async function initCommand(
         // Non-critical - agent teams can be enabled later via `specweave team`
       }
     }
-
-    // ========================================================================
-    // COMMON SETUP: Repository, Issue Tracker, Wizard (ALL TOOLS - Claude & Non-Claude)
-    // v1.0.26: Moved outside Claude-only block to ensure consistent init flow
-    // ========================================================================
-
-    // Repository hosting setup (MANDATORY for all tools)
-    const gitHubRemote = detectGitHubRemote(targetDir);
-    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
 
     // Track background job IDs for living docs dependencies
     const pendingJobIds: string[] = [];
