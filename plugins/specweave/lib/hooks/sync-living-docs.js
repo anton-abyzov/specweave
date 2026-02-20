@@ -38,15 +38,35 @@ async function syncLivingDocs(incrementId) {
     console.log("\u2705 Living docs sync enabled");
 
     // ========================================================================
+    // RESOLVE SYNC PERMISSIONS (v1.0.295 - Preset-Aware Hook)
+    // ========================================================================
+    // Resolve permissions from preset first, then individual settings override.
+    // This ensures preset: "bidirectional" enables all permissions even when
+    // individual flags are not explicitly set in config.json.
+    const PRESET_PERMISSIONS = {
+      'read-only':      { canUpsertInternalItems: false, canUpdateExternalItems: false, canUpdateStatus: false },
+      'push-only':      { canUpsertInternalItems: true,  canUpdateExternalItems: true,  canUpdateStatus: true  },
+      'bidirectional':  { canUpsertInternalItems: true,  canUpdateExternalItems: true,  canUpdateStatus: true  },
+      'full-control':   { canUpsertInternalItems: true,  canUpdateExternalItems: true,  canUpdateStatus: true  },
+    };
+    const preset = config.sync?.preset;
+    const presetPerms = PRESET_PERMISSIONS[preset] || {};
+    const settings = config.sync?.settings || {};
+
+    // Individual settings override preset; preset overrides default (true)
+    const resolveFlag = (key) => settings[key] ?? presetPerms[key] ?? true;
+
+    // ========================================================================
     // GATE 1: canUpsertInternalItems (v0.24.0+ - Internal Docs Permission)
     // ========================================================================
     // This permission controls whether SpecWeave can CREATE/UPDATE internal docs.
     // If false, ALL living docs sync is blocked (both local and external).
-    const canUpsertInternal = config.sync?.settings?.canUpsertInternalItems ?? false;
+    const canUpsertInternal = resolveFlag('canUpsertInternalItems');
 
     if (!canUpsertInternal) {
       console.log("\u26D4 Living docs sync BLOCKED (canUpsertInternalItems = false)");
       console.log("   To enable: Set sync.settings.canUpsertInternalItems = true in config.json");
+      console.log("   Or set sync.preset = \"bidirectional\" to enable all permissions");
       console.log("   No internal docs or external tools will be updated");
       return;
     }
@@ -121,7 +141,7 @@ async function syncLivingDocs(incrementId) {
     // This permission controls whether SpecWeave can UPDATE externally-created items
     // (full content: title, description, ACs, tasks, comments).
     // If false, living docs sync happens locally but doesn't push to external tools.
-    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+    const canUpdateExternal = resolveFlag('canUpdateExternalItems');
 
     if (!canUpdateExternal) {
       console.log("\u2139\uFE0F  GitHub sync skipped (canUpdateExternalItems = false)");
@@ -137,7 +157,7 @@ async function syncLivingDocs(incrementId) {
     // This setting controls whether sync to external tools happens automatically
     // on increment completion or requires manual /sw:sync-* commands.
     // DEFAULT: true (automatic sync enabled for better UX)
-    const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
+    const autoSync = resolveFlag('autoSyncOnCompletion');
 
     if (!autoSync) {
       console.log("\u26A0\uFE0F  Automatic external sync DISABLED (autoSyncOnCompletion = false)");
