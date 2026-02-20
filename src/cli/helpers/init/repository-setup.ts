@@ -1599,13 +1599,25 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
 
       // Immediately clone umbrella into current dir (right after selection, before nested pattern)
       if (umbrellaSource === 'select' && umbrellaRepo && githubRepoSelection) {
-        await cloneUmbrellaIntoCurrentDir(
-          options.targetDir,
-          githubRepoSelection.org,
-          umbrellaRepo,
-          githubRepoSelection.pat,
-          gitUrlFormat || 'https'
-        );
+        try {
+          const cloneResult = await cloneUmbrellaIntoCurrentDir(
+            options.targetDir,
+            githubRepoSelection.org,
+            umbrellaRepo,
+            githubRepoSelection.pat,
+            gitUrlFormat || 'https'
+          );
+          if (!cloneResult.success) {
+            console.log(chalk.yellow(`\n   ⚠ Umbrella clone did not succeed: ${cloneResult.error}`));
+            console.log(chalk.gray('   Continuing with init...\n'));
+          }
+        } catch (err) {
+          console.log(chalk.red(`\n   ✗ Umbrella clone error: ${err instanceof Error ? err.message : String(err)}`));
+          console.log(chalk.gray('   Continuing with init...\n'));
+        }
+      } else if (umbrellaSource === 'select') {
+        // Debug: condition was partially met but not fully
+        console.log(chalk.gray(`   [debug] umbrellaRepo=${umbrellaRepo}, githubRepoSelection=${!!githubRepoSelection}`));
       }
     }
 
