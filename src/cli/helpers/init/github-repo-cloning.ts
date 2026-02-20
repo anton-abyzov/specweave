@@ -361,13 +361,15 @@ function buildGitHubCloneUrl(
  * @param githubRepoSelection - GitHub org and PAT
  * @param clonePattern - Clone pattern configuration
  * @param gitUrlFormat - Git URL format preference ('ssh' or 'https') - v1.0.10+
+ * @param excludeRepos - Repo names to exclude from cloning (e.g., umbrella repo already cloned at root)
  * @returns Cloning result with job ID and list of repos being cloned (v1.0.9)
  */
 export async function triggerGitHubRepoCloning(
   projectPath: string,
   githubRepoSelection: GitHubRepoSelection,
   clonePattern: ClonePatternResult,
-  gitUrlFormat: 'ssh' | 'https' = 'https'
+  gitUrlFormat: 'ssh' | 'https' = 'https',
+  excludeRepos: string[] = []
 ): Promise<GitHubCloningResult> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
@@ -420,7 +422,13 @@ export async function triggerGitHubRepoCloning(
   console.log(chalk.green(`   ✓ Found ${allRepos.length} repositories in ${org}`));
 
   // Filter by pattern
-  const filteredRepos = filterRepositoriesByPattern(allRepos, clonePattern);
+  let filteredRepos = filterRepositoriesByPattern(allRepos, clonePattern);
+
+  // Exclude repos (e.g., umbrella repo already cloned at project root)
+  if (excludeRepos.length > 0) {
+    const excludeSet = new Set(excludeRepos.map(n => n.toLowerCase()));
+    filteredRepos = filteredRepos.filter(r => !excludeSet.has(r.name.toLowerCase()));
+  }
 
   if (filteredRepos.length === 0) {
     const patternDesc = clonePattern.pattern ? ` matching "${clonePattern.pattern}"` : '';

@@ -196,6 +196,8 @@ export interface RepositorySetupResult {
   bitbucketRepoSelection?: BitbucketRepoSelection;
   /** Umbrella (parent) repository name for multi-repo setups */
   umbrellaRepo?: string;
+  /** How umbrella was selected: 'current-dir' (already here) or 'select' (needs cloning) */
+  umbrellaSource?: 'current-dir' | 'select';
 }
 
 /**
@@ -1507,6 +1509,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   let githubRepoSelection: GitHubRepoSelection | undefined;
   let bitbucketRepoSelection: BitbucketRepoSelection | undefined;
   let umbrellaRepo: string | undefined;
+  let umbrellaSource: 'current-dir' | 'select' | undefined;
 
   if (isMultiRepo && (provider === 'ado' || provider === 'github' || provider === 'bitbucket')) {
     // Step 3a: Provider-specific credential prompts
@@ -1572,6 +1575,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
 
       if (umbrellaChoice === 'current-dir' && gitHubRemote) {
         umbrellaRepo = gitHubRemote.repo;
+        umbrellaSource = 'current-dir';
         console.log(chalk.green(`   \u2713 Umbrella: ${umbrellaRepo} (current directory)`));
       } else if (umbrellaChoice === 'select') {
         console.log(chalk.gray('   Fetching repositories...'));
@@ -1584,6 +1588,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
             message: 'Which repository is your umbrella?',
             choices: fetchResult.names.map(name => ({ name, value: name })),
           });
+          umbrellaSource = 'select';
           console.log(chalk.green(`   \u2713 Umbrella: ${umbrellaRepo}`));
         } else {
           console.log(chalk.yellow('   No repositories found. Skipping umbrella selection.'));
@@ -1631,5 +1636,6 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     githubRepoSelection,
     bitbucketRepoSelection,
     umbrellaRepo,
+    umbrellaSource,
   };
 }
