@@ -13,6 +13,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { execSync } from 'node:child_process';
 import type {
   HealthChecker,
   CategoryResult,
@@ -250,6 +251,25 @@ export class InstallationHealthChecker implements HealthChecker {
     }
 
     if (missing.length > 0) {
+      if (fix) {
+        try {
+          execSync('specweave refresh-plugins', { stdio: 'pipe' });
+          return {
+            name: 'Lockfile integrity',
+            status: 'warn',
+            message: `${missing.length} skill(s) were missing, ran refresh-plugins`,
+            details: missing.map(m => `Missing: ${m}`),
+            fixSuggestion: 'Ran: specweave refresh-plugins',
+          };
+        } catch (err) {
+          return {
+            name: 'Lockfile integrity',
+            status: 'fail',
+            message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            fixSuggestion: 'Run: specweave refresh-plugins manually',
+          };
+        }
+      }
       return {
         name: 'Lockfile integrity',
         status: 'fail',
@@ -260,19 +280,33 @@ export class InstallationHealthChecker implements HealthChecker {
     }
 
     if (mismatches.length > 0) {
-      const result: CheckResult = {
+      if (fix) {
+        try {
+          execSync('specweave refresh-plugins', { stdio: 'pipe' });
+          return {
+            name: 'Lockfile integrity',
+            status: 'warn',
+            message: `${mismatches.length} hash mismatch(es) fixed by refresh-plugins`,
+            details: mismatches,
+            fixSuggestion: 'Ran: specweave refresh-plugins',
+          };
+        } catch (err) {
+          return {
+            name: 'Lockfile integrity',
+            status: 'fail',
+            message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            details: mismatches,
+            fixSuggestion: 'Run: specweave refresh-plugins manually',
+          };
+        }
+      }
+      return {
         name: 'Lockfile integrity',
         status: 'warn',
         message: `${mismatches.length} hash mismatch(es) detected`,
         details: mismatches,
+        fixSuggestion: 'Run: specweave refresh-plugins',
       };
-      if (fix) {
-        result.fixSuggestion =
-          'Run: specweave refresh-plugins to reinstall with correct hashes';
-      } else {
-        result.fixSuggestion = 'Run: specweave refresh-plugins';
-      }
-      return result;
     }
 
     return {

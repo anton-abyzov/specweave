@@ -5,6 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { execSync } from 'child_process';
 import type {
   HealthChecker,
   CategoryResult,
@@ -13,26 +14,36 @@ import type {
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 
+interface PluginsCheckerOptions {
+  homeDir?: string;
+}
+
 export class PluginsChecker implements HealthChecker {
   category = 'Plugins';
+  private homeDir: string;
+
+  constructor(opts?: PluginsCheckerOptions) {
+    this.homeDir = opts?.homeDir ?? os.homedir();
+  }
 
   async check(
     projectRoot: string,
-    _options: DoctorOptions
+    options: DoctorOptions
   ): Promise<CategoryResult> {
+    const fix = options.fix ?? false;
     const checks: CheckResult[] = [];
 
     // Check local plugin state
-    checks.push(this.checkLocalPluginState(projectRoot));
+    checks.push(this.checkLocalPluginState(projectRoot, fix));
 
     // Check global plugin cache
-    checks.push(this.checkGlobalPluginCache());
+    checks.push(this.checkGlobalPluginCache(fix));
 
     // Check marketplace availability
-    checks.push(this.checkMarketplaceDirectory());
+    checks.push(this.checkMarketplaceDirectory(fix));
 
     // Check for core plugin
-    checks.push(this.checkCorePlugin());
+    checks.push(this.checkCorePlugin(fix));
 
     return {
       category: this.category,
@@ -41,7 +52,7 @@ export class PluginsChecker implements HealthChecker {
     };
   }
 
-  private checkLocalPluginState(projectRoot: string): CheckResult {
+  private checkLocalPluginState(projectRoot: string, fix: boolean): CheckResult {
     const statePath = path.join(
       projectRoot,
       '.specweave',
@@ -69,6 +80,15 @@ export class PluginsChecker implements HealthChecker {
         details: plugins.slice(0, 5),
       };
     } catch {
+      if (fix) {
+        fs.unlinkSync(statePath);
+        return {
+          name: 'Local plugin state',
+          status: 'warn',
+          message: 'invalid state file removed',
+          fixSuggestion: 'Deleted corrupt state file',
+        };
+      }
       return {
         name: 'Local plugin state',
         status: 'warn',
@@ -78,8 +98,8 @@ export class PluginsChecker implements HealthChecker {
     }
   }
 
-  private checkGlobalPluginCache(): CheckResult {
-    const globalDir = path.join(os.homedir(), '.specweave', 'state');
+  private checkGlobalPluginCache(fix: boolean): CheckResult {
+    const globalDir = path.join(this.homeDir, '.specweave', 'state');
     const cachePath = path.join(globalDir, 'plugins-loaded.json');
 
     if (!fs.existsSync(cachePath)) {
@@ -95,6 +115,15 @@ export class PluginsChecker implements HealthChecker {
       const ageHours = (Date.now() - stat.mtimeMs) / (1000 * 60 * 60);
 
       if (ageHours > 24) {
+        if (fix) {
+          fs.unlinkSync(cachePath);
+          return {
+            name: 'Global plugin cache',
+            status: 'warn',
+            message: `stale cache removed (was ${Math.round(ageHours)}h old)`,
+            fixSuggestion: 'Deleted stale cache file',
+          };
+        }
         return {
           name: 'Global plugin cache',
           status: 'warn',
@@ -117,9 +146,9 @@ export class PluginsChecker implements HealthChecker {
     }
   }
 
-  private checkMarketplaceDirectory(): CheckResult {
+  private checkMarketplaceDirectory(fix: boolean): CheckResult {
     const marketplaceDir = path.join(
-      os.homedir(),
+      this.homeDir,
       '.claude',
       'plugins',
       'marketplaces',
@@ -127,6 +156,15 @@ export class PluginsChecker implements HealthChecker {
     );
 
     if (!fs.existsSync(marketplaceDir)) {
+      if (fix) {
+        execSync('specweave refresh-plugins', { stdio: 'pipe' });
+        return {
+          name: 'SpecWeave marketplace',
+          status: 'warn',
+          message: 'not installed, ran refresh-plugins',
+          fixSuggestion: 'Ran: specweave refresh-plugins',
+        };
+      }
       return {
         name: 'SpecWeave marketplace',
         status: 'warn',
@@ -139,6 +177,15 @@ export class PluginsChecker implements HealthChecker {
     try {
       const pluginsDir = path.join(marketplaceDir, 'plugins');
       if (!fs.existsSync(pluginsDir)) {
+        if (fix) {
+          execSync('specweave refresh-plugins', { stdio: 'pipe' });
+          return {
+            name: 'SpecWeave marketplace',
+            status: 'warn',
+            message: 'was empty, ran refresh-plugins',
+            fixSuggestion: 'Ran: specweave refresh-plugins',
+          };
+        }
         return {
           name: 'SpecWeave marketplace',
           status: 'warn',
@@ -162,9 +209,9 @@ export class PluginsChecker implements HealthChecker {
     }
   }
 
-  private checkCorePlugin(): CheckResult {
-    const marketplaceDir = path.join(
-      os.homedir(),
+  private checkCorePlugin(fix: boolean): CheckResult {
+    const corePluginDir = path.join(
+      this.homeDir,
       '.claude',
       'plugins',
       'marketplaces',
@@ -173,7 +220,16 @@ export class PluginsChecker implements HealthChecker {
       'specweave'
     );
 
-    if (!fs.existsSync(marketplaceDir)) {
+    if (!fs.existsSync(corePluginDir)) {
+      if (fix) {
+        execSync('specweave refresh-plugins', { stdio: 'pipe' });
+        return {
+          name: 'Core plugin (sw)',
+          status: 'warn',
+          message: 'not installed, ran refresh-plugins',
+          fixSuggestion: 'Ran: specweave refresh-plugins',
+        };
+      }
       return {
         name: 'Core plugin (sw)',
         status: 'warn',
@@ -183,13 +239,22 @@ export class PluginsChecker implements HealthChecker {
     }
 
     // Check for essential files
-    const skillsDir = path.join(marketplaceDir, 'skills');
-    const commandsDir = path.join(marketplaceDir, 'commands');
+    const skillsDir = path.join(corePluginDir, 'skills');
+    const commandsDir = path.join(corePluginDir, 'commands');
 
     const hasSkills = fs.existsSync(skillsDir);
     const hasCommands = fs.existsSync(commandsDir);
 
     if (!hasSkills && !hasCommands) {
+      if (fix) {
+        execSync('specweave refresh-plugins', { stdio: 'pipe' });
+        return {
+          name: 'Core plugin (sw)',
+          status: 'warn',
+          message: 'incomplete installation, ran refresh-plugins',
+          fixSuggestion: 'Ran: specweave refresh-plugins',
+        };
+      }
       return {
         name: 'Core plugin (sw)',
         status: 'fail',

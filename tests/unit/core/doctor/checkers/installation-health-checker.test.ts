@@ -2,10 +2,13 @@
  * Tests for InstallationHealthChecker
  * Covers: ghost commands, stale cache, lockfile integrity, namespace pollution
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+const mockExecSync = vi.hoisted(() => vi.fn());
+vi.mock('child_process', () => ({ execSync: mockExecSync }));
 import { InstallationHealthChecker } from '../../../../../src/core/doctor/checkers/installation-health-checker.js';
 
 describe('InstallationHealthChecker', () => {
@@ -22,6 +25,7 @@ describe('InstallationHealthChecker', () => {
     fs.mkdirSync(commandsDir, { recursive: true });
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.mkdirSync(projectRoot, { recursive: true });
+    mockExecSync.mockReset();
   });
 
   afterEach(() => {
@@ -330,6 +334,139 @@ describe('InstallationHealthChecker', () => {
 
       expect(lockCheck).toBeDefined();
       expect(lockCheck!.fixSuggestion).toContain('refresh-plugins');
+    });
+
+    // ─── New: TC-LF-01 to TC-LF-04 (fix mode) ───────────────────────────
+
+    it('TC-LF-01: fix=true with hash mismatches runs specweave refresh-plugins', async () => {
+      const pluginDir = path.join(commandsDir, 'sw');
+      fs.mkdirSync(path.join(pluginDir, 'do'), { recursive: true });
+      fs.writeFileSync(path.join(pluginDir, 'do', 'SKILL.md'), '# Do skill');
+
+      const lockfile = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0',
+            sha: 'wrong_hash_123',
+            tier: 'BUNDLED',
+            installedAt: new Date().toISOString(),
+            source: 'local:specweave',
+          },
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify(lockfile, null, 2)
+      );
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true });
+      const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', { stdio: 'pipe' });
+      expect(lockCheck?.status).toBe('warn');
+    });
+
+    it('TC-LF-02: fix=true with missing skills runs refresh-plugins and returns warn', async () => {
+      // Lockfile references 'sw' but the dir doesn't exist in commandsDir
+      const lockfile = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0',
+            sha: 'abc123def456',
+            tier: 'BUNDLED',
+            installedAt: new Date().toISOString(),
+            source: 'local:specweave',
+          },
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify(lockfile, null, 2)
+      );
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true });
+      const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', { stdio: 'pipe' });
+      expect(lockCheck?.status).toBe('warn');
+    });
+
+    it('TC-LF-03: fix=true but refresh-plugins throws returns fail status', async () => {
+      const pluginDir = path.join(commandsDir, 'sw');
+      fs.mkdirSync(path.join(pluginDir, 'do'), { recursive: true });
+      fs.writeFileSync(path.join(pluginDir, 'do', 'SKILL.md'), '# Do skill');
+
+      const lockfile = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0',
+            sha: 'wrong_hash_fail',
+            tier: 'BUNDLED',
+            installedAt: new Date().toISOString(),
+            source: 'local:specweave',
+          },
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify(lockfile, null, 2)
+      );
+
+      mockExecSync.mockImplementationOnce(() => {
+        throw new Error('command not found: specweave');
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true });
+      const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
+
+      expect(lockCheck?.status).toBe('fail');
+      expect(lockCheck?.message).toContain('refresh-plugins failed');
+    });
+
+    it('TC-LF-04: fix=false does not call execSync for hash mismatch', async () => {
+      const pluginDir = path.join(commandsDir, 'sw');
+      fs.mkdirSync(path.join(pluginDir, 'do'), { recursive: true });
+      fs.writeFileSync(path.join(pluginDir, 'do', 'SKILL.md'), '# Do skill');
+
+      const lockfile = {
+        version: 1,
+        agents: ['claude-code'],
+        skills: {
+          sw: {
+            version: '1.0.0',
+            sha: 'wrong_hash_no_fix',
+            tier: 'BUNDLED',
+            installedAt: new Date().toISOString(),
+            source: 'local:specweave',
+          },
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(
+        path.join(projectRoot, 'vskill.lock'),
+        JSON.stringify(lockfile, null, 2)
+      );
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      await checker.check(projectRoot, { fix: false });
+
+      expect(mockExecSync).not.toHaveBeenCalled();
     });
   });
 
