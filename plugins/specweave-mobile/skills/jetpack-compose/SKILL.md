@@ -879,3 +879,10 @@ fun SwipeableListItem(item: Item, onDelete: () -> Unit, onArchive: () -> Unit) {
 | Large recomposition scope | Extract composables, use `derivedStateOf`, mark classes `@Stable` |
 | Blocking main thread in ViewModel | Use `viewModelScope.launch` with appropriate dispatcher |
 | Hardcoded strings in UI | Use `stringResource(R.string.x)` for localization support |
+
+## Related Skills
+
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (for iOS counterpart of your Android app)
+- `flutter` - Cross-platform alternative with Dart
+- `mobile-testing` - Comprehensive testing strategies (Espresso, Compose testing)
+- `deep-linking-push` - Deep linking (App Links) and push notifications (FCM)

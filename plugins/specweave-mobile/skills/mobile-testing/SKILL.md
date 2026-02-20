@@ -682,6 +682,7 @@ genhtml coverage/lcov.info -o coverage/html
 
 ## Related Skills
 
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight distribution, pre-submission validation)
 - `expo` - Expo-specific testing setup
 - `react-native-expert` - React Native debugging tools
 - `react-native-expert` - Architecture for testability

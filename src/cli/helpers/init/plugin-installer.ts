@@ -1,28 +1,20 @@
 /**
  * Plugin installation for Claude Code
- * Uses vskill for plugin installation with security scanning
+ * Uses inline copier for first-party plugin installation (no vskill dependency).
  */
 
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from '../../../utils/claude-cli-detector.js';
 import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
 import { enablePluginsInSettings } from './claude-plugin-enabler.js';
-import { resolveVskillPath as _resolveVskillPath, resolveSpecweaveDir } from '../../../utils/vskill-resolver.js';
+import { copyPlugin, findSpecweaveRoot } from '../../../utils/plugin-copier.js';
+import { getDirname } from '../../../utils/esm-helpers.js';
 
-/** Resolve vskill path from this module's location */
-function resolveVskillPath(): string {
-  return _resolveVskillPath(__dirname);
-}
-
-/** Resolve specweave source directory */
-function resolveSpecweavePluginDir(): string {
-  return resolveSpecweaveDir(__dirname);
-}
+const __dirname = getDirname(import.meta.url);
 
 /**
  * Options for plugin installation
@@ -47,13 +39,13 @@ export interface PluginInstallResult {
 }
 
 /**
- * Install SpecWeave plugins via Claude CLI
+ * Install SpecWeave plugins via inline copier
  *
  * By default (lazyMode=true), only the core plugin (sw) is installed.
  * Other plugins are loaded on-demand based on keywords detected by
  * the detect-intent command in the user-prompt-submit hook.
  *
- * With lazyMode=false, all plugins are installed (legacy behavior).
+ * With lazyMode=false, all plugins are installed.
  *
  * @param options - Installation options
  * @returns Installation result
@@ -66,10 +58,6 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
   const claudeStatus = detectClaudeCli();
 
   if (!claudeStatus.available) {
-    // Claude CLI NOT working - cannot install plugins
-    // Note: v1.0.170+ removed the fallback that wrote directly to known_marketplaces.json
-    // because Claude CLI is now bundled with Claude Code and should always be available.
-    // If it's not, show clear diagnostics so user can fix the underlying issue.
     const diagnostic = getClaudeCliDiagnostic(claudeStatus);
     const suggestions = getClaudeCliSuggestions(claudeStatus);
 
@@ -78,7 +66,6 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     console.log(chalk.yellow.bold('⚠️  Claude Code CLI Issue Detected'));
     console.log('');
 
-    // Show detailed diagnostic info
     if (claudeStatus.commandExists) {
       console.log(chalk.white('Found command in PATH, but verification failed:'));
       console.log('');
@@ -102,7 +89,6 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     }
     console.log('');
 
-    // Show actionable suggestions
     console.log(chalk.cyan('💡 How to fix:'));
     console.log('');
     suggestions.forEach(suggestion => {
@@ -110,7 +96,6 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     });
     console.log('');
 
-    // Show alternatives if CLI not found
     if (claudeStatus.error === 'command_not_found') {
       console.log(chalk.cyan('Alternative Options:'));
       console.log('');
@@ -129,7 +114,7 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     return { success: false, successCount: 0, failCount: 0, failedPlugins: [] };
   }
 
-  // Claude CLI available - proceed with vskill-based installation
+  // Claude CLI available - proceed with inline copier installation
   try {
     // Load marketplace.json to get ALL available plugins
     spinner.start('Loading available plugins...');
@@ -164,14 +149,12 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     }
 
     // LAZY LOADING MODE (default)
-    // Install only core plugin via vskill, cache the rest for on-demand loading
     if (lazyMode) {
-      return await installLazyMode(allPlugins, spinner, dirname);
+      return await installLazyMode(allPlugins, spinner);
     }
 
     // FULL MODE (--full flag)
-    // Install ALL plugins via vskill with security scanning
-    const result = await installPluginsWithRetry(allPlugins, spinner);
+    const result = await installPluginsFullMode(allPlugins, spinner, forceRefresh);
 
     // Enable installed plugins in Claude settings
     if (result.installedPlugins.length > 0) {
@@ -216,7 +199,6 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
     };
 
   } catch (error: unknown) {
-    // Installation failed - provide helpful diagnostics
     spinner.warn('Could not auto-install plugins');
     console.log('');
 
@@ -224,41 +206,25 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
     if (errorMessage.includes('not found') || errorMessage.includes('ENOENT')) {
       console.log(chalk.yellow('   Reason: Plugin source not found'));
-      console.log(chalk.gray('   Try: vskill add --plugin sw --plugin-dir <specweave-dir>'));
     } else if (errorMessage.includes('EACCES') || errorMessage.includes('permission')) {
       console.log(chalk.yellow('   Reason: Permission denied'));
       console.log(chalk.gray('   Check file permissions or run with appropriate access'));
-    } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('network')) {
-      console.log(chalk.yellow('   Reason: Network error'));
-      console.log(chalk.gray('   Check internet connection and try again'));
     } else if (process.env.DEBUG) {
       console.log(chalk.gray(`   Error: ${errorMessage}`));
     }
 
     console.log('');
-    console.log(chalk.cyan('Manual installation:'));
-    console.log(chalk.white('   vskill add --plugin sw --plugin-dir <specweave-dir>'));
-    console.log('');
-
     return { success: false, successCount: 0, failCount: 0, failedPlugins: [] };
   }
 }
 
 /**
- * Install in lazy mode - core plugin only via vskill, load others on-demand
- *
- * Installs:
- * - sw (core SpecWeave framework) via vskill add
- *
- * Other SpecWeave plugins are loaded on-demand via detect-intent hook.
- * Official plugins (context7, playwright) are optional user installs.
+ * Install in lazy mode - core plugin only, load others on-demand
  */
 async function installLazyMode(
   _allPlugins: Array<{ name: string }>,
   spinner: ReturnType<typeof ora>,
-  _dirname: string
 ): Promise<PluginInstallResult> {
-  // Essential plugins to install (v1.0.240: only core SW plugin)
   const essentialPlugins = [
     { name: 'sw', marketplace: 'specweave', description: 'Core SpecWeave framework' },
   ];
@@ -267,32 +233,30 @@ async function installLazyMode(
   const failedPlugins: string[] = [];
   const successfullyInstalled: string[] = [];
 
-  spinner.start('Installing essential plugins via vskill...');
+  spinner.start('Installing essential plugins...');
   spinner.stop();
 
-  const vskillPath = resolveVskillPath();
-  const pluginDir = resolveSpecweavePluginDir();
+  const specweaveRoot = findSpecweaveRoot(__dirname);
+  if (!specweaveRoot) {
+    console.log(chalk.yellow('  Could not find specweave root directory'));
+    return { success: false, successCount: 0, failCount: 1, failedPlugins: ['sw'] };
+  }
 
   for (const plugin of essentialPlugins) {
-    console.log(chalk.blue(`  Installing ${plugin.name} via vskill...`));
+    console.log(chalk.blue(`  Installing ${plugin.name}...`));
 
-    const result = installPluginViaVskill(vskillPath, pluginDir, plugin.name);
+    const result = copyPlugin(plugin.name, specweaveRoot, { force: true });
 
-    if (result.success) {
-      // Display scan result to user
-      if (result.scanOutput) {
-        console.log(chalk.gray(`  Security scan: ${result.scanOutput}`));
-      }
-      console.log(chalk.green(`  ${plugin.name} installed via vskill`));
+    if (result.success && !result.skipped) {
+      console.log(chalk.green(`  ${plugin.name} installed`));
       installedCount++;
       successfullyInstalled.push(plugin.name);
-    } else if (result.alreadyInstalled) {
+    } else if (result.success && result.skipped) {
       console.log(chalk.gray(`  ${plugin.name} (already installed)`));
       installedCount++;
       successfullyInstalled.push(plugin.name);
     } else {
-      console.log(chalk.yellow(`  ${plugin.name} failed`));
-      console.log(chalk.gray(`    Install manually: vskill add --plugin ${plugin.name} --plugin-dir ${pluginDir}`));
+      console.log(chalk.yellow(`  ${plugin.name} failed: ${result.error || 'unknown'}`));
       failedPlugins.push(plugin.name);
     }
   }
@@ -339,76 +303,37 @@ async function installLazyMode(
 }
 
 /**
- * Install a single plugin via vskill add
- *
- * Uses execFileNoThrowSync to invoke the vskill CLI with
- * --plugin and --plugin-dir flags for local plugin directory installation.
+ * Install all plugins (full mode) via inline copier
  */
-function installPluginViaVskill(
-  vskillPath: string,
-  pluginDir: string,
-  pluginName: string
-): { success: boolean; alreadyInstalled?: boolean; scanOutput?: string } {
-  const result = execFileNoThrowSync('node', [
-    vskillPath,
-    'add',
-    pluginDir, // source (local path)
-    '--plugin', pluginName,
-    '--plugin-dir', pluginDir,
-    '--force', // Auto-accept scan results during init
-  ]);
-
-  if (result.success) {
-    // Extract scan output for user display
-    const stdout = result.stdout || '';
-    const scanMatch = stdout.match(/Score:.*Verdict:\s*\w+/);
-    return {
-      success: true,
-      scanOutput: scanMatch ? scanMatch[0] : undefined,
-    };
-  }
-
-  // Check if already installed
-  const combined = `${result.stdout || ''} ${result.stderr || ''}`.toLowerCase();
-  if (combined.includes('already')) {
-    return { success: true, alreadyInstalled: true };
-  }
-
-  return { success: false };
-}
-
-/**
- * Install plugins via vskill with retry logic
- */
-async function installPluginsWithRetry(
+async function installPluginsFullMode(
   plugins: Array<{ name: string }>,
-  spinner: ReturnType<typeof ora>
+  spinner: ReturnType<typeof ora>,
+  forceRefresh?: boolean,
 ): Promise<{ successCount: number; failCount: number; failedPlugins: string[]; installedPlugins: string[] }> {
   let successCount = 0;
   let failCount = 0;
   const failedPlugins: string[] = [];
   const installedPlugins: string[] = [];
 
-  const vskillPath = resolveVskillPath();
-  const pluginDir = resolveSpecweavePluginDir();
+  const specweaveRoot = findSpecweaveRoot(__dirname);
+  if (!specweaveRoot) {
+    return { successCount: 0, failCount: plugins.length, failedPlugins: plugins.map(p => p.name), installedPlugins: [] };
+  }
 
   for (const plugin of plugins) {
     const pluginName = plugin.name;
-    spinner.start(`Installing ${pluginName} via vskill...`);
+    spinner.start(`Installing ${pluginName}...`);
 
-    const result = installPluginViaVskill(vskillPath, pluginDir, pluginName);
+    const result = copyPlugin(pluginName, specweaveRoot, { force: forceRefresh });
 
     if (result.success) {
       successCount++;
       installedPlugins.push(pluginName);
-      if (result.scanOutput) {
-        console.log(chalk.gray(`  Security scan: ${result.scanOutput}`));
-      }
       spinner.succeed(`${pluginName} installed`);
     } else {
       failCount++;
       failedPlugins.push(pluginName);
-      spinner.warn(`${pluginName} failed (will continue)`);
+      spinner.warn(`${pluginName} failed: ${result.error || 'unknown'}`);
     }
   }
 

@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.272 - vskill Plugin Installation)
+# SpecWeave UserPromptSubmit Hook (v1.0.278 - Direct Plugin Copy)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v1.0.272: VSKILL PLUGIN INSTALL - sw-* plugins now installed via vskill instead of
-#   `claude plugin install`. Includes security scanning (tier1 PASS/CONCERNS/FAIL) and
-#   vskill.lock fast-path for already-installed plugins. Non-specweave plugins (LSP, etc.)
-#   still use `claude plugin install`.
+# - v1.0.278: DIRECT PLUGIN COPY - sw-* plugins installed via direct file copy instead of
+#   npx vskill (which was broken for all production users). Uses install_plugin_direct() that
+#   reads marketplace.json, copies source dir to ~/.claude/commands/<name>/, and fixes .sh
+#   permissions. No external dependencies. vskill.lock fast-path still used for skip check.
 # - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
 #   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
 #   analysis. Key fix: "find references" now gets semantic refs, not text matches!
@@ -267,11 +267,11 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
       for plugin_key in $POLLUTED_PLUGINS; do
         # Uninstall from user scope
         if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
-          # v1.0.272: sw-* plugins reinstall via vskill, LSP plugins via claude CLI
+          # v1.0.278: sw-* plugins reinstall via direct copy, LSP plugins via claude CLI
           if [[ "$plugin_key" == sw-*@specweave ]]; then
             # Extract plugin name from "sw-name@specweave" format
             _sw_name="${plugin_key%%@*}"
-            if install_plugin_via_vskill "$_sw_name"; then
+            if install_plugin_direct "$_sw_name"; then
               [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
               MIGRATED="${MIGRATED}${plugin_key}"
             fi
@@ -453,43 +453,54 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install sw-* plugin via vskill (v1.0.272)
-# Uses npx vskill add with --plugin and --plugin-dir flags.
+# Helper: Install sw-* plugin via direct copy (v1.0.278)
+# Copies plugin source dir to ~/.claude/commands/<name>/ and fixes hook permissions.
+# No external dependencies (replaces npx vskill shell-out).
 # Args: $1=plugin name (e.g., "sw-frontend")
 # Returns: 0 if installed successfully, 1 if failed
-# Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
-install_plugin_via_vskill() {
+# Sets VSKILL_INSTALL_OUTPUT with status message
+install_plugin_direct() {
   local plugin="$1"
   local plugin_dir="${HOME}/.claude/plugins/marketplaces/specweave"
+  local marketplace_json="$plugin_dir/.claude-plugin/marketplace.json"
 
   # Verify marketplace directory exists
-  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$plugin_dir/.claude-plugin/marketplace.json" ]]; then
+  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$marketplace_json" ]]; then
     VSKILL_INSTALL_OUTPUT="marketplace directory not found at $plugin_dir"
     return 1
   fi
 
-  VSKILL_INSTALL_OUTPUT=""
-  if command -v npx >/dev/null 2>&1; then
-    if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
-    else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
-    fi
+  # Resolve plugin source directory from marketplace.json
+  local source_rel=""
+  if command -v jq >/dev/null 2>&1; then
+    source_rel=$(jq -r --arg name "$plugin" '.plugins[] | select(.name == $name) | .source' "$marketplace_json" 2>/dev/null)
   else
-    # Fallback: try node with direct path
-    local vskill_js="${HOME}/.claude/plugins/marketplaces/specweave/node_modules/.bin/vskill"
-    if [[ -f "$vskill_js" ]]; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
-    else
-      VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
-      return 1
-    fi
+    # Fallback: grep-based extraction
+    source_rel=$(grep -oP "\"name\"\\s*:\\s*\"${plugin}\"[^}]*\"source\"\\s*:\\s*\"([^\"]+)\"" "$marketplace_json" | grep -oP '"source"\s*:\s*"\K[^"]+' || true)
   fi
 
-  # Check if install succeeded
-  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
+  if [[ -z "$source_rel" ]]; then
+    VSKILL_INSTALL_OUTPUT="plugin '$plugin' not found in marketplace.json"
+    return 1
+  fi
+
+  # Resolve full path (source is relative to plugin_dir, e.g. ./plugins/specweave)
+  local source_dir="$plugin_dir/${source_rel#./}"
+  if [[ ! -d "$source_dir" ]]; then
+    VSKILL_INSTALL_OUTPUT="source dir not found: $source_dir"
+    return 1
+  fi
+
+  # Copy to target
+  local target_dir="${HOME}/.claude/commands/${plugin}"
+  mkdir -p "$target_dir"
+  if cp -R "$source_dir/." "$target_dir/" 2>/dev/null; then
+    # Fix hook permissions (.sh files need to be executable)
+    find "$target_dir" -name "*.sh" -exec chmod 755 {} \; 2>/dev/null || true
+    VSKILL_INSTALL_OUTPUT="installed $plugin via direct copy"
     return 0
   else
+    VSKILL_INSTALL_OUTPUT="copy failed for $plugin"
     return 1
   fi
 }
@@ -1175,7 +1186,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
                   PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill add ~/.claude/plugins/marketplaces/specweave --plugin <plugin> --plugin-dir ~/.claude/plugins/marketplaces/specweave --force\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`specweave refresh-plugins --all\`\\n"
                   AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
                   [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
@@ -1202,9 +1213,9 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                     # v1.0.159: Determine marketplace based on plugin name
                     # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
                     # v1.0.240 (0198): context7/playwright removed from auto-install
-                    # v1.0.272 (0232): sw-* plugins now installed via vskill instead of claude plugin install
+                    # v1.0.278 (0241): sw-* plugins now installed via direct copy (no vskill dependency)
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
-                      # ---- SW-* PLUGINS: Install via vskill (v1.0.272) ----
+                      # ---- SW-* PLUGINS: Install via direct copy (v1.0.278) ----
                       # Fast-path: check vskill.lock first (no CLI invocation needed)
                       if check_plugin_in_vskill_lock "$plugin"; then
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
@@ -1214,8 +1225,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       else
-                        # Not installed - install via vskill add
-                        if install_plugin_via_vskill "$plugin"; then
+                        # Not installed - install via direct copy
+                        if install_plugin_direct "$plugin"; then
                           [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
                           PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
 

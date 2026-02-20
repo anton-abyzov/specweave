@@ -1,8 +1,8 @@
 /**
- * Tests for plugin-installer.ts vskill integration
+ * Tests for plugin-installer.ts inline copier integration
  *
- * TC-018: Init uses vskill instead of claude plugin install
- * TC-019: Scan result displayed to user
+ * TC-018: Init uses inline copier instead of claude plugin install
+ * TC-019: Plugin installation reports results to user
  *
  * @module tests/unit/cli/helpers/init/plugin-installer-vskill
  */
@@ -11,14 +11,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // ---- hoisted mocks (ESM-safe) ----
 
-const mockExecFileNoThrowSync = vi.hoisted(() => vi.fn());
+const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
 const mockDetectClaudeCli = vi.hoisted(() => vi.fn());
 const mockGetClaudeCliDiagnostic = vi.hoisted(() => vi.fn());
 const mockGetClaudeCliSuggestions = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
 const mockCleanupStalePlugins = vi.hoisted(() => vi.fn());
-const mockGetPluginScope = vi.hoisted(() => vi.fn());
-const mockGetScopeArgs = vi.hoisted(() => vi.fn());
 const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 
 const mockFs = vi.hoisted(() => ({
@@ -69,8 +68,13 @@ vi.mock('chalk', () => {
   return { default: chalkProxy };
 });
 
-vi.mock('../../../../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrowSync: mockExecFileNoThrowSync,
+vi.mock('../../../../../src/utils/plugin-copier.js', () => ({
+  copyPlugin: mockCopyPlugin,
+  findSpecweaveRoot: mockFindSpecweaveRoot,
+}));
+
+vi.mock('../../../../../src/utils/esm-helpers.js', () => ({
+  getDirname: () => '/mock/src/cli/helpers/init',
 }));
 
 vi.mock('../../../../../src/utils/claude-cli-detector.js', () => ({
@@ -87,11 +91,6 @@ vi.mock('../../../../../src/utils/cleanup-stale-plugins.js', () => ({
   cleanupStalePlugins: mockCleanupStalePlugins,
 }));
 
-vi.mock('../../../../../src/core/types/plugin-scope.js', () => ({
-  getPluginScope: mockGetPluginScope,
-  getScopeArgs: mockGetScopeArgs,
-}));
-
 vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
@@ -106,41 +105,35 @@ function marketplaceJson(plugins: Array<{ name: string }> = [{ name: 'sw' }, { n
   return JSON.stringify({ plugins });
 }
 
-/** Setup mocks for a successful vskill-based flow */
-function setupVskillHappyPath(overrides?: {
+/** Setup mocks for a successful inline copier flow */
+function setupHappyPath(overrides?: {
   plugins?: Array<{ name: string }>;
   cleanupResult?: { removedCount: number; removedPlugins: string[] };
 }) {
   const plugins = overrides?.plugins ?? [{ name: 'sw' }, { name: 'sw-github' }];
   const cleanup = overrides?.cleanupResult ?? { removedCount: 0, removedPlugins: [] };
 
-  // Claude CLI still available (needed for detect-intent etc.)
   mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
   mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
   mockFs.existsSync.mockReturnValue(true);
   mockFs.readFileSync.mockReturnValue(marketplaceJson(plugins));
   mockCleanupStalePlugins.mockResolvedValue({ success: true, ...cleanup });
-  mockGetPluginScope.mockReturnValue('user');
-  mockGetScopeArgs.mockReturnValue([]);
   mockEnablePluginsInSettings.mockReturnValue(true);
 
-  // Default exec stub: vskill add succeeds with scan output
-  mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-    const argsStr = (args || []).join(' ');
-    if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-      return {
-        success: true,
-        stdout: 'Score: 100/100  Verdict: PASS\nInstalled sw to 1 agent',
-        stderr: '',
-      };
-    }
-    return { success: true, stdout: '', stderr: '' };
+  // Inline copier: findSpecweaveRoot returns valid root
+  mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
+
+  // Default copyPlugin: succeeds
+  mockCopyPlugin.mockReturnValue({
+    success: true,
+    sha: 'abc123def456',
+    targetDir: '/mock-home/.claude/commands/sw',
   });
 }
 
 // ---- tests ----
 
-describe('plugin-installer vskill integration', () => {
+describe('plugin-installer inline copier integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -148,84 +141,27 @@ describe('plugin-installer vskill integration', () => {
   });
 
   // ============================================================
-  // TC-018: Init uses vskill instead of claude plugin install
+  // TC-018: Init uses inline copier instead of claude plugin install
   // ============================================================
-  describe('TC-018: Init uses vskill instead of claude plugin install', () => {
-    it('should invoke vskill add instead of claude plugin install in lazy mode', async () => {
-      setupVskillHappyPath();
+  describe('TC-018: Init uses inline copier instead of claude plugin install', () => {
+    it('should invoke copyPlugin instead of vskill or claude plugin install', async () => {
+      setupHappyPath();
 
       const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
 
-      // CRITICAL: Verify vskill was used, NOT claude plugin install
-      // After vskill integration, execFileNoThrowSync calls should contain
-      // 'vskill' or 'node' with vskill path, NOT 'claude plugin install'
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
-      const claudePluginInstallCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = call[0];
-          const args = call[1] || [];
-          return cmd === 'claude' && args[0] === 'plugin' && args[1] === 'install';
-        }
-      );
-
-      // After migration: ZERO calls to `claude plugin install`
-      expect(claudePluginInstallCalls).toHaveLength(0);
-
-      // Instead, should have calls that reference vskill
-      const vskillCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = String(call[0]);
-          const args = (call[1] || []).join(' ');
-          return cmd.includes('vskill') || args.includes('vskill');
-        }
-      );
-      expect(vskillCalls.length).toBeGreaterThan(0);
-    });
-
-    it('should not call refreshMarketplace or ensureOfficialMarketplace', async () => {
-      setupVskillHappyPath();
-
-      await installAllPlugins({ dirname: '/test' });
-
-      // After vskill migration, there should be NO calls to
-      // `claude plugin marketplace add/update/list`
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
-      const marketplaceCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = call[0];
-          const args = call[1] || [];
-          return cmd === 'claude' && args[0] === 'plugin' && args[1] === 'marketplace';
-        }
-      );
-
-      expect(marketplaceCalls).toHaveLength(0);
-    });
-
-    it('should use vskill add with --plugin and --plugin-dir flags', async () => {
-      setupVskillHappyPath();
-
-      await installAllPlugins({ dirname: '/test' });
-
-      // Verify that vskill add was called with the correct flags
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
-      const vskillAddCalls = allCalls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('--plugin');
-        }
-      );
-      expect(vskillAddCalls.length).toBeGreaterThan(0);
+      // CRITICAL: Verify copyPlugin was called
+      expect(mockCopyPlugin).toHaveBeenCalled();
+      expect(mockCopyPlugin.mock.calls[0][0]).toBe('sw');
     });
 
     it('should maintain the same public API return type', async () => {
-      setupVskillHappyPath();
+      setupHappyPath();
 
       const result = await installAllPlugins({ dirname: '/test' });
 
-      // Public API contract must be preserved
       expect(result).toHaveProperty('success');
       expect(result).toHaveProperty('successCount');
       expect(result).toHaveProperty('failCount');
@@ -236,78 +172,79 @@ describe('plugin-installer vskill integration', () => {
       expect(Array.isArray(result.failedPlugins)).toBe(true);
     });
 
-    it('should install only core sw plugin in lazy mode via vskill', async () => {
-      setupVskillHappyPath();
+    it('should install only core sw plugin in lazy mode', async () => {
+      setupHappyPath();
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: true });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
 
-      // The only plugin installed should be 'sw'
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
-      const vskillCalls = allCalls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('sw');
-        }
-      );
-      expect(vskillCalls.length).toBeGreaterThan(0);
+      // Only 'sw' should be installed
+      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
+      expect(calledPlugins).toContain('sw');
+      expect(calledPlugins).not.toContain('sw-github');
     });
 
-    it('should install all plugins in full mode via vskill', async () => {
-      setupVskillHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
+    it('should install all plugins in full mode', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }, { name: 'sw-github' }] });
 
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(2);
+
+      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
+      expect(calledPlugins).toContain('sw');
+      expect(calledPlugins).toContain('sw-github');
+    });
+
+    it('should handle copyPlugin failure gracefully', async () => {
+      setupHappyPath();
+      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(false);
+      expect(result.failCount).toBe(1);
+      expect(result.failedPlugins).toContain('sw');
     });
   });
 
   // ============================================================
-  // TC-019: Scan result displayed to user
+  // TC-019: Plugin installation reports results
   // ============================================================
-  describe('TC-019: Scan result displayed to user', () => {
-    it('should display scan result during plugin installation', async () => {
-      setupVskillHappyPath();
+  describe('TC-019: Plugin installation reports results', () => {
+    it('should report successful installation to user', async () => {
+      setupHappyPath();
 
-      // Capture console.log calls
       const logSpy = vi.spyOn(console, 'log');
 
       await installAllPlugins({ dirname: '/test' });
 
-      // After vskill integration, the scan verdict (PASS/CONCERNS/FAIL)
-      // should appear in user output
       const allLogMessages = logSpy.mock.calls.map(call => call.join(' ')).join('\n');
 
-      // vskill runs a tier1 scan and reports the verdict
-      expect(allLogMessages).toMatch(/scan|Score|Verdict|PASS/i);
+      // Should report installation success
+      expect(allLogMessages).toMatch(/install/i);
     });
 
-    it('should show scan PASS verdict when security scan passes', async () => {
-      setupVskillHappyPath();
-
-      // Mock vskill exec to return scan result in stdout
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add')) {
-          return {
-            success: true,
-            stdout: 'Score: 100/100  Verdict: PASS\nInstalled sw to 1 agent',
-            stderr: '',
-          };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
-
-      const logSpy = vi.spyOn(console, 'log');
+    it('should enable plugins in Claude settings after install', async () => {
+      setupHappyPath();
 
       await installAllPlugins({ dirname: '/test' });
 
-      // Scan result should be communicated to the user
-      const allLogMessages = logSpy.mock.calls.map(call => call.join(' ')).join('\n');
-      expect(allLogMessages).toMatch(/PASS|scan|security/i);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw'], 'specweave');
+    });
+
+    it('should handle Claude CLI not available', async () => {
+      mockDetectClaudeCli.mockReturnValue({ available: false, error: 'command_not_found' });
+      mockGetClaudeCliDiagnostic.mockReturnValue('Claude CLI not found');
+      mockGetClaudeCliSuggestions.mockReturnValue(['Install Claude Code']);
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(false);
+      expect(mockCopyPlugin).not.toHaveBeenCalled();
     });
   });
 });

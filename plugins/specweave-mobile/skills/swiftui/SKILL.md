@@ -896,3 +896,9 @@ struct MyApp: App {
 | @Published + @Observable | Never combine; @Observable does not use @Published |
 | Large body property | Extract subviews, use computed properties, apply modifiers in extensions |
 | Implicit animations on data change | Use .animation(.default, value: specificValue) not .animation(.default) |
+
+## Related Skills
+
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata, signing, Xcode Cloud)
+- `mobile-testing` - Comprehensive testing strategies (XCTest, XCUITest)
+- `deep-linking-push` - Deep linking (Universal Links) and push notifications (APNs)

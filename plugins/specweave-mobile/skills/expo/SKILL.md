@@ -757,6 +757,7 @@ eas submit --platform android --latest
 
 ## Related Skills
 
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata, signing)
 - `react-native-expert` - Architecture decisions and patterns
 - `react-native-expert` - Bare RN setup, Metro, debugging
 - `mobile-testing` - Comprehensive testing strategies
