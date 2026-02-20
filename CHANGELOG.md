@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.299] - 2026-02-20
+
+### Changes
+- chore: remove unused countMd function
+- fix: docs command and project detector updates
+- fix: doctor --fix broken by non-existent refresh-plugins command
+
+---
+
+
+
 ## [1.0.298] - 2026-02-20
 
 ### Changes
