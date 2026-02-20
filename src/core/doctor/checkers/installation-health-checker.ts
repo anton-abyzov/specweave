@@ -8,6 +8,7 @@ import {
   readdirSync,
   statSync,
   readFileSync,
+  writeFileSync,
   unlinkSync,
   rmSync,
 } from 'node:fs';
@@ -253,20 +254,20 @@ export class InstallationHealthChecker implements HealthChecker {
     if (missing.length > 0) {
       if (fix) {
         try {
-          execSync('specweave refresh-plugins', { stdio: 'pipe' });
+          execSync('specweave update', { stdio: 'pipe' });
           return {
             name: 'Lockfile integrity',
             status: 'warn',
-            message: `${missing.length} skill(s) were missing, ran refresh-plugins`,
+            message: `${missing.length} skill(s) were missing, ran specweave update`,
             details: missing.map(m => `Missing: ${m}`),
-            fixSuggestion: 'Ran: specweave refresh-plugins',
+            fixSuggestion: 'Ran: specweave update',
           };
         } catch (err) {
           return {
             name: 'Lockfile integrity',
             status: 'fail',
-            message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
-            fixSuggestion: 'Run: specweave refresh-plugins manually',
+            message: `specweave update failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            fixSuggestion: 'Run: specweave update',
           };
         }
       }
@@ -275,28 +276,41 @@ export class InstallationHealthChecker implements HealthChecker {
         status: 'fail',
         message: `${missing.length} skill(s) missing from commands dir`,
         details: missing.map(m => `Missing: ${m}`),
-        fixSuggestion: 'Run: specweave refresh-plugins',
+        fixSuggestion: 'Run: specweave update',
       };
     }
 
     if (mismatches.length > 0) {
       if (fix) {
+        // Update lockfile hashes to match currently installed files
         try {
-          execSync('specweave refresh-plugins', { stdio: 'pipe' });
+          const updatedSkills: typeof lockfile.skills = {};
+          for (const [name, entry] of Object.entries(lockfile.skills)) {
+            const skillDir = join(this.commandsDir, name);
+            if (existsSync(skillDir)) {
+              try {
+                updatedSkills[name] = { ...entry, sha: computePluginHash(skillDir) };
+              } catch {
+                updatedSkills[name] = entry;
+              }
+            } else {
+              updatedSkills[name] = entry;
+            }
+          }
+          writeFileSync(lockPath, JSON.stringify({ ...lockfile, skills: updatedSkills }, null, 2), 'utf-8');
           return {
             name: 'Lockfile integrity',
-            status: 'warn',
-            message: `${mismatches.length} hash mismatch(es) fixed by refresh-plugins`,
-            details: mismatches,
-            fixSuggestion: 'Ran: specweave refresh-plugins',
+            status: 'pass',
+            message: `${mismatches.length} hash mismatch(es) corrected in lockfile`,
+            fixSuggestion: 'Updated lockfile hashes',
           };
         } catch (err) {
           return {
             name: 'Lockfile integrity',
-            status: 'fail',
-            message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            status: 'warn',
+            message: `Could not update lockfile: ${err instanceof Error ? err.message : 'unknown error'}`,
             details: mismatches,
-            fixSuggestion: 'Run: specweave refresh-plugins manually',
+            fixSuggestion: 'Run: specweave update',
           };
         }
       }
@@ -305,7 +319,7 @@ export class InstallationHealthChecker implements HealthChecker {
         status: 'warn',
         message: `${mismatches.length} hash mismatch(es) detected`,
         details: mismatches,
-        fixSuggestion: 'Run: specweave refresh-plugins',
+        fixSuggestion: 'Run: specweave doctor --fix',
       };
     }
 
