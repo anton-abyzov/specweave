@@ -137,6 +137,53 @@ describe('ProjectService', () => {
       ).resolves.not.toThrow();
     });
 
+    it('should handle increment.completed as alias for increment.done', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+      vi.mocked(fsNative.existsSync).mockReturnValue(false);
+
+      await service.initialize();
+
+      // increment.completed should be accepted without throwing
+      await expect(
+        service.emitIncrementEvent('increment.completed', '0250-test-increment')
+      ).resolves.not.toThrow();
+    });
+
+    it('should trigger requestSync for increment.completed event', async () => {
+      const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
+      const fsNative = await import('../../../../src/utils/fs-native.js');
+
+      vi.mocked(fsNative.existsSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) return true;
+        if (s.endsWith('config.json')) return true;
+        if (s.endsWith('.env')) return false;
+        return false;
+      });
+      vi.mocked(fsNative.readFileSync).mockImplementation((p: any) => {
+        const s = String(p);
+        if (s.endsWith('spec.md')) {
+          return 'project: test-project\n\n# Test\n';
+        }
+        if (s.endsWith('config.json')) {
+          return JSON.stringify({ sync: { enabled: true } });
+        }
+        return '';
+      });
+
+      await service.initialize();
+
+      const registry = service.getRegistry();
+      const requestSyncSpy = vi.spyOn(registry, 'requestSync').mockResolvedValue();
+
+      // increment.completed must trigger same sync as increment.done
+      await service.emitIncrementEvent('increment.completed', '0250-test');
+
+      expect(requestSyncSpy).toHaveBeenCalledWith('test-project', ['github', 'ado', 'jira']);
+    });
+
     it('should auto-initialize if not initialized', async () => {
       const service = ProjectService.getInstance(testProjectRoot, mockLogger as any);
 
