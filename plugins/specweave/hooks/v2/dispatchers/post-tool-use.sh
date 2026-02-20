@@ -278,16 +278,24 @@ case "$FILE_PATH" in
 
       if [[ "$CURRENT_STATUS" == "completed" ]] || [[ "$CURRENT_STATUS" == "done" ]] || [[ "$CURRENT_STATUS" == "reopened" ]]; then
         log_debug "IMMEDIATE SYNC: Status is $CURRENT_STATUS - syncing to external tools"
+
+        # Map raw status to canonical event name (consistent with lifecycle-detector)
+        case "$CURRENT_STATUS" in
+          completed|done) BRIDGE_EVENT="increment.done" ;;
+          reopened) BRIDGE_EVENT="increment.reopened" ;;
+          *) BRIDGE_EVENT="increment.$CURRENT_STATUS" ;;
+        esac
+
         BRIDGE_HANDLER="$HOOK_DIR/handlers/project-bridge-handler.sh"
         if [[ -f "$BRIDGE_HANDLER" ]]; then
           # Run synchronously but with timeout to not block too long
           (
             if command -v gtimeout >/dev/null 2>&1; then
-              gtimeout 15 bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+              gtimeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
             elif command -v timeout >/dev/null 2>&1; then
-              timeout 15 bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+              timeout 15 bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
             else
-              bash "$BRIDGE_HANDLER" "increment.$CURRENT_STATUS" "$INC_ID" 2>/dev/null || true
+              bash "$BRIDGE_HANDLER" "$BRIDGE_EVENT" "$INC_ID" 2>/dev/null || true
             fi
           )
           log_debug "IMMEDIATE SYNC completed for $INC_ID"
@@ -328,7 +336,7 @@ case "$FILE_PATH" in
       # ========================================================================
       # PROVIDER-AGNOSTIC AC SYNC (v1.0.255+): Sync progress to all providers
       # ========================================================================
-      AC_SYNC_DISPATCHER="${HOOK_DIR}/../handlers/ac-sync-dispatcher.sh"
+      AC_SYNC_DISPATCHER="${HOOK_DIR}/handlers/ac-sync-dispatcher.sh"
       if [[ -f "$AC_SYNC_DISPATCHER" ]]; then
         safe_run_background "$AC_SYNC_DISPATCHER" "ac-sync" "$INC_ID"
       fi
@@ -377,7 +385,7 @@ case "$FILE_PATH" in
     # When spec.md is created/updated AND has user stories, auto-create
     # items in GitHub/JIRA/ADO if autoSync or auto_create is enabled.
     if [[ "$FILE_PATH" == *spec.md ]]; then
-      UNIVERSAL_AUTO_CREATE="${HOOK_DIR}/../handlers/universal-auto-create-dispatcher.sh"
+      UNIVERSAL_AUTO_CREATE="${HOOK_DIR}/handlers/universal-auto-create-dispatcher.sh"
       if [[ -f "$UNIVERSAL_AUTO_CREATE" ]]; then
         safe_run_background "$UNIVERSAL_AUTO_CREATE" "universal-auto-create" "$INC_ID"
       fi

@@ -34,6 +34,7 @@ import { JiraProjectAdapter } from './adapters/jira-project-adapter.js';
 export type IncrementEventType =
   | 'increment.created'
   | 'increment.done'
+  | 'increment.completed'
   | 'increment.archived'
   | 'increment.reopened'
   | 'increment.sync'
@@ -335,7 +336,9 @@ export class ProjectService {
     // for universal AC completion and task status updates.
     switch (eventType) {
       case 'increment.done':
+      case 'increment.completed':
         // When increment completes, request sync to ALL external tools
+        // increment.completed is an alias — shell hooks may send raw status value
         await this.registry.requestSync(projectId, ['github', 'ado', 'jira']);
         break;
 
