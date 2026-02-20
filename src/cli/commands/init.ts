@@ -48,7 +48,6 @@ import {
 } from '../helpers/init/index.js';
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js';
-import { cloneUmbrellaIntoCurrentDir } from '../helpers/init/umbrella-cloning.js';
 import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
 import { createProjectFolders } from '../helpers/init/multi-project-folders.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
@@ -680,19 +679,8 @@ export async function initCommand(
       }
     }
 
-    // Umbrella repo cloning (clone selected parent repo into current dir)
-    if (repoResult.umbrellaSource === 'select' && repoResult.umbrellaRepo && repoResult.githubRepoSelection) {
-      const { org, pat } = repoResult.githubRepoSelection;
-      await cloneUmbrellaIntoCurrentDir(
-        targetDir,
-        org,
-        repoResult.umbrellaRepo,
-        pat,
-        repoResult.gitUrlFormat || 'https'
-      );
-    }
-
     // GitHub Repository cloning (for multi-repo setups)
+    // Note: umbrella repo is cloned inside setupRepositoryHosting (right after user selects it)
     // Exclude umbrella repo from nested cloning (it's already at the project root)
     let githubClonedRepos: string[] = [];
     if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {

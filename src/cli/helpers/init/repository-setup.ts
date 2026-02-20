@@ -11,6 +11,7 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { parsePatternShortcut, validateRegex } from '../selection-strategy.js';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import { parseEnvFile, readEnvFile } from '../../../utils/env-file.js';
+import { cloneUmbrellaIntoCurrentDir } from './umbrella-cloning.js';
 
 /**
  * Lightweight GitHub repo list fetcher for interactive selection prompts.
@@ -1595,6 +1596,17 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
         }
       }
       // 'none' → umbrellaRepo stays undefined
+
+      // Immediately clone umbrella into current dir (right after selection, before nested pattern)
+      if (umbrellaSource === 'select' && umbrellaRepo && githubRepoSelection) {
+        await cloneUmbrellaIntoCurrentDir(
+          options.targetDir,
+          githubRepoSelection.org,
+          umbrellaRepo,
+          githubRepoSelection.pat,
+          gitUrlFormat || 'https'
+        );
+      }
     }
 
     // Step 3b: Show unified strategy selection (ALL providers)

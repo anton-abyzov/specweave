@@ -32,6 +32,7 @@ const {
   mockParseEnvFile,
   mockReadEnvFile,
   mockFetch,
+  mockCloneUmbrellaIntoCurrentDir,
 } = vi.hoisted(() => ({
   mockSelect: vi.fn(),
   mockInput: vi.fn(),
@@ -46,6 +47,7 @@ const {
   mockParseEnvFile: vi.fn(() => ({} as Record<string, string>)),
   mockReadEnvFile: vi.fn(() => ''),
   mockFetch: vi.fn(),
+  mockCloneUmbrellaIntoCurrentDir: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock('@inquirer/prompts', () => ({
@@ -87,6 +89,10 @@ vi.mock('../../../../../src/utils/auth-helpers.js', () => ({
 vi.mock('../../../../../src/utils/env-file.js', () => ({
   parseEnvFile: mockParseEnvFile,
   readEnvFile: mockReadEnvFile,
+}));
+
+vi.mock('../../../../../src/cli/helpers/init/umbrella-cloning.js', () => ({
+  cloneUmbrellaIntoCurrentDir: mockCloneUmbrellaIntoCurrentDir,
 }));
 
 // Mock global fetch
@@ -872,6 +878,14 @@ describe('repository-setup', () => {
       expect(result.umbrellaRepo).toBe('specweave-umb');
       expect(result.umbrellaSource).toBe('select');
       expect(result.adoClonePatternResult?.strategy).toBe('all');
+      // Umbrella clone triggered immediately (before pattern selection)
+      expect(mockCloneUmbrellaIntoCurrentDir).toHaveBeenCalledWith(
+        '/tmp/test-project',
+        'test-org',
+        'specweave-umb',
+        'ghp_token',
+        'https'
+      );
     });
 
     it('should skip umbrella when user says no', async () => {
