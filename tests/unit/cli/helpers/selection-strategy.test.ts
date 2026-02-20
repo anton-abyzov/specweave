@@ -575,6 +575,50 @@ describe('selection-strategy', () => {
       });
     });
 
+    describe('strategy: manual', () => {
+      it('should filter repos to only those in selectedRepos', () => {
+        const result = filterRepositoriesByPattern(repos, {
+          strategy: 'manual',
+          selectedRepos: ['sw-frontend', 'api-gateway'],
+        });
+        expect(result).toHaveLength(2);
+        expect(result.map(r => r.name)).toEqual(['sw-frontend', 'api-gateway']);
+      });
+
+      it('should return empty array when selectedRepos is empty', () => {
+        const result = filterRepositoriesByPattern(repos, {
+          strategy: 'manual',
+          selectedRepos: [],
+        });
+        expect(result).toEqual([]);
+      });
+
+      it('should return empty array when selectedRepos is undefined', () => {
+        const result = filterRepositoriesByPattern(repos, {
+          strategy: 'manual',
+        });
+        expect(result).toEqual([]);
+      });
+
+      it('should preserve additional fields on matched repos', () => {
+        const result = filterRepositoriesByPattern(repos, {
+          strategy: 'manual',
+          selectedRepos: ['sw-frontend'],
+        });
+        expect(result[0]).toEqual(repos[0]);
+        expect(result[0].url).toBe('https://example.com/sw-frontend');
+      });
+
+      it('should ignore names not present in repos', () => {
+        const result = filterRepositoriesByPattern(repos, {
+          strategy: 'manual',
+          selectedRepos: ['sw-frontend', 'nonexistent-repo'],
+        });
+        expect(result).toHaveLength(1);
+        expect(result[0].name).toBe('sw-frontend');
+      });
+    });
+
     describe('strategy: unknown/default', () => {
       it('should return all repos for unrecognized strategy', () => {
         const result = filterRepositoriesByPattern(repos, {

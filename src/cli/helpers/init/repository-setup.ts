@@ -13,6 +13,57 @@ import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import { parseEnvFile, readEnvFile } from '../../../utils/env-file.js';
 
 /**
+ * Lightweight GitHub repo list fetcher for interactive selection prompts.
+ * Separate from github-repo-cloning.ts to avoid circular imports in test mocks.
+ * Returns sorted repo names (non-archived, non-fork, owned by org).
+ */
+async function fetchGitHubReposForSelection(
+  org: string,
+  pat: string
+): Promise<{ names: string[]; error?: string }> {
+  try {
+    // Try org endpoint first
+    let response = await fetch(
+      `https://api.github.com/orgs/${encodeURIComponent(org)}/repos?per_page=100&sort=full_name`,
+      {
+        headers: {
+          'Authorization': `Bearer ${pat}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      }
+    );
+
+    // Fallback to user repos if org not found
+    if (response.status === 404) {
+      response = await fetch(
+        `https://api.github.com/user/repos?per_page=100&sort=full_name`,
+        {
+          headers: {
+            'Authorization': `Bearer ${pat}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        }
+      );
+    }
+
+    if (!response.ok) {
+      return { names: [], error: `GitHub API error: ${response.status}` };
+    }
+
+    const repos: Array<{ name: string; owner: { login: string }; archived: boolean; fork: boolean }> = await response.json();
+    const names = repos
+      .filter(r => r.owner.login.toLowerCase() === org.toLowerCase() && !r.archived && !r.fork)
+      .map(r => r.name)
+      .sort();
+    return { names };
+  } catch (e) {
+    return { names: [], error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+}
+
+/**
  * Safely parse JSON response with HTML detection
  *
  * Azure DevOps may return HTML error pages instead of JSON when:
@@ -81,7 +132,7 @@ export interface RepositorySetupOptions {
 /**
  * ADO clone pattern selection strategy
  */
-export type AdoCloneStrategy = 'all' | 'pattern-glob' | 'pattern-regex' | 'skip';
+export type AdoCloneStrategy = 'all' | 'pattern-glob' | 'pattern-regex' | 'manual' | 'skip';
 
 /**
  * ADO clone pattern result
@@ -90,6 +141,8 @@ export interface AdoClonePatternResult {
   strategy: AdoCloneStrategy;
   pattern?: string;
   isRegex?: boolean;
+  /** Explicitly selected repo names (for 'manual' strategy) */
+  selectedRepos?: string[];
 }
 
 // Import from types.ts (single source of truth) and re-export for backward compatibility
@@ -141,6 +194,8 @@ export interface RepositorySetupResult {
   githubRepoSelection?: GitHubRepoSelection;
   /** Bitbucket repo selection for multi-repo cloning (v0.32.7+) */
   bitbucketRepoSelection?: BitbucketRepoSelection;
+  /** Umbrella (parent) repository name for multi-repo setups */
+  umbrellaRepo?: string;
 }
 
 /**
@@ -435,6 +490,12 @@ function getRepoStrings(language: SupportedLanguage): {
   adoPatternGlobDesc: string;
   adoPatternRegex: string;
   adoPatternRegexDesc: string;
+  adoManualOption: string;
+  adoManualDesc: string;
+  adoManualFetching: string;
+  adoManualNoneFound: string;
+  adoManualPrompt: string;
+  adoManualSelected: string;
   adoSkipOption: string;
   adoSkipDesc: string;
   // v1.0.21: Enhanced skip option with manual placement guidance
@@ -507,6 +568,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Match by pattern (e.g., "sw-*", "*-backend")',
       adoPatternRegex: 'Pattern (regex)',
       adoPatternRegexDesc: 'Regular expression (e.g., "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Skip',
       adoSkipDesc: 'I have my own repos / configure later',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -578,6 +645,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Сопоставление по шаблону (напр., "sw-*", "*-backend")',
       adoPatternRegex: 'Шаблон (regex)',
       adoPatternRegexDesc: 'Регулярное выражение (напр., "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Пропустить',
       adoSkipDesc: 'У меня свои репо / настроить позже',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -648,6 +721,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Coincidir por patrón (ej., "sw-*", "*-backend")',
       adoPatternRegex: 'Patrón (regex)',
       adoPatternRegexDesc: 'Expresión regular (ej., "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Omitir',
       adoSkipDesc: 'Tengo mis propios repos / configurar después',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -718,6 +797,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: '按模式匹配（例如 "sw-*"、"*-backend"）',
       adoPatternRegex: '模式 (正则)',
       adoPatternRegexDesc: '正则表达式（例如 "^sw-.*$"）',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: '跳过',
       adoSkipDesc: '我有自己的仓库 / 稍后配置',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -788,6 +873,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Nach Muster filtern (z.B. "sw-*", "*-backend")',
       adoPatternRegex: 'Muster (regex)',
       adoPatternRegexDesc: 'Regulärer Ausdruck (z.B. "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Überspringen',
       adoSkipDesc: 'Ich habe eigene Repos / später konfigurieren',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -858,6 +949,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Correspondance par modèle (ex., "sw-*", "*-backend")',
       adoPatternRegex: 'Modèle (regex)',
       adoPatternRegexDesc: 'Expression régulière (ex., "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Ignorer',
       adoSkipDesc: "J'ai mes propres repos / configurer plus tard",
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -928,6 +1025,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'パターンでマッチ（例: "sw-*", "*-backend"）',
       adoPatternRegex: 'パターン (正規表現)',
       adoPatternRegexDesc: '正規表現（例: "^sw-.*$"）',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'スキップ',
       adoSkipDesc: '自分のリポジトリがある / 後で設定',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -998,6 +1101,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: '패턴으로 매칭 (예: "sw-*", "*-backend")',
       adoPatternRegex: '패턴 (정규식)',
       adoPatternRegexDesc: '정규 표현식 (예: "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: '건너뛰기',
       adoSkipDesc: '내 레포가 있음 / 나중에 설정',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -1068,6 +1177,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternGlobDesc: 'Corresponder por padrão (ex., "sw-*", "*-backend")',
       adoPatternRegex: 'Padrão (regex)',
       adoPatternRegexDesc: 'Expressão regular (ex., "^sw-.*$")',
+      adoManualOption: 'Manual',
+      adoManualDesc: 'Browse and pick specific repositories',
+      adoManualFetching: 'Fetching repository list...',
+      adoManualNoneFound: 'No repositories found. Falling back to skip.',
+      adoManualPrompt: 'Select repositories to clone:',
+      adoManualSelected: '{count} repository(ies) selected for cloning',
       adoSkipOption: 'Pular',
       adoSkipDesc: 'Tenho meus próprios repos / configurar depois',
       // v1.0.21: Enhanced skip option with manual placement guidance
@@ -1121,7 +1236,7 @@ function getRepoStrings(language: SupportedLanguage): {
 /**
  * Generic multi-repo pattern selection strategy type
  */
-export type MultiRepoCloneStrategy = 'all' | 'pattern-glob' | 'pattern-regex' | 'skip';
+export type MultiRepoCloneStrategy = 'all' | 'pattern-glob' | 'pattern-regex' | 'manual' | 'skip';
 
 /**
  * Generic multi-repo pattern selection result
@@ -1130,6 +1245,8 @@ export interface MultiRepoPatternResult {
   strategy: MultiRepoCloneStrategy;
   pattern?: string;
   isRegex?: boolean;
+  /** Explicitly selected repo names (for 'manual' strategy) */
+  selectedRepos?: string[];
 }
 
 /**
@@ -1138,12 +1255,14 @@ export interface MultiRepoPatternResult {
  * @param provider - The git provider ('github' | 'bitbucket' | 'ado')
  * @param strings - Localized strings
  * @param orgName - Organization/workspace name for skip guidance (v1.0.21+)
+ * @param credentials - Optional credentials for manual repo fetching
  * @returns Selected pattern result
  */
 async function promptMultiRepoPatternSelection(
   provider: 'github' | 'bitbucket' | 'ado',
   strings: ReturnType<typeof getRepoStrings>,
-  orgName?: string
+  orgName?: string,
+  credentials?: { org?: string; pat?: string }
 ): Promise<MultiRepoPatternResult> {
   // Display provider-specific header
   if (provider === 'github') {
@@ -1176,6 +1295,10 @@ async function promptMultiRepoPatternSelection(
     {
       name: `${strings.adoPatternRegex} ${chalk.gray(`- ${strings.adoPatternRegexDesc}`)}`,
       value: 'pattern-regex',
+    },
+    {
+      name: `${strings.adoManualOption} ${chalk.gray(`- ${strings.adoManualDesc}`)}`,
+      value: 'manual',
     },
     {
       name: `${strings.adoSkipOption} ${chalk.gray(`- ${strings.adoSkipDesc}`)}`,
@@ -1232,6 +1355,32 @@ async function promptMultiRepoPatternSelection(
       const message = strings.adoSelectedRegex.replace('{pattern}', pattern.trim());
       console.log(chalk.green(`   ✓ ${message}`));
       return { strategy: 'pattern-regex', pattern: pattern.trim(), isRegex: true };
+    }
+
+    case 'manual': {
+      // Fetch repos and show checkbox for manual selection
+      if (provider === 'github' && credentials?.org && credentials?.pat) {
+        console.log(chalk.gray(`\n   ${strings.adoManualFetching}`));
+        const fetchResult = await fetchGitHubReposForSelection(credentials.org, credentials.pat);
+        if (fetchResult.error || fetchResult.names.length === 0) {
+          console.log(chalk.yellow(`   ${strings.adoManualNoneFound}`));
+          return { strategy: 'skip' };
+        }
+        const selected = await checkbox<string>({
+          message: strings.adoManualPrompt,
+          choices: fetchResult.names.map(name => ({ name, value: name })),
+        });
+        if (selected.length === 0) {
+          console.log(chalk.yellow(`   ${strings.adoManualNoneFound}`));
+          return { strategy: 'skip' };
+        }
+        const msg = strings.adoManualSelected.replace('{count}', String(selected.length));
+        console.log(chalk.green(`   ✓ ${msg}`));
+        return { strategy: 'manual', selectedRepos: selected };
+      }
+      // Fallback for unsupported providers
+      console.log(chalk.yellow(`   Manual selection not yet supported for ${provider}. Skipping.`));
+      return { strategy: 'skip' };
     }
 
     case 'skip': {
@@ -1357,6 +1506,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   let adoProjectSelection: AdoProjectSelection | undefined;
   let githubRepoSelection: GitHubRepoSelection | undefined;
   let bitbucketRepoSelection: BitbucketRepoSelection | undefined;
+  let umbrellaRepo: string | undefined;
 
   if (isMultiRepo && (provider === 'ado' || provider === 'github' || provider === 'bitbucket')) {
     // Step 3a: Provider-specific credential prompts
@@ -1389,16 +1539,73 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
       }
     }
 
+    // Step 3a.5: For GitHub multi-repo, ask about umbrella (parent) repository
+    if (provider === 'github' && githubRepoSelection) {
+      console.log(chalk.blue('\n\uD83C\uDFD7\uFE0F  Umbrella Repository\n'));
+      console.log(chalk.gray('   An umbrella repository is a parent project that contains and'));
+      console.log(chalk.gray('   manages multiple nested repositories (e.g., monorepo orchestrator).\n'));
+
+      const umbrellaChoices: Array<{ name: string; value: string }> = [];
+
+      if (gitHubRemote) {
+        umbrellaChoices.push({
+          name: `\uD83D\uDCC2 This directory (${gitHubRemote.repo}) ${chalk.gray('- Use current repo as umbrella')}`,
+          value: 'current-dir',
+        });
+      }
+
+      umbrellaChoices.push(
+        {
+          name: `\uD83D\uDD0D Select from GitHub ${chalk.gray('- Pick from your repositories')}`,
+          value: 'select',
+        },
+        {
+          name: `\u23ED\uFE0F  No umbrella needed ${chalk.gray('- Just clone nested repos')}`,
+          value: 'none',
+        },
+      );
+
+      const umbrellaChoice = await select<string>({
+        message: 'Do you need an umbrella (parent) repository?',
+        choices: umbrellaChoices,
+      });
+
+      if (umbrellaChoice === 'current-dir' && gitHubRemote) {
+        umbrellaRepo = gitHubRemote.repo;
+        console.log(chalk.green(`   \u2713 Umbrella: ${umbrellaRepo} (current directory)`));
+      } else if (umbrellaChoice === 'select') {
+        console.log(chalk.gray('   Fetching repositories...'));
+        const fetchResult = await fetchGitHubReposForSelection(
+          githubRepoSelection.org,
+          githubRepoSelection.pat
+        );
+        if (fetchResult.names.length > 0) {
+          umbrellaRepo = await select<string>({
+            message: 'Which repository is your umbrella?',
+            choices: fetchResult.names.map(name => ({ name, value: name })),
+          });
+          console.log(chalk.green(`   \u2713 Umbrella: ${umbrellaRepo}`));
+        } else {
+          console.log(chalk.yellow('   No repositories found. Skipping umbrella selection.'));
+        }
+      }
+      // 'none' → umbrellaRepo stays undefined
+    }
+
     // Step 3b: Show unified strategy selection (ALL providers)
     // v1.0.21: Pass org name for skip guidance
     const orgName = githubRepoSelection?.org || bitbucketRepoSelection?.workspace || adoProjectSelection?.org;
-    const patternResult = await promptMultiRepoPatternSelection(provider, strings, orgName);
+    const credentials = githubRepoSelection
+      ? { org: githubRepoSelection.org, pat: githubRepoSelection.pat }
+      : undefined;
+    const patternResult = await promptMultiRepoPatternSelection(provider, strings, orgName, credentials);
 
     // Map to ADO-style result for backward compatibility
     adoClonePatternResult = {
       strategy: patternResult.strategy,
       pattern: patternResult.pattern,
       isRegex: patternResult.isRegex,
+      selectedRepos: patternResult.selectedRepos,
     };
 
     // Set the clone pattern string
@@ -1408,6 +1615,8 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
       adoClonePattern = patternResult.pattern;
     } else if (patternResult.strategy === 'pattern-regex') {
       adoClonePattern = `regex:${patternResult.pattern}`;
+    } else if (patternResult.strategy === 'manual') {
+      adoClonePattern = `manual:${patternResult.selectedRepos?.join(',')}`;
     }
     // For 'skip', adoClonePattern remains undefined
   }
@@ -1420,6 +1629,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     adoClonePatternResult,
     adoProjectSelection,
     githubRepoSelection,
-    bitbucketRepoSelection
+    bitbucketRepoSelection,
+    umbrellaRepo,
   };
 }
