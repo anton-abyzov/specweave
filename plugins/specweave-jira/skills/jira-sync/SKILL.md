@@ -33,184 +33,169 @@ Coordinates JIRA synchronization by delegating to `jira-mapper` agent.
 
 ---
 
-## ⚠️ CRITICAL: Secrets Required (MANDATORY CHECK)
+## CRITICAL: Secrets Required (MANDATORY CHECK)
 
 **BEFORE attempting JIRA sync, CHECK for JIRA credentials.**
+
+**SECURITY RULE**: This skill MUST NOT collect, write, or store credentials. The user configures their own `.env` file. The skill only validates that credentials exist.
 
 ### Step 1: Check If Credentials Exist
 
 ```bash
-# Check .env file for both required credentials
-if [ -f .env ] && grep -q "JIRA_API_TOKEN" .env && grep -q "JIRA_EMAIL" .env; then
-  echo "✅ JIRA credentials found"
+# Check .env file for required credentials (existence only — never read values)
+if [ -f .env ] && grep -q "^JIRA_API_TOKEN=" .env && grep -q "^JIRA_EMAIL=" .env && grep -q "^JIRA_DOMAIN=" .env; then
+  echo "JIRA credentials found in .env"
 else
-  # Credentials NOT found - STOP and prompt user
+  echo "JIRA credentials missing — see setup instructions below"
+  # STOP HERE — do NOT prompt user for secrets
 fi
 ```
 
-### Step 2: If Credentials Missing, STOP and Show This Message
+### Step 2: If Credentials Missing, Show Setup Instructions
+
+Do NOT ask the user to paste credentials into the chat. Instead, show self-service setup:
 
 ```
-🔐 **JIRA API Token and Email Required**
+JIRA credentials are required but not configured.
 
-I need your JIRA API token and email to sync with JIRA.
+**Setup (do this yourself — the agent should NOT handle your secrets):**
 
-**How to get it**:
-1. Go to: https://id.atlassian.com/manage-profile/security/api-tokens
-2. Log in with your Atlassian account
-3. Click "Create API token"
-4. Give it a label (e.g., "specweave-sync")
-5. Click "Create"
-6. **Copy the token immediately** (you can't see it again!)
+1. Create an API token at: https://id.atlassian.com/manage-profile/security/api-tokens
+2. Add these lines to your project `.env` file:
 
-**Where I'll save it**:
-- File: `.env` (gitignored, secure)
-- Format:
-  ```
-  JIRA_API_TOKEN=your-jira-api-token-here
-  JIRA_EMAIL=your-email@example.com
-  JIRA_DOMAIN=your-domain.atlassian.net
-  ```
+   JIRA_API_TOKEN=<your-token>
+   JIRA_EMAIL=<your-email>
+   JIRA_DOMAIN=<your-company>.atlassian.net
 
-**Security**:
-✅ .env is in .gitignore (never committed to git)
-✅ Token is random alphanumeric string (variable length)
-✅ Stored locally only (not in source code)
+3. Ensure `.env` is in `.gitignore`
+4. Re-run the sync command
 
-Please provide:
-1. Your JIRA API token:
-2. Your JIRA email:
-3. Your JIRA domain (e.g., company.atlassian.net):
+For self-hosted JIRA: Use a Personal Access Token (PAT) and your server's hostname.
 ```
 
-### Step 3: Validate Credentials Format
+**IMPORTANT**: After showing instructions, STOP. Do not continue until credentials are configured by the user.
+
+### Step 3: Validate Credential Presence (Not Values)
 
 ```bash
-# Validate email format
-if [[ ! "$JIRA_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-  echo "⚠️  Warning: Email format unexpected"
-  echo "Expected: valid email address"
-  echo "Got: $JIRA_EMAIL"
-fi
+# Validate that required keys exist and are non-empty (never echo values)
+MISSING=()
+for KEY in JIRA_API_TOKEN JIRA_EMAIL JIRA_DOMAIN; do
+  VAL=$(grep "^${KEY}=" .env | cut -d '=' -f2-)
+  if [ -z "$VAL" ]; then
+    MISSING+=("$KEY")
+  fi
+done
 
-# Validate domain format
-if [[ ! "$JIRA_DOMAIN" =~ \.atlassian\.net$ ]]; then
-  echo "⚠️  Warning: Domain format unexpected"
-  echo "Expected: *.atlassian.net"
-  echo "Got: $JIRA_DOMAIN"
-  echo "Note: Self-hosted JIRA may have different domain format"
-fi
-
-# Token validation (just check it's not empty)
-if [ -z "$JIRA_API_TOKEN" ]; then
-  echo "❌ Error: JIRA API token is empty"
+if [ ${#MISSING[@]} -gt 0 ]; then
+  echo "Missing or empty credentials: ${MISSING[*]}"
   exit 1
 fi
+echo "All required credentials present"
 ```
 
-### Step 4: Save Credentials Securely
+### Step 4: Domain Validation (Strict)
 
 ```bash
-# Save to .env
-cat >> .env << EOF
-JIRA_API_TOKEN=$JIRA_API_TOKEN
-JIRA_EMAIL=$JIRA_EMAIL
-JIRA_DOMAIN=$JIRA_DOMAIN
-EOF
+# Read domain safely — quote all variable expansions
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
 
-# Ensure .env is gitignored
-if ! grep -q "^\\.env$" .gitignore; then
-  echo ".env" >> .gitignore
+# Reject empty
+if [ -z "$JIRA_DOMAIN" ]; then
+  echo "Error: JIRA_DOMAIN is empty"
+  exit 1
 fi
 
-# Create .env.example for team
-cat > .env.example << 'EOF'
-# JIRA API Token
-# Get from: https://id.atlassian.com/manage-profile/security/api-tokens
-JIRA_API_TOKEN=your-jira-api-token
-JIRA_EMAIL=your-email@example.com
-JIRA_DOMAIN=your-domain.atlassian.net
-EOF
+# Must be a valid hostname (letters, digits, hyphens, dots only)
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]]; then
+  echo "Error: JIRA_DOMAIN contains invalid characters"
+  exit 1
+fi
 
-echo "✅ Credentials saved to .env (gitignored)"
-echo "✅ Created .env.example for team (commit this)"
+# Must end with .atlassian.net for cloud JIRA
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
+  echo "Warning: Domain does not match <subdomain>.atlassian.net pattern"
+  echo "If using self-hosted JIRA, confirm the domain is correct before proceeding"
+  # Require explicit user confirmation for non-standard domains
+fi
+
+# Reject IP addresses (prevent SSRF)
+if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+  echo "Error: IP addresses not allowed — use a hostname"
+  exit 1
+fi
+
+# Reject localhost and internal hostnames
+if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
+  echo "Error: Internal/localhost addresses not allowed"
+  exit 1
+fi
 ```
 
 ### Step 5: Use Credentials in Sync
 
 ```bash
-# Export for JIRA API calls (read from .env without displaying values)
-export JIRA_API_TOKEN=$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)
-export JIRA_EMAIL=$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)
-export JIRA_DOMAIN=$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)
+# Load credentials from .env (never display values)
+JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)"
+JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)"
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
 
 # Create Basic Auth header (JIRA uses email:token)
-AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
+AUTH="$(printf '%s:%s' "$JIRA_EMAIL" "$JIRA_API_TOKEN" | base64)"
 
-# Use in JIRA API calls
-curl -H "Authorization: Basic $AUTH" \
-     -H "Content-Type: application/json" \
-     https://$JIRA_DOMAIN/rest/api/3/issue/PROJ-123
+# HTTPS only — never allow plain HTTP
+# All variables double-quoted to prevent word splitting
+curl -s -f \
+  -H "Authorization: Basic $AUTH" \
+  -H "Content-Type: application/json" \
+  "https://${JIRA_DOMAIN}/rest/api/3/myself" \
+  || { echo "JIRA API connection failed"; exit 1; }
 ```
 
 ### Step 6: Never Log Secrets
 
 ```bash
-# ❌ WRONG - Logs secret
-echo "Using token: $JIRA_API_TOKEN"
-
-# ✅ CORRECT - Masks secret
-echo "Using JIRA credentials (token present: ✅, email: $JIRA_EMAIL)"
+# NEVER echo token values, auth headers, or base64-encoded credentials
+# Only confirm presence:
+echo "JIRA connection: domain=${JIRA_DOMAIN}, email present=yes, token present=yes"
 ```
 
 ### Step 7: Error Handling
 
 ```bash
-# If API call fails with 401 Unauthorized
-if [ $? -eq 401 ]; then
-  echo "❌ JIRA credentials invalid"
-  echo ""
-  echo "Possible causes:"
-  echo "1. API token expired or revoked"
-  echo "2. Email address incorrect"
-  echo "3. Domain incorrect (check: $JIRA_DOMAIN)"
-  echo "4. Account lacks permissions (need: project admin or issue create/edit)"
-  echo ""
-  echo "Please verify credentials:"
-  echo "https://id.atlassian.com/manage-profile/security/api-tokens"
-fi
+# Store HTTP status code from curl
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+  -H "Authorization: Basic $AUTH" \
+  -H "Content-Type: application/json" \
+  "https://${JIRA_DOMAIN}/rest/api/3/myself")
 
-# If API call fails with 403 Forbidden
-if [ $? -eq 403 ]; then
-  echo "❌ JIRA permission denied"
-  echo ""
-  echo "Your account lacks permissions for this operation."
-  echo "Required permissions:"
-  echo "- Browse projects"
-  echo "- Create issues"
-  echo "- Edit issues"
-  echo "- Administer projects (for Epic creation)"
-  echo ""
-  echo "Contact your JIRA administrator."
-fi
+case "$HTTP_STATUS" in
+  200) echo "JIRA authentication successful" ;;
+  401)
+    echo "JIRA credentials invalid (HTTP 401)"
+    echo "Check: API token may be expired or email incorrect"
+    echo "Manage tokens: https://id.atlassian.com/manage-profile/security/api-tokens"
+    ;;
+  403)
+    echo "JIRA permission denied (HTTP 403)"
+    echo "Required permissions: Browse projects, Create issues, Edit issues"
+    ;;
+  *)
+    echo "JIRA API error (HTTP $HTTP_STATUS)"
+    ;;
+esac
 ```
 
 ### Step 8: Production Recommendations
 
 **For production deployments, use OAuth 2.0** instead of API tokens:
 
-**Why OAuth 2.0?**
-- ✅ More secure (no long-lived credentials)
-- ✅ Fine-grained permissions (scopes)
-- ✅ Automatic token refresh
-- ✅ Audit trail in JIRA
+- More secure (no long-lived credentials)
+- Fine-grained permissions (scopes)
+- Automatic token refresh
+- Audit trail in JIRA
 
-**How to set up OAuth 2.0**:
-1. Go to: https://developer.atlassian.com/console/myapps/
-2. Create a new app
-3. Configure OAuth 2.0 credentials
-4. Add required scopes (read:jira-work, write:jira-work)
-5. Use OAuth flow instead of API token
+**Setup**: https://developer.atlassian.com/console/myapps/ (OAuth 2.0 with scopes: `read:jira-work`, `write:jira-work`)
 
 **For self-hosted JIRA**: Use Personal Access Tokens (PAT) instead of API tokens.
 
