@@ -33,14 +33,20 @@ vi.mock('../../../../../src/utils/fs-native.js', () => ({
   remove: mockFsRemove,
 }));
 
+const mockChalk = vi.hoisted(() => {
+  const passthrough = (s: string) => s;
+  const result: Record<string, unknown> = {};
+  for (const color of ['gray', 'green', 'blue', 'yellow', 'red', 'cyan']) {
+    result[color] = Object.assign(
+      (...args: string[]) => args.join(''),
+      { bold: (...args: string[]) => args.join('') }
+    );
+  }
+  return result;
+});
+
 vi.mock('chalk', () => ({
-  default: {
-    gray: (s: string) => s,
-    green: (s: string) => s,
-    blue: (s: string) => s,
-    yellow: (s: string) => s,
-    red: (s: string) => s,
-  },
+  default: mockChalk,
 }));
 
 import { cloneUmbrellaIntoCurrentDir } from '../../../../../src/cli/helpers/init/umbrella-cloning.js';
@@ -83,11 +89,12 @@ describe('umbrella-cloning', () => {
       expect(result.success).toBe(true);
       expect(result.error).toBeUndefined();
 
-      // Verify clone command uses --no-checkout
+      // Verify clone command uses --no-checkout with timeout
       const cloneCall = mockExecFileNoThrow.mock.calls[0];
       expect(cloneCall[0]).toBe('git');
       expect(cloneCall[1]).toContain('clone');
       expect(cloneCall[1]).toContain('--no-checkout');
+      expect(cloneCall[2]).toMatchObject({ timeout: 120_000 });
 
       // URL should include PAT for HTTPS
       const cloneUrl = cloneCall[1].find((a: string) => a.includes('github.com'));
@@ -95,11 +102,11 @@ describe('umbrella-cloning', () => {
       expect(cloneUrl).toContain('my-org');
       expect(cloneUrl).toContain('my-umbrella');
 
-      // Verify checkout runs in project dir
+      // Verify checkout runs in project dir with timeout
       const checkoutCall = mockExecFileNoThrow.mock.calls[1];
       expect(checkoutCall[0]).toBe('git');
       expect(checkoutCall[1]).toEqual(['checkout', '.']);
-      expect(checkoutCall[2]).toEqual({ cwd: '/project' });
+      expect(checkoutCall[2]).toMatchObject({ cwd: '/project', timeout: 60_000 });
 
       // Verify .git was moved from temp to project root
       expect(mockFsMove).toHaveBeenCalledWith(
