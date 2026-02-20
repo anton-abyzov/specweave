@@ -117,6 +117,10 @@ const config: Config = {
   // Mermaid diagrams support
   markdown: {
     mermaid: true,
+    format: 'detect',
+    hooks: {
+      onBrokenMarkdownImages: () => {},
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 
