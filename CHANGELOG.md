@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.281] - 2026-02-20
+
+### Changes
+- fix: infinite loop in specweave update (Commander --no-self mismatch)
+
+---
+
+
+
 ## [1.0.280] - 2026-02-20
 
 ### Changes
