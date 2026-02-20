@@ -60,9 +60,9 @@ export async function runDoctor(
   // Calculate summary
   const summary = calculateSummary(categories);
 
-  // Determine fix command if issues found
+  // Only show fix command when not already running with --fix
   let fixCommand: string | undefined;
-  if (summary.warnings > 0 || summary.failures > 0) {
+  if (!options.fix && (summary.warnings > 0 || summary.failures > 0)) {
     fixCommand = determineFix(categories);
   }
 
