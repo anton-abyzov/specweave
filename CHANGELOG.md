@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.289] - 2026-02-20
+
+### Changes
+- feat(llm): add budget guard, fallback provider, and workers-ai provider
+
+---
+
+
+
 ## [1.0.288] - 2026-02-20
 
 ### Changes
