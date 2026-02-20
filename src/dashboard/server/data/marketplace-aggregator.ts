@@ -22,8 +22,14 @@ export class MarketplaceAggregator {
     this.queue = new SubmissionQueue(projectPath);
   }
 
+  /** Reload queue data from disk (external scanner worker may have updated it) */
+  private refreshQueue(): void {
+    this.queue.reload();
+  }
+
   /** Get scanner status from BackgroundJobManager state */
   async getScannerStatus(): Promise<ScannerStatus> {
+    this.refreshQueue();
     const jobManager = getJobManager(this.projectPath);
     const activeJobs = jobManager.getActiveJobs();
     const scannerJob = activeJobs.find(
@@ -51,17 +57,20 @@ export class MarketplaceAggregator {
 
   /** Get paginated/filtered submissions */
   async getQueue(filter?: SubmissionFilter): Promise<PaginatedSubmissions> {
+    this.refreshQueue();
     return this.queue.getSubmissions(filter || {});
   }
 
   /** Get only verified skills */
   async getVerifiedSkills(): Promise<SkillSubmission[]> {
+    this.refreshQueue();
     const result = this.queue.getSubmissions({ status: 'verified' });
     return result.items;
   }
 
   /** Get pipeline insights/analytics */
   async getInsights(): Promise<SubmissionInsights> {
+    this.refreshQueue();
     return this.queue.getInsights();
   }
 
