@@ -387,8 +387,8 @@ describe('plugin-copier', () => {
       const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
       expect(result.success).toBe(true);
 
-      // The non-invokable SKILL.md should NOT be copied
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'skills', 'internal-tool', 'SKILL.md'))).toBe(false);
+      // The non-invokable SKILL.md should NOT be copied (skills/ is flattened into parent)
+      expect(fs.existsSync(path.join(targetDir, 'sw', 'internal-tool', 'SKILL.md'))).toBe(false);
 
       // The root SKILL.md (no frontmatter restriction) should still be there
       expect(fs.existsSync(path.join(targetDir, 'sw', 'SKILL.md'))).toBe(true);
@@ -406,8 +406,8 @@ describe('plugin-copier', () => {
       const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
       expect(result.success).toBe(true);
 
-      // Normal skill should be copied
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'skills', 'public-tool', 'SKILL.md'))).toBe(true);
+      // Normal skill should be copied (skills/ is flattened into parent)
+      expect(fs.existsSync(path.join(targetDir, 'sw', 'public-tool', 'SKILL.md'))).toBe(true);
     });
   });
 
