@@ -958,8 +958,8 @@ describe('exportSkills', () => {
       expect(results[0].success).toBe(true);
     });
 
-    it('should handle visibility field without including it in output', async () => {
-      setup('visibility');
+    it('should strip unknown frontmatter fields from exported output', async () => {
+      setup('unknown-fields');
       createSkillFile(testDir, 'plug', 'vis', makeSkillContent({
         name: 'vis-skill',
         description: 'test',
@@ -973,7 +973,7 @@ describe('exportSkills', () => {
       const outputContent = fs.readFileSync(
         path.join(outputDir, 'vis-skill', 'SKILL.md'), 'utf-8'
       );
-      // visibility is a SpecWeave-specific field, not in Agent Skills output
+      // Unknown fields should not leak into Agent Skills output
       expect(outputContent).not.toContain('visibility');
     });
 

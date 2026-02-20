@@ -130,12 +130,6 @@ export interface Skill {
 
   /** Test cases for this skill */
   testCases?: TestCase[];
-
-  /**
-   * Visibility level (v1.0.102+)
-   * @default "public"
-   */
-  visibility?: 'public' | 'internal';
 }
 
 /**

@@ -73,6 +73,21 @@ export function shouldSkipFromCommands(relPath: string): boolean {
 }
 
 /**
+ * Check if a SKILL.md file is marked as non-user-invokable via frontmatter.
+ * Files with `user-invokable: false` should not be copied to the commands dir.
+ */
+export function isNonInvokableSkill(filePath: string): boolean {
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    const fmMatch = content.match(/^---\n([\s\S]+?)\n---/);
+    if (!fmMatch) return false;
+    return /^user-invokable:\s*false$/m.test(fmMatch[1]);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Recursively copy a plugin directory, skipping files that would pollute
  * the Claude Code commands namespace (see shouldSkipFromCommands).
  */
@@ -89,6 +104,8 @@ function copyPluginFiltered(sourceDir: string, targetDir: string, relBase = ''):
     if (stat.isDirectory()) {
       copyPluginFiltered(sourcePath, targetPath, relPath);
     } else if (stat.isFile() && !shouldSkipFromCommands(relPath)) {
+      // Skip SKILL.md files marked as non-user-invokable (e.g., internal tools)
+      if (entry === 'SKILL.md' && isNonInvokableSkill(sourcePath)) continue;
       copyFileSync(sourcePath, targetPath);
     }
   }
@@ -167,6 +184,8 @@ export function computePluginHash(pluginDir: string): string {
     for (const file of files.sort()) {
       if (shouldSkipFromCommands(file)) continue;
       const fullPath = join(pluginDir, file);
+      // Skip non-user-invokable SKILL.md files (same as copyPluginFiltered)
+      if (file.endsWith('SKILL.md') && isNonInvokableSkill(fullPath)) continue;
       try {
         hash.update(readFileSync(fullPath, 'utf-8'));
       } catch {

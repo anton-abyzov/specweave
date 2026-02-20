@@ -1,6 +1,6 @@
 ---
 description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use /sw-jira:sync command instead.
-allowed-tools: Read, Write, Edit, Task, Bash
+allowed-tools: Read, Task
 ---
 
 # JIRA Sync Skill
@@ -78,11 +78,11 @@ For self-hosted JIRA: Use a Personal Access Token (PAT) and your server's hostna
 ### Step 3: Validate Credential Presence (Not Values)
 
 ```bash
-# Validate that required keys exist and are non-empty (never echo values)
+# Validate that required keys exist and have non-empty values
+# Uses grep -qE to check pattern without reading values into variables
 MISSING=()
 for KEY in JIRA_API_TOKEN JIRA_EMAIL JIRA_DOMAIN; do
-  VAL=$(grep "^${KEY}=" .env | cut -d '=' -f2-)
-  if [ -z "$VAL" ]; then
+  if ! grep -qE "^${KEY}=.+" .env; then
     MISSING+=("$KEY")
   fi
 done
@@ -106,9 +106,9 @@ if [ -z "$JIRA_DOMAIN" ]; then
   exit 1
 fi
 
-# Must be a valid hostname (letters, digits, hyphens, dots only)
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]]; then
-  echo "Error: JIRA_DOMAIN contains invalid characters"
+# Must be a valid hostname — each label: alphanumeric, hyphens allowed mid-label, no consecutive dots
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+  echo "Error: JIRA_DOMAIN is not a valid hostname"
   exit 1
 fi
 
@@ -119,8 +119,8 @@ if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
   # Require explicit user confirmation for non-standard domains
 fi
 
-# Reject IP addresses (prevent SSRF)
-if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+# Reject IP addresses — IPv4, IPv6 brackets, hex-encoded (SSRF prevention)
+if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "$JIRA_DOMAIN" =~ ^\[.*\]$ ]] || [[ "$JIRA_DOMAIN" =~ ^0x ]]; then
   echo "Error: IP addresses not allowed — use a hostname"
   exit 1
 fi
@@ -217,14 +217,14 @@ JIRA and Confluence are both Atlassian products and often used together. This sk
 
 ### Confluence Credentials
 
-Same authentication pattern as JIRA (Basic Auth with email:api_token):
+Same authentication and security rules as JIRA — user configures `.env`, skill only validates presence. Same domain validation applies (must be `<subdomain>.atlassian.net`, HTTPS only, no IPs).
 
-```bash
-# .env (gitignored)
-CONFLUENCE_API_TOKEN=your-api-token    # Same as JIRA token works
-CONFLUENCE_EMAIL=your-email@example.com
-CONFLUENCE_DOMAIN=your-domain.atlassian.net
-CONFLUENCE_SPACE_KEY=PROJ
+Required `.env` keys (configured by the user, NOT by this skill):
+```
+CONFLUENCE_API_TOKEN=<your-token>    # Same as JIRA API token
+CONFLUENCE_EMAIL=<your-email>
+CONFLUENCE_DOMAIN=<your-company>.atlassian.net
+CONFLUENCE_SPACE_KEY=<space-key>
 ```
 
 ### Key Confluence Operations
