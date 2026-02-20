@@ -128,11 +128,14 @@ export async function cloneUmbrellaIntoCurrentDir(
     console.log(chalk.green('   ✓ .git moved'));
 
     // Step 3: Checkout tracked files into current dir
-    // Files not in the umbrella repo (like .specweave/) are left untouched as untracked
+    // CRITICAL: Use "checkout HEAD -- ." not "checkout ."
+    // After --no-checkout clone, the index is empty. "checkout ." restores from the
+    // index (nothing there), while "checkout HEAD -- ." reads directly from the HEAD
+    // commit, populating both index and working tree.
     console.log(chalk.cyan('   [3/3] Checking out files...'));
     const checkoutResult = await execFileNoThrow(
       'git',
-      ['checkout', '.'],
+      ['checkout', 'HEAD', '--', '.'],
       { cwd: projectPath, timeout: 60_000 }
     );
 
