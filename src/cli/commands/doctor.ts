@@ -45,7 +45,7 @@ export function registerDoctorCommand(program: Command): void {
     .option('--json', 'Output as JSON')
     .option('--quick', 'Skip slow checks (network, hook execution)')
     .option('--skip-external', 'Skip external tool connectivity checks')
-    .option('--fix', 'Run suggested fix command if issues found')
+    .option('--fix', 'Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)')
     .action(async (options: Record<string, unknown>) => {
       try {
         const report = await doctor(process.cwd(), {
@@ -55,21 +55,6 @@ export function registerDoctorCommand(program: Command): void {
           skipExternal: options.skipExternal as boolean,
           fix: options.fix as boolean,
         });
-
-        // If --fix and issues found, suggest running the fix command
-        if (options.fix && report.fixCommand) {
-          console.log(`\nRunning fix: ${report.fixCommand}\n`);
-          const { execSync } = await import('child_process');
-          try {
-            execSync(report.fixCommand, {
-              cwd: process.cwd(),
-              stdio: 'inherit',
-            });
-          } catch (fixError) {
-            logger.error(`Fix command failed: ${fixError}`);
-            process.exit(1);
-          }
-        }
 
         // Exit with appropriate code
         if (report.summary.failures > 0) {
