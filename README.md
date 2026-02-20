@@ -2,7 +2,7 @@
 
 **The spec-driven Skill Fabric for AI coding agents.** Program your AI in English. Ship features while you sleep.
 
-*First-class support for Claude Code — compatible with any LLM-powered coding tool.*
+*Works with Claude Code, Cursor, Copilot, Codex, Antigravity & any LLM-powered coding tool.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -225,7 +225,9 @@ cd your-project
 specweave init .
 ```
 
-Then in Claude Code:
+The `specweave` CLI ships with 49 commands — project init, LSP code intelligence, skill management, dashboard, plugin marketplace, diagnostics, and more.
+
+Then in any AI coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot):
 ```
 You: "Add dark mode to the app"
 → SpecWeave creates spec, plans architecture, builds it autonomously.
@@ -260,8 +262,13 @@ All commands activate automatically from natural language. Use directly for fine
 | **GitHub** | Issues, PRs, milestones — bidirectional |
 | **JIRA** | Epics, stories, status |
 | **Azure DevOps** | Work items, area paths |
+| **[Verified Skills](https://verified-skill.com)** | Security scanning, trust certification, public skill registry |
 
 When you close an increment, external tools update automatically.
+
+### Verified Skills Registry
+
+Every SpecWeave skill can be submitted to [verified-skill.com](https://verified-skill.com) for automated security scanning and trust certification. Three tiers: Scanned (automated 41-pattern check), Verified (LLM intent analysis), Certified (human review + sandbox). Marketplace repos are auto-discovered — submit a single GitHub URL and all plugins/skills are detected.
 
 ---
 
@@ -281,7 +288,7 @@ When you close an increment, external tools update automatically.
 | **LSP code intelligence** | 198x faster, semantic accuracy | No | No |
 | **Specialized skills** | 100+ (PM, QA, DevOps, ML...) | 21 agents | None |
 | **Spec/plan/tasks workflow** | Yes | Yes | Yes |
-| **Agent-agnostic** | Claude Code + OpenClaw + Copilot + Codex | Multi-IDE | Multi-IDE |
+| **Agent-agnostic** | Claude Code + Codex + Antigravity + Copilot + Cursor + OpenClaw | Multi-IDE | Multi-IDE |
 
 ---
 
