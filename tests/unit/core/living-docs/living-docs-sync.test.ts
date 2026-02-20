@@ -429,6 +429,92 @@ describe('LivingDocsSync', () => {
   });
 
   // =========================================================================
+  // syncIncrement - TOCTOU race condition (increment disappears mid-sync)
+  // =========================================================================
+
+  describe('syncIncrement - TOCTOU race condition handling', () => {
+    it('should handle increment folder disappearing after access check (mid-sync race)', async () => {
+      const incrementId = '0050-vanishing-increment';
+      const incDir = path.join(testDir, '.specweave', 'increments', incrementId);
+
+      // Create the increment folder so fs.access() succeeds
+      await fsPromises.mkdir(incDir, { recursive: true });
+      await fsPromises.writeFile(
+        path.join(incDir, 'spec.md'),
+        '---\ntitle: Vanishing\n---\n# Vanishing',
+        'utf-8'
+      );
+      await fsPromises.writeFile(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'in-progress' }),
+        'utf-8'
+      );
+
+      // Simulate race: after fs.access succeeds, remove the folder before spec parsing.
+      // We spy on the real fs.access to remove the folder right after the check passes,
+      // so subsequent reads hit ENOENT — mimicking an archive moving the folder.
+      const originalAccess = fsPromises.access;
+      const accessSpy = vi.spyOn(fsPromises, 'access').mockImplementation(async (...args) => {
+        const result = await originalAccess.apply(fsPromises, args as Parameters<typeof originalAccess>);
+        // After access succeeds for our increment path, remove the folder
+        if (String(args[0]).includes(incrementId)) {
+          await fsPromises.rm(incDir, { recursive: true, force: true });
+        }
+        return result;
+      });
+
+      const result = await sync.syncIncrement(incrementId);
+
+      // The outer try/catch should catch the ENOENT and return a failure result
+      // (not throw an unhandled exception)
+      expect(result.success).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors[0]).toMatch(/Sync failed/);
+
+      accessSpy.mockRestore();
+    });
+
+    it('should not leave partial living docs when increment vanishes mid-sync', async () => {
+      const incrementId = '0051-ghost-increment';
+      const incDir = path.join(testDir, '.specweave', 'increments', incrementId);
+
+      // Create increment folder
+      await fsPromises.mkdir(incDir, { recursive: true });
+      await fsPromises.writeFile(
+        path.join(incDir, 'spec.md'),
+        '---\ntitle: Ghost\n---\n# Ghost',
+        'utf-8'
+      );
+      await fsPromises.writeFile(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'in-progress' }),
+        'utf-8'
+      );
+
+      // Remove folder after access check
+      const originalAccess = fsPromises.access;
+      const accessSpy = vi.spyOn(fsPromises, 'access').mockImplementation(async (...args) => {
+        const result = await originalAccess.apply(fsPromises, args as Parameters<typeof originalAccess>);
+        if (String(args[0]).includes(incrementId)) {
+          await fsPromises.rm(incDir, { recursive: true, force: true });
+        }
+        return result;
+      });
+
+      await sync.syncIncrement(incrementId);
+
+      // Verify no FEATURE.md was created in living docs for this ghost increment
+      const featurePath = path.join(
+        testDir, '.specweave', 'docs', 'internal', 'specs', 'test-project', 'FS-001'
+      );
+      const featureExists = fsMod.existsSync(path.join(featurePath, 'FEATURE.md'));
+      expect(featureExists).toBe(false);
+
+      accessSpy.mockRestore();
+    });
+  });
+
+  // =========================================================================
   // syncIncrement - happy path (single-project)
   // =========================================================================
 
