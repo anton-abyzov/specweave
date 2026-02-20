@@ -440,21 +440,6 @@ export async function docsStatusCommand(): Promise<void> {
 
   console.log(chalk.blue('\n\u{1F4DA} Documentation Status\n'));
 
-  // Count markdown files recursively
-  const countMd = (dir: string): number => {
-    if (!fs.existsSync(dir)) return 0;
-    let count = 0;
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        count += countMd(path.join(dir, entry.name));
-      } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
-        count++;
-      }
-    }
-    return count;
-  };
-
   // Show status for both scopes
   const scopes: DocScope[] = ['internal', 'public'];
   for (const scope of scopes) {
@@ -467,11 +452,24 @@ export async function docsStatusCommand(): Promise<void> {
     console.log(chalk.white(`   ${label} docs:`));
     console.log(`     Source: ${docsExist ? chalk.green('✓ Found') : chalk.red('✗ Not found')} ${chalk.dim(`.specweave/docs/${SCOPE_DOC_DIRS[scope]}/`)}`);
     if (docsExist) {
-      const docCount = countMd(docsPath);
+      const docCount = countMdFiles(docsPath);
       console.log(`     Documents: ${chalk.cyan(docCount)} files`);
     }
     console.log(`     Docusaurus: ${siteSetup ? chalk.green('✓ Installed') : chalk.yellow('○ Not installed (will auto-setup)')}`);
     console.log(`     Port: ${chalk.dim(String(SCOPE_PORTS[scope]))}`);
+    console.log();
+  }
+
+  // Show umbrella child repo doc counts
+  const childRepoDocs = await getUmbrellaChildRepoDocs(projectRoot, 'internal');
+  if (childRepoDocs.length > 0) {
+    console.log(chalk.white('   Child repos (umbrella mode):'));
+    for (const repo of childRepoDocs) {
+      const docInfo = repo.docCount > 0
+        ? chalk.cyan(`${repo.docCount} docs`)
+        : chalk.dim('no docs');
+      console.log(`     ${repo.name}: ${docInfo}`);
+    }
     console.log();
   }
 
