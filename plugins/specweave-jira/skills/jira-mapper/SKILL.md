@@ -56,6 +56,74 @@ You are an expert in mapping SpecWeave concepts to JIRA and vice versa with prec
 
 ---
 
+## Security Rules (MANDATORY)
+
+These rules apply to ALL JIRA and Confluence API operations in this skill.
+
+### Credential Handling
+
+1. **Never collect credentials** — this skill reads from `.env` only, never prompts the user
+2. **Never log secrets** — never echo token values, auth headers, or base64 credentials
+3. **Never write credentials** — the user configures `.env` themselves
+
+### Credential Loading
+
+```bash
+# Load credentials from .env (never display values)
+JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)"
+JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)"
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
+
+# Validate non-empty (without reading into output)
+for KEY in JIRA_API_TOKEN JIRA_EMAIL JIRA_DOMAIN; do
+  if ! grep -qE "^${KEY}=.+" .env; then
+    echo "Error: ${KEY} missing or empty in .env"
+    exit 1
+  fi
+done
+```
+
+### Domain Validation (before ANY API call)
+
+```bash
+# Must be a valid hostname — no special chars, no consecutive dots
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+  echo "Error: JIRA_DOMAIN contains invalid characters"
+  exit 1
+fi
+
+# Cloud JIRA: must match <subdomain>.atlassian.net
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
+  echo "Warning: Domain does not match <subdomain>.atlassian.net — requires user confirmation for non-standard domains"
+fi
+
+# Reject IP addresses (SSRF prevention)
+if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "$JIRA_DOMAIN" =~ ^\[.*\]$ ]] || [[ "$JIRA_DOMAIN" =~ ^0x ]]; then
+  echo "Error: IP addresses not allowed — use a hostname"
+  exit 1
+fi
+
+# Reject localhost and private networks
+if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
+  echo "Error: Internal/localhost addresses not allowed"
+  exit 1
+fi
+```
+
+### API Call Pattern (HTTPS only, quoted variables)
+
+```bash
+AUTH="$(printf '%s:%s' "$JIRA_EMAIL" "$JIRA_API_TOKEN" | base64)"
+
+# All API calls MUST use https://, double-quote all variables
+curl -s -f \
+  -H "Authorization: Basic $AUTH" \
+  -H "Content-Type: application/json" \
+  "https://${JIRA_DOMAIN}/rest/api/3/..."
+```
+
+---
+
 ## Conversion Workflows
 
 ### 1. Export: Increment → JIRA Epic
@@ -66,7 +134,7 @@ You are an expert in mapping SpecWeave concepts to JIRA and vice versa with prec
 - Increment folder exists
 - `spec.md` exists with valid frontmatter
 - `tasks.md` exists
-- JIRA connection configured
+- JIRA credentials configured in `.env` (validated per Security Rules above)
 
 **Process**:
 
@@ -460,12 +528,14 @@ Sync SpecWeave living docs to Confluence pages. Confluence is commonly paired wi
 
 ### Confluence Credentials
 
-```bash
-# .env (gitignored)
-CONFLUENCE_API_TOKEN=your-api-token
-CONFLUENCE_EMAIL=your-email@example.com
-CONFLUENCE_DOMAIN=your-domain.atlassian.net
-CONFLUENCE_SPACE_KEY=PROJ
+Same security rules as JIRA credentials (see Security Rules section above). User configures `.env`, skill only validates presence. Same domain validation applies.
+
+Required `.env` keys (configured by the user, NOT by this skill):
+```
+CONFLUENCE_API_TOKEN=<your-token>    # Same as JIRA API token
+CONFLUENCE_EMAIL=<your-email>
+CONFLUENCE_DOMAIN=<your-company>.atlassian.net
+CONFLUENCE_SPACE_KEY=<space-key>
 ```
 
 ### Page Update Workflow (CRITICAL)
