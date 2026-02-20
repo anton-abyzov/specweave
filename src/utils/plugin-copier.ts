@@ -24,6 +24,7 @@ import {
 import { join, resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
+import { getProjectRoot } from './find-project-root.js';
 
 // ---------------------------------------------------------------------------
 // Command file filter
@@ -328,7 +329,7 @@ export function copyPlugin(
 
   // 3. Compute hash and check lockfile
   const sha = computePluginHash(sourceDir);
-  const lockDir = process.cwd();
+  const lockDir = getProjectRoot();
   const lock = ensureLockfile(lockDir);
 
   if (!options.force && lock.skills[pluginName]?.sha === sha) {

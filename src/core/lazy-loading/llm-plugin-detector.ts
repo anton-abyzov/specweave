@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { resolveVskillPath as _resolveVskillPath, resolveSpecweaveDir as _resolveSpecweaveDir } from '../../utils/vskill-resolver.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
 import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
@@ -101,7 +102,7 @@ export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
   }
 
   // Try to read from config file
-  const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+  const configPath = path.join(getProjectRoot(), '.specweave', 'config.json');
   try {
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, 'utf8');
@@ -1248,7 +1249,7 @@ Which plugins should be loaded?`;
  */
 function isPluginInVskillLock(pluginName: string): boolean {
   try {
-    const lockPath = path.join(process.cwd(), 'vskill.lock');
+    const lockPath = path.join(getProjectRoot(), 'vskill.lock');
     if (!fs.existsSync(lockPath)) {
       return false;
     }
