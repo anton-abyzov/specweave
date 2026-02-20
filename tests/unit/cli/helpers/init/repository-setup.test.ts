@@ -870,6 +870,7 @@ describe('repository-setup', () => {
       const result = await setupRepositoryHosting(makeOptions());
 
       expect(result.umbrellaRepo).toBe('specweave-umb');
+      expect(result.umbrellaSource).toBe('select');
       expect(result.adoClonePatternResult?.strategy).toBe('all');
     });
 
@@ -890,6 +891,7 @@ describe('repository-setup', () => {
       const result = await setupRepositoryHosting(makeOptions());
 
       expect(result.umbrellaRepo).toBeUndefined();
+      expect(result.umbrellaSource).toBeUndefined();
       expect(result.adoClonePatternResult?.strategy).toBe('all');
     });
 
@@ -912,6 +914,7 @@ describe('repository-setup', () => {
       }));
 
       expect(result.umbrellaRepo).toBe('specweave-umb');
+      expect(result.umbrellaSource).toBe('current-dir');
     });
   });
 
