@@ -68,9 +68,10 @@ describe('PluginsChecker', () => {
   });
 
   // =========================================================================
-  // TC-PC-03: fix=true with empty marketplace runs refresh-plugins
+  // TC-PC-03: marketplace issues cannot be auto-fixed (wrong tool)
+  // refresh-plugins copies to ~/.claude/commands/, NOT the marketplace dir
   // =========================================================================
-  it('TC-PC-03: fix=true with marketplace installed but empty runs refresh-plugins', async () => {
+  it('TC-PC-03: fix=true with marketplace installed but empty reports warn (no auto-fix)', async () => {
     // Create marketplace dir without plugins/ subdir
     const marketplaceDir = path.join(
       tmpDir,
@@ -82,27 +83,29 @@ describe('PluginsChecker', () => {
     fs.mkdirSync(marketplaceDir, { recursive: true });
 
     const checker = new PluginsChecker({ homeDir: tmpDir });
-    await checker.check(projectRoot, { fix: true });
+    const result = await checker.check(projectRoot, { fix: true });
 
-    expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', {
-      stdio: 'pipe',
-    });
+    // No execSync — marketplace issues require manual intervention
+    expect(mockExecSync).not.toHaveBeenCalled();
+    const mktCheck = result.checks.find(c => c.name === 'SpecWeave marketplace');
+    expect(mktCheck?.status).toBe('warn');
   });
 
-  it('TC-PC-03b: fix=true with marketplace not installed runs refresh-plugins', async () => {
+  it('TC-PC-03b: fix=true with marketplace not installed reports warn (no auto-fix)', async () => {
     // No marketplace dir at all
     const checker = new PluginsChecker({ homeDir: tmpDir });
-    await checker.check(projectRoot, { fix: true });
+    const result = await checker.check(projectRoot, { fix: true });
 
-    expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', {
-      stdio: 'pipe',
-    });
+    expect(mockExecSync).not.toHaveBeenCalled();
+    const mktCheck = result.checks.find(c => c.name === 'SpecWeave marketplace');
+    expect(mktCheck?.status).toBe('warn');
+    expect(mktCheck?.fixSuggestion).toContain('claude plugin marketplace add');
   });
 
   // =========================================================================
-  // TC-PC-04: fix=true with missing core plugin runs refresh-plugins
+  // TC-PC-04: core plugin issues cannot be auto-fixed via refresh-plugins
   // =========================================================================
-  it('TC-PC-04: fix=true with missing core plugin runs refresh-plugins', async () => {
+  it('TC-PC-04: fix=true with missing core plugin reports warn (no auto-fix)', async () => {
     // Create marketplace dir with plugins/ but no specweave core plugin
     const pluginsDir = path.join(
       tmpDir,
@@ -115,14 +118,14 @@ describe('PluginsChecker', () => {
     fs.mkdirSync(pluginsDir, { recursive: true });
 
     const checker = new PluginsChecker({ homeDir: tmpDir });
-    await checker.check(projectRoot, { fix: true });
+    const result = await checker.check(projectRoot, { fix: true });
 
-    expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', {
-      stdio: 'pipe',
-    });
+    expect(mockExecSync).not.toHaveBeenCalled();
+    const coreCheck = result.checks.find(c => c.name === 'Core plugin (sw)');
+    expect(coreCheck?.status).toBe('warn');
   });
 
-  it('TC-PC-04b: fix=true with incomplete core plugin (no skills or commands) runs refresh-plugins', async () => {
+  it('TC-PC-04b: fix=true with incomplete core plugin (no skills or commands) reports fail (no auto-fix)', async () => {
     // Create core plugin dir but without skills/ or commands/
     const corePluginDir = path.join(
       tmpDir,
@@ -136,11 +139,11 @@ describe('PluginsChecker', () => {
     fs.mkdirSync(corePluginDir, { recursive: true });
 
     const checker = new PluginsChecker({ homeDir: tmpDir });
-    await checker.check(projectRoot, { fix: true });
+    const result = await checker.check(projectRoot, { fix: true });
 
-    expect(mockExecSync).toHaveBeenCalledWith('specweave refresh-plugins', {
-      stdio: 'pipe',
-    });
+    expect(mockExecSync).not.toHaveBeenCalled();
+    const coreCheck = result.checks.find(c => c.name === 'Core plugin (sw)');
+    expect(coreCheck?.status).toBe('fail');
   });
 
   // =========================================================================
