@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "1.0.295",
+  "version": "1.0.296",
   "description": "Spec-driven development framework for AI coding agents. Works with Claude Code, Codex, Antigravity, Cursor, Copilot & more. 100+ skills, 49 CLI commands, verified skill certification, autonomous execution, and living documentation.",
   "type": "module",
   "main": "dist/index.js",
