@@ -62,8 +62,11 @@ export function shouldSkipFromCommands(relPath: string): boolean {
   // Data files at any depth
   if (filename === 'FRESHNESS.md') return true;
 
+  // Dot-prefixed directories are metadata, never commands
+  if (parts.length > 1 && parts[0].startsWith('.')) return true;
+
   // Root directories that are plugin internals, not commands
-  const internalRootDirs = new Set(['knowledge-base', 'lib', 'templates']);
+  const internalRootDirs = new Set(['knowledge-base', 'lib', 'templates', 'scripts', 'hooks']);
   if (parts.length > 1 && internalRootDirs.has(parts[0])) return true;
 
   // Inside skills/<name>/, only SKILL.md is a real command;
@@ -365,13 +368,10 @@ export function copyPlugin(
   // 4. Copy plugin to target, excluding internal files that would leak as commands
   const targetDir = join(targetBaseDir, pluginName);
   try {
-    // Clean up stale commands/ and skills/ subdirs from pre-flattening installs.
-    // These would cause duplicate slash commands (e.g. sw:commands:qa + sw:qa).
-    for (const staleDir of ['commands', 'skills']) {
-      const stalePath = join(targetDir, staleDir);
-      if (existsSync(stalePath)) {
-        rmSync(stalePath, { recursive: true, force: true });
-      }
+    // Full clean before copy: removes stale files from older installs that lacked
+    // proper filtering (e.g. PLUGIN.md, FRESHNESS.md, README.md in knowledge-base/).
+    if (existsSync(targetDir)) {
+      rmSync(targetDir, { recursive: true, force: true });
     }
     copyPluginFiltered(sourceDir, targetDir);
     fixHookPermissions(targetDir);
