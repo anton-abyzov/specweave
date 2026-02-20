@@ -14,7 +14,8 @@ export type NotificationType =
   | 'discrepancy'
   | 'sync-failure'
   | 'drift'
-  | 'job-complete';
+  | 'job-complete'
+  | 'cost-alert';
 
 /**
  * Notification severity levels
@@ -230,6 +231,8 @@ export function getNotificationTypeLabel(type: NotificationType): string {
       return 'Drift Detected';
     case 'job-complete':
       return 'Job Complete';
+    case 'cost-alert':
+      return 'Cost Alert';
     default:
       return 'Notification';
   }

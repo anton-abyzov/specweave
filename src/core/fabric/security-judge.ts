@@ -14,7 +14,11 @@
 import { loadLLMConfig, createProvider } from '../llm/provider-factory.js';
 import { checkConsent, isExternalProvider } from '../llm/consent.js';
 import { extractJson } from '../../utils/llm-json-extractor.js';
-import type { LLMProvider } from '../llm/types.js';
+import { FallbackProvider } from '../llm/fallback-provider.js';
+import { BudgetGuardProvider } from '../llm/budget-guard.js';
+import type { LLMProvider, LLMConfig, BudgetConfig } from '../llm/types.js';
+import * as fs from '../../utils/fs-native.js';
+import path from 'path';
 
 export interface SecurityThreat {
   category: string;
@@ -180,6 +184,17 @@ export class SecurityJudge {
   }
 
   private async getProvider(): Promise<LLMProvider | null> {
+    // 1. Try dedicated securityJudge config (Workers AI with budget + fallback)
+    const sjConfig = this.loadSecurityJudgeConfig();
+    if (sjConfig) {
+      try {
+        return await this.createSecurityProvider(sjConfig);
+      } catch {
+        // Fall through to main LLM config
+      }
+    }
+
+    // 2. Fall back to main llm config
     const config = loadLLMConfig(this.projectRoot);
     if (!config) return null;
 
@@ -193,6 +208,46 @@ export class SecurityJudge {
     } catch {
       return null;
     }
+  }
+
+  private loadSecurityJudgeConfig(): (LLMConfig & { budget?: BudgetConfig }) | null {
+    const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) return null;
+
+    try {
+      const raw = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return raw.securityJudge || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async createSecurityProvider(
+    config: LLMConfig & { budget?: BudgetConfig }
+  ): Promise<LLMProvider> {
+    // Check consent for the primary provider
+    if (isExternalProvider(config.provider)) {
+      const consent = checkConsent(config.provider, this.projectRoot);
+      if (consent !== 'granted') {
+        throw new Error(`Consent not granted for ${config.provider}`);
+      }
+    }
+
+    let provider = await createProvider(config, { projectRoot: this.projectRoot });
+
+    // Wrap with budget guard if budget config exists
+    if (config.budget) {
+      const usagePath = path.join(this.projectRoot, '.specweave', 'state', 'workers-ai-usage.json');
+      provider = new BudgetGuardProvider(provider, config.budget, usagePath);
+    }
+
+    // Wrap with fallback if fallback config exists
+    if (config.fallback) {
+      const fallbackProvider = await createProvider(config.fallback, { projectRoot: this.projectRoot });
+      provider = new FallbackProvider(provider, fallbackProvider);
+    }
+
+    return provider;
   }
 
   private fallbackResult(start: number, reason?: string): SecurityJudgeResult {
