@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.290] - 2026-02-20
+
+### Changes
+- feat: add universal skill discovery pipeline
+
+---
+
+
+
 ## [1.0.289] - 2026-02-20
 
 ### Changes
