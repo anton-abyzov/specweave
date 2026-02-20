@@ -20,6 +20,7 @@ import {
   readFileSync,
   writeFileSync,
   existsSync,
+  rmSync,
 } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -90,6 +91,10 @@ export function isNonInvokableSkill(filePath: string): boolean {
 /**
  * Recursively copy a plugin directory, skipping files that would pollute
  * the Claude Code commands namespace (see shouldSkipFromCommands).
+ *
+ * Root-level `commands/` and `skills/` directories are flattened into the
+ * target so that Claude Code's path-based scanner produces short names
+ * matching the plugin system (e.g. `sw:qa` instead of `sw:commands:qa`).
  */
 function copyPluginFiltered(sourceDir: string, targetDir: string, relBase = ''): void {
   mkdirSync(targetDir, { recursive: true });
@@ -98,15 +103,17 @@ function copyPluginFiltered(sourceDir: string, targetDir: string, relBase = ''):
   for (const entry of entries) {
     const relPath = relBase ? `${relBase}/${entry}` : entry;
     const sourcePath = join(sourceDir, entry);
-    const targetPath = join(targetDir, entry);
     const stat = statSync(sourcePath);
 
     if (stat.isDirectory()) {
-      copyPluginFiltered(sourcePath, targetPath, relPath);
+      // Flatten: root-level commands/ and skills/ merge into the parent target dir
+      const isFlattened = !relBase && (entry === 'commands' || entry === 'skills');
+      const nextTargetDir = isFlattened ? targetDir : join(targetDir, entry);
+      copyPluginFiltered(sourcePath, nextTargetDir, relPath);
     } else if (stat.isFile() && !shouldSkipFromCommands(relPath)) {
       // Skip SKILL.md files marked as non-user-invokable (e.g., internal tools)
       if (entry === 'SKILL.md' && isNonInvokableSkill(sourcePath)) continue;
-      copyFileSync(sourcePath, targetPath);
+      copyFileSync(sourcePath, join(targetDir, entry));
     }
   }
 }
@@ -358,6 +365,14 @@ export function copyPlugin(
   // 4. Copy plugin to target, excluding internal files that would leak as commands
   const targetDir = join(targetBaseDir, pluginName);
   try {
+    // Clean up stale commands/ and skills/ subdirs from pre-flattening installs.
+    // These would cause duplicate slash commands (e.g. sw:commands:qa + sw:qa).
+    for (const staleDir of ['commands', 'skills']) {
+      const stalePath = join(targetDir, staleDir);
+      if (existsSync(stalePath)) {
+        rmSync(stalePath, { recursive: true, force: true });
+      }
+    }
     copyPluginFiltered(sourceDir, targetDir);
     fixHookPermissions(targetDir);
   } catch (err) {
