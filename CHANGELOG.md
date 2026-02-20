@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.288] - 2026-02-20
+
+### Changes
+- fix: update plugin copier and cost aggregator
+- reorder init: ask umbrella before creating files, fix checkout HEAD
+- fix checkout after --no-checkout clone, add SSH key detection
+- fix umbrella clone: add timeouts, error handling, verbose logging
+- bump v1.0.284
+- fix: clone umbrella immediately on selection, handle git init .git
+- bump v1.0.283
+- clone umbrella repo into current dir during init
+- chore: bump version to 1.0.282
+- add manual repo selection and umbrella repo prompt to init
+
+---
+
+
+
 ## [1.0.287] - 2026-02-20
 
 ### Changes
