@@ -24,13 +24,13 @@ Collaboration and management terms cover the methodologies, practices, and tools
 - Frameworks: Scrum, Kanban, XP (Extreme Programming)
 - When to use: uncertainty, changing requirements, need for feedback
 
-**Scrum**
+**[Scrum](/docs/glossary/terms/scrum)**
 - Agile framework with defined roles and ceremonies
 - Roles: Product Owner, Scrum Master, Development Team
 - Ceremonies: Sprint Planning, Daily Standup, Review, Retrospective
 - Sprint: Time-boxed iteration (1-4 weeks)
 
-**Kanban**
+**[Kanban](/docs/glossary/terms/kanban)**
 - Visual workflow management
 - Focus on continuous flow (no sprints)
 - WIP (Work In Progress) limits
@@ -38,25 +38,25 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Work Breakdown
 
-**[User Story](/docs/glossary/terms/user-stories)**
+**[User Story](/docs/glossary/terms/user-story)**
 - Feature from user's perspective
 - Format: "As a [role], I want [feature] so that [benefit]"
 - Acceptance criteria define "done"
 - SpecWeave generates user stories in spec.md
 
-**Epic**
+**[Epic](/docs/glossary/terms/epic)**
 - Large user story spanning multiple sprints
 - Broken down into smaller stories
 - Example: "User Authentication" epic → Login, Signup, Password Reset stories
 - SpecWeave maps epics to living docs specs
 
-**Task**
+**[Task](/docs/glossary/terms/task)**
 - Technical work item (developer perspective)
 - Smaller than user story
 - Example: "Create database migration", "Add unit tests"
 - SpecWeave tracks tasks in tasks.md
 
-**Spike**
+**[Spike](/docs/glossary/terms/spike)**
 - Time-boxed research/investigation
 - Explores unknowns, reduces risk
 - No production code (prototype only)
@@ -64,19 +64,19 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Estimation & Planning
 
-**Story Points**
+**[Story Points](/docs/glossary/terms/story-points)**
 - Relative effort estimation (not time)
 - Common scales: Fibonacci (1, 2, 3, 5, 8, 13), T-shirt sizes (S, M, L)
 - Accounts for: complexity, risk, uncertainty
 - Not used by SpecWeave (uses time estimates)
 
-**Velocity**
+**[Velocity](/docs/glossary/terms/velocity)**
 - Story points completed per sprint
 - Used for predicting future capacity
 - Example: Team averages 30 points/sprint
 - SpecWeave tracks: tasks completed per increment
 
-**Sprint Planning**
+**[Sprint Planning](/docs/glossary/terms/sprint-planning)**
 - Meeting to plan sprint work
 - Select stories from backlog
 - Break stories into tasks
@@ -84,23 +84,23 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Tracking & Collaboration
 
-**Backlog**
+**[Backlog](/docs/glossary/terms/backlog)**
 - Prioritized list of work (stories, bugs, tasks)
 - Product Backlog: All work (long-term)
 - Sprint Backlog: Work for current sprint
 - SpecWeave uses: `.specweave/increments/_backlog/`
 
-**Jira**
+**[Jira](/docs/glossary/terms/jira)**
 - Issue tracking and project management tool
 - Features: boards, sprints, roadmaps, reports
 - Most popular in enterprises
-- SpecWeave plugin: `sw-jira`
+- SpecWeave plugin: `specweave-jira` (planned)
 
-**GitHub Issues**
+**[GitHub Issues](/docs/glossary/terms/github-issues)**
 - Issue tracking on GitHub
 - Lightweight, integrated with Git
 - Labels, milestones, projects
-- SpecWeave plugin: `sw-github`
+- SpecWeave plugin: `specweave-github` (available)
 
 ---
 
@@ -295,7 +295,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 
 ```bash
 # Create Jira issue from increment
-/sw-jira:sync 0035 --mode=export
+/jira-create-issue 0035
 
 # Result:
 # ✅ Created Jira epic: PLAT-100 "User Registration"
@@ -305,7 +305,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 # ✅ Linked to increment: 0035-user-registration
 
 # Sync status: SpecWeave → Jira
-/sw-jira:sync 0035
+/jira-sync 0035
 
 # Result:
 # ✅ T-001 done → PLAT-101 status updated to "Done"
@@ -338,33 +338,33 @@ Sprint (2 weeks)       → Increment (.specweave/increments/)
 User Story             → Acceptance Criteria (AC-US1-01)
 Task                   → Task (tasks.md: T-001)
 Backlog                → .specweave/increments/_backlog/
-Sprint Planning        → /sw:increment (increment planning)
-Daily Standup          → /sw:progress (status update)
-Sprint Review          → /sw:done (completion report)
+Sprint Planning        → /specweave:increment (increment planning)
+Daily Standup          → /specweave:progress (status update)
+Sprint Review          → /specweave:done (completion report)
 Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
 ```
 
 ### 2. External PM Tool Integration
 
-**sw-github plugin**:
+**specweave-github plugin** (available):
 ```bash
 # Sync increment ↔ GitHub issue
-/sw-github:create 0035
-/sw-github:sync 0035
+/github-create-issue 0035 "User Registration"
+/github-sync 0035
 ```
 
-**sw-jira plugin**:
+**specweave-jira plugin** (planned):
 ```bash
 # Sync increment ↔ Jira epic/stories
-/sw-jira:sync 0035 --mode=export
-/sw-jira:sync 0035
+/jira-create-issue 0035
+/jira-sync 0035
 ```
 
-**sw-ado plugin**:
+**specweave-ado plugin** (planned):
 ```bash
 # Sync increment ↔ Azure DevOps work item
-/sw-ado:create 0035
-/sw-ado:sync 0035
+/ado-create-issue 0035
+/ado-sync 0035
 ```
 
 ### 3. Living Documentation for Collaboration
@@ -388,10 +388,10 @@ Team collaboration documented in:
 # Increment = Sprint (SpecWeave's unit of work)
 
 **Duration**: Typically 1-2 weeks (flexible)
-**Planning**: /sw:increment (generate spec.md, plan.md, tasks)
-**Execution**: /sw:do (implement tasks)
-**Daily Updates**: /sw:progress (check status)
-**Completion**: /sw:done (close increment, generate report)
+**Planning**: /specweave:increment (generate spec.md, plan.md, tasks)
+**Execution**: /specweave:do (implement tasks)
+**Daily Updates**: /specweave:progress (check status)
+**Completion**: /specweave:done (close increment, generate report)
 
 **Key Difference from Scrum**:
 - ✅ No fixed sprint length (increments are flexible)
@@ -402,7 +402,7 @@ Team collaboration documented in:
 ### 5. Velocity Tracking
 
 ```bash
-/sw:status
+/specweave:status
 
 # Output:
 # Increment History:
@@ -435,9 +435,9 @@ Team collaboration documented in:
 ## Learn More
 
 ### Guides
-- [Getting Started](/docs/quick-start)
-- [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle)
-- [Multi-Project Setup](/docs/guides/multi-project-setup)
+- [Development Workflow](/docs/delivery/guides/development-workflow)
+- [Increment Lifecycle](/docs/delivery/guides/increment-lifecycle)
+- [Branch Strategy](/docs/delivery/branch-strategy)
 
 ### Books
 - "Agile Estimating and Planning" by Mike Cohn
@@ -458,4 +458,4 @@ Team collaboration documented in:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

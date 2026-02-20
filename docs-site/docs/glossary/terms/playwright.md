@@ -263,23 +263,6 @@ SpecWeave uses Playwright for **E2E testing** with mandatory truth-telling:
 **Overall Coverage**: 88%
 ```
 
-### CLI vs MCP Mode Selection
-
-SpecWeave provides dual-mode browser automation for optimal AI token usage:
-
-| Mode | Package | Token Cost | Best For |
-|------|---------|------------|----------|
-| **CLI** | `@playwright/cli` | ~250 chars/action | Test execution, automation scripts, CI/CD |
-| **MCP** | `playwright@claude-plugins-official` | ~5K+ chars/action | Interactive inspection, self-healing tests |
-
-The CLI (v0.1.0+, Feb 2026) keeps browser state external and returns file references instead of dumping full accessibility trees into context. This scales dramatically better for complex pages — the CLI output stays at ~250 chars regardless of page complexity, while MCP output grows linearly with the number of elements.
-
-**Install CLI**: `npm install -g @playwright/cli@latest`
-
-**Configure**: Set `testing.playwright.preferCli: true` in `.specweave/config.json`
-
-The Skill Fabric (`sw-testing`) routes automatically: CLI for automation tasks (80%), MCP for inspection tasks (20%). Falls back to MCP if CLI is not installed.
-
 ### SpecWeave E2E Test Requirements
 
 **MANDATORY when UI exists**:
@@ -624,9 +607,62 @@ test('see console logs', async ({ page }) => {
 
 ---
 
+## Playwright CLI for AI Agents (Dual-Mode)
+
+Since February 2026, Microsoft offers **`@playwright/cli`** — a standalone CLI designed for AI coding agents. SpecWeave supports **dual-mode** browser automation, routing tasks to the optimal tool automatically.
+
+### CLI vs MCP Comparison
+
+| Aspect | `@playwright/cli` (CLI) | Playwright MCP Plugin |
+|--------|------------------------|----------------------|
+| **Token cost** | ~250 chars/interaction | ~5-8K chars/interaction |
+| **Token savings** | **~98% reduction** | Baseline |
+| **Best for** | Test execution, automation, CI/CD | Page exploration, DOM inspection |
+| **Browser state** | External (daemon-based) | In-context (accessibility tree) |
+| **Install** | `npm install -g @playwright/cli@latest` | `claude plugin install playwright` |
+
+### Smart Routing
+
+SpecWeave automatically routes tasks based on type:
+
+- **CLI preferred (80%)**: `ui-automate`, `e2e-test-run`, `screenshot`, `form-automation`, `ci-testing`
+- **MCP preferred (20%)**: `ui-inspect`, `page-exploration`, `self-healing-test`
+- **Fallback**: If CLI is not installed, all tasks use MCP (graceful degradation)
+
+### Configuration
+
+```json
+{
+  "testing": {
+    "playwright": {
+      "preferCli": true
+    }
+  }
+}
+```
+
+Set `preferCli: false` to always use the MCP plugin.
+
+### CLI Commands
+
+```bash
+# Install CLI globally
+npm install -g @playwright/cli@latest
+
+# Basic usage
+playwright-cli open https://example.com
+playwright-cli goto https://example.com/login
+playwright-cli snapshot
+playwright-cli screenshot output.png
+playwright-cli click "Login button"
+playwright-cli fill "Email input" "user@example.com"
+```
+
+---
+
 ## Related Terms
 
-- E2E Testing - End-to-end testing methodology
+- [E2E Testing](/docs/glossary/terms/e2e) - End-to-end testing methodology (includes CLI cross-reference)
 - [Integration Testing](/docs/glossary/terms/integration-testing) - Component interaction testing
 - [Test Pyramid](/docs/glossary/terms/test-pyramid) - Testing strategy distribution
 - [BDD](/docs/glossary/terms/bdd) - Behavior-driven development with Given-When-Then

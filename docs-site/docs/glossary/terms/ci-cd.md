@@ -654,7 +654,7 @@ After CI/CD setup, update docs:
 
 ```bash
 # Sync CI/CD setup to docs
-/sw:sync-docs update
+/specweave:sync-docs update
 
 # Results in:
 # - Updated README with build badges
@@ -739,7 +739,7 @@ After CI/CD setup, update docs:
 - [Kubernetes](/docs/glossary/terms/kubernetes) - Deployment target
 - [Git](/docs/glossary/terms/git) - Version control triggering pipelines
 - Testing - Automated tests in CI
-- DevOps - CI/CD as DevOps practice
+- [DevOps](/docs/glossary/terms/devops) - CI/CD as DevOps practice
 
 ## Resources
 

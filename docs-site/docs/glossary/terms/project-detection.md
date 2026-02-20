@@ -94,8 +94,8 @@ graph LR
 | **Frontmatter** | +20 | Highest (1.0) | `project: backend` | Explicit field in YAML frontmatter |
 | **Increment ID** | +10 | High (0.8) | `0016-backend-auth` | Project name in increment ID |
 | **Team Name** | +5 | Medium (0.6) | `team: backend-team` | Team field matches project team |
-| **Keywords** | +3 each | Low (0.3) | backend, api, service | Keywords match project keywords |
-| **Tech Stack** | +2 each | Low (0.2) | Node.js, PostgreSQL | Tech stack matches project stack |
+| **Keywords** | +3 each | Low (0.3) | `backend`, `api`, `service` | Keywords match project keywords |
+| **Tech Stack** | +2 each | Low (0.2) | `Node.js`, `PostgreSQL` | Tech stack matches project stack |
 
 **Auto-Select Threshold**: 0.7 (70% confidence = 14+ points out of 20 max from frontmatter)
 
@@ -425,11 +425,11 @@ Implement authentication...
 | **fallbackProject** | ✅ | Default project if detection fails | `"default"` |
 | **detectionThreshold** | ✅ | Minimum confidence (0.0-1.0) | `0.7` |
 | **projects** | ✅ | Project configurations | `{"backend": {...}}` |
-| **projects.`{id}`.name** | ✅ | Human-readable name | `"Backend Services"` |
-| **projects.`{id}`.team** | ⚠️  | Team name (optional) | `"Backend Team"` |
-| **projects.`{id}`.keywords** | ⚠️  | Keywords for detection | `["backend", "api"]` |
-| **projects.`{id}`.techStack** | ⚠️  | Tech stack for detection | `["Node.js", "PostgreSQL"]` |
-| **projects.`{id}`.specsFolder** | ✅ | Output folder path | `".specweave/docs/internal/specs/backend"` |
+| **projects.{id}.name** | ✅ | Human-readable name | `"Backend Services"` |
+| **projects.{id}.team** | ⚠️  | Team name (optional) | `"Backend Team"` |
+| **projects.{id}.keywords** | ⚠️  | Keywords for detection | `["backend", "api"]` |
+| **projects.{id}.techStack** | ⚠️  | Tech stack for detection | `["Node.js", "PostgreSQL"]` |
+| **projects.{id}.specsFolder** | ✅ | Output folder path | `".specweave/docs/internal/specs/backend"` |
 
 ---
 

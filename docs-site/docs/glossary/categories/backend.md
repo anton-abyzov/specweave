@@ -42,7 +42,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - JavaScript runtime for server-side development
 - Event-driven, non-blocking I/O
 - Frameworks: Express, Fastify, NestJS
-- SpecWeave plugin: `sw-backend`
+- SpecWeave plugin: `specweave-nodejs-backend` (planned)
 
 **Express.js**
 - Minimal Node.js web framework
@@ -50,7 +50,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Most popular Node.js framework
 - Quick to set up, flexible
 
-**NestJS**
+**[NestJS](/docs/glossary/terms/nestjs)**
 - Progressive Node.js framework
 - TypeScript-first, modular architecture
 - Built-in dependency injection
@@ -58,19 +58,19 @@ Backend development terms cover server-side logic, API design, database manageme
 
 ### Database Management
 
-**PostgreSQL**
+**[PostgreSQL](/docs/glossary/terms/postgresql)**
 - Relational database (SQL)
 - ACID transactions, complex queries
 - Extensions: PostGIS, full-text search
 - SpecWeave default recommendation for transactional systems
 
-**MongoDB**
+**[MongoDB](/docs/glossary/terms/mongodb)**
 - NoSQL document database
 - Flexible schema, horizontal scaling
 - Best for: rapid development, unstructured data
 - Trade-off: No ACID transactions across documents
 
-**Redis**
+**[Redis](/docs/glossary/terms/redis)**
 - In-memory data store
 - Use cases: caching, session storage, rate limiting
 - Fast reads/writes (microsecond latency)
@@ -90,7 +90,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Benefits: simplicity, easier debugging
 - When to use: small teams, early-stage products
 
-**Event-Driven Architecture**
+**[Event-Driven Architecture](/docs/glossary/terms/event-driven)**
 - Systems communicate via events
 - Tools: Kafka, RabbitMQ, AWS SNS/SQS
 - Benefits: loose coupling, scalability
@@ -331,11 +331,13 @@ Creates a new order.
 
 ### 1. Backend-Specific Plugins
 
-**sw-backend plugin**:
+**specweave-nodejs-backend plugin** (planned):
 - Node.js best practices
 - Express/NestJS boilerplate generation
 - Database schema suggestions
 - API endpoint templates
+
+**specweave-python-backend plugin** (planned):
 - FastAPI/Django/Flask expertise
 - Python-specific testing (pytest)
 - Virtual environment setup
@@ -345,7 +347,7 @@ Creates a new order.
 When creating backend increments:
 
 ```bash
-/sw:increment "User Authentication API"
+/specweave:increment "User Authentication API"
 ```
 
 The Architect agent:
@@ -423,4 +425,4 @@ Backend increments include embedded tests:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

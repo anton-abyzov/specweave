@@ -176,7 +176,7 @@ npx specweave init my-saas-app
 cd my-saas-app
 
 # Start first increment
-/sw:increment "0001-user-authentication"
+/specweave:increment "0001-user-authentication"
 
 # SpecWeave guides you through:
 # - Choosing tech stack (Next.js + Supabase + Vercel)
@@ -290,7 +290,7 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Create first feature increment
-/sw:increment "0001-user-authentication"
+/specweave:increment "0001-user-authentication"
 
 # PM agent generates:
 # - spec.md (user stories, acceptance criteria)
@@ -302,7 +302,7 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Execute tasks with AI assistance
-/sw:do
+/specweave:do
 
 # After each task completes:
 # - Living docs sync automatically (via post-task-completion hook)
@@ -315,8 +315,8 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Continue with next increments
-/sw:increment "0002-payment-processing"
-/sw:increment "0003-notification-system"
+/specweave:increment "0002-payment-processing"
+/specweave:increment "0003-notification-system"
 
 # SpecWeave maintains:
 # - Complete project history (.specweave/docs/internal/specs/)
@@ -343,8 +343,8 @@ npx specweave init my-app --greenfield
 
 4. **Plugin System**
    - Load only relevant plugins (70%+ context reduction)
-   - Tech stack plugins (sw-frontend, sw-backend)
-   - Domain plugins (sw-ml, sw-payments)
+   - Tech stack plugins (specweave-frontend, specweave-backend)
+   - Domain plugins (specweave-ml, specweave-payments)
 
 ---
 
@@ -503,13 +503,13 @@ Break project into small, testable increments:
 
 ```bash
 # Increment 1: Core infrastructure
-/sw:increment "0001-project-setup-and-auth"
+/specweave:increment "0001-project-setup-and-auth"
 
 # Increment 2: Basic features
-/sw:increment "0002-project-and-task-crud"
+/specweave:increment "0002-project-and-task-crud"
 
 # Increment 3: Advanced features
-/sw:increment "0003-real-time-collaboration"
+/specweave:increment "0003-real-time-collaboration"
 ```
 
 ### 5. Document as You Go
@@ -584,7 +584,7 @@ Use SpecWeave's living docs system:
 - [Brownfield Development](/docs/glossary/terms/brownfield) - Working with legacy codebases
 - Technical Debt - Understanding and managing debt
 - [Architecture Decision Records](/docs/glossary/terms/adr) - Documenting decisions
-- Migration Strategies - Moving from brownfield to greenfield
+- [Migration Strategies](/docs/glossary/terms/migration) - Moving from brownfield to greenfield
 - [SpecWeave Quick Start](../../guides/getting-started/quickstart) - Greenfield setup guide
 
 ---
