@@ -165,20 +165,51 @@ done
 |-------|--------|
 | **0 packages** | STOP with error: "No publishable npm packages found under repositories/" |
 | **1 package** | Auto-select it, report: "Auto-selected `$PKG_NAME` (only publishable package)" |
-| **2+ packages** | Use `AskUserQuestion` to let the user choose |
+| **2+ packages** | **Smart selection** — check which repos have changes first (see below) |
 
-**AskUserQuestion format (when 2+ packages):**
+### Smart Selection for 2+ Packages
+
+When multiple publishable packages are found, check each one for **changes** (dirty files OR unpushed commits):
+
+```bash
+# For each publishable package, check if it has changes
+CHANGED=()
+for entry in "${PUBLISHABLE[@]}"; do
+  DIR=$(echo "$entry" | cut -d'|' -f1)
+  NAME=$(echo "$entry" | cut -d'|' -f2)
+  VERSION=$(echo "$entry" | cut -d'|' -f3)
+  cd "$UMBRELLA_ROOT/$DIR"
+
+  DIRTY=$(git status --porcelain)
+  AHEAD=$(git rev-list @{u}..HEAD --count 2>/dev/null || echo "0")
+
+  if [ -n "$DIRTY" ] || [ "$AHEAD" -gt 0 ]; then
+    CHANGED+=("$DIR|$NAME|$VERSION")
+  fi
+  cd "$UMBRELLA_ROOT"
+done
+```
+
+| Changed repos | Action |
+|---------------|--------|
+| **Exactly 1** has changes | Auto-select it, report: "Auto-selected `$NAME` (only repo with changes)" |
+| **0** have changes | Ask user to choose from ALL publishable packages |
+| **2+** have changes | Ask user to choose from ONLY the repos with changes |
+
+**AskUserQuestion format (when asking is needed):**
 
 ```
 Question: "Which npm package do you want to release?"
 Header: "Package"
 Options:
   - label: "$NAME1 (v$VERSION1)"
-    description: "Path: $DIR1"
+    description: "Path: $DIR1 — [has uncommitted changes | has N unpushed commits | no changes]"
   - label: "$NAME2 (v$VERSION2)"
-    description: "Path: $DIR2"
-  ... (one per publishable package)
+    description: "Path: $DIR2 — [has uncommitted changes | has N unpushed commits | no changes]"
+  ... (one per candidate package)
 ```
+
+**Note**: When 0 repos have changes, show all publishable packages. When 2+ have changes, show only those with changes.
 
 ### After Selection
 
