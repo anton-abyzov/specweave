@@ -1158,6 +1158,16 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
     # Quick skip: already using /sw: commands (user is in workflow)
     if ! echo "$PROMPT" | grep -qE "^[[:space:]]*/sw:"; then
 
+      # BYPASS: Native Claude Code slash commands (e.g., /context, /help, /doctor)
+      # Prevents 15s detect-intent timeout -> LLM_DETECTION_FAILED -> keyword fallback
+      # that falsely matches "test" as substring inside "/context". Pattern matches
+      # /word or /word-word prompts that do not mention specweave.
+      if echo "$PROMPT" | grep -qE "^[[:space:]]*/[a-z][a-z0-9-]*([[:space:]]|$)" &&
+         ! echo "$PROMPT" | grep -qiE "specweave"; then
+        echo '{"decision":"approve"}'
+        exit 0
+      fi
+
       # Check if specweave CLI is available
       if command -v specweave >/dev/null 2>&1; then
         # Setup logging (use project root, never create dirs at $HOME)
