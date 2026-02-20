@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.279] - 2026-02-20
+
+### Changes
+- update plugins, mobile skills, and plugin-copier
+
+---
+
+
+
 ## [1.0.278] - 2026-02-19
 
 ### Changes
