@@ -94,6 +94,23 @@ else
 fi
 
 # ==============================================================================
+# EARLY EXIT FOR BUILT-IN SLASH COMMANDS (v1.0.280)
+# ==============================================================================
+# Claude Code has built-in slash commands (/context, /help, /clear, /compact,
+# /memory, /permissions, /cost, /doctor, /login, /logout, /config, etc.)
+# SpecWeave MUST NOT intercept, delay, or inject context into these commands.
+# Only /sw: and /sw-*: prefixed commands belong to SpecWeave.
+#
+# Without this guard, built-in commands like /context go through the LLM
+# detect-intent pipeline (5-15s delay) and may get incorrect additionalContext
+# injected, causing them to fail or behave unexpectedly.
+if echo "$PROMPT" | grep -qE "^[[:space:]]*/[a-zA-Z][a-zA-Z0-9_-]*($|[[:space:]])" && \
+   ! echo "$PROMPT" | grep -qiE "^[[:space:]]*/sw[-:]"; then
+  echo '{"decision":"approve"}'
+  exit 0
+fi
+
+# ==============================================================================
 # PROJECT-SCOPE INITIALIZATION GUARD (v1.0.235)
 # ==============================================================================
 # Prevents SpecWeave skills from running in non-initialized projects.
