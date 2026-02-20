@@ -24,6 +24,7 @@ import {
 } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { getProjectRoot } from './find-project-root.js';
 
@@ -230,6 +231,28 @@ export function fixHookPermissions(targetDir: string): void {
 }
 
 // ---------------------------------------------------------------------------
+// Plugin cache cleanup
+// ---------------------------------------------------------------------------
+
+/**
+ * Remove a plugin installed via Claude Code's plugin system.
+ *
+ * Claude Code's `claude plugin install` copies ALL files to its cache
+ * without any filtering, causing internal .md files (README.md, FRESHNESS.md,
+ * etc.) to leak as ghost slash commands. Since we install via copyPlugin() to
+ * ~/.claude/commands/ with proper filtering, the unfiltered cache is harmful.
+ *
+ * Uses `claude plugin uninstall` CLI to properly remove the plugin through
+ * Claude Code's own API rather than directly manipulating internal files.
+ */
+export function cleanPluginCache(pluginName: string, marketplace: string): void {
+  const pluginKey = `${pluginName}@${marketplace}`;
+  try {
+    execSync(`claude plugin uninstall "${pluginKey}"`, { stdio: 'ignore', timeout: 10_000 });
+  } catch { /* ignore - plugin might not be installed via CLI */ }
+}
+
+// ---------------------------------------------------------------------------
 // Marketplace
 // ---------------------------------------------------------------------------
 
@@ -365,7 +388,13 @@ export function copyPlugin(
     return { success: true, sha, skipped: true };
   }
 
-  // 4. Copy plugin to target, excluding internal files that would leak as commands
+  // 4. Remove unfiltered plugin cache that Claude Code's plugin system creates.
+  //    The cache contains ALL files (including internal README.md, FRESHNESS.md, etc.)
+  //    which leak as ghost slash commands. Our filtered copy in ~/.claude/commands/ is
+  //    the canonical installation.
+  cleanPluginCache(pluginName, 'specweave');
+
+  // 5. Copy plugin to target, excluding internal files that would leak as commands
   const targetDir = join(targetBaseDir, pluginName);
   try {
     // Full clean before copy: removes stale files from older installs that lacked
@@ -379,7 +408,7 @@ export function copyPlugin(
     return { success: false, sha, error: `Copy failed: ${(err as Error).message}` };
   }
 
-  // 5. Update lockfile
+  // 6. Update lockfile
   lock.skills[pluginName] = {
     version: pluginEntry.version || '0.0.0',
     sha,
