@@ -428,14 +428,14 @@ my-spa-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "Dashboard SPA"] --> B[PM: Define User Flows]
+    A[/specweave:increment "Dashboard SPA"] --> B[PM: Define User Flows]
     B --> C[Architect: Design Routing Structure]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Setup Router]
     E --> F[Implement Pages]
     F --> G[Add State Management]
     G --> H[Test Navigation]
-    H --> I[/sw:done]
+    H --> I[/specweave:done]
 
     style B fill:#61dafb
     style C fill:#61dafb
@@ -715,7 +715,7 @@ const About = lazy(() => import('./About'));
 - **SPA Architecture Guide** - Deep dive into SPAs
 - **React Router Tutorial** - Client-side routing
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - Hybrid approach (SPA + SSR)
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SPA-specific features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SPA-specific features
 
 ---
 

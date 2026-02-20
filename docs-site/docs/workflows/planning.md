@@ -2,9 +2,7 @@
 
 The planning phase transforms a feature idea into a **complete, executable implementation plan** with specifications, architecture, tasks, and tests.
 
-:::info Core Principle
-**The plan is the source of truth. Code is a derivative.** All implementation flows from spec.md → plan.md → tasks.md → code. If the plan changes, code follows. If you discover something during implementation that invalidates the plan, stop and update the plan first. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
-:::
+> **Core Principle: The plan is the source of truth. Code is a derivative.** All implementation flows from spec.md → plan.md → tasks.md → code. If the plan changes, code follows. If you discover something during implementation that invalidates the plan, stop and update the plan first. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
 
 ## Overview
 
@@ -21,7 +19,7 @@ graph LR
 
 **Duration**: 15-60 minutes (automated)
 
-**Command**: `/sw:increment "feature description"`
+**Command**: `/specweave:increment "feature description"`
 
 **Output**: Complete increment with spec.md, plan.md, tasks.md
 
@@ -32,7 +30,7 @@ graph LR
 Simply describe what you want to build:
 
 ```bash
-/sw:increment "Add real-time chat with WebSocket support"
+/specweave:increment "Add real-time chat with WebSocket support"
 ```
 
 **What happens:**
@@ -393,14 +391,14 @@ coverage_target: 88%
 📊 Estimated Effort: 3-5 days
 
 Would you like to:
-1. Proceed with implementation (/sw:do)
+1. Proceed with implementation (/specweave:do)
 2. Modify scope (edit spec)
 3. Adjust architecture (edit plan)
-4. Regenerate tasks (/sw:increment --regenerate)
+4. Regenerate tasks (/specweave:increment --regenerate)
 ```
 
 **Options:**
-- ✅ Proceed → `/sw:do`
+- ✅ Proceed → `/specweave:do`
 - 🔄 Modify → Edit files, regenerate
 - ❌ Cancel → Delete increment
 
@@ -509,7 +507,7 @@ rm .specweave/increments/0012-chat/plan.md
 rm .specweave/increments/0012-chat/tasks.md
 
 # 3. Regenerate with updated spec
-/sw:increment "0012-real-time-chat" --regenerate
+/specweave:increment "0012-real-time-chat" --regenerate
 ```
 
 **During implementation** (mid-coding discovery):
@@ -517,7 +515,7 @@ rm .specweave/increments/0012-chat/tasks.md
 # 1. Stop coding — don't push through with a known-bad plan
 # 2. Update spec.md/plan.md/tasks.md to reflect new understanding
 # 3. Review changes for consistency across all three files
-# 4. Resume implementation with /sw:do
+# 4. Resume implementation with /specweave:do
 ```
 
 The key rule: **never let code drift from the plan**. If they diverge, fix one to match the other immediately.
@@ -558,7 +556,7 @@ Before moving to implementation:
 Planning complete! Move to implementation:
 
 ```bash
-/sw:do
+/specweave:do
 ```
 
 **Learn more:**

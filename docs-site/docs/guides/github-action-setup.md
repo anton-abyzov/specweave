@@ -70,9 +70,9 @@ SpecWeave provides **3 workflow tiers**:
 
 | Tier | File | Features | Best For |
 |------|------|----------|----------|
-| **Starter** | `sw-starter.yml` | Feature planning, basic PR validation, auto-docs | New users, small teams |
-| **Standard** | `sw-standard.yml` | + Brownfield protection, test coverage, issue triage | Production teams |
-| **Enterprise** | `sw-enterprise.yml` | + Security scanning, performance, compliance | Large organizations |
+| **Starter** | `specweave-starter.yml` | Feature planning, basic PR validation, auto-docs | New users, small teams |
+| **Standard** | `specweave-standard.yml` | + Brownfield protection, test coverage, issue triage | Production teams |
+| **Enterprise** | `specweave-enterprise.yml` | + Security scanning, performance, compliance | Large organizations |
 
 **Recommendation**: Start with **Starter**, upgrade to **Standard** after testing.
 
@@ -91,7 +91,7 @@ SpecWeave provides **3 workflow tiers**:
 
 ```bash
 # Copy starter workflow
-cp .github/workflows/sw-starter.yml.template .github/workflows/sw-starter.yml
+cp .github/workflows/specweave-starter.yml.template .github/workflows/specweave-starter.yml
 
 # Or use install script
 ./install.sh --enable-github-actions
@@ -125,7 +125,7 @@ Create a test issue:
 
 ### Tier 1: Starter (Recommended for New Users)
 
-**File**: `.github/workflows/sw-starter.yml`
+**File**: `.github/workflows/specweave-starter.yml`
 
 **Features**:
 - ✅ Auto increment planning (issue labeled 'feature')
@@ -145,7 +145,7 @@ Create a test issue:
 
 ### Tier 2: Standard (Recommended for Production)
 
-**File**: `.github/workflows/sw-standard.yml`
+**File**: `.github/workflows/specweave-standard.yml`
 
 **Features**:
 - ✅ Everything in Starter, PLUS:
@@ -171,7 +171,7 @@ Create a test issue:
 
 ### Tier 3: Enterprise (For Large Organizations)
 
-**File**: `.github/workflows/sw-enterprise.yml`
+**File**: `.github/workflows/specweave-enterprise.yml`
 
 **Features**:
 - ✅ Everything in Standard, PLUS:
@@ -258,7 +258,7 @@ github_actions:
     slack:
       enabled: false
       webhook_url: "${SLACK_WEBHOOK}"
-      channel: "#sw-notifications"
+      channel: "#specweave-notifications"
 
     azure_devops:
       enabled: false
@@ -286,7 +286,7 @@ github_actions:
 
 # AI Model Configuration
 ai:
-  model: "opus"  # Use alias: opus, sonnet, or haiku
+  model: "sonnet"  # Use alias: opus, sonnet, or haiku
   max_tokens: 16000
 ```
 
@@ -360,7 +360,7 @@ integrations:
 integrations:
   slack:
     enabled: true
-    channel: "#sw-notifications"
+    channel: "#specweave-notifications"
 ```
 
 ---
@@ -399,10 +399,10 @@ integrations:
 1. Reads issue title and description
 2. Activates `increment` skill
 3. Generates complete increment structure:
-   - `.specweave/increments/0001-feature-name/spec.md`
-   - `.specweave/increments/0001-feature-name/plan.md`
-   - `.specweave/increments/0001-feature-name/tasks.md`
-   - `.specweave/increments/0001-feature-name/metadata.json`
+   - `.specweave/increments/00001-feature-name/spec.md`
+   - `.specweave/increments/00001-feature-name/plan.md`
+   - `.specweave/increments/00001-feature-name/tasks.md`
+   - `.specweave/increments/00001-feature-name/tests.md`
 4. Creates branch `feature/0001-feature-name`
 5. Commits files
 6. Creates draft PR
@@ -416,11 +416,11 @@ Issue: "Add user authentication with OAuth2"
 Label: feature
 
 → Auto-generates:
-  .specweave/increments/0003-user-authentication/
+  features/0003-user-authentication/
   ├── spec.md (WHAT/WHY)
   ├── plan.md (HOW)
-  ├── tasks.md (checklist with embedded tests)
-  └── metadata.json (status, timestamps)
+  ├── tasks.md (checklist)
+  └── tests.md (TC-0001 through TC-0010)
 
 → Creates: PR #15 (draft)
 → Comments: "Feature structure created! Review PR #15"
@@ -433,8 +433,8 @@ Label: feature
 **Trigger**: PR opened or updated
 
 **What it does**:
-1. Reads increment's spec.md and tasks.md
-2. Searches living docs in `.specweave/docs/internal/` for related context
+1. Loads feature's spec files (spec.md, plan.md, tasks.md)
+2. Loads referenced specs from `docs/internal/strategy/`
 3. Validates:
    - ✅ Spec exists for changes
    - ✅ Code aligns with spec
@@ -649,8 +649,8 @@ None ✅
 **Verify**:
 ```bash
 # Check increment folder
-ls .specweave/increments/0001-dark-mode/
-# Should see: spec.md, plan.md, tasks.md, metadata.json
+ls features/0001-dark-mode/
+# Should see: spec.md, plan.md, tasks.md, tests.md
 
 # Check branch
 git fetch
@@ -734,7 +734,7 @@ cat .specweave/docs/changelog/2025-10.md
    - Fix: Add API key
 
 2. **Workflow file missing or disabled**
-   - Check: `.github/workflows/sw-*.yml` exists
+   - Check: `.github/workflows/specweave-*.yml` exists
    - Check: Actions tab shows workflow
    - Fix: Copy workflow file, commit, push
 
@@ -762,7 +762,7 @@ cat .specweave/docs/changelog/2025-10.md
    curl https://api.anthropic.com/v1/messages \
      -H "x-api-key: YOUR_KEY" \
      -H "anthropic-version: 2023-06-01" \
-     -d '{"model":"claude-opus-4-5-20251101","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
+     -d '{"model":"claude-sonnet-4-5-20250929","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
    ```
 
 2. **Check key format**
@@ -795,15 +795,10 @@ cat .specweave/docs/changelog/2025-10.md
    - Check: Actions tab → Filter by workflow
    - Fix: Adjust triggers in YAML
 
-4. **Not using progressive disclosure**
-   - Check: Skills have clear descriptions with keywords
-   - Fix: Ensure CLAUDE.md references living docs locations
-
 **Cost optimization tips**:
-- Use progressive disclosure (70%+ reduction via on-demand skill loading)
 - Set reasonable max_tokens (8000-16000)
 - Use Haiku for simple tasks
-- Use `/sw:docs` to load only relevant living docs
+- Cache frequently-used context
 
 ---
 
@@ -830,7 +825,6 @@ cat .specweave/docs/changelog/2025-10.md
    # Should see:
    # ---
    # description: Plan and create SpecWeave increments...
-   # description: ...
    # ---
    ```
 
@@ -964,21 +958,21 @@ jobs:
 
 **Different workflows per branch**:
 ```yaml
-# .github/workflows/sw-main.yml
+# .github/workflows/specweave-main.yml
 on:
   push:
     branches: [main]
 jobs:
   # Production validations only
 
-# .github/workflows/sw-develop.yml
+# .github/workflows/specweave-develop.yml
 on:
   push:
     branches: [develop]
 jobs:
   # Development validations + performance tests
 
-# .github/workflows/sw-feature.yml
+# .github/workflows/specweave-feature.yml
 on:
   push:
     branches: [features/**]
@@ -998,4 +992,4 @@ jobs:
 
 **Questions?** Open an issue with label `question` and tag `@claude`
 
-**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](https://github.com/features/actions)
+**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](../../Actions)

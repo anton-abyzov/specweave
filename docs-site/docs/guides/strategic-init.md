@@ -1,310 +1,426 @@
-# Strategic Init - AI-Powered Product Planning
+# Strategic Init Guide
 
-**Version**: 0.22.0+
-**Last Updated**: 2025-11-17
-**Feature**: Strategic Init with Phase 0-6 (Vision → Architecture)
+**SpecWeave's AI-Powered Strategic Planning Session**
+
+Strategic Init transforms `specweave init` from a simple configuration tool into an intelligent planning session that analyzes your product vision, detects compliance needs, recommends architecture, and delivers a perfectly tailored development setup.
 
 ---
 
-## Overview
+## What is Strategic Init?
 
-SpecWeave's **Strategic Init** is an AI-powered product planning system that guides you from vision to production-ready architecture in 6 phases. Instead of guessing, you get data-driven recommendations based on market analysis, compliance requirements, and scale projections.
+Strategic Init is SpecWeave's research-driven initialization flow that:
 
-**What You Get**:
-- 🧠 AI-powered vision analysis (market, competitors, viral potential)
-- 🔒 Automatic compliance detection (HIPAA, GDPR, PCI-DSS, SOC 2, etc.)
-- 👥 Intelligent team recommendations (role sizing based on compliance + scale)
-- 📦 GitHub template repository discovery and selection
-- 🏗️ Architecture decision engine (serverless vs traditional with cost estimates)
-- 📋 Auto-generated project list (compliance + feature-aware)
+1. **Analyzes your product vision** using AI to extract market insights
+2. **Detects compliance requirements** automatically (HIPAA, GDPR, PCI-DSS, etc.)
+3. **Recommends team structure** with serverless alternatives to save costs
+4. **Suggests architecture** based on your specific needs (viral potential, compliance, scale)
+5. **Provides cost estimates** at different user scales (1K, 10K, 100K, 1M users)
+6. **Generates project structure** ready for development
 
-**Time Saved**: 20-40 hours of market research + architecture planning
+**Time to Complete**: 2-5 minutes
+**Questions Asked**: 8-12 (smart follow-ups based on your answers)
 
 ---
 
 ## When to Use Strategic Init
 
-**Perfect For**:
-- ✅ **New product ideas** - Need market validation and architecture decisions
-- ✅ **Regulated industries** - Healthcare, fintech, e-commerce (automatic compliance detection)
-- ✅ **Bootstrapped startups** - Optimize for low cost, high viral potential
-- ✅ **Enterprise products** - Need compliance, audit trails, traditional infrastructure
+### ✅ Perfect For:
+- **New projects**: Starting from scratch with clear vision
+- **Product pivots**: Reassessing architecture for new direction
+- **Compliance projects**: Healthcare, finance, government applications
+- **Viral products**: Apps expecting rapid growth (10x - 100x scaling)
+- **Bootstrapped startups**: Need to minimize fixed costs
 
-**Not Needed For**:
-- ❌ **Proof-of-concepts** - Use `specweave init --skip-research` for quick setup
-- ❌ **Internal tools** - Compliance and market analysis aren't relevant
-
----
-
-## The 6 Phases Explained
-
-### Phase 0: Vision Analysis 🧠
-
-**Input**: Your product vision (1-2 sentences)
-
-**AI Analysis**:
-- **Keyword extraction**: Identifies key concepts (e.g., "real-time collaboration", "healthcare", "HIPAA")
-- **Market detection**: Categorizes product (productivity-saas, healthcare, fintech, gaming, ai-ml, etc.)
-- **Competitor analysis**: Identifies similar products with strengths/weaknesses
-- **Viral potential score**: Rates opportunity (1-10) based on market dynamics
-- **Follow-up questions**: Generates dynamic questions for deeper understanding
-
-**Example**:
-```
-Input: "A HIPAA-compliant telehealth platform for remote patient monitoring"
-
-AI Output:
-- Market: healthcare
-- Keywords: telehealth, remote monitoring, HIPAA, patient data
-- Competitors: Doxy.me, VSee, Amwell
-- Viral Potential: 7/10 (healthcare + compliance = sticky but regulated)
-- Follow-up: "Will you integrate with EHR systems like Epic/Cerner?"
-```
-
-**Files Created**:
-- `.specweave/research/market-research-report.md` - Full analysis with competitor matrix
+### ⚠️ Not Needed For:
+- **Existing projects**: Already have architecture in place
+- **Simple scripts**: Small utilities or automation scripts
+- **Learning projects**: Just exploring SpecWeave features
 
 ---
 
-### Phase 1: Compliance Detection 🔒
+## The 6-Phase Flow
 
-**Input**: Vision keywords + market category
+### Phase 1: Vision & Market Research
+
+**What it does**: Analyzes your product description to extract market insights
+
+**Questions**:
+```
+What is your product vision?
+Example: "A design collaboration tool like Figma but for remote teams"
+```
 
 **AI Analysis**:
-- **Compliance requirements**: Automatically detects HIPAA, GDPR, PCI-DSS, SOC 2, ISO 27001, FDA, COPPA, FERPA
-- **Geographic requirements**: Multi-region compliance (US, EU, global)
-- **Serverless suitability**: Determines if AWS Lambda/Firebase can meet compliance needs
-- **Risk assessment**: Flags high-risk keywords (PHI, payment, financial, children's data)
-
-**Example**:
-```
-Vision: "Healthcare telehealth platform"
-
-Detected Compliance:
-✅ HIPAA (healthcare + patient data)
-✅ GDPR (if EU patients)
-⚠️ Serverless NOT recommended (HIPAA requires audit controls)
-→ Traditional infrastructure with AWS EC2 + RDS + CloudTrail
-```
+- Extracts keywords: `["design", "collaboration", "remote", "teams"]`
+- Detects market: `productivity-saas`
+- Finds competitors: `["Figma", "Miro", "Whimsical"]`
+- Calculates opportunity score: `8/10` (high market, moderate competition)
+- Detects viral potential: `true` (network effects, sharing features)
 
 **Output**:
-- `config.compliance` array in `.specweave/config.yml`
-- Architecture constraints (traditional vs serverless)
-
----
-
-### Phase 2: Team Recommendations 👥
-
-**Input**: Viral potential + compliance requirements + budget
-
-**AI Recommendations**:
-- **Core roles**: Backend, frontend, mobile, DevOps, QA
-- **Compliance roles**: Security engineer, compliance specialist (for HIPAA/PCI-DSS)
-- **Team size**: Small (2-5 for MVP), Medium (6-15 for growth), Large (16+ for scale)
-- **Bootstrapped optimization**: Minimize team size for lean startups
-
-**Example**:
 ```
-Inputs:
-- Viral Potential: 8/10
-- Compliance: HIPAA
-- Budget: Bootstrapped
-
-Recommended Team:
-1. Backend Engineer (API + compliance)
-2. Frontend Engineer (web app)
-3. DevOps Engineer (infrastructure + audit logs)
-4. Security Engineer (HIPAA compliance, penetration testing)
-
-Total: 4 people (vs 2 for non-compliant product)
+✓ Market: Productivity SaaS
+✓ Competitors: Figma (real-time, plugins), Miro (whiteboarding)
+✓ Opportunity: 8/10 - Large market, moderate competition
+✓ Viral Potential: High (collaboration = network effects)
 ```
 
 ---
 
-### Phase 3: Repository Selection 📦
+### Phase 2: Scaling & Performance Goals
 
-**Input**: GitHub username/organization
-
-**Features**:
-- **GitHub template discovery**: Scans your GitHub for template repositories
-- **Keyword-based filtering**: Filter by name (e.g., "react", "serverless", "backend")
-- **Combined rules**: Prefix + owner, keyword + language
-- **Repository preview**: Shows language, stars, description before selection
-- **Adaptive UX**:
-  - ≤5 repos → "Select all or manual"
-  - 6-20 repos → "Prefix-based selection"
-  - 21+ repos → "Pattern-based filtering + keywords"
-
-**Example**:
+**Questions**:
 ```
-Detected Templates (27 total):
-- anton-abyzov/serverless-starter (Node.js, 45 ⭐)
-- anton-abyzov/react-mobile-template (TypeScript, 23 ⭐)
-- anton-abyzov/backend-api-template (Python, 67 ⭐)
+How many users do you expect?
+  ○ Learning project (0-100 users)
+  ○ Small product (100-10K users)
+  ● Viral potential (10K-1M+ users)     ← Selected
 
-Selection Options:
-1. Select all (27 repos)
-2. Filter by prefix: anton-abyzov/serverless-*
-3. Filter by keyword: "serverless" (3 matches)
-4. Manual selection: Pick 5-10 repos
+How quickly will you grow?
+  ○ Gradual (months to scale)
+  ● Rapid (could go viral overnight)    ← Selected
+```
+
+**Impact**: Influences architecture recommendation (viral → serverless for instant scaling)
+
+---
+
+### Phase 3: Data & Compliance Detection
+
+**Questions**:
+```
+What type of data will your application handle?
+  ☑ Personal user data (emails, names, profiles)
+  ☐ Healthcare records (HIPAA)
+  ☐ Payment/credit card data (PCI-DSS)
+  ☐ Government data (FedRAMP, FISMA)
+
+Where will your users be located?
+  ☑ United States
+  ☑ European Union
+  ☐ Global/Multiple regions
+```
+
+**AI Detection**:
+```
+📋 Compliance Standards Detected:
+
+• GDPR (General Data Protection Regulation)
+  Region: European Union
+  Data: Personal user data
+  Requirements: Consent management, data portability, right to deletion
+  Team Impact: Need Privacy Engineer or DPO (Data Protection Officer)
+  Cost: $500/month (DPO) + $200/month (consent management tools)
+
+• CCPA (California Consumer Privacy Act)
+  Region: United States (California)
+  Data: Personal user data
+  Requirements: Privacy policy, opt-out mechanisms, data disclosure
+  Team Impact: Legal review + privacy controls
+  Cost: $100/month (compliance tools)
 ```
 
 ---
 
-### Phase 4 & 5: Architecture Decision Engine 🏗️
+### Phase 4: Budget & Cloud Credits
 
-**Input**: Viral potential + compliance + budget + scale projection
-
-**Decision Tree**:
+**Questions**:
 ```
-IF viral_potential >= 8 AND bootstrapped:
-  → Serverless (AWS Lambda + Supabase)
-  → Cost: $0/month → $500/month at 100K users
-  → Auto-scaling, pay-per-use
-
-ELSE IF compliance IN [HIPAA, PCI-DSS, SOC2]:
-  → Traditional (AWS EC2 + RDS + CloudTrail)
-  → Cost: $500/month → $5K/month at 100K users
-  → Full audit controls, dedicated infrastructure
-
-ELSE IF learning_project:
-  → Free Tier (Render + Supabase + Vercel)
-  → Cost: $0/month (YAGNI principle)
+What's your budget situation?
+  ● Bootstrapped (self-funded, minimal budget)
+  ○ Pre-seed ($50K-$500K raised)
+  ○ Series A+ ($1M+ raised)
+  ○ Learning (free tier only)
 ```
 
-**Cost Estimation**:
-- **1K users**: $0-$50/month
-- **10K users**: $200-$800/month
-- **100K users**: $1K-$5K/month
-- **1M users**: $10K-$50K/month
-
-**Breakdown**: Compute, database, storage, bandwidth
-
-**Example**:
+**Cloud Credits Presented**:
 ```
-Inputs:
-- Viral Potential: 9/10
-- Compliance: None
-- Budget: Bootstrapped
-- Scale: 100K users target
+☁️  Available Cloud Credits for Bootstrapped Startups:
 
-Recommendation: Serverless
-✅ AWS Lambda (compute)
-✅ API Gateway (REST API)
-✅ Supabase (PostgreSQL + Auth + Storage)
-✅ CloudFront (CDN)
+• AWS Activate Portfolio: $1,000 (12 months)
+  Requirements: Join incubator/accelerator
+  Apply: https://aws.amazon.com/activate/
 
-Estimated Cost at 100K users: $500/month
+• Google Cloud for Startups: $2,000 (24 months)
+  Requirements: Self-service signup
+  Apply: https://cloud.google.com/startup
+
+• Vercel Pro: $20/month free (6 months)
+  Requirements: Self-service signup
+  Apply: https://vercel.com/startups
 ```
 
 ---
 
-### Phase 6: Project Generation 📋
+### Phase 5: Methodology & Organization
 
-**Input**: Architecture + compliance + vision keywords
-
-**Project List Generation**:
-- **Core projects**: Backend API, frontend web, mobile app (if keywords match)
-- **Compliance additions**: Auth service, data service, audit logs (for HIPAA/PCI-DSS)
-- **Feature additions**: Payment service (if "payment"), notification service (if "notification"), analytics (if "analytics")
-
-**Example**:
+**Questions**:
 ```
-Vision: "HIPAA-compliant telehealth with mobile app and payments"
+How will you organize work?
+  ● Agile (Increments = Sprints, 1-2 week cycles)
+  ○ Waterfall (Increments = Phases, sequential delivery)
+```
 
-Generated Projects:
-1. backend-api (Core)
-2. frontend-web (Core)
-3. mobile-app (Keyword: "mobile")
-4. auth-service (HIPAA: Authentication)
-5. data-service (HIPAA: PHI handling)
-6. audit-logs-service (HIPAA: Audit trail)
-7. payment-service (Keyword: "payments")
-8. notification-service (Telehealth: Real-time alerts)
+**Impact**: Changes increment terminology and workflow
 
-Total: 8 projects
+---
+
+### Phase 6: Repository Selection (Multi-Repo Only)
+
+**Triggers when**: You have 3+ repositories
+
+**Questions**:
+```
+How many repositories are in this project?
+  ○ Single repository (monorepo)
+  ○ 2-5 repositories
+  ● 10+ repositories                     ← Selected
+
+How would you like to select repositories?
+  ● Pattern-based (prefix, keyword, org)  ← RECOMMENDED for 10+ repos
+  ○ All repositories from my GitHub account
+  ○ Manual selection (enter each URL)
+
+What's the repository naming pattern?
+  Examples:
+  - Prefix: "myapp-" (myapp-frontend, myapp-backend, myapp-api)
+  - Owner: "my-company" (all repos from GitHub org)
+  - Keyword: "service" (all repos containing "service")
+
+  Your pattern: myapp-
+
+Preview: Found 12 repositories matching "myapp-*"
+  • myapp-frontend (TypeScript, 145 stars, updated 2 days ago)
+  • myapp-backend (Node.js, 89 stars, updated 1 week ago)
+  • myapp-api (TypeScript, 67 stars, updated 3 days ago)
+  ... (9 more)
+
+Exclude any repositories? (optional)
+  Examples: deprecated, archived, old, legacy
+
+  Your exclusions: deprecated, archived
+
+Final selection: 10 repositories (excluded 2)
+```
+
+**Time Saved**: ~5 minutes (vs manual entry of 10 URLs)
+
+---
+
+## Architecture Recommendation
+
+After all phases, Strategic Init provides a comprehensive architecture recommendation:
+
+### Example Output:
+
+```
+🏗️  ARCHITECTURE RECOMMENDATION
+══════════════════════════════════════════════════════════════════════
+
+📐 Architecture: Serverless
+
+💡 Rationale:
+   Your product has viral potential (network effects from collaboration)
+   and you're bootstrapped (need $0 fixed costs). Serverless provides
+   instant auto-scaling from 10 to 100K users with pay-per-use pricing.
+
+🔧 Infrastructure:
+   • AWS Lambda (compute)
+   • Supabase (PostgreSQL database + auth)
+   • Vercel (frontend hosting)
+   • S3 (file storage)
+   • CloudFront CDN (global distribution)
+
+💰 Cost Estimates:
+   • At 1K users:   $10/month (mostly free tier)
+   • At 10K users:  $250/month
+   • At 100K users: $850/month
+   • At 1M users:   $5,000/month
+
+☁️  Cloud Credits Available:
+   • AWS Activate: $1,000 (12 months) - Apply: https://aws.amazon.com/activate/
+   • Vercel Pro: $20/month free (6 months) - Apply: https://vercel.com/startups
+
+📦 Generated Projects:
+   • frontend (Vercel)
+   • backend-functions (AWS Lambda)
+   • api-gateway (API Gateway + Lambda)
+
+👥 Team Recommendations:
+   • Core: 2-5 engineers (full-stack or frontend + backend split)
+   • Optional: Auth team (OR use AWS Cognito - saves $185/month)
+   • Optional: DevOps (OR use Vercel/AWS managed services)
+
+══════════════════════════════════════════════════════════════════════
+
+Accept this recommendation? (y/n/modify)
 ```
 
 ---
 
-## Usage
+## Decision Logic Examples
 
-### Basic Usage
+Strategic Init uses intelligent decision trees to recommend architecture:
+
+### Case 1: Viral + Bootstrapped → Serverless
+```
+IF viral_potential = true AND budget = "bootstrapped"
+THEN recommend serverless
+BECAUSE instant scaling + $0 fixed costs
+```
+
+### Case 2: HIPAA + Healthcare → Traditional + Compliance
+```
+IF compliance includes HIPAA AND handles PHI
+THEN recommend traditional-monolith with compliance controls
+BECAUSE HIPAA requires BAA, audit logs, encryption, network isolation
+```
+
+### Case 3: Learning Project → YAGNI + Free Tier
+```
+IF budget = "learning"
+THEN recommend modular-monolith with free tier services
+BECAUSE simplicity + zero cost for learning
+```
+
+### Case 4: Enterprise Scale → Microservices
+```
+IF team_size > 15 AND expected_services > 10 AND funding = "series-a-plus"
+THEN recommend microservices with Kubernetes
+BECAUSE team autonomy + service isolation at scale
+```
+
+---
+
+## What Gets Saved
+
+Strategic Init saves all insights to `.specweave/config.json`:
+
+```json
+{
+  "research": {
+    "vision": {
+      "keywords": ["design", "collaboration", "remote"],
+      "market": "productivity-saas",
+      "competitors": [...],
+      "opportunityScore": 8,
+      "viralPotential": true
+    },
+    "compliance": [
+      { "id": "GDPR", "regions": ["EU"], ... },
+      { "id": "CCPA", "regions": ["US-CA"], ... }
+    ],
+    "teams": [
+      { "teamName": "backend-team", "required": true, ... },
+      { "teamName": "auth-team", "serverlessAlternative": {...} }
+    ],
+    "scaling": {
+      "expectedUsers": 100000,
+      "growthRate": "viral"
+    },
+    "budget": "bootstrapped",
+    "methodology": "agile"
+  },
+  "architecture": {
+    "type": "serverless",
+    "infrastructure": ["AWS Lambda", "Supabase", "Vercel"],
+    "rationale": "...",
+    "costEstimate": {...},
+    "projects": ["frontend", "backend-functions", "api-gateway"]
+  },
+  "repositories": {
+    "selectionRules": {
+      "type": "prefix",
+      "pattern": "myapp-",
+      "excludePatterns": ["deprecated", "archived"]
+    },
+    "repositories": [...]
+  }
+}
+```
+
+**Why This Matters**: Future increments can reference this research data for consistent decision-making.
+
+---
+
+## Tips for Best Results
+
+### 1. Be Specific in Your Vision
+```
+❌ BAD: "A social media app"
+✅ GOOD: "A social media app for local businesses to connect with customers,
+         like Nextdoor but focused on small business discovery"
+```
+
+### 2. Don't Overestimate Compliance Needs
+```
+❌ BAD: "We'll handle payment data" (when using Stripe)
+✅ GOOD: "We'll use Stripe for payments" (no PCI-DSS needed!)
+```
+
+### 3. Be Realistic About Scale
+```
+❌ BAD: "We'll have 1 million users in 6 months"
+✅ GOOD: "We're aiming for 10K users in year 1, with potential for viral growth"
+```
+
+### 4. Use Pattern Selection for Multi-Repo
+```
+❌ BAD: Manually entering 50 repository URLs
+✅ GOOD: Use prefix pattern "myapp-" to select all at once
+```
+
+---
+
+## Skipping Strategic Init
+
+If you want basic init without research:
 
 ```bash
-# Run Strategic Init (default)
+# Standard init (no AI analysis)
 specweave init
 
-# You'll be prompted for vision in Phase 0
-```
-
-### Advanced Usage
-
-```bash
-# Provide vision upfront (skip Phase 0 question)
-specweave init --vision "A HIPAA-compliant telehealth platform"
-
-# Skip research phases (quick setup)
-specweave init --skip-research
-
-# Auto-accept all defaults (CI/CD mode)
-specweave init --auto-yes
-```
-
-### Brownfield Projects
-
-```bash
-# Initialize existing project
-cd my-existing-project
-specweave init
-
-# SpecWeave detects existing code and adjusts recommendations
+# Or provide basic info upfront
+specweave init --quick \
+  --name "MyApp" \
+  --tech-stack "Node.js, React, PostgreSQL" \
+  --projects "backend,frontend"
 ```
 
 ---
 
-## Output Files
+## Troubleshooting
 
-After Strategic Init completes, you'll have:
+### "LLM analysis failed"
+**Cause**: Network issue or LLM API unavailable
+**Fix**: Strategic Init falls back to keyword matching. You'll still get architecture recommendations, just without AI-powered market insights.
 
-**Configuration**:
-- `.specweave/config.yml` - Project config with compliance, team, architecture
+### "No repositories found with pattern 'myapp-'"
+**Cause**: Pattern doesn't match any repositories
+**Fix**: Check your GitHub org/username and repository naming. Try a different pattern or use manual selection.
 
-**Research**:
-- `.specweave/research/market-research-report.md` - Vision analysis, competitors, viral potential
-
-**Living Docs** (if multi-project mode):
-- `.specweave/docs/internal/specs/projects/{project-name}/` - One folder per project
-
-**Templates**:
-- `CLAUDE.md` - User-facing context for Claude Code
-- `README.md` - Project overview
-- `.gitignore` - SpecWeave-aware ignore patterns
+### "Compliance detection showing too many standards"
+**Cause**: You selected multiple data types (personal + healthcare + payment)
+**Fix**: Be selective - only choose data types you'll actually handle. If using third-party services (Stripe, Auth0), you DON'T need those compliance standards.
 
 ---
 
-## FAQ
+## Next Steps After Strategic Init
 
-### Does Strategic Init cost money?
-
-**No.** Phase 0 (Vision Analysis) uses Claude Code's existing LLM access. No additional API costs.
-
-### Can I skip phases?
-
-**Yes.** Use `--skip-research` flag. But you'll lose compliance detection, team recommendations, and cost estimates.
-
-### Can I re-run Strategic Init?
-
-**Yes.** Run `specweave init --force` to re-initialize. Your existing increments and docs will be preserved (unless you select "Fresh start").
-
-### What if I don't have GitHub templates?
-
-Strategic Init will recommend popular open-source templates based on your architecture (Next.js, Serverless Framework, etc.).
+1. **Review generated projects**: Check `.specweave/docs/internal/specs/` for project folders
+2. **Start first increment**: `specweave increment "Setup authentication"`
+3. **Invite team**: Share `.specweave/config.json` with team for consistent setup
+4. **Apply for cloud credits**: Use URLs provided in Architecture Recommendation
 
 ---
 
-## Related Guides
+## Learn More
 
-- [Multi-Project Setup](./multi-project-setup.md) - Organize projects across teams
-- [Compliance Standards Reference](../reference/compliance-standards.md) - Detailed compliance info
-- [Repository Selection Guide](./repository-selection.md) - Advanced filtering techniques
+- [Multi-Project Setup Guide](./multi-project-setup.md) - Organizing multiple projects
+- [Compliance Standards Reference](./compliance-standards.md) - All 30+ supported standards
+- [Repository Selection Guide](./repository-selection.md) - Advanced selection patterns
+- [Architecture Decisions](../../internal/architecture/adr/) - How Strategic Init makes decisions
+
+---
+
+**Ready to start?** Run `specweave init` in your project directory!

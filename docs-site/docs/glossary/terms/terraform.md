@@ -307,7 +307,7 @@ After infrastructure changes, update architecture docs:
 
 ```bash
 # Update architecture diagrams with new infrastructure
-/sw:sync-docs update
+/specweave:sync-docs update
 
 # Results in:
 # - Updated HLD with infrastructure diagram

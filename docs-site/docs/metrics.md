@@ -27,7 +27,7 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 
 **What it measures:** How often we deploy to production
 **Industry benchmarks:**
-- 🏆 **Elite**: Multiple deploys per day (&gt;365/year)
+- 🏆 **Elite**: Multiple deploys per day (>365/year)
 - ⭐ **High**: Weekly to daily (52-365/year)
 - 📊 **Medium**: Monthly to weekly (12-52/year)
 - ⚠️ **Low**: Less than monthly (&lt;12/year)
@@ -105,7 +105,7 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 ```mermaid
 graph LR
     A[GitHub API] --> B[DORA Calculator]
-    B --> C[metrics/dora-latest.json]
+    B --> C[.specweave/metrics/dora-latest.json]
     C --> D[Shields.io Badges]
     D --> E[README.md]
     C --> F[This Dashboard]

@@ -469,7 +469,7 @@ Team: ".specweave/docs/internal/specs/spec-001-authentication.md"
 
 ## Related Terms
 
-- [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content out, status in
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync
 - [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
 - [Increments](/docs/glossary/terms/increments) - Increment structure

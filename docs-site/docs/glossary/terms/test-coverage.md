@@ -538,11 +538,11 @@ coverage html
 
 ## SpecWeave Coverage Validation
 
-SpecWeave provides `/sw:validate-coverage` command:
+SpecWeave provides `/specweave:validate-coverage` command:
 
 ```bash
 # Validate coverage for increment
-/sw:validate-coverage 0008
+/specweave:validate-coverage 0008
 
 # Output:
 ✅ Increment 0008: User Authentication

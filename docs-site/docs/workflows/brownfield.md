@@ -30,51 +30,24 @@ graph TB
 
 ## The SpecWeave Brownfield Approach
 
-**Choose your path based on project size:**
-
 ```mermaid
-graph TB
-    A[Existing Codebase] --> B{Project Size?}
+graph LR
+    A[Analyze Code] --> B[Document Current State]
+    B --> C[Create Tests]
+    C --> D[Plan Changes]
+    D --> E[Implement Safely]
+    E --> F[Validate No Regression]
 
-    B -->|Large 50k+ LOC| C[Quick Start Path]
-    B -->|Small <50k LOC| D[Comprehensive Path]
-
-    C --> E[Init + Document Core Only]
-    E --> F[Create Increment]
-    F --> G[Implement with<br/>Existing Code Context]
-    G --> H[Document Changes]
-    H --> I{More Features?}
-    I -->|Yes| F
-    I -->|No| J[Complete]
-
-    D --> K[Full Documentation]
-    K --> L[Baseline Tests]
-    L --> M[Create Increment]
-    M --> N[Implement]
-    N --> I
-
-    style A fill:#ffccbc
-    style C fill:#e8f5e9
-    style D fill:#fff9c4
-    style J fill:#c8e6c9
+    style A fill:#e3f2fd
+    style F fill:#c8e6c9
 ```
 
-### Quick Start (Recommended for Large Projects)
-
-| Aspect | Quick Start | Comprehensive |
-|--------|-------------|---------------|
-| **Best For** | 50k+ LOC, fast iteration | \<50k LOC, regulated industries |
-| **Upfront Work** | 1-2 hours (core only) | 1-2 weeks (everything) |
-| **How It Works** | Document core → start immediately → docs grow with changes | Full docs → baseline tests → then increments |
-| **Benefits** | Start in hours, not weeks | Complete context upfront |
-
-**Key principle:** SpecWeave **considers existing code** when planning—you don't need to document every module before making any changes!
-
-**Key practices:**
-1. **Choose your path** (Quick Start for large projects, Comprehensive for small)
-2. **Create baseline tests** for modules you're modifying
-3. **Merge existing docs** (consolidate scattered knowledge)
-4. **Living documentation** (auto-updates as you work)
+**Key principles:**
+1. **Document BEFORE modifying** (safety first)
+2. **Create baseline tests** (capture current behavior)
+3. **Retroactive architecture** (understand before changing)
+4. **Merge existing docs** (consolidate knowledge)
+5. **Living documentation** (keep current forever)
 
 ## Complete Workflow
 
@@ -481,7 +454,7 @@ describe('Authentication Baseline (Current Behavior)', () => {
 **Now** you can safely plan changes:
 
 ```bash
-/sw:increment "0015-add-2fa-to-authentication"
+/specweave:increment "0015-add-2fa-to-authentication"
 ```
 
 **PM agent asks brownfield-aware questions:**
@@ -538,7 +511,7 @@ Please answer so I can create a safe modification plan."
 ### Phase 6: Implement Safely
 
 ```bash
-/sw:do
+/specweave:do
 ```
 
 **Implementation with safety checks:**
@@ -580,7 +553,7 @@ graph TB
 # Authentication System
 - JWT authentication
 - OAuth (Google, GitHub)
-- ✨ Two-Factor Authentication (TOTP)
+- ✨ Two-Factor Authentication (TOTP)  ← NEW!
   - Optional for users
   - Required for admins
   - Authenticator app support
@@ -627,10 +600,10 @@ graph TB
 "Create tests for current auth behavior"
 
 # 3. Plan changes
-/sw:increment "0015-add-2fa"
+/specweave:increment "0015-add-2fa"
 
 # 4. Implement with safety net
-/sw:do
+/specweave:do
 # Baseline tests catch regressions!
 ```
 
@@ -647,12 +620,12 @@ graph TB
 ```bash
 # Month 1: Auth module
 "Document auth module"
-/sw:increment "0015-modernize-auth"
+/specweave:increment "0015-modernize-auth"
 # Result: Auth modernized ✅
 
 # Month 2: Payment module
 "Document payment module"
-/sw:increment "0018-modernize-payments"
+/specweave:increment "0018-modernize-payments"
 # Result: Payments modernized ✅
 
 # Month 3: Notifications
@@ -698,12 +671,12 @@ npm test
 ### Week 3: First Modification
 
 ```bash
-/sw:increment "0001-add-apple-pay"
+/specweave:increment "0001-add-apple-pay"
 # PM agent considers existing payment module
 # Architect designs extension (not replacement)
 # Test-aware planner includes baseline + new tests
 
-/sw:do
+/specweave:do
 # Implement with regression protection
 # Baseline tests ensure no breaks
 # New tests validate Apple Pay
@@ -808,9 +781,9 @@ Before modifying ANY existing code:
 ## Next Steps
 
 **New to brownfield?** Start here:
-- [Brownfield Projects](/docs/glossary/terms/brownfield) - Understanding existing codebases
-- [Quality Gates](/docs/glossary/terms/quality-gate) - Validation before shipping
-- [Testing Fundamentals](/docs/academy/fundamentals/testing-fundamentals) - Test strategies
+- [Brownfield Analyzer](/docs/skills/brownfield-analyzer)
+- [Brownfield Onboarder](/docs/skills/brownfield-onboarder)
+- [Creating Baseline Tests](/docs/guides/testing/baseline-tests)
 
 **Ready to start?**
 ```bash

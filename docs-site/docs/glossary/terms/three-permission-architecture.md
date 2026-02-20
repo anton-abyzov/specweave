@@ -33,12 +33,12 @@ graph TB
 
 **Controls**: Creating and updating work items that SpecWeave creates.
 
-**Flow**: `/sw:increment` → CREATE GitHub issue → UPDATE as tasks complete
+**Flow**: `/specweave:increment` → CREATE GitHub issue → UPDATE as tasks complete
 
 **When true**:
-- GitHub issue auto-created on `/sw:increment`
+- GitHub issue auto-created on `/specweave:increment`
 - Issue updated with task progress
-- Issue closed on `/sw:done`
+- Issue closed on `/specweave:done`
 
 **When false**:
 - No automatic issue creation
@@ -158,6 +158,6 @@ Migration happens automatically on upgrade.
 
 ## Related Terms
 
-- [Split-Source Sync](/docs/glossary/terms/split-source-sync)
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync)
 - [Hooks](/docs/glossary/terms/hooks)
