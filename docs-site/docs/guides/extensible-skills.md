@@ -23,6 +23,23 @@ Claude Code pioneered **Skills** — transparent, programmable AI where behavior
 
 ---
 
+## A Pattern You Already Know
+
+If you've used Kustomize, Helm, or OPA Gatekeeper, you already understand Extensible Skills. The same pattern — stable core + injected customization — has been battle-tested across the Kubernetes ecosystem for years:
+
+| Infrastructure | AI Skills |
+|---|---|
+| Kustomize `base/` manifests | `SKILL.md` (core logic) |
+| Kustomize `overlays/` patches | `skill-memories/*.md` (your rules) |
+| `kustomize build` composes both | Claude runtime composes both |
+| You never fork the base | You never fork the skill |
+
+Helm charts work the same way: a published chart (stable, versioned) plus your `values.yaml` (project-specific). OPA Gatekeeper separates `ConstraintTemplate` (policy logic) from `Constraint` (your parameters). In every case, the author publishes once, users customize without forking.
+
+SpecWeave didn't invent this pattern — we applied it to AI. The Extensible Skills Standard defines how `SKILL.md` files declare extension points and how `skill-memories/` inject project-specific rules at runtime, using the same base-plus-overlay composition that infrastructure teams have relied on for years.
+
+---
+
 ## Architecture
 
 ```
