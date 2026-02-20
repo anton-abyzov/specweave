@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.297] - 2026-02-20
+
+### Changes
+- fix(plugins): update user-prompt-submit hook
+
+---
+
+
+
 ## [1.0.296] - 2026-02-20
 
 ### Changes
