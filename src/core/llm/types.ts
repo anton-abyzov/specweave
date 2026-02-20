@@ -8,6 +8,7 @@
  * - AWS Bedrock
  * - Ollama (local)
  * - Google Vertex AI
+ * - Cloudflare Workers AI (gpt-oss-120b)
  */
 
 /**
@@ -20,7 +21,8 @@ export type LLMProviderType =
   | 'azure-openai'
   | 'bedrock'
   | 'ollama'
-  | 'vertex-ai';
+  | 'vertex-ai'
+  | 'workers-ai';  // Cloudflare Workers AI (gpt-oss-120b)
 
 /**
  * LLM configuration stored in .specweave/config.json
@@ -46,6 +48,15 @@ export interface LLMConfig {
 
   /** Bedrock-specific: AWS region */
   awsRegion?: string;
+
+  /** Workers AI: Cloudflare account ID */
+  cloudflareAccountId?: string;
+
+  /** Workers AI: Reasoning effort for gpt-oss models */
+  reasoningEffort?: 'low' | 'medium' | 'high';
+
+  /** Budget config for cost-controlled providers */
+  budget?: BudgetConfig;
 
   /** Max tokens per request (default: 4096) */
   maxTokensPerRequest?: number;
@@ -225,6 +236,20 @@ export interface LLMProvider {
 }
 
 /**
+ * Budget configuration for cost-controlled providers
+ */
+export interface BudgetConfig {
+  /** Maximum daily spend in USD (default: 1.00) */
+  dailyLimitUSD: number;
+  /** Maximum monthly spend in USD (default: 10.00) */
+  monthlyLimitUSD: number;
+  /** Send notification on every use (default: true) */
+  notifyOnUse: boolean;
+  /** Send warning notification at this % of budget (default: 80) */
+  notifyThresholdPercent: number;
+}
+
+/**
  * Model pricing per 1M tokens (input/output)
  */
 export interface ModelPricing {
@@ -254,6 +279,9 @@ export const MODEL_ALIASES: Record<string, string> = {
   'bedrock:opus': 'anthropic.claude-opus-4-5-20251101-v1:0',
   'bedrock:sonnet': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
   'bedrock:haiku': 'anthropic.claude-3-haiku-20240307-v1:0',
+
+  // Cloudflare Workers AI aliases
+  'workers-ai:gpt-oss': '@cf/openai/gpt-oss-120b',
 };
 
 /**
@@ -310,6 +338,9 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
 
   // Local (free)
   'ollama/*': { inputPer1M: 0, outputPer1M: 0 },
+
+  // Cloudflare Workers AI
+  '@cf/openai/gpt-oss-120b': { inputPer1M: 0.35, outputPer1M: 0.75 },
 };
 
 /**
@@ -325,6 +356,7 @@ export const RECOMMENDED_MODELS: Record<string, Partial<Record<LLMProviderType, 
     'bedrock': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
     'ollama': 'llama3.1:70b',
     'vertex-ai': 'gemini-1.5-pro',
+    'workers-ai': '@cf/openai/gpt-oss-120b',
   },
   // Quick tasks - cost-effective
   'quick-task': {
@@ -335,5 +367,6 @@ export const RECOMMENDED_MODELS: Record<string, Partial<Record<LLMProviderType, 
     'bedrock': 'anthropic.claude-3-haiku-20240307-v1:0',
     'ollama': 'llama3.1:8b',
     'vertex-ai': 'gemini-1.5-flash',
+    'workers-ai': '@cf/openai/gpt-oss-120b',
   },
 };
