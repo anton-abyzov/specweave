@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.294] - 2026-02-20
+
+### Changes
+- fix: clean unfiltered plugin cache via claude CLI on install
+
+---
+
+
+
 ## [1.0.293] - 2026-02-20
 
 ### Changes
