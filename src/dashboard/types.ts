@@ -243,6 +243,7 @@ export interface DashboardLockFile {
   pid: number;
   startedAt: string;
   projects: string[];  // Array of project paths
+  authToken?: string;  // Dashboard API auth token
 }
 
 // API response wrapper

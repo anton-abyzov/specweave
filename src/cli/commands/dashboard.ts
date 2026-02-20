@@ -9,6 +9,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomBytes } from 'crypto';
 import chalk from 'chalk';
 import { findAvailablePort } from '../../utils/docs-preview/server-manager.js';
 import type { DashboardLockFile } from '../../dashboard/types.js';
@@ -39,11 +40,22 @@ export async function dashboardCommand(options: DashboardOptions = {}): Promise<
 
     // Register project via API
     try {
-      await fetch(`http://localhost:${existing.port}/api/projects`, {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (existing.authToken) {
+        headers['X-Specweave-Dashboard-Token'] = existing.authToken;
+      }
+
+      const registerResponse = await fetch(`http://localhost:${existing.port}/api/projects`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ path: projectRoot }),
       });
+
+      if (!registerResponse.ok) {
+        throw new Error(`Failed to register project (HTTP ${registerResponse.status})`);
+      }
     } catch {
       // Server might not be responding — fall through to start new one
       console.log(chalk.yellow('Existing dashboard not responding. Starting new instance...'));
@@ -71,11 +83,13 @@ export async function dashboardCommand(options: DashboardOptions = {}): Promise<
 async function startNewDashboard(projectRoot: string, options: DashboardOptions): Promise<void> {
   const requestedPort = options.port ? parseInt(options.port, 10) : 3456;
   const port = await findAvailablePort(requestedPort, requestedPort + 20);
+  const authToken = randomBytes(32).toString('hex');
 
   const { DashboardServer } = await import('../../dashboard/server/dashboard-server.js');
 
   const server = new DashboardServer({
     port,
+    authToken,
     projectRoots: [projectRoot],
     openBrowser: options.browser !== false,
   });
@@ -83,7 +97,13 @@ async function startNewDashboard(projectRoot: string, options: DashboardOptions)
   const instance = await server.start();
 
   // Write lock file
-  writeLockFile({ port, pid: process.pid, startedAt: new Date().toISOString(), projects: [projectRoot] });
+  writeLockFile({
+    port,
+    pid: process.pid,
+    startedAt: new Date().toISOString(),
+    projects: [projectRoot],
+    authToken,
+  });
 
   const projectSlug = pathToSlug(projectRoot);
   const url = `${instance.url}/?project=${projectSlug}`;

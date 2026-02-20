@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useCallback, useState } from 'react';
 import type { ReactNode } from 'react';
+import { appendDashboardToken } from '../utils/dashboardAuth';
 
 export type SSEStatus = 'connecting' | 'connected' | 'disconnected';
 
@@ -33,7 +34,7 @@ export function SSEProvider({ url = '/api/events', children }: { url?: string; c
     }
 
     setStatus('connecting');
-    const es = new EventSource(url);
+    const es = new EventSource(appendDashboardToken(url));
     eventSourceRef.current = es;
 
     for (const type of EVENT_TYPES) {

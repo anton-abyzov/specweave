@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as net from 'net';
 import * as fs from 'fs';
 import * as path from 'path';
+import { timingSafeEqual } from 'crypto';
 import { fileURLToPath } from 'url';
 import { Router, sendJson, readBody } from './router.js';
 import { SSEManager } from './sse-manager.js';
@@ -21,6 +22,8 @@ const __dirname = path.dirname(__filename);
 
 export interface DashboardServerOptions {
   port: number;
+  host?: string;
+  authToken?: string;
   projectRoots: string[];
   openBrowser: boolean;
 }
@@ -47,6 +50,8 @@ export class DashboardServer {
   private server: http.Server | null = null;
   private router: Router;
   private sseManager: SSEManager;
+  private readonly host: string;
+  private readonly authToken: string;
   private projects = new Map<string, {
     root: string;
     watcher: FileWatcher;
@@ -61,6 +66,8 @@ export class DashboardServer {
   }>();
 
   constructor(private options: DashboardServerOptions) {
+    this.host = options.host || '';
+    this.authToken = options.authToken || '';
     this.sseManager = new SSEManager();
     this.router = new Router();
 
@@ -152,14 +159,21 @@ export class DashboardServer {
         reject(err);
       });
 
-      this.server.listen(this.options.port, () => {
-        const url = `http://localhost:${this.options.port}`;
+      const onListen = () => {
+        const displayHost = this.host || 'localhost';
+        const url = `http://${displayHost}:${this.options.port}`;
         resolve({
           url,
           port: this.options.port,
           stop: () => this.stop(),
         });
-      });
+      };
+
+      if (this.host) {
+        this.server.listen(this.options.port, this.host, onListen);
+      } else {
+        this.server.listen(this.options.port, onListen);
+      }
     });
   }
 
@@ -189,7 +203,7 @@ export class DashboardServer {
       const origin = req.headers.origin || '';
       const headers: Record<string, string> = {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Specweave-Dashboard-Token',
         'Vary': 'Origin',
       };
       if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
@@ -197,6 +211,12 @@ export class DashboardServer {
       }
       res.writeHead(204, headers);
       res.end();
+      return;
+    }
+
+    // Security: Require dashboard token for API and SSE access.
+    if ((url.startsWith('/api/events') || url.startsWith('/api/')) && !this.isRequestAuthorized(req)) {
+      sendJson(res, { ok: false, error: 'Unauthorized' }, 401);
       return;
     }
 
@@ -217,6 +237,34 @@ export class DashboardServer {
 
     // Static files
     await this.serveStaticFile(req, res, url);
+  }
+
+  /** Verify API requests include the dashboard session token. */
+  private isRequestAuthorized(req: http.IncomingMessage): boolean {
+    if (!this.authToken) {
+      return true;
+    }
+
+    const header = req.headers['x-specweave-dashboard-token'];
+    const headerToken = Array.isArray(header) ? (header[0] || '') : (header || '');
+    const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    const queryToken = requestUrl.searchParams.get('token') || '';
+
+    return this.constantTimeTokenEquals(headerToken) || this.constantTimeTokenEquals(queryToken);
+  }
+
+  /** Constant-time token comparison to avoid token oracle leaks. */
+  private constantTimeTokenEquals(candidate: string): boolean {
+    if (!candidate || !this.authToken) {
+      return false;
+    }
+
+    const candidateBuf = Buffer.from(candidate);
+    const tokenBuf = Buffer.from(this.authToken);
+    if (candidateBuf.length !== tokenBuf.length) {
+      return false;
+    }
+    return timingSafeEqual(candidateBuf, tokenBuf);
   }
 
   /** Resolve project from query string ?project=<id> */
@@ -951,10 +999,34 @@ export class DashboardServer {
     const ext = path.extname(filePath);
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
+    // Inject dashboard auth token into the SPA bootstrap page.
+    if (ext === '.html' && path.basename(filePath) === 'index.html') {
+      try {
+        const html = fs.readFileSync(filePath, 'utf-8');
+        const tokenBootstrap = `<script>window.__SPECWEAVE_DASHBOARD_TOKEN__=${JSON.stringify(this.authToken)};</script>`;
+        const content = html.includes('</head>')
+          ? html.replace('</head>', `${tokenBootstrap}</head>`)
+          : `${tokenBootstrap}${html}`;
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Cache-Control': 'no-cache',
+        });
+        res.end(content);
+        return;
+      } catch {
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'text/plain' });
+        }
+        res.end('Internal server error');
+        return;
+      }
+    }
+
     res.writeHead(200, {
       'Content-Type': contentType,
       'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
     });
+
     const stream = fs.createReadStream(filePath);
     stream.on('error', () => {
       if (!res.headersSent) {
