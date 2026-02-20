@@ -334,6 +334,25 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
+  // Step 3b: Installation health scan (ghost commands, stale cache, etc.)
+  // Runs BEFORE plugin refresh so issues are detected, then refresh fixes them
+  {
+    const { InstallationHealthChecker } = await import('../../core/doctor/checkers/installation-health-checker.js');
+    const installChecker = new InstallationHealthChecker();
+    const installResult = await installChecker.check(projectPath, { fix: !options.check });
+
+    const installIssues = installResult.checks.filter(c => c.status === 'warn' || c.status === 'fail');
+    if (installIssues.length > 0) {
+      for (const issue of installIssues) {
+        if (options.check) {
+          console.log(chalk.yellow(`  ⚠️  ${issue.name}: ${issue.message}`));
+        } else {
+          console.log(chalk.green(`  ✓ Fixed: ${issue.name} (${issue.message})`));
+        }
+      }
+    }
+  }
+
   // Step 4: Refresh plugins (DEFAULT - unless --no-plugins specified)
   if (!options.noPlugins) {
     console.log('');
