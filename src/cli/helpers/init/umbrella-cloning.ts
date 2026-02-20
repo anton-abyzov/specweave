@@ -42,10 +42,16 @@ function buildCloneUrl(
   return `https://${pat}@github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}.git`;
 }
 
+/** Sanitize PAT from any string (replace all occurrences) */
+function sanitize(text: string, pat: string): string {
+  if (!pat) return text;
+  return text.split(pat).join('***');
+}
+
 /**
  * Clone an umbrella repository into the current project directory.
  *
- * Handles two scenarios:
+ * Handles three scenarios:
  * - No .git: fresh directory → clone directly
  * - .git with no remotes: from `git init` during specweave init → replace with umbrella's .git
  * - .git with remotes: pre-existing real repo → skip (guard)
@@ -66,52 +72,79 @@ export async function cloneUmbrellaIntoCurrentDir(
   pat: string,
   gitUrlFormat: 'ssh' | 'https' = 'https'
 ): Promise<UmbrellaCloningResult> {
+  console.log('');
+  console.log(chalk.blue.bold('   ┌─────────────────────────────────────────┐'));
+  console.log(chalk.blue.bold(`   │  📥 Cloning umbrella: ${org}/${repoName}`));
+  console.log(chalk.blue.bold('   └─────────────────────────────────────────┘'));
+  console.log('');
+
   const gitDir = path.join(projectPath, '.git');
 
+  // Step 0: Handle existing .git directory
   if (existsSync(gitDir)) {
-    // Check if this is a real pre-existing repo (has remotes) or our fresh git init (no remotes)
     const remoteResult = await execFileNoThrow('git', ['remote'], { cwd: projectPath });
     const hasRemotes = remoteResult.success && remoteResult.stdout.trim().length > 0;
 
     if (hasRemotes) {
-      // Real existing repo — don't clobber it
-      console.log(chalk.yellow('   Directory already contains a git repository with remotes. Skipping umbrella clone.'));
+      console.log(chalk.yellow('   ⚠ Directory already has a git repo with remotes — skipping umbrella clone.'));
+      console.log(chalk.gray(`   Remotes: ${remoteResult.stdout.trim()}`));
       return { success: false, error: 'Directory already contains a git repository with remotes' };
     }
 
-    // No remotes = fresh git init from specweave init — safe to replace
-    console.log(chalk.gray('   Replacing fresh git init with umbrella repository...'));
+    console.log(chalk.gray('   Removing fresh git init (no remotes)...'));
     await remove(gitDir);
+    console.log(chalk.gray('   ✓ Old .git removed'));
+  } else {
+    console.log(chalk.gray('   No existing .git — fresh directory'));
   }
-
-  console.log(chalk.blue(`\n📥 Cloning umbrella repository: ${org}/${repoName}\n`));
 
   const cloneUrl = buildCloneUrl(org, repoName, pat, gitUrlFormat);
   const tmpDir = path.join(os.tmpdir(), `sw-umbrella-${Date.now()}`);
+  const urlDisplay = gitUrlFormat === 'ssh' ? cloneUrl : `https://***@github.com/${org}/${repoName}.git`;
+  console.log(chalk.gray(`   URL: ${urlDisplay}`));
+  console.log(chalk.gray(`   Format: ${gitUrlFormat}`));
+  console.log(chalk.gray(`   Target: ${projectPath}`));
 
   try {
     // Step 1: Clone to temp dir (no checkout — avoids conflicts with .specweave/)
-    console.log(chalk.gray('   Cloning repository...'));
-    const cloneResult = await execFileNoThrow('git', ['clone', '--no-checkout', cloneUrl, tmpDir]);
+    console.log(chalk.cyan('   [1/3] Cloning to temp directory...'));
+    const cloneResult = await execFileNoThrow(
+      'git',
+      ['clone', '--no-checkout', cloneUrl, tmpDir],
+      { timeout: 120_000, maxBuffer: 10 * 1024 * 1024 }
+    );
+
     if (!cloneResult.success) {
-      const cleanError = cloneResult.stderr.replace(pat, '***');
-      console.log(chalk.red(`   Clone failed: ${cleanError}`));
+      const cleanError = sanitize(cloneResult.stderr, pat);
+      console.log(chalk.red(`   ✗ Clone failed (exit code ${cloneResult.exitCode})`));
+      console.log(chalk.red(`   ${cleanError}`));
       return { success: false, error: `Clone failed: ${cleanError}` };
     }
+    console.log(chalk.green('   ✓ Clone complete'));
 
     // Step 2: Move .git to project root
+    console.log(chalk.cyan('   [2/3] Moving .git to project root...'));
     await move(path.join(tmpDir, '.git'), gitDir);
+    console.log(chalk.green('   ✓ .git moved'));
 
     // Step 3: Checkout tracked files into current dir
     // Files not in the umbrella repo (like .specweave/) are left untouched as untracked
-    const checkoutResult = await execFileNoThrow('git', ['checkout', '.'], { cwd: projectPath });
+    console.log(chalk.cyan('   [3/3] Checking out files...'));
+    const checkoutResult = await execFileNoThrow(
+      'git',
+      ['checkout', '.'],
+      { cwd: projectPath, timeout: 60_000 }
+    );
+
     if (!checkoutResult.success) {
-      console.log(chalk.red(`   Checkout failed: ${checkoutResult.stderr}`));
+      console.log(chalk.red(`   ✗ Checkout failed: ${checkoutResult.stderr}`));
       return { success: false, error: `Checkout failed: ${checkoutResult.stderr}` };
     }
 
-    console.log(chalk.green(`   ✓ Umbrella repository cloned into current directory`));
-    console.log(chalk.gray(`   Repository: ${org}/${repoName}`));
+    console.log(chalk.green('   ✓ Files checked out'));
+    console.log('');
+    console.log(chalk.green.bold(`   ✅ Umbrella repository "${org}/${repoName}" cloned successfully`));
+    console.log('');
     return { success: true };
   } finally {
     // Always clean up temp dir
