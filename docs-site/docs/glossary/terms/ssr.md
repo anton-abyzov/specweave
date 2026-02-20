@@ -471,14 +471,14 @@ my-ssr-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "SSR Product Pages"] --> B[PM: Define Data Requirements]
+    A[/specweave:increment "SSR Product Pages"] --> B[PM: Define Data Requirements]
     B --> C[Architect: Design SSR Strategy]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Implement getServerSideProps]
     E --> F[Fetch Data on Server]
     F --> G[Test SEO]
     G --> H[Optimize Performance]
-    H --> I[/sw:done]
+    H --> I[/specweave:done]
 
     style B fill:#7c3aed
     style C fill:#8b5cf6
@@ -725,7 +725,7 @@ export async function getServerSideProps({ req }) {
 - **[Next.js SSR Guide](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props)** - Official docs
 - **SSR Tutorial** - SpecWeave SSR guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSR
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SSR-specific features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSR-specific features
 
 ---
 

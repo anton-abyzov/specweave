@@ -80,7 +80,7 @@ description: Plan and create SpecWeave increments with PM and Architect
 
 ```mermaid
 graph LR
-    A["/sw:increment"] --> B[PM Agent spawned]
+    A["/specweave:increment"] --> B[PM Agent spawned]
     B --> C[Isolated context]
     C --> D[Generate spec.md]
     D --> E[Return to main context]
@@ -192,11 +192,13 @@ Main Context (100K tokens)
 - Keep skills focused and small
 - Use clear activation keywords
 - Provide templates and examples
+- **Use other skills when needed** (PM → Architect, LSP after code)
+- Invoke specialized domain skills (frontend, backend, payments)
 
 **DON'T**:
-- Spawn agents from skills (context explosion!)
 - Make skills too generic
-- Include heavy computation
+- Duplicate existing skill functionality
+- Skip LSP validation after code generation
 
 ### Agents
 
@@ -204,11 +206,13 @@ Main Context (100K tokens)
 - Use for multi-step generation
 - Keep context isolated
 - Return clear reports
+- Invoke from skills when task requires isolated execution
 
 **DON'T**:
-- Spawn multiple agents in parallel for large tasks
+- Spawn multiple agents **processing same large files** in parallel (context shared)
 - Use agents for simple questions
 - Skip quality gates
+- Process files one by one when dealing with large codebases
 
 ---
 

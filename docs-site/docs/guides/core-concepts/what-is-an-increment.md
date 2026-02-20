@@ -1,9 +1,3 @@
----
-sidebar_position: 1
-title: What is an Increment?
-description: Learn about SpecWeave's fundamental unit of work - complete, self-contained features with specs, plans, and tests.
----
-
 # What is an Increment?
 
 An **increment** is SpecWeave's fundamental unit of work—a complete, self-contained feature with specifications, architecture, implementation plan, and tests.
@@ -25,11 +19,13 @@ graph LR
 ```
 
 **Each increment contains:**
-- 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria)
-- 🏗️ **plan.md** - How (architecture, test strategy, implementation approach)
-- ✅ **tasks.md** - Checklist with embedded tests
+- 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria) — **required**
+- 🏗️ **plan.md** - How (architecture, test strategy, implementation approach) — **optional**, for complex features
+- ✅ **tasks.md** - Checklist with embedded tests — **required**
 - 📊 **logs/** - Execution history
 - 📝 **reports/** - Completion summaries, scope changes
+
+> **When is plan.md needed?** Create `plan.md` for features with architectural decisions, multi-component design, or technology choices. Skip it for bug fixes, simple migrations, and straightforward tasks where the spec already describes the approach.
 
 ## Anatomy of an Increment
 
@@ -40,10 +36,10 @@ graph LR
 │                        # - US-002: Password reset
 │                        # - AC-US1-01: Valid credentials → dashboard
 │
-├── plan.md              # HOW: Architecture + test strategy
-│                        # - JWT authentication design
-│                        # - Database schema
-│                        # - Test coverage targets (85% unit, 80% integration)
+├── plan.md              # HOW: Architecture + test strategy (OPTIONAL)
+│                        # - Only for complex features needing design docs
+│                        # - Skip for bug fixes, simple migrations
+│                        # - Example: JWT auth design, database schema
 │
 ├── tasks.md             # Checklist + embedded tests
 │                        # - T-001: AuthService [in_progress]
@@ -132,13 +128,13 @@ SpecWeave supports different work types:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning: /sw:increment "feature"
-    Planning --> Active: /sw:do
+    [*] --> Planning: /specweave:increment "feature"
+    Planning --> Active: /specweave:do
     Active --> Active: Complete tasks
-    Active --> Paused: /sw:pause
-    Paused --> Active: /sw:resume
+    Active --> Paused: /specweave:pause
+    Paused --> Active: /specweave:resume
     Active --> Completed: All tasks done
-    Active --> Abandoned: /sw:abandon
+    Active --> Abandoned: /specweave:abandon
     Completed --> [*]
     Abandoned --> [*]
 ```
@@ -150,63 +146,23 @@ stateDiagram-v2
 - **Completed**: All tasks done, tests passing
 - **Abandoned**: Work canceled (with reason)
 
-## Increment Sizing: Keep It Small
-
-:::tip Golden Rule
-**5-15 tasks, 1-3 user stories, completable in 1-3 days.**
-:::
-
-| Metric | Target | Why |
-|--------|--------|-----|
-| **Tasks** | 5-15 | Trackable, achievable in reasonable time |
-| **User Stories** | 1-3 | Focused scope, clear goals |
-| **Duration** | 1-3 days | Fast feedback, quick wins |
-
-### Why Small Increments?
-
-**For Humans:**
-- ✅ "12 of 15 tasks done" feels achievable
-- ✅ Ship something every few days
-- ✅ Always know exactly what to do next
-
-**For AI Tools:**
-- ✅ Better context retention (smaller specs fit in context windows)
-- ✅ Higher accuracy per task
-- ✅ Easier to validate acceptance criteria
-
-### Anti-Pattern: The Mega-Increment
-
-```
-❌ BAD: 50-task increment running for 3 weeks
-   - You lose mental context after week 1
-   - AI tools struggle with sprawling specs
-   - Progress feels slow ("10% done after 3 days?")
-   - Higher risk of incomplete delivery
-```
-
-**If your increment has 15+ tasks → split it into smaller increments!**
-
----
-
 ## Best Practices
 
 ### ✅ DO
 
-1. **Keep increments small** - 5-15 tasks, 1-3 user stories
-2. **Keep increments focused** - One feature or fix per increment
-3. **Complete before starting new** - Finish 0001 before 0002
-4. **Use descriptive names** - `0001-user-authentication` not `0001`
-5. **Document scope changes** - Use `/sw:update-scope`
-6. **Close properly** - Validate tests, update docs, create completion report
+1. **Keep increments focused** - One feature or fix per increment
+2. **Complete before starting new** - Finish 0001 before 0002
+3. **Use descriptive names** - `0001-user-authentication` not `0001`
+4. **Document scope changes** - Use `/specweave:update-scope`
+5. **Close properly** - Validate tests, update docs, create completion report
 
 ### ❌ DON'T
 
-1. **Don't create mega-increments** - Split 20+ task increments
-2. **Don't start multiple increments** - Causes context switching
-3. **Don't skip specs** - Leads to unclear requirements
-4. **Don't modify completed increments** - They're immutable snapshots
-5. **Don't work without a plan** - Create plan.md before implementation
-6. **Don't forget tests** - Every task needs test validation
+1. **Don't start multiple increments** - Causes context switching
+2. **Don't skip specs** - Leads to unclear requirements
+3. **Don't modify completed increments** - They're immutable snapshots
+4. **Don't create unnecessary plan.md** - Only for complex features with architecture decisions
+5. **Don't forget tests** - Every task needs test validation
 
 ## Real-World Examples
 
@@ -225,41 +181,23 @@ Structure:
 └── reports/COMPLETION-REPORT.md
 ```
 
-### Example 2: Payment Feature (Split into Multiple Increments)
-
-:::caution Better Approach
-Instead of one 18-task, 3-week increment, **split into focused increments**:
-:::
+### Example 2: Complex Feature
 
 ```
-# Instead of ONE mega-increment, split into THREE focused ones:
-
-Increment: 0012-stripe-checkout
-Duration: 3 days
-Tasks: 8
+Increment: 0012-payment-processing
+Duration: 3 weeks
+Tasks: 18
 Type: feature
-├── spec.md (2 user stories: basic checkout, payment confirmation)
-├── plan.md (Stripe Checkout integration)
-└── tasks.md (8 tasks, embedded tests, 85% coverage)
 
-Increment: 0013-stripe-webhooks
-Duration: 2 days
-Tasks: 6
-Type: feature
-├── spec.md (2 user stories: webhook handling, event processing)
-├── plan.md (Webhook endpoints, event verification)
-└── tasks.md (6 tasks, embedded tests, 90% coverage)
-
-Increment: 0014-stripe-refunds
-Duration: 2 days
-Tasks: 5
-Type: feature
-├── spec.md (1 user story: refund processing)
-├── plan.md (Refund API, admin UI)
-└── tasks.md (5 tasks, embedded tests, 85% coverage)
+Structure:
+├── spec.md (5 user stories, 15 AC-IDs)
+├── plan.md (Stripe integration, webhooks, refunds)
+├── tasks.md (18 tasks, embedded tests, 90% coverage)
+├── logs/ (multiple sessions)
+└── reports/
+    ├── COMPLETION-REPORT.md
+    └── scope-changes-2025-11-10.md
 ```
-
-**Result**: Same total scope, but with 3 shippable milestones instead of 1 risky mega-increment!
 
 ### Example 3: Emergency Hotfix
 
@@ -302,7 +240,6 @@ Answer: Read living docs
 ## Summary
 
 - **Increment = complete feature unit** (spec, plan, tasks, tests)
-- **Keep it small**: 5-15 tasks, 1-3 user stories, 1-3 days
 - **Immutable snapshots** preserved forever
 - **Clear lifecycle** (planning → active → completed)
 - **Focus on ONE** increment at a time
@@ -312,12 +249,12 @@ Answer: Read living docs
 ## Next Steps
 
 - [Creating Your First Increment](/docs/workflows/planning)
-- [The /sw:do Workflow](/docs/workflows/implementation)
+- [The /specweave:do Workflow](/docs/workflows/implementation)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---
 
 **Learn More:**
 - [Increment Planning Workflow](/docs/workflows/planning)
-- [Increment Discipline (WIP Limits)](/docs/academy/specweave-essentials/13-increment-lifecycle)
+- [Increment Discipline (WIP Limits)](/docs/guides/core-concepts/increment-discipline)
 - Test-Aware Planning

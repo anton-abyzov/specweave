@@ -1,9 +1,3 @@
----
-sidebar_position: 2
-title: Living Documentation
-description: Documentation that automatically stays synchronized with your code - no manual updates, always current.
----
-
 # Living Documentation
 
 **Living documentation** is documentation that automatically stays synchronized with your code—no manual updates, no drift, always current.
@@ -46,7 +40,7 @@ graph LR
 ```
 
 **How it works:**
-1. You complete a task with `/sw:do`
+1. You complete a task with `/specweave:do`
 2. Post-task-completion hook fires automatically
 3. Specs, architecture docs, ADRs update to reflect reality
 4. Docs commit with implementation changes
@@ -187,14 +181,14 @@ Watch how docs evolve automatically:
 ## Current Implementation
 - ✅ JWT-based authentication
 - ✅ Password hashing with bcrypt
-- ✅ OAuth 2.0 integration (Google, GitHub)
+- ✅ OAuth 2.0 integration (Google, GitHub)  ← NEW!
 - ✅ Login endpoint: POST /api/auth/login
-- ✅ OAuth callback: POST /api/auth/oauth/callback
+- ✅ OAuth callback: POST /api/auth/oauth/callback  ← NEW!
 
 ## Components
 - AuthService (src/services/auth/AuthService.ts)
 - JWT utilities (src/utils/jwt.ts)
-- OAuthManager (src/services/auth/OAuthManager.ts)
+- OAuthManager (src/services/auth/OAuthManager.ts)  ← NEW!
 
 ## Test Coverage
 - Unit: 92% (tests/unit/auth.test.ts, oauth.test.ts)
@@ -211,7 +205,7 @@ Fires after **every task completion**:
 
 ```bash
 # You complete a task
-/sw:do
+/specweave:do
 # Task T-001: Implement AuthService ✅
 
 # Hook fires automatically:
@@ -349,11 +343,11 @@ Fires after **every task completion**:
 
 ### ❌ DON'T
 
-1. **Don't manually edit living docs** - Use `/sw:sync-docs` instead
+1. **Don't manually edit living docs** - Use `/specweave:sync-docs` instead
 2. **Don't skip hook execution** - Docs will drift
 3. **Don't modify increment snapshots** - They're immutable history
 4. **Don't duplicate docs** - One source of truth only
-5. **Don't bypass the workflow** - Use `/sw:do` for all work
+5. **Don't bypass the workflow** - Use `/specweave:do` for all work
 
 ## Comparison: Traditional vs Living
 
@@ -390,7 +384,7 @@ Month 3: Docs already outdated
 **With living docs:**
 ```
 Day 1: Implement OAuth
-  /sw:do
+  /specweave:do
   # Hook fires:
   # ✅ Updates strategy/authentication.md
   # ✅ Updates architecture/hld-authentication.md
@@ -418,7 +412,7 @@ sequenceDiagram
     participant Docs as Living Docs
     participant Git as Git
 
-    Dev->>CLI: /sw:do
+    Dev->>CLI: /specweave:do
     CLI->>CLI: Execute task
     CLI->>Hook: ✅ Task completed
     Hook->>Docs: Analyze changes
@@ -449,10 +443,10 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 
 ```bash
 # Review docs vs implementation
-/sw:sync-docs review
+/specweave:sync-docs review
 
 # Update docs from implementation
-/sw:sync-docs update
+/specweave:sync-docs update
 ```
 
 **Note**: Hooks handle updates automatically, manual sync rarely needed.
@@ -470,13 +464,14 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 ## Next Steps
 
 - [Understanding Increments](/docs/guides/core-concepts/what-is-an-increment)
-- [The /sw:do Workflow](/docs/workflows/implementation)
-- [Hook System](/docs/glossary/terms/hooks)
+- [The /specweave:do Workflow](/docs/workflows/implementation)
+- [Hook System](/docs/guides/advanced/hooks)
 
 ---
 
 **Learn More:**
-- [Documentation Structure](/docs/guides/specs-organization-guide)
+- [Living Docs Sync Strategy](/docs/guides/core-concepts/living-docs-sync-strategy) - When and how sync happens
+- [Documentation Structure](/docs/guides/core-concepts/documentation-structure)
 - [Increment vs Living Docs](/docs/guides/core-concepts/what-is-an-increment#increments-vs-living-documentation)
-- [Post-Task-Completion Hook](/docs/glossary/terms/hooks)
-- [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs) - Understand value for humans vs LLMs
+- [Post-Task-Completion Hook](/docs/guides/advanced/hooks#post-task-completion-hook)
+- [Background Jobs](/docs/guides/core-concepts/background-jobs) - Long-running operations

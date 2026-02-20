@@ -4,12 +4,12 @@
 
 ---
 
-## /sw:costs Command
+## /specweave:costs Command
 
 ### Syntax
 
 ```bash
-/sw:costs [incrementId] [--export json|csv|both]
+/specweave:costs [incrementId] [--export json|csv|both]
 ```
 
 ### Parameters
@@ -21,19 +21,19 @@
 
 ```bash
 # View all increments
-/sw:costs
+/specweave:costs
 
 # View specific increment
-/sw:costs 0003
+/specweave:costs 0003
 
 # Export to JSON
-/sw:costs 0003 --export json
+/specweave:costs 0003 --export json
 
 # Export to CSV
-/sw:costs 0003 --export csv
+/specweave:costs 0003 --export csv
 
 # Export both formats
-/sw:costs 0003 --export both
+/specweave:costs 0003 --export both
 ```
 
 ---
@@ -58,7 +58,7 @@
       "agent": "pm",
       "model": "opus",
       "increment": "0003",
-      "command": "/sw:do",
+      "command": "/specweave:do",
       "startedAt": "2025-10-31T14:30:00.000Z",
       "endedAt": "2025-10-31T14:32:00.000Z",
       "tokenUsage": {
@@ -106,7 +106,7 @@ cost = (inputTokens / 1_000_000) * inputRate +
 ### Savings Calculation
 
 ```typescript
-baselineCost = calculateCost('opus', inputTokens, outputTokens)
+baselineCost = calculateCost('sonnet', inputTokens, outputTokens)
 actualCost = calculateCost(usedModel, inputTokens, outputTokens)
 savings = baselineCost - actualCost
 ```
@@ -128,7 +128,7 @@ savings = baselineCost - actualCost
   "totalTokens": 1250000,
   "sessionCount": 42,
   "costByModel": {
-    "opus": 12.00,
+    "sonnet": 12.00,
     "haiku": 10.50
   },
   "costByAgent": {
@@ -147,7 +147,7 @@ savings = baselineCost - actualCost
 **Columns**:
 ```csv
 Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,opus,/sw:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
+session_123,pm,sonnet,/specweave:inc,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
 ```
 
 ---
@@ -193,7 +193,7 @@ const tracker = new CostTracker({
 });
 
 // Start session
-const sessionId = tracker.startSession('pm', 'opus', '0003', '/sw:increment');
+const sessionId = tracker.startSession('pm', 'opus', '0003', '/specweave:increment');
 
 // Record tokens
 tracker.recordTokens(5000, 2000, sessionId);
@@ -233,4 +233,4 @@ await reporter.exportToCSV('0003', 'cost-history.csv');
 
 ---
 
-*Last updated: 2025-10-31*
+*Last updated: 2025-10-31 | SpecWeave v0.4.0*

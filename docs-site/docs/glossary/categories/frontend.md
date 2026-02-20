@@ -23,7 +23,7 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 - Virtual DOM for performance
 - Declarative programming model
 - Most popular frontend framework
-- SpecWeave plugin: `sw-frontend`
+- SpecWeave plugin: `specweave-frontend` (planned)
 
 **[Next.js](/docs/glossary/terms/nextjs)**
 - React framework for production
@@ -65,19 +65,19 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 
 ### State Management
 
-**Redux**
+**[Redux](/docs/glossary/terms/redux)**
 - Predictable state container
 - Centralized state, time-travel debugging
 - Best for: complex state, multiple components
 - Trade-off: boilerplate, learning curve
 
-**Context API**
+**[Context API](/docs/glossary/terms/context-api)**
 - React's built-in state management
 - Simpler than Redux for small apps
 - Best for: simple global state, theme, auth
 - When to use: small/medium apps
 
-**Zustand**
+**[Zustand](/docs/glossary/terms/zustand)**
 - Minimal state management library
 - Less boilerplate than Redux
 - Best for: medium apps, want simplicity
@@ -85,19 +85,19 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 
 ### Styling Approaches
 
-**CSS Modules**
+**[CSS Modules](/docs/glossary/terms/css-modules)**
 - Scoped CSS by default
 - Prevents naming conflicts
 - Works with any framework
 - Best for: traditional CSS workflow
 
-**Tailwind CSS**
+**[Tailwind CSS](/docs/glossary/terms/tailwind)**
 - Utility-first CSS framework
 - Fast development, consistent design
 - Trade-off: HTML classes verbose
 - SpecWeave docs site uses Tailwind
 
-**Styled Components**
+**[Styled Components](/docs/glossary/terms/styled-components)**
 - CSS-in-JS solution
 - Component-scoped styles
 - Dynamic styling with props
@@ -334,23 +334,23 @@ src/
 
 ### 1. Frontend-Specific Plugins
 
-**sw-frontend plugin**:
+**specweave-frontend plugin** (planned):
 - React/Next.js best practices
 - Component boilerplate generation
 - State management patterns
 - Responsive design helpers
 
-**Figma integration** (via sw-frontend plugin, `/sw-frontend:figma` skill):
-- Design-to-code via official Figma MCP
-- Design token extraction and Code Connect
-- Responsive component generation
+**specweave-figma plugin** (planned):
+- Design system integration
+- Component generation from Figma
+- Design token export
 
 ### 2. Increment Planning for Frontend Features
 
 When creating frontend increments:
 
 ```bash
-/sw:increment "User Profile Dashboard"
+/specweave:increment "User Profile Dashboard"
 ```
 
 The Architect agent:
@@ -459,4 +459,4 @@ test('user can view dashboard', async ({ page }) => {
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

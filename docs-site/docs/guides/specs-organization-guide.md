@@ -1,10 +1,11 @@
-# Quick Start Guide
+# v2.0 Quick Start Guide
 
 **Updated**: 2025-11-12
+**Version**: 2.0 (Brownfield-First)
 
 ## 🎯 One-Minute Summary
 
-**Brownfield-First + No Duplication**
+**v2.0 = Brownfield-First + No Duplication**
 
 1. **specs/ contains ONLY feature specs (FS-*)**
 2. **Other docs live in their proper folders** (strategy/, architecture/, operations/, delivery/)
@@ -32,26 +33,27 @@
         └── by-project.md
 ```
 
-## 🆚 Old vs New Approach
+## 🆚 v1.0 vs v2.0
 
-| Aspect | Old Approach (Rejected) | Current Approach (Approved) |
+| Aspect | v1.0 (Rejected) | v2.0 (Approved) |
 |--------|----------------|-----------------|
 | **Specs contain** | ❌ NFRs, overviews, user stories | ✅ ONLY references to other docs |
 | **Folder names** | Domain-based (core-framework) | Project-based (BE from JIRA) |
 | **Duplication** | ❌ Yes (4x) | ✅ No (1x) |
 | **External tool sync** | ❌ Manual mapping | ✅ Automatic (mirrors JIRA) |
 
-## 📚 Related Documentation
+## 📚 Complete Documentation
 
-- [Living Documentation](/docs/guides/core-concepts/living-documentation) - How docs stay current
-- [Multi-Project Setup](/docs/guides/multi-project-setup) - Multi-repo organization
-- [Increments](/docs/glossary/terms/increments) - Understanding increments
+1. **[REVISED-ORGANIZATION-STRATEGY.md](./REVISED-ORGANIZATION-STRATEGY.md)** - Full v2.0 architecture
+2. **[V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md)** - Visual comparison
+3. **[COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md)** - Full example
+4. **[FINAL-DECISION.md](./FINAL-DECISION.md)** - Implementation plan
 
 ## 🚀 Next Steps
 
-1. Review [Multi-Project Setup](/docs/guides/multi-project-setup) for complete project organization
-2. Check [Living Documentation](/docs/guides/core-concepts/living-documentation) for document maintenance
-3. See [Brownfield Workflow](/docs/workflows/brownfield) for existing project migration
+1. Read [FINAL-DECISION.md](./FINAL-DECISION.md) for complete implementation plan
+2. Review [V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md) for visual comparison
+3. Check [COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md) for example spec
 
 ---
 

@@ -167,5 +167,5 @@ The orchestrator follows critical safety patterns:
 ## Related Terms
 
 - [Increments](/docs/glossary/terms/increments)
-- PM Validation
-- Quality Gates
+- [PM Validation](/docs/glossary/terms/pm-validation)
+- [Quality Gates](/docs/glossary/terms/quality-gates)

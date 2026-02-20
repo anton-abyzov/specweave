@@ -447,12 +447,12 @@ my-react-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "User Profile"] --> B[PM: Generate Spec]
+    A[/specweave:increment "User Profile"] --> B[PM: Generate Spec]
     B --> C[Architect: Plan Component Structure]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Implement React Components]
     E --> F[Write Tests]
-    F --> G[/sw:done]
+    F --> G[/specweave:done]
 
     style B fill:#61dafb
     style E fill:#61dafb
@@ -709,14 +709,14 @@ useEffect(() => {
 - **[SPA](/docs/glossary/terms/spa)** - Single Page Application architecture
 - **Component Library** - Reusable React components
 - **Frontend** - Client-side development
-- **State Management** - Redux, Zustand, etc.
+- **[State Management](/docs/glossary/terms/state-management)** - Redux, Zustand, etc.
 
 ## Learn More
 
 - **[React Official Docs](https://react.dev)** - Best learning resource
 - **React Tutorial** - SpecWeave React guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSR/SSG
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - React-specific SpecWeave features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - React-specific SpecWeave features
 
 ---
 

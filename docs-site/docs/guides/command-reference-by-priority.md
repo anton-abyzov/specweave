@@ -1,6 +1,7 @@
 # SpecWeave Command Reference - By Priority
 
 **Last Updated**: 2025-11-14
+**Version**: v0.19.0
 
 This guide organizes all SpecWeave commands by priority, from essential daily workflow to specialized features.
 
@@ -24,7 +25,7 @@ These are the essential commands you'll use every day. Master these first!
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:reopen` | Reopen completed work | `/sw:reopen 0031 --reason "GitHub sync failing"` |
+| `/sw:reopen` | **NEW!** Reopen completed work | `/sw:reopen 0031 --reason "GitHub sync failing"` |
 
 **Smart Detection**: Just say "GitHub sync not working" and the skill auto-suggests what to reopen!
 
@@ -61,7 +62,7 @@ Commands you'll use regularly but not every day.
 |---------|-------------|---------|
 | `/sw:validate` | Validate increment structure | `/sw:validate 0031` |
 | `/sw:qa` | Quality assessment with risk scoring | `/sw:qa 0031` |
-| `/sw:judge-llm` | Ultrathink code validation (any files) | `/sw:judge-llm src/**/*.ts` |
+| `/sw:check-tests` | Validate test coverage | `/sw:check-tests 0031` |
 
 ### Documentation Sync
 
@@ -97,8 +98,9 @@ Specialized commands for advanced workflows.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:archive` | Archive completed increments | `/sw:archive 0031` |
-| `/sw:restore` | Restore archived increment | `/sw:restore 0031` |
+| `/sw:archive-increments` | Archive completed increments | `/sw:archive-increments` |
+| `/sw:archive-features` | Archive completed features | `/sw:archive-features FS-031` |
+| `/sw:restore-feature` | Restore archived feature | `/sw:restore-feature FS-031` |
 | `/sw:abandon` | Abandon increment | `/sw:abandon 0031 --reason "Obsolete"` |
 
 ### Import & Migration
@@ -214,7 +216,7 @@ If you're new to SpecWeave, start with these 5 commands:
 # 4. Close when done
 /sw:done 0031
 
-# 5. Reopen if issues found
+# 5. (NEW!) Reopen if issues found
 /sw:reopen 0031 --reason "Auth broken in prod"
 ```
 
@@ -269,7 +271,7 @@ If you're new to SpecWeave, start with these 5 commands:
 
 ---
 
-## Smart Reopen
+## New in v0.19.0: Smart Reopen
 
 **Breaking News**: COMPLETED is no longer terminal! You can now reopen work when issues are discovered.
 
@@ -432,3 +434,4 @@ Options:
 
 **Last Updated**: 2025-11-14
 **Total Commands**: 62 across 10 plugins
+**New in v0.19.0**: Smart Reopen Functionality ⭐

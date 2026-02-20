@@ -384,7 +384,7 @@ graph LR
 - ✅ Auto-create GitHub Issues for increments
 - ✅ Auto-sync progress after each task
 - ✅ Auto-close issues when increments complete
-- ✅ See: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
+- ✅ See: [GitHub Sync Guide](./guides/github-sync)
 
 ---
 
@@ -456,80 +456,6 @@ enterprise-project/
 
 ---
 
-## Architecture & Performance
-
-### Why does SpecWeave use Skills instead of MCP?
-
-**Short Answer**: Code execution achieves 98% token reduction vs MCP tool calls. This is based on [Anthropic's own engineering research](https://www.anthropic.com/engineering/code-execution-with-mcp).
-
-**The Problem with MCP**:
-
-| Issue | Impact |
-|-------|--------|
-| **Tool definition bloat** | All tools loaded upfront → context window consumed |
-| **Data duplication** | Same data flows through model 2-3× |
-| **Token explosion** | 150,000 tokens for tasks achievable in 2,000 |
-
-**How SpecWeave Solves This**:
-
-```
-❌ MCP Pattern:
-   Load 50 tools → Claude picks one → fetch data → process → call another tool
-   = Multiple round trips, all definitions in context, data duplicated
-
-✅ SpecWeave Pattern:
-   Skill activates on-demand → Claude writes code → execute locally → minimal tokens
-   = 98% reduction, deterministic, reusable code
-```
-
-**Key Quote from Anthropic**:
-> "LLMs are adept at writing code and developers should take advantage of this strength to build agents that interact with MCP servers more efficiently."
-
-**Practical Benefits**:
-- **Reusable**: Code commits to git, runs in CI/CD
-- **Deterministic**: Same code = same result every time
-- **Debuggable**: Full stack traces, not opaque tool failures
-- **Cheaper**: 70-98% token savings
-
-**For Non-Claude Tools (Cursor, Copilot, etc.)**:
-This is even MORE important! MCP support varies across tools, but `npx` works everywhere:
-
-```bash
-# Instead of Playwright MCP:
-npx playwright test
-
-# Instead of Kafka MCP:
-import { Kafka } from 'kafkajs';
-```
-
-See the Architecture Decision Records in `.specweave/docs/internal/architecture/adr/` for full technical decisions.
-
----
-
-## Installation Issues
-
-### "SyntaxError: Unexpected token 'with'"
-
-**Your Node.js version is too old.** SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
-
-**Quick check:**
-```bash
-node --version
-# If below v20.12.0, you need to upgrade
-```
-
-**Solution**: See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms (macOS, Linux, Windows) and version managers (nvm, fnm, Volta, asdf, Homebrew).
-
-**Quick fix for nvm users:**
-```bash
-nvm install 22
-nvm use 22
-nvm alias default 22
-npm install -g specweave
-```
-
----
-
 ## Getting Started
 
 ### I'm new to SpecWeave. Where do I start?
@@ -537,7 +463,7 @@ npm install -g specweave
 **Quick Start** (5 minutes):
 
 ```bash
-# 1. Install SpecWeave (requires Node.js 20.12.0+)
+# 1. Install SpecWeave
 npm install -g specweave
 
 # 2. Initialize your project
@@ -545,7 +471,7 @@ cd my-project
 specweave init
 
 # 3. Create your first increment
-/sw:increment "Add user registration"
+/specweave:increment "Add user registration"
 
 # Result: spec.md, plan.md, tasks.md created
 # No living docs spec needed for first feature!
@@ -596,7 +522,7 @@ specweave init
 # Don't duplicate - link to existing documentation!
 
 # Step 3: Create increments for NEW work
-/sw:increment "Enhance authentication"
+/specweave:increment "Enhance authentication"
 
 # Your existing docs remain unchanged
 # SpecWeave overlays on top
@@ -698,353 +624,20 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
----
-
-## Self-Improving AI (Reflect)
-
-### What is the Reflect system?
-
-**Reflect enables Claude to learn from your corrections and apply patterns automatically in future sessions.**
-
-Instead of repeating yourself every session ("No, always use Button component, not button tag"), Claude captures these corrections and remembers them permanently.
-
-**How it works:**
-
-```mermaid
-flowchart LR
-    A["Session 1: You correct Claude"] --> B["Reflect captures pattern"]
-    B --> C["Saved to .specweave/memory/"]
-    C --> D["Session 2: Pattern auto-applied"]
-```
-
-**Enable it:**
-```bash
-/sw:reflect-on     # Auto-learn from every session
-/sw:reflect        # Manually capture learnings
-/sw:reflect-status # Check memory status
-```
-
-**What gets learned:**
-- ✅ Naming conventions ("Always use kebab-case for file names")
-- ✅ Component patterns ("Use Button variant='primary' for main actions")
-- ✅ Architecture decisions ("Always validate input at API boundary")
-- ✅ Testing patterns ("Mock external APIs in unit tests")
-- ✅ Code style preferences ("Prefer functional components over class")
-
-**[Full Reflect Guide →](/docs/guides/self-improving-skills)**
-
----
-
-### Why use Reflect instead of just telling Claude each time?
-
-**Because compounding knowledge beats repetition.**
-
-| Without Reflect | With Reflect |
-|-----------------|--------------|
-| Correct 10x per month | Correct once |
-| 50 tokens × 10 = 500 tokens | 50 tokens × 1 = 50 tokens |
-| Claude forgets next session | Claude remembers forever |
-| You're the memory | AI has memory |
-
-**Real example:**
-
-```
-Day 1: "No, use <Button>, not <button>"
-Day 3: "Again, use <Button>"
-Day 7: "STILL using <button>!"
-Day 14: "Please remember: <Button>"
-```
-
-**With Reflect:**
-
-```
-Day 1: "No, use <Button>, not <button>"
-       → Reflect captures learning
-Day 3: Claude automatically uses <Button>
-Day 7: Still uses <Button>
-Forever: Pattern applied automatically
-```
-
-**Memory compounds over time** — the more you work with SpecWeave, the smarter Claude becomes about YOUR project.
-
----
-
-### Where are learnings stored?
-
-Learnings are stored in **centralized memory files**:
-
-```
-.specweave/memory/                  # Project-specific learnings
-├── component-usage.md              # UI component patterns
-├── api-patterns.md                 # API conventions
-├── testing.md                      # Test patterns
-├── deployment.md                   # Deploy procedures
-└── general.md                      # Misc learnings
-
-~/.specweave/memory/                # Global learnings (all projects)
-├── general.md                      # Cross-project patterns
-└── ...
-```
-
-**Benefits:**
-- ✅ Git-trackable (team can share learnings)
-- ✅ Human-readable markdown
-- ✅ Easy to edit or remove specific learnings
-- ✅ Project-specific + global memory
-
----
-
-### Can I edit or delete learnings?
-
-**Yes! Memory files are plain markdown.**
-
-**View learnings:**
-```bash
-cat .specweave/memory/component-usage.md
-```
-
-**Edit learnings:**
-```bash
-# Remove or modify entries manually
-vim .specweave/memory/component-usage.md
-```
-
-**Delete specific learning:**
-```bash
-/sw:reflect-clear "LRN-2026-01-05-abc"
-```
-
-**Clear all learnings:**
-```bash
-rm -rf .specweave/memory/
-```
-
-Memory is transparent and user-controlled.
-
----
-
-## Hooks System
-
-### What are hooks and why do they matter?
-
-**Hooks are the secret to SpecWeave's autonomous quality.**
-
-They execute automatically at key points:
-- **SessionStart** — Load context, check prerequisites
-- **UserPromptSubmit** — Validate increment status, enforce rules
-- **ToolCall** — Auto-sync living docs, update task status
-- **SessionEnd** — Generate reports, trigger Reflect
-
-**Why they're critical:**
-
-```mermaid
-flowchart TB
-    A["Claude marks task complete"] --> B["Hook: Sync spec.md ACs"]
-    B --> C["Hook: Update living docs"]
-    C --> D["Hook: Run quality checks"]
-    D --> E["Result: Docs always current"]
-```
-
-Without hooks:
-- ❌ Manual doc updates (forget 50% of the time)
-- ❌ Specs drift from reality
-- ❌ No quality gates
-
-With hooks:
-- ✅ **Automatic doc sync** after every task
-- ✅ **Quality gates** prevent bad merges
-- ✅ **Test validation** ensures code works
-- ✅ **Living docs stay current** without manual work
-
-**Hooks make `/sw:auto` reliable** for multi-hour autonomous sessions.
-
----
-
-### Can I customize hooks?
-
-**Yes! Hooks are customizable bash scripts.**
-
-**Hook locations:**
-```
-.claude/hooks/
-├── session-start/
-├── user-prompt-submit/
-├── tool-call/
-└── session-end/
-```
-
-**Example custom hook** (validate environment):
-```bash
-# .claude/hooks/session-start/check-env.sh
-if [ ! -f .env ]; then
-  echo "⚠️  Missing .env file!"
-  exit 1
-fi
-```
-
-**SpecWeave provides default hooks** for:
-- Living docs sync
-- Task-AC auto-update
-- Test validation
-- Quality gates
-
-**[Learn more about hooks →](/docs/glossary/terms/hooks)**
-
----
-
-### What's the difference between hooks and skills?
-
-**Hooks execute automatically, skills activate on keywords.**
-
-| Aspect | Hooks | Skills |
-|--------|-------|--------|
-| **When** | Automatic (session start, tool calls) | Keyword-triggered ("architecture", "security") |
-| **Purpose** | Quality gates, validation, sync | Specialized expertise (PM, Architect, QA) |
-| **Customization** | Edit bash scripts in `.claude/hooks/` | Use provided skills or write custom |
-| **Examples** | Sync docs after task, validate tests | Generate ADR, design system, write tests |
-
-**Together they're powerful:**
-- **Skills** = AI agents with domain expertise
-- **Hooks** = Automation ensuring quality
-
----
-
-## Troubleshooting & Recovery
-
-### Commands not working? Skills not loading?
-
-**Quick Fix** - Run this command to recover from most issues:
-
-```bash
-specweave update
-```
-
-**When to use:**
-- ✅ Claude Code was updated and skills stopped working
-- ✅ Commands like `/sw:increment` not recognized
-- ✅ Hooks not firing properly
-- ✅ After upgrading SpecWeave version
-
-**What it does:**
-- CLI self-update (npm)
-- Regenerates CLAUDE.md and AGENTS.md
-- Updates config with new defaults
-- Refreshes plugins (24 plugins, 136 skills, 68 agents)
-
-### When to use `refresh-plugins` instead
-
-Most users should use `specweave update`. The `refresh-plugins` command exists for specific situations:
-
-```bash
-specweave refresh-plugins
-```
-
-**What it does beyond auto-update:**
-- Fixes hook permissions (`chmod +x`) — executable bits may not be preserved
-- Manages lazy loading state (router-only installation for token efficiency)
-- Cleans up orphaned cache/skills directories
-- Updates instruction files (CLAUDE.md, AGENTS.md)
-
-**When to use it:**
-- Hooks stopped working after an update (permission issue)
-- Skills not activating despite being installed
-- Want to refresh plugins without updating CLI version
-
-### Auto Mode Issues
-
-**Session stuck or not completing?**
-```bash
-# Check session status
-/sw:auto-status
-
-# Cancel current session
-/sw:cancel-auto
-
-# Resume with fresh session
-/sw:auto
-```
-
-**Tests not running in auto mode?**
-
-Auto mode requires tests to actually execute before completion. If you see:
-- "All tasks marked complete but NO TEST EXECUTION detected"
-- "E2E tests exist but were NOT executed"
-
-Run tests explicitly, then auto mode will complete:
-```bash
-npm test
-npx playwright test
-```
-
-### Skills not activating?
-```bash
-ls -la .claude/skills/
-# Should see 17+ SpecWeave skills
-
-# If missing, first try full update:
-specweave update
-
-# If still not working (hook permissions issue):
-specweave refresh-plugins
-```
-
-### Commands not found?
-```bash
-ls -la .claude/commands/
-# Should see 22+ command files
-
-# If missing, first try full update:
-specweave update
-
-# If still not working:
-specweave refresh-plugins
-```
-
-### Hooks not firing?
-
-```bash
-# Check hooks are installed
-ls -la .claude/hooks/
-
-# Verify hook output
-cat .specweave/logs/hook*.log
-
-# Reinstall hooks:
-specweave init .
-# Select: "Continue working"
-```
-
-### Errors during Bash or Edit tool calls?
-
-**Install latest SpecWeave:**
-```bash
-npm install -g specweave@latest
-specweave update
-```
-
-**Clear stale state:**
-```bash
-rm -f .specweave/state/*.lock
-rm -rf .specweave/state/.dedup-cache
-```
-
----
-
 ## Still Have Questions?
 
 **Resources**:
-- **User Guide**: [Quick Start](/docs/quick-start)
-- **GitHub Sync**: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
-- **Intro**: [Introduction](/docs/intro)
+- **User Guide**: [Getting Started](./guides/getting-started)
+- **GitHub Sync**: [GitHub Integration](./guides/github-sync)
+- **Architecture**: [System Architecture](./architecture/overview)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
-- **Discord**: [Join Community](https://discord.gg/UYg4BGJ65V)
+- **Discord**: [Join Community](https://discord.gg/specweave) *(coming soon)*
 
 **Common Follow-Ups**:
-- "How do I sync with Jira?" → See [JIRA Integration](/docs/academy/specweave-essentials/15-jira-integration)
-- "Can I use SpecWeave with Cursor?" → See [Introduction](/docs/intro)
-- "What's the increment lifecycle?" → See [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle)
-- "How do I use auto mode?" → See [Auto Mode Guide](#auto-mode-issues) above
+- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
+- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
+- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
 
 ---
 
-**Last Updated**: 2026-01-02
+**Last Updated**: 2025-12-24 (v1.0.46)

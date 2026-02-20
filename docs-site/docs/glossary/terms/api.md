@@ -241,16 +241,16 @@ Your application's backend APIs are documented in:
 
 SpecWeave integrates with external APIs:
 
-**GitHub API** (via `sw-github` plugin):
+**GitHub API** (via `specweave-github` plugin):
 ```bash
 # Create GitHub issue from increment
-/sw-github:create-issue
+/specweave-github:create-issue
 ```
 
-**Jira API** (via `sw-jira` plugin):
+**Jira API** (via `specweave-jira` plugin):
 ```bash
 # Sync increment to Jira epic
-/sw-jira:sync
+/specweave-jira:sync
 ```
 
 ### 3. API-First Development
@@ -325,7 +325,7 @@ GET /users
 Headers: Authorization: Bearer eyJhbGc...
 ```
 
-**Learn More: JWT →** | **OAuth2 →**
+**Learn More: JWT →** | **[OAuth2 →](/docs/glossary/terms/oauth2)**
 
 ### 3. Rate Limiting
 

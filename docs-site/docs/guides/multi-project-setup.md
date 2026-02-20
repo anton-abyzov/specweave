@@ -1,7 +1,8 @@
 # Multi-Project Setup Guide
 
-**Version**: 0.16.11+ (Flattened Structure)
+**Version**: 0.16.11 (Flattened Structure)
 **Last Updated**: 2025-11-11
+**Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
 
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
 
@@ -58,7 +59,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 **Use when**:
 - Multiple teams or repos
-- [Microservices](/docs/glossary/terms/microservices) architecture
+- Microservices architecture
 - Platform engineering managing multiple projects
 - Different tech stacks per team
 - Enterprise with multiple products
@@ -71,7 +72,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 └── platform-infra/
 ```
 
-**Behavior**: Switch between projects using `/sw:switch-project`.
+**Behavior**: Switch between projects using `/specweave:switch-project`.
 
 ---
 
@@ -80,7 +81,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 ### Step 1: Initialize Multi-Project Mode
 
 ```bash
-/sw:init-multiproject
+/specweave:init-multiproject
 ```
 
 **Interactive prompts**:
@@ -100,7 +101,7 @@ Create additional projects? (besides "default") (y/N): y
 Project ID (kebab-case): web-app
 Project name: Web Application
 Description: Customer-facing web application
-Tech stack (comma-separated): [React](/docs/glossary/terms/react), [TypeScript](/docs/glossary/terms/typescript), [Node.js](/docs/glossary/terms/nodejs), PostgreSQL
+Tech stack (comma-separated): React, TypeScript, Node.js, PostgreSQL
 Team name: Frontend Team
 Tech lead email (optional): lead@example.com
 Product manager email (optional): pm@example.com
@@ -116,7 +117,7 @@ Project ID (kebab-case): mobile-app
 ### Step 2: Switch to a Project
 
 ```bash
-/sw:switch-project web-app
+/specweave:switch-project web-app
 ```
 
 **Output**:
@@ -132,7 +133,7 @@ Project ID (kebab-case): mobile-app
 ### Step 3: Create Increments (As Usual)
 
 ```bash
-/sw:increment "Add user authentication"
+/specweave:increment "Add user authentication"
 ```
 
 **Result**: Spec created in `specs/web-app/spec-001-user-auth.md`
@@ -265,6 +266,78 @@ legacy/
 
 ---
 
+## Increment spec.md Requirements
+
+When creating increments in multi-project mode, you must specify the target project in the spec.md YAML frontmatter. This ensures increments sync to the correct location in living docs.
+
+### 1-Level Structure (Projects Only)
+
+**When**: `multiProject.enabled: true` in config.json
+
+**Required field**: `project:`
+
+```yaml
+---
+increment: 0001-dark-mode
+project: web-app           # REQUIRED
+title: "Add Dark Mode"
+status: planned
+---
+```
+
+**Sync path**: `internal/specs/web-app/FS-001/`
+
+### 2-Level Structure (Projects + Boards)
+
+**When**: ADO area paths, JIRA boards, or umbrella with teams
+
+**Required fields**: `project:` AND `board:`
+
+```yaml
+---
+increment: 0001-clinical-reports
+project: acme-corp                 # REQUIRED
+board: clinical-insights           # REQUIRED for 2-level
+title: "Add Clinical Reports"
+status: planned
+---
+```
+
+**Sync path**: `internal/specs/acme-corp/clinical-insights/FS-001/`
+
+### Automatic Detection
+
+The increment planner automatically detects your structure level and prompts for project/board selection:
+
+```
+🔍 Detected 2-level structure (ADO area path mapping)
+   Available projects: acme-corp
+
+   📁 Project: acme-corp
+      Boards: clinical-insights, platform-engineering, digital-operations
+
+Which board should this increment sync to?
+> clinical-insights
+
+✅ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
+```
+
+### Migration: Adding project to existing increments
+
+If you have existing increments without `project:` field:
+
+```bash
+# Add to spec.md YAML frontmatter:
+---
+increment: 0001-existing-feature
+project: my-project          # Add this line
+---
+```
+
+See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md) for technical details.
+
+---
+
 ## Workflows
 
 ### Workflow 1: Managing Multiple Teams
@@ -273,13 +346,13 @@ legacy/
 
 ```bash
 # Morning: Frontend team work
-/sw:switch-project web-app
-/sw:increment "Add dark mode"
+/specweave:switch-project web-app
+/specweave:increment "Add dark mode"
 # Spec created in: specs/web-app/spec-004-dark-mode.md
 
 # Afternoon: Mobile team work
-/sw:switch-project mobile-app
-/sw:increment "Add biometric auth"
+/specweave:switch-project mobile-app
+/specweave:increment "Add biometric auth"
 # Spec created in: specs/mobile-app/spec-001-biometric-auth.md
 ```
 
@@ -294,16 +367,16 @@ legacy/
 # - frontend-app (React)
 
 # Infrastructure work
-/sw:switch-project platform-infra
-/sw:increment "Upgrade Kubernetes to 1.28"
+/specweave:switch-project platform-infra
+/specweave:increment "Upgrade Kubernetes to 1.28"
 
 # Backend work
-/sw:switch-project backend-api
-/sw:increment "Add rate limiting middleware"
+/specweave:switch-project backend-api
+/specweave:increment "Add rate limiting middleware"
 
 # Frontend work
-/sw:switch-project frontend-app
-/sw:increment "Implement new design system"
+/specweave:switch-project frontend-app
+/specweave:increment "Implement new design system"
 ```
 
 ### Workflow 3: Microservices
@@ -318,11 +391,11 @@ legacy/
 # - notification-service
 # - analytics-service
 
-/sw:switch-project user-service
-/sw:increment "Add OAuth2 support"
+/specweave:switch-project user-service
+/specweave:increment "Add OAuth2 support"
 
-/sw:switch-project order-service
-/sw:increment "Implement order tracking"
+/specweave:switch-project order-service
+/specweave:increment "Implement order tracking"
 
 # Each service gets its own specs, modules, team docs
 ```
@@ -392,10 +465,10 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 
 ```bash
 # Switch to web-app
-/sw:switch-project web-app
+/specweave:switch-project web-app
 
 # Create increment (syncs to web-app-github and web-app-jira)
-/sw:increment "Add payment integration"
+/specweave:increment "Add payment integration"
 
 # Result:
 # - Spec: specs/web-app/spec-005-payment-integration.md
@@ -487,7 +560,7 @@ modules/
 
 **Solution**:
 ```bash
-/sw:init-multiproject
+/specweave:init-multiproject
 # Select "Yes" to enable multi-project mode
 ```
 
@@ -498,10 +571,10 @@ modules/
 **Solution**:
 ```bash
 # List all projects
-/sw:switch-project
+/specweave:switch-project
 
 # Create missing project
-/sw:init-multiproject
+/specweave:init-multiproject
 # Select "Yes" to create additional projects
 ```
 
@@ -510,7 +583,7 @@ modules/
 **Issue**: Created increment in wrong project
 
 **Solution**:
-1. Switch to correct project: `/sw:switch-project correct-project`
+1. Switch to correct project: `/specweave:switch-project correct-project`
 2. Manually move spec file to correct project folder
 3. Update increment metadata if needed
 
@@ -530,7 +603,7 @@ modules/
 
 
 ```bash
-/sw:init-multiproject
+/specweave:init-multiproject
 
 # Prompts:
 # - Enable multi-project mode? → Yes
@@ -539,84 +612,15 @@ modules/
 
 ---
 
-## Saving Changes Across Repos
-
-Use `/sw:save` to commit and push changes across all repos with a single command:
-
-```bash
-# Save all repos with same commit message
-/sw:save "feat: Add user authentication"
-
-# Preview what would happen
-/sw:save --dry-run
-
-# Save specific repos only
-/sw:save "fix: Bug fixes" --repos frontend,backend
-```
-
-### Example Workflow
-
-```
-/sw:save "feat: Complete user registration"
-
-Scanning for repositories...
-Mode: Umbrella (3 child repos)
-
-frontend:
-  Status: 4 files changed
-  ✓ Committed and pushed
-
-backend:
-  Status: 2 files changed
-  ✓ Committed and pushed
-
-shared:
-  Status: No changes (skipping)
-
-Summary:
-  ✓ Saved: 2/3 repositories
-```
-
-### Remote Setup
-
-If a repo has no remote configured, the command will:
-
-1. **Check umbrella config** - Use `githubUrl` if configured
-2. **Prompt for URL** - Ask you to enter manually or use GitHub convention
-3. **Skip** - Continue without saving that repo
-
-**Tip**: Configure `githubUrl` in your umbrella config for seamless remote setup:
-
-```json
-{
-  "umbrella": {
-    "childRepos": [
-      {
-        "id": "myapp-frontend",
-        "path": "./myapp-frontend",
-        "githubUrl": "https://github.com/myorg/myapp-frontend"
-      }
-    ]
-  }
-}
-```
-
-**ID Strategy**: The `id` MUST match the repo name exactly (e.g., `myapp-frontend`), not arbitrary abbreviations like `fe`.
-
-See the full [/sw:save command reference](/docs/commands/save) for more options.
-
----
-
 ## See Also
 
 - **Brownfield Import Guide** (coming soon) - Import existing docs from external sources
 - **Team Playbooks Guide** (coming soon) - Best practices for team documentation
-- `/sw:init-multiproject` - CLI command reference
-- `/sw:switch-project` - CLI command reference
-- `/sw:import-docs` - CLI command reference
-- `/sw:save` - Save changes across all repos
+- `/specweave:init-multiproject` - CLI command reference
+- `/specweave:switch-project` - CLI command reference
+- `/specweave:import-docs` - CLI command reference
 
 ---
 
 **Last Updated**: 2025-11-05
-**Version**: 0.8.0+
+**Version**: 0.8.0

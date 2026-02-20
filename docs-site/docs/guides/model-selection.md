@@ -7,18 +7,14 @@
 ## Overview
 
 SpecWeave uses a two-tier model strategy:
-1. **Opus 4.6** (or Opus 4.5) - Default for all complex work (planning, analysis, architecture, code review)
+1. **Opus 4.5** - Default for all complex work (planning, analysis, architecture, code review)
 2. **Haiku** - For simple/cheap operations (translations, mechanical tasks)
-
-:::tip Latest Models
-Claude Opus 4.6 is the most capable coding model available. It excels at complex architecture, multi-file refactors, and production-quality code generation. Sonnet 4.5 provides an excellent balance of speed and capability for routine tasks.
-:::
 
 ---
 
 ## The Models
 
-### Opus 4.6 / 4.5 (Default - Planning, Analysis & Complex Work)
+### Opus 4.5 (Default - Planning, Analysis & Complex Work)
 
 **Use for**:
 - Strategic planning
@@ -67,4 +63,4 @@ Claude Opus 4.6 is the most capable coding model available. It excels at complex
 
 ---
 
-*Last updated: 2025-10-31*
+*Last updated: 2025-10-31 | SpecWeave v0.4.0*

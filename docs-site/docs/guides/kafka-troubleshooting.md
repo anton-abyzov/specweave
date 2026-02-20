@@ -45,7 +45,7 @@ nc -zv localhost 9092
 
 ```bash
 # Start Kafka cluster
-/sw-kafka:dev-env start
+/specweave-kafka:dev-env start
 
 # Wait for cluster to be ready (~60 seconds)
 docker logs kafka-broker -f
@@ -66,7 +66,7 @@ npm install -g @kanapuli/mcp-kafka
 go install github.com/tuannvm/kafka-mcp-server@latest
 
 # Reconfigure MCP
-/sw-kafka:mcp-configure
+/specweave-kafka:mcp-configure
 ```
 
 **Solution 3: Firewall Blocking Port**
@@ -1001,13 +1001,13 @@ curl -X PUT http://localhost:8081/config/user-events-value \
 # ⚠️ CAUTION: Deletes ALL data!
 
 # Stop all services
-/sw-kafka:dev-env stop
+/specweave-kafka:dev-env stop
 
 # Remove volumes
 docker volume prune -f
 
 # Restart fresh
-/sw-kafka:dev-env start
+/specweave-kafka:dev-env start
 ```
 
 ### Export Cluster Diagnostics

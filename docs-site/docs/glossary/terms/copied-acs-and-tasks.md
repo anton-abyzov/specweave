@@ -1,7 +1,7 @@
 # COPIED ACs and Tasks
 
 **Category**: Architecture
-**Related Terms**: [Three-Layer Architecture](three-layer-architecture.md), [Living Docs](living-docs.md), [User Story](user-stories), [Project-Specific Tasks](project-specific-tasks.md)
+**Related Terms**: [Three-Layer Architecture](three-layer-architecture.md), [Living Docs](living-docs.md), [User Story](user-story.md), [Project-Specific Tasks](project-specific-tasks.md)
 
 ---
 
@@ -250,7 +250,7 @@ COPIED content becomes checkable checkboxes in GitHub issues:
 
 ### Copy Process
 
-**Command**: `/sw:sync-docs`
+**Command**: `/specweave:sync-docs`
 
 **Steps**:
 1. Read increment spec.md (all ACs)
@@ -341,7 +341,7 @@ class CopiedContentSyncManager {
 ```markdown
 # US-001: Implement Authentication (Backend)
 
-**Feature**: [FS-031: External Tool Status Sync](../../_features/_archive/FS-031/FEATURE.md)
+**Feature**: [FS-031: External Tool Status Sync](../../_features/FS-031/FEATURE.md)
 **Epic**: [Epic-123: Authentication System](../../_epics/epic-123.md)
 
 ---
@@ -399,7 +399,7 @@ validation, and protected route middleware.
 ### For Developers
 
 1. **Trust the Increment**: Always update increment spec.md and tasks.md first
-2. **Sync Regularly**: Run `/sw:sync-docs` to propagate changes
+2. **Sync Regularly**: Run `/specweave:sync-docs` to propagate changes
 3. **Verify Filtering**: Check User Stories have correct project-specific content
 4. **Validate Status**: Ensure checkbox status matches code completion
 
@@ -444,7 +444,7 @@ validation, and protected route middleware.
 - **[Living Docs](living-docs.md)**: Destination for COPIED User Stories
 - **[Project-Specific Tasks](project-specific-tasks.md)**: How tasks are filtered by project
 - **[Source of Truth](source-of-truth.md)**: Increment as definitive status
-- **[User Story](user-stories)**: Container for COPIED ACs and tasks
+- **[User Story](user-story.md)**: Container for COPIED ACs and tasks
 
 ---
 
@@ -465,4 +465,4 @@ validation, and protected route middleware.
 ---
 
 **Last Updated**: 2025-11-16
-**Related Increment**: [0037-project-specific-tasks](/docs/glossary/terms/increments)
+**Related Increment**: [0037-project-specific-tasks](../../../increments/0037-project-specific-tasks/)

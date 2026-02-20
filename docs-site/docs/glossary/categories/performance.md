@@ -24,13 +24,13 @@ Performance and scalability terms cover the practices, patterns, and technologie
 - Types: In-memory (Redis), HTTP, Query result
 - Benefits: Faster response, reduced database load
 
-**Redis**
+**[Redis](/docs/glossary/terms/redis)**
 - In-memory data store (key-value)
 - Use cases: caching, session storage, rate limiting
 - Fast: microsecond latency
 - SpecWeave uses Redis for hook debouncing
 
-**CDN (Content Delivery Network)**
+**[CDN (Content Delivery Network)](/docs/glossary/terms/cdn)**
 - Distributed network of servers for static content
 - Benefits: faster load times, reduced server load
 - Providers: CloudFront, Cloudflare, Fastly
@@ -38,19 +38,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Scaling Patterns
 
-**Horizontal Scaling**
+**[Horizontal Scaling](/docs/glossary/terms/horizontal-scaling)**
 - Add more servers (scale out)
 - Benefits: handle more traffic, fault tolerance
 - Requires: load balancer, stateless design
 - Example: 1 server → 10 servers
 
-**Vertical Scaling**
+**[Vertical Scaling](/docs/glossary/terms/vertical-scaling)**
 - Increase server resources (scale up)
 - Benefits: simpler, no code changes
 - Limits: hardware ceiling, single point of failure
 - Example: 2 CPU → 16 CPU
 
-**Load Balancing**
+**[Load Balancing](/docs/glossary/terms/load-balancing)**
 - Distribute traffic across multiple servers
 - Algorithms: Round Robin, Least Connections, IP Hash
 - Tools: Nginx, HAProxy, AWS ELB
@@ -58,19 +58,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Database Optimization
 
-**Database Indexing**
+**[Database Indexing](/docs/glossary/terms/database-indexing)**
 - Speed up queries by creating indexes
 - Trade-off: faster reads, slower writes
 - Types: B-tree, Hash, Full-text
 - When to use: frequently queried columns (WHERE, JOIN)
 
-**Query Optimization**
+**[Query Optimization](/docs/glossary/terms/query-optimization)**
 - Improve database query performance
 - Techniques: EXPLAIN plan, avoid N+1, use indexes
 - Tools: pg_stat_statements (PostgreSQL), slow query log
 - Target: &lt;100ms for most queries
 
-**Connection Pooling**
+**[Connection Pooling](/docs/glossary/terms/connection-pooling)**
 - Reuse database connections
 - Benefits: faster queries, lower overhead
 - Tools: PgBouncer (PostgreSQL), HikariCP (Java)
@@ -78,19 +78,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Performance Monitoring
 
-**APM (Application Performance Monitoring)**
+**[APM (Application Performance Monitoring)](/docs/glossary/terms/apm)**
 - Monitor application performance in production
 - Metrics: response time, error rate, throughput
 - Tools: Datadog, New Relic, AppDynamics
 - Benefits: identify bottlenecks, track SLOs
 
-**Profiling**
+**[Profiling](/docs/glossary/terms/profiling)**
 - Analyze code performance (CPU, memory)
 - Identify hotspots (slow functions)
 - Tools: Chrome DevTools, Node.js profiler, py-spy
 - When to use: performance issues, optimization
 
-**Metrics**
+**[Metrics](/docs/glossary/terms/metrics)**
 - Quantitative measurements of system behavior
 - Types: RED (Rate, Errors, Duration), USE (Utilization, Saturation, Errors)
 - Storage: Prometheus, InfluxDB, CloudWatch
@@ -416,7 +416,7 @@ async function getUsersWithPosts() {
 
 ### 1. Performance-Focused Plugins
 
-**sw-infra plugin** (observability features):
+**specweave-observability plugin** (planned):
 - Performance monitoring setup
 - APM integration (Datadog, New Relic)
 - Metric collection (Prometheus)
@@ -427,7 +427,7 @@ async function getUsersWithPosts() {
 When creating performance increments:
 
 ```bash
-/sw:increment "API Performance Optimization"
+/specweave:increment "API Performance Optimization"
 ```
 
 The Architect agent:
@@ -456,7 +456,7 @@ Performance documentation in:
 ### 4. Performance Validation
 
 ```bash
-/sw:validate 0050 --performance
+/specweave:validate 0050 --performance
 
 # Checks:
 # ✅ Load tests pass (10K req/sec)
@@ -497,7 +497,7 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 ## Learn More
 
 ### Guides
-- Performance Tuning (coming soon)
+- [Performance Tuning](/docs/operations/performance-tuning)
 - Caching Strategies (coming soon)
 - Database Optimization (coming soon)
 
@@ -519,4 +519,4 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

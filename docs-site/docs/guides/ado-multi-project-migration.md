@@ -167,7 +167,7 @@ az devops project create --name PaymentService --org https://dev.azure.com/youro
 
 Or use the SpecWeave command:
 ```bash
-/sw-ado:create-projects
+/specweave-ado:create-projects
 ```
 
 ### Step 6: Re-sync Specs to New Structure
@@ -176,11 +176,11 @@ After migration, sync your specs to the new ADO structure:
 
 ```bash
 # Sync all specs
-/sw-ado:sync-all
+/specweave-ado:sync-all
 
 # Or sync individually
-/sw-ado:sync-spec AuthService/spec-001
-/sw-ado:sync-spec UserService/spec-002
+/specweave-ado:sync-spec AuthService/spec-001
+/specweave-ado:sync-spec UserService/spec-002
 ```
 
 ### Step 7: Verify Migration
@@ -190,10 +190,10 @@ After migration, sync your specs to the new ADO structure:
 ls -la .specweave/docs/internal/specs/
 
 # Verify ADO links
-/sw-ado:status
+/specweave-ado:status
 
 # Test sync
-/sw-ado:sync-spec AuthService/spec-001 --dry-run
+/specweave-ado:sync-spec AuthService/spec-001 --dry-run
 ```
 
 ## Migration Patterns
@@ -281,7 +281,7 @@ rm -rf .specweave/docs/internal/specs
 mv .specweave/docs/internal/specs.backup .specweave/docs/internal/specs
 
 # Re-sync with original structure
-/sw-ado:sync-all
+/specweave-ado:sync-all
 ```
 
 ## Common Issues and Solutions
@@ -312,7 +312,7 @@ specweave dedupe-specs --strategy newest
 
 **Solution**: Run link repair:
 ```bash
-/sw-ado:repair-links
+/specweave-ado:repair-links
 ```
 
 ### Issue 4: Rate Limiting During Migration
@@ -366,10 +366,10 @@ Notify your team:
 Update your pipelines:
 ```yaml
 # Before
-- run: /sw-ado:sync-spec spec-001
+- run: /specweave-ado:sync-spec spec-001
 
 # After
-- run: /sw-ado:sync-spec AuthService/spec-001
+- run: /specweave-ado:sync-spec AuthService/spec-001
 ```
 
 ### 5. Monitor After Migration
@@ -433,9 +433,9 @@ tail -f .specweave/logs/migration.log
 
 ### Resources
 
-- [ADO Multi-Project Architecture](/docs/guides/multi-project-setup)
-- [Project Detection Algorithm](/docs/guides/multi-project-setup)
-- [Sync Strategies Comparison](/docs/guides/multi-project-setup)
+- [ADO Multi-Project Architecture](./ado-multi-project-architecture.md)
+- [Project Detection Algorithm](./ado-project-detection.md)
+- [Sync Strategies Comparison](./ado-sync-strategies.md)
 
 ## Summary
 

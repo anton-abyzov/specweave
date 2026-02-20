@@ -1,52 +1,10 @@
 # What is SpecWeave?
 
-**SpecWeave is the spec-driven Skill Fabric for AI coding agents.** Program your AI in English. Ship features while you sleep.
+**SpecWeave is the AI development framework that doesn't lose your work.**
 
-Skills are programs written in English — reusable, extensible logic that controls how AI thinks, decides, and acts. Describe what you want to build, AI asks the right questions, creates specifications, and builds it autonomously. Every decision becomes permanent, searchable documentation.
+Every AI coding tool promises productivity. But after the chat ends, your specs disappear into chat history, your architecture decisions are forgotten, and new team members start from zero.
 
-**You don't need to learn Claude Code docs.** SpecWeave handles hooks, plugins, CLAUDE.md, and context management for you. [Learn more](./no-docs-needed).
-
-**Enterprise ready.** Compliance audit trails, brownfield analysis, JIRA/ADO sync, multi-repo coordination. [Enterprise overview](/docs/enterprise).
-
-## Stop Repeating Yourself
-
-Every app needs the same things: auth, tests, docs, deployment. Without SpecWeave, you dictate every step:
-
-```
-"Create user authentication"
-"Now add tests for that"
-"Document the architecture"
-"Update JIRA with progress"
-"Create the PR description"
-```
-
-**With SpecWeave:**
-```bash
-/sw:increment "User authentication"
-/sw:auto
-# Done. Tests, docs, sync - all handled.
-```
-
-### One Command = Many Prompts
-
-| What You Used To Dictate | SpecWeave Command |
-|-------------------------|-------------------|
-| "Create spec with user stories..." | `/sw:increment "feature"` |
-| "Implement, test, fix, repeat..." | `/sw:auto` (runs for hours) |
-| "Update GitHub/JIRA..." | `/sw:sync-progress` |
-| "Review for security..." | Auto-activates on keywords |
-| "Commit and create PR..." | `/sw:save` |
-
-### Built-In Expertise
-
-SpecWeave isn't just shortcuts — it's **programs in English** that encapsulate expert knowledge:
-
-- **100+ skills** (PM, Architect, QA, Security, Frontend, Backend, ML) — each one a reusable program you can customize
-- **Skills auto-activate** — mention "security" and security expertise loads automatically
-- **Quality gates** enforce what senior devs know: tests before merge, docs before close
-- **Agent swarms** — run parallel agents across iTerm/tmux panes for maximum throughput
-
-**Real result**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to do the same - because the expertise is built in, not in knowing what to ask.
+**SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
 ## The Problem: Lost Work
 
@@ -71,21 +29,9 @@ Traditional AI-assisted development:
 
 SpecWeave enforces **Spec-Driven Development**:
 
-```mermaid
-flowchart LR
-    A["Your Idea"] --> B["Spec ✓"]
-    B --> C["Plan ✓"]
-    C --> D["Tasks ✓"]
-    D --> E["Code"]
-    E --> F["Living Docs"]
-
-    style B fill:#d4edda,stroke:#28a745
-    style C fill:#d4edda,stroke:#28a745
-    style D fill:#d4edda,stroke:#28a745
-    style F fill:#cce5ff,stroke:#0d6efd
-```
-
-**Permanent** = survives chat sessions | **Auto-sync** = updates automatically
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/specweave-flow.svg" alt="SpecWeave Flow: Your Idea → Spec → Plan → Tasks → Code → Living Docs" width="800"/>
+</p>
 
 ### Key Principles
 
@@ -94,20 +40,20 @@ flowchart LR
 3. **Context Precision** - Load only what's needed (70%+ token reduction)
 4. **Test-Validated Features** - Every feature proven through automated tests
 5. **Regression Prevention** - Document existing code before modification
-6. **Stack Agnostic** - Works with ANY tech stack
+6. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
 
 ## How It Works
 
 ### 1. One Command Creates Foundation
 
 ```bash
-/sw:increment "User authentication with OAuth"
+/specweave:increment "Add dark mode toggle"
 ```
 
 AI agents (PM, Architect, Planner) create:
 
 ```
-.specweave/increments/0001-user-authentication/
+.specweave/increments/0001-dark-mode/
 ├── spec.md    <- WHAT: User stories, acceptance criteria
 ├── plan.md    <- HOW: Architecture, ADRs, tech decisions
 └── tasks.md   <- DO: Tasks with embedded tests
@@ -116,7 +62,7 @@ AI agents (PM, Architect, Planner) create:
 ### 2. One Command Builds
 
 ```bash
-/sw:do
+/specweave:do
 ```
 
 Autonomous execution through all tasks with quality validation.
@@ -124,7 +70,7 @@ Autonomous execution through all tasks with quality validation.
 ### 3. One Command Closes
 
 ```bash
-/sw:done 0001
+/specweave:done 0001
 ```
 
 Three quality gates validate completion:
@@ -134,7 +80,7 @@ Three quality gates validate completion:
 
 ### 4. Auto-Sync Everywhere
 
-Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
+Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, and Azure DevOps automatically.
 
 ## Who Should Use SpecWeave?
 
@@ -143,7 +89,7 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 - **Enterprise teams** building production systems
 - **Startups** needing scalable architecture from day one
 - **Solo developers** building complex applications
-- **Regulated industries** (healthcare - [HIPAA](/docs/glossary/terms/hipaa), finance - [SOC 2](/docs/glossary/terms/soc2))
+- **Regulated industries** ([healthcare - HIPAA](/docs/glossary/terms/hipaa), [finance - SOC 2](/docs/glossary/terms/soc2))
 - **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
 
 ### Use Cases
@@ -155,15 +101,15 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 
 ## Core Features
 
-| Feature | Benefit |
-|---------|---------|
-| **68+ AI Agents** | [PM](/docs/glossary/terms/pm-agent), [Architect](/docs/glossary/terms/architect-agent), [QA](/docs/glossary/terms/qa-lead-agent), Security, DevOps work autonomously (Claude Opus 4.6) |
-| **[Living Documentation](/docs/glossary/terms/living-docs)** | Specs auto-update after every task via [hooks](/docs/glossary/terms/hooks) |
-| **70% Token Reduction** | Context precision loads only what you need |
-| **[Quality Gates](/docs/glossary/terms/quality-gate)** | Three-gate validation before closing [increments](/docs/glossary/terms/increments) |
-| **External Sync** | Push specs to GitHub/JIRA/ADO, read status back |
-| **[Brownfield](/docs/glossary/terms/brownfield) Support** | Import existing docs, create retroactive specs |
-| **Multi-Language** | Work in ANY language (Russian, Spanish, Chinese, etc.) |
+| Feature | Benefit | Uniqueness |
+|---------|---------|------------|
+| **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | ⭐ Unique |
+| **[Brownfield](/docs/glossary/terms/brownfield) Excellence** | Import existing docs (Notion, Confluence, Wiki), create retroactive specs, ADRs | ⭐ Unique |
+| **Living Documentation** | Specs auto-update after every task via hooks—never drift from code | ⭐ Unique |
+| **External Sync** | Push specs to GitHub/JIRA/ADO, read status back—keep existing workflows | Strong |
+| **Quality Gates** | Three-gate validation (tasks + 60%+ tests + docs) before closing | Strong |
+| **68+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously (Claude Opus 4.6) | Good |
+| **Universal Stack** | Works with ANY tech stack and ANY AI tool (Claude, Cursor, Copilot) | Expected |
 
 ## What You Get vs. Current State
 
@@ -188,10 +134,12 @@ specweave init .
 
 Then in Claude Code:
 ```bash
-/sw:increment "Your first feature"
-/sw:do
-/sw:done 0001
+/specweave:increment "Add dark mode toggle"
+/specweave:do
+/specweave:done 0001
 ```
+
+**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **[Full Quickstart Guide](/docs/guides/getting-started/quickstart)**
 

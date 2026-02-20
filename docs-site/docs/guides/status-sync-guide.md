@@ -97,7 +97,7 @@ Edit `.specweave/config.json`:
 When creating increment with GitHub sync:
 
 ```bash
-/sw-github:create-issue 0001-user-authentication
+/specweave-github:create-issue 0001-user-authentication
 ```
 
 This creates `metadata.json` with GitHub link:
@@ -116,7 +116,7 @@ This creates `metadata.json` with GitHub link:
 ### 3. Complete Increment
 
 ```bash
-/sw:done 0001
+/specweave:done 0001
 ```
 
 If status sync is enabled, you'll be prompted:
@@ -244,10 +244,10 @@ How to resolve?
 
 ### Sync After Increment Completion
 
-Status sync happens automatically when using `/sw:done`:
+Status sync happens automatically when using `/specweave:done`:
 
 ```bash
-/sw:done 0001-user-authentication
+/specweave:done 0001-user-authentication
 ```
 
 Output:
@@ -265,17 +265,17 @@ Output:
 Force sync for a specific increment:
 
 ```bash
-/sw-github:sync 0001-user-authentication
+/specweave-github:sync 0001-user-authentication
 ```
 
 Options:
 
 ```bash
 # Specify direction
-/sw-github:sync 0001 --direction to-external
+/specweave-github:sync 0001 --direction to-external
 
 # Dry run (preview changes)
-/sw-github:sync 0001 --dry-run
+/specweave-github:sync 0001 --dry-run
 ```
 
 ### Bulk Sync
@@ -283,7 +283,7 @@ Options:
 Sync multiple increments at once:
 
 ```bash
-/sw-github:bulk-sync --time-range 1M
+/specweave-github:bulk-sync --time-range 1M
 ```
 
 This syncs all increments modified in the last month.
@@ -345,7 +345,7 @@ User selects **Option 1** → JIRA updated to `Done`
 **A**: Sync fails gracefully with error message. Use retry:
 
 ```bash
-/sw-github:sync 0001 --retry
+/specweave-github:sync 0001 --retry
 ```
 
 ### Q: Can I customize status mappings per increment?
@@ -380,7 +380,7 @@ User selects **Option 1** → JIRA updated to `Done`
 **A**: Yes! The sync is **bidirectional by default**:
 
 ```bash
-/sw-github:sync 0001
+/specweave-github:sync 0001
 ```
 
 This syncs in both directions:
@@ -389,7 +389,7 @@ This syncs in both directions:
 
 To sync only from GitHub (one-way):
 ```bash
-/sw-github:sync 0001 --direction from-github
+/specweave-github:sync 0001 --direction from-github
 ```
 
 ### Q: What if status mapping is invalid?
@@ -447,7 +447,7 @@ cat .specweave/logs/sync-events.json | jq '.'
 **Solution**: Use bulk sync with delays:
 
 ```bash
-/sw-github:bulk-sync --batch-size 5 --delay 1000
+/specweave-github:bulk-sync --batch-size 5 --delay 1000
 ```
 
 This syncs 5 at a time with 1-second delay between batches.
@@ -467,5 +467,5 @@ This syncs 5 at a time with 1-second delay between batches.
 ## Next Steps
 
 - [Migration Guide](./status-sync-migration.md) - Upgrade from old sync
-- [External Tools](/docs/academy/specweave-essentials/07-external-tools) - Integration guide
-- [Troubleshooting](/docs/academy/specweave-essentials/09-troubleshooting) - Fix sync issues
+- [Architecture](../internal/architecture/adr/0031-status-sync-architecture.md) - Technical details
+- [API Reference](../api/status-sync-api.md) - Programmatic usage

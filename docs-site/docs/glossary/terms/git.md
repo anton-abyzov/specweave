@@ -604,7 +604,7 @@ git log --oneline --no-merges increment/0012-user-auth
 git log --graph --decorate increment/0012-user-auth
 
 # Sync living docs
-/sw:sync-docs update
+/specweave:sync-docs update
 # Results in:
 # - CHANGELOG.md updated with increment summary
 # - Architecture docs updated with implementation details
@@ -754,8 +754,8 @@ git cherry-pick abc123
 - [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation with Git
 - Pull Request - Code review workflow
 - [CI/CD](/docs/glossary/terms/ci-cd) - Automated pipelines triggered by Git
-- Branching Strategy - Git workflow patterns
-- Version Control - General VCS concepts
+- [Branching Strategy](/docs/glossary/terms/branching-strategy) - Git workflow patterns
+- [Version Control](/docs/glossary/terms/version-control) - General VCS concepts
 
 ## Resources
 

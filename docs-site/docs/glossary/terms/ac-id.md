@@ -11,9 +11,9 @@
 **Components**:
 - **AC** = Acceptance Criteria prefix
 - **US** = User Story
-- **`{story}`** = User story number (1, 2, 3, ..., no zero-padding for brevity)
+- **{story}** = User story number (1, 2, 3, ..., no zero-padding for brevity)
 - **-** = Separator
-- **`{number}`** = Sequential AC number within story (01, 02, 03, ..., zero-padded for sorting)
+- **{number}** = Sequential AC number within story (01, 02, 03, ..., zero-padded for sorting)
 
 **Examples**:
 - ✅ `AC-US1-01` (First AC for User Story 1)
@@ -201,7 +201,7 @@ describe('AuthService', () => {
 **Automated coverage report links AC-IDs to tests**:
 
 ```bash
-/sw:check-tests 0008
+/specweave:check-tests 0008
 
 # Output:
 ## AC Coverage Report
@@ -316,8 +316,8 @@ US-001: AC-US1-01, AC-US1-02  # Same AC-US1-01, but different spec (context make
 ```
 
 **Global Uniqueness**: When referencing across specs, include spec ID:
-- `SPEC-001::AC-US1-01` (Authentication spec, `US-001`, `AC-01`)
-- `SPEC-002::AC-US1-01` (User Profile spec, `US-001`, `AC-01`)
+- `SPEC-001::AC-US1-01` (Authentication spec, US-001, AC-01)
+- `SPEC-002::AC-US1-01` (User Profile spec, US-001, AC-01)
 
 ---
 
@@ -398,7 +398,7 @@ Requirement (AC-US1-01) → Task (T-001) → Test (auth.test.ts) → Report (✅
 ### 2. Automated Coverage Measurement
 
 ```bash
-/sw:check-tests 0008
+/specweave:check-tests 0008
 
 # Automatically reports:
 # - Which ACs are tested (✅)
@@ -568,7 +568,7 @@ test('should authenticate user with valid credentials (AC-US1-01)', async () => 
 **AC-ID** enables complete traceability in SpecWeave:
 - **Format**: `AC-US{story}-{number}` (e.g., AC-US1-01, AC-US12-05)
 - **Traceability**: spec.md → tasks.md → tests → coverage report
-- **Validation**: Automated AC coverage checking (`/sw:check-tests`)
+- **Validation**: Automated AC coverage checking (`/specweave:check-tests`)
 - **Audit**: Clear proof of requirement → implementation → validation
 - **Benefits**: Complete traceability, automated coverage, audit trail, gap detection
 

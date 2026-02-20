@@ -12,7 +12,7 @@ Understanding machine learning, artificial intelligence, and LLM-powered applica
 
 ## Overview
 
-ML/AI terms cover machine learning models, training, inference, and AI-powered application development. These concepts enable teams to integrate intelligent features, from simple predictions to complex LLM-powered assistants. SpecWeave itself is an AI-native Skill Fabric designed to work seamlessly with Claude Code and other AI tools.
+ML/AI terms cover machine learning models, training, inference, and AI-powered application development. These concepts enable teams to integrate intelligent features, from simple predictions to complex LLM-powered assistants. SpecWeave itself is an AI-native framework designed to work seamlessly with Claude Code and other AI tools.
 
 ## Core Concepts
 
@@ -24,13 +24,13 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 - Use cases: recommendations, fraud detection, image recognition
 - When to use: pattern recognition, large datasets, predictive tasks
 
-**Model Training**
+**[Model Training](/docs/glossary/terms/model-training)**
 - Process of teaching a model using data
 - Steps: data collection, preprocessing, training, validation
 - Metrics: accuracy, precision, recall, F1 score
 - Tools: TensorFlow, PyTorch, scikit-learn
 
-**Inference**
+**[Inference](/docs/glossary/terms/inference)**
 - Using a trained model to make predictions
 - Real-time: API endpoint (fast, expensive)
 - Batch: Process large datasets (slow, cheap)
@@ -44,19 +44,19 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 - Capabilities: text generation, code, reasoning, translation
 - SpecWeave is LLM-native (designed for Claude Code)
 
-**Prompt Engineering**
+**[Prompt Engineering](/docs/glossary/terms/prompt-engineering)**
 - Crafting effective prompts for LLMs
 - Techniques: few-shot learning, chain-of-thought, system prompts
 - SpecWeave uses: structured prompts in skills, agents, commands
 - Best practices: clear instructions, examples, constraints
 
-**Context Window**
+**[Context Window](/docs/glossary/terms/context-window)**
 - Maximum tokens an LLM can process
-- Claude Opus 4.5: 200K tokens
+- Claude Sonnet 4.5: 200K tokens
 - SpecWeave optimization: 75%+ reduction via plugins
 - Trade-off: context size vs cost/speed
 
-**Token**
+**[Token](/docs/glossary/terms/token)**
 - Basic unit of LLM processing
 - Roughly: 1 token ≈ 4 characters or 0.75 words
 - Cost: charged per input/output token
@@ -64,19 +64,19 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 ### AI Frameworks
 
-**TensorFlow**
+**[TensorFlow](/docs/glossary/terms/tensorflow)**
 - Open-source ML framework by Google
 - Best for: production ML, complex models
 - Deployment: TensorFlow Serving, TFLite (mobile)
 - When to use: enterprise ML, need for scale
 
-**PyTorch**
+**[PyTorch](/docs/glossary/terms/pytorch)**
 - Open-source ML framework by Meta
 - Best for: research, experimentation, flexibility
 - More Pythonic, dynamic computation graphs
 - When to use: research, prototyping, NLP
 
-**Scikit-learn**
+**[Scikit-learn](/docs/glossary/terms/scikit-learn)**
 - Python ML library (classical algorithms)
 - Algorithms: regression, classification, clustering
 - Best for: traditional ML (not deep learning)
@@ -84,23 +84,23 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 ### AI Development Patterns
 
-**RAG (Retrieval-Augmented Generation)**
+**[RAG (Retrieval-Augmented Generation)](/docs/glossary/terms/rag)**
 - Combine LLM with external knowledge retrieval
 - Steps: Retrieve relevant docs → Generate response
 - Use cases: chatbots, documentation search, Q&A
 - SpecWeave uses: context loading from living docs
 
-**Fine-Tuning**
+**[Fine-Tuning](/docs/glossary/terms/fine-tuning)**
 - Adapt pre-trained model to specific task
 - Requires: labeled data, training infrastructure
 - Benefits: better performance on domain tasks
 - Trade-offs: cost, maintenance vs prompt engineering
 
-**Vector Database**
+**[Vector Database](/docs/glossary/terms/vector-database)**
 - Database optimized for similarity search
 - Use cases: RAG, recommendations, semantic search
 - Tools: Pinecone, Weaviate, Chroma, pgvector
-- SpecWeave plugin: `sw-ml` provides vector search features
+- SpecWeave plugin: `specweave-vector-search` (planned)
 
 ---
 
@@ -153,7 +153,7 @@ client = anthropic.Anthropic(api_key="...")
 
 def get_response(message):
     response = client.messages.create(
-        model="claude-opus-4-5-20251101",
+        model="claude-3-5-sonnet-20250929",
         max_tokens=1024,
         system="You are a helpful customer support agent for an e-commerce company. Be polite and concise.",
         messages=[
@@ -202,7 +202,7 @@ def get_response(message):
 
     # Generate response with context
     response = client.messages.create(
-        model="claude-opus-4-5-20251101",
+        model="claude-3-5-sonnet-20250929",
         max_tokens=1024,
         system=f"""You are a customer support agent. Use the following knowledge to answer:
 
@@ -251,7 +251,7 @@ def get_response(user_id, message):
 
     # Generate response with history + context
     response = client.messages.create(
-        model="claude-opus-4-5-20251101",
+        model="claude-3-5-sonnet-20250929",
         max_tokens=1024,
         system=f"""Customer support agent. Use this knowledge:
 
@@ -422,20 +422,20 @@ Be concise. Only report significant issues.
 - Response: ~3K tokens (output)
 - Total: ~10K tokens/PR
 
-**Pricing** (Claude Opus 4.5):
-- Input: $15 / 1M tokens
-- Output: $75 / 1M tokens
-- Cost per PR: $0.30 (30 cents)
+**Pricing** (Claude Sonnet 4.5):
+- Input: $3 / 1M tokens
+- Output: $15 / 1M tokens
+- Cost per PR: $0.06 (6 cents)
 
 **Monthly cost** (100 PRs/month):
-- $30/month (affordable for quality!)
+- $6/month (very affordable!)
 ```
 
 ---
 
 ## How SpecWeave Uses ML/AI Terms
 
-### 1. LLM-Native Skill Fabric
+### 1. LLM-Native Framework
 
 SpecWeave is designed for LLM-powered development:
 
@@ -449,7 +449,7 @@ Architecture:
 └─────────────────┬───────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────┐
-│  SpecWeave Skill Fabric                     │
+│  SpecWeave Framework                        │
 │  - Plugin system (modular capabilities)    │
 │  - Context optimization (75% reduction)    │
 │  - Living docs (always up-to-date)         │
@@ -482,8 +482,7 @@ Skills use structured prompts:
 
 ```markdown
 ---
-description: Plan and create SpecWeave increments with PM and Architect agent collaboration.
-argument-hint: "<feature-description>"
+description: Plan and create SpecWeave increments with PM and Architect agent collaboration. Activates for: increment planning, feature planning, hotfix, MVP, new product.
 ---
 
 # Increment Skill
@@ -545,7 +544,7 @@ When planning increments:
 
 ### 5. ML/AI Plugin (Planned)
 
-**sw-ml plugin**:
+**specweave-ml-ops plugin** (planned):
 - ML model training workflows
 - Experiment tracking (MLflow)
 - Model versioning
@@ -587,4 +586,4 @@ When planning increments:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

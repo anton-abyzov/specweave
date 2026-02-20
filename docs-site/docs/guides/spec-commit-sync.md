@@ -148,24 +148,24 @@ If commits go to different repos, multiple comments can be posted (one per repo)
 
 **GitHub**:
 ```bash
-/sw-github:create-issue 0001
+/specweave-github:create-issue 0001
 ```
 
 **JIRA**:
 ```bash
-/sw-jira:sync 0001
+/specweave-jira:sync 0001
 ```
 
 **Azure DevOps**:
 ```bash
-/sw-ado:sync 0001
+/specweave-ado:sync 0001
 ```
 
 ### 2. Work Normally
 
 ```bash
 # Work on tasks
-/sw:do
+/specweave:do
 
 # Complete tasks (TodoWrite updates)
 # Hook fires automatically after each completion
@@ -263,17 +263,17 @@ git remote -v
 - `src/core/comment-builder.ts` - Comment formatting (437 lines)
 
 **Plugin Implementations**:
-- `plugins/sw-github/lib/github-spec-commit-sync.ts` - GitHub sync (243 lines)
-- `plugins/sw-jira/lib/jira-spec-commit-sync.ts` - JIRA sync (267 lines)
-- `plugins/sw-ado/lib/ado-spec-commit-sync.ts` - ADO sync (241 lines)
+- `plugins/specweave-github/lib/github-spec-commit-sync.ts` - GitHub sync (243 lines)
+- `plugins/specweave-jira/lib/jira-spec-commit-sync.ts` - JIRA sync (267 lines)
+- `plugins/specweave-ado/lib/ado-spec-commit-sync.ts` - ADO sync (241 lines)
 
 **CLI**:
 - `src/cli/commands/sync-spec-commits.ts` - CLI interface (169 lines)
 
 **Hooks**:
-- `plugins/sw-github/hooks/post-task-completion.sh` - GitHub hook integration
-- `plugins/sw-jira/hooks/post-task-completion.sh` - JIRA hook integration
-- `plugins/sw-ado/hooks/post-task-completion.sh` - ADO hook integration
+- `plugins/specweave-github/hooks/post-task-completion.sh` - GitHub hook integration
+- `plugins/specweave-jira/hooks/post-task-completion.sh` - JIRA hook integration
+- `plugins/specweave-ado/hooks/post-task-completion.sh` - ADO hook integration
 
 **Total**: ~2,102 lines of TypeScript + bash integration
 
@@ -386,9 +386,9 @@ node dist/cli/commands/sync-spec-commits.js \
 
 ## Related
 
-- [Spec-Task Mapping](/docs/guides/multi-project-setup) - How tasks map to user stories
-- [Living Docs Sync](/docs/guides/core-concepts/living-documentation) - How specs stay synchronized
-- [External Tool Integration](/docs/academy/specweave-essentials/07-external-tools) - GitHub, JIRA, ADO setup
+- [Spec-Task Mapping](./spec-task-mapping.md) - How tasks map to user stories
+- [Living Docs Sync](./living-docs-sync.md) - How specs stay synchronized
+- [External Tool Integration](./external-tool-integration.md) - GitHub, JIRA, ADO setup
 
 ---
 

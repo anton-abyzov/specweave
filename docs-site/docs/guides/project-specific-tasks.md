@@ -8,12 +8,13 @@ keywords: [tasks, user stories, project isolation, github sync, traceability]
 
 # Project-Specific Tasks
 
+**Version**: 0.18.3
 **Status**: Production-Ready
 **Last Updated**: 2025-11-15
 
 ## Overview
 
-User stories include their own **project-specific checkable task lists** instead of just links to increment tasks.
+User stories now include their own **project-specific checkable task lists** instead of just links to increment tasks.
 
 ### Before
 
@@ -176,7 +177,7 @@ Configure project keywords in `.specweave/config.json`:
 After creating your increment spec and tasks:
 
 ```bash
-/sw:sync-docs update
+/specweave:sync-docs update
 ```
 
 **What Happens**:
@@ -196,7 +197,7 @@ After creating your increment spec and tasks:
 Create GitHub issues with checkable task lists:
 
 ```bash
-/sw-github:sync-spec specweave/FS-031
+/specweave-github:sync-spec specweave/FS-031
 ```
 
 **Result**: GitHub issues have checkable task lists like this:
@@ -239,7 +240,7 @@ Create GitHub issues with checkable task lists:
    - Calls TaskProjectSpecificGenerator for each user story
    - Formats `## Tasks` section in user story files
 
-3. **UserStoryIssueBuilder** (`plugins/sw-github/lib/user-story-issue-builder.ts`):
+3. **UserStoryIssueBuilder** (`plugins/specweave-github/lib/user-story-issue-builder.ts`):
    - Reads tasks from `## Tasks` section (NEW)
    - Falls back to legacy extraction from increment tasks.md
    - Generates GitHub issue body with task checkboxes
@@ -316,7 +317,7 @@ Old user stories (without `## Tasks` section) still work:
 Re-run living docs sync to add `## Tasks` sections:
 
 ```bash
-/sw:sync-docs update
+/specweave:sync-docs update
 ```
 
 **What Changes**:
@@ -328,7 +329,7 @@ Re-run living docs sync to add `## Tasks` sections:
 
 Tasks are automatically included:
 - Create increment as usual
-- Run `/sw:sync-docs update`
+- Run `/specweave:sync-docs update`
 - User stories generated with `## Tasks` sections
 
 ---
@@ -371,7 +372,7 @@ Tasks are automatically included:
 2. Old GitHub sync code
 
 **Solution**:
-- Re-run `/sw:sync-docs update`
+- Re-run `/specweave:sync-docs update`
 - Update to the latest version
 - Verify user story file has `## Tasks` section
 
@@ -429,7 +430,7 @@ Tasks are automatically included:
 
 **Command**:
 ```bash
-/sw:sync-docs update
+/specweave:sync-docs update
 ```
 
 **Why**: Keeps user story task lists in sync with increment tasks.md.
@@ -465,9 +466,9 @@ Tasks are automatically included:
 - [Intelligent Living Docs Sync](./intelligent-living-docs-sync.md) - Overall sync architecture
 - [GitHub Integration](./github-integration.md) - GitHub sync setup
 - [Multi-Project Setup](./multi-project-setup.md) - Multi-project configuration
-- [Bidirectional Linking](/docs/overview/introduction) - AC-ID format
+- [Bidirectional Linking](../../internal/specs/default/README.md) - AC-ID format
 
 ---
 
 **Last Updated**: 2025-11-15
-**Version**: 0.18.3+
+**Version**: 0.18.3

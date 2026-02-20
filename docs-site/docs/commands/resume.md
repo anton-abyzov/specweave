@@ -18,7 +18,7 @@ This is primarily a **system command** used by SpecWeave internally. SpecWeave *
 
 ## Description
 
-The `resume` command restarts work on a paused or abandoned [increment](/docs/glossary/terms/increments). SpecWeave calls this automatically when it detects dependencies are available.
+The `resume` command restarts work on a paused or abandoned increment. SpecWeave calls this automatically when it detects dependencies are available.
 
 **SpecWeave automatically resumes when**:
 - ✅ API keys/credentials become available
@@ -197,7 +197,7 @@ graph LR
 }
 ```
 
-### [WIP Limit](/docs/glossary/terms/wip-limits) Validation
+### WIP Limit Validation
 
 ```typescript
 // Pseudo-code
@@ -233,7 +233,7 @@ $ specweave resume 0001
 
 **Solution**: Increment is done. Start a new one if needed.
 
-### [WIP Limit](/docs/glossary/terms/wip-limits) Reached
+### WIP Limit Reached
 
 ```bash
 $ specweave resume 0007
@@ -382,10 +382,10 @@ $ specweave do  # Continue work
 
 ## See Also
 
-- [`pause`](/docs/commands/pause) - Pause active work
-- [`abandon`](/docs/commands/abandon) - Cancel work permanently
-- [`status`](/docs/commands/status) - Check current status
-- [Status Management](/docs/commands/status-management) - Complete workflow guide
+- `pause` - Pause active work
+- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
+- [`status`](/docs/glossary/terms/status) - Check current status
+- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
 
 ## Summary
 

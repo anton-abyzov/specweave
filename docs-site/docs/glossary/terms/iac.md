@@ -435,7 +435,7 @@ terraform apply -var="environment=prod"
 
 ```bash
 # Plan infrastructure deployment
-/sw:do "T-003: Deploy Kubernetes cluster"
+/specweave:do "T-003: Deploy Kubernetes cluster"
 
 # Infrastructure tasks in tasks.md:
 # - Write Terraform config
@@ -738,8 +738,8 @@ resource "aws_instance" "web" {
 - **[Kubernetes](/docs/glossary/terms/kubernetes)** - Container orchestration platform
 - **[Docker](/docs/glossary/terms/docker)** - Container runtime (infrastructure for apps)
 - **CI/CD** - Automate infrastructure deployment
-- **Cloud Computing** - Where IaC manages resources
-- **DevOps** - IaC is core DevOps practice
+- **[Cloud Computing](/docs/glossary/terms/cloud-computing)** - Where IaC manages resources
+- **[DevOps](/docs/glossary/terms/devops)** - IaC is core DevOps practice
 
 ## Learn More
 

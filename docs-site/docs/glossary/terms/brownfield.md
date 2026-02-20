@@ -208,7 +208,7 @@ legacy-ecommerce/
 
 ```bash
 # Step 1: Analyze existing system
-/sw:analyze-brownfield /path/to/legacy-ecommerce
+/specweave:analyze-brownfield /path/to/legacy-ecommerce
 
 # SpecWeave outputs:
 # - Found 45 PHP files
@@ -221,7 +221,7 @@ cd legacy-ecommerce
 npx specweave init . --brownfield
 
 # Step 3: Merge existing documentation
-/sw:merge-docs
+/specweave:merge-docs
 
 # SpecWeave merges:
 # - docs/architecture.md → .specweave/docs/internal/architecture/hld-legacy-system.md
@@ -229,7 +229,7 @@ npx specweave init . --brownfield
 # - Creates CLAUDE.md.backup (preserves manual changes)
 
 # Step 4: Start incremental migration
-/sw:increment "0001-extract-cart-service"
+/specweave:increment "0001-extract-cart-service"
 
 # Strangler Fig pattern: Extract cart to new microservice
 # - New service in Node.js/TypeScript (greenfield)
@@ -298,7 +298,7 @@ legacy-api/
     └── integration/    # Some tests exist
 
 # Increment 1: Add GraphQL alongside REST
-/sw:increment "0001-add-graphql-layer"
+/specweave:increment "0001-add-graphql-layer"
 
 # spec.md includes:
 # - REST endpoints remain unchanged (backward compatibility)
@@ -408,20 +408,20 @@ Found the following folders:
 
 ### Brownfield Commands
 
-#### `/sw:analyze-brownfield`
+#### `/specweave:analyze-brownfield`
 
 **Purpose**: Scan existing project and generate migration plan
 
 **Usage**:
 ```bash
 # Analyze current directory
-/sw:analyze-brownfield .
+/specweave:analyze-brownfield .
 
 # Analyze specific path
-/sw:analyze-brownfield /path/to/legacy-project
+/specweave:analyze-brownfield /path/to/legacy-project
 
 # Analyze with external tool detection
-/sw:analyze-brownfield . --detect-jira --detect-ado
+/specweave:analyze-brownfield . --detect-jira --detect-ado
 ```
 
 **Output**: `analysis-report.md` with:
@@ -430,20 +430,20 @@ Found the following folders:
 - Migration plan with effort estimate
 - External tool integration suggestions
 
-#### `/sw:merge-docs`
+#### `/specweave:merge-docs`
 
 **Purpose**: Execute migration plan (merge existing docs)
 
 **Usage**:
 ```bash
 # Dry run (preview changes without executing)
-/sw:merge-docs --dry-run
+/specweave:merge-docs --dry-run
 
 # Execute migration
-/sw:merge-docs --execute
+/specweave:merge-docs --execute
 
 # Execute with Jira sync
-/sw:merge-docs --execute --sync-jira
+/specweave:merge-docs --execute --sync-jira
 ```
 
 **What it does**:
@@ -454,7 +454,7 @@ Found the following folders:
 5. Creates `CLAUDE.md.backup` (preserves manual changes)
 6. Generates traceability matrix (old → new paths)
 
-#### `/sw:init --brownfield`
+#### `/specweave:init --brownfield`
 
 **Purpose**: Initialize SpecWeave in existing project
 
@@ -514,7 +514,7 @@ sequenceDiagram
 
     Note over Dev,New: Strangler Fig Pattern
 
-    Dev->>SW: /sw:increment "Extract cart service"
+    Dev->>SW: /specweave:increment "Extract cart service"
     SW->>Dev: Generate spec.md (cart extraction)
 
     Dev->>New: Build new cart service (greenfield)
@@ -529,7 +529,7 @@ sequenceDiagram
     Legacy->>Legacy: GET /checkout (old endpoint)
     Note over Legacy: Old code still works
 
-    Dev->>SW: /sw:increment "Migrate users to new cart"
+    Dev->>SW: /specweave:increment "Migrate users to new cart"
     SW->>Dev: Generate migration tasks
 
     Dev->>Legacy: Update frontend (use new API)
@@ -542,7 +542,7 @@ sequenceDiagram
 
 ```bash
 # After each task completion
-/sw:do
+/specweave:do
 
 # Post-task-completion hook fires automatically:
 # 1. Syncs living docs
@@ -620,13 +620,13 @@ graph TB
 
 ```bash
 # Increment 1: Add API Gateway
-/sw:increment "0001-add-api-gateway"
+/specweave:increment "0001-add-api-gateway"
 
 # Increment 2: Extract first service (cart)
-/sw:increment "0002-extract-cart-service"
+/specweave:increment "0002-extract-cart-service"
 
 # Increment 3: Extract second service (users)
-/sw:increment "0003-extract-user-service"
+/specweave:increment "0003-extract-user-service"
 
 # Continue until legacy monolith is fully replaced
 ```
@@ -672,7 +672,7 @@ function calculateShipping(cart: Cart): number {
 
 **SpecWeave Increment**:
 ```bash
-/sw:increment "0005-shipping-calculation-v2"
+/specweave:increment "0005-shipping-calculation-v2"
 
 # spec.md includes:
 # - Feature flag strategy (10% rollout)
@@ -752,7 +752,7 @@ const processor: PaymentProcessor = config.useStripe
 
 ```bash
 # ALWAYS start with analysis
-/sw:analyze-brownfield .
+/specweave:analyze-brownfield .
 
 # Review the report:
 # - What exists?
@@ -770,7 +770,7 @@ const processor: PaymentProcessor = config.useStripe
 cp CLAUDE.md CLAUDE.md.backup
 
 # Merge existing docs (don't delete)
-/sw:merge-docs --preserve-originals
+/specweave:merge-docs --preserve-originals
 
 # Create traceability matrix
 # (so you can find old docs if needed)
@@ -780,12 +780,12 @@ cp CLAUDE.md CLAUDE.md.backup
 
 ```bash
 # DON'T: Big bang rewrite
-/sw:increment "0001-rewrite-entire-system" # ❌ Too risky!
+/specweave:increment "0001-rewrite-entire-system" # ❌ Too risky!
 
 # DO: Small increments
-/sw:increment "0001-extract-cart-service"  # ✅ Low risk
-/sw:increment "0002-add-tests-to-auth"     # ✅ Incremental
-/sw:increment "0003-upgrade-node-version"  # ✅ Manageable
+/specweave:increment "0001-extract-cart-service"  # ✅ Low risk
+/specweave:increment "0002-add-tests-to-auth"     # ✅ Incremental
+/specweave:increment "0003-upgrade-node-version"  # ✅ Manageable
 ```
 
 ### 4. Test Heavily
@@ -811,7 +811,7 @@ cp CLAUDE.md CLAUDE.md.backup
 
 ```bash
 # After each brownfield increment
-/sw:do
+/specweave:do
 
 # Post-task-completion hook:
 # - Captures refactoring decisions (ADRs)
@@ -863,10 +863,10 @@ cp CLAUDE.md CLAUDE.md.backup
 
 - [Greenfield Development](/docs/glossary/terms/greenfield) - Starting projects from scratch
 - Technical Debt - Understanding and managing debt
-- Legacy Code - Working with old codebases
-- Refactoring Strategies - Improving existing code
-- Migration Patterns - Moving between architectures
-- [SpecWeave Brownfield Guide](/docs/workflows/brownfield) - Detailed brownfield setup
+- [Legacy Code](/docs/glossary/terms/legacy-code) - Working with old codebases
+- [Refactoring Strategies](/docs/glossary/terms/refactoring) - Improving existing code
+- [Migration Patterns](/docs/glossary/terms/migration) - Moving between architectures
+- [SpecWeave Brownfield Guide](../../guides/brownfield-integration) - Detailed brownfield setup
 
 ---
 

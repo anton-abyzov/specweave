@@ -424,6 +424,59 @@ adb reverse tcp:8082 tcp:8082
 3. For real devices: Ensure device and computer are on the same Wi-Fi network
 4. Try clearing cache: `npm start -- --reset-cache`
 
+#### Issue: App white screens or crashes silently on startup
+
+**Solution**: This is usually a **module-level code execution** issue - code running at import time before React is ready.
+
+Common culprits:
+- `expo-localization` accessed at module level
+- `react-i18next` initialized at module level
+- `AsyncStorage` read at module level
+- React hooks (`useX()`) called outside components
+
+**Debug Strategy**:
+1. Start with minimal app: `export default () => <Text>Hello</Text>`
+2. Add providers ONE BY ONE until crash
+3. Check imports of the crashing provider
+
+**See**: [React Native Crash Troubleshooting](../troubleshooting/react-native-expo-crashes.md)
+
+#### Issue: "Cannot read property 'getLocales' of null"
+
+**Cause**: `expo-localization` accessed at module level before native module initializes.
+
+**Solution**: Use `Intl.DateTimeFormat()` instead:
+```typescript
+// ❌ Crashes
+import * as Localization from 'expo-localization';
+const locale = Localization.getLocales()[0].languageCode;
+
+// ✅ Works
+function getLocale() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
+  } catch {
+    return 'en';
+  }
+}
+```
+
+#### Issue: "Invalid hook call" or i18n crashes
+
+**Cause**: `react-i18next` has React dependencies that execute at module level.
+
+**Solution**: Use `i18n-js` instead:
+```typescript
+// ❌ Crashes in Expo Go
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...});
+
+// ✅ Works everywhere
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+export const t = (key) => i18n.t(key);
+```
+
 ---
 
 ## Available Commands
@@ -580,7 +633,7 @@ Fast Refresh is enabled by default. To manually trigger:
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Navigation](https://reactnavigation.org/docs/getting-started)
 - [React Native Directory](https://reactnative.directory/) - Find libraries
-- [SpecWeave Mobile Plugin](/docs/intro) - SpecWeave integration guide
+- [SpecWeave Mobile Plugin](../../../README.md) - SpecWeave integration guide
 
 ---
 
@@ -595,5 +648,9 @@ If you encounter issues not covered in this guide:
 
 ---
 
-**Last Updated**: November 2024
-**Tested With**: React Native 0.73, Expo SDK 50
+**Last Updated**: January 2026
+**Tested With**: React Native 0.83, Expo SDK 54
+
+**Related Guides**:
+- [React Native Crash Troubleshooting](../troubleshooting/react-native-expo-crashes.md) - Module-level crashes, white screens
+- [Mobile Architect Agent](../../../../plugins/specweave-mobile/agents/mobile-architect/AGENT.md) - Architecture patterns

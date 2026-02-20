@@ -2,28 +2,6 @@
 
 SpecWeave provides a comprehensive suite of tools and workflows for building production-grade software with AI assistance.
 
-## ⚡ One Command = Many Prompts
-
-**Stop dictating the same things over and over.** Every app needs auth, tests, docs, deployment - SpecWeave handles the repetitive workflows with single commands.
-
-| What You Used To Dictate | SpecWeave Command |
-|-------------------------|-------------------|
-| "Create spec with user stories and acceptance criteria..." | `/sw:increment "feature"` |
-| "Implement this, run tests, fix failures, repeat until green..." | `/sw:auto` (runs for hours autonomously) |
-| "Update GitHub issue and JIRA with my progress..." | `/sw:sync-progress` |
-| "Review this code for security vulnerabilities..." | Skills auto-activate on keywords |
-| "Commit everything, push, and create a PR..." | `/sw:save` |
-
-**The expertise is built-in:**
-- 68+ AI agents work in parallel (PM, Architect, QA, Security, DevOps) — powered by Claude Opus 4.6
-- Skills auto-activate when you mention keywords - no need to ask for expertise
-- Quality gates enforce senior dev practices automatically
-- Patterns learned once become defaults everywhere
-
-**Real-world proof**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to build apps too - because the expertise is built in, not in knowing what to ask.
-
----
-
 ## 🚀 Two Ways to Work (Flexibility for All Project Sizes)
 
 ### Interactive Quick Build
@@ -54,13 +32,13 @@ Simply describe what you want - SpecWeave guides you through interactive prompts
 Professional planning with slash commands and multi-agent coordination:
 
 ```bash
-/sw:increment "user authentication"
+/specweave:increment "user authentication"
 # PM, Architect, QA agents create:
 # ✅ spec.md (requirements with AC-IDs)
 # ✅ plan.md (architecture + test strategy)
 # ✅ tasks.md with embedded tests
 
-/sw:do
+/specweave:do
 # Implement with hooks auto-updating docs
 ```
 
@@ -134,46 +112,28 @@ Living documentation organized by purpose:
 
 ## 🧠 Context Precision (70%+ Token Reduction)
 
-### Progressive Disclosure (Native Claude)
+### Selective Loading
+- **Context Manifests**: Each increment declares what it needs
+- **Section Anchors**: Load specific sections, not entire files
+- **Glob Patterns**: Match multiple related files
+- **Cache-Friendly**: Reuse frequently-loaded context
 
-SpecWeave uses Claude's native progressive disclosure mechanism - no RAG or vector databases needed:
+### Example Manifest
 
-- **CLAUDE.md**: Always visible reference with living docs locations
-- **Skills**: Metadata loads first (~75 tokens), full content on-demand
-- **Living Docs Navigator**: Built-in skill that teaches Claude WHERE to look and HOW to search
-- **Explicit Loading**: `/sw:docs <topic>` loads relevant docs into conversation
-
-### How It Works
-
-```
-User: "Implement user authentication"
-         ↓
-Claude reads CLAUDE.md (always loaded)
-         ↓
-Sees: "Before implementing: Check existing docs"
-         ↓
-Searches: grep -ril "auth" .specweave/docs/internal/
-         ↓
-Finds: ADRs, specs, architecture docs
-         ↓
-Reads only relevant files
-         ↓
-Implements with full context
-```
-
-**Why Not RAG?** Progressive disclosure is simpler, cheaper, and more accurate:
-- No vector DB infrastructure
-- No embedding approximations - reads actual content
-- No index staleness - always current files
-- Zero cost - native Claude capability
+\`\`\`yaml
+spec_sections:
+  - .specweave/docs/internal/strategy/auth/login-spec.md
+  - .specweave/docs/internal/strategy/auth/oauth.md#token-flow
+documentation:
+  - .specweave/docs/internal/architecture/adr/0001-auth-method.md
+max_context_tokens: 10000
+\`\`\`
 
 **Result**: Load exactly what's needed, save 70%+ on AI costs.
 
-See [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs) for details.
-
 ## 🤖 AI Agents & Skills
 
-### 68+ Specialized Agents
+### 11 Core Agents
 
 | Agent | Role | Expertise |
 |-------|------|-----------|
@@ -200,45 +160,6 @@ User: "Create authentication system"
 → Invokes PM, Architect, Tech Lead agents
 → Generates complete spec + architecture + plan
 \`\`\`
-
-## 🔌 Skills Are Programs in English
-
-**Skills are not prompts — they are reusable programs written in English.** Each skill controls how AI thinks, decides, and acts for a specific domain. 100+ skills ship with SpecWeave.
-
-SpecWeave applies the **SOLID Open/Closed Principle** to these human-language programs:
-
-- **SKILL.md** = core program (closed for modification — stable, tested, version-controlled)
-- **skill-memories/*.md** = your extensions (open for extension — your rules, your patterns)
-
-Claude reads both at runtime. Your extensions override defaults. The original skill keeps getting updates. You never have merge conflicts.
-
-**Example:**
-```markdown
-# .specweave/skill-memories/frontend.md
-
-### Form Handling
-- Use React Hook Form for all forms
-- Combine with Zod for validation schemas
-
-### Component Rules
-When generating components:
-1. Check design system first (src/components/ui/)
-2. If component exists, import it — don't recreate
-3. Extract to custom hooks if logic >50 lines
-```
-
-You correct Claude once. It remembers forever. That's not configuration — that's **programming the AI in English**.
-
-| Tool | Can You Customize AI Behavior? |
-|------|-------------------------------|
-| **SpecWeave** | Yes — extend via skill-memories (SOLID Open/Closed) |
-| **ChatGPT** | Text box. No structure. Resets per conversation |
-| **GitHub Copilot** | No — black box reasoning |
-| **Cursor** | No — proprietary, locked logic |
-
-**Enable auto-learning:** `/sw:reflect-on` captures corrections as permanent skill-memories.
-
-See [Skills Are Programs in English](/docs/overview/skills-as-programs) for a full overview, [Extensible Skills deep-dive](/docs/guides/extensible-skills) for customization patterns, and [Philosophy: Open/Closed Principle](/docs/overview/philosophy#5-extensible-skills-openclosed-principle) for design principles.
 
 ## 🧪 Test-Validated Development
 
@@ -289,7 +210,7 @@ C4Context
     title System Context Diagram for SpecWeave
 
     Person(user, "Developer", "Uses SpecWeave to build software")
-    System(specweave, "SpecWeave", "Spec-Driven Skill Fabric for AI Coding Agents")
+    System(specweave, "SpecWeave", "Spec-Driven Development Framework")
     System_Ext(claude, "Claude Code", "AI coding assistant")
     System_Ext(github, "GitHub", "Version control and [CI/CD](/docs/glossary/terms/ci-cd)")
 
@@ -336,60 +257,31 @@ SpecWeave detects your tech stack from:
     └── ...
 \`\`\`
 
-### [WIP Limits](/docs/glossary/terms/wip-limits)
+### WIP Limits
 
 Prevent context-switching:
 - **Solo/small teams**: 1-2 in progress
 - **Large teams**: 3-5 in progress
 - **Force override**: Available but discouraged
 
-## 🔗 External Tool Sync (GitHub/JIRA/ADO)
-
-**No Tool Lock-in**: SpecWeave integrates with your existing project management tools. Keep your workflow—just add specifications.
-
-### Why This Matters
-
-| Problem | Without SpecWeave | With SpecWeave |
-|---------|-------------------|----------------|
-| **Team uses JIRA** | Abandon JIRA or maintain two systems | Specs push to JIRA, status reads back |
-| **GitHub Issues workflow** | Manual updates, drift | Auto-sync progress to issues |
-| **Azure DevOps enterprise** | Complex migration | Native integration, no disruption |
-| **Multiple tools** | Constant context switching | SpecWeave syncs to all |
-
-### GitHub Issues Sync
-```bash
-/sw-github:sync
-```
-- **Milestones** ↔ Release Plans
-- **Issues** ↔ User Stories/Tasks with checkable subtasks
-- **Progress** auto-updates as tasks complete
-- **Labels** auto-generated from increment metadata
+## 🔗 External Integrations
 
 ### JIRA Sync
-```bash
-/sw-jira:sync
-```
-- **Content sync** - specs push to JIRA, status reads back
-- **Epics** ↔ Features/Increments
-- **Stories** ↔ User Stories (PRDs/RFCs)
-- **Tasks** ↔ Tasks with AC-ID mapping
+- Bidirectional conversion
+- Epics ↔ Increments
+- Stories ↔ PRDs/RFCs
+- Tasks ↔ Tasks
 
 ### Azure DevOps Sync
-```bash
-/sw-ado:sync
-```
-- **4-level hierarchy** support (Epics → Features → User Stories → Tasks)
-- **Area Paths** and **Iterations** mapping
-- **Work item synchronization** with status updates
-- **Enterprise-ready** with PAT authentication
+- 4-level hierarchy support
+- Epics → Features → User Stories → Tasks
+- Area Paths and Iterations
+- Work item synchronization
 
-### Key Benefits
-
-1. **Keep Your Workflow** - Teams continue using familiar tools
-2. **Single Source of Truth** - Specs drive everything, tools reflect state
-3. **Auto-Sync Progress** - Complete a task → issue updates automatically
-4. **Gradual Adoption** - Start with one project, expand when ready
-5. **Audit Trail** - All syncs logged in increment metadata
+### GitHub Sync
+- Milestones ↔ Release Plans
+- Issues ↔ RFCs/Tasks
+- Checkable subtasks
 
 ## 🏢 [Brownfield](/docs/glossary/terms/brownfield) Excellence (The Hardest Problem Solved)
 
@@ -409,7 +301,7 @@ Brownfield projects are the **ultimate challenge** in software development:
 
 - ❌ **Living documentation** that stays current as code evolves
 
-**Most tools give up here. SpecWeave excels.**
+**Most frameworks give up here. SpecWeave excels.**
 
 ### Intelligent Documentation Merging
 
@@ -495,7 +387,7 @@ The **killer feature** for [brownfield](/docs/glossary/terms/brownfield): docume
 
 1. **Initial Documentation** - SpecWeave creates complete specs, HLDs, ADRs, diagrams
 
-2. **Code Changes** - You modify code using `/sw:do`
+2. **Code Changes** - You modify code using `/specweave:do`
 
 3. **Auto-Update** - Hooks automatically update:
    - Specifications reflect new requirements
@@ -510,7 +402,7 @@ The **killer feature** for [brownfield](/docs/glossary/terms/brownfield): docume
 
 - **Claude Hooks** - Post-task-completion hook runs after every task
 
-- **Living Docs Sync** - `/sw:sync-docs update` propagates changes
+- **Living Docs Sync** - `/specweave:sync-docs update` propagates changes
 
 - **Version Control** - All docs in [Git](/docs/glossary/terms/git), full history preserved
 
@@ -520,7 +412,7 @@ As your [brownfield](/docs/glossary/terms/brownfield) project grows, SpecWeave *
 
 **Scenario: Adding new payment module**
 ```bash
-/sw:increment "payment processing module"
+/specweave:increment "payment processing module"
 ```
 
 **SpecWeave automatically:**
@@ -604,8 +496,8 @@ npx specweave init .
 # ✅ Regression prevention in place
 
 # Day 4: Add OAuth safely
-/sw:increment "Add OAuth 2.0 support"
-/sw:do
+/specweave:increment "Add OAuth 2.0 support"
+/specweave:do
 # ✅ OAuth added with:
 #    - Updated specs and ADRs
 #    - Extended architecture diagrams
@@ -684,15 +576,15 @@ Logs and notifies when AI needs clarification.
 Framework-agnostic commands:
 
 **Core Commands:**
-- `/sw:increment "feature"` - Plan new increment (PM-led)
-- `/sw:do` - Execute tasks (smart resume)
-- `/sw:progress` - Check status and completion
-- `/sw:validate 0001` - Optional quality assessment
-- `/sw:done 0001` - Manual close (rarely needed)
+- `/specweave:increment "feature"` - Plan new increment (PM-led)
+- `/specweave:do` - Execute tasks (smart resume)
+- `/specweave:progress` - Check status and completion
+- `/specweave:validate 0001` - Optional quality assessment
+- `/specweave:done 0001` - Manual close (rarely needed)
 
 **Integration Commands:**
-- `/sw:sync-github` - Sync to GitHub issues
-- `/sw:sync-docs` - Review specs vs implementation
+- `/specweave:sync-github` - Sync to GitHub issues
+- `/specweave:sync-docs` - Review specs vs implementation
 
 All commands adapt to detected tech stack.
 
@@ -705,25 +597,16 @@ All commands adapt to detected tech stack.
   - Auto-translates specs, plans, tasks, and living docs to English
   - Zero translation costs (uses same LLM session)
 
-- **Cost optimization**: 70-98% token reduction through code-first architecture
-  - Skills load on-demand (not all tools upfront)
-  - Code execution beats MCP tool calls ([Anthropic research](https://www.anthropic.com/engineering/code-execution-with-mcp))
-  - Sub-agents isolate context (no bloat accumulation)
+- **Cost optimization**: 75%+ context reduction through intelligent plugin architecture
+  - Plugin-based system loads only what you need
+  - MCP protocol for efficient context management
   - Typical savings: $60-120/month per developer
 
-- **Figma integration**: Design-to-code via official Figma MCP in sw-frontend plugin
-  - Extract design tokens, implement components, manage Code Connect
-  - Responsive adaptation from single-viewport mockups
+- **Figma integration**: Design sync capabilities via specweave-figma plugin
+  - Import Figma designs into SpecWeave specs
+  - Track design-to-code alignment
 
 ### 🔜 Roadmap
-
-- **Lazy Plugin Loading** (v1.1): **99% token reduction** for non-SpecWeave work
-  - Router skill (~500 tokens) installed by default instead of 24 full plugins
-  - Keyword detection triggers on-demand plugin loading
-  - Skills cache at `~/.specweave/skills-cache/` for instant activation
-  - Hot-reload leverages Claude Code 2.1.0+ skill activation
-  - Context forking for heavy skills (PM, Architect) in isolated sub-agents
-  - Lazy loading is enabled by default for new installations
 
 - **Vector search**: Semantic spec search across all increments (v2.0)
 - **Enterprise analytics**: Advanced compliance tracking and team metrics

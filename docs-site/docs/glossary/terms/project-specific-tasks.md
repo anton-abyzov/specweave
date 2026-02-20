@@ -1,7 +1,7 @@
 # Project-Specific Tasks
 
 **Category**: Organization
-**Related Terms**: [COPIED ACs and Tasks](copied-acs-and-tasks.md), [User Story](user-stories), [Living Docs](living-docs.md), [Three-Layer Architecture](three-layer-architecture.md)
+**Related Terms**: [COPIED ACs and Tasks](copied-acs-and-tasks.md), [User Story](user-story.md), [Living Docs](living-docs.md), [Three-Layer Architecture](three-layer-architecture.md)
 
 ---
 
@@ -521,7 +521,7 @@ export class TaskProjectSpecificGenerator {
 ### For Teams
 
 1. **Single Source of Truth**: Update increment tasks.md, not User Story files
-2. **Sync After Updates**: Run `/sw:sync-docs` to propagate changes
+2. **Sync After Updates**: Run `/specweave:sync-docs` to propagate changes
 3. **Verify Filtering**: Check User Stories have correct project-specific tasks
 4. **Track Progress**: Use project-specific completion percentages
 
@@ -554,7 +554,7 @@ export class TaskProjectSpecificGenerator {
 
 - **[COPIED ACs and Tasks](copied-acs-and-tasks.md)**: How tasks are copied to User Stories
 - **[Three-Layer Architecture](three-layer-architecture.md)**: Synchronization pattern
-- **[User Story](user-stories)**: Container for project-specific tasks
+- **[User Story](user-story.md)**: Container for project-specific tasks
 - **[Living Docs](living-docs.md)**: Destination for User Story files
 - **[AC-ID](ac-id.md)**: Identifier used for task filtering
 
@@ -578,4 +578,4 @@ export class TaskProjectSpecificGenerator {
 ---
 
 **Last Updated**: 2025-11-16
-**Related Increment**: [0037-project-specific-tasks](/docs/glossary/terms/increments)
+**Related Increment**: [0037-project-specific-tasks](../../../increments/0037-project-specific-tasks/)

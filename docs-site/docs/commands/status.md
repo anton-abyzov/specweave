@@ -14,13 +14,13 @@ specweave status [options]
 
 ## Description
 
-The `status` command displays a comprehensive overview of all [increments](/docs/glossary/terms/increments) in your project, including:
+The `status` command displays a comprehensive overview of all increments in your project, including:
 - **Overall progress** (X/Y increments complete)
 - **Active increments** (currently working)
 - **Paused increments** (temporarily blocked)
 - **Completed increments** (done and shipped)
 - **Abandoned increments** (cancelled work)
-- **[WIP limit](/docs/glossary/terms/wip-limits) status** (are you at capacity?)
+- **WIP limit status** (are you at capacity?)
 - **Warnings** (stale work, context switching)
 - **Suggestions** (next actions)
 
@@ -28,7 +28,7 @@ The `status` command displays a comprehensive overview of all [increments](/docs
 - 📊 Checking overall project progress
 - 🔍 Finding which increment to work on
 - ⚠️ Identifying stale or blocked work
-- 📈 Understanding [WIP limit](/docs/glossary/terms/wip-limits) status
+- 📈 Understanding WIP limit status
 
 :::tip Check Status Daily
 Run `specweave status` at the start of each day to understand current work and identify any issues early.
@@ -598,10 +598,10 @@ $ specweave status
 
 ## See Also
 
-- [`pause`](/docs/commands/pause) - Pause active work
-- [`resume`](/docs/commands/resume) - Resume paused work
-- [`abandon`](/docs/commands/abandon) - Cancel work permanently
-- [Status Management](/docs/commands/status-management) - Complete workflow guide
+- `pause` - Pause active work
+- `resume` - Resume paused work
+- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
+- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
 
 ## Summary
 

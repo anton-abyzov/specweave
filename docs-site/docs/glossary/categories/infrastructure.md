@@ -36,7 +36,7 @@ Infrastructure and operations terms cover the deployment, scaling, monitoring, a
 - Container orchestration platform
 - Automates deployment, scaling, and management
 - Industry standard for cloud-native applications
-- SpecWeave plugin: `sw-k8s` for K8s-specific features
+- SpecWeave plugin: `specweave-kubernetes` for K8s-specific features
 
 **[Docker](/docs/glossary/terms/docker)**
 - Container platform for packaging applications
@@ -64,7 +64,7 @@ Infrastructure and operations terms cover the deployment, scaling, monitoring, a
 - Understanding system behavior from external outputs
 - Three pillars: logs, metrics, traces
 - Tools: Prometheus, Grafana, Datadog
-- SpecWeave plugin: `sw-infra` provides observability features
+- SpecWeave plugin: `specweave-observability` (planned)
 
 ---
 
@@ -227,7 +227,7 @@ spec:
 When creating infrastructure-related increments:
 
 ```bash
-/sw:increment "Deploy API to Kubernetes"
+/specweave:increment "Deploy API to Kubernetes"
 ```
 
 The Architect agent:
@@ -238,13 +238,13 @@ The Architect agent:
 
 ### 2. Plugin System for Infrastructure
 
-**sw-k8s plugin**:
+**specweave-kubernetes plugin** (planned):
 - Kubernetes-specific skills (deployment, scaling, monitoring)
 - Helm chart generation
 - K8s configuration validation
 - kubectl command suggestions
 
-**sw-infra plugin**:
+**specweave-terraform plugin** (planned):
 - Terraform module templates
 - State management guidance
 - Provider-specific best practices
@@ -279,7 +279,7 @@ Typical infrastructure increments in SpecWeave:
 
 - **[Architecture & Design](/docs/glossary/categories/architecture-category)** - System design decisions
 - **[DevOps & Tools](/docs/glossary/categories/devops-category)** - Development workflows
-- **Security & Compliance** - Production security
+- **[Security & Compliance](/docs/glossary/categories/security)** - Production security
 
 ---
 
@@ -309,4 +309,4 @@ Typical infrastructure increments in SpecWeave:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

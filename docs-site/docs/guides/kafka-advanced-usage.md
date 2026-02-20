@@ -541,7 +541,7 @@ Build real-time stream processing pipelines with windowing, joins, and stateful 
 ### Generate Kafka Streams App Scaffold
 
 ```bash
-/sw-kafka:app-scaffold
+/specweave-kafka-streams:app-scaffold
 
 # Generates:
 # - src/streams/app.ts (main application)
@@ -1025,7 +1025,7 @@ export { consumeTracedMessages };
 
 ```bash
 # Start Jaeger (included in monitoring stack)
-/sw-kafka:monitor-setup
+/specweave-kafka:monitor-setup
 
 # Access Jaeger UI
 open http://localhost:16686

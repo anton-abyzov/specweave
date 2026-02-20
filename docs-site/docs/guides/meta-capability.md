@@ -6,11 +6,11 @@
 
 ## What Is Meta-Capability?
 
-**SpecWeave isn't just a tool** - it's a **self-extending system** where:
+**SpecWeave isn't just a framework** - it's a **self-extending system** where:
 
 - ✅ **Agents build agents** - Core agents create custom domain experts
 - ✅ **Skills build skills** - Core skills generate specialized capabilities
-- ✅ **SpecWeave builds SpecWeave** - The Skill Fabric uses itself to add new features
+- ✅ **SpecWeave builds SpecWeave** - The framework uses itself to add new features
 - ✅ **You control everything** - No autonomous changes, always approved
 
 **In other words**: The factory builds factories, and you're the architect.
@@ -22,21 +22,21 @@
 ### Traditional Frameworks
 
 ```
-Traditional framework provides tools
+Framework provides tools
    ↓
 You use tools to build app
    ↓
 Framework stays static
    ↓
-You're limited to what the framework provides
+You're limited to what framework provides
 ```
 
-❌ **Problem**: Traditional frameworks can't adapt to YOUR domain, YOUR company, YOUR needs.
+❌ **Problem**: Framework can't adapt to YOUR domain, YOUR company, YOUR needs.
 
 ### SpecWeave's Meta-Capability
 
 ```
-Skill Fabric provides core agents/skills
+Framework provides core agents/skills
    ↓
 You use them to build app
    ↓
@@ -44,7 +44,7 @@ You create custom agents/skills for YOUR domain
    ↓
 Custom agents create MORE tools
    ↓
-Skill Fabric evolves with YOUR needs
+Framework evolves with YOUR needs
 ```
 
 ✅ **Solution**: Infinite extensibility tailored to your exact requirements.
@@ -112,7 +112,7 @@ Catches violations BEFORE code review
 
 ### 3. SpecWeave Builds SpecWeave
 
-**Scenario**: The Skill Fabric needs diagram generation capabilities.
+**Scenario**: The framework needs diagram generation capabilities.
 
 **How it's built**:
 ```
@@ -124,12 +124,12 @@ architect agent: Designs architecture (HOW)
    ↓
 docs-writer agent: Creates documentation
    ↓
-Result: diagrams-architect agent added to Skill Fabric
+Result: diagrams-architect agent added to framework
    ↓
 SpecWeave now has diagram capabilities (built by SpecWeave!)
 ```
 
-**The Skill Fabric uses itself to improve itself** - continuous evolution.
+**The framework uses itself to improve itself** - continuous evolution.
 
 ---
 
@@ -247,13 +247,13 @@ audit-log-validator skill:
 
 ### 🚀 Infinite Extensibility
 
-**No limits**:
+**No framework limits**:
 - Healthcare? Create `hipaa-compliance` agent
 - Gaming? Create `game-balance` agent
 - IoT? Create `iot-protocol` skill
 - Finance? Create `financial-reporting` agent
 
-**Any domain, any niche, any requirement** - the Skill Fabric adapts.
+**Any domain, any niche, any requirement** - the framework adapts.
 
 ---
 
@@ -293,18 +293,18 @@ Result: Entire team benefits from improvement
 
 ---
 
-### 📈 Skill Fabric Evolution
+### 📈 Framework Evolution
 
 **How SpecWeave grows**:
 
 | Contribution | Result |
 |-------------|--------|
 | User feedback | New agents/skills added |
-| Community contributions | Skill Fabric capabilities expand |
+| Community contributions | Framework capabilities expand |
 | Best practices emerge | Codified in agents |
 | Edge cases discovered | Skills improved |
 
-**The Skill Fabric gets better every day** - driven by real-world usage.
+**The framework gets better every day** - driven by real-world usage.
 
 ---
 
@@ -447,7 +447,7 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 **A**: They're in your repo - you control visibility.
 
 - ✅ Keep in private repo → Only your team has access
-- ✅ Keep in `.claude/agents/` → Not published to Skill Fabric
+- ✅ Keep in `.claude/agents/` → Not published to framework
 - ✅ Use `.gitignore` → Don't even commit to git
 
 **Full control over distribution.**
@@ -456,14 +456,14 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 ### Q: How do I contribute custom agents back to SpecWeave?
 
-**A**: Submit a PR to the Skill Fabric!
+**A**: Submit a PR to the framework!
 
 **Steps**:
 1. Create custom agent in your project
 2. Test thoroughly in production
 3. Move to SpecWeave's `src/agents/`
 4. Submit PR with test cases
-5. If accepted → Added to Skill Fabric for everyone
+5. If accepted → Added to framework for everyone
 
 **Community-driven growth.**
 
@@ -494,15 +494,15 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 ## The Bottom Line
 
-**SpecWeave is not just a Skill Fabric** - it's a **self-improving ecosystem** where:
+**SpecWeave is not just a framework** - it's a **self-improving ecosystem** where:
 
 - ✅ Agents build agents
 - ✅ Skills build skills
-- ✅ The Skill Fabric uses itself to grow
+- ✅ The framework uses itself to grow
 - ✅ You control every step
 - ✅ Knowledge compounds over time
 
-**Other tools give you static prompts.**
+**Other frameworks give you tools.**
 
 **SpecWeave gives you a factory that builds MORE tools.**
 
@@ -514,8 +514,8 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 - [CLAUDE.md](https://github.com/anton-abyzov/specweave/blob/develop/CLAUDE.md) - Development guide for contributors
 - [Plugin Development](https://docs.claude.com/en/docs/claude-code/plugins) - Claude Code plugin system documentation
-- [Creating Custom Agents](/docs/overview/introduction) - Step-by-step guide (coming soon)
-- [Creating Custom Skills](/docs/overview/introduction) - Step-by-step guide (coming soon)
+- [Creating Custom Agents](/docs/glossary/terms/creating-custom-agents) - Step-by-step guide (coming soon)
+- [Creating Custom Skills](/docs/glossary/terms/creating-custom-skills) - Step-by-step guide (coming soon)
 
 ---
 

@@ -543,13 +543,13 @@ my-angular-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "User Module"] --> B[PM: Define Features]
+    A[/specweave:increment "User Module"] --> B[PM: Define Features]
     B --> C[Architect: Design Module Structure]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Generate Module/Components]
     E --> F[Implement Services]
     F --> G[Write Unit Tests]
-    G --> H[/sw:done]
+    G --> H[/specweave:done]
 
     style B fill:#dd0031
     style C fill:#dd0031
@@ -780,7 +780,7 @@ ngOnInit(): void {
 - **[Angular Official Docs](https://angular.io/docs)** - Comprehensive documentation
 - **Angular Tutorial** - SpecWeave Angular guide
 - **[TypeScript Guide](/docs/glossary/terms/typescript)** - Learn TypeScript first
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - Angular-specific features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Angular-specific features
 
 ---
 

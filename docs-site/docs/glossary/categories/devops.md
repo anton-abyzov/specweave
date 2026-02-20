@@ -27,7 +27,7 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 **GitHub**
 - Git hosting platform + collaboration tools
 - Features: pull requests, issues, actions, projects
-- SpecWeave plugin: `sw-github` for issue sync
+- SpecWeave plugin: `specweave-github` for issue sync
 - Most popular: 100M+ developers
 
 **Branch Strategies**:
@@ -72,13 +72,13 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 
 ### Package Management
 
-**NPM**
+**[NPM](/docs/glossary/terms/npm)**
 - Node Package Manager
 - 2M+ packages (largest ecosystem)
 - Package.json: Project dependencies
 - SpecWeave distributed via NPM
 
-**Yarn**
+**[Yarn](/docs/glossary/terms/yarn)**
 - Alternative to NPM (faster, deterministic)
 - Lock file: Ensures consistent installs
 - Workspaces: Monorepo support
@@ -86,13 +86,13 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 
 ### Code Quality
 
-**ESLint**
+**[ESLint](/docs/glossary/terms/eslint)**
 - JavaScript/TypeScript linter
 - Catches bugs, enforces style
 - Configurable rules (.eslintrc)
 - SpecWeave uses ESLint + Prettier
 
-**Prettier**
+**[Prettier](/docs/glossary/terms/prettier)**
 - Code formatter (opinionated)
 - Consistent code style across team
 - Auto-format on save
@@ -387,16 +387,16 @@ git commit -m "chore: initialize SpecWeave"
 
 ```bash
 # Install plugin
-/plugin install sw-github
+/plugin install sw-github@specweave
 
 # Create GitHub issue from increment
-/sw-github:create 0030
+/github-create-issue 0030 "CI/CD Pipeline Setup"
 
 # Sync increment ↔ GitHub issue
-/sw-github:sync 0030
+/github-sync 0030
 
 # View status
-/sw-github:status 0030
+/github-status 0030
 ```
 
 **Features**:
@@ -410,7 +410,7 @@ git commit -m "chore: initialize SpecWeave"
 SpecWeave increments include CI/CD examples:
 
 ```yaml
-# .github/workflows/sw-validation.yml
+# .github/workflows/specweave-validation.yml
 name: SpecWeave Validation
 
 on:
@@ -494,15 +494,15 @@ DevOps configuration documented in:
 
 - **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Deployment and scaling
 - **[Testing & Quality](/docs/glossary/categories/testing-category)** - CI/CD testing
-- **Security & Compliance** - Secure pipelines
+- **[Security & Compliance](/docs/glossary/categories/security)** - Secure pipelines
 
 ---
 
 ## Learn More
 
 ### Guides
-- [Getting Started](/docs/quick-start)
-- [Multi-Project Setup](/docs/guides/multi-project-setup)
+- [Development Workflow](/docs/delivery/guides/development-workflow)
+- [Branch Strategy](/docs/delivery/branch-strategy)
 - CI/CD Best Practices (coming soon)
 
 ### Books
@@ -524,4 +524,4 @@ DevOps configuration documented in:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/)
+- [Alphabetical Index](/docs/glossary/README)

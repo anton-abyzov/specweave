@@ -91,8 +91,8 @@ Each category page follows the **EXACT structure** from `architecture.md`:
 - Real-world scenarios
 
 ✅ **SpecWeave Integration**
-- Plugin references (sw-github, sw-k8s, etc.)
-- Command examples (/sw:inc, /sw:do, etc.)
+- Plugin references (specweave-github, specweave-kubernetes, etc.)
+- Command examples (/specweave:inc, /specweave:do, etc.)
 - Living documentation structure
 - Increment planning workflows
 
@@ -187,7 +187,7 @@ Each category page includes:
 Category pages integrate with:
 - `/docs/glossary/` - Main glossary page
 - `/docs/glossary/index-by-category` - Category browser
-- `/docs/glossary/` - Alphabetical index
+- `/docs/glossary/README` - Alphabetical index
 - `/docs/glossary/terms/` - Individual term pages
 
 ---

@@ -447,13 +447,13 @@ my-nextjs-app/
 
 ```mermaid
 graph TB
-    A[/sw:increment "Product Catalog"] --> B[PM: Choose Rendering Strategy]
+    A[/specweave:increment "Product Catalog"] --> B[PM: Choose Rendering Strategy]
     B --> C[Architect: Design SSG + ISR]
-    C --> D[/sw:do]
+    C --> D[/specweave:do]
     D --> E[Implement Pages]
     E --> F[Configure next.config.js]
     F --> G[Test Performance]
-    G --> H[/sw:done]
+    G --> H[/specweave:done]
 
     style B fill:#7c3aed
     style C fill:#8b5cf6
@@ -703,7 +703,7 @@ export async function getStaticProps() {
 - **[Next.js Official Docs](https://nextjs.org/docs)** - Comprehensive documentation
 - **Next.js Tutorial** - SpecWeave Next.js guide
 - **[React Guide](/docs/glossary/terms/react)** - Understanding React first
-- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - Next.js-specific features
+- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Next.js-specific features
 
 ---
 
