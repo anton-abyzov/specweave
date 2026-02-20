@@ -20,6 +20,7 @@ Comprehensive mobile development plugin covering native iOS (SwiftUI), native An
 | mobile-testing | Mobile testing across all platforms: XCTest, Espresso, Detox, Maestro, and device farms |
 | deep-linking-push | Deep linking (Universal Links, App Links) and push notifications (APNs, FCM) |
 | capacitor-ionic | Web-to-mobile development with Capacitor 6+ and Ionic Framework |
+| appstore | App Store Connect automation via `asc` CLI: TestFlight, submissions, metadata, signing, analytics, Xcode Cloud |
 
 ## Installation
 

@@ -1,24 +1,30 @@
 /**
- * Refresh SpecWeave Plugins via vskill
+ * Refresh SpecWeave Plugins
  *
- * Refresh SpecWeave Plugins via vskill CLI.
- * Uses vskill CLI (shell-out) for plugin installation, scanning, and lockfile management.
+ * Copies first-party plugins from specweave's bundled plugins/ directory
+ * to ~/.claude/commands/<name>/. Uses inline plugin copier (no vskill dependency).
  *
  * Modes:
  *   - Default (lazy): Install only core `sw` plugin
  *   - --all: Install all plugins from marketplace.json
  *   - Hash comparison: Skip plugins whose content hash hasn't changed
  *
- * @since 1.0.273
+ * @since 1.0.279
  */
 
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { createHash } from 'node:crypto';
 import { consoleLogger as logger } from '../../utils/logger.js';
-import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import {
+  copyPlugin,
+  computePluginHash,
+  findSpecweaveRoot,
+  readLockfile as readLockfileFromDir,
+  writeLockfile as writeLockfileToDir,
+  ensureLockfile as ensureLockfileInDir,
+} from '../../utils/plugin-copier.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -40,22 +46,6 @@ interface MarketplacePlugin {
   description?: string;
 }
 
-interface LockfileSkillEntry {
-  version: string;
-  sha: string;
-  tier: string;
-  installedAt: string;
-  source: string;
-}
-
-interface VskillLock {
-  version: number;
-  agents: string[];
-  skills: Record<string, LockfileSkillEntry>;
-  createdAt: string;
-  updatedAt: string;
-}
-
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -68,30 +58,19 @@ const CORE_PLUGINS = ['sw'];
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the path to the specweave repo's marketplace.json.
- * Searches upwards from cwd or uses the specweave package install location.
+ * Resolve the path to the specweave root directory.
+ * Tries multiple strategies for both development and production layouts.
  */
-function findMarketplaceJson(): string | null {
-  // Strategy 1: Look relative to this file's package (installed specweave)
-  // The marketplace.json is at <specweave-root>/.claude-plugin/marketplace.json
-  const candidates = [
-    // Running from source (development)
-    path.resolve(__dirname, '../../../.claude-plugin/marketplace.json'),
-    // Running from dist (installed)
-    path.resolve(__dirname, '../../../../.claude-plugin/marketplace.json'),
-    // Current working directory (project using specweave as dependency)
-    path.join(process.cwd(), '.claude-plugin/marketplace.json'),
-    // Installed marketplace location (Claude Code manages this)
-    path.join(
-      process.env.HOME || process.env.USERPROFILE || '',
-      '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
-    ),
-  ];
+function resolveSpecweaveRoot(): string | null {
+  // Strategy 1: Walk up from this file's location
+  const fromFile = findSpecweaveRoot(__dirname);
+  if (fromFile) return fromFile;
 
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
+  // Strategy 2: Check known installed marketplace location
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  const installedMarketplace = path.join(home, '.claude/plugins/marketplaces/specweave');
+  if (fs.existsSync(path.join(installedMarketplace, '.claude-plugin/marketplace.json'))) {
+    return installedMarketplace;
   }
 
   return null;
@@ -116,135 +95,12 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
   }
 }
 
-/**
- * Read vskill.lock from the current directory.
- */
-function readLockfile(): VskillLock | null {
-  const lockPath = path.join(process.cwd(), 'vskill.lock');
-  if (!fs.existsSync(lockPath)) return null;
-  try {
-    const raw = fs.readFileSync(lockPath, 'utf-8');
-    return JSON.parse(raw) as VskillLock;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Write vskill.lock to the current directory.
- */
-function writeLockfile(lock: VskillLock): void {
-  lock.updatedAt = new Date().toISOString();
-  const lockPath = path.join(process.cwd(), 'vskill.lock');
-  fs.writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n', 'utf-8');
-}
-
-/**
- * Ensure a lockfile exists, creating one if needed.
- */
-function ensureLockfile(): VskillLock {
-  const existing = readLockfile();
-  if (existing) return existing;
-
-  const lock: VskillLock = {
-    version: 1,
-    agents: [],
-    skills: {},
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  writeLockfile(lock);
-  return lock;
-}
-
-/**
- * Compute the content hash for a plugin's source directory.
- * Walks the plugin directory and hashes all readable file contents.
- */
-function computePluginHash(pluginDir: string): string {
-  if (!fs.existsSync(pluginDir)) return '';
-
-  const hash = createHash('sha256');
-
-  try {
-    const files = fs.readdirSync(pluginDir, { recursive: true }) as string[];
-    for (const file of files.sort()) {
-      const fullPath = path.join(pluginDir, file);
-      try {
-        const content = fs.readFileSync(fullPath, 'utf-8');
-        hash.update(content);
-      } catch {
-        // Skip unreadable files (directories, binary, etc.)
-      }
-    }
-  } catch {
-    // Directory not readable
-  }
-
-  return hash.digest('hex').slice(0, 12);
-}
-
-/**
- * Install a single plugin via vskill CLI (shell-out).
- */
-function installPluginViaVskill(
-  pluginName: string,
-  pluginDirBase: string,
-  _options: RefreshPluginsOptions,
-): { success: boolean; sha: string; error?: string } {
-  // Shell out to vskill add with --plugin and --pluginDir flags
-  const args = [
-    'add',
-    'specweave',         // source identifier
-    '--plugin', pluginName,
-    '--pluginDir', pluginDirBase,
-    // Always --force: these are first-party plugins from specweave's own repo.
-    // The security scanner is meant for untrusted third-party plugins.
-    '--force',
-  ];
-
-  // Try to find vskill CLI
-  const vskillPaths = [
-    // In monorepo (development)
-    path.resolve(__dirname, '../../../../../vskill/dist/index.js'),
-    // Fallback: global vskill
-    'vskill',
-  ];
-
-  let result: ExecResult = { stdout: '', stderr: '', exitCode: 1, success: false };
-
-  for (const vskillPath of vskillPaths) {
-    if (vskillPath === 'vskill') {
-      result = execFileNoThrowSync('vskill', args) ?? result;
-    } else {
-      result = execFileNoThrowSync('node', [vskillPath, ...args]) ?? result;
-    }
-
-    if (result.success) break;
-  }
-
-  // Compute hash for lockfile
-  const marketplaceJsonDir = path.dirname(pluginDirBase);
-  const marketplace = getAvailablePlugins(
-    path.join(marketplaceJsonDir, '.claude-plugin/marketplace.json')
-  );
-  const plugin = marketplace.find(p => p.name === pluginName);
-  const pluginSourceDir = plugin?.source
-    ? path.resolve(pluginDirBase, '..', plugin.source)
-    : pluginDirBase;
-
-  const sha = computePluginHash(pluginSourceDir);
-
-  const error = result?.success ? undefined : (result?.stderr || result?.stdout || 'Unknown error').trim();
-  return { success: result?.success ?? false, sha, error };
-}
-
 // ---------------------------------------------------------------------------
 // Main command
 // ---------------------------------------------------------------------------
 
 /**
- * Refresh plugins using vskill.
+ * Refresh plugins using inline copier.
  *
  * Default (lazy mode): installs only core `sw` plugin.
  * With --all flag: installs all plugins from marketplace.json.
@@ -253,19 +109,19 @@ function installPluginViaVskill(
 export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<void> {
   const lazyMode = !(options.all ?? false);
 
-  console.log(chalk.blue.bold('\n  SpecWeave Plugin Refresh (vskill)'));
+  console.log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));
   console.log(chalk.blue.bold(`  Mode: ${lazyMode ? 'lazy (core only)' : 'all plugins'}\n`));
 
-  // Step 1: Find marketplace.json
-  const marketplacePath = findMarketplaceJson();
-  if (!marketplacePath) {
-    console.log(chalk.yellow('Could not find marketplace.json'));
-    console.log(chalk.gray('  Run from within the specweave project or ensure it is installed.'));
+  // Step 1: Find specweave root
+  const specweaveRoot = resolveSpecweaveRoot();
+  if (!specweaveRoot) {
+    console.log(chalk.yellow('Could not find specweave installation'));
+    console.log(chalk.gray('  Ensure specweave is installed globally or run from the specweave project.'));
     return;
   }
 
-  const marketplaceDir = path.dirname(path.dirname(marketplacePath)); // Go up from .claude-plugin/
-  logger.debug(`Found marketplace.json at ${marketplacePath}`);
+  const marketplacePath = path.join(specweaveRoot, '.claude-plugin', 'marketplace.json');
+  logger.debug(`Found specweave root at ${specweaveRoot}`);
 
   // Step 2: Read available plugins
   const allPlugins = getAvailablePlugins(marketplacePath);
@@ -281,65 +137,36 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     ? allPlugins.filter(p => CORE_PLUGINS.includes(p.name))
     : allPlugins;
 
-  // Step 4: Read lockfile for hash comparison
-  const lock = ensureLockfile();
-
-  // Step 5: Process each plugin
+  // Step 4: Process each plugin
   let installed = 0;
   let skipped = 0;
   let failed = 0;
 
   for (const plugin of pluginsToProcess) {
-    const existingEntry = lock.skills[plugin.name];
+    console.log(chalk.blue(`  Installing ${plugin.name}...`));
 
-    // Compute current hash for the plugin source
-    const pluginSourceDir = path.resolve(marketplaceDir, plugin.source);
-    const currentHash = computePluginHash(pluginSourceDir);
+    const result = copyPlugin(plugin.name, specweaveRoot, {
+      force: options.force,
+    });
 
-    // Skip if hash hasn't changed (unless --force)
-    if (existingEntry && existingEntry.sha === currentHash && !options.force) {
+    if (result.success && result.skipped) {
       if (options.verbose) {
         console.log(chalk.gray(`  - ${plugin.name}: unchanged (skipped)`));
       }
       skipped++;
-      continue;
-    }
-
-    // Install via vskill
-    console.log(chalk.blue(`  Installing ${plugin.name}...`));
-
-    const result = installPluginViaVskill(plugin.name, marketplaceDir, options);
-
-    if (result.success) {
+    } else if (result.success) {
       installed++;
       console.log(chalk.green(`  + ${plugin.name} installed`));
-
-      // Update lockfile entry
-      lock.skills[plugin.name] = {
-        version: plugin.version,
-        sha: currentHash || result.sha,
-        tier: 'SCANNED',
-        installedAt: new Date().toISOString(),
-        source: `local:specweave`,
-      };
     } else {
       failed++;
       console.log(chalk.red(`  x ${plugin.name} failed`));
       if (result.error) {
-        // Show last meaningful line of error output
-        const lines = result.error.split('\n').filter(l => l.trim());
-        const lastLines = lines.slice(-3);
-        for (const line of lastLines) {
-          console.log(chalk.gray(`    ${line}`));
-        }
+        console.log(chalk.gray(`    ${result.error}`));
       }
     }
   }
 
-  // Step 6: Write updated lockfile
-  writeLockfile(lock);
-
-  // Step 7: Summary
+  // Step 5: Summary
   console.log('');
   console.log(chalk.blue.bold('  Summary'));
   console.log(chalk.green(`  Installed: ${installed}`));

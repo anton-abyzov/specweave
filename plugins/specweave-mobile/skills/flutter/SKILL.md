@@ -1087,3 +1087,10 @@ Structure: lib/data|domain|presentation/{feature}/
 | Slow builds | Enable Impeller, use `--no-sound-null-safety` only for debugging |
 | Large image memory usage | Use `cacheWidth`/`cacheHeight` on Image widget, CachedNetworkImage |
 | Hot reload not reflecting changes | Full restart (`Shift+R`) for changes to main(), providers, or native code |
+
+## Related Skills
+
+- `appstore` - **Recommended**: App Store Connect automation via `asc` CLI (TestFlight, submissions, metadata, signing)
+- `expo` - Expo/React Native for cross-platform comparison
+- `mobile-testing` - Comprehensive testing strategies
+- `deep-linking-push` - Deep linking and push notification details
