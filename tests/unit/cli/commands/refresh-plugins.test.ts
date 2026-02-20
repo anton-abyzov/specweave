@@ -18,17 +18,11 @@ const {
   mockFindSpecweaveRoot,
   mockExistsSync,
   mockReadFileSync,
-  mockRegisterPluginsWithClaudeCli,
 } = vi.hoisted(() => ({
   mockCopyPlugin: vi.fn(),
   mockFindSpecweaveRoot: vi.fn(),
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
-  mockRegisterPluginsWithClaudeCli: vi.fn().mockReturnValue({
-    marketplaceRegistered: true,
-    installedPlugins: [],
-    failedPlugins: [],
-  }),
 }));
 
 // Mock plugin-copier (replaces vskill shell-out)
@@ -72,11 +66,6 @@ vi.mock('chalk', () => {
   };
   return { default: new Proxy(identity, handler) };
 });
-
-// Mock claude-plugin-cli (shared CLI registration utility)
-vi.mock('../../../../src/utils/claude-plugin-cli.js', () => ({
-  registerPluginsWithClaudeCli: mockRegisterPluginsWithClaudeCli,
-}));
 
 // Mock fs
 vi.mock('fs', async (importOriginal) => {
@@ -203,56 +192,6 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({});
 
       expect(mockCopyPlugin).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  // =========================================================================
-  // Claude CLI plugin registration
-  // =========================================================================
-  describe('Claude CLI plugin registration', () => {
-    it('should call registerPluginsWithClaudeCli after successful install', async () => {
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123' });
-
-      await refreshPluginsCommand({});
-
-      expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalledWith(
-        '/mock/specweave', ['sw'],
-      );
-    });
-
-    it('should register all plugins in --all mode', async () => {
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123' });
-
-      await refreshPluginsCommand({ all: true });
-
-      expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalledWith(
-        '/mock/specweave', ['sw', 'sw-frontend', 'sw-github'],
-      );
-    });
-
-    it('should still register via CLI when plugins are skipped (unchanged)', async () => {
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
-
-      await refreshPluginsCommand({});
-
-      // skipped counts as success, so CLI registration should still happen
-      expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalled();
-    });
-
-    it('should not call CLI when all plugins fail', async () => {
-      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'fail' });
-
-      await refreshPluginsCommand({});
-
-      expect(mockRegisterPluginsWithClaudeCli).not.toHaveBeenCalled();
-    });
-
-    it('should not crash when registerPluginsWithClaudeCli throws', async () => {
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123' });
-      mockRegisterPluginsWithClaudeCli.mockImplementation(() => { throw new Error('CLI not found'); });
-
-      // Should not throw
-      await refreshPluginsCommand({});
     });
   });
 

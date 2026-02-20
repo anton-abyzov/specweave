@@ -69,18 +69,19 @@ These rules apply to ALL JIRA and Confluence API operations in this skill.
 ### Credential Loading
 
 ```bash
-# Load credentials from .env (never display values)
-JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)"
-JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)"
-JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
-
-# Validate non-empty (without reading into output)
+# 1. Validate presence FIRST (before reading any values)
 for KEY in JIRA_API_TOKEN JIRA_EMAIL JIRA_DOMAIN; do
   if ! grep -qE "^${KEY}=.+" .env; then
     echo "Error: ${KEY} missing or empty in .env"
     exit 1
   fi
 done
+
+# 2. Load credentials ONLY after validation passes (never display values)
+#    head -1 ensures only first match used if .env has duplicate keys
+JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | head -1 | cut -d '=' -f2-)"
+JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | head -1 | cut -d '=' -f2-)"
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | head -1 | cut -d '=' -f2-)"
 ```
 
 ### Domain Validation (before ANY API call)
@@ -94,7 +95,10 @@ fi
 
 # Cloud JIRA: must match <subdomain>.atlassian.net
 if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Warning: Domain does not match <subdomain>.atlassian.net — requires user confirmation for non-standard domains"
+  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
+  echo "Self-hosted JIRA requires explicit user confirmation"
+  exit 1
+  # Agent: use AskUserQuestion to confirm non-standard domain before retrying
 fi
 
 # Reject IP addresses (SSRF prevention)

@@ -97,8 +97,8 @@ echo "All required credentials present"
 ### Step 4: Domain Validation (Strict)
 
 ```bash
-# Read domain safely — quote all variable expansions
-JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
+# Read domain safely — quote all expansions, take first match only
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | head -1 | cut -d '=' -f2-)"
 
 # Reject empty
 if [ -z "$JIRA_DOMAIN" ]; then
@@ -114,9 +114,10 @@ fi
 
 # Must end with .atlassian.net for cloud JIRA
 if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Warning: Domain does not match <subdomain>.atlassian.net pattern"
-  echo "If using self-hosted JIRA, confirm the domain is correct before proceeding"
-  # Require explicit user confirmation for non-standard domains
+  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
+  echo "Self-hosted JIRA requires explicit user confirmation"
+  exit 1
+  # Agent: use AskUserQuestion to confirm non-standard domain before retrying
 fi
 
 # Reject IP addresses — IPv4, IPv6 brackets, hex-encoded (SSRF prevention)
@@ -132,61 +133,11 @@ if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\
 fi
 ```
 
-### Step 5: Use Credentials in Sync
+### Step 5: Credential Loading and API Calls
 
-```bash
-# Load credentials from .env (never display values)
-JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)"
-JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)"
-JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)"
+This skill does NOT execute API calls directly (no Bash tool). Credential loading, authentication, and API operations are handled by the `jira-mapper` skill — see its **Security Rules** section for the hardened patterns (domain validation, HTTPS enforcement, SSRF prevention, variable quoting).
 
-# Create Basic Auth header (JIRA uses email:token)
-AUTH="$(printf '%s:%s' "$JIRA_EMAIL" "$JIRA_API_TOKEN" | base64)"
-
-# HTTPS only — never allow plain HTTP
-# All variables double-quoted to prevent word splitting
-curl -s -f \
-  -H "Authorization: Basic $AUTH" \
-  -H "Content-Type: application/json" \
-  "https://${JIRA_DOMAIN}/rest/api/3/myself" \
-  || { echo "JIRA API connection failed"; exit 1; }
-```
-
-### Step 6: Never Log Secrets
-
-```bash
-# NEVER echo token values, auth headers, or base64-encoded credentials
-# Only confirm presence:
-echo "JIRA connection: domain=${JIRA_DOMAIN}, email present=yes, token present=yes"
-```
-
-### Step 7: Error Handling
-
-```bash
-# Store HTTP status code from curl
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -H "Authorization: Basic $AUTH" \
-  -H "Content-Type: application/json" \
-  "https://${JIRA_DOMAIN}/rest/api/3/myself")
-
-case "$HTTP_STATUS" in
-  200) echo "JIRA authentication successful" ;;
-  401)
-    echo "JIRA credentials invalid (HTTP 401)"
-    echo "Check: API token may be expired or email incorrect"
-    echo "Manage tokens: https://id.atlassian.com/manage-profile/security/api-tokens"
-    ;;
-  403)
-    echo "JIRA permission denied (HTTP 403)"
-    echo "Required permissions: Browse projects, Create issues, Edit issues"
-    ;;
-  *)
-    echo "JIRA API error (HTTP $HTTP_STATUS)"
-    ;;
-esac
-```
-
-### Step 8: Production Recommendations
+### Step 6: Production Recommendations
 
 **For production deployments, use OAuth 2.0** instead of API tokens:
 

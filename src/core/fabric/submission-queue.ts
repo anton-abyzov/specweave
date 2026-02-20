@@ -67,6 +67,13 @@ export class SubmissionQueue {
   }
 
   /**
+   * Reload data from disk (useful when external processes write to the file).
+   */
+  reload(): void {
+    this.data = this.load();
+  }
+
+  /**
    * Add a submission to the queue from GitHub repo info.
    * Deduplicates by repoFullName -- returns existing entry if already present.
    */

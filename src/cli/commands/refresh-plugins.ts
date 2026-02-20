@@ -166,18 +166,6 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
   }
 
-  // Step 4.5: Register with Claude Code plugin system (non-fatal)
-  // Uses Claude CLI to register marketplace and install plugins officially.
-  // This makes plugins appear in /plugin Installed UI.
-  if (installed > 0 || skipped > 0) {
-    try {
-      const { registerPluginsWithClaudeCli } = await import('../../utils/claude-plugin-cli.js');
-      registerPluginsWithClaudeCli(specweaveRoot, pluginsToProcess.map(p => p.name));
-    } catch {
-      // Non-fatal: Claude CLI may not be available
-    }
-  }
-
   // Step 5: Summary
   console.log('');
   console.log(chalk.blue.bold('  Summary'));
