@@ -40,9 +40,10 @@ interface VerifiedSkill {
   repoFullName: string;
   author: string;
   stars: number;
-  securityScore: number;
-  repoUrl?: string;
-  verifiedAt?: string;
+  repoUrl: string;
+  tier1Result?: { passed: boolean; findings: number; score: number };
+  tier2Result?: { verdict: string; score: number; threats: string[] };
+  updatedAt: string;
 }
 
 interface InsightsData {
@@ -120,6 +121,37 @@ function securityScoreColor(score: number): string {
   return 'text-rose-400';
 }
 
+function trustScore(skill: VerifiedSkill): number {
+  const t1 = skill.tier1Result?.score ?? 0;
+  const t2 = skill.tier2Result?.score ?? 0;
+  if (t1 && t2) return Math.round((t1 + t2) / 2);
+  return t1 || t2;
+}
+
+function trustScoreColor(score: number): string {
+  if (score >= 80) return 'bg-emerald-500';
+  if (score >= 50) return 'bg-amber-500';
+  return 'bg-rose-500';
+}
+
+function trustScoreTextColor(score: number): string {
+  if (score >= 80) return 'text-emerald-400';
+  if (score >= 50) return 'text-amber-400';
+  return 'text-rose-400';
+}
+
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}m`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function popularityRank(skill: VerifiedSkill): number {
+  const starWeight = Math.log10(Math.max(skill.stars, 1)) * 20;
+  const trust = trustScore(skill);
+  return starWeight + trust;
+}
+
 type KpiColor = 'indigo' | 'emerald' | 'amber' | 'rose' | 'cyan';
 
 function rateLimitColor(remaining: number, total: number): KpiColor {
@@ -137,6 +169,7 @@ export function MarketplacePage() {
   const [offset, setOffset] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [skillSearch, setSkillSearch] = useState('');
 
   const { execute, running, output, status: cmdStatus, reset } = useCommand();
 
@@ -433,8 +466,22 @@ export function MarketplacePage() {
 
       {/* Section 3: Verified Skills Gallery */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-800">
-          <h3 className="text-sm font-medium text-gray-300">Verified Skills</h3>
+        <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between gap-4">
+          <h3 className="text-sm font-medium text-gray-300 shrink-0">Popular Skills</h3>
+          {verifiedSkills.length > 0 && (
+            <div className="relative max-w-xs w-full">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Discover popular skills..."
+                value={skillSearch}
+                onChange={e => setSkillSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600 transition-colors"
+              />
+            </div>
+          )}
         </div>
 
         {verifiedLoading ? (
@@ -447,42 +494,7 @@ export function MarketplacePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-            {verifiedSkills.map(skill => (
-              <div key={skill.id} className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-gray-600 transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-gray-200 truncate">{skill.repoFullName}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{skill.author}</div>
-                  </div>
-                  <Badge label="Verified" variant="success" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      {skill.stars.toLocaleString()}
-                    </span>
-                    <span className={`text-xs font-mono ${securityScoreColor(skill.securityScore)}`}>
-                      Score: {skill.securityScore}
-                    </span>
-                  </div>
-                  {skill.repoUrl && (
-                    <a
-                      href={skill.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                    >
-                      GitHub
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <VerifiedSkillsGrid skills={verifiedSkills} search={skillSearch} />
         )}
       </div>
 
@@ -521,6 +533,110 @@ export function MarketplacePage() {
 }
 
 // --- Sub-Components ---
+
+function VerifiedSkillsGrid({ skills, search }: { skills: VerifiedSkill[]; search: string }) {
+  const sorted = [...skills].sort((a, b) => popularityRank(b) - popularityRank(a));
+  const trendingIds = new Set(sorted.slice(0, 3).map(s => s.id));
+
+  const filtered = search
+    ? sorted.filter(s =>
+        s.repoFullName.toLowerCase().includes(search.toLowerCase()) ||
+        s.author.toLowerCase().includes(search.toLowerCase())
+      )
+    : sorted;
+
+  if (filtered.length === 0) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-500 text-sm">No skills match "{search}"</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+      {filtered.map(skill => (
+        <SkillCard key={skill.id} skill={skill} trending={trendingIds.has(skill.id)} />
+      ))}
+    </div>
+  );
+}
+
+function SkillCard({ skill, trending }: { skill: VerifiedSkill; trending: boolean }) {
+  const score = trustScore(skill);
+  const barColor = trustScoreColor(score);
+  const textColor = trustScoreTextColor(score);
+
+  return (
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-gray-600 transition-colors">
+      {/* Header: name + badges */}
+      <div className="flex items-start justify-between mb-2">
+        <div className="min-w-0 flex-1">
+          {skill.repoUrl ? (
+            <a
+              href={skill.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-gray-200 hover:text-indigo-300 truncate block transition-colors"
+            >
+              {skill.repoFullName.split('/').pop()}
+            </a>
+          ) : (
+            <div className="text-sm font-medium text-gray-200 truncate">
+              {skill.repoFullName.split('/').pop()}
+            </div>
+          )}
+          <div className="text-xs text-gray-500 mt-0.5">{skill.author}</div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {trending && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-500/15 text-orange-400 text-[10px] font-medium rounded">
+              <svg className="w-2.5 h-2.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+              </svg>
+              Hot
+            </span>
+          )}
+          <Badge label="Verified" variant="success" />
+        </div>
+      </div>
+
+      {/* Trust Score bar */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Trust</span>
+          <span className={`text-xs font-mono font-medium ${textColor}`}>{score}</span>
+        </div>
+        <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className={`h-full ${barColor} rounded-full transition-all duration-500`}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Footer: stars + link */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400 flex items-center gap-1">
+          <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          {formatCompact(skill.stars)}
+        </span>
+        {skill.repoUrl && (
+          <a
+            href={skill.repoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            View on GitHub
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function PassRateBar({ label, rate }: { label: string; rate: number }) {
   const pct = Math.round(rate);

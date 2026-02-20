@@ -430,7 +430,9 @@ output_approve_with_context() {
 # Returns: 0 if in lockfile, 1 if not
 check_plugin_in_vskill_lock() {
   local plugin="$1"
-  local lockfile="vskill.lock"
+  # Use project root if available, else fall back to CWD
+  local lock_dir="${SW_PROJECT_ROOT:-$PWD}"
+  local lockfile="$lock_dir/vskill.lock"
 
   # Check project-local lockfile first
   [[ ! -f "$lockfile" ]] && return 1
@@ -497,6 +499,37 @@ install_plugin_direct() {
   if cp -R "$source_dir/." "$target_dir/" 2>/dev/null; then
     # Fix hook permissions (.sh files need to be executable)
     find "$target_dir" -name "*.sh" -exec chmod 755 {} \; 2>/dev/null || true
+
+    # Write lockfile entry so subsequent prompts skip re-install
+    local lock_dir="${SW_PROJECT_ROOT:-$PWD}"
+    local lockfile="$lock_dir/vskill.lock"
+    local now
+    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -Iseconds 2>/dev/null)
+
+    if command -v jq >/dev/null 2>&1 && [[ -n "$lock_dir" ]]; then
+      local skill_entry
+      skill_entry=$(jq -n \
+        --arg ver "0.0.0" \
+        --arg now "$now" \
+        '{version: $ver, sha: "", tier: "BUNDLED", installedAt: $now, source: "local:specweave"}')
+
+      if [[ -f "$lockfile" ]]; then
+        # Merge into existing lockfile
+        jq --arg key "$plugin" --argjson entry "$skill_entry" --arg now "$now" \
+          '.skills[$key] = $entry | .updatedAt = $now' \
+          "$lockfile" > "${lockfile}.tmp" 2>/dev/null && \
+          mv "${lockfile}.tmp" "$lockfile" 2>/dev/null || true
+      else
+        # Create new lockfile
+        jq -n \
+          --arg now "$now" \
+          --arg key "$plugin" \
+          --argjson entry "$skill_entry" \
+          '{version: 1, agents: ["claude-code"], skills: {($key): $entry}, createdAt: $now, updatedAt: $now}' \
+          > "$lockfile" 2>/dev/null || true
+      fi
+    fi
+
     VSKILL_INSTALL_OUTPUT="installed $plugin via direct copy"
     return 0
   else

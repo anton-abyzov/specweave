@@ -8,6 +8,7 @@
  * - AWS Bedrock (Claude, Titan)
  * - Google Vertex AI (Gemini)
  * - Ollama (local models)
+ * - Cloudflare Workers AI (gpt-oss-120b)
  *
  * Usage:
  * ```typescript
@@ -40,6 +41,8 @@ export {
   RECOMMENDED_MODELS,
 } from './types.js';
 
+export type { BudgetConfig } from './types.js';
+
 // Factory
 export {
   loadLLMConfig,
@@ -57,6 +60,11 @@ export { AzureOpenAIProvider } from './providers/azure-openai-provider.js';
 export { OllamaProvider } from './providers/ollama-provider.js';
 export { BedrockProvider } from './providers/bedrock-provider.js';
 export { VertexAIProvider } from './providers/vertex-ai-provider.js';
+export { WorkersAIProvider } from './providers/workers-ai-provider.js';
+
+// Fallback and budget guard
+export { FallbackProvider } from './fallback-provider.js';
+export { BudgetGuardProvider, BudgetExceededError } from './budget-guard.js';
 
 // Consent management for external API providers
 export {

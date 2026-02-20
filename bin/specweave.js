@@ -342,7 +342,7 @@ program
   .requiredOption('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
   .requiredOption('--title <title>', 'Feature title')
   .requiredOption('--description <description>', 'Feature description')
-  .requiredOption('--project <project-id>', 'Project ID from specweave context projects')
+  .requiredOption('--project <project-id>', 'Project ID (from .specweave/config.json)')
   .option('--board <board-id>', 'Board ID for 2-level structures')
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
@@ -997,35 +997,6 @@ docsCmd.action(async () => {
   await docsPreviewCommand({ scope: 'internal' });
 });
 
-// Context command - Get project/board context for increment planning
-const contextCmd = program
-  .command('context')
-  .description('Get project/board context for increment planning');
-
-contextCmd
-  .command('projects')
-  .description('List available projects and structure level')
-  .action(async () => {
-    const { contextProjectsCommand } = await import('../dist/src/cli/commands/context.js');
-    await contextProjectsCommand();
-  });
-
-contextCmd
-  .command('boards')
-  .description('List available boards for a project (2-level structures)')
-  .option('-p, --project <id>', 'Project ID to filter boards')
-  .action(async (options) => {
-    const { contextBoardsCommand } = await import('../dist/src/cli/commands/context.js');
-    await contextBoardsCommand(options);
-  });
-
-contextCmd
-  .command('select')
-  .description('Interactive project/board selection (auto-selects if single option)')
-  .action(async () => {
-    const { contextSelectCommand } = await import('../dist/src/cli/commands/context.js');
-    await contextSelectCommand();
-  });
 
 // Refresh marketplace command - Update marketplace with lazy loading support
 program
@@ -1227,9 +1198,6 @@ program.on('--help', () => {
   console.log('  $ specweave cache --rebuild                 # Rebuild dashboard cache');
   console.log('  $ specweave cache --debug                   # Show cache debug info');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
-  console.log('  $ specweave context projects                # Get available projects as JSON');
-  console.log('  $ specweave context boards --project myapp  # Get boards for a project');
-  console.log('  $ specweave context select                  # Interactive project/board selection');
   console.log('  $ specweave docs                            # Preview internal docs (port 3015)');
   console.log('  $ specweave docs public                     # Preview public docs (port 3016)');
   console.log('  $ specweave docs build                      # Build internal site');

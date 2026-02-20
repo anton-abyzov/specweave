@@ -98,6 +98,9 @@ export async function createProvider(
     case 'vertex-ai':
       return createVertexAIProvider(config, logger);
 
+    case 'workers-ai':
+      return createWorkersAIProvider(config, logger);
+
     default:
       throw new Error(`Unsupported LLM provider: ${config.provider}`);
   }
@@ -276,6 +279,43 @@ async function createVertexAIProvider(
 }
 
 /**
+ * Create Cloudflare Workers AI provider
+ */
+async function createWorkersAIProvider(
+  config: LLMConfig,
+  logger: Logger
+): Promise<LLMProvider> {
+  const { WorkersAIProvider } = await import('./providers/workers-ai-provider.js');
+
+  const accountId = config.cloudflareAccountId || process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = config.apiKeyEnv
+    ? process.env[config.apiKeyEnv]
+    : process.env.CLOUDFLARE_AI_API_TOKEN;
+
+  if (!accountId) {
+    throw new Error(
+      'Cloudflare account ID not found. Set cloudflareAccountId in config or CLOUDFLARE_ACCOUNT_ID env variable.'
+    );
+  }
+
+  if (!apiToken) {
+    throw new Error(
+      `Cloudflare AI API token not found. Set ${config.apiKeyEnv || 'CLOUDFLARE_AI_API_TOKEN'} environment variable.`
+    );
+  }
+
+  return new WorkersAIProvider({
+    accountId,
+    apiToken,
+    model: config.model || '@cf/openai/gpt-oss-120b',
+    maxTokens: config.maxTokensPerRequest,
+    temperature: config.temperature,
+    reasoningEffort: config.reasoningEffort,
+    logger,
+  });
+}
+
+/**
  * Get list of available providers (based on installed SDKs and env vars)
  */
 export async function getAvailableProviders(): Promise<LLMProviderType[]> {
@@ -336,6 +376,11 @@ export async function getAvailableProviders(): Promise<LLMProviderType[]> {
   // Check Vertex AI
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_PROJECT) {
     available.push('vertex-ai');
+  }
+
+  // Check Workers AI
+  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_AI_API_TOKEN) {
+    available.push('workers-ai');
   }
 
   return available;
