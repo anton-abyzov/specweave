@@ -34,6 +34,7 @@ export interface CostsSummaryPayload {
 // Source: https://platform.claude.com/docs/en/about-claude/pricing
 const PRICING: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
   'claude-opus-4-6': { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.50 },
+  'claude-sonnet-4-6': { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.30 },
   'claude-sonnet-4-5-20250929': { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.30 },
   'claude-haiku-4-5-20251001': { input: 1, output: 5, cacheWrite: 1.25, cacheRead: 0.10 },
 };
@@ -41,6 +42,7 @@ const PRICING: Record<string, { input: number; output: number; cacheWrite: numbe
 // Friendly display names for model IDs
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   'claude-opus-4-6': 'Opus 4.6',
+  'claude-sonnet-4-6': 'Sonnet 4.6',
   'claude-sonnet-4-5-20250929': 'Sonnet 4.5',
   'claude-haiku-4-5-20251001': 'Haiku 4.5',
 };
@@ -49,10 +51,14 @@ export function getModelDisplayName(modelId: string): string {
   return MODEL_DISPLAY_NAMES[modelId] || modelId;
 }
 
-// Fallback patterns for model detection
+// Resolve raw model ID from logs to a known pricing key.
+// Checks exact match first, then falls back to family pattern matching.
+// Order of pattern checks matters: more specific before more generic.
 function resolveModel(raw: string): string {
   if (!raw) return 'unknown';
+  if (PRICING[raw]) return raw;
   if (raw.includes('opus')) return 'claude-opus-4-6';
+  if (raw.includes('sonnet-4-6')) return 'claude-sonnet-4-6';
   if (raw.includes('sonnet')) return 'claude-sonnet-4-5-20250929';
   if (raw.includes('haiku')) return 'claude-haiku-4-5-20251001';
   return raw;
