@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.291] - 2026-02-20
+
+### Changes
+- fix: update marketplace aggregator and refresh-plugins
+- fix: broken event-driven GitHub sync pipeline
+
+---
+
+
+
 ## [1.0.290] - 2026-02-20
 
 ### Changes
