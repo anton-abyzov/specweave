@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.282] - 2026-02-20
+
+### Changes
+- add manual repo selection and umbrella repo prompt to init
+
+---
+
+
+
 ## [1.0.281] - 2026-02-20
 
 ### Changes
