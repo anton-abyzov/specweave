@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.292] - 2026-02-20
+
+### Changes
+- fix: flatten commands/ and skills/ dirs to prevent duplicate slash commands
+
+---
+
+
+
 ## [1.0.291] - 2026-02-20
 
 ### Changes
