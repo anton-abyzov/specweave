@@ -14,6 +14,72 @@ import * as fs from '../../utils/fs-native.js';
 import type { DocScope } from '../../utils/docs-preview/types.js';
 import { SCOPE_PORTS, SCOPE_SITE_DIRS, SCOPE_DOC_DIRS } from '../../utils/docs-preview/types.js';
 
+/** Count markdown files recursively (sync) */
+function countMdFiles(dir: string): number {
+  if (!fs.existsSync(dir)) return 0;
+  let count = 0;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      count += countMdFiles(path.join(dir, entry.name));
+    } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
+      count++;
+    }
+  }
+  return count;
+}
+
+interface ChildRepoDocsInfo {
+  name: string;
+  id: string;
+  docsPath: string;
+  docCount: number;
+}
+
+/**
+ * Read umbrella config and return child repo docs info for the given scope.
+ * Returns an empty array if not an umbrella project or config is unreadable.
+ */
+async function getUmbrellaChildRepoDocs(
+  projectRoot: string,
+  scope: DocScope,
+): Promise<ChildRepoDocsInfo[]> {
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) return [];
+
+  let config: Record<string, unknown>;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch {
+    return [];
+  }
+
+  const umbrella = config.umbrella as Record<string, unknown> | undefined;
+  if (!umbrella?.enabled || !Array.isArray(umbrella.childRepos)) return [];
+
+  const results: ChildRepoDocsInfo[] = [];
+  const scopeDir = SCOPE_DOC_DIRS[scope];
+
+  for (const repo of umbrella.childRepos as Record<string, unknown>[]) {
+    const repoPath = repo.path as string | undefined;
+    const repoId = repo.id as string | undefined;
+    if (!repoPath || !repoId) continue;
+
+    const childRoot = path.resolve(projectRoot, repoPath);
+    const childDocsPath = path.join(childRoot, '.specweave', 'docs', scopeDir);
+
+    const docCount = countMdFiles(childDocsPath);
+    results.push({
+      name: (repo.name as string | undefined) || repoId,
+      id: repoId,
+      docsPath: childDocsPath,
+      docCount,
+    });
+  }
+
+  return results;
+}
+
 export interface DocsPreviewOptions {
   port?: number;
   force?: boolean;
@@ -59,6 +125,19 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
       console.log(chalk.dim('   • /sw:increment "feature" (to create docs)\n'));
     }
     process.exit(1);
+  }
+
+  // Show umbrella child repo notice
+  const childRepoDocs = await getUmbrellaChildRepoDocs(projectRoot, scope);
+  if (childRepoDocs.length > 0) {
+    console.log(chalk.blue('🏛️  Umbrella mode: serving unified documentation\n'));
+    for (const repo of childRepoDocs) {
+      const status = repo.docCount > 0
+        ? chalk.green(`✓ ${repo.docCount} docs`)
+        : chalk.dim('○ no docs');
+      console.log(chalk.dim(`   Child repo: ${repo.name} — ${status}`));
+    }
+    console.log();
   }
 
   // Run validation first (unless explicitly skipped)
