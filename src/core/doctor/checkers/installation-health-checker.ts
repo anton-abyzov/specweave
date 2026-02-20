@@ -254,20 +254,20 @@ export class InstallationHealthChecker implements HealthChecker {
     if (missing.length > 0) {
       if (fix) {
         try {
-          execSync('specweave update', { stdio: 'pipe' });
+          execSync('specweave refresh-plugins', { stdio: 'pipe' });
           return {
             name: 'Lockfile integrity',
             status: 'warn',
-            message: `${missing.length} skill(s) were missing, ran specweave update`,
+            message: `${missing.length} skill(s) were missing, ran refresh-plugins`,
             details: missing.map(m => `Missing: ${m}`),
-            fixSuggestion: 'Ran: specweave update',
+            fixSuggestion: 'Ran: specweave refresh-plugins',
           };
         } catch (err) {
           return {
             name: 'Lockfile integrity',
             status: 'fail',
-            message: `specweave update failed: ${err instanceof Error ? err.message : 'unknown error'}`,
-            fixSuggestion: 'Run: specweave update',
+            message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            fixSuggestion: 'Run: specweave refresh-plugins',
           };
         }
       }
@@ -276,7 +276,7 @@ export class InstallationHealthChecker implements HealthChecker {
         status: 'fail',
         message: `${missing.length} skill(s) missing from commands dir`,
         details: missing.map(m => `Missing: ${m}`),
-        fixSuggestion: 'Run: specweave update',
+        fixSuggestion: 'Run: specweave refresh-plugins',
       };
     }
 

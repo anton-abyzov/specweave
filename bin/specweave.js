@@ -270,6 +270,18 @@ program
     await scanSkillCommand(file, options);
   });
 
+// Scan plugins command - Batch security scan of all plugins/*/skills/*/SKILL.md files
+program
+  .command('scan-plugins')
+  .description('Batch-scan all plugin SKILL.md files for security issues (Gen Agent Trust Hub categories)')
+  .option('--json', 'Output results as JSON for CI integration', false)
+  .option('--verbose', 'Show per-skill reports in addition to batch summary', false)
+  .option('--dir <path>', 'Path to plugins directory (default: ./plugins)')
+  .action(async (options) => {
+    const { scanPluginsCommand } = await import('../dist/src/cli/commands/scan-plugins.js');
+    await scanPluginsCommand(options);
+  });
+
 // Judge skill command - Combined Tier 1 + Tier 2 LLM security analysis
 program
   .command('judge-skill <file>')
@@ -1011,6 +1023,18 @@ program
     await refreshMarketplaceCommand(options);
   });
 
+// Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
+program
+  .command('refresh-plugins')
+  .description('Copy SpecWeave plugins to ~/.claude/commands/ (lazy mode by default - core only)')
+  .option('--all', 'Install ALL plugins (not just core)')
+  .option('-f, --force', 'Force reinstall (skip hash check)')
+  .option('-v, --verbose', 'Show skipped plugins')
+  .action(async (options) => {
+    const { refreshPluginsCommand } = await import('../dist/src/cli/commands/refresh-plugins.js');
+    await refreshPluginsCommand(options);
+  });
+
 // Doctor command - Comprehensive health check
 program
   .command('doctor')
@@ -1019,7 +1043,7 @@ program
   .option('--json', 'Output as JSON')
   .option('--quick', 'Skip slow checks (network, hook execution)')
   .option('--skip-external', 'Skip external tool connectivity checks')
-  .option('--fix', 'Run suggested fix command if issues found')
+  .option('--fix', 'Apply inline fixes (remove ghost files, stale cache, update lockfile hashes)')
   .action(async (options) => {
     const { doctor } = await import('../dist/src/cli/commands/doctor.js');
     const report = await doctor(process.cwd(), {
