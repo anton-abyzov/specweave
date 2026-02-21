@@ -9,6 +9,76 @@ allowed-tools: Read, Bash, Write, Edit
 
 **Auto-Activation**: Triggers when Jira setup or validation is needed.
 
+## Security Rules (MANDATORY)
+
+These rules apply to ALL JIRA API operations in this skill.
+
+### Credential Handling
+
+1. **Never collect credentials** — this skill reads from `.env` only, never prompts the user
+2. **Never log secrets** — never echo token values, auth headers, or base64 credentials
+3. **Never write credentials** — the user configures `.env` themselves (this skill may update non-secret keys like `JIRA_BOARDS` and `JIRA_PROJECT`)
+
+### Credential Loading
+
+```bash
+# 1. Validate presence FIRST (before reading any values)
+for KEY in JIRA_API_TOKEN JIRA_EMAIL JIRA_DOMAIN; do
+  if ! grep -qE "^${KEY}=.+" .env; then
+    echo "Error: ${KEY} missing or empty in .env"
+    exit 1
+  fi
+done
+
+# 2. Load credentials ONLY after validation passes (never display values)
+#    head -1 ensures only first match used if .env has duplicate keys
+JIRA_API_TOKEN="$(grep '^JIRA_API_TOKEN=' .env | head -1 | cut -d '=' -f2-)"
+JIRA_EMAIL="$(grep '^JIRA_EMAIL=' .env | head -1 | cut -d '=' -f2-)"
+JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | head -1 | cut -d '=' -f2-)"
+```
+
+### Domain Validation (before ANY API call)
+
+```bash
+# Reject IP addresses first (SSRF prevention)
+if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "$JIRA_DOMAIN" =~ ^\[.*\]$ ]] || [[ "$JIRA_DOMAIN" =~ ^0x ]]; then
+  echo "Error: IP addresses not allowed — use a hostname"
+  exit 1
+fi
+
+# Reject localhost and private networks
+if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
+  echo "Error: Internal/localhost addresses not allowed"
+  exit 1
+fi
+
+# Must be a valid hostname — no special chars, no consecutive dots
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+  echo "Error: JIRA_DOMAIN contains invalid characters"
+  exit 1
+fi
+
+# Cloud JIRA: must match <subdomain>.atlassian.net
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
+  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
+  exit 1
+fi
+```
+
+### API Call Pattern (HTTPS only, quoted variables)
+
+```bash
+AUTH="$(printf '%s:%s' "$JIRA_EMAIL" "$JIRA_API_TOKEN" | base64)"
+
+# All API calls MUST use https://, double-quote all variables
+curl -s -f \
+  -H "Authorization: Basic $AUTH" \
+  -H "Content-Type: application/json" \
+  "https://${JIRA_DOMAIN}/rest/api/3/..."
+```
+
+---
+
 ## What This Skill Does
 
 This skill ensures your Jira configuration in `.env` is valid and all resources exist. It's **smart enough** to:
@@ -31,10 +101,10 @@ This skill ensures your Jira configuration in `.env` is valid and all resources 
 
 ### Required .env Variables
 
-```bash
-JIRA_API_TOKEN=your_token_here
-JIRA_EMAIL=your_email@company.com
-JIRA_DOMAIN=yourcompany.atlassian.net
+```
+JIRA_API_TOKEN=<your-token>
+JIRA_EMAIL=<your-email>
+JIRA_DOMAIN=<your-company>.atlassian.net
 JIRA_STRATEGY=board-based
 JIRA_PROJECT=PROJECTKEY
 JIRA_BOARDS=1,2,3  # IDs (if exist) OR names (if creating)

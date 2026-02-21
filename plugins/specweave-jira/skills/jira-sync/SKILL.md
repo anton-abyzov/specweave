@@ -106,21 +106,7 @@ if [ -z "$JIRA_DOMAIN" ]; then
   exit 1
 fi
 
-# Must be a valid hostname — each label: alphanumeric, hyphens allowed mid-label, no consecutive dots
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
-  echo "Error: JIRA_DOMAIN is not a valid hostname"
-  exit 1
-fi
-
-# Must end with .atlassian.net for cloud JIRA
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
-  echo "Self-hosted JIRA requires explicit user confirmation"
-  exit 1
-  # Agent: use AskUserQuestion to confirm non-standard domain before retrying
-fi
-
-# Reject IP addresses — IPv4, IPv6 brackets, hex-encoded (SSRF prevention)
+# Reject IP addresses FIRST — IPv4, IPv6 brackets, hex-encoded (SSRF prevention)
 if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "$JIRA_DOMAIN" =~ ^\[.*\]$ ]] || [[ "$JIRA_DOMAIN" =~ ^0x ]]; then
   echo "Error: IP addresses not allowed — use a hostname"
   exit 1
@@ -129,6 +115,19 @@ fi
 # Reject localhost and internal hostnames
 if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
   echo "Error: Internal/localhost addresses not allowed"
+  exit 1
+fi
+
+# Must be a valid hostname — each label: alphanumeric, hyphens allowed mid-label, no consecutive dots
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+  echo "Error: JIRA_DOMAIN is not a valid hostname"
+  exit 1
+fi
+
+# Must end with .atlassian.net for cloud JIRA
+# Agent: use AskUserQuestion to confirm non-standard domain before retrying
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
+  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
   exit 1
 fi
 ```
@@ -168,7 +167,7 @@ JIRA and Confluence are both Atlassian products and often used together. This sk
 
 ### Confluence Credentials
 
-Same authentication and security rules as JIRA — user configures `.env`, skill only validates presence. Same domain validation applies (must be `<subdomain>.atlassian.net`, HTTPS only, no IPs).
+Same authentication and security rules as JIRA — user configures `.env`, skill only validates presence. Same domain validation applies (must be `<subdomain>.atlassian.net`, HTTPS only, no IPs). `CONFLUENCE_DOMAIN` MUST pass the same validation as `JIRA_DOMAIN` (Step 4) before any Confluence API call.
 
 Required `.env` keys (configured by the user, NOT by this skill):
 ```
@@ -190,20 +189,12 @@ CONFLUENCE_SPACE_KEY=<space-key>
 
 **Every page update MUST increment the version number**:
 
-```bash
-# 1. Get current version
-curl -s GET ".../pages/{id}" | jq '.version.number'
-# Returns: 5
+1. GET current page to retrieve `version.number` (e.g., returns 5)
+2. PUT update with `version.number` set to current + 1 (e.g., 6)
 
-# 2. Update with version + 1
-PUT ".../pages/{id}"
-{ "version": { "number": 6 } }
-```
+If version is not incremented, the API returns `409 Conflict`.
 
-**Error if version not incremented**:
-```
-409 Conflict: "Version must be incremented on update. Current version is: 5"
-```
+All Confluence API calls follow the same security rules as JIRA (HTTPS only, domain validation, credential handling). See the `jira-mapper` skill's **Security Rules** section for implementation patterns.
 
 ### Reference Documentation
 
