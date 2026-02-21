@@ -18,8 +18,17 @@ Get up and running with SpecWeave in **5 minutes**.
 ## Installation
 
 ```bash
-# Install globally
+# npm
 npm install -g specweave
+
+# bun
+bun add -g specweave
+
+# pnpm
+pnpm add -g specweave
+
+# yarn
+yarn global add specweave
 
 # Verify installation
 specweave --version
