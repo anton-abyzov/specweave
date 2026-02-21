@@ -176,52 +176,13 @@ export const SPECWEAVE_PLUGINS = [
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
 
 /**
- * Official Claude Code plugins (from claude-plugins-official marketplace)
+ * All valid plugins — SpecWeave only.
  *
- * v1.0.159: Consolidated plugin detection - detect-intent handles BOTH SW and official plugins
- * v1.0.195: REMOVED broken LSP plugins (see GitHub Issue #15148)
- *
- * NOTE: Excludes plugins that collide with SpecWeave:
- * - github@claude-plugins-official → use sw-github instead
- * - stripe@claude-plugins-official → use sw-payments instead
- *
- * NOTE: LSP plugins from @claude-plugins-official are BROKEN and excluded:
- * - csharp-lsp, gopls-lsp, jdtls-lsp, kotlin-lsp, php-lsp, lua-lsp, clangd-lsp
- * - These plugins only contain README.md files with no actual LSP configuration
- * - See: https://github.com/anthropics/claude-code/issues/15148
- * - Use boostvolt/claude-code-lsps marketplace instead for working LSP plugins
+ * v1.0.279: OFFICIAL_PLUGINS removed. Only @specweave plugins are allowed.
+ * Install command: npx vskill install <source> --plugin <name> --plugin-dir <dir>
  */
-export const OFFICIAL_PLUGINS = [
-  // NOTE: LSP plugins REMOVED - they're broken in @claude-plugins-official
-  // Use boostvolt/claude-code-lsps marketplace + ENABLE_LSP_TOOL=1 instead
-
-  // NOTE (v1.0.240 / 0198): context7 and playwright REMOVED from auto-install.
-  // Users can install manually: claude plugin install context7@claude-plugins-official
-  // Playwright browser automation handled by @playwright/cli (98% token savings).
-
-  // Service Integrations (no SW equivalent)
-  'firebase',         // Firebase, Firestore
-  'gitlab',           // GitLab, GitLab CI
-  'linear',           // Linear issues
-  'asana',            // Asana tasks
-  'slack',            // Slack bots/apps
-  'supabase',         // Supabase
-
-  // Framework-specific
-  'laravel-boost',    // Laravel (PHP)
-
-  // Development Tools
-  'commit-commands',  // Git commit workflows
-  'hookify',          // Git hooks
-] as const;
-
-export type OfficialPlugin = (typeof OFFICIAL_PLUGINS)[number];
-
-/**
- * All valid plugins (both SpecWeave and Official)
- */
-export const ALL_VALID_PLUGINS = [...SPECWEAVE_PLUGINS, ...OFFICIAL_PLUGINS] as const;
-export type ValidPlugin = SpecWeavePlugin | OfficialPlugin;
+export const ALL_VALID_PLUGINS = SPECWEAVE_PLUGINS;
+export type ValidPlugin = SpecWeavePlugin;
 
 /**
  * Check if a plugin is a SpecWeave plugin (installed from @specweave)
@@ -231,24 +192,11 @@ export function isSpecWeavePlugin(plugin: string): plugin is SpecWeavePlugin {
 }
 
 /**
- * Check if a plugin is an official plugin (installed from @claude-plugins-official)
+ * Get the marketplace name for a plugin — always @specweave.
+ * v1.0.279: OFFICIAL_PLUGINS removed; only specweave marketplace allowed.
  */
-export function isOfficialPlugin(plugin: string): plugin is OfficialPlugin {
-  return OFFICIAL_PLUGINS.includes(plugin as OfficialPlugin);
-}
-
-/**
- * Get the marketplace name for a plugin
- * SW plugins: @specweave, Official plugins: @claude-plugins-official
- */
-export function getPluginMarketplace(plugin: string): string {
-  if (isSpecWeavePlugin(plugin)) {
-    return 'specweave';
-  }
-  if (isOfficialPlugin(plugin)) {
-    return 'claude-plugins-official';
-  }
-  return 'unknown';
+export function getPluginMarketplace(_plugin: string): string {
+  return 'specweave';
 }
 
 /**
@@ -554,16 +502,11 @@ function buildDetectionPrompt(): string {
   return `You detect which plugins to load based on the user's prompt.
 Return BOTH SpecWeave (sw-*) AND official (claude-plugins-official) plugins.
 
-⚠️ PRIORITY: SpecWeave plugins OVERRIDE official for these services:
-- GitHub → sw-github (NOT github@claude-plugins-official)
-- Stripe/payments → sw-payments (NOT stripe@claude-plugins-official)
-- JIRA → sw-jira | Azure DevOps → sw-ado
-
 DETECTION RULES:
 1. EXPLICIT tech - user says "React" → sw-frontend, ".NET" → sw-backend
 2. IMPLIED - "dashboard" needs API → sw-backend
 3. Questions/discussions → ZERO plugins
-4. ⚠️ NEVER suggest LSP plugins (*-lsp) - they are BROKEN in official marketplace
+4. ONLY suggest @specweave plugins (sw-*) — no other marketplaces
 
 OUTPUT FORMAT (JSON only):
 {"plugins":["sw-frontend"],"confidence":0.9,"reasoning":"one-line"}
@@ -586,33 +529,6 @@ sw-media: AI image generation, AI video generation, Remotion, text-to-image, tex
 sw-github: GitHub issues, PRs, Actions, sync (USE THIS instead of github@official)
 sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)
-
-═══════════════════════════════════════════════════════════════
-OFFICIAL PLUGINS (@claude-plugins-official) - Use when NO SW equivalent
-═══════════════════════════════════════════════════════════════
-
-⚠️ DO NOT SUGGEST LSP PLUGINS (*-lsp) - THEY ARE BROKEN!
-The official marketplace LSP plugins (csharp-lsp, gopls-lsp, etc.) only contain
-README files with no actual configuration. See GitHub Issue #15148.
-LSP is handled separately via boostvolt/claude-code-lsps marketplace.
-
-⚠️ DO NOT suggest context7 or playwright - they are optional, user-installed.
-Browser automation is handled by @playwright/cli (not MCP plugin).
-
-Service Integrations (NO SW equivalent - use these):
-  firebase: Firebase, Firestore, Firebase Auth
-  gitlab: GitLab, GitLab CI/CD pipelines
-  linear: Linear issues, Linear project management
-  asana: Asana tasks, Asana projects
-  slack: Slack bots, Slack apps, Slack webhooks
-  supabase: Supabase, Supabase Auth, Supabase DB
-
-Framework-specific:
-  laravel-boost: Laravel (PHP framework)
-
-Development Tools:
-  commit-commands: Git commit workflows
-  hookify: Git hooks, pre-commit hooks
 
 ═══════════════════════════════════════════════════════════════
 INCREMENT RECOMMENDATION (v1.0.241 - DEFAULT: create increment)
@@ -1287,15 +1203,12 @@ export async function installPluginViaCli(
   pluginName: string,
   timeout: number = 30000
 ): Promise<PluginInstallResult> {
-  // v1.0.159: Validate against both SW and official plugins
-  const isSW = isSpecWeavePlugin(pluginName);
-  const isOfficial = isOfficialPlugin(pluginName);
-
-  if (!isSW && !isOfficial) {
+  // Only specweave plugins allowed (v1.0.279: official plugins removed)
+  if (!isSpecWeavePlugin(pluginName)) {
     return {
       success: false,
       plugin: pluginName,
-      error: `Unknown plugin: ${pluginName}`,
+      error: `Unknown plugin: ${pluginName}. Only @specweave plugins are allowed.`,
     };
   }
 

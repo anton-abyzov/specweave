@@ -49,6 +49,17 @@ When no ID provided, auto-select (NEVER ask user for ID):
 3. Select best candidate and auto-promote to in-progress if needed
 4. If no candidates, show status summary and offer: create new, close ready_for_review, resume backlog, or view status
 
+### Step 1.5: Auto-Mode Context Override
+
+When running inside an active auto session (`.specweave/state/auto-mode.json` has `active: true`):
+
+1. **Explicit ID takes priority**: If an explicit increment ID was passed (e.g., `/sw:do 0252`), use it directly — skip this step
+2. **Stop hook guidance**: If the stop hook feedback in the current conversation mentions a specific increment ID (e.g., "Continue: /sw:do 0252"), use that ID
+3. **Read incrementIds**: If no ID from above, read `incrementIds` array from `auto-mode.json` and use the **first entry** — this is the increment prioritized by scoring at session start
+4. **Skip filesystem scanning**: When auto-mode context provides an increment ID via steps 2 or 3, skip Step 1's filesystem scanning entirely — auto-mode context takes priority
+
+This ensures the execution loop stays focused on the contextually correct increment rather than re-scanning the filesystem each iteration.
+
 ### Step 2: Load Context
 
 1. **Find increment directory**: Normalize ID to 4-digit format, match `.specweave/increments/NNNN-*/`

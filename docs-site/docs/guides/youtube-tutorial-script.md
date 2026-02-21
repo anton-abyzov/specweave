@@ -3537,7 +3537,8 @@ specweave scan-skill ./my-skill/SKILL.md
 > Version-pinned verification. When a skill gets a verified badge, that badge says 'verified at v1.3.0' — not just 'verified' in some vague, permanent sense. Update the skill? The badge resets. You re-verify. Because security isn't a one-time checkbox. It's a continuous process."
 
 ```bash
-npx vskill add claude-memory-manager
+npx vskill find claude-memory           # search the registry
+npx vskill install claude-memory-manager
 # Fetching: claude-memory-manager@2.1.0
 # Running security scan... 26 patterns checked
 # Risk score: 0.12 (LOW)
@@ -3548,6 +3549,10 @@ npx vskill add claude-memory-manager
 > "The install flow scans BEFORE installing. Not after. You see the risk score before the skill touches your system. Novel concept, apparently.
 >
 > It supports all 39 agent platforms — not just Claude Code. OpenClaw, Windsurf, Roo, Cline, Aider — if your agent uses skills, verified-skill.com covers it.
+>
+> And here's something worth saying out loud: **there's a race happening right now in the AI skills ecosystem.** Claude Code had the first skills — that's where this whole idea started. But the race is on. Google has published CERTIFIED skills. The Remotion team — who build video creation in React — have published verified skills for video development. Teams across the industry are standardizing their AI expertise into portable, installable skills. This is becoming the new way to ship AI-powered tooling.
+>
+> vskill is the layer that makes all of that work consistently. Regardless of which team published a skill or which agent platform you use — same install command, same security scan, same lockfile. `vskill install google/remotion`. `vskill install remotion-dev/skills-remotion`. One tool, any skill, any platform.
 >
 > There's a vendor fast-path for skills published by Anthropic, OpenAI, and Google. Official first-party skills get expedited verification because the supply chain risk is lower when the vendor IS the publisher.
 >

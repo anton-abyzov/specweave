@@ -375,6 +375,7 @@ async function printStartMessage(
       startedAt: new Date().toISOString(),
       tddMode: tddMode,
       requireTests: requireTests,
+      userGoal: null as string | null,
       successCriteria: successCriteria,
       successSummary: successSummary,
     };

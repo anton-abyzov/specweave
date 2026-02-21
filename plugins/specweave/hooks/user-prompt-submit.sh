@@ -5,10 +5,10 @@
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v1.0.278: DIRECT PLUGIN COPY - sw-* plugins installed via direct file copy instead of
-#   npx vskill (which was broken for all production users). Uses install_plugin_direct() that
-#   reads marketplace.json, copies source dir to ~/.claude/commands/<name>/, and fixes .sh
-#   permissions. No external dependencies. vskill.lock fast-path still used for skip check.
+# - v1.0.279: VSKILL INSTALL - sw-* plugins installed via vskill at project scope.
+#   Uses install_plugin_via_vskill(): node <vskill-cli> install <specweave-dir>
+#   --plugin <name> --plugin-dir <dir> --force, run from SW_PROJECT_ROOT.
+#   Installs to .claude/commands/<name>/ (project scope). Never ~/.claude/commands/.
 # - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
 #   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
 #   analysis. Key fix: "find references" now gets semantic refs, not text matches!
@@ -266,58 +266,69 @@ fi
 
 if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && command -v claude >/dev/null 2>&1; then
   USER_SETTINGS="$HOME/.claude/settings.json"
+  PROJECT_SETTINGS="${SW_PROJECT_ROOT}/.claude/settings.json"
 
+  # ---- 1. Clean user-level settings ----
+  # Remove: sw-* domain plugins at user scope (should be project-scoped via vskill)
+  #         any *@claude-plugins-official (never allowed)
+  # Exempt: sw@specweave (core plugin, user-scoped by design)
   if [[ -f "$USER_SETTINGS" ]]; then
-    # Find SpecWeave domain plugins and LSP plugins at user level
-    # Exempt: sw@specweave (core plugin, intentionally user-scoped)
-    POLLUTED_PLUGINS=$(jq -r '
+    POLLUTED_USER=$(jq -r '
       .enabledPlugins // {} | to_entries[]
       | select(
           (.key | test("^sw-.*@specweave$")) or
-          (.key | test("-lsp@"))
+          (.key | test("@claude-plugins-official$"))
         )
       | .key
     ' "$USER_SETTINGS" 2>/dev/null)
 
-    if [[ -n "$POLLUTED_PLUGINS" ]]; then
-      MIGRATED=""
-      for plugin_key in $POLLUTED_PLUGINS; do
-        # Uninstall from user scope
+    if [[ -n "$POLLUTED_USER" ]]; then
+      REMOVED=""
+      REINSTALLED=""
+      for plugin_key in $POLLUTED_USER; do
         if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
-          # v1.0.278: sw-* plugins reinstall via direct copy, LSP plugins via claude CLI
           if [[ "$plugin_key" == sw-*@specweave ]]; then
-            # Extract plugin name from "sw-name@specweave" format
+            # Reinstall sw-* at project scope via vskill
             _sw_name="${plugin_key%%@*}"
-            if install_plugin_direct "$_sw_name"; then
-              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
-              MIGRATED="${MIGRATED}${plugin_key}"
-            fi
-          else
-            # LSP and other plugins: reinstall via claude CLI at project scope
-            if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
-              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
-              MIGRATED="${MIGRATED}${plugin_key}"
+            if install_plugin_via_vskill "$_sw_name"; then
+              [[ -n "$REINSTALLED" ]] && REINSTALLED="$REINSTALLED, "
+              REINSTALLED="${REINSTALLED}${plugin_key}"
             fi
           fi
+          # *@claude-plugins-official: uninstall only — never reinstall
+          [[ -n "$REMOVED" ]] && REMOVED="$REMOVED, "
+          REMOVED="${REMOVED}${plugin_key}"
         fi
       done
 
-      if [[ -n "$MIGRATED" ]]; then
-        echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
+      if [[ -n "$REMOVED" ]]; then
+        echo "[$(date -Iseconds)] scope-guard | removed user-level: $REMOVED | reinstalled@project: ${REINSTALLED:-none}" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
       fi
 
-      # CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
-      # The `claude plugin uninstall` commands above may corrupt ~/.claude/settings.json
-      # and disable sw@specweave as collateral damage. Re-enable it explicitly.
-      if [[ -f "$USER_SETTINGS" ]]; then
-        SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
-        if [[ "$SW_ENABLED" != "true" ]]; then
-          # Re-enable core plugin (preserves all other settings)
-          jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
-            mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
-          echo "[$(date -Iseconds)] scope-guard | restored sw@specweave enabled state" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
-        fi
+      # Restore sw@specweave core plugin enabled state (uninstall may collateral-damage it)
+      SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
+      if [[ "$SW_ENABLED" != "true" ]]; then
+        jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
+          mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+        echo "[$(date -Iseconds)] scope-guard | restored sw@specweave" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
       fi
+    fi
+  fi
+
+  # ---- 2. Clean project-level settings ----
+  # Remove any *@claude-plugins-official from project settings — never allowed
+  if [[ -f "$PROJECT_SETTINGS" ]]; then
+    POLLUTED_PROJECT=$(jq -r '
+      .enabledPlugins // {} | to_entries[]
+      | select(.key | test("@claude-plugins-official$"))
+      | .key
+    ' "$PROJECT_SETTINGS" 2>/dev/null)
+
+    if [[ -n "$POLLUTED_PROJECT" ]]; then
+      for plugin_key in $POLLUTED_PROJECT; do
+        timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1 || true
+      done
+      echo "[$(date -Iseconds)] scope-guard | removed project official plugins: $POLLUTED_PROJECT" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
     fi
   fi
 
@@ -472,85 +483,59 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install sw-* plugin via direct copy (v1.0.278)
-# Copies plugin source dir to ~/.claude/commands/<name>/ and fixes hook permissions.
-# No external dependencies (replaces npx vskill shell-out).
+# Helper: Install sw-* plugin via vskill (v1.0.279)
+# Uses: node <vskill-cli> install <specweave-dir> --plugin <name> --plugin-dir <specweave-dir> --force
+# Installs to project scope: ${SW_PROJECT_ROOT}/.claude/commands/<name>/
 # Args: $1=plugin name (e.g., "sw-frontend")
 # Returns: 0 if installed successfully, 1 if failed
 # Sets VSKILL_INSTALL_OUTPUT with status message
-install_plugin_direct() {
+install_plugin_via_vskill() {
   local plugin="$1"
-  local plugin_dir="${HOME}/.claude/plugins/marketplaces/specweave"
-  local marketplace_json="$plugin_dir/.claude-plugin/marketplace.json"
+  local specweave_dir="${HOME}/.claude/plugins/marketplaces/specweave"
+  local project_dir="${SW_PROJECT_ROOT:-$PWD}"
 
-  # Verify marketplace directory exists
-  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$marketplace_json" ]]; then
-    VSKILL_INSTALL_OUTPUT="marketplace directory not found at $plugin_dir"
+  # Find node binary
+  local node_bin
+  node_bin=$(command -v node 2>/dev/null)
+  if [[ -z "$node_bin" ]]; then
+    VSKILL_INSTALL_OUTPUT="node not found in PATH"
     return 1
   fi
 
-  # Resolve plugin source directory from marketplace.json
-  local source_rel=""
-  if command -v jq >/dev/null 2>&1; then
-    source_rel=$(jq -r --arg name "$plugin" '.plugins[] | select(.name == $name) | .source' "$marketplace_json" 2>/dev/null)
+  # Find vskill CLI — check global first, then bundled with specweave
+  local vskill_cli=""
+  if command -v vskill >/dev/null 2>&1; then
+    vskill_cli=$(command -v vskill)
   else
-    # Fallback: grep-based extraction
-    source_rel=$(grep -oP "\"name\"\\s*:\\s*\"${plugin}\"[^}]*\"source\"\\s*:\\s*\"([^\"]+)\"" "$marketplace_json" | grep -oP '"source"\s*:\s*"\K[^"]+' || true)
-  fi
-
-  if [[ -z "$source_rel" ]]; then
-    VSKILL_INSTALL_OUTPUT="plugin '$plugin' not found in marketplace.json"
-    return 1
-  fi
-
-  # Resolve full path (source is relative to plugin_dir, e.g. ./plugins/specweave)
-  local source_dir="$plugin_dir/${source_rel#./}"
-  if [[ ! -d "$source_dir" ]]; then
-    VSKILL_INSTALL_OUTPUT="source dir not found: $source_dir"
-    return 1
-  fi
-
-  # Copy to target
-  local target_dir="${HOME}/.claude/commands/${plugin}"
-  mkdir -p "$target_dir"
-  if cp -R "$source_dir/." "$target_dir/" 2>/dev/null; then
-    # Fix hook permissions (.sh files need to be executable)
-    find "$target_dir" -name "*.sh" -exec chmod 755 {} \; 2>/dev/null || true
-
-    # Write lockfile entry so subsequent prompts skip re-install
-    local lock_dir="${SW_PROJECT_ROOT:-$PWD}"
-    local lockfile="$lock_dir/vskill.lock"
-    local now
-    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -Iseconds 2>/dev/null)
-
-    if command -v jq >/dev/null 2>&1 && [[ -n "$lock_dir" ]]; then
-      local skill_entry
-      skill_entry=$(jq -n \
-        --arg ver "0.0.0" \
-        --arg now "$now" \
-        '{version: $ver, sha: "", tier: "BUNDLED", installedAt: $now, source: "local:specweave"}')
-
-      if [[ -f "$lockfile" ]]; then
-        # Merge into existing lockfile
-        jq --arg key "$plugin" --argjson entry "$skill_entry" --arg now "$now" \
-          '.skills[$key] = $entry | .updatedAt = $now' \
-          "$lockfile" > "${lockfile}.tmp" 2>/dev/null && \
-          mv "${lockfile}.tmp" "$lockfile" 2>/dev/null || true
-      else
-        # Create new lockfile
-        jq -n \
-          --arg now "$now" \
-          --arg key "$plugin" \
-          --argjson entry "$skill_entry" \
-          '{version: 1, agents: ["claude-code"], skills: {($key): $entry}, createdAt: $now, updatedAt: $now}' \
-          > "$lockfile" 2>/dev/null || true
-      fi
+    # Look for vskill bundled alongside specweave in node_modules
+    local candidate="${specweave_dir}/../../../node_modules/.bin/vskill"
+    if [[ -f "$candidate" ]]; then
+      vskill_cli="$candidate"
     fi
+  fi
 
-    VSKILL_INSTALL_OUTPUT="installed $plugin via direct copy"
+  if [[ -z "$vskill_cli" ]]; then
+    VSKILL_INSTALL_OUTPUT="vskill not found — install with: npm install -g vskill"
+    return 1
+  fi
+
+  # Verify specweave marketplace dir exists
+  if [[ ! -d "$specweave_dir" ]]; then
+    VSKILL_INSTALL_OUTPUT="specweave marketplace dir not found at $specweave_dir"
+    return 1
+  fi
+
+  # Run vskill install at project scope (cwd = project root)
+  local output
+  output=$(cd "$project_dir" && "$node_bin" "$vskill_cli" install "$specweave_dir" \
+    --plugin "$plugin" --plugin-dir "$specweave_dir" --force 2>&1)
+  local exit_code=$?
+
+  if [[ $exit_code -eq 0 ]]; then
+    VSKILL_INSTALL_OUTPUT="installed $plugin via vskill (project scope)"
     return 0
   else
-    VSKILL_INSTALL_OUTPUT="copy failed for $plugin"
+    VSKILL_INSTALL_OUTPUT="vskill install failed for $plugin: $output"
     return 1
   fi
 }
@@ -1270,13 +1255,10 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
-                    # v1.0.159: Determine marketplace based on plugin name
-                    # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
-                    # v1.0.240 (0198): context7/playwright removed from auto-install
-                    # v1.0.278 (0241): sw-* plugins now installed via direct copy (no vskill dependency)
+                    # v1.0.279: Only @specweave plugins allowed — no claude-plugins-official
+                    # Install via vskill (project scope: .claude/commands/<name>/)
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
-                      # ---- SW-* PLUGINS: Install via direct copy (v1.0.278) ----
-                      # Fast-path: check vskill.lock first (no CLI invocation needed)
+                      # Fast-path: check vskill.lock first
                       if check_plugin_in_vskill_lock "$plugin"; then
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
@@ -1285,61 +1267,18 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       else
-                        # Not installed - install via direct copy
-                        if install_plugin_direct "$plugin"; then
+                        # Install via vskill at project scope
+                        if install_plugin_via_vskill "$plugin"; then
                           [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
                           PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-
-                          # Display scan result if available
-                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
-                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
-                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
-                          fi
+                          echo "[$(date -Iseconds)] vskill | ${plugin} | ${VSKILL_INSTALL_OUTPUT:-ok}" >> "$LAZY_LOAD_LOG"
                         else
                           echo "[$(date -Iseconds)] vskill | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
                         fi
                       fi
                     else
-                      # ---- NON-SW PLUGINS: Install via claude CLI (unchanged) ----
-                      MARKETPLACE="claude-plugins-official"
-                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
-                      FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
-                      ALREADY_INSTALLED=false
-
-                      if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
-                        ALREADY_INSTALLED=true
-                      else
-                        CURRENT_PLUGINS=""
-                        if command -v timeout >/dev/null 2>&1; then
-                          CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                        else
-                          CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                        fi
-                        if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
-                          ALREADY_INSTALLED=true
-                        fi
-                      fi
-
-                      if [[ "$ALREADY_INSTALLED" == "true" ]]; then
-                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                      else
-                        if command -v timeout >/dev/null 2>&1; then
-                          OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                        else
-                          OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                        fi
-                        if echo "$OUT" | grep -qiE "(success|installed)"; then
-                          sleep 0.5
-                          if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
-                            [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                            PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                          else
-                            [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                            PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                          fi
-                        fi
-                      fi
+                      # Non-sw-* plugin detected — skip (only @specweave plugins allowed)
+                      echo "[$(date -Iseconds)] plugins | SKIPPED non-specweave plugin: $plugin" >> "$LAZY_LOAD_LOG"
                     fi
                   done
 

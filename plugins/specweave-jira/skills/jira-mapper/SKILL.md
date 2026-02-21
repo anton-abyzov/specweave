@@ -87,21 +87,7 @@ JIRA_DOMAIN="$(grep '^JIRA_DOMAIN=' .env | head -1 | cut -d '=' -f2-)"
 ### Domain Validation (before ANY API call)
 
 ```bash
-# Must be a valid hostname — no special chars, no consecutive dots
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
-  echo "Error: JIRA_DOMAIN contains invalid characters"
-  exit 1
-fi
-
-# Cloud JIRA: must match <subdomain>.atlassian.net
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
-  echo "Self-hosted JIRA requires explicit user confirmation"
-  exit 1
-  # Agent: use AskUserQuestion to confirm non-standard domain before retrying
-fi
-
-# Reject IP addresses (SSRF prevention)
+# Reject IP addresses FIRST — IPv4, IPv6 brackets, hex-encoded (SSRF prevention)
 if [[ "$JIRA_DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "$JIRA_DOMAIN" =~ ^\[.*\]$ ]] || [[ "$JIRA_DOMAIN" =~ ^0x ]]; then
   echo "Error: IP addresses not allowed — use a hostname"
   exit 1
@@ -110,6 +96,19 @@ fi
 # Reject localhost and private networks
 if [[ "$JIRA_DOMAIN" =~ ^(localhost|127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
   echo "Error: Internal/localhost addresses not allowed"
+  exit 1
+fi
+
+# Must be a valid hostname — no special chars, no consecutive dots
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+  echo "Error: JIRA_DOMAIN contains invalid characters"
+  exit 1
+fi
+
+# Cloud JIRA: must match <subdomain>.atlassian.net
+# Agent: use AskUserQuestion to confirm non-standard domain before retrying
+if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
+  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
   exit 1
 fi
 ```

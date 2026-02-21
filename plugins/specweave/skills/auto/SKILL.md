@@ -75,7 +75,7 @@ Use Read/Write/Edit/Glob tools directly (no CLI needed):
   "incrementIds": ["0001-feature"],
   "tddMode": false,
   "requireTests": false,
-  "userGoal": "optional",
+  "userGoal": null,
   "successCriteria": [
     { "type": "tasks_complete", "description": "All tasks marked complete", "required": true },
     { "type": "acs_satisfied", "description": "All ACs satisfied", "required": true }
@@ -95,6 +95,8 @@ Map flags to extra `successCriteria` entries:
 - `--tdd` -> set `"tddMode": true`
 
 Always include `tasks_complete` and `acs_satisfied` as base criteria. Ensure `.specweave/state/` dir exists.
+
+**`userGoal` field**: Set to the user's stated intent from conversation context. If the user said "fix the auth bug", set `userGoal` to `"fix the auth bug"`. If no clear intent is expressed, set to `null`. This field is read by the stop hook to provide context-aware feedback and guide `/sw:do` to the correct increment.
 
 ### Step 1.5a: MANDATORY - Complexity Check for Team-Lead Routing
 
