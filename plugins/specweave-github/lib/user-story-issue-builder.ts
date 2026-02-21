@@ -520,34 +520,52 @@ export class UserStoryIssueBuilder {
     sections.push('');
 
     // Generate proper GitHub blob URLs
-    // v5.0.0+: Features live in project folders, NOT _features
+    // v1.0.302 FIX: Use increment paths instead of living docs paths.
+    // Living docs (/.specweave/docs/internal/specs/) only exist in the umbrella repo,
+    // so links to them return 404 in the target repo. Increment spec.md is always pushed.
     if (this.repoOwner && this.repoName) {
       const baseUrl = `https://github.com/${this.repoOwner}/${this.repoName}/blob/${this.branch}`;
 
-      // Extract project from user story path: specs/{project}/FS-XXX/us-*.md
-      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
-      const projectFolder = pathMatch ? pathMatch[1] : 'default';
-
-      // Feature Spec link
-      sections.push(`- **Feature Spec**: [${this.featureId}](${baseUrl}/.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
-
-      // User Story File link (relative to project root)
-      const relativeUSPath = path.relative(this.projectRoot, this.userStoryPath);
-      sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${baseUrl}/${relativeUSPath})`);
-
-      // Increment link (extracted from Implementation section)
+      // Extract increment ID from Implementation section (if available)
       const incrementMatch = implMatch?.[1]?.match(/\*\*Increment\*\*:\s*\[([^\]]+)\]/);
-      if (incrementMatch) {
-        const incrementId = incrementMatch[1];
+      const incrementId = incrementMatch ? incrementMatch[1] : null;
+
+      // Feature Spec link: point to increment spec.md (always exists in target repo)
+      if (incrementId) {
+        sections.push(`- **Feature Spec**: [${this.featureId}](${baseUrl}/.specweave/increments/${incrementId}/spec.md)`);
+      } else {
+        // Fallback to living docs path when no increment ID available
+        const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
+        const projectFolder = pathMatch ? pathMatch[1] : 'default';
+        sections.push(`- **Feature Spec**: [${this.featureId}](${baseUrl}/.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
+      }
+
+      // User Story File link: point to increment spec.md (always exists in target repo)
+      if (incrementId) {
+        sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${baseUrl}/.specweave/increments/${incrementId}/spec.md)`);
+      } else {
+        const relativeUSPath = path.relative(this.projectRoot, this.userStoryPath);
+        sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${baseUrl}/${relativeUSPath})`);
+      }
+
+      // Increment link (always points to the increment folder in the target repo)
+      if (incrementId) {
         sections.push(`- **Increment**: [${incrementId}](${baseUrl}/.specweave/increments/${incrementId})`);
       }
     } else {
       // Fallback to relative links if repo info not provided
-      // v5.0.0+: Features live in project folders, NOT _features
-      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
-      const projectFolder = pathMatch ? pathMatch[1] : 'default';
-      sections.push(`- **Feature Spec**: [${this.featureId}](../.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
-      sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${this.userStoryPath})`);
+      const incrementMatch = implMatch?.[1]?.match(/\*\*Increment\*\*:\s*\[([^\]]+)\]/);
+      const incrementId = incrementMatch ? incrementMatch[1] : null;
+
+      if (incrementId) {
+        sections.push(`- **Feature Spec**: [${this.featureId}](.specweave/increments/${incrementId}/spec.md)`);
+        sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](.specweave/increments/${incrementId}/spec.md)`);
+      } else {
+        const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
+        const projectFolder = pathMatch ? pathMatch[1] : 'default';
+        sections.push(`- **Feature Spec**: [${this.featureId}](../.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
+        sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${this.userStoryPath})`);
+      }
     }
 
     sections.push('');

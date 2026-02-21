@@ -50,7 +50,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 **Vendor skills** from Anthropic, OpenAI, Google, and Microsoft carry the highest baseline trust but cover only generic use cases. Domain-specific needs (Terraform, Stripe, Kubernetes) are rarely addressed by vendor-authored skills. The vendor model also creates a false dichotomy: developers who need domain-specific skills are forced to choose between trusted-but-limited vendor skills and feature-rich-but-unvetted community skills. This gap is precisely where SpecWeave's tiered verification model aims to provide a third option.
 
 :::tip SpecWeave's Answer
-SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verifiedskill.com](https://verifiedskill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/skills/secure-skill-factory-standard) for the complete specification.
+SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verifiedskill.com](https://verifiedskill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/skills/verified/secure-skill-factory-standard) for the complete specification.
 :::
 
 ### The Trust Gap

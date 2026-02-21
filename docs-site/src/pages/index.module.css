@@ -4,6 +4,25 @@
  */
 
 /* ===========================================
+   HERO VIDEO SECTION
+   =========================================== */
+
+.heroVideoSection {
+  background: #0f0a1e;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.heroVideo {
+  width: 100%;
+  max-width: 1280px;
+  height: auto;
+  display: block;
+}
+
+/* ===========================================
    HERO SECTION
    =========================================== */
 

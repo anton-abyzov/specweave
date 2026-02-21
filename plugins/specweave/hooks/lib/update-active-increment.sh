@@ -48,8 +48,8 @@ while IFS= read -r metadata_file; do
   if command -v jq >/dev/null 2>&1; then
     status=$(jq -r '.status // "unknown"' "$metadata_file" 2>/dev/null || echo "unknown")
   else
-    # Fallback: grep parsing
-    status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "unknown")
+    # Fallback: sed parsing (portable - works on macOS BSD and Linux GNU)
+    status=$(sed -n 's/.*"status"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$metadata_file" 2>/dev/null || echo "unknown")
   fi
 
   # Check if status is active-like
