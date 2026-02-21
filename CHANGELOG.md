@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.306] - 2026-02-21
+
+### Changes
+- update user-prompt-submit hook
+- add DCI abuse patterns to security scanner
+
+---
+
+
+
 ## [1.0.305] - 2026-02-21
 
 ### Changes
