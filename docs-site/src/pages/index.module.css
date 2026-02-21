@@ -765,6 +765,306 @@
 }
 
 /* ===========================================
+   V-SKILLS SECURITY SECTION
+   =========================================== */
+
+.vskillsSection {
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1028 50%, #0f0f23 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.vskillsSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 50%, rgba(239, 68, 68, 0.08), transparent),
+    radial-gradient(ellipse 50% 40% at 80% 50%, rgba(16, 185, 129, 0.08), transparent);
+  pointer-events: none;
+}
+
+.vskillsSection .container {
+  position: relative;
+  z-index: 1;
+}
+
+.vskillsBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.vskillsSection .sectionTitle {
+  color: white;
+}
+
+.vskillsSection .sectionSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.vskillsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* Danger stat card */
+.vskillsDanger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.vskillsDanger::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ef4444, transparent);
+}
+
+.vskillsDangerIcon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: 14px;
+  color: #f87171;
+}
+
+.vskillsDangerIcon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.vskillsDangerStat {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.vskillsDangerLabel {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.vskillsDangerSource {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Trust ladder */
+.vskillsTrust {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2.5rem;
+}
+
+.vskillsTrustTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.vskillsTrustDesc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.trustLadder {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.trustTier {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.trustTier:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(4px);
+}
+
+.trustBadge {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trustBadgeIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trustBadgeIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.trustScanned {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.trustVerified {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.trustCertified {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.trustTierContent h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.35rem;
+}
+
+.trustTierContent p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.vskillsCtas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btnVerified {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btnVerified:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.btnVerifiedOutline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btnVerifiedOutline:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #34d399;
+  text-decoration: none;
+}
+
+/* Feature card shield icon override */
+.featureIconShield {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #059669;
+}
+
+[data-theme='dark'] .featureIconShield {
+  background: linear-gradient(135deg, #052e16 0%, #064e3b 100%);
+  color: #34d399;
+}
+
+.featureCard a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.featureCard a:hover {
+  text-decoration: underline;
+}
+
+[data-theme='dark'] .featureCard a {
+  color: #34d399;
+}
+
+/* ===========================================
    CTA SECTION
    =========================================== */
 
@@ -960,6 +1260,17 @@
     margin-right: auto;
   }
 
+  .vskillsGrid {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .vskillsDangerStat {
+    font-size: 3.5rem;
+  }
+
   .featuresGrid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1017,6 +1328,20 @@
 
   .codeContent code {
     font-size: 0.75rem;
+  }
+
+  .vskillsDangerStat {
+    font-size: 3rem;
+  }
+
+  .vskillsCtas {
+    flex-direction: column;
+  }
+
+  .trustTier {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .featuresGrid {

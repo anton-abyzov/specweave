@@ -107,6 +107,35 @@ const Icons = {
       <path d="M2 12l10 5 10-5"/>
     </svg>
   ),
+  // Security icons
+  shield: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ),
+  scanner: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3z"/>
+      <path d="M21 17v4h-4"/>
+      <path d="M12 7v4"/>
+      <path d="M12 15h.01"/>
+      <path d="M8 12h8"/>
+    </svg>
+  ),
+  certificate: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="6"/>
+      <path d="M9 12l2 2 4-4"/>
+      <path d="M8.5 14.5L7 22l5-3 5 3-1.5-7.5"/>
+    </svg>
+  ),
+  warning: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
 };
 
 function HomepageHeader() {
@@ -216,6 +245,87 @@ function ProblemSection(): ReactNode {
   );
 }
 
+function VSkillsSection(): ReactNode {
+  return (
+    <section className={styles.vskillsSection}>
+      <div className="container">
+        <div className={styles.vskillsBadge}>SKILL SECURITY</div>
+        <Heading as="h2" className={styles.sectionTitle}>
+          Not All AI Skills Are Safe
+        </Heading>
+        <p className={styles.sectionSubtitle}>
+          The AI skill ecosystem has a security problem. SpecWeave solves it with verified, auditable skill installation.
+        </p>
+
+        <div className={styles.vskillsGrid}>
+          {/* Danger stat */}
+          <div className={styles.vskillsDanger}>
+            <div className={styles.vskillsDangerIcon}>
+              {Icons.warning}
+            </div>
+            <div className={styles.vskillsDangerStat}>36.82%</div>
+            <p className={styles.vskillsDangerLabel}>
+              of public AI skills contain security flaws
+            </p>
+            <p className={styles.vskillsDangerSource}>
+              Snyk ToxicSkills Research, Feb 2026
+            </p>
+          </div>
+
+          {/* Trust ladder */}
+          <div className={styles.vskillsTrust}>
+            <h3 className={styles.vskillsTrustTitle}>Three-Tier Trust Ladder</h3>
+            <p className={styles.vskillsTrustDesc}>
+              Every skill installed through SpecWeave passes through a progressive trust pipeline.
+            </p>
+
+            <div className={styles.trustLadder}>
+              <div className={styles.trustTier}>
+                <div className={`${styles.trustBadge} ${styles.trustScanned}`}>
+                  <div className={styles.trustBadgeIcon}>{Icons.scanner}</div>
+                </div>
+                <div className={styles.trustTierContent}>
+                  <h4>Scanned</h4>
+                  <p>Automated SAST analysis detects vulnerabilities, credential leaks, and malicious patterns before installation.</p>
+                </div>
+              </div>
+
+              <div className={styles.trustTier}>
+                <div className={`${styles.trustBadge} ${styles.trustVerified}`}>
+                  <div className={styles.trustBadgeIcon}>{Icons.shield}</div>
+                </div>
+                <div className={styles.trustTierContent}>
+                  <h4>Verified</h4>
+                  <p>Human-reviewed by maintainers. Source integrity confirmed. Behavioral sandbox testing passed.</p>
+                </div>
+              </div>
+
+              <div className={styles.trustTier}>
+                <div className={`${styles.trustBadge} ${styles.trustCertified}`}>
+                  <div className={styles.trustBadgeIcon}>{Icons.certificate}</div>
+                </div>
+                <div className={styles.trustTierContent}>
+                  <h4>Certified</h4>
+                  <p>Enterprise-grade audit trail. Compliance-ready. Continuous monitoring and re-certification.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.vskillsCtas}>
+              <Link className={styles.btnVerified} to="/docs/skills/verified-skills">
+                Learn About Verified Skills
+              </Link>
+              <Link className={styles.btnVerifiedOutline} to="https://verifiedskill.com">
+                verifiedskill.com →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function WhatsNewSection(): ReactNode {
   return (
     <section className={styles.whatsNewSection}>
@@ -298,7 +408,7 @@ function FeaturesSection(): ReactNode {
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.extensible}</div>
             <h3>Extensible Skills (SOLID)</h3>
-            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules.</p>
+            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules. Verified installation ensures supply chain security.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIconWrapper}>{Icons.agents}</div>
@@ -324,6 +434,11 @@ function FeaturesSection(): ReactNode {
             <div className={styles.featureIconWrapper}>{Icons.sync}</div>
             <h3>Bidirectional Sync</h3>
             <p>GitHub Issues, JIRA, Azure DevOps — real-time synchronization across platforms.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={`${styles.featureIconWrapper} ${styles.featureIconShield}`}>{Icons.shield}</div>
+            <h3>Verified Skills</h3>
+            <p>Three-tier trust: Scanned, Verified, Certified. Every skill is security-audited before installation. <a href="https://verifiedskill.com" target="_blank" rel="noopener noreferrer">verifiedskill.com</a></p>
           </div>
         </div>
       </div>
@@ -413,6 +528,7 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <main>
         <ProblemSection />
+        <VSkillsSection />
         <WhatsNewSection />
         <StatsSection />
         <FeaturesSection />
