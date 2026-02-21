@@ -28,7 +28,7 @@ Skills self-load their customizations using **Dynamic Context Injection (DCI)** 
 
 The result: you correct Claude once ("use React Hook Form, not useState for forms"), and that preference is applied automatically in every future session. No reminders needed.
 
-[Read the full Extensible Skills Standard](/docs/skills/extensible-skills)
+[Read the full Extensible Skills Standard](/docs/skills/extensible/)
 
 ---
 
@@ -46,9 +46,9 @@ The Verified Skills Standard introduces **three-tier certification**:
 | **Verified** | Tier 1 + LLM intent analysis | ~$0.03/skill | 5-15s |
 | **Certified** | Tiers 1+2 + human security review + sandbox | $50-200/skill | 1-5 days |
 
-The registry at [verifiedskill.com](https://verifiedskill.com) provides a trusted source for browsing and submitting skills, with the `npx vskill` CLI for command-line access.
+The registry at [verifiedskill.com](https://verifiedskill.com) provides a trusted source for browsing and submitting skills, with the `vskill` CLI for command-line access (`npx vskill`, `bunx vskill`, `pnpx vskill`, or `yarn dlx vskill`).
 
-[Read the full Verified Skills Standard](/docs/skills/verified-skills)
+[Read the full Verified Skills Standard](/docs/skills/verified/)
 
 ---
 
@@ -76,10 +76,9 @@ A skill can be both **verified** (passed security certification) and **extensibl
 
 ## Explore Further
 
-- **[Claude Skills Deep Dive](/docs/guides/claude-skills-deep-dive)** — Architecture and comparison with other AI tool systems
-- **[Self-Improving Skills](/docs/guides/self-improving-skills)** — How the Reflect system auto-learns from corrections
-- **[Security Landscape](/docs/skills/skills-ecosystem-security)** — ToxicSkills data, platform comparison, risk taxonomy
-- **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 39 AI coding agents
+- **[Extensible Skills Hub](/docs/skills/extensible/)** — All docs about customization, DCI, skill memories, and self-improving AI
+- **[Verified Skills Hub](/docs/skills/verified/)** — All docs about security certification, trust tiers, and the skills ecosystem
 - **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find skills and how to evaluate them
+- **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 39 AI coding agents
 - **[All 100+ Skills](/docs/reference/skills)** — Complete SpecWeave skill catalog
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
