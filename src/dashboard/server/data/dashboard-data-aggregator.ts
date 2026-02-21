@@ -5,6 +5,7 @@ import type {
   IncrementListPayload,
   IncrementSummary,
   SyncStatusPayload,
+  SyncRepoStatus,
   SkillUsage,
   LspStatus,
   PluginInfo,
@@ -118,13 +119,68 @@ export class DashboardDataAggregator {
     };
   }
 
-  /** Get sync status with enriched connection diagnosis */
+  /** Get sync status with enriched connection diagnosis, umbrella-aware */
   async getSyncStatus(): Promise<SyncStatusPayload> {
     const meta = this.readSyncMetadata();
     const config = this.readConfig();
+    const syncSettings = config?.sync?.settings || {};
+    const permissions = {
+      canUpsertInternalItems: syncSettings.canUpsertInternalItems === true,
+      canUpdateExternalItems: syncSettings.canUpdateExternalItems === true,
+      canUpdateStatus: syncSettings.canUpdateStatus === true,
+      autoSyncOnCompletion: syncSettings.autoSyncOnCompletion === true,
+    };
+
+    const isUmbrella = config?.umbrella?.enabled === true && Array.isArray(config?.umbrella?.childRepos);
+
+    if (!isUmbrella) {
+      return {
+        platforms: this.enrichSyncPlatforms(meta, config),
+        lastUpdated: meta?.lastUpdated,
+        isUmbrella: false,
+        permissions,
+      };
+    }
+
+    // Umbrella mode: build per-repo sync status
+    const repos: SyncRepoStatus[] = [];
+    const childRepos: Array<{ id: string; path: string; name: string; prefix?: string; sync?: Record<string, any> }> = config.umbrella.childRepos;
+
+    for (const child of childRepos) {
+      const childAbsPath = path.join(this.projectRoot, child.path);
+      const childSpecweaveDir = path.join(childAbsPath, '.specweave');
+      const hasSpecweave = fs.existsSync(childSpecweaveDir);
+
+      // Read sync metadata: child's own file takes priority, else umbrella's repos[id]
+      let repoMeta: any = {};
+      if (hasSpecweave) {
+        const childMetaPath = path.join(childAbsPath, '.specweave/sync-metadata.json');
+        if (fs.existsSync(childMetaPath)) {
+          try { repoMeta = JSON.parse(fs.readFileSync(childMetaPath, 'utf-8')); } catch { /* */ }
+        }
+      } else if (meta?.repos?.[child.id]) {
+        repoMeta = meta.repos[child.id];
+      }
+
+      // Build a merged config for this child: child.sync overrides global sync per-platform
+      const repoSyncOverride = child.sync || {};
+      const repoPlatforms = this.enrichSyncPlatforms(repoMeta, config, repoSyncOverride);
+
+      repos.push({
+        repoId: child.id,
+        repoName: child.name || child.id,
+        repoPath: child.path,
+        hasSpecweave,
+        platforms: repoPlatforms,
+      });
+    }
+
     return {
       platforms: this.enrichSyncPlatforms(meta, config),
       lastUpdated: meta?.lastUpdated,
+      isUmbrella: true,
+      repos,
+      permissions,
     };
   }
 
@@ -312,14 +368,21 @@ export class DashboardDataAggregator {
 
   // --- Sync Enrichment ---
 
-  private enrichSyncPlatforms(syncMeta: any, config: any): Record<string, any> {
+  /**
+   * Enrich sync platforms with connection status and diagnostics.
+   * @param syncMeta - Raw sync metadata for the project/repo
+   * @param config - Full config or a config with a `sync` section
+   * @param syncOverride - Optional per-platform sync config override (from child repo)
+   */
+  enrichSyncPlatforms(syncMeta: any, config: any, syncOverride?: Record<string, any>): Record<string, any> {
     const platforms: Record<string, any> = {};
+    const syncSection = config?.sync || {};
     const platformConfigs: Record<string, { key: string; label: string; configCheck: () => string | null }> = {
       github: {
         key: 'github',
         label: 'GitHub',
         configCheck: () => {
-          const gh = config?.sync?.github;
+          const gh = { ...syncSection.github, ...(syncOverride?.github || {}) };
           return gh?.owner && gh?.repo ? `${gh.owner}/${gh.repo}` : null;
         },
       },
@@ -327,7 +390,7 @@ export class DashboardDataAggregator {
         key: 'jira',
         label: 'JIRA',
         configCheck: () => {
-          const j = config?.sync?.jira;
+          const j = { ...syncSection.jira, ...(syncOverride?.jira || {}) };
           return j?.domain ? `${j.domain} (${j.projectKey || 'N/A'})` : null;
         },
       },
@@ -335,15 +398,19 @@ export class DashboardDataAggregator {
         key: 'ado',
         label: 'Azure DevOps',
         configCheck: () => {
-          const a = config?.sync?.ado;
+          const a = { ...syncSection.ado, ...(syncOverride?.ado || {}) };
           return a?.organization ? `${a.organization}/${a.project || ''}` : null;
         },
       },
     };
 
+    // When a child override is provided and non-empty, only platforms explicitly
+    // listed in the override are considered configured for that repo.
+    const hasExplicitOverride = syncOverride && Object.keys(syncOverride).length > 0;
+
     for (const [key, pConfig] of Object.entries(platformConfigs)) {
       const meta = syncMeta?.[key];
-      const configDetail = pConfig.configCheck();
+      const configDetail = hasExplicitOverride && !(key in syncOverride) ? null : pConfig.configCheck();
       const lastImport = meta?.lastImport || '';
       const lastSyncResult = meta?.lastSyncResult || 'unknown';
       const lastImportCount = meta?.lastImportCount ?? 0;
@@ -363,6 +430,10 @@ export class DashboardDataAggregator {
       } else if (lastSyncResult === 'partial') {
         connectionStatus = 'connected';
         diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Last sync: ${lastImportCount} items (some warnings).`;
+      } else if (lastSyncResult === 'failed' && lastImportCount === 0) {
+        // A failure with 0 items was a connectivity check, not a real sync failure.
+        connectionStatus = 'configured_never_synced';
+        diagnosticMessage = `${pConfig.label} configured for ${configDetail}. Click Verify to check connectivity.`;
       } else {
         connectionStatus = 'sync_failed';
         const errorDetail = meta?.lastError ? ` Error: ${meta.lastError}` : '';
