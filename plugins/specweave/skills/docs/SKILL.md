@@ -44,6 +44,25 @@ for dir in $DOC_DIRS; do
 done
 echo "DOC_COUNT:$DOC_COUNT"
 
+# Detect umbrella mode and list child repo docs
+UMB_REPOS=$(jq -r '.umbrella | select(.enabled==true) | .childRepos[]? | "\(.id):\(.path)"' .specweave/config.json 2>/dev/null)
+if [ -n "$UMB_REPOS" ]; then
+  echo "UMBRELLA:true"
+  for entry in $UMB_REPOS; do
+    REPO_ID="${entry%%:*}"
+    REPO_PATH="${entry#*:}"
+    REPO_DOC_COUNT=0
+    for scope_dir in internal public; do
+      CHILD_DOCS="$REPO_PATH/.specweave/docs/$scope_dir"
+      if [ -d "$CHILD_DOCS" ]; then
+        C=$(find "$CHILD_DOCS" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+        REPO_DOC_COUNT=$((REPO_DOC_COUNT + C))
+      fi
+    done
+    echo "CHILD_REPO:$REPO_ID:$REPO_DOC_COUNT docs"
+  done
+fi
+
 # Check Docusaurus install status
 [ -d ".specweave/docs-site-internal/node_modules" ] && echo "DOCUSAURUS:installed" || echo "DOCUSAURUS:not_installed"
 
@@ -72,6 +91,20 @@ for dir in $DOC_DIRS; do
     ls -d "$dir"/*/ 2>/dev/null | xargs -I{} basename {} || echo "  (none)"
   fi
 done
+
+# In umbrella mode, also list child repo doc topics
+if [ -n "$UMB_REPOS" ]; then
+  for entry in $UMB_REPOS; do
+    REPO_ID="${entry%%:*}"
+    REPO_PATH="${entry#*:}"
+    CHILD_DOC_DIR="$REPO_PATH/.specweave/docs"
+    if [ -d "$CHILD_DOC_DIR" ]; then
+      echo "=== $REPO_ID ==="
+      [ -d "$CHILD_DOC_DIR/internal" ] && echo "  Internal:" && ls "$CHILD_DOC_DIR/internal/" 2>/dev/null || true
+      [ -d "$CHILD_DOC_DIR/public" ] && echo "  Public:" && ls "$CHILD_DOC_DIR/public/" 2>/dev/null || true
+    fi
+  done
+fi
 ```
 
 Present as a clean dashboard.
@@ -90,10 +123,17 @@ Same as dashboard but skip server/Docusaurus diagnostics. Just list folder names
 
 When user provides a topic (e.g., `/sw:docs sync`, `/sw:docs troubleshooting`):
 
-1. **Search** across all configured directories:
+1. **Search** across all configured directories and child repos:
    ```bash
    DOC_DIRS=$(jq -r '(.documentation.directories // [".specweave/docs"])[]' .specweave/config.json 2>/dev/null)
    [ -z "$DOC_DIRS" ] && DOC_DIRS=".specweave/docs"
+
+   # Add child repo doc dirs in umbrella mode
+   UMB_REPOS=$(jq -r '.umbrella | select(.enabled==true) | .childRepos[]? | .path' .specweave/config.json 2>/dev/null)
+   for repo_path in $UMB_REPOS; do
+     [ -d "$repo_path/.specweave/docs" ] && DOC_DIRS="$DOC_DIRS $repo_path/.specweave/docs"
+   done
+
    for dir in $DOC_DIRS; do
      find "$dir" -type d -iname "*<topic>*" -maxdepth 4 2>/dev/null
      find "$dir" -type f -iname "*<topic>*.md" -maxdepth 5 2>/dev/null
@@ -123,11 +163,15 @@ Detect serve intent from: `--serve`, `--preview`, or phrases like "serve", "prev
    Subsequent runs start instantly.
 
    Options:
-     specweave docs preview --port 3005   Use specific port
-     specweave docs preview --no-browser  Don't auto-open browser
+     specweave docs preview --port 3005            Use specific port
+     specweave docs preview --no-browser           Don't auto-open browser
+     specweave docs preview --project <id>         Target child repo (umbrella)
+     specweave docs preview --project vskill       Example: preview vskill docs
 
    To stop: Ctrl+C in terminal, or: specweave docs kill
    ```
+
+   **In umbrella projects**, also mention `--project <id>` usage to target child repo docs.
 
 ### 5. `--status`: Full status report
 

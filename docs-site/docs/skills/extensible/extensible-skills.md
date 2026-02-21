@@ -18,11 +18,9 @@ The Extensible Skills Standard has been split into two documents for clarity:
 
 The **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)** defines:
 
-- **Tier model (E0-E4)** -- Five levels of extensibility from "not extensible" to "DCI + auto-learning"
+- **Three extensibility categories** -- extensible, semi-extensible, not-extensible
 - **DCI specification** -- Syntax, execution model, and graceful degradation
-- **Frontmatter schema** -- Structured extensibility declarations in YAML
-- **Agent portability matrix** -- Which mechanisms work with which agents
-- **Detection algorithm** -- How tiers are determined from SKILL.md content
+- **Detection algorithm** -- How categories are determined from SKILL.md content
 - **Conformance requirements** -- What registries must implement
 
 ---
@@ -41,13 +39,11 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 
 ## Quick Reference
 
-| Tier | Name | Mechanism | Portability |
-|---|---|---|---|
-| E0 | Not Extensible | None | N/A |
-| E1 | Declarative | Keywords in prose | All agents |
-| E2 | Frontmatter-Declared | YAML `extensibility:` | YAML-reading agents |
-| E3 | DCI-Verified | Shell block in SKILL.md | Claude Code |
-| E4 | DCI + Auto-Learning | DCI + Reflect | Claude Code |
+| Category | Meaning | Detection |
+|---|---|---|
+| **Extensible** | DCI block with skill-memories. Standard, discoverable customization. | DCI block referencing `skill-memories` |
+| **Semi-Extensible** | Mentions customization but not through the standard system. | Keyword signals or DCI without skill-memories |
+| **Not Extensible** | No customization mechanism. Fork to change. | No signals detected |
 
 ---
 
@@ -61,6 +57,6 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 
 ---
 
-**Version**: 3.0.0
+**Version**: 4.0.0
 **Authors**: Anton Abyzov
 **License**: MIT

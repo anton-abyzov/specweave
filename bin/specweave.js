@@ -919,6 +919,7 @@ docsCmd
   .description('Start documentation preview server with hot reload')
   .option('-p, --port <number>', 'Port number (default: 3015 internal, 3016 public)')
   .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
+  .option('--project <id>', 'Target child repo docs in umbrella project')
   .option('-f, --force', 'Force reinstall Docusaurus')
   .option('--no-browser', 'Do not open browser automatically')
   .option('--no-validate', 'Skip pre-flight validation')
@@ -932,6 +933,7 @@ docsCmd
       validate: options.validate,
       autoFix: options.autoFix,
       scope: options.scope || 'internal',
+      project: options.project,
     });
   });
 
@@ -939,6 +941,7 @@ docsCmd
   .command('build')
   .description('Build static documentation site for deployment')
   .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
+  .option('--project <id>', 'Target child repo docs in umbrella project')
   .option('--no-validate', 'Skip pre-build validation')
   .option('--no-auto-fix', 'Do not auto-fix validation issues')
   .option('-o, --output <path>', 'Output directory')
@@ -949,6 +952,7 @@ docsCmd
       autoFix: options.autoFix,
       output: options.output,
       scope: options.scope || 'internal',
+      project: options.project,
     });
   });
 
@@ -956,6 +960,7 @@ docsCmd
   .command('validate')
   .description('Validate documentation without starting server')
   .option('-s, --scope <scope>', 'Documentation scope: internal or public (default: internal)')
+  .option('--project <id>', 'Target child repo docs in umbrella project')
   .option('--auto-fix', 'Auto-fix common issues')
   .option('-v, --verbose', 'Show all issues (not just errors)')
   .action(async (options) => {
@@ -964,6 +969,7 @@ docsCmd
       autoFix: options.autoFix,
       verbose: options.verbose,
       scope: options.scope || 'internal',
+      project: options.project,
     });
   });
 
@@ -971,6 +977,7 @@ docsCmd
   .command('public')
   .description('Preview public documentation (shorthand for preview --scope public)')
   .option('-p, --port <number>', 'Port number (default: 3016)')
+  .option('--project <id>', 'Target child repo docs in umbrella project')
   .option('-f, --force', 'Force reinstall Docusaurus')
   .option('--no-browser', 'Do not open browser automatically')
   .option('--no-validate', 'Skip pre-flight validation')
@@ -984,6 +991,7 @@ docsCmd
       validate: options.validate,
       autoFix: options.autoFix,
       scope: 'public',
+      project: options.project,
     });
   });
 
@@ -998,9 +1006,10 @@ docsCmd
 docsCmd
   .command('status')
   .description('Show documentation status and help')
-  .action(async () => {
+  .option('--project <id>', 'Target child repo docs in umbrella project')
+  .action(async (options) => {
     const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
-    await docsStatusCommand();
+    await docsStatusCommand({ project: options.project });
   });
 
 // Default action for 'specweave docs' without subcommand — launches internal preview

@@ -248,6 +248,7 @@ export interface HookConfiguration {
   };
   post_increment_planning?: {
     auto_create_github_issue?: boolean;
+    sync_living_docs?: boolean;
   };
   post_increment_done?: {
     sync_living_docs?: boolean;

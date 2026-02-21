@@ -30,16 +30,16 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 
 | Platform | Security Scanning | Versioning | Trust / Verification | Review Process | Known Incidents | Scale |
 |----------|------------------|-----------|---------------------|----------------|-----------------|-------|
-| **Skills.sh** (Vercel) | None | None | None — open directory | Community ratings; source visible pre-install | None publicly reported | 200+ skills; top listing at 234K+ installs |
+| **Skills.sh** (Vercel) | None | None | None — open directory | Community ratings; source visible pre-install | Threat actors **zaycv** and **moonshine-100rze** published malicious skills (ToxicSkills study) | 200+ skills; top listing at 234K+ installs |
 | **Smithery** | Partial (post-incident) | Server-level | API key management added post-breach | Reactive — improvements after disclosure | API key exposure; path traversal (Jun 2025); 3,000+ MCP servers compromised | 3,000+ MCP servers |
 | **ClawHub** | None built-in | Git-based (community forks) | Community submissions; no formal verification | None — open contribution model | ClawHavoc campaign: 335 infostealer packages deploying Atomic macOS Stealer | 500+ community-submitted skills |
 | **SkillsDirectory.com** | 50+ rules (automated) | Unclear (directory model) | Opaque review criteria | Automated + manual review (details undisclosed) | None publicly reported | ~36K skills indexed |
-| **SpecWeave Fabric** | 41 patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review | None | Growing marketplace |
+| **Verified Skills** (SpecWeave) | 52 patterns (vskill CLI) / 55 patterns (specweave scanner) + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review + blocklist enforcement | None | Growing marketplace at [verifiedskill.com](https://verifiedskill.com) |
 | **Vendor Skills** (Anthropic, OpenAI, Google, Microsoft) | Internal code review; sandbox testing | Version-pinned to platform releases | Trusted organization model — vendor-authored or vendor-reviewed | Internal engineering review | None publicly disclosed | ~200 skills total across vendors |
 
 ### Key Observations
 
-**Skills.sh** is the most popular community platform with the highest install counts, but offers zero automated scanning. A malicious skill published to Skills.sh reaches developers directly with no intervening check. The platform's strength — visibility of skill source before install — relies entirely on the developer actually reading the file, which research suggests most do not do. Skills.sh does provide install counts and community ratings, but neither metric reflects security quality; a popular skill with high ratings may still contain prompt injection payloads that only activate under specific conditions.
+**Skills.sh** is the most popular community platform with the highest install counts, but offers zero automated scanning. A malicious skill published to Skills.sh reaches developers directly with no intervening check. The ToxicSkills study confirmed that threat actors **zaycv** and **moonshine-100rze** published malicious skills on Skills.sh alongside ClawHub. The platform's strength — visibility of skill source before install — relies entirely on the developer actually reading the file, which research suggests most do not do. Skills.sh does provide install counts and community ratings, but neither metric reflects security quality; a popular skill with high ratings may still contain prompt injection payloads that only activate under specific conditions.
 
 **Smithery** learned the hard way. The June 2025 path traversal vulnerability exposed configuration data for over 3,000 MCP servers. Post-incident, Smithery added API key management and began hardening its platform, but the breach demonstrated how a single vulnerability in a centralized server registry can cascade across thousands of deployments. The Smithery incident is particularly instructive because it was not a skill-level attack — it was an infrastructure-level vulnerability in the registry itself, meaning even legitimately published servers were exposed.
 
@@ -67,7 +67,7 @@ quadrantChart
     quadrant-3 "Unverified & Limited"
     quadrant-4 "Unverified but Broad"
     "Vendor Skills": [0.15, 0.92]
-    "SpecWeave Fabric": [0.45, 0.78]
+    "Verified Skills": [0.45, 0.78]
     "SkillsDirectory": [0.82, 0.55]
     "Skills.sh": [0.50, 0.30]
     "ClawHub": [0.60, 0.18]
@@ -301,21 +301,22 @@ SpecWeave takes a defense-in-depth approach to skill security. No single mechani
 
 ### 1. Deterministic Security Scanner
 
-The `security-scanner.ts` module implements **41 regex-based pattern checks** across **9 detection categories**. Every skill submitted to the SpecWeave Fabric marketplace is scanned before it can be listed.
+The specweave `security-scanner.ts` module implements **55 regex-based pattern checks** across **10 detection categories**. The vskill CLI ships a parallel scanner (`scanner/patterns.ts`) with **52 patterns** across **9 categories**. Every skill submitted to the Verified Skills marketplace is scanned before listing, and the vskill CLI runs Tier 1 scanning at install time for GitHub-sourced and registry-sourced skills.
 
 | Category | Pattern Count | Severity | Examples |
 |----------|--------------|----------|----------|
-| **Destructive commands** | 7 | Critical | `rm -rf`, `format C:`, `DROP TABLE`, `dd if=`, `mkfs`, `Remove-Item -Recurse -Force` |
+| **Destructive commands** | 7 | Critical | `rm -rf`, `rm --force`, `format C:`, `DROP TABLE`, `dd if=`, `mkfs`, `Remove-Item -Recurse -Force` |
 | **Remote code execution** | 8 | Critical | `curl \| bash`, `wget \| sh`, `\| bash` (generic), `eval()`, `exec()`, `child_process`, `Invoke-Expression`, `new Function()` |
 | **Obfuscation** | 5 | Critical | `atob()`, `btoa()`, `base64 -d/-D`, hex escape sequences, password-protected archives (`unzip -P`, `7z -p`) |
 | **Memory poisoning** | 2 | Critical | Writes to `CLAUDE.md`/`AGENTS.md`/`.claude/`, writes to `SOUL.md`/`MEMORY.md` |
+| **DCI block abuse** | 14 | Critical | DCI credential reads, DCI network exfiltration (curl/wget/fetch/nc), DCI config writes, DCI base64 decode, DCI eval, DCI download-and-execute, DCI reverse shell, DCI sudo, DCI rm -rf, DCI home dir reads, DCI data piping |
 | **Credential access** | 9 | High | `.env` file reads, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`, `credentials.json`, `secrets.yaml`, `~/.ssh/`, `~/.aws/`, crypto wallet paths |
 | **Data exfiltration** | 1 | High | `curl --data` / `curl -d` (data upload to external endpoints) |
 | **Prompt injection** | 4 | High | `<system>` tags, "ignore previous instructions", "you are now", "override system prompt" |
 | **Dangerous permissions** | 1 | High | `chmod 777` |
 | **Network access** | 4 | Info | `fetch()`, `http.get()`, `axios`, external URL references |
 
-The scanner also includes two additional checks beyond the 41 regex patterns:
+The specweave scanner also includes two additional structural checks beyond the 55 regex patterns:
 
 - **Frontmatter `name:` field detection** — catches the namespace-stripping issue that can cause plugin conflicts (medium severity)
 - **Unbalanced code fence detection** — prevents attackers from using unclosed code blocks to hide patterns from naive line-by-line scanners
@@ -348,7 +349,7 @@ SpecWeave classifies every skill into one of three trust tiers. Higher tiers req
 
 | Tier | Label | Requirements | Cost | Latency |
 |------|-------|-------------|------|---------|
-| **Tier 1** | Scanned | Pass all 41 deterministic patterns | Free | < 500ms |
+| **Tier 1** | Scanned | Pass all 55 deterministic patterns (specweave) / 52 patterns (vskill CLI) | Free | < 500ms |
 | **Tier 2** | Verified | Tier 1 + LLM judge intent analysis | ~$0.03/skill | 5-15 seconds |
 | **Tier 3** | Certified | Tier 1 + Tier 2 + human security review | $50-200/skill | 1-5 business days |
 
@@ -387,7 +388,7 @@ Beyond pattern matching, the skill validator checks structural integrity across 
 | **Frontmatter** | Required fields present, no `name:` field, valid YAML syntax |
 | **Scope declaration** | Languages, frameworks, tools, file patterns, "Does NOT" clause |
 | **Permissions** | Every tool usage justified, permissions match `allowed-tools` |
-| **Security patterns** | The 41-pattern scanner results |
+| **Security patterns** | The 55-pattern scanner results (specweave) / 52-pattern results (vskill CLI) |
 | **Content quality** | Description length (10-1024 chars), section completeness |
 | **Cross-references** | No circular dependencies, no coupling to specific skill names |
 
@@ -403,24 +404,54 @@ Tier 2 verification uses an LLM to analyze skill intent beyond what regex patter
 
 The judge uses the LLM provider abstraction (`src/core/llm/`) for multi-provider support (Anthropic, OpenAI, Azure, Bedrock, Ollama, Vertex AI) and respects the consent gate — no API calls are made without explicit user permission. When no LLM is configured, the judge returns a CONCERNS verdict recommending manual review.
 
+### 7. Malicious Skills Blocklist
+
+The `vskill` CLI includes a blocklist system (`vskill blocklist`) that maintains a local cache of known-malicious skills synced from the Verified Skills registry at verifiedskill.com. The blocklist is enforced at install time — before a skill is written to disk.
+
+| Command | Action |
+|---------|--------|
+| `vskill blocklist sync` | Fetch the latest blocklist from verifiedskill.com |
+| `vskill blocklist list` | Display all cached blocklist entries with threat type and severity |
+| `vskill blocklist check <name>` | Check whether a specific skill name is blocklisted |
+
+When `vskill add` installs a skill from GitHub, it runs a blocklist check before proceeding to Tier 1 scanning. If the skill name matches a blocklist entry, installation is refused with the threat type and reason displayed. The `--force` flag overrides the block with a warning.
+
+The blocklist is sourced from the platform's analysis of skills reported by the community and from automated scanning of public skill registries. Each entry includes the skill name, threat type (e.g., credential-theft, prompt-injection), severity level, and the source registry where the malicious skill was found.
+
+### Known Gaps and Honest Limitations
+
+Transparency about what the system does not yet do is as important as what it does.
+
+**Lockfile tier is always "SCANNED".** The `vskill.lock` file records a `tier` field for every installed skill, but the value is currently hardcoded to `"SCANNED"` regardless of the skill's actual verification tier. A skill that has been Verified (Tier 2) or Certified (Tier 3) on the marketplace still appears as `"SCANNED"` in the lockfile. This means the lockfile does not currently reflect the real trust level of installed skills.
+
+**Local plugin installs skip scanning entirely.** When using `vskill add --plugin` to install a plugin from a local directory, no Tier 1 scan is performed. The lockfile still records `tier: "SCANNED"`, creating a misleading trust signal. Local plugins are assumed to be trusted by the developer who controls the source path.
+
+**Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verifiedskill.com performs server-side scanning at submission time. The vskill CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes — a skill could theoretically pass one and fail the other if the pattern sets diverge. The specweave scanner (55 patterns) and vskill scanner (52 patterns) share the same core patterns but are not identical; the specweave scanner includes additional patterns for `rm --force` long-form flags and certain credential paths.
+
+**Certification expiry is stored but not enforced.** The Verified Skills platform stores a `certExpiresAt` timestamp for certified skills, but neither the platform nor the vskill CLI currently enforces expiry. A skill whose certification has lapsed still displays its last-known tier. Enforcement of certification expiry is planned but not yet implemented.
+
+**Tier 2 LLM analysis requires explicit opt-in.** The LLM judge respects a consent gate — no API calls are made without explicit user permission. When no LLM provider is configured, the judge returns a CONCERNS verdict recommending manual review but does not block installation. This means many installations in practice only receive Tier 1 scanning.
+
 ### How the Layers Compose
 
 The following table shows which attack types each security layer is designed to catch, and where gaps remain:
 
-| Attack Type | Tier 1 Scanner | Pre-Commit Hooks | Skill Validator | LLM Judge | Human Review |
-|-------------|---------------|-----------------|-----------------|-----------|-------------|
-| `rm -rf` / destructive commands | Catches | Prevents in tests | N/A | Catches | Catches |
-| `curl \| bash` / RCE | Catches | N/A | N/A | Catches | Catches |
-| `.env` / credential reads | Catches | N/A | Permission check | Catches | Catches |
-| `<system>` tag injection | Catches | N/A | N/A | Catches | Catches |
-| Semantic prompt injection (no keywords) | Misses | N/A | N/A | Catches | Catches |
-| Base64-encoded exfiltration | Partial | N/A | N/A | Catches | Catches |
-| Trojanized archive payloads | Misses | N/A | N/A | Partial | Catches |
-| Memory poisoning via config writes | Partial | N/A | Scope check | Catches | Catches |
-| Typosquatted dependencies | Misses | N/A | N/A | Partial | Catches |
-| `name:` frontmatter stripping | Catches | Catches | Catches | N/A | Catches |
+| Attack Type | Tier 1 Scanner | Pre-Commit Hooks | Skill Validator | LLM Judge | Blocklist | Human Review |
+|-------------|---------------|-----------------|-----------------|-----------|-----------|-------------|
+| `rm -rf` / destructive commands | Catches | Prevents in tests | N/A | Catches | N/A | Catches |
+| `curl \| bash` / RCE | Catches | N/A | N/A | Catches | N/A | Catches |
+| `.env` / credential reads | Catches | N/A | Permission check | Catches | N/A | Catches |
+| `<system>` tag injection | Catches | N/A | N/A | Catches | N/A | Catches |
+| DCI block abuse (14 patterns) | Catches | N/A | N/A | Catches | N/A | Catches |
+| Semantic prompt injection (no keywords) | Misses | N/A | N/A | Catches | N/A | Catches |
+| Base64-encoded exfiltration | Partial | N/A | N/A | Catches | N/A | Catches |
+| Trojanized archive payloads | Misses | N/A | N/A | Partial | N/A | Catches |
+| Memory poisoning via config writes | Partial | N/A | Scope check | Catches | N/A | Catches |
+| Typosquatted dependencies | Misses | N/A | N/A | Partial | N/A | Catches |
+| Known malicious skills (by name) | N/A | N/A | N/A | N/A | Catches | Catches |
+| `name:` frontmatter stripping | Catches | Catches | Catches | N/A | N/A | Catches |
 
-No single layer covers all attack types. The defense-in-depth strategy ensures that an attack must evade multiple independent detection mechanisms simultaneously. A semantic prompt injection (no keywords) evades Tier 1 but is caught by the LLM judge. A trojanized archive evades both Tier 1 and the LLM judge but is caught by human review. The probability of an attack evading all layers simultaneously decreases with each additional layer.
+No single layer covers all attack types. The defense-in-depth strategy ensures that an attack must evade multiple independent detection mechanisms simultaneously. A semantic prompt injection (no keywords) evades Tier 1 but is caught by the LLM judge. A trojanized archive evades both Tier 1 and the LLM judge but is caught by human review. Known malicious skills bypass all content-based analysis entirely but are caught by the blocklist. The probability of an attack evading all layers simultaneously decreases with each additional layer.
 
 ### Real-World Validation: Snyk ToxicSkills PoC
 
@@ -429,8 +460,8 @@ To validate the scanner against real malicious skills, we ran it against four sa
 | Sample | Result | Critical | High | Attack Vector |
 |--------|--------|----------|------|---------------|
 | **clawhub/skill.md** | **FAIL** | 2 | 0 | Base64-obfuscated reverse shell (`base64 -D \| bash`) |
-| **vercel/SKILL.md** (.agents) | **FAIL** | 0 | 2 | Data exfiltration via `curl --data` sending `uname -a` to paste service |
-| **vercel/SKILL.md** (.gemini) | **FAIL** | 0 | 2 | Same exfiltration pattern, targeting Gemini agents |
+| **vercel/SKILL.md** (.agents) | **FAIL** | 0 | 2 | Data exfiltration via `curl --data` sending `uname -a` to paste service (targets agents using the Vercel SKILL.md format) |
+| **vercel/SKILL.md** (.gemini) | **FAIL** | 0 | 2 | Same exfiltration pattern, targeting Gemini agents (targets agents using the Vercel SKILL.md format) |
 | **google/SKILL.md** | **PASS** | 0 | 0 | Social engineering — natural language instructions to download and run malware |
 
 **Detection rate**: 75% (3 of 4) via Tier 1 pattern scanning alone.
@@ -461,7 +492,7 @@ flowchart LR
 
     subgraph Tier1["Tier 1: Scanned"]
         direction TB
-        T1A["41 regex patterns"]
+        T1A["55 regex patterns"]
         T1B["Frontmatter validation"]
         T1C["Code fence analysis"]
         T1D["Safe context detection"]
@@ -511,7 +542,7 @@ flowchart LR
 
 ### Tier Progression Details
 
-**Tier 1: Scanned** is the minimum bar. Every skill in the SpecWeave marketplace must pass this tier. It runs in under 500 milliseconds and costs nothing. The scanner catches the majority of unsophisticated attacks — the `rm -rf` commands, the `curl | bash` patterns, the `<system>` tag injections. It does not catch semantic attacks (e.g., a skill that uses legitimate-sounding language to instruct the agent to exfiltrate data without using any flagged patterns).
+**Tier 1: Scanned** is the minimum bar. Every skill in the Verified Skills marketplace must pass this tier. It runs in under 500 milliseconds and costs nothing. The scanner catches the majority of unsophisticated attacks — the `rm -rf` commands, the `curl | bash` patterns, the `<system>` tag injections, and the DCI block abuse patterns (14 patterns covering credential reads, network exfiltration, privilege escalation, and config file writes within executable DCI blocks). It does not catch semantic attacks (e.g., a skill that uses legitimate-sounding language to instruct the agent to exfiltrate data without using any flagged patterns).
 
 **Tier 2: Verified** adds LLM-based intent analysis. The judge model reads the entire skill and evaluates whether its stated purpose aligns with its actual instructions. A skill claiming to be a "React component generator" that also instructs the agent to read `~/.aws/credentials` would be flagged — even if the credential access uses no pattern-matched keywords. This tier costs approximately $0.03 per skill evaluation and takes 5-15 seconds.
 
@@ -587,7 +618,7 @@ For teams adopting AI agent skills for the first time, here is a minimal checkli
 - [ ] Establish a skill review process (who approves new skill installations?)
 - [ ] Add `CLAUDE.md`, `MEMORY.md`, `.cursorrules` to your code review watchlist
 - [ ] Pin all skill versions in your project configuration
-- [ ] Run `specweave fabric scan` (or equivalent) on all installed skills
+- [ ] Run `specweave scan-skill` or `vskill scan` on all installed skills
 - [ ] Set up alerts for changes to agent configuration files
 - [ ] Document your skill inventory with version numbers and approval dates
 - [ ] Brief the team on the five risk categories documented above
@@ -630,7 +661,9 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 |------|-----------|
 | **Agent Skills** | Markdown files (SKILL.md) that provide instructions to AI coding agents. Adopted by 39 agent runtimes as of `skills@1.3.9`. |
 | **ClawHavoc** | A supply chain attack campaign that published 335 infostealer packages to ClawHub, deploying Atomic macOS Stealer. |
-| **Fabric** | SpecWeave's skill marketplace infrastructure, including the security scanner, validator, and verification pipeline. |
+| **Blocklist** | A locally cached list of known-malicious skills, synced from verifiedskill.com via `vskill blocklist sync`. Enforced at install time by the vskill CLI. |
+| **DCI Block** | A "Direct Command Injection" block in SKILL.md — shell commands prefixed with `!` that agents execute directly. The scanners include 14 dedicated DCI-abuse patterns. |
+| **Fabric** | SpecWeave's internal code namespace for the marketplace infrastructure (`src/core/fabric/`), including the security scanner, validator, and verification pipeline. The public-facing brand is **Verified Skills** at [verifiedskill.com](https://verifiedskill.com). |
 | **LLM Judge** | An AI model used in Tier 2 verification to evaluate skill intent beyond what regex patterns can detect. |
 | **Memory Poisoning** | An attack where a skill modifies agent configuration files (CLAUDE.md, MEMORY.md) to persist malicious behavior across sessions. |
 | **MCP** | Model Context Protocol — a standard for connecting AI agents to external tools and data sources. Smithery hosts 3,000+ MCP servers. |

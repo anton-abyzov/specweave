@@ -180,6 +180,11 @@
               "type": "boolean",
               "description": "Automatically create GitHub issue after increment planning",
               "default": true
+            },
+            "sync_living_docs": {
+              "type": "boolean",
+              "description": "Sync living docs after increment planning (before external issue creation)",
+              "default": true
             }
           },
           "additionalProperties": false

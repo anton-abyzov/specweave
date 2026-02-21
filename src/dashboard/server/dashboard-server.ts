@@ -95,6 +95,10 @@ export class DashboardServer {
       },
     });
     const watcher = new FileWatcher(projectRoot, (event) => {
+      // Invalidate increments cache on increment file changes
+      if (event.type === 'increment-update') {
+        aggregator.invalidateIncrementsCache();
+      }
       this.sseManager.broadcast(event.type, { projectId: id, ...event.data });
       this.sseManager.broadcast('activity', {
         projectId: id,
@@ -326,12 +330,38 @@ export class DashboardServer {
       sendJson(res, { ok: true, data });
     });
 
-    // Increments
+    // Increments (with server-side pagination and filtering)
     this.router.get('/api/increments', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const data = await project.aggregator.getIncrements();
-      sendJson(res, { ok: true, data });
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const limit = safeParseInt(url.searchParams.get('limit'), 50, 1, 500);
+      const offset = safeParseInt(url.searchParams.get('offset'), 0, 0, 100000);
+      const statusFilter = url.searchParams.get('status') || undefined;
+      const typeFilter = url.searchParams.get('type') || undefined;
+
+      const fullData = await project.aggregator.getIncrements();
+
+      // Apply filters
+      let filtered = fullData.increments;
+      if (statusFilter) {
+        filtered = filtered.filter(inc => inc.status === statusFilter);
+      }
+      if (typeFilter) {
+        filtered = filtered.filter(inc => inc.type === typeFilter);
+      }
+
+      const total = filtered.length;
+      const page = filtered.slice(offset, offset + limit);
+
+      sendJson(res, {
+        ok: true,
+        data: {
+          increments: page,
+          summary: fullData.summary,
+          pagination: { total, limit, offset, hasMore: offset + limit < total },
+        },
+      });
     });
 
     // Analytics
@@ -1159,6 +1189,7 @@ function scanRepositories(projectRoot: string): Array<{
   remote?: string;
   branch?: string;
   hasSpecweave: boolean;
+  isUmbrellaManaged?: boolean;
   isCurrent?: boolean;
   lastModified?: string;
 }> {
@@ -1170,6 +1201,7 @@ function scanRepositories(projectRoot: string): Array<{
     remote?: string;
     branch?: string;
     hasSpecweave: boolean;
+    isUmbrellaManaged?: boolean;
     isCurrent?: boolean;
     lastModified?: string;
   }> = [];
@@ -1254,6 +1286,16 @@ function scanRepositories(projectRoot: string): Array<{
         isCurrent: true,
       });
     } catch { /* */ }
+  }
+
+  // Umbrella detection: if the project root itself has .specweave/,
+  // mark sub-repos without their own .specweave/ as umbrella-managed
+  if (repos.length > 0 && fs.existsSync(path.join(projectRoot, '.specweave'))) {
+    for (const repo of repos) {
+      if (!repo.hasSpecweave) {
+        repo.isUmbrellaManaged = true;
+      }
+    }
   }
 
   return repos.sort((a, b) => a.name.localeCompare(b.name));

@@ -36,6 +36,76 @@ interface ChildRepoDocsInfo {
   docCount: number;
 }
 
+/** Parsed umbrella configuration */
+export interface UmbrellaConfig {
+  enabled: boolean;
+  childRepos: Array<{ id: string; path: string; name: string }>;
+}
+
+/** Result of resolving the effective docs root */
+export interface DocsRootResolution {
+  effectiveRoot: string;
+  repoName?: string;
+  umbrellaConfig: UmbrellaConfig | null;
+}
+
+/**
+ * Parse umbrella config from .specweave/config.json.
+ * Returns null if not an umbrella project or config is unreadable.
+ */
+export function getUmbrellaConfig(projectRoot: string): UmbrellaConfig | null {
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) return null;
+
+  let config: Record<string, unknown>;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch {
+    return null;
+  }
+
+  const umbrella = config.umbrella as Record<string, unknown> | undefined;
+  if (!umbrella?.enabled || !Array.isArray(umbrella.childRepos)) return null;
+
+  return {
+    enabled: true,
+    childRepos: (umbrella.childRepos as Record<string, unknown>[])
+      .filter((r) => r.id && r.path)
+      .map((r) => ({
+        id: r.id as string,
+        path: r.path as string,
+        name: (r.name as string) || (r.id as string),
+      })),
+  };
+}
+
+/**
+ * Resolve the effective project root for docs operations.
+ * When --project is given, resolves to the child repo path.
+ * When not given, returns the current project root.
+ */
+export function resolveDocsRoot(projectRoot: string, project?: string): DocsRootResolution {
+  const umbrellaConfig = getUmbrellaConfig(projectRoot);
+
+  if (!project) {
+    return { effectiveRoot: projectRoot, umbrellaConfig };
+  }
+
+  if (!umbrellaConfig) {
+    console.log(chalk.yellow('  --project flag ignored: not an umbrella project'));
+    return { effectiveRoot: projectRoot, umbrellaConfig: null };
+  }
+
+  const childRepo = umbrellaConfig.childRepos.find((r) => r.id === project);
+  if (!childRepo) {
+    const validIds = umbrellaConfig.childRepos.map((r) => r.id).join(', ');
+    throw new Error(`Unknown project "${project}". Available: ${validIds}`);
+  }
+
+  const effectiveRoot = path.resolve(projectRoot, childRepo.path);
+  return { effectiveRoot, repoName: childRepo.name, umbrellaConfig };
+}
+
 /**
  * Read umbrella config and return child repo docs info for the given scope.
  * Returns an empty array if not an umbrella project or config is unreadable.
@@ -44,40 +114,61 @@ async function getUmbrellaChildRepoDocs(
   projectRoot: string,
   scope: DocScope,
 ): Promise<ChildRepoDocsInfo[]> {
-  const configPath = path.join(projectRoot, '.specweave', 'config.json');
-  if (!fs.existsSync(configPath)) return [];
-
-  let config: Record<string, unknown>;
-  try {
-    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  } catch {
-    return [];
-  }
-
-  const umbrella = config.umbrella as Record<string, unknown> | undefined;
-  if (!umbrella?.enabled || !Array.isArray(umbrella.childRepos)) return [];
+  const umbrellaConfig = getUmbrellaConfig(projectRoot);
+  if (!umbrellaConfig) return [];
 
   const results: ChildRepoDocsInfo[] = [];
   const scopeDir = SCOPE_DOC_DIRS[scope];
 
-  for (const repo of umbrella.childRepos as Record<string, unknown>[]) {
-    const repoPath = repo.path as string | undefined;
-    const repoId = repo.id as string | undefined;
-    if (!repoPath || !repoId) continue;
-
-    const childRoot = path.resolve(projectRoot, repoPath);
+  for (const repo of umbrellaConfig.childRepos) {
+    const childRoot = path.resolve(projectRoot, repo.path);
     const childDocsPath = path.join(childRoot, '.specweave', 'docs', scopeDir);
 
     const docCount = countMdFiles(childDocsPath);
     results.push({
-      name: (repo.name as string | undefined) || repoId,
-      id: repoId,
+      name: repo.name,
+      id: repo.id,
       docsPath: childDocsPath,
       docCount,
     });
   }
 
   return results;
+}
+
+/**
+ * Print umbrella guidance when no --project flag is given.
+ * Returns true if the caller should exit (no root docs found).
+ */
+function printUmbrellaGuidance(
+  childRepoDocs: ChildRepoDocsInfo[],
+  rootDocsExist: boolean,
+  subcommand: string,
+): boolean {
+  if (childRepoDocs.length === 0) return false;
+
+  if (!rootDocsExist) {
+    console.log(chalk.yellow('\n  Umbrella project detected — no docs found at root.\n'));
+    console.log(chalk.white('  Available child repos:'));
+    for (const repo of childRepoDocs) {
+      const status =
+        repo.docCount > 0 ? chalk.green(`${repo.docCount} docs`) : chalk.dim('no docs');
+      console.log(`    ${repo.id}: ${status}`);
+    }
+    console.log(chalk.white(`\n  Target a specific repo with --project:`));
+    console.log(chalk.dim(`    specweave docs ${subcommand} --project <id>\n`));
+    return true;
+  }
+
+  // Root docs exist - show notice about child repos
+  console.log(chalk.blue('  Umbrella mode: using root docs. Use --project <id> for child repos:'));
+  for (const repo of childRepoDocs) {
+    const status =
+      repo.docCount > 0 ? chalk.green(`${repo.docCount} docs`) : chalk.dim('no docs');
+    console.log(chalk.dim(`    ${repo.id}: ${status}`));
+  }
+  console.log();
+  return false;
 }
 
 export interface DocsPreviewOptions {
@@ -87,6 +178,7 @@ export interface DocsPreviewOptions {
   validate?: boolean;
   autoFix?: boolean;
   scope?: DocScope;
+  project?: string;
 }
 
 export interface DocsBuildOptions {
@@ -94,24 +186,35 @@ export interface DocsBuildOptions {
   autoFix?: boolean;
   output?: string;
   scope?: DocScope;
+  project?: string;
 }
 
 export interface DocsValidateOptions {
   autoFix?: boolean;
   verbose?: boolean;
   scope?: DocScope;
+  project?: string;
 }
 
 /**
  * Preview documentation with Docusaurus dev server
  */
 export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  const cwdRoot = process.cwd();
+  const { effectiveRoot: projectRoot, repoName, umbrellaConfig } = resolveDocsRoot(cwdRoot, options.project);
   const scope: DocScope = options.scope || 'internal';
   const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
   const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue(`\n\u{1F4DA} Documentation Preview (${scopeLabel})\n`));
+  console.log(chalk.blue(`\n\u{1F4DA} Documentation Preview (${scopeLabel})${repoName ? ` [${repoName}]` : ''}\n`));
+
+  // Umbrella guidance when no --project given
+  if (umbrellaConfig && !options.project) {
+    const childRepoDocs = await getUmbrellaChildRepoDocs(cwdRoot, scope);
+    if (printUmbrellaGuidance(childRepoDocs, fs.existsSync(docsPath), 'preview')) {
+      process.exit(1);
+    }
+  }
 
   // Check if docs exist
   if (!fs.existsSync(docsPath)) {
@@ -125,19 +228,6 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
       console.log(chalk.dim('   • /sw:increment "feature" (to create docs)\n'));
     }
     process.exit(1);
-  }
-
-  // Show umbrella child repo notice
-  const childRepoDocs = await getUmbrellaChildRepoDocs(projectRoot, scope);
-  if (childRepoDocs.length > 0) {
-    console.log(chalk.blue('🏛️  Umbrella mode: serving unified documentation\n'));
-    for (const repo of childRepoDocs) {
-      const status = repo.docCount > 0
-        ? chalk.green(`✓ ${repo.docCount} docs`)
-        : chalk.dim('○ no docs');
-      console.log(chalk.dim(`   Child repo: ${repo.name} — ${status}`));
-    }
-    console.log();
   }
 
   // Run validation first (unless explicitly skipped)
@@ -251,12 +341,21 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
  * Build static documentation site
  */
 export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  const cwdRoot = process.cwd();
+  const { effectiveRoot: projectRoot, repoName, umbrellaConfig } = resolveDocsRoot(cwdRoot, options.project);
   const scope: DocScope = options.scope || 'internal';
   const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
   const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue(`\n\u{1F4E6} Documentation Build (${scopeLabel})\n`));
+  console.log(chalk.blue(`\n\u{1F4E6} Documentation Build (${scopeLabel})${repoName ? ` [${repoName}]` : ''}\n`));
+
+  // Umbrella guidance when no --project given
+  if (umbrellaConfig && !options.project) {
+    const childRepoDocs = await getUmbrellaChildRepoDocs(cwdRoot, scope);
+    if (printUmbrellaGuidance(childRepoDocs, fs.existsSync(docsPath), 'build')) {
+      process.exit(1);
+    }
+  }
 
   // Check if docs exist
   if (!fs.existsSync(docsPath)) {
@@ -322,12 +421,21 @@ export async function docsBuildCommand(options: DocsBuildOptions = {}): Promise<
  * Validate documentation without starting server
  */
 export async function docsValidateCommand(options: DocsValidateOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  const cwdRoot = process.cwd();
+  const { effectiveRoot: projectRoot, repoName, umbrellaConfig } = resolveDocsRoot(cwdRoot, options.project);
   const scope: DocScope = options.scope || 'internal';
   const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
   const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
-  console.log(chalk.blue(`\n\u{1F50D} Documentation Validation (${scopeLabel})\n`));
+  console.log(chalk.blue(`\n\u{1F50D} Documentation Validation (${scopeLabel})${repoName ? ` [${repoName}]` : ''}\n`));
+
+  // Umbrella guidance when no --project given
+  if (umbrellaConfig && !options.project) {
+    const childRepoDocs = await getUmbrellaChildRepoDocs(cwdRoot, scope);
+    if (printUmbrellaGuidance(childRepoDocs, fs.existsSync(docsPath), 'validate')) {
+      process.exit(1);
+    }
+  }
 
   // Check if docs exist
   if (!fs.existsSync(docsPath)) {
@@ -435,10 +543,11 @@ export async function docsKillCommand(): Promise<void> {
 /**
  * Show docs status and help
  */
-export async function docsStatusCommand(): Promise<void> {
-  const projectRoot = process.cwd();
+export async function docsStatusCommand(options: { project?: string } = {}): Promise<void> {
+  const cwdRoot = process.cwd();
+  const { effectiveRoot: projectRoot, repoName, umbrellaConfig } = resolveDocsRoot(cwdRoot, options.project);
 
-  console.log(chalk.blue('\n\u{1F4DA} Documentation Status\n'));
+  console.log(chalk.blue(`\n\u{1F4DA} Documentation Status${repoName ? ` [${repoName}]` : ''}\n`));
 
   // Show status for both scopes
   const scopes: DocScope[] = ['internal', 'public'];
@@ -460,8 +569,9 @@ export async function docsStatusCommand(): Promise<void> {
     console.log();
   }
 
-  // Show umbrella child repo doc counts
-  const childRepoDocs = await getUmbrellaChildRepoDocs(projectRoot, 'internal');
+  // Show umbrella child repo doc counts (combined view)
+  const umbrellaRoot = options.project ? cwdRoot : projectRoot;
+  const childRepoDocs = await getUmbrellaChildRepoDocs(umbrellaRoot, 'internal');
   if (childRepoDocs.length > 0) {
     console.log(chalk.white('   Child repos (umbrella mode):'));
     for (const repo of childRepoDocs) {
@@ -480,5 +590,8 @@ export async function docsStatusCommand(): Promise<void> {
   console.log(chalk.dim('   • specweave docs build --scope public   - Build public site'));
   console.log(chalk.dim('   • specweave docs validate               - Check for errors'));
   console.log(chalk.dim('   • specweave docs kill                   - Stop all running servers'));
+  if (umbrellaConfig) {
+    console.log(chalk.dim('   • specweave docs status --project <id>  - Status for a child repo'));
+  }
   console.log();
 }
