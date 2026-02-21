@@ -19,8 +19,14 @@ The result: you correct Claude once ("use React Hook Form, not useState for form
 
 ## In This Section
 
-### [The Standard (Open/Closed)](/docs/skills/extensible/extensible-skills)
-The full specification — architecture, cascading lookup, DCI blocks, skill memory format, FAQ, and getting started guide.
+### [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)
+The formal specification — E0-E4 tier definitions, DCI specification, frontmatter schema, agent portability matrix, and conformance requirements.
+
+### [Implementation Guide](/docs/skills/extensible/extensible-skills-guide)
+Practical how-to — getting started, architecture, cascading lookup, real-world examples, skill memory format, and FAQ.
+
+### [The Open/Closed Principle for AI](/docs/skills/extensible/extensible-skills)
+Overview page with quick reference table and links to the standard and guide.
 
 ### [Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)
 How skills work under the hood — progressive disclosure architecture, comparison with other AI tool systems, and the evolution from prompts to programs.

@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Write(//**)",
@@ -14,7 +17,8 @@
     "sw-testing@specweave": true,
     "sw-frontend@specweave": true,
     "sw-jira@specweave": true,
-    "sw-ado@specweave": true
+    "sw-ado@specweave": true,
+    "sw@specweave": false
   },
   "pluginConfigs": {
     "supabase@claude-plugins-official": {
@@ -25,8 +29,5 @@
         }
       }
     }
-  },
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   }
 }

@@ -4,6 +4,9 @@
  * Tests the auto-closer that closes GitHub issues when all acceptance
  * criteria for a user story are completed in spec.md.
  *
+ * Updated for v1.0.302: parseIssueLinks reads from metadata.json
+ * (sibling of spec.md) instead of spec.md frontmatter.
+ *
  * Expected module: plugins/specweave-github/lib/github-us-auto-closer.ts
  *
  * @see T-007: RED phase
@@ -24,6 +27,11 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 const mockReadFile = vi.hoisted(() => vi.fn());
 vi.mock('fs/promises', () => ({
   readFile: mockReadFile,
+}));
+
+const mockExistsSync = vi.hoisted(() => vi.fn());
+vi.mock('fs', () => ({
+  existsSync: mockExistsSync,
 }));
 
 import {
@@ -52,19 +60,11 @@ function makeOptions(overrides: Partial<AutoCloseOptions> = {}): AutoCloseOption
   };
 }
 
-/** Spec.md with US-001 ALL 3 ACs complete */
+/** Spec.md with US-001 ALL 3 ACs complete (no issue links in frontmatter) */
 const SPEC_ALL_DONE = `---
 increment: 0193-github-sync-ac-comment-wiring
 title: "Test Feature"
 status: active
-externalLinks:
-  github:
-    syncStatus: synced
-    userStories:
-      US-001:
-        issueNumber: 42
-        issueUrl: "https://github.com/test-owner/test-repo/issues/42"
-        syncedAt: "2026-02-07T00:00:00Z"
 ---
 
 # Feature: Test Feature
@@ -84,14 +84,6 @@ const SPEC_PARTIAL = `---
 increment: 0193-github-sync-ac-comment-wiring
 title: "Test Feature"
 status: active
-externalLinks:
-  github:
-    syncStatus: synced
-    userStories:
-      US-001:
-        issueNumber: 42
-        issueUrl: "https://github.com/test-owner/test-repo/issues/42"
-        syncedAt: "2026-02-07T00:00:00Z"
 ---
 
 # Feature: Test Feature
@@ -108,19 +100,11 @@ externalLinks:
 - [ ] **AC-US1-05**: Fifth criterion pending
 `;
 
-/** Spec.md with no issue link for US-003 */
+/** Spec.md with US-003 ACs done but no issue link in metadata */
 const SPEC_NO_LINK = `---
 increment: 0193-github-sync-ac-comment-wiring
 title: "Test Feature"
 status: active
-externalLinks:
-  github:
-    syncStatus: synced
-    userStories:
-      US-001:
-        issueNumber: 42
-        issueUrl: "https://github.com/test-owner/test-repo/issues/42"
-        syncedAt: "2026-02-07T00:00:00Z"
 ---
 
 # Feature: Test Feature
@@ -133,6 +117,37 @@ externalLinks:
 - [x] **AC-US3-01**: First criterion done
 - [x] **AC-US3-02**: Second criterion done
 `;
+
+/** Metadata.json with issue link for US-001 */
+const METADATA_WITH_US001 = JSON.stringify({
+  id: '0193-github-sync-ac-comment-wiring',
+  status: 'active',
+  github: {
+    issues: [
+      {
+        userStory: 'US-001',
+        number: 42,
+        url: 'https://github.com/test-owner/test-repo/issues/42',
+      },
+    ],
+  },
+});
+
+/**
+ * Helper: Set up readFile mock to handle both spec.md and metadata.json reads.
+ */
+function setupReadFileMock(specContent: string, metadataContent?: string) {
+  mockExistsSync.mockReturnValue(!!metadataContent);
+  mockReadFile.mockImplementation((filePath: string) => {
+    if (filePath.endsWith('metadata.json')) {
+      if (metadataContent) {
+        return Promise.resolve(metadataContent);
+      }
+      return Promise.reject(new Error('ENOENT: no such file'));
+    }
+    return Promise.resolve(specContent);
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -147,7 +162,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-010: Closes issue when all ACs complete
   // -------------------------------------------------------------------------
   it('should close issue when all ACs are complete', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_ALL_DONE);
+    setupReadFileMock(SPEC_ALL_DONE, METADATA_WITH_US001);
     // gh issue view (check state) → OPEN
     mockExecFileNoThrow.mockResolvedValueOnce(
       execSuccess(JSON.stringify({ state: 'OPEN' })),
@@ -185,7 +200,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-011: Posts completion comment before closing
   // -------------------------------------------------------------------------
   it('should post completion comment BEFORE closing issue', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_ALL_DONE);
+    setupReadFileMock(SPEC_ALL_DONE, METADATA_WITH_US001);
     // gh issue view → OPEN
     mockExecFileNoThrow.mockResolvedValueOnce(
       execSuccess(JSON.stringify({ state: 'OPEN' })),
@@ -223,7 +238,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-012: Skips already-closed issues (idempotent)
   // -------------------------------------------------------------------------
   it('should skip already-closed issues', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_ALL_DONE);
+    setupReadFileMock(SPEC_ALL_DONE, METADATA_WITH_US001);
     // gh issue view → CLOSED
     mockExecFileNoThrow.mockResolvedValueOnce(
       execSuccess(JSON.stringify({ state: 'CLOSED' })),
@@ -251,7 +266,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-013: Does NOT close when some ACs still incomplete
   // -------------------------------------------------------------------------
   it('should not close issue when some ACs are incomplete', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_PARTIAL);
+    setupReadFileMock(SPEC_PARTIAL, METADATA_WITH_US001);
 
     const result = await autoCloseCompletedUserStories(
       '0193',
@@ -275,7 +290,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-014: Handles GitHub failure gracefully
   // -------------------------------------------------------------------------
   it('should handle GitHub close failure gracefully', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_ALL_DONE);
+    setupReadFileMock(SPEC_ALL_DONE, METADATA_WITH_US001);
     // gh issue view → OPEN
     mockExecFileNoThrow.mockResolvedValueOnce(
       execSuccess(JSON.stringify({ state: 'OPEN' })),
@@ -304,7 +319,8 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-015: Skips US without GitHub issue link
   // -------------------------------------------------------------------------
   it('should skip user stories without GitHub issue links', async () => {
-    mockReadFile.mockResolvedValueOnce(SPEC_NO_LINK);
+    // metadata.json has US-001 but NOT US-003
+    setupReadFileMock(SPEC_NO_LINK, METADATA_WITH_US001);
 
     const result = await autoCloseCompletedUserStories(
       '0193',
@@ -345,6 +361,7 @@ describe('autoCloseCompletedUserStories', () => {
   // TC-015c: Handles spec.md read failure
   // -------------------------------------------------------------------------
   it('should return error when spec.md cannot be read', async () => {
+    mockExistsSync.mockReturnValue(false);
     mockReadFile.mockRejectedValueOnce(new Error('ENOENT: no such file'));
 
     const result = await autoCloseCompletedUserStories(
