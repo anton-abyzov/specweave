@@ -537,8 +537,18 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
+          id: 'skills/extensible/extensible-skills-standard',
+          label: 'Standard (E0-E4 Tiers)',
+        },
+        {
+          type: 'doc',
+          id: 'skills/extensible/extensible-skills-guide',
+          label: 'Implementation Guide',
+        },
+        {
+          type: 'doc',
           id: 'skills/extensible/extensible-skills',
-          label: 'The Standard (Open/Closed)',
+          label: 'Overview (Open/Closed)',
         },
         {
           type: 'doc',
