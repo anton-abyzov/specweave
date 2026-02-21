@@ -292,6 +292,29 @@ Every SpecWeave skill can be submitted to [verified-skill.com](https://verified-
 
 ---
 
+## Dashboard & Analytics
+
+SpecWeave includes a built-in web dashboard for monitoring your projects. Launch it with:
+
+```bash
+specweave dashboard
+```
+
+**What you get:**
+
+- **Overview** — increment progress, task completion, acceptance criteria status at a glance
+- **Analytics** — command invocations, skill activations, agent spawns tracked locally in JSONL. Captures implicit calls too (team-lead spawning agents, agents calling `/sw:do` internally). Daily breakdowns, success rates, and top-used commands/skills
+- **Multi-project support** — switch between projects via `?project=` query param. All views are project-scoped
+- **Cost tracking** — token usage and cost estimates per increment
+- **Live updates** — SSE-powered real-time refresh as increments and tasks change
+- **Error resilience** — ErrorBoundary catches page crashes without killing the entire SPA
+
+All analytics data stays local in `.specweave/state/analytics/events.jsonl` — nothing is sent externally.
+
+**[Analytics dashboard guide](https://spec-weave.com/docs/guides/analytics-dashboard)**
+
+---
+
 ## Built With SpecWeave
 
 > SpecWeave builds itself. Every feature, bug fix, and release is spec-driven.
