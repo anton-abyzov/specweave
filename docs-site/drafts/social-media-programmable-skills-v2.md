@@ -80,7 +80,7 @@ When generating components:
 
 You PROGRAM the AI. It remembers forever.
 
-Full spec: https://spec-weave.com/docs/guides/extensible-skills
+Full spec: https://spec-weave.com/docs/skills/extensible-skills
 
 ### Tweet 5 (Innovation #2: Working LSP - 100x Faster)
 **INNOVATION #2**: Working LSP Integration (100x faster than text search)
@@ -292,7 +292,7 @@ If Skills are programs, then software engineering principles should apply. SpecW
 
 **Innovation**: **FIRST** to make AI skills extendable without forking
 
-**Full specification**: https://spec-weave.com/docs/guides/extensible-skills
+**Full specification**: https://spec-weave.com/docs/skills/extensible-skills
 
 ### Real-World Example
 
@@ -792,7 +792,7 @@ This is the **future of AI tools**: transparent, customizable, production-proven
 
 **The standards exist. They're documented. They're production-proven.**
 
-- ✅ Extendable skills: https://spec-weave.com/docs/guides/extensible-skills
+- ✅ Extendable skills: https://spec-weave.com/docs/skills/extensible-skills
 - ✅ LSP integration: https://spec-weave.com/docs/guides/lsp-integration
 - ✅ Living docs: https://spec-weave.com/docs/guides/living-docs
 - ✅ Multi-repo: https://spec-weave.com/docs/guides/multi-project-sync-architecture
@@ -832,7 +832,7 @@ specweave lsp refs src/payment.ts PaymentService
 **Full documentation**: https://spec-weave.com
 
 **Key guides**:
-- Extendable skills: https://spec-weave.com/docs/guides/extensible-skills
+- Extendable skills: https://spec-weave.com/docs/skills/extensible-skills
 - LSP integration: https://spec-weave.com/docs/guides/lsp-integration
 - Living docs: https://spec-weave.com/docs/guides/living-docs
 - Multi-repo: https://spec-weave.com/docs/guides/multi-project-sync-architecture
@@ -934,7 +934,7 @@ See what programs in human language look like:
 https://github.com/anton-abyzov/specweave
 
 Read the deep-dive on SOLID for AI:
-https://spec-weave.com/docs/guides/extensible-skills
+https://spec-weave.com/docs/skills/extensible-skills
 
 "Prompt engineering" was the assembly language phase.
 
@@ -952,7 +952,7 @@ Structured human-language programming starts now.
    - First framework to apply software engineering principles to AI customization
    - skill-memories/ = open for extension, SKILL.md = closed for modification
    - Git-versioned learnings that persist forever
-   - Documented standard: https://spec-weave.com/docs/guides/extensible-skills
+   - Documented standard: https://spec-weave.com/docs/skills/extensible-skills
 
 2. **Working LSP Integration** (100x Faster)
    - 97% token reduction vs text search (30x cost savings)

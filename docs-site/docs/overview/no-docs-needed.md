@@ -60,8 +60,8 @@ You interact with skills. Skills interact with Claude Code. You never need to to
 
 SpecWeave covers 95% of use cases out of the box. You might want to dig deeper if you:
 
-- Want to **create custom skills** for your team — see [Skill Development Guidelines](../guides/skill-development-guidelines)
-- Need to **customize existing skills** — see [Extensible Skills](../guides/extensible-skills)
+- Want to **create custom skills** for your team — see [Skill Development Guidelines](../skills/skill-development-guidelines)
+- Need to **customize existing skills** — see [Extensible Skills](../skills/extensible-skills)
 - Are debugging **hook behavior** — see [Troubleshooting](../guides/troubleshooting/common-errors)
 
 But for building features? Just describe what you want and let SpecWeave handle the rest.

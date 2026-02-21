@@ -18,7 +18,7 @@ Snyk's [ToxicSkills study](https://snyk.io/blog/toxicskills) (February 5, 2026) 
 
 No existing platform had comprehensive security scanning. The Verified Skills Standard fills this gap.
 
-For the full threat landscape, platform comparison, and risk taxonomy, see the [Skills Ecosystem Security](/docs/guides/skills-ecosystem-security) page.
+For the full threat landscape, platform comparison, and risk taxonomy, see the [Skills Ecosystem Security](/docs/skills/skills-ecosystem-security) page.
 
 ---
 
@@ -94,7 +94,7 @@ Additional labels provide context:
 | Label | Meaning |
 |-------|---------|
 | `safe` | No network access, no filesystem writes outside declared scope |
-| `extensible` | Supports DCI and skill memories ([Extensible Skills Standard](/docs/guides/extensible-skills)) |
+| `extensible` | Supports DCI and skill memories ([Extensible Skills Standard](/docs/skills/extensible-skills)) |
 | `portable` | Works across multiple AI agents |
 | `popular` | High install count / community usage |
 | `deprecated` | No longer maintained |
@@ -111,7 +111,7 @@ To qualify for any certification tier, a SKILL.md file must include four section
 3. **`## Permissions`** — Table of every tool permission with justification
 4. **`## Security Notes`** — Data handling, network access, external dependencies
 
-These sections make skill behavior transparent and auditable. The full specification with compliant examples is in the [Secure Skill Factory Standard RFC](/docs/guides/secure-skill-factory-standard).
+These sections make skill behavior transparent and auditable. The full specification with compliant examples is in the [Secure Skill Factory Standard RFC](/docs/skills/secure-skill-factory-standard).
 
 ---
 
@@ -127,7 +127,7 @@ Certain patterns constitute **automatic disqualification** from any certificatio
 - Data exfiltration (`curl --data`)
 - Destructive commands (`rm -rf`, `DROP TABLE`, `format`, `dd`)
 
-The complete list of 41 forbidden patterns across 9 categories is documented in the [Secure Skill Factory Standard RFC](/docs/guides/secure-skill-factory-standard#22-forbidden-patterns).
+The complete list of 41 forbidden patterns across 9 categories is documented in the [Secure Skill Factory Standard RFC](/docs/skills/secure-skill-factory-standard#22-forbidden-patterns).
 
 ---
 
@@ -166,14 +166,14 @@ verifiedskill.com is currently in development (see [increment 0225](https://gith
 
 ## The Full Specification
 
-This page provides a concise overview of the Verified Skills Standard. For the complete technical specification — including all 41 forbidden patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility considerations — see the [Secure Skill Factory Standard RFC](/docs/guides/secure-skill-factory-standard).
+This page provides a concise overview of the Verified Skills Standard. For the complete technical specification — including all 41 forbidden patterns, structural validation rules, vendor auto-verification logic, and backwards compatibility considerations — see the [Secure Skill Factory Standard RFC](/docs/skills/secure-skill-factory-standard).
 
 ---
 
 ## See Also
 
 - **[Skills Overview](/docs/skills/)** — Both skill standards at a glance
-- **[Extensible Skills Standard](/docs/guides/extensible-skills)** — How skills adapt to your project
-- **[Security Landscape](/docs/guides/skills-ecosystem-security)** — Full ToxicSkills data and platform comparison
-- **[Skill Discovery & Evaluation](/docs/guides/skill-discovery-evaluation)** — Where to find and evaluate skills
+- **[Extensible Skills Standard](/docs/skills/extensible-skills)** — How skills adapt to your project
+- **[Security Landscape](/docs/skills/skills-ecosystem-security)** — Full ToxicSkills data and platform comparison
+- **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find and evaluate skills
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
