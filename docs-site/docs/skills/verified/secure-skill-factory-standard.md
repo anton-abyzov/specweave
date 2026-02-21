@@ -17,7 +17,7 @@ keywords: [security, skills, RFC, standard, certification, trust labels, SKILL.m
 ---
 
 :::info Quick Overview
-For a concise overview of the Verified Skills Standard, see the [Verified Skills Standard](/docs/skills/verified-skills) page. This document is the full RFC specification.
+For a concise overview of the Verified Skills Standard, see the [Verified Skills Standard](/docs/skills/verified/verified-skills) page. This document is the full RFC specification.
 :::
 
 ## Abstract

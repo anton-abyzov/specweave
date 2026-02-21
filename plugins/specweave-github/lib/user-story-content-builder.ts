@@ -110,14 +110,16 @@ export class UserStoryContentBuilder {
    * Build GitHub issue body from user story content
    *
    * @param githubRepo Optional GitHub repo in format "owner/repo" for generating URLs
+   * @param branch Optional branch name for URL generation (defaults to 'main')
    */
-  async buildIssueBody(githubRepo?: string): Promise<string> {
+  async buildIssueBody(githubRepo?: string, branch?: string): Promise<string> {
     const content = await this.parse();
 
     let body = '';
 
     // Detect GitHub repo from git remote if not provided
     const repo = githubRepo || await this.detectGitHubRepo();
+    const branchName = branch || 'main';
 
     // ❌ REMOVED: Metadata header (Feature, Status, Priority)
     // WHY: GitHub has NATIVE fields for this (labels, milestones)
@@ -160,7 +162,7 @@ export class UserStoryContentBuilder {
       const relativePath = this.userStoryPath
         .replace(this.projectRoot, '')
         .replace(/^\//, '');
-      body += `📄 View full story: [\`${usFilename}\`](https://github.com/${repo}/tree/develop/${relativePath})\n\n`;
+      body += `📄 View full story: [\`${usFilename}\`](https://github.com/${repo}/tree/${branchName}/${relativePath})\n\n`;
     }
 
     body += `---\n\n`;
@@ -196,7 +198,7 @@ export class UserStoryContentBuilder {
 
       if (content.incrementId) {
         if (repo) {
-          body += `**Increment**: [${content.incrementId}](https://github.com/${repo}/tree/develop/.specweave/increments/${content.incrementId})\n\n`;
+          body += `**Increment**: [${content.incrementId}](https://github.com/${repo}/tree/${branchName}/.specweave/increments/${content.incrementId})\n\n`;
         } else {
           body += `**Increment**: ${content.incrementId}\n\n`;
         }
@@ -208,7 +210,7 @@ export class UserStoryContentBuilder {
         let taskLink = task.link;
         if (repo && taskLink.startsWith('../../')) {
           const relativePath = taskLink.replace(/^\.\.\/\.\.\//, '.specweave/');
-          taskLink = `https://github.com/${repo}/tree/develop/${relativePath}`;
+          taskLink = `https://github.com/${repo}/tree/${branchName}/${relativePath}`;
         }
         body += `- ${checkbox} [${task.id}: ${task.title}](${taskLink})\n`;
       }

@@ -664,8 +664,10 @@ Orchestrator Final Check:
   2. No unresolved BLOCKING_ISSUE messages
   3. Run full test suite (all domains combined)
   4. Run /sw:grill on the combined increment
-  5. If all pass -> /sw:team-merge
-  6. If failures -> identify owning agent, send fix request via SendMessage
+  5. Run /sw:done --auto <id> for each increment in dependency order
+  6. If any /sw:done --auto fails, report the failure and continue with remaining increments
+  7. If all pass -> /sw:team-merge
+  8. If failures -> identify owning agent, send fix request via SendMessage
 ```
 
 ### Grill Checklist per Domain

@@ -47,10 +47,10 @@ argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 ## Core Loop
 
 ```
-IMPLEMENT task -> TEST -> FAIL? -> FIX -> PASS -> mark complete -> NEXT task
+IMPLEMENT task -> TEST -> FAIL? -> FIX -> PASS -> mark complete -> NEXT task -> ... -> ALL DONE -> /sw:done --auto -> CLOSED
 ```
 
-Stop hook gates exit when tasks/ACs remain. Model enforces quality gates (build/tests/lint) before `/sw:done`.
+Stop hook blocks when tasks/ACs remain. When all work is complete, stop hook blocks with `all_complete_needs_closure` to trigger `/sw:done --auto`. Model enforces quality gates (build/tests/lint) before closure.
 
 ## Execution
 
@@ -182,7 +182,9 @@ Then return to Step 1c-1d to set up the session, then Step 1.5 for the banner.
 2. Mark tasks complete in tasks.md, update spec.md ACs
 3. Run tests after each task
 4. Before `/sw:done`: verify all quality gates from `successCriteria`
-5. On completion output `<!-- auto-complete:DONE -->`
+5. **Closure**: When all tasks are complete (stop hook blocks with `all_complete_needs_closure`), run `/sw:done --auto <id>` for each increment in the session
+6. **On success**: If `/sw:done` succeeds, clean up session state (`rm -f` auto-mode.json, turn counter, dedup files) and output `<!-- auto-complete:DONE -->`
+7. **On failure**: If `/sw:done` fails (gate failure), report the failure and do NOT clean up session state. The stop hook will block again on the next turn for a retry.
 
 ## Credential Auto-Execution
 

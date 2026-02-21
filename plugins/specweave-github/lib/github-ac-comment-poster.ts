@@ -9,6 +9,8 @@
  */
 
 import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
+import * as path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 import { pushSyncUserStories } from './github-push-sync.js';
 import type { UserStoryForSync } from './github-push-sync.js';
@@ -69,7 +71,7 @@ export async function postACProgressComments(
     return result;
   }
 
-  const issueLinks = parseIssueLinks(content);
+  const issueLinks = await parseIssueLinks(specPath);
   const repoSlug = `${options.owner}/${options.repo}`;
   const env = options.token ? { GH_TOKEN: options.token } : undefined;
 
@@ -116,37 +118,52 @@ export async function postACProgressComments(
 }
 
 /**
- * Parse issue links from spec.md YAML frontmatter.
- * Extracts externalLinks.github.userStories entries.
+ * Parse issue links from metadata.json (sibling of spec.md).
+ *
+ * Supports TWO formats:
+ * - OLD: metadata.github.issues[] with { userStory, number, url }
+ * - NEW: metadata.externalLinks.github.issues with { [US-XXX]: { issueNumber, issueUrl } }
+ *
+ * Falls back to empty if metadata.json is missing or invalid.
  */
-function parseIssueLinks(content: string): Record<string, ParsedUSIssueLink> {
+async function parseIssueLinks(specPath: string): Promise<Record<string, ParsedUSIssueLink>> {
   const links: Record<string, ParsedUSIssueLink> = {};
 
-  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!fmMatch) return links;
+  try {
+    const metadataPath = path.join(path.dirname(specPath), 'metadata.json');
+    if (!existsSync(metadataPath)) return links;
 
-  const frontmatter = fmMatch[1];
+    const raw = await readFile(metadataPath, 'utf-8');
+    const metadata = JSON.parse(raw);
 
-  // Parse userStories section from YAML frontmatter
-  const usBlockMatch = frontmatter.match(/userStories:\s*\n((?:\s{6,}[\s\S]*?)(?=\n\s{0,3}\S|$))/);
-  if (!usBlockMatch) return links;
-
-  const usBlock = usBlockMatch[1];
-  const usEntries = usBlock.match(/^\s+(US-\d+):\s*\n((?:\s+\w[\s\S]*?)(?=\n\s+US-|\s*$))/gm);
-
-  if (!usEntries) return links;
-
-  for (const entry of usEntries) {
-    const idMatch = entry.match(/(US-\d+):/);
-    const numMatch = entry.match(/issueNumber:\s*(\d+)/);
-    const urlMatch = entry.match(/issueUrl:\s*"([^"]+)"/);
-
-    if (idMatch && numMatch) {
-      links[idMatch[1]] = {
-        issueNumber: parseInt(numMatch[1], 10),
-        issueUrl: urlMatch ? urlMatch[1] : '',
-      };
+    // OLD format: metadata.github.issues[] array
+    if (metadata.github?.issues && Array.isArray(metadata.github.issues)) {
+      for (const entry of metadata.github.issues) {
+        if (entry.userStory && entry.number) {
+          links[entry.userStory] = {
+            issueNumber: entry.number,
+            issueUrl: entry.url || '',
+          };
+        }
+      }
     }
+
+    // NEW format: metadata.externalLinks.github.issues object
+    if (metadata.externalLinks?.github?.issues) {
+      const issues = metadata.externalLinks.github.issues;
+      for (const [usId, data] of Object.entries(issues)) {
+        const issueData = data as { issueNumber?: number; issueUrl?: string };
+        if (issueData.issueNumber) {
+          // NEW format entries override OLD format for the same US
+          links[usId] = {
+            issueNumber: issueData.issueNumber,
+            issueUrl: issueData.issueUrl || '',
+          };
+        }
+      }
+    }
+  } catch {
+    // Graceful fallback: return empty if metadata.json is missing or invalid
   }
 
   return links;

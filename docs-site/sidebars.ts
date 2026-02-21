@@ -530,25 +530,29 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Extensible Skills Standard',
       collapsed: false,
+      link: {
+        type: 'doc',
+        id: 'skills/extensible/index',
+      },
       items: [
         {
           type: 'doc',
-          id: 'skills/extensible-skills',
+          id: 'skills/extensible/extensible-skills',
           label: 'The Standard (Open/Closed)',
         },
         {
           type: 'doc',
-          id: 'guides/claude-skills-deep-dive',
+          id: 'skills/extensible/claude-skills-deep-dive',
           label: 'Claude Skills Deep Dive',
         },
         {
           type: 'doc',
-          id: 'guides/self-improving-skills',
+          id: 'skills/extensible/self-improving-skills',
           label: 'Self-Improving Skills (Reflect)',
         },
         {
           type: 'doc',
-          id: 'skills/skill-development-guidelines',
+          id: 'skills/extensible/skill-development-guidelines',
           label: 'Development Guidelines',
         },
       ],
@@ -557,20 +561,24 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Verified Skills Standard',
       collapsed: false,
+      link: {
+        type: 'doc',
+        id: 'skills/verified/index',
+      },
       items: [
         {
           type: 'doc',
-          id: 'skills/verified-skills',
+          id: 'skills/verified/verified-skills',
           label: 'The Standard (3-Tier Trust)',
         },
         {
           type: 'doc',
-          id: 'skills/secure-skill-factory-standard',
+          id: 'skills/verified/secure-skill-factory-standard',
           label: 'Skill Factory RFC (Full Spec)',
         },
         {
           type: 'doc',
-          id: 'skills/skills-ecosystem-security',
+          id: 'skills/verified/skills-ecosystem-security',
           label: 'Security Landscape',
         },
       ],

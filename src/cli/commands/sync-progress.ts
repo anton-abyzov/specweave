@@ -17,6 +17,7 @@ import { autoCreateExternalIssue, AutoCreateResult } from '../../sync/external-i
 import { ConfigManager } from '../../core/config/config-manager.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
 import { SyncCoordinator } from '../../sync/sync-coordinator.js';
+import { syncACProgressToProviders, parseAllUserStoryIds, type ACProgressSyncConfig } from '../../core/ac-progress-sync.js';
 import { existsSync } from 'fs';
 
 export interface SyncProgressArgs {
@@ -240,6 +241,66 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       } else if (!permissionsOk) {
         logger.log('   ⚠️  GitHub: Skipping (canUpdateExternalItems=false)');
       }
+
+      // Step 6b: Sync AC progress to all providers (auto-close/transition complete issues)
+      // This handles JIRA transitions, ADO state changes, and GitHub auto-close
+      // for user stories where all ACs are complete.
+      if (permissionsOk && (!parsedArgs.noGithub || !parsedArgs.noJira || !parsedArgs.noAdo)) {
+        try {
+          const specPath = path.join(incrementPath!, 'spec.md');
+          if (existsSync(specPath)) {
+            const specContent = await fs.readFile(specPath, 'utf-8');
+            const allUSIds = parseAllUserStoryIds(specContent);
+
+            if (allUSIds.length > 0) {
+              // Build metadata for external links
+              const metadataPath = path.join(incrementPath!, 'metadata.json');
+              let externalLinks: any = {};
+              if (existsSync(metadataPath)) {
+                try {
+                  const metaContent = await fs.readFile(metadataPath, 'utf-8');
+                  const metadata = JSON.parse(metaContent);
+                  externalLinks = metadata.externalLinks || {};
+                } catch {
+                  // Ignore metadata parse errors
+                }
+              }
+
+              const acSyncConfig: ACProgressSyncConfig = {
+                sync: {
+                  github: (githubConfigured && !parsedArgs.noGithub) ? { enabled: true } : undefined,
+                  jira: (jiraConfigured && !parsedArgs.noJira) ? { enabled: true } : undefined,
+                  ado: (adoConfigured && !parsedArgs.noAdo) ? { enabled: true } : undefined,
+                },
+                github: config.github || config.sync?.github,
+                jira: config.jira || config.sync?.jira,
+                ado: config.ado || config.sync?.ado,
+                externalLinks,
+              };
+
+              const acProgressResult = await syncACProgressToProviders(
+                incrementId, allUSIds, specPath, acSyncConfig
+              );
+
+              // Log results per provider
+              for (const [provider, providerResult] of Object.entries(acProgressResult)) {
+                if (providerResult.closed.length > 0) {
+                  logger.log(`   ✅ ${provider}: Auto-closed ${providerResult.closed.length} completed user story issue(s)`);
+                }
+                if (providerResult.errors.length > 0) {
+                  for (const err of providerResult.errors) {
+                    result.warnings.push(`${provider} AC progress sync error (${err.usId}): ${err.error}`);
+                  }
+                }
+              }
+            }
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          result.warnings.push(`AC progress provider sync failed: ${errorMsg}`);
+          logger.log(`   ⚠️  AC progress provider sync failed: ${errorMsg}`);
+        }
+      }
     } else {
       logger.log('   [DRY-RUN] Would sync AC checkboxes to external tools');
     }
@@ -346,7 +407,8 @@ async function detectActiveIncrement(projectRoot: string, logger: Logger): Promi
       return activeIncrements[0];
     }
   } catch (error) {
-    // Ignore errors, return null
+    // FIX (v1.0.302 / 0271): Log instead of silent swallow
+    logger.log(`   ℹ️  Active increment detection failed: ${error}`);
   }
 
   return null;
@@ -456,8 +518,22 @@ async function checkExistingGitHubIssue(incrementPath: string): Promise<boolean>
       return true;
     }
 
+    // FIX (v1.0.302 / 0271): Also check externalLinks format (written by SyncCoordinator v1.0.240+)
+    if (metadata.externalLinks?.github?.issueNumber) {
+      return true;
+    }
+    if (metadata.externalLinks?.github?.issues) {
+      const issues = metadata.externalLinks.github.issues;
+      const firstKey = Object.keys(issues)[0];
+      if (firstKey && issues[firstKey]?.issueNumber) {
+        return true;
+      }
+    }
+
     return false;
-  } catch {
+  } catch (error) {
+    // FIX (v1.0.302 / 0271): Log error instead of silent swallow
+    console.warn(`   ⚠️  Failed to check existing GitHub issue: ${error}`);
     return false;
   }
 }

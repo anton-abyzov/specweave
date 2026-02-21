@@ -322,9 +322,9 @@ Yes. The `.claude/skill-memories/` and `~/.claude/skill-memories/` paths work wi
 ## See Also
 
 - **[Skills Overview](/docs/skills/)** — Both skill standards at a glance
-- **[Verified Skills Standard](/docs/skills/verified-skills)** — How skills earn trust through 3-tier security certification
-- **[Skill Development Guidelines](/docs/skills/skill-development-guidelines)** — SOLID principles applied to skill authoring
-- **[Self-Improving Skills](/docs/guides/self-improving-skills)** — How the Reflect system auto-learns corrections
+- **[Verified Skills Standard](/docs/skills/verified/verified-skills)** — How skills earn trust through 3-tier security certification
+- **[Skill Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** — SOLID principles applied to skill authoring
+- **[Self-Improving Skills](/docs/skills/extensible/self-improving-skills)** — How the Reflect system auto-learns corrections
 
 ---
 

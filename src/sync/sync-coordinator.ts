@@ -1599,8 +1599,15 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
     }
 
+    // FIX (v1.0.302 / 0271): Add deriveFeatureId() fallback when featureId not in frontmatter/metadata
     if (!featureId) {
-      return [];
+      try {
+        featureId = deriveFeatureId(this.incrementId);
+        this.logger.log(`  📎 Derived feature ID for user story loading: ${featureId}`);
+      } catch {
+        this.logger.warn(`  ⚠️ Could not derive feature ID from ${this.incrementId} - no user stories loaded`);
+        return [];
+      }
     }
 
     // Find living docs for this feature (uses auto-detected project ID)
@@ -1612,7 +1619,12 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     );
 
     if (!existsSync(featurePath)) {
-      return [];
+      // FIX (v1.0.302 / 0271): Fall back to parsing user stories from spec.md
+      // when living docs folder is missing (same approach as ExternalIssueAutoCreator)
+      this.logger.warn(`  ⚠️ Living docs folder missing: ${this.projectId}/${featureId}/`);
+      this.logger.warn(`     Falling back to parsing user stories from spec.md`);
+      this.logger.warn(`     Run /sw:progress-sync to create living docs`);
+      return this.parseUserStoriesFromSpec(content, featureId);
     }
 
     // Load all US files
@@ -1642,6 +1654,37 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
           });
         }
       }
+    }
+
+    return usFiles;
+  }
+
+  /**
+   * Parse user stories from spec.md content when living docs folder is missing
+   * FIX (v1.0.302 / 0271): Fallback for when living docs haven't been synced yet
+   * Uses the same regex approach as ExternalIssueAutoCreator.parseUserStories()
+   */
+  private parseUserStoriesFromSpec(specContent: string, featureId: string): LivingDocsUSFile[] {
+    const usFiles: LivingDocsUSFile[] = [];
+    const usRegex = /^### (US-\d+):?\s*(.+?)(?:\s*\(P\d\))?\s*$/gm;
+    let match;
+
+    while ((match = usRegex.exec(specContent)) !== null) {
+      const usId = match[1];
+      const title = match[2].trim();
+
+      usFiles.push({
+        id: usId,
+        title,
+        format_preservation: false,
+        origin: 'internal',
+      });
+    }
+
+    if (usFiles.length > 0) {
+      this.logger.log(`  📄 Parsed ${usFiles.length} user story/stories from spec.md (fallback)`);
+    } else {
+      this.logger.warn(`  ⚠️ No user stories found in spec.md body`);
     }
 
     return usFiles;

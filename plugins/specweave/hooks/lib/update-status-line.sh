@@ -124,8 +124,8 @@ while IFS= read -r metadata_file; do
     status=$(jq -r '.status // "unknown"' "$metadata_file" 2>/dev/null || echo "unknown")
     created=$(jq -r '.created // "9999-99-99"' "$metadata_file" 2>/dev/null || echo "9999-99-99")
   else
-    status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "unknown")
-    created=$(grep -oP '"created"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "9999-99-99")
+    status=$(sed -n 's/.*"status"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$metadata_file" 2>/dev/null || echo "unknown")
+    created=$(sed -n 's/.*"created"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$metadata_file" 2>/dev/null || echo "9999-99-99")
   fi
 
   # Check if active
