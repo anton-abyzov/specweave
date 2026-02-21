@@ -40,6 +40,9 @@ export interface SyncMetadata {
 
   /** Last updated timestamp */
   lastUpdated?: string;
+
+  /** Per-repo sync metadata for umbrella projects (keyed by repo id) */
+  repos?: Record<string, Record<string, PlatformSyncMetadata>>;
 }
 
 /**
@@ -167,6 +170,38 @@ export function hasPlatformBeenImported(
 ): boolean {
   const timestamp = getLastImportTimestamp(projectRoot, platform);
   return timestamp !== undefined;
+}
+
+/**
+ * Update sync metadata for a specific child repo in an umbrella project.
+ * Stores data under the `repos[repoId]` key in the umbrella's sync-metadata.json.
+ */
+export function updateRepoSyncMetadata(
+  umbrellaRoot: string,
+  repoId: string,
+  platform: 'github' | 'jira' | 'ado',
+  metadata: PlatformSyncMetadata
+): void {
+  validateProjectRoot(umbrellaRoot);
+
+  const metadataPath = path.join(umbrellaRoot, SYNC_METADATA_FILE);
+  const existing = loadSyncMetadata(umbrellaRoot);
+
+  const repos = existing.repos || {};
+  if (!repos[repoId]) repos[repoId] = {};
+  repos[repoId][platform] = metadata;
+
+  const updated: SyncMetadata = {
+    ...existing,
+    repos,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  try {
+    fs.writeFileSync(metadataPath, JSON.stringify(updated, null, 2), 'utf-8');
+  } catch (error: any) {
+    throw new Error(`Failed to write repo sync metadata for ${repoId}: ${error.message}`);
+  }
 }
 
 /**
