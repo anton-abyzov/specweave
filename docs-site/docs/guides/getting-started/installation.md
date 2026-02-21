@@ -21,8 +21,17 @@ Before installing SpecWeave, ensure you have:
 Install once, use everywhere:
 
 ```bash
-# Install globally
+# npm
 npm install -g specweave
+
+# bun
+bun add -g specweave
+
+# pnpm
+pnpm add -g specweave
+
+# yarn
+yarn global add specweave
 
 # Verify installation
 specweave --version
@@ -44,18 +53,24 @@ cd my-project
 
 **Best for:** Regular SpecWeave users, developers working on multiple projects
 
-### Method 2: npx (No Install)
+### Method 2: Run Without Installing
 
-Run without installing:
+Run without a global install using your preferred package runner:
 
 ```bash
-# New project (always uses latest version)
+# npm
 npx specweave init my-project
-cd my-project
 
-# Existing project
-cd my-existing-project
-npx specweave init .
+# bun
+bunx specweave init my-project
+
+# pnpm
+pnpx specweave init my-project
+
+# yarn
+yarn dlx specweave init my-project
+
+cd my-project
 ```
 
 **Pros:**
@@ -382,19 +397,25 @@ integrations:
 # Check current version
 specweave --version
 
-# Upgrade to latest
+# npm
 npm update -g specweave
 
-# Or reinstall
-npm install -g specweave@latest
+# bun
+bun update -g specweave
+
+# pnpm
+pnpm update -g specweave
+
+# yarn
+yarn global upgrade specweave
 
 # Verify new version
 specweave --version
 ```
 
-### npx (Always Latest)
+### Package Runner (Always Latest)
 
-npx automatically uses the latest version, no upgrade needed.
+`npx`, `bunx`, `pnpx`, and `yarn dlx` automatically use the latest version, no upgrade needed.
 
 ### Reinstall Project
 
@@ -689,4 +710,4 @@ Need help? We've got you covered:
 
 **SpecWeave** - Spec-Driven Development Framework
 
-🚀 **Install now:** `npm install -g specweave`
+**Install now:** `npm install -g specweave` (or `bun add -g` / `pnpm add -g` / `yarn global add`)
