@@ -370,6 +370,22 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       result.errors.push(`Plugin refresh failed: ${error}`);
     }
 
+    // Step 4a-fix: Sync plugin cache hooks (v1.0.306)
+    // Claude Code's plugin cache (~/.claude/plugins/cache/) may have stale hooks
+    // if the source was updated but `claude plugin install` didn't refresh the cache.
+    // Directly patch the cache to ensure hooks match the source.
+    try {
+      const { InstallationHealthChecker } = await import('../../core/doctor/checkers/installation-health-checker.js');
+      const cacheChecker = new InstallationHealthChecker();
+      const cacheResult = await cacheChecker.check(projectPath, { fix: true });
+      const cacheFixed = cacheResult.checks.find(c => c.name === 'Plugin cache hook freshness');
+      if (cacheFixed && cacheFixed.status !== 'pass') {
+        console.log(chalk.green(`  ✓ Plugin cache hooks updated`));
+      }
+    } catch {
+      // Non-critical — hooks still work from ~/.claude/commands/
+    }
+
     // Step 4b: Ensure plugins are enabled in project settings
     // init.ts does this but update.ts didn't — projects created before this fix
     // may have .claude/settings.json without enabledPlugins
