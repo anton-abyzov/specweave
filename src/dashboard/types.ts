@@ -73,6 +73,12 @@ export interface IncrementSummary {
 export interface IncrementListPayload {
   increments: IncrementSummary[];
   summary: Record<string, number>;
+  pagination?: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
 }
 
 export interface IncrementDetailPayload {
@@ -242,6 +248,7 @@ export interface RepoInfo {
   remote?: string;
   branch?: string;
   hasSpecweave: boolean;
+  isUmbrellaManaged?: boolean;
   isCurrent?: boolean;
   lastModified?: string;
 }

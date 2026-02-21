@@ -10,7 +10,7 @@ tags: ["extensible-skills", "implementation", "skill-memories", "DCI", "getting-
 
 **Making AI tools transparent, customizable, and extensible**
 
-For formal tier definitions and the detection specification, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
+For formal category definitions and the detection specification, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
 
 ---
 
@@ -75,7 +75,7 @@ Priority 3: ~/.claude/skill-memories/{skill}.md    <- User global level
 
 ### Auto-Learning (Reflect System)
 
-When enabled, SpecWeave automatically captures corrections and saves them to skill memory files:
+Auto-learning via the Reflect system is an **optional feature orthogonal to extensibility classification**. When enabled, SpecWeave automatically captures corrections and saves them to skill memory files:
 
 ```
 You correct Claude -> Reflect detects signal -> Extracts learning ->
@@ -177,17 +177,15 @@ git push
 
 ---
 
-## Extensibility Tiers at a Glance
+## Extensibility Categories at a Glance
 
-| Tier | Name | How to Achieve | Portability |
-|---|---|---|---|
-| E0 | Not Extensible | Default -- no action needed | N/A |
-| E1 | Declarative | Mention extension points in prose | All agents |
-| E2 | Frontmatter-Declared | Add `extensibility:` to YAML frontmatter | Agents reading YAML |
-| E3 | DCI-Verified | Add the DCI one-liner to `SKILL.md` | Claude Code |
-| E4 | DCI + Auto-Learning | E3 + Reflect system integration | Claude Code |
+| Category | Meaning | How to Achieve |
+|---|---|---|
+| **Extensible** | DCI block with skill-memories. Standard, discoverable customization. | Add the DCI one-liner referencing `skill-memories` |
+| **Semi-Extensible** | Mentions customization but not through the standard system. | Mention extension points in prose |
+| **Not Extensible** | No customization mechanism. Fork to change. | Default -- no action needed |
 
-For formal tier definitions and the detection algorithm, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
+For formal category definitions and the detection algorithm, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
 
 ---
 
@@ -254,7 +252,7 @@ Add this block to your `SKILL.md`, right after the title -- change only the `s=`
 !`s="my-skill"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
 ```
 
-This makes your skill E3 (DCI-Verified). For E2 (portable), add frontmatter instead. For E4, also integrate the Reflect system.
+This makes your skill **extensible** (the highest category).
 
 ### Q: Can I add my own DCI blocks?
 
@@ -285,7 +283,7 @@ Yes. The `.claude/skill-memories/` and `~/.claude/skill-memories/` paths work wi
 
 ## See Also
 
-- **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)** -- Formal tier definitions, DCI specification, portability matrix
+- **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)** -- Formal category definitions, DCI specification
 - **[Skills Overview](/docs/skills/)** -- Both skill standards at a glance
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** -- How skills earn trust through 3-tier security certification
 - **[Skill Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- SOLID principles applied to skill authoring
@@ -302,6 +300,6 @@ Yes. The `.claude/skill-memories/` and `~/.claude/skill-memories/` paths work wi
 
 ---
 
-**Version**: 3.0.0
+**Version**: 4.0.0
 **Authors**: Anton Abyzov
 **License**: MIT

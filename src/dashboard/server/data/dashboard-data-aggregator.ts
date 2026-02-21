@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { readFile, access, readdir, stat } from 'fs/promises';
 import * as path from 'path';
 import type {
   OverviewPayload,
@@ -27,18 +28,28 @@ export class DashboardDataAggregator {
   private analyticsCacheTime = 0;
   private readonly analyticsCacheTTL = 30_000; // 30 seconds
 
+  private incrementsCache: IncrementListPayload | null = null;
+  private incrementsCacheTime = 0;
+  private readonly incrementsCacheTTL = 30_000; // 30 seconds
+
   constructor(private projectRoot: string) {}
+
+  /** Invalidate the increments cache (called by file watcher on increment changes) */
+  invalidateIncrementsCache(): void {
+    this.incrementsCache = null;
+  }
 
   /** Get overview combining all sources */
   async getOverview(costData?: CostsSummaryPayload): Promise<OverviewPayload> {
-    const dashboard = this.readDashboardJson();
-    const syncMeta = this.readSyncMetadata();
-    const notifications = this.readNotifications();
+    const dashboard = await this.readDashboardJson();
+    const syncMeta = await this.readSyncMetadata();
+    const notifications = await this.readNotifications();
     const analytics = await this.aggregateEventsFromJsonl();
-    const config = this.readConfig();
+    const config = await this.readConfig();
 
-    // Use cache summary, or fall back to filesystem scan
-    const summary = dashboard?.summary ?? this.buildSummaryFromIncrements(this.scanIncrementsFromFilesystem());
+    // Reuse getIncrements() cache instead of independent scan
+    const incrementData = await this.getIncrements();
+    const summary = dashboard?.summary ?? incrementData.summary;
 
     return {
       project: {
@@ -77,9 +88,14 @@ export class DashboardDataAggregator {
     };
   }
 
-  /** Get increments list */
+  /** Get increments list (with TTL cache) */
   async getIncrements(): Promise<IncrementListPayload> {
-    const dashboard = this.readDashboardJson();
+    // Check TTL cache first
+    if (this.incrementsCache && Date.now() - this.incrementsCacheTime < this.incrementsCacheTTL) {
+      return this.incrementsCache;
+    }
+
+    const dashboard = await this.readDashboardJson();
     let increments: IncrementSummary[] = [];
 
     if (dashboard?.increments) {
@@ -99,7 +115,7 @@ export class DashboardDataAggregator {
       }
     } else {
       // Fallback: scan filesystem directly when cache is missing
-      increments = this.scanIncrementsFromFilesystem();
+      increments = await this.scanIncrementsFromFilesystem();
     }
 
     // Sort: active first, then by last activity descending
@@ -113,16 +129,16 @@ export class DashboardDataAggregator {
 
     const summary = dashboard?.summary ?? this.buildSummaryFromIncrements(increments);
 
-    return {
-      increments,
-      summary,
-    };
+    const result: IncrementListPayload = { increments, summary };
+    this.incrementsCache = result;
+    this.incrementsCacheTime = Date.now();
+    return result;
   }
 
   /** Get sync status with enriched connection diagnosis, umbrella-aware */
   async getSyncStatus(): Promise<SyncStatusPayload> {
-    const meta = this.readSyncMetadata();
-    const config = this.readConfig();
+    const meta = await this.readSyncMetadata();
+    const config = await this.readConfig();
     const syncSettings = config?.sync?.settings || {};
     const permissions = {
       canUpsertInternalItems: syncSettings.canUpsertInternalItems === true,
@@ -205,12 +221,12 @@ export class DashboardDataAggregator {
 
   /** Get notifications */
   async getNotifications(): Promise<unknown[]> {
-    return this.readNotifications() || [];
+    return (await this.readNotifications()) || [];
   }
 
   /** Get config */
   async getConfig(): Promise<Record<string, unknown>> {
-    return this.readConfig() || {};
+    return (await this.readConfig()) || {};
   }
 
   /** Get LSP status */
@@ -456,15 +472,15 @@ export class DashboardDataAggregator {
 
   // --- Filesystem fallback (when dashboard.json cache is missing) ---
 
-  /** Scan increment directories directly from filesystem */
-  scanIncrementsFromFilesystem(): IncrementSummary[] {
+  /** Scan increment directories directly from filesystem (async) */
+  async scanIncrementsFromFilesystem(): Promise<IncrementSummary[]> {
     const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
-    if (!fs.existsSync(incrementsDir)) return [];
+    try { await access(incrementsDir); } catch { return []; }
 
     const increments: IncrementSummary[] = [];
     let entries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(incrementsDir, { withFileTypes: true });
+      entries = await readdir(incrementsDir, { withFileTypes: true });
     } catch {
       return [];
     }
@@ -476,23 +492,23 @@ export class DashboardDataAggregator {
 
       const dir = path.join(incrementsDir, entry.name);
       const metadataPath = path.join(dir, 'metadata.json');
-      if (!fs.existsSync(metadataPath)) continue;
+      try { await access(metadataPath); } catch { continue; }
 
       try {
-        const raw = fs.readFileSync(metadataPath, 'utf-8');
+        const raw = await readFile(metadataPath, 'utf-8');
         const meta = JSON.parse(raw);
 
         const tasksPath = path.join(dir, 'tasks.md');
         const specPath = path.join(dir, 'spec.md');
-        const tasks = this.countTasksFromFile(tasksPath);
-        const acs = this.countAcsFromFile(specPath);
+        const tasks = await this.countTasksFromFile(tasksPath);
+        const acs = await this.countAcsFromFile(specPath);
 
         // Get last activity from metadata mtime
         let lastActivity = meta.lastActivity || '';
         if (!lastActivity) {
           try {
-            const stat = fs.statSync(metadataPath);
-            lastActivity = stat.mtime.toISOString();
+            const fileStat = await stat(metadataPath);
+            lastActivity = fileStat.mtime.toISOString();
           } catch { /* ignore */ }
         }
 
@@ -516,11 +532,11 @@ export class DashboardDataAggregator {
     return increments;
   }
 
-  /** Count tasks from tasks.md file */
-  private countTasksFromFile(tasksPath: string): { total: number; completed: number } {
-    if (!fs.existsSync(tasksPath)) return { total: 0, completed: 0 };
+  /** Count tasks from tasks.md file (async) */
+  private async countTasksFromFile(tasksPath: string): Promise<{ total: number; completed: number }> {
+    try { await access(tasksPath); } catch { return { total: 0, completed: 0 }; }
     try {
-      const content = fs.readFileSync(tasksPath, 'utf-8');
+      const content = await readFile(tasksPath, 'utf-8');
       const lines = content.split('\n');
       let total = 0;
       let completed = 0;
@@ -546,11 +562,11 @@ export class DashboardDataAggregator {
     }
   }
 
-  /** Count acceptance criteria from spec.md file */
-  private countAcsFromFile(specPath: string): { total: number; completed: number } {
-    if (!fs.existsSync(specPath)) return { total: 0, completed: 0 };
+  /** Count acceptance criteria from spec.md file (async) */
+  private async countAcsFromFile(specPath: string): Promise<{ total: number; completed: number }> {
+    try { await access(specPath); } catch { return { total: 0, completed: 0 }; }
     try {
-      const content = fs.readFileSync(specPath, 'utf-8');
+      const content = await readFile(specPath, 'utf-8');
       const lines = content.split('\n');
       let total = 0;
       let completed = 0;
@@ -578,28 +594,28 @@ export class DashboardDataAggregator {
 
   // --- Private helpers ---
 
-  private readDashboardJson(): any {
+  private async readDashboardJson(): Promise<any> {
     return this.readJsonFile('.specweave/state/dashboard.json');
   }
 
-  private readSyncMetadata(): any {
+  private async readSyncMetadata(): Promise<any> {
     return this.readJsonFile('.specweave/sync-metadata.json');
   }
 
-  private readNotifications(): any {
-    const data = this.readJsonFile('.specweave/state/notifications.json');
+  private async readNotifications(): Promise<any> {
+    const data = await this.readJsonFile('.specweave/state/notifications.json');
     return data?.notifications || data || [];
   }
 
-  private readConfig(): any {
+  private async readConfig(): Promise<any> {
     return this.readJsonFile('.specweave/config.json');
   }
 
-  private readJsonFile(relativePath: string): any {
+  private async readJsonFile(relativePath: string): Promise<any> {
     const fullPath = path.join(this.projectRoot, relativePath);
     try {
-      if (!fs.existsSync(fullPath)) return null;
-      const content = fs.readFileSync(fullPath, 'utf-8');
+      await access(fullPath);
+      const content = await readFile(fullPath, 'utf-8');
       return JSON.parse(content);
     } catch {
       return null;

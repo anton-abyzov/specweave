@@ -52,7 +52,8 @@ export async function writeSyncConfig(
       external_tracker_sync: true
     },
     post_increment_planning: {
-      auto_create_github_issue: tracker === 'github' // Only for GitHub
+      auto_create_github_issue: tracker === 'github', // Only for GitHub
+      sync_living_docs: true
     },
     post_increment_done: {
       sync_living_docs: true,

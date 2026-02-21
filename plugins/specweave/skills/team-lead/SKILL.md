@@ -27,9 +27,7 @@ description: Orchestrate multi-agent parallel development with domain-specialize
 | Action | Tool | Parameters |
 |--------|------|------------|
 | Create team | `TeamCreate` | `team_name`, `description` |
-| Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt`, `mode` |
-| Spawn agent (plan mode) | `Task` | `mode: "plan"` — agent must submit plan for team lead review |
-| Approve/reject plan | `SendMessage` | `type: "plan_approval_response"`, `request_id`, `recipient`, `approve`, `content` |
+| Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt`, `mode: "bypassPermissions"` |
 | Send message | `SendMessage` | `type`, `recipient`, `content`, `summary` |
 | Shutdown agent | `SendMessage` | `type: "shutdown_request"`, `recipient` |
 
@@ -201,37 +199,60 @@ The team lead acts as **architectural reviewer** for all sub-agent plans. Do NOT
 
 Without review, agents may duplicate work across domains, misinterpret scope, make conflicting architectural decisions, or produce plans misaligned with the spec.
 
-### Protocol
+### Permission Mode: bypassPermissions (CRITICAL)
 
-**Spawn all agents with `mode: "plan"`.** This forces agents to call `ExitPlanMode` before implementing, which sends a `plan_approval_request` to the team lead.
+**All agents MUST be spawned with `mode: "bypassPermissions"`.** This is required because:
+- Agents run as separate processes that encounter folder trust prompts
+- Trust prompts require interactive input that agents CANNOT provide
+- Without `bypassPermissions`, agents get STUCK waiting for trust confirmation and never execute
+- This applies to ALL agent spawns — upstream and downstream
 
-When you receive a plan approval request:
+**NEVER use `mode: "plan"` for agent spawns** — it causes agents to block on the trust-folder prompt.
 
-1. **Read the plan** — check the agent's spec.md, plan.md, and tasks.md
-2. **Evaluate**:
+### Protocol (SendMessage-Based)
+
+Since agents use `bypassPermissions` (not `plan` mode), plan review uses an explicit SendMessage protocol:
+
+**Agent side** (built into every agent prompt template):
+1. Read the increment spec and explore the codebase
+2. Create plan files (spec.md, plan.md, tasks.md) in the increment directory
+3. Send plan summary to team-lead:
+```
+SendMessage({
+  type: "message",
+  recipient: "team-lead",
+  content: "PLAN_READY: Created spec.md, plan.md, tasks.md at .specweave/increments/[ID]/. Summary: [key decisions, file list, task count]. Ready for review.",
+  summary: "Plan ready for review"
+});
+```
+4. **WAIT for PLAN_APPROVED message** before starting implementation. Do NOT proceed without approval.
+
+**Team-lead side**:
+1. Receive `PLAN_READY` message from agent
+2. Read the agent's plan files (spec.md, plan.md, tasks.md)
+3. Evaluate:
    - Does it align with the feature spec and ACs?
    - Is the architecture consistent with existing codebase patterns?
    - Does the agent stay within its file ownership boundaries?
    - Are there conflicts with other agents' plans?
    - Is scope correct — not too broad, not too narrow?
-3. **Approve or reject**:
+4. Approve or reject:
 
 ```
 // Approve
 SendMessage({
-  type: "plan_approval_response",
-  request_id: "<from plan_approval_request>",
+  type: "message",
   recipient: "database-agent",
-  approve: true
+  content: "PLAN_APPROVED: Go ahead with implementation.",
+  summary: "Plan approved"
 });
 
 // Reject with feedback
 SendMessage({
-  type: "plan_approval_response",
-  request_id: "<from plan_approval_request>",
+  type: "message",
   recipient: "database-agent",
-  approve: false,
-  content: "Revise: 1) Add index on user_id for sessions. 2) Missing migration for AC-US1-03."
+  content: "PLAN_REJECTED: Revise: 1) Add index on user_id for sessions. 2) Missing migration for AC-US1-03.",
+  summary: "Plan needs revision"
 });
 ```
 
@@ -286,12 +307,18 @@ WORKFLOW:
   6. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
      - Read openapi.yaml for API endpoints (if backend produces one)
-  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  8. Run all tests for owned code (unit + integration): npm test
-  9. Run quality gate: /sw:grill
-  10. Do NOT signal completion until all tests pass
-  11. After auto completes, attempt closure via /sw:done
-  12. Signal completion via SendMessage to team-lead
+  7. Create plan files (plan.md, tasks.md) for your increment
+  8. Send plan to team-lead and WAIT for approval:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
+       summary: "Frontend plan ready for review" })
+  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  11. Run all tests for owned code (unit + integration): npm test
+  12. Run quality gate: /sw:grill
+  13. Do NOT signal completion until all tests pass
+  14. After auto completes, attempt closure via /sw:done
+  15. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -338,13 +365,19 @@ WORKFLOW:
   6. Wait for contract artifacts if Phase 1 is active:
      - Read prisma/schema.prisma for database schema
      - Read src/types/ for shared interfaces
-  7. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  8. Generate or update OpenAPI spec if API routes change
-  9. Run all tests for owned code (unit + integration): npm test
-  10. Run quality gate: /sw:grill
-  11. Do NOT signal completion until all tests pass
-  12. After auto completes, attempt closure via /sw:done
-  13. Signal completion via SendMessage to team-lead
+  7. Create plan files (plan.md, tasks.md) for your increment
+  8. Send plan to team-lead and WAIT for approval:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
+       summary: "Backend plan ready for review" })
+  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  11. Generate or update OpenAPI spec if API routes change
+  12. Run all tests for owned code (unit + integration): npm test
+  13. Run quality gate: /sw:grill
+  14. Do NOT signal completion until all tests pass
+  15. After auto completes, attempt closure via /sw:done
+  16. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -380,15 +413,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec and tasks
   5. Design database schema changes
-  6. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
-  7. Write seed data if needed
-  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  9. Run all tests for owned code (migration, seed): npm test
-  10. Run quality gate: /sw:grill
-  11. Do NOT signal completion until all tests pass
-  12. Signal CONTRACT_READY with schema details via SendMessage to team-lead
-  13. After auto completes, attempt closure via /sw:done
-  14. Signal completion via SendMessage to team-lead
+  6. Create plan files (plan.md, tasks.md) for your increment
+  7. Send plan to team-lead and WAIT for approval:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "PLAN_READY: [increment path]. [summary of schema changes, migrations, seed data].",
+       summary: "Database plan ready for review" })
+  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  9. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
+  10. Write seed data if needed
+  11. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  12. Run all tests for owned code (migration, seed): npm test
+  13. Run quality gate: /sw:grill
+  14. Do NOT signal completion until all tests pass
+  15. Signal CONTRACT_READY with schema details via SendMessage to team-lead
+  16. After auto completes, attempt closure via /sw:done
+  17. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -430,15 +469,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec and tasks
   5. Wait for ALL other agents to produce initial code
-  6. Write unit tests for new services/components
-  7. Write integration tests for API endpoints
-  8. Write E2E tests for user journeys
-  9. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  10. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  11. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
-  12. Run quality gate: /sw:grill
-  13. After auto completes, attempt closure via /sw:done
-  14. Signal completion via SendMessage to team-lead
+  6. Create plan files (plan.md, tasks.md) for your increment
+  7. Send plan to team-lead and WAIT for approval:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "PLAN_READY: [increment path]. [summary of test strategy, coverage plan].",
+       summary: "Testing plan ready for review" })
+  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  9. Write unit tests for new services/components
+  10. Write integration tests for API endpoints
+  11. Write E2E tests for user journeys
+  12. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  13. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  14. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
+  15. Run quality gate: /sw:grill
+  16. After auto completes, attempt closure via /sw:done
+  17. Signal completion via SendMessage to team-lead
 
 RULES:
   - WRITE only to test files (listed above)
@@ -476,15 +521,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Read the increment spec and tasks
   5. Audit code produced by other agents for security issues
-  6. Implement auth/authz middleware if needed
-  7. Add input validation and sanitization
-  8. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  9. Run all tests for owned code (security tests): npm test
-  10. Run security audit tools (npm audit, dependency check)
-  11. Run quality gate: /sw:grill
-  12. Do NOT signal completion until all tests pass
-  13. After auto completes, attempt closure via /sw:done
-  14. Signal completion with security findings summary via SendMessage to team-lead
+  6. Create plan files (plan.md, tasks.md) for your increment
+  7. Send plan to team-lead and WAIT for approval:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "PLAN_READY: [increment path]. [summary of security findings, hardening plan].",
+       summary: "Security plan ready for review" })
+  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  9. Implement auth/authz middleware if needed
+  10. Add input validation and sanitization
+  11. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  12. Run all tests for owned code (security tests): npm test
+  13. Run security audit tools (npm audit, dependency check)
+  14. Run quality gate: /sw:grill
+  15. Do NOT signal completion until all tests pass
+  16. After auto completes, attempt closure via /sw:done
+  17. Signal completion with security findings summary via SendMessage to team-lead
 
 RULES:
   - WRITE only to files you own (listed above)
@@ -582,14 +633,14 @@ TeamCreate({
 
 ### Step 2: Spawn Upstream Agents (Phase 1)
 
-All agents are spawned with `mode: "plan"` so the team lead reviews their plans before implementation (see Section 3b).
+All agents are spawned with `mode: "bypassPermissions"` to prevent blocking on trust-folder prompts. Plan review is enforced via the SendMessage PLAN_READY/PLAN_APPROVED protocol (see Section 3b).
 
 ```typescript
 Task({
   team_name: "feature-checkout",
   name: "database-agent",
   subagent_type: "general-purpose",
-  mode: "plan",
+  mode: "bypassPermissions",
   prompt: `[DATABASE AGENT PROMPT - see template in Section 4c]`,
 });
 
@@ -597,7 +648,7 @@ Task({
   team_name: "feature-checkout",
   name: "shared-types-agent",
   subagent_type: "general-purpose",
-  mode: "plan",
+  mode: "bypassPermissions",
   prompt: `[SHARED/TYPES AGENT PROMPT]`,
 });
 ```
@@ -613,7 +664,7 @@ Task({
   team_name: "feature-checkout",
   name: "backend-agent",
   subagent_type: "general-purpose",
-  mode: "plan",
+  mode: "bypassPermissions",
   prompt: `[BACKEND AGENT PROMPT - see template in Section 4b]`,
 });
 
@@ -621,7 +672,7 @@ Task({
   team_name: "feature-checkout",
   name: "frontend-agent",
   subagent_type: "general-purpose",
-  mode: "plan",
+  mode: "bypassPermissions",
   prompt: `[FRONTEND AGENT PROMPT - see template in Section 4a]`,
 });
 
@@ -629,7 +680,7 @@ Task({
   team_name: "feature-checkout",
   name: "testing-agent",
   subagent_type: "general-purpose",
-  mode: "plan",
+  mode: "bypassPermissions",
   prompt: `[TESTING AGENT PROMPT - see template in Section 4d]`,
 });
 ```
@@ -691,12 +742,12 @@ Orchestrator Final Check:
   ├── Step 1: Analyze feature -> identify domains -> decide increment split
   ├── Step 2: Create team via TeamCreate
   ├── Step 3: Create per-domain increments
-  ├── Step 4: Contract-first spawning (all agents with mode: "plan")
+  ├── Step 4: Contract-first spawning (all agents with mode: "bypassPermissions")
   │     ├── Phase 1: Spawn shared + database
-  │     │     └── Review & approve each agent's plan (Section 3b)
+  │     │     └── Receive PLAN_READY, review & approve via SendMessage (Section 3b)
   │     │     └── Wait for CONTRACT_READY after approval
   │     └── Phase 2: Spawn backend + frontend + testing
-  │           └── Review & approve each agent's plan
+  │           └── Receive PLAN_READY, review & approve via SendMessage
   ├── Step 5: Monitor progress via SendMessage
   ├── Step 6: Quality gates (each agent runs /sw:grill)
   └── Step 7: Merge and close (/sw:team-merge)
@@ -729,6 +780,7 @@ To execute, run without --dry-run.
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
+| **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
