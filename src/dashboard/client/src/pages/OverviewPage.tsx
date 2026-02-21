@@ -148,8 +148,8 @@ export function OverviewPage() {
             title={isSubscriptionPlan(data.costs) ? 'Usage Value' : 'Total Cost'}
             value={`$${data.costs.totalCost.toFixed(2)}`}
             subtitle={isSubscriptionPlan(data.costs)
-              ? `$${data.costs.billingContext?.monthlyAmount ?? '?'}/mo plan`
-              : `${data.costs.sessionCount.toLocaleString()} sessions`}
+              ? `via Claude Code · $${data.costs.billingContext?.monthlyAmount ?? '?'}/mo plan`
+              : `via Claude Code · ${data.costs.sessionCount.toLocaleString()} sessions`}
             color="amber"
           />
         </Link>
