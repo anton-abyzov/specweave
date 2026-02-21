@@ -95,7 +95,7 @@ else
 fi
 
 # ==============================================================================
-# EARLY EXIT FOR BUILT-IN SLASH COMMANDS (v1.0.280)
+# EARLY EXIT FOR BUILT-IN SLASH COMMANDS (v1.0.280, fixed v1.0.305)
 # ==============================================================================
 # Claude Code has built-in slash commands (/context, /help, /clear, /compact,
 # /memory, /permissions, /cost, /doctor, /login, /logout, /config, etc.)
@@ -105,8 +105,15 @@ fi
 # Without this guard, built-in commands like /context go through the LLM
 # detect-intent pipeline (5-15s delay) and may get incorrect additionalContext
 # injected, causing them to fail or behave unexpectedly.
-if echo "$PROMPT" | grep -qE "^[[:space:]]*/[a-zA-Z][a-zA-Z0-9_-]*($|[[:space:]])" && \
-   ! echo "$PROMPT" | grep -qiE "^[[:space:]]*/sw[-:]"; then
+#
+# v1.0.305: Strip IDE metadata tags before checking. In VSCode, the prompt may
+# have <ide_opened_file>...</ide_opened_file> or <ide_selection>...</ide_selection>
+# prefixed on the same line as the command, causing the ^-anchored regex to fail.
+# Uses sed to strip everything up to the last closing </ide_*> tag (handles content
+# with < chars like code selections), then trims leading whitespace.
+CLEAN_PROMPT=$(echo "$PROMPT" | sed 's/.*<\/ide_[a-z_]*>//; s/^[[:space:]]*//')
+if echo "$CLEAN_PROMPT" | grep -qE "^[[:space:]]*/[a-zA-Z][a-zA-Z0-9_-]*($|[[:space:]])" && \
+   ! echo "$CLEAN_PROMPT" | grep -qiE "^[[:space:]]*/sw[-:]"; then
   echo '{"decision":"approve"}'
   exit 0
 fi
