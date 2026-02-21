@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.303] - 2026-02-21
+
+### Changes
+- update plugins and increment tooling
+- restructure skills docs under /docs/skills/ URL namespace
+- add V-Skills security section to homepage
+
+---
+
+
+
 ## [1.0.302] - 2026-02-21
 
 ### Changes
