@@ -207,6 +207,18 @@ When factors point to different complexity levels:
 | **Medium** | 9-18 questions | Multiple components, some integration points |
 | **Large** | 19-40 questions | Architectural, cross-cutting, high-risk (payments, security) |
 
+### Config Floor: minQuestions
+
+The project may define a minimum question count in config:
+
+```bash
+jq -r '.planning.deepInterview.minQuestions // 5' .specweave/config.json 2>/dev/null
+```
+
+**Rule**: If your complexity assessment yields fewer questions than `minQuestions`, use `minQuestions` as the floor. For example, if you assess a feature as "trivial" (0-3 questions) but `minQuestions` is 5, ask at least 5 questions.
+
+This prevents teams from accidentally under-interviewing when they have set an organizational minimum.
+
 ### What's a "Single Component"?
 
 A "single component" means **isolated scope** - changes contained to one area:

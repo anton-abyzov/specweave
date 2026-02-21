@@ -10,10 +10,11 @@
  * The cache was premature optimization that caused bugs. Scanning 4 directories
  * is fast enough (~5ms) and doesn't need caching.
  *
- * E-SUFFIX CONVENTION (v0.32.0):
- * Increments working on external items (imported from GitHub/JIRA/ADO) use
- * E suffix: 0111E-feature-name instead of 0111-feature-name.
- * This maintains consistency with FS-XXXE feature IDs and US-XXXE user stories.
+ * PLATFORM SUFFIX CONVENTION (v0.32.0, extended v1.0.272):
+ * Increments imported from external tools use platform-specific suffixes:
+ *   G = GitHub, J = JIRA, A = Azure DevOps, E = Legacy/generic external
+ * Example: 0111G-feature-name (from GitHub), 0111J-feature-name (from JIRA)
+ * All suffixed variants share the same base number namespace.
  *
  * @module increment-utils
  * @since 0.18.3
@@ -22,6 +23,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { findNextAvailableIdForProject } from '../../utils/feature-id-collision.js';
+import { type PlatformSuffix, SUFFIX_MAP, type Platform } from '../../sync/types.js';
 
 /**
  * Recognized lifecycle sub-folders under .specweave/increments/
@@ -187,7 +189,7 @@ export class IncrementNumberManager {
           if (!entry.isDirectory()) continue;
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
-          const match = entry.name.match(/^(\d{3,4})E?-/);
+          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
           if (match) {
             const entryNumber = match[1].padStart(4, '0');
             if (entryNumber === normalizedNumber) {
@@ -287,7 +289,7 @@ export class IncrementNumberManager {
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
           // CRITICAL: Extract BASE number - both 0001 and 0001E → 1
-          const match = entry.name.match(/^(\d{3,4})E?-/);
+          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
           if (match) {
             const number = parseInt(match[1], 10);
 
@@ -300,7 +302,7 @@ export class IncrementNumberManager {
             numbers.add(number);
           } else {
             // **VALIDATION**: Warn about non-standard increment folder names
-            // Valid: XXXX-name, XXXE-name
+            // Valid: XXXX-name, XXXX[GJAE]-name
             // Invalid: .specweave, _templates, 0000-adhoc, reports, backup, etc.
             if (!entry.name.startsWith('_')) { // Ignore system folders like _archive
               // **NEW (v1.0.105)**: Check for reserved names
@@ -367,7 +369,7 @@ export class IncrementNumberManager {
           if (!entry.isDirectory()) continue;
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
-          const match = entry.name.match(/^(\d{3,4})E?-/);
+          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
           if (match) {
             totalIncrements++;
             const number = parseInt(match[1], 10);
@@ -417,6 +419,34 @@ export class IncrementNumberManager {
   ): string {
     const baseNumber = this.getNextIncrementNumber(projectRoot);
     return `${baseNumber}E`;
+  }
+
+  /**
+   * Generate an increment number with platform-specific suffix.
+   *
+   * PLATFORM SUFFIX CONVENTION (v1.0.272):
+   * - G = GitHub, J = JIRA, A = Azure DevOps
+   * - Falls back to E for unknown platforms
+   *
+   * @param projectRoot - Project root directory
+   * @param platform - Source platform ('github' | 'jira' | 'ado')
+   * @returns Next increment number with platform suffix (e.g., "0033G")
+   *
+   * @example
+   * ```typescript
+   * const id = IncrementNumberManager.getNextPlatformIncrementNumber(cwd, 'github');
+   * // "0033G" - for use as "0033G-feature-name"
+   * ```
+   *
+   * @since 1.0.272
+   */
+  static getNextPlatformIncrementNumber(
+    projectRoot: string = process.cwd(),
+    platform: Platform
+  ): string {
+    const baseNumber = this.getNextIncrementNumber(projectRoot);
+    const suffix = SUFFIX_MAP[platform] ?? 'E';
+    return `${baseNumber}${suffix}`;
   }
 
   /**
@@ -527,9 +557,9 @@ export class IncrementNumberManager {
    */
   static generateIncrementId(
     name: string,
-    options: { isExternal?: boolean; projectRoot?: string; projectId?: string; skipValidation?: boolean } = {}
+    options: { isExternal?: boolean; platformSuffix?: PlatformSuffix; projectRoot?: string; projectId?: string; skipValidation?: boolean } = {}
   ): string {
-    const { isExternal = false, projectRoot = process.cwd(), projectId, skipValidation = false } = options;
+    const { isExternal = false, platformSuffix, projectRoot = process.cwd(), projectId, skipValidation = false } = options;
 
     // 🚨 CRITICAL VALIDATION (v1.0.105): Block reserved names at creation time
     this.validateIncrementName(name);
@@ -538,13 +568,14 @@ export class IncrementNumberManager {
     // When projectId is provided, use project-scoped number generation
     // This checks the target project's FS-ID space and skips colliding numbers
     const number = projectId
-      ? this.getNextIncrementNumberForProject(projectRoot, projectId, { isExternal })
+      ? this.getNextIncrementNumberForProject(projectRoot, projectId, { isExternal: isExternal || !!platformSuffix })
       : this.getNextIncrementNumber(projectRoot);
 
     // 🚨 CRITICAL VALIDATION (v1.0.104): Block 0000 at creation time
     this.validateIncrementNumber(number);
 
-    const suffix = isExternal ? 'E' : '';
+    // Platform suffix takes priority over legacy isExternal flag
+    const suffix = platformSuffix ?? (isExternal ? 'E' : '');
     const id = `${number}${suffix}-${name}`;
 
     // Validate by default to prevent duplicates (v0.34.0+)
@@ -582,7 +613,7 @@ export class IncrementNumberManager {
     if (!number) {
       throw new Error(
         `Invalid increment ID format: "${incrementId}". ` +
-        `Expected format: "XXXX-name" (e.g., "0141-my-feature") or "XXXXE-name" for external items.`
+        `Expected format: "XXXX-name" (e.g., "0141-my-feature") or "XXXX[GJAE]-name" for external items.`
       );
     }
 
@@ -600,7 +631,7 @@ export class IncrementNumberManager {
         duplicates.map(d => `  - ${d}`).join('\n') + `\n\n` +
         `CRITICAL: Increment IDs MUST be unique. This prevents confusion and sync issues.\n\n` +
         `FIX: Use the next available number: ${nextNumber}\n` +
-        `Suggested ID: ${nextNumber}${this.isExternalIncrement(incrementId) ? '' : ''}-${incrementId.replace(/^\d{3,4}E?-/, '')}`
+        `Suggested ID: ${nextNumber}-${incrementId.replace(/^\d{3,4}[GJAE]?-/, '')}`
       );
     }
   }
@@ -623,7 +654,7 @@ export class IncrementNumberManager {
    * @since 0.32.0
    */
   static isExternalIncrement(incrementId: string): boolean {
-    return /^\d{3,4}E-/.test(incrementId);
+    return /^\d{3,4}[GJAE]-/.test(incrementId);
   }
 
   /**
@@ -644,7 +675,7 @@ export class IncrementNumberManager {
    * @since 0.32.0
    */
   static extractNumber(incrementId: string): string | null {
-    const match = incrementId.match(/^(\d{3,4})E?-/);
+    const match = incrementId.match(/^(\d{3,4})[GJAE]?-/);
     if (match) {
       return match[1].padStart(4, '0');
     }
@@ -695,7 +726,7 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
-          const match = entry.name.match(/^(\d{3,4})E?-/);
+          const match = entry.name.match(/^(\d{3,4})[GJAE]?-/);
           if (match) {
             const entryNumber = match[1].padStart(4, '0');
             if (entryNumber === normalizedNumber) {
@@ -749,7 +780,7 @@ export class IncrementNumberManager {
       throw new Error(
         `Duplicate increment number detected! Number ${number} already exists:\n` +
         otherDuplicates.map(d => `  - ${d}`).join('\n') +
-        `\n\nIMPORTANT: 0001 and 0001E share the SAME base number and cannot coexist.\n` +
+        `\n\nIMPORTANT: All suffix variants (0001, 0001G, 0001J, 0001A, 0001E) share the SAME base number.\n` +
         `Use getNextIncrementNumber() to get a unique number.`
       );
     }

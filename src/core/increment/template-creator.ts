@@ -46,6 +46,31 @@ export const TEMPLATE_MARKERS = {
 /**
  * Options for creating increment templates.
  */
+/**
+ * External source metadata for imported issues.
+ * @since 1.0.272
+ */
+export interface ExternalSourceInfo {
+  /** Source platform */
+  platform: 'github' | 'jira' | 'ado';
+  /** Platform-specific external ID (e.g., "github#owner/repo#123") */
+  externalId: string;
+  /** URL to the external issue */
+  externalUrl: string;
+  /** Original issue title */
+  title: string;
+  /** Original issue description/body */
+  description: string;
+  /** Extracted acceptance criteria */
+  acceptanceCriteria?: string[];
+  /** External labels/tags */
+  labels?: string[];
+  /** External priority */
+  priority?: string;
+  /** External status */
+  status?: string;
+}
+
 export interface CreateTemplateOptions {
   /** Increment ID (e.g., "0001-stripe-dashboard-mvp") */
   incrementId: string;
@@ -67,6 +92,8 @@ export interface CreateTemplateOptions {
   coverageTarget?: number;
   /** Project root directory */
   projectRoot?: string;
+  /** External source metadata for imported issues (v1.0.272) */
+  externalSource?: ExternalSourceInfo;
 }
 
 /**
@@ -125,6 +152,7 @@ export async function createIncrementTemplates(
     testMode = 'test-after',
     coverageTarget = 80,
     projectRoot = process.cwd(),
+    externalSource,
   } = options;
 
   const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
@@ -140,7 +168,7 @@ export async function createIncrementTemplates(
 
     // 1. Create metadata.json FIRST (required before spec.md)
     const metadataPath = path.join(incrementPath, 'metadata.json');
-    const metadata = {
+    const metadata: Record<string, unknown> = {
       id: incrementId,
       status: 'planned',
       type,
@@ -153,22 +181,49 @@ export async function createIncrementTemplates(
       epic_id: null,
       externalLinks: {},
     };
+
+    // Add external source tracking for imported issues (v1.0.272)
+    if (externalSource) {
+      metadata.origin = 'external';
+      metadata.source_platform = externalSource.platform;
+      metadata.external_ref = externalSource.externalId;
+      metadata.externalLinks = {
+        [externalSource.platform]: {
+          url: externalSource.externalUrl,
+          synced: new Date().toISOString(),
+        },
+      };
+    }
+
     fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     createdFiles.push('metadata.json');
 
-    // 2. Create spec.md TEMPLATE
+    // 2. Create spec.md — pre-filled from external source or template
     const specPath = path.join(incrementPath, 'spec.md');
-    const specContent = generateSpecTemplate({
-      incrementId,
-      title,
-      description,
-      projectId,
-      boardId,
-      type,
-      priority,
-      testMode,
-      coverageTarget,
-    });
+    const specContent = externalSource
+      ? generateExternalSpecContent({
+          incrementId,
+          title,
+          description: externalSource.description || description,
+          projectId,
+          boardId,
+          type,
+          priority: externalSource.priority || priority,
+          testMode,
+          coverageTarget,
+          externalSource,
+        })
+      : generateSpecTemplate({
+          incrementId,
+          title,
+          description,
+          projectId,
+          boardId,
+          type,
+          priority,
+          testMode,
+          coverageTarget,
+        });
     fs.writeFileSync(specPath, specContent);
     createdFiles.push('spec.md');
 
@@ -178,21 +233,31 @@ export async function createIncrementTemplates(
     fs.writeFileSync(planPath, planContent);
     createdFiles.push('plan.md');
 
-    // 4. Create tasks.md TEMPLATE
+    // 4. Create tasks.md — derived from external ACs or template
     const tasksPath = path.join(incrementPath, 'tasks.md');
-    const tasksContent = generateTasksTemplate({ title, testMode });
+    const tasksContent = externalSource?.acceptanceCriteria?.length
+      ? generateExternalTasksContent({ title, testMode, acceptanceCriteria: externalSource.acceptanceCriteria })
+      : generateTasksTemplate({ title, testMode });
     fs.writeFileSync(tasksPath, tasksContent);
     createdFiles.push('tasks.md');
+
+    const nextSteps = externalSource
+      ? [
+          `Imported from ${externalSource.platform}: ${externalSource.externalUrl}`,
+          `Review and refine spec: /sw:do ${incrementId}`,
+          `Start working: /sw:auto ${incrementId}`,
+        ]
+      : [
+          `Complete product specification: Tell Claude "Complete the spec for increment ${incrementId}"`,
+          `Design architecture: Tell Claude "Design architecture for increment ${incrementId}"`,
+          `Generate tasks: Tell Claude "Create tasks for increment ${incrementId}"`,
+        ];
 
     return {
       success: true,
       incrementPath,
       createdFiles,
-      nextSteps: [
-        `Complete product specification: Tell Claude "Complete the spec for increment ${incrementId}"`,
-        `Design architecture: Tell Claude "Design architecture for increment ${incrementId}"`,
-        `Generate tasks: Tell Claude "Create tasks for increment ${incrementId}"`,
-      ],
+      nextSteps,
     };
   } catch (error) {
     return {
@@ -586,6 +651,165 @@ This will activate the test-aware planner which will:
 
 - [ ] [T050] Run integration tests
 - [ ] [T051] Verify all acceptance criteria
+`;
+}
+
+/**
+ * Generate spec.md content pre-filled from an external issue.
+ *
+ * Unlike the template version, this generates real content from the
+ * external issue's title, description, and acceptance criteria.
+ *
+ * @since 1.0.272
+ */
+function generateExternalSpecContent(options: {
+  incrementId: string;
+  title: string;
+  description: string;
+  projectId: string;
+  boardId?: string;
+  type: string;
+  priority: string;
+  testMode: string;
+  coverageTarget: number;
+  externalSource: ExternalSourceInfo;
+}): string {
+  const {
+    incrementId,
+    title,
+    description,
+    projectId,
+    boardId,
+    type,
+    priority,
+    testMode,
+    coverageTarget,
+    externalSource,
+  } = options;
+
+  const date = new Date().toISOString().split('T')[0];
+  const boardLine = boardId ? `**Board**: ${boardId}\n` : '';
+  const platformLabel = externalSource.platform === 'github' ? 'GitHub'
+    : externalSource.platform === 'jira' ? 'JIRA'
+    : 'Azure DevOps';
+
+  // Build acceptance criteria from external source
+  const acs = externalSource.acceptanceCriteria ?? [];
+  const acLines = acs.length > 0
+    ? acs.map((ac, i) => `- [ ] **AC-US1-${String(i + 1).padStart(2, '0')}**: ${ac}`).join('\n')
+    : `- [ ] **AC-US1-01**: [Review and define acceptance criteria from imported issue]`;
+
+  // Build labels section
+  const labelsLine = externalSource.labels?.length
+    ? `\n**Labels**: ${externalSource.labels.join(', ')}`
+    : '';
+
+  return `---
+increment: ${incrementId}
+title: "${title}"
+type: ${type}
+priority: ${priority}
+status: planned
+created: ${date}
+structure: user-stories
+test_mode: ${testMode}
+coverage_target: ${coverageTarget}
+source_platform: ${externalSource.platform}
+external_ref: "${externalSource.externalId}"
+---
+
+# Feature: ${title}
+
+<!-- IMPORTED FROM ${platformLabel}: ${externalSource.externalUrl} -->
+
+## Overview
+
+${description || `Imported from ${platformLabel}. See original issue for full context.`}
+
+## External Source
+
+- **Platform**: ${platformLabel}
+- **URL**: ${externalSource.externalUrl}
+- **External ID**: ${externalSource.externalId}
+- **Import Date**: ${date}
+
+## User Stories
+
+### US-001: ${title} (${priority})
+**Project**: ${projectId}
+${boardLine}
+**As a** user
+**I want** ${title.toLowerCase()}
+**So that** the issue tracked in ${platformLabel} is resolved${labelsLine}
+
+**Acceptance Criteria**:
+${acLines}
+
+## Functional Requirements
+
+${description ? `### FR-001: ${title}\n${description}` : `### FR-001: [To be defined from imported issue]`}
+
+## Success Criteria
+
+- All acceptance criteria from the imported ${platformLabel} issue are met
+- Original issue can be closed/resolved after verification
+`;
+}
+
+/**
+ * Generate tasks.md content derived from external acceptance criteria.
+ *
+ * Each AC becomes a task with a BDD test skeleton.
+ *
+ * @since 1.0.272
+ */
+function generateExternalTasksContent(options: {
+  title: string;
+  testMode: string;
+  acceptanceCriteria: string[];
+}): string {
+  const { title, acceptanceCriteria } = options;
+
+  const taskEntries = acceptanceCriteria.map((ac, i) => {
+    const taskNum = String(i + 1).padStart(3, '0');
+    return `#### T-${taskNum}: ${ac}
+
+**Description**: Implement and verify: ${ac}
+
+**References**: AC-US1-${String(i + 1).padStart(2, '0')}
+
+**Test Plan**:
+- **Tests**:
+  - **TC-${taskNum}**: Verify ${ac}
+    - Given the system is set up
+    - When the feature is implemented
+    - Then ${ac}
+
+**Status**: [ ] Not Started`;
+  }).join('\n\n');
+
+  return `# Tasks: ${title}
+
+<!-- IMPORTED — Tasks derived from external acceptance criteria -->
+
+## Task Notation
+
+- \`[T###]\`: Task ID
+- \`[P]\`: Parallelizable
+- \`[ ]\`: Not started
+- \`[x]\`: Completed
+- Model hints: haiku (simple), opus (default)
+
+## Phase 1: Core Implementation
+
+### US-001: ${title} (P1)
+
+${taskEntries}
+
+## Phase 2: Verification
+
+- [ ] [T${String(acceptanceCriteria.length + 1).padStart(3, '0')}] Run all tests
+- [ ] [T${String(acceptanceCriteria.length + 2).padStart(3, '0')}] Verify all acceptance criteria
 `;
 }
 

@@ -74,15 +74,16 @@ if [ ! -f "$BRIDGE_HANDLER" ]; then
 fi
 
 # Cross-platform timeout wrapper
+# FIXED (v1.0.302): Don't suppress stderr from inner commands
 run_with_timeout() {
     local timeout_secs="$1"
     shift
     if command -v timeout >/dev/null 2>&1; then
-        timeout "$timeout_secs" "$@" 2>/dev/null || true
+        timeout "$timeout_secs" "$@" || true
     elif command -v gtimeout >/dev/null 2>&1; then
-        gtimeout "$timeout_secs" "$@" 2>/dev/null || true
+        gtimeout "$timeout_secs" "$@" || true
     else
-        "$@" 2>/dev/null || true
+        "$@" || true
     fi
 }
 
@@ -194,11 +195,15 @@ for INC_ID in $INCREMENTS_TO_SYNC; do
 
     # Route user-story events to github-sync-handler (v1.0.262+)
     # github-sync-handler understands user-story.completed/reopened with INC_ID:US_ID data
+    # FIXED (v1.0.302): Filter by BOTH event type AND increment ID to prevent
+    # routing all events to the first matching increment's US event.
     if [ -f "$GITHUB_SYNC_HANDLER" ] && [ -f "$EVENT_TYPES_FILE" ]; then
         while IFS='|' read -r _inc_id us_event_type; do
             [ -z "$us_event_type" ] && continue
-            # Extract US data (INC_ID:US_ID) from pending.jsonl for this event
-            US_DATA=$(grep -o "\"type\":\"${us_event_type}\"[^}]*\"data\":\"[^\"]*\"" "$PENDING_FILE" 2>/dev/null \
+            # Extract US data (INC_ID:US_ID) from pending.jsonl for THIS increment
+            # Must match both the event type AND the increment ID in the data field
+            US_DATA=$(grep "\"type\":\"${us_event_type}\"" "$PENDING_FILE" 2>/dev/null \
+                | grep "\"data\":\"${INC_ID}:" \
                 | grep -o '"data":"[^"]*"' | cut -d'"' -f4 | head -1)
             if [ -n "$US_DATA" ]; then
                 log "Routing user-story event to github-sync-handler: $us_event_type $US_DATA"
