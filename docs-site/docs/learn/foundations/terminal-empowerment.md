@@ -96,7 +96,7 @@ pwd                        # Show current path
 
 # SpecWeave
 specweave init .           # Initialize project
-specweave refresh-marketplace
+specweave refresh-plugins
 
 # Claude Code
 claude                     # Start session
