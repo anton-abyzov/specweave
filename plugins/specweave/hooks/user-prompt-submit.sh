@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.278 - Direct Plugin Copy)
+# SpecWeave UserPromptSubmit Hook (v1.0.272 - vskill Plugin Installation)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v1.0.279: VSKILL INSTALL - sw-* plugins installed via vskill at project scope.
-#   Uses install_plugin_via_vskill(): node <vskill-cli> install <specweave-dir>
-#   --plugin <name> --plugin-dir <dir> --force, run from SW_PROJECT_ROOT.
-#   Installs to .claude/commands/<name>/ (project scope). Never ~/.claude/commands/.
+# - v1.0.272: VSKILL PLUGIN INSTALL - sw-* plugins now installed via vskill instead of
+#   `claude plugin install`. Includes security scanning (tier1 PASS/CONCERNS/FAIL) and
+#   vskill.lock fast-path for already-installed plugins. Non-specweave plugins (LSP, etc.)
+#   still use `claude plugin install`.
 # - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
 #   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
 #   analysis. Key fix: "find references" now gets semantic refs, not text matches!
@@ -85,12 +85,13 @@ set +e
 # ==============================================================================
 INPUT=$(cat 2>/dev/null || echo '{}')
 
-# Use jq if available (10x faster than node), fallback to simple grep
+# Use jq if available (10x faster than node), fallback to portable sed
 if command -v jq >/dev/null 2>&1; then
   PROMPT=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null || echo "")
 else
-  # Fallback: extract prompt with grep (no node!)
-  PROMPT=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]*' 2>/dev/null || echo "")
+  # Fallback: extract prompt with sed (portable - works on macOS BSD and Linux GNU)
+  # Note: grep -oP (PCRE) is NOT available on macOS default BSD grep
+  PROMPT=$(echo "$INPUT" | sed -n 's/.*"prompt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' 2>/dev/null || echo "")
 fi
 
 # ==============================================================================
@@ -154,7 +155,7 @@ if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]]; then
     if [[ -z "$FOUND_CONFIG" ]]; then
       # Check if guard is disabled in config (would fail since no config exists yet)
       # Extract skill name for error message
-      SKILL_NAME=$(echo "$PROMPT" | grep -oP '^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+' | tr '[:upper:]' '[:lower:]')
+      SKILL_NAME=$(echo "$PROMPT" | grep -oE '^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+' | tr '[:upper:]' '[:lower:]')
 
       # Generate helpful error message
       cat <<EOF
@@ -266,69 +267,58 @@ fi
 
 if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && command -v claude >/dev/null 2>&1; then
   USER_SETTINGS="$HOME/.claude/settings.json"
-  PROJECT_SETTINGS="${SW_PROJECT_ROOT}/.claude/settings.json"
 
-  # ---- 1. Clean user-level settings ----
-  # Remove: sw-* domain plugins at user scope (should be project-scoped via vskill)
-  #         any *@claude-plugins-official (never allowed)
-  # Exempt: sw@specweave (core plugin, user-scoped by design)
   if [[ -f "$USER_SETTINGS" ]]; then
-    POLLUTED_USER=$(jq -r '
+    # Find SpecWeave domain plugins and LSP plugins at user level
+    # Exempt: sw@specweave (core plugin, intentionally user-scoped)
+    POLLUTED_PLUGINS=$(jq -r '
       .enabledPlugins // {} | to_entries[]
       | select(
           (.key | test("^sw-.*@specweave$")) or
-          (.key | test("@claude-plugins-official$"))
+          (.key | test("-lsp@"))
         )
       | .key
     ' "$USER_SETTINGS" 2>/dev/null)
 
-    if [[ -n "$POLLUTED_USER" ]]; then
-      REMOVED=""
-      REINSTALLED=""
-      for plugin_key in $POLLUTED_USER; do
+    if [[ -n "$POLLUTED_PLUGINS" ]]; then
+      MIGRATED=""
+      for plugin_key in $POLLUTED_PLUGINS; do
+        # Uninstall from user scope
         if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
+          # v1.0.272: sw-* plugins reinstall via vskill, LSP plugins via claude CLI
           if [[ "$plugin_key" == sw-*@specweave ]]; then
-            # Reinstall sw-* at project scope via vskill
+            # Extract plugin name from "sw-name@specweave" format
             _sw_name="${plugin_key%%@*}"
             if install_plugin_via_vskill "$_sw_name"; then
-              [[ -n "$REINSTALLED" ]] && REINSTALLED="$REINSTALLED, "
-              REINSTALLED="${REINSTALLED}${plugin_key}"
+              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
+              MIGRATED="${MIGRATED}${plugin_key}"
+            fi
+          else
+            # LSP and other plugins: reinstall via claude CLI at project scope
+            if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
+              [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
+              MIGRATED="${MIGRATED}${plugin_key}"
             fi
           fi
-          # *@claude-plugins-official: uninstall only — never reinstall
-          [[ -n "$REMOVED" ]] && REMOVED="$REMOVED, "
-          REMOVED="${REMOVED}${plugin_key}"
         fi
       done
 
-      if [[ -n "$REMOVED" ]]; then
-        echo "[$(date -Iseconds)] scope-guard | removed user-level: $REMOVED | reinstalled@project: ${REINSTALLED:-none}" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
+      if [[ -n "$MIGRATED" ]]; then
+        echo "[$(date -Iseconds)] scope-guard | migrated user→project: $MIGRATED" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
       fi
 
-      # Restore sw@specweave core plugin enabled state (uninstall may collateral-damage it)
-      SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
-      if [[ "$SW_ENABLED" != "true" ]]; then
-        jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
-          mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
-        echo "[$(date -Iseconds)] scope-guard | restored sw@specweave" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
+      # CRITICAL FIX: Restore sw@specweave enabled state after uninstall operations
+      # The `claude plugin uninstall` commands above may corrupt ~/.claude/settings.json
+      # and disable sw@specweave as collateral damage. Re-enable it explicitly.
+      if [[ -f "$USER_SETTINGS" ]]; then
+        SW_ENABLED=$(jq -r '.enabledPlugins."sw@specweave" // "not_set"' "$USER_SETTINGS" 2>/dev/null)
+        if [[ "$SW_ENABLED" != "true" ]]; then
+          # Re-enable core plugin (preserves all other settings)
+          jq '.enabledPlugins."sw@specweave" = true' "$USER_SETTINGS" > "${USER_SETTINGS}.tmp" 2>/dev/null && \
+            mv "${USER_SETTINGS}.tmp" "$USER_SETTINGS" 2>/dev/null || true
+          echo "[$(date -Iseconds)] scope-guard | restored sw@specweave enabled state" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
+        fi
       fi
-    fi
-  fi
-
-  # ---- 2. Clean project-level settings ----
-  # Remove any *@claude-plugins-official from project settings — never allowed
-  if [[ -f "$PROJECT_SETTINGS" ]]; then
-    POLLUTED_PROJECT=$(jq -r '
-      .enabledPlugins // {} | to_entries[]
-      | select(.key | test("@claude-plugins-official$"))
-      | .key
-    ' "$PROJECT_SETTINGS" 2>/dev/null)
-
-    if [[ -n "$POLLUTED_PROJECT" ]]; then
-      for plugin_key in $POLLUTED_PROJECT; do
-        timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1 || true
-      done
-      echo "[$(date -Iseconds)] scope-guard | removed project official plugins: $POLLUTED_PROJECT" >> "$SW_PROJECT_ROOT/.specweave/state/hook.log" 2>/dev/null || true
     fi
   fi
 
@@ -458,9 +448,7 @@ output_approve_with_context() {
 # Returns: 0 if in lockfile, 1 if not
 check_plugin_in_vskill_lock() {
   local plugin="$1"
-  # Use project root if available, else fall back to CWD
-  local lock_dir="${SW_PROJECT_ROOT:-$PWD}"
-  local lockfile="$lock_dir/vskill.lock"
+  local lockfile="vskill.lock"
 
   # Check project-local lockfile first
   [[ ! -f "$lockfile" ]] && return 1
@@ -483,59 +471,43 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install sw-* plugin via vskill (v1.0.279)
-# Uses: node <vskill-cli> install <specweave-dir> --plugin <name> --plugin-dir <specweave-dir> --force
-# Installs to project scope: ${SW_PROJECT_ROOT}/.claude/commands/<name>/
+# Helper: Install sw-* plugin via vskill (v1.0.272)
+# Uses npx vskill add with --plugin and --plugin-dir flags.
 # Args: $1=plugin name (e.g., "sw-frontend")
 # Returns: 0 if installed successfully, 1 if failed
-# Sets VSKILL_INSTALL_OUTPUT with status message
+# Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
 install_plugin_via_vskill() {
   local plugin="$1"
-  local specweave_dir="${HOME}/.claude/plugins/marketplaces/specweave"
-  local project_dir="${SW_PROJECT_ROOT:-$PWD}"
+  local plugin_dir="${HOME}/.claude/plugins/marketplaces/specweave"
 
-  # Find node binary
-  local node_bin
-  node_bin=$(command -v node 2>/dev/null)
-  if [[ -z "$node_bin" ]]; then
-    VSKILL_INSTALL_OUTPUT="node not found in PATH"
+  # Verify marketplace directory exists
+  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$plugin_dir/.claude-plugin/marketplace.json" ]]; then
+    VSKILL_INSTALL_OUTPUT="marketplace directory not found at $plugin_dir"
     return 1
   fi
 
-  # Find vskill CLI — check global first, then bundled with specweave
-  local vskill_cli=""
-  if command -v vskill >/dev/null 2>&1; then
-    vskill_cli=$(command -v vskill)
+  VSKILL_INSTALL_OUTPUT=""
+  if command -v npx >/dev/null 2>&1; then
+    if command -v timeout >/dev/null 2>&1; then
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    else
+      VSKILL_INSTALL_OUTPUT=$(npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    fi
   else
-    # Look for vskill bundled alongside specweave in node_modules
-    local candidate="${specweave_dir}/../../../node_modules/.bin/vskill"
-    if [[ -f "$candidate" ]]; then
-      vskill_cli="$candidate"
+    # Fallback: try node with direct path
+    local vskill_js="${HOME}/.claude/plugins/marketplaces/specweave/node_modules/.bin/vskill"
+    if [[ -f "$vskill_js" ]]; then
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+    else
+      VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
+      return 1
     fi
   fi
 
-  if [[ -z "$vskill_cli" ]]; then
-    VSKILL_INSTALL_OUTPUT="vskill not found — install with: npm install -g vskill"
-    return 1
-  fi
-
-  # Verify specweave marketplace dir exists
-  if [[ ! -d "$specweave_dir" ]]; then
-    VSKILL_INSTALL_OUTPUT="specweave marketplace dir not found at $specweave_dir"
-    return 1
-  fi
-
-  # Run vskill install at project scope (cwd = project root)
-  local output
-  output=$(cd "$project_dir" && "$node_bin" "$vskill_cli" install "$specweave_dir" \
-    --plugin "$plugin" --plugin-dir "$specweave_dir" --force 2>&1)
-  local exit_code=$?
-
-  if [[ $exit_code -eq 0 ]]; then
-    VSKILL_INSTALL_OUTPUT="installed $plugin via vskill (project scope)"
+  # Check if install succeeded
+  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
     return 0
   else
-    VSKILL_INSTALL_OUTPUT="vskill install failed for $plugin: $output"
     return 1
   fi
 }
@@ -1144,10 +1116,10 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
     if ! echo "$PROMPT" | grep -qE "^[[:space:]]*/sw:"; then
 
       # BYPASS: Native Claude Code slash commands (e.g., /context, /help, /doctor)
-      # Prevents 15s detect-intent timeout -> LLM_DETECTION_FAILED -> keyword fallback
+      # Prevents 15s detect-intent timeout → LLM_DETECTION_FAILED → keyword fallback
       # that falsely matches "test" as substring inside "/context". Pattern matches
-      # /word or /word-word prompts that do not mention specweave.
-      if echo "$PROMPT" | grep -qE "^[[:space:]]*/[a-z][a-z0-9-]*([[:space:]]|$)" &&
+      # /word or /word-word prompts that don't mention specweave.
+      if echo "$PROMPT" | grep -qE "^[[:space:]]*/[a-z][a-z0-9-]*([[:space:]]|$)" && \
          ! echo "$PROMPT" | grep -qiE "specweave"; then
         echo '{"decision":"approve"}'
         exit 0
@@ -1231,7 +1203,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
                   PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`specweave refresh-plugins --all\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill add ~/.claude/plugins/marketplaces/specweave --plugin <plugin> --plugin-dir ~/.claude/plugins/marketplaces/specweave --force\`\\n"
                   AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
                   [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
@@ -1255,10 +1227,13 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
-                    # v1.0.279: Only @specweave plugins allowed — no claude-plugins-official
-                    # Install via vskill (project scope: .claude/commands/<name>/)
+                    # v1.0.159: Determine marketplace based on plugin name
+                    # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
+                    # v1.0.240 (0198): context7/playwright removed from auto-install
+                    # v1.0.272 (0232): sw-* plugins now installed via vskill instead of claude plugin install
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
-                      # Fast-path: check vskill.lock first
+                      # ---- SW-* PLUGINS: Install via vskill (v1.0.272) ----
+                      # Fast-path: check vskill.lock first (no CLI invocation needed)
                       if check_plugin_in_vskill_lock "$plugin"; then
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
@@ -1267,18 +1242,61 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       else
-                        # Install via vskill at project scope
+                        # Not installed - install via vskill add
                         if install_plugin_via_vskill "$plugin"; then
                           [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
                           PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                          echo "[$(date -Iseconds)] vskill | ${plugin} | ${VSKILL_INSTALL_OUTPUT:-ok}" >> "$LAZY_LOAD_LOG"
+
+                          # Display scan result if available
+                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
+                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
+                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
+                          fi
                         else
                           echo "[$(date -Iseconds)] vskill | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
                         fi
                       fi
                     else
-                      # Non-sw-* plugin detected — skip (only @specweave plugins allowed)
-                      echo "[$(date -Iseconds)] plugins | SKIPPED non-specweave plugin: $plugin" >> "$LAZY_LOAD_LOG"
+                      # ---- NON-SW PLUGINS: Install via claude CLI (unchanged) ----
+                      MARKETPLACE="claude-plugins-official"
+                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
+                      FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
+                      ALREADY_INSTALLED=false
+
+                      if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                        ALREADY_INSTALLED=true
+                      else
+                        CURRENT_PLUGINS=""
+                        if command -v timeout >/dev/null 2>&1; then
+                          CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                        else
+                          CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
+                        fi
+                        if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
+                          ALREADY_INSTALLED=true
+                        fi
+                      fi
+
+                      if [[ "$ALREADY_INSTALLED" == "true" ]]; then
+                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                      else
+                        if command -v timeout >/dev/null 2>&1; then
+                          OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
+                        else
+                          OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
+                        fi
+                        if echo "$OUT" | grep -qiE "(success|installed)"; then
+                          sleep 0.5
+                          if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
+                            [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                            PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+                          else
+                            [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                            PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                          fi
+                        fi
+                      fi
                     fi
                   done
 
@@ -1415,11 +1433,9 @@ Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NA
                       # The skill reads the user's prompt from conversation context (it's already there).
 
                       # v1.0.243: Smart interview gate — LLM assesses prompt completeness
-                      # v1.0.301: Removed question count cap ("2-5") — sw:pm decides count
-                      # based on complexity (trivial: 0-3, small: 4-8, medium: 9-18, large: 19-40).
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
-                        DEEP_INTERVIEW_MSG=" Deep interview enabled — sw:pm skill will assess complexity and interview depth."
+                        DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
                       fi
 
                       MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
@@ -1951,7 +1967,7 @@ if echo "$PROMPT" | grep -qE "^/sw:do($| )"; then
       if command -v jq >/dev/null 2>&1; then
         status=$(jq -r '.status // "unknown"' "$meta" 2>/dev/null)
       else
-        status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$meta" 2>/dev/null || echo "unknown")
+        status=$(sed -n 's/.*"status"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$meta" 2>/dev/null || echo "unknown")
       fi
       if [[ "$status" == "active" || "$status" == "planning" || "$status" == "backlog" || "$status" == "ready_for_review" ]]; then
         DO_INCREMENT_ID=$(basename "$(dirname "$meta")")
@@ -1989,8 +2005,8 @@ if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
       read -r status inc_type < <(jq -r '"\(.status // "unknown") \(.type // "feature")"' "$metadata_file" 2>/dev/null || echo "unknown feature")
     else
       # Fallback: grep (no node!)
-      status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "unknown")
-      inc_type=$(grep -oP '"type"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "feature")
+      status=$(sed -n 's/.*"status"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$metadata_file" 2>/dev/null || echo "unknown")
+      inc_type=$(sed -n 's/.*"type"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$metadata_file" 2>/dev/null || echo "feature")
     fi
 
     if [[ "$status" == "active" || "$status" == "planning" || "$status" == "ready_for_review" ]]; then
@@ -2094,7 +2110,7 @@ if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; th
   fi
 
   if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
-    SMART_INTERVIEW_GATE_MSG="No active increment. Deep interview enabled — assess prompt completeness for complexity. If gaps exist, ask targeted questions (count depends on complexity). If sufficient, call sw:increment."
+    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment."
   fi
 fi
 
@@ -2260,10 +2276,10 @@ if [[ -n "$ACTIVE_INCREMENT" ]]; then
       )
     else
       # Pure grep fallback (no node!)
-      TOTAL_TASKS=$(grep -oP '"total"\s*:\s*\K[0-9]+' "$CACHE_FILE" 2>/dev/null | head -1 || echo "0")
-      COMPLETED_TASKS=$(grep -oP '"completed"\s*:\s*\K[0-9]+' "$CACHE_FILE" 2>/dev/null | head -1 || echo "0")
-      TOTAL_ACS=$(grep -oP '"acsTotal"\s*:\s*\K[0-9]+' "$CACHE_FILE" 2>/dev/null || echo "0")
-      COMPLETED_ACS=$(grep -oP '"acsCompleted"\s*:\s*\K[0-9]+' "$CACHE_FILE" 2>/dev/null || echo "0")
+      TOTAL_TASKS=$(sed -n 's/.*"total"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$CACHE_FILE" 2>/dev/null | head -1 || echo "0")
+      COMPLETED_TASKS=$(sed -n 's/.*"completed"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$CACHE_FILE" 2>/dev/null | head -1 || echo "0")
+      TOTAL_ACS=$(sed -n 's/.*"acsTotal"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$CACHE_FILE" 2>/dev/null || echo "0")
+      COMPLETED_ACS=$(sed -n 's/.*"acsCompleted"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$CACHE_FILE" 2>/dev/null || echo "0")
     fi
 
     # Ensure valid numbers
@@ -2431,40 +2447,20 @@ _budget_append "$ARCHIVE_SUGGESTION_MSG"
 # ==============================================================================
 # If this turn's context is identical to last turn's, don't re-inject it.
 # Claude already has it in history. Saves ~2500 chars per duplicate turn.
-#
-# v1.0.301: SMART_INTERVIEW_GATE_MSG is excluded from the dedup hash.
-# The gate must fire on EVERY prompt (until an increment is created) so the
-# LLM keeps assessing prompt completeness across turns. Hashing the full
-# FINAL_MESSAGE (which includes the gate) would produce the same hash on
-# consecutive prompts and suppress the gate after the first turn.
 if [[ -n "$FINAL_MESSAGE" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
   DEDUP_HASH_FILE="$SW_PROJECT_ROOT/.specweave/state/.context-hash"
   CURRENT_HASH=""
-
-  # Build hash input WITHOUT the gate message so it doesn't trigger dedup
-  DEDUP_INPUT="$FINAL_MESSAGE"
-  if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
-    # Remove the gate message (with leading \n) from hash input
-    DEDUP_INPUT="${DEDUP_INPUT//\\n${SMART_INTERVIEW_GATE_MSG}/}"
-    DEDUP_INPUT="${DEDUP_INPUT//${SMART_INTERVIEW_GATE_MSG}/}"
-  fi
-
   if command -v md5sum >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$DEDUP_INPUT" | md5sum | cut -d' ' -f1)
+    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5sum | cut -d' ' -f1)
   elif command -v md5 >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$DEDUP_INPUT" | md5)
+    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5)
   fi
 
   if [[ -n "$CURRENT_HASH" ]]; then
     if [[ -f "$DEDUP_HASH_FILE" ]]; then
       PREV_HASH=$(cat "$DEDUP_HASH_FILE" 2>/dev/null)
       if [[ "$CURRENT_HASH" == "$PREV_HASH" ]]; then
-        if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
-          # Rest of context is duplicate, but gate must still fire
-          output_approve_with_context "\\n${SMART_INTERVIEW_GATE_MSG}"
-          exit 0
-        fi
-        # No gate — fully identical, skip injection
+        # Identical to last turn — skip injection
         echo '{"decision":"approve"}'
         exit 0
       fi

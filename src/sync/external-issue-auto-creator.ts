@@ -390,8 +390,36 @@ export class ExternalIssueAutoCreator {
           break;
       }
 
+      // FIX (v1.0.302 / 0271): Also check externalLinks format (written by SyncCoordinator v1.0.240+)
+      switch (provider) {
+        case 'github':
+          if (metadata.externalLinks?.github?.issueNumber) {
+            return `#${metadata.externalLinks.github.issueNumber}`;
+          }
+          if (metadata.externalLinks?.github?.issues) {
+            const issues = metadata.externalLinks.github.issues;
+            const firstKey = Object.keys(issues)[0];
+            if (firstKey && issues[firstKey]?.issueNumber) {
+              return `#${issues[firstKey].issueNumber}`;
+            }
+          }
+          break;
+        case 'jira':
+          if (metadata.externalLinks?.jira?.issueKey) {
+            return metadata.externalLinks.jira.issueKey;
+          }
+          break;
+        case 'ado':
+          if (metadata.externalLinks?.ado?.workItemId) {
+            return `#${metadata.externalLinks.ado.workItemId}`;
+          }
+          break;
+      }
+
       return null;
-    } catch {
+    } catch (error) {
+      // FIX (v1.0.302 / 0271): Log error instead of silent swallow
+      this.logger.warn(`⚠️ Failed to check existing issue for ${incrementId}: ${error}`);
       return null;
     }
   }

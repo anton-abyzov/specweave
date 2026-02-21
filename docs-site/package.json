@@ -16,7 +16,9 @@
     "generate:hero-images": "node scripts/generate-hero-images.js",
     "generate:hero-images-free": "node scripts/generate-hero-images-free.js",
     "generate:trading-only": "node scripts/generate-trading-only.js",
-    "start:internal": "docusaurus start --port 3015 --config docusaurus.config.internal.ts"
+    "start:internal": "docusaurus start --port 3015 --config docusaurus.config.internal.ts",
+    "remotion:preview": "remotion preview remotion/index.ts",
+    "remotion:render": "remotion render remotion/index.ts SpecWeaveHero static/video/hero.mp4 && remotion render remotion/index.ts SpecWeaveHero static/video/hero.webm"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
@@ -34,7 +36,11 @@
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
     "@google/generative-ai": "^0.24.1",
+    "@remotion/cli": "^4.0.427",
+    "@remotion/google-fonts": "^4.0.427",
+    "@remotion/transitions": "^4.0.427",
     "png-to-ico": "^3.0.1",
+    "remotion": "^4.0.427",
     "sharp": "^0.34.5",
     "typescript": "~5.6.2"
   },

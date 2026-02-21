@@ -84,7 +84,7 @@ block() {
     local reason="$1" rc="${2:-work_remaining}" ctx="${3:-"{}"}" msg="$4"
     log "BLOCK: $reason"
     type log_decision &>/dev/null && log_decision "stop-auto" "block" "$rc" "$reason" "$ctx" "$(_get_duration_ms)"
-    jq -n --arg d "block" --arg r "$reason" --arg m "$msg" '{decision:$d,reason:$r,systemMessage:$m}'; exit 0
+    jq -n --arg d "block" --arg r "$reason" --arg rc "$rc" --arg m "$msg" '{decision:$d,reason:$r,reasonCode:$rc,systemMessage:$m}'; exit 0
 }
 
 # ── Source-only guard ────────────────────────────────────────────────────
@@ -184,12 +184,32 @@ for meta in $(find "$INC_DIR" -maxdepth 2 -name "metadata.json" 2>/dev/null); do
     fi
 done
 
-# 9. All complete → approve
+# 9. All work items complete → check if closure needed
 if [ "$IC" -eq 0 ]; then
-    rm -f "$SESSION" "$DEDUP_PREV" "$TURN_FILE" 2>/dev/null
-    loud_approve "All work complete" "all_complete" \
-        "$(jq -n --argjson t "$TURN" '{turn:$t}')" \
-        "All tasks and ACs complete. Run /sw:done to close the increment."
+    # Count active/in-progress increments (regardless of task completion)
+    _ACTIVE_COUNT=0; _ACTIVE_IDS=""
+    for _meta in $(find "$INC_DIR" -maxdepth 2 -name "metadata.json" 2>/dev/null); do
+        _st=$(jq -r '.status // "unknown"' "$_meta" 2>/dev/null || echo "unknown")
+        if [ "$_st" = "active" ] || [ "$_st" = "in-progress" ]; then
+            _ACTIVE_COUNT=$((_ACTIVE_COUNT + 1))
+            _d=$(dirname "$_meta"); _id=$(basename "$_d")
+            [ -z "$_ACTIVE_IDS" ] && _ACTIVE_IDS="$_id" || _ACTIVE_IDS="$_ACTIVE_IDS, $_id"
+        fi
+    done
+
+    if [ "$_ACTIVE_COUNT" -gt 0 ]; then
+        # Active increments with all tasks done → block for closure (do NOT clean up state)
+        _CLOSE_MSG="All tasks and ACs complete. Run \`/sw:done --auto <id>\` to close: ${_ACTIVE_IDS}"
+        block "All work complete, needs closure" "all_complete_needs_closure" \
+            "$(jq -n --argjson t "$TURN" --arg ids "$_ACTIVE_IDS" '{turn:$t,incrementIds:$ids}')" \
+            "$_CLOSE_MSG"
+    else
+        # All increments already closed (completed/archived) → approve and clean up
+        rm -f "$SESSION" "$DEDUP_PREV" "$TURN_FILE" 2>/dev/null
+        loud_approve "All increments closed" "all_complete" \
+            "$(jq -n --argjson t "$TURN" '{turn:$t}')" \
+            "All increments are closed. Auto session complete."
+    fi
 fi
 
 # 10. Work remains → block with enriched context message

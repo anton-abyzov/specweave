@@ -71,8 +71,8 @@ Closure order respects contract chain:
 For each teammate's increment, in dependency order:
 
 ```bash
-# Run /sw:done per increment -- triggers quality gates
-/sw:done <increment-id>
+# Run /sw:done --auto per increment -- triggers quality gates, skips user confirmation
+/sw:done <increment-id> --auto
 ```
 
 This ensures:

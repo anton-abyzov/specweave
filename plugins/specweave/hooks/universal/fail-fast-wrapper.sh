@@ -81,8 +81,8 @@ PROJECT_ROOT=$(find_project_root)
 # Exit early if not a SpecWeave project (prevents .specweave pollution)
 if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
   # Not a SpecWeave project - output success JSON and exit
-  # Stop hooks need {"decision":"approve"}, others need {"continue":true}
-  if [[ "$script_name" == stop-* ]]; then
+  # UserPromptSubmit and Stop hooks need {"decision":"approve"}, others need {"continue":true}
+  if [[ "$script_name" == stop-* ]] || [[ "$script_name" == user-prompt-submit* ]]; then
     echo '{"decision":"approve"}'
   else
     echo '{"continue": true}'
@@ -155,11 +155,13 @@ get_safe_output_with_warnings() {
   escaped_recommendation=$(escape_json "$recommendation")
 
   # Build JSON with warnings array
+  local base_script
+  base_script=$(basename "$script" 2>/dev/null)
   if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
     cat <<EOF
 {"decision":"allow","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
 EOF
-  elif [[ "$(basename "$script")" == stop-* ]]; then
+  elif [[ "$base_script" == stop-* ]] || [[ "$base_script" == user-prompt-submit* ]]; then
     cat <<EOF
 {"decision":"approve","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
 EOF
@@ -173,9 +175,11 @@ EOF
 # Safe output without warnings (success case)
 get_safe_output() {
   local script="$1"
+  local base_script
+  base_script=$(basename "$script" 2>/dev/null)
   if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
     echo '{"decision":"allow","warnings":[]}'
-  elif [[ "$(basename "$script")" == stop-* ]]; then
+  elif [[ "$base_script" == stop-* ]] || [[ "$base_script" == user-prompt-submit* ]]; then
     echo '{"decision":"approve","warnings":[]}'
   else
     echo '{"continue":true,"warnings":[]}'
@@ -198,7 +202,7 @@ fi
 # Script doesn't exist = safe default with warning
 if [[ ! -f "$script" ]]; then
   log_warning "$script" "Script not found (may be refreshing)" "Path: $script"
-  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-plugins' to update plugins"
+  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-marketplace' to update plugins"
   exit 0
 fi
 

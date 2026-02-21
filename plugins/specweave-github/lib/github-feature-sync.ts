@@ -54,6 +54,9 @@ export class GitHubFeatureSync {
   private calculator: CompletionCalculator;
   private token?: string;
 
+  // Cached default branch for the sync session (one API call per session)
+  private defaultBranch: string | null = null;
+
   // SYNC LOCK: Prevent concurrent syncs of the same feature
   // Maps featureId → last sync timestamp
   private static syncLocks: Map<string, number> = new Map();
@@ -66,6 +69,33 @@ export class GitHubFeatureSync {
     this.calculator = new CompletionCalculator(projectRoot);
     // Get token from .env for gh CLI passthrough
     this.token = getGitHubAuthFromProject(projectRoot).token;
+  }
+
+  /**
+   * Detect the default branch from the GitHub API.
+   * Caches the result per sync session to avoid repeated API calls.
+   * Falls back to 'main' if API call fails.
+   */
+  private async detectDefaultBranch(): Promise<string> {
+    if (this.defaultBranch) {
+      return this.defaultBranch;
+    }
+
+    const owner = this.client.getOwner();
+    const repo = this.client.getRepo();
+
+    const result = await execFileNoThrow('gh', [
+      'api', `repos/${owner}/${repo}`, '--jq', '.default_branch'
+    ], { env: this.getGhEnv() });
+
+    if (result.exitCode === 0 && result.stdout.trim()) {
+      this.defaultBranch = result.stdout.trim();
+    } else {
+      console.warn(`   ⚠️  Failed to detect default branch, falling back to 'main': ${result.stderr}`);
+      this.defaultBranch = 'main';
+    }
+
+    return this.defaultBranch;
   }
 
   /**
@@ -163,6 +193,10 @@ export class GitHubFeatureSync {
     let issuesCreated = 0;
     let issuesUpdated = 0;
 
+    // Detect default branch once per sync session
+    const detectedBranch = await this.detectDefaultBranch();
+    console.log(`   🌿 Default branch: ${detectedBranch}`);
+
     for (const userStory of userStories) {
       console.log(`\n   🔹 Processing ${userStory.id}: ${userStory.title}`);
 
@@ -170,7 +204,7 @@ export class GitHubFeatureSync {
       const repoInfo = {
         owner: this.client.getOwner(),
         repo: this.client.getRepo(),
-        branch: 'develop'  // TODO: detect from git
+        branch: detectedBranch
       };
 
       const builder = new UserStoryIssueBuilder(
@@ -755,9 +789,13 @@ export class GitHubFeatureSync {
     // CRITICAL: Check if milestone already exists before creating
     // NOTE: Must use per_page=100 to handle repos with 30+ milestones (GitHub default is 30)
     // BUG FIX: Without pagination, milestone #31+ won't be found → false "not found" → HTTP 422 duplicate error
+    // FIX (v1.0.302): Use explicit owner/repo from config, not :owner/:repo which resolves from git remote
+    const owner = this.client.getOwner();
+    const repo = this.client.getRepo();
+
     const existingResult = await execFileNoThrow('gh', [
       'api',
-      'repos/:owner/:repo/milestones?per_page=100&state=all',
+      `repos/${owner}/${repo}/milestones?per_page=100&state=all`,
       '--jq',
       `.[] | select(.title == "${title}") | {number, html_url}`,
     ], { env: this.getGhEnv() });
@@ -784,7 +822,7 @@ export class GitHubFeatureSync {
 
     const result = await execFileNoThrow('gh', [
       'api',
-      'repos/:owner/:repo/milestones',
+      `repos/${owner}/${repo}/milestones`,
       '-X',
       'POST',
       '-f',
@@ -965,7 +1003,9 @@ export class GitHubFeatureSync {
       acsPercentage: number;
       tasksPercentage: number;
       acsTotal?: number;
+      acsCompleted?: number;
       tasksTotal?: number;
+      tasksCompleted?: number;
       frontmatterStatus?: string;
     }
   ): Promise<void> {
@@ -1046,6 +1086,26 @@ export class GitHubFeatureSync {
         console.log(`      🏷️  Updated label: ${newStatusLabel}`);
       } else {
         console.warn(`      ⚠️  Failed to add label ${newStatusLabel}: ${result.stderr}`);
+      }
+
+      // Step 3: Auto-close issue when status:complete and issue still OPEN
+      // This ensures closure happens atomically with the label update,
+      // preventing issues like #1198 where label is applied but issue stays open
+      if (newStatusLabel === 'status:complete' && issueData.state.toLowerCase() !== 'closed') {
+        try {
+          const completionComment = this.calculator.buildCompletionComment(completion as any);
+          await execFileNoThrow('gh', [
+            'issue',
+            'close',
+            issueNumber.toString(),
+            '--comment',
+            completionComment,
+          ], { env: this.getGhEnv() });
+          console.log(`      ✅ Auto-closed issue #${issueNumber} (status:complete)`);
+        } catch (closeError) {
+          // Non-blocking: close failure shouldn't break sync
+          console.warn(`      ⚠️  Failed to auto-close issue #${issueNumber}: ${(closeError as Error).message}`);
+        }
       }
     } catch (error) {
       // Non-blocking: Label update failure shouldn't break sync

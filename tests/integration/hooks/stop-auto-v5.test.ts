@@ -253,12 +253,12 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
   // ─── Active Session - Work Tracking ─────────────────────────────────────
 
   describe('Active Session - Work Tracking', () => {
-    it('should approve when all increments are completed', async () => {
+    it('should block for closure when all tasks/ACs are complete but increment still active', async () => {
       await setupProject(tempDir);
       await writeConfig(tempDir);
       await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
 
-      // Increment with all tasks done
+      // Increment with all tasks done but still active status
       await createIncrement(tempDir, '0100-feature', {
         status: 'active',
         tasks: [
@@ -274,7 +274,11 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       const result = await runHook(tempDir, hookPath);
 
       expect(result.exitCode).toBe(0);
-      expect(result.json.decision).toBe('approve');
+      expect(result.json.decision).toBe('block');
+      expect(result.json.reasonCode).toBe('all_complete_needs_closure');
+      const msg = result.json.systemMessage as string;
+      expect(msg).toContain('/sw:done --auto');
+      expect(msg).toContain('0100-feature');
     });
 
     it('should approve when no active increments exist (all completed/archived)', async () => {
@@ -572,8 +576,8 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
 
       const result = await runHook(tempDir, hookPath);
       const msg = result.json.systemMessage as string;
-      // Should mention 3 pending tasks
-      expect(msg).toMatch(/3\s*task/i);
+      // Block message shows done/total format (e.g. "1/4 tasks")
+      expect(msg).toMatch(/1\/4\s*tasks/i);
     });
 
     it('should include actionable guidance (/sw:do or /sw:done)', async () => {
@@ -709,7 +713,7 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
       expect(retryExists).toBe(false);
     });
 
-    it('should NOT auto-close increments (no specweave complete calls)', async () => {
+    it('should NOT auto-close increments (blocks for /sw:done instead)', async () => {
       await setupProject(tempDir);
       await writeConfig(tempDir);
       await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
@@ -728,16 +732,88 @@ describe('stop-auto-v5.sh - Simplified Stop Hook', () => {
 
       const result = await runHook(tempDir, hookPath);
 
-      // Should approve (work complete), but NOT change increment status
-      expect(result.json.decision).toBe('approve');
+      // Should block (not approve) so Claude runs /sw:done
+      expect(result.json.decision).toBe('block');
+      const msg = result.json.systemMessage as string;
+      expect(msg).toContain('/sw:done --auto');
 
-      // Increment should still be "active" (not "completed")
+      // Increment should still be "active" (not "completed") — hook does not modify metadata
       const metadataRaw = await fs.readFile(
         path.join(tempDir, '.specweave', 'increments', '0100-feature', 'metadata.json'),
         'utf-8'
       );
       const metadata = JSON.parse(metadataRaw);
       expect(metadata.status).toBe('active');
+    });
+  });
+
+  // ─── All-Complete Closure Behavior ─────────────────────────────────────
+
+  describe('All-Complete Closure Behavior', () => {
+    it('should block with all_complete_needs_closure reason code when all work done', async () => {
+      await setupProject(tempDir);
+      await writeConfig(tempDir);
+      await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
+
+      await createIncrement(tempDir, '0100-feature', {
+        status: 'active',
+        tasks: [
+          { id: 'T-001', title: 'Done', done: true },
+          { id: 'T-002', title: 'Also done', done: true },
+        ],
+        acs: [
+          { id: 'AC-US1-01', done: true },
+        ],
+      });
+
+      const result = await runHook(tempDir, hookPath);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.json.decision).toBe('block');
+      expect(result.json.reasonCode).toBe('all_complete_needs_closure');
+    });
+
+    it('should NOT clean up session state on all-complete block', async () => {
+      await setupProject(tempDir);
+      await writeConfig(tempDir);
+      await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
+
+      await createIncrement(tempDir, '0100-feature', {
+        status: 'active',
+        tasks: [{ id: 'T-001', title: 'Done', done: true }],
+        acs: [{ id: 'AC-US1-01', done: true }],
+      });
+
+      // Pre-set turn counter so we can verify it persists
+      const turnFile = path.join(tempDir, '.specweave', 'state', '.stop-auto-turns');
+      await fs.writeFile(turnFile, '3');
+
+      const result = await runHook(tempDir, hookPath);
+
+      expect(result.json.decision).toBe('block');
+
+      // Session state files should NOT be cleaned up
+      const sessionExists = await fs.access(
+        path.join(tempDir, '.specweave', 'state', 'auto-mode.json')
+      ).then(() => true).catch(() => false);
+      expect(sessionExists).toBe(true);
+
+      const turnExists = await fs.access(turnFile).then(() => true).catch(() => false);
+      expect(turnExists).toBe(true);
+    });
+
+    it('should approve when all increments are already completed status', async () => {
+      await setupProject(tempDir);
+      await writeConfig(tempDir);
+      await writeSessionMarker(tempDir, { active: true, startedAt: new Date().toISOString() });
+
+      // Increment with completed status (already closed by /sw:done)
+      await createIncrement(tempDir, '0100-feature', { status: 'completed' });
+
+      const result = await runHook(tempDir, hookPath);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.json.decision).toBe('approve');
     });
   });
 
