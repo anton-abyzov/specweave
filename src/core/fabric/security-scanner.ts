@@ -6,6 +6,11 @@
 
 import { FabricSecurityScanResult, FabricSecurityFinding } from './registry-schema.js';
 
+/** Safe DCI patterns — the canonical skill-memories lookup */
+const SAFE_DCI_CONTEXTS = [
+  /^!\s*`for\s+d\s+in\s+\.specweave\/skill-memories/,
+];
+
 /** Temp-dir path patterns (reused across short-form and long-form rm) */
 const TEMP_DIR_PATTERNS = [
   /\$\{?TMPDIR\}?/i,
@@ -279,6 +284,107 @@ const PATTERN_CHECKS: PatternCheck[] = [
     message: 'new Function() constructor detected (dynamic code generation)',
   },
 
+  // --- DCI Block Abuse (critical) ---
+  // DCI blocks are shell commands in SKILL.md executed via ! prefix.
+  {
+    pattern: /^!\s*`[^`]*(?:~\/\.ssh\/|~\/\.aws\/|\.env\b|\.gnupg\/)/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block reads credential files (~/.ssh/, ~/.aws/, .env)',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\b(?:curl|wget)\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block uses curl/wget for network access',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\b(?:fetch|nc|ncat|netcat)\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block uses fetch or netcat for network access',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*(?:>\s*.*(?:CLAUDE\.md|AGENTS\.md|\.claude\/|\.specweave\/))/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block writes to agent config files (CLAUDE.md, AGENTS.md, .claude/)',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*(?:tee|sed\s+-i|echo\s+.*>>)\s*.*(?:CLAUDE\.md|AGENTS\.md|\.claude\/)/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block modifies agent config via tee/sed/echo append',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\b(?:base64\s+(?:-[dD]|--decode)|atob\s*\()/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block contains base64 decoding (obfuscation)',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\\x[0-9a-fA-F]{2}(?:\\x[0-9a-fA-F]{2}){3,}/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block contains hex escape sequences (obfuscation)',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\beval\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block uses eval for code execution',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\b(?:curl|wget)\b[^`]*\|\s*(?:ba|z|da|k)?sh\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block pipes downloaded content to shell (download-and-execute)',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*(?:\/dev\/tcp\/|bash\s+-i\s+>&|mkfifo|nc\s+-[a-z]*e)/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block establishes a reverse shell connection',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\bsudo\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block uses sudo for privilege escalation',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*\brm\s+-[a-zA-Z]*r[a-zA-Z]*f/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block executes destructive rm -rf command',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*(?:cat|less|head|tail|strings)\s+[^`]*(?:~\/\.|\/home\/[^`]*\.)/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block reads from home directory sensitive paths',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+  {
+    pattern: /^!\s*`[^`]*(?:cat|tar|zip)\s+[^|`]*\|\s*(?:curl|wget|nc)\b/,
+    severity: 'critical',
+    category: 'dci-abuse',
+    message: 'DCI block pipes local data to a network command',
+    safeContexts: SAFE_DCI_CONTEXTS,
+  },
+
   // --- Network access (info) ---
   {
     pattern: /\bfetch\s*\(/,
@@ -382,8 +488,11 @@ export function scanSkillContent(content: string): FabricSecurityScanResult {
           if (isSafe) continue;
         }
 
-        // Downgrade severity inside balanced fenced code blocks only
-        const severity = (inCodeBlock && codeBlocksBalanced) ? 'info' as const : check.severity;
+        // Downgrade severity inside balanced fenced code blocks only.
+        // DCI-abuse findings are NEVER downgraded — DCI blocks execute even inside code fences.
+        const severity = (inCodeBlock && codeBlocksBalanced && check.category !== 'dci-abuse')
+          ? 'info' as const
+          : check.severity;
 
         findings.push({
           severity,
