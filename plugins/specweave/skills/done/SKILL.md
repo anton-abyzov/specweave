@@ -1,11 +1,6 @@
 ---
 description: Close increment with PM 3-gate validation (tasks, tests, docs). Use when all tasks complete and saying "close increment", "we're done", or "finish up".
 argument-hint: "<increment-id> [--auto]"
-hooks:
-  Stop:
-    - hooks:
-        - type: command
-          command: bash plugins/specweave/hooks/v2/guards/completion-guard.sh
 ---
 
 # Close Increment (PM Validated)
