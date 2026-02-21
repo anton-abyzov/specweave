@@ -20,9 +20,15 @@ hooks:
 
 # Plan Product Increment
 
-## CRITICAL: Plan Mode Required
+## CRITICAL: Plan Mode Required (BLOCKING)
 
-**Before executing this skill, you MUST be in plan mode.** If you are not currently in plan mode, call `EnterPlanMode` first. Increment planning is ALWAYS a planning activity — never skip straight to implementation.
+**You MUST be in plan mode before proceeding.** If not, call `EnterPlanMode` now and wait for confirmation before continuing to Step 0A.
+
+1. Call `EnterPlanMode` immediately
+2. Wait for plan mode confirmation
+3. Then proceed to Step 0A
+
+Increment planning produces specs, plans, and task breakdowns that require user review. Do not skip plan mode or defer it — the user must approve the plan before any implementation begins.
 
 ## Project Overrides
 

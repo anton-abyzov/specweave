@@ -27,7 +27,9 @@ description: Orchestrate multi-agent parallel development with domain-specialize
 | Action | Tool | Parameters |
 |--------|------|------------|
 | Create team | `TeamCreate` | `team_name`, `description` |
-| Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt` |
+| Spawn agent | `Task` | `team_name`, `name`, `subagent_type`, `prompt`, `mode` |
+| Spawn agent (plan mode) | `Task` | `mode: "plan"` — agent must submit plan for team lead review |
+| Approve/reject plan | `SendMessage` | `type: "plan_approval_response"`, `request_id`, `recipient`, `approve`, `content` |
 | Send message | `SendMessage` | `type`, `recipient`, `content`, `summary` |
 | Shutdown agent | `SendMessage` | `type: "shutdown_request"`, `recipient` |
 
@@ -188,6 +190,58 @@ Analyze domains
   └── Single domain?
         YES -> Spawn single agent, no orchestration needed
 ```
+
+---
+
+## 3b. Plan Review Workflow
+
+The team lead acts as **architectural reviewer** for all sub-agent plans. Do NOT auto-accept plans.
+
+### Why Review
+
+Without review, agents may duplicate work across domains, misinterpret scope, make conflicting architectural decisions, or produce plans misaligned with the spec.
+
+### Protocol
+
+**Spawn all agents with `mode: "plan"`.** This forces agents to call `ExitPlanMode` before implementing, which sends a `plan_approval_request` to the team lead.
+
+When you receive a plan approval request:
+
+1. **Read the plan** — check the agent's spec.md, plan.md, and tasks.md
+2. **Evaluate**:
+   - Does it align with the feature spec and ACs?
+   - Is the architecture consistent with existing codebase patterns?
+   - Does the agent stay within its file ownership boundaries?
+   - Are there conflicts with other agents' plans?
+   - Is scope correct — not too broad, not too narrow?
+3. **Approve or reject**:
+
+```
+// Approve
+SendMessage({
+  type: "plan_approval_response",
+  request_id: "<from plan_approval_request>",
+  recipient: "database-agent",
+  approve: true
+});
+
+// Reject with feedback
+SendMessage({
+  type: "plan_approval_response",
+  request_id: "<from plan_approval_request>",
+  recipient: "database-agent",
+  approve: false,
+  content: "Revise: 1) Add index on user_id for sessions. 2) Missing migration for AC-US1-03."
+});
+```
+
+### Non-Blocking Review
+
+Plan review MUST NOT block other agents. Review plans as they arrive — agents waiting for approval are idle, but other agents continue working normally.
+
+### Multi-Increment Consideration
+
+For very large features, the team lead MAY split work into multiple increments per domain for better tracking and independent closure. Decide this during initial analysis (Step 1), before spawning agents.
 
 ---
 
@@ -528,11 +582,14 @@ TeamCreate({
 
 ### Step 2: Spawn Upstream Agents (Phase 1)
 
+All agents are spawned with `mode: "plan"` so the team lead reviews their plans before implementation (see Section 3b).
+
 ```typescript
 Task({
   team_name: "feature-checkout",
   name: "database-agent",
   subagent_type: "general-purpose",
+  mode: "plan",
   prompt: `[DATABASE AGENT PROMPT - see template in Section 4c]`,
 });
 
@@ -540,6 +597,7 @@ Task({
   team_name: "feature-checkout",
   name: "shared-types-agent",
   subagent_type: "general-purpose",
+  mode: "plan",
   prompt: `[SHARED/TYPES AGENT PROMPT]`,
 });
 ```
@@ -555,6 +613,7 @@ Task({
   team_name: "feature-checkout",
   name: "backend-agent",
   subagent_type: "general-purpose",
+  mode: "plan",
   prompt: `[BACKEND AGENT PROMPT - see template in Section 4b]`,
 });
 
@@ -562,6 +621,7 @@ Task({
   team_name: "feature-checkout",
   name: "frontend-agent",
   subagent_type: "general-purpose",
+  mode: "plan",
   prompt: `[FRONTEND AGENT PROMPT - see template in Section 4a]`,
 });
 
@@ -569,6 +629,7 @@ Task({
   team_name: "feature-checkout",
   name: "testing-agent",
   subagent_type: "general-purpose",
+  mode: "plan",
   prompt: `[TESTING AGENT PROMPT - see template in Section 4d]`,
 });
 ```
@@ -625,12 +686,15 @@ Orchestrator Final Check:
 ```
 /sw:team-lead "Build checkout flow"
   │
-  ├── Step 1: Analyze feature -> identify domains
+  ├── Step 1: Analyze feature -> identify domains -> decide increment split
   ├── Step 2: Create team via TeamCreate
   ├── Step 3: Create per-domain increments
-  ├── Step 4: Contract-first spawning
-  │     ├── Phase 1: Spawn shared + database -> wait for CONTRACT_READY
-  │     └── Phase 2: Spawn backend + frontend + testing (parallel)
+  ├── Step 4: Contract-first spawning (all agents with mode: "plan")
+  │     ├── Phase 1: Spawn shared + database
+  │     │     └── Review & approve each agent's plan (Section 3b)
+  │     │     └── Wait for CONTRACT_READY after approval
+  │     └── Phase 2: Spawn backend + frontend + testing
+  │           └── Review & approve each agent's plan
   ├── Step 5: Monitor progress via SendMessage
   ├── Step 6: Quality gates (each agent runs /sw:grill)
   └── Step 7: Merge and close (/sw:team-merge)
