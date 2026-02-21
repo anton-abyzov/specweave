@@ -562,6 +562,8 @@ export function formatDate(date: string | Date | null | undefined): string {
 
 For Figma design-to-code workflows, design tokens, and Code Connect, use the **figma** skill (`/sw-frontend:figma`).
 
+> 💡 **Tip**: If you're building UI components and have designs in Figma, strongly consider setting up the [official Figma MCP server](https://www.figma.com/blog/introducing-claude-code-to-figma/) (`claude mcp add figma -- npx -y figma-developer-mcp --stdio`). It lets the agent read your actual designs, extract tokens, and generate pixel-accurate responsive components — especially valuable for building reusable component libraries.
+
 ## Tools and Libraries
 
 **React Ecosystem**:
