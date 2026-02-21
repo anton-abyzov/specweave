@@ -413,7 +413,9 @@ export class DashboardServer {
             connected = true;
             detail = `${resp.data.full_name} (${resp.data.open_issues_count} open issues)`;
           } catch (e: any) {
-            detail = e.message || 'Connection failed';
+            detail = e.status === 401 ? 'Authentication failed — check token' :
+                     e.status === 404 ? 'Repository not found' :
+                     e.status ? `HTTP ${e.status}` : 'Connection failed';
           }
         } else if (platform === 'jira') {
           const domain = syncConfig.domain || syncConfig.host || '';
@@ -424,9 +426,10 @@ export class DashboardServer {
               headers: { Authorization: `Basic ${Buffer.from(`${email}:${apiToken}`).toString('base64')}` },
             });
             connected = resp.ok;
-            detail = connected ? `Authenticated as ${(await resp.json() as any).displayName || email}` : `HTTP ${resp.status}`;
-          } catch (e: any) {
-            detail = e.message || 'Connection failed';
+            detail = connected ? `Authenticated as ${(await resp.json() as any).displayName || email}` :
+                     resp.status === 401 ? 'Authentication failed — check credentials' : `HTTP ${resp.status}`;
+          } catch {
+            detail = 'Connection failed — check domain';
           }
         } else if (platform === 'ado') {
           const org = syncConfig.organization || '';
@@ -437,9 +440,10 @@ export class DashboardServer {
               headers: { Authorization: `Basic ${Buffer.from(`:${pat}`).toString('base64')}` },
             });
             connected = resp.ok;
-            detail = connected ? `Connected to ${org}/${adoProject}` : `HTTP ${resp.status}`;
-          } catch (e: any) {
-            detail = e.message || 'Connection failed';
+            detail = connected ? `Connected to ${org}/${adoProject}` :
+                     resp.status === 401 ? 'Authentication failed — check PAT' : `HTTP ${resp.status}`;
+          } catch {
+            detail = 'Connection failed — check organization/project';
           }
         }
 

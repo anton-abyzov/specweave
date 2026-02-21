@@ -110,9 +110,12 @@ export function SyncPage() {
       params.set('platform', platform);
       if (repoId) params.set('repo', repoId);
       if (projectParam) params.set('project', projectParam);
-      await fetch(`/api/sync/verify?${params.toString()}`, { method: 'POST' });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      await fetch(`/api/sync/verify?${params.toString()}`, { method: 'POST', signal: controller.signal });
+      clearTimeout(timeout);
       refetch();
-    } catch { /* ignore */ }
+    } catch { /* timeout or network error */ }
     setVerifying(null);
   };
 
@@ -228,20 +231,29 @@ export function SyncPage() {
 function PermissionsPanel({ permissions, onSave }: { permissions: SyncPermissions; onSave: () => void }) {
   const [local, setLocal] = useState(permissions);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const changed = JSON.stringify(local) !== JSON.stringify(permissions);
 
   const save = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const projectParam = new URLSearchParams(window.location.search).get('project') || '';
       const qs = projectParam ? `?project=${projectParam}` : '';
-      await fetch(`/api/config${qs}`, {
+      const resp = await fetch(`/api/config${qs}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sync: { settings: local } }),
       });
-      onSave();
-    } catch { /* ignore */ }
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        setSaveError((body as any).error || `Save failed (HTTP ${resp.status})`);
+      } else {
+        onSave();
+      }
+    } catch (e) {
+      setSaveError(String(e));
+    }
     setSaving(false);
   };
 
@@ -266,6 +278,9 @@ function PermissionsPanel({ permissions, onSave }: { permissions: SyncPermission
           </button>
         )}
       </div>
+      {saveError && (
+        <p className="text-xs text-red-400 mb-2">Failed to save: {saveError}</p>
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {toggles.map(({ key, label, desc }) => (
           <button
@@ -306,6 +321,15 @@ function UmbrellaHealthView({
   execute: (cmd: string, params?: Record<string, string>) => void;
   running: boolean;
 }) {
+  if (repos.length === 0) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
+        <p className="text-gray-500 text-sm">No child repositories configured</p>
+        <p className="text-gray-600 text-xs mt-1">Add repos in umbrella.childRepos in config.json</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {repos.map(repo => {
@@ -598,7 +622,9 @@ function PlatformIcon({ platform }: { platform: string }) {
 function timeAgo(ts: string): string {
   if (!ts) return '-';
   try {
-    const diff = Date.now() - new Date(ts).getTime();
+    const time = new Date(ts).getTime();
+    if (isNaN(time)) return '-';
+    const diff = Date.now() - time;
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'just now';
     if (mins < 60) return `${mins}m ago`;
