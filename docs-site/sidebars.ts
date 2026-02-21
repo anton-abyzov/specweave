@@ -533,7 +533,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'guides/extensible-skills',
+          id: 'skills/extensible-skills',
           label: 'The Standard (Open/Closed)',
         },
         {
@@ -548,7 +548,7 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
-          id: 'guides/skill-development-guidelines',
+          id: 'skills/skill-development-guidelines',
           label: 'Development Guidelines',
         },
       ],
@@ -565,12 +565,12 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
-          id: 'guides/secure-skill-factory-standard',
+          id: 'skills/secure-skill-factory-standard',
           label: 'Skill Factory RFC (Full Spec)',
         },
         {
           type: 'doc',
-          id: 'guides/skills-ecosystem-security',
+          id: 'skills/skills-ecosystem-security',
           label: 'Security Landscape',
         },
       ],
@@ -582,7 +582,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'guides/skill-discovery-evaluation',
+          id: 'skills/skill-discovery-evaluation',
           label: 'Discovery & Evaluation',
         },
         {
@@ -592,7 +592,7 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
-          id: 'guides/skill-contradiction-resolution',
+          id: 'skills/skill-contradiction-resolution',
           label: 'Contradiction Resolution',
         },
       ],

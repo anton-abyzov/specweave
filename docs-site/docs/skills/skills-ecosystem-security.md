@@ -50,7 +50,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 **Vendor skills** from Anthropic, OpenAI, Google, and Microsoft carry the highest baseline trust but cover only generic use cases. Domain-specific needs (Terraform, Stripe, Kubernetes) are rarely addressed by vendor-authored skills. The vendor model also creates a false dichotomy: developers who need domain-specific skills are forced to choose between trusted-but-limited vendor skills and feature-rich-but-unvetted community skills. This gap is precisely where SpecWeave's tiered verification model aims to provide a third option.
 
 :::tip SpecWeave's Answer
-SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verifiedskill.com](https://verifiedskill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/guides/secure-skill-factory-standard) for the complete specification.
+SpecWeave addresses these ecosystem-wide security failures through the [Verified Skills Standard](/docs/skills/verified-skills) — a 3-tier certification system (Scanned, Verified, Certified) backed by the [verifiedskill.com](https://verifiedskill.com) registry. See the [Secure Skill Factory Standard RFC](/docs/skills/secure-skill-factory-standard) for the complete specification.
 :::
 
 ### The Trust Gap
@@ -619,8 +619,8 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 - [Skill Discovery and Evaluation](./skill-discovery-evaluation.md) — 6-dimension quality scoring rubric and platform-by-platform discovery guide
 - [Secure Skill Factory Standard](./secure-skill-factory-standard.md) — RFC for mandatory SKILL.md sections, forbidden patterns, and author verification
 - [Skill Contradiction Resolution](./skill-contradiction-resolution.md) — how SpecWeave detects and resolves conflicting instructions between skills
-- [Agent Skills Extensibility Analysis](./agent-skills-extensibility-analysis.md) — compatibility matrix for the SKILL.md format across 39 AI coding agents
-- [Agent Security Best Practices](./agent-security-best-practices.md) — operational security guidelines for running AI agent swarms
+- [Agent Skills Extensibility Analysis](../guides/agent-skills-extensibility-analysis.md) — compatibility matrix for the SKILL.md format across 39 AI coding agents
+- [Agent Security Best Practices](../guides/agent-security-best-practices.md) — operational security guidelines for running AI agent swarms
 
 ---
 

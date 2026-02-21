@@ -729,11 +729,11 @@ function validateStructure(skillContent: string): Finding[] {
 
 6. **SpecWeave Security Scanner**. Reference implementation of Tier 1 pattern-based scanning. Source: `src/core/fabric/security-scanner.ts` in the SpecWeave repository.
 
-7. **Agent Security Best Practices** (SpecWeave Docs). Complementary guide covering prompt injection prevention, plugin vetting, and safe autonomous execution. [Agent Security Best Practices](./agent-security-best-practices.md)
+7. **Agent Security Best Practices** (SpecWeave Docs). Complementary guide covering prompt injection prevention, plugin vetting, and safe autonomous execution. [Agent Security Best Practices](../guides/agent-security-best-practices.md)
 
 8. **Skill Discovery and Evaluation** (SpecWeave Docs). Guide to finding quality AI agent skills with a 6-dimension quality scoring rubric. [Skill Discovery and Evaluation](./skill-discovery-evaluation.md)
 
-9. **Agent Skills Extensibility Analysis** (SpecWeave Docs). Compatibility matrix for the Agent Skills format across 39 AI coding platforms. [Agent Skills Extensibility Analysis](./agent-skills-extensibility-analysis.md)
+9. **Agent Skills Extensibility Analysis** (SpecWeave Docs). Compatibility matrix for the Agent Skills format across 39 AI coding platforms. [Agent Skills Extensibility Analysis](../guides/agent-skills-extensibility-analysis.md)
 
 10. **Skill Contradiction Resolution** (SpecWeave Docs). System design for detecting and resolving contradicting instructions from multiple skill sources. [Skill Contradiction Resolution](./skill-contradiction-resolution.md)
 

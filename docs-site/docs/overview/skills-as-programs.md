@@ -87,6 +87,6 @@ Skills follow SOLID's Open/Closed Principle:
 
 Your customizations override defaults. Original skills keep getting updates. No fork needed.
 
-**[Learn more about extensible skills →](../guides/extensible-skills)**
+**[Learn more about extensible skills →](../skills/extensible-skills)**
 
-**[Skill development guidelines →](../guides/skill-development-guidelines)**
+**[Skill development guidelines →](../skills/skill-development-guidelines)**

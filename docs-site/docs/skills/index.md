@@ -28,7 +28,7 @@ Skills self-load their customizations using **Dynamic Context Injection (DCI)** 
 
 The result: you correct Claude once ("use React Hook Form, not useState for forms"), and that preference is applied automatically in every future session. No reminders needed.
 
-[Read the full Extensible Skills Standard](/docs/guides/extensible-skills)
+[Read the full Extensible Skills Standard](/docs/skills/extensible-skills)
 
 ---
 
@@ -78,8 +78,8 @@ A skill can be both **verified** (passed security certification) and **extensibl
 
 - **[Claude Skills Deep Dive](/docs/guides/claude-skills-deep-dive)** — Architecture and comparison with other AI tool systems
 - **[Self-Improving Skills](/docs/guides/self-improving-skills)** — How the Reflect system auto-learns from corrections
-- **[Security Landscape](/docs/guides/skills-ecosystem-security)** — ToxicSkills data, platform comparison, risk taxonomy
+- **[Security Landscape](/docs/skills/skills-ecosystem-security)** — ToxicSkills data, platform comparison, risk taxonomy
 - **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 39 AI coding agents
-- **[Skill Discovery & Evaluation](/docs/guides/skill-discovery-evaluation)** — Where to find skills and how to evaluate them
+- **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find skills and how to evaluate them
 - **[All 100+ Skills](/docs/reference/skills)** — Complete SpecWeave skill catalog
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry
