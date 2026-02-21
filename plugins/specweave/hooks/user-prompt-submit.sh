@@ -1442,7 +1442,7 @@ Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NA
                       # v1.0.243: Smart interview gate — LLM assesses prompt completeness
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
-                        DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
+                        DEEP_INTERVIEW_MSG=" Assess prompt completeness first — sw:pm skill will assess complexity and determine question count. If gaps exist, ask targeted questions (count depends on complexity) before calling."
                       fi
 
                       MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
@@ -2117,7 +2117,7 @@ if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; th
   fi
 
   if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
-    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment."
+    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask targeted questions (count depends on complexity). If sufficient, call sw:increment."
   fi
 fi
 
@@ -2457,10 +2457,16 @@ _budget_append "$ARCHIVE_SUGGESTION_MSG"
 if [[ -n "$FINAL_MESSAGE" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
   DEDUP_HASH_FILE="$SW_PROJECT_ROOT/.specweave/state/.context-hash"
   CURRENT_HASH=""
+  # SMART_INTERVIEW_GATE_MSG is excluded from the dedup hash so the gate
+  # fires on every turn even when the rest of the context is identical.
+  HASH_INPUT="$FINAL_MESSAGE"
+  if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
+    HASH_INPUT="${HASH_INPUT//$SMART_INTERVIEW_GATE_MSG/}"
+  fi
   if command -v md5sum >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5sum | cut -d' ' -f1)
+    CURRENT_HASH=$(printf '%s' "$HASH_INPUT" | md5sum | cut -d' ' -f1)
   elif command -v md5 >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5)
+    CURRENT_HASH=$(printf '%s' "$HASH_INPUT" | md5)
   fi
 
   if [[ -n "$CURRENT_HASH" ]]; then
