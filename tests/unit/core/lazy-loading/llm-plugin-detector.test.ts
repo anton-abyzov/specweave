@@ -34,10 +34,8 @@ vi.mock('../../../../src/core/types/plugin-scope.js', () => ({
 
 import {
   SPECWEAVE_PLUGINS,
-  OFFICIAL_PLUGINS,
   ALL_VALID_PLUGINS,
   isSpecWeavePlugin,
-  isOfficialPlugin,
   getPluginMarketplace,
   readPluginAutoLoadConfig,
   clearCliCache,
@@ -56,7 +54,7 @@ import type {
 describe('SPECWEAVE_PLUGINS constant', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(SPECWEAVE_PLUGINS)).toBe(true);
-    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(22);
+    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(21);
   });
 
   it('should have "sw" as the first element (core plugin)', () => {
@@ -120,60 +118,18 @@ describe('SPECWEAVE_PLUGINS constant', () => {
 });
 
 // ============================================================
-// OFFICIAL_PLUGINS constant
+// OFFICIAL_PLUGINS removed (v1.0.279)
 // ============================================================
-describe('OFFICIAL_PLUGINS constant', () => {
-  it('should be a non-empty array', () => {
-    expect(Array.isArray(OFFICIAL_PLUGINS)).toBe(true);
-    expect(OFFICIAL_PLUGINS.length).toBeGreaterThanOrEqual(9);
+describe('Official plugins policy (v1.0.279)', () => {
+  it('ALL_VALID_PLUGINS should equal SPECWEAVE_PLUGINS only', () => {
+    // No claude-plugins-official entries allowed
+    expect(ALL_VALID_PLUGINS).toEqual(SPECWEAVE_PLUGINS);
   });
 
-  it('should include service integration plugins', () => {
-    expect(OFFICIAL_PLUGINS).toContain('firebase');
-    expect(OFFICIAL_PLUGINS).toContain('gitlab');
-    expect(OFFICIAL_PLUGINS).toContain('linear');
-    expect(OFFICIAL_PLUGINS).toContain('asana');
-    expect(OFFICIAL_PLUGINS).toContain('slack');
-    expect(OFFICIAL_PLUGINS).toContain('supabase');
-  });
-
-  it('should include framework-specific plugins', () => {
-    expect(OFFICIAL_PLUGINS).toContain('laravel-boost');
-  });
-
-  it('should include development tool plugins', () => {
-    expect(OFFICIAL_PLUGINS).toContain('commit-commands');
-    expect(OFFICIAL_PLUGINS).toContain('hookify');
-  });
-
-  it('should NOT contain broken LSP plugins', () => {
-    expect(OFFICIAL_PLUGINS).not.toContain('csharp-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('gopls-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('jdtls-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('kotlin-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('php-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('lua-lsp');
-    expect(OFFICIAL_PLUGINS).not.toContain('clangd-lsp');
-  });
-
-  it('should NOT contain removed plugins (context7, playwright)', () => {
-    expect(OFFICIAL_PLUGINS).not.toContain('context7');
-    expect(OFFICIAL_PLUGINS).not.toContain('playwright');
-  });
-
-  it('should NOT contain plugins that collide with SpecWeave', () => {
-    expect(OFFICIAL_PLUGINS).not.toContain('github');
-    expect(OFFICIAL_PLUGINS).not.toContain('stripe');
-  });
-
-  it('should have no duplicates', () => {
-    const uniqueSet = new Set(OFFICIAL_PLUGINS);
-    expect(uniqueSet.size).toBe(OFFICIAL_PLUGINS.length);
-  });
-
-  it('should NOT contain any sw-prefixed plugins', () => {
-    for (const plugin of OFFICIAL_PLUGINS) {
-      expect(plugin).not.toMatch(/^sw/);
+  it('should never include gitlab, firebase, slack, or any non-specweave plugin', () => {
+    const forbidden = ['gitlab', 'firebase', 'slack', 'linear', 'asana', 'supabase', 'laravel-boost', 'hookify', 'commit-commands'];
+    for (const plugin of forbidden) {
+      expect(ALL_VALID_PLUGINS).not.toContain(plugin);
     }
   });
 });
@@ -182,8 +138,8 @@ describe('OFFICIAL_PLUGINS constant', () => {
 // ALL_VALID_PLUGINS constant
 // ============================================================
 describe('ALL_VALID_PLUGINS constant', () => {
-  it('should combine both SPECWEAVE_PLUGINS and OFFICIAL_PLUGINS', () => {
-    expect(ALL_VALID_PLUGINS.length).toBe(SPECWEAVE_PLUGINS.length + OFFICIAL_PLUGINS.length);
+  it('should equal SPECWEAVE_PLUGINS (no official plugins)', () => {
+    expect(ALL_VALID_PLUGINS.length).toBe(SPECWEAVE_PLUGINS.length);
   });
 
   it('should include all SpecWeave plugins', () => {
@@ -192,10 +148,10 @@ describe('ALL_VALID_PLUGINS constant', () => {
     }
   });
 
-  it('should include all official plugins', () => {
-    for (const plugin of OFFICIAL_PLUGINS) {
-      expect(ALL_VALID_PLUGINS).toContain(plugin);
-    }
+  it('should NOT include any official plugins (gitlab, firebase, etc.)', () => {
+    expect(ALL_VALID_PLUGINS).not.toContain('gitlab');
+    expect(ALL_VALID_PLUGINS).not.toContain('firebase');
+    expect(ALL_VALID_PLUGINS).not.toContain('slack');
   });
 
   it('should have no duplicates across both arrays', () => {
@@ -203,13 +159,8 @@ describe('ALL_VALID_PLUGINS constant', () => {
     expect(uniqueSet.size).toBe(ALL_VALID_PLUGINS.length);
   });
 
-  it('should start with SpecWeave plugins followed by official plugins', () => {
-    // First element is the core 'sw' plugin
+  it('should start with the core sw plugin', () => {
     expect(ALL_VALID_PLUGINS[0]).toBe('sw');
-    // Last element should be from OFFICIAL_PLUGINS
-    expect(ALL_VALID_PLUGINS[ALL_VALID_PLUGINS.length - 1]).toBe(
-      OFFICIAL_PLUGINS[OFFICIAL_PLUGINS.length - 1]
-    );
   });
 });
 
@@ -238,7 +189,7 @@ describe('isSpecWeavePlugin', () => {
     }
   });
 
-  it('should return false for official plugins', () => {
+  it('should return false for non-specweave plugin names', () => {
     expect(isSpecWeavePlugin('firebase')).toBe(false);
     expect(isSpecWeavePlugin('gitlab')).toBe(false);
     expect(isSpecWeavePlugin('linear')).toBe(false);
@@ -267,56 +218,7 @@ describe('isSpecWeavePlugin', () => {
   });
 });
 
-// ============================================================
-// isOfficialPlugin()
-// ============================================================
-describe('isOfficialPlugin', () => {
-  it('should return true for service integrations', () => {
-    expect(isOfficialPlugin('firebase')).toBe(true);
-    expect(isOfficialPlugin('gitlab')).toBe(true);
-    expect(isOfficialPlugin('linear')).toBe(true);
-    expect(isOfficialPlugin('slack')).toBe(true);
-    expect(isOfficialPlugin('supabase')).toBe(true);
-    expect(isOfficialPlugin('asana')).toBe(true);
-  });
-
-  it('should return true for framework-specific plugins', () => {
-    expect(isOfficialPlugin('laravel-boost')).toBe(true);
-  });
-
-  it('should return true for dev tool plugins', () => {
-    expect(isOfficialPlugin('commit-commands')).toBe(true);
-    expect(isOfficialPlugin('hookify')).toBe(true);
-  });
-
-  it('should return true for all entries in OFFICIAL_PLUGINS', () => {
-    for (const plugin of OFFICIAL_PLUGINS) {
-      expect(isOfficialPlugin(plugin)).toBe(true);
-    }
-  });
-
-  it('should return false for SpecWeave plugins', () => {
-    expect(isOfficialPlugin('sw')).toBe(false);
-    expect(isOfficialPlugin('sw-frontend')).toBe(false);
-    expect(isOfficialPlugin('sw-backend')).toBe(false);
-    expect(isOfficialPlugin('sw-github')).toBe(false);
-  });
-
-  it('should return false for unknown plugins', () => {
-    expect(isOfficialPlugin('unknown')).toBe(false);
-    expect(isOfficialPlugin('my-plugin')).toBe(false);
-  });
-
-  it('should return false for empty string', () => {
-    expect(isOfficialPlugin('')).toBe(false);
-  });
-
-  it('should be case-sensitive', () => {
-    expect(isOfficialPlugin('Firebase')).toBe(false);
-    expect(isOfficialPlugin('GITLAB')).toBe(false);
-    expect(isOfficialPlugin('Slack')).toBe(false);
-  });
-});
+// isOfficialPlugin removed in v1.0.279 — only @specweave plugins allowed
 
 // ============================================================
 // getPluginMarketplace()
@@ -338,36 +240,27 @@ describe('getPluginMarketplace', () => {
     expect(getPluginMarketplace('sw-testing')).toBe('specweave');
   });
 
-  it('should return "claude-plugins-official" for all official plugins', () => {
-    for (const plugin of OFFICIAL_PLUGINS) {
-      expect(getPluginMarketplace(plugin)).toBe('claude-plugins-official');
-    }
+  it('should return "specweave" for any plugin (v1.0.279: only specweave marketplace)', () => {
+    expect(getPluginMarketplace('firebase')).toBe('specweave');
+    expect(getPluginMarketplace('gitlab')).toBe('specweave');
   });
 
-  it('should return "claude-plugins-official" for firebase', () => {
-    expect(getPluginMarketplace('firebase')).toBe('claude-plugins-official');
+  it('should return "specweave" for any plugin name (v1.0.279: always specweave marketplace)', () => {
+    expect(getPluginMarketplace('unknown')).toBe('specweave');
+    expect(getPluginMarketplace('my-custom-plugin')).toBe('specweave');
+    expect(getPluginMarketplace('')).toBe('specweave');
+    expect(getPluginMarketplace('react')).toBe('specweave');
   });
 
-  it('should return "claude-plugins-official" for gitlab', () => {
-    expect(getPluginMarketplace('gitlab')).toBe('claude-plugins-official');
+  it('should return "specweave" for removed plugins (marketplace is always specweave)', () => {
+    expect(getPluginMarketplace('sw-ui')).toBe('specweave');
+    expect(getPluginMarketplace('sw-router')).toBe('specweave');
+    expect(getPluginMarketplace('sw-plugin-dev')).toBe('specweave');
   });
 
-  it('should return "unknown" for unrecognized plugin names', () => {
-    expect(getPluginMarketplace('unknown')).toBe('unknown');
-    expect(getPluginMarketplace('my-custom-plugin')).toBe('unknown');
-    expect(getPluginMarketplace('')).toBe('unknown');
-    expect(getPluginMarketplace('react')).toBe('unknown');
-  });
-
-  it('should return "unknown" for removed plugins', () => {
-    expect(getPluginMarketplace('sw-ui')).toBe('unknown');
-    expect(getPluginMarketplace('sw-router')).toBe('unknown');
-    expect(getPluginMarketplace('sw-plugin-dev')).toBe('unknown');
-  });
-
-  it('should return "unknown" for broken LSP plugins', () => {
-    expect(getPluginMarketplace('csharp-lsp')).toBe('unknown');
-    expect(getPluginMarketplace('gopls-lsp')).toBe('unknown');
+  it('should return "specweave" for LSP plugin names (marketplace is always specweave)', () => {
+    expect(getPluginMarketplace('csharp-lsp')).toBe('specweave');
+    expect(getPluginMarketplace('gopls-lsp')).toBe('specweave');
   });
 });
 
@@ -701,13 +594,13 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['firebase'] as any,
+        plugins: ['sw-frontend'] as any,
       }),
       installations: [],
       suggestOnly: true,
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('firebase');
+    expect(parsed.systemMessage).toContain('sw-frontend');
     expect(parsed.systemMessage).toContain('Plugins that may help');
   });
 
@@ -879,16 +772,16 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend', 'firebase'] as any,
+        plugins: ['sw-frontend', 'sw-backend', 'sw-testing'] as any,
       }),
       installations: [
         makeInstall({ success: true, plugin: 'sw-frontend', alreadyInstalled: true }),
         makeInstall({ success: true, plugin: 'sw-backend', alreadyInstalled: true }),
-        makeInstall({ success: true, plugin: 'firebase', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'sw-testing', alreadyInstalled: true }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: sw-frontend, sw-backend, firebase');
+    expect(parsed.systemMessage).toContain('Using: sw-frontend, sw-backend, sw-testing');
   });
 
   it('should always have continue: true even when detection fails with "not found"', () => {

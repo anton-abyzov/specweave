@@ -52,9 +52,21 @@ count_pending_tasks() {
     local f="$1"; [ ! -f "$f" ] && echo "0" && return
     local c; c=$(grep -c '\[ \]' "$f" 2>/dev/null) || true; echo "${c:-0}"
 }
+count_completed_tasks() {
+    local f="$1"; [ ! -f "$f" ] && echo "0" && return
+    local c; c=$(grep -c '\[x\]' "$f" 2>/dev/null) || true; echo "${c:-0}"
+}
 count_open_acs() {
     local f="$1"; [ ! -f "$f" ] && echo "0" && return
     local c; c=$(grep -c '\[ \]' "$f" 2>/dev/null) || true; echo "${c:-0}"
+}
+get_next_task_title() {
+    local f="$1"; [ ! -f "$f" ] && echo "" && return
+    local lnum; lnum=$(grep -n '\[ \]' "$f" 2>/dev/null | head -1 | cut -d: -f1)
+    [ -z "$lnum" ] && echo "" && return
+    # Search backwards from [ ] line to find ### T-NNN: Title heading
+    local title; title=$(head -n "$lnum" "$f" | grep '### T-' | tail -1 | sed 's/^### T-[0-9]*: //')
+    echo "${title}" | head -c 80
 }
 silent_approve() {
     local reason="$1" rc="${2:-session_inactive}" ctx="${3:-"{}"}"
@@ -143,8 +155,12 @@ if [ -f "$DEDUP_PREV" ]; then
 fi
 echo "$NOW" > "$DEDUP_PREV" 2>/dev/null
 
-# 7. Scan active increments
+# 7. Read userGoal from session marker
+USER_GOAL=$(jq -r '.userGoal // ""' "$SESSION" 2>/dev/null || echo "")
+
+# 8. Scan active increments (enriched: next task, progress fraction)
 TP=0; TAC=0; IC=0; ILIST=""
+_SCORE_SCRIPT="$SCRIPT_DIR/lib/score-increment.sh"
 for meta in $(find "$INC_DIR" -maxdepth 2 -name "metadata.json" 2>/dev/null); do
     st=$(jq -r '.status // "unknown"' "$meta" 2>/dev/null || echo "unknown")
     [ "$st" != "active" ] && [ "$st" != "in-progress" ] && continue
@@ -152,11 +168,23 @@ for meta in $(find "$INC_DIR" -maxdepth 2 -name "metadata.json" 2>/dev/null); do
     p=$(count_pending_tasks "$d/tasks.md"); a=$(count_open_acs "$d/spec.md")
     if [ "$p" -gt 0 ] || [ "$a" -gt 0 ]; then
         TP=$((TP + p)); TAC=$((TAC + a)); IC=$((IC + 1))
-        [ -z "$ILIST" ] && ILIST="$id|$p|$a" || ILIST="$ILIST,$id|$p|$a"
+        # Extract next pending task title (first [ ] line, strip markdown)
+        _next_task=$(grep -m1 '\[ \]' "$d/tasks.md" 2>/dev/null | sed 's/.*\] //' | head -c 80 || echo "")
+        # Count completed tasks for progress fraction
+        _done=$(grep -c '\[x\]' "$d/tasks.md" 2>/dev/null) || _done=0
+        _total=$((_done + p))
+        # Score against userGoal if set and scoring script available
+        _score=""
+        if [ -n "$USER_GOAL" ] && [ -f "$_SCORE_SCRIPT" ]; then
+            _score=$(bash "$_SCORE_SCRIPT" "$d" "$USER_GOAL" 2>/dev/null || echo "0")
+        fi
+        # Extended ILIST format: id|pending|acs|next_task|done|total|score
+        _entry="$id|$p|$a|$_next_task|$_done|$_total|${_score:-0}"
+        [ -z "$ILIST" ] && ILIST="$_entry" || ILIST="$ILIST,$_entry"
     fi
 done
 
-# 8. All complete → approve
+# 9. All complete → approve
 if [ "$IC" -eq 0 ]; then
     rm -f "$SESSION" "$DEDUP_PREV" "$TURN_FILE" 2>/dev/null
     loud_approve "All work complete" "all_complete" \
@@ -164,19 +192,37 @@ if [ "$IC" -eq 0 ]; then
         "All tasks and ACs complete. Run /sw:done to close the increment."
 fi
 
-# 9. Work remains → block with concise message
+# 10. Work remains → block with enriched context message
+# Sort entries by score descending (highest-relevance first) when userGoal is set
+SORTED_ILIST="$ILIST"
+if [ -n "$USER_GOAL" ] && [ "$IC" -gt 1 ]; then
+    # Sort by score field (7th field) descending
+    SORTED_ILIST=$(echo "$ILIST" | tr ',' '\n' | sort -t'|' -k7 -nr | tr '\n' ',')
+    SORTED_ILIST="${SORTED_ILIST%,}"  # trim trailing comma
+fi
+
 DETAILS=""
-IFS=',' read -ra ENTRIES <<< "$ILIST"
+_BEST_ID=""
+IFS=',' read -ra ENTRIES <<< "$SORTED_ILIST"
 for entry in "${ENTRIES[@]}"; do
-    IFS='|' read -r eid ep ea <<< "$entry"
-    DETAILS="${DETAILS}\n  - ${eid}: ${ep} tasks pending, ${ea} ACs open"
+    IFS='|' read -r eid ep ea enext edone etotal escore <<< "$entry"
+    [ -z "$_BEST_ID" ] && _BEST_ID="$eid"
+    _progress="${edone:-0}/${etotal:-0} tasks"
+    _next_info=""
+    [ -n "$enext" ] && _next_info=" | Next: $enext"
+    DETAILS="${DETAILS}\n  ▸ ${eid}: ${_progress}${_next_info}"
 done
 
-BMSG="Auto Mode: ${IC} increment(s) need work${DETAILS}\nTurn $TURN/$MAX_TURNS | Continue: /sw:do | Complete: /sw:done"
+# Build enriched block message
+BMSG=""
+[ -n "$USER_GOAL" ] && BMSG="Goal: ${USER_GOAL}\n"
+BMSG="${BMSG}Auto Mode: ${IC} increment(s) need work${DETAILS}"
+BMSG="${BMSG}\nTurn $TURN/$MAX_TURNS | Continue: /sw:do ${_BEST_ID}"
 BMSG=$(echo -e "$BMSG")
 
 block "Work remaining: $TP tasks, $TAC ACs" "work_remaining" \
     "$(jq -n --argjson p "$TP" --argjson a "$TAC" --argjson i "$IC" \
         --argjson t "$TURN" --argjson mt "$MAX_TURNS" --arg il "$ILIST" \
-        '{pendingTasks:$p,openAcs:$a,incompleteIncrements:$i,increments:$il,turn:{current:$t,max:$mt}}')" \
+        --arg goal "$USER_GOAL" --arg best "$_BEST_ID" \
+        '{pendingTasks:$p,openAcs:$a,incompleteIncrements:$i,increments:$il,turn:{current:$t,max:$mt},userGoal:$goal,recommended:$best}')" \
     "$BMSG"

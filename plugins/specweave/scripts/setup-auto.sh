@@ -249,21 +249,61 @@ if [ "$ALL_BACKLOG" = "true" ]; then
     fi
 fi
 
-# If no increments specified, find current in-progress increment
+# If no increments specified, find current in-progress increment(s) via intent scoring
 if [ ${#INCREMENT_IDS[@]} -eq 0 ]; then
+    # Collect ALL active/in-progress increments (no blind first-match break)
+    _ACTIVE_DIRS=()
     for dir in "$INCREMENTS_DIR"/[0-9][0-9][0-9][0-9]-*/; do
         if [ -d "$dir" ]; then
             META_FILE="$dir/metadata.json"
             if [ -f "$META_FILE" ]; then
                 STATUS=$(jq -r '.status' "$META_FILE" 2>/dev/null || echo "")
                 if [ "$STATUS" = "active" ] || [ "$STATUS" = "in-progress" ]; then
-                    INCREMENT_ID=$(basename "$dir")
-                    INCREMENT_IDS+=("$INCREMENT_ID")
-                    break
+                    _ACTIVE_DIRS+=("$dir")
                 fi
             fi
         fi
     done
+
+    if [ ${#_ACTIVE_DIRS[@]} -eq 1 ]; then
+        # Fast path: single active increment, no scoring needed
+        INCREMENT_IDS+=("$(basename "${_ACTIVE_DIRS[0]}")")
+    elif [ ${#_ACTIVE_DIRS[@]} -gt 1 ]; then
+        select_best_increment() {
+            local prompt_text="$1"; shift; local dirs=("$@")
+            local _setup_dir; _setup_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+            local _score_script="$_setup_dir/../hooks/lib/score-increment.sh"
+
+            if [ -n "$prompt_text" ] && [ -f "$_score_script" ]; then
+                # Score each increment against the prompt, pick best
+                local _best_score=-1 _best_dir=""
+                for _dir in "${dirs[@]}"; do
+                    local _score; _score=$(bash "$_score_script" "$_dir" "$prompt_text" 2>/dev/null || echo "0")
+                    if [ "$_score" -gt "$_best_score" ]; then
+                        _best_score="$_score"; _best_dir="$_dir"
+                    fi
+                done
+                local _sel; _sel=$(basename "$_best_dir")
+                echo "🎯 Selected '$_sel' by intent match (score: $_best_score/100)" >&2
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"increment_selected\",\"increment\":\"$_sel\",\"method\":\"intent_scoring\",\"score\":$_best_score}" >> "$LOGS_DIR/auto-sessions.log"
+                echo "$_sel"
+            else
+                # No prompt: pick most-recently-modified increment
+                local _latest_mtime=0 _latest_dir=""
+                for _dir in "${dirs[@]}"; do
+                    local _mtime; _mtime=$(stat -f%m "$_dir/metadata.json" 2>/dev/null || stat -c%Y "$_dir/metadata.json" 2>/dev/null || echo "0")
+                    if [ "$_mtime" -gt "$_latest_mtime" ]; then
+                        _latest_mtime="$_mtime"; _latest_dir="$_dir"
+                    fi
+                done
+                local _sel; _sel=$(basename "${_latest_dir:-${dirs[0]}}")
+                echo "📅 Selected '$_sel' by most recent activity" >&2
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"increment_selected\",\"increment\":\"$_sel\",\"method\":\"recent_activity\"}" >> "$LOGS_DIR/auto-sessions.log"
+                echo "$_sel"
+            fi
+        }
+        INCREMENT_IDS+=("$(select_best_increment "$PROMPT" "${_ACTIVE_DIRS[@]}")")
+    fi
 fi
 
 if [ ${#INCREMENT_IDS[@]} -eq 0 ]; then
@@ -471,6 +511,20 @@ echo "$SESSION_JSON" | jq . > "$SESSION_FILE"
 
 # Log session start
 echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"session_start\",\"sessionId\":\"$SESSION_ID\",\"increments\":${#INCREMENT_IDS[@]}}" >> "$LOGS_DIR/auto-sessions.log"
+
+# Write userGoal to auto-mode.json BEFORE the session start banner
+AUTO_MODE_FILE="$STATE_DIR/auto-mode.json"
+if [ -f "$AUTO_MODE_FILE" ]; then
+    if [ -n "$PROMPT" ]; then
+        _UPDATED_AM=$(jq --arg g "$PROMPT" '.userGoal = $g' "$AUTO_MODE_FILE" 2>/dev/null)
+    else
+        _UPDATED_AM=$(jq '.userGoal = null' "$AUTO_MODE_FILE" 2>/dev/null)
+    fi
+    [ -n "$_UPDATED_AM" ] && echo "$_UPDATED_AM" > "$AUTO_MODE_FILE"
+elif [ -n "$PROMPT" ]; then
+    # Create stub so stop hook can read userGoal even before LLM writes full auto-mode.json
+    jq -n --arg g "$PROMPT" '{"active":false,"userGoal":$g}' > "$AUTO_MODE_FILE"
+fi
 
 # Output - Session Start Banner
 echo ""
