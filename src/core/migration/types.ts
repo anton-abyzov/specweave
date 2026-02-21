@@ -101,6 +101,8 @@ export interface MigrationOptions {
   yes?: boolean;
   /** Add a new repo to existing umbrella */
   addRepo?: string;
+  /** Reorganize spec folders into per-project directories */
+  reorganizeSpecs?: boolean;
 }
 
 /**

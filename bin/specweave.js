@@ -1318,6 +1318,7 @@ program
   .option('--org <name>', 'GitHub organization name')
   .option('--rollback', 'Rollback a previous migration')
   .option('--add-repo <name>', 'Add a new repo to existing umbrella (name or org/name)')
+  .option('--reorganize-specs', 'Reorganize spec folders into per-project directories')
   .option('--yes', 'Skip confirmation prompts')
   .action(async (opts) => {
     const { migrateToUmbrellaCommand } = await import('../dist/src/cli/commands/migrate-to-umbrella.js');
@@ -1327,6 +1328,7 @@ program
       orgName: opts.org,
       rollback: opts.rollback,
       addRepo: opts.addRepo,
+      reorganizeSpecs: opts.reorganizeSpecs,
       yes: opts.yes,
     });
   });

@@ -50,7 +50,7 @@ export class GitHubReconciler {
                 return result;
             }
             // 2. Initialize GitHub client
-            await this.initClient();
+            await this.initClient(config);
             if (!this.client) {
                 result.errors.push('Failed to initialize GitHub client');
                 return result;
@@ -301,9 +301,9 @@ This typically happens when:
      * where git remote points to a different repo than where issues live).
      * Falls back to git remote detection.
      */
-    async initClient() {
-        const config = await this.loadConfig();
-        const ghConfig = config.sync?.github;
+    async initClient(config) {
+        const cfg = config ?? await this.loadConfig();
+        const ghConfig = cfg.sync?.github;
         if (ghConfig?.owner && ghConfig?.repo) {
             this.client = GitHubClientV2.fromRepo(ghConfig.owner, ghConfig.repo);
             this.logger.log(`🔗 GitHub repository: ${ghConfig.owner}/${ghConfig.repo} (from config)`);
