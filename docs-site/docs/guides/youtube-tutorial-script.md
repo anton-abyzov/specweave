@@ -7,108 +7,90 @@ draft: true
 
 # SpecWeave Complete Tutorial - YouTube Video Script
 
-**Duration**: ~60 minutes
-**Format**: Screen recording walking through spec-weave.com documentation + terminal demos
+**Duration**: ~45 minutes (main tutorial) + optional deep dives
+**Format**: Cold open → live demos → screen recording → terminal demos
 **Diagrams**: Mermaid (already embedded in docs) + 5 Excalidraw transitions
-**Teaching Claude**: This script teaches Claude how SpecWeave works by walking through real docs
+**Companion videos**: "AI Skills Are Not Safe" (15 min standalone), "App Showcase" (10 min standalone)
 
 ---
 
-## INTRO - THE VIBE CODING PROBLEM (0:00 - 2:30)
+## COLD OPEN - THE HOOK (0:00 - 0:45)
 
-**[SCREEN: Navigate to docs/guides/lessons/11-vibe-coding-problem]**
+**[SCREEN: Black screen. White text appears, typewriter style. No music.]**
 
-> "Before I show you SpecWeave, let me explain the problem it solves.
->
-> This is what I call 'Vibe Coding' — and almost everyone does it."
+> "259 pull requests. 497 commits. 40,000 lines of code. One month. Zero IDE sessions."
 
-**[READ from the page - The 5 Pain Points]**
+**[SCREEN: Cut to face-cam]**
 
-> "Pain Point 1: **Context Evaporation**. Monday you have a great conversation with Claude about payment architecture. Friday, nobody remembers why you chose idempotency keys.
+> "That's Boris Cherny — the creator of Claude Code at Anthropic — shipping production software without opening his editor. Not once. Every commit authored by an AI agent running autonomously with stop hooks.
 >
-> Pain Point 2: **Scattered Implementation**. Each AI request produces isolated code. No shared services. No consistent patterns.
+> I've done something similar. Seven production applications — three of them live in the App Store right now — built in weeks, not months. What used to take me three months, I now ship in three days.
 >
-> Pain Point 3: **No Quality Gates**. Generated code goes straight to production. No tests. No review. No validation.
+> This is the system that makes it possible."
+
+**[SCREEN: Rapid 3-second montage of all seven apps — fast cuts, energetic music]**
+
+> **BizZone** — student business events, AI news generation → **SkillUp** — football coaching monetization → **EduFeed** — AI learning platform → **WC26** — World Cup companion, mobile + web → **Lulla** — baby calming with ML cry detection → **EasyChamp** — enterprise sports leagues, 20+ microservices → **SpecWeave** — the tool itself, built with itself
+
+**[SCREEN: Cut to face-cam. Music fades.]**
+
+> "I'm going to teach you this entire system. And to prove it works, I'll build a complete white-label online store — an LMS where creators sell video courses — live on camera, from zero to deployed. You'll watch the AI interview me, write specs, and execute autonomously while I fast-forward through the build.
 >
-> Pain Point 4: **Documentation Debt**. You promise to document later. You never do.
->
-> Pain Point 5: **Onboarding Nightmare**. New developers have zero context. Everything is tribal knowledge.
->
-> And now there's a sixth pain point that barely existed a year ago:
->
-> Pain Point 6: **Agent Swarm Chaos**. You're running three AI agents on the same codebase — Claude Code locally, an OpenClaw instance in the cloud, a colleague with their own session. Nobody knows who's working on what. Agents duplicate work. They edit the same files. There's no coordination layer. OpenClaw has 160,000 GitHub stars and everyone wants to run multiple instances — but without structure, it's chaos.
->
-> And here's number seven — the one that hits you mid-session:
->
-> Pain Point 7: **'Prompt is too long.'** You've seen this error. I see it ALL the time."
+> But first, 60 seconds on why you need this."
+
+---
+
+## THE PROBLEM - 60 SECONDS (0:45 - 1:45)
 
 **[SCREEN: Show "prompt is too long" error screenshot]**
 
-> "You're deep in a session. You've been building for an hour. Context is loaded, Claude understands your codebase, you're in the zone — and then: 'prompt is too long.' Session over. Start fresh.
+> "You're deep in a session. An hour of building. Context is loaded. You're in the zone. Then — 'prompt is too long.' Session over. Start fresh. Re-explain everything. Fifteen minutes gone before you can do anything productive.
 >
-> Now you're repeating yourself. Re-explaining architecture. Re-describing what you already built. Re-loading context that was JUST there five minutes ago. You're doing the same work twice. Three times. Every restart costs you 10-15 minutes of re-explaining before you can do anything productive.
->
-> And by the way — Claude Code's latest updates now store some task context between sessions. But that's not enough. You still lose the WHY behind decisions, the acceptance criteria, the architecture choices, the test plans.
->
-> This is exactly what SpecWeave solves. When you follow the discipline — create increments, write specs, break work into tasks — you can restart at ANY point. Fresh session? Claude reads your spec.md, your tasks.md, and it's back to full speed in seconds. Not 15 minutes of re-explaining. Seconds.
->
-> It's not vibe coding anymore. It's structured, disciplined development where YOU are in control. Small tasks, full context, restartable at any point. That's the difference."
+> That's just one problem. Context evaporates between sessions. Code ships without tests. Architecture decisions live in Slack threads. New developers have zero context. And if you're running multiple AI agents? Chaos — they edit the same files, duplicate work, nobody coordinates."
 
-**[PERSONAL STORY - WHY I BUILT THIS]**
+**[SCREEN: Cut to face-cam]**
 
-> "Now, I didn't just read about these problems — I lived them. For months, I used BMAD, speckit, and OpenClaw for my AI-assisted development. Great tools. Seriously.
+> "I used BMAD, speckit, and other tools. Solid projects. But I kept hitting the same walls — no traceability, no restartable context, no quality gates. So I built SpecWeave.
 >
-> But I kept hitting walls. Context would disappear between sessions. Specifications lived in chat history. There was no traceability from requirements to code. Every new project meant rebuilding the same scaffolding.
->
-> I'd finish a feature on Monday and by Thursday couldn't remember why I made certain decisions. Sound familiar?
->
-> So I asked myself: what would a tool look like that solves these problems for good? Not just for this project, but for the next ten projects. Something I could rely on for months and years, not just days.
->
-> That question became SpecWeave."
+> Three markdown files — spec.md, plan.md, tasks.md. That's the core. Describe what you want. The AI interviews you like a product manager. You go to sleep. Wake up to finished, tested code. Every decision documented. Every change traceable."
 
-**[QUICK PREVIEW - WHAT'S POSSIBLE]**
+**[EXCALIDRAW TRANSITION: "Vibe Coding" crossed out → "Spec-Driven Development"]**
 
-> "But before diving into how SpecWeave works, let me show you what's possible when you solve these problems.
->
-> In the past month alone, using SpecWeave, I've shipped five production applications:"
+---
 
-**[SCREEN: Quick montage - 5-10 seconds per app, showing the most impressive screen]**
+## PROOF - THE PORTFOLIO (1:45 - 3:30)
 
-> "**SkillUp** — A football coaching platform where coaches monetize their training programs through Stripe. Instagram-like feed on mobile and web, lesson scheduling, challenges, program configurations. Even has scrapers pulling great content from YouTube channels.
->
-> **EduFeed** — Educational content platform with NotebookLM-style AI. Create study materials from YouTube videos, PDFs, URLs — generates videos, audio, quizzes, flashcards, mind maps. Includes video rooms like Zoom where students collaborate and share materials.
->
-> **WC26** — Your ultimate World Cup 2026 companion. AI travel planner integrates flights and ticket purchasing. Complete team stats, fixtures, player analytics, venue information. Mobile and web with Supabase auth.
->
-> **Lulla** — Calm your baby anywhere. Swift iOS app with Apple Watch integration. Uses machine learning to classify baby cries — tired, hungry, or pain — and plays scientifically-backed sounds to soothe them. Smart playlist generation like Spotify, with offline support via Cloudflare R2.
->
-> **EasyChamp** — Four years running, this is an AI-powered sports league management platform. Over 20 microservices deployed on GCP with ArgoCD GitOps. Includes ML video analytics using computer vision models, complete tournament systems from group stages to double elimination, custom websites for leagues, and Stripe monetization for tournament organizers."
+**[SCREEN: Split view — App Store screenshots + web dashboards]**
 
-**[SCREEN: Back to you]**
+> "Before the theory, the evidence. Seven production applications, three live in the App Store right now:"
 
-> "Most of these apps are Cloudflare Workers with Remix or Next.js. Almost all have LLM chat capabilities — some open-source, some paid models. And here's the key — my daughters helped build some of these. My 10-year-old worked on SkillUp. My 14-year-old contributed to EduFeed.
+**[3 seconds per app — show the most impressive screen of each]**
+
+> "**BizZone** — my first App Store release. A platform for student and business events with AI-powered news generation. Users create events, the AI generates professional news articles automatically.
 >
-> **Here's the insane part**: All of this — five production apps — built in ONE MONTH. Not 10x faster than before. **100x faster**.
+> **SkillUp Football** — at skillup-football.com. Coaches monetize their training programs through Stripe. Instagram-like feed, lesson scheduling, challenges. My 10-year-old daughter helped test this one.
+
+**[SCREEN: B-roll — daughter at the computer, 2 seconds]**
+
+> "**EduFeed** — NotebookLM meets Zoom for education. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join video rooms and share AI-generated materials in real time. My 14-year-old contributed to the student experience.
 >
-> You know what else was a side project? Claude Code itself. The tool I'm using to build all of this? Created by Anthropic as almost an experiment. And now it's enabling this level of productivity.
+> **WC26 Football** — live in the App Store. Your World Cup 2026 companion. AI travel planner, live ticket purchasing, comprehensive team stats, venue guides. Mobile and web.
 >
-> And here's the thing — Anthropic just released Claude Opus 4.6 and Sonnet 4.5. I need to be honest with you about something personal.
+> **Lulla** — this one is personal."
+
+**[SCREEN: B-roll — baby in car seat, 2 seconds. Then show the app.]**
+
+> "Built when my youngest wouldn't sleep in the car. Swift iOS app with Apple Watch. Uses an ML model to classify baby cries — tired, hungry, or in pain — and automatically adjusts the playlist. The model filters out car noise, sibling voices, everything.
 >
-> I've been a software engineer for over 18 years. I was there for the first iPhone — I remember holding it, thinking 'everything changes now.' I remember unboxing my first MacBook Pro — the weight of it, the screen, the feeling that this machine would redefine how I work. I've been through React changing frontend forever, Docker revolutionizing deployment, Kubernetes transforming infrastructure. Each one was thrilling. Each one felt like the future arriving.
+> **EasyChamp** — four years in production. Enterprise sports league management. Over 20 microservices on GCP with ArgoCD. ML video analytics with computer vision. Tournament systems, custom websites, Stripe monetization. This is where I'll show brownfield integration later — introducing SpecWeave to a complex existing codebase.
 >
-> But Opus 4.6 hit me differently. I'm not exaggerating — and I don't say this lightly after almost two decades in this industry — this was the single most emotional technology moment of my entire career. More than the iPhone. More than the MacBook. More than any framework or platform announcement.
+> **And SpecWeave itself** — built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill. The entire ecosystem is dogfooded."
+
+**[SCREEN: Back to face-cam]**
+
+> "Every one of these apps has specs in version control, architecture decisions in ADRs, requirements traced to code. That's what separates this from vibe coding — when I revisit EasyChamp's Stripe webhooks six months from now, I read increment 0034 and I know exactly how the system works.
 >
-> The first time I paired Opus 4.6 with SpecWeave and watched it reason through a complex multi-service refactor — understanding the full architecture, identifying edge cases I hadn't thought of, writing production code that passed review on the first try — I literally had to step away from my desk. I needed a moment. Because I realized I was witnessing a phase change. Not an incremental improvement. A fundamental shift in what's possible.
->
-> After 18 years of writing every line by hand, debugging at 3 AM, wrestling with legacy systems, reading through thousand-line stack traces — suddenly having a partner that truly GETS IT. Not autocomplete. Not suggestions. Deep architectural understanding. The judgment of a staff engineer who has read your entire codebase and remembers every decision you've ever made.
->
-> SpecWeave leverages both models — Opus 4.6 for critical architectural decisions and complex implementations, Sonnet 4.5 for faster routine tasks. The combination is devastatingly powerful.
->
-> The moral? We're living in a different era now. What used to take a year can happen in a month. What seemed impossible is now Tuesday afternoon. SpecWeave + Opus 4.6 is that unlock. And I built this entire Skill Fabric to harness exactly this power.
->
-> If you want to see these apps in detail, I'll walk through them at the end of this video. But for now, understand this: all of these were built with SpecWeave. Every feature spec'd. Every decision documented. Every change traceable.
->
-> Without SpecWeave, I'd still be on app number two, trying to remember why I chose one authentication pattern over another."
+> Now — the system that made this possible."
 
 **[BRIEF NOTE - BEYOND CODE]**
 
