@@ -2751,7 +2751,43 @@ test.failed        → Logs failure context
 
 ---
 
-## NEW CONCLUSION (61:30 - 63:30)
+## SECTION 18.5: ANALYTICS DASHBOARD (61:30 - 63:00)
+
+**[TERMINAL: Launch dashboard]**
+
+```bash
+specweave dashboard
+```
+
+> "One more thing I want to show you: the built-in analytics dashboard. Run `specweave dashboard` and you get a local web UI that shows everything happening in your project."
+
+**[SCREEN: Show dashboard overview page]**
+
+> "The overview page gives you increment progress, task completion, and acceptance criteria status at a glance. It live-updates via SSE as your agents work."
+
+**[SCREEN: Navigate to analytics page]**
+
+> "The analytics page tracks every command invocation, skill activation, and agent spawn. You see daily breakdowns, success rates, top commands. All stored locally in a JSONL file -- nothing leaves your machine."
+
+**[SCREEN: Show analytics commands tab with high counts]**
+
+> "Here's the powerful part: analytics captures *implicit* calls too. When team-lead orchestrates parallel agents and those agents call `/sw:do` or spawn sub-agents internally, every single call gets tracked. So the dashboard shows the true volume of work -- not just what you type, but everything the AI agents do behind the scenes."
+
+**[SCREEN: Show multi-project switcher]**
+
+> "If you're working with multiple projects, the dashboard scopes everything to the active project. Switch projects in the header -- all views update instantly."
+
+**[SCREEN: Navigate to costs page]**
+
+> "There's also a costs page showing token usage and cost estimates per increment. Useful when you're running long autonomous sessions and want to understand the spend."
+
+**[Cut back to face-cam]**
+
+> "This is your project control center. Specs, progress, costs, analytics -- all in one place, all local."
+
+---
+
+## NEW CONCLUSION (63:00 - 65:00)
 
 **[SCREEN: Navigate back to intro.md]**
 

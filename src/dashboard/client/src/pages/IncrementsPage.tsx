@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
+import { useProjectNavigate } from '../hooks/useProjectNavigate.js';
 import { useSSEEvent } from '../contexts/SSEContext.js';
 import { useUrlState } from '../hooks/useUrlState.js';
 import { Badge, statusBadgeVariant } from '../components/ui/Badge.js';
@@ -32,7 +32,7 @@ export function IncrementsPage() {
   const { data, loading, error, refetch } = useProjectApi<IncrementsData>(`/api/increments?_r=${refreshKey}`);
   const [statusFilter, setStatusFilter] = useUrlState('status', 'all');
   const [typeFilter, setTypeFilter] = useUrlState('type', 'all');
-  const navigate = useNavigate();
+  const navigate = useProjectNavigate();
 
   if (loading) return <PageLoader />;
   if (error) return <ErrorAlert message={error} onRetry={refetch} />;

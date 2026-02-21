@@ -1,8 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { ProjectContext, useProjectManager } from './hooks/useProject';
 import { SSEProvider } from './contexts/SSEContext';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { OverviewPage } from './pages/OverviewPage';
 import { IncrementsPage } from './pages/IncrementsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
@@ -20,6 +21,7 @@ import { IncrementDetailPage } from './pages/IncrementDetailPage';
 
 export default function App() {
   const projectManager = useProjectManager();
+  const location = useLocation();
 
   return (
     <ProjectContext.Provider value={projectManager}>
@@ -29,6 +31,7 @@ export default function App() {
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
           <main className="flex-1 overflow-y-auto">
+            <ErrorBoundary resetKey={location.pathname}>
             <Routes>
               <Route path="/" element={<OverviewPage />} />
               <Route path="/increments" element={<IncrementsPage />} />
@@ -51,6 +54,7 @@ export default function App() {
                 </div>
               } />
             </Routes>
+            </ErrorBoundary>
           </main>
         </div>
       </div>
