@@ -23,6 +23,9 @@ export interface PlatformSyncMetadata {
 
   /** Last sync result (success, partial, failed) */
   lastSyncResult?: 'success' | 'partial' | 'failed';
+
+  /** Error message from last failed sync attempt */
+  lastError?: string;
 }
 
 /**
