@@ -352,8 +352,8 @@ This integrates with the Fabric Registry's quality scoring rubric, where portabi
 
 ## Further Reading
 
-- [Skill Discovery & Evaluation Guide](/docs/guides/skill-discovery-evaluation) — Finding and scoring quality skills
-- [Skill Contradiction Resolution](/docs/guides/skill-contradiction-resolution) — Handling conflicting instructions
+- [Skill Discovery & Evaluation Guide](/docs/skills/skill-discovery-evaluation) — Finding and scoring quality skills
+- [Skill Contradiction Resolution](/docs/skills/skill-contradiction-resolution) — Handling conflicting instructions
 - [Agent Security Best Practices](/docs/guides/agent-security-best-practices) — Operational security guidelines
 - [Agent Skills Specification](https://agentskills.io/home) — The open format specification
 - [Skills CLI Documentation](https://github.com/vercel-labs/skills) — Installation tooling

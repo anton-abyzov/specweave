@@ -167,8 +167,28 @@ const config: Config = {
       {
         redirects: [
           {
-            from: '/docs/guides/programmable-skills',
-            to: '/docs/guides/extensible-skills',
+            from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills'],
+            to: '/docs/skills/extensible-skills',
+          },
+          {
+            from: '/docs/guides/skills-ecosystem-security',
+            to: '/docs/skills/skills-ecosystem-security',
+          },
+          {
+            from: '/docs/guides/secure-skill-factory-standard',
+            to: '/docs/skills/secure-skill-factory-standard',
+          },
+          {
+            from: '/docs/guides/skill-discovery-evaluation',
+            to: '/docs/skills/skill-discovery-evaluation',
+          },
+          {
+            from: '/docs/guides/skill-contradiction-resolution',
+            to: '/docs/skills/skill-contradiction-resolution',
+          },
+          {
+            from: '/docs/guides/skill-development-guidelines',
+            to: '/docs/skills/skill-development-guidelines',
           },
         ],
       },
