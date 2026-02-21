@@ -100,6 +100,6 @@ When validating forms:
 
 ## See Also
 
-- **[Extensible Skills Standard](/docs/guides/extensible-skills)** — Full architecture of the Open/Closed Principle for skills
+- **[Extensible Skills Standard](/docs/skills/extensible-skills)** — Full architecture of the Open/Closed Principle for skills
 - **[Verified Skills Standard](/docs/skills/verified-skills)** — Security certification requirements for publishable skills
-- **[Secure Skill Factory Standard](/docs/guides/secure-skill-factory-standard)** — Mandatory sections and forbidden patterns for SKILL.md files
+- **[Secure Skill Factory Standard](/docs/skills/secure-skill-factory-standard)** — Mandatory sections and forbidden patterns for SKILL.md files
