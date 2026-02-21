@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.307] - 2026-02-21
+
+### Changes
+- add plugin cache hook freshness check to doctor and update
+
+---
+
+
+
 ## [1.0.306] - 2026-02-21
 
 ### Changes
