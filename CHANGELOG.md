@@ -4,6 +4,29 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.308] - 2026-02-21
+
+### Changes
+- update regenerated screenshots
+- update dashboard screenshots
+- update sync metadata and add vendor type declarations
+- implement 0300 costs page clarity, CostAggregator cache, virtual sessions table
+- implement 0297 dashboard fixes: sync page, error drilling, data aggregation
+- implement 0298 lifecycle hooks and 0299 reconciler config cache
+- implement 0297 dashboard fixes: error boundary, project nav, analytics docs
+- implement 0295 multi-repo docs restructuring and spec project mapper
+- fix DCI scanner bypass: whitespace and safe-pattern append
+- fix: avoid double loadConfig() in GitHubReconciler.reconcile()
+- test(fabric): add dci integration test
+- remove disabled completion-guard hook from done skill
+- fix hook source to match deep interview spec changes
+- chore: bump version to 1.0.307
+- add plugin cache hook freshness check to doctor and update
+
+---
+
+
+
 ## [1.0.307] - 2026-02-21
 
 ### Changes
