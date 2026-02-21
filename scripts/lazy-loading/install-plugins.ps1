@@ -132,7 +132,7 @@ try {
 # Check if cache exists
 if (-not (Test-Path $CacheDir)) {
     Write-Err "Skills cache not found at $CacheDir"
-    Write-Err "Run 'specweave refresh-marketplace' first to populate the cache."
+    Write-Err "Run 'specweave refresh-plugins' first to populate the cache."
     exit 1
 }
 

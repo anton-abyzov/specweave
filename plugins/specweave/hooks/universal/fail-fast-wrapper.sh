@@ -198,7 +198,7 @@ fi
 # Script doesn't exist = safe default with warning
 if [[ ! -f "$script" ]]; then
   log_warning "$script" "Script not found (may be refreshing)" "Path: $script"
-  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-marketplace' to update plugins"
+  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-plugins' to update plugins"
   exit 0
 fi
 
