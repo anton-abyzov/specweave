@@ -49,6 +49,7 @@ export declare class GitHubReconciler {
     private dryRun;
     private logger;
     private client;
+    private configCache;
     constructor(options: ReconcileOptions);
     /**
      * Main reconciliation entry point
@@ -75,7 +76,7 @@ export declare class GitHubReconciler {
      */
     private initClient;
     /**
-     * Load config
+     * Load config (cached after first read)
      */
     private loadConfig;
     /**
