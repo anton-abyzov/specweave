@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { useProjectNavigate } from '../hooks/useProjectNavigate.js';
 import { useSSEEvent } from '../contexts/SSEContext.js';
@@ -24,34 +24,57 @@ interface IncrementSummary {
 interface IncrementsData {
   increments: IncrementSummary[];
   summary: Record<string, number>;
+  pagination?: { total: number; limit: number; offset: number; hasMore: boolean };
 }
+
+const PAGE_SIZE = 50;
 
 export function IncrementsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
-  useSSEEvent('increment-update', () => setRefreshKey((k) => k + 1));
-  const { data, loading, error, refetch } = useProjectApi<IncrementsData>(`/api/increments?_r=${refreshKey}`);
+  const [offset, setOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useUrlState('status', 'all');
   const [typeFilter, setTypeFilter] = useUrlState('type', 'all');
   const navigate = useProjectNavigate();
 
-  if (loading) return <PageLoader />;
+  // Debounced SSE handler (500ms window)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  useSSEEvent('increment-update', () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setRefreshKey((k) => k + 1), 500);
+  });
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
+
+  // Build API URL with server-side filters and pagination
+  const params = new URLSearchParams({ _r: String(refreshKey), limit: String(PAGE_SIZE), offset: String(offset) });
+  if (statusFilter !== 'all') params.set('status', statusFilter);
+  if (typeFilter !== 'all') params.set('type', typeFilter);
+
+  const { data, loading, error, refetch } = useProjectApi<IncrementsData>(`/api/increments?${params}`);
+
+  // Reset offset when filters change
+  const prevStatusRef = useRef(statusFilter);
+  const prevTypeRef = useRef(typeFilter);
+  useEffect(() => {
+    if (prevStatusRef.current !== statusFilter || prevTypeRef.current !== typeFilter) {
+      setOffset(0);
+      prevStatusRef.current = statusFilter;
+      prevTypeRef.current = typeFilter;
+    }
+  }, [statusFilter, typeFilter]);
+
+  if (loading && offset === 0) return <PageLoader />;
   if (error) return <ErrorAlert message={error} onRetry={refetch} />;
   if (!data) return null;
 
-  const filteredIncrements = data.increments.filter((inc) => {
-    if (statusFilter !== 'all' && inc.status !== statusFilter) return false;
-    if (typeFilter !== 'all' && inc.type !== typeFilter) return false;
-    return true;
-  });
-
-  const statuses = [...new Set(data.increments.map((i) => i.status))];
-  const types = [...new Set(data.increments.map((i) => i.type))];
+  // Derive filter options from summary (always reflects full dataset)
+  const statuses = Object.keys(data.summary).filter(k => k !== 'total' && data.summary[k] > 0);
+  const pagination = data.pagination;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-200">Increments</h2>
-        <span className="text-sm text-gray-500">{data.increments.length} total</span>
+        <span className="text-sm text-gray-500">{pagination?.total ?? data.increments.length} total</span>
       </div>
 
       {/* Filter Chips */}
@@ -64,6 +87,7 @@ export function IncrementsPage() {
               label="All"
               active={statusFilter === 'all'}
               onClick={() => setStatusFilter('all')}
+              count={data.summary.total}
             />
             {statuses.map(s => (
               <FilterChip
@@ -71,7 +95,7 @@ export function IncrementsPage() {
                 label={s}
                 active={statusFilter === s}
                 onClick={() => setStatusFilter(s)}
-                count={data.increments.filter(inc => inc.status === s).length}
+                count={data.summary[s]}
               />
             ))}
           </div>
@@ -86,23 +110,18 @@ export function IncrementsPage() {
               active={typeFilter === 'all'}
               onClick={() => setTypeFilter('all')}
             />
-            {types.map(t => (
-              <FilterChip
-                key={t}
-                label={t}
-                active={typeFilter === t}
-                onClick={() => setTypeFilter(t)}
-                count={data.increments.filter(inc => inc.type === t).length}
-              />
-            ))}
           </div>
         </div>
 
-        <span className="text-xs text-gray-500">{filteredIncrements.length} matching</span>
+        {pagination && (
+          <span className="text-xs text-gray-500">
+            Showing {Math.min(offset + PAGE_SIZE, pagination.total)} of {pagination.total}
+          </span>
+        )}
       </div>
 
       {/* Table */}
-      {filteredIncrements.length === 0 ? (
+      {data.increments.length === 0 ? (
         <EmptyState title="No increments match filters" description="Try adjusting your filters" />
       ) : (
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
@@ -120,7 +139,7 @@ export function IncrementsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredIncrements.map((inc) => (
+              {data.increments.map((inc) => (
                 <tr key={inc.id} onClick={() => navigate(`/increments/${inc.id}`)} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer">
                   <td className="px-4 py-3">
                     <span className="text-xs text-indigo-400 font-mono">{inc.id}</span>
@@ -152,6 +171,18 @@ export function IncrementsPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {pagination?.hasMore && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => setOffset(offset + PAGE_SIZE)}
+            className="px-4 py-2 text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            Load More
+          </button>
         </div>
       )}
     </div>

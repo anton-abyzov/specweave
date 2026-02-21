@@ -25,6 +25,7 @@ import { Logger, consoleLogger } from '../utils/logger.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 import { ConfigManager } from '../core/config/config-manager.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
+import { isTemplateFile } from '../core/increment/template-creator.js';
 
 export interface ExternalIssueAutoCreatorOptions {
   projectRoot: string;
@@ -107,6 +108,23 @@ export class ExternalIssueAutoCreator {
           provider: 'none',
           skipped: true,
           skipReason: 'No external provider configured (GitHub/JIRA/ADO)',
+        };
+      }
+
+      // Guard: skip if spec.md is still a template with placeholders
+      const specPath = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        incrementId,
+        'spec.md'
+      );
+      if (isTemplateFile(specPath)) {
+        this.logger.log(`⏭️ Skipping ${incrementId}: spec.md is still a template`);
+        return {
+          success: true,
+          provider: 'none',
+          skipped: true,
+          skipReason: 'spec.md is still a template - deferring until spec is complete',
         };
       }
 

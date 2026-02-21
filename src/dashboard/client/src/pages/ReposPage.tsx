@@ -11,6 +11,7 @@ interface RepoInfo {
   remote?: string;
   branch?: string;
   hasSpecweave: boolean;
+  isUmbrellaManaged?: boolean;
   isCurrent?: boolean;
   lastModified?: string;
 }
@@ -43,7 +44,7 @@ export function ReposPage() {
 
   const repos = data || [];
   const orgs = [...new Set(repos.map(r => r.org))];
-  const withSpecweave = repos.filter(r => r.hasSpecweave).length;
+  const withSpecweave = repos.filter(r => r.hasSpecweave || r.isUmbrellaManaged).length;
   const currentRepo = repos.find(r => r.isCurrent);
 
   return (
@@ -103,8 +104,8 @@ export function ReposPage() {
                               <Badge label="Current Project" variant="info" />
                             )}
                             <Badge
-                              label={repo.hasSpecweave ? 'SpecWeave' : 'No SpecWeave'}
-                              variant={repo.hasSpecweave ? 'success' : 'default'}
+                              label={repo.hasSpecweave ? 'SpecWeave' : repo.isUmbrellaManaged ? 'via umbrella' : 'No SpecWeave'}
+                              variant={repo.hasSpecweave ? 'success' : repo.isUmbrellaManaged ? 'info' : 'default'}
                             />
                           </div>
                         </div>

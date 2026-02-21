@@ -47,12 +47,30 @@ export class LifecycleHookDispatcher {
 
     try {
       const hooks = await LifecycleHookDispatcher.readHooksConfig(projectRoot);
-      if (!hooks?.post_increment_planning?.auto_create_github_issue) return;
+      const planningConfig = hooks?.post_increment_planning;
+      if (!planningConfig) return;
 
-      const { autoCreateExternalIssue } = await import(
-        '../../sync/external-issue-auto-creator.js'
-      );
-      await autoCreateExternalIssue(projectRoot, incrementId);
+      // Living docs sync FIRST (creates us-*.md files for proper sync pipeline)
+      if (planningConfig.sync_living_docs) {
+        try {
+          const { LivingDocsSync } = await import(
+            '../living-docs/living-docs-sync.js'
+          );
+          const sync = new LivingDocsSync(projectRoot);
+          await sync.syncIncrement(incrementId);
+        } catch (error) {
+          // Living docs failure should not block external issue creation
+          LifecycleHookDispatcher.logError('onIncrementPlanned:livingDocs', error);
+        }
+      }
+
+      // External issue auto-creation SECOND
+      if (planningConfig.auto_create_github_issue) {
+        const { autoCreateExternalIssue } = await import(
+          '../../sync/external-issue-auto-creator.js'
+        );
+        await autoCreateExternalIssue(projectRoot, incrementId);
+      }
     } catch (error) {
       LifecycleHookDispatcher.logError('onIncrementPlanned', error);
     }

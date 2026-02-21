@@ -34,6 +34,7 @@ const {
   mockJiraClient,
   mockAdoClient,
   mockGetAdoPat,
+  mockIsTemplateFile,
 } = vi.hoisted(() => {
   const mockConfigManagerRead = vi.fn();
   const mockDeriveFeatureId = vi.fn();
@@ -61,6 +62,8 @@ const {
 
   const mockGetAdoPat = vi.fn();
 
+  const mockIsTemplateFile = vi.fn().mockReturnValue(false);
+
   return {
     mockConfigManagerRead,
     mockDeriveFeatureId,
@@ -71,6 +74,7 @@ const {
     mockJiraClient,
     mockAdoClient,
     mockGetAdoPat,
+    mockIsTemplateFile,
   };
 });
 
@@ -91,6 +95,10 @@ vi.mock('../../../src/utils/feature-id-derivation.js', () => ({
 
 vi.mock('../../../src/utils/project-detection.js', () => ({
   autoDetectProjectIdSync: vi.fn().mockReturnValue('test-project'),
+}));
+
+vi.mock('../../../src/core/increment/template-creator.js', () => ({
+  isTemplateFile: mockIsTemplateFile,
 }));
 
 vi.mock('../../../src/utils/logger.js', () => ({
@@ -2269,6 +2277,56 @@ title: "Feature With Feature"
       expect(mockWriteFile).toHaveBeenCalled();
       const writtenContent = JSON.parse(mockWriteFile.mock.calls[0][1]);
       expect(writtenContent.github.issue).toBe(88);
+    });
+  });
+
+  // =========================================================================
+  // Template Guard (0304)
+  // =========================================================================
+
+  describe('template guard', () => {
+    it('skips when spec.md is still a template (no API calls)', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: { autoCreateOnIncrement: true, github: { enabled: true, owner: 'o', repo: 'r' } },
+      });
+      mockIsTemplateFile.mockReturnValue(true);
+      setupIncrementFiles({ specContent: SPEC_CONTENT_WITH_STORIES });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('template');
+      expect(result.provider).toBe('none');
+
+      // No external API calls should have been made
+      expect(mockGitHubClientV2.searchIssueByTitle).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createEpicIssue).not.toHaveBeenCalled();
+      expect(mockJiraClient.createIssue).not.toHaveBeenCalled();
+      expect(mockAdoClient.createWorkItem).not.toHaveBeenCalled();
+    });
+
+    it('proceeds normally when spec.md is NOT a template', async () => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: { autoCreateOnIncrement: true, github: { enabled: true, owner: 'o', repo: 'r' } },
+      });
+      mockIsTemplateFile.mockReturnValue(false);
+      mockDeriveFeatureId.mockReturnValue('FS-001');
+      setupIncrementFiles({ specContent: SPEC_CONTENT_WITH_STORIES });
+      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
+      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
+        number: 99,
+        html_url: 'https://github.com/o/r/issues/99',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBeFalsy();
+      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalled();
     });
   });
 });
