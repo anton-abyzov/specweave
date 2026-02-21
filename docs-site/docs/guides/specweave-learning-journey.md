@@ -1431,6 +1431,25 @@ Results returned
 
 **Result:** 98%+ token reduction for the same capability.
 
+**Industry Validation: Cloudflare Code Mode (2026)**
+
+In February 2026, Cloudflare faced the same problem at massive scale. Their platform has 2,500+ API endpoints. Exposing each as an MCP tool would require **1.17 million tokens** just for tool definitions.
+
+Their solution — **Code Mode** — strips it down to two tools: `search()` and `execute()`. The agent writes JavaScript against a typed OpenAPI spec instead of choosing from thousands of enumerated tools. Result: **99.9% token reduction**.
+
+```
+Cloudflare traditional MCP:
+  2,500 endpoints × ~500 tokens each = 1,170,000 tokens
+  → Model picks tool → fetches data → processes → picks again
+
+Cloudflare Code Mode:
+  search() + execute() = ~1,000 tokens
+  → Agent writes JS to discover + call endpoints
+  → 99.9% reduction
+```
+
+This is the same principle SpecWeave applies with skills. The model writes code; it does not browse a catalog of tools. Cloudflare arrived at this independently from the API side, while SpecWeave solved it from the development workflow side. Same conclusion: **code execution beats tool enumeration at scale.**
+
 > **:next** → *Module 6: The Future*
 
 ---
