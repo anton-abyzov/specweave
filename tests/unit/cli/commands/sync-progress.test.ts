@@ -28,6 +28,8 @@ const {
   MockActiveIncrementManager,
   mockSyncCoordinatorInstance,
   MockSyncCoordinator,
+  mockSyncACProgressToProviders,
+  mockParseAllUserStoryIds,
   mockFsReadFile,
   mockFsReaddir,
 } = vi.hoisted(() => {
@@ -96,6 +98,8 @@ const {
     MockActiveIncrementManager: _MockActiveIncrementManager,
     mockSyncCoordinatorInstance: _mockSyncCoordinatorInstance,
     MockSyncCoordinator: _MockSyncCoordinator,
+    mockSyncACProgressToProviders: vi.fn().mockResolvedValue({}),
+    mockParseAllUserStoryIds: vi.fn().mockReturnValue([]),
     mockFsReadFile: vi.fn(),
     mockFsReaddir: vi.fn(),
   };
@@ -119,6 +123,11 @@ vi.mock('../../../../src/core/increment/active-increment-manager.js', () => ({
 
 vi.mock('../../../../src/sync/sync-coordinator.js', () => ({
   SyncCoordinator: MockSyncCoordinator,
+}));
+
+vi.mock('../../../../src/core/ac-progress-sync.js', () => ({
+  syncACProgressToProviders: mockSyncACProgressToProviders,
+  parseAllUserStoryIds: mockParseAllUserStoryIds,
 }));
 
 vi.mock('../../../../src/utils/fs-native.js', () => ({
@@ -1350,6 +1359,198 @@ describe('sync-progress command', () => {
 
       const logCalls = logger.log.mock.calls.flat().join(' ');
       expect(logCalls).toContain('COMPREHENSIVE PROGRESS SYNC');
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // AC progress provider sync (auto-close/transition)
+  // ═══════════════════════════════════════════════════════════════════
+
+  describe('AC progress provider sync', () => {
+    beforeEach(() => {
+      const incDir = path.join(incrementsDir, '0001-test');
+      fs.mkdirSync(incDir, { recursive: true });
+
+      // Create spec.md with user stories
+      fs.writeFileSync(
+        path.join(incDir, 'spec.md'),
+        '### US-001: Test Story\n\n- [x] **AC-US1-01**: Done\n'
+      );
+
+      // Create metadata.json with external links
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({
+          externalLinks: {
+            github: {
+              issues: {
+                'US-001': { issueNumber: 42, issueUrl: 'https://github.com/test/repo/issues/42' }
+              }
+            }
+          }
+        })
+      );
+
+      // Mock fs-native readFile to return spec/metadata content
+      mockFsReadFile.mockImplementation(async (filePath: string) => {
+        if (filePath.endsWith('spec.md')) {
+          return '### US-001: Test Story\n\n- [x] **AC-US1-01**: Done\n';
+        }
+        if (filePath.endsWith('metadata.json')) {
+          return JSON.stringify({
+            externalLinks: {
+              github: {
+                issues: {
+                  'US-001': { issueNumber: 42, issueUrl: 'https://github.com/test/repo/issues/42' }
+                }
+              }
+            }
+          });
+        }
+        throw new Error('ENOENT');
+      });
+
+      mockParseAllUserStoryIds.mockReturnValue(['US-001']);
+    });
+
+    it('should invoke syncACProgressToProviders when GitHub configured with permissions', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true },
+          settings: { canUpdateExternalItems: true },
+        },
+      });
+
+      mockSyncACProgressToProviders.mockResolvedValue({
+        github: {
+          posted: [{ usId: 'US-001', ref: '42' }],
+          closed: [{ usId: 'US-001', ref: '42' }],
+          skipped: [],
+          errors: [],
+        },
+      });
+
+      await syncProgress(['0001-test'], { logger });
+
+      expect(mockSyncACProgressToProviders).toHaveBeenCalledWith(
+        '0001-test',
+        ['US-001'],
+        expect.stringContaining('spec.md'),
+        expect.objectContaining({
+          sync: expect.objectContaining({
+            github: { enabled: true },
+          }),
+        })
+      );
+
+      const logCalls = logger.log.mock.calls.flat().join(' ');
+      expect(logCalls).toContain('Auto-closed 1 completed user story issue(s)');
+    });
+
+    it('should invoke syncACProgressToProviders when JIRA configured', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          jira: { enabled: true },
+          settings: { canUpdateExternalItems: true },
+        },
+      });
+
+      mockSyncACProgressToProviders.mockResolvedValue({
+        jira: {
+          posted: [{ usId: 'US-001', ref: 'PROJ-42' }],
+          closed: [],
+          skipped: [],
+          errors: [],
+        },
+      });
+
+      await syncProgress(['0001-test'], { logger });
+
+      expect(mockSyncACProgressToProviders).toHaveBeenCalledWith(
+        '0001-test',
+        ['US-001'],
+        expect.stringContaining('spec.md'),
+        expect.objectContaining({
+          sync: expect.objectContaining({
+            jira: { enabled: true },
+          }),
+        })
+      );
+    });
+
+    it('should invoke syncACProgressToProviders when ADO configured', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          ado: { enabled: true },
+          settings: { canUpdateExternalItems: true },
+        },
+      });
+
+      mockSyncACProgressToProviders.mockResolvedValue({
+        ado: {
+          posted: [{ usId: 'US-001', ref: '100' }],
+          closed: [{ usId: 'US-001', ref: '100' }],
+          skipped: [],
+          errors: [],
+        },
+      });
+
+      await syncProgress(['0001-test'], { logger });
+
+      expect(mockSyncACProgressToProviders).toHaveBeenCalledWith(
+        '0001-test',
+        ['US-001'],
+        expect.stringContaining('spec.md'),
+        expect.objectContaining({
+          sync: expect.objectContaining({
+            ado: { enabled: true },
+          }),
+        })
+      );
+    });
+
+    it('should not invoke syncACProgressToProviders when permissions disabled', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true },
+          settings: { canUpdateExternalItems: false, canUpsertInternalItems: false },
+        },
+      });
+
+      await syncProgress(['0001-test'], { logger });
+
+      expect(mockSyncACProgressToProviders).not.toHaveBeenCalled();
+    });
+
+    it('should not invoke syncACProgressToProviders in dry-run mode', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true },
+          settings: { canUpdateExternalItems: true },
+        },
+      });
+
+      await syncProgress(['0001-test', '--dry-run'], { logger });
+
+      expect(mockSyncACProgressToProviders).not.toHaveBeenCalled();
+    });
+
+    it('should handle syncACProgressToProviders errors gracefully', async () => {
+      mockConfigManagerInstance.read.mockResolvedValue({
+        sync: {
+          github: { enabled: true },
+          settings: { canUpdateExternalItems: true },
+        },
+      });
+
+      mockSyncACProgressToProviders.mockRejectedValue(new Error('Provider sync failed'));
+
+      await syncProgress(['0001-test'], { logger });
+
+      // Should not crash
+      expect(processExitSpy).not.toHaveBeenCalled();
+      const logCalls = logger.log.mock.calls.flat().join(' ');
+      expect(logCalls).toContain('AC progress provider sync failed');
     });
   });
 });

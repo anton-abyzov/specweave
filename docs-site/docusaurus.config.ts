@@ -166,18 +166,37 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
+          // Extensible Skills Standard — old paths → new pillar location
           {
-            from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills'],
-            to: '/docs/skills/extensible-skills',
+            from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills'],
+            to: '/docs/skills/extensible/extensible-skills',
           },
           {
-            from: '/docs/guides/skills-ecosystem-security',
-            to: '/docs/skills/skills-ecosystem-security',
+            from: '/docs/guides/claude-skills-deep-dive',
+            to: '/docs/skills/extensible/claude-skills-deep-dive',
           },
           {
-            from: '/docs/guides/secure-skill-factory-standard',
-            to: '/docs/skills/secure-skill-factory-standard',
+            from: '/docs/guides/self-improving-skills',
+            to: '/docs/skills/extensible/self-improving-skills',
           },
+          {
+            from: ['/docs/guides/skill-development-guidelines', '/docs/skills/skill-development-guidelines'],
+            to: '/docs/skills/extensible/skill-development-guidelines',
+          },
+          // Verified Skills Standard — old paths → new pillar location
+          {
+            from: ['/docs/guides/skills-ecosystem-security', '/docs/skills/skills-ecosystem-security'],
+            to: '/docs/skills/verified/skills-ecosystem-security',
+          },
+          {
+            from: ['/docs/guides/secure-skill-factory-standard', '/docs/skills/secure-skill-factory-standard'],
+            to: '/docs/skills/verified/secure-skill-factory-standard',
+          },
+          {
+            from: '/docs/skills/verified-skills',
+            to: '/docs/skills/verified/verified-skills',
+          },
+          // Ecosystem — unchanged locations
           {
             from: '/docs/guides/skill-discovery-evaluation',
             to: '/docs/skills/skill-discovery-evaluation',
@@ -185,10 +204,6 @@ const config: Config = {
           {
             from: '/docs/guides/skill-contradiction-resolution',
             to: '/docs/skills/skill-contradiction-resolution',
-          },
-          {
-            from: '/docs/guides/skill-development-guidelines',
-            to: '/docs/skills/skill-development-guidelines',
           },
         ],
       },

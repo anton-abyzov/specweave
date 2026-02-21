@@ -1,6 +1,6 @@
 ---
 description: Close increment with PM 3-gate validation (tasks, tests, docs). Use when all tasks complete and saying "close increment", "we're done", or "finish up".
-argument-hint: "<increment-id>"
+argument-hint: "<increment-id> [--auto]"
 hooks:
   Stop:
     - hooks:
@@ -21,10 +21,16 @@ hooks:
 ## Usage
 
 ```
-/sw:done <increment-id>
+/sw:done <increment-id> [--auto]
 ```
 
 Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name"). Numeric portion extracted and zero-padded to 4 digits.
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--auto` | Skip user confirmation prompt in Step 4 (for `/sw:auto` and `/sw:team-lead` modes). All quality gates (grill, judge-llm, Gate 0, PM gates) still enforced. |
 
 ---
 
@@ -56,7 +62,7 @@ If closing a SpecWeave framework increment, show post-closure reminders: update 
 - `completed` -> Already closed, warn user
 - `backlog` / `paused` / `abandoned` -> BLOCK with error
 
-Require explicit user confirmation before closure ("yes" to close, "no" to cancel).
+**User confirmation**: If `--auto` flag is present, skip the explicit user confirmation and proceed directly to closure. Otherwise, require explicit user confirmation before closure ("yes" to close, "no" to cancel). Note: `--auto` does NOT bypass any quality gates (grill, judge-llm, Gate 0, PM gates) — it only skips the interactive confirmation prompt.
 
 ### Step 5: Load Increment Context
 
