@@ -313,6 +313,53 @@ describe('DocsValidator', () => {
     });
   });
 
+  describe('autoFix', () => {
+    it('fixes unquoted colons and excludes them from errors', async () => {
+      createFile('doc.md', '---\ntitle: Feature: Auth System\n---\n\n# Content');
+
+      const validator = new DocsValidator({
+        docsPath: tempDir,
+        autoFix: true,
+        ignorePaths: [],
+      });
+      const result = await validator.validate();
+
+      // Fixed issues should not appear in the result
+      const yamlIssues = result.issues.filter(
+        (i) => i.type === 'yaml_unquoted_colon'
+      );
+      expect(yamlIssues.length).toBe(0);
+      expect(result.fixedCount).toBeGreaterThan(0);
+      expect(result.valid).toBe(true);
+
+      // File should be fixed on disk
+      const fixed = fs.readFileSync(path.join(tempDir, 'doc.md'), 'utf-8');
+      expect(fixed).toContain('title: "Feature: Auth System"');
+    });
+
+    it('fixes multiple unquoted colons in the same file without overwriting', async () => {
+      createFile(
+        'doc.md',
+        '---\ntitle: Feature: Auth\ntldr: Summary: Of Feature\n---\n\n# Content'
+      );
+
+      const validator = new DocsValidator({
+        docsPath: tempDir,
+        autoFix: true,
+        ignorePaths: [],
+      });
+      const result = await validator.validate();
+
+      expect(result.valid).toBe(true);
+      expect(result.fixedCount).toBe(2);
+
+      // Both fixes should persist on disk
+      const fixed = fs.readFileSync(path.join(tempDir, 'doc.md'), 'utf-8');
+      expect(fixed).toContain('title: "Feature: Auth"');
+      expect(fixed).toContain('tldr: "Summary: Of Feature"');
+    });
+  });
+
   describe('formatResult', () => {
     it('includes duplicate route warning in output', async () => {
       createFile('folder/README.md', '# Readme');

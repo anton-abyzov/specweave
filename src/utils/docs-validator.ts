@@ -244,8 +244,9 @@ export class DocsValidator {
           message: `Unquoted colon in YAML value: ${key}: ${value.trim()} (wrap in quotes)`,
           autoFixable: true,
           fix: () => {
+            const currentContent = fs.readFileSync(filePath, 'utf-8');
             const fixedLine = `${indent}${key}: "${value.trim()}"`;
-            const newContent = content.replace(line, fixedLine);
+            const newContent = currentContent.replace(line, fixedLine);
             fs.writeFileSync(filePath, newContent);
             this.fixedCount++;
           },
@@ -262,7 +263,8 @@ export class DocsValidator {
           message: 'YAML frontmatter contains tabs (use spaces)',
           autoFixable: true,
           fix: () => {
-            const newContent = content.replace(/\t/g, '  ');
+            const currentContent = fs.readFileSync(filePath, 'utf-8');
+            const newContent = currentContent.replace(/\t/g, '  ');
             fs.writeFileSync(filePath, newContent);
             this.fixedCount++;
           },
@@ -289,7 +291,8 @@ export class DocsValidator {
         message: issue,
         autoFixable: true,
         fix: () => {
-          const fixedContent = sanitizeHtmlForMdx(content);
+          const currentContent = fs.readFileSync(filePath, 'utf-8');
+          const fixedContent = sanitizeHtmlForMdx(currentContent);
           fs.writeFileSync(filePath, fixedContent);
           this.fixedCount++;
         },
@@ -537,16 +540,20 @@ export class DocsValidator {
   private buildResult(): ValidationResult {
     // Apply auto-fixes if enabled
     if (this.autoFix) {
+      const fixedIssues = new Set<ValidationIssue>();
       for (const issue of this.issues) {
         if (issue.autoFixable && issue.fix) {
           try {
             issue.fix();
+            fixedIssues.add(issue);
             this.logger.info(`✓ Fixed: ${issue.file} - ${issue.message}`);
           } catch (err) {
             this.logger.warn(`Failed to fix ${issue.file}: ${(err as Error).message}`);
           }
         }
       }
+      // Remove successfully fixed issues so they don't count as errors
+      this.issues = this.issues.filter((i) => !fixedIssues.has(i));
     }
 
     const errors = this.issues.filter((i) => i.severity === 'error').length;
