@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.304] - 2026-02-21
+
+### Changes
+- chore: update docs-site and plugin utilities
+- add multi-package-manager install examples to docs
+- fix: update stale refresh-marketplace references to refresh-plugins
+- chore: bump version to 1.0.303
+- update plugins and increment tooling
+- restructure skills docs under /docs/skills/ URL namespace
+- add V-Skills security section to homepage
+
+---
+
+
+
 ## [1.0.303] - 2026-02-21
 
 ### Changes
