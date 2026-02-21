@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.305] - 2026-02-21
+
+### Changes
+- update docs, tests, and skill definitions
+- update docs, auto-closer and integration tests
+
+---
+
+
+
 ## [1.0.304] - 2026-02-21
 
 ### Changes
