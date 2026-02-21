@@ -23,7 +23,13 @@ import {
   addRepoToUmbrella,
   classifyExistingUmbrella,
 } from '../../core/migration/umbrella-migrator.js';
+import {
+  buildFeatureProjectMap,
+  generateReorganizationPlan,
+  reorganizeSpecs,
+} from '../../core/migration/spec-project-mapper.js';
 import * as fs from 'fs';
+import * as path from 'path';
 import type { MigrationOptions, MigrationPlan } from '../../core/migration/types.js';
 
 /**
@@ -43,6 +49,12 @@ export async function migrateToUmbrellaCommand(
   // Handle add-repo
   if (options.addRepo) {
     await handleAddRepo(projectRoot, options.addRepo, options);
+    return;
+  }
+
+  // Handle reorganize-specs
+  if (options.reorganizeSpecs) {
+    await handleReorganizeSpecs(projectRoot, options);
     return;
   }
 
@@ -334,6 +346,106 @@ async function handleAddRepo(
   } else {
     console.log(chalk.red(`\n  Failed to add repo: ${result.error}`));
     process.exit(1);
+  }
+}
+
+/**
+ * Handle --reorganize-specs: redistribute FS-XXX spec folders by project.
+ */
+async function handleReorganizeSpecs(
+  projectRoot: string,
+  options: MigrationOptions,
+): Promise<void> {
+  console.log(chalk.blue('\n  Reorganize Specs by Project\n'));
+
+  // Validate umbrella project
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) {
+    console.log(chalk.red('  No .specweave/config.json found.'));
+    process.exit(1);
+  }
+
+  let config: Record<string, any>;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch {
+    console.log(chalk.red('  Could not parse .specweave/config.json'));
+    process.exit(1);
+    return;
+  }
+
+  if (!config.umbrella?.enabled) {
+    console.log(chalk.red('  This is not an umbrella project. --reorganize-specs requires umbrella.enabled=true.'));
+    process.exit(1);
+  }
+
+  // Detect current project folder
+  const specsDir = path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs');
+  if (!fs.existsSync(specsDir)) {
+    console.log(chalk.red('  No specs directory found at .specweave/docs/internal/specs/'));
+    process.exit(1);
+  }
+
+  // Find current project folder (first non-archive directory)
+  const projectDirs = fs.readdirSync(specsDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && !d.name.startsWith('_'));
+  if (projectDirs.length === 0) {
+    console.log(chalk.yellow('  No project folders found under specs/'));
+    return;
+  }
+  const currentProject = projectDirs[0].name;
+  console.log(chalk.dim(`  Current project folder: ${currentProject}`));
+
+  // Build feature → project mapping
+  console.log(chalk.dim('  Scanning increments for project mappings...\n'));
+  const featureMap = await buildFeatureProjectMap(projectRoot);
+
+  if (featureMap.size === 0) {
+    console.log(chalk.yellow('  No feature specs found to reorganize.'));
+    return;
+  }
+
+  // Generate reorganization plan
+  const plan = await generateReorganizationPlan(featureMap, specsDir, currentProject);
+
+  if (plan.length === 0) {
+    console.log(chalk.green('  All specs are already in the correct project folders. Nothing to do.'));
+    if (!config.multiProject?.enabled) {
+      console.log(chalk.dim('  Config: will set multiProject.enabled=true'));
+      if (options.execute) {
+        await reorganizeSpecs([], configPath, { execute: true });
+        console.log(chalk.green('  Config updated: multiProject.enabled=true'));
+      }
+    }
+    return;
+  }
+
+  // Display plan
+  console.log(chalk.blue(`  Reorganization Plan (${plan.length} operations):\n`));
+  for (const op of plan) {
+    const sourceProject = path.basename(path.dirname(op.source));
+    const destProject = path.basename(path.dirname(op.destination));
+    const tag = op.type === 'move' ? chalk.yellow('[MOVE]') : chalk.cyan('[COPY]');
+    console.log(`  ${tag} ${op.featureId}: ${sourceProject}/ → ${destProject}/`);
+  }
+
+  if (!config.multiProject?.enabled) {
+    console.log(chalk.blue(`\n  [CONFIG] multiProject.enabled: false → true`));
+  }
+
+  if (!options.execute) {
+    console.log(chalk.yellow('\n  Dry-run complete. Run with --execute --reorganize-specs to apply.\n'));
+    return;
+  }
+
+  // Execute
+  console.log(chalk.blue('\n  Executing reorganization...\n'));
+  await reorganizeSpecs(plan, configPath, { execute: true });
+
+  console.log(chalk.green(`\n  Reorganization complete!`));
+  console.log(chalk.dim(`  ${plan.length} specs moved/copied to per-project folders.`));
+  if (!config.multiProject?.enabled) {
+    console.log(chalk.dim('  multiProject.enabled set to true.'));
   }
 }
 
