@@ -58,14 +58,15 @@ export function useCommand() {
     };
   }, []);
 
-  const execute = useCallback(async (commandName: string) => {
+  const execute = useCallback(async (commandName: string, queryParams?: Record<string, string>) => {
     setRunning(true);
     setError(null);
-    setOutput([`> specweave ${commandName}`]);
+    setOutput([`> specweave ${commandName}${queryParams ? ` (${Object.values(queryParams).join(', ')})` : ''}`]);
     setStatus('running');
 
     try {
-      const res = await fetch(`/api/commands/${commandName}`, { method: 'POST' });
+      const qs = queryParams ? '?' + new URLSearchParams(queryParams).toString() : '';
+      const res = await fetch(`/api/commands/${commandName}${qs}`, { method: 'POST' });
       const json = await res.json();
       if (!json.ok) {
         setError(json.error || 'Command failed');

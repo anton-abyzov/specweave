@@ -32,8 +32,8 @@ export class CommandRunner {
     this.onComplete = callbacks?.onComplete;
   }
 
-  /** Execute a whitelisted command */
-  execute(commandName: string): CommandExecution | null {
+  /** Execute a whitelisted command, optionally in a different working directory */
+  execute(commandName: string, options?: { cwd?: string }): CommandExecution | null {
     if (this.active?.status === 'running') {
       return null; // Already running
     }
@@ -53,7 +53,7 @@ export class CommandRunner {
     this.active = execution;
 
     const proc = spawn(spec.cmd, spec.args, {
-      cwd: this.projectRoot,
+      cwd: options?.cwd || this.projectRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env },
     });

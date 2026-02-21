@@ -121,8 +121,10 @@ export function ErrorsPage() {
     (tab === 'timeline' && tl) ||
     (tab === 'sessions' && sl);
 
-  // Collect errors from fetches
-  const fetchError = ge || ee || se || te;
+  // Only show errors from the active tab's fetches (groups+paginated always active for KPIs)
+  const fetchError = ge || ee ||
+    (tab === 'sessions' ? se : null) ||
+    (tab === 'timeline' ? te : null);
 
   const totalErrors = paginated?.total || 0;
   const errors = paginated?.errors || [];

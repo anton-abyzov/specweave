@@ -31,6 +31,7 @@ export function useApi<T>(url: string, options?: UseApiOptions): UseApiResult<T>
     if (!url) {
       setLoading(false);
       setData(null);
+      setError(null);
       return;
     }
 
@@ -46,6 +47,10 @@ export function useApi<T>(url: string, options?: UseApiOptions): UseApiResult<T>
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timer);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          throw new Error(`Expected JSON response but got ${ct || 'unknown'} — server may be restarting`);
+        }
         const json = await res.json();
         if (!cancelled) {
           setData(json.data ?? json);

@@ -77,6 +77,7 @@ export class Router {
 export function sendJson(res: http.ServerResponse, data: unknown, status = 200, req?: http.IncomingMessage): void {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
     'Vary': 'Origin',
   };
   const origin = req?.headers?.origin;

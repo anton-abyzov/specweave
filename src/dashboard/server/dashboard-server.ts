@@ -369,21 +369,36 @@ export class DashboardServer {
       sendJson(res, { ok: true, data });
     });
 
-    // Sync verify — lightweight per-platform connectivity check
+    // Sync verify — lightweight per-platform connectivity check (supports ?repo= for umbrella child repos)
     this.router.post('/api/sync/verify', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const platform = url.searchParams.get('platform') || '';
+      const repoId = url.searchParams.get('repo') || '';
       if (!['github', 'jira', 'ado'].includes(platform)) {
         return sendJson(res, { ok: false, error: 'Invalid platform. Use: github, jira, ado' }, 400);
       }
 
       try {
         const config = await project.aggregator.getConfig();
-        const syncConfig = (config as any)?.sync?.[platform];
-        if (!syncConfig) {
-          return sendJson(res, { ok: false, error: `${platform} is not configured` }, 400);
+        const globalSyncConfig = (config as any)?.sync?.[platform] || {};
+
+        // For child repos, merge child's per-platform override with the global config
+        let syncConfig = globalSyncConfig;
+        let childRepoPath: string | null = null;
+        if (repoId) {
+          const childRepos = (config as any)?.umbrella?.childRepos || [];
+          const child = childRepos.find((r: any) => r.id === repoId);
+          if (!child) {
+            return sendJson(res, { ok: false, error: `Child repo '${repoId}' not found` }, 400);
+          }
+          childRepoPath = path.resolve(project.root, child.path);
+          syncConfig = { ...globalSyncConfig, ...(child.sync?.[platform] || {}) };
+        }
+
+        if (!syncConfig || Object.keys(syncConfig).length === 0) {
+          return sendJson(res, { ok: false, error: `${platform} is not configured${repoId ? ` for ${repoId}` : ''}` }, 400);
         }
 
         let connected = false;
@@ -415,28 +430,41 @@ export class DashboardServer {
           }
         } else if (platform === 'ado') {
           const org = syncConfig.organization || '';
-          const project = syncConfig.project || '';
+          const adoProject = syncConfig.project || '';
           const pat = syncConfig.pat || process.env.ADO_PAT || '';
           try {
-            const resp = await fetch(`https://dev.azure.com/${org}/${project}/_apis/projects/${project}?api-version=7.0`, {
+            const resp = await fetch(`https://dev.azure.com/${org}/${adoProject}/_apis/projects/${adoProject}?api-version=7.0`, {
               headers: { Authorization: `Basic ${Buffer.from(`:${pat}`).toString('base64')}` },
             });
             connected = resp.ok;
-            detail = connected ? `Connected to ${org}/${project}` : `HTTP ${resp.status}`;
+            detail = connected ? `Connected to ${org}/${adoProject}` : `HTTP ${resp.status}`;
           } catch (e: any) {
             detail = e.message || 'Connection failed';
           }
         }
 
-        // Update sync metadata with verification result
-        const { updateSyncMetadata } = await import('../../sync/sync-metadata.js');
-        await updateSyncMetadata(project.root, platform as 'github' | 'jira' | 'ado', {
-          lastImport: new Date().toISOString(),
-          lastImportCount: 0,
-          lastSyncResult: connected ? 'success' : 'failed',
-        });
+        // Only persist success to sync metadata — failures should NOT poison the status
+        if (connected) {
+          const { updateSyncMetadata, updateRepoSyncMetadata } = await import('../../sync/sync-metadata.js');
+          const successMeta = {
+            lastImport: new Date().toISOString(),
+            lastImportCount: 0,
+            lastSyncResult: 'success' as const,
+          };
 
-        sendJson(res, { ok: true, data: { platform, connected, detail } });
+          if (repoId) {
+            // For child repos: write to child's own file if it has .specweave, else umbrella's repos section
+            if (childRepoPath && fs.existsSync(path.join(childRepoPath, '.specweave'))) {
+              await updateSyncMetadata(childRepoPath, platform as 'github' | 'jira' | 'ado', successMeta);
+            } else {
+              await updateRepoSyncMetadata(project.root, repoId, platform as 'github' | 'jira' | 'ado', successMeta);
+            }
+          } else {
+            await updateSyncMetadata(project.root, platform as 'github' | 'jira' | 'ado', successMeta);
+          }
+        }
+
+        sendJson(res, { ok: true, data: { platform, connected, detail, repoId: repoId || undefined } });
       } catch (e: any) {
         sendJson(res, { ok: false, error: e.message || 'Verification failed' }, 500);
       }
@@ -473,11 +501,30 @@ export class DashboardServer {
       sendJson(res, { ok: true, data });
     });
 
-    // Commands
+    // Commands (supports ?repo= for per-repo execution in umbrella projects)
     this.router.post('/api/commands/:name', async (req, res, params) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
-      const execution = project.commandRunner.execute(params.name);
+
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const repoId = url.searchParams.get('repo');
+
+      let cwd: string | undefined;
+      if (repoId && params.name === 'sync-push') {
+        const config = await project.aggregator.getConfig();
+        const childRepos = (config as any)?.umbrella?.childRepos || [];
+        const child = childRepos.find((r: any) => r.id === repoId);
+        if (!child) {
+          return sendJson(res, { ok: false, error: `Child repo '${repoId}' not found` }, 400);
+        }
+        const childPath = path.resolve(project.root, child.path);
+        if (!fs.existsSync(path.join(childPath, '.specweave'))) {
+          return sendJson(res, { ok: false, error: `Child repo '${repoId}' has no .specweave directory. Initialize it with 'specweave init' first.` }, 400);
+        }
+        cwd = childPath;
+      }
+
+      const execution = project.commandRunner.execute(params.name, { cwd });
       if (!execution) {
         sendJson(res, { ok: false, error: 'Command not available or already running' }, 400);
         return;

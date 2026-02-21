@@ -90,14 +90,37 @@ export interface IncrementDetailPayload {
 }
 
 // Sync
+export interface SyncPlatformInfo {
+  lastImport: string;
+  lastImportCount?: number;
+  lastSkippedCount?: number;
+  lastSyncResult?: string;
+  connectionStatus?: string;
+  diagnosticMessage?: string;
+  configDetail?: string;
+}
+
+export interface SyncRepoStatus {
+  repoId: string;
+  repoName: string;
+  repoPath: string;
+  hasSpecweave: boolean;
+  platforms: Record<string, SyncPlatformInfo>;
+}
+
+export interface SyncPermissions {
+  canUpsertInternalItems: boolean;
+  canUpdateExternalItems: boolean;
+  canUpdateStatus: boolean;
+  autoSyncOnCompletion: boolean;
+}
+
 export interface SyncStatusPayload {
-  platforms: Record<string, {
-    lastImport: string;
-    lastImportCount?: number;
-    lastSkippedCount?: number;
-    lastSyncResult?: string;
-  }>;
+  platforms: Record<string, SyncPlatformInfo>;
   lastUpdated?: string;
+  isUmbrella?: boolean;
+  repos?: SyncRepoStatus[];
+  permissions?: SyncPermissions;
 }
 
 // Activity stream
