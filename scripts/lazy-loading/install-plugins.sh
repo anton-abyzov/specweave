@@ -227,7 +227,7 @@ mkdir -p "$STATE_DIR" 2>/dev/null || true
 # Check if cache exists
 if [[ ! -d "$CACHE_DIR" ]]; then
     error "Skills cache not found at $CACHE_DIR"
-    error "Run 'specweave refresh-marketplace' first to populate the cache."
+    error "Run 'specweave refresh-plugins' first to populate the cache."
     exit 1
 fi
 
