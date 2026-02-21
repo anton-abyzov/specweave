@@ -1,73 +1,53 @@
 ---
 title: "Extensible Skills Standard"
-description: "Formal specification for extensibility tiers (E0-E4), DCI blocks, frontmatter schema, and agent portability matrix"
+description: "Formal specification for extensibility categories (extensible, semi-extensible, not-extensible) and DCI blocks"
 date: "2026-02-21"
 authors: ["Anton Abyzov"]
-tags: ["extensible-skills", "standard", "E0-E4", "DCI", "portability"]
+tags: ["extensible-skills", "standard", "DCI", "skill-memories"]
 ---
 
 # Extensible Skills Standard
 
-**Version**: 3.0.0 | **Status**: Normative | **Authors**: Anton Abyzov
+**Version**: 4.0.0 | **Status**: Normative | **Authors**: Anton Abyzov
 
-This document defines the formal standard for skill extensibility classification. It specifies tier definitions, detection mechanisms, frontmatter schema, and the agent portability matrix.
+This document defines the formal standard for skill extensibility classification. It specifies category definitions, detection mechanisms, and the DCI specification.
 
 For practical how-to guidance, see the [Implementation Guide](/docs/skills/extensible/extensible-skills-guide).
 
 ---
 
-## 1. Extensibility Tier Model
+## 1. Extensibility Categories
 
-Skills MUST be classified into one of five extensibility tiers (E0-E4). Each tier represents a progressively stronger extensibility mechanism.
+Skills MUST be classified into one of three extensibility categories.
 
-### E0 -- Not Extensible
+### Extensible
 
-The skill has no detected extension points. Users MUST fork `SKILL.md` to customize behavior.
-
-**Requirements**: None (default classification).
-
-### E1 -- Declarative (Keyword-Detected)
-
-The skill's prose mentions extension points (templates, hooks, configuration overrides, plugins, or context providers) but provides no verified mechanism for customization.
+The skill has a working DCI block that loads customizations from the standard `skill-memories` system. Users can create a memory file and know exactly where to put it -- no skill-specific knowledge required.
 
 **Requirements**:
-- MUST contain one or more keyword patterns matching recognized extension types
-- MAY describe how users can customize behavior in documentation
-- SHOULD NOT be assumed to have a working customization mechanism
+- MUST contain at least one DCI block (`` !`...` ``) outside of fenced code blocks
+- The DCI block MUST reference `skill-memories` for the standard cascading lookup
 
-**Keyword signals** (any match classifies as E1):
+### Semi-Extensible
+
+The skill mentions customization mechanisms (templates, hooks, configuration, plugins, context providers) in its prose, OR has a DCI block that does not use the standard skill-memories system. Users need skill-specific knowledge to customize behavior.
+
+**Requirements** (any of):
+- Contains one or more keyword patterns matching recognized extension types
+- Contains a DCI block that does NOT reference `skill-memories`
+
+**Keyword signals** (any match classifies as semi-extensible):
 - **template**: "custom templates", "override templates", "template customization"
 - **hook**: "lifecycle hooks", "pre-commit/build/deploy hooks", "custom hooks"
 - **config**: "configuration overrides", "custom configuration", "settings file"
 - **plugin**: "plugin support", "custom plugins", "extend functionality"
 - **context**: "context providers", "custom context", "context definitions"
 
-### E2 -- Frontmatter-Declared
+### Not Extensible
 
-The skill's YAML frontmatter contains a structured `extensibility:` declaration. This is a formal statement by the skill author that the skill supports extension.
+The skill has no detected extension points. Users MUST fork `SKILL.md` to customize behavior.
 
-**Requirements**:
-- MUST include an `extensibility:` key in YAML frontmatter (between `---` delimiters)
-- SHOULD specify the tier and extension point types
-- The frontmatter schema is defined in Section 3
-
-### E3 -- DCI-Verified
-
-The skill contains a working Dynamic Context Injection (DCI) shell block that loads customizations at runtime.
-
-**Requirements**:
-- MUST contain at least one DCI block (`` !`...` ``) outside of fenced code blocks
-- The DCI block SHOULD reference `skill-memories` for the standard cascading lookup
-- DCI blocks MUST NOT appear inside triple-backtick fenced code blocks (those are documentation examples, not executable)
-
-### E4 -- DCI + Auto-Learning
-
-The skill has DCI-based extensibility plus evidence of automated learning integration (the Reflect system or equivalent auto-learn mechanism).
-
-**Requirements**:
-- MUST satisfy all E3 requirements
-- MUST contain a `skill-memories` reference in its DCI block
-- MUST reference `reflect` or `auto-learn` in its content, indicating automated correction capture
+**Requirements**: None (default classification).
 
 ---
 
@@ -109,70 +89,34 @@ DCI blocks are preprocessed by Claude Code before the skill content is interpret
 
 ---
 
-## 3. Frontmatter Schema
-
-Skills declaring E2+ extensibility SHOULD include an `extensibility:` key in their YAML frontmatter:
-
-```yaml
----
-extensibility:
-  tier: "E2"
-  points:
-    - template
-    - config
-  description: "Supports custom templates and configuration overrides"
----
-```
-
-**Fields**:
-- `tier` (string, OPTIONAL): The declared extensibility tier. If omitted, the detector classifies based on signals.
-- `points` (string[], OPTIONAL): Extension point types.
-- `description` (string, OPTIONAL): Human-readable extensibility summary.
-
----
-
-## 4. Agent Portability Matrix
-
-Extensibility mechanisms have varying levels of support across AI agents:
-
-| Mechanism | Compatible Agents | Notes |
-|---|---|---|
-| **DCI** (shell blocks) | Claude Code | Only agent that executes `!` backtick commands in SKILL.md |
-| **Frontmatter** (YAML) | Claude Code, Cursor, GitHub Copilot, Windsurf, Aider | Any agent that reads YAML frontmatter from skill files |
-| **Keywords** (prose) | All agents (*) | Informational only; any agent can read prose descriptions |
-
-**Implications for skill authors**:
-- Skills targeting maximum portability SHOULD use frontmatter declarations (E2)
-- Skills using DCI (E3/E4) SHOULD document that DCI blocks are Claude Code-specific
-- Skills MAY include both DCI and frontmatter for layered portability
-
----
-
-## 5. Detection Algorithm
+## 3. Detection Algorithm
 
 The extensibility detector MUST check signals in the following order of strength (highest wins):
 
-1. **E4**: DCI block with `skill-memories` reference + `reflect` or `auto-learn` reference
-2. **E3**: DCI block present (with or without `skill-memories`)
-3. **E2**: YAML frontmatter contains `extensibility:` key
-4. **E1**: Keyword pattern matches from the SIGNALS list
-5. **E0**: No signals detected
+1. **Extensible**: DCI block with `skill-memories` reference
+2. **Semi-extensible**: DCI block without `skill-memories`, OR keyword pattern matches
+3. **Not extensible**: No signals detected
 
 **Pre-processing**: Before scanning for DCI patterns, the detector MUST strip fenced code blocks (` ``` ... ``` `) to avoid false positives from documentation examples.
 
-**Backward compatibility**: The `extensible: boolean` field MUST remain derived as `tier !== 'E0'`, ensuring existing API consumers are unaffected.
+**Backward compatibility**: The `extensible: boolean` field MUST remain derived as `tier !== 'not-extensible'`, ensuring existing API consumers are unaffected.
 
 ---
 
-## 6. Conformance
+## 4. Auto-Learning (Reflect)
+
+The Reflect system (auto-learning from corrections) is an **optional feature orthogonal to extensibility classification**. A skill with DCI + skill-memories is `extensible` regardless of whether it also integrates auto-learning. Reflect enhances the user experience but does not change the extensibility category.
+
+---
+
+## 5. Conformance
 
 A skill registry implementation conforms to this standard if it:
 
-1. Classifies all registered skills into exactly one tier (E0-E4)
-2. Implements the detection algorithm as specified in Section 5
+1. Classifies all registered skills into exactly one category (extensible, semi-extensible, not-extensible)
+2. Implements the detection algorithm as specified in Section 3
 3. Maintains backward compatibility with the `extensible: boolean` field
-4. Reports portability information for extensible skills (E1+)
-5. Provides tier-level breakdown in aggregate statistics
+4. Provides category-level breakdown in aggregate statistics
 
 ---
 

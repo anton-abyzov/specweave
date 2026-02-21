@@ -8,6 +8,9 @@
  * - Overview with and without cache
  * - Analytics aggregation
  * - Sync status enrichment
+ * - TTL cache for increments (hit, miss, expiry, invalidation)
+ * - Async I/O conversion
+ * - Shared scan between getOverview() and getIncrements()
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -15,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DashboardDataAggregator } from '../../../../src/dashboard/server/data/dashboard-data-aggregator.js';
 
-// Mock fs module
+// Mock fs module (still needed for analytics, plugins, sync child repos)
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
@@ -28,6 +31,19 @@ vi.mock('fs', () => ({
   default: mockFs,
 }));
 
+// Mock fs/promises module (used by async readJsonFile, scanIncrements, countTasks, countAcs)
+const mockFsp = vi.hoisted(() => ({
+  access: vi.fn(),
+  readFile: vi.fn(),
+  readdir: vi.fn(),
+  stat: vi.fn(),
+}));
+
+vi.mock('fs/promises', () => ({
+  ...mockFsp,
+  default: mockFsp,
+}));
+
 describe('DashboardDataAggregator', () => {
   const PROJECT_ROOT = '/fake/project';
   let aggregator: DashboardDataAggregator;
@@ -36,27 +52,32 @@ describe('DashboardDataAggregator', () => {
     vi.clearAllMocks();
     aggregator = new DashboardDataAggregator(PROJECT_ROOT);
 
-    // Default: no files exist
+    // Default: no files exist (sync)
     mockFs.existsSync.mockReturnValue(false);
+    // Default: no files exist (async) — access rejects
+    mockFsp.access.mockRejectedValue(new Error('ENOENT'));
+    mockFsp.readFile.mockRejectedValue(new Error('ENOENT'));
+    mockFsp.readdir.mockRejectedValue(new Error('ENOENT'));
+    mockFsp.stat.mockRejectedValue(new Error('ENOENT'));
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  // --- Helper to set up a dashboard.json cache ---
+  // --- Helper to set up a dashboard.json cache (async) ---
   function setupDashboardCache(data: Record<string, unknown>) {
-    mockFs.existsSync.mockImplementation((p: string) => {
-      if (typeof p === 'string' && p.endsWith('state/dashboard.json')) return true;
-      return false;
+    mockFsp.access.mockImplementation(async (p: string) => {
+      if (typeof p === 'string' && p.endsWith('state/dashboard.json')) return undefined;
+      throw new Error('ENOENT');
     });
-    mockFs.readFileSync.mockImplementation((p: string) => {
+    mockFsp.readFile.mockImplementation(async (p: string) => {
       if (typeof p === 'string' && p.endsWith('state/dashboard.json')) return JSON.stringify(data);
       throw new Error('ENOENT');
     });
   }
 
-  // --- Helper to set up filesystem increments ---
+  // --- Helper to set up filesystem increments (async) ---
   function setupFilesystemIncrements(increments: Array<{
     id: string;
     metadata: Record<string, unknown>;
@@ -65,19 +86,19 @@ describe('DashboardDataAggregator', () => {
   }>) {
     const incrementsDir = path.join(PROJECT_ROOT, '.specweave/increments');
 
-    mockFs.existsSync.mockImplementation((p: string) => {
-      if (typeof p !== 'string') return false;
-      if (p === incrementsDir) return true;
+    mockFsp.access.mockImplementation(async (p: string) => {
+      if (typeof p !== 'string') throw new Error('ENOENT');
+      if (p === incrementsDir) return undefined;
       for (const inc of increments) {
         const dir = path.join(incrementsDir, inc.id);
-        if (p === path.join(dir, 'metadata.json')) return true;
-        if (p === path.join(dir, 'tasks.md') && inc.tasks) return true;
-        if (p === path.join(dir, 'spec.md') && inc.spec) return true;
+        if (p === path.join(dir, 'metadata.json')) return undefined;
+        if (p === path.join(dir, 'tasks.md') && inc.tasks) return undefined;
+        if (p === path.join(dir, 'spec.md') && inc.spec) return undefined;
       }
-      return false;
+      throw new Error('ENOENT');
     });
 
-    mockFs.readdirSync.mockImplementation((p: string, _opts?: any) => {
+    mockFsp.readdir.mockImplementation(async (p: string, _opts?: any) => {
       if (typeof p === 'string' && p === incrementsDir) {
         return increments.map(inc => ({
           name: inc.id,
@@ -88,7 +109,7 @@ describe('DashboardDataAggregator', () => {
       return [];
     });
 
-    mockFs.readFileSync.mockImplementation((p: string) => {
+    mockFsp.readFile.mockImplementation(async (p: string) => {
       if (typeof p !== 'string') throw new Error('ENOENT');
       for (const inc of increments) {
         const dir = path.join(incrementsDir, inc.id);
@@ -99,7 +120,7 @@ describe('DashboardDataAggregator', () => {
       throw new Error('ENOENT');
     });
 
-    mockFs.statSync.mockImplementation((p: string) => {
+    mockFsp.stat.mockImplementation(async (p: string) => {
       for (const inc of increments) {
         const dir = path.join(incrementsDir, inc.id);
         if (typeof p === 'string' && p === path.join(dir, 'metadata.json')) {
@@ -180,7 +201,7 @@ describe('DashboardDataAggregator', () => {
     });
 
     // =====================================================
-    // getIncrements — filesystem fallback (THE BUG FIX)
+    // getIncrements — filesystem fallback
     // =====================================================
 
     describe('without dashboard.json cache (filesystem fallback)', () => {
@@ -271,10 +292,11 @@ describe('DashboardDataAggregator', () => {
 
       it('should skip non-numeric directories', async () => {
         const incrementsDir = path.join(PROJECT_ROOT, '.specweave/increments');
-        mockFs.existsSync.mockImplementation((p: string) =>
-          typeof p === 'string' && p === incrementsDir,
-        );
-        mockFs.readdirSync.mockReturnValue([
+        mockFsp.access.mockImplementation(async (p: string) => {
+          if (typeof p === 'string' && p === incrementsDir) return undefined;
+          throw new Error('ENOENT');
+        });
+        mockFsp.readdir.mockResolvedValue([
           { name: '_archive', isDirectory: () => true, isFile: () => false },
           { name: 'README.md', isDirectory: () => false, isFile: () => true },
           { name: '.DS_Store', isDirectory: () => false, isFile: () => true },
@@ -287,12 +309,12 @@ describe('DashboardDataAggregator', () => {
 
       it('should skip increments without metadata.json', async () => {
         const incrementsDir = path.join(PROJECT_ROOT, '.specweave/increments');
-        mockFs.existsSync.mockImplementation((p: string) => {
-          if (typeof p === 'string' && p === incrementsDir) return true;
+        mockFsp.access.mockImplementation(async (p: string) => {
+          if (typeof p === 'string' && p === incrementsDir) return undefined;
           // metadata.json does NOT exist
-          return false;
+          throw new Error('ENOENT');
         });
-        mockFs.readdirSync.mockReturnValue([
+        mockFsp.readdir.mockResolvedValue([
           { name: '0001-no-metadata', isDirectory: () => true, isFile: () => false },
         ] as any);
 
@@ -358,7 +380,7 @@ describe('DashboardDataAggregator', () => {
       });
 
       it('should return empty when increments directory does not exist', async () => {
-        // existsSync returns false for everything (default)
+        // access rejects for everything (default)
         const result = await aggregator.getIncrements();
 
         expect(result.increments).toHaveLength(0);
@@ -381,6 +403,106 @@ describe('DashboardDataAggregator', () => {
         expect(result.increments[2].status).toBe('completed');
         expect(result.summary).toEqual({ total: 3, active: 1, planning: 1, completed: 1 });
       });
+    });
+  });
+
+  // =====================================================
+  // TTL Cache for increments (T-001, T-010)
+  // =====================================================
+
+  describe('increments TTL cache', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should return cached data on subsequent calls within TTL', async () => {
+      setupFilesystemIncrements([
+        { id: '0001-feature', metadata: { title: 'Feature', status: 'active' } },
+      ]);
+
+      const result1 = await aggregator.getIncrements();
+      expect(result1.increments).toHaveLength(1);
+
+      // Clear mocks to prove second call uses cache
+      mockFsp.access.mockRejectedValue(new Error('ENOENT'));
+      mockFsp.readdir.mockRejectedValue(new Error('ENOENT'));
+      mockFsp.readFile.mockRejectedValue(new Error('ENOENT'));
+
+      const result2 = await aggregator.getIncrements();
+      expect(result2.increments).toHaveLength(1);
+      expect(result2).toEqual(result1);
+    });
+
+    it('should expire cache after TTL', async () => {
+      setupFilesystemIncrements([
+        { id: '0001-feature', metadata: { title: 'Feature', status: 'active' } },
+      ]);
+
+      const result1 = await aggregator.getIncrements();
+      expect(result1.increments).toHaveLength(1);
+
+      // Advance past TTL (30s)
+      vi.advanceTimersByTime(31_000);
+
+      // Set up different data to prove fresh read
+      setupFilesystemIncrements([
+        { id: '0001-feature', metadata: { title: 'Feature', status: 'active' } },
+        { id: '0002-new', metadata: { title: 'New', status: 'planning' } },
+      ]);
+
+      const result2 = await aggregator.getIncrements();
+      expect(result2.increments).toHaveLength(2);
+    });
+
+    it('should re-read after invalidateIncrementsCache()', async () => {
+      setupFilesystemIncrements([
+        { id: '0001-feature', metadata: { title: 'Feature', status: 'active' } },
+      ]);
+
+      const result1 = await aggregator.getIncrements();
+      expect(result1.increments).toHaveLength(1);
+
+      // Invalidate cache
+      aggregator.invalidateIncrementsCache();
+
+      // Set up different data
+      setupFilesystemIncrements([
+        { id: '0001-feature', metadata: { title: 'Feature', status: 'active' } },
+        { id: '0002-new', metadata: { title: 'New', status: 'planning' } },
+      ]);
+
+      const result2 = await aggregator.getIncrements();
+      expect(result2.increments).toHaveLength(2);
+    });
+  });
+
+  // =====================================================
+  // Shared scan: getOverview() reuses getIncrements() cache (T-004)
+  // =====================================================
+
+  describe('shared scan between getOverview and getIncrements', () => {
+    it('should share cached data between getOverview and getIncrements', async () => {
+      setupFilesystemIncrements([
+        { id: '0001-active', metadata: { title: 'Active', status: 'active' } },
+      ]);
+
+      // Call getOverview first (triggers getIncrements internally)
+      const overview = await aggregator.getOverview();
+      expect(overview.project.totalIncrements).toBe(1);
+
+      // Clear mocks — if getIncrements uses cache, it won't need filesystem
+      mockFsp.access.mockRejectedValue(new Error('ENOENT'));
+      mockFsp.readdir.mockRejectedValue(new Error('ENOENT'));
+      mockFsp.readFile.mockRejectedValue(new Error('ENOENT'));
+
+      // getIncrements should return from cache
+      const increments = await aggregator.getIncrements();
+      expect(increments.increments).toHaveLength(1);
+      expect(increments.increments[0].id).toBe('0001-active');
     });
   });
 
@@ -461,31 +583,49 @@ describe('DashboardDataAggregator', () => {
   describe('scanIncrementsFromFilesystem', () => {
     it('should handle corrupted metadata.json gracefully', async () => {
       const incrementsDir = path.join(PROJECT_ROOT, '.specweave/increments');
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p === incrementsDir) return true;
-        if (typeof p === 'string' && p.endsWith('metadata.json')) return true;
-        return false;
+      mockFsp.access.mockImplementation(async (p: string) => {
+        if (typeof p === 'string' && (p === incrementsDir || p.endsWith('metadata.json'))) return undefined;
+        throw new Error('ENOENT');
       });
-      mockFs.readdirSync.mockReturnValue([
+      mockFsp.readdir.mockResolvedValue([
         { name: '0001-corrupt', isDirectory: () => true, isFile: () => false },
       ] as any);
-      mockFs.readFileSync.mockImplementation(() => 'NOT VALID JSON{{{');
+      mockFsp.readFile.mockResolvedValue('NOT VALID JSON{{{');
 
-      const result = aggregator.scanIncrementsFromFilesystem();
+      const result = await aggregator.scanIncrementsFromFilesystem();
 
       expect(result).toHaveLength(0);
     });
 
     it('should handle readdir errors gracefully', async () => {
       const incrementsDir = path.join(PROJECT_ROOT, '.specweave/increments');
-      mockFs.existsSync.mockImplementation((p: string) =>
-        typeof p === 'string' && p === incrementsDir,
-      );
-      mockFs.readdirSync.mockImplementation(() => { throw new Error('Permission denied'); });
+      mockFsp.access.mockImplementation(async (p: string) => {
+        if (typeof p === 'string' && p === incrementsDir) return undefined;
+        throw new Error('ENOENT');
+      });
+      mockFsp.readdir.mockRejectedValue(new Error('Permission denied'));
 
-      const result = aggregator.scanIncrementsFromFilesystem();
+      const result = await aggregator.scanIncrementsFromFilesystem();
 
       expect(result).toHaveLength(0);
+    });
+
+    it('should produce correct results for multiple increments', async () => {
+      setupFilesystemIncrements([
+        { id: '0001-feat', metadata: { title: 'Feature', status: 'active', type: 'feature', priority: 'P1' } },
+        { id: '0002-bug', metadata: { title: 'Bug Fix', status: 'completed', type: 'bug', priority: 'P0' } },
+        { id: '0003-plan', metadata: { title: 'Planning', status: 'planning' } },
+      ]);
+
+      const result = await aggregator.scanIncrementsFromFilesystem();
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('0001-feat');
+      expect(result[0].type).toBe('feature');
+      expect(result[1].id).toBe('0002-bug');
+      expect(result[1].type).toBe('bug');
+      expect(result[2].id).toBe('0003-plan');
+      expect(result[2].type).toBe('feature'); // default
     });
   });
 
@@ -550,11 +690,11 @@ describe('DashboardDataAggregator', () => {
     });
 
     it('should detect configured_never_synced status', async () => {
-      mockFs.existsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.endsWith('config.json')) return true;
-        return false;
+      mockFsp.access.mockImplementation(async (p: string) => {
+        if (typeof p === 'string' && p.endsWith('config.json')) return undefined;
+        throw new Error('ENOENT');
       });
-      mockFs.readFileSync.mockImplementation((p: string) => {
+      mockFsp.readFile.mockImplementation(async (p: string) => {
         if (typeof p === 'string' && p.endsWith('config.json')) {
           return JSON.stringify({ sync: { github: { owner: 'myorg', repo: 'myrepo' } } });
         }
