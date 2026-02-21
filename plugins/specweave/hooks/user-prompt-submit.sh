@@ -1415,9 +1415,11 @@ Then spawn agent: \`Task({ subagent_type: \"${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NA
                       # The skill reads the user's prompt from conversation context (it's already there).
 
                       # v1.0.243: Smart interview gate — LLM assesses prompt completeness
+                      # v1.0.301: Removed question count cap ("2-5") — sw:pm decides count
+                      # based on complexity (trivial: 0-3, small: 4-8, medium: 9-18, large: 19-40).
                       DEEP_INTERVIEW_MSG=""
                       if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]]; then
-                        DEEP_INTERVIEW_MSG=" Assess prompt completeness first — if gaps exist, ask 2-5 targeted questions before calling."
+                        DEEP_INTERVIEW_MSG=" Deep interview enabled — sw:pm skill will assess complexity and interview depth."
                       fi
 
                       MSG="${WIP_WARNING}${AUTOLOAD_PREFIX}SKILL FIRST: \`Skill({ skill: \"sw:increment\" })\` — call BEFORE implementation.
@@ -2092,7 +2094,7 @@ if [[ "$DEEP_INTERVIEW_ENABLED" == "true" ]] && [[ -z "$ACTIVE_INCREMENT" ]]; th
   fi
 
   if [[ "$HAVE_ACTIVE_STATE" != "true" ]]; then
-    SMART_INTERVIEW_GATE_MSG="No active increment. Assess prompt completeness for complexity — if gaps, ask 2-5 targeted questions. If sufficient, call sw:increment."
+    SMART_INTERVIEW_GATE_MSG="No active increment. Deep interview enabled — assess prompt completeness for complexity. If gaps exist, ask targeted questions (count depends on complexity). If sufficient, call sw:increment."
   fi
 fi
 
@@ -2429,20 +2431,40 @@ _budget_append "$ARCHIVE_SUGGESTION_MSG"
 # ==============================================================================
 # If this turn's context is identical to last turn's, don't re-inject it.
 # Claude already has it in history. Saves ~2500 chars per duplicate turn.
+#
+# v1.0.301: SMART_INTERVIEW_GATE_MSG is excluded from the dedup hash.
+# The gate must fire on EVERY prompt (until an increment is created) so the
+# LLM keeps assessing prompt completeness across turns. Hashing the full
+# FINAL_MESSAGE (which includes the gate) would produce the same hash on
+# consecutive prompts and suppress the gate after the first turn.
 if [[ -n "$FINAL_MESSAGE" ]] && [[ -n "$SW_PROJECT_ROOT" ]]; then
   DEDUP_HASH_FILE="$SW_PROJECT_ROOT/.specweave/state/.context-hash"
   CURRENT_HASH=""
+
+  # Build hash input WITHOUT the gate message so it doesn't trigger dedup
+  DEDUP_INPUT="$FINAL_MESSAGE"
+  if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
+    # Remove the gate message (with leading \n) from hash input
+    DEDUP_INPUT="${DEDUP_INPUT//\\n${SMART_INTERVIEW_GATE_MSG}/}"
+    DEDUP_INPUT="${DEDUP_INPUT//${SMART_INTERVIEW_GATE_MSG}/}"
+  fi
+
   if command -v md5sum >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5sum | cut -d' ' -f1)
+    CURRENT_HASH=$(printf '%s' "$DEDUP_INPUT" | md5sum | cut -d' ' -f1)
   elif command -v md5 >/dev/null 2>&1; then
-    CURRENT_HASH=$(printf '%s' "$FINAL_MESSAGE" | md5)
+    CURRENT_HASH=$(printf '%s' "$DEDUP_INPUT" | md5)
   fi
 
   if [[ -n "$CURRENT_HASH" ]]; then
     if [[ -f "$DEDUP_HASH_FILE" ]]; then
       PREV_HASH=$(cat "$DEDUP_HASH_FILE" 2>/dev/null)
       if [[ "$CURRENT_HASH" == "$PREV_HASH" ]]; then
-        # Identical to last turn — skip injection
+        if [[ -n "$SMART_INTERVIEW_GATE_MSG" ]]; then
+          # Rest of context is duplicate, but gate must still fire
+          output_approve_with_context "\\n${SMART_INTERVIEW_GATE_MSG}"
+          exit 0
+        fi
+        # No gate — fully identical, skip injection
         echo '{"decision":"approve"}'
         exit 0
       fi
