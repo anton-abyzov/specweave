@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.310] - 2026-02-21
+
+### Changes
+- fix docs validator
+
+---
+
+
+
 ## [1.0.309] - 2026-02-21
 
 ### Changes
