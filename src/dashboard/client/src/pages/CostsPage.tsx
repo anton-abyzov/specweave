@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo, Fragment } from 'react';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { useSSEEvent } from '../contexts/SSEContext.js';
 import { KpiCard } from '../components/ui/KpiCard.js';
@@ -62,7 +62,24 @@ export function CostsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-lg font-semibold text-gray-200">Token Usage & Costs</h2>
+      {/* Source Header — T-007 */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-200">Claude Code Usage</h2>
+            <span className="text-xs text-gray-500">
+              {isSubscription && data.billingContext?.monthlyAmount
+                ? `$${data.billingContext.monthlyAmount}/mo plan`
+                : 'API-equivalent usage analytics'}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Subscription Banner */}
       {isSubscription && (
@@ -183,24 +200,115 @@ export function CostsPage() {
       )}
 
       {tab === 'sessions' && (
-        <SessionsTable
+        <VirtualSessionsTable
           sessions={sessions}
           expandedSession={expandedSession}
           onToggle={(id) => setExpandedSession(expandedSession === id ? null : id)}
         />
       )}
+
+      {/* Footer — T-008 */}
+      <div className="text-center py-4 border-t border-gray-800/50">
+        <span className="text-xs text-gray-600">More providers coming soon</span>
+      </div>
     </div>
   );
 }
 
-const PAGE_SIZE = 30;
+/** Row height constants for virtualization */
+const ROW_HEIGHT = 37;        // collapsed row height in px
+const EXPANDED_HEIGHT = 160;  // expanded row height in px
+const BUFFER_ROWS = 5;        // extra rows above/below viewport
 
-function SessionsTable({ sessions, expandedSession, onToggle }: {
+/**
+ * Virtualized sessions table — T-010, T-011
+ * Hand-rolled virtualization: fixed-height container, overflow-y auto,
+ * only renders visible rows + buffer. Supports expandable rows.
+ */
+function VirtualSessionsTable({ sessions, expandedSession, onToggle }: {
   sessions: SessionCost[];
   expandedSession: string | null;
   onToggle: (id: string) => void;
 }) {
-  const [page, setPage] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    if (containerRef.current) {
+      setScrollTop(containerRef.current.scrollTop);
+    }
+  }, []);
+
+  // Compute row heights (expanded rows are taller)
+  const rowHeights = useMemo(() => {
+    return sessions.map(s => {
+      const id = s.sessionId || '-';
+      return id === expandedSession ? EXPANDED_HEIGHT : ROW_HEIGHT;
+    });
+  }, [sessions, expandedSession]);
+
+  // Cumulative offsets for each row
+  const rowOffsets = useMemo(() => {
+    const offsets: number[] = [];
+    let acc = 0;
+    for (const h of rowHeights) {
+      offsets.push(acc);
+      acc += h;
+    }
+    return offsets;
+  }, [rowHeights]);
+
+  const totalHeight = rowOffsets.length > 0
+    ? rowOffsets[rowOffsets.length - 1] + rowHeights[rowHeights.length - 1]
+    : 0;
+
+  // Container viewport height: ~20 rows
+  const containerHeight = Math.min(totalHeight, ROW_HEIGHT * 20);
+
+  // Find visible range via binary search on offsets
+  const visibleRange = useMemo(() => {
+    if (sessions.length === 0) return { start: 0, end: 0 };
+
+    const viewTop = scrollTop;
+    const viewBottom = scrollTop + containerHeight;
+
+    // Binary search for first visible row
+    let lo = 0;
+    let hi = sessions.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (rowOffsets[mid] + rowHeights[mid] <= viewTop) lo = mid + 1;
+      else hi = mid;
+    }
+    const start = Math.max(0, lo - BUFFER_ROWS);
+
+    // Find last visible row
+    lo = start;
+    hi = sessions.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (rowOffsets[mid] >= viewBottom) hi = mid - 1;
+      else lo = mid;
+    }
+    const end = Math.min(sessions.length, lo + BUFFER_ROWS + 1);
+
+    return { start, end };
+  }, [scrollTop, containerHeight, sessions.length, rowOffsets, rowHeights]);
+
+  // Scroll expanded row into view
+  useEffect(() => {
+    if (!expandedSession || !containerRef.current) return;
+    const idx = sessions.findIndex(s => (s.sessionId || '-') === expandedSession);
+    if (idx < 0) return;
+    const rowTop = rowOffsets[idx];
+    const rowBottom = rowTop + EXPANDED_HEIGHT;
+    const el = containerRef.current;
+    if (rowBottom > el.scrollTop + containerHeight) {
+      el.scrollTop = rowBottom - containerHeight;
+    } else if (rowTop < el.scrollTop) {
+      el.scrollTop = rowTop;
+    }
+  }, [expandedSession, sessions, rowOffsets, containerHeight]);
 
   if (sessions.length === 0) {
     return (
@@ -210,20 +318,20 @@ function SessionsTable({ sessions, expandedSession, onToggle }: {
     );
   }
 
-  const totalPages = Math.ceil(sessions.length / PAGE_SIZE);
-  const pageStart = page * PAGE_SIZE;
-  const pageEnd = pageStart + PAGE_SIZE;
-  const pageSessions = sessions.slice(pageStart, pageEnd);
+  const visibleSessions = sessions.slice(visibleRange.start, visibleRange.end);
+  const topPad = visibleRange.start > 0 ? rowOffsets[visibleRange.start] : 0;
+  const bottomPad = visibleRange.end < sessions.length
+    ? totalHeight - rowOffsets[visibleRange.end]
+    : 0;
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
       <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-300">Recent Sessions</h3>
-        <span className="text-xs text-gray-500">
-          {pageStart + 1}-{Math.min(pageEnd, sessions.length)} of {sessions.length}
-        </span>
+        <span className="text-xs text-gray-500">{sessions.length} sessions</span>
       </div>
-      <table className="w-full">
+      {/* Sticky header */}
+      <table className="w-full table-fixed">
         <thead>
           <tr className="border-b border-gray-800">
             <th className="text-left px-4 py-2 text-xs text-gray-500 w-8"></th>
@@ -237,132 +345,104 @@ function SessionsTable({ sessions, expandedSession, onToggle }: {
             <th className="text-left px-4 py-2 text-xs text-gray-500">When</th>
           </tr>
         </thead>
-        <tbody>
-          {pageSessions.map((s) => {
-            const id = s.sessionId || '-';
-            const isExpanded = expandedSession === id;
-            const totalCache = (s.cacheReadTokens || 0) + (s.cacheWriteTokens || 0);
-
-            return (
-              <Fragment key={id}>
-                <tr
-                  className="border-b border-gray-800/50 hover:bg-gray-800/30 cursor-pointer"
-                  onClick={() => onToggle(id)}
-                >
-                  <td className="px-4 py-2 text-xs text-gray-600">
-                    <span className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
-                      &#9656;
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-xs text-gray-400 font-mono">
-                    {id.slice(0, 8)}
-                  </td>
-                  <td className="px-4 py-2">
-                    <Badge label={s.model || 'unknown'} variant="default" />
-                  </td>
-                  <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(s.inputTokens)}</td>
-                  <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(s.outputTokens)}</td>
-                  <td className="px-4 py-2 text-xs text-gray-500 text-right">
-                    {totalCache > 0 ? formatTokens(totalCache) : '-'}
-                  </td>
-                  <td className="px-4 py-2 text-xs text-amber-400 text-right">${s.cost?.toFixed(4) || '0.0000'}</td>
-                  <td className="px-4 py-2 text-xs text-gray-500 text-right">
-                    {s.duration ? formatDuration(s.duration) : '-'}
-                  </td>
-                  <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(s.timestamp)}</td>
-                </tr>
-                {isExpanded && (
-                  <tr className="border-b border-gray-800/50">
-                    <td colSpan={9} className="px-6 py-3 bg-gray-800/20">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                        <div>
-                          <span className="text-gray-500 block mb-1">Input Tokens</span>
-                          <span className="text-gray-300 font-mono">{s.inputTokens.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">Output Tokens</span>
-                          <span className="text-gray-300 font-mono">{s.outputTokens.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">Cache Write</span>
-                          <span className="text-gray-300 font-mono">{(s.cacheWriteTokens || 0).toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">Cache Read</span>
-                          <span className="text-gray-300 font-mono">{(s.cacheReadTokens || 0).toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">Cost</span>
-                          <span className="text-amber-400 font-mono">${s.cost?.toFixed(6) || '0'}</span>
-                        </div>
-                        {s.savings != null && s.savings > 0 && (
-                          <div>
-                            <span className="text-gray-500 block mb-1">Cache Savings</span>
-                            <span className="text-emerald-400 font-mono">${s.savings.toFixed(6)}</span>
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-gray-500 block mb-1">Duration</span>
-                          <span className="text-gray-300">{s.duration ? formatDuration(s.duration) : '-'}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">Session ID</span>
-                          <span className="text-gray-400 font-mono text-[10px]">{s.sessionId}</span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            );
-          })}
-        </tbody>
       </table>
-      {totalPages > 1 && (
-        <div className="px-5 py-3 border-t border-gray-800 flex items-center justify-between">
-          <button
-            onClick={() => setPage(p => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="px-3 py-1 text-xs text-gray-400 hover:text-gray-200 border border-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            Previous
-          </button>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-              let pageNum: number;
-              if (totalPages <= 7) {
-                pageNum = i;
-              } else if (page < 3) {
-                pageNum = i;
-              } else if (page > totalPages - 4) {
-                pageNum = totalPages - 7 + i;
-              } else {
-                pageNum = page - 3 + i;
-              }
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-7 h-7 text-xs rounded transition-colors ${
-                    page === pageNum
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
-                  }`}
-                >
-                  {pageNum + 1}
-                </button>
-              );
-            })}
-          </div>
-          <button
-            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="px-3 py-1 text-xs text-gray-400 hover:text-gray-200 border border-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            Next
-          </button>
+      {/* Scrollable virtualized body */}
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="overflow-y-auto custom-scrollbar"
+        style={{ maxHeight: `${containerHeight}px` }}
+      >
+        <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
+          {/* Top spacer */}
+          {topPad > 0 && <div style={{ height: `${topPad}px` }} />}
+          <table className="w-full table-fixed">
+            <tbody>
+              {visibleSessions.map((s) => {
+                const id = s.sessionId || '-';
+                const isExpanded = expandedSession === id;
+                const totalCache = (s.cacheReadTokens || 0) + (s.cacheWriteTokens || 0);
+
+                return (
+                  <Fragment key={id}>
+                    <tr
+                      className="border-b border-gray-800/50 hover:bg-gray-800/30 cursor-pointer"
+                      style={{ height: `${ROW_HEIGHT}px` }}
+                      onClick={() => onToggle(id)}
+                    >
+                      <td className="px-4 py-2 text-xs text-gray-600 w-8">
+                        <span className={`inline-block transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
+                          &#9656;
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-xs text-gray-400 font-mono">
+                        {id.slice(0, 8)}
+                      </td>
+                      <td className="px-4 py-2">
+                        <Badge label={s.model || 'unknown'} variant="default" />
+                      </td>
+                      <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(s.inputTokens)}</td>
+                      <td className="px-4 py-2 text-xs text-gray-500 text-right">{formatTokens(s.outputTokens)}</td>
+                      <td className="px-4 py-2 text-xs text-gray-500 text-right">
+                        {totalCache > 0 ? formatTokens(totalCache) : '-'}
+                      </td>
+                      <td className="px-4 py-2 text-xs text-amber-400 text-right">${s.cost?.toFixed(4) || '0.0000'}</td>
+                      <td className="px-4 py-2 text-xs text-gray-500 text-right">
+                        {s.duration ? formatDuration(s.duration) : '-'}
+                      </td>
+                      <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(s.timestamp)}</td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="border-b border-gray-800/50">
+                        <td colSpan={9} className="px-6 py-3 bg-gray-800/20">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                            <div>
+                              <span className="text-gray-500 block mb-1">Input Tokens</span>
+                              <span className="text-gray-300 font-mono">{s.inputTokens.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 block mb-1">Output Tokens</span>
+                              <span className="text-gray-300 font-mono">{s.outputTokens.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 block mb-1">Cache Write</span>
+                              <span className="text-gray-300 font-mono">{(s.cacheWriteTokens || 0).toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 block mb-1">Cache Read</span>
+                              <span className="text-gray-300 font-mono">{(s.cacheReadTokens || 0).toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 block mb-1">Cost</span>
+                              <span className="text-amber-400 font-mono">${s.cost?.toFixed(6) || '0'}</span>
+                            </div>
+                            {s.savings != null && s.savings > 0 && (
+                              <div>
+                                <span className="text-gray-500 block mb-1">Cache Savings</span>
+                                <span className="text-emerald-400 font-mono">${s.savings.toFixed(6)}</span>
+                              </div>
+                            )}
+                            <div>
+                              <span className="text-gray-500 block mb-1">Duration</span>
+                              <span className="text-gray-300">{s.duration ? formatDuration(s.duration) : '-'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 block mb-1">Session ID</span>
+                              <span className="text-gray-400 font-mono text-[10px]">{s.sessionId}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+          {/* Bottom spacer */}
+          {bottomPad > 0 && <div style={{ height: `${bottomPad}px` }} />}
         </div>
-      )}
+      </div>
     </div>
   );
 }
