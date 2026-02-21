@@ -20,6 +20,7 @@ import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 export class GitHubReconciler {
     constructor(options) {
         this.client = null;
+        this.configCache = null;
         this.projectRoot = options.projectRoot;
         this.dryRun = options.dryRun ?? false;
         this.logger = options.logger ?? consoleLogger;
@@ -318,15 +319,20 @@ This typically happens when:
         }
     }
     /**
-     * Load config
+     * Load config (cached after first read)
      */
     async loadConfig() {
+        if (this.configCache !== null) {
+            return this.configCache;
+        }
         const configPath = path.join(this.projectRoot, '.specweave/config.json');
         if (!existsSync(configPath)) {
-            return {};
+            this.configCache = {};
+            return this.configCache;
         }
         const content = await fs.readFile(configPath, 'utf-8');
-        return JSON.parse(content);
+        this.configCache = JSON.parse(content);
+        return this.configCache;
     }
     /**
      * Resolve GitHub owner/repo from config, falling back to git remote.

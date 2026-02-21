@@ -12,6 +12,7 @@
 
 import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
+import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
 
 export interface CreateIncrementOptions {
   id: string;
@@ -57,6 +58,9 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     }
     throw new Error(result.error);
   }
+
+  // Fire-and-forget: dispatch post-increment-planning hooks (non-blocking)
+  void LifecycleHookDispatcher.onIncrementPlanned(projectRoot, id).catch(() => {});
 
   if (json) {
     console.log(JSON.stringify({

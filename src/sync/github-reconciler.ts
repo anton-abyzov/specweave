@@ -60,6 +60,7 @@ export class GitHubReconciler {
   private dryRun: boolean;
   private logger: Logger;
   private client: GitHubClientV2 | null = null;
+  private configCache: any | null = null;
 
   constructor(options: ReconcileOptions) {
     this.projectRoot = options.projectRoot;
@@ -423,17 +424,23 @@ This typically happens when:
   }
 
   /**
-   * Load config
+   * Load config (cached after first read)
    */
   private async loadConfig(): Promise<any> {
+    if (this.configCache !== null) {
+      return this.configCache;
+    }
+
     const configPath = path.join(this.projectRoot, '.specweave/config.json');
 
     if (!existsSync(configPath)) {
-      return {};
+      this.configCache = {};
+      return this.configCache;
     }
 
     const content = await fs.readFile(configPath, 'utf-8');
-    return JSON.parse(content);
+    this.configCache = JSON.parse(content);
+    return this.configCache;
   }
 
   /**
