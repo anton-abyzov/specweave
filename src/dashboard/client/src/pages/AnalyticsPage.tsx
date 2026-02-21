@@ -26,10 +26,10 @@ interface SkillUsage {
   lastUsed: string;
 }
 
-type Tab = 'commands' | 'skills' | 'agents' | 'daily';
+type Tab = 'skills' | 'commands' | 'agents' | 'daily';
 
 export function AnalyticsPage() {
-  const [tab, setTab] = useState<Tab>('commands');
+  const [tab, setTab] = useState<Tab>('skills');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   useSSEEvent('analytics-event', () => setRefreshKey((k) => k + 1));
@@ -79,8 +79,8 @@ export function AnalyticsPage() {
       {/* Tab Bar */}
       <div className="flex gap-1 bg-gray-900/50 border border-gray-800 rounded-lg p-1">
         {([
-          { key: 'commands' as Tab, label: 'Commands' },
           { key: 'skills' as Tab, label: 'Skills' },
+          { key: 'commands' as Tab, label: 'Commands' },
           { key: 'agents' as Tab, label: 'Agents' },
           { key: 'daily' as Tab, label: 'Daily Trends' },
         ]).map(t => (

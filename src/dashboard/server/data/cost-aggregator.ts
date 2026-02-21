@@ -68,11 +68,21 @@ function getPricing(model: string) {
   return PRICING[model] || PRICING[resolveModel(model)] || PRICING['claude-sonnet-4-5-20250929'];
 }
 
+/** Per-file cache entry: mtime + parsed summary */
+interface FileCacheEntry {
+  mtimeMs: number;
+  summary: SessionTokenSummary;
+}
+
 export class CostAggregator {
   private logDir: string;
-  private cache: CostsSummaryPayload | null = null;
-  private cacheTime = 0;
-  private readonly cacheTTL = 60_000; // 60 seconds
+
+  /** Level-1: per-file cache keyed by absolute file path */
+  private fileCache = new Map<string, FileCacheEntry>();
+
+  /** Level-2: response cache — invalidated when file list/mtimes change */
+  private responseCache: CostsSummaryPayload | null = null;
+  private responseCacheHash = '';
 
   constructor(projectRoot: string) {
     const slug = projectRoot.replace(/^\//, '').replace(/\//g, '-');
@@ -80,34 +90,67 @@ export class CostAggregator {
   }
 
   async getTokenSummaries(limit = 200, billingConfig?: { planType?: string; monthlyAmount?: number }): Promise<CostsSummaryPayload> {
-    if (this.cache && Date.now() - this.cacheTime < this.cacheTTL) {
-      return this.cache;
+    // 1. Get current file list with mtimes
+    const fileInfos = this.getSessionFilesWithMtime();
+    const recent = fileInfos.slice(-limit);
+
+    // 2. Compute a hash from file paths + mtimes for response cache invalidation
+    const hash = recent.map(f => `${f.path}:${f.mtimeMs}`).join('|');
+    if (this.responseCache && this.responseCacheHash === hash) {
+      return this.responseCache;
     }
 
-    const files = this.getSessionFiles();
-    const recent = files.slice(-limit);
-    const sessions: SessionTokenSummary[] = [];
-    const modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }> = {};
+    // 3. Evict deleted files from per-file cache
+    const currentPaths = new Set(recent.map(f => f.path));
+    for (const cachedPath of this.fileCache.keys()) {
+      if (!currentPaths.has(cachedPath)) {
+        this.fileCache.delete(cachedPath);
+      }
+    }
 
+    // 4. Determine which files need re-parsing (new or mtime changed)
+    const toReparse: Array<{ path: string; mtimeMs: number }> = [];
+    for (const info of recent) {
+      const cached = this.fileCache.get(info.path);
+      if (!cached || cached.mtimeMs !== info.mtimeMs) {
+        toReparse.push(info);
+      }
+    }
+
+    // 5. Parse only changed/new files in batches
     const CONCURRENCY = 15;
-    for (let i = 0; i < recent.length; i += CONCURRENCY) {
-      const batch = recent.slice(i, i + CONCURRENCY);
+    for (let i = 0; i < toReparse.length; i += CONCURRENCY) {
+      const batch = toReparse.slice(i, i + CONCURRENCY);
       const settled = await Promise.allSettled(
-        batch.map(file => this.extractTokensFromSession(file)),
+        batch.map(async (info) => {
+          const summary = await this.extractTokensFromSession(info.path);
+          return { path: info.path, mtimeMs: info.mtimeMs, summary };
+        }),
       );
       for (const result of settled) {
-        if (result.status === 'fulfilled' && result.value) {
-          const summary = result.value;
+        if (result.status === 'fulfilled' && result.value.summary) {
+          const { path: filePath, mtimeMs, summary } = result.value;
           if (summary.inputTokens + summary.outputTokens > 0) {
-            sessions.push(summary);
-            const model = summary.model || 'unknown';
-            if (!modelBreakdown[model]) modelBreakdown[model] = { cost: 0, tokens: 0, sessions: 0 };
-            modelBreakdown[model].cost += summary.cost;
-            modelBreakdown[model].tokens += summary.inputTokens + summary.outputTokens;
-            modelBreakdown[model].sessions++;
+            this.fileCache.set(filePath, { mtimeMs, summary });
           }
         }
       }
+    }
+
+    // 6. Rebuild aggregates from all per-file cached summaries
+    const sessions: SessionTokenSummary[] = [];
+    const modelBreakdown: Record<string, { cost: number; tokens: number; sessions: number }> = {};
+
+    for (const info of recent) {
+      const cached = this.fileCache.get(info.path);
+      if (!cached) continue;
+      const summary = cached.summary;
+      sessions.push(summary);
+      const model = summary.model || 'unknown';
+      if (!modelBreakdown[model]) modelBreakdown[model] = { cost: 0, tokens: 0, sessions: 0 };
+      modelBreakdown[model].cost += summary.cost;
+      modelBreakdown[model].tokens += summary.inputTokens + summary.outputTokens;
+      modelBreakdown[model].sessions++;
     }
 
     sessions.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
@@ -134,8 +177,8 @@ export class CostAggregator {
       billingContext,
     };
 
-    this.cache = result;
-    this.cacheTime = Date.now();
+    this.responseCache = result;
+    this.responseCacheHash = hash;
     return result;
   }
 
@@ -208,15 +251,24 @@ export class CostAggregator {
     };
   }
 
-  private getSessionFiles(): string[] {
+  /** Get session files sorted by mtime, with mtime included for cache comparison */
+  private getSessionFilesWithMtime(): Array<{ path: string; mtimeMs: number }> {
     if (!fs.existsSync(this.logDir)) return [];
     try {
-      return fs.readdirSync(this.logDir)
+      const files = fs.readdirSync(this.logDir)
         .filter(f => f.endsWith('.jsonl'))
-        .map(f => path.join(this.logDir, f))
-        .sort((a, b) => {
-          try { return fs.statSync(a).mtimeMs - fs.statSync(b).mtimeMs; } catch { return 0; }
-        });
+        .map(f => {
+          const fullPath = path.join(this.logDir, f);
+          try {
+            const stat = fs.statSync(fullPath);
+            return { path: fullPath, mtimeMs: stat.mtimeMs };
+          } catch {
+            return null;
+          }
+        })
+        .filter((f): f is { path: string; mtimeMs: number } => f !== null)
+        .sort((a, b) => a.mtimeMs - b.mtimeMs);
+      return files;
     } catch { return []; }
   }
 }
