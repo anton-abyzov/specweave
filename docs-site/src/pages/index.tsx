@@ -138,6 +138,24 @@ const Icons = {
   ),
 };
 
+function HeroVideo(): ReactNode {
+  return (
+    <section className={styles.heroVideoSection}>
+      <video
+        className={styles.heroVideo}
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster="/video/hero-poster.jpg"
+      >
+        <source src="/video/hero.mp4" type="video/mp4" />
+        <source src="/video/hero.webm" type="video/webm" />
+      </video>
+    </section>
+  );
+}
+
 function HomepageHeader() {
   return (
     <header className={styles.heroBanner}>
@@ -312,12 +330,12 @@ function VSkillsSection(): ReactNode {
             </div>
 
             <div className={styles.vskillsCtas}>
-              <Link className={styles.btnVerified} to="/docs/skills/verified-skills">
+              <Link className={styles.btnVerified} to="/docs/skills/verified/verified-skills">
                 Learn About Verified Skills
               </Link>
-              <Link className={styles.btnVerifiedOutline} to="https://verifiedskill.com">
+              <a className={styles.btnVerifiedOutline} href="https://verifiedskill.com" target="_blank" rel="noopener noreferrer">
                 verifiedskill.com →
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -496,7 +514,12 @@ function CTASection(): ReactNode {
         </p>
 
         <div className={styles.ctaCode}>
-          <code>npm install -g specweave && specweave init .</code>
+          <code>
+            npm install -g specweave && specweave init .<br/>
+            <span style={{ color: 'var(--ifm-color-emphasis-500)', fontSize: '0.85em' }}>
+              # or: bun add -g specweave | pnpm add -g specweave | yarn global add specweave
+            </span>
+          </code>
         </div>
 
         <div className={styles.ctaButtons}>
@@ -527,6 +550,7 @@ export default function Home(): ReactNode {
       description="The spec-driven skill layer for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Ship features while you sleep.">
       <HomepageHeader />
       <main>
+        <HeroVideo />
         <ProblemSection />
         <VSkillsSection />
         <WhatsNewSection />
