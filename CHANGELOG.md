@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.311] - 2026-02-21
+
+### Changes
+- feat: dashboard repos, docs improvements, lifecycle hooks
+
+---
+
+
+
 ## [1.0.310] - 2026-02-21
 
 ### Changes
