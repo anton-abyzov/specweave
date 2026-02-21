@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.301] - 2026-02-21
+
+### Changes
+- update hooks, jira skills, llm-plugin-detector, do skill
+- v1.0.300
+- strengthen plan mode enforcement and add team lead plan review
+- bypass native CC slash commands before detect-intent
+- fix: set markdown format detect and ignore broken images
+- feat: add plugin security self-scan module (0244)
+- fix: register refresh-plugins CLI command and fix doctor test expectations
+- docs: sync public docs to docs-site
+
+---
+
+
+
 ## [1.0.300] - 2026-02-21
 
 ### Changes
