@@ -195,7 +195,11 @@ async function main() {
     }
 
     process.exit(0);
-  } catch (error) {
+  } catch (error: unknown) {
+    // FIXED (v1.0.302): Write errors to stdout too, since stderr may be suppressed
+    // by run_with_timeout() in shell handlers. This ensures errors appear in throttle.log.
+    const msg = error instanceof Error ? error.message : String(error);
+    console.log(`\n[ERROR] Sync failed for ${featureId}: ${msg}`);
     console.error(`\n❌ Sync failed:`, error);
     process.exit(1);
   }
@@ -203,6 +207,8 @@ async function main() {
 
 // Run CLI
 main().catch(error => {
+  const msg = error instanceof Error ? error.message : String(error);
+  console.log(`[FATAL] ${msg}`);
   console.error('Fatal error:', error);
   process.exit(1);
 });

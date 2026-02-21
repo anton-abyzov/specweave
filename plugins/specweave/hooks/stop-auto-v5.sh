@@ -168,8 +168,8 @@ for meta in $(find "$INC_DIR" -maxdepth 2 -name "metadata.json" 2>/dev/null); do
     p=$(count_pending_tasks "$d/tasks.md"); a=$(count_open_acs "$d/spec.md")
     if [ "$p" -gt 0 ] || [ "$a" -gt 0 ]; then
         TP=$((TP + p)); TAC=$((TAC + a)); IC=$((IC + 1))
-        # Extract next pending task title (first [ ] line, strip markdown)
-        _next_task=$(grep -m1 '\[ \]' "$d/tasks.md" 2>/dev/null | sed 's/.*\] //' | head -c 80 || echo "")
+        # Extract next pending task title using helper
+        _next_task=$(get_next_task_title "$d/tasks.md")
         # Count completed tasks for progress fraction
         _done=$(grep -c '\[x\]' "$d/tasks.md" 2>/dev/null) || _done=0
         _total=$((_done + p))

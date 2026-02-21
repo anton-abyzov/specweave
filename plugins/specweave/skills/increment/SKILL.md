@@ -46,14 +46,19 @@ Increment planning produces specs, plans, and task breakdowns that require user 
 STEP 0A: Discipline Check (BLOCKING)
 STEP 0B: WIP Enforcement
 STEP 0C: Tech Stack Detection
-STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview)
-STEP 1a: Deep Interview (if enabled)
+STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview check)
 STEP 2:  Project Context (resolve project/board)
-STEP 3:  Create Increment (via Template API)
+STEP 3:  Create Increment (via Template API) ← folder + ID exist after this
+STEP 3a: Deep Interview (if enabled) ← runs AFTER folder exists
 STEP 4:  Delegation (architect + test-aware-planner)
 STEP 5:  Post-Creation Sync
 STEP 6:  Execution Strategy Recommendation
 ```
+
+**CRITICAL**: Step 3 (Create Increment) MUST run before Step 3a (Deep Interview).
+The interview state file is written to `.specweave/state/interview-{increment-id}.json`,
+and the enforcement guard looks for it by increment ID. If the interview runs before the
+increment folder exists, the guard cannot find the state file and blocks spec.md writing.
 
 ## Step 0A: Discipline Check (MANDATORY)
 
@@ -120,23 +125,12 @@ jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/n
 # 2. Check multi-project config
 specweave context projects 2>/dev/null
 
-# 3. Check deep interview mode
-jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null
+# 3. Check deep interview mode (note: interview itself runs at Step 3a, after increment exists)
+DEEP_INTERVIEW=$(jq -r '.planning.deepInterview.enabled // false' .specweave/config.json 2>/dev/null)
 
 # 4. Check WIP limits
 find .specweave/increments -maxdepth 2 -name "metadata.json" -exec grep -l '"status":"active"' {} \; 2>/dev/null | wc -l
 ```
-
-## Step 1a: Deep Interview Mode (if enabled)
-
-**If deep interview is enabled, delegate to PM skill:**
-
-```typescript
-Skill({ skill: "sw:pm", args: "Deep interview mode for: <user description>" })
-```
-
-**THINK about complexity first** - assess before asking:
-- Trivial: 0-3 questions | Small: 4-8 | Medium: 9-18 | Large: 19-40+
 
 ## Step 2: Project Context
 
@@ -245,6 +239,26 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 3. **NO agent spawning** - Skills MUST NOT spawn Task() agents (causes crashes). Guide user in main conversation.
 4. **Increment naming** - Format: `####-descriptive-kebab-case`
 5. **Multi-repo** - In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
+
+## Step 3a: Deep Interview Mode (if enabled)
+
+**IMPORTANT**: This step runs AFTER the increment folder is created (Step 3), so the
+interview state file can reference the real increment ID.
+
+**If deep interview is enabled, delegate to PM skill:**
+
+```typescript
+Skill({ skill: "sw:pm", args: "Deep interview for increment XXXX-name: <user description>" })
+```
+
+The PM skill will:
+1. Assess complexity and determine question count (trivial: 0-3, small: 4-8, medium: 9-18, large: 19-40)
+2. Interview the user across relevant categories
+3. Write interview state to `.specweave/state/interview-{increment-id}.json`
+4. Return interview summary for spec.md creation
+
+**After PM returns**, read the interview state file to confirm all categories are covered
+before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
 ## Step 4: Delegation
 

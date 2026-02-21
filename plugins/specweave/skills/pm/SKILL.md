@@ -44,8 +44,35 @@ If `true`:
    - Small features: 4-8 questions
    - Medium features: 9-18 questions
    - Large features: 19-40 questions
-3. Cover relevant categories (skip those that don't apply)
-4. Only proceed to Research phase after sufficient clarity
+3. Check `minQuestions` config: `jq -r '.planning.deepInterview.minQuestions // 5' .specweave/config.json`
+   - If complexity assessment yields fewer questions than minQuestions, use minQuestions as the floor
+4. Cover relevant categories (skip those that don't apply)
+5. Only proceed to Research phase after sufficient clarity
+
+### Writing Interview State to Disk (CRITICAL)
+
+**This skill runs with `context: fork` (isolated LLM context), but file writes persist.**
+
+When invoked from `sw:increment` with an increment ID (e.g., "Deep interview for increment 0266-foo: ..."),
+you MUST write the interview state file to disk so the enforcement guard can find it:
+
+```bash
+# Extract increment ID from the args (e.g., "Deep interview for increment 0266-foo: ...")
+# Initialize interview state file BEFORE starting questions
+mkdir -p .specweave/state
+echo '{"incrementId":"XXXX-name","startedAt":"'$(date -Iseconds)'","coveredCategories":{}}' \
+  > .specweave/state/interview-XXXX-name.json
+```
+
+After covering each category, update the state file:
+```bash
+jq '.coveredCategories.architecture = {"coveredAt": "'$(date -Iseconds)'", "summary": "..."}' \
+  .specweave/state/interview-XXXX-name.json > tmp && mv tmp .specweave/state/interview-XXXX-name.json
+```
+
+**Why this matters**: The `interview-enforcement-guard.sh` (PreToolUse hook on Write) checks
+`.specweave/state/interview-{increment-id}.json` before allowing spec.md writes. If this file
+is missing or incomplete, spec.md creation is BLOCKED in strict mode.
 
 ## Core Principles
 

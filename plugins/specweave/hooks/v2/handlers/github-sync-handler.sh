@@ -144,15 +144,18 @@ touch "$THROTTLE_FILE"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] EXECUTING $INC_ID ($SYNC_TYPE) event=$EVENT_TYPE" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Cross-platform timeout wrapper
+# FIXED (v1.0.302): Don't suppress stderr from inner commands — only suppress
+# stderr from timeout/gtimeout binary itself (e.g., "command not found").
+# The caller already redirects stderr to log files via 2>&1.
 run_with_timeout() {
   local timeout_secs="$1"
   shift
   if command -v timeout >/dev/null 2>&1; then
-    timeout "$timeout_secs" "$@" 2>/dev/null || true
+    timeout "$timeout_secs" "$@" || true
   elif command -v gtimeout >/dev/null 2>&1; then
-    gtimeout "$timeout_secs" "$@" 2>/dev/null || true
+    gtimeout "$timeout_secs" "$@" || true
   else
-    "$@" 2>/dev/null || true
+    "$@" || true
   fi
 }
 

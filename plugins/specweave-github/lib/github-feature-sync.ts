@@ -10,7 +10,7 @@
  * Creates ONE issue PER user story file from specs/{project}/FS-XXX/us-*.md
  */
 
-import { readdir, readFile, writeFile } from 'fs/promises';
+import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
@@ -294,7 +294,8 @@ export class GitHubFeatureSync {
   }
 
   /**
-   * Find Feature folder in specs directory
+   * Find Feature folder in specs directory.
+   * Falls back to auto-creating from increment spec.md if living docs don't exist.
    */
   private async findFeatureFolder(featureId: string): Promise<string | null> {
     // v5.0.0+: NO _features folder - features live in project folders
@@ -315,7 +316,294 @@ export class GitHubFeatureSync {
       return legacyFolder;
     }
 
+    // FALLBACK (v1.0.302): Auto-create feature folder from increment spec.md
+    // Most increments never get living docs created, so sync silently fails.
+    // This makes sync self-healing by creating minimal living docs on-the-fly.
+    console.log(`   ℹ️  Feature folder not found in living docs, attempting auto-create from spec.md...`);
+    const created = await this.createFeatureFolderFromSpec(featureId, projectFolders);
+    if (created) {
+      return created;
+    }
+
     return null;
+  }
+
+  /**
+   * Find the increment folder for a given feature ID.
+   * Converts FS-271 -> finds 0271-xxx-xxx/ in .specweave/increments/
+   */
+  private async findIncrementFolder(featureId: string): Promise<string | null> {
+    const numMatch = featureId.match(/FS-0*(\d+)E?/i);
+    if (!numMatch) return null;
+
+    const num = parseInt(numMatch[1], 10);
+    const paddedNum = String(num).padStart(4, '0');
+
+    const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+    if (!existsSync(incrementsDir)) return null;
+
+    const entries = await readdir(incrementsDir);
+    const match = entries.find(e => e.startsWith(paddedNum + '-'));
+    if (!match) return null;
+
+    return path.join(incrementsDir, match);
+  }
+
+  /**
+   * Auto-create a feature folder (FEATURE.md + us-NNN.md files) from an
+   * increment's spec.md. This enables GitHub sync even when the living docs
+   * builder hasn't run yet.
+   */
+  private async createFeatureFolderFromSpec(
+    featureId: string,
+    projectFolders: string[]
+  ): Promise<string | null> {
+    try {
+      const incrementFolder = await this.findIncrementFolder(featureId);
+      if (!incrementFolder) {
+        console.log(`   ⚠️  No increment folder found for ${featureId}`);
+        return null;
+      }
+
+      const specPath = path.join(incrementFolder, 'spec.md');
+      if (!existsSync(specPath)) {
+        console.log(`   ⚠️  No spec.md found in ${path.basename(incrementFolder)}`);
+        return null;
+      }
+
+      const specContent = await readFile(specPath, 'utf-8');
+
+      // Parse frontmatter
+      const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
+      if (!fmMatch) {
+        console.log(`   ⚠️  spec.md has no YAML frontmatter`);
+        return null;
+      }
+
+      const frontmatter = yaml.parse(fmMatch[1]);
+      const title = frontmatter.title || path.basename(incrementFolder).replace(/^\d+-/, '');
+      const status = frontmatter.status || 'active';
+      const priority = frontmatter.priority || 'P2';
+      const created = frontmatter.created || new Date().toISOString().split('T')[0];
+      const incrementId = frontmatter.increment || path.basename(incrementFolder);
+
+      // Determine target project folder from spec.md user stories or first available
+      let targetProjectFolder = projectFolders[0]; // Default: first project folder
+      const projectMatch = specContent.match(/\*\*Project\*\*:\s*(\S+)/);
+      if (projectMatch) {
+        const projectName = projectMatch[1];
+        const matchingFolder = projectFolders.find(f => path.basename(f) === projectName);
+        if (matchingFolder) {
+          targetProjectFolder = matchingFolder;
+        }
+      }
+
+      if (!targetProjectFolder) {
+        console.log(`   ⚠️  No project folder available for feature creation`);
+        return null;
+      }
+
+      // Create feature folder
+      const featureFolder = path.join(targetProjectFolder, featureId);
+      await mkdir(featureFolder, { recursive: true });
+
+      // Parse user stories from spec.md body
+      const userStories = this.parseUserStoriesFromSpec(specContent, featureId);
+
+      // Create FEATURE.md
+      const featureMd = this.buildFeatureMd(featureId, title, status, priority, created, incrementId, userStories);
+      await writeFile(path.join(featureFolder, 'FEATURE.md'), featureMd, 'utf-8');
+
+      // Create us-NNN.md files
+      for (const us of userStories) {
+        const usFilename = `us-${us.id.replace('US-', '').padStart(3, '0')}-${this.slugify(us.title)}.md`;
+        const usMd = this.buildUserStoryMd(us, featureId, incrementId);
+        await writeFile(path.join(featureFolder, usFilename), usMd, 'utf-8');
+      }
+
+      console.log(`   ✅ Auto-created feature folder with ${userStories.length} user stories`);
+      return featureFolder;
+    } catch (error) {
+      console.log(`   ⚠️  Failed to auto-create feature folder: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Parse user stories from spec.md markdown content.
+   */
+  private parseUserStoriesFromSpec(
+    specContent: string,
+    featureId: string
+  ): Array<{
+    id: string;
+    title: string;
+    priority: string;
+    project: string;
+    storyText: string;
+    acceptanceCriteria: string[];
+    status: string;
+  }> {
+    const stories: Array<{
+      id: string;
+      title: string;
+      priority: string;
+      project: string;
+      storyText: string;
+      acceptanceCriteria: string[];
+      status: string;
+    }> = [];
+
+    // Match ### US-NNN: Title (Priority) sections
+    const usRegex = /### (US-\d+):\s*(.+?)(?:\s*\((P\d)\))?\s*\n([\s\S]*?)(?=\n### US-|\n## |\n---\s*\n### US-|$)/g;
+    let match;
+
+    while ((match = usRegex.exec(specContent)) !== null) {
+      const usId = match[1];
+      const rawTitle = match[2].trim();
+      const priority = match[3] || 'P2';
+      const body = match[4];
+
+      // Skip template placeholders
+      if (rawTitle === '[Story Title]') continue;
+
+      // Extract project
+      const projectMatch = body.match(/\*\*Project\*\*:\s*(\S+)/);
+      const project = projectMatch ? projectMatch[1] : 'specweave';
+
+      // Extract story text (As a... I want... So that...)
+      const storyMatch = body.match(/\*\*As a\*\*\s+([\s\S]*?)(?=\n\*\*Acceptance Criteria|$)/);
+      const storyText = storyMatch ? storyMatch[1].trim() : '';
+
+      // Extract acceptance criteria
+      const acs: string[] = [];
+      const acRegex = /- \[[ x]\] \*\*AC-[^*]+\*\*:\s*(.+)/g;
+      let acMatch;
+      while ((acMatch = acRegex.exec(body)) !== null) {
+        acs.push(acMatch[0]);
+      }
+
+      // Determine status from ACs
+      const totalAcs = acs.length;
+      const completedAcs = acs.filter(ac => ac.startsWith('- [x]')).length;
+      let status = 'not-started';
+      if (totalAcs > 0 && completedAcs === totalAcs) status = 'complete';
+      else if (completedAcs > 0) status = 'active';
+
+      stories.push({
+        id: usId,
+        title: rawTitle,
+        priority,
+        project,
+        storyText,
+        acceptanceCriteria: acs,
+        status,
+      });
+    }
+
+    return stories;
+  }
+
+  /**
+   * Build FEATURE.md content matching the living docs format.
+   */
+  private buildFeatureMd(
+    featureId: string,
+    title: string,
+    status: string,
+    priority: string,
+    created: string,
+    incrementId: string,
+    userStories: Array<{ id: string; title: string }>
+  ): string {
+    const now = new Date().toISOString().split('T')[0];
+    const mappedStatus = status === 'planned' ? 'planning'
+      : status === 'completed' || status === 'done' ? 'complete'
+      : status === 'active' || status === 'in-progress' ? 'active'
+      : 'planning';
+
+    const fm: Record<string, unknown> = {
+      id: featureId,
+      title,
+      type: 'feature',
+      status: mappedStatus,
+      priority,
+      created,
+      lastUpdated: now,
+      tldr: title,
+      complexity: 'medium',
+      auto_created: true,
+    };
+
+    const yamlFm = yaml.stringify(fm);
+
+    let body = `\n# ${title}\n\n## TL;DR\n\n**What**: ${title}\n**Status**: ${mappedStatus} | **Priority**: ${priority}\n**User Stories**: ${userStories.length}\n\n## Overview\n\n${title}\n\n## Implementation History\n\n| Increment | Status |\n|-----------|--------|\n| [${incrementId}](../../../../../increments/${incrementId}/spec.md) | ${mappedStatus} |\n\n## User Stories\n`;
+
+    for (const us of userStories) {
+      body += `\n- [${us.id}: ${us.title}](./${us.id.toLowerCase()}.md)`;
+    }
+
+    return `---\n${yamlFm}---${body}\n`;
+  }
+
+  /**
+   * Build us-NNN.md content matching the living docs format.
+   */
+  private buildUserStoryMd(
+    us: {
+      id: string;
+      title: string;
+      priority: string;
+      project: string;
+      storyText: string;
+      acceptanceCriteria: string[];
+      status: string;
+    },
+    featureId: string,
+    incrementId: string
+  ): string {
+    const now = new Date().toISOString().split('T')[0];
+
+    const fm: Record<string, unknown> = {
+      id: us.id,
+      feature: featureId,
+      title: us.title,
+      status: us.status,
+      priority: us.priority,
+      created: now,
+      project: us.project,
+    };
+
+    const yamlFm = yaml.stringify(fm);
+
+    let body = `\n# ${us.id}: ${us.title}\n\n**Feature**: [${featureId}](./FEATURE.md)\n\n`;
+
+    if (us.storyText) {
+      body += `${us.storyText}\n\n`;
+    }
+
+    body += `---\n\n## Acceptance Criteria\n\n`;
+
+    if (us.acceptanceCriteria.length > 0) {
+      body += us.acceptanceCriteria.join('\n') + '\n';
+    } else {
+      body += `- [ ] **AC-${us.id.replace('US-', 'US')}-01**: Pending specification\n`;
+    }
+
+    body += `\n---\n\n## Implementation\n\n**Increment**: [${incrementId}](../../../../../increments/${incrementId}/spec.md)\n`;
+
+    return `---\n${yamlFm}---${body}\n`;
+  }
+
+  /**
+   * Convert a title to a URL-safe slug.
+   */
+  private slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 60);
   }
 
   /**
