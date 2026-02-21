@@ -25,6 +25,7 @@ import {
   writeLockfile as writeLockfileToDir,
   ensureLockfile as ensureLockfileInDir,
 } from '../../utils/plugin-copier.js';
+import { registerPluginsWithClaudeCli } from '../../utils/claude-plugin-cli.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -141,6 +142,7 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   let installed = 0;
   let skipped = 0;
   let failed = 0;
+  const processedPlugins: string[] = [];
 
   for (const plugin of pluginsToProcess) {
     console.log(chalk.blue(`  Installing ${plugin.name}...`));
@@ -154,8 +156,10 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         console.log(chalk.gray(`  - ${plugin.name}: unchanged (skipped)`));
       }
       skipped++;
+      processedPlugins.push(plugin.name);
     } else if (result.success) {
       installed++;
+      processedPlugins.push(plugin.name);
       console.log(chalk.green(`  + ${plugin.name} installed`));
     } else {
       failed++;
@@ -164,6 +168,12 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         console.log(chalk.gray(`    ${result.error}`));
       }
     }
+  }
+
+  // Step 4b: Register with Claude CLI (ensures plugins appear in /plugin Installed)
+  // This is non-fatal — file-copy is the primary installation mechanism.
+  if (processedPlugins.length > 0) {
+    registerPluginsWithClaudeCli(specweaveRoot, processedPlugins);
   }
 
   // Step 5: Summary
