@@ -106,9 +106,7 @@ draft: true
 >
 > You could automate your YouTube publishing pipeline, your content calendar, your weekly knowledge reviews. If you can describe acceptance criteria for it, SpecWeave can coordinate AI to deliver it.
 >
-> And here's one you might not expect — you can actually earn money with this. Platforms like Guidepoint pay for expert consultations and surveys based on your professional experience. I just earned $65 from a Generative AI survey — completely legitimate, based on my real 18 years of experience. No cheating, no faking anything. The AI just saved me time. It already has my knowledge in CLAUDE.md files, my project history, my architectural decisions — so when I need to fill out detailed survey responses about my expertise, it does the heavy lifting. It enters everything accurately because it already knows what I know. That's the kind of practical value people overlook — the AI doesn't replace your expertise, it makes monetizing it effortless.
->
-> I have a full guide on this at spec-weave.com — link in the description. Check out the Life Automation guide for concrete examples.
+> Full guide at spec-weave.com — link in the description.
 >
 > But for this video, let's focus on the core developer workflow. That's where the foundation is."
 
@@ -237,9 +235,9 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 
 **[Quick mention of Claude Code velocity]**
 
-> "And here's the thing — features are being delivered SO fast in this space. Claude Code ships new versions every week. New capabilities, new optimizations, new patterns. You literally cannot keep up. Nobody can.
+> "Claude Code ships new versions weekly. Three new features in the last two weeks alone. Nobody can keep up with the changelog — and you shouldn't have to.
 >
-> Anthropic is moving in this direction — they'll probably add project management, external sync, quality gates someday. But it's taking them a long time because they're handling too many things at once. They're building the foundation — the model, the SDK, the protocol. That's their job.
+> Anthropic is building the foundation — the model, the SDK, the protocol. That's their job.
 >
 > SpecWeave is already here. It takes all that power and wraps it into a structured, disciplined workflow. `context: fork` for isolated execution. `model: opus` for critical decisions. MCP Tool Search for 85% token reduction. Skill-scoped hooks for efficiency.
 >
@@ -972,6 +970,8 @@ specweave init .
 
 > "The init wizard sets up your project structure. It works with greenfield AND brownfield projects."
 
+**[LIVE DEMO: Record a terminal session running `/sw:increment "Build a course marketplace"` with Deep Interview Mode enabled. Show Claude asking 8-12 real questions — payment provider, drip scheduling, certificates, multi-tenancy. Then show the resulting spec.md with all answers baked in. This demonstrates the "AI as PM" value prop better than any slide.]**
+
 **[HIGHLIGHT: Deep Interview Mode prompt in init wizard]**
 
 > "Here's a new feature that's a game-changer — Deep Interview Mode. During init, you'll see this prompt:"
@@ -1677,6 +1677,8 @@ wrangler deploy
 
 ## SECTION 13: AUTONOMOUS MODE DEEP DIVE (38:30 - 43:30)
 
+**[LIVE DEMO: Record a full-screen terminal with `/sw:auto` running on a real increment. Show tasks.md checkboxes flipping from [ ] to [x] in real time, box art updating iteration counts, and test output streaming. Speed up 3-4x in post. End with the "ALL TASKS COMPLETE" banner. This is the payoff viewers have been waiting for — don't cut away to slides.]**
+
 **[SCREEN: Navigate to docs/guides/autonomous-mode]**
 
 > "Now let's talk about the feature that changes everything — autonomous mode. This is where SpecWeave becomes truly hands-off."
@@ -1803,6 +1805,8 @@ wrangler deploy
 ---
 
 ## SECTION 13.5: AGENT SWARMS — PARALLEL AI DEVELOPMENT (43:30 - 47:00)
+
+**[LIVE DEMO: Record two tmux panes running /sw:auto on different increments simultaneously. Show tasks.md updating in real time. Show /sw:team-status reflecting both agents. This is the #1 differentiator — viewers MUST see it working live, not just diagrams.]**
 
 **[SCREEN: Show terminal with 3 sessions side-by-side]**
 
@@ -2894,189 +2898,125 @@ specweave init .
 
 ---
 
-### SkillUp - Football Coaching Monetization Platform (64:00 - 66:00)
+### BizZone - Student Events Platform (64:00 - 65:00)
 
-**[SCREEN: Share screen showing SkillUp mobile app]**
+**[SCREEN: Show BizZone in the App Store, then the app itself]**
 
-> "Let's start with SkillUp. This is a platform for football coaches to monetize their training programs."
+> "BizZone — my first mobile app released in the App Store. A platform for student and business events with AI-powered news generation."
 
-**[Navigate through the app: Instagram-like feed → lesson details → coach dashboard]**
+**[Navigate: Event listing → AI news article → event details]**
 
-> "The core features:
+> "Users create business events. The AI generates professional news articles automatically — summarizing events, highlighting speakers, writing promotional content. All in-app.
 >
-> **Mobile-first feed** — Like Instagram, but for football training content. Coaches post drills, techniques, training sessions.
->
-> **Monetization** — Stripe integration lets coaches earn from their programs. I built a custom dashboard showing their revenue, student enrollments, popular content.
->
-> **Lesson management** — Coaches configure online and offline sessions. Students book and pay through the platform.
->
-> **Programs & Challenges** — Multi-week training programs. Daily challenges. Progress tracking.
->
-> **Content scrapers** — Automated scrapers find great free content from YouTube channels. Coaches can reference or incorporate it."
-
-**[SCREEN: Show web dashboard with Stripe revenue charts]**
-
-> "Here's the coach dashboard. Real-time revenue tracking. Student analytics. Content performance metrics.
->
-> The tech stack: Remix on Cloudflare Workers for the web app. React Native for mobile. Supabase for database and auth. Stripe for payments. The mobile app has both iOS and Android builds.
->
-> My 10-year-old daughter helped test features and gave product feedback. That's the power of clear specs — even a kid can understand what a feature should do."
-
-**[Point to architecture decision]**
-
-> "Key SpecWeave win: The Stripe webhook handling was complex — subscription lifecycle, failed payments, refunds. I documented every edge case in the spec. Six months from now, when I need to add a new subscription tier, I'll read increment 0034 and know exactly how the system works."
+> This was the project that taught me the App Store submission process with SpecWeave. Every rejection reason, every metadata requirement, every screenshot spec — all documented in increments. When I submitted WC26 and SkillUp later, the process was smooth because the specs from BizZone already captured every edge case."
 
 ---
 
-### EduFeed - Collaborative AI Learning Platform (66:00 - 67:30)
+### SkillUp Football - Coaching Monetization (65:00 - 66:00)
 
-**[SCREEN: Show EduFeed interface]**
+**[SCREEN: Show skillup-football.com + mobile app side by side]**
 
-> "Next is EduFeed — think NotebookLM meets Zoom for education."
+> "SkillUp Football — live at skillup-football.com. Coaches monetize training programs through Stripe."
 
-**[Navigate: Content creation → AI generation → video room]**
+**[Navigate: Instagram-like feed → coach dashboard → Stripe revenue]**
 
-> "Here's how it works:
+> "Instagram-like feed for training content. Lesson scheduling, challenges, programs. Stripe handles all payments — subscription lifecycle, failed payments, refunds. All documented in increment 0034.
 >
-> **Multi-source content ingestion** — Upload a YouTube video, a PDF textbook, or paste URLs. The AI processes everything.
->
-> **Six output formats** — From that source material, EduFeed generates:
-> - Video summaries
-> - Audio podcast-style discussions
-> - Interactive quizzes
-> - Flashcard decks
-> - Mind maps
-> - Study guides
->
-> **Collaborative rooms** — Students join video/audio-enabled rooms like Zoom. But here's the twist — they can share the AI-generated materials in real-time. Someone finds a great quiz? Share it with the room. Everyone upvotes the best materials."
+> My 10-year-old daughter helped test this one."
 
-**[SCREEN: Show a video room in action with shared materials sidebar]**
+**[SCREEN: B-roll — daughter at the computer, 2 seconds]**
 
-> "Look at this — live video chat on the left, shared study materials on the right. Students upvote what helps them most. The AI learns which formats work best for different topics.
->
-> Tech stack: Next.js on Vercel for the web app. Supabase for database. OpenAI and Anthropic APIs for content generation. WebRTC for video rooms.
->
-> My 14-year-old daughter contributed to this one — testing the student experience, suggesting UI improvements.
->
-> SpecWeave advantage: The content generation pipeline has 12 steps — extract, chunk, analyze, generate, format, store. Each step documented in plan.md with failure modes and retry logic. When generation fails, I know exactly where and why."
+> "That's the power of clear specs — even a kid can understand what a feature should do."
 
 ---
 
-### WC26 - World Cup 2026 AI Travel Assistant (67:30 - 69:00)
+### EduFeed - AI Learning Platform (66:00 - 67:00)
 
-**[SCREEN: Show WC26 app - mobile and web]**
+**[SCREEN: Show EduFeed — content creation → AI output → video room]**
 
-> "WC26 is your ultimate World Cup 2026 companion."
-
-**[Navigate: AI chat → team stats → travel planner]**
-
-> "Four main features:
+> "NotebookLM meets Zoom. Upload a YouTube video, get quizzes, flashcards, mind maps, audio discussions. Students join video rooms and share AI-generated materials in real time.
 >
-> **AI Travel Planner** — Tell it which games you want to see. It suggests flights, hotels, ticket packages. Integrates with booking APIs.
->
-> **Live ticket purchasing** — Buy official World Cup tickets directly through the app.
->
-> **Comprehensive stats** — Every team's results, fixtures, standings. Player statistics, personal records, historical performance.
->
-> **Venue guides** — Information about every stadium. How to get there, nearby hotels, local tips.
->
-> The AI assistant knows everything. Ask 'Which games should I attend in New York?' — it suggests matches, estimates costs, books your trip."
-
-**[SCREEN: Show AI chat answering complex query about team matchups]**
-
-> "Here's the AI analyzing matchup history between Argentina and Brazil, suggesting the best game to attend based on rivalry intensity.
->
-> Tech stack: Remix on Cloudflare Workers. D1 for the database (SQLite at the edge). Supabase for user auth. Wrangler for deployment. Mobile app built with React Native.
->
-> SpecWeave lesson: This app has three distinct domains — travel planning, statistics, content. I created separate feature folders in living docs for each domain. When implementing the stats module, I loaded ONLY the sports data context. Clean separation, zero confusion."
+> 12-step content generation pipeline — extract, chunk, analyze, generate, format, store. Each step documented in plan.md with failure modes and retry logic. My 14-year-old daughter contributed to the student experience."
 
 ---
 
-### Lulla - AI Baby Calming App (69:00 - 70:00)
+### WC26 Football - World Cup Companion (67:00 - 68:00)
 
-**[SCREEN: Show Lulla iOS app + Apple Watch companion]**
+**[SCREEN: Show WC26 in the App Store, then mobile + web side by side]**
+
+> "Live in the App Store right now. AI travel planner, live ticket purchasing, comprehensive team stats, venue guides."
+
+**[SCREEN: Show AI chat analyzing Argentina vs Brazil matchup]**
+
+> "Ask 'Which games should I attend in New York?' — it suggests matches, estimates costs, books your trip. Three distinct domains — travel, statistics, content — each with separate living docs folders. Clean separation, zero confusion."
+
+---
+
+### Lulla - AI Baby Calming App (68:00 - 69:00)
+
+**[SCREEN: B-roll — baby in car seat, 2 seconds. Then show the iOS app + Apple Watch.]**
 
 > "Lulla is personal — built when my youngest wouldn't sleep in the car."
 
-**[Navigate through: sound library → emergency mode → Apple Watch controls]**
+**[Navigate: cry detection → playlist adjustment → Apple Watch controls]**
 
-> "Here's what it does:
+> "Uses a Core ML model to classify baby cries — tired, hungry, or in pain — and automatically adjusts the playlist. Filters out car noise, sibling voices, everything. Swift, SwiftUI, WatchOS. Offline-first with Cloudflare R2.
 >
-> **Sound library** — Curated collection of calming sounds. Lullabies, white noise, nature sounds, instrumental music. All sourced from free public sound libraries.
->
-> **Smart playlists** — Like Spotify for baby sleep. The app learns which sounds work best for your child and creates custom queues.
->
-> **Emergency cry detection** — This is the magic. Uses an open-source ML model (trained on scientific research) to classify baby cries into three categories: tired, hungry, or in pain. When it detects crying, it automatically adjusts the playlist to match the need.
->
-> **Apple Watch integration** — Control playback from your wrist while driving. See cry classification in real-time.
->
-> **Offline-first** — Download your favorite sounds. Works with no internet connection. Files stored in Cloudflare R2."
-
-**[SCREEN: Show emergency mode detecting a cry and adjusting playlist]**
-
-> "Look at this — cry detected, classified as 'tired,' playlist switches to deeper sleep sounds with slower tempo.
->
-> Tech stack: Pure Swift for iOS. SwiftUI for the interface. Core ML for the cry classification model. Cloudflare R2 for sound file storage. WatchOS app for Apple Watch.
->
-> This is the only app NOT using Remix or React — proves SpecWeave works for native development too.
->
-> SpecWeave insight: The ML model integration required careful testing. I documented every classification edge case in the spec. Ambient car noise? Handled. Sibling talking? Filtered out. All captured in increment 0021."
+> The only app NOT using Remix or React — proves SpecWeave works for native development too."
 
 ---
 
-### EasyChamp - Enterprise Sports League Platform (70:00 - 71:30)
+### EasyChamp - Enterprise Sports Platform (69:00 - 70:30)
 
-**[SCREEN: Show EasyChamp platform - league dashboard, match analytics, website builder]**
+**[SCREEN: Show EasyChamp — league dashboard + Kubernetes lens + ArgoCD]**
 
-> "Finally, EasyChamp — this is the big one. Four years in production. Not a month project — an enterprise platform."
+> "The big one. Four years in production. 20+ microservices on GCP with ArgoCD GitOps. ML video analytics with computer vision. Tournament systems, custom websites, Stripe monetization."
 
-**[Navigate: Tournament bracket → live match stats → custom website builder]**
+**[SCREEN: Show ArgoCD deployment pipeline]**
 
-> "EasyChamp is an AI-powered sports league management platform. Here's what makes it complex:
->
-> **Tournament systems** — Group stages, knockout brackets, double elimination, round-robin. Fully automated scheduling and standings.
->
-> **Live match statistics** — Real-time stat tracking for multiple sports. For football: possession, shots, fouls, cards, substitutions. Each sport has custom stat types.
->
-> **ML video analytics** — Upload match video, the system uses computer vision (DETR model) to analyze play. Automatically tracks player movements, ball possession, key events.
->
-> **Custom websites** — Every league gets a subdomain. Visual website builder with templates. Fully customizable branding.
->
-> **Monetization marketplace** — Tournament organizers charge entry fees through Stripe. Players pay to join. Organizers earn.
->
-> **Player data integration** — Scrapers pull player stats from FIFA (now EA Sports FC) and Konami's eFootball. Import complete player databases with ratings and attributes."
+> "I'll use EasyChamp later to demonstrate brownfield integration — how you introduce SpecWeave to a complex existing codebase. Before SpecWeave, architecture decisions lived in Slack threads. Now we have 48 ADRs. New developers onboard by reading living docs."
 
-**[SCREEN: Show Kubernetes lens dashboard with microservices]**
+---
 
-> "The architecture is serious:
->
-> **20+ microservices** — Each domain has its own service. Tournament service, statistics service, video analytics service, user service, payment service.
->
-> **GCP deployment** — Running on Google Cloud Platform with ArgoCD for GitOps continuous deployment.
->
-> **ML pipelines** — Video processing happens in separate GPU-enabled workers. Model training and deployment automated.
->
-> **Custom NPM packages** — Shared UI component library. Shared types across services.
->
-> **Infrastructure as Code** — Terraform manages the entire cloud setup."
+### LIVE BUILD: White-Label LMS — From Zero to Deployed (70:30 - 78:00)
 
-**[SCREEN: Show ArgoCD dashboard with deployment pipeline]**
+**[SCREEN: Empty terminal. Face-cam in corner.]**
 
-> "Look at this — ArgoCD GitOps. Push to main, automatic deployment across all microservices. Health checks, rollback on failure, zero-downtime deployments.
->
-> Tech stack: Next.js frontends. Node.js backends. PostgreSQL databases. Redis caching. Kafka for event streaming. TensorFlow for ML models. All deployed on GCP with Kubernetes.
->
-> SpecWeave transformation: I introduced SpecWeave to this project six months ago. Before that, architecture decisions lived in Slack threads and Google Docs. Now we have 48 ADRs documenting every major choice. New developers onboard by reading living docs. Compliance audits are trivial — we show the increment trail."
+> "Theory is great. Now watch it happen. I'm going to build a complete white-label online store — an LMS where creators sell video courses — from an empty directory to a deployed application."
 
-**[SCREEN: Back to your face]**
+**[LIVE DEMO: Start with `specweave init .` — show agent detection, CLAUDE.md creation]**
 
-> "Five apps. Different domains, different stacks, different complexity levels. All built with the same Skill Fabric — SpecWeave.
+> "Step one — initialize. SpecWeave detects my AI agents, creates the project structure."
+
+**[LIVE DEMO: `/sw:increment "White-label LMS for selling video courses"` — show the deep interview happening in real time]**
+
+> "Watch this. I describe what I want in one sentence. The AI doesn't start coding. It interviews me. 'What payment provider? Course drip scheduling? Student progress tracking? Certificates?' It asks the questions a good PM would ask."
+
+**[SCREEN: Show spec.md being generated with acceptance criteria]**
+
+> "From that interview — spec.md, plan.md, tasks.md. Every acceptance criterion traced with AC-IDs. Every task linked to a user story."
+
+**[LIVE DEMO: `/sw:auto` — show autonomous execution. Fast-forward time-lapse of the build.]**
+
+> "Now I press play and step back. `/sw:auto` runs autonomously — writing code, running tests, fixing failures. Watch the tasks check off."
+
+**[SCREEN: Time-lapse of terminal — tasks checking off, tests passing, 60-90 seconds of fast-forward]**
+
+> "This ran for about two hours. Auth system, course CRUD, video player, Stripe checkout, student dashboard. Every task tested. Every AC satisfied."
+
+**[SCREEN: Show the deployed LMS — course catalog, video player, checkout, admin panel]**
+
+> "From empty directory to this. A production-ready LMS. Deployed on Cloudflare Workers. The specs document every decision — if I come back in six months, I know exactly how the Stripe webhook lifecycle works because it's in increment 0001.
 >
-> The mobile apps prove it works for React Native and native Swift. The enterprise platform proves it scales to 20+ microservices. The ML integration proves it handles complex pipelines.
+> That's the difference between vibe coding and spec-driven development."
+
+---
+
+**[SCREEN: Back to face-cam]**
+
+> "Seven apps. Three in the App Store. An enterprise platform with 20 microservices. An LMS built live on camera. All built with the same system — SpecWeave.
 >
-> Every one of these apps has complete documentation. Architecture decisions captured in ADRs. Requirements traced to code through AC-IDs. Tests embedded in tasks.
->
-> That's what spec-driven development gives you. Not just code — context, clarity, and confidence."
+> And SpecWeave itself? Built with SpecWeave. Every feature spec'd through increments. Skills developed and verified through vskill — the secure skill installer we built. The entire ecosystem is dogfooded."
 
 ---
 
@@ -3344,6 +3284,8 @@ These topics are mentioned briefly but have full documentation available:
 ---
 
 ## ARE AI SKILLS SAFE? THE SUPPLY CHAIN RISK (71:30 - 79:30)
+
+> **Standalone video potential**: This entire section (71:30-79:30) works as a self-contained 15-minute video titled **"AI Skills Are Not Safe: What Snyk Found"**. The Snyk data, platform comparison table, SkillGuard malware twist, and vskill three-tier solution form a complete narrative arc. Film it as a standalone first, then embed the same footage here. Two videos from one recording session.
 
 **[SCREEN: Dark slide — white text: "Are AI Skills Safe?"]**
 
