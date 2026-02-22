@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.314] - 2026-02-22
+
+### Changes
+- update skills and guards
+
+---
+
+
+
 ## [1.0.313] - 2026-02-22
 
 ### Changes
