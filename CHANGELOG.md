@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.313] - 2026-02-22
+
+### Changes
+- update docs command and auto-create dispatcher hook
+
+---
+
+
+
 ## [1.0.312] - 2026-02-22
 
 ### Changes
