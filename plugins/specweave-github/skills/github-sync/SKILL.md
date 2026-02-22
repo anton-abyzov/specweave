@@ -220,7 +220,7 @@ This skill requires GitHub CLI (`gh`) to be installed and authenticated:
 ```bash
 # Install GitHub CLI
 brew install gh              # macOS
-sudo apt install gh          # Ubuntu
+apt install gh               # Ubuntu/Debian
 choco install gh             # Windows
 
 # Authenticate

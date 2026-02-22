@@ -47,7 +47,7 @@ spawn('ls', [sanitizedPath], { shell: false });
 
 **Python OS Commands**
 
-Dangerous: `os.system()` or `subprocess.call()` with `shell=True` and user-controlled strings.
+Dangerous: Python `os.system` or `subprocess.call` with `shell=True` and user-controlled strings.
 
 ```python
 # SAFE
