@@ -14,7 +14,7 @@ const TIERS = [
     label: 'Scanned',
     color: COLORS.green,
     icon: '\u26A1', // lightning
-    detail: '41 patterns \u00B7 <500ms \u00B7 Free',
+    detail: '52 patterns \u00B7 <500ms \u00B7 Free',
     delay: 0,
   },
   {

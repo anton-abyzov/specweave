@@ -1182,7 +1182,7 @@ async function getIncrementDetail(projectRoot: string, incrementId: string): Pro
 }
 
 /** Scan repositories/ directory for cloned repos, with single-repo git fallback */
-function scanRepositories(projectRoot: string): Array<{
+export function scanRepositories(projectRoot: string): Array<{
   name: string;
   org: string;
   path: string;

@@ -2329,4 +2329,132 @@ title: "Feature With Feature"
       expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalled();
     });
   });
+
+  // =========================================================================
+  // Placeholder skip in parseUserStories (0315)
+  // =========================================================================
+
+  describe('parseUserStories placeholder skip', () => {
+    beforeEach(() => {
+      mockConfigManagerRead.mockResolvedValue({
+        sync: {
+          autoCreateOnIncrement: true,
+          github: { enabled: true, owner: 'o', repo: 'r' },
+        },
+      });
+      mockDeriveFeatureId.mockReturnValue('FS-001');
+      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
+      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
+        number: 10,
+        html_url: 'https://github.com/o/r/issues/10',
+      });
+      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
+        number: 50,
+        html_url: 'https://github.com/o/r/issues/50',
+      });
+    });
+
+    it('should skip [Story Title] exact placeholder', async () => {
+      const spec = `---
+title: "Test"
+---
+
+### US-001: [Story Title] (P1)
+
+**Project**: test
+`;
+      setupIncrementFiles({
+        specContent: spec,
+        specExists: true,
+        incrementId: '0001-placeholder',
+      });
+
+      const creator = createCreator();
+      await creator.createForIncrement('0001-placeholder');
+
+      // Placeholder skipped → no user story issues → falls back to epic issue
+      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip bracket-only placeholder pattern like [Any Text]', async () => {
+      const spec = `---
+title: "Test"
+---
+
+### US-001: [Some Placeholder] (P1)
+
+**Project**: test
+`;
+      setupIncrementFiles({
+        specContent: spec,
+        specExists: true,
+        incrementId: '0001-bracket',
+      });
+
+      const creator = createCreator();
+      await creator.createForIncrement('0001-bracket');
+
+      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
+    });
+
+    it('should pass through real titles like Queue Search & Filtering (P1)', async () => {
+      const spec = `---
+title: "Test"
+feature_id: "FS-001"
+---
+
+### US-001: Queue Search & Filtering (P1)
+
+**Project**: test
+`;
+      setupIncrementFiles({
+        specContent: spec,
+        specExists: true,
+        incrementId: '0001-real',
+      });
+
+      const creator = createCreator();
+      await creator.createForIncrement('0001-real');
+
+      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(1);
+      const call = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
+      expect(call.title).toBe('Queue Search & Filtering (P1)');
+    });
+
+    it('should return only real titles from mixed spec with placeholders and real stories', async () => {
+      const spec = `---
+title: "Test"
+feature_id: "FS-001"
+---
+
+### US-001: [Story Title] (P1)
+
+**Project**: test
+
+### US-002: Real Feature Title (P2)
+
+**Project**: test
+
+### US-003: [Another Placeholder] (P1)
+
+**Project**: test
+`;
+      setupIncrementFiles({
+        specContent: spec,
+        specExists: true,
+        incrementId: '0001-mixed',
+      });
+
+      const creator = createCreator();
+      await creator.createForIncrement('0001-mixed');
+
+      // Only US-002 (real title) should create an issue
+      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(1);
+      const call = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
+      expect(call.userStoryId).toBe('US-002');
+      expect(call.title).toBe('Real Feature Title (P2)');
+    });
+  });
 });

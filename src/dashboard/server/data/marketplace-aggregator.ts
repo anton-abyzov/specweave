@@ -88,4 +88,30 @@ export class MarketplaceAggregator {
   async getSubmission(id: string): Promise<SkillSubmission | null> {
     return this.queue.getById(id);
   }
+
+  /** Fetch verified skills from the vskill-platform API */
+  async fetchPlatformSkills(limit = 20): Promise<PlatformSkill[]> {
+    try {
+      const res = await fetch(
+        `https://verified-skill.com/api/v1/skills?sortBy=trendingScore7d&limit=${limit}`,
+        { headers: { "User-Agent": "specweave-dashboard/1.0" }, signal: AbortSignal.timeout(10000) },
+      );
+      if (!res.ok) return [];
+      const data = await res.json() as { skills?: PlatformSkill[] };
+      return data.skills ?? [];
+    } catch {
+      // Network errors are non-fatal — dashboard shows local data only
+      return [];
+    }
+  }
+}
+
+export interface PlatformSkill {
+  slug: string;
+  name: string;
+  repoUrl: string;
+  author: string;
+  trustScore?: number;
+  trendingScore7d?: number;
+  starCount?: number;
 }

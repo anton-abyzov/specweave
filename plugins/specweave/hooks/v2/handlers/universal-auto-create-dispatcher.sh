@@ -44,6 +44,9 @@ CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
 [[ ! -f "$SPEC_PATH" ]] && exit 0
 [[ ! -f "$CONFIG_PATH" ]] && exit 0
 
+# Template guard: skip if spec.md still contains placeholder markers
+grep -q '\[Story Title\]' "$SPEC_PATH" && { log "Skipping: spec.md still contains [Story Title] template markers"; exit 0; }
+
 # ============================================================================
 # LOGGING
 # ============================================================================
@@ -57,7 +60,7 @@ log() {
 }
 
 # ============================================================================
-# DEBOUNCE (10s window — spec.md gets edited rapidly during planning)
+# DEBOUNCE (30s window — spec.md gets edited rapidly during planning)
 # ============================================================================
 
 STATE_DIR="$PROJECT_ROOT/.specweave/state"
@@ -70,17 +73,17 @@ if [[ -f "$DEBOUNCE_FILE" ]]; then
   else
     AGE=$(($(date +%s) - $(stat -c%Y "$DEBOUNCE_FILE" 2>/dev/null || echo 0)))
   fi
-  [[ $AGE -lt 10 ]] && exit 0
+  [[ $AGE -lt 30 ]] && exit 0
 fi
 
 echo "$(date +%s)" > "$DEBOUNCE_FILE" 2>/dev/null || true
-sleep 10
+sleep 30
 
 # After sleeping, check if a newer invocation took over
 if [[ -f "$DEBOUNCE_FILE" ]]; then
   CURRENT_SIGNAL=$(cat "$DEBOUNCE_FILE" 2>/dev/null || echo 0)
   SIGNAL_AGE=$(( $(date +%s) - CURRENT_SIGNAL ))
-  (( SIGNAL_AGE > 11 )) && exit 0
+  (( SIGNAL_AGE > 31 )) && exit 0
 fi
 rm -f "$DEBOUNCE_FILE" 2>/dev/null || true
 
@@ -132,12 +135,18 @@ log "Creating external items for $INC_ID (github=$GH_ENABLED jira=$JIRA_ENABLED 
 
 if [[ "$GH_ENABLED" == "true" ]]; then
   GITHUB_HANDLER="${PROJECT_ROOT}/plugins/specweave-github/hooks/github-auto-create-handler.sh"
+  # Fallback: handler may be in a sibling plugin directory (umbrella repo layout)
+  if [[ ! -f "$GITHUB_HANDLER" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    FALLBACK_DIR="$(cd "$SCRIPT_DIR/../../../specweave-github/hooks" 2>/dev/null && pwd)"
+    [[ -n "$FALLBACK_DIR" ]] && GITHUB_HANDLER="$FALLBACK_DIR/github-auto-create-handler.sh"
+  fi
   if [[ -f "$GITHUB_HANDLER" ]]; then
     log "Delegating GitHub auto-create to existing handler"
     bash "$GITHUB_HANDLER" "$INC_ID" &
     GH_PID=$!
   else
-    log "GitHub handler not found: $GITHUB_HANDLER"
+    log "GitHub handler not found at any known path"
   fi
 fi
 

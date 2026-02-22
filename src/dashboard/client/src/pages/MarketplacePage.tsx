@@ -14,8 +14,8 @@ interface ScannerStatus {
   running: boolean;
   lastScanTime?: string;
   reposScanned: number;
-  rateLimitRemaining: number;
-  rateLimitTotal: number;
+  rateLimitRemaining: number | null;
+  rateLimitTotal: number | null;
 }
 
 interface QueueItem {
@@ -308,11 +308,15 @@ export function MarketplacePage() {
           />
           <KpiCard
             title="Rate Limit"
-            value={`${scanner.rateLimitRemaining}/${scanner.rateLimitTotal}`}
-            subtitle={scanner.rateLimitTotal > 0
+            value={scanner.rateLimitRemaining != null && scanner.rateLimitTotal != null
+              ? `${scanner.rateLimitRemaining}/${scanner.rateLimitTotal}`
+              : 'No token'}
+            subtitle={scanner.rateLimitRemaining != null && scanner.rateLimitTotal != null && scanner.rateLimitTotal > 0
               ? `${Math.round((scanner.rateLimitRemaining / scanner.rateLimitTotal) * 100)}% remaining`
-              : 'Unknown'}
-            color={rateLimitColor(scanner.rateLimitRemaining, scanner.rateLimitTotal)}
+              : 'Set GITHUB_TOKEN in environment'}
+            color={scanner.rateLimitRemaining != null && scanner.rateLimitTotal != null
+              ? rateLimitColor(scanner.rateLimitRemaining, scanner.rateLimitTotal)
+              : 'amber'}
           />
         </div>
       ) : !scannerLoading && !scannerError ? (

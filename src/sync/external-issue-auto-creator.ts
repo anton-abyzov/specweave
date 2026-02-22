@@ -339,6 +339,11 @@ export class ExternalIssueAutoCreator {
       const usId = match[1];
       const title = match[2].trim();
 
+      // Skip template placeholders — matches TEMPLATE_MARKERS.STORY_TITLE
+      // Strip optional trailing priority like (P1) before checking
+      const titleForCheck = title.replace(/\s*\(P\d\)\s*$/, '');
+      if (titleForCheck === '[Story Title]' || /^\[.+\]$/.test(titleForCheck)) continue;
+
       // Try to find **Project**: field after the US header
       const usStartIndex = match.index;
       const nextUsMatch = specContent.substring(usStartIndex + match[0].length).match(/^### US-\d+/m);
