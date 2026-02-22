@@ -1013,6 +1013,10 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
       sync_tasks_md: true,
       external_tracker_sync: true,
     },
+    post_increment_planning: {
+      auto_create_github_issue: true,
+      sync_living_docs: true,
+    },
     post_increment_done: {
       sync_living_docs: true,
       sync_to_github_project: true,

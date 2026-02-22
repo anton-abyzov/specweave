@@ -538,7 +538,7 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'skills/extensible/extensible-skills-standard',
-          label: 'Standard (E0-E4 Tiers)',
+          label: 'Extensibility Standard',
         },
         {
           type: 'doc',

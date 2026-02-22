@@ -74,9 +74,9 @@ This is the same pattern that hit npm in its early years. Open registries with n
 
 We built a three-tier verification system for skills. Every skill published to verifiedskill.com must pass at least the first tier before any developer can install it.
 
-[VISUAL: Show Tier 1 scanning — terminal output of `specweave scan-skill`]
+[VISUAL: Show Tier 1 scanning — terminal output of `vskill scan`]
 
-Tier 1 is pattern scanning. 41 rules across 9 categories — destructive commands, remote code execution, credential access, obfuscation, prompt injection, memory poisoning, data exfiltration, dangerous permissions, and suspicious network access. It runs in under 500 milliseconds. It is free.
+Tier 1 is pattern scanning. 52 rules across 9 categories — destructive commands, remote code execution, credential access, obfuscation, prompt injection, memory poisoning, data exfiltration, dangerous permissions, and suspicious network access. It runs in under 500 milliseconds. It is free.
 
 [VISUAL: Show scan results table from ToxicSkills PoC]
 
@@ -102,7 +102,7 @@ Tier 3 is human review plus sandbox testing for high-trust skills. A security pr
 
 ## SECTION 4 — What You Should Do (5:30 - 6:30)
 
-[VISUAL: Terminal — running `specweave scan-skill` on a downloaded skill file]
+[VISUAL: Terminal — running `vskill scan` on a downloaded skill file]
 
 **SCRIPT:**
 
@@ -112,7 +112,7 @@ First — review every skill you have installed. Open the source files and look 
 
 Second — prefer registries that scan skills before publication, not after. If a platform has no security scanning, assume some of its skills are compromised, because statistically, they are.
 
-Third — if you use SpecWeave, run `specweave scan-skill` on any community skill before you install it. It is free, it takes under a second, and it catches 75 percent of known attack patterns at Tier 1 alone.
+Third — run `vskill scan` on any community skill before you install it. It is free, it takes under a second, and it catches 75 percent of known attack patterns at Tier 1 alone.
 
 The skill ecosystem is growing fast. Thousands of new skills are being published every month. The convenience is real. The risk is also real.
 

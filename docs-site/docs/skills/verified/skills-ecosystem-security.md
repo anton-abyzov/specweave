@@ -34,7 +34,7 @@ Not all skill platforms are equal. Some scan every submission. Most scan nothing
 | **Smithery** | Partial (post-incident) | Server-level | API key management added post-breach | Reactive — improvements after disclosure | API key exposure; path traversal (Jun 2025); 3,000+ MCP servers compromised | 3,000+ MCP servers |
 | **ClawHub** | None built-in | Git-based (community forks) | Community submissions; no formal verification | None — open contribution model | ClawHavoc campaign: 335 infostealer packages deploying Atomic macOS Stealer | 500+ community-submitted skills |
 | **SkillsDirectory.com** | 50+ rules (automated) | Unclear (directory model) | Opaque review criteria | Automated + manual review (details undisclosed) | None publicly reported | ~36K skills indexed |
-| **Verified Skills** (SpecWeave) | 52 patterns (vskill CLI) / 55 patterns (specweave scanner) + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review + blocklist enforcement | None | Growing marketplace at [verifiedskill.com](https://verifiedskill.com) |
+| **Verified Skills** (SpecWeave) | 52 regex patterns + 3 verification tiers | Semver-pinned per skill | Transparent 3-tier model (scanned/verified/certified) | Deterministic scanner + LLM judge + human review + blocklist enforcement | None | Growing marketplace at [verifiedskill.com](https://verifiedskill.com) |
 | **Vendor Skills** (Anthropic, OpenAI, Google, Microsoft) | Internal code review; sandbox testing | Version-pinned to platform releases | Trusted organization model — vendor-authored or vendor-reviewed | Internal engineering review | None publicly disclosed | ~200 skills total across vendors |
 
 ### Key Observations
@@ -301,7 +301,7 @@ SpecWeave takes a defense-in-depth approach to skill security. No single mechani
 
 ### 1. Deterministic Security Scanner
 
-The specweave `security-scanner.ts` module implements **55 regex-based pattern checks** across **10 detection categories**. The vskill CLI ships a parallel scanner (`scanner/patterns.ts`) with **52 patterns** across **9 categories**. Every skill submitted to the Verified Skills marketplace is scanned before listing, and the vskill CLI runs Tier 1 scanning at install time for GitHub-sourced and registry-sourced skills.
+The `vskill` CLI implements **52 regex-based pattern checks** across **9 detection categories**. Every skill installed via `vskill add` is scanned at install time, and every skill submitted to the Verified Skills marketplace is scanned server-side before listing.
 
 | Category | Pattern Count | Severity | Examples |
 |----------|--------------|----------|----------|
@@ -316,7 +316,7 @@ The specweave `security-scanner.ts` module implements **55 regex-based pattern c
 | **Dangerous permissions** | 1 | High | `chmod 777` |
 | **Network access** | 4 | Info | `fetch()`, `http.get()`, `axios`, external URL references |
 
-The specweave scanner also includes two additional structural checks beyond the 55 regex patterns:
+The scanner also includes two additional structural checks beyond the 52 regex patterns:
 
 - **Frontmatter `name:` field detection** — catches the namespace-stripping issue that can cause plugin conflicts (medium severity)
 - **Unbalanced code fence detection** — prevents attackers from using unclosed code blocks to hide patterns from naive line-by-line scanners
@@ -349,7 +349,7 @@ SpecWeave classifies every skill into one of three trust tiers. Higher tiers req
 
 | Tier | Label | Requirements | Cost | Latency |
 |------|-------|-------------|------|---------|
-| **Tier 1** | Scanned | Pass all 55 deterministic patterns (specweave) / 52 patterns (vskill CLI) | Free | < 500ms |
+| **Tier 1** | Scanned | Pass all 52 deterministic patterns | Free | < 500ms |
 | **Tier 2** | Verified | Tier 1 + LLM judge intent analysis | ~$0.03/skill | 5-15 seconds |
 | **Tier 3** | Certified | Tier 1 + Tier 2 + human security review | $50-200/skill | 1-5 business days |
 
@@ -388,13 +388,13 @@ Beyond pattern matching, the skill validator checks structural integrity across 
 | **Frontmatter** | Required fields present, no `name:` field, valid YAML syntax |
 | **Scope declaration** | Languages, frameworks, tools, file patterns, "Does NOT" clause |
 | **Permissions** | Every tool usage justified, permissions match `allowed-tools` |
-| **Security patterns** | The 55-pattern scanner results (specweave) / 52-pattern results (vskill CLI) |
+| **Security patterns** | The 52-pattern Tier 1 scanner results |
 | **Content quality** | Description length (10-1024 chars), section completeness |
 | **Cross-references** | No circular dependencies, no coupling to specific skill names |
 
 ### 6. LLM Judge for Intent Analysis
 
-Tier 2 verification uses an LLM to analyze skill intent beyond what regex patterns can detect. The `SecurityJudge` class (`src/core/fabric/security-judge.ts`) evaluates five threat categories:
+Tier 2 verification uses an LLM to analyze skill intent beyond what regex patterns can detect. The security judge evaluates five threat categories:
 
 1. **Social engineering** — Instructions that trick users into downloading, installing, or running untrusted software
 2. **Scope inflation** — Skill claims to do X but instructions actually do Y
@@ -402,7 +402,7 @@ Tier 2 verification uses an LLM to analyze skill intent beyond what regex patter
 4. **Multi-step attack chains** — Individually safe steps composing into an attack
 5. **Chained skill attacks** — Instructions to install or invoke other potentially malicious skills
 
-The judge uses the LLM provider abstraction (`src/core/llm/`) for multi-provider support (Anthropic, OpenAI, Azure, Bedrock, Ollama, Vertex AI) and respects the consent gate — no API calls are made without explicit user permission. When no LLM is configured, the judge returns a CONCERNS verdict recommending manual review.
+The judge supports multiple LLM providers (Anthropic, OpenAI, Azure, Bedrock, Ollama, Vertex AI) and respects a consent gate — no API calls are made without explicit user permission. When no LLM is configured, the judge returns a CONCERNS verdict recommending manual review.
 
 ### 7. Malicious Skills Blocklist
 
@@ -426,7 +426,7 @@ Transparency about what the system does not yet do is as important as what it do
 
 **Local plugin installs skip scanning entirely.** When using `vskill add --plugin` to install a plugin from a local directory, no Tier 1 scan is performed. The lockfile still records `tier: "SCANNED"`, creating a misleading trust signal. Local plugins are assumed to be trusted by the developer who controls the source path.
 
-**Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verifiedskill.com performs server-side scanning at submission time. The vskill CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes — a skill could theoretically pass one and fail the other if the pattern sets diverge. The specweave scanner (55 patterns) and vskill scanner (52 patterns) share the same core patterns but are not identical; the specweave scanner includes additional patterns for `rm --force` long-form flags and certain credential paths.
+**Marketplace scanning vs. install-time scanning.** The Verified Skills marketplace at verifiedskill.com performs server-side scanning at submission time. The `vskill` CLI performs client-side Tier 1 scanning at install time for GitHub and registry sources. These are independent scan passes using the same 52-pattern ruleset. A skill scanned server-side at submission and client-side at install receives two independent checks.
 
 **Certification expiry is stored but not enforced.** The Verified Skills platform stores a `certExpiresAt` timestamp for certified skills, but neither the platform nor the vskill CLI currently enforces expiry. A skill whose certification has lapsed still displays its last-known tier. Enforcement of certification expiry is planned but not yet implemented.
 
@@ -470,13 +470,11 @@ To validate the scanner against real malicious skills, we ran it against four sa
 
 **What Tier 1 missed**: The google skill uses pure social engineering — it tells users in natural language to "download from here, extract with pass `openclaw`, and run openclaw-core file." No shell command syntax appears directly; the attack relies on the agent convincing the user to execute a malicious binary.
 
-**Tier 2 LLM Judge closes the gap**: The `specweave judge-skill` command combines Tier 1 pattern scanning with Tier 2 LLM intent analysis. When Tier 1 finds critical/high findings, the verdict is BLOCKED and LLM analysis is skipped (saving cost). When Tier 1 passes, the LLM judge evaluates the skill for semantic threats including social engineering, scope inflation, obfuscated intent, multi-step attack chains, and chained skill attacks. The google skill's social engineering — which evades all regex patterns — is detected by the LLM judge's semantic analysis of the download-and-execute instructions.
+**Tier 2 LLM Judge closes the gap**: When Tier 1 finds critical/high findings, the verdict is BLOCKED and LLM analysis is skipped (saving cost). When Tier 1 passes, the LLM judge evaluates the skill for semantic threats including social engineering, scope inflation, obfuscated intent, multi-step attack chains, and chained skill attacks. The google skill's social engineering — which evades all regex patterns — is detected by the LLM judge's semantic analysis of the download-and-execute instructions.
 
 **CLI commands**:
-- `specweave scan-skill <file>` — Tier 1 pattern scanning only
-- `specweave judge-skill <file>` — Combined Tier 1 + Tier 2 LLM analysis
-- `specweave judge-skill --scan-only <file>` — Tier 1 only via judge pipeline
-- `specweave judge-skill --json <file>` — Machine-readable output with both tier results
+- `vskill scan <file>` — Tier 1 pattern scanning only
+- `vskill audit [path]` — Audit all installed skills in a project for security vulnerabilities
 
 ---
 
@@ -492,7 +490,7 @@ flowchart LR
 
     subgraph Tier1["Tier 1: Scanned"]
         direction TB
-        T1A["55 regex patterns"]
+        T1A["52 regex patterns"]
         T1B["Frontmatter validation"]
         T1C["Code fence analysis"]
         T1D["Safe context detection"]
@@ -618,7 +616,7 @@ For teams adopting AI agent skills for the first time, here is a minimal checkli
 - [ ] Establish a skill review process (who approves new skill installations?)
 - [ ] Add `CLAUDE.md`, `MEMORY.md`, `.cursorrules` to your code review watchlist
 - [ ] Pin all skill versions in your project configuration
-- [ ] Run `specweave scan-skill` or `vskill scan` on all installed skills
+- [ ] Run `vskill scan` or `vskill audit` on all installed skills
 - [ ] Set up alerts for changes to agent configuration files
 - [ ] Document your skill inventory with version numbers and approval dates
 - [ ] Brief the team on the five risk categories documented above
@@ -633,7 +631,7 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 
 **Mandatory minimum scanning.** Platforms that distribute skills without any scanning are effectively distributing unverified code with trusted-context privileges. The industry should converge on a minimum scanning standard — even a basic regex-based Tier 1 scan would have caught the majority of the ToxicSkills payloads.
 
-**Transparent scanner rulesets.** Opaque scanning (as practiced by SkillsDirectory.com) creates a trust problem. Developers cannot evaluate the quality of the scan if they cannot see the rules. Open-sourcing scanner rulesets, as SpecWeave does with its `security-scanner.ts`, enables community review and improvement of the detection patterns themselves.
+**Transparent scanner rulesets.** Opaque scanning (as practiced by SkillsDirectory.com) creates a trust problem. Developers cannot evaluate the quality of the scan if they cannot see the rules. Open-sourcing scanner rulesets enables community review and improvement of the detection patterns themselves.
 
 **Behavioral sandboxing at the agent level.** The agent runtimes (Claude Code, Cursor, Windsurf, OpenClaw) should implement per-skill permission boundaries. A skill that declares it only needs `Read` and `Grep` access should not be able to instruct the agent to run `Bash` commands. Currently, no agent runtime enforces declared permissions — they are advisory at best.
 
@@ -663,7 +661,6 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 | **ClawHavoc** | A supply chain attack campaign that published 335 infostealer packages to ClawHub, deploying Atomic macOS Stealer. |
 | **Blocklist** | A locally cached list of known-malicious skills, synced from verifiedskill.com via `vskill blocklist sync`. Enforced at install time by the vskill CLI. |
 | **DCI Block** | A "Direct Command Injection" block in SKILL.md — shell commands prefixed with `!` that agents execute directly. The scanners include 14 dedicated DCI-abuse patterns. |
-| **Fabric** | SpecWeave's internal code namespace for the marketplace infrastructure (`src/core/fabric/`), including the security scanner, validator, and verification pipeline. The public-facing brand is **Verified Skills** at [verifiedskill.com](https://verifiedskill.com). |
 | **LLM Judge** | An AI model used in Tier 2 verification to evaluate skill intent beyond what regex patterns can detect. |
 | **Memory Poisoning** | An attack where a skill modifies agent configuration files (CLAUDE.md, MEMORY.md) to persist malicious behavior across sessions. |
 | **MCP** | Model Context Protocol — a standard for connecting AI agents to external tools and data sources. Smithery hosts 3,000+ MCP servers. |

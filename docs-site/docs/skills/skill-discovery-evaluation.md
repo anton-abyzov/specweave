@@ -141,19 +141,19 @@ Not all skill sources are equal. Each platform makes different trade-offs betwee
 
 ---
 
-### 8. SpecWeave Fabric Registry
+### 8. Verified Skills Registry
 
-**What it is:** SpecWeave's integrated skill registry with a 3-tier trust model and a 26-pattern security scanner.
+**What it is:** SpecWeave's integrated skill registry at [verifiedskill.com](https://verifiedskill.com) with a 3-tier trust model and a 52-pattern security scanner.
 
 | Attribute | Detail |
 |-----------|--------|
 | **Trust tiers** | Tier 1 (vendor-verified), Tier 2 (community-reviewed), Tier 3 (unvetted) |
-| **Scanner patterns** | 26 patterns covering prompt injection, credential access, excessive permissions, obfuscation, and instruction override |
+| **Scanner patterns** | 52 patterns covering prompt injection, credential access, DCI block abuse, obfuscation, destructive commands, and more |
 | **Quality signals** | Trust tier badge; scan results; compatibility matrix; update frequency |
 
-**Strengths:** Integrated directly into the SpecWeave workflow. Skills are scanned before installation, not after. The 3-tier trust model provides clear expectations — Tier 1 skills have been reviewed by maintainers, Tier 2 skills passed community review, and Tier 3 skills are explicitly marked as unvetted.
+**Strengths:** Integrated directly into the SpecWeave workflow via the `vskill` CLI. Skills are scanned before installation, not after. The 3-tier trust model provides clear expectations — Scanned skills passed automated pattern checks, Verified skills passed LLM intent analysis, and Certified skills passed human security review.
 
-**Weaknesses:** Smaller catalog than open marketplaces. The 26-pattern scanner is effective against known attack patterns but, like all static analysis, can miss novel techniques.
+**Weaknesses:** Smaller catalog than open marketplaces. The 52-pattern scanner is effective against known attack patterns but, like all static analysis, can miss novel techniques.
 
 ---
 
@@ -264,7 +264,7 @@ This matrix applies the scoring rubric to each discovery source as a whole, prov
 | **SkillsDirectory.com** | 3 | 3 | 2 | 3 | 1 | 2 | **14** |
 | **GitHub Search** | 5 | 1 | 3 | 3 | 2 | 2 | **16** |
 | **Third-Party Scanners** | 3 | 4 | 3 | 3 | 2 | 2 | **17** |
-| **SpecWeave Fabric Registry** | 4 | 4 | 4 | 3 | 3 | 3 | **21** |
+| **Verified Skills Registry** | 4 | 4 | 4 | 3 | 3 | 3 | **21** |
 
 Note: These scores represent the typical quality of skills found on each platform, not the quality of the platform itself. Individual skills will vary widely.
 
@@ -299,17 +299,14 @@ When you find a skill you want to install, search for the same name across at le
 
 ### SpecWeave Approach
 
-The `specweave fabric compare` command provides automated cross-source comparison:
+The `vskill` CLI can help with cross-source comparison:
 
 ```bash
-# Compare a skill across known registries
-specweave fabric compare react-component-generator --sources skills.sh,clawhub,github
+# Search the Verified Skills registry for a skill
+vskill find react-component-generator
 
-# Output includes:
-# - Content diff between versions
-# - Author identity correlation
-# - Permission scope comparison
-# - Publish timeline
+# Scan a specific skill file for security issues
+vskill scan ./path-to-skill/SKILL.md
 ```
 
 This surfaces discrepancies before installation, allowing you to make an informed choice about which source to trust.
@@ -387,8 +384,8 @@ Read every line. Skills are typically 50 to 500 lines of Markdown — this takes
 Use at least one purpose-built scanner. Recommended options in order of accessibility:
 
 ```bash
-# SpecWeave's built-in 26-pattern scanner
-specweave fabric scan ./path-to-skill/
+# vskill's built-in 52-pattern scanner
+vskill scan ./path-to-skill/SKILL.md
 
 # Alice Caterpillar (prompt injection focus)
 alice scan --skill ./SKILL.md
@@ -401,7 +398,7 @@ If the skill fails any scanner, do not install it regardless of other positive s
 
 ### Step 4: Check for Cross-Platform Discrepancies
 
-Search for the skill name on at least two other platforms. If the same name appears with different content or authors, investigate before proceeding. Use `specweave fabric compare` for automated comparison if available.
+Search for the skill name on at least two other platforms. If the same name appears with different content or authors, investigate before proceeding.
 
 ### Step 5: Verify Portability Claims
 

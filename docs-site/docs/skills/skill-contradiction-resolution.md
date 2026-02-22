@@ -194,22 +194,22 @@ Proceed with installation? (y/n)
 
 ### Security Scanner Integration
 
-Contradiction detection is integrated into SpecWeave's existing `security-scanner.ts` infrastructure. The scanner already runs 26 security patterns against skill content. Contradiction checks run as an additional pass after security scanning, using the same parsed skill content.
+Contradiction detection is integrated into the existing security scanner infrastructure. The scanner runs 52 security patterns against skill content. Contradiction checks run as an additional pass after security scanning, using the same parsed skill content.
 
-### Fabric Registry Integration
+### Verified Skills Registry Integration
 
-The Fabric Registry stores contradiction metadata per skill:
+The Verified Skills registry at verifiedskill.com stores contradiction metadata per skill:
 
 - **Known conflicts**: Pre-computed conflicts with popular skills
 - **Resolution history**: How developers in the ecosystem have resolved specific conflicts
 - **Conflict score**: A numeric indicator of how "opinionated" a skill is (high conflict scores = frequently contradicts other skills)
 
-### `specweave fabric compare` Integration
+### Cross-Source Comparison
 
-The `fabric compare` CLI command includes contradiction analysis when comparing skills from different sources:
+When comparing skills from different sources, contradiction analysis highlights conflicts automatically:
 
 ```
-$ specweave fabric compare react-best-practices --sources skillssh,github
+$ vskill find react-best-practices
 
 Source Comparison: react-best-practices
 ┌─────────────────┬──────────────┬──────────────────┬──────────────┐
