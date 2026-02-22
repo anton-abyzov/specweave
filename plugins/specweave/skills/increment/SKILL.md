@@ -8,9 +8,15 @@ hooks:
     - matcher: Write
       hooks:
         - type: command
+          command: bash plugins/specweave/hooks/v2/guards/skill-chain-enforcement-guard.sh
+        - type: command
           command: bash plugins/specweave/hooks/v2/guards/interview-enforcement-guard.sh
         - type: command
           command: bash plugins/specweave/hooks/v2/guards/spec-template-enforcement-guard.sh
+    - matcher: Edit
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/skill-chain-enforcement-guard.sh
   PostToolUse:
     - matcher: Write
       hooks:
@@ -234,11 +240,42 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **Project field is MANDATORY** - Every US MUST have `**Project**:` field
-2. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
-3. **NO agent spawning** - Skills MUST NOT spawn Task() agents (causes crashes). Guide user in main conversation.
-4. **Increment naming** - Format: `####-descriptive-kebab-case`
-5. **Multi-repo** - In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
+1. **NEVER write spec.md/plan.md/tasks.md directly** - ALWAYS delegate via Skill() calls (guard-enforced)
+2. **Project field is MANDATORY** - Every US MUST have `**Project**:` field
+3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
+4. **NO agent spawning** - Skills MUST NOT spawn Task() agents (causes crashes). Guide user in main conversation.
+5. **Increment naming** - Format: `####-descriptive-kebab-case`
+6. **Multi-repo** - In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
+
+## CRITICAL: Mandatory Skill Delegation (BLOCKING ENFORCEMENT)
+
+**This skill MUST NOT write spec.md, plan.md, or tasks.md directly.**
+A PreToolUse guard (`skill-chain-enforcement-guard.sh`) BLOCKS all direct writes.
+
+**You MUST invoke these sub-skills via Skill() calls:**
+
+| File | Required Skill | Invocation |
+|------|---------------|------------|
+| spec.md | PM | `Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <description>" })` |
+| plan.md | Architect | `Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name based on spec.md" })` |
+| tasks.md | Test-Aware Planner | `Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name based on spec.md and plan.md" })` |
+
+**Each sub-skill MUST register its marker BEFORE writing its file:**
+```bash
+mkdir -p .specweave/state
+# PM skill registers before writing spec.md:
+echo '{}' | jq '.pm_invoked=true | .pm_invoked_at="'$(date -Iseconds)'"' > .specweave/state/skill-chain-XXXX-name.json
+# Or merge into existing:
+jq '.architect_invoked=true | .architect_invoked_at="'$(date -Iseconds)'"' .specweave/state/skill-chain-XXXX-name.json > tmp && mv tmp .specweave/state/skill-chain-XXXX-name.json
+```
+
+**DO NOT:**
+- Write user stories, architecture, or tasks inline
+- Copy/paste spec content into Write() calls
+- "Summarize" what a skill would produce
+- Skip any of the 3 Skill() calls
+
+**The guard will BLOCK your write and show this error if you try.**
 
 ## Step 3a: Deep Interview Mode (if enabled)
 
@@ -260,17 +297,28 @@ The PM skill will:
 **After PM returns**, read the interview state file to confirm all categories are covered
 before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
-## Step 4: Delegation
+## Step 4: Delegation (MANDATORY - Guard Enforced)
 
-After increment creation:
+**After increment folder + metadata.json are created, you MUST invoke all 3 sub-skills.**
+**A PreToolUse guard BLOCKS writes to spec.md/plan.md/tasks.md without skill markers.**
 
+### 4a. Invoke PM for spec.md (REQUIRED)
 ```typescript
-// Invoke architect for plan.md
-Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX" })
-
-// Invoke test-aware planner for tasks.md
-Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX" })
+Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <user's feature description>" })
 ```
+
+### 4b. Invoke Architect for plan.md (REQUIRED)
+```typescript
+Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name based on spec.md" })
+```
+
+### 4c. Invoke Test-Aware Planner for tasks.md (REQUIRED)
+```typescript
+Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name based on spec.md and plan.md" })
+```
+
+**Order matters**: PM first (spec.md) -> Architect second (plan.md) -> Planner last (tasks.md).
+Each skill reads the output of the previous one.
 
 ## Step 5: Post-Creation Sync
 
