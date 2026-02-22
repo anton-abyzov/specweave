@@ -12,7 +12,7 @@ Snyk's ToxicSkills study (February 2026) found that **36.82% of 3,984 publicly a
 
 | Tier | Method | Cost | Speed |
 |------|--------|------|-------|
-| **Scanned** | 41 pattern checks + structural validation | Free | < 500ms |
+| **Scanned** | 52 pattern checks + structural validation | Free | < 500ms |
 | **Verified** | Tier 1 + LLM intent analysis | ~$0.03/skill | 5-15s |
 | **Certified** | Tiers 1+2 + human security review + sandbox | $50-200/skill | 1-5 days |
 

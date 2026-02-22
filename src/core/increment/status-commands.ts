@@ -293,18 +293,16 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     // This triggers StatusChangeSyncTrigger → external tool sync!
     MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
-    // Fire-and-forget: dispatch post-increment-done hooks (non-blocking)
-    // Dynamic import to avoid circular dependency
-    void (async () => {
-      try {
-        const { LifecycleHookDispatcher } = await import(
-          '../hooks/LifecycleHookDispatcher.js'
-        );
-        await LifecycleHookDispatcher.onIncrementDone(process.cwd(), incrementId);
-      } catch {
-        // Non-blocking: swallow errors
-      }
-    })();
+    // Dispatch post-increment-done hooks (awaited, error-isolated)
+    try {
+      const { LifecycleHookDispatcher } = await import(
+        '../hooks/LifecycleHookDispatcher.js'
+      );
+      await LifecycleHookDispatcher.onIncrementDone(process.cwd(), incrementId);
+    } catch (hookError) {
+      const msg = hookError instanceof Error ? hookError.message : String(hookError);
+      process.stderr.write(`[completeIncrement] Post-closure hook error: ${msg}\n`);
+    }
 
     log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
     log(chalk.gray(`📦 Status changed to: completed`));

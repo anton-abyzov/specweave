@@ -26,10 +26,8 @@ export interface DispatchOptions {
 /**
  * Dispatches configured actions at lifecycle hook points.
  *
- * Usage (fire-and-forget):
- * ```ts
- * void LifecycleHookDispatcher.onIncrementPlanned(root, id).catch(() => {});
- * ```
+ * All dispatches are error-isolated (catch + log, never crash).
+ * onIncrementDone is awaited by completeIncrement() for reliable post-closure sync.
  */
 export class LifecycleHookDispatcher {
   /**
@@ -123,6 +121,7 @@ export class LifecycleHookDispatcher {
    *
    * Checks hooks.post_increment_done for:
    * - sync_living_docs: triggers LivingDocsSync.syncIncrement
+   * - sync_to_github_project: triggers GitHubFeatureSync for the increment's feature
    * - close_github_issue: triggers SyncCoordinator.syncIncrementClosure
    * - update_living_docs_first: if true, living docs sync runs before closure
    */
@@ -139,7 +138,8 @@ export class LifecycleHookDispatcher {
       if (!doneConfig) return;
 
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true;
-      const shouldClosIssue = doneConfig.close_github_issue === true;
+      const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
+      const shouldCloseIssue = doneConfig.close_github_issue === true;
       const docsFirst = doneConfig.update_living_docs_first === true;
 
       const syncLivingDocs = async () => {
@@ -151,8 +151,25 @@ export class LifecycleHookDispatcher {
         await sync.syncIncrement(incrementId);
       };
 
+      const syncGitHubProject = async () => {
+        if (!shouldSyncGitHubProject) return;
+        try {
+          const { resolveFeatureId } = await import('./feature-id-resolver.js');
+          const featureId = await resolveFeatureId(projectRoot, incrementId);
+          if (!featureId) return;
+
+          const { syncFeatureToGitHub } = await import(
+            './github-project-sync.js'
+          );
+          await syncFeatureToGitHub(projectRoot, featureId);
+        } catch (error) {
+          // GitHub plugin may not be installed — log and continue
+          LifecycleHookDispatcher.logError('onIncrementDone:githubProject', error);
+        }
+      };
+
       const syncClosure = async () => {
-        if (!shouldClosIssue) return;
+        if (!shouldCloseIssue) return;
         const { SyncCoordinator } = await import(
           '../../sync/sync-coordinator.js'
         );
@@ -164,12 +181,12 @@ export class LifecycleHookDispatcher {
       };
 
       if (docsFirst && shouldSyncLivingDocs) {
-        // Sequential: living docs first, then closure
+        // Sequential: living docs first, then closure + github project
         await syncLivingDocs();
-        await syncClosure();
+        await Promise.all([syncClosure(), syncGitHubProject()]);
       } else {
-        // Parallel or individual
-        await Promise.all([syncLivingDocs(), syncClosure()]);
+        // Parallel: all three
+        await Promise.all([syncLivingDocs(), syncClosure(), syncGitHubProject()]);
       }
     } catch (error) {
       LifecycleHookDispatcher.logError('onIncrementDone', error);

@@ -291,14 +291,14 @@ export class DashboardDataAggregator {
     const now24h = new Date(Date.now() - 86_400_000).toISOString();
 
     try {
-      if (!fs.existsSync(eventsPath)) {
+      try { await access(eventsPath); } catch {
         const empty: AnalyticsAggregation = { totalEvents: 0, successRate: 0, topCommands: [], topSkills: [], topAgents: [], dailySummaries: [], last24hEvents: 0 };
         this.analyticsCache = empty;
         this.analyticsCacheTime = Date.now();
         return empty;
       }
 
-      const content = fs.readFileSync(eventsPath, 'utf-8');
+      const content = await readFile(eventsPath, 'utf-8');
       const lines = content.split('\n').filter(Boolean);
 
       for (const line of lines) {

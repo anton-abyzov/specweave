@@ -644,10 +644,11 @@ describe('DashboardDataAggregator', () => {
 
     it('should aggregate events from jsonl', async () => {
       const eventsPath = path.join(PROJECT_ROOT, '.specweave/state/analytics/events.jsonl');
-      mockFs.existsSync.mockImplementation((p: string) =>
-        typeof p === 'string' && p === eventsPath,
-      );
-      mockFs.readFileSync.mockImplementation((p: string) => {
+      mockFsp.access.mockImplementation(async (p: string) => {
+        if (typeof p === 'string' && p === eventsPath) return undefined;
+        throw new Error('ENOENT');
+      });
+      mockFsp.readFile.mockImplementation(async (p: string) => {
         if (typeof p === 'string' && p === eventsPath) {
           return [
             JSON.stringify({ name: '/sw:do', type: 'skill', success: true, timestamp: new Date().toISOString(), plugin: 'specweave' }),
