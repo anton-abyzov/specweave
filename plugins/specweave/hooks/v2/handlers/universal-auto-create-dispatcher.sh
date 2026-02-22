@@ -44,9 +44,6 @@ CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
 [[ ! -f "$SPEC_PATH" ]] && exit 0
 [[ ! -f "$CONFIG_PATH" ]] && exit 0
 
-# Template guard: skip if spec.md still contains placeholder markers
-grep -q '\[Story Title\]' "$SPEC_PATH" && { log "Skipping: spec.md still contains [Story Title] template markers"; exit 0; }
-
 # ============================================================================
 # LOGGING
 # ============================================================================
@@ -58,6 +55,9 @@ mkdir -p "$LOGS_DIR" 2>/dev/null || true
 log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] [auto-create] $1" >> "$LOG_FILE" 2>/dev/null || true
 }
+
+# Template guard: skip if spec.md still contains placeholder markers
+grep -q '\[Story Title\]' "$SPEC_PATH" && { log "Skipping: spec.md still contains [Story Title] template markers"; exit 0; }
 
 # ============================================================================
 # DEBOUNCE (30s window — spec.md gets edited rapidly during planning)
