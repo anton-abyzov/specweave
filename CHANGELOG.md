@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.312] - 2026-02-22
+
+### Changes
+- update docs, plugins, dashboard, and scanner
+
+---
+
+
+
 ## [1.0.311] - 2026-02-21
 
 ### Changes
