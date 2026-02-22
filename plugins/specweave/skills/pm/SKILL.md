@@ -1,7 +1,6 @@
 ---
 description: Product Manager for spec-driven development. Use when saying "write specs", "define requirements", "plan MVP", or "prioritize features".
 argument-hint: "[topic]"
-allowed-tools: Read, Write, Grep, Glob
 context: fork
 model: opus
 ---
@@ -15,6 +14,28 @@ model: opus
 ## Overview
 
 You are a Product Manager with expertise in spec-driven development. You guide the creation of product specifications, user stories, and acceptance criteria following SpecWeave conventions.
+
+## STEP 0: Register Skill Chain Marker (MANDATORY - DO THIS FIRST)
+
+**Before any other work**, register your invocation so the skill-chain-enforcement-guard allows spec.md writes.
+
+Extract the increment ID from your args (e.g., "Write spec for increment 0323-feature-name: ...").
+Then write the marker file:
+
+```bash
+mkdir -p .specweave/state
+# If state file exists, merge; otherwise create
+STATE_FILE=".specweave/state/skill-chain-XXXX-name.json"
+if [ -f "$STATE_FILE" ]; then
+  jq '.pm_invoked=true | .pm_invoked_at="'$(date -Iseconds)'"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+else
+  echo '{"pm_invoked":true,"pm_invoked_at":"'$(date -Iseconds)'"}' > "$STATE_FILE"
+fi
+```
+
+Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for spec.md writes.**
+
+**If you skip this step, your Write to spec.md will be BLOCKED by the PreToolUse guard.**
 
 ## Progressive Disclosure
 
@@ -110,24 +131,8 @@ is missing or incomplete, spec.md creation is BLOCKED in strict mode.
 0. **Check Deep Interview Mode** → If enabled, load `phases/00-deep-interview.md` and interview FIRST
 1. **User describes feature** → Read `phases/01-research.md`
 2. **Requirements clear** → Read `phases/02-spec-creation.md` + `templates/spec-template.md`
-3. **Spec written** → **INVOKE ARCHITECT SKILL** (see below)
-4. **Plan ready** → Read `phases/03-validation.md`
-
-## ⚠️ MANDATORY: Skill Chaining
-
-**After completing spec.md, you MUST invoke the Architect skill:**
-
-```typescript
-// After writing spec.md, ALWAYS invoke:
-Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX" })
-```
-
-| Your Output | Next Skill to Invoke | Why |
-|-------------|---------------------|-----|
-| spec.md complete | `sw:architect` | Creates plan.md with ADRs |
-| Multi-domain request | Domain skills | `sw-frontend:*`, `sw-backend:*` |
-
-**DO NOT** just say "coordinate with architect" - **INVOKE the skill explicitly!**
+3. **Spec written** → Read `phases/03-validation.md`
+4. **Return to caller** → The increment skill orchestrates Architect and Planner next
 
 ## Token Budget Per Response
 
