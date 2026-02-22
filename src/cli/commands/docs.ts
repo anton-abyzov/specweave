@@ -197,16 +197,106 @@ export interface DocsValidateOptions {
 }
 
 /**
+ * Read publicSitePath from .specweave/config.json documentation section.
+ * Returns the resolved absolute path if configured, otherwise null.
+ */
+function getPublicSitePath(projectRoot: string): string | null {
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) return null;
+
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const publicSitePath = config?.documentation?.publicSitePath;
+    if (!publicSitePath) return null;
+
+    const resolved = path.resolve(projectRoot, publicSitePath);
+    if (!fs.existsSync(resolved)) return null;
+
+    // Must have package.json to be a valid Docusaurus site
+    if (!fs.existsSync(path.join(resolved, 'package.json'))) return null;
+
+    return resolved;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Launch a custom (pre-built) public Docusaurus site directly.
+ * Skips auto-generation — just runs npm start in the given directory.
+ */
+async function launchCustomPublicSite(sitePath: string, options: DocsPreviewOptions): Promise<void> {
+  try {
+    const { killAllDocusaurusProcesses, killProcessOnPort, startDevServer, findAvailablePort } = await import('../../utils/docs-preview/index.js');
+
+    const killed = await killAllDocusaurusProcesses();
+    if (killed > 0) {
+      console.log(chalk.dim(`   Stopped ${killed} existing Docusaurus process(es)\n`));
+    }
+
+    const defaultPort = SCOPE_PORTS['public'];
+    const targetPort = options.port || defaultPort;
+    const portKilled = await killProcessOnPort(targetPort);
+    if (portKilled) {
+      console.log(chalk.dim(`   Freed port ${targetPort}\n`));
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    console.log(chalk.cyan('🚀 Starting public documentation site...\n'));
+
+    const port = options.port || await findAvailablePort(defaultPort, 3030);
+    const server = await startDevServer(sitePath, {
+      port,
+      openBrowser: !options.noBrowser,
+    });
+
+    console.log(chalk.green('━'.repeat(50)));
+    console.log(chalk.green.bold(`\n📚 Public Documentation Site Started!\n`));
+    console.log(chalk.white(`   URL: ${chalk.cyan.underline(server.url)}`));
+    console.log(chalk.white(`   Site: ${chalk.dim(sitePath)}`));
+    console.log(chalk.dim(`   Port: ${server.port}`));
+    console.log();
+    console.log(chalk.yellow('   Press Ctrl+C to stop the server.\n'));
+    console.log(chalk.green('━'.repeat(50)));
+    console.log();
+
+    process.on('SIGINT', async () => {
+      console.log(chalk.dim('\n\nStopping server...'));
+      await server.stop();
+      console.log(chalk.green('✅ Server stopped\n'));
+      process.exit(0);
+    });
+
+    await new Promise(() => {});
+  } catch (error) {
+    console.log(chalk.red(`\n❌ Failed to start public site:`));
+    console.log(chalk.dim(`   ${error instanceof Error ? error.message : error}`));
+    process.exit(1);
+  }
+}
+
+/**
  * Preview documentation with Docusaurus dev server
  */
 export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Promise<void> {
   const cwdRoot = process.cwd();
   const { effectiveRoot: projectRoot, repoName, umbrellaConfig } = resolveDocsRoot(cwdRoot, options.project);
   const scope: DocScope = options.scope || 'internal';
-  const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
   const scopeLabel = scope === 'public' ? 'public' : 'internal';
 
   console.log(chalk.blue(`\n\u{1F4DA} Documentation Preview (${scopeLabel})${repoName ? ` [${repoName}]` : ''}\n`));
+
+  // For public scope, check if a custom site path is configured
+  if (scope === 'public') {
+    const customSitePath = getPublicSitePath(projectRoot);
+    if (customSitePath) {
+      console.log(chalk.cyan(`   Using custom public site: ${chalk.dim(path.relative(projectRoot, customSitePath))}\n`));
+      await launchCustomPublicSite(customSitePath, options);
+      return;
+    }
+  }
+
+  const docsPath = path.join(projectRoot, '.specweave', 'docs', SCOPE_DOC_DIRS[scope]);
 
   // Umbrella guidance when no --project given
   if (umbrellaConfig && !options.project) {
