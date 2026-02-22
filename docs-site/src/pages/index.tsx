@@ -5,45 +5,14 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
-// Professional SVG Icons
+// SVG Icons — kept minimal
 const Icons = {
-  // Problem icons
-  contextLoss: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-      <circle cx="12" cy="12" r="3"/>
-    </svg>
-  ),
-  repeat: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 1l4 4-4 4"/>
-      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-      <path d="M7 23l-4-4 4-4"/>
-      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-    </svg>
-  ),
-  docsRot: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-      <polyline points="14,2 14,8 20,8"/>
-      <line x1="9" y1="15" x2="15" y2="15"/>
-      <line x1="12" y1="18" x2="12" y2="12"/>
-    </svg>
-  ),
-  // Feature icons
   agents: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
       <circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  ),
-  livingDocs: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-      <path d="M8 7h8M8 11h8M8 15h4"/>
     </svg>
   ),
   memory: (
@@ -55,12 +24,9 @@ const Icons = {
       <circle cx="12" cy="6" r="1"/>
     </svg>
   ),
-  sync: (
+  bolt: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21.5 2v6h-6"/>
-      <path d="M2.5 22v-6h6"/>
-      <path d="M2 11.5a10 10 0 0 1 18.8-4.3"/>
-      <path d="M22 12.5a10 10 0 0 1-18.8 4.2"/>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
     </svg>
   ),
   qualityGates: (
@@ -69,22 +35,26 @@ const Icons = {
       <path d="M9 12l2 2 4-4"/>
     </svg>
   ),
-  setup: (
+  livingDocs: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      <path d="M8 7h8M8 11h8M8 15h4"/>
     </svg>
   ),
-  extensible: (
+  sync: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15.5 2H18a2 2 0 0 1 2 2v2.5"/>
-      <path d="M20 13.5V18a2 2 0 0 1-2 2h-2.5"/>
-      <path d="M8.5 22H6a2 2 0 0 1-2-2v-2.5"/>
-      <path d="M4 10.5V6a2 2 0 0 1 2-2h2.5"/>
-      <path d="M12 8v8"/>
-      <path d="M8 12h8"/>
+      <path d="M21.5 2v6h-6"/>
+      <path d="M2.5 22v-6h6"/>
+      <path d="M2 11.5a10 10 0 0 1 18.8-4.3"/>
+      <path d="M22 12.5a10 10 0 0 1-18.8 4.2"/>
     </svg>
   ),
-  // Integration icons
+  shield: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ),
   github: (
     <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -107,418 +77,270 @@ const Icons = {
       <path d="M2 12l10 5 10-5"/>
     </svg>
   ),
-  // Security icons
-  shield: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>
-  ),
-  scanner: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3z"/>
-      <path d="M21 17v4h-4"/>
-      <path d="M12 7v4"/>
-      <path d="M12 15h.01"/>
-      <path d="M8 12h8"/>
-    </svg>
-  ),
-  certificate: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="6"/>
-      <path d="M9 12l2 2 4-4"/>
-      <path d="M8.5 14.5L7 22l5-3 5 3-1.5-7.5"/>
-    </svg>
-  ),
-  warning: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
-    </svg>
-  ),
 };
 
-function HeroVideo(): ReactNode {
+/* ===================================================================
+   Section 1: VideoHero — cinematic dark hero with video centerpiece
+   =================================================================== */
+function VideoHero(): ReactNode {
   return (
-    <section className={styles.heroVideoSection}>
-      <video
-        className={styles.heroVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster="/video/hero-poster.jpg"
-      >
-        <source src="/video/hero.mp4" type="video/mp4" />
-        <source src="/video/hero.webm" type="video/webm" />
-      </video>
-    </section>
-  );
-}
-
-function HomepageHeader() {
-  return (
-    <header className={styles.heroBanner}>
+    <section className={styles.videoHero}>
+      <div className={styles.videoHeroGlow} />
       <div className="container">
-        <div className={styles.heroGrid}>
-          <div className={styles.heroContent}>
-            <div className={styles.heroTags}>
-              <span className={styles.heroTagPrimary}>Enterprise Ready</span>
-              <span className={styles.heroTagSecondary}>Open Source</span>
-            </div>
-
-            <Heading as="h1" className={styles.heroTitle}>
-              Ship Features<br/>
-              <span className={styles.heroGradient}>While You Sleep</span>
-            </Heading>
-
-            <p className={styles.heroSubtitle}>
-              The spec-driven skill layer for AI coding agents. First-class support for <strong>Claude Code</strong> — compatible with any LLM-powered coding tool. Persistent memory, autonomous execution, quality gates, and living documentation.
-            </p>
-
-            <div className={styles.heroButtons}>
-              <Link className={styles.btnPrimary} to="/docs/intro">
-                Start Building
-              </Link>
-              <Link className={styles.btnSecondary} to="https://youtube.com/@antonabyzov">
-                See It In Action →
-              </Link>
-            </div>
-
-            <div className={styles.heroBadges}>
-              <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
-                <img src="https://img.shields.io/npm/v/specweave?color=7c3aed&style=for-the-badge" alt="NPM Version" />
-              </a>
-              <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
-                <img src="https://img.shields.io/npm/dm/specweave?color=22c55e&style=for-the-badge" alt="Downloads" />
-              </a>
-              <a href="https://discord.gg/UYg4BGJ65V" target="_blank" rel="noopener noreferrer">
-                <img src="https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
-              </a>
-            </div>
+        <div className={styles.heroContent}>
+          <div className={styles.heroPills}>
+            <span className={styles.heroPill}>Open Source</span>
+            <span className={styles.heroPill}>Claude Code Native</span>
           </div>
 
-          <div className={styles.heroVisual}>
-            <div className={styles.codeWindow}>
-              <div className={styles.codeWindowHeader}>
-                <div className={styles.codeWindowDots}>
-                  <span className={styles.dotRed}></span>
-                  <span className={styles.dotYellow}></span>
-                  <span className={styles.dotGreen}></span>
-                </div>
-                <span className={styles.codeWindowTitle}>Enterprise Workflow</span>
-              </div>
-              <pre className={styles.codeContent}>
-                <code>{`# 1. Define requirements
-/sw:increment "OAuth 2.0 with PKCE"
-→ Generates spec.md + plan.md + tasks.md
+          <Heading as="h1" className={styles.heroTitle}>
+            Ship Features<br />
+            <span className={styles.heroGradient}>While You Sleep</span>
+          </Heading>
 
-# 2. Autonomous execution
-/sw:auto
-→ Runs for hours without intervention
-
-# 3. Validate & deploy
-/sw:done 0001
-→ Quality gates: tasks ✓ tests ✓ docs ✓`}</code>
-              </pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function ProblemSection(): ReactNode {
-  return (
-    <section className={styles.problemSection}>
-      <div className="container">
-        <div className={styles.problemGrid}>
-          <div className={styles.problemCard}>
-            <div className={styles.problemIconWrapper}>{Icons.contextLoss}</div>
-            <h3>Context Evaporates</h3>
-            <p>Chat ends. Decisions vanish. "Why did we choose JWT?" becomes archaeology. Every session starts from zero.</p>
-          </div>
-          <div className={styles.problemCard}>
-            <div className={styles.problemIconWrapper}>{Icons.repeat}</div>
-            <h3>9 Hours Per Feature</h3>
-            <p>2 hours building, 4 hours fixing bugs (no upfront design), 3 hours explaining to teammates (no docs). Every time.</p>
-          </div>
-          <div className={styles.problemCard}>
-            <div className={styles.problemIconWrapper}>{Icons.docsRot}</div>
-            <h3>No Quality Gates</h3>
-            <p>Code ships without tests, reviews, or documentation. Bugs reach production. Technical debt compounds silently.</p>
-          </div>
-        </div>
-
-        <div className={styles.solutionBox}>
-          <h3>SpecWeave: AI That Never Forgets</h3>
-          <p>
-            Every decision, every architecture choice, every line of reasoning — <strong>captured permanently</strong> in spec.md, plan.md, and tasks.md.
-            New session? Full context. New teammate? Instant onboarding. Six months later? Search and find exactly why.
+          <p className={styles.heroSubtitle}>
+            The spec-driven framework for AI coding agents. Persistent memory, autonomous execution, quality gates, and living documentation — all from your terminal.
           </p>
+
+          <div className={styles.heroCtas}>
+            <Link className={styles.btnPrimary} to="/docs/intro">
+              Get Started
+            </Link>
+            <Link className={styles.btnSecondary} to="https://youtube.com/@antonabyzov">
+              Watch Demo →
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.videoWrapper}>
+          <video
+            className={styles.heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/video/ship-while-you-sleep-poster.jpg"
+          >
+            <source src="/video/ship-while-you-sleep.mp4" type="video/mp4" />
+          </video>
+        </div>
+
+        <div className={styles.heroBadges}>
+          <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.shields.io/npm/v/specweave?color=7c3aed&style=for-the-badge" alt="NPM Version" />
+          </a>
+          <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.shields.io/npm/dm/specweave?color=22c55e&style=for-the-badge" alt="Downloads" />
+          </a>
+          <a href="https://discord.gg/UYg4BGJ65V" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
+          </a>
         </div>
       </div>
     </section>
   );
 }
 
-function VSkillsSection(): ReactNode {
+/* ===================================================================
+   Section 2: Workflow — three-command horizontal stepper
+   =================================================================== */
+function WorkflowSection(): ReactNode {
+  const steps = [
+    {
+      num: '01',
+      cmd: '/sw:increment',
+      title: 'Define',
+      desc: 'Describe the feature in plain English. AI generates spec, plan, and tasks.',
+    },
+    {
+      num: '02',
+      cmd: '/sw:auto',
+      title: 'Execute',
+      desc: 'Walk away. Autonomous implementation with tests, docs, and quality gates.',
+    },
+    {
+      num: '03',
+      cmd: '/sw:done',
+      title: 'Ship',
+      desc: 'Validate, sync to GitHub/JIRA, and deploy with confidence.',
+    },
+  ];
+
   return (
-    <section className={styles.vskillsSection}>
+    <section className={styles.workflowSection}>
       <div className="container">
-        <div className={styles.vskillsBadge}>SKILL SECURITY</div>
+        <span className={styles.sectionLabel}>HOW IT WORKS</span>
         <Heading as="h2" className={styles.sectionTitle}>
-          Not All AI Skills Are Safe
+          Three Commands. Zero Babysitting.
+        </Heading>
+
+        <div className={styles.workflowTimeline}>
+          {steps.map((step, i) => (
+            <div key={i} className={styles.workflowStep}>
+              <div className={styles.stepNumber}>{step.num}</div>
+              <code className={styles.stepCmd}>{step.cmd}</code>
+              <h3 className={styles.stepTitle}>{step.title}</h3>
+              <p className={styles.stepDesc}>{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ===================================================================
+   Section 3: Capabilities — 6-card grid of key features
+   =================================================================== */
+function CapabilitiesSection(): ReactNode {
+  const capabilities = [
+    {
+      icon: Icons.agents,
+      title: 'Multi-Agent Teams',
+      desc: 'PM, Architect, QA, Security, and DevOps agents collaborating on your features. Powered by Claude Opus 4.6.',
+    },
+    {
+      icon: Icons.memory,
+      title: 'Persistent Memory',
+      desc: 'AI learns from corrections and retains full context across sessions. Fix once — remembered permanently.',
+    },
+    {
+      icon: Icons.bolt,
+      title: 'Autonomous Execution',
+      desc: 'Run /sw:auto and walk away. Implements, tests, fixes, and documents — for hours without intervention.',
+    },
+    {
+      icon: Icons.qualityGates,
+      title: 'Quality Gates',
+      desc: 'Code Grill reviews every change. Tests passing, docs current, acceptance criteria satisfied before release.',
+    },
+    {
+      icon: Icons.livingDocs,
+      title: 'Living Documentation',
+      desc: 'Specs, ADRs, and runbooks sync automatically after every task. Documentation that never drifts from code.',
+    },
+    {
+      icon: Icons.sync,
+      title: 'Bidirectional Sync',
+      desc: 'GitHub Issues, JIRA, Azure DevOps — real-time two-way synchronization across your entire toolchain.',
+    },
+  ];
+
+  return (
+    <section className={styles.capabilitiesSection} id="capabilities">
+      <div className="container">
+        <span className={styles.sectionLabel}>CAPABILITIES</span>
+        <Heading as="h2" className={styles.sectionTitle}>
+          Everything You Need to Ship at Scale
         </Heading>
         <p className={styles.sectionSubtitle}>
-          The AI skill ecosystem has a security problem. SpecWeave solves it with verified, auditable skill installation.
+          Purpose-built for teams shipping production software with AI coding agents.
         </p>
 
-        <div className={styles.vskillsGrid}>
-          {/* Danger stat */}
-          <div className={styles.vskillsDanger}>
-            <div className={styles.vskillsDangerIcon}>
-              {Icons.warning}
+        <div className={styles.capabilitiesGrid}>
+          {capabilities.map((cap, i) => (
+            <div key={i} className={styles.capabilityCard}>
+              <div className={styles.capabilityIcon}>{cap.icon}</div>
+              <h3>{cap.title}</h3>
+              <p>{cap.desc}</p>
             </div>
-            <div className={styles.vskillsDangerStat}>36.82%</div>
-            <p className={styles.vskillsDangerLabel}>
-              of public AI skills contain security flaws
-            </p>
-            <p className={styles.vskillsDangerSource}>
-              Snyk ToxicSkills Research, Feb 2026
-            </p>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ===================================================================
+   Section 4: Trust — stats, verified skills callout, integrations
+   =================================================================== */
+function TrustSection(): ReactNode {
+  return (
+    <section className={styles.trustSection}>
+      <div className="container">
+        <span className={styles.sectionLabelLight}>TRUSTED & PROVEN</span>
+        <Heading as="h2" className={styles.sectionTitleLight}>
+          Built With Itself. Production Ready.
+        </Heading>
+        <p className={styles.sectionSubtitleLight}>
+          SpecWeave is entirely developed using SpecWeave — every feature, every release, every page you're reading.
+        </p>
+
+        <div className={styles.trustStats}>
+          <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.trustStat}>
+            <div className={styles.trustStatValue}>Self-Built</div>
+            <div className={styles.trustStatLabel}>Dogfooded Daily</div>
+          </Link>
+          <div className={styles.trustStat}>
+            <div className={styles.trustStatValue}>Zero</div>
+            <div className={styles.trustStatLabel}>Context Loss</div>
           </div>
+          <div className={styles.trustStat}>
+            <div className={styles.trustStatValue}>Hours</div>
+            <div className={styles.trustStatLabel}>Autonomous Work</div>
+          </div>
+        </div>
 
-          {/* Trust ladder */}
-          <div className={styles.vskillsTrust}>
-            <h3 className={styles.vskillsTrustTitle}>Three-Tier Trust Ladder</h3>
-            <p className={styles.vskillsTrustDesc}>
-              Every skill installed through SpecWeave passes through a progressive trust pipeline.
-            </p>
-
-            <div className={styles.trustLadder}>
-              <div className={styles.trustTier}>
-                <div className={`${styles.trustBadge} ${styles.trustScanned}`}>
-                  <div className={styles.trustBadgeIcon}>{Icons.scanner}</div>
-                </div>
-                <div className={styles.trustTierContent}>
-                  <h4>Scanned</h4>
-                  <p>Automated SAST analysis detects vulnerabilities, credential leaks, and malicious patterns before installation.</p>
-                </div>
-              </div>
-
-              <div className={styles.trustTier}>
-                <div className={`${styles.trustBadge} ${styles.trustVerified}`}>
-                  <div className={styles.trustBadgeIcon}>{Icons.shield}</div>
-                </div>
-                <div className={styles.trustTierContent}>
-                  <h4>Verified</h4>
-                  <p>Human-reviewed by maintainers. Source integrity confirmed. Behavioral sandbox testing passed.</p>
-                </div>
-              </div>
-
-              <div className={styles.trustTier}>
-                <div className={`${styles.trustBadge} ${styles.trustCertified}`}>
-                  <div className={styles.trustBadgeIcon}>{Icons.certificate}</div>
-                </div>
-                <div className={styles.trustTierContent}>
-                  <h4>Certified</h4>
-                  <p>Enterprise-grade audit trail. Compliance-ready. Continuous monitoring and re-certification.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.vskillsCtas}>
-              <Link className={styles.btnVerified} to="/docs/skills/verified/verified-skills">
-                Learn About Verified Skills
-              </Link>
-              <a className={styles.btnVerifiedOutline} href="https://verifiedskill.com" target="_blank" rel="noopener noreferrer">
-                verifiedskill.com →
+        <div className={styles.verifiedCallout}>
+          <div className={styles.verifiedIcon}>{Icons.shield}</div>
+          <div className={styles.verifiedContent}>
+            <h3>Verified Skills Security</h3>
+            <p>
+              Three-tier trust ladder: Scanned, Verified, Certified. Every skill is security-audited before installation.{' '}
+              <a href="https://verified-skill.com" target="_blank" rel="noopener noreferrer">
+                verified-skill.com
               </a>
-            </div>
+            </p>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function WhatsNewSection(): ReactNode {
-  return (
-    <section className={styles.whatsNewSection}>
-      <div className="container">
-        <div className={styles.whatsNewBadge}>LATEST</div>
-        <Heading as="h2" className={styles.sectionTitle}>What's New</Heading>
-        <p className={styles.sectionSubtitle}>Recent updates that make SpecWeave even more powerful.</p>
-
-        <div className={styles.whatsNewGrid}>
-          <div className={styles.whatsNewCard}>
-            <div className={styles.whatsNewIcon}>
-              {Icons.qualityGates}
-            </div>
-            <div>
-              <h3>Code Grill</h3>
-              <p>A demanding senior engineer reviews your code before every release. Checks correctness, security (OWASP), performance, and maintainability. Run <code>/sw:grill</code> and ship with confidence.</p>
-            </div>
-          </div>
-          <div className={styles.whatsNewCard}>
-            <div className={styles.whatsNewIcon}>
-              {Icons.sync}
-            </div>
-            <div>
-              <h3>Multi-Repo Sync</h3>
-              <p>Redesigned sync architecture for coordinating work across multiple repositories. GitHub, JIRA, and Azure DevOps stay in sync — automatically.</p>
-            </div>
-          </div>
-          <div className={styles.whatsNewCard}>
-            <div className={styles.whatsNewIcon}>
-              {Icons.setup}
-            </div>
-            <div>
-              <h3>LSP Code Intelligence</h3>
-              <p>Language Server Protocol integration for TypeScript, Python, Go, Rust, Java, and C#. Semantic code understanding instead of text search — dramatically faster and more accurate.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StatsSection(): ReactNode {
-  return (
-    <section className={styles.statsSection}>
-      <div className="container">
-        <div className={styles.statsBadge}>DOGFOODING: BUILT WITH ITSELF</div>
-        <Heading as="h2" className={styles.statsTitle}>Production Proven</Heading>
-        <p className={styles.statsSubtitle}>
-          Not a prototype. SpecWeave is entirely developed using SpecWeave — every feature, every release, every page you're reading right now.
-        </p>
-
-        <div className={styles.statsGrid}>
-          <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.statCard}>
-            <div className={styles.statNumber}>Self-Built</div>
-            <div className={styles.statLabel}>Every feature spec-driven</div>
-          </Link>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>Zero</div>
-            <div className={styles.statLabel}>Context Loss</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>Hours</div>
-            <div className={styles.statLabel}>Of Autonomous Work</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FeaturesSection(): ReactNode {
-  return (
-    <section className={styles.featuresSection} id="capabilities">
-      <div className="container">
-        <Heading as="h2" className={styles.sectionTitle}>Enterprise Capabilities</Heading>
-        <p className={styles.sectionSubtitle}>Purpose-built for teams shipping production software at scale.</p>
-
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.extensible}</div>
-            <h3>Extensible Skills (SOLID)</h3>
-            <p>Customize AI behavior without forking. SKILL.md + skill-memories follow the Open/Closed Principle — extend any skill with your team's rules. Verified installation ensures supply chain security.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.agents}</div>
-            <h3>Multi-Agent Orchestration</h3>
-            <p>Specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables. Powered by Claude Opus 4.6.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.memory}</div>
-            <h3>Persistent Memory</h3>
-            <p>AI learns from corrections and retains context. Fix once — remembered permanently.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
-            <h3>Living Documentation</h3>
-            <p>Specifications, ADRs, and runbooks synchronized automatically after every task completion.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.qualityGates}</div>
-            <h3>Automated Quality Gates</h3>
-            <p>Enforced validation: tests passing, docs current, acceptance criteria satisfied before release.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIconWrapper}>{Icons.sync}</div>
-            <h3>Bidirectional Sync</h3>
-            <p>GitHub Issues, JIRA, Azure DevOps — real-time synchronization across platforms.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={`${styles.featureIconWrapper} ${styles.featureIconShield}`}>{Icons.shield}</div>
-            <h3>Verified Skills</h3>
-            <p>Three-tier trust: Scanned, Verified, Certified. Every skill is security-audited before installation. <a href="https://verifiedskill.com" target="_blank" rel="noopener noreferrer">verifiedskill.com</a></p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function IntegrationsSection(): ReactNode {
-  return (
-    <section className={styles.integrationsSection}>
-      <div className="container">
-        <Heading as="h2" className={styles.sectionTitle}>Seamless Integration</Heading>
-        <p className={styles.sectionSubtitle}>Native connectivity with enterprise toolchains.</p>
-
-        <div className={styles.integrationsGrid}>
-          <div className={styles.integrationCard}>
-            <div className={styles.integrationIconWrapper}>{Icons.github}</div>
-            <h3>GitHub</h3>
-            <p>Issues, Milestones, Projects. Full bidirectional synchronization.</p>
-          </div>
-          <div className={styles.integrationCard}>
-            <div className={styles.integrationIconWrapper}>{Icons.jira}</div>
-            <h3>JIRA</h3>
-            <p>Epics, Stories, Boards. Complete hierarchy mapping.</p>
-          </div>
-          <div className={styles.integrationCard}>
-            <div className={styles.integrationIconWrapper}>{Icons.azure}</div>
-            <h3>Azure DevOps</h3>
-            <p>Work Items, Area Paths, Iterations. Enterprise-grade integration.</p>
-          </div>
-          <div className={styles.integrationCard}>
-            <div className={styles.integrationIconWrapper}>{Icons.ai}</div>
-            <h3>AI Platforms</h3>
-            <p>Claude Opus 4.6 & Sonnet 4.5 native. Also works with Cursor, Copilot, Gemini.</p>
-          </div>
-        </div>
-
-        <div className={styles.integrationsCta}>
-          <Link to="/docs/guides/integrations/external-tools-overview" className={styles.btnOutline}>
-            Integration Documentation →
+          <Link className={styles.verifiedLink} to="/docs/skills/verified/verified-skills">
+            Learn More →
           </Link>
         </div>
+
+        <div className={styles.integrationLogos}>
+          <span className={styles.integrationLabel}>Works with</span>
+          <div className={styles.logoRow}>
+            <div className={styles.logoItem}>
+              <div className={styles.logoIcon}>{Icons.github}</div>
+              <span>GitHub</span>
+            </div>
+            <div className={styles.logoItem}>
+              <div className={styles.logoIcon}>{Icons.jira}</div>
+              <span>JIRA</span>
+            </div>
+            <div className={styles.logoItem}>
+              <div className={styles.logoIcon}>{Icons.azure}</div>
+              <span>Azure DevOps</span>
+            </div>
+            <div className={styles.logoItem}>
+              <div className={styles.logoIcon}>{Icons.ai}</div>
+              <span>Claude, Cursor, Copilot</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
+/* ===================================================================
+   Section 5: CTA — final call-to-action
+   =================================================================== */
 function CTASection(): ReactNode {
   return (
     <section className={styles.ctaSection}>
       <div className="container">
-        <Heading as="h2" className={styles.ctaTitle}>Stop Losing Work. Start Shipping.</Heading>
+        <Heading as="h2" className={styles.ctaTitle}>
+          Stop Losing Context. Start Shipping.
+        </Heading>
         <p className={styles.ctaSubtitle}>
           Two commands. Permanent memory. Autonomous execution for hours. Your AI coding assistant finally remembers everything.
         </p>
 
         <div className={styles.ctaCode}>
           <code>
-            npm install -g specweave && specweave init .<br/>
-            <span style={{ color: 'var(--ifm-color-emphasis-500)', fontSize: '0.85em' }}>
-              # or: bun add -g specweave | pnpm add -g specweave | yarn global add specweave
-            </span>
+            npm install -g specweave && specweave init .
           </code>
         </div>
 
@@ -547,16 +369,12 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Ship Features While You Sleep"
-      description="The spec-driven skill layer for AI coding agents. First-class support for Claude Code — compatible with any LLM-powered coding tool. Ship features while you sleep.">
-      <HomepageHeader />
+      description="The spec-driven framework for AI coding agents. Persistent memory, autonomous execution, quality gates, and living documentation. First-class Claude Code support.">
+      <VideoHero />
       <main>
-        <HeroVideo />
-        <ProblemSection />
-        <VSkillsSection />
-        <WhatsNewSection />
-        <StatsSection />
-        <FeaturesSection />
-        <IntegrationsSection />
+        <WorkflowSection />
+        <CapabilitiesSection />
+        <TrustSection />
         <CTASection />
       </main>
     </Layout>
