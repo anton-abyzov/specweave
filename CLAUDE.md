@@ -16,7 +16,7 @@
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
 
 **Options**:
-1. **Start fresh**: `rm -rf .specweave/increments/0001-project-setup` → `/sw:increment "your-feature"`
+1. **Start fresh**: Delete `.specweave/increments/0001-project-setup/` → `/sw:increment "your-feature"`
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
