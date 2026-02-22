@@ -310,7 +310,7 @@ Certification is graduated. Higher tiers provide stronger trust guarantees at hi
 | Tier | Name | Method | Cost | Latency | Badge |
 |------|------|--------|------|---------|-------|
 | 0 | Unscanned | None | Free | 0 | None |
-| 1 | Scanned | 41 regex patterns + structural validation | Free | &lt;500ms | `scanned` |
+| 1 | Scanned | 52 regex patterns + structural validation | Free | &lt;500ms | `scanned` |
 | 2 | Verified | Tier 1 + LLM intent analysis (Claude Sonnet) | ~$0.03/skill | 5-15s | `verified` |
 | 3 | Certified | Tier 1 + Tier 2 + human review + sandbox execution | $50-200/skill | 1-5 business days | `certified` |
 
@@ -665,7 +665,7 @@ The standard recommends a three-phase rollout for platforms:
 
 ### 7.1 Scanner Implementation Reference
 
-SpecWeave provides a reference implementation of the Tier 1 scanner in `src/core/fabric/security-scanner.ts`. This scanner implements **41 regex patterns** across **9 detection categories**:
+The `vskill` CLI provides the reference implementation of the Tier 1 scanner. It implements **52 regex patterns** across **9 detection categories**:
 
 - **Destructive commands** (critical): `rm -rf`, `rm --force`, `format`, `DROP TABLE`, `dd`, `mkfs`, `Remove-Item -Recurse -Force`
 - **Remote code execution** (critical): `curl | bash`, `wget | bash`, `| bash` (generic pipe), `eval()`, `exec()`, `child_process`, `Invoke-Expression`, `new Function()`
@@ -679,7 +679,7 @@ SpecWeave provides a reference implementation of the Tier 1 scanner in `src/core
 
 The scanner was validated against [Snyk's ToxicSkills PoC samples](https://github.com/snyk-labs/toxicskills-goof), achieving a 75% detection rate on real malicious skills via Tier 1 alone. The remaining 25% (social engineering attacks in natural language) require Tier 2 LLM analysis.
 
-**CLI**: Run `specweave scan-skill <file>` to scan any SKILL.md file. Add `--json` for machine-readable output.
+**CLI**: Run `vskill scan <file>` to scan any SKILL.md file. Run `vskill audit` to scan all installed skills in a project.
 
 ### 7.2 Structural Validation Pseudocode
 
@@ -727,7 +727,7 @@ function validateStructure(skillContent: string): Finding[] {
 
 5. **Skills.sh** (Vercel). Claude Code skill marketplace with 200+ listings and 233,000+ installs on the most popular skill. Zero security scanning at time of writing. [https://skills.sh](https://skills.sh)
 
-6. **SpecWeave Security Scanner**. Reference implementation of Tier 1 pattern-based scanning. Source: `src/core/fabric/security-scanner.ts` in the SpecWeave repository.
+6. **vskill Security Scanner**. Reference implementation of Tier 1 pattern-based scanning. Available via `vskill scan` in the [vskill CLI](https://www.npmjs.com/package/vskill).
 
 7. **Agent Security Best Practices** (SpecWeave Docs). Complementary guide covering prompt injection prevention, plugin vetting, and safe autonomous execution. [Agent Security Best Practices](../guides/agent-security-best-practices.md)
 
@@ -741,7 +741,7 @@ function validateStructure(skillContent: string): Finding[] {
 
 ## Appendix A: Complete Forbidden Patterns Reference
 
-The following table lists all 41 patterns checked by the Tier 1 scanner, organized by category. Each pattern includes the severity level and whether safe-context exceptions apply.
+The following table lists the patterns checked by the Tier 1 scanner, organized by category. Each pattern includes the severity level and whether safe-context exceptions apply.
 
 | # | Category | Pattern | Severity | Safe Context |
 |---|----------|---------|----------|-------------|

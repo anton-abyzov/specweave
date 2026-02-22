@@ -336,7 +336,7 @@ The installer includes path safety protections:
 
 ## The `agentSkillsCompat` Extension
 
-SpecWeave's Fabric Registry tracks per-skill compatibility metadata through the `agentSkillsCompat` field:
+The Verified Skills registry tracks per-skill compatibility metadata through the `agentSkillsCompat` field:
 
 **Portability scoring (0-5)**:
 - **5**: Tested on 10+ agents, no known issues, portable core only
@@ -346,7 +346,7 @@ SpecWeave's Fabric Registry tracks per-skill compatibility metadata through the 
 - **1**: Single-agent skill with no portability effort
 - **0**: Uses features exclusive to one agent with no fallback
 
-This integrates with the Fabric Registry's quality scoring rubric, where portability is one of six dimensions contributing to a skill's overall trust score.
+This integrates with the Verified Skills registry's quality scoring rubric, where portability is one of six dimensions contributing to a skill's overall trust score.
 
 ---
 

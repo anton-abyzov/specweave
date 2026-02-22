@@ -15,12 +15,16 @@ const mocks = vi.hoisted(() => {
   const mockAutoCreateExternalIssue = vi.fn();
   const mockSyncIncrement = vi.fn();
   const mockSyncIncrementClosure = vi.fn();
+  const mockSyncFeatureToGitHub = vi.fn();
+  const mockResolveFeatureId = vi.fn();
 
   return {
     mockConfigRead,
     mockAutoCreateExternalIssue,
     mockSyncIncrement,
     mockSyncIncrementClosure,
+    mockSyncFeatureToGitHub,
+    mockResolveFeatureId,
   };
 });
 
@@ -51,6 +55,14 @@ vi.mock('../../../../src/sync/sync-coordinator.js', () => {
     },
   };
 });
+
+vi.mock('../../../../src/core/hooks/github-project-sync.js', () => ({
+  syncFeatureToGitHub: mocks.mockSyncFeatureToGitHub,
+}));
+
+vi.mock('../../../../src/core/hooks/feature-id-resolver.js', () => ({
+  resolveFeatureId: mocks.mockResolveFeatureId,
+}));
 
 // Import after mocks are set up
 import { LifecycleHookDispatcher } from '../../../../src/core/hooks/LifecycleHookDispatcher.js';
@@ -220,6 +232,80 @@ describe('LifecycleHookDispatcher', () => {
 
       // Verify syncIncrementClosure was called (implying SyncCoordinator was constructed)
       expect(mocks.mockSyncIncrementClosure).toHaveBeenCalled();
+    });
+
+    it('TC-017: dispatches GitHub Project sync when sync_to_github_project=true', async () => {
+      mocks.mockConfigRead.mockResolvedValue({
+        hooks: {
+          post_increment_done: {
+            sync_to_github_project: true,
+          },
+        },
+      });
+      mocks.mockResolveFeatureId.mockResolvedValue('FS-0100');
+      mocks.mockSyncFeatureToGitHub.mockResolvedValue({ success: true });
+
+      await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
+
+      expect(mocks.mockResolveFeatureId).toHaveBeenCalledWith(projectRoot, incrementId);
+      expect(mocks.mockSyncFeatureToGitHub).toHaveBeenCalledWith(projectRoot, 'FS-0100');
+    });
+
+    it('TC-018: skips GitHub Project sync when sync_to_github_project=false', async () => {
+      mocks.mockConfigRead.mockResolvedValue({
+        hooks: {
+          post_increment_done: {
+            sync_to_github_project: false,
+          },
+        },
+      });
+
+      await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
+
+      expect(mocks.mockResolveFeatureId).not.toHaveBeenCalled();
+      expect(mocks.mockSyncFeatureToGitHub).not.toHaveBeenCalled();
+    });
+
+    it('TC-019: GitHub Project sync failure does not block other hooks', async () => {
+      mocks.mockConfigRead.mockResolvedValue({
+        hooks: {
+          post_increment_done: {
+            sync_to_github_project: true,
+            sync_living_docs: true,
+            close_github_issue: true,
+          },
+        },
+      });
+      mocks.mockResolveFeatureId.mockResolvedValue('FS-0100');
+      mocks.mockSyncFeatureToGitHub.mockRejectedValue(new Error('GitHub API down'));
+      mocks.mockSyncIncrement.mockResolvedValue({ success: true });
+      mocks.mockSyncIncrementClosure.mockResolvedValue({ success: true, closedIssues: [] });
+
+      // Should not throw
+      await expect(
+        LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass),
+      ).resolves.toBeUndefined();
+
+      // Other hooks should still have run
+      expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);
+      expect(mocks.mockSyncIncrementClosure).toHaveBeenCalled();
+    });
+
+    it('TC-020: feature ID is resolved from project root and increment', async () => {
+      mocks.mockConfigRead.mockResolvedValue({
+        hooks: {
+          post_increment_done: {
+            sync_to_github_project: true,
+          },
+        },
+      });
+      mocks.mockResolveFeatureId.mockResolvedValue(null);
+
+      await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
+
+      expect(mocks.mockResolveFeatureId).toHaveBeenCalledWith(projectRoot, incrementId);
+      // No feature ID resolved -> skip sync (don't call syncFeatureToGitHub)
+      expect(mocks.mockSyncFeatureToGitHub).not.toHaveBeenCalled();
     });
 
     it('TC-010: respects update_living_docs_first ordering', async () => {

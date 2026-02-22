@@ -3443,17 +3443,17 @@ These topics are mentioned briefly but have full documentation available:
 > Second — a built-in security scanner that goes beyond pattern matching."
 
 ```bash
-specweave scan-skill ./my-skill/SKILL.md
+vskill scan ./my-skill/SKILL.md
 # Scanning: my-skill
-# Checking 26 security patterns...
+# Checking 52 security patterns...
 # Safe-context analysis: PASS
 # External command injection: PASS
 # Memory poisoning vectors: PASS
 # Credential access patterns: PASS
-# Result: CLEAN (26/26 patterns clear)
+# Result: CLEAN (52/52 patterns clear)
 ```
 
-> "26 security patterns with safe-context awareness. That 'safe-context' part matters — the scanner understands the DIFFERENCE between a skill that legitimately needs to run git commands and one that's trying to exfiltrate your .env file via curl. Context-aware scanning, not just keyword matching.
+> "52 security patterns with safe-context awareness. That 'safe-context' part matters — the scanner understands the DIFFERENCE between a skill that legitimately needs to run git commands and one that's trying to exfiltrate your .env file via curl. Context-aware scanning, not just keyword matching.
 >
 > Third — three-tier verification. This is the architecture that actually works."
 
@@ -3463,7 +3463,7 @@ specweave scan-skill ./my-skill/SKILL.md
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
 │  Tier 1: SCANNED (Automated)                                 │
-│  → 26-pattern security scanner                               │
+│  → 52-pattern security scanner                               │
 │  → Runs automatically on install                             │
 │  → Catches known attack vectors                              │
 │                                                               │
@@ -3480,7 +3480,7 @@ specweave scan-skill ./my-skill/SKILL.md
 └──────────────────────────────────────────────────────────────┘
 ```
 
-> "Tier 1 — automated scanning. Every skill gets checked against 26 patterns on install. This catches the obvious stuff: remote code execution, credential harvesting, memory poisoning.
+> "Tier 1 — automated scanning. Every skill gets checked against 52 patterns on install. This catches the obvious stuff: remote code execution, credential harvesting, memory poisoning.
 >
 > Tier 2 — LLM judge verification. This is where it gets interesting. Instead of just matching patterns, an LLM analyzes the skill's INTENT. It reads the skill the way an AI agent would read it and asks: 'What is this skill actually trying to accomplish? Does the behavior match the description? Are there hidden instructions?' This catches the social engineering attacks that pattern scanners miss.
 >
@@ -3500,7 +3500,7 @@ specweave scan-skill ./my-skill/SKILL.md
 npx vskill find claude-memory           # search the registry
 npx vskill install claude-memory-manager
 # Fetching: claude-memory-manager@2.1.0
-# Running security scan... 26 patterns checked
+# Running security scan... 52 patterns checked
 # Risk score: 0.12 (LOW)
 # Verification: CERTIFIED at v2.1.0
 # Install? (y/n)

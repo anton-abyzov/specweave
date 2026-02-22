@@ -14,6 +14,7 @@ const mockUpdateStatus = vi.fn();
 const mockGetActive = vi.fn().mockReturnValue([]);
 const mockGetAll = vi.fn().mockReturnValue([]);
 const mockGetExtended = vi.fn();
+const mockOnIncrementDone = vi.fn();
 
 vi.mock('../../../../src/core/increment/metadata-manager.js', () => ({
   MetadataManager: {
@@ -22,6 +23,12 @@ vi.mock('../../../../src/core/increment/metadata-manager.js', () => ({
     getActive: () => mockGetActive(),
     getAll: () => mockGetAll(),
     getExtended: (...args: unknown[]) => mockGetExtended(...args),
+  },
+}));
+
+vi.mock('../../../../src/core/hooks/LifecycleHookDispatcher.js', () => ({
+  LifecycleHookDispatcher: {
+    onIncrementDone: (...args: unknown[]) => mockOnIncrementDone(...args),
   },
 }));
 
@@ -320,6 +327,46 @@ describe('status-commands', () => {
       });
 
       expect(logSpy).not.toHaveBeenCalled();
+    });
+
+    it('should await LifecycleHookDispatcher.onIncrementDone after completion', async () => {
+      const callOrder: string[] = [];
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockOnIncrementDone.mockImplementation(async () => {
+        callOrder.push('hooks');
+      });
+
+      const result = await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      // Hooks should have been called by the time completeIncrement returns
+      expect(result).toBe(true);
+      expect(mockOnIncrementDone).toHaveBeenCalled();
+      expect(callOrder).toContain('hooks');
+    });
+
+    it('should return true even when hooks throw (error-isolated)', async () => {
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockOnIncrementDone.mockRejectedValue(new Error('Hook dispatch failed'));
+
+      const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+      const result = await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      // Completion should still succeed
+      expect(result).toBe(true);
+      expect(mockUpdateStatus).toHaveBeenCalledWith('0001-test', IncrementStatus.COMPLETED);
+      // Error should be logged to stderr
+      expect(stderrSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Hook dispatch failed'),
+      );
+
+      stderrSpy.mockRestore();
     });
   });
 });

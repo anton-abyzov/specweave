@@ -312,7 +312,7 @@ async function main(): Promise<void> {
 
     // Read marketplace config from project config (with defaults)
     const marketplaceConfig = readMarketplaceConfig(projectPath);
-    const githubToken = marketplaceConfig.githubToken || process.env.GITHUB_TOKEN || '';
+    const githubToken = marketplaceConfig.githubToken || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '';
 
     // Log to worker-specific log file
     const logPath = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'worker.log');
@@ -330,6 +330,13 @@ async function main(): Promise<void> {
     log(`Search filenames: ${jobConfig.searchFilenames.join(', ')}`);
     log(`Interval: ${jobConfig.intervalMinutes} minutes`);
     log(`Auto scan on discover: ${marketplaceConfig.autoScanOnDiscover}`);
+
+    if (!githubToken) {
+      log(`WARNING: No GitHub token configured. Rate limit will be 60 req/hour (unauthenticated).`);
+      log(`Set GITHUB_TOKEN in environment or marketplace.scanner.githubToken in .specweave/config.json`);
+    } else {
+      log(`GitHub token configured (authenticated: 5000 req/hour)`);
+    }
 
     // Dynamically import job manager and submission queue
     const jobManagerModule = await import('../../core/background/job-manager.js');

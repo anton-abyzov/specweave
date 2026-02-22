@@ -61,13 +61,13 @@ The fourth sample used pure social engineering: natural-language instructions di
 
 SpecWeave's [Verified Skills Standard](/docs/skills/verified/verified-skills) defines three escalating levels of certification:
 
-1. **Scanned** — 41 pattern rules across 9 categories. Free. Under 500ms. Catches obfuscation, credential access, destructive commands, prompt injection, and more.
+1. **Scanned** — 52 pattern rules across 9 categories. Free. Under 500ms. Catches obfuscation, credential access, destructive commands, prompt injection, and more.
 2. **Verified** — LLM-based semantic analysis on top of pattern scanning. ~$0.03 per skill. Catches social engineering, scope inflation, and multi-step attacks.
 3. **Certified** — Human security review plus sandbox testing. $50-200. For high-trust, widely-used skills.
 
 Every skill published to [verifiedskill.com](https://verifiedskill.com) passes at least Tier 1 before it reaches any developer. Skills that fail are rejected with detailed findings explaining exactly what was flagged and why.
 
-The scanning methodology is fully transparent. The [41 patterns](docs/skills/secure-skill-factory-standard) are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.
+The scanning methodology is fully transparent. The [52 patterns](docs/skills/secure-skill-factory-standard) are documented. The detection categories are public. Developers can understand exactly what the scanner checks and make informed decisions about trust.
 
 ## What You Should Do
 
@@ -75,7 +75,7 @@ If you are using AI agent skills today:
 
 1. **Check your installed skills.** Review the source of every skill you have installed. Look for shell commands, network requests, and file access patterns you did not expect.
 2. **Prefer verified sources.** Use skills from registries that scan submissions before publication, not after (or never).
-3. **Run `specweave scan-skill`** on any community skill before installing it. The Tier 1 scanner is free and takes under a second.
+3. **Run `vskill scan`** on any community skill before installing it. The Tier 1 scanner is free and takes under a second.
 
 The full [security landscape analysis](/docs/skills/verified/skills-ecosystem-security) covers the threat taxonomy, platform comparison, and detailed recommendations.
 

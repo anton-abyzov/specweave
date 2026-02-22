@@ -20,7 +20,7 @@ The result: you correct Claude once ("use React Hook Form, not useState for form
 ## In This Section
 
 ### [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)
-The formal specification — E0-E4 tier definitions, DCI specification, frontmatter schema, agent portability matrix, and conformance requirements.
+The formal specification — extensibility category definitions, DCI specification, detection algorithm, and conformance requirements.
 
 ### [Implementation Guide](/docs/skills/extensible/extensible-skills-guide)
 Practical how-to — getting started, architecture, cascading lookup, real-world examples, skill memory format, and FAQ.

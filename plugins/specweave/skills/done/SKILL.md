@@ -97,52 +97,50 @@ PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDA
 
 **All gates pass**:
 1. Create marker file: `mkdir -p .specweave/state && touch .specweave/state/.sw-done-in-progress`
-2. Update metadata.json status to `completed`, set completion date
-3. Remove marker file
+2. Run completion via CLI: `Bash({ command: "specweave complete <id> --skip-validation --yes" })` — this is safe because quality gates already ran in Steps 2-3 and 6-7. The CLI call triggers `LifecycleHookDispatcher.onIncrementDone()` which fires living docs sync, GitHub Project sync, and issue closure automatically.
+3. Remove marker file: `rm -f .specweave/state/.sw-done-in-progress`
 4. Generate completion report, update backlog
+
+**CRITICAL**: Do NOT directly edit metadata.json to set status. Always use the `specweave complete` CLI command — it is the single completion path that triggers all post-closure hooks.
 
 **Any gate fails**:
 - Show failures and blockers with estimated fix effort
 - If GitHub issue exists, reopen it with failure details
 - Increment remains in-progress
 
-### Step 9: Post-Closure Sync (AUTOMATIC)
+### Step 9: Post-Closure Sync (AUTOMATIC via CLI hooks)
 
-Runs automatically after successful closure:
+The `specweave complete` call in Step 8 triggers `LifecycleHookDispatcher.onIncrementDone()` which automatically handles:
 
-**A) Sync spec.md status** to `completed` (frontmatter + status line cache). Always runs.
+- **Living docs sync** (`sync_living_docs` flag): Updates feature specs and user story files
+- **GitHub Project sync** (`sync_to_github_project` flag): Pushes spec to GitHub Project
+- **Issue closure** (`close_github_issue` flag): Closes GitHub/JIRA/ADO issues via SyncCoordinator
 
-**B) Sync living docs to GitHub Project**: If `hooks.post_increment_done.sync_to_github_project` enabled, find living docs spec and run `/sw-github:sync-spec`.
+After the CLI completes, display the sync result summary:
 
-**C) Close ALL per-user-story GitHub issues**: If `hooks.post_increment_done.close_github_issue` enabled:
+```
+| Hook                     | Result                    |
+|--------------------------|---------------------------|
+| Living docs sync         | OK / FAILED: {reason}     |
+| GitHub Project sync      | OK / SKIPPED              |
+| Issue closure            | OK / SKIPPED              |
+```
 
+If any operation failed, display: "Run `/sw:progress-sync` to retry failed sync operations."
+
+**Supplemental closure** (not handled by hooks — run manually if applicable):
+
+**A) Close external-origin issue** (E-suffix increments only): Parse `metadata.external_ref` (format: `github#owner/repo#number`). Check `sync.settings.canUpdateStatus` permission. Close via `gh issue close -R`.
+
+**B) Close ALL per-user-story GitHub issues**: If the hook-based closure missed any, search by title pattern:
 1. Read `sync.github.owner` and `sync.github.repo` from config.json
-2. Extract the feature ID (e.g. `FS-237`) from spec.md frontmatter or increment ID
-3. For EACH user story in spec.md (US-001, US-002, etc.):
-   - Search GitHub by title pattern: `gh issue list -R {owner}/{repo} --search "[{feature_id}][{us_id}]" --state open --json number`
-   - Close each matching open issue: `gh issue close {number} -R {owner}/{repo} -c "Completed as part of increment {increment_id}"`
-4. Also close the single issue in `metadata.github.issue` if it exists and is still open
-5. Report: "Closed N of M user-story issues on GitHub"
-
-**IMPORTANT**: Do NOT rely only on `metadata.github.issue` — that field tracks only one issue. Always search by title pattern to find ALL per-user-story issues.
-
-**D) Close external-origin issue** (E-suffix increments only): Parse `metadata.external_ref` (format: `github#owner/repo#number`). Check `sync.settings.canUpdateStatus` permission. Close via `gh issue close -R`.
-
-**E) Sync to external tools**: If `sync.statusSync.enabled`, use `syncACProgressToProviders()` to sync to all enabled providers (GitHub, JIRA, ADO).
-
-**F) Sync Result Summary**: Display a summary of all closure operations:
-```
-| Tool   | Action              | Result                    |
-|--------|---------------------|---------------------------|
-| GitHub | Close N issues      | OK / FAILED: {reason}     |
-| JIRA   | Transition N issues | OK / SKIPPED              |
-| ADO    | Close N work items  | OK / SKIPPED              |
-```
-If any operation failed, display: "Run `/sw:progress-sync` to retry."
+2. Extract the feature ID from spec.md frontmatter or increment ID
+3. For EACH user story in spec.md, search: `gh issue list -R {owner}/{repo} --search "[{feature_id}][{us_id}]" --state open --json number`
+4. Close each: `gh issue close {number} -R {owner}/{repo} -c "Completed as part of increment {increment_id}"`
 
 ### Step 10: Sync Living Docs (MANDATORY)
 
-Execute: `Skill({ skill: "sw:sync-docs" })` with "review" mode. Do NOT just mention it -- actually invoke it.
+Execute: `Skill({ skill: "sw:sync-docs" })` with the increment ID. Do NOT just mention it -- actually invoke it. This serves as a verification pass to confirm living docs are up to date after closure.
 
 ### Step 11: Post-Closure Quality Assessment
 

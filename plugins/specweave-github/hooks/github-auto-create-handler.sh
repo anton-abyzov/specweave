@@ -7,7 +7,7 @@
 # Features:
 # - Idempotent: checks existing issues before creating
 # - Updates metadata.json with external links
-# - Debounce (10s window to batch rapid spec edits)
+# - Debounce (30s window to batch rapid spec edits)
 # - Circuit breaker (3 consecutive failures → auto-disable)
 # - Non-blocking (all errors → exit 0)
 #
@@ -50,6 +50,9 @@ log() {
 
 [[ ! -f "$SPEC_PATH" ]] && exit 0
 [[ ! -f "$CONFIG_PATH" ]] && exit 0
+
+# Template guard: skip if spec.md still contains placeholder markers
+grep -q '\[Story Title\]' "$SPEC_PATH" && { log "Skipping: spec.md still contains [Story Title] template markers"; exit 0; }
 
 command -v gh &>/dev/null || { log "gh CLI not found"; exit 0; }
 command -v jq &>/dev/null || { log "jq not found"; exit 0; }
@@ -106,26 +109,26 @@ if [[ -f "$CB_FILE" ]]; then
 fi
 
 # ============================================================================
-# DEBOUNCE (10s window — spec.md may be written multiple times during planning)
+# DEBOUNCE (30s window — spec.md may be written multiple times during planning)
 # ============================================================================
 
 if [[ "${SPECWEAVE_SKIP_DEBOUNCE:-0}" != "1" ]]; then
   DEBOUNCE_FILE="$STATE_DIR/.github-auto-create-pending-$INC_ID"
   if [[ -f "$DEBOUNCE_FILE" ]]; then
     SIGNAL_AGE=$(($(date +%s) - $(stat -f "%m" "$DEBOUNCE_FILE" 2>/dev/null || echo 0)))
-    if (( SIGNAL_AGE < 10 )); then
-      log "Debounce: signal age ${SIGNAL_AGE}s < 10s. Deferring."
+    if (( SIGNAL_AGE < 30 )); then
+      log "Debounce: signal age ${SIGNAL_AGE}s < 30s. Deferring."
       exit 0
     fi
   fi
   echo "$(date +%s)" > "$DEBOUNCE_FILE" 2>/dev/null || true
-  sleep 10
+  sleep 30
   # Check if a newer invocation took over
   if [[ -f "$DEBOUNCE_FILE" ]]; then
     CURRENT_SIGNAL=$(cat "$DEBOUNCE_FILE" 2>/dev/null || echo 0)
     NOW=$(date +%s)
     SIGNAL_AGE=$((NOW - CURRENT_SIGNAL))
-    if (( SIGNAL_AGE > 12 )); then
+    if (( SIGNAL_AGE > 32 )); then
       log "Debounce: newer invocation detected. Exiting."
       exit 0
     fi

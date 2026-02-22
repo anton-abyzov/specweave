@@ -113,9 +113,9 @@ export function IncrementsPage() {
           </div>
         </div>
 
-        {pagination && (
+        {pagination && pagination.total > 0 && (
           <span className="text-xs text-gray-500">
-            Showing {Math.min(offset + PAGE_SIZE, pagination.total)} of {pagination.total}
+            Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, pagination.total)} of {pagination.total}
           </span>
         )}
       </div>
@@ -175,13 +175,21 @@ export function IncrementsPage() {
       )}
 
       {/* Pagination */}
-      {pagination?.hasMore && (
-        <div className="flex justify-center">
+      {pagination && pagination.total > PAGE_SIZE && (
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+            disabled={offset === 0}
+            className="px-4 py-2 text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
           <button
             onClick={() => setOffset(offset + PAGE_SIZE)}
-            className="px-4 py-2 text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+            disabled={!pagination.hasMore}
+            className="px-4 py-2 text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Load More
+            Next
           </button>
         </div>
       )}
