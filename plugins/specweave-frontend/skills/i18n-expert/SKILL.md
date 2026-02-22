@@ -757,7 +757,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Lokalise CLI
         run: |
-          curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh | sh
+          curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh -o install-lokalise.sh
+          sh install-lokalise.sh && rm install-lokalise.sh
       - name: Upload source strings
         run: |
           ./bin/lokalise2 file upload \

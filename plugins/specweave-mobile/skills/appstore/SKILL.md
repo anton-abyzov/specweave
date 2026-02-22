@@ -81,7 +81,8 @@ which asc && asc --version
 
 2. **Install script**:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/rudrankriyam/App-Store-Connect-CLI/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/rudrankriyam/App-Store-Connect-CLI/main/install.sh -o install-asc.sh
+   bash install-asc.sh && rm install-asc.sh
    ```
 
 3. **GitHub Actions** (CI only):
