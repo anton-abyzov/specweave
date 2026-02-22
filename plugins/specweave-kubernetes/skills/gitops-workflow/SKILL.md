@@ -115,8 +115,9 @@ spec:
 ### 1. Installation
 
 ```bash
-# Install Flux CLI
-curl -s https://fluxcd.io/install.sh | sudo bash
+# Install Flux CLI (download then run for security)
+curl -s https://fluxcd.io/install.sh -o install-flux.sh
+sudo bash install-flux.sh && rm install-flux.sh
 
 # Bootstrap Flux
 flux bootstrap github \

@@ -36,22 +36,20 @@ run: echo "$TITLE"
 ```
 
 **Node.js Child Process Execution**
-```typescript
-// DANGEROUS - Shell command with user input
-exec(`ls ${userInput}`);
-spawn('sh', ['-c', userInput]);
 
+Dangerous: passing unsanitized user input to shell commands via `child_process` methods with string arguments.
+
+```typescript
 // SAFE - Array arguments, no shell
 execFile('ls', [sanitizedPath]);
 spawn('ls', [sanitizedPath], { shell: false });
 ```
 
 **Python OS Commands**
-```python
-# DANGEROUS
-os.system(f"grep {user_input} file.txt")
-subprocess.call(user_input, shell=True)
 
+Dangerous: `os.system()` or `subprocess.call()` with `shell=True` and user-controlled strings.
+
+```python
 # SAFE
 subprocess.run(['grep', sanitized_input, 'file.txt'], shell=False)
 ```
@@ -59,13 +57,10 @@ subprocess.run(['grep', sanitized_input, 'file.txt'], shell=False)
 ### 2. Dynamic Code Execution
 
 **JavaScript eval-like Patterns**
-```typescript
-// DANGEROUS - All of these execute arbitrary code
-eval(userInput);
-new Function(userInput)();
-setTimeout(userInput, 1000);  // When string passed
-setInterval(userInput, 1000); // When string passed
 
+Dangerous: passing user-controlled strings to `eval()`, `new Function()`, `setTimeout(string)`, or `setInterval(string)` — all execute arbitrary code.
+
+```typescript
 // SAFE - Use parsed data, not code
 const config = JSON.parse(configString);
 ```
@@ -107,10 +102,10 @@ data = json.loads(user_provided_string)
 ```
 
 **JavaScript unsafe deserialization**
-```typescript
-// DANGEROUS with untrusted input
-const obj = eval('(' + jsonString + ')');
 
+Dangerous: using `eval('(' + jsonString + ')')` to parse JSON — executes arbitrary code.
+
+```typescript
 // SAFE
 const obj = JSON.parse(jsonString);
 ```
@@ -145,15 +140,15 @@ if (!safePath.startsWith('./uploads/')) throw new Error('Invalid path');
 
 | Pattern | Category | Severity | Action |
 |---------|----------|----------|--------|
-| `eval(` | Code Execution | CRITICAL | Block |
-| `new Function(` | Code Execution | CRITICAL | Block |
-| `dangerouslySetInnerHTML` | XSS | HIGH | Warn |
-| `innerHTML =` | XSS | HIGH | Warn |
-| `document.write(` | XSS | HIGH | Warn |
-| `exec(` + string concat | Command Injection | CRITICAL | Block |
-| `spawn(` + shell:true | Command Injection | HIGH | Warn |
-| `pickle.loads(` | Deserialization | CRITICAL | Warn |
-| `${{ github.event` | GH Actions Injection | CRITICAL | Warn |
+| eval with user input | Code Execution | CRITICAL | Block |
+| Function constructor with user input | Code Execution | CRITICAL | Block |
+| dangerouslySetInnerHTML | XSS | HIGH | Warn |
+| innerHTML assignment | XSS | HIGH | Warn |
+| document.write with user input | XSS | HIGH | Warn |
+| child_process exec with string concat | Command Injection | CRITICAL | Block |
+| spawn with shell:true | Command Injection | HIGH | Warn |
+| pickle.loads with untrusted data | Deserialization | CRITICAL | Warn |
+| github.event context in run | GH Actions Injection | CRITICAL | Warn |
 | Template literal in SQL | SQL Injection | CRITICAL | Block |
 
 ## Response Format
@@ -164,17 +159,17 @@ When detecting a pattern:
 ⚠️ **Security Warning**: [Pattern Category]
 
 **File**: `path/to/file.ts:123`
-**Pattern Detected**: `eval(userInput)`
+**Pattern Detected**: [description of the dangerous pattern]
 **Risk**: Remote Code Execution - Attacker-controlled input can execute arbitrary JavaScript
 
 **Recommendation**:
-1. Never use eval() with user input
+1. Never use dynamic code execution with user input
 2. Use JSON.parse() for data parsing
 3. Use safe alternatives for dynamic behavior
 
 **Safe Alternative**:
 ```typescript
-// Instead of eval(userInput), use:
+// Use JSON.parse instead of dynamic execution:
 const data = JSON.parse(userInput);
 ```
 ```
@@ -189,9 +184,9 @@ This skill should be invoked:
 ## False Positive Handling
 
 Some patterns may be false positives:
-- `dangerouslySetInnerHTML` with DOMPurify is safe
-- `eval` in build tools (not user input) may be acceptable
-- `exec` with hardcoded commands is lower risk
+- dangerouslySetInnerHTML with DOMPurify is safe
+- Dynamic code execution in build tools (not user input) may be acceptable
+- Child process execution with hardcoded commands is lower risk
 
 Always check the context before blocking.
 
