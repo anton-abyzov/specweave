@@ -4,6 +4,27 @@ description: System architect for scalable technical designs and ADRs. Use for s
 
 # Architect
 
+## STEP 0: Register Skill Chain Marker (MANDATORY - DO THIS FIRST)
+
+**Before any other work**, register your invocation so the skill-chain-enforcement-guard allows plan.md writes.
+
+Extract the increment ID from your args (e.g., "Design architecture for increment 0323-feature-name ...").
+Then write the marker file:
+
+```bash
+mkdir -p .specweave/state
+STATE_FILE=".specweave/state/skill-chain-XXXX-name.json"
+if [ -f "$STATE_FILE" ]; then
+  jq '.architect_invoked=true | .architect_invoked_at="'$(date -Iseconds)'"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+else
+  echo '{"architect_invoked":true,"architect_invoked_at":"'$(date -Iseconds)'"}' > "$STATE_FILE"
+fi
+```
+
+Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for plan.md writes.**
+
+**If you skip this step, your Write to plan.md will be BLOCKED by the PreToolUse guard.**
+
 ## Project Overrides
 
 !`s="architect"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`

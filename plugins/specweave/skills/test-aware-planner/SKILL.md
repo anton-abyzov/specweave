@@ -1,9 +1,29 @@
 ---
 description: Generate tasks.md with embedded test plans in BDD format, one user story at a time to prevent crashes. Use for test-first task planning where each task includes Given/When/Then scenarios. Produces implementation tasks with inline test specifications.
-allowed-tools: Read, Write, Grep, Glob, Edit
 ---
 
 # Test-Aware Planner Skill
+
+## STEP 0: Register Skill Chain Marker (MANDATORY - DO THIS FIRST)
+
+**Before any other work**, register your invocation so the skill-chain-enforcement-guard allows tasks.md writes.
+
+Extract the increment ID from your args (e.g., "Generate tasks for increment 0323-feature-name ...").
+Then write the marker file:
+
+```bash
+mkdir -p .specweave/state
+STATE_FILE=".specweave/state/skill-chain-XXXX-name.json"
+if [ -f "$STATE_FILE" ]; then
+  jq '.planner_invoked=true | .planner_invoked_at="'$(date -Iseconds)'"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+else
+  echo '{"planner_invoked":true,"planner_invoked_at":"'$(date -Iseconds)'"}' > "$STATE_FILE"
+fi
+```
+
+Replace `XXXX-name` with the actual increment ID. **This unblocks the guard for tasks.md writes.**
+
+**If you skip this step, your Write to tasks.md will be BLOCKED by the PreToolUse guard.**
 
 ## Overview
 
