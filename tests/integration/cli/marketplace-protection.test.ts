@@ -34,46 +34,41 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(content).not.toMatch(/claude.*marketplace.*remove/);
     });
 
-    it('should use vskill-based installation instead of marketplace (0232+)', async () => {
+    it('should use inline copier instead of marketplace (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // 0232+: refreshMarketplace() removed, replaced with vskill-based approach
+      // 0232+: refreshMarketplace() removed, replaced with inline copier approach
       expect(content).not.toContain('async function refreshMarketplace');
 
-      // Must have vskill-based installer function
-      expect(content).toContain('function installPluginViaVskill');
+      // Must use copyPlugin from plugin-copier
+      expect(content).toContain('copyPlugin');
 
-      // Must resolve vskill path
-      expect(content).toContain('resolveVskillPath');
+      // Must resolve specweave root for plugin source
+      expect(content).toContain('findSpecweaveRoot');
     });
 
-    it('should install plugins via vskill add instead of marketplace add (0232+)', async () => {
+    it('should install plugins via inline copier instead of marketplace add (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
       // 0232+: No marketplace CLI commands
       expect(content).not.toContain("'marketplace', 'add'");
       expect(content).not.toContain("'marketplace', 'update'");
 
-      // Uses vskill add instead
-      expect(content).toContain("vskill");
-      expect(content).toContain("'add'");
+      // Uses inline copier instead
+      expect(content).toContain('copyPlugin');
+      expect(content).toContain('findSpecweaveRoot');
 
-      // Must resolve specweave plugin directory
-      expect(content).toContain('resolveSpecweavePluginDir');
+      // Uses specweaveRoot to locate plugin source
+      expect(content).toContain('specweaveRoot');
     });
 
-    it('should have proper documentation for vskill-based installation (0232+)', async () => {
+    it('should have proper documentation for inline copier installation (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Extract installPluginViaVskill function and its JSDoc
-      const docStart = content.lastIndexOf('/**', content.indexOf('function installPluginViaVskill'));
-      const functionEnd = content.indexOf('\n}', content.indexOf('function installPluginViaVskill')) + 2;
-      const functionWithDoc = content.substring(docStart, functionEnd);
-
-      // Must document the vskill approach
-      expect(functionWithDoc).toContain('vskill');
-      expect(functionWithDoc).toContain('add');
-      expect(functionWithDoc).toContain('plugin');
+      // Must document the inline copier approach
+      expect(content).toContain('inline copier');
+      expect(content).toContain('plugin');
+      expect(content).toContain('installation');
     });
   });
 
@@ -87,25 +82,25 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(content).not.toContain('isSpecWeaveFrameworkRepository');
     });
 
-    it('should use vskill to install plugins instead of marketplace list (0232+)', async () => {
+    it('should use inline copier instead of marketplace list (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // 0232+: No marketplace list command - vskill handles installation directly
+      // 0232+: No marketplace list command - inline copier handles installation directly
       expect(content).not.toContain("'marketplace', 'list'");
 
-      // Uses vskill for plugin installation
-      expect(content).toContain('installPluginViaVskill');
+      // Uses copyPlugin for plugin installation
+      expect(content).toContain('copyPlugin');
 
-      // Handles already-installed case via vskill output
-      expect(content).toContain('alreadyInstalled');
+      // Handles already-installed case via skipped flag
+      expect(content).toContain('skipped');
     });
 
-    it('should install core sw plugin via vskill (0232+)', async () => {
+    it('should install core sw plugin via inline copier (0232+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // 0232+: Core plugin is 'sw', installed via vskill with --plugin flag
-      expect(content).toContain("{ name: 'sw'");
-      expect(content).toContain("'--plugin'");
+      // 0232+: Core plugin is 'sw', installed via copyPlugin
+      expect(content).toContain("name: 'sw'");
+      expect(content).toContain('copyPlugin');
 
       // No plugins.length >= 25 guard (removed as over-engineering)
       expect(content).not.toMatch(/plugins\.length\s*>=\s*25/);
@@ -199,27 +194,22 @@ describe('Marketplace Protection - Behavioral Verification', () => {
     expect(functionBody).not.toContain("'remove'");
   });
 
-  it('should use vskill add with plugin-dir flag (0232+)', async () => {
+  it('should use copyPlugin with specweaveRoot (0232+)', async () => {
     const pluginInstallerPath = path.join(
       process.cwd(),
       'src/cli/helpers/init/plugin-installer.ts'
     );
     const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-    // Extract installPluginViaVskill function body
-    const functionStart = content.indexOf('function installPluginViaVskill');
-    const functionEnd = content.indexOf('\n}', functionStart) + 2;
-    const functionBody = content.substring(functionStart, functionEnd);
+    // Must use copyPlugin for installation
+    expect(content).toContain('copyPlugin');
 
-    // Must use vskill add with --plugin and --plugin-dir flags
-    const addIndex = functionBody.indexOf("'add'");
-    const pluginFlagIndex = functionBody.indexOf("'--plugin'");
-    const pluginDirFlagIndex = functionBody.indexOf("'--plugin-dir'");
+    // Must resolve specweave root for locating plugin source
+    expect(content).toContain('findSpecweaveRoot');
+    expect(content).toContain('specweaveRoot');
 
-    // vskill add must come first, then flags
-    expect(addIndex).toBeGreaterThan(0);
-    expect(pluginFlagIndex).toBeGreaterThan(addIndex);
-    expect(pluginDirFlagIndex).toBeGreaterThan(addIndex);
+    // Must import from plugin-copier
+    expect(content).toContain('plugin-copier');
   });
 
   it('should be idempotent - same result regardless of call count (0232+)', async () => {
@@ -229,17 +219,15 @@ describe('Marketplace Protection - Behavioral Verification', () => {
     );
     const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-    // 0232+: Idempotency guaranteed by vskill handling already-installed case
-    // - If plugin already installed → vskill returns "already" in output
-    // - installPluginViaVskill detects this and returns alreadyInstalled=true
+    // 0232+: Idempotency guaranteed by inline copier handling already-installed case
+    // - If plugin already installed → copyPlugin returns skipped=true
     // - No destructive remove/re-add cycle needed
 
-    // Must have installPluginViaVskill function
-    expect(content).toContain('function installPluginViaVskill');
+    // Must use copyPlugin for installation
+    expect(content).toContain('copyPlugin');
 
-    // Must handle already-installed case gracefully
-    expect(content).toContain('alreadyInstalled');
-    expect(content).toContain("'already'");
+    // Must handle already-installed case gracefully via skipped flag
+    expect(content).toContain('skipped');
 
     // No marketplace remove operations (idempotent: never destructive)
     expect(content).not.toContain("'marketplace', 'remove'");

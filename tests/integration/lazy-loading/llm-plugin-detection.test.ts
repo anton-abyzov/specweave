@@ -30,7 +30,8 @@ import {
   clearCliCache,
   getCliStatus,
   SPECWEAVE_PLUGINS,
-  OFFICIAL_PLUGINS,
+  VSKILL_PLUGINS,
+  ALL_KNOWN_PLUGINS,
   type LLMDetectionResult,
 } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
 import { detectClaudeCli } from '../../../src/utils/claude-cli-detector.js';
@@ -582,21 +583,25 @@ describe('Error Handling', () => {
 
   it('should validate plugin names against known list', () => {
     const unknownPlugin = 'sw-unknown-plugin';
-    const knownPlugin = 'sw-frontend';
+    const knownSpecweavePlugin = 'sw-github';
+    const knownVskillPlugin = 'frontend';
 
     expect(SPECWEAVE_PLUGINS.includes(unknownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(false);
-    expect(SPECWEAVE_PLUGINS.includes(knownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(true);
+    expect(SPECWEAVE_PLUGINS.includes(knownSpecweavePlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(true);
+    expect(VSKILL_PLUGINS.includes(knownVskillPlugin as typeof VSKILL_PLUGINS[number])).toBe(true);
   });
 });
 
 describe('Plugin List Validation', () => {
   it('should have all expected core plugins', () => {
-    // Marketplace names use sw-* prefix
+    // Core specweave plugins use sw-* prefix
     expect(SPECWEAVE_PLUGINS).toContain('sw');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-frontend');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-backend');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-testing');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-mobile');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-github');
+    // Domain plugins migrated to vskill repo (no prefix)
+    expect(VSKILL_PLUGINS).toContain('frontend');
+    expect(VSKILL_PLUGINS).toContain('backend');
+    expect(VSKILL_PLUGINS).toContain('testing');
+    expect(VSKILL_PLUGINS).toContain('mobile');
   });
 
   // ============================================================================
@@ -604,7 +609,7 @@ describe('Plugin List Validation', () => {
   // See: https://github.com/anthropics/claude-code/issues/15148
   // Official marketplace LSP plugins only contain README files (no config)
   // ============================================================================
-  it('should NOT include broken LSP plugins from claude-plugins-official', () => {
+  it('should NOT include broken LSP plugins in ALL_KNOWN_PLUGINS', () => {
     // These LSP plugins are BROKEN in @claude-plugins-official
     // They only contain README.md files, no actual config
     const brokenLspPlugins = [
@@ -615,19 +620,20 @@ describe('Plugin List Validation', () => {
       'php-lsp',
       'lua-lsp',
       'clangd-lsp',
-      'typescript-lsp', // If it exists
-      'pyright-lsp',    // If it exists
-      'rust-analyzer-lsp', // If it exists
+      'typescript-lsp',
+      'pyright-lsp',
+      'rust-analyzer-lsp',
     ];
 
     for (const brokenPlugin of brokenLspPlugins) {
-      expect(OFFICIAL_PLUGINS).not.toContain(brokenPlugin);
+      expect(ALL_KNOWN_PLUGINS).not.toContain(brokenPlugin);
     }
   });
 
   it('should have all expected infrastructure plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-infra');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-k8s');
+    // Infrastructure plugins migrated to vskill repo
+    expect(VSKILL_PLUGINS).toContain('infra');
+    expect(VSKILL_PLUGINS).toContain('k8s');
   });
 
   it('should have all expected integration plugins', () => {
@@ -637,10 +643,11 @@ describe('Plugin List Validation', () => {
   });
 
   it('should have all expected specialized plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-payments');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-ml');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-kafka');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-confluent');
+    // Specialized plugins migrated to vskill repo
+    expect(VSKILL_PLUGINS).toContain('payments');
+    expect(VSKILL_PLUGINS).toContain('ml');
+    expect(VSKILL_PLUGINS).toContain('kafka');
+    expect(VSKILL_PLUGINS).toContain('confluent');
   });
 
   it('should use sw-* marketplace prefix (not specweave-*)', () => {
@@ -656,20 +663,19 @@ describe('Plugin List Validation', () => {
   // 0198: context7 and playwright should NOT be in OFFICIAL_PLUGINS
   // These are optional — users install manually if they want them
   // ============================================================================
-  it('should NOT include context7 in OFFICIAL_PLUGINS', () => {
-    expect(OFFICIAL_PLUGINS).not.toContain('context7');
+  it('should NOT include context7 in ALL_KNOWN_PLUGINS', () => {
+    expect(ALL_KNOWN_PLUGINS).not.toContain('context7');
   });
 
-  it('should NOT include playwright in OFFICIAL_PLUGINS', () => {
-    expect(OFFICIAL_PLUGINS).not.toContain('playwright');
+  it('should NOT include playwright in ALL_KNOWN_PLUGINS', () => {
+    expect(ALL_KNOWN_PLUGINS).not.toContain('playwright');
   });
 
-  it('should NOT have any "Core/Required" official plugins', () => {
-    // All official plugins are optional service integrations
-    // None should be treated as core/required
-    const corePlugins = ['context7', 'playwright'];
-    for (const core of corePlugins) {
-      expect(OFFICIAL_PLUGINS).not.toContain(core);
+  it('should NOT have any "Core/Required" optional plugins', () => {
+    // Optional third-party tools should not be in the known plugins list
+    const optionalPlugins = ['context7', 'playwright'];
+    for (const p of optionalPlugins) {
+      expect(ALL_KNOWN_PLUGINS).not.toContain(p);
     }
   });
 });
