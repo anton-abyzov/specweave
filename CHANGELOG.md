@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.315] - 2026-02-23
+
+### Changes
+- update docs-site skills and academy content
+- update auto-loading for migrated vskill plugins
+- migrate plugins to vskill repo, update marketplace
+- fix scanner false positives in SKILL.md and CLAUDE.md
+- redesign homepage: video-first, 5 sleek sections
+- fix SKILL.md scanner false positives across plugins
+
+---
+
+
+
 ## [1.0.314] - 2026-02-22
 
 ### Changes
