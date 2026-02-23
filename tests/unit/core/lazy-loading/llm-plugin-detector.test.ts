@@ -112,7 +112,7 @@ describe('SPECWEAVE_PLUGINS constant (v1.0.315: workflow/integration only)', () 
 describe('VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(VSKILL_PLUGINS)).toBe(true);
-    expect(VSKILL_PLUGINS.length).toBe(15);
+    expect(VSKILL_PLUGINS.length).toBe(16);
   });
 
   it('should include all migrated domain plugins', () => {
@@ -131,6 +131,7 @@ describe('VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)', () => {
     expect(VSKILL_PLUGINS).toContain('cost');
     expect(VSKILL_PLUGINS).toContain('docs');
     expect(VSKILL_PLUGINS).toContain('security');
+    expect(VSKILL_PLUGINS).toContain('scout');
   });
 
   it('should NOT contain any sw- prefixed entries', () => {
@@ -262,6 +263,7 @@ describe('isVskillPlugin (v1.0.315: migrated domain plugins)', () => {
     expect(isVskillPlugin('backend')).toBe(true);
     expect(isVskillPlugin('ml')).toBe(true);
     expect(isVskillPlugin('k8s')).toBe(true);
+    expect(isVskillPlugin('scout')).toBe(true);
   });
 
   it('should return false for specweave plugins', () => {
@@ -294,6 +296,7 @@ describe('isKnownPlugin (v1.0.315: combined validation)', () => {
     expect(isKnownPlugin('frontend')).toBe(true);
     expect(isKnownPlugin('backend')).toBe(true);
     expect(isKnownPlugin('security')).toBe(true);
+    expect(isKnownPlugin('scout')).toBe(true);
   });
 
   it('should return false for old migrated names', () => {
