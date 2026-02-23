@@ -542,18 +542,19 @@ describe('InstallationHealthChecker', () => {
   // Full check() method (T-006)
   // =========================================================================
   describe('check() integration', () => {
-    it('TC-016: should return all 4 check categories', async () => {
+    it('TC-016: should return all 5 check categories', async () => {
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
 
       expect(result.category).toBe('Installation Health');
-      expect(result.checks.length).toBe(4);
+      expect(result.checks.length).toBe(5);
 
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).toContain('Ghost slash commands');
       expect(checkNames).toContain('Stale cache directories');
       expect(checkNames).toContain('Lockfile integrity');
       expect(checkNames).toContain('Command namespace pollution');
+      expect(checkNames).toContain('Plugin cache hook freshness');
     });
 
     it('TC-016b: should calculate overall status from worst check', async () => {
