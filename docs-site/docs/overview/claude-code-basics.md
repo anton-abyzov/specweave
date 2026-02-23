@@ -90,6 +90,8 @@ You can also invoke skills explicitly:
 
 **SpecWeave has 100+ skills** covering PM, architecture, security, testing, frontend, backend, DevOps, and more.
 
+> For a deep dive into how skills, plugins, and marketplaces work, see the **[Fundamentals guide](/docs/skills/fundamentals)**.
+
 ### Agents
 
 Agents are **specialized subprocesses** that handle specific types of work. Think of them as team members with expertise:

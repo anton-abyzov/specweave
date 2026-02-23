@@ -8,6 +8,10 @@ keywords: [skills, extensible-skills, verified-skills, v-skills, standards, AI a
 
 AI agent skills are programs written in English — transparent markdown files that define how an AI coding agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
 
+:::tip New to skills?
+Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** — a beginner guide covering what skills, plugins, and marketplaces are, how they relate, and how SpecWeave uses them at scale.
+:::
+
 SpecWeave defines **two complementary standards** that address the two fundamental questions every skill user faces:
 
 1. **How do I make skills work for MY project?** — The Extensible Skills Standard
