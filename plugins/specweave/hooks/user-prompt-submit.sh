@@ -521,7 +521,7 @@ install_plugin_via_vskill() {
 
 # Plugins migrated to vskill repo (v1.0.315 - 0331)
 # These are installed via vskill add --repo instead of local marketplace
-VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent kafka-streams n8n cost docs security"
+VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent kafka-streams n8n cost docs security scout"
 
 # Check if plugin is a vskill repo plugin
 is_vskill_repo_plugin() {
