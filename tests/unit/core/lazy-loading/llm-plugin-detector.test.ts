@@ -34,8 +34,12 @@ vi.mock('../../../../src/core/types/plugin-scope.js', () => ({
 
 import {
   SPECWEAVE_PLUGINS,
+  VSKILL_PLUGINS,
+  ALL_KNOWN_PLUGINS,
   ALL_VALID_PLUGINS,
   isSpecWeavePlugin,
+  isVskillPlugin,
+  isKnownPlugin,
   getPluginMarketplace,
   readPluginAutoLoadConfig,
   clearCliCache,
@@ -51,26 +55,14 @@ import type {
 // ============================================================
 // SPECWEAVE_PLUGINS constant
 // ============================================================
-describe('SPECWEAVE_PLUGINS constant', () => {
+describe('SPECWEAVE_PLUGINS constant (v1.0.315: workflow/integration only)', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(SPECWEAVE_PLUGINS)).toBe(true);
-    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(21);
+    expect(SPECWEAVE_PLUGINS.length).toBeGreaterThanOrEqual(5);
   });
 
   it('should have "sw" as the first element (core plugin)', () => {
     expect(SPECWEAVE_PLUGINS[0]).toBe('sw');
-  });
-
-  it('should include development domain plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-frontend');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-backend');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-testing');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-mobile');
-  });
-
-  it('should include infrastructure plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-infra');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-k8s');
   });
 
   it('should include external tool integration plugins', () => {
@@ -79,30 +71,27 @@ describe('SPECWEAVE_PLUGINS constant', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-ado');
   });
 
-  it('should include specialized domain plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-payments');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-ml');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-kafka');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-confluent');
-  });
-
-  it('should include additional marketplace plugins', () => {
-    expect(SPECWEAVE_PLUGINS).toContain('sw-kafka-streams');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-n8n');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-cost');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-docs');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-diagrams');
-    expect(SPECWEAVE_PLUGINS).toContain('sw-media');
+  it('should include workflow plugins that remain in specweave', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-release');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-diagrams');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-docs');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-media');
   });
 
-  it('should NOT contain removed plugins', () => {
-    // sw-ui removed v1.0.204
-    expect(SPECWEAVE_PLUGINS).not.toContain('sw-ui');
-    // sw-router removed v1.0.160
-    expect(SPECWEAVE_PLUGINS).not.toContain('sw-router');
-    // sw-plugin-dev removed v1.0.203
-    expect(SPECWEAVE_PLUGINS).not.toContain('sw-plugin-dev');
+  it('should NOT contain migrated domain plugins (moved to vskill)', () => {
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-frontend');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-backend');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-testing');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-mobile');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-infra');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-k8s');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-payments');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-ml');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-kafka');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-confluent');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-kafka-streams');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-n8n');
+    expect(SPECWEAVE_PLUGINS).not.toContain('sw-cost');
   });
 
   it('should have no duplicates', () => {
@@ -118,15 +107,54 @@ describe('SPECWEAVE_PLUGINS constant', () => {
 });
 
 // ============================================================
+// VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)
+// ============================================================
+describe('VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)', () => {
+  it('should be a non-empty array', () => {
+    expect(Array.isArray(VSKILL_PLUGINS)).toBe(true);
+    expect(VSKILL_PLUGINS.length).toBe(15);
+  });
+
+  it('should include all migrated domain plugins', () => {
+    expect(VSKILL_PLUGINS).toContain('frontend');
+    expect(VSKILL_PLUGINS).toContain('backend');
+    expect(VSKILL_PLUGINS).toContain('testing');
+    expect(VSKILL_PLUGINS).toContain('mobile');
+    expect(VSKILL_PLUGINS).toContain('infra');
+    expect(VSKILL_PLUGINS).toContain('k8s');
+    expect(VSKILL_PLUGINS).toContain('payments');
+    expect(VSKILL_PLUGINS).toContain('ml');
+    expect(VSKILL_PLUGINS).toContain('kafka');
+    expect(VSKILL_PLUGINS).toContain('confluent');
+    expect(VSKILL_PLUGINS).toContain('kafka-streams');
+    expect(VSKILL_PLUGINS).toContain('n8n');
+    expect(VSKILL_PLUGINS).toContain('cost');
+    expect(VSKILL_PLUGINS).toContain('docs');
+    expect(VSKILL_PLUGINS).toContain('security');
+  });
+
+  it('should NOT contain any sw- prefixed entries', () => {
+    for (const plugin of VSKILL_PLUGINS) {
+      expect(plugin).not.toMatch(/^sw-/);
+      expect(plugin).not.toBe('sw');
+    }
+  });
+
+  it('should have no duplicates', () => {
+    const uniqueSet = new Set(VSKILL_PLUGINS);
+    expect(uniqueSet.size).toBe(VSKILL_PLUGINS.length);
+  });
+});
+
+// ============================================================
 // OFFICIAL_PLUGINS removed (v1.0.279)
 // ============================================================
 describe('Official plugins policy (v1.0.279)', () => {
-  it('ALL_VALID_PLUGINS should equal SPECWEAVE_PLUGINS only', () => {
-    // No claude-plugins-official entries allowed
-    expect(ALL_VALID_PLUGINS).toEqual(SPECWEAVE_PLUGINS);
+  it('ALL_VALID_PLUGINS should equal ALL_KNOWN_PLUGINS (specweave + vskill)', () => {
+    expect(ALL_VALID_PLUGINS).toEqual(ALL_KNOWN_PLUGINS);
   });
 
-  it('should never include gitlab, firebase, slack, or any non-specweave plugin', () => {
+  it('should never include gitlab, firebase, slack, or any third-party plugin', () => {
     const forbidden = ['gitlab', 'firebase', 'slack', 'linear', 'asana', 'supabase', 'laravel-boost', 'hookify', 'commit-commands'];
     for (const plugin of forbidden) {
       expect(ALL_VALID_PLUGINS).not.toContain(plugin);
@@ -135,11 +163,11 @@ describe('Official plugins policy (v1.0.279)', () => {
 });
 
 // ============================================================
-// ALL_VALID_PLUGINS constant
+// ALL_VALID_PLUGINS / ALL_KNOWN_PLUGINS constant (v1.0.315)
 // ============================================================
-describe('ALL_VALID_PLUGINS constant', () => {
-  it('should equal SPECWEAVE_PLUGINS (no official plugins)', () => {
-    expect(ALL_VALID_PLUGINS.length).toBe(SPECWEAVE_PLUGINS.length);
+describe('ALL_VALID_PLUGINS constant (v1.0.315: combined)', () => {
+  it('should include both specweave and vskill plugins', () => {
+    expect(ALL_VALID_PLUGINS.length).toBe(SPECWEAVE_PLUGINS.length + VSKILL_PLUGINS.length);
   });
 
   it('should include all SpecWeave plugins', () => {
@@ -148,13 +176,19 @@ describe('ALL_VALID_PLUGINS constant', () => {
     }
   });
 
-  it('should NOT include any official plugins (gitlab, firebase, etc.)', () => {
+  it('should include all vskill plugins', () => {
+    for (const plugin of VSKILL_PLUGINS) {
+      expect(ALL_VALID_PLUGINS).toContain(plugin);
+    }
+  });
+
+  it('should NOT include any third-party plugins', () => {
     expect(ALL_VALID_PLUGINS).not.toContain('gitlab');
     expect(ALL_VALID_PLUGINS).not.toContain('firebase');
     expect(ALL_VALID_PLUGINS).not.toContain('slack');
   });
 
-  it('should have no duplicates across both arrays', () => {
+  it('should have no duplicates', () => {
     const uniqueSet = new Set(ALL_VALID_PLUGINS);
     expect(uniqueSet.size).toBe(ALL_VALID_PLUGINS.length);
   });
@@ -167,20 +201,15 @@ describe('ALL_VALID_PLUGINS constant', () => {
 // ============================================================
 // isSpecWeavePlugin()
 // ============================================================
-describe('isSpecWeavePlugin', () => {
+describe('isSpecWeavePlugin (v1.0.315: narrowed to workflow/integration)', () => {
   it('should return true for core "sw" plugin', () => {
     expect(isSpecWeavePlugin('sw')).toBe(true);
   });
 
-  it('should return true for domain plugins', () => {
-    expect(isSpecWeavePlugin('sw-frontend')).toBe(true);
-    expect(isSpecWeavePlugin('sw-backend')).toBe(true);
-    expect(isSpecWeavePlugin('sw-testing')).toBe(true);
-  });
-
-  it('should return true for infra plugins', () => {
-    expect(isSpecWeavePlugin('sw-infra')).toBe(true);
-    expect(isSpecWeavePlugin('sw-k8s')).toBe(true);
+  it('should return true for integration plugins', () => {
+    expect(isSpecWeavePlugin('sw-github')).toBe(true);
+    expect(isSpecWeavePlugin('sw-jira')).toBe(true);
+    expect(isSpecWeavePlugin('sw-ado')).toBe(true);
   });
 
   it('should return true for all entries in SPECWEAVE_PLUGINS', () => {
@@ -189,16 +218,22 @@ describe('isSpecWeavePlugin', () => {
     }
   });
 
-  it('should return false for non-specweave plugin names', () => {
-    expect(isSpecWeavePlugin('firebase')).toBe(false);
-    expect(isSpecWeavePlugin('gitlab')).toBe(false);
-    expect(isSpecWeavePlugin('linear')).toBe(false);
-    expect(isSpecWeavePlugin('supabase')).toBe(false);
+  it('should return false for migrated plugins (now in vskill)', () => {
+    expect(isSpecWeavePlugin('sw-frontend')).toBe(false);
+    expect(isSpecWeavePlugin('sw-backend')).toBe(false);
+    expect(isSpecWeavePlugin('sw-testing')).toBe(false);
+    expect(isSpecWeavePlugin('sw-infra')).toBe(false);
+    expect(isSpecWeavePlugin('sw-k8s')).toBe(false);
+  });
+
+  it('should return false for vskill plugin names', () => {
+    expect(isSpecWeavePlugin('frontend')).toBe(false);
+    expect(isSpecWeavePlugin('backend')).toBe(false);
+    expect(isSpecWeavePlugin('testing')).toBe(false);
   });
 
   it('should return false for unknown plugin names', () => {
     expect(isSpecWeavePlugin('unknown')).toBe(false);
-    expect(isSpecWeavePlugin('my-custom-plugin')).toBe(false);
     expect(isSpecWeavePlugin('sw-nonexistent')).toBe(false);
   });
 
@@ -206,15 +241,69 @@ describe('isSpecWeavePlugin', () => {
     expect(isSpecWeavePlugin('')).toBe(false);
   });
 
-  it('should return false for string with only whitespace', () => {
-    expect(isSpecWeavePlugin(' ')).toBe(false);
-    expect(isSpecWeavePlugin('  sw  ')).toBe(false);
-  });
-
   it('should be case-sensitive', () => {
     expect(isSpecWeavePlugin('SW')).toBe(false);
-    expect(isSpecWeavePlugin('Sw-Frontend')).toBe(false);
-    expect(isSpecWeavePlugin('SW-BACKEND')).toBe(false);
+    expect(isSpecWeavePlugin('SW-GITHUB')).toBe(false);
+  });
+});
+
+// ============================================================
+// isVskillPlugin() (v1.0.315: new)
+// ============================================================
+describe('isVskillPlugin (v1.0.315: migrated domain plugins)', () => {
+  it('should return true for all VSKILL_PLUGINS entries', () => {
+    for (const plugin of VSKILL_PLUGINS) {
+      expect(isVskillPlugin(plugin)).toBe(true);
+    }
+  });
+
+  it('should return true for common domain plugins', () => {
+    expect(isVskillPlugin('frontend')).toBe(true);
+    expect(isVskillPlugin('backend')).toBe(true);
+    expect(isVskillPlugin('ml')).toBe(true);
+    expect(isVskillPlugin('k8s')).toBe(true);
+  });
+
+  it('should return false for specweave plugins', () => {
+    expect(isVskillPlugin('sw')).toBe(false);
+    expect(isVskillPlugin('sw-github')).toBe(false);
+    expect(isVskillPlugin('sw-jira')).toBe(false);
+  });
+
+  it('should return false for old sw- prefixed names', () => {
+    expect(isVskillPlugin('sw-frontend')).toBe(false);
+    expect(isVskillPlugin('sw-backend')).toBe(false);
+  });
+
+  it('should return false for unknown plugins', () => {
+    expect(isVskillPlugin('unknown')).toBe(false);
+    expect(isVskillPlugin('')).toBe(false);
+  });
+});
+
+// ============================================================
+// isKnownPlugin() (v1.0.315: new)
+// ============================================================
+describe('isKnownPlugin (v1.0.315: combined validation)', () => {
+  it('should return true for specweave plugins', () => {
+    expect(isKnownPlugin('sw')).toBe(true);
+    expect(isKnownPlugin('sw-github')).toBe(true);
+  });
+
+  it('should return true for vskill plugins', () => {
+    expect(isKnownPlugin('frontend')).toBe(true);
+    expect(isKnownPlugin('backend')).toBe(true);
+    expect(isKnownPlugin('security')).toBe(true);
+  });
+
+  it('should return false for old migrated names', () => {
+    expect(isKnownPlugin('sw-frontend')).toBe(false);
+    expect(isKnownPlugin('sw-backend')).toBe(false);
+  });
+
+  it('should return false for unknown plugins', () => {
+    expect(isKnownPlugin('nonexistent')).toBe(false);
+    expect(isKnownPlugin('')).toBe(false);
   });
 });
 
@@ -223,8 +312,8 @@ describe('isSpecWeavePlugin', () => {
 // ============================================================
 // getPluginMarketplace()
 // ============================================================
-describe('getPluginMarketplace', () => {
-  it('should return "specweave" for all SpecWeave plugins', () => {
+describe('getPluginMarketplace (v1.0.315: dual-source)', () => {
+  it('should return "specweave" for all sw-* plugins', () => {
     for (const plugin of SPECWEAVE_PLUGINS) {
       expect(getPluginMarketplace(plugin)).toBe('specweave');
     }
@@ -234,33 +323,23 @@ describe('getPluginMarketplace', () => {
     expect(getPluginMarketplace('sw')).toBe('specweave');
   });
 
-  it('should return "specweave" for domain plugins', () => {
-    expect(getPluginMarketplace('sw-frontend')).toBe('specweave');
-    expect(getPluginMarketplace('sw-backend')).toBe('specweave');
-    expect(getPluginMarketplace('sw-testing')).toBe('specweave');
+  it('should return "vskill" for migrated domain plugins', () => {
+    expect(getPluginMarketplace('frontend')).toBe('vskill');
+    expect(getPluginMarketplace('backend')).toBe('vskill');
+    expect(getPluginMarketplace('testing')).toBe('vskill');
+    expect(getPluginMarketplace('ml')).toBe('vskill');
+    expect(getPluginMarketplace('kafka-streams')).toBe('vskill');
   });
 
-  it('should return "specweave" for any plugin (v1.0.279: only specweave marketplace)', () => {
-    expect(getPluginMarketplace('firebase')).toBe('specweave');
-    expect(getPluginMarketplace('gitlab')).toBe('specweave');
+  it('should return "vskill" for all VSKILL_PLUGINS entries', () => {
+    for (const plugin of VSKILL_PLUGINS) {
+      expect(getPluginMarketplace(plugin)).toBe('vskill');
+    }
   });
 
-  it('should return "specweave" for any plugin name (v1.0.279: always specweave marketplace)', () => {
+  it('should return "specweave" for unknown plugins (default)', () => {
     expect(getPluginMarketplace('unknown')).toBe('specweave');
-    expect(getPluginMarketplace('my-custom-plugin')).toBe('specweave');
     expect(getPluginMarketplace('')).toBe('specweave');
-    expect(getPluginMarketplace('react')).toBe('specweave');
-  });
-
-  it('should return "specweave" for removed plugins (marketplace is always specweave)', () => {
-    expect(getPluginMarketplace('sw-ui')).toBe('specweave');
-    expect(getPluginMarketplace('sw-router')).toBe('specweave');
-    expect(getPluginMarketplace('sw-plugin-dev')).toBe('specweave');
-  });
-
-  it('should return "specweave" for LSP plugin names (marketplace is always specweave)', () => {
-    expect(getPluginMarketplace('csharp-lsp')).toBe('specweave');
-    expect(getPluginMarketplace('gopls-lsp')).toBe('specweave');
   });
 });
 

@@ -519,6 +519,40 @@ install_plugin_via_vskill() {
   fi
 }
 
+# Plugins migrated to vskill repo (v1.0.315 - 0331)
+# These are installed via vskill add --repo instead of local marketplace
+VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent kafka-streams n8n cost docs security"
+
+# Check if plugin is a vskill repo plugin
+is_vskill_repo_plugin() {
+  local plugin="$1"
+  echo " $VSKILL_REPO_PLUGINS " | grep -q " $plugin "
+}
+
+# Install vskill repo plugin via --repo flag (v1.0.315 - 0331)
+# Args: $1=plugin name (e.g., "frontend")
+install_vskill_repo_plugin() {
+  local plugin="$1"
+  VSKILL_INSTALL_OUTPUT=""
+  if command -v npx >/dev/null 2>&1; then
+    if command -v timeout >/dev/null 2>&1; then
+      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill add dummy --repo anton-abyzov/vskill --plugin "$plugin" --force --yes 2>&1) || true
+    else
+      VSKILL_INSTALL_OUTPUT=$(npx vskill add dummy --repo anton-abyzov/vskill --plugin "$plugin" --force --yes 2>&1) || true
+    fi
+  else
+    VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
+    return 1
+  fi
+
+  # Check if install succeeded
+  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
 # This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
 # Args: $1=plugin name (e.g., "sw-frontend"), $2=marketplace (e.g., "specweave")
@@ -1261,6 +1295,25 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                           fi
                         else
                           echo "[$(date -Iseconds)] vskill | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
+                        fi
+                      fi
+                    elif is_vskill_repo_plugin "$plugin"; then
+                      # ---- VSKILL REPO PLUGINS: Install via vskill --repo (v1.0.315 - 0331) ----
+                      if check_plugin_in_vskill_lock "$plugin"; then
+                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
+                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
+                      else
+                        if install_vskill_repo_plugin "$plugin"; then
+                          [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
+                          PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
+
+                          # Display scan result if available
+                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
+                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
+                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill-repo | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
+                          fi
+                        else
+                          echo "[$(date -Iseconds)] vskill-repo | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
                         fi
                       fi
                     else
