@@ -102,14 +102,14 @@ describe('LSP Plugin Installation Blocking (Gap #2)', () => {
   });
 });
 
-describe('OFFICIAL_PLUGINS Array (Gap #1 verification)', () => {
+describe('ALL_KNOWN_PLUGINS Array (Gap #1 verification)', () => {
   it('should not include any *-lsp plugins', async () => {
     // Dynamic import to get the actual exported array
-    const { OFFICIAL_PLUGINS } = await import(
+    const { ALL_KNOWN_PLUGINS } = await import(
       '../../../src/core/lazy-loading/llm-plugin-detector.js'
     );
 
-    const lspPlugins = OFFICIAL_PLUGINS.filter(
+    const lspPlugins = (ALL_KNOWN_PLUGINS as readonly string[]).filter(
       (p: string) => p.endsWith('-lsp') || p.includes('lsp')
     );
 

@@ -2,8 +2,8 @@
  * Integration tests for the full vskill plugin pipeline
  *
  * Tests the end-to-end flow across multiple components:
- * - TC-026: refresh-plugins end-to-end with vskill
- * - TC-027: Init with vskill end-to-end
+ * - TC-026: refresh-plugins end-to-end with inline copier
+ * - TC-027: Init with inline copier end-to-end
  * - TC-028: Migration end-to-end
  *
  * These tests exercise the integration between:
@@ -12,6 +12,9 @@
  * - migrate-to-vskill (src/cli/commands/migrate-to-vskill.ts)
  *
  * All external I/O (filesystem, child_process) is mocked via vi.mock.
+ *
+ * Updated for v1.0.315 migration: refresh-plugins and plugin-installer
+ * now use inline copier (plugin-copier.js) instead of vskill CLI.
  *
  * @module tests/integration/vskill-plugin-pipeline
  */
@@ -57,6 +60,11 @@ const mockGetPluginScope = vi.hoisted(() => vi.fn());
 const mockGetScopeArgs = vi.hoisted(() => vi.fn());
 const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 
+// Inline copier mocks (replaces vskill CLI)
+const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
+const mockRegisterPluginsWithClaudeCli = vi.hoisted(() => vi.fn());
+
 const mockOra = vi.hoisted(() => {
   const spinner = {
     start: vi.fn().mockReturnThis(),
@@ -73,7 +81,7 @@ const mockOra = vi.hoisted(() => {
 // vi.mock() declarations
 // ---------------------------------------------------------------------------
 
-// Mock execFileNoThrowSync (used by refresh-plugins and plugin-installer)
+// Mock execFileNoThrowSync (used by migrate-to-vskill)
 vi.mock('../../src/utils/execFileNoThrow.js', () => ({
   execFileNoThrowSync: mockExecFileNoThrowSync,
 }));
@@ -218,10 +226,29 @@ vi.mock('../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
 
-// Mock vskill-resolver (for plugin-installer)
+// Mock vskill-resolver (for plugin-installer backward compat)
 vi.mock('../../src/utils/vskill-resolver.js', () => ({
   resolveVskillPath: () => '/mock/vskill/dist/cli.js',
   resolveSpecweaveDir: () => '/mock/specweave',
+}));
+
+// Mock plugin-copier (inline copier used by refresh-plugins and plugin-installer)
+vi.mock('../../src/utils/plugin-copier.js', () => ({
+  copyPlugin: mockCopyPlugin,
+  findSpecweaveRoot: mockFindSpecweaveRoot,
+  computePluginHash: vi.fn(() => 'mock-hash-abc123'),
+  readLockfile: vi.fn(() => null),
+  writeLockfile: vi.fn(),
+  ensureLockfile: vi.fn(() => ({ version: 1, agents: [], skills: {}, createdAt: '', updatedAt: '' })),
+  shouldSkipFromCommands: vi.fn(() => false),
+  isNonInvokableSkill: vi.fn(() => false),
+  fixHookPermissions: vi.fn(),
+  cleanPluginCache: vi.fn(),
+}));
+
+// Mock claude-plugin-cli (registration with Claude CLI)
+vi.mock('../../src/utils/claude-plugin-cli.js', () => ({
+  registerPluginsWithClaudeCli: mockRegisterPluginsWithClaudeCli,
 }));
 
 // ---------------------------------------------------------------------------
@@ -235,10 +262,6 @@ import { migrateToVskill, shouldOfferMigration } from '../../src/cli/commands/mi
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
-
-function execOk(stdout = '', stderr = ''): { stdout: string; stderr: string; exitCode: number; success: boolean } {
-  return { stdout, stderr, exitCode: 0, success: true };
-}
 
 /** Sample marketplace.json content */
 const MARKETPLACE_JSON = JSON.stringify({
@@ -259,22 +282,23 @@ describe('vskill plugin pipeline integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExistsSync.mockReturnValue(false);
-    mockExecFileNoThrowSync.mockReturnValue(execOk('installed successfully'));
+    mockExecFileNoThrowSync.mockReturnValue({ stdout: '', stderr: '', exitCode: 0, success: true });
     mockReaddirSync.mockReturnValue([]);
     mockHomedir.mockReturnValue('/home/testuser');
+    mockFindSpecweaveRoot.mockReturnValue('/mock/specweave-root');
+    mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   // =========================================================================
-  // TC-026: refresh-plugins end-to-end with vskill
+  // TC-026: refresh-plugins end-to-end with inline copier
   // =========================================================================
-  describe('TC-026: refresh-plugins end-to-end with vskill', () => {
-    it('should invoke vskill add for plugins listed in marketplace.json', async () => {
+  describe('TC-026: refresh-plugins end-to-end with inline copier', () => {
+    it('should invoke copyPlugin for plugins listed in marketplace.json', async () => {
       // Given: a configured project with marketplace.json
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
-        if (p.includes('vskill.lock')) return false;
         return false;
       });
 
@@ -286,30 +310,19 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs with --all
       await refreshPluginsCommand({ all: true });
 
-      // Then: vskill add is invoked for each plugin
-      const vskillCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (c: unknown[]) => {
-          const args = c[1] as string[];
-          return args?.some((a: string) => a === '--plugin');
-        }
-      );
+      // Then: copyPlugin is invoked for each plugin
+      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
 
-      const pluginNames = vskillCalls.map((c: unknown[]) => {
-        const args = c[1] as string[];
-        const idx = args.indexOf('--plugin');
-        return idx >= 0 ? args[idx + 1] : null;
-      });
-
+      const pluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
       expect(pluginNames).toContain('sw');
       expect(pluginNames).toContain('sw-frontend');
       expect(pluginNames).toContain('sw-github');
     });
 
-    it('should create/update the vskill.lock lockfile after refresh', async () => {
-      // Given: marketplace.json exists, no prior lockfile
+    it('should pass specweave root to copyPlugin for each plugin', async () => {
+      // Given: marketplace.json exists
       mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('marketplace.json')) return true;
-        if (typeof p === 'string' && p.includes('vskill.lock')) return false;
+        if (p.includes('marketplace.json')) return true;
         return false;
       });
 
@@ -321,63 +334,32 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs
       await refreshPluginsCommand({ all: true });
 
-      // Then: lockfile is written
-      const lockfileWrites = mockWriteFileSync.mock.calls.filter(
-        (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('vskill.lock')
-      );
-      expect(lockfileWrites.length).toBeGreaterThanOrEqual(1);
-
-      // Parse the written lockfile
-      const lastWrite = lockfileWrites[lockfileWrites.length - 1];
-      const lockContent = JSON.parse(lastWrite[1] as string);
-      expect(lockContent.version).toBe(1);
-      expect(lockContent.skills).toBeDefined();
-      expect(lockContent.updatedAt).toBeDefined();
+      // Then: each copyPlugin call passes the specweave root
+      for (const call of mockCopyPlugin.mock.calls) {
+        expect(call[1]).toBe('/mock/specweave-root');
+      }
     });
 
-    it('should skip unchanged plugins based on hash comparison', async () => {
-      // Given: existing lockfile with hashes matching current plugin content
-      // (empty readdirSync => hash is always the same for "empty" dirs)
-      const emptyHash = 'e3b0c44298fc'; // SHA-256 of empty input, first 12 chars
-
-      const existingLockfile = JSON.stringify({
-        version: 1,
-        agents: ['claude'],
-        skills: {
-          'sw': { version: '1.0.272', sha: emptyHash, tier: 'SCANNED', installedAt: '2026-02-01T00:00:00Z', source: 'local:specweave' },
-          'sw-frontend': { version: '1.0.50', sha: emptyHash, tier: 'SCANNED', installedAt: '2026-02-01T00:00:00Z', source: 'local:specweave' },
-          'sw-github': { version: '1.0.30', sha: emptyHash, tier: 'SCANNED', installedAt: '2026-02-01T00:00:00Z', source: 'local:specweave' },
-        },
-        createdAt: '2026-02-01T00:00:00Z',
-        updatedAt: '2026-02-01T00:00:00Z',
-      });
-
+    it('should skip unchanged plugins when copyPlugin returns skipped', async () => {
+      // Given: marketplace.json exists, all plugins are unchanged
       mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('marketplace.json')) return true;
-        if (typeof p === 'string' && p.includes('vskill.lock')) return true;
-        if (typeof p === 'string' && p.includes('plugins/specweave')) return true;
+        if (p.includes('marketplace.json')) return true;
         return false;
       });
 
       mockReadFileSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('marketplace.json')) return MARKETPLACE_JSON;
-        if (typeof p === 'string' && p.includes('vskill.lock')) return existingLockfile;
         return '';
       });
 
-      mockReaddirSync.mockReturnValue([]);
+      // copyPlugin returns skipped for all plugins
+      mockCopyPlugin.mockReturnValue({ success: true, skipped: true });
 
       // When: refreshPluginsCommand runs with --all
       await refreshPluginsCommand({ all: true });
 
-      // Then: NO vskill add calls (all plugins unchanged)
-      const vskillAddCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (c: unknown[]) => {
-          const args = c[1] as string[];
-          return args?.some((a: string) => a === '--plugin');
-        }
-      );
-      expect(vskillAddCalls.length).toBe(0);
+      // Then: copyPlugin was called but all returned skipped
+      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
     });
 
     it('should NOT invoke claude plugin install (legacy path)', async () => {
@@ -395,7 +377,7 @@ describe('vskill plugin pipeline integration', () => {
       // When: refresh runs
       await refreshPluginsCommand({ all: true });
 
-      // Then: no calls to claude plugin install
+      // Then: no calls to execFileNoThrowSync with claude plugin install
       const claudePluginInstallCalls = mockExecFileNoThrowSync.mock.calls.filter(
         (c: unknown[]) => {
           const cmd = c[0] as string;
@@ -405,13 +387,35 @@ describe('vskill plugin pipeline integration', () => {
       );
       expect(claudePluginInstallCalls).toHaveLength(0);
     });
+
+    it('should register processed plugins with Claude CLI', async () => {
+      // Given: marketplace.json exists
+      mockExistsSync.mockImplementation((p: string) => {
+        if (p.includes('marketplace.json')) return true;
+        return false;
+      });
+
+      mockReadFileSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('marketplace.json')) return MARKETPLACE_JSON;
+        return '';
+      });
+
+      // When: refreshPluginsCommand runs
+      await refreshPluginsCommand({ all: true });
+
+      // Then: registerPluginsWithClaudeCli is called with processed plugin names
+      expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalledWith(
+        '/mock/specweave-root',
+        expect.arrayContaining(['sw', 'sw-frontend', 'sw-github'])
+      );
+    });
   });
 
   // =========================================================================
-  // TC-027: Init with vskill end-to-end
+  // TC-027: Init with inline copier end-to-end
   // =========================================================================
-  describe('TC-027: Init with vskill end-to-end', () => {
-    /** Setup mocks for a working init-via-vskill flow */
+  describe('TC-027: Init with inline copier end-to-end', () => {
+    /** Setup mocks for a working init-via-copier flow */
     function setupInitMocks(plugins: Array<{ name: string }> = [{ name: 'sw' }, { name: 'sw-github' }]) {
       mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
@@ -421,21 +425,11 @@ describe('vskill plugin pipeline integration', () => {
       mockGetPluginScope.mockReturnValue('user');
       mockGetScopeArgs.mockReturnValue([]);
       mockEnablePluginsInSettings.mockReturnValue(true);
-
-      mockExecFileNoThrowSync.mockImplementation((_cmd: string, args: string[]) => {
-        const argsStr = (args || []).join(' ');
-        if (argsStr.includes('add') && argsStr.includes('--plugin')) {
-          return {
-            success: true,
-            stdout: 'Score: 100/100  Verdict: PASS\nInstalled sw to 1 agent',
-            stderr: '',
-          };
-        }
-        return { success: true, stdout: '', stderr: '' };
-      });
+      mockFindSpecweaveRoot.mockReturnValue('/mock/specweave-root');
+      mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
     }
 
-    it('should call vskill add (not claude plugin install) during installAllPlugins', async () => {
+    it('should call copyPlugin (not claude plugin install) during installAllPlugins', async () => {
       setupInitMocks();
 
       // When: installAllPlugins runs
@@ -445,11 +439,11 @@ describe('vskill plugin pipeline integration', () => {
       expect(result.success).toBe(true);
       expect(result.successCount).toBeGreaterThanOrEqual(1);
 
-      // Verify: vskill was called, NOT claude plugin install
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
+      // Verify: copyPlugin was called, NOT claude plugin install
+      expect(mockCopyPlugin).toHaveBeenCalled();
 
-      // No calls to claude plugin install
-      const claudePluginInstallCalls = allCalls.filter(
+      // No calls to execFileNoThrowSync with claude plugin install
+      const claudePluginInstallCalls = mockExecFileNoThrowSync.mock.calls.filter(
         (call: any[]) => {
           const cmd = call[0];
           const args = call[1] || [];
@@ -457,15 +451,6 @@ describe('vskill plugin pipeline integration', () => {
         }
       );
       expect(claudePluginInstallCalls).toHaveLength(0);
-
-      // vskill add calls should be present
-      const vskillCalls = allCalls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('--plugin');
-        }
-      );
-      expect(vskillCalls.length).toBeGreaterThan(0);
     });
 
     it('should not register or invoke marketplace commands', async () => {
@@ -496,23 +481,11 @@ describe('vskill plugin pipeline integration', () => {
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
 
-      // Verify: only sw plugin was installed via vskill
-      const vskillCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('--plugin');
-        }
-      );
-
-      const installedPluginNames = vskillCalls.map((call: any[]) => {
-        const args = call[1] || [];
-        const idx = args.indexOf('--plugin');
-        return idx >= 0 ? args[idx + 1] : null;
-      });
-
-      expect(installedPluginNames).toContain('sw');
-      expect(installedPluginNames).not.toContain('sw-frontend');
-      expect(installedPluginNames).not.toContain('sw-github');
+      // Verify: only sw plugin was installed via copyPlugin
+      const copiedPluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
+      expect(copiedPluginNames).toContain('sw');
+      expect(copiedPluginNames).not.toContain('sw-frontend');
+      expect(copiedPluginNames).not.toContain('sw-github');
     });
 
     it('should install all plugins when lazyMode is false', async () => {
@@ -526,16 +499,16 @@ describe('vskill plugin pipeline integration', () => {
       expect(result.successCount).toBe(3);
     });
 
-    it('should display scan results to user during installation', async () => {
+    it('should use inline copier output (not vskill scan results)', async () => {
       setupInitMocks();
       const logSpy = vi.spyOn(console, 'log');
 
       // When: init runs
       await installAllPlugins({ dirname: '/test' });
 
-      // Then: scan verdict is visible in output
+      // Then: log output indicates plugin installation (not vskill scan)
       const allLogMessages = logSpy.mock.calls.map(call => call.join(' ')).join('\n');
-      expect(allLogMessages).toMatch(/scan|Score|Verdict|PASS/i);
+      expect(allLogMessages).toMatch(/install|plugin|sw/i);
     });
 
     it('should preserve the public API return type contract', async () => {
@@ -795,7 +768,7 @@ describe('vskill plugin pipeline integration', () => {
       mockGetPluginScope.mockReturnValue('user');
       mockGetScopeArgs.mockReturnValue([]);
       mockEnablePluginsInSettings.mockReturnValue(true);
-      mockExecFileNoThrowSync.mockReturnValue(execOk('Score: 100/100  Verdict: PASS'));
+      mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
 
       await installAllPlugins({ dirname: '/test' });
 

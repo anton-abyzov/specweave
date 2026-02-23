@@ -4,6 +4,13 @@
  * Verifies that the 25 new skills are properly triggered by realistic user prompts.
  * Uses the SkillTriggerExtractor to extract keywords from actual SKILL.md files
  * and validates that prompt matching activates the correct skills.
+ *
+ * Updated for v1.0.315 migration: domain skills moved to vskill repo.
+ * - specweave-mobile → mobile (vskill repo)
+ * - specweave-ml → ml (vskill repo)
+ * - specweave-backend → backend (vskill repo)
+ * - specweave-infrastructure → infra (vskill repo)
+ * - specweave-desktop, specweave-blockchain → stayed in specweave repo
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -19,11 +26,14 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..', '..', '..', '..');
-const pluginsDir = join(projectRoot, 'plugins');
+const specweavePluginsDir = join(projectRoot, 'plugins');
 
-// New skills from increment 0191 organized by plugin
-const NEW_SKILLS: Record<string, string[]> = {
-  'specweave-mobile': [
+// vskill repo plugins directory (sibling repo in umbrella)
+const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
+
+// Skills that migrated to vskill repo (v1.0.315)
+const VSKILL_SKILLS: Record<string, string[]> = {
+  'mobile': [
     'swiftui',
     'jetpack-compose',
     'flutter',
@@ -32,15 +42,15 @@ const NEW_SKILLS: Record<string, string[]> = {
     'deep-linking-push',
     'capacitor-ionic',
   ],
-  'specweave-ml': [
+  'ml': [
     'langchain-agents',
     'rag-vectordb',
     'llm-fine-tuning',
     'huggingface',
     'edge-ml',
   ],
-  'specweave-backend': ['go-backend', 'java-spring', 'rust-backend', 'graphql'],
-  'specweave-infrastructure': [
+  'backend': ['go-backend', 'java-spring', 'rust-backend', 'graphql'],
+  'infra': [
     'terraform-opentofu',
     'opentelemetry',
     'github-actions',
@@ -49,6 +59,10 @@ const NEW_SKILLS: Record<string, string[]> = {
     'azure-bicep-aks',
     'aws-deep-dive',
   ],
+};
+
+// Skills that stayed in specweave repo
+const SPECWEAVE_SKILLS: Record<string, string[]> = {
   'specweave-desktop': ['electron'],
   'specweave-blockchain': ['blockchain'],
 };
@@ -62,10 +76,28 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
     extractor = new SkillTriggerExtractor();
     allTriggers = [];
 
-    // Extract triggers from all new SKILL.md files
-    for (const [plugin, skills] of Object.entries(NEW_SKILLS)) {
+    // Extract triggers from vskill repo skills
+    for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
       for (const skill of skills) {
-        const skillPath = join(pluginsDir, plugin, 'skills', skill, 'SKILL.md');
+        const skillPath = join(vskillPluginsDir, plugin, 'skills', skill, 'SKILL.md');
+        if (!existsSync(skillPath)) continue;
+
+        const content = readFileSync(skillPath, 'utf-8');
+        const result = extractor.extractFromContent(
+          content,
+          skill,
+          plugin,
+          'skill',
+          skillPath
+        );
+        allTriggers.push(result);
+      }
+    }
+
+    // Extract triggers from specweave repo skills (desktop, blockchain)
+    for (const [plugin, skills] of Object.entries(SPECWEAVE_SKILLS)) {
+      for (const skill of skills) {
+        const skillPath = join(specweavePluginsDir, plugin, 'skills', skill, 'SKILL.md');
         if (!existsSync(skillPath)) continue;
 
         const content = readFileSync(skillPath, 'utf-8');
@@ -110,7 +142,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:swiftui');
+      expect(fqns).toContain('mobile:swiftui');
     });
 
     it('Jetpack Compose: "Create an Android app using Jetpack Compose with Material Design 3"', () => {
@@ -119,7 +151,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:jetpack-compose');
+      expect(fqns).toContain('mobile:jetpack-compose');
     });
 
     it('Flutter: "Build a cross-platform app with Flutter and Riverpod"', () => {
@@ -128,7 +160,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:flutter');
+      expect(fqns).toContain('mobile:flutter');
     });
 
     it('Expo: "Set up a React Native project with Expo Router"', () => {
@@ -137,7 +169,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:expo');
+      expect(fqns).toContain('mobile:expo');
     });
 
     it('Mobile Testing: "Write UI tests for the Android app using Espresso"', () => {
@@ -146,7 +178,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:mobile-testing');
+      expect(fqns).toContain('mobile:mobile-testing');
     });
 
     it('Deep Linking: "Set up Universal Links and push notifications for iOS"', () => {
@@ -155,7 +187,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:deep-linking-push');
+      expect(fqns).toContain('mobile:deep-linking-push');
     });
 
     it('Capacitor: "Convert our web app to mobile using Capacitor and Ionic"', () => {
@@ -164,7 +196,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-mobile:capacitor-ionic');
+      expect(fqns).toContain('mobile:capacitor-ionic');
     });
   });
 
@@ -175,7 +207,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-ml:langchain-agents');
+      expect(fqns).toContain('ml:langchain-agents');
     });
 
     it('RAG: "Implement RAG with Pinecone vector database"', () => {
@@ -184,7 +216,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-ml:rag-vectordb');
+      expect(fqns).toContain('ml:rag-vectordb');
     });
 
     it('Fine-tuning: "Fine-tune an LLM using LoRA and QLoRA"', () => {
@@ -193,7 +225,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-ml:llm-fine-tuning');
+      expect(fqns).toContain('ml:llm-fine-tuning');
     });
 
     it('Hugging Face: "Deploy a model from Hugging Face Hub with TGI"', () => {
@@ -202,7 +234,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-ml:huggingface');
+      expect(fqns).toContain('ml:huggingface');
     });
 
     it('Edge ML: "Convert a PyTorch model to Core ML for iOS"', () => {
@@ -211,7 +243,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-ml:edge-ml');
+      expect(fqns).toContain('ml:edge-ml');
     });
   });
 
@@ -222,7 +254,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-backend:go-backend');
+      expect(fqns).toContain('backend:go-backend');
     });
 
     it('Java/Spring: "Create a Spring Boot 3 application with JPA and Security"', () => {
@@ -231,7 +263,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-backend:java-spring');
+      expect(fqns).toContain('backend:java-spring');
     });
 
     it('Rust: "Build a web service with Axum and SQLx in Rust"', () => {
@@ -240,18 +272,16 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-backend:rust-backend');
+      expect(fqns).toContain('backend:rust-backend');
     });
 
     it('GraphQL: "Set up a GraphQL API with Apollo Server and federation"', () => {
-      // Prompt updated: trimmed description no longer has "Apollo Server" as trigger,
-      // but "graphql" is extracted as a technology term from the description
       const matches = extractor.matchPrompt(
         'Set up a GraphQL API with Apollo Server and federation',
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-backend:graphql');
+      expect(fqns).toContain('backend:graphql');
     });
   });
 
@@ -262,7 +292,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:terraform-opentofu');
+      expect(fqns).toContain('infra:terraform-opentofu');
     });
 
     it('OpenTelemetry: "Set up distributed tracing with OpenTelemetry Collector"', () => {
@@ -271,7 +301,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:opentelemetry');
+      expect(fqns).toContain('infra:opentelemetry');
     });
 
     it('GitHub Actions: "Create a CI/CD pipeline with GitHub Actions and OIDC"', () => {
@@ -280,7 +310,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:github-actions');
+      expect(fqns).toContain('infra:github-actions');
     });
 
     it('DevSecOps: "Add container scanning with Trivy to our pipeline"', () => {
@@ -289,7 +319,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:devsecops');
+      expect(fqns).toContain('infra:devsecops');
     });
 
     it('Secret Management: "Set up HashiCorp Vault with External Secrets Operator"', () => {
@@ -298,7 +328,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:secret-management');
+      expect(fqns).toContain('infra:secret-management');
     });
 
     it('Azure: "Deploy an AKS cluster with Bicep and Managed Identity"', () => {
@@ -307,7 +337,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:azure-bicep-aks');
+      expect(fqns).toContain('infra:azure-bicep-aks');
     });
 
     it('AWS: "Create AWS CDK stacks for Lambda and API Gateway"', () => {
@@ -316,7 +346,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
         index
       );
       const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-infrastructure:aws-deep-dive');
+      expect(fqns).toContain('infra:aws-deep-dive');
     });
   });
 
@@ -348,7 +378,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
       );
 
       const fqns = matches.map((m) => m.fqn);
-      // Should match at least 3 domains
+      // Should match at least 2 domains
       const domains = new Set(fqns.map((f) => f.split(':')[0]));
       expect(domains.size).toBeGreaterThanOrEqual(2);
     });
@@ -361,7 +391,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
       const fqns = matches.map((m) => m.fqn);
 
       // OpenTelemetry skill should be in the matches
-      expect(fqns).toContain('specweave-infrastructure:opentelemetry');
+      expect(fqns).toContain('infra:opentelemetry');
     });
   });
 });

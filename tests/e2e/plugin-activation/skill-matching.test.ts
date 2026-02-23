@@ -5,6 +5,10 @@
  * the appropriate plugins and skills from the SpecWeave marketplace.
  *
  * Tests cover: Kubernetes, Mobile, Backend, Frontend, Security, ML, Infrastructure
+ *
+ * Updated for v1.0.315 migration: domain skills now split between
+ * specweave (core/integrations) and vskill (domain-specific) repos.
+ * Index is generated from both repos and merged.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -12,20 +16,54 @@ import { SkillTriggerIndexManager } from '../../../src/core/plugins/skill-trigge
 import { SkillTriggersIndex } from '../../../src/core/plugins/skill-trigger-extractor.js';
 import * as path from 'path';
 
+/**
+ * Merge two SkillTriggersIndex objects into one combined index.
+ */
+function mergeIndexes(a: SkillTriggersIndex, b: SkillTriggersIndex): SkillTriggersIndex {
+  const skills = { ...a.skills, ...b.skills };
+  const keywords: Record<string, string[]> = { ...a.keywords };
+
+  // Merge keyword entries from b
+  for (const [keyword, skillNames] of Object.entries(b.keywords)) {
+    if (keywords[keyword]) {
+      // Deduplicate
+      const combined = new Set([...keywords[keyword], ...skillNames]);
+      keywords[keyword] = Array.from(combined);
+    } else {
+      keywords[keyword] = skillNames;
+    }
+  }
+
+  return {
+    skills,
+    keywords,
+    generatedAt: new Date().toISOString(),
+    skillCount: Object.keys(skills).length,
+    keywordCount: Object.keys(keywords).length,
+  };
+}
+
 describe('Plugin Activation E2E Tests', () => {
   let manager: SkillTriggerIndexManager;
   let index: SkillTriggersIndex;
 
   beforeAll(async () => {
-    // Use the project root for testing
+    // Generate index from local specweave plugins
     const projectRoot = path.resolve(__dirname, '../../..');
     manager = new SkillTriggerIndexManager(projectRoot);
+    const localResult = await manager.generateAndSave();
 
-    // Generate fresh index from plugins
-    const result = await manager.generateAndSave();
-    index = result.index;
+    // Generate index from vskill repo plugins (migrated domain skills)
+    const vskillRoot = path.resolve(projectRoot, '..', 'vskill');
+    const vskillManager = new SkillTriggerIndexManager(vskillRoot);
+    const vskillResult = await vskillManager.generateAndSave(
+      path.join(vskillRoot, 'plugins')
+    );
 
-    // Sanity check - should have many skills indexed
+    // Merge both indexes for full coverage
+    index = mergeIndexes(localResult.index, vskillResult.index);
+
+    // Sanity check - combined should have many skills indexed
     expect(index.skillCount).toBeGreaterThan(100);
     expect(index.keywordCount).toBeGreaterThan(200);
   });

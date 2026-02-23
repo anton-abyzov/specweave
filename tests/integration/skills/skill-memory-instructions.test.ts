@@ -23,15 +23,15 @@ import { glob } from 'glob';
 
 describe('Skill memory loading architecture', () => {
   const pluginsDir = path.join(process.cwd(), 'plugins/specweave/skills');
-
   // Skills that should have DCI blocks (user-invocable or referenced by other skills)
+  // Note: code-simplifier, security, security-patterns migrated to vskill repo
+  // and no longer use the specweave DCI pattern
   const DCI_SKILLS = [
-    'architect', 'auto', 'cancel-auto', 'code-simplifier', 'do', 'docs',
+    'architect', 'auto', 'cancel-auto', 'do', 'docs',
     'docs-updater', 'done', 'framework', 'grill', 'increment',
-    'lsp', 'pm', 'progress', 'save', 'security',
-    'security-patterns', 'tdd-cycle', 'tdd-green',
+    'lsp', 'pm', 'progress', 'save', 'tdd-cycle', 'tdd-green',
     'tdd-red', 'validate',
-  ];
+  ].map(s => ({ skill: s, dir: pluginsDir }));
 
   // Get all SKILL.md files
   const getSkillFiles = (): string[] => {
@@ -48,8 +48,8 @@ describe('Skill memory loading architecture', () => {
     it('all invocable skills should have ## Project Overrides section', () => {
       const missing: string[] = [];
 
-      for (const skill of DCI_SKILLS) {
-        const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      for (const { skill, dir } of DCI_SKILLS) {
+        const filePath = path.join(dir, skill, 'SKILL.md');
         if (!fs.existsSync(filePath)) {
           missing.push(`${skill} (file not found)`);
           continue;
@@ -67,8 +67,8 @@ describe('Skill memory loading architecture', () => {
     it('all DCI blocks should have the cascading lookup pattern', () => {
       const missing: string[] = [];
 
-      for (const skill of DCI_SKILLS) {
-        const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      for (const { skill, dir } of DCI_SKILLS) {
+        const filePath = path.join(dir, skill, 'SKILL.md');
         if (!fs.existsSync(filePath)) continue;
 
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -87,8 +87,8 @@ describe('Skill memory loading architecture', () => {
     it('DCI s= value should match the skill directory name', () => {
       const mismatches: string[] = [];
 
-      for (const skill of DCI_SKILLS) {
-        const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      for (const { skill, dir } of DCI_SKILLS) {
+        const filePath = path.join(dir, skill, 'SKILL.md');
         if (!fs.existsSync(filePath)) continue;
 
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -108,8 +108,8 @@ describe('Skill memory loading architecture', () => {
     it('DCI blocks should use awk for cross-platform compatibility', () => {
       const usingSed: string[] = [];
 
-      for (const skill of DCI_SKILLS) {
-        const filePath = path.join(pluginsDir, skill, 'SKILL.md');
+      for (const { skill, dir } of DCI_SKILLS) {
+        const filePath = path.join(dir, skill, 'SKILL.md');
         if (!fs.existsSync(filePath)) continue;
 
         const content = fs.readFileSync(filePath, 'utf-8');

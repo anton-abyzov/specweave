@@ -537,18 +537,18 @@ describe('registerDoctorCommand()', () => {
       expect(mockExecSync).not.toHaveBeenCalled();
     });
 
-    it('should run fix command when --fix flag is set and issues found', async () => {
+    it('should pass fix flag to runDoctor when --fix is set', async () => {
       const reportWithFix = createReportWithFailures();
       mockRunDoctor.mockResolvedValue(reportWithFix);
       mockFormatDoctorReport.mockReturnValue('Report');
-      mockExecSync.mockReturnValue('Fix executed');
 
       await runDoctorCommand('--fix');
 
-      expect(mockExecSync).toHaveBeenCalledWith('specweave init', {
-        cwd: process.cwd(),
-        stdio: 'inherit',
-      });
+      // Fix is handled internally by runDoctor via health checkers, not via execSync
+      expect(mockRunDoctor).toHaveBeenCalledWith(
+        process.cwd(),
+        expect.objectContaining({ fix: true })
+      );
     });
 
     it('should not run fix when no fixCommand in report', async () => {
@@ -562,43 +562,36 @@ describe('registerDoctorCommand()', () => {
       expect(mockExecSync).not.toHaveBeenCalled();
     });
 
-    it('should display fix command message when running fix', async () => {
+    it('should not call execSync directly for fix (handled by runDoctor)', async () => {
       const reportWithFix = createReportWithFailures();
       mockRunDoctor.mockResolvedValue(reportWithFix);
       mockFormatDoctorReport.mockReturnValue('Report');
-      mockExecSync.mockReturnValue('Success');
 
       await runDoctorCommand('--fix');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Running fix: specweave init')
-      );
+      // Fix logic delegated to runDoctor/health checkers — no direct execSync
+      expect(mockExecSync).not.toHaveBeenCalled();
     });
 
-    it('should exit with code 1 if fix command fails', async () => {
+    it('should exit with code 1 when failures detected with --fix', async () => {
       const reportWithFix = createReportWithFailures();
       mockRunDoctor.mockResolvedValue(reportWithFix);
       mockFormatDoctorReport.mockReturnValue('Report');
-      mockExecSync.mockImplementation(() => {
-        throw new Error('Fix command failed');
-      });
 
       await runDoctorCommand('--fix');
 
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
 
-    it('should pass correct cwd to execSync for fix command', async () => {
+    it('should pass fix=true in options to runDoctor', async () => {
       const reportWithFix = createReportWithFailures();
       mockRunDoctor.mockResolvedValue(reportWithFix);
       mockFormatDoctorReport.mockReturnValue('Report');
-      mockExecSync.mockReturnValue('Success');
 
       await runDoctorCommand('--fix');
 
-      const callArgs = mockExecSync.mock.calls[0];
-      expect(callArgs[1].cwd).toBe(process.cwd());
-      expect(callArgs[1].stdio).toBe('inherit');
+      const callOptions = mockRunDoctor.mock.calls[0][1];
+      expect(callOptions.fix).toBe(true);
     });
   });
 

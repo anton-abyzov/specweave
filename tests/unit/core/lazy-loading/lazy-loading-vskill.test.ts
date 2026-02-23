@@ -4,6 +4,9 @@
  * TC-020: Detector uses vskill for installation
  * TC-021: Fast-path skip for already-installed plugins
  *
+ * Updated for v1.0.315 migration: plugin names changed from sw-* to short names
+ * (e.g., sw-frontend → frontend, sw-backend → backend)
+ *
  * @module tests/unit/core/lazy-loading/lazy-loading-vskill
  */
 
@@ -25,6 +28,10 @@ const mockFs = vi.hoisted(() => ({
   mkdirSync: vi.fn(),
 }));
 
+const mockGetProjectRoot = vi.hoisted(() => vi.fn(() => '/tmp/test-project'));
+const mockResolveVskillPath = vi.hoisted(() => vi.fn(() => '/usr/local/lib/node_modules/vskill/dist/cli.js'));
+const mockResolveSpecweaveDir = vi.hoisted(() => vi.fn(() => '/usr/local/lib/node_modules/specweave'));
+
 vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
   detectClaudeCli: mockDetectClaudeCli,
   getCleanEnv: mockGetCleanEnv,
@@ -37,6 +44,15 @@ vi.mock('../../../../src/utils/logger.js', () => ({
 vi.mock('../../../../src/core/types/plugin-scope.js', () => ({
   getPluginScope: vi.fn(() => 'project'),
   getScopeArgs: vi.fn(() => ['--scope', 'project']),
+}));
+
+vi.mock('../../../../src/utils/find-project-root.js', () => ({
+  getProjectRoot: mockGetProjectRoot,
+}));
+
+vi.mock('../../../../src/utils/vskill-resolver.js', () => ({
+  resolveVskillPath: mockResolveVskillPath,
+  resolveSpecweaveDir: mockResolveSpecweaveDir,
 }));
 
 vi.mock('child_process', () => ({
@@ -93,6 +109,8 @@ describe('lazy loading vskill integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearCliCache();
+    // Default: no vskill.lock exists
+    mockFs.existsSync.mockReturnValue(false);
   });
 
   // ============================================================
@@ -105,17 +123,17 @@ describe('lazy loading vskill integration', () => {
       // Mock spawnSync to simulate successful vskill execution
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed sw-frontend to 1 agent',
+        stdout: 'Installed frontend to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('sw-frontend');
+      const result = await installPluginViaCli('frontend');
 
       expect(result.success).toBe(true);
-      expect(result.plugin).toBe('sw-frontend');
+      expect(result.plugin).toBe('frontend');
 
-      // CRITICAL: Verify that vskill was invoked, NOT claude plugin install
+      // CRITICAL: Verify that vskill was invoked via node, NOT claude plugin install
       const allCalls = mockSpawnSync.mock.calls;
       const claudePluginCalls = allCalls.filter(
         (call: any[]) => {
@@ -128,34 +146,33 @@ describe('lazy loading vskill integration', () => {
       // After migration: ZERO calls to claude plugin install
       expect(claudePluginCalls).toHaveLength(0);
 
-      // Instead, should have calls that reference vskill
+      // Should have calls to node with vskill args (add, --plugin, --repo)
       const vskillCalls = allCalls.filter(
         (call: any[]) => {
-          const cmd = String(call[0]);
           const args = (call[1] || []).join(' ');
-          return cmd.includes('vskill') || args.includes('vskill');
+          return args.includes('add') && args.includes('--plugin');
         }
       );
       expect(vskillCalls.length).toBeGreaterThan(0);
     });
 
-    it('should use vskill add with correct plugin name for sw plugins', async () => {
+    it('should use vskill add with correct plugin name for vskill plugins', async () => {
       setupCliAvailable();
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed sw-frontend to 1 agent',
+        stdout: 'Installed frontend to 1 agent',
         stderr: '',
         error: null,
       });
 
-      await installPluginViaCli('sw-frontend');
+      await installPluginViaCli('frontend');
 
-      // Verify vskill add was called with --plugin sw-frontend
+      // Verify vskill add was called with --plugin frontend --repo
       const allCalls = mockSpawnSync.mock.calls;
       const addCalls = allCalls.filter((call: any[]) => {
         const args = (call[1] || []).join(' ');
-        return args.includes('add') && args.includes('sw-frontend');
+        return args.includes('add') && args.includes('--plugin') && args.includes('frontend');
       });
       expect(addCalls.length).toBeGreaterThan(0);
     });
@@ -166,14 +183,14 @@ describe('lazy loading vskill integration', () => {
       mockSpawnSync.mockReturnValue({
         status: 1,
         stdout: '',
-        stderr: 'Plugin "sw-frontend" not found in marketplace.json',
+        stderr: 'Plugin "frontend" not found in marketplace.json',
         error: null,
       });
 
-      const result = await installPluginViaCli('sw-frontend');
+      const result = await installPluginViaCli('frontend');
 
       expect(result.success).toBe(false);
-      expect(result.plugin).toBe('sw-frontend');
+      expect(result.plugin).toBe('frontend');
       expect(result.error).toBeDefined();
     });
 
@@ -187,7 +204,7 @@ describe('lazy loading vskill integration', () => {
         error: null,
       });
 
-      const results = await installPluginsViaCli(['sw-frontend', 'sw-backend']);
+      const results = await installPluginsViaCli(['frontend', 'backend']);
 
       expect(results).toHaveLength(2);
       expect(results[0].success).toBe(true);
@@ -213,9 +230,9 @@ describe('lazy loading vskill integration', () => {
     it('should skip installation when plugin is in vskill.lock with matching hash', async () => {
       setupCliAvailable();
 
-      // Mock vskill.lock with sw-frontend already installed
+      // Mock vskill.lock with frontend already installed
       mockVskillLock({
-        'sw-frontend': {
+        'frontend': {
           version: '1.0.272',
           sha: 'abc123def456',
           tier: 'SCANNED',
@@ -224,7 +241,7 @@ describe('lazy loading vskill integration', () => {
         },
       });
 
-      const result = await installPluginViaCli('sw-frontend');
+      const result = await installPluginViaCli('frontend');
 
       // Should succeed without invoking vskill
       expect(result.success).toBe(true);
@@ -237,17 +254,17 @@ describe('lazy loading vskill integration', () => {
     it('should install when plugin is NOT in vskill.lock', async () => {
       setupCliAvailable();
 
-      // Mock vskill.lock WITHOUT sw-frontend
+      // Mock vskill.lock WITHOUT frontend
       mockVskillLock({});
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed sw-frontend to 1 agent',
+        stdout: 'Installed frontend to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('sw-frontend');
+      const result = await installPluginViaCli('frontend');
 
       expect(result.success).toBe(true);
 
@@ -266,12 +283,12 @@ describe('lazy loading vskill integration', () => {
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed sw-frontend to 1 agent',
+        stdout: 'Installed frontend to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('sw-frontend');
+      const result = await installPluginViaCli('frontend');
 
       expect(result.success).toBe(true);
 
@@ -284,14 +301,14 @@ describe('lazy loading vskill integration', () => {
 
       // Mock vskill.lock with both plugins
       mockVskillLock({
-        'sw-frontend': {
+        'frontend': {
           version: '1.0.272',
           sha: 'abc123',
           tier: 'SCANNED',
           installedAt: '2026-02-17T00:00:00Z',
           source: 'local:specweave',
         },
-        'sw-backend': {
+        'backend': {
           version: '1.0.272',
           sha: 'def456',
           tier: 'SCANNED',
@@ -300,7 +317,7 @@ describe('lazy loading vskill integration', () => {
         },
       });
 
-      const results = await installPluginsViaCli(['sw-frontend', 'sw-backend']);
+      const results = await installPluginsViaCli(['frontend', 'backend']);
 
       expect(results).toHaveLength(2);
       expect(results[0].success).toBe(true);
