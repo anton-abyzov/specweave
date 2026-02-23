@@ -173,6 +173,7 @@ export const VSKILL_PLUGINS = [
   'cost',            // Cloud cost optimization
   'docs',            // Extended documentation
   'security',        // Security scanning and hardening
+  'scout',           // Skill discovery — find and install skills
 ] as const;
 
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
@@ -552,6 +553,7 @@ mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
 ml: ML, PyTorch, TensorFlow, LLM, MLOps (ONLY if explicit)
 kafka: Kafka, event streaming, MSK (ONLY if explicit)
 confluent: Confluent Cloud, Schema Registry, ksqlDB (ONLY if explicit)
+scout: find skill, discover skill, what skills available, search registry, install a skill, recommend skills, browse skills, vskill, skill for, which skill, explore skills (ONLY if asking about finding/discovering skills — NOT for domain work)
 sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
 sw-github: GitHub issues, PRs, Actions, sync
 sw-jira: JIRA, Atlassian (ONLY if explicit)
