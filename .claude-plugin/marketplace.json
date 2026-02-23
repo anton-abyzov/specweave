@@ -52,141 +52,9 @@
       }
     },
     {
-      "name": "sw-infra",
-      "description": "Cloud infrastructure - Hetzner, Prometheus, Grafana, monitoring",
-      "source": "./plugins/specweave-infrastructure",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-ml",
-      "description": "Machine learning - ML pipelines, training, deployment",
-      "source": "./plugins/specweave-ml",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw-release",
       "description": "Release management - version alignment, RC workflows, multi-repo coordination, semantic versioning",
       "source": "./plugins/specweave-release",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-kafka",
-      "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
-      "source": "./plugins/specweave-kafka",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-kafka-streams",
-      "description": "Kafka Streams library integration - Stream processing with Java/Kotlin, topology design, state stores, windowing, joins, exactly-once semantics",
-      "source": "./plugins/specweave-kafka-streams",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-n8n",
-      "description": "n8n workflow automation with Kafka integration - Event-driven workflows, Kafka triggers, producers, no-code/low-code event processing patterns",
-      "source": "./plugins/specweave-n8n",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-backend",
-      "description": "Backend development - Node.js, Python, .NET, REST APIs, database design, microservices architecture",
-      "source": "./plugins/specweave-backend",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-confluent",
-      "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, enterprise Kafka features",
-      "source": "./plugins/specweave-confluent",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-k8s",
-      "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps, cluster management, container orchestration",
-      "source": "./plugins/specweave-kubernetes",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-mobile",
-      "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing",
-      "source": "./plugins/specweave-mobile",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-payments",
-      "description": "Payment processing - Stripe, PayPal, billing, PCI compliance, subscription management, payment gateways",
-      "source": "./plugins/specweave-payments",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-frontend",
-      "description": "Frontend development - React, Next.js, component generation, design systems, UI scaffolding",
-      "source": "./plugins/specweave-frontend",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-testing",
-      "description": "Testing framework - E2E with Playwright, unit testing, test coverage, test generation",
-      "source": "./plugins/specweave-testing",
       "category": "development",
       "version": "1.0.0",
       "author": {
@@ -218,20 +86,9 @@
     },
     {
       "name": "sw-docs",
-      "description": "Documentation generation and management - Docusaurus, spec-driven docs, API documentation, living documentation",
+      "description": "SpecWeave documentation - living docs preview, stakeholder reports",
       "source": "./plugins/specweave-docs",
       "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "sw-cost",
-      "description": "Cloud cost optimization - AWS, GCP, Azure cost analysis, right-sizing, reserved instances, savings plans",
-      "source": "./plugins/specweave-cost-optimizer",
-      "category": "development",
       "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",
