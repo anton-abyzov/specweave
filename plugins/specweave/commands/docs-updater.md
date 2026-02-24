@@ -22,18 +22,18 @@ Updates product documentation (.specweave/docs/) based on implementation progres
 
 1. **Reads task requirements** - Understands what was implemented from tasks.md
 2. **Updates living docs** - Modifies `.specweave/docs/` files with actual implementation
-3. **Status tracking** - Changes `[DRAFT]` � `[COMPLETE]` on doc sections
+3. **Status tracking** - Changes `[DRAFT]` → `[COMPLETE]` on doc sections
 4. **Bidirectional links** - Maintains links between docs and increments
 5. **Format adaptation** - Matches existing doc structure (features/ or modules/)
 
 ## Workflow
 
 ```
-1. Read tasks.md � Find documentation tasks
-2. Read implementation � Understand what changed
-3. Update docs � Add real code examples, endpoints, configs
-4. Mark complete � Change [DRAFT] to [COMPLETE]
-5. Verify links � Ensure increment � doc references work
+1. Read tasks.md → Find documentation tasks
+2. Read implementation → Understand what changed
+3. Update docs → Add real code examples, endpoints, configs
+4. Mark complete → Change [DRAFT] to [COMPLETE]
+5. Verify links → Ensure increment → doc references work
 ```
 
 ## Example
@@ -63,5 +63,4 @@ Updates product documentation (.specweave/docs/) based on implementation progres
 - Verify doc links are valid (use relative paths)
 - Keep examples in sync with actual code
 - Don't over-document - focus on what users need
-
 

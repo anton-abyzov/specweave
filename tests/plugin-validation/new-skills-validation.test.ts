@@ -6,13 +6,12 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..', '..');
-const pluginsDir = join(projectRoot, 'plugins');
 const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
 
 /**
  * Validation Tests: New Skills from Increment 0191 (Skill Enrichment)
  *
- * Validates that all 25 new SKILL.md files have correct:
+ * Validates that all 23 new SKILL.md files have correct:
  * 1. File existence and placement
  * 2. YAML frontmatter structure (no forbidden `name:` field)
  * 3. Required frontmatter fields (description)
@@ -59,27 +58,13 @@ const VSKILL_SKILLS: Record<string, string[]> = {
   ],
 };
 
-// Skills that stayed in specweave repo
-const SPECWEAVE_SKILLS: Record<string, string[]> = {
-  'specweave-desktop': ['electron'],
-  'specweave-blockchain': ['blockchain'],
-};
-
-// Combined for iteration — all 25 skills
+// Combined for iteration — all 23 skills (desktop and blockchain plugins deleted)
 const ALL_SKILLS: Array<{ plugin: string; skill: string; baseDir: string }> = [];
 for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
   for (const skill of skills) {
     ALL_SKILLS.push({ plugin, skill, baseDir: vskillPluginsDir });
   }
 }
-for (const [plugin, skills] of Object.entries(SPECWEAVE_SKILLS)) {
-  for (const skill of skills) {
-    ALL_SKILLS.push({ plugin, skill, baseDir: pluginsDir });
-  }
-}
-
-// New plugins that need manifests (only those still in specweave)
-const NEW_PLUGINS = ['specweave-desktop', 'specweave-blockchain'];
 
 // Migrated plugins with manifests in vskill
 const VSKILL_PLUGINS_WITH_MANIFESTS = ['mobile', 'ml', 'backend', 'infra'];
@@ -192,31 +177,6 @@ describe('New Skills Validation (Increment 0191)', () => {
   });
 
   describe('Plugin Manifests', () => {
-    // Specweave plugins (stayed in specweave repo)
-    for (const plugin of NEW_PLUGINS) {
-      const manifestPath = join(pluginsDir, plugin, '.claude-plugin', 'plugin.json');
-
-      it(`${plugin}/plugin.json should exist`, () => {
-        expect(existsSync(manifestPath)).toBe(true);
-      });
-
-      it(`${plugin}/plugin.json should have required fields`, () => {
-        if (!existsSync(manifestPath)) return;
-        const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-
-        expect(manifest.name).toBeDefined();
-        expect(manifest.name).toMatch(/^sw-/);
-        expect(manifest.description).toBeDefined();
-        expect(manifest.version).toBeDefined();
-        expect(manifest.license).toBe('MIT');
-      });
-
-      it(`${plugin}/PLUGIN.md should exist`, () => {
-        const pluginMdPath = join(pluginsDir, plugin, 'PLUGIN.md');
-        expect(existsSync(pluginMdPath)).toBe(true);
-      });
-    }
-
     // Vskill plugins (migrated to vskill repo)
     for (const plugin of VSKILL_PLUGINS_WITH_MANIFESTS) {
       const manifestPath = join(vskillPluginsDir, plugin, '.claude-plugin', 'plugin.json');
@@ -238,15 +198,12 @@ describe('New Skills Validation (Increment 0191)', () => {
   });
 
   describe('Skill Count Totals', () => {
-    it('should have exactly 25 new skills', () => {
+    it('should have exactly 23 new skills', () => {
       let totalSkills = 0;
       for (const skills of Object.values(VSKILL_SKILLS)) {
         totalSkills += skills.length;
       }
-      for (const skills of Object.values(SPECWEAVE_SKILLS)) {
-        totalSkills += skills.length;
-      }
-      expect(totalSkills).toBe(25);
+      expect(totalSkills).toBe(23);
     });
 
     it('should have all skill directories containing SKILL.md', () => {

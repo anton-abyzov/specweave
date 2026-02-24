@@ -49,7 +49,7 @@ These are **knowledge/reference** skills that provide patterns and best practice
 | `kubernetes-architect` | Reference/knowledge | Remove `context: fork` |
 | `frontend-architect` | Reference/knowledge | Remove `context: fork` |
 | `database-optimizer` | Reference/knowledge | Remove `context: fork` |
-| `diagrams-architect` | Reference/knowledge | Remove `context: fork` |
+| `diagrams` | Reference/knowledge | Remove `context: fork` |
 | `payment-integration` | Reference/knowledge | Remove `context: fork` |
 | `dotnet-backend` | Reference/knowledge | Remove `context: fork` |
 | `python-backend` | Reference/knowledge | Remove `context: fork` |
@@ -187,7 +187,7 @@ Commands and skills serve different purposes:
 Per official docs, the correct field is `allowed-tools:`, not `tools:`.
 
 **Files fixed** (6 total):
-1. ✅ `specweave-diagrams/skills/diagrams-architect/SKILL.md`
+1. ✅ `specweave-diagrams/skills/diagrams/SKILL.md`
 2. ✅ `specweave-backend/skills/python-backend/SKILL.md`
 3. ✅ `specweave-backend/skills/nodejs-backend/SKILL.md`
 4. ✅ `specweave-backend/skills/dotnet-backend/SKILL.md`

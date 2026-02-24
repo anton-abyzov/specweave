@@ -12,8 +12,7 @@ Multi-repository release coordination with version alignment, release waves, RC 
 
 | Skill | Description |
 |-------|-------------|
-| version-aligner | Multi-repo version alignment with semantic versioning, version conflict detection, compatibility validation, and version matrix management |
-| release-coordinator | Multi-repo release orchestration with RC lifecycle management, dependency management, release waves, and brownfield strategy detection |
+| release-expert | Multi-repo release expert combining version alignment (semantic versioning, conflict detection, compatibility validation, version matrix management) with release orchestration (RC lifecycle, dependency management, release waves, brownfield detection) |
 
 ## Commands
 

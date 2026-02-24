@@ -2,7 +2,6 @@
 description: Critical code review and quality interrogation before increment completion. Use when finishing a feature, before /sw:done, or when saying "grill the code", "review my work", "critique implementation".
 argument-hint: "[increment-id]"
 allowed-tools: Read, Grep, Glob, Bash
-context: fork
 ---
 
 # Code Grill Expert

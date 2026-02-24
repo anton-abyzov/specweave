@@ -145,8 +145,7 @@ export const SPECWEAVE_PLUGINS = [
   'sw-ado',        // Azure DevOps
   'sw-release',    // Release management
   'sw-diagrams',   // Diagrams
-  'sw-docs',       // SpecWeave docs (preview, stakeholder)
-  'sw-ui',         // Browser automation (merged into sw-testing)
+  'sw-docs',       // SpecWeave docs
   'sw-media',      // AI image/video generation
 ] as const;
 
