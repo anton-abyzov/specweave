@@ -16,7 +16,6 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoCreateExternalIssue, AutoCreateResult } from '../../sync/external-issue-auto-creator.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
-import { SyncCoordinator } from '../../sync/sync-coordinator.js';
 import { syncACProgressToProviders, parseAllUserStoryIds, type ACProgressSyncConfig } from '../../core/ac-progress-sync.js';
 import { existsSync } from 'fs';
 
@@ -213,13 +212,16 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       if (githubConfigured && !parsedArgs.noGithub && permissionsOk) {
         logger.log('   🐙 GitHub: Syncing AC checkboxes...');
         try {
-          // Use SyncCoordinator to sync AC checkboxes to GitHub issues
-          const syncCoordinator = new SyncCoordinator({
+          // (0348) Use GitHubACCheckboxSync directly from the GitHub plugin
+          const { GitHubACCheckboxSync } = await import(
+            '../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js'
+          );
+          const acSync = new GitHubACCheckboxSync({
             projectRoot,
             incrementId,
             logger
           });
-          const acSyncResult = await syncCoordinator.syncACCheckboxesToGitHub(config, {
+          const acSyncResult = await acSync.syncACCheckboxesToGitHub(config, {
             addComment: true  // Add progress comment
           });
 

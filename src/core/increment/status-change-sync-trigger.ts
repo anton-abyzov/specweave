@@ -233,6 +233,10 @@ export class StatusChangeSyncTrigger {
    *
    * @since v1.0.19
    */
+  /**
+   * (0348) GitHub issue creation is handled by LivingDocsSync → GitHubFeatureSync chain
+   * (called at line 203 via syncIncrement). This method now only handles JIRA/ADO.
+   */
   private static async autoCreateIfNeeded(
     projectRoot: string,
     incrementId: string
@@ -243,6 +247,8 @@ export class StatusChangeSyncTrigger {
         '../../sync/external-issue-auto-creator.js'
       );
 
+      // ExternalIssueAutoCreator now skips GitHub (handled by GitHubFeatureSync)
+      // but still handles JIRA/ADO auto-creation
       const result = await autoCreateExternalIssue(projectRoot, incrementId, this.logger);
 
       if (result.success && !result.skipped) {
@@ -259,7 +265,8 @@ export class StatusChangeSyncTrigger {
   /**
    * Auto-close external issues when increment status becomes COMPLETED
    *
-   * Uses SyncCoordinator for safe closure with proper comments and labels.
+   * (0348) GitHub closure is handled by GitHubFeatureSync via LivingDocsSync chain
+   * at line 203. SyncCoordinator.syncIncrementClosure() now only handles JIRA/ADO.
    *
    * @since v1.0.19
    */

@@ -624,6 +624,25 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 ---
 🤖 Auto-closed by SpecWeave on increment completion`;
 
+          // Idempotency check: Don't post duplicate completion comments
+          // Mirrors JIRA dedup pattern (see closeJiraIssuesForUserStories)
+          const lastGhComment = await client.getLastComment(existingIssue.number);
+          if (lastGhComment && lastGhComment.body.includes('✅ User Story Complete')) {
+            this.logger.log(`  ⏭️  ${usFile.id} - Completion comment already posted, closing without comment`);
+            // Still close the issue (without posting duplicate comment)
+            this.metrics.startOperation();
+            try {
+              await client.closeIssue(existingIssue.number);
+              closedIssues.push(existingIssue.number);
+              this.metrics.recordClosure('github', existingIssue.number, true);
+              this.logger.log(`  ✅ Closed issue #${existingIssue.number}`);
+            } catch (closeError) {
+              this.metrics.recordClosure('github', existingIssue.number, false, String(closeError));
+              throw closeError;
+            }
+            continue;
+          }
+
           // Track metrics
           this.metrics.startOperation();
           try {
@@ -879,6 +898,28 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       closedIssues: []
     };
 
+    // Filesystem lock to prevent concurrent closure from dual triggers
+    // (StatusChangeSyncTrigger + LifecycleHookDispatcher both call this)
+    const lockDir = path.join(
+      this.projectRoot,
+      '.specweave/state/.locks',
+      `sync-closure-${this.incrementId}`
+    );
+    const lockManager = new LockManager(lockDir, 60, { logger: this.logger });
+
+    let lockAcquired = false;
+    try {
+      lockAcquired = await lockManager.acquire();
+      if (!lockAcquired) {
+        this.logger.log(`⏳ Increment ${this.incrementId} - Closure sync already in progress, skipping`);
+        result.success = true;
+        return result;
+      }
+    } catch {
+      // Lock acquisition failed — proceed anyway (dedup layer protects against duplicates)
+      this.logger.log(`⚠️  Lock acquisition failed for ${this.incrementId}, proceeding with dedup protection`);
+    }
+
     try {
       this.logger.log(`\n🔒 Syncing increment CLOSURE for ${this.incrementId}...`);
 
@@ -934,25 +975,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       let totalClosed = 0;
 
       // ========================================================================
-      // GitHub Closure
+      // GitHub Closure — handled by GitHubFeatureSync (0348 consolidation)
       // ========================================================================
       if (githubEnabled) {
-        this.logger.log('\n🔹 GitHub: Ensuring all issues exist...');
-        try {
-          await this.createGitHubIssuesForUserStories(config);
-        } catch (error) {
-          this.logger.error('⚠️  GitHub issue creation failed (non-blocking):', error);
-          result.errors.push(`GitHub issue creation error: ${error}`);
-        }
-
-        this.logger.log('\n🔹 GitHub: Closing issues for completed user stories...');
-        try {
-          result.closedIssues = await this.closeGitHubIssuesForUserStories(config);
-          totalClosed += result.closedIssues.length;
-        } catch (error) {
-          this.logger.error('⚠️  GitHub issue closure failed:', error);
-          result.errors.push(`GitHub issue closure error: ${error}`);
-        }
+        this.logger.log('\n🔹 GitHub: Handled by GitHubFeatureSync pipeline (skipping SyncCoordinator path)');
       }
 
       // ========================================================================
@@ -1010,6 +1036,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       result.errors.push(`Sync closure error: ${error}`);
       this.logger.error('❌ Increment closure sync failed:', error);
       return result;
+    } finally {
+      if (lockAcquired) {
+        await lockManager.release();
+      }
     }
   }
 
@@ -1222,22 +1252,12 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         } else {
           this.logger.log('✅ Automatic external sync enabled (autoSyncOnCompletion=true)');
 
-          // GATE 4: Check if GitHub sync is enabled (tool-specific gate)
-          // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+          // GitHub sync handled by LivingDocsSync → GitHubFeatureSync pipeline (0348)
           const githubEnabled = isProviderEnabled(config, 'github');
           if (githubEnabled) {
-            this.logger.log('✅ GitHub sync enabled (detected from profiles or sync.github.enabled)');
-            this.logger.log('\n🔹 Creating GitHub issues for user stories...');
-            try {
-              await this.createGitHubIssuesForUserStories(config);
-            } catch (error) {
-              this.logger.error('⚠️  GitHub issue creation failed (non-blocking):', error);
-              result.errors.push(`GitHub sync error: ${error}`);
-              // Continue with rest of sync even if GitHub fails
-            }
+            this.logger.log('✅ GitHub sync handled by GitHubFeatureSync pipeline');
           } else {
-            this.logger.log('ℹ️  GitHub sync disabled (no GitHub profile or sync.github.enabled)');
-            this.logger.log('   Configure sync.profiles with provider: "github" or set sync.github.enabled=true');
+            this.logger.log('ℹ️  GitHub sync disabled');
             result.syncMode = 'external-disabled';
           }
         }
@@ -1469,6 +1489,14 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
         // Add completion comment to work item
         const completionComment = this.formatAdoCompletionComment(usFile, completionData);
+
+        // Idempotency check: Don't post duplicate comments (mirrors JIRA dedup pattern)
+        const lastAdoComment = await adoClient.getLastComment(workItemId);
+        if (lastAdoComment && lastAdoComment.text === completionComment) {
+          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted to ADO #${workItemId})`);
+          return;
+        }
+
         await adoClient.addComment(workItemId, completionComment);
 
         this.logger.log(`  ✅ Added completion comment to ADO work item #${workItemId}`);
@@ -1809,219 +1837,21 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   /**
    * Sync AC checkbox status to GitHub issues
    *
-   * CRITICAL FIX: Updates AC checkboxes in GitHub issue bodies when tasks are completed.
-   * Handles both bold (**AC-US5-01**:) and plain (AC-US5-01:) formats.
-   *
-   * CONCURRENCY-SAFE: Uses atomic issue body updates via Octokit.
-   *
-   * @param config - Project configuration
-   * @param addComment - If true, also adds a progress comment
-   * @returns Summary of synced ACs
+   * @deprecated (0348) Delegates to GitHubACCheckboxSync in the GitHub plugin.
+   * Kept for backward compatibility with callers that haven't migrated yet.
    */
   async syncACCheckboxesToGitHub(
     config: SpecWeaveConfig,
     options: { addComment?: boolean } = {}
   ): Promise<{ success: boolean; updated: number; issues: number[] }> {
-    const result = { success: true, updated: 0, issues: [] as number[] };
-
-    try {
-      // Check if GitHub sync is enabled
-      const githubEnabled = isProviderEnabled(config, 'github');
-      if (!githubEnabled) {
-        this.logger.log('ℹ️  GitHub sync disabled - skipping AC checkbox sync');
-        return result;
-      }
-
-      // v1.0.240 FIX: Honor preset when explicit settings absent
-      const syncAny3 = config.sync as Record<string, unknown> | undefined;
-      const perms3 = resolvePermissions(syncAny3?.preset as SyncPreset | undefined, undefined, config.sync?.settings);
-      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? perms3.canUpsert;
-      if (!canUpdateExternal) {
-        this.logger.log('ℹ️  External update disabled (canUpdateExternalItems=false)');
-        return result;
-      }
-
-      // Load user stories
-      const userStories = await this.loadUserStoriesForIncrement();
-      if (userStories.length === 0) {
-        this.logger.log('ℹ️  No user stories found for this increment');
-        return result;
-      }
-
-      // Get GitHub repo info
-      const githubConfig = config.sync?.github || {};
-      const repoInfo = await this.detectGitHubRepo(githubConfig);
-      if (!repoInfo) {
-        this.logger.log('⚠️  GitHub repository not configured');
-        return result;
-      }
-
-      const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
-
-      this.logger.log(`\n📊 Syncing AC checkboxes to GitHub issues...`);
-      this.logger.log(`   Repository: ${repoInfo.owner}/${repoInfo.repo}`);
-
-      // Load spec.md to get current AC status
-      const specPath = path.join(
-        this.projectRoot,
-        '.specweave/increments',
-        this.incrementId,
-        'spec.md'
-      );
-
-      if (!existsSync(specPath)) {
-        this.logger.log('⚠️  spec.md not found');
-        return result;
-      }
-
-      const specContent = await fs.readFile(specPath, 'utf-8');
-
-      // Parse AC status from spec.md
-      const acStatus = this.parseACStatusFromSpec(specContent);
-      this.logger.log(`   Found ${acStatus.size} ACs in spec.md`);
-
-      // Process each user story with a GitHub issue
-      for (const usFile of userStories) {
-        // Find GitHub issue number from frontmatter
-        const issueNumber = usFile.external_tools?.github?.number ||
-                            usFile.external_id ||
-                            (usFile.external_tools?.github as any)?.issue_number;
-
-        if (!issueNumber) {
-          this.logger.log(`   ⏭️  ${usFile.id} - No GitHub issue linked`);
-          continue;
-        }
-
-        // Filter ACs that belong to this user story
-        const usAcStatus = new Map<string, boolean>();
-        for (const [acId, completed] of acStatus) {
-          // AC format: AC-US5-01 → belongs to US-005/US5/US-5
-          const acUsMatch = acId.match(/AC-US?(\d+)-\d+/i);
-          if (acUsMatch) {
-            const acUsNum = acUsMatch[1];
-            const usNum = usFile.id.match(/US-?(\d+)/i)?.[1] || '';
-            // Remove leading zeros for comparison
-            if (parseInt(acUsNum) === parseInt(usNum)) {
-              usAcStatus.set(acId, completed);
-            }
-          }
-        }
-
-        if (usAcStatus.size === 0) {
-          this.logger.log(`   ⏭️  ${usFile.id} - No ACs to sync`);
-          continue;
-        }
-
-        try {
-          // Fetch and update issue
-          const issue = await client.getIssue(Number(issueNumber));
-          if (!issue) {
-            this.logger.log(`   ⚠️  ${usFile.id} - Issue #${issueNumber} not found`);
-            continue;
-          }
-
-          let body = issue.body || '';
-          const originalBody = body;
-          let updatedCount = 0;
-
-          // Update each AC checkbox
-          for (const [acId, completed] of usAcStatus) {
-            const checkboxState = completed ? 'x' : ' ';
-            const escapedAcId = acId.replace(/-/g, '\\-');
-
-            // Pattern 1: Bold format `- [ ] **AC-US5-01**: Description`
-            const boldRegex = new RegExp(`(- \\[)[ x](\\] \\*\\*${escapedAcId}\\*\\*:)`, 'g');
-
-            // Pattern 2: Plain format `- [ ] AC-US5-01: Description`
-            const plainRegex = new RegExp(`(- \\[)[ x](\\] ${escapedAcId}:)`, 'g');
-
-            const beforeUpdate = body;
-            body = body.replace(boldRegex, `$1${checkboxState}$2`);
-            body = body.replace(plainRegex, `$1${checkboxState}$2`);
-
-            if (body !== beforeUpdate) {
-              updatedCount++;
-            }
-          }
-
-          if (body === originalBody) {
-            this.logger.log(`   ⏭️  ${usFile.id} #${issueNumber} - No checkbox changes`);
-            continue;
-          }
-
-          // Update issue body
-          await client.updateIssueBody(Number(issueNumber), body);
-          result.updated += updatedCount;
-          result.issues.push(Number(issueNumber));
-          this.logger.log(`   ✅ ${usFile.id} #${issueNumber} - Updated ${updatedCount} AC checkbox(es)`);
-
-          // Optionally add progress comment
-          if (options.addComment) {
-            const completedCount = [...usAcStatus.values()].filter(v => v).length;
-            const totalCount = usAcStatus.size;
-            const percentage = Math.round((completedCount / totalCount) * 100);
-
-            const commentBody = `## 📊 Progress Update
-
-**Acceptance Criteria**: ${completedCount}/${totalCount} (${percentage}%)
-
-${[...usAcStatus.entries()].map(([id, done]) =>
-  `- ${done ? '✅' : '⬜'} ${id}`
-).join('\n')}
-
----
-🤖 Auto-updated by SpecWeave AC Completion Gate`;
-
-            await client.addComment(Number(issueNumber), commentBody);
-            this.logger.log(`   💬 Added progress comment`);
-          }
-        } catch (error) {
-          this.logger.log(`   ⚠️  ${usFile.id} - Failed to update #${issueNumber}: ${error}`);
-          result.success = false;
-        }
-      }
-
-      this.logger.log(`\n📊 AC Checkbox Sync Complete`);
-      this.logger.log(`   Updated: ${result.updated} checkbox(es) across ${result.issues.length} issue(s)`);
-
-      return result;
-    } catch (error) {
-      this.logger.error('❌ AC checkbox sync failed:', error);
-      result.success = false;
-      return result;
-    }
-  }
-
-  /**
-   * Parse AC checkbox status from spec.md content
-   *
-   * Handles both formats:
-   * - `- [x] **AC-US5-01**: Description` (SpecWeave standard)
-   * - `- [x] AC-US5-01: Description` (legacy)
-   */
-  private parseACStatusFromSpec(specContent: string): Map<string, boolean> {
-    const acStatus = new Map<string, boolean>();
-    const lines = specContent.split('\n');
-
-    // Bold format: - [x] **AC-US5-01**: Description
-    const boldRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+-\d+)\*\*:/;
-
-    // Plain format: - [x] AC-US5-01: Description
-    const plainRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):/;
-
-    for (const line of lines) {
-      let match = line.match(boldRegex);
-      if (!match) {
-        match = line.match(plainRegex);
-      }
-
-      if (match) {
-        const completed = match[1] === 'x';
-        const acId = match[2];
-        acStatus.set(acId, completed);
-      }
-    }
-
-    return acStatus;
+    const { GitHubACCheckboxSync } = await import(
+      '../../plugins/specweave-github/lib/github-ac-checkbox-sync.js'
+    );
+    const sync = new GitHubACCheckboxSync({
+      projectRoot: this.projectRoot,
+      incrementId: this.incrementId,
+      logger: this.logger,
+    });
+    return sync.syncACCheckboxesToGitHub(config, options);
   }
 }

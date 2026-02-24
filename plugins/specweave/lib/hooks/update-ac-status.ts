@@ -30,7 +30,6 @@
  */
 
 import { ACStatusManager } from '../vendor/core/increment/ac-status-manager.js';
-import { SyncCoordinator } from '../../../../dist/src/sync/sync-coordinator.js';
 import { SpecToLivingDocsSync } from '../../../../dist/src/sync/spec-to-living-docs-sync.js';
 import { consoleLogger } from '../vendor/utils/logger.js';
 import { readFileSync, existsSync } from 'fs';
@@ -180,14 +179,17 @@ async function syncACsToGitHub(projectRoot: string, incrementId: string): Promis
 
     console.log('\n🔗 Syncing AC checkboxes to GitHub...');
 
-    // Use SyncCoordinator for GitHub sync
-    const coordinator = new SyncCoordinator({
+    // (0348) Use GitHubACCheckboxSync directly from the GitHub plugin
+    const { GitHubACCheckboxSync } = await import(
+      '../../../../plugins/specweave-github/lib/github-ac-checkbox-sync.js'
+    );
+    const sync = new GitHubACCheckboxSync({
       projectRoot,
       incrementId,
       logger: consoleLogger
     });
 
-    const syncResult = await coordinator.syncACCheckboxesToGitHub(config, {
+    const syncResult = await sync.syncACCheckboxesToGitHub(config, {
       addComment: false // Don't add comment on every AC update (prevent spam)
     });
 

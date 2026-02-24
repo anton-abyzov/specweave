@@ -151,9 +151,16 @@ export class ExternalIssueAutoCreator {
       }
 
       // Create issues based on provider
+      // NOTE (0348): GitHub is handled by LivingDocsSync → GitHubFeatureSync chain.
+      // ExternalIssueAutoCreator only handles JIRA and ADO now.
       switch (provider) {
         case 'github':
-          return await this.createGitHubIssues(incrementId, incrementInfo, config);
+          return {
+            success: true,
+            provider: 'github',
+            skipped: true,
+            skipReason: 'GitHub sync handled by LivingDocsSync → GitHubFeatureSync pipeline',
+          };
         case 'jira':
           return await this.createJiraIssues(incrementId, incrementInfo, config);
         case 'ado':

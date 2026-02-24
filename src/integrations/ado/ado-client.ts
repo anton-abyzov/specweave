@@ -1032,4 +1032,35 @@ export class AdoClient {
       throw new Error(`Failed to add comment to ADO work item ${workItemId}: ${response.status} ${error}`);
     }
   }
+
+  /**
+   * Get last comment on Azure DevOps work item (for idempotency check)
+   *
+   * GET /{organization}/{project}/_apis/wit/workitems/{id}/comments?$top=1&order=desc&api-version=7.0-preview
+   */
+  public async getLastComment(workItemId: number): Promise<{ text: string } | null> {
+    const url = `https://dev.azure.com/${this.credentials.organization}/${this.credentials.project}/_apis/wit/workitems/${workItemId}/comments?%24top=1&order=desc&api-version=${this.apiVersion}-preview`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    try {
+      const data = await response.json() as { comments?: Array<{ text: string }> };
+      if (data.comments && data.comments.length > 0) {
+        return { text: data.comments[0].text };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }
