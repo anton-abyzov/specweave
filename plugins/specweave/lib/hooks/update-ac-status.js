@@ -91,8 +91,8 @@ async function syncACsToGitHub(projectRoot, incrementId) {
       logger: consoleLogger
     });
     const syncResult = await sync.syncACCheckboxesToGitHub(config, {
-      addComment: false
-      // Don't add comment on every AC update (prevent spam)
+      addComment: true
+      // Post comment on GitHub issue when ACs are completed
     });
     if (syncResult.success && syncResult.updated > 0) {
       console.log(`   \u2705 Updated ${syncResult.updated} AC(s) in GitHub issues`);
