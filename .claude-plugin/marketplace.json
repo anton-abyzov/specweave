@@ -74,10 +74,10 @@
       }
     },
     {
-      "name": "sw-ui",
-      "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
-      "source": "./plugins/specweave-ui",
-      "category": "development",
+      "name": "sw-docs",
+      "description": "SpecWeave documentation - living docs build, validation, health, organization",
+      "source": "./plugins/specweave-docs",
+      "category": "productivity",
       "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",
@@ -85,10 +85,10 @@
       }
     },
     {
-      "name": "sw-docs",
-      "description": "SpecWeave documentation - living docs preview, stakeholder reports",
-      "source": "./plugins/specweave-docs",
-      "category": "productivity",
+      "name": "sw-media",
+      "description": "Media generation - AI images (Imagen 4), AI video (Veo 3.1), programmatic video (Remotion)",
+      "source": "./plugins/specweave-media",
+      "category": "development",
       "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",

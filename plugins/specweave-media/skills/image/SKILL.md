@@ -8,7 +8,9 @@ context: fork
 
 Generate images from text prompts using AI models. Uses a 3-tier fallback chain to maximize reliability.
 
-## Provider Fallback Chain (Follow This Order)
+## Provider Fallback Chains
+
+### Standard Mode (default — optimizes for cost)
 
 ```
 Tier 1: Gemini Native (FREE) ─── gemini-2.5-flash-image ──┐
@@ -20,6 +22,20 @@ Tier 2: Pollinations.ai (FREE, no key) ─────────────�
 Tier 3: Imagen 4 (PAID, billing required) ────────────────┘
 ```
 
+### High-Quality Mode (optimizes for quality, `--hq` or "high quality" in prompt)
+
+```
+Tier 1: Imagen 4 (PAID, ~$0.04/image) ───────────────────┐
+        ↓ on error                                         │
+Tier 2: Gemini Pro (FREE) ─── gemini-3-pro-image-preview ─┤
+        ↓ on error                                         │
+Tier 3: Gemini Flash (FREE) ── gemini-2.5-flash-image ────┤
+        ↓ on error                                         │
+Tier 4: Pollinations.ai (FREE, no key) ──────────────────┘
+```
+
+**Requires**: `GEMINI_API_KEY` with billing enabled for Imagen 4. If billing is not enabled, auto-falls through to Gemini Pro (still higher quality than Flash).
+
 **Key**: Gemini native models generate images via the same `generateContent` API used for text - they're FREE with a daily quota. Imagen 4 uses a separate paid `:predict` endpoint.
 
 ## Workflow
@@ -29,8 +45,13 @@ Tier 3: Imagen 4 (PAID, billing required) ────────────�
 Extract from the user's prompt:
 - **Subject**: What to generate (e.g., "a sunset over mountains")
 - **Style**: Photorealistic, illustration, painting, etc. (default: photorealistic)
+- **Quality**: `high` or `standard` (default: standard). Detect from keywords: "high quality", "best quality", "hq", "maximum quality", "premium"
 - **Output path**: Where to save (default: `./generated-media/`)
 - **Count**: How many images (default: 1)
+
+**Quality modes**:
+- **Standard** (default): Free-first fallback chain (Gemini Flash → Gemini Pro → Pollinations → Imagen 4). Optimizes for cost.
+- **High**: Best-first fallback chain (Imagen 4 → Gemini Pro → Gemini Flash → Pollinations). Optimizes for quality. Requires `GEMINI_API_KEY` with billing enabled. Inform the user: "Using high-quality mode — Imagen 4 costs ~$0.04/image."
 
 ### Step 2: Prepare Output Directory
 
@@ -55,6 +76,10 @@ fi
 ### Step 4: Generate Image (Fallback Chain)
 
 **IMPORTANT**: Try each provider in order. On ANY error (quota, billing, network), move to the next tier. Write API responses to temp files to avoid JSON parsing issues with large base64 payloads.
+
+**If high-quality mode**: Skip to "High-Quality Mode Execution" section below. Try Imagen 4 first, then Gemini Pro, then Flash, then Pollinations.
+
+**If standard mode** (default): Follow the tiers below in order.
 
 #### Tier 1: Gemini Native Free (requires GEMINI_API_KEY)
 
@@ -209,6 +234,21 @@ elif 'error' in data:
     rm -f "$TMPFILE"
   fi
 fi
+```
+
+#### High-Quality Mode Execution
+
+When the user requests high quality, reverse the provider order to prioritize quality over cost:
+
+1. **Try Imagen 4 first** (best quality, paid ~$0.04/image) — use the Tier 3 code above
+2. **If Imagen 4 fails** → Try `gemini-3-pro-image-preview` (Tier 1 code, but only the Pro model)
+3. **If Pro fails** → Try `gemini-2.5-flash-image` (Tier 1 code, Flash model)
+4. **If Flash fails** → Try Pollinations (Tier 2 code)
+
+Before starting, inform the user:
+```
+"High-quality mode active — trying Imagen 4 first (~$0.04/image, requires billing).
+If billing isn't enabled, falling back to Gemini Pro (free, still high quality)."
 ```
 
 ### Step 5: Verify Output

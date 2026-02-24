@@ -15,13 +15,12 @@ The **specweave-release** plugin provides end-to-end release management capabili
 
 ## Components
 
-### Skills (4 total)
+### Skills (3 total)
 
 | Skill | Purpose | When to Use |
 |-------|---------|-------------|
 | **release-strategy-advisor** | Analyze architecture and recommend release strategy | "What release strategy should we use?" |
-| **release-coordinator** | Coordinate multi-repo releases with dependency management | "Coordinate release across 5 microservices" |
-| **version-aligner** | Align versions across repos using semantic versioning | "Align versions before release" |
+| **release-expert** | Full release orchestration: version alignment, multi-repo coordination, dependency management | "Coordinate release across 5 microservices", "Align versions before release" |
 | **rc-manager** | Manage release candidate lifecycle and testing | "Create RC for v2.0.0" |
 
 ### Agents (1 total)

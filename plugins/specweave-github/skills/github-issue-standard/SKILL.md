@@ -1,5 +1,6 @@
 ---
 description: Mandatory format standard for ALL GitHub issues created by SpecWeave with checkable acceptance criteria and proper metadata. Use when creating GitHub issues, formatting issue content, or ensuring consistent issue structure. Covers user stories, epics, features, and increments.
+user-invokable: false
 ---
 
 # GitHub Issue Standard - Universal Format

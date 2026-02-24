@@ -360,7 +360,7 @@ Step 4: Execute → Follow the increment planning workflow
 |-----------|---------------|----------|
 | "Plan a new feature" | \`increment\` | "feature planning", "create increment" |
 | "Sync to JIRA" | \`jira-sync\` | "JIRA sync", "create JIRA issue" |
-| "Create diagram" | \`diagrams-architect\` | "architecture diagram", "C4 diagram" |
+| "Create diagram" | \`diagrams\` | "architecture diagram", "C4 diagram" |
 | "Build React UI" | \`frontend\` | "React", "components", "UI" |
 | "Deploy to cloud" | \`hetzner-provisioner\` | "deploy", "infrastructure" |
 | "Quality check" | \`increment-quality-judge\` | "quality check", "assess spec" |

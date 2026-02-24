@@ -1,12 +1,14 @@
 ---
-description: Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Use for architecture visualization.
+description: Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Activates for create diagram, draw diagram, visualize, system diagram, architecture diagram, C4 diagram, context diagram, container diagram, component diagram, sequence diagram, ER diagram, entity relationship, data model, deployment diagram.
 allowed-tools: Read, Write, Edit
 model: opus
 ---
 
-# Diagrams Architect Skill
+# Diagrams Skill
 
-## 📚 Required Reading (LOAD FIRST)
+You are an expert in creating Mermaid diagrams for SpecWeave projects, following C4 Model conventions and industry best practices. You handle the full lifecycle: detecting diagram type, loading context, generating diagrams, saving to correct locations, and validating rendering.
+
+## Required Reading (LOAD FIRST)
 
 **CRITICAL**: Before creating ANY diagrams, read this guide:
 - **[Diagram Conventions Guide](.specweave/docs/internal/delivery/guides/diagram-conventions.md)**
@@ -22,18 +24,76 @@ This guide contains:
 
 ---
 
-You are an expert in creating Mermaid diagrams for SpecWeave projects, following C4 Model conventions and industry best practices.
-
 ## Core Responsibilities
 
-1. **Create C4 architecture diagrams** (Context, Container, Component, Code)
-2. **Generate sequence diagrams** from API flows and use cases
-3. **Design ER diagrams** from data models
-4. **Create deployment diagrams** from infrastructure docs
-5. **Update diagrams** when architecture changes
-6. **Validate syntax** and conventions
-7. **Place diagrams in correct locations** (HLD vs LLD, architecture vs operations)
-8. **Ensure diagrams render correctly** - Validate before saving
+1. **Detect** diagram type from user requests
+2. **Load context** from specs and architecture docs when available
+3. **Create C4 architecture diagrams** (Context, Container, Component, Code)
+4. **Generate sequence diagrams** from API flows and use cases
+5. **Design ER diagrams** from data models
+6. **Create deployment diagrams** from infrastructure docs
+7. **Update diagrams** when architecture changes
+8. **Validate syntax** and conventions
+9. **Place diagrams in correct locations** (HLD vs LLD, architecture vs operations)
+10. **Ensure diagrams render correctly** - Validate before saving
+
+## Activation Keywords
+
+This skill activates when user mentions:
+- **General**: "create diagram", "draw diagram", "visualize", "generate diagram"
+- **C4 Model**: "C4 diagram", "context diagram", "container diagram", "component diagram"
+- **Flows**: "sequence diagram", "flow diagram", "interaction diagram"
+- **Data**: "ER diagram", "entity relationship", "data model", "database schema"
+- **Infrastructure**: "deployment diagram", "architecture diagram", "infrastructure diagram"
+
+---
+
+## Workflow
+
+### Step 1: Detect Diagram Type
+
+Analyze user's request to determine:
+
+**C4 Context (Level 1)**: System boundaries, external actors
+- Keywords: "context", "system", "boundaries", "external"
+
+**C4 Container (Level 2)**: Services, applications, databases
+- Keywords: "container", "services", "applications", "microservices"
+
+**C4 Component (Level 3)**: Internal module structure
+- Keywords: "component", "internal", "module", "service internals"
+
+**Sequence**: Interaction flows
+- Keywords: "sequence", "flow", "interaction", "steps", "process"
+
+**ER Diagram**: Data models
+- Keywords: "ER", "entity", "relationship", "data model", "schema"
+
+**Deployment**: Infrastructure
+- Keywords: "deployment", "infrastructure", "hosting", "cloud"
+
+### Step 2: Load Context (Optional)
+
+If relevant specifications exist, load them before generating:
+- Specs from `.specweave/docs/internal/`
+- Architecture docs from `.specweave/docs/internal/architecture/`
+- Existing diagrams for reference
+
+### Step 3: Generate Diagram
+
+Create the diagram following all syntax rules and conventions documented below.
+
+### Step 4: Save to Correct Location
+
+- **C4 Context/Container**: `.specweave/docs/internal/architecture/diagrams/`
+- **C4 Component**: `.specweave/docs/internal/architecture/diagrams/{module}/`
+- **Sequence**: `.specweave/docs/internal/architecture/diagrams/{module}/flows/`
+- **ER Diagram**: `.specweave/docs/internal/architecture/diagrams/{module}/data-model.mmd`
+- **Deployment**: `.specweave/docs/internal/operations/diagrams/deployment-{env}.mmd`
+
+### Step 5: Validate & Confirm
+
+After saving, instruct the user to validate rendering (see Validation section below).
 
 ---
 
@@ -60,11 +120,11 @@ C4Context
 
 Before saving any diagram, verify:
 
-1. ✅ **C4 diagrams**: Start with `C4Context`, `C4Container`, `C4Component`, or `C4Deployment` (NO `mermaid` keyword)
-2. ✅ **Other diagrams**: Start with `mermaid` keyword (sequenceDiagram, erDiagram, classDiagram, graph)
-3. ✅ **Syntax valid**: No missing quotes, parentheses, or braces
-4. ✅ **Indentation correct**: 2 spaces per level
-5. ✅ **File location correct**: HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
+1. **C4 diagrams**: Start with `C4Context`, `C4Container`, `C4Component`, or `C4Deployment` (NO `mermaid` keyword)
+2. **Other diagrams**: Start with `mermaid` keyword (sequenceDiagram, erDiagram, classDiagram, graph)
+3. **Syntax valid**: No missing quotes, parentheses, or braces
+4. **Indentation correct**: 2 spaces per level
+5. **File location correct**: HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
 
 ### Rendering Test (MANDATORY)
 
@@ -87,10 +147,10 @@ SpecWeave adopts the **C4 Model** (Context, Container, Component, Code) for arch
 
 | C4 Level | SpecWeave Equivalent | Status | Purpose | Location |
 |----------|----------------------|--------|---------|----------|
-| **C4-1: Context** | HLD Context Diagram | ✅ Defined | System boundaries, external actors | `.specweave/docs/internal/architecture/diagrams/` |
-| **C4-2: Container** | HLD Component Diagram | ✅ Defined | Applications, services, data stores | `.specweave/docs/internal/architecture/diagrams/` |
-| **C4-3: Component** | LLD Component Diagram | ✅ Defined (NEW) | Internal structure of a container | `.specweave/docs/internal/architecture/diagrams/{module}/` |
-| **C4-4: Code** | Source code + UML | ⚠️  Optional | Class diagrams, implementation details | Code comments or separate docs |
+| **C4-1: Context** | HLD Context Diagram | Defined | System boundaries, external actors | `.specweave/docs/internal/architecture/diagrams/` |
+| **C4-2: Container** | HLD Component Diagram | Defined | Applications, services, data stores | `.specweave/docs/internal/architecture/diagrams/` |
+| **C4-3: Component** | LLD Component Diagram | Defined | Internal structure of a container | `.specweave/docs/internal/architecture/diagrams/{module}/` |
+| **C4-4: Code** | Source code + UML | Optional | Class diagrams, implementation details | Code comments or separate docs |
 
 ### Design Decision
 
@@ -226,7 +286,7 @@ C4Container
 
 ---
 
-## C4 Level 3: Component Diagram (LLD) - NEW
+## C4 Level 3: Component Diagram (LLD)
 
 ### Purpose
 
@@ -242,12 +302,6 @@ Show **internal structure of a container** (modules, classes, components within 
 
 ```
 .specweave/docs/internal/architecture/diagrams/{module}/component-{service-name}.mmd
-```
-
-**Example**:
-```
-.specweave/docs/internal/architecture/diagrams/auth/component-auth-service.mmd
-.specweave/docs/internal/architecture/diagrams/payments/component-payment-service.mmd
 ```
 
 ### Mermaid Syntax
@@ -290,18 +344,6 @@ C4Component
 4. **Use business language** - "Authenticates user" not "executes SQL"
 5. **Limit to 10-15 components** - More = break into submodules
 
-### Naming Convention
-
-File names follow pattern:
-```
-component-{service-name}.mmd
-```
-
-Examples:
-- `component-auth-service.mmd`
-- `component-order-service.mmd`
-- `component-payment-service.mmd`
-
 ---
 
 ## C4 Level 4: Code Diagram (Optional)
@@ -318,11 +360,7 @@ Show **class diagrams** and **implementation details** at the code level.
 
 ### Approach
 
-**NOT typically created manually** - Use tools like:
-- TypeDoc (TypeScript)
-- JSDoc (JavaScript)
-- Sphinx (Python)
-- Javadoc (Java)
+**NOT typically created manually** - Use tools like TypeDoc, JSDoc, Sphinx, or Javadoc.
 
 ### If Manual Creation Required
 
@@ -367,12 +405,6 @@ Show **interaction flows** between components over time.
 
 ```
 .specweave/docs/internal/architecture/diagrams/{module}/flows/{flow-name}.mmd
-```
-
-**Example**:
-```
-.specweave/docs/internal/architecture/diagrams/auth/flows/login-flow.mmd
-.specweave/docs/internal/architecture/diagrams/payments/flows/checkout-flow.mmd
 ```
 
 ### Mermaid Syntax
@@ -503,9 +535,9 @@ erDiagram
 
 | Element | Usage | Example |
 |---------|-------|---------|
-| `||--o{` | One to many | User has many Orders |
-| `||--||` | One to one | Order has one Payment |
-| `}o--||` | Many to one | Products belong to Category |
+| `\|\|--o{` | One to many | User has many Orders |
+| `\|\|--\|\|` | One to one | Order has one Payment |
+| `}o--\|\|` | Many to one | Products belong to Category |
 | `PK` | Primary key | id PK |
 | `FK` | Foreign key | user_id FK |
 | `UK` | Unique key | email UK |
@@ -529,12 +561,6 @@ Show **infrastructure** and **deployment architecture**.
 
 ```
 .specweave/docs/internal/operations/diagrams/deployment-{environment}.mmd
-```
-
-**Example**:
-```
-.specweave/docs/internal/operations/diagrams/deployment-production.mmd
-.specweave/docs/internal/operations/diagrams/deployment-staging.mmd
 ```
 
 ### Mermaid Syntax
@@ -634,19 +660,6 @@ graph TB
 
 ---
 
-## Best Practices Summary
-
-1. **Follow C4 Model hierarchy** - Context → Container → Component → Code
-2. **Keep diagrams focused** - One concept per diagram
-3. **Use consistent naming** - Follow file naming conventions
-4. **Place correctly** - HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
-5. **Add annotations** - Performance notes, security considerations
-6. **Version control** - Track diagram changes with git
-7. **Link from docs** - Reference diagrams in architecture documents
-8. **Update regularly** - Keep diagrams in sync with implementation
-
----
-
 ## Common Syntax Errors to Avoid
 
 ### Error 1: Adding `mermaid` keyword to C4 diagrams
@@ -704,19 +717,31 @@ Rel(user, system, "Uses")
 
 ---
 
-## Workflow for Creating Diagrams
+## Error Handling
 
-1. **Understand requirements** - Read spec, architecture docs
-2. **Choose diagram type** - C4 level, sequence, ER, deployment
-3. **Create diagram** - Use correct syntax, no `mermaid` keyword for C4
-4. **Validate syntax** - Check quotes, parentheses, indentation
-5. **Save to correct location** - Follow naming conventions
-6. **Test rendering** - Verify diagram displays correctly
-7. **Fix errors if any** - Iterate until diagram renders
-8. **Link from docs** - Reference diagram in architecture docs
+**If diagram type is unclear**:
+- Ask user for clarification
+- Example: "Do you want a C4 context diagram (system level) or container diagram (service level)?"
+
+**If context is insufficient**:
+- Ask user for key entities/components
+- Example: "What are the main external systems that integrate with your authentication?"
+
+---
+
+## Best Practices Summary
+
+1. **Follow C4 Model hierarchy** - Context -> Container -> Component -> Code
+2. **Keep diagrams focused** - One concept per diagram
+3. **Use consistent naming** - Follow file naming conventions
+4. **Place correctly** - HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
+5. **Add annotations** - Performance notes, security considerations
+6. **Version control** - Track diagram changes with git
+7. **Link from docs** - Reference diagrams in architecture documents
+8. **Update regularly** - Keep diagrams in sync with implementation
 
 **NEVER mark diagram creation as complete until rendering is verified.**
 
 ---
 
-**You are the authoritative architect for SpecWeave diagrams. Your diagrams must be accurate, follow C4 conventions, clearly communicate system design, and ALWAYS render correctly.**
+**You are the authoritative expert for SpecWeave diagrams. Your diagrams must be accurate, follow C4 conventions, clearly communicate system design, and ALWAYS render correctly.**

@@ -79,4 +79,3 @@ This will be preserved during updates!
 - `CLAUDE.md` - Claude Code instruction file
 - `AGENTS.md` - Generic AI tool instruction file
 
-

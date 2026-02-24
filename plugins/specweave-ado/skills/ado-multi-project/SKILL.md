@@ -1,5 +1,6 @@
 ---
 description: Organize specs and tasks across multiple Azure DevOps projects with intelligent content-based mapping. Use when working with project-per-team, area-path-based, or team-based ADO architectures. Handles cross-project coordination and folder structure organization.
+user-invokable: false
 allowed-tools: Read, Write, Edit, Glob
 ---
 

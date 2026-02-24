@@ -152,17 +152,24 @@ export class LifecycleHookDispatcher {
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true;
       const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
       const shouldCloseIssue = doneConfig.close_github_issue === true;
-      const docsFirst = doneConfig.update_living_docs_first === true;
 
-      const syncLivingDocs = async () => {
-        if (!shouldSyncLivingDocs) return;
-        const { LivingDocsSync } = await import(
-          '../living-docs/living-docs-sync.js'
-        );
-        const sync = new LivingDocsSync(projectRoot);
-        await sync.syncIncrement(incrementId);
-      };
+      // STEP 1: Living docs sync MUST run first.
+      // It updates living docs files AND chains to GitHub via syncToExternalTools().
+      // GitHubFeatureSync has a 30s sync lock, so running GitHub sync in parallel
+      // would cause a race condition where stale data wins.
+      if (shouldSyncLivingDocs) {
+        try {
+          const { LivingDocsSync } = await import(
+            '../living-docs/living-docs-sync.js'
+          );
+          const sync = new LivingDocsSync(projectRoot);
+          await sync.syncIncrement(incrementId);
+        } catch (error) {
+          LifecycleHookDispatcher.logError('onIncrementDone:livingDocs', error);
+        }
+      }
 
+      // STEP 2: After living docs are updated, run closure and direct GitHub sync in parallel.
       const syncGitHubProject = async () => {
         if (!shouldSyncGitHubProject) return;
         try {
@@ -175,13 +182,11 @@ export class LifecycleHookDispatcher {
           );
           await syncFeatureToGitHub(projectRoot, featureId);
         } catch (error) {
-          // GitHub plugin may not be installed — log and continue
           LifecycleHookDispatcher.logError('onIncrementDone:githubProject', error);
         }
       };
 
-      // (0348) GitHub closure handled by GitHubFeatureSync (via syncLivingDocs + syncGitHubProject).
-      // SyncCoordinator only used for JIRA/ADO closure.
+      // SyncCoordinator only handles JIRA/ADO closure (GitHub handled by step 1)
       const syncClosure = async () => {
         if (!shouldCloseIssue) return;
         const { SyncCoordinator } = await import(
@@ -191,19 +196,10 @@ export class LifecycleHookDispatcher {
           projectRoot,
           incrementId,
         });
-        // syncIncrementClosure now skips GitHub (handled by GitHubFeatureSync)
-        // but still handles JIRA and ADO closure
         await coordinator.syncIncrementClosure();
       };
 
-      if (docsFirst && shouldSyncLivingDocs) {
-        // Sequential: living docs first, then closure + github project
-        await syncLivingDocs();
-        await Promise.all([syncClosure(), syncGitHubProject()]);
-      } else {
-        // Parallel: all three
-        await Promise.all([syncLivingDocs(), syncClosure(), syncGitHubProject()]);
-      }
+      await Promise.all([syncClosure(), syncGitHubProject()]);
     } catch (error) {
       LifecycleHookDispatcher.logError('onIncrementDone', error);
     }

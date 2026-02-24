@@ -59,8 +59,13 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     throw new Error(result.error);
   }
 
-  // Fire-and-forget: dispatch post-increment-planning hooks (non-blocking)
-  void LifecycleHookDispatcher.onIncrementPlanned(projectRoot, id).catch(() => {});
+  // Await post-increment-planning hooks to ensure GitHub/JIRA/ADO sync completes
+  try {
+    await LifecycleHookDispatcher.onIncrementPlanned(projectRoot, id);
+  } catch (error: any) {
+    // Log but don't fail increment creation
+    console.error(chalk.yellow(`⚠️  Post-planning sync warning: ${error.message}`));
+  }
 
   if (json) {
     console.log(JSON.stringify({

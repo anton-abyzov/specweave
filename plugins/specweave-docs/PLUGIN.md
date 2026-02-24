@@ -14,8 +14,6 @@ Complete documentation ecosystem for technical writers, product teams, and devel
 |-------|-------------|
 | technical-writing | Expert in API documentation, README files, tutorials, changelog management, and developer documentation with style guides and OpenAPI/Swagger support |
 | docusaurus | Docusaurus 3.x framework expert for MDX authoring, theming, versioning, and internationalization |
-| preview | Documentation server for Docusaurus integration with hot reload, auto-generated sidebars, and Mermaid diagram support |
-| stakeholder-docs | Executive documentation generation from technical living docs including business summaries and feature status reports |
 | spec-driven-brainstorming | Product discovery expert for feature ideation, story mapping, MoSCoW/RICE prioritization, and MVP definition |
 
 ## Installation

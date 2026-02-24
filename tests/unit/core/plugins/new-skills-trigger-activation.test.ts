@@ -10,7 +10,7 @@
  * - specweave-ml → ml (vskill repo)
  * - specweave-backend → backend (vskill repo)
  * - specweave-infrastructure → infra (vskill repo)
- * - specweave-desktop, specweave-blockchain → stayed in specweave repo
+ * - specweave-desktop, specweave-blockchain → DELETED
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -26,7 +26,6 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..', '..', '..', '..');
-const specweavePluginsDir = join(projectRoot, 'plugins');
 
 // vskill repo plugins directory (sibling repo in umbrella)
 const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
@@ -61,12 +60,6 @@ const VSKILL_SKILLS: Record<string, string[]> = {
   ],
 };
 
-// Skills that stayed in specweave repo
-const SPECWEAVE_SKILLS: Record<string, string[]> = {
-  'specweave-desktop': ['electron'],
-  'specweave-blockchain': ['blockchain'],
-};
-
 describe('New Skills Trigger Activation (Increment 0191)', () => {
   let extractor: SkillTriggerExtractor;
   let allTriggers: ExtractedTriggers[];
@@ -94,31 +87,13 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
       }
     }
 
-    // Extract triggers from specweave repo skills (desktop, blockchain)
-    for (const [plugin, skills] of Object.entries(SPECWEAVE_SKILLS)) {
-      for (const skill of skills) {
-        const skillPath = join(specweavePluginsDir, plugin, 'skills', skill, 'SKILL.md');
-        if (!existsSync(skillPath)) continue;
-
-        const content = readFileSync(skillPath, 'utf-8');
-        const result = extractor.extractFromContent(
-          content,
-          skill,
-          plugin,
-          'skill',
-          skillPath
-        );
-        allTriggers.push(result);
-      }
-    }
-
     // Build the inverted index
     index = extractor.buildIndex(allTriggers);
   });
 
   describe('Trigger Extraction', () => {
-    it('should extract triggers from all 25 new skills', () => {
-      expect(allTriggers.length).toBe(25);
+    it('should extract triggers from all 23 new skills', () => {
+      expect(allTriggers.length).toBe(23);
     });
 
     it('every skill should have at least 2 triggers', () => {
@@ -131,7 +106,7 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
     });
 
     it('should build an index with all skills', () => {
-      expect(index.skillCount).toBe(25);
+      expect(index.skillCount).toBe(23);
     });
   });
 
@@ -347,26 +322,6 @@ describe('New Skills Trigger Activation (Increment 0191)', () => {
       );
       const fqns = matches.map((m) => m.fqn);
       expect(fqns).toContain('infra:aws-deep-dive');
-    });
-  });
-
-  describe('Desktop & Other Skills Activation', () => {
-    it('Electron: "Build a desktop app with Electron and auto-updates"', () => {
-      const matches = extractor.matchPrompt(
-        'Build a desktop app with Electron and auto-updates',
-        index
-      );
-      const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-desktop:electron');
-    });
-
-    it('Blockchain: "Write a Solidity smart contract with Hardhat"', () => {
-      const matches = extractor.matchPrompt(
-        'Write a Solidity smart contract with Hardhat',
-        index
-      );
-      const fqns = matches.map((m) => m.fqn);
-      expect(fqns).toContain('specweave-blockchain:blockchain');
     });
   });
 

@@ -161,6 +161,7 @@ export class StatusChangeSyncTrigger {
 
     const SYNC_WORTHY = [
       'planning → active',            // Work started
+      'planned → active',             // Work started (alternate status value)
       'active → completed',           // Work finished (legacy direct completion)
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
       'completed → active',           // Work reopened
@@ -211,19 +212,10 @@ export class StatusChangeSyncTrigger {
       this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
     };
 
-    // Completion transitions run synchronously to ensure issue closure
-    // completes before the process exits. Other transitions stay non-blocking.
-    if (newStatus === IncrementStatus.COMPLETED) {
-      await syncFn();
-    } else {
-      setTimeout(async () => {
-        try {
-          await syncFn();
-        } catch (error) {
-          throw error;
-        }
-      }, 0);
-    }
+    // All transitions run synchronously to ensure sync completes
+    // before the process exits. The previous setTimeout(0) pattern
+    // caused sync to be lost when the process exited quickly.
+    await syncFn();
   }
 
   /**

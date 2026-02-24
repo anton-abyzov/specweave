@@ -12,8 +12,7 @@ Create and manage architecture diagrams following C4 Model conventions and SpecW
 
 | Skill | Description |
 |-------|-------------|
-| diagrams-architect | Expert in creating Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams |
-| diagrams-generator | Lightweight coordinator that detects diagram requests and delegates to diagrams-architect for generation |
+| diagrams | Expert in creating Mermaid diagrams following C4 Model and SpecWeave conventions - system architecture, sequence, ER, deployment diagrams. Handles the full lifecycle from detection through generation and validation. |
 
 ## Commands
 

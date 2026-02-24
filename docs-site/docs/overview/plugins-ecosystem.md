@@ -406,8 +406,8 @@ Documentation generation, organization, and live Docusaurus preview with hot rel
 #### **specweave-diagrams** - Diagram Generation
 Mermaid diagrams following C4 Model conventions.
 
-**Agent:**
-- **diagrams-architect**: C4 Context/Container/Component, sequence, ER diagrams
+**Skill:**
+- **diagrams**: C4 Context/Container/Component, sequence, ER, deployment diagrams
 
 **Example:**
 ```bash

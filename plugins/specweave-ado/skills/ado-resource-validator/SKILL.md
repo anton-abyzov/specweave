@@ -1,5 +1,6 @@
 ---
 description: Validates Azure DevOps projects, area paths, and teams exist with auto-creation of missing resources. Use when setting up ADO integration, configuring .env variables, or troubleshooting missing project errors. Supports project-per-team, area-path-based, and team-based strategies.
+user-invokable: false
 allowed-tools: Read, Bash, Write, Edit
 ---
 

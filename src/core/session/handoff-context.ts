@@ -239,7 +239,7 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
   ],
   'sw-diagrams': [
     {
-      name: 'sw-diagrams:diagrams-architect',
+      name: 'sw-diagrams:diagrams',
       description: 'Architecture diagrams with Mermaid and C4',
       category: 'documentation',
     },

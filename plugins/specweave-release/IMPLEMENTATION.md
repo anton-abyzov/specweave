@@ -18,13 +18,11 @@ The **specweave-release** plugin provides comprehensive release management capab
 plugins/specweave-release/
 ├── .claude-plugin/
 │   └── plugin.json             # Claude native manifest
-├── skills/                      # 4 specialized skills
+├── skills/                      # 3 specialized skills
 │   ├── release-strategy-advisor/
 │   │   └── SKILL.md            # Strategy design + brownfield detection
-│   ├── release-coordinator/
-│   │   └── SKILL.md            # Multi-repo orchestration
-│   ├── version-aligner/
-│   │   └── SKILL.md            # Version management + semver
+│   ├── release-expert/
+│   │   └── SKILL.md            # Version alignment + multi-repo orchestration
 │   └── rc-manager/
 │       └── SKILL.md            # RC lifecycle + testing
 ├── agents/
@@ -42,8 +40,7 @@ plugins/specweave-release/
 
 **Skills** (Auto-Activating):
 - ✅ **release-strategy-advisor** (3,700 lines) - Strategy design, brownfield detection
-- ✅ **release-coordinator** (3,200 lines) - Multi-repo coordination, dependency management
-- ✅ **version-aligner** (2,900 lines) - Semantic versioning, version alignment
+- ✅ **release-expert** - Version alignment, semantic versioning, multi-repo coordination, dependency management
 - ✅ **rc-manager** (4,100 lines) - RC lifecycle, testing, promotion
 
 **Agent** (Orchestrator):

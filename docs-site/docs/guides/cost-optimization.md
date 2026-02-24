@@ -226,7 +226,7 @@ Override model for specific agent:
 Task tool: agent=security, model=opus
 
 # Use Haiku for simple diagram
-Task tool: agent=diagrams-architect, model=haiku
+Task tool: agent=diagrams, model=haiku
 ```
 
 ---

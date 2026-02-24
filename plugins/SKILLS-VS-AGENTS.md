@@ -90,8 +90,8 @@ All domain experts are now skills with `context: fork`:
 | **Infrastructure** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
 | **Mobile** | `sw-mobile:react-native-expert` | React Native, iOS, Android, Expo |
 | **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, TensorFlow, PyTorch |
-| **Diagrams** | `sw-diagrams:diagrams-architect` | Mermaid, C4, architecture diagram, flowchart |
-| **Release** | `sw-release:release-coordinator` | release, version, changelog, npm publish |
+| **Diagrams** | `sw-diagrams:diagrams` | Mermaid, C4, architecture diagram, flowchart |
+| **Release** | `sw-release:release-expert` | release, version, changelog, npm publish |
 
 All run in isolated context without polluting the main conversation.
 

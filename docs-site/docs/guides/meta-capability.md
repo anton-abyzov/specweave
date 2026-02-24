@@ -124,7 +124,7 @@ architect agent: Designs architecture (HOW)
    ↓
 docs-writer agent: Creates documentation
    ↓
-Result: diagrams-architect agent added to framework
+Result: diagrams agent added to framework
    ↓
 SpecWeave now has diagram capabilities (built by SpecWeave!)
 ```
