@@ -953,16 +953,31 @@ export class GitHubFeatureSync {
     if (completion.overallComplete) {
       // ✅ SAFE TO CLOSE - All ACs and tasks verified [x]
       if (!currentlyClosed) {
-        await execFileNoThrow('gh', [
-          'issue',
-          'close',
-          issueNumber.toString(),
-          '--comment',
-          this.calculator.buildCompletionComment(completion),
-        ], { env: this.getGhEnv() });
-        console.log(
-          `      ✅ Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
-        );
+        // Idempotency check: skip completion comment if already posted by another sync path
+        const lastComment = await this.client.getLastComment(issueNumber);
+        const commentAlreadyPosted = lastComment && lastComment.body.includes('✅ User Story Complete');
+        if (commentAlreadyPosted) {
+          // Close without duplicate comment
+          await execFileNoThrow('gh', [
+            'issue',
+            'close',
+            issueNumber.toString(),
+          ], { env: this.getGhEnv() });
+          console.log(
+            `      ✅ Verified complete (comment already posted): ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
+          );
+        } else {
+          await execFileNoThrow('gh', [
+            'issue',
+            'close',
+            issueNumber.toString(),
+            '--comment',
+            this.calculator.buildCompletionComment(completion),
+          ], { env: this.getGhEnv() });
+          console.log(
+            `      ✅ Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
+          );
+        }
       }
     } else {
       // ⚠️ INCOMPLETE - Keep open or reopen if needed
@@ -1093,15 +1108,33 @@ export class GitHubFeatureSync {
       // preventing issues like #1198 where label is applied but issue stays open
       if (newStatusLabel === 'status:complete' && issueData.state.toLowerCase() !== 'closed') {
         try {
-          const completionComment = this.calculator.buildCompletionComment(completion as any);
-          await execFileNoThrow('gh', [
-            'issue',
-            'close',
-            issueNumber.toString(),
-            '--comment',
-            completionComment,
-          ], { env: this.getGhEnv() });
-          console.log(`      ✅ Auto-closed issue #${issueNumber} (status:complete)`);
+          // Re-fetch issue state to avoid race with updateUserStoryIssue close
+          const freshIssueData = await this.client.getIssue(issueNumber);
+          if (freshIssueData.state.toLowerCase() === 'closed') {
+            console.log(`      ⏭️  Issue #${issueNumber} already closed (skipping duplicate close)`);
+          } else {
+            // Idempotency check: skip completion comment if already posted
+            const lastComment = await this.client.getLastComment(issueNumber);
+            if (lastComment && lastComment.body.includes('✅ User Story Complete')) {
+              // Comment already exists — close without posting duplicate
+              await execFileNoThrow('gh', [
+                'issue',
+                'close',
+                issueNumber.toString(),
+              ], { env: this.getGhEnv() });
+              console.log(`      ✅ Auto-closed issue #${issueNumber} (comment already posted)`);
+            } else {
+              const completionComment = this.calculator.buildCompletionComment(completion as any);
+              await execFileNoThrow('gh', [
+                'issue',
+                'close',
+                issueNumber.toString(),
+                '--comment',
+                completionComment,
+              ], { env: this.getGhEnv() });
+              console.log(`      ✅ Auto-closed issue #${issueNumber} (status:complete)`);
+            }
+          }
         } catch (closeError) {
           // Non-blocking: close failure shouldn't break sync
           console.warn(`      ⚠️  Failed to auto-close issue #${issueNumber}: ${(closeError as Error).message}`);
