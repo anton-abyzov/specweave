@@ -567,9 +567,7 @@ Create and maintain documentation.
 | `living-docs` | core | Living documentation management |
 | `living-docs-navigator` | core | Navigate project docs |
 | `technical-writing` | sw-docs | Technical writing best practices |
-| `stakeholder-docs` | sw-docs | Non-technical documentation |
 | `docusaurus` | sw-docs | Docusaurus site management |
-| `preview` | sw-docs | Documentation preview |
 | `spec-driven-brainstorming` | sw-docs | Structured ideation |
 
 ### docs-writer
@@ -677,22 +675,21 @@ Manage releases and versions.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `release-coordinator` | sw-release | Release process orchestration |
-| `version-aligner` | sw-release | Monorepo version alignment |
+| `release-expert` | sw-release | Release orchestration and version alignment |
 
-### release-coordinator
+### release-expert
 
-**Purpose**: Coordinate release processes.
+**Purpose**: Full release orchestration, version alignment, and coordination.
 
 ```bash
-/sw-release:release-coordinator  # Release guidance
+/sw-release:release-expert  # Release guidance
 ```
 
 **Covers:**
-- Semantic versioning
-- Changelog generation
-- Release notes
-- Rollback procedures
+- Semantic versioning and version alignment
+- Multi-repo release coordination and waves
+- RC lifecycle management
+- Changelog generation and rollback procedures
 
 ---
 
@@ -702,22 +699,21 @@ Create technical diagrams.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `diagrams-architect` | sw-diagrams | Architecture diagram design |
-| `diagrams-generator` | sw-diagrams | Diagram code generation |
+| `diagrams` | sw-diagrams | Architecture diagram design and generation |
 
-### diagrams-generator
+### diagrams
 
-**Purpose**: Generate Mermaid/PlantUML diagrams.
+**Purpose**: Create and generate Mermaid/C4 diagrams.
 
 ```bash
-/sw-diagrams:diagrams-generator  # Create diagrams
+/sw-diagrams:diagrams  # Create diagrams
 ```
 
 **Creates:**
-- Architecture diagrams
+- C4 architecture diagrams (Context, Container, Component)
 - Sequence diagrams
 - Entity relationship diagrams
-- Flow charts
+- Deployment diagrams
 
 ---
 

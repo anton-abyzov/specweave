@@ -520,12 +520,11 @@ I activate when you ask about:
 - **Tech Lead agent** - Code review, best practices
 - **spec-generator** - Creating detailed technical RFCs
 - **context-loader** - Explaining context efficiency
-- **diagrams-architect** - Creating C4/Mermaid diagrams
+- **diagrams** - Creating C4/Mermaid diagrams
 
 I focus on **framework knowledge**. For **increment execution**, use the PM agent and commands!
 
 ---
 
 Let me help you understand and use SpecWeave correctly! 🚀
-
 

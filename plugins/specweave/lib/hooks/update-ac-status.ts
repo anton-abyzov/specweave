@@ -190,7 +190,7 @@ async function syncACsToGitHub(projectRoot: string, incrementId: string): Promis
     });
 
     const syncResult = await sync.syncACCheckboxesToGitHub(config, {
-      addComment: false // Don't add comment on every AC update (prevent spam)
+      addComment: true // Post comment on GitHub issue when ACs are completed
     });
 
     if (syncResult.success && syncResult.updated > 0) {

@@ -1,5 +1,6 @@
 ---
 description: Sync guidance for SpecWeave increments with JIRA epics/stories (content SpecWeave→JIRA, status JIRA→SpecWeave). Use when asking about JIRA integration setup or troubleshooting sync. For actual syncing, use /sw-jira:sync command instead.
+user-invokable: false
 allowed-tools: Read, Task
 ---
 
