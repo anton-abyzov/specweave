@@ -20,7 +20,7 @@
 Per official Claude Code documentation, the correct field is `allowed-tools:`, NOT `tools:`.
 
 **Affected files:**
-1. `plugins/specweave-diagrams/skills/diagrams-architect/SKILL.md`
+1. `plugins/specweave-diagrams/skills/diagrams/SKILL.md`
 2. `plugins/specweave-backend/skills/python-backend/SKILL.md`
 3. `plugins/specweave-backend/skills/nodejs-backend/SKILL.md`
 4. `plugins/specweave-backend/skills/dotnet-backend/SKILL.md`
@@ -99,7 +99,7 @@ allowed-tools: Read, Write, Edit, Bash
 # Fix tools: → allowed-tools: in SKILL.md files
 
 files=(
-  "plugins/specweave-diagrams/skills/diagrams-architect/SKILL.md"
+  "plugins/specweave-diagrams/skills/diagrams/SKILL.md"
   "plugins/specweave-backend/skills/python-backend/SKILL.md"
   "plugins/specweave-backend/skills/nodejs-backend/SKILL.md"
   "plugins/specweave-backend/skills/dotnet-backend/SKILL.md"

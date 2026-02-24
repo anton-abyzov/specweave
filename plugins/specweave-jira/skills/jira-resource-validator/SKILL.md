@@ -1,5 +1,6 @@
 ---
 description: Validates JIRA projects and boards exist, auto-creates missing resources. Use when setting up JIRA integration, validating .env configuration, or troubleshooting missing projects/boards. Supports per-project board configuration with JIRA_BOARDS_{ProjectKey} pattern.
+user-invokable: false
 allowed-tools: Read, Bash, Write, Edit
 ---
 

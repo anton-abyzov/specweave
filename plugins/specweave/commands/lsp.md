@@ -203,4 +203,3 @@ Features:
 2. Uses native LSP protocol
 3. Provides real semantic analysis
 4. Works in any environment (CI/CD, Claude Code, scripts)
-

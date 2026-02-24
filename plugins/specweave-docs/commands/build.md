@@ -46,7 +46,7 @@ console.log('\n✅ Validation passed! Proceeding with build...\n');
 # Check if Docusaurus is set up
 if [ ! -d ".specweave/cache/docs-site/node_modules" ]; then
   echo "Setting up Docusaurus first..."
-  # Run the same setup as preview command (see preview.md for full setup)
+  # Run the same setup as view command (see view.md for full setup)
   # After setup, continue to build
 fi
 ```

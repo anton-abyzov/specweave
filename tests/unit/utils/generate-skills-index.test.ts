@@ -238,7 +238,7 @@ description: ${description}
     });
 
     it('should categorize architecture skills', async () => {
-      setupSingleSkill('diagrams-architect', 'Generates architecture diagrams.');
+      setupSingleSkill('diagrams', 'Generates architecture diagrams.');
       await generateSkillsIndex('/tmp/output.md');
 
       const content = mockWriteFileSync.mock.calls[0][1] as string;
