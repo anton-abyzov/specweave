@@ -66,7 +66,11 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/utils/chalk-fallback.js',
     // GitHub Reconciler - reconciles GitHub issue states with increment statuses
     // Used by reopen-github-issues.js and close-github-issues-abandoned.js hooks
-    'dist/src/sync/github-reconciler.js'
+    'dist/src/sync/github-reconciler.js',
+    // Universal Auto-Create - creates per-user-story items in JIRA/ADO
+    // Used by universal-auto-create-dispatcher.sh hook
+    'dist/src/core/universal-auto-create.js',
+    'dist/src/utils/feature-id-derivation.js'
   ]
 };
 
