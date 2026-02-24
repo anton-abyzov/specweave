@@ -134,19 +134,31 @@ log "Creating external items for $INC_ID (github=$GH_ENABLED jira=$JIRA_ENABLED 
 # ============================================================================
 
 if [[ "$GH_ENABLED" == "true" ]]; then
-  GITHUB_HANDLER="${PROJECT_ROOT}/plugins/specweave-github/hooks/github-auto-create-handler.sh"
-  # Fallback: handler may be in a sibling plugin directory (umbrella repo layout)
-  if [[ ! -f "$GITHUB_HANDLER" ]]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    FALLBACK_DIR="$(cd "$SCRIPT_DIR/../../../specweave-github/hooks" 2>/dev/null && pwd)"
-    [[ -n "$FALLBACK_DIR" ]] && GITHUB_HANDLER="$FALLBACK_DIR/github-auto-create-handler.sh"
+  # Derive specweave package root from script location (works for both dev and npm)
+  # Script is at: plugins/specweave/hooks/v2/handlers/ → 5 levels up = package root
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  PKG_ROOT="$(cd "$SCRIPT_DIR/../../../../.." 2>/dev/null && pwd)"
+
+  GITHUB_HANDLER=""
+  # 1. Sibling plugin dir (works for both npm and dev: plugins/specweave-github/hooks/)
+  CANDIDATE="$SCRIPT_DIR/../../../../specweave-github/hooks/github-auto-create-handler.sh"
+  [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
+  # 2. Fallback: PROJECT_ROOT/plugins/ (dev-only, when running from source repo)
+  if [[ -z "$GITHUB_HANDLER" ]]; then
+    CANDIDATE="${PROJECT_ROOT}/plugins/specweave-github/hooks/github-auto-create-handler.sh"
+    [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
   fi
-  if [[ -f "$GITHUB_HANDLER" ]]; then
-    log "Delegating GitHub auto-create to existing handler"
+  # 3. Fallback: node_modules/specweave/ (direct npm install)
+  if [[ -z "$GITHUB_HANDLER" ]]; then
+    CANDIDATE="${PROJECT_ROOT}/node_modules/specweave/plugins/specweave-github/hooks/github-auto-create-handler.sh"
+    [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
+  fi
+  if [[ -n "$GITHUB_HANDLER" && -f "$GITHUB_HANDLER" ]]; then
+    log "Delegating GitHub auto-create to handler at $GITHUB_HANDLER"
     bash "$GITHUB_HANDLER" "$INC_ID" &
     GH_PID=$!
   else
-    log "GitHub handler not found at any known path"
+    log "GitHub handler not found at any known path (checked sibling, PROJECT_ROOT, node_modules)"
   fi
 fi
 
@@ -157,9 +169,36 @@ fi
 if [[ "$JIRA_ENABLED" == "true" || "$ADO_ENABLED" == "true" ]]; then
   command -v node &>/dev/null || { log "Node.js not found. Skipping JIRA/ADO."; exit 0; }
 
-  CREATE_MODULE="$PROJECT_ROOT/dist/src/core/universal-auto-create.js"
-  if [[ ! -f "$CREATE_MODULE" ]]; then
-    log "Module not found at $CREATE_MODULE. Skipping JIRA/ADO."
+  # Resolve universal-auto-create.js from multiple locations
+  CREATE_MODULE=""
+  # 0. SPECWEAVE_PKG (set by Claude Code hook infrastructure, most reliable)
+  if [[ -n "${SPECWEAVE_PKG:-}" ]]; then
+    CANDIDATE="${SPECWEAVE_PKG}/dist/src/core/universal-auto-create.js"
+    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
+  fi
+  # 1. Package dist/ (derived from script location — works for both npm and dev)
+  if [[ -z "$CREATE_MODULE" ]]; then
+    CANDIDATE="${PKG_ROOT:-$PROJECT_ROOT}/dist/src/core/universal-auto-create.js"
+    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
+  fi
+  # 2. Vendor directory (self-contained plugin)
+  if [[ -z "$CREATE_MODULE" ]]; then
+    CANDIDATE="$HANDLER_DIR/../../lib/vendor/core/universal-auto-create.js"
+    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$(cd "$(dirname "$CANDIDATE")" && pwd)/$(basename "$CANDIDATE")"
+  fi
+  # 3. node_modules/specweave/ (direct npm install)
+  if [[ -z "$CREATE_MODULE" ]]; then
+    CANDIDATE="${PROJECT_ROOT}/node_modules/specweave/dist/src/core/universal-auto-create.js"
+    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
+  fi
+  # 4. Legacy: PROJECT_ROOT/dist/ (dev-only, running from source repo)
+  if [[ -z "$CREATE_MODULE" ]]; then
+    CANDIDATE="${PROJECT_ROOT}/dist/src/core/universal-auto-create.js"
+    [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
+  fi
+
+  if [[ -z "$CREATE_MODULE" ]]; then
+    log "Module not found at any known path. Skipping JIRA/ADO. Checked: PKG_ROOT=${PKG_ROOT:-unset}, node_modules, vendor, PROJECT_ROOT"
   else
     # Build config JSON for the TypeScript module
     JIRA_DOMAIN=$(jq -r '.sync.jira.domain // .issueTracker.domain // ""' "$CONFIG_PATH" 2>/dev/null)
