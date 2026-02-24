@@ -52,6 +52,7 @@ const {
   mockGhGetIssue,
   mockGhUpdateIssueBody,
   mockGhAddComment,
+  mockGhGetLastComment,
   // Frontmatter updater mocks
   mockGetGitHubIssueFromFrontmatter,
   mockUpdateUserStoryFrontmatter,
@@ -88,6 +89,7 @@ const {
   mockAdoListWorkItems,
   mockAdoUpdateWorkItem,
   mockAdoAddComment,
+  mockAdoGetLastComment,
   MockAdoClient,
 } = vi.hoisted(() => {
   // fs mocks
@@ -118,6 +120,7 @@ const {
   const _mockGhGetIssue = vi.fn();
   const _mockGhUpdateIssueBody = vi.fn();
   const _mockGhAddComment = vi.fn();
+  const _mockGhGetLastComment = vi.fn().mockResolvedValue(null);
 
   class _MockGitHubClientV2 {
     createOrGetMilestone = _mockGhCreateOrGetMilestone;
@@ -127,6 +130,7 @@ const {
     getIssue = _mockGhGetIssue;
     updateIssueBody = _mockGhUpdateIssueBody;
     addComment = _mockGhAddComment;
+    getLastComment = _mockGhGetLastComment;
     static fromRepo = vi.fn();
   }
 
@@ -212,11 +216,13 @@ const {
   const _mockAdoListWorkItems = vi.fn().mockResolvedValue([]);
   const _mockAdoUpdateWorkItem = vi.fn();
   const _mockAdoAddComment = vi.fn();
+  const _mockAdoGetLastComment = vi.fn().mockResolvedValue(null);
 
   class _MockAdoClient {
     listWorkItems = _mockAdoListWorkItems;
     updateWorkItem = _mockAdoUpdateWorkItem;
     addComment = _mockAdoAddComment;
+    getLastComment = _mockAdoGetLastComment;
     constructor(_config?: any) {}
   }
 
@@ -255,6 +261,7 @@ const {
     mockGhGetIssue: _mockGhGetIssue,
     mockGhUpdateIssueBody: _mockGhUpdateIssueBody,
     mockGhAddComment: _mockGhAddComment,
+    mockGhGetLastComment: _mockGhGetLastComment,
     mockGetGitHubIssueFromFrontmatter: _mockGetGitHubIssueFromFrontmatter,
     mockUpdateUserStoryFrontmatter: _mockUpdateUserStoryFrontmatter,
     mockLockAcquire: _mockLockAcquire,
@@ -281,6 +288,7 @@ const {
     mockAdoListWorkItems: _mockAdoListWorkItems,
     mockAdoUpdateWorkItem: _mockAdoUpdateWorkItem,
     mockAdoAddComment: _mockAdoAddComment,
+    mockAdoGetLastComment: _mockAdoGetLastComment,
     MockAdoClient: _MockAdoClient,
   };
 });
@@ -472,6 +480,7 @@ function setupGitHubClient() {
     getIssue: mockGhGetIssue,
     updateIssueBody: mockGhUpdateIssueBody,
     addComment: mockGhAddComment,
+    getLastComment: mockGhGetLastComment,
   };
   mockGhFromRepo.mockReturnValue(clientInstance);
   return clientInstance;
@@ -1011,6 +1020,65 @@ describe('SyncCoordinator', () => {
       expect(mockMetricsRecordClosure).toHaveBeenCalledWith('github', 42, false, expect.stringContaining('API error'));
     });
 
+    it('skips duplicate completion comment when already posted (dedup)', async () => {
+      setupExistsSync(['spec.md', 'docs/internal/specs']);
+      mockReadFile.mockImplementation((p: string) => {
+        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
+        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
+        return Promise.reject(new Error('not found'));
+      });
+      mockReaddir.mockResolvedValue(['us-001-test.md']);
+      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
+      setupGitHubClient();
+      mockGhSearchIssueByTitle.mockResolvedValue({
+        number: 42,
+        state: 'OPEN',
+        html_url: 'https://github.com/o/r/issues/42',
+      });
+      // Simulate existing completion comment from a prior sync
+      mockGhGetLastComment.mockResolvedValue({
+        body: '## ✅ User Story Complete\n\nIncrement `0001` completed.',
+        author: 'bot',
+      });
+      mockGhCloseIssue.mockResolvedValue(undefined);
+
+      const coord = makeCoordinator();
+      const result = await coord.closeGitHubIssuesForUserStories(config);
+
+      expect(result).toEqual([42]);
+      // Should close WITHOUT the completion comment (no duplicate)
+      expect(mockGhCloseIssue).toHaveBeenCalledWith(42);
+      // Should NOT have been called with a comment string
+      expect(mockGhCloseIssue).not.toHaveBeenCalledWith(42, expect.stringContaining('User Story Complete'));
+    });
+
+    it('posts completion comment when no prior comment exists', async () => {
+      setupExistsSync(['spec.md', 'docs/internal/specs']);
+      mockReadFile.mockImplementation((p: string) => {
+        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
+        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
+        return Promise.reject(new Error('not found'));
+      });
+      mockReaddir.mockResolvedValue(['us-001-test.md']);
+      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
+      setupGitHubClient();
+      mockGhSearchIssueByTitle.mockResolvedValue({
+        number: 42,
+        state: 'OPEN',
+        html_url: 'https://github.com/o/r/issues/42',
+      });
+      // No prior comment
+      mockGhGetLastComment.mockResolvedValue(null);
+      mockGhCloseIssue.mockResolvedValue(undefined);
+
+      const coord = makeCoordinator();
+      const result = await coord.closeGitHubIssuesForUserStories(config);
+
+      expect(result).toEqual([42]);
+      // Should close WITH the completion comment
+      expect(mockGhCloseIssue).toHaveBeenCalledWith(42, expect.stringContaining('User Story Complete'));
+    });
+
     it('uses deriveFeatureId when spec has no feature_id', async () => {
       // loadUserStoriesForIncrement needs feature_id from metadata.json fallback
       setupExistsSync(['spec.md', 'docs/internal/specs', 'metadata.json']);
@@ -1383,6 +1451,37 @@ describe('SyncCoordinator', () => {
       expect(mockMetricsIsFailureRateHigh).toHaveBeenCalledWith('github');
       expect(mockMetricsIsFailureRateHigh).toHaveBeenCalledWith('jira');
       expect(mockMetricsIsFailureRateHigh).toHaveBeenCalledWith('ado');
+    });
+
+    it('skips execution when lock already held (concurrent call prevention)', async () => {
+      // Simulate lock already held by another concurrent call
+      mockLockAcquire.mockResolvedValue(false);
+
+      const coord = makeCoordinator();
+      const result = await coord.syncIncrementClosure();
+
+      // Should return success with empty closedIssues (skipped)
+      expect(result.success).toBe(true);
+      expect(result.closedIssues).toEqual([]);
+      // Should NOT have tried to load config (skipped early)
+      expect(mockLockRelease).not.toHaveBeenCalled();
+    });
+
+    it('releases lock after successful closure', async () => {
+      mockLockAcquire.mockResolvedValue(true);
+      setupExistsSync(['config.json']);
+      mockReadFile.mockImplementation((p: string) => {
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson({
+          settings: { canUpdateExternalItems: false },
+        }));
+        return Promise.reject(new Error('not found'));
+      });
+
+      const coord = makeCoordinator();
+      await coord.syncIncrementClosure();
+
+      expect(mockLockAcquire).toHaveBeenCalled();
+      expect(mockLockRelease).toHaveBeenCalled();
     });
   });
 
