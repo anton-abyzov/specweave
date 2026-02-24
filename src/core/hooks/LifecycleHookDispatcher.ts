@@ -62,12 +62,18 @@ export class LifecycleHookDispatcher {
         }
       }
 
-      // External issue auto-creation SECOND
-      if (planningConfig.auto_create_github_issue) {
-        const { autoCreateExternalIssue } = await import(
-          '../../sync/external-issue-auto-creator.js'
-        );
-        await autoCreateExternalIssue(projectRoot, incrementId);
+      // (0348) GitHub issue creation now handled by LivingDocsSync → GitHubFeatureSync.
+      // If auto_create_github_issue is set but sync_living_docs wasn't, ensure living docs sync runs.
+      if (planningConfig.auto_create_github_issue && !planningConfig.sync_living_docs) {
+        try {
+          const { LivingDocsSync } = await import(
+            '../living-docs/living-docs-sync.js'
+          );
+          const sync = new LivingDocsSync(projectRoot);
+          await sync.syncIncrement(incrementId);
+        } catch (error) {
+          LifecycleHookDispatcher.logError('onIncrementPlanned:autoCreateFallback', error);
+        }
       }
     } catch (error) {
       LifecycleHookDispatcher.logError('onIncrementPlanned', error);
@@ -101,15 +107,21 @@ export class LifecycleHookDispatcher {
         await sync.syncIncrement(incrementId);
       }
 
+      // (0348) external_tracker_sync now routes through LivingDocsSync → GitHubFeatureSync
+      // for GitHub. JIRA/ADO still handled by SyncCoordinator for non-GitHub closure.
       if (taskConfig.external_tracker_sync) {
-        const { SyncCoordinator } = await import(
-          '../../sync/sync-coordinator.js'
-        );
-        const coordinator = new SyncCoordinator({
-          projectRoot,
-          incrementId,
-        });
-        await coordinator.syncIncrementClosure();
+        // Ensure living docs sync runs (which chains to GitHub via GitHubFeatureSync)
+        if (!taskConfig.sync_tasks_md) {
+          try {
+            const { LivingDocsSync } = await import(
+              '../living-docs/living-docs-sync.js'
+            );
+            const sync = new LivingDocsSync(projectRoot);
+            await sync.syncIncrement(incrementId);
+          } catch (error) {
+            LifecycleHookDispatcher.logError('onTaskCompleted:livingDocsFallback', error);
+          }
+        }
       }
     } catch (error) {
       LifecycleHookDispatcher.logError('onTaskCompleted', error);
@@ -168,6 +180,8 @@ export class LifecycleHookDispatcher {
         }
       };
 
+      // (0348) GitHub closure handled by GitHubFeatureSync (via syncLivingDocs + syncGitHubProject).
+      // SyncCoordinator only used for JIRA/ADO closure.
       const syncClosure = async () => {
         if (!shouldCloseIssue) return;
         const { SyncCoordinator } = await import(
@@ -177,6 +191,8 @@ export class LifecycleHookDispatcher {
           projectRoot,
           incrementId,
         });
+        // syncIncrementClosure now skips GitHub (handled by GitHubFeatureSync)
+        // but still handles JIRA and ADO closure
         await coordinator.syncIncrementClosure();
       };
 
