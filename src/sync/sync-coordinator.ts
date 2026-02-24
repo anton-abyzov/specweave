@@ -1175,6 +1175,25 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     }
   }
 
+  /**
+   * Format user story content for GitHub issue body
+   */
+  private formatUserStoryBody(usFile: LivingDocsUSFile): string {
+    // Simple body for now - can be enhanced later
+    const parts: string[] = [];
+
+    parts.push(`## User Story: ${usFile.id}`);
+    parts.push('');
+
+    if (usFile.external_title) {
+      parts.push(`**Original Title**: ${usFile.external_title}`);
+      parts.push('');
+    }
+
+    parts.push('For detailed acceptance criteria, tasks, and technical specifications, see the living docs in the repository.');
+
+    return parts.join('\n');
+  }
 
   /**
    * Sync increment completion to external tools using format preservation
@@ -1815,4 +1834,24 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     return lines.join('\n');
   }
 
+  /**
+   * Sync AC checkbox status to GitHub issues
+   *
+   * @deprecated (0348) Delegates to GitHubACCheckboxSync in the GitHub plugin.
+   * Kept for backward compatibility with callers that haven't migrated yet.
+   */
+  async syncACCheckboxesToGitHub(
+    config: SpecWeaveConfig,
+    options: { addComment?: boolean } = {}
+  ): Promise<{ success: boolean; updated: number; issues: number[] }> {
+    const { GitHubACCheckboxSync } = await import(
+      '../../plugins/specweave-github/lib/github-ac-checkbox-sync.js'
+    );
+    const sync = new GitHubACCheckboxSync({
+      projectRoot: this.projectRoot,
+      incrementId: this.incrementId,
+      logger: this.logger,
+    });
+    return sync.syncACCheckboxesToGitHub(config, options);
+  }
 }
