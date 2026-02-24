@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.318] - 2026-02-24
+
+### Changes
+- sync-coordinator cleanup
+- build artifact cleanup
+- build artifact from pre-commit hook
+- consolidate skills to commands, cleanup plugins
+
+---
+
+
+
 ## [1.0.317] - 2026-02-24
 
 ### Changes
