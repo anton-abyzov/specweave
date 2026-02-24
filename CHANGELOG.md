@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.317] - 2026-02-24
+
+### Changes
+- build artifact from pre-commit hook
+- consolidate github sync path, add ac checkbox sync
+- fix tests broken by vskill skills migration
+- bump to 1.0.316
+- add scout to auto-loading detection as discovery entry point
+
+---
+
+
+
 ## [1.0.315] - 2026-02-23
 
 ### Changes
