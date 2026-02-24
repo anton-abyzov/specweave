@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.319] - 2026-02-24
+
+### Changes
+- remove orphaned GitHub methods from SyncCoordinator, fix tests
+- build artifact from publish
+- restore sync-coordinator methods, bump 1.0.318
+
+---
+
+
+
 ## [1.0.318] - 2026-02-24
 
 ### Changes
