@@ -4,21 +4,16 @@
  * Tests cover:
  * - Constructor: project ID auto-detection, metrics initialization, provider router setup
  * - getClosureMetrics() / getFormattedClosureMetrics(): metric delegation
- * - createGitHubIssuesForUserStories(): 3-layer idempotency, issue creation, lock management
- * - closeGitHubIssuesForUserStories(): issue closure, already-closed detection
+ * - createGitHubIssuesForUserStories(): deprecated stub (0348 - GitHub via GitHubFeatureSync)
+ * - closeGitHubIssuesForUserStories(): deprecated stub (0348 - GitHub via GitHubFeatureSync)
  * - closeJiraIssuesForUserStories(): JIRA transitions, missing config handling
  * - closeAdoWorkItemsForUserStories(): ADO closure, batch fetching
  * - syncIncrementClosure(): full closure flow, gate checks, error handling
  * - syncIncrementCompletion(): living docs sync, gate checks, multi-provider routing
- * - syncACCheckboxesToGitHub(): checkbox updates, comment posting
- * - parseACStatusFromSpec(): bold and plain AC formats
- * - formatUserStoryBody(): body generation
  * - formatAdoCompletionComment() / formatJiraCompletionComment(): comment formatting
  * - loadUserStoriesForIncrement(): spec parsing, metadata fallback
  * - loadCompletionData(): tasks/ACs parsing
  * - loadConfig(): config file loading
- * - detectDuplicateIssue(): duplicate feature ID detection
- * - updateIssueIfPlaceholder(): placeholder body updates
  *
  * @see src/sync/sync-coordinator.ts
  */
@@ -575,534 +570,28 @@ describe('SyncCoordinator', () => {
   });
 
   // ================================================================
-  // createGitHubIssuesForUserStories
+  // createGitHubIssuesForUserStories (deprecated stub - 0348)
+  // GitHub issue creation now handled by GitHubFeatureSync pipeline
   // ================================================================
 
-  describe('createGitHubIssuesForUserStories()', () => {
-    const config = {
-      sync: {
-        github: { enabled: true, owner: 'o', repo: 'r' },
-        settings: { canUpdateExternalItems: true },
-      },
-    } as any;
-
-    it('returns empty when no user stories found', async () => {
-      // spec.md does not exist -> no user stories
-      mockExistsSync.mockReturnValue(false);
+  describe('createGitHubIssuesForUserStories() [deprecated stub]', () => {
+    it('returns empty array (GitHub handled by GitHubFeatureSync)', async () => {
       const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-    });
-
-    it('throws when GitHub repo not configured', async () => {
-      // Set up spec.md with feature_id
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      setupReadFile({
-        'spec.md': SPEC_WITH_FEATURE_ID,
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001-test.md')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockDetectGitHubRepo.mockResolvedValue(null);
-
-      const coord = makeCoordinator();
-      await expect(coord.createGitHubIssuesForUserStories(config)).rejects.toThrow('GitHub repository not configured');
-    });
-
-    it('uses deriveFeatureId when spec.md has no feature_id', async () => {
-      // loadUserStoriesForIncrement needs feature_id from metadata.json fallback
-      // but createGitHubIssuesForUserStories re-reads spec.md independently
-      setupExistsSync(['spec.md', 'docs/internal/specs', 'metadata.json', '.locks']);
-
-      mockYamlParse.mockImplementation((str: string) => {
-        // spec.md frontmatter has NO feature_id/epic/feature
-        if (str.includes('title: Test Feature')) return { title: 'Test Feature' };
-        // User story frontmatter
-        return { id: 'US-001', title: 'Test Story' };
-      });
-
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITHOUT_FEATURE_ID);
-        // metadata.json has feature_id -> loadUserStoriesForIncrement finds stories
-        if (p.includes('metadata.json')) return Promise.resolve(JSON.stringify({ feature_id: 'FS-001' }));
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      mockDeriveFeatureId.mockReturnValue('FS-001');
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-      mockGhCreateUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
-        title: '[FS-001][US-001] Test Story',
-        body: 'body',
-        state: 'open',
-        labels: [],
-      });
-
-      const coord = makeCoordinator();
-      await coord.createGitHubIssuesForUserStories(config);
-
-      expect(mockDeriveFeatureId).toHaveBeenCalledWith(INCREMENT_ID);
-    });
-
-    it('skips user story when lock not acquired', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockLockAcquire.mockResolvedValue(false);
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-      expect(mockGhCreateUserStoryIssue).not.toHaveBeenCalled();
-    });
-
-    it('skips when Layer 1 (frontmatter) finds existing issue', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGetGitHubIssueFromFrontmatter.mockResolvedValue({ number: 5, url: 'https://...' });
-      // Mock getIssue for updateIssueIfPlaceholder
-      mockGhGetIssue.mockResolvedValue({
-        number: 5,
-        body: '## Acceptance Criteria\n- AC 1',
-        state: 'open',
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-      expect(mockGhCreateUserStoryIssue).not.toHaveBeenCalled();
-    });
-
-    it('skips when Layer 2 (metadata.json) finds existing issue', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({
-        github: {
-          issues: [{ userStory: 'US-001', number: 7, url: 'https://...', createdAt: '2026-01-01' }],
-        },
-      });
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhGetIssue.mockResolvedValue({
-        number: 7,
-        body: '## Acceptance Criteria\n- AC',
-        state: 'open',
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-      expect(mockGhCreateUserStoryIssue).not.toHaveBeenCalled();
-    });
-
-    it('skips when Layer 2 finds issue in externalLinks format', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({
-        github: { issues: [] },
-        externalLinks: {
-          github: {
-            issues: {
-              'US-001': { issueNumber: 12, issueUrl: 'https://github.com/o/r/issues/12' },
-            },
-          },
-        },
-      });
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhGetIssue.mockResolvedValue({
-        number: 12,
-        body: '## Acceptance Criteria',
-        state: 'open',
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-    });
-
-    it('backfills frontmatter and metadata when Layer 3 (GitHub API) finds existing issue', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({ github: { issues: [] } });
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      // Layer 3: GitHub API finds the issue
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 20,
-        html_url: 'https://github.com/o/r/issues/20',
-        title: '[FS-001][US-001] Test',
-        body: 'Has ## Acceptance Criteria',
-        state: 'open',
-        labels: [],
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-
-      expect(result).toEqual([]);
-      expect(mockUpdateUserStoryFrontmatter).toHaveBeenCalled();
-      expect(mockWriteFile).toHaveBeenCalled(); // metadata backfill
-    });
-
-    it('creates a new issue when all 3 layers miss', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({ github: { issues: [] } });
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-test.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhSearchIssueByTitle.mockResolvedValue(null); // All layers miss
-
-      const newIssue = {
-        number: 30,
-        html_url: 'https://github.com/o/r/issues/30',
-        title: '[FS-001][US-001] Test Story',
-        body: 'body',
-        state: 'open',
-        labels: [],
-      };
-      mockGhCreateUserStoryIssue.mockResolvedValue(newIssue);
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].number).toBe(30);
-      expect(mockGhCreateUserStoryIssue).toHaveBeenCalled();
-      expect(mockUpdateUserStoryFrontmatter).toHaveBeenCalled();
-    });
-
-    it('always releases lock even on error', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      // Cause error during frontmatter check
-      mockGetGitHubIssueFromFrontmatter.mockRejectedValue(new Error('frontmatter error'));
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-
-      // Lock should still be released
-      expect(mockLockRelease).toHaveBeenCalled();
-    });
-
-    it('continues with milestone error (non-blocking)', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({ github: { issues: [] } });
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-test.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockRejectedValue(new Error('milestone error'));
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-      mockGhCreateUserStoryIssue.mockResolvedValue({
-        number: 31,
-        html_url: 'https://github.com/o/r/issues/31',
-        title: '[FS-001][US-001]',
-        body: 'body',
-        state: 'open',
-        labels: [],
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
-
-      // Should still create the issue despite milestone failure
-      expect(result).toHaveLength(1);
-    });
-
-    it('returns empty and skips GitHub sync when deriveFeatureId fails and no spec feature_id', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITHOUT_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockDeriveFeatureId.mockImplementation(() => { throw new Error('bad format'); });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories(config);
+      const result = await coord.createGitHubIssuesForUserStories({} as any);
       expect(result).toEqual([]);
     });
   });
 
   // ================================================================
-  // closeGitHubIssuesForUserStories
+  // closeGitHubIssuesForUserStories (deprecated stub - 0348)
+  // GitHub closure now handled by GitHubFeatureSync pipeline
   // ================================================================
 
-  describe('closeGitHubIssuesForUserStories()', () => {
-    const config = {
-      sync: {
-        github: { enabled: true },
-        settings: { canUpdateExternalItems: true },
-      },
-    } as any;
-
-    it('returns empty when no user stories found', async () => {
-      mockExistsSync.mockReturnValue(false);
+  describe('closeGitHubIssuesForUserStories() [deprecated stub]', () => {
+    it('returns empty array (GitHub handled by GitHubFeatureSync)', async () => {
       const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
+      const result = await coord.closeGitHubIssuesForUserStories({} as any);
       expect(result).toEqual([]);
-    });
-
-    it('throws when GitHub repo not configured', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue(null);
-
-      const coord = makeCoordinator();
-      await expect(coord.closeGitHubIssuesForUserStories(config)).rejects.toThrow('GitHub repository not configured');
-    });
-
-    it('closes open issues successfully', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 42,
-        state: 'OPEN',
-        html_url: 'https://github.com/o/r/issues/42',
-      });
-      mockGhCloseIssue.mockResolvedValue(undefined);
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-
-      expect(result).toEqual([42]);
-      expect(mockGhCloseIssue).toHaveBeenCalledWith(42, expect.stringContaining('User Story Complete'));
-      expect(mockMetricsStartOperation).toHaveBeenCalled();
-      expect(mockMetricsRecordClosure).toHaveBeenCalledWith('github', 42, true);
-    });
-
-    it('skips already closed issues', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 42,
-        state: 'CLOSED',
-        html_url: 'https://...',
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-      expect(mockGhCloseIssue).not.toHaveBeenCalled();
-    });
-
-    it('skips when no GitHub issue found for user story', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-      expect(result).toEqual([]);
-    });
-
-    it('records failure metric when closeIssue throws', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 42,
-        state: 'OPEN',
-        html_url: 'https://...',
-      });
-      mockGhCloseIssue.mockRejectedValue(new Error('API error'));
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-
-      expect(result).toEqual([]);
-      expect(mockMetricsRecordClosure).toHaveBeenCalledWith('github', 42, false, expect.stringContaining('API error'));
-    });
-
-    it('skips duplicate completion comment when already posted (dedup)', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 42,
-        state: 'OPEN',
-        html_url: 'https://github.com/o/r/issues/42',
-      });
-      // Simulate existing completion comment from a prior sync
-      mockGhGetLastComment.mockResolvedValue({
-        body: '## ✅ User Story Complete\n\nIncrement `0001` completed.',
-        author: 'bot',
-      });
-      mockGhCloseIssue.mockResolvedValue(undefined);
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-
-      expect(result).toEqual([42]);
-      // Should close WITHOUT the completion comment (no duplicate)
-      expect(mockGhCloseIssue).toHaveBeenCalledWith(42);
-      // Should NOT have been called with a comment string
-      expect(mockGhCloseIssue).not.toHaveBeenCalledWith(42, expect.stringContaining('User Story Complete'));
-    });
-
-    it('posts completion comment when no prior comment exists', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhSearchIssueByTitle.mockResolvedValue({
-        number: 42,
-        state: 'OPEN',
-        html_url: 'https://github.com/o/r/issues/42',
-      });
-      // No prior comment
-      mockGhGetLastComment.mockResolvedValue(null);
-      mockGhCloseIssue.mockResolvedValue(undefined);
-
-      const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories(config);
-
-      expect(result).toEqual([42]);
-      // Should close WITH the completion comment
-      expect(mockGhCloseIssue).toHaveBeenCalledWith(42, expect.stringContaining('User Story Complete'));
-    });
-
-    it('uses deriveFeatureId when spec has no feature_id', async () => {
-      // loadUserStoriesForIncrement needs feature_id from metadata.json fallback
-      setupExistsSync(['spec.md', 'docs/internal/specs', 'metadata.json']);
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('title: Test Feature')) return { title: 'Test Feature' };
-        return { id: 'US-001', title: 'Test Story' };
-      });
-
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITHOUT_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(JSON.stringify({ feature_id: 'FS-001' }));
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test Story'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-
-      const coord = makeCoordinator();
-      await coord.closeGitHubIssuesForUserStories(config);
-      expect(mockDeriveFeatureId).toHaveBeenCalledWith(INCREMENT_ID);
     });
   });
 
@@ -1593,221 +1082,6 @@ describe('SyncCoordinator', () => {
     });
   });
 
-  // ================================================================
-  // syncACCheckboxesToGitHub
-  // ================================================================
-
-  describe('syncACCheckboxesToGitHub()', () => {
-    it('returns early when GitHub disabled', async () => {
-      mockIsProviderEnabled.mockReturnValue(false);
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({} as any);
-      expect(result.success).toBe(true);
-      expect(result.updated).toBe(0);
-    });
-
-    it('returns early when canUpdateExternal is false', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: false, canDelete: false });
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({
-        sync: { settings: { canUpdateExternalItems: false } },
-      } as any);
-      expect(result.success).toBe(true);
-      expect(result.updated).toBe(0);
-    });
-
-    it('returns early when no user stories', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: true, canUpsert: true, canDelete: false });
-      mockExistsSync.mockReturnValue(false);
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({
-        sync: {
-          settings: { canUpdateExternalItems: true },
-        },
-      } as any);
-      expect(result.success).toBe(true);
-    });
-
-    it('returns early when repo not configured', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: true, canUpsert: true, canDelete: false });
-
-      // Set up spec file with ACs
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue(null);
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({
-        sync: {
-          github: {},
-          settings: { canUpdateExternalItems: true },
-        },
-      } as any);
-      expect(result.success).toBe(true);
-      expect(result.updated).toBe(0);
-    });
-
-    it('updates AC checkboxes in issue body (bold format)', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: true, canUpsert: true, canDelete: false });
-
-      const specContent = `---
-feature_id: FS-001
----
-## ACs
-- [x] **AC-US1-01**: First AC
-- [ ] **AC-US1-02**: Second AC`;
-
-      // yaml parse mock needs to handle the feature_id
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) {
-          return { feature_id: 'FS-001' };
-        }
-        if (str.includes('US-001')) {
-          return {
-            id: 'US-001',
-            title: 'Test Story',
-            external_tools: { github: { number: 50 } },
-          };
-        }
-        return {};
-      });
-
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(specContent);
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-
-      const issueBody = `## Acceptance Criteria
-- [ ] **AC-US1-01**: First AC
-- [ ] **AC-US1-02**: Second AC`;
-
-      mockGhGetIssue.mockResolvedValue({
-        number: 50,
-        body: issueBody,
-        state: 'open',
-      });
-      mockGhUpdateIssueBody.mockResolvedValue(undefined);
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({
-        sync: {
-          github: {},
-          settings: { canUpdateExternalItems: true },
-        },
-      } as any);
-
-      expect(result.issues).toContain(50);
-      expect(mockGhUpdateIssueBody).toHaveBeenCalledWith(50, expect.any(String));
-    });
-
-    it('adds progress comment when addComment option is true', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: true, canUpsert: true, canDelete: false });
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) {
-          return { feature_id: 'FS-001' };
-        }
-        return {
-          id: 'US-001',
-          title: 'Test',
-          external_tools: { github: { number: 55 } },
-        };
-      });
-
-      const specContent = `---
-feature_id: FS-001
----
-- [x] **AC-US1-01**: First AC`;
-
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(specContent);
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-
-      mockGhGetIssue.mockResolvedValue({
-        number: 55,
-        body: '- [ ] **AC-US1-01**: First AC',
-        state: 'open',
-      });
-      mockGhUpdateIssueBody.mockResolvedValue(undefined);
-      mockGhAddComment.mockResolvedValue(undefined);
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub(
-        {
-          sync: {
-            github: {},
-            settings: { canUpdateExternalItems: true },
-          },
-        } as any,
-        { addComment: true }
-      );
-
-      expect(mockGhAddComment).toHaveBeenCalledWith(55, expect.stringContaining('Progress Update'));
-    });
-
-    it('handles error during checkbox update gracefully', async () => {
-      mockIsProviderEnabled.mockReturnValue(true);
-      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: true, canUpsert: true, canDelete: false });
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-001' };
-        return {
-          id: 'US-001',
-          title: 'Test',
-          external_tools: { github: { number: 60 } },
-        };
-      });
-
-      const specContent = `---
-feature_id: FS-001
----
-- [x] **AC-US1-01**: First`;
-
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(specContent);
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhGetIssue.mockRejectedValue(new Error('API error'));
-
-      const coord = makeCoordinator();
-      const result = await coord.syncACCheckboxesToGitHub({
-        sync: {
-          github: {},
-          settings: { canUpdateExternalItems: true },
-        },
-      } as any);
-
-      expect(result.success).toBe(false);
-    });
-  });
 
   // ================================================================
   // loadUserStoriesForIncrement (tested indirectly through public methods)
@@ -1815,26 +1089,38 @@ feature_id: FS-001
 
   describe('loadUserStoriesForIncrement (via public methods)', () => {
     it('returns empty when spec.md does not exist', async () => {
-      mockExistsSync.mockReturnValue(false);
+      mockExistsSync.mockImplementation((p: string) => {
+        if (p.includes('config.json')) return true;
+        return false;
+      });
+      mockReadFile.mockImplementation((p: string) => {
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson());
+        return Promise.reject(new Error('not found'));
+      });
+      mockIsProviderEnabled.mockReturnValue(true);
+      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: true, canDelete: false });
+
       const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories({} as any);
-      expect(result).toEqual([]);
+      const result = await coord.syncIncrementCompletion();
+      expect(result.userStoriesSynced).toBe(0);
     });
 
     it('returns empty when spec.md has no frontmatter', async () => {
-      setupExistsSync(['spec.md']);
+      setupExistsSync(['spec.md', 'config.json']);
       mockReadFile.mockImplementation((p: string) => {
         if (p.includes('spec.md')) return Promise.resolve('# No frontmatter');
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson());
         return Promise.reject(new Error('not found'));
       });
+      mockIsProviderEnabled.mockReturnValue(true);
+      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: true, canDelete: false });
 
       const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories({} as any);
-      expect(result).toEqual([]);
+      const result = await coord.syncIncrementCompletion();
+      expect(result.userStoriesSynced).toBe(0);
     });
 
     it('falls back to metadata.json for feature_id', async () => {
-      // yaml parse returns no feature_id for spec, but metadata has it
       mockYamlParse.mockImplementation((str: string) => {
         if (str.includes('title: No Feature')) {
           return { title: 'No Feature' };
@@ -1845,8 +1131,9 @@ feature_id: FS-001
         return {};
       });
 
-      setupExistsSync(['spec.md', 'metadata.json', 'docs/internal/specs']);
+      setupExistsSync(['spec.md', 'metadata.json', 'docs/internal/specs', 'config.json']);
       mockReadFile.mockImplementation((p: string) => {
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson());
         if (p.includes('spec.md')) return Promise.resolve('---\ntitle: No Feature\n---\n# X');
         if (p.includes('metadata.json')) return Promise.resolve(JSON.stringify({
           feature_id: 'FS-002',
@@ -1855,16 +1142,12 @@ feature_id: FS-001
         return Promise.reject(new Error('not found'));
       });
       mockReaddir.mockResolvedValue(['us-001-test.md']);
+      mockIsProviderEnabled.mockReturnValue(true);
+      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: true, canDelete: false });
+      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
 
       const coord = makeCoordinator();
-      // Use closeGitHubIssues as a vehicle to test loadUserStoriesForIncrement
-      try {
-        await coord.closeGitHubIssuesForUserStories({
-          sync: { github: { enabled: true } },
-        } as any);
-      } catch {
-        // Expected - GitHub repo not configured
-      }
+      await coord.syncIncrementCompletion();
 
       // Verify metadata.json was read (feature_id fallback)
       expect(mockReadFile).toHaveBeenCalledWith(
@@ -1876,20 +1159,22 @@ feature_id: FS-001
     it('returns empty when feature path does not exist', async () => {
       mockYamlParse.mockImplementation(() => ({ feature_id: 'FS-999' }));
 
-      setupExistsSync(['spec.md']);
-      // Feature dir does NOT exist
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('spec.md')) return true;
+        if (p.includes('config.json')) return true;
         return false;
       });
       mockReadFile.mockImplementation((p: string) => {
         if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson());
         return Promise.reject(new Error('not found'));
       });
+      mockIsProviderEnabled.mockReturnValue(true);
+      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: true, canDelete: false });
 
       const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories({} as any);
-      expect(result).toEqual([]);
+      const result = await coord.syncIncrementCompletion();
+      expect(result.userStoriesSynced).toBe(0);
     });
   });
 
@@ -1950,64 +1235,6 @@ feature_id: FS-001
       // syncIncrementClosure calls loadConfig internally
       const result = await coord.syncIncrementClosure();
       expect(result).toBeDefined();
-    });
-  });
-
-  // ================================================================
-  // formatUserStoryBody
-  // ================================================================
-
-  describe('formatUserStoryBody (via createGitHubIssuesForUserStories)', () => {
-    it('formats body with external_title when present', async () => {
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-001' };
-        return {
-          id: 'US-001',
-          title: 'Test',
-          external_title: 'Original External Title',
-        };
-      });
-
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(JSON.stringify({ github: { issues: [] } }));
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      // Feature dir has NO user story file -> fallback to formatUserStoryBody
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-test.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-
-      // Make the UserStoryContentBuilder fail so it falls back to formatUserStoryBody
-      mockBuildIssueBody.mockRejectedValue(new Error('no file'));
-
-      mockGhCreateUserStoryIssue.mockResolvedValue({
-        number: 40,
-        html_url: 'https://github.com/o/r/issues/40',
-        title: '[FS-001][US-001]',
-        body: '',
-        state: 'open',
-        labels: [],
-      });
-
-      const coord = makeCoordinator();
-      await coord.createGitHubIssuesForUserStories({
-        sync: { github: { enabled: true } },
-      } as any);
-
-      // Verify issue was created (formatUserStoryBody was used as fallback)
-      expect(mockGhCreateUserStoryIssue).toHaveBeenCalledWith(
-        expect.objectContaining({
-          body: expect.stringContaining('User Story: US-001'),
-        })
-      );
     });
   });
 
@@ -2115,211 +1342,28 @@ feature_id: FS-001
   });
 
   // ================================================================
-  // detectDuplicateIssue (tested indirectly via createGitHubIssuesForUserStories)
-  // ================================================================
-
-  describe('detectDuplicateIssue (via createGitHubIssuesForUserStories)', () => {
-    it('skips issue creation when duplicate detected with different format', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({ github: { issues: [] } });
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-128' };
-        return { id: 'US-001', title: 'Test' };
-      });
-
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve('---\nfeature_id: FS-128\n---');
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-test.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-128' });
-      mockDeriveFeatureId.mockReturnValue('FS-128');
-
-      // Layer 3 (exact match) misses
-      let callCount = 0;
-      mockGhSearchIssueByTitle.mockImplementation((title: string) => {
-        callCount++;
-        // First call: exact title "[FS-128][US-001]" -> null (Layer 3)
-        // Second call: duplicate check "[FS-0128][US-001]" -> found!
-        if (title.includes('[FS-0128]')) {
-          return Promise.resolve({
-            number: 99,
-            html_url: 'https://github.com/o/r/issues/99',
-            title: '[FS-0128][US-001] Test',
-            body: 'body',
-            state: 'open',
-          });
-        }
-        return Promise.resolve(null);
-      });
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories({
-        sync: { github: { enabled: true } },
-      } as any);
-
-      expect(result).toEqual([]);
-      expect(mockGhCreateUserStoryIssue).not.toHaveBeenCalled();
-      // Should backfill frontmatter with the duplicate issue
-      expect(mockUpdateUserStoryFrontmatter).toHaveBeenCalled();
-    });
-  });
-
-  // ================================================================
-  // updateIssueIfPlaceholder (tested indirectly)
-  // ================================================================
-
-  describe('updateIssueIfPlaceholder (via createGitHubIssuesForUserStories)', () => {
-    it('updates issue with rich content when placeholder detected', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-test.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-
-      // Layer 1 returns cached issue
-      mockGetGitHubIssueFromFrontmatter.mockResolvedValue({ number: 70, url: 'https://...' });
-
-      // Issue has placeholder body
-      mockGhGetIssue.mockResolvedValue({
-        number: 70,
-        body: 'This issue was auto-created by SpecWeave. No AC yet.',
-        state: 'open',
-      });
-      mockBuildIssueBody.mockResolvedValue('## Acceptance Criteria\n- AC 1');
-      mockGhUpdateIssueBody.mockResolvedValue(undefined);
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-001' };
-        return { id: 'US-001', title: 'Test' };
-      });
-
-      const coord = makeCoordinator();
-      await coord.createGitHubIssuesForUserStories({
-        sync: { github: { enabled: true } },
-      } as any);
-
-      expect(mockGhUpdateIssueBody).toHaveBeenCalledWith(70, expect.stringContaining('Acceptance Criteria'));
-    });
-
-    it('does not update when issue already has rich content', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks']);
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('us-001')) return Promise.resolve(makeUSFile('US-001', 'Test'));
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockResolvedValue(['us-001-test.md']);
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-
-      mockGetGitHubIssueFromFrontmatter.mockResolvedValue({ number: 71, url: 'https://...' });
-
-      // Issue already has Acceptance Criteria -> no update needed
-      mockGhGetIssue.mockResolvedValue({
-        number: 71,
-        body: 'This issue was auto-created by SpecWeave.\n## Acceptance Criteria\n- AC 1',
-        state: 'open',
-      });
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-001' };
-        return { id: 'US-001', title: 'Test' };
-      });
-
-      const coord = makeCoordinator();
-      await coord.createGitHubIssuesForUserStories({
-        sync: { github: { enabled: true } },
-      } as any);
-
-      // updateIssueBody should NOT be called (already has rich content)
-      expect(mockGhUpdateIssueBody).not.toHaveBeenCalled();
-    });
-  });
-
-  // ================================================================
   // Edge cases
   // ================================================================
 
   describe('edge cases', () => {
-    it('handles multiple user stories in same increment', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs', '.locks', 'metadata.json']);
-      const metadataJson = JSON.stringify({ github: { issues: [] } });
-
-      mockYamlParse.mockImplementation((str: string) => {
-        if (str.includes('feature_id')) return { feature_id: 'FS-001' };
-        if (str.includes('US-002')) return { id: 'US-002', title: 'Story 2' };
-        return { id: 'US-001', title: 'Story 1' };
-      });
-
-      mockReadFile.mockImplementation((p: string) => {
-        if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
-        if (p.includes('metadata.json')) return Promise.resolve(metadataJson);
-        if (p.includes('us-001')) return Promise.resolve('---\nid: US-001\n---');
-        if (p.includes('us-002')) return Promise.resolve('---\nid: US-002\n---');
-        return Promise.reject(new Error('not found'));
-      });
-      mockReaddir.mockImplementation((p: string) => {
-        if (p.includes('docs/internal/specs')) return Promise.resolve(['us-001-story1.md', 'us-002-story2.md']);
-        return Promise.resolve([]);
-      });
-      mockDetectGitHubRepo.mockResolvedValue({ owner: 'o', repo: 'r' });
-      setupGitHubClient();
-      mockGhCreateOrGetMilestone.mockResolvedValue({ number: 1, title: 'FS-001' });
-      mockGhSearchIssueByTitle.mockResolvedValue(null);
-
-      let issueNum = 100;
-      mockGhCreateUserStoryIssue.mockImplementation(() =>
-        Promise.resolve({
-          number: issueNum++,
-          html_url: `https://github.com/o/r/issues/${issueNum}`,
-          title: 'issue',
-          body: 'body',
-          state: 'open',
-          labels: [],
-        })
-      );
-
-      const coord = makeCoordinator();
-      const result = await coord.createGitHubIssuesForUserStories({
-        sync: { github: { enabled: true } },
-      } as any);
-
-      expect(result).toHaveLength(2);
-    });
-
     it('skips non-US markdown files in feature dir', async () => {
-      setupExistsSync(['spec.md', 'docs/internal/specs']);
+      setupExistsSync(['spec.md', 'docs/internal/specs', 'config.json']);
 
       mockYamlParse.mockImplementation(() => ({ feature_id: 'FS-001' }));
 
       mockReadFile.mockImplementation((p: string) => {
         if (p.includes('spec.md')) return Promise.resolve(SPEC_WITH_FEATURE_ID);
+        if (p.includes('config.json')) return Promise.resolve(makeConfigJson());
         return Promise.reject(new Error('not found'));
       });
       // Feature dir has non-US files
       mockReaddir.mockResolvedValue(['overview.md', 'notes.md', 'README.md']);
+      mockIsProviderEnabled.mockReturnValue(true);
+      mockResolvePermissions.mockReturnValue({ canRead: true, canUpdateStatus: false, canUpsert: true, canDelete: false });
 
       const coord = makeCoordinator();
-      const result = await coord.closeGitHubIssuesForUserStories({} as any);
-      expect(result).toEqual([]);
+      const result = await coord.syncIncrementCompletion();
+      expect(result.userStoriesSynced).toBe(0);
     });
 
     it('re-exports isProviderEnabled for backwards compatibility', async () => {
