@@ -119,8 +119,7 @@ TMPFILE="/tmp/gemini-vid-response-${TIMESTAMP}.json"
 SUCCESS=false
 
 if [ -n "$GEMINI_API_KEY" ]; then
-  echo "Starting video generation with $MODEL..."
-  echo "Estimated cost: ~$2.00-3.20 for a 5-8 second clip"
+  echo "Starting video generation with $MODEL (consent obtained)..."
 
   # Step 1: Start generation (returns operation ID)
   curl -s -X POST \
@@ -320,15 +319,13 @@ curl -s -X POST \
 
 ## Cost Awareness
 
-**IMPORTANT**: Video generation costs money with Google Veo. Always inform the user before generating:
+**IMPORTANT**: Video generation costs money with Google Veo 3. The consent flow in Step 4b is MANDATORY — never generate paid video without explicit user approval.
 
 | Model | Cost | Duration |
 |-------|------|----------|
-| Veo 3.1 Fast (720p) | ~$0.15/sec = ~$0.75-1.20 per video | 5-8 sec |
-| Veo 3.1 Standard | ~$0.40/sec = ~$2.00-3.20 per video | 5-8 sec |
-| Pollinations | Free | 4-10 sec |
-
-Before generating with Google Veo, confirm: "This will cost approximately $X. Proceed?"
+| Veo 3 Standard (`veo-3.1-generate-preview`) | ~$0.40/sec = ~$2.00-3.20 per video | 5-8 sec |
+| Veo 3 Fast (`veo-3.1-fast-generate-preview`) | ~$0.15/sec = ~$0.75-1.20 per video | 5-8 sec |
+| Pollinations (seedance) | Free | 4-10 sec |
 
 ## Setup Instructions (Show When No API Key Found)
 
