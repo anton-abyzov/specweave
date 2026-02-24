@@ -11,12 +11,17 @@ Generate videos from text prompts (or images) using AI models. Video generation 
 ## Provider Fallback Chain (Follow This Order)
 
 ```
-Tier 1: Google Veo 3.1 (PAID, billing required) ─── Best quality, audio ──┐
-        ↓ on error                                                         │
-Tier 2: Pollinations.ai (FREE, no key) ───────────────────────────────────┘
+Tier 1: Google Veo 3 (PAID, billing required) ─── Best quality, audio ──┐
+        ↓ on error or user declines consent                              │
+Tier 2: Pollinations.ai (FREE, no key) ────────────────────────────────┘
 ```
 
+**Default model**: `veo-3.1-generate-preview` (Veo 3 family, standard quality with audio, ~$0.40/sec).
+**Fast option**: `veo-3.1-fast-generate-preview` (720p/1080p, ~$0.15/sec).
+
 **Note**: Unlike image generation, there are no free Gemini native video models. Veo requires billing. Pollinations provides a free fallback.
+
+**API Key Required**: `GEMINI_API_KEY` must be configured for Veo 3. If not set, show setup instructions prominently BEFORE falling back to free tier.
 
 ## Workflow
 
@@ -49,20 +54,61 @@ if [ -z "$GEMINI_API_KEY" ] && [ -f ../.env ]; then
 fi
 ```
 
-### Step 4: Generate Video (Fallback Chain)
+### Step 4: Check API Key and Get User Consent
 
-#### Tier 1: Google Veo 3.1 (PAID, requires GEMINI_API_KEY + billing)
+**Before ANY paid generation**, you MUST get explicit user consent using AskUserQuestion.
+
+#### 4a: Verify API Key
+
+If `GEMINI_API_KEY` is not set, show setup instructions immediately:
+
+> **Veo 3 requires a Google API key with billing enabled.**
+>
+> To set up:
+> 1. Go to https://aistudio.google.com/
+> 2. Create or select a project with billing enabled
+> 3. Generate an API key
+> 4. Add to your `.env` file: `GEMINI_API_KEY=your-key-here`
+>
+> Without an API key, only free providers (Pollinations) are available — lower quality, no audio, shorter clips.
+
+Then fall back to Tier 2 (Pollinations). Do NOT silently skip Veo.
+
+#### 4b: Get User Consent (MANDATORY for Veo 3)
+
+If `GEMINI_API_KEY` is set, use AskUserQuestion to get explicit approval BEFORE submitting:
+
+```
+AskUserQuestion:
+  question: "Video generation with Veo 3 costs money. Which option do you prefer?"
+  header: "Video model"
+  options:
+    - label: "Veo 3 Standard (Recommended)"
+      description: "Best quality with audio. ~$2.00-3.20 per clip (5-8 sec at ~$0.40/sec)"
+    - label: "Veo 3 Fast"
+      description: "Good quality, cheaper. ~$0.75-1.20 per clip (5-8 sec at ~$0.15/sec)"
+    - label: "Free (Pollinations)"
+      description: "No cost, lower quality, no audio. Uses seedance model (4-10 sec)"
+```
+
+- If user picks **Veo 3 Standard** → use `veo-3.1-generate-preview`
+- If user picks **Veo 3 Fast** → use `veo-3.1-fast-generate-preview`
+- If user picks **Free** → skip directly to Tier 2 (Pollinations)
+
+### Step 5: Generate Video
+
+#### Tier 1: Google Veo 3 (PAID, requires GEMINI_API_KEY + billing + user consent)
 
 Available models:
-- `veo-3.1-fast-generate-preview` — Fast, ~$0.15/sec (720p/1080p)
 - `veo-3.1-generate-preview` — Standard with audio, ~$0.40/sec (default)
+- `veo-3.1-fast-generate-preview` — Fast, ~$0.15/sec (720p/1080p)
 
 **IMPORTANT**: Veo is asynchronous. You must:
 1. Submit the generation request
 2. Poll the operation endpoint every 10 seconds
 3. Download the video when done
 
-**Cost warning**: Before generating, tell the user the estimated cost (~$0.75-3.20 per clip) and confirm they want to proceed.
+**User consent must already be obtained in Step 4b before reaching here.**
 
 ```bash
 TIMESTAMP=$(date +%s)
@@ -209,7 +255,7 @@ if [ "$SUCCESS" != "true" ]; then
 fi
 ```
 
-### Step 5: Verify Output
+### Step 6: Verify Output
 
 ```bash
 if [ -f "$OUTFILE" ] && [ -s "$OUTFILE" ]; then
@@ -229,7 +275,7 @@ else
 fi
 ```
 
-### Step 6: Report Result
+### Step 7: Report Result
 
 Tell the user:
 - File path to the generated video
