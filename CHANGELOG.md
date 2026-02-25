@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.326] - 2026-02-25
+
+### Changes
+- update hooks, plugins, and tests
+- remove done/in-progress fallback in github feature sync
+
+---
+
+
+
 ## [1.0.325] - 2026-02-25
 
 ### Changes
