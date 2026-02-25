@@ -552,8 +552,8 @@ export class GitHubFeatureSync {
   ): string {
     const now = new Date().toISOString().split('T')[0];
     const mappedStatus = status === 'planned' ? 'planning'
-      : status === 'completed' || status === 'done' ? 'complete'
-      : status === 'active' || status === 'in-progress' ? 'active'
+      : status === 'completed' ? 'complete'
+      : status === 'active' ? 'active'
       : 'planning';
 
     const fm: Record<string, unknown> = {
