@@ -69,7 +69,7 @@ export function isSpecWeaveSkillInvocation(prompt: string): boolean {
 
   // Check for /sw: or /sw-<plugin>: patterns (integration plugins)
   // Also check for domain plugin patterns: /frontend:, /backend:, /testing:, etc.
-  const DOMAIN_PLUGINS = ['frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s', 'ml', 'payments', 'kafka', 'confluent', 'cost', 'docs', 'security', 'scout', 'blockchain'];
+  const DOMAIN_PLUGINS = ['frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s', 'ml', 'payments', 'kafka', 'confluent', 'cost', 'docs', 'security', 'skills', 'blockchain'];
   if (/^\/sw(-[a-z0-9-]+)?:/.test(normalized)) return true;
   const match = normalized.match(/^\/([a-z0-9-]+):/);
   return match !== null && DOMAIN_PLUGINS.includes(match[1]);

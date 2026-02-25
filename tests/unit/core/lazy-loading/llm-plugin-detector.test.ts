@@ -129,7 +129,7 @@ describe('VSKILL_PLUGINS constant (v2.1.0: per-category plugins)', () => {
     expect(VSKILL_PLUGINS).toContain('cost');
     expect(VSKILL_PLUGINS).toContain('docs');
     expect(VSKILL_PLUGINS).toContain('security');
-    expect(VSKILL_PLUGINS).toContain('scout');
+    expect(VSKILL_PLUGINS).toContain('skills');
     expect(VSKILL_PLUGINS).toContain('blockchain');
   });
 
@@ -267,7 +267,7 @@ describe('isVskillPlugin (v2.1.0: per-category plugins)', () => {
     expect(isVskillPlugin('backend')).toBe(true);
     expect(isVskillPlugin('ml')).toBe(true);
     expect(isVskillPlugin('k8s')).toBe(true);
-    expect(isVskillPlugin('scout')).toBe(true);
+    expect(isVskillPlugin('skills')).toBe(true);
     expect(isVskillPlugin('blockchain')).toBe(true);
   });
 
@@ -305,7 +305,7 @@ describe('isKnownPlugin (v1.0.315: combined validation)', () => {
     expect(isKnownPlugin('frontend')).toBe(true);
     expect(isKnownPlugin('backend')).toBe(true);
     expect(isKnownPlugin('security')).toBe(true);
-    expect(isKnownPlugin('scout')).toBe(true);
+    expect(isKnownPlugin('skills')).toBe(true);
     expect(isKnownPlugin('blockchain')).toBe(true);
   });
 

@@ -208,7 +208,7 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
 /** Domain plugins live in the vskill marketplace (no sw- prefix) */
 const DOMAIN_PLUGINS = new Set([
   'frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s',
-  'ml', 'payments', 'confluent', 'kafka', 'docs', 'cost', 'security', 'scout',
+  'ml', 'payments', 'confluent', 'kafka', 'docs', 'cost', 'security', 'skills', 'blockchain',
 ]);
 
 function isDomainPlugin(shortName: string): boolean {
