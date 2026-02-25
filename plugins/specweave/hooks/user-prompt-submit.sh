@@ -155,7 +155,7 @@ find_specweave_config() {
 
 # Check if this is a SpecWeave skill invocation
 # Matches: /sw:*, /sw-github:*, /frontend:*, /backend:*, /testing:*, etc.
-DOMAIN_PLUGIN_PATTERN="^[[:space:]]*/([Ff]rontend|[Bb]ackend|[Tt]esting|[Mm]obile|[Ii]nfra|[Kk]8s|[Mm]l|[Pp]ayments|[Kk]afka|[Cc]onfluent|[Cc]ost|[Dd]ocs|[Ss]ecurity|[Ss]cout|[Bb]lockchain):[a-zA-Z-]+"
+DOMAIN_PLUGIN_PATTERN="^[[:space:]]*/([Ff]rontend|[Bb]ackend|[Tt]esting|[Mm]obile|[Ii]nfra|[Kk]8s|[Mm]l|[Pp]ayments|[Kk]afka|[Cc]onfluent|[Cc]ost|[Dd]ocs|[Ss]ecurity|[Ss]kills|[Bb]lockchain):[a-zA-Z-]+"
 if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]] || [[ "$PROMPT" =~ $DOMAIN_PLUGIN_PATTERN ]]; then
   # Check if guard is disabled via environment variable
   if [[ "${SPECWEAVE_DISABLE_GUARD:-0}" != "1" ]]; then
@@ -524,7 +524,7 @@ install_plugin_via_vskill() {
 # Domain skill plugins in vskill marketplace (per-category plugins).
 # Each is a standalone plugin: frontend@vskill, backend@vskill, etc.
 # Skills are invoked as plugin:skill (e.g., frontend:nextjs, backend:dotnet).
-VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent cost docs security scout blockchain"
+VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent cost docs security skills blockchain"
 
 # Check if plugin name is a vskill marketplace plugin
 is_vskill_repo_plugin() {
