@@ -45,17 +45,17 @@ Skills are <strong>programs written in English</strong> — reusable, extensible
 
 <div className="problem-cards">
 <div className="problem-card">
-<span className="problem-icon">💨</span>
+<img src="/img/icons/context-vanishes.jpg" alt="Context Vanishes" className="problem-icon-img" />
 <h3>Context Vanishes</h3>
 <p>Chat ends, specs disappear. You lose everything.</p>
 </div>
 <div className="problem-card">
-<span className="problem-icon">🔄</span>
+<img src="/img/icons/repeat-yourself.jpg" alt="Repeat Yourself" className="problem-icon-img" />
 <h3>Repeat Yourself</h3>
 <p>Re-explain architecture every single session.</p>
 </div>
 <div className="problem-card">
-<span className="problem-icon">📝</span>
+<img src="/img/icons/docs-rot.jpg" alt="Docs Rot" className="problem-icon-img" />
 <h3>Docs Rot</h3>
 <p>JIRA outdated. README lies. Tests missing.</p>
 </div>
@@ -127,19 +127,19 @@ flowchart LR
 <div className="feature-grid">
 
 <div className="feature-card">
-<div className="feature-icon">🧠</div>
+<img src="/img/icons/programmable-ai.jpg" alt="Programmable AI" className="feature-icon-img" />
 <h3>Programmable AI</h3>
 <p>Skills are programs in English — reusable logic that controls how AI thinks and acts. Customize any skill without forking. Fix once, remembered permanently.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">🤖</div>
+<img src="/img/icons/autonomous-teams.jpg" alt="Autonomous Teams" className="feature-icon-img" />
 <h3>Autonomous Teams</h3>
 <p>Run agent swarms across iTerm/tmux panes. Each agent owns an increment. File-based coordination prevents conflicts. 100+ specialized skills.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">🏢</div>
+<img src="/img/icons/enterprise-ready.jpg" alt="Enterprise Ready" className="feature-icon-img" />
 <h3>Enterprise Ready</h3>
 <p>Compliance audit trails in git. Brownfield analysis. JIRA/ADO sync. Multi-repo coordination. Production-grade from day one.</p>
 </div>
@@ -210,37 +210,37 @@ Run `/sw:auto` and watch AI work for **hours** without intervention:
 <div className="feature-grid">
 
 <div className="feature-card">
-<div className="feature-icon">📝</div>
+<img src="/img/icons/skills-programs.jpg" alt="Skills as Programs" className="feature-icon-img" />
 <h3>Skills as Programs</h3>
 <p>100+ skills written in English. PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML — all customizable.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">📚</div>
+<img src="/img/icons/living-docs.jpg" alt="Living Documentation" className="feature-icon-img" />
 <h3>Living Documentation</h3>
 <p>Specs, ADRs, and runbooks update automatically after every task. Zero manual work.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">🧠</div>
+<img src="/img/icons/self-improving.jpg" alt="Self-Improving AI" className="feature-icon-img" />
 <h3>Self-Improving AI</h3>
 <p>Claude learns from your corrections. Fix something once — it remembers forever across all sessions.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">🔗</div>
+<img src="/img/icons/external-sync.jpg" alt="External Sync" className="feature-icon-img" />
 <h3>External Sync</h3>
 <p>GitHub Issues, JIRA, Azure DevOps — all stay in sync automatically. Bidirectional.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">✅</div>
+<img src="/img/icons/quality-gates.jpg" alt="Quality Gates" className="feature-icon-img" />
 <h3>Quality Gates</h3>
 <p>Code Grill reviews like a senior engineer. Tests must pass. Docs must be updated. ACs must be met.</p>
 </div>
 
 <div className="feature-card">
-<div className="feature-icon">⚡</div>
+<img src="/img/icons/zero-config.jpg" alt="Zero Config" className="feature-icon-img" />
 <h3>Zero Config</h3>
 <p>One command to install. Skills auto-activate. No Claude Code expertise needed.</p>
 </div>

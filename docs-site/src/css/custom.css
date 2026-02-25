@@ -396,6 +396,15 @@
   margin-bottom: 0.75rem;
 }
 
+.problem-icon-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+}
+
 .problem-card h3 {
   font-size: 1.1rem;
   font-weight: 700;
@@ -582,6 +591,15 @@
   font-size: 2.5rem;
   margin-bottom: 1rem;
   display: block;
+}
+
+.feature-icon-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 1rem;
+  border-radius: 14px;
 }
 
 .feature-card h3 {
