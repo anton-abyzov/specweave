@@ -519,17 +519,18 @@ install_plugin_via_vskill() {
   fi
 }
 
-# Plugins migrated to vskill repo (v1.0.315 - 0331)
-# These are installed via vskill add --repo instead of local marketplace
-VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent kafka-streams n8n cost docs security scout"
+# Domain skill plugins in vskill marketplace (per-category plugins).
+# Each is a standalone plugin: frontend@vskill, backend@vskill, etc.
+# Skills are invoked as plugin:skill (e.g., frontend:nextjs, backend:dotnet).
+VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent cost docs security scout blockchain"
 
-# Check if plugin is a vskill repo plugin
+# Check if plugin name is a vskill marketplace plugin
 is_vskill_repo_plugin() {
   local plugin="$1"
   echo " $VSKILL_REPO_PLUGINS " | grep -q " $plugin "
 }
 
-# Install vskill repo plugin via --repo flag (v1.0.315 - 0331)
+# Install vskill marketplace plugin via --repo flag.
 # Args: $1=plugin name (e.g., "frontend")
 install_vskill_repo_plugin() {
   local plugin="$1"
@@ -1298,7 +1299,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                         fi
                       fi
                     elif is_vskill_repo_plugin "$plugin"; then
-                      # ---- VSKILL REPO PLUGINS: Install via vskill --repo (v1.0.315 - 0331) ----
+                      # ---- VSKILL MARKETPLACE PLUGINS ----
+                      # Each category is a standalone plugin (frontend@vskill, backend@vskill, etc.)
                       if check_plugin_in_vskill_lock "$plugin"; then
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
@@ -1609,7 +1611,8 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
                 PRIMARY_PLUGIN=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .plugin // empty' 2>/dev/null | head -1)
                 PRIMARY_SKILL_NAME=$(echo "$JSON_OUTPUT" | jq -r '.routing.skills[] | select(.priority == "primary") | .name // empty' 2>/dev/null | head -1)
                 BRAIN_MSG+="Primary skill: ${PRIMARY_SKILL}"
-                [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]] && BRAIN_MSG+=" (agent: ${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME}:${PRIMARY_SKILL_NAME})"
+                # v2.1.0: Use plugin:skill format for agent type (e.g., frontend:nextjs)
+                [[ -n "$PRIMARY_PLUGIN" && -n "$PRIMARY_SKILL_NAME" ]] && BRAIN_MSG+=" (agent: ${PRIMARY_PLUGIN}:${PRIMARY_SKILL_NAME})"
                 BRAIN_MSG+=", invoke: ${PRIMARY_INVOKE:-after_increment}. "
                 [[ -n "$SECONDARY_SKILLS" ]] && BRAIN_MSG+="Also: ${SECONDARY_SKILLS}. "
               fi

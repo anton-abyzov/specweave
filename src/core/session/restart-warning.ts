@@ -93,22 +93,21 @@ const RESTART_INSTRUCTIONS = [
  */
 const PLUGIN_DESCRIPTIONS: Record<string, string> = {
   'sw': 'SpecWeave Core - Spec-driven development framework',
-  'sw-frontend': 'Frontend Development - React, Vue, Next.js expertise',
-  'sw-backend': 'Backend Development - API, database, microservices',
+  'frontend': 'Frontend Development - React, Vue, Next.js expertise',
+  'backend': 'Backend Development - API, database, microservices',
   'sw-github': 'GitHub Integration - Issues, PRs, sync',
   'sw-jira': 'JIRA Integration - Epics, stories, sync',
   'sw-ado': 'Azure DevOps Integration - Work items, boards',
-  'sw-k8s': 'Kubernetes - K8s, Helm, GitOps',
-  'sw-infra': 'Infrastructure - Terraform, Docker, CI/CD',
-  'sw-testing': 'Testing & QA - E2E, Playwright, Vitest',
-  'sw-mobile': 'Mobile Development - React Native, iOS, Android',
-  'sw-ml': 'Machine Learning - ML, PyTorch, TensorFlow',
-  'sw-payments': 'Payments - Stripe, PayPal, checkout flows',
+  'k8s': 'Kubernetes - K8s, Helm, GitOps',
+  'infra': 'Infrastructure - Terraform, Docker, CI/CD',
+  'testing': 'Testing & QA - E2E, Playwright, Vitest',
+  'mobile': 'Mobile Development - React Native, iOS, Android',
+  'ml': 'Machine Learning - ML, PyTorch, TensorFlow',
+  'payments': 'Payments - Stripe, PayPal, checkout flows',
   'sw-diagrams': 'Diagrams - Mermaid, C4, architecture diagrams',
   'sw-release': 'Release Management - Versioning, changelog',
-  // NOTE: sw-router REMOVED v1.0.204 - detect-intent now handles routing
-  'sw-confluent': 'Confluent Cloud - Kafka, Schema Registry, ksqlDB',
-  'sw-kafka': 'Apache Kafka - Event streaming, topics',
+  'confluent': 'Confluent Cloud - Kafka, Schema Registry, ksqlDB',
+  'kafka': 'Apache Kafka - Event streaming, topics',
 };
 
 /**
@@ -116,17 +115,17 @@ const PLUGIN_DESCRIPTIONS: Record<string, string> = {
  */
 const PLUGIN_SKILLS: Record<string, string> = {
   'sw': '/sw:increment, /sw:do, /sw:done - Core workflow',
-  'sw-frontend': 'Frontend architecture and React expertise',
-  'sw-backend': 'Backend API and database expertise',
+  'frontend': 'Frontend architecture and React expertise',
+  'backend': 'Backend API and database expertise',
   'sw-github': '/sw-github:sync - GitHub issue sync',
   'sw-jira': '/sw-jira:sync - JIRA issue sync',
   'sw-ado': '/sw-ado:sync - Azure DevOps sync',
-  'sw-k8s': 'Kubernetes architecture and manifests',
-  'sw-infra': 'Infrastructure as Code and DevOps',
-  'sw-testing': 'QA strategy and E2E testing',
-  'sw-mobile': 'Mobile app development expertise',
-  'sw-ml': 'Machine learning and MLOps',
-  'sw-payments': 'Payment integration (Stripe, PayPal)',
+  'k8s': 'Kubernetes architecture and manifests',
+  'infra': 'Infrastructure as Code and DevOps',
+  'testing': 'QA strategy and E2E testing',
+  'mobile': 'Mobile app development expertise',
+  'ml': 'Machine learning and MLOps',
+  'payments': 'Payment integration (Stripe, PayPal)',
   'sw-diagrams': 'Architecture diagrams and C4 models',
   'sw-release': 'Release management and versioning',
 };

@@ -49,7 +49,7 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 | `pm` | Product Manager | Requirements, user stories |
 | `architect` | System Architect | Design, ADRs, architecture |
 | `devops` | DevOps Engineer | Infrastructure, deployment |
-| `sw-testing:qa-engineer` | QA Engineer | Test strategy, test cases |
+| `testing:qa` | QA Engineer | Test strategy, test cases |
 | `security` | Security Engineer | Threat modeling, audits |
 | `frontend` | Frontend Developer | UI implementation |
 | `python-backend` | Python Backend Dev | FastAPI, Django APIs |
@@ -193,12 +193,12 @@ Skills are invoked explicitly via Skill tool or auto-activate based on keywords:
 ```typescript
 // Explicit invocation
 await Skill({
-  skill: "sw-frontend:frontend-architect",
+  skill: "frontend:architect",
   args: "Design React component architecture for dashboard"
 });
 
 // Or via slash command
-/sw-frontend:frontend-architect Design React component architecture
+/frontend:architect Design React component architecture
 ```
 
 Skills like PM and Architect auto-activate based on keywords. For explicit invocation, use the Skill tool.
