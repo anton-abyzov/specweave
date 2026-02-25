@@ -110,7 +110,7 @@ function ensureStateDirectory(projectRoot: string): void {
  * @example
  * ```typescript
  * createPluginInstallFlag('/path/to/project', {
- *   plugins: ['sw', 'sw-frontend'],
+ *   plugins: ['sw', 'frontend'],
  *   trigger: 'specweave-init',
  *   projectPath: '/path/to/project'
  * });

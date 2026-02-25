@@ -23,38 +23,38 @@ const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
  * plugin names (mobile, ml, backend, infra).
  */
 
-// Skills that migrated to vskill repo (0331 universal-skills-migration)
+// Skills in vskill repo (v2.1.0 per-category plugins)
 const VSKILL_SKILLS: Record<string, string[]> = {
   'mobile': [
     'swiftui',
-    'jetpack-compose',
+    'jetpack',
     'flutter',
     'expo',
-    'mobile-testing',
-    'deep-linking-push',
-    'capacitor-ionic',
+    'testing',
+    'deep-linking',
+    'capacitor',
   ],
   'ml': [
-    'langchain-agents',
-    'rag-vectordb',
-    'llm-fine-tuning',
+    'langchain',
+    'rag',
+    'fine-tuning',
     'huggingface',
-    'edge-ml',
+    'edge',
   ],
   'backend': [
-    'go-backend',
+    'go',
     'java-spring',
-    'rust-backend',
+    'rust',
     'graphql',
   ],
   'infra': [
-    'terraform-opentofu',
+    'terraform',
     'opentelemetry',
     'github-actions',
     'devsecops',
-    'secret-management',
-    'azure-bicep-aks',
-    'aws-deep-dive',
+    'secrets',
+    'azure',
+    'aws',
   ],
 };
 
@@ -66,8 +66,11 @@ for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
   }
 }
 
-// Migrated plugins with manifests in vskill
-const VSKILL_PLUGINS_WITH_MANIFESTS = ['mobile', 'ml', 'backend', 'infra'];
+// All vskill plugins with manifests
+const VSKILL_PLUGINS_WITH_MANIFESTS = [
+  'frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s', 'ml',
+  'kafka', 'confluent', 'payments', 'docs', 'cost', 'security', 'scout', 'blockchain',
+];
 
 function parseFrontmatter(content: string): {
   frontmatter: Record<string, string>;

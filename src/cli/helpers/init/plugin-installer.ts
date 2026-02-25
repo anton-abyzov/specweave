@@ -289,8 +289,8 @@ async function installLazyMode(
   console.log(chalk.cyan('On-demand plugins (loaded via keywords):'));
   console.log(chalk.gray('   "GitHub sync" -> sw-github'));
   console.log(chalk.gray('   "JIRA" -> sw-jira'));
-  console.log(chalk.gray('   "Kubernetes" -> sw-k8s'));
-  console.log(chalk.gray('   "React/frontend" -> sw-frontend'));
+  console.log(chalk.gray('   "Kubernetes" -> k8s'));
+  console.log(chalk.gray('   "React/frontend" -> frontend'));
   console.log('');
 
   return {

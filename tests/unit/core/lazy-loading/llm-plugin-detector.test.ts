@@ -109,13 +109,13 @@ describe('SPECWEAVE_PLUGINS constant (v1.0.315: workflow/integration only)', () 
 // ============================================================
 // VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)
 // ============================================================
-describe('VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)', () => {
+describe('VSKILL_PLUGINS constant (v2.1.0: per-category plugins)', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(VSKILL_PLUGINS)).toBe(true);
-    expect(VSKILL_PLUGINS.length).toBe(16);
+    expect(VSKILL_PLUGINS.length).toBe(15);
   });
 
-  it('should include all migrated domain plugins', () => {
+  it('should include all vskill marketplace plugins', () => {
     expect(VSKILL_PLUGINS).toContain('frontend');
     expect(VSKILL_PLUGINS).toContain('backend');
     expect(VSKILL_PLUGINS).toContain('testing');
@@ -126,12 +126,16 @@ describe('VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)', () => {
     expect(VSKILL_PLUGINS).toContain('ml');
     expect(VSKILL_PLUGINS).toContain('kafka');
     expect(VSKILL_PLUGINS).toContain('confluent');
-    expect(VSKILL_PLUGINS).toContain('kafka-streams');
-    expect(VSKILL_PLUGINS).toContain('n8n');
     expect(VSKILL_PLUGINS).toContain('cost');
     expect(VSKILL_PLUGINS).toContain('docs');
     expect(VSKILL_PLUGINS).toContain('security');
     expect(VSKILL_PLUGINS).toContain('scout');
+    expect(VSKILL_PLUGINS).toContain('blockchain');
+  });
+
+  it('should NOT contain kafka-streams or n8n (merged into kafka plugin)', () => {
+    expect(VSKILL_PLUGINS).not.toContain('kafka-streams');
+    expect(VSKILL_PLUGINS).not.toContain('n8n');
   });
 
   it('should NOT contain any sw- prefixed entries', () => {
@@ -166,7 +170,7 @@ describe('Official plugins policy (v1.0.279)', () => {
 // ============================================================
 // ALL_VALID_PLUGINS / ALL_KNOWN_PLUGINS constant (v1.0.315)
 // ============================================================
-describe('ALL_VALID_PLUGINS constant (v1.0.315: combined)', () => {
+describe('ALL_VALID_PLUGINS constant (v2.1.0: combined)', () => {
   it('should include both specweave and vskill plugins', () => {
     expect(ALL_VALID_PLUGINS.length).toBe(SPECWEAVE_PLUGINS.length + VSKILL_PLUGINS.length);
   });
@@ -251,7 +255,7 @@ describe('isSpecWeavePlugin (v1.0.315: narrowed to workflow/integration)', () =>
 // ============================================================
 // isVskillPlugin() (v1.0.315: new)
 // ============================================================
-describe('isVskillPlugin (v1.0.315: migrated domain plugins)', () => {
+describe('isVskillPlugin (v2.1.0: per-category plugins)', () => {
   it('should return true for all VSKILL_PLUGINS entries', () => {
     for (const plugin of VSKILL_PLUGINS) {
       expect(isVskillPlugin(plugin)).toBe(true);
@@ -264,6 +268,11 @@ describe('isVskillPlugin (v1.0.315: migrated domain plugins)', () => {
     expect(isVskillPlugin('ml')).toBe(true);
     expect(isVskillPlugin('k8s')).toBe(true);
     expect(isVskillPlugin('scout')).toBe(true);
+    expect(isVskillPlugin('blockchain')).toBe(true);
+  });
+
+  it('should return false for old "vs" monolithic plugin name', () => {
+    expect(isVskillPlugin('vs')).toBe(false);
   });
 
   it('should return false for specweave plugins', () => {
@@ -297,6 +306,11 @@ describe('isKnownPlugin (v1.0.315: combined validation)', () => {
     expect(isKnownPlugin('backend')).toBe(true);
     expect(isKnownPlugin('security')).toBe(true);
     expect(isKnownPlugin('scout')).toBe(true);
+    expect(isKnownPlugin('blockchain')).toBe(true);
+  });
+
+  it('should return false for old "vs" monolithic plugin name', () => {
+    expect(isKnownPlugin('vs')).toBe(false);
   });
 
   it('should return false for old migrated names', () => {
@@ -326,12 +340,12 @@ describe('getPluginMarketplace (v1.0.315: dual-source)', () => {
     expect(getPluginMarketplace('sw')).toBe('specweave');
   });
 
-  it('should return "vskill" for migrated domain plugins', () => {
+  it('should return "vskill" for domain plugins', () => {
     expect(getPluginMarketplace('frontend')).toBe('vskill');
     expect(getPluginMarketplace('backend')).toBe('vskill');
     expect(getPluginMarketplace('testing')).toBe('vskill');
     expect(getPluginMarketplace('ml')).toBe('vskill');
-    expect(getPluginMarketplace('kafka-streams')).toBe('vskill');
+    expect(getPluginMarketplace('blockchain')).toBe('vskill');
   });
 
   it('should return "vskill" for all VSKILL_PLUGINS entries', () => {

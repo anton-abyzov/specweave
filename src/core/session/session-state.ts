@@ -216,7 +216,7 @@ export function initSessionState(projectRoot: string): SessionState {
  *
  * @example
  * ```typescript
- * const state = recordPluginInstallation('/path/to/project', ['sw', 'sw-frontend'], {
+ * const state = recordPluginInstallation('/path/to/project', ['sw', 'frontend'], {
  *   trigger: 'specweave-init',
  *   projectPath: '/new/project'
  * });

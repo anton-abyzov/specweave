@@ -136,24 +136,10 @@ map_plugin_to_dir() {
         sw-github) echo "specweave-github" ;;
         sw-jira) echo "specweave-jira" ;;
         sw-ado) echo "specweave-ado" ;;
-        sw-infra) echo "specweave-infrastructure" ;;
-        sw-ml) echo "specweave-ml" ;;
         sw-release) echo "specweave-release" ;;
-        sw-kafka) echo "specweave-kafka" ;;
-        sw-kafka-streams) echo "specweave-kafka-streams" ;;
-        sw-n8n) echo "specweave-n8n" ;;
-        sw-backend) echo "specweave-backend" ;;
-        sw-confluent) echo "specweave-confluent" ;;
-        sw-k8s) echo "specweave-kubernetes" ;;
-        sw-mobile) echo "specweave-mobile" ;;
-        sw-payments) echo "specweave-payments" ;;
-        sw-frontend) echo "specweave-frontend" ;;
-        sw-testing) echo "specweave-testing" ;;
-        sw-tooling) echo "specweave-tooling" ;;
         sw-diagrams) echo "specweave-diagrams" ;;
-        sw-ui) echo "specweave-ui" ;;
         sw-docs) echo "specweave-docs" ;;
-        sw-cost) echo "specweave-cost-optimizer" ;;
+        sw-media) echo "specweave-media" ;;
         *) echo "$plugin_name" ;;  # Default: use as-is
     esac
 }

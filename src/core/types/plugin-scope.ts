@@ -43,7 +43,7 @@ export interface PluginScopeConfig {
   lspScope?: PluginInstallationScope;
 
   /**
-   * Scope for SpecWeave plugins (sw, sw-frontend, sw-backend, etc.)
+   * Scope for SpecWeave plugins (sw, sw-github, frontend, backend, etc.)
    * @default 'user'
    */
   specweaveScope?: PluginInstallationScope;
@@ -66,7 +66,7 @@ export interface PluginScopeConfig {
  * Default plugin scope configuration
  *
  * - LSP plugins: project scope (language-specific, don't pollute global)
- * - SpecWeave domain plugins (sw-frontend, sw-github, etc.): project scope
+ * - SpecWeave/vskill plugins (frontend, backend, sw-github, etc.): project scope
  * - Core SpecWeave plugin (sw): user scope (needed across all projects)
  * - Other plugins: user scope (default)
  */

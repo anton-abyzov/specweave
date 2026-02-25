@@ -135,31 +135,31 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'workflow',
     },
   ],
-  'sw-frontend': [
+  'frontend': [
     {
-      name: 'sw-frontend:frontend-architect',
+      name: 'frontend:architect',
       description: 'Frontend architecture expertise',
       category: 'frontend',
     },
     {
-      name: 'sw-frontend:design-system-architect',
+      name: 'frontend:design-system',
       description: 'Design system and component library expertise',
       category: 'frontend',
     },
     {
-      name: 'sw-frontend:nextjs',
+      name: 'frontend:nextjs',
       description: 'Next.js App Router and Server Components expertise',
       category: 'frontend',
     },
   ],
-  'sw-backend': [
+  'backend': [
     {
-      name: 'sw-backend:database-optimizer',
+      name: 'backend:db-optimizer',
       description: 'Database optimization and query tuning',
       category: 'backend',
     },
     {
-      name: 'sw-backend:dotnet-backend',
+      name: 'backend:dotnet',
       description: '.NET/C# backend development',
       category: 'backend',
     },
@@ -185,54 +185,54 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'sync',
     },
   ],
-  'sw-payments': [
+  'payments': [
     {
-      name: 'sw-payments:stripe-integration',
+      name: 'payments:core',
       description: 'Stripe payment integration',
       category: 'payments',
     },
     {
-      name: 'sw-payments:paypal-integration',
-      description: 'PayPal payment integration',
+      name: 'payments:billing',
+      description: 'Subscription billing and management',
       category: 'payments',
     },
   ],
-  'sw-k8s': [
+  'k8s': [
     {
-      name: 'sw-k8s:kubernetes-architect',
+      name: 'k8s:manifests',
       description: 'Kubernetes architecture and manifests',
       category: 'infrastructure',
     },
   ],
-  'sw-infra': [
+  'infra': [
     {
-      name: 'sw-infra:devops',
+      name: 'infra:devops',
       description: 'DevOps and infrastructure automation',
       category: 'infrastructure',
     },
   ],
-  'sw-testing': [
+  'testing': [
     {
-      name: 'sw-testing:qa-engineer',
+      name: 'testing:qa',
       description: 'QA strategy and E2E testing',
       category: 'testing',
     },
   ],
-  'sw-mobile': [
+  'mobile': [
     {
-      name: 'sw-mobile:react-native-expert',
+      name: 'mobile:react-native',
       description: 'Mobile app architecture and React Native development',
       category: 'mobile',
     },
   ],
-  'sw-ml': [
+  'ml': [
     {
-      name: 'sw-ml:ml-engineer',
+      name: 'ml:engineer',
       description: 'Machine learning and MLOps',
       category: 'ml',
     },
     {
-      name: 'sw-ml:data-scientist',
+      name: 'ml:data-scientist',
       description: 'Data analysis and notebooks',
       category: 'ml',
     },
@@ -251,16 +251,16 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
       category: 'release',
     },
   ],
-  'sw-confluent': [
+  'confluent': [
     {
-      name: 'sw-confluent:confluent-kafka-connect',
+      name: 'confluent:kafka-connect',
       description: 'Confluent Kafka Connect integration',
       category: 'streaming',
     },
   ],
-  'sw-kafka': [
+  'kafka': [
     {
-      name: 'sw-kafka:kafka-architect',
+      name: 'kafka:architect',
       description: 'Apache Kafka event streaming',
       category: 'streaming',
     },

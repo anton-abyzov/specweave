@@ -114,9 +114,9 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention domain skills for different tech stacks', () => {
-      expect(claudeContent).toContain('sw-frontend:frontend-architect');
-      expect(claudeContent).toContain('sw-backend:dotnet-backend');
-      expect(claudeContent).toContain('sw-payments:stripe-integration');
+      expect(claudeContent).toContain('frontend:architect');
+      expect(claudeContent).toContain('backend:dotnet');
+      expect(claudeContent).toContain('payments:core');
     });
 
     test('should explain auto-activation fallback', () => {
