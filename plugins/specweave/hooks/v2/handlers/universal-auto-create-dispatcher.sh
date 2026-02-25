@@ -95,6 +95,9 @@ command -v jq >/dev/null 2>&1 || exit 0
 
 # Use shared provider detection (supports PROFILES, LEGACY DIRECT, LEGACY PROVIDER formats)
 HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Derive package root from script location (works for both npm install and dev):
+# handlers/ → v2/ → hooks/ → specweave/ → plugins/ → package root (5 levels up)
+PKG_ROOT="$(cd "$HANDLER_DIR/../../../../.." 2>/dev/null && pwd)"
 SHARED_LIB="$HANDLER_DIR/../lib/check-provider-enabled.sh"
 if [[ -f "$SHARED_LIB" ]]; then
   source "$SHARED_LIB"
@@ -134,14 +137,9 @@ log "Creating external items for $INC_ID (github=$GH_ENABLED jira=$JIRA_ENABLED 
 # ============================================================================
 
 if [[ "$GH_ENABLED" == "true" ]]; then
-  # Derive specweave package root from script location (works for both dev and npm)
-  # Script is at: plugins/specweave/hooks/v2/handlers/ → 5 levels up = package root
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  PKG_ROOT="$(cd "$SCRIPT_DIR/../../../../.." 2>/dev/null && pwd)"
-
   GITHUB_HANDLER=""
-  # 1. Sibling plugin dir (works for both npm and dev: plugins/specweave-github/hooks/)
-  CANDIDATE="$SCRIPT_DIR/../../../../specweave-github/hooks/github-auto-create-handler.sh"
+  # 1. Sibling plugin dir — handlers/../../../../ = plugins/ (works for both npm and dev)
+  CANDIDATE="$HANDLER_DIR/../../../../specweave-github/hooks/github-auto-create-handler.sh"
   [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
   # 2. Fallback: PROJECT_ROOT/plugins/ (dev-only, when running from source repo)
   if [[ -z "$GITHUB_HANDLER" ]]; then
@@ -153,7 +151,7 @@ if [[ "$GH_ENABLED" == "true" ]]; then
     CANDIDATE="${PROJECT_ROOT}/node_modules/specweave/plugins/specweave-github/hooks/github-auto-create-handler.sh"
     [[ -f "$CANDIDATE" ]] && GITHUB_HANDLER="$CANDIDATE"
   fi
-  if [[ -n "$GITHUB_HANDLER" && -f "$GITHUB_HANDLER" ]]; then
+  if [[ -n "$GITHUB_HANDLER" ]]; then
     log "Delegating GitHub auto-create to handler at $GITHUB_HANDLER"
     bash "$GITHUB_HANDLER" "$INC_ID" &
     GH_PID=$!
@@ -182,8 +180,11 @@ if [[ "$JIRA_ENABLED" == "true" || "$ADO_ENABLED" == "true" ]]; then
     [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$CANDIDATE"
   fi
   # 2. Vendor directory (self-contained plugin)
+  # handlers/../../../ = plugins/specweave/ (3 levels up), then lib/vendor/
+  # NOTE: vendor path only works for GitHub-only users; JIRA/ADO dynamic imports
+  # (jira-client.js, ado-client.js) are NOT vendored and will fail if this path is used.
   if [[ -z "$CREATE_MODULE" ]]; then
-    CANDIDATE="$HANDLER_DIR/../../lib/vendor/core/universal-auto-create.js"
+    CANDIDATE="$HANDLER_DIR/../../../lib/vendor/core/universal-auto-create.js"
     [[ -f "$CANDIDATE" ]] && CREATE_MODULE="$(cd "$(dirname "$CANDIDATE")" && pwd)/$(basename "$CANDIDATE")"
   fi
   # 3. node_modules/specweave/ (direct npm install)
@@ -254,7 +255,9 @@ fi
 
 # Wait for GitHub handler if started
 if [[ -n "${GH_PID:-}" ]]; then
-  wait "$GH_PID" 2>/dev/null || true
+  wait "$GH_PID" 2>/dev/null
+  GH_EXIT=$?
+  [[ $GH_EXIT -ne 0 ]] && log "GitHub handler exited with code $GH_EXIT (check github-auto-create.log for details)"
 fi
 
 log "Universal auto-create finished for $INC_ID"
