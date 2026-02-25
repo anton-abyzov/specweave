@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.325] - 2026-02-25
+
+### Changes
+- update docs, plugins, hooks, and tests
+- update CLAUDE template, hooks, skills, and plugin detection
+
+---
+
+
+
 ## [1.0.324] - 2026-02-25
 
 ### Changes
