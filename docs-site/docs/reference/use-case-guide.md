@@ -29,13 +29,13 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Work task-by-task manually | `/sw:do` | Command |
 | Work with multiple agents | `/sw:auto-parallel` | Command |
 | Check auto mode progress | `/sw:auto-status` | Command |
-| Get React/Vue/Angular help | `/sw-frontend:frontend-architect` | Skill |
-| Get Node.js API help | `/sw-backend:nodejs-backend` | Skill |
-| Get .NET help | `/sw-backend:dotnet-backend` | Skill |
-| Get Python help | `/sw-backend:python-backend` | Skill |
-| Optimize database queries | `/sw-backend:database-optimizer` | Skill |
-| Set up Kubernetes | `/sw-kubernetes:k8s-manifest-generator` | Skill |
-| Design Kafka architecture | `/sw-kafka:kafka-architect` | Skill |
+| Get React/Vue/Angular help | `/frontend:architect` | Skill |
+| Get Node.js API help | `/backend:nodejs` | Skill |
+| Get .NET help | `/backend:dotnet` | Skill |
+| Get Python help | `/backend:python` | Skill |
+| Optimize database queries | `/backend:database-optimizer` | Skill |
+| Set up Kubernetes | `/k8s:deployment-generate` | Skill |
+| Design Kafka architecture | `/kafka:architect` | Skill |
 
 ### Testing & Quality
 
@@ -46,8 +46,8 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Deep implementation audit | `/sw:grill` | Command |
 | Follow TDD strictly | `/sw:tdd-cycle` | Skill |
 | Write failing tests first | `/sw:tdd-red` | Skill |
-| Get test strategy help | `/sw-testing:qa-engineer` | Skill |
-| Write E2E tests | `/sw-testing:e2e-testing` | Skill |
+| Get test strategy help | `/testing:qa` | Skill |
+| Write E2E tests | `/testing:e2e` | Skill |
 | Code review my changes | `/sw:code-reviewer` | Skill |
 
 ### Completing & Managing Work
@@ -78,8 +78,8 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Write technical docs | `/sw:docs-writer` | Skill |
 | Update living docs | `/sw:docs-updater` | Skill |
 | Navigate project docs | `/sw:living-docs-navigator` | Skill |
-| Build Docusaurus site | `/sw-docs:docusaurus` | Skill |
-| Preview documentation | `/sw-docs:preview` | Skill |
+| Build Docusaurus site | `/docs:docusaurus` | Skill |
+| Preview documentation | `/docs:preview` | Skill |
 
 ### Security & Compliance
 
@@ -88,14 +88,14 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Security assessment | `/sw:security` | Skill |
 | Detect security patterns | `/sw:security-patterns` | Skill |
 | SOC 2/HIPAA compliance | `/sw:compliance-architecture` | Skill |
-| PCI-DSS for payments | `/sw-payments:pci-compliance` | Skill |
+| PCI-DSS for payments | `/payments:pci-compliance` | Skill |
 
 ### Cost & Performance
 
 | I want to... | Use this | Type |
 |--------------|----------|------|
-| Optimize cloud costs | `/sw-cost-optimizer:cost-optimization` | Skill |
-| Analyze AWS costs | `/sw-cost-optimizer:aws-cost-expert` | Skill |
+| Optimize cloud costs | `/cost:cost-optimization` | Skill |
+| Analyze AWS costs | `/cost:aws-cost-expert` | Skill |
 | Improve performance | `/sw:performance` | Skill |
 
 ---
@@ -116,43 +116,43 @@ Find the right SpecWeave skill or command for what you're trying to do.
 ```bash
 /sw:architect             # System design, ADRs
 /sw:role-orchestrator     # Coordinate multiple agents
-/sw-infrastructure:devops # CI/CD, deployment
+/infra:devops             # CI/CD, deployment
 /sw:security              # Security review
 ```
 
 ### I'm a Frontend Developer
 
 ```bash
-/sw-frontend:frontend-architect    # React/Vue patterns
-/sw-frontend:nextjs                # Next.js specifics
-/sw-frontend:design-system-architect  # Component library
+/frontend:architect                # React/Vue patterns
+/frontend:nextjs                   # Next.js specifics
+/frontend:design-system-architect  # Component library
 /sw:auto                           # Autonomous implementation
 ```
 
 ### I'm a Backend Developer
 
 ```bash
-/sw-backend:nodejs-backend         # Node.js APIs
-/sw-backend:database-optimizer     # SQL optimization
-/sw-kafka:kafka-architect          # Event-driven design
+/backend:nodejs                     # Node.js APIs
+/backend:database-optimizer        # SQL optimization
+/kafka:architect                   # Event-driven design
 /sw:auto                           # Autonomous implementation
 ```
 
 ### I'm a DevOps Engineer
 
 ```bash
-/sw-infrastructure:devops          # CI/CD pipelines
-/sw-kubernetes:k8s-manifest-generator  # K8s manifests
-/sw-kubernetes:gitops-workflow     # ArgoCD/Flux
-/sw-infra:terraform-opentofu       # Terraform IaC
+/infra:devops                      # CI/CD pipelines
+/k8s:deployment-generate           # K8s manifests
+/k8s:gitops-workflow               # ArgoCD/Flux
+/infra:terraform                   # Terraform IaC
 ```
 
 ### I'm a QA Engineer
 
 ```bash
-/sw-testing:qa-engineer             # Test strategy
-/sw-testing:e2e-testing            # Playwright E2E
-/sw-testing:unit-testing           # Unit test patterns
+/testing:qa                         # Test strategy
+/testing:e2e                       # Playwright E2E
+/testing:unit                      # Unit test patterns
 /sw:tdd-cycle               # TDD workflow
 /sw:grill                          # Implementation audit
 ```
@@ -163,7 +163,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 /sw:security                       # Vulnerability assessment
 /sw:security-patterns              # Real-time detection
 /sw:compliance-architecture        # Compliance frameworks
-/sw-payments:pci-compliance        # PCI-DSS
+/payments:pci-compliance            # PCI-DSS
 ```
 
 ---
@@ -205,8 +205,8 @@ graph TD
 **Commands/Skills:**
 - `/sw:auto` - Autonomous execution
 - `/sw:do` - Manual execution
-- `/sw-frontend:*` - Frontend skills
-- `/sw-backend:*` - Backend skills
+- `/frontend:*` - Frontend skills
+- `/backend:*` - Backend skills
 
 ### Phase 3: Quality
 
@@ -405,11 +405,11 @@ Skills activate automatically when you mention these keywords:
 |----------|-----------------|
 | "user story", "acceptance criteria", "requirements" | `sw:pm` |
 | "architecture", "ADR", "design decision" | `sw:architect` |
-| "React", "Vue", "Angular", "frontend" | `sw-frontend:frontend-architect` |
-| "Node.js", "Express", "API endpoint" | `sw-backend:nodejs-backend` |
-| "database", "SQL", "query optimization" | `sw-backend:database-optimizer` |
-| "Kubernetes", "K8s", "pods", "deployment" | `sw-kubernetes:*` |
-| "Kafka", "events", "streaming" | `sw-kafka:kafka-architect` |
+| "React", "Vue", "Angular", "frontend" | `frontend:architect` |
+| "Node.js", "Express", "API endpoint" | `backend:nodejs` |
+| "database", "SQL", "query optimization" | `backend:database-optimizer` |
+| "Kubernetes", "K8s", "pods", "deployment" | `k8s:*` |
+| "Kafka", "events", "streaming" | `kafka:architect` |
 | "test", "TDD", "unit test", "E2E" | `sw:tdd-cycle` |
 | "security", "OWASP", "vulnerability" | `sw:security` |
 | "compliance", "SOC 2", "HIPAA", "GDPR" | `sw:compliance-architecture` |

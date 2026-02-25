@@ -67,8 +67,12 @@ export function isSpecWeaveSkillInvocation(prompt: string): boolean {
   // Normalize: trim whitespace and convert to lowercase
   const normalized = prompt.trim().toLowerCase();
 
-  // Check for /sw: or /sw-<plugin>: patterns
-  return /^\/sw(-[a-z0-9-]+)?:/.test(normalized);
+  // Check for /sw: or /sw-<plugin>: patterns (integration plugins)
+  // Also check for domain plugin patterns: /frontend:, /backend:, /testing:, etc.
+  const DOMAIN_PLUGINS = ['frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s', 'ml', 'payments', 'kafka', 'confluent', 'cost', 'docs', 'security', 'scout', 'blockchain'];
+  if (/^\/sw(-[a-z0-9-]+)?:/.test(normalized)) return true;
+  const match = normalized.match(/^\/([a-z0-9-]+):/);
+  return match !== null && DOMAIN_PLUGINS.includes(match[1]);
 }
 
 /**
@@ -178,7 +182,7 @@ You invoked \`${skillInvocation}\`, but this project hasn't been initialized wit
    {
      "enabledPlugins": {
        "sw@specweave": false,
-       "sw-frontend@specweave": false
+       "frontend@vskill": false
      }
    }
    \`\`\`

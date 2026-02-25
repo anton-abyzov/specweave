@@ -34,8 +34,8 @@ import { clearCliCache } from '../../../src/core/lazy-loading/llm-plugin-detecto
 import { execFileNoThrowSync } from '../../../src/utils/execFileNoThrow.js';
 
 // Test configuration
-// NOTE: Use SHORT name (sw-*) for plugin operations, matching marketplace.json
-const TEST_PLUGIN = 'sw-frontend'; // Plugin to test install/uninstall (short name)
+// NOTE: Use plugin name for plugin operations, matching marketplace.json
+const TEST_PLUGIN = 'frontend'; // Plugin to test install/uninstall
 const CLAUDE_REGISTRY_PATH = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
 const CLAUDE_SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
 const CLAUDE_SKILLS_PATH = path.join(os.homedir(), '.claude', 'skills');
@@ -104,18 +104,19 @@ if (!CLI_AVAILABLE_AT_LOAD) {
  * The marketplace UI "installed" count = enabled plugins only.
  *
  * IMPORTANT: Claude CLI may register plugins with EITHER:
- * - Short name: sw-frontend@specweave (from marketplace.json "name" field)
- * - Long name: specweave-frontend@specweave (from source folder name)
+ * - Short name: frontend@vskill (domain plugins) or sw-github@specweave (integration plugins)
+ * - Long name: specweave-frontend@specweave (legacy source folder name)
  * This function checks BOTH naming conventions.
  */
 function isPluginInstalled(pluginName: string): boolean {
   try {
     // Build both possible keys
-    const shortKey = `${pluginName}@specweave`;
+    const marketplace = getMarketplace(pluginName);
+    const shortKey = `${pluginName}@${marketplace}`;
     const longName = PLUGIN_FOLDER_TO_SHORT[pluginName]
       ? pluginName // Already a long name, use as-is
       : Object.entries(PLUGIN_FOLDER_TO_SHORT).find(([, short]) => short === pluginName)?.[0];
-    const longKey = longName ? `${longName}@specweave` : null;
+    const longKey = longName ? `${longName}@${marketplace}` : null;
 
     // Check 1: Is it in the registry? (check both keys)
     if (!fs.existsSync(CLAUDE_REGISTRY_PATH)) {
@@ -155,11 +156,12 @@ function isPluginInRegistry(pluginName: string): boolean {
     const registry = JSON.parse(fs.readFileSync(CLAUDE_REGISTRY_PATH, 'utf8'));
 
     // Check both short and long name formats
-    const shortKey = `${pluginName}@specweave`;
+    const marketplace = getMarketplace(pluginName);
+    const shortKey = `${pluginName}@${marketplace}`;
     const longName = PLUGIN_FOLDER_TO_SHORT[pluginName]
       ? pluginName
       : Object.entries(PLUGIN_FOLDER_TO_SHORT).find(([, short]) => short === pluginName)?.[0];
-    const longKey = longName ? `${longName}@specweave` : null;
+    const longKey = longName ? `${longName}@${marketplace}` : null;
 
     const hasShort = !!(registry.plugins?.[shortKey] && registry.plugins[shortKey].length > 0);
     const hasLong = longKey ? !!(registry.plugins?.[longKey] && registry.plugins[longKey].length > 0) : false;
@@ -180,28 +182,43 @@ function isPluginInSkillsDir(pluginName: string): boolean {
 /**
  * Map plugin FOLDER names to SHORT names (for Claude CLI)
  *
- * SHORT names are defined in marketplace.json and are what users should use:
- * `claude plugin install sw-testing@specweave` (NOT specweave-testing)
+ * Domain plugins use vskill marketplace (no sw- prefix).
+ * Integration plugins remain in specweave marketplace (sw- prefix).
  */
 const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
   specweave: 'sw',
   'specweave-router': 'sw-router',
-  'specweave-frontend': 'sw-frontend',
-  'specweave-backend': 'sw-backend',
-  'specweave-testing': 'sw-testing',
+  'specweave-frontend': 'frontend',
+  'specweave-backend': 'backend',
+  'specweave-testing': 'testing',
   'specweave-github': 'sw-github',
   'specweave-jira': 'sw-jira',
   'specweave-ado': 'sw-ado',
-  'specweave-infrastructure': 'sw-infra',
-  'specweave-kubernetes': 'sw-k8s',
-  'specweave-ml': 'sw-ml',
-  'specweave-kafka': 'sw-kafka',
-  'specweave-confluent': 'sw-confluent',
-  'specweave-mobile': 'sw-mobile',
-  'specweave-payments': 'sw-payments',
+  'specweave-infrastructure': 'infra',
+  'specweave-kubernetes': 'k8s',
+  'specweave-ml': 'ml',
+  'specweave-kafka': 'kafka',
+  'specweave-confluent': 'confluent',
+  'specweave-mobile': 'mobile',
+  'specweave-payments': 'payments',
   'specweave-release': 'sw-release',
   'specweave-diagrams': 'sw-diagrams',
 };
+
+/** Domain plugins live in the vskill marketplace (no sw- prefix) */
+const DOMAIN_PLUGINS = new Set([
+  'frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s',
+  'ml', 'payments', 'confluent', 'kafka', 'docs', 'cost', 'security', 'scout',
+]);
+
+function isDomainPlugin(shortName: string): boolean {
+  return DOMAIN_PLUGINS.has(shortName);
+}
+
+/** Get the marketplace name for a plugin */
+function getMarketplace(shortName: string): string {
+  return isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+}
 
 /**
  * Enable a plugin via Claude CLI
@@ -211,13 +228,14 @@ const PLUGIN_FOLDER_TO_SHORT: Record<string, string> = {
  * - `claude plugin install <plugin>@<marketplace>` - installs new plugin
  *
  * Most SpecWeave plugins are already installed but disabled - use enable first.
- * Accepts EITHER short name (sw-frontend) or long name (specweave-frontend).
+ * Accepts EITHER short name (frontend) or long name (specweave-frontend).
  */
 function enablePluginViaClaude(pluginName: string): { success: boolean; output: string } {
   try {
     // Convert to short name if needed
     const shortName = PLUGIN_FOLDER_TO_SHORT[pluginName] || pluginName;
-    const pluginKey = `${shortName}@specweave`;
+    const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+    const pluginKey = `${shortName}@${marketplace}`;
 
     // First try to enable (faster, works for already-installed plugins)
     const enableResult = execFileNoThrowSync('claude', ['plugin', 'enable', pluginKey], {
@@ -251,14 +269,15 @@ function enablePluginViaClaude(pluginName: string): { success: boolean; output: 
 /**
  * Install a plugin via Claude CLI using SHORT names
  *
- * Accepts EITHER short name (sw-frontend) or long name (specweave-frontend).
+ * Accepts EITHER short name (frontend) or long name (specweave-frontend).
  * Converts to short name for the Claude CLI call.
  */
 function installPluginViaClaude(pluginName: string): { success: boolean; output: string } {
   try {
     // Convert to short name if needed (accepts either format)
     const shortName = PLUGIN_FOLDER_TO_SHORT[pluginName] || pluginName;
-    const pluginKey = `${shortName}@specweave`;
+    const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+    const pluginKey = `${shortName}@${marketplace}`;
 
     const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginKey], {
       timeout: 60000,
@@ -330,15 +349,15 @@ async function runDetectIntent(
  * - Any OS (Windows/macOS/Linux - shell:true handles functions/aliases)
  *
  * PLUGIN NAMING:
- * - Install uses SHORT names from marketplace.json: `sw-testing@specweave`
- * - After install, registry stores with the same short name
+ * - Install uses names from marketplace.json: `testing@vskill` (domain) or `sw-github@specweave` (integration)
+ * - After install, registry stores with the same name
  * - Some legacy plugins may have long names like `specweave-testing@specweave`
  *
  * COMMANDS:
  * - `claude plugin list` - shows all installed plugins
- * - `claude plugin install sw-testing@specweave` - installs plugin (short name)
- * - `claude plugin enable/disable <name>@specweave` - toggle existing plugin
- * - `claude plugin uninstall <name>@specweave` - removes plugin
+ * - `claude plugin install testing@vskill` - installs domain plugin
+ * - `claude plugin enable/disable <name>@<marketplace>` - toggle existing plugin
+ * - `claude plugin uninstall <name>@<marketplace>` - removes plugin
  *
  * RUN THIS TEST:
  *   npx vitest run tests/integration/lazy-loading/plugin-install-e2e.test.ts -t "Direct CLI"
@@ -424,7 +443,7 @@ describe('Direct CLI Plugin Install Test', () => {
   it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin from official Claude marketplace', () => {
     // Test with a plugin from the SpecWeave marketplace (reliable for CI/CD)
     // Skip if external marketplace is unavailable
-    const pluginKey = 'sw-testing@specweave';
+    const pluginKey = 'testing@vskill';
 
     console.log('\n📦 Testing: claude plugin install ' + pluginKey);
 
@@ -456,14 +475,14 @@ describe('Direct CLI Plugin Install Test', () => {
 
   it.skipIf(!PLUGIN_CMD_WORKS)('should install and uninstall SpecWeave plugin using SHORT name', () => {
     // Test the CORRECT way to install SpecWeave plugins:
-    // Use SHORT name from marketplace.json (sw-testing), NOT folder name (specweave-testing)
+    // Use name from marketplace.json (testing), NOT folder name (specweave-testing)
     //
     // IMPORTANT: Claude CLI may register plugins with EITHER:
-    // - Short name: sw-testing@specweave (from marketplace.json "name" field)
-    // - Long name: specweave-testing@specweave (from source folder name)
+    // - Short name: testing@vskill (from marketplace.json "name" field)
+    // - Long name: specweave-testing@specweave (legacy source folder name)
     // We need to check for BOTH in assertions
-    const pluginKey = 'sw-testing@specweave';
-    const pluginShortName = 'sw-testing'; // Short name from marketplace
+    const pluginKey = 'testing@vskill';
+    const pluginShortName = 'testing'; // Name from marketplace
     const pluginLongName = 'specweave-testing'; // Folder name (may also appear in registry)
 
     console.log('\n📦 Testing: Full install/uninstall cycle for ' + pluginKey);
@@ -520,9 +539,9 @@ describe('Direct CLI Plugin Install Test', () => {
 
     console.log('   Plugin list output:', listResult.stdout?.substring(0, 500));
 
-    // Claude CLI may register with SHORT name (sw-testing) or LONG name (specweave-testing)
+    // Claude CLI may register with SHORT name (testing) or LONG name (specweave-testing)
     // Check for EITHER format - both are valid
-    const hasShortName = listResult.stdout?.includes(pluginShortName + '@specweave');
+    const hasShortName = listResult.stdout?.includes(pluginShortName + '@vskill');
     const hasLongName = listResult.stdout?.includes(pluginLongName + '@specweave');
     console.log(`   Found short name (${pluginShortName}): ${hasShortName}`);
     console.log(`   Found long name (${pluginLongName}): ${hasLongName}`);
@@ -563,7 +582,7 @@ describe('Direct CLI Plugin Install Test', () => {
     });
     // Plugin should NOT appear in list after uninstall (check BOTH names)
     // Note: Claude CLI may not always uninstall cleanly - plugin might remain until restart
-    const goneShort = !verifyResult.stdout?.includes(pluginShortName + '@specweave');
+    const goneShort = !verifyResult.stdout?.includes(pluginShortName + '@vskill');
     const goneLong = !verifyResult.stdout?.includes(pluginLongName + '@specweave');
     if (goneShort && goneLong) {
       console.log('   ✅ Plugin confirmed removed from list');
@@ -649,8 +668,8 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(detection.result).toBeDefined();
 
       if (detection.result?.detected) {
-        // LLM returns SHORT names (sw-*) not directory names (specweave-*)
-        expect(detection.result.plugins).toContain('sw-frontend');
+        // LLM returns plugin names: domain plugins have no sw- prefix
+        expect(detection.result.plugins).toContain('frontend');
         expect(detection.result.confidence).toBeGreaterThan(0.5);
       }
     }, 30000); // 30s timeout for LLM
@@ -663,8 +682,8 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(detection.success).toBe(true);
 
       if (detection.result?.detected) {
-        // LLM returns SHORT names (sw-*) not directory names (specweave-*)
-        expect(detection.result.plugins).toContain('sw-backend');
+        // LLM returns plugin names: domain plugins have no sw- prefix
+        expect(detection.result.plugins).toContain('backend');
       }
     }, 30000);
 
@@ -676,8 +695,8 @@ describe('Plugin Auto-Load E2E Integration', () => {
       expect(detection.success).toBe(true);
 
       if (detection.result?.detected) {
-        // LLM returns SHORT names (sw-*) not directory names (specweave-*)
-        expect(detection.result.plugins).toContain('sw-testing');
+        // LLM returns plugin names: domain plugins have no sw- prefix
+        expect(detection.result.plugins).toContain('testing');
       }
     }, 30000);
 
@@ -745,19 +764,19 @@ describe('Plugin Auto-Load E2E Integration', () => {
      */
     function getShortPluginName(folderName: string): string {
       const mapping: Record<string, string> = {
-        'specweave-frontend': 'sw-frontend',
-        'specweave-backend': 'sw-backend',
-        'specweave-testing': 'sw-testing',
+        'specweave-frontend': 'frontend',
+        'specweave-backend': 'backend',
+        'specweave-testing': 'testing',
         'specweave-github': 'sw-github',
         'specweave-jira': 'sw-jira',
         'specweave-ado': 'sw-ado',
-        'specweave-infrastructure': 'sw-infra',
-        'specweave-k8s': 'sw-k8s',
-        'specweave-ml': 'sw-ml',
-        'specweave-kafka': 'sw-kafka',
-        'specweave-confluent': 'sw-confluent',
-        'specweave-mobile': 'sw-mobile',
-        'specweave-payments': 'sw-payments',
+        'specweave-infrastructure': 'infra',
+        'specweave-kubernetes': 'k8s',
+        'specweave-ml': 'ml',
+        'specweave-kafka': 'kafka',
+        'specweave-confluent': 'confluent',
+        'specweave-mobile': 'mobile',
+        'specweave-payments': 'payments',
         'specweave-release': 'sw-release',
         'specweave-diagrams': 'sw-diagrams',
       };
@@ -786,7 +805,8 @@ describe('Plugin Auto-Load E2E Integration', () => {
 
       for (const pluginFolderName of pluginsInstalledByTest) {
         const shortName = getShortPluginName(pluginFolderName);
-        const shortKey = `${shortName}@specweave`;
+        const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+        const shortKey = `${shortName}@${marketplace}`;
         const longKey = `${pluginFolderName}@specweave`;
 
         console.log(`   Cleaning up: ${pluginFolderName}`);
@@ -828,7 +848,8 @@ describe('Plugin Auto-Load E2E Integration', () => {
         // Get the FIRST detected plugin - this is what we'll track and clean up
         const detectedPlugin = detection.result.plugins[0];
         const shortName = getShortPluginName(detectedPlugin);
-        const shortKey = `${shortName}@specweave`;
+        const marketplace = isDomainPlugin(shortName) ? 'vskill' : 'specweave';
+        const shortKey = `${shortName}@${marketplace}`;
         const longKey = `${detectedPlugin}@specweave`;
 
         console.log(`\n🎯 Primary detected plugin: ${detectedPlugin}`);
@@ -913,7 +934,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
 
   describe('Direct Plugin Installation via Claude CLI', () => {
     it.skipIf(!PLUGIN_CMD_WORKS)('should install plugin via claude plugin install', async () => {
-      // Use Claude's native CLI: `claude plugin install sw-frontend@specweave`
+      // Use Claude's native CLI: `claude plugin install frontend@vskill`
       const result = installPluginViaClaude(TEST_PLUGIN);
 
       console.log(`📦 ${TEST_PLUGIN} install attempt:`);
@@ -977,7 +998,7 @@ describe('Plugin Auto-Load E2E Integration', () => {
     }, 60000); // Extend timeout for marketplace operations
 
     it.skip('uninstall removes plugin from registry', () => {
-      // Use `claude plugin uninstall sw-testing@specweave` to remove
+      // Use `claude plugin uninstall testing@vskill` to remove
       // Plugins remain loaded until Claude Code restarts
     });
   });

@@ -184,7 +184,7 @@ describe('PluginsChecker', () => {
     fs.mkdirSync(stateDir, { recursive: true });
     fs.writeFileSync(
       path.join(stateDir, 'plugins-loaded.json'),
-      JSON.stringify({ loadedPlugins: ['sw', 'sw-frontend'] })
+      JSON.stringify({ loadedPlugins: ['sw', 'frontend'] })
     );
 
     const checker = new PluginsChecker({ homeDir: tmpDir });

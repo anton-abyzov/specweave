@@ -373,9 +373,9 @@ Installing plugins...
 ✓ sw-release (Release management)
 
 Optional plugins available:
-  ? Install sw-kafka? (Kafka infrastructure) [y/N]
-  ? Install sw-ml? (ML pipeline support) [y/N]
-  ? Install sw-mobile? (React Native support) [y/N]
+  ? Install kafka? (Kafka infrastructure) [y/N]
+  ? Install ml? (ML pipeline support) [y/N]
+  ? Install mobile? (React Native support) [y/N]
 ```
 
 ### Core Plugins (Auto-installed)
@@ -390,11 +390,11 @@ Optional plugins available:
 
 | Plugin | When to Install |
 |--------|-----------------|
-| sw-kafka | Building event-driven systems |
-| sw-ml | ML pipelines, model deployment |
-| sw-mobile | React Native mobile apps |
-| sw-k8s | K8s deployments |
-| sw-infra | Terraform, cloud infrastructure |
+| kafka | Building event-driven systems |
+| ml | ML pipelines, model deployment |
+| mobile | React Native mobile apps |
+| k8s | K8s deployments |
+| infra | Terraform, cloud infrastructure |
 
 ---
 

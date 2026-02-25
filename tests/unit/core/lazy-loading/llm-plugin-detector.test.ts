@@ -581,7 +581,7 @@ describe('formatHookOutput', () => {
   function makeInstall(overrides: Partial<PluginInstallResult> = {}): PluginInstallResult {
     return {
       success: true,
-      plugin: 'sw-frontend',
+      plugin: 'frontend',
       ...overrides,
     };
   }
@@ -673,7 +673,7 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend'] as any,
+        plugins: ['frontend', 'backend'] as any,
       }),
       installations: [],
       suggestOnly: true,
@@ -681,22 +681,22 @@ describe('formatHookOutput', () => {
     const parsed = JSON.parse(result);
     expect(parsed.continue).toBe(true);
     expect(parsed.systemMessage).toContain('Plugins that may help');
-    expect(parsed.systemMessage).toContain('sw-frontend, sw-backend');
+    expect(parsed.systemMessage).toContain('frontend, backend');
     expect(parsed.systemMessage).toContain('claude plugin install');
-    expect(parsed.systemMessage).toContain('@specweave');
+    expect(parsed.systemMessage).toContain('@vskill');
   });
 
   it('should show single plugin in suggestOnly mode', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [],
       suggestOnly: true,
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('sw-frontend');
+    expect(parsed.systemMessage).toContain('frontend');
     expect(parsed.systemMessage).toContain('Plugins that may help');
   });
 
@@ -706,29 +706,29 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend' }),
+        makeInstall({ success: true, plugin: 'frontend' }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: sw-frontend');
+    expect(parsed.systemMessage).toContain('Loaded: frontend');
   });
 
   it('should show multiple loaded plugins', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend'] as any,
+        plugins: ['frontend', 'backend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend' }),
-        makeInstall({ success: true, plugin: 'sw-backend' }),
+        makeInstall({ success: true, plugin: 'frontend' }),
+        makeInstall({ success: true, plugin: 'backend' }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: sw-frontend, sw-backend');
+    expect(parsed.systemMessage).toContain('Loaded: frontend, backend');
   });
 
   // --- Normal mode: already installed plugins ---
@@ -737,29 +737,29 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: sw-frontend');
+    expect(parsed.systemMessage).toContain('Using: frontend');
   });
 
   it('should NOT show "Using:" when there are newly installed plugins too', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend'] as any,
+        plugins: ['frontend', 'backend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend' }),
-        makeInstall({ success: true, plugin: 'sw-backend', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'frontend' }),
+        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: sw-frontend');
+    expect(parsed.systemMessage).toContain('Loaded: frontend');
     expect(parsed.systemMessage).not.toContain('Using:');
   });
 
@@ -769,14 +769,14 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [
-        makeInstall({ success: false, plugin: 'sw-frontend', error: 'timeout' }),
+        makeInstall({ success: false, plugin: 'frontend', error: 'timeout' }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Failed: sw-frontend');
+    expect(parsed.systemMessage).toContain('Failed: frontend');
   });
 
   // --- Mix of installed and failed ---
@@ -785,19 +785,19 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend', 'sw-testing'] as any,
+        plugins: ['frontend', 'backend', 'testing'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend' }),
-        makeInstall({ success: true, plugin: 'sw-backend', alreadyInstalled: true }),
-        makeInstall({ success: false, plugin: 'sw-testing', error: 'network error' }),
+        makeInstall({ success: true, plugin: 'frontend' }),
+        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
+        makeInstall({ success: false, plugin: 'testing', error: 'network error' }),
       ],
     });
     const parsed = JSON.parse(result);
     expect(parsed.continue).toBe(true);
     // Should have Loaded + Failed (no Using since there are new installs)
-    expect(parsed.systemMessage).toContain('Loaded: sw-frontend');
-    expect(parsed.systemMessage).toContain('Failed: sw-testing');
+    expect(parsed.systemMessage).toContain('Loaded: frontend');
+    expect(parsed.systemMessage).toContain('Failed: testing');
     expect(parsed.systemMessage).not.toContain('Using:');
     expect(parsed.systemMessage).toContain(' | ');
   });
@@ -806,16 +806,16 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend'] as any,
+        plugins: ['frontend', 'backend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend', alreadyInstalled: true }),
-        makeInstall({ success: false, plugin: 'sw-backend', error: 'err' }),
+        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
+        makeInstall({ success: false, plugin: 'backend', error: 'err' }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: sw-frontend');
-    expect(parsed.systemMessage).toContain('Failed: sw-backend');
+    expect(parsed.systemMessage).toContain('Using: frontend');
+    expect(parsed.systemMessage).toContain('Failed: backend');
     expect(parsed.systemMessage).toContain(' | ');
   });
 
@@ -823,10 +823,10 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend' }),
+        makeInstall({ success: true, plugin: 'frontend' }),
       ],
     });
     const parsed = JSON.parse(result);
@@ -841,7 +841,7 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [],
     });
@@ -853,31 +853,31 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend'] as any,
+        plugins: ['frontend', 'backend'] as any,
       }),
       installations: [
-        makeInstall({ success: false, plugin: 'sw-frontend', error: 'err1' }),
-        makeInstall({ success: false, plugin: 'sw-backend', error: 'err2' }),
+        makeInstall({ success: false, plugin: 'frontend', error: 'err1' }),
+        makeInstall({ success: false, plugin: 'backend', error: 'err2' }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Failed: sw-frontend, sw-backend');
+    expect(parsed.systemMessage).toContain('Failed: frontend, backend');
   });
 
   it('should handle all already-installed with multiple plugins', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend', 'sw-backend', 'sw-testing'] as any,
+        plugins: ['frontend', 'backend', 'testing'] as any,
       }),
       installations: [
-        makeInstall({ success: true, plugin: 'sw-frontend', alreadyInstalled: true }),
-        makeInstall({ success: true, plugin: 'sw-backend', alreadyInstalled: true }),
-        makeInstall({ success: true, plugin: 'sw-testing', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
+        makeInstall({ success: true, plugin: 'testing', alreadyInstalled: true }),
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: sw-frontend, sw-backend, sw-testing');
+    expect(parsed.systemMessage).toContain('Using: frontend, backend, testing');
   });
 
   it('should always have continue: true even when detection fails with "not found"', () => {
@@ -908,7 +908,7 @@ describe('formatHookOutput', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['sw-frontend'] as any,
+        plugins: ['frontend'] as any,
       }),
       installations: [],
       suggestOnly: true,

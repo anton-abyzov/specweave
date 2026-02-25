@@ -236,11 +236,11 @@ SpecWeave assigns domain-specific expertise to each agent:
 │                                                                          │
 │   Domain        Skill Assigned              Expertise                    │
 │   ──────        ──────────────              ─────────                    │
-│   frontend      sw-frontend:frontend-arch   React, Vue, Next.js, CSS    │
-│   backend       sw-backend:database-opt     Node, Express, APIs, SQL    │
-│   database      sw-backend:database-opt     Migrations, schemas, ORM    │
-│   devops        sw-infra:devops             Docker, K8s, CI/CD, IaC     │
-│   qa            sw-testing:qa-engineer      Playwright, Vitest, E2E     │
+│   frontend      frontend:architect           React, Vue, Next.js, CSS    │
+│   backend       backend:database-optimizer  Node, Express, APIs, SQL    │
+│   database      backend:database-optimizer  Migrations, schemas, ORM    │
+│   devops        infra:devops                Docker, K8s, CI/CD, IaC     │
+│   qa            testing:qa                  Playwright, Vitest, E2E     │
 │   general       general-purpose             Versatile, any task         │
 │                                                                          │
 │   All agents use: Claude Opus 4.6 for maximum reasoning capability      │

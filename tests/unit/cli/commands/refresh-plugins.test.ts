@@ -98,7 +98,7 @@ const MARKETPLACE_JSON = JSON.stringify({
   version: '1.0.0',
   plugins: [
     { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework' },
-    { name: 'sw-frontend', source: './plugins/specweave-frontend', version: '1.0.50', description: 'Frontend' },
+    { name: 'frontend', source: './plugins/frontend', version: '1.0.50', description: 'Frontend' },
     { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.30', description: 'GitHub sync' },
   ],
 });
@@ -141,11 +141,11 @@ describe('refresh-plugins', () => {
       expect(mockCopyPlugin).toHaveBeenCalledWith('sw', '/mock/specweave', { force: undefined });
     });
 
-    it('should not install sw-frontend or sw-github in lazy mode', async () => {
+    it('should not install frontend or sw-github in lazy mode', async () => {
       await refreshPluginsCommand({});
 
       const calledPlugins = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
-      expect(calledPlugins).not.toContain('sw-frontend');
+      expect(calledPlugins).not.toContain('frontend');
       expect(calledPlugins).not.toContain('sw-github');
     });
   });
@@ -161,7 +161,7 @@ describe('refresh-plugins', () => {
 
       const calledPlugins = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
       expect(calledPlugins).toContain('sw');
-      expect(calledPlugins).toContain('sw-frontend');
+      expect(calledPlugins).toContain('frontend');
       expect(calledPlugins).toContain('sw-github');
     });
   });

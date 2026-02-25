@@ -57,27 +57,27 @@ describe.skip('Agent SDK Integration', () => {
         {
           prompt: 'Build a React dashboard with charts',
           expectedMin: 0.7,
-          expectedPlugins: ['sw-frontend'],
+          expectedPlugins: ['frontend'],
         },
         {
           prompt: 'Create a REST API with Express and PostgreSQL',
           expectedMin: 0.7,
-          expectedPlugins: ['sw-backend'],
+          expectedPlugins: ['backend'],
         },
         {
           prompt: 'Deploy to Kubernetes with Helm charts',
           expectedMin: 0.7,
-          expectedPlugins: ['sw-k8s'],
+          expectedPlugins: ['k8s'],
         },
         {
           prompt: 'Build an ML pipeline with PyTorch',
           expectedMin: 0.7,
-          expectedPlugins: ['sw-ml'],
+          expectedPlugins: ['ml'],
         },
         {
           prompt: 'Write E2E tests with Playwright',
           expectedMin: 0.7,
-          expectedPlugins: ['sw-testing'],
+          expectedPlugins: ['testing'],
         },
       ];
 
@@ -204,7 +204,7 @@ describe.skip('Agent SDK Integration', () => {
 
       for (const prompt of frontendPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('sw-frontend');
+        expect(result.suggestedPlugins).toContain('frontend');
       }
     });
 
@@ -223,7 +223,7 @@ describe.skip('Agent SDK Integration', () => {
 
       for (const prompt of backendPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('sw-backend');
+        expect(result.suggestedPlugins).toContain('backend');
       }
     });
 
@@ -242,7 +242,7 @@ describe.skip('Agent SDK Integration', () => {
 
       for (const prompt of mlPrompts) {
         const result = detectSpecWeaveIntent(prompt);
-        expect(result.suggestedPlugins).toContain('sw-ml');
+        expect(result.suggestedPlugins).toContain('ml');
       }
     });
 
@@ -253,17 +253,17 @@ describe.skip('Agent SDK Integration', () => {
       // "ai" should not match inside "mermaid"
       const mermaidPrompt = 'Create Mermaid architecture diagrams';
       const mermaidResult = detectSpecWeaveIntent(mermaidPrompt);
-      expect(mermaidResult.suggestedPlugins).not.toContain('sw-ml');
+      expect(mermaidResult.suggestedPlugins).not.toContain('ml');
 
       // "ui" should not match inside "fruit"
       const fruitPrompt = 'Build a fruit inventory system';
       const fruitResult = detectSpecWeaveIntent(fruitPrompt);
-      expect(fruitResult.suggestedPlugins).not.toContain('sw-frontend');
+      expect(fruitResult.suggestedPlugins).not.toContain('frontend');
 
       // "ml" should not match inside "html"
       const htmlPrompt = 'Parse HTML documents';
       const htmlResult = detectSpecWeaveIntent(htmlPrompt);
-      expect(htmlResult.suggestedPlugins).not.toContain('sw-ml');
+      expect(htmlResult.suggestedPlugins).not.toContain('ml');
     });
 
     /**
@@ -273,17 +273,17 @@ describe.skip('Agent SDK Integration', () => {
       // Standalone "AI" should match
       const aiPrompt = 'Build an AI assistant';
       const aiResult = detectSpecWeaveIntent(aiPrompt);
-      expect(aiResult.suggestedPlugins).toContain('sw-ml');
+      expect(aiResult.suggestedPlugins).toContain('ml');
 
       // Standalone "UI" should match
       const uiPrompt = 'Design the UI components';
       const uiResult = detectSpecWeaveIntent(uiPrompt);
-      expect(uiResult.suggestedPlugins).toContain('sw-frontend');
+      expect(uiResult.suggestedPlugins).toContain('frontend');
 
       // Standalone "ML" should match
       const mlPrompt = 'Create ML pipeline';
       const mlResult = detectSpecWeaveIntent(mlPrompt);
-      expect(mlResult.suggestedPlugins).toContain('sw-ml');
+      expect(mlResult.suggestedPlugins).toContain('ml');
     });
   });
 
@@ -307,7 +307,7 @@ describe.skip('Agent SDK Integration', () => {
     it('should recommend haiku model for simple, high-confidence routing', () => {
       // For simple plugin routing decisions, haiku is sufficient
       const simpleRouting: MockTaskCall = {
-        subagent_type: 'sw-frontend:frontend-architect',
+        subagent_type: 'frontend:architect',
         prompt: 'Create a React component for user profile',
         model: 'haiku', // Fast, cheap for simple tasks
         description: 'Frontend component creation',
@@ -322,7 +322,7 @@ describe.skip('Agent SDK Integration', () => {
     it('should recommend sonnet/opus for complex architectural decisions', () => {
       // For complex architectural decisions, use more capable models
       const complexArchitecture: MockTaskCall = {
-        subagent_type: 'sw-backend:database-optimizer',
+        subagent_type: 'backend:database-optimizer',
         prompt:
           'Design a multi-tenant database schema with row-level security, considering scalability to 10M users',
         model: 'sonnet', // More capable for complex reasoning
@@ -333,7 +333,7 @@ describe.skip('Agent SDK Integration', () => {
 
       // For critical decisions, use opus
       const criticalDecision: MockTaskCall = {
-        subagent_type: 'sw-infra:kubernetes-architect',
+        subagent_type: 'infra:kubernetes-architect',
         prompt:
           'Design production Kubernetes architecture for financial services with compliance requirements',
         model: 'opus', // Highest capability for critical decisions
@@ -358,7 +358,7 @@ describe.skip('Agent SDK Integration', () => {
       expect(result.matchedKeywords).toContain('react');
       expect(result.matchedKeywords).toContain('dashboard');
       expect(result.matchedKeywords).toContain('github');
-      expect(result.suggestedPlugins).toContain('sw-frontend');
+      expect(result.suggestedPlugins).toContain('frontend');
       expect(result.suggestedPlugins).toContain('sw-github');
     });
 
@@ -368,7 +368,7 @@ describe.skip('Agent SDK Integration', () => {
 
       expect(result.detected).toBe(true);
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-      expect(result.suggestedPlugins).toContain('sw-infra');
+      expect(result.suggestedPlugins).toContain('infra');
       expect(result.suggestedPlugins).toContain('sw-github');
     });
 
@@ -380,7 +380,7 @@ describe.skip('Agent SDK Integration', () => {
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
       expect(result.matchedKeywords).toContain('stripe');
       expect(result.matchedKeywords).toContain('checkout');
-      expect(result.suggestedPlugins).toContain('sw-payments');
+      expect(result.suggestedPlugins).toContain('payments');
     });
 
     it('should handle "Write comprehensive E2E tests with Playwright for the auth flow"', () => {
@@ -391,7 +391,7 @@ describe.skip('Agent SDK Integration', () => {
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
       expect(result.matchedKeywords).toContain('e2e');
       expect(result.matchedKeywords).toContain('playwright');
-      expect(result.suggestedPlugins).toContain('sw-testing');
+      expect(result.suggestedPlugins).toContain('testing');
     });
 
     it('should handle "Build a mobile app with React Native and Expo"', () => {
@@ -400,7 +400,7 @@ describe.skip('Agent SDK Integration', () => {
 
       expect(result.detected).toBe(true);
       expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-      expect(result.suggestedPlugins).toContain('sw-mobile');
+      expect(result.suggestedPlugins).toContain('mobile');
     });
 
     it('should handle complex multi-domain prompt with boosted confidence', () => {
@@ -412,11 +412,11 @@ describe.skip('Agent SDK Integration', () => {
       // Multi-domain should boost confidence
       expect(result.confidence).toBeGreaterThanOrEqual(0.8);
       // Should suggest multiple plugins
-      expect(result.suggestedPlugins).toContain('sw-frontend');
-      expect(result.suggestedPlugins).toContain('sw-backend');
-      expect(result.suggestedPlugins).toContain('sw-payments');
-      expect(result.suggestedPlugins).toContain('sw-k8s');
-      expect(result.suggestedPlugins).toContain('sw-infra');
+      expect(result.suggestedPlugins).toContain('frontend');
+      expect(result.suggestedPlugins).toContain('backend');
+      expect(result.suggestedPlugins).toContain('payments');
+      expect(result.suggestedPlugins).toContain('k8s');
+      expect(result.suggestedPlugins).toContain('infra');
     });
   });
 

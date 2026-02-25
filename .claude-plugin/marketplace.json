@@ -74,7 +74,7 @@
       }
     },
     {
-      "name": "sw-docs",
+      "name": "docs",
       "description": "SpecWeave documentation - living docs build, validation, health, organization",
       "source": "./plugins/specweave-docs",
       "category": "productivity",

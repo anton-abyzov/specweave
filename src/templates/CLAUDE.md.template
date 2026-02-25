@@ -25,7 +25,7 @@
 
 **Skill chaining** — skills are NOT "one and done":
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)
-2. **Implementation**: Invoke domain skill per tech (React → `frontend:architect`, .NET → `backend:dotnet`, Stripe → `payments:core`, etc.)
+2. **Implementation**: Invoke domain skill per tech (React → `frontend:architect`, .NET → `backend:dotnet`, Stripe → `payments:payment-core`, etc.)
 3. **Closure**: `sw:grill` runs automatically via `/sw:done`
 
 If auto-activation fails, invoke explicitly: `Skill({ skill: "name" })`
@@ -219,7 +219,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 <!-- SECTION:lazyloading -->
 ## Plugin Auto-Loading
 
-Plugins load automatically. Manual: `vskill add specweave --plugin sw-frontend`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
+Plugins load automatically. Manual: `vskill install --repo anton-abyzov/vskill --plugin frontend`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
 <!-- /SECTION -->
 
 <!-- SECTION:principles -->
