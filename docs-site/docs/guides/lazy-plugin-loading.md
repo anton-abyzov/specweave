@@ -134,7 +134,7 @@ Power users can manually manage plugin loading using the vskill CLI:
 ```bash
 # Install plugins using vskill (RECOMMENDED)
 vskill add specweave --plugin sw              # Core Skill Fabric
-vskill add specweave --plugin sw-frontend     # Frontend development
+vskill install --repo anton-abyzov/vskill --plugin frontend  # Frontend development
 vskill add specweave --plugin sw-github       # GitHub integration
 vskill add specweave --plugin sw-jira         # JIRA integration
 
@@ -142,7 +142,7 @@ vskill add specweave --plugin sw-jira         # JIRA integration
 vskill list
 
 # Remove a plugin
-vskill remove sw-testing
+vskill remove testing
 ```
 
 **Available plugins:**
@@ -154,11 +154,11 @@ vskill remove sw-testing
 | `sw-github` | `vskill add specweave --plugin sw-github` | GitHub integration |
 | `sw-jira` | `vskill add specweave --plugin sw-jira` | JIRA integration |
 | `sw-ado` | `vskill add specweave --plugin sw-ado` | Azure DevOps integration |
-| `sw-frontend` | `vskill add specweave --plugin sw-frontend` | Frontend development |
-| `sw-backend` | `vskill add specweave --plugin sw-backend` | Backend development |
-| `sw-infra` | `vskill add specweave --plugin sw-infra` | Infrastructure/DevOps |
-| `sw-ml` | `vskill add specweave --plugin sw-ml` | Machine learning |
-| `sw-testing` | `vskill add specweave --plugin sw-testing` | Testing/QA |
+| `frontend` | `vskill install --repo anton-abyzov/vskill --plugin frontend` | Frontend development |
+| `backend` | `vskill install --repo anton-abyzov/vskill --plugin backend` | Backend development |
+| `infra` | `vskill install --repo anton-abyzov/vskill --plugin infra` | Infrastructure/DevOps |
+| `ml` | `vskill install --repo anton-abyzov/vskill --plugin ml` | Machine learning |
+| `testing` | `vskill install --repo anton-abyzov/vskill --plugin testing` | Testing/QA |
 
 ## Context Forking for Heavy Skills
 

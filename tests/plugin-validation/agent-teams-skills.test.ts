@@ -83,11 +83,11 @@ describe('T-001: team-lead SKILL.md', () => {
   it('should reference specific SpecWeave skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
     const requiredSkills = [
-      'sw-frontend:frontend-architect',
-      'sw-testing:qa-engineer',
+      'frontend:architect',
+      'testing:qa',
       'sw:security',
       'sw:architect',
-      'sw-infra:devops',
+      'infra:devops',
     ];
     for (const skill of requiredSkills) {
       expect(content).toContain(skill);
@@ -189,7 +189,7 @@ describe('T-007: team-build SKILL.md', () => {
 
   it('should map full-stack preset to correct skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toContain('sw-frontend:frontend-architect');
+    expect(content).toContain('frontend:architect');
     expect(content).toContain('sw:architect');
   });
 
@@ -202,9 +202,9 @@ describe('T-007: team-build SKILL.md', () => {
 
   it('should map testing preset to testing skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toContain('sw-testing:unit-testing');
-    expect(content).toContain('sw-testing:e2e-testing');
-    expect(content).toContain('sw-testing:qa-engineer');
+    expect(content).toContain('testing:unit');
+    expect(content).toContain('testing:e2e');
+    expect(content).toContain('testing:qa');
   });
 
   it('should map tdd preset to red/green/refactor skills', () => {
@@ -351,8 +351,8 @@ describe('T-023: Full-stack preset end-to-end validation', () => {
     const build = readFileSync(buildPath, 'utf-8');
 
     // Both should reference the same frontend skill
-    expect(orchestrate).toContain('sw-frontend:frontend-architect');
-    expect(build).toContain('sw-frontend:frontend-architect');
+    expect(orchestrate).toContain('frontend:architect');
+    expect(build).toContain('frontend:architect');
 
     // Both should reference architect for backend/shared
     expect(orchestrate).toContain('sw:architect');
@@ -488,7 +488,7 @@ describe('ISSUE-6: Frontend agent design quality', () => {
     const content = readFileSync(skillPath, 'utf-8');
     // Frontend agent section should include design skill invocation
     const frontendSection = content.split(/### 4a\./)[1]?.split(/### 4b\./)[0] || '';
-    expect(frontendSection).toMatch(/sw-frontend:frontend-design/);
+    expect(frontendSection).toMatch(/frontend:design/);
   });
 
   it('should set world-class design quality as default expectation', () => {

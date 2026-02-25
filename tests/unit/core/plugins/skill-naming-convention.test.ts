@@ -9,7 +9,7 @@
  * Official convention (per https://code.claude.com/docs/en/skills):
  * - Plugin name from plugin.json `name` field
  * - Skill name from DIRECTORY name (not frontmatter `name`)
- * - FQN format: `{plugin}:{skill}` e.g., `sw:pm`, `sw-frontend:frontend-architect`
+ * - FQN format: `{plugin}:{skill}` e.g., `sw:pm`, `frontend:architect`
  *
  * @see ADR for skill naming standardization
  * @since 1.0.217
@@ -81,14 +81,14 @@ description: Product Manager skill
     });
 
     it('should build correct FQN for domain plugin skills', async () => {
-      // Create plugin structure: specweave-frontend/skills/frontend-architect/SKILL.md
-      const pluginDir = path.join(testDir, 'specweave-frontend');
-      const skillDir = path.join(pluginDir, 'skills', 'frontend-architect');
+      // Create plugin structure: frontend/skills/architect/SKILL.md
+      const pluginDir = path.join(testDir, 'frontend');
+      const skillDir = path.join(pluginDir, 'skills', 'architect');
       await fs.ensureDir(skillDir);
 
       // Correctly formatted skill (no prefix in frontmatter)
       const skillContent = `---
-name: frontend-architect
+name: architect
 description: Frontend architecture skill
 ---
 
@@ -98,15 +98,15 @@ description: Frontend architecture skill
 
       await fs.ensureDir(path.join(pluginDir, '.claude-plugin'));
       await fs.writeJSON(path.join(pluginDir, '.claude-plugin', 'plugin.json'), {
-        name: 'sw-frontend',
-        description: 'SpecWeave frontend plugin'
+        name: 'frontend',
+        description: 'Frontend plugin'
       });
 
       const triggers = await extractor.scanAllPlugins(testDir);
       const index = extractor.buildIndex(triggers);
 
-      // FQN should be specweave-frontend:frontend-architect (directory names)
-      expect(Object.keys(index.skills)).toContain('specweave-frontend:frontend-architect');
+      // FQN should be frontend:architect (directory names)
+      expect(Object.keys(index.skills)).toContain('frontend:architect');
     });
 
     it('should NOT double-prefix when frontmatter has prefix', async () => {
@@ -180,7 +180,7 @@ description: Reviews code for best practices
       // Create two plugins with skills
       const plugins = [
         { dir: 'specweave', name: 'sw', skills: ['pm', 'architect'] },
-        { dir: 'specweave-frontend', name: 'sw-frontend', skills: ['nextjs', 'frontend-architect'] }
+        { dir: 'frontend', name: 'frontend', skills: ['nextjs', 'architect'] }
       ];
 
       for (const plugin of plugins) {
@@ -217,8 +217,8 @@ description: ${skill} skill
         expect.arrayContaining([
           'specweave:pm',
           'specweave:architect',
-          'specweave-frontend:nextjs',
-          'specweave-frontend:frontend-architect'
+          'frontend:nextjs',
+          'frontend:architect'
         ])
       );
 

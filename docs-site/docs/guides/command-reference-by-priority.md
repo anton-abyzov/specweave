@@ -158,28 +158,28 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw-docs:view` | Launch docs server (internal or public) | `/sw-docs:view` or `/sw-docs:view --public` |
-| `/sw-docs:build` | Build static docs site | `/sw-docs:build` |
-| `/sw-docs:generate` | Generate documentation | `/sw-docs:generate` |
-| `/sw-docs:organize` | Organize large doc folders | `/sw-docs:organize` |
-| `/sw-docs:health` | Documentation health report | `/sw-docs:health` |
-| `/sw-docs:validate` | Validate documentation | `/sw-docs:validate` |
+| `/docs:view` | Launch docs server (internal or public) | `/docs:view` or `/docs:view --public` |
+| `/docs:build` | Build static docs site | `/docs:build` |
+| `/docs:generate` | Generate documentation | `/docs:generate` |
+| `/docs:organize` | Organize large doc folders | `/docs:organize` |
+| `/docs:health` | Documentation health report | `/docs:health` |
+| `/docs:validate` | Validate documentation | `/docs:validate` |
 
 ### Infrastructure & SRE
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw-infra:monitor-setup` | Setup monitoring | `/sw-infra:monitor-setup` |
-| `/sw-infra:slo-implement` | Implement SLOs | `/sw-infra:slo-implement` |
+| `/infra:monitor-setup` | Setup monitoring | `/infra:monitor-setup` |
+| `/infra:slo-implement` | Implement SLOs | `/infra:slo-implement` |
 
 ### ML/AI Workflows
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw-ml:pipeline` | Design ML pipeline | `/sw-ml:pipeline` |
-| `/sw-ml:evaluate` | Evaluate ML model | `/sw-ml:evaluate` |
-| `/sw-ml:explain` | Model explainability | `/sw-ml:explain` |
-| `/sw-ml:deploy` | Deploy ML model | `/sw-ml:deploy` |
+| `/ml:pipeline` | Design ML pipeline | `/ml:pipeline` |
+| `/ml:evaluate` | Evaluate ML model | `/ml:evaluate` |
+| `/ml:explain` | Model explainability | `/ml:explain` |
+| `/ml:deploy` | Deploy ML model | `/ml:deploy` |
 
 ### Release Management
 

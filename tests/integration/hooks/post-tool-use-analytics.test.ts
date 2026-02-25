@@ -90,14 +90,14 @@ describe('PostToolUse Analytics Hook', () => {
     });
 
     it('should extract plugin name from non-sw prefixed skills', () => {
-      runHook({ tool_name: 'Skill', tool_input: { skill: 'sw-frontend:frontend-architect' } });
+      runHook({ tool_name: 'Skill', tool_input: { skill: 'frontend:architect' } });
       waitForBackground();
 
       const event = readLastEvent();
       expect(event).not.toBeNull();
       expect(event!.type).toBe('skill');
-      expect(event!.name).toBe('sw-frontend:frontend-architect');
-      expect(event!.plugin).toBe('sw-frontend');
+      expect(event!.name).toBe('frontend:architect');
+      expect(event!.plugin).toBe('frontend');
     });
 
     it('should detect Skill from input fields when tool_name is missing', () => {

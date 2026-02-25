@@ -170,13 +170,13 @@ test_dedup_identical_without_gate() {
   SMART_INTERVIEW_GATE_MSG="No active increment. Deep interview enabled."
 
   # Turn 1
-  FINAL1="Plugin: sw-frontend\\n${SMART_INTERVIEW_GATE_MSG}"
+  FINAL1="Plugin: frontend\\n${SMART_INTERVIEW_GATE_MSG}"
   DEDUP1="$FINAL1"
   DEDUP1="${DEDUP1//\\n${SMART_INTERVIEW_GATE_MSG}/}"
   DEDUP1="${DEDUP1//${SMART_INTERVIEW_GATE_MSG}/}"
 
   # Turn 2 — identical base context
-  FINAL2="Plugin: sw-frontend\\n${SMART_INTERVIEW_GATE_MSG}"
+  FINAL2="Plugin: frontend\\n${SMART_INTERVIEW_GATE_MSG}"
   DEDUP2="$FINAL2"
   DEDUP2="${DEDUP2//\\n${SMART_INTERVIEW_GATE_MSG}/}"
   DEDUP2="${DEDUP2//${SMART_INTERVIEW_GATE_MSG}/}"

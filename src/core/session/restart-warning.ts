@@ -258,14 +258,14 @@ function getPluginCountPhrase(count: number): string {
  * ```typescript
  * // Basic usage
  * const result = formatRestartWarning({
- *   plugins: ['sw', 'sw-frontend'],
+ *   plugins: ['sw', 'frontend'],
  *   projectPath: '/path/to/project'
  * });
  * console.log(result.text);
  *
  * // With full context for handoff
  * const detailed = formatRestartWarning({
- *   plugins: ['sw', 'sw-frontend'],
+ *   plugins: ['sw', 'frontend'],
  *   projectPath: '/path/to/project',
  *   originalIntent: 'Create React dashboard with Stripe',
  *   includeDescriptions: true,

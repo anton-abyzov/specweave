@@ -1090,12 +1090,12 @@ describe('detect-intent command', () => {
       tempDir = createTempDir('integration-success');
       process.chdir(tempDir);
 
-      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['sw-frontend', 'sw-testing'], 0.95));
+      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['frontend', 'testing'], 0.95));
       const mod = await importFresh();
 
       const result = await mod.detectIntentCommand('build a React component with tests');
       expect(result.detected).toBe(true);
-      expect(result.plugins).toEqual(['sw-frontend', 'sw-testing']);
+      expect(result.plugins).toEqual(['frontend', 'testing']);
       expect(result.confidence).toBe(0.95);
       expect(result.reasoning).toBe('Detected plugins');
       expect(result.latencyMs).toBe(100);
@@ -1175,7 +1175,7 @@ describe('detect-intent command', () => {
       tempDir = createTempDir('integration-install');
       process.chdir(tempDir);
 
-      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['sw-frontend']));
+      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['frontend']));
       const mod = await importFresh();
 
       const result = await mod.detectIntentCommand('build React app', { install: true });
@@ -1200,13 +1200,13 @@ describe('detect-intent command', () => {
       process.chdir(tempDir);
 
       mockDetectPluginsViaLLM.mockResolvedValue({
-        ...pluginLLMResult(['sw-frontend']),
+        ...pluginLLMResult(['frontend']),
         routing: {
           skills: [
             {
-              name: 'frontend-architect',
-              plugin: 'sw-frontend',
-              fullName: 'sw-frontend:frontend-architect',
+              name: 'architect',
+              plugin: 'frontend',
+              fullName: 'frontend:architect',
               priority: 'primary',
               invokeWhen: 'after_increment',
               reason: 'React component work',
@@ -1225,7 +1225,7 @@ describe('detect-intent command', () => {
       const result = await mod.detectIntentCommand('build a React dashboard');
       expect(result.routing).toBeDefined();
       expect(result.routing!.skills).toHaveLength(1);
-      expect(result.routing!.skills[0].fullName).toBe('sw-frontend:frontend-architect');
+      expect(result.routing!.skills[0].fullName).toBe('frontend:architect');
       expect(result.routing!.workflow.suggestPlanMode).toBe(true);
     });
 
@@ -1253,9 +1253,9 @@ describe('detect-intent command', () => {
       process.chdir(tempDir);
 
       mockDetectPluginsViaLLM.mockResolvedValue({
-        ...pluginLLMResult(['sw-ml']),
+        ...pluginLLMResult(['ml']),
         skillInvocation: {
-          skill: 'sw-ml:ml-engineer',
+          skill: 'ml:ml-engineer',
           reason: 'Machine learning task detected',
           mandatory: true,
         },
@@ -1264,7 +1264,7 @@ describe('detect-intent command', () => {
 
       const result = await mod.detectIntentCommand('train a PyTorch model');
       expect(result.skillInvocation).toBeDefined();
-      expect(result.skillInvocation!.skill).toBe('sw-ml:ml-engineer');
+      expect(result.skillInvocation!.skill).toBe('ml:ml-engineer');
       expect(result.skillInvocation!.mandatory).toBe(true);
     });
 
@@ -1377,7 +1377,7 @@ describe('detect-intent command', () => {
       tempDir = createTempDir('integration-analytics');
       process.chdir(tempDir);
 
-      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['sw-frontend']));
+      mockDetectPluginsViaLLM.mockResolvedValue(pluginLLMResult(['frontend']));
       const mod = await importFresh();
 
       await mod.detectIntentCommand('build React app');
@@ -1386,7 +1386,7 @@ describe('detect-intent command', () => {
         'LLM detection complete',
         expect.objectContaining({
           detected: true,
-          plugins: ['sw-frontend'],
+          plugins: ['frontend'],
         })
       );
     });

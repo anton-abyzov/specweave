@@ -34,7 +34,7 @@ The terminal is not scary. It's your **superpower**. While GUIs hide complexity 
 
 ### Terminal Way (Direct Control)
 ```bash
-claude plugin install sw-frontend@specweave
+claude plugin install frontend@vskill
 # Done. You know exactly what happened.
 ```
 

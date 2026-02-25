@@ -137,7 +137,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-frontend');
+      expect(result.plugins).toContain('frontend');
       expect(result.confidence).toBeGreaterThan(0.5);
       expect(result.durationMs).toBeLessThan(30000);
     }, 60000);
@@ -151,7 +151,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-backend');
+      expect(result.plugins).toContain('backend');
       expect(result.confidence).toBeGreaterThan(0.5);
     }, 60000);
 
@@ -166,9 +166,9 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-frontend');
-      expect(result.plugins).toContain('sw-backend');
-      expect(result.plugins).toContain('sw-testing');
+      expect(result.plugins).toContain('frontend');
+      expect(result.plugins).toContain('backend');
+      expect(result.plugins).toContain('testing');
     }, 60000);
 
     it('should detect K8s plugins for Kubernetes prompt', async () => {
@@ -182,7 +182,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-k8s');
+      expect(result.plugins).toContain('k8s');
     }, 60000);
 
     it('should detect infrastructure plugins for Terraform prompt', async () => {
@@ -196,7 +196,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-infra');
+      expect(result.plugins).toContain('infra');
     }, 60000);
 
     it('should detect payment plugins for Stripe prompt', async () => {
@@ -210,7 +210,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-payments');
+      expect(result.plugins).toContain('payments');
     }, 60000);
 
     it('should detect testing plugins for TDD prompt', async () => {
@@ -224,7 +224,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-testing');
+      expect(result.plugins).toContain('testing');
     }, 60000);
 
     it('should detect ML plugins for machine learning prompt', async () => {
@@ -238,7 +238,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-ml');
+      expect(result.plugins).toContain('ml');
     }, 60000);
 
     it('should detect mobile plugins for React Native prompt', async () => {
@@ -252,7 +252,7 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-mobile');
+      expect(result.plugins).toContain('mobile');
     }, 60000);
 
     it('should return empty plugins for unrelated prompt', async () => {
@@ -299,9 +299,9 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should NOT include frontend plugin - user explicitly wants CLI/backend only
-      expect(result.plugins).not.toContain('sw-frontend');
+      expect(result.plugins).not.toContain('frontend');
       // Should include backend for Node.js
-      expect(result.plugins).toContain('sw-backend');
+      expect(result.plugins).toContain('backend');
     }, 60000);
 
     it('should detect frontend when user wants Vue instead of React', async () => {
@@ -316,7 +316,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should STILL include frontend - Vue is frontend technology!
-      expect(result.plugins).toContain('sw-frontend');
+      expect(result.plugins).toContain('frontend');
     }, 60000);
 
     it('should detect mobile when user wants mobile instead of web', async () => {
@@ -331,7 +331,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should include mobile
-      expect(result.plugins).toContain('sw-mobile');
+      expect(result.plugins).toContain('mobile');
       // Frontend is optional here - React Native can be considered either way
     }, 60000);
 
@@ -347,7 +347,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Should detect frontend (Vue is frontend)
-      expect(result.plugins).toContain('sw-frontend');
+      expect(result.plugins).toContain('frontend');
       expect(result.confidence).toBeGreaterThan(0.5);
     }, 60000);
 
@@ -363,7 +363,7 @@ describe('LLM Plugin Detection', () => {
 
       expect(result.success).toBe(true);
       // Negative sentiment about React shouldn't exclude frontend domain
-      expect(result.plugins).toContain('sw-frontend');
+      expect(result.plugins).toContain('frontend');
     }, 60000);
 
     it('should detect backend only for terminal/server application', async () => {
@@ -377,8 +377,8 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('sw-backend');
-      expect(result.plugins).not.toContain('sw-frontend');
+      expect(result.plugins).toContain('backend');
+      expect(result.plugins).not.toContain('frontend');
     }, 60000);
   });
 
@@ -490,7 +490,7 @@ describe('Hook Output Format', () => {
     // Hook output must be valid JSON with specific fields
     const hookOutput = {
       continue: true,
-      systemMessage: 'SpecWeave: Loaded sw-frontend, sw-backend plugins for your React + Node.js project.',
+      systemMessage: 'SpecWeave: Loaded frontend, backend plugins for your React + Node.js project.',
     };
 
     // Must be valid JSON
@@ -818,8 +818,8 @@ describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should have sw-backend (for .NET)
-      expect(result.plugins).toContain('sw-backend');
+      // Should have backend (for .NET)
+      expect(result.plugins).toContain('backend');
       // Should NOT have broken csharp-lsp from official marketplace
       expect(result.plugins).not.toContain('csharp-lsp');
     }, 60000);
@@ -833,8 +833,8 @@ describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should have sw-backend (for Go)
-      expect(result.plugins).toContain('sw-backend');
+      // Should have backend (for Go)
+      expect(result.plugins).toContain('backend');
       // Should NOT have broken gopls-lsp from official marketplace
       expect(result.plugins).not.toContain('gopls-lsp');
     }, 60000);

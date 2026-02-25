@@ -86,11 +86,11 @@ describe('Session State Tracker', () => {
       initSessionState(tempDir);
 
       // When: recordPluginInstallation() is called
-      const state = recordPluginInstallation(tempDir, ['sw', 'sw-frontend']);
+      const state = recordPluginInstallation(tempDir, ['sw', 'frontend']);
 
       // Then: state should include the installed plugins
       expect(state.pluginsInstalledDuringSession).toContain('sw');
-      expect(state.pluginsInstalledDuringSession).toContain('sw-frontend');
+      expect(state.pluginsInstalledDuringSession).toContain('frontend');
     });
 
     it('should append to existing plugins', () => {
@@ -99,11 +99,11 @@ describe('Session State Tracker', () => {
       recordPluginInstallation(tempDir, ['sw']);
 
       // When: More plugins are installed
-      const state = recordPluginInstallation(tempDir, ['sw-backend']);
+      const state = recordPluginInstallation(tempDir, ['backend']);
 
       // Then: All plugins should be present
       expect(state.pluginsInstalledDuringSession).toContain('sw');
-      expect(state.pluginsInstalledDuringSession).toContain('sw-backend');
+      expect(state.pluginsInstalledDuringSession).toContain('backend');
     });
 
     it('should not duplicate plugins', () => {
@@ -140,7 +140,7 @@ describe('Session State Tracker', () => {
     it('should return persisted state', () => {
       // Given: State file exists
       initSessionState(tempDir);
-      recordPluginInstallation(tempDir, ['sw', 'sw-frontend']);
+      recordPluginInstallation(tempDir, ['sw', 'frontend']);
 
       // When: loadSessionState() is called
       const state = loadSessionState(tempDir);
@@ -148,7 +148,7 @@ describe('Session State Tracker', () => {
       // Then: it should return the persisted state
       expect(state).toBeDefined();
       expect(state?.pluginsInstalledDuringSession).toContain('sw');
-      expect(state?.pluginsInstalledDuringSession).toContain('sw-frontend');
+      expect(state?.pluginsInstalledDuringSession).toContain('frontend');
     });
 
     it('should return null when state file does not exist', () => {

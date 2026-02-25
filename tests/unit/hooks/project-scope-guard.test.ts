@@ -44,8 +44,8 @@ describe('Project-Scope Initialization Guard', () => {
     });
 
     it('should detect plugin-namespaced skill invocations', () => {
-      expect(isSpecWeaveSkillInvocation('/sw-frontend:component-generate')).toBe(true);
-      expect(isSpecWeaveSkillInvocation('/sw-testing:e2e-setup')).toBe(true);
+      expect(isSpecWeaveSkillInvocation('/frontend:component-generate')).toBe(true);
+      expect(isSpecWeaveSkillInvocation('/testing:e2e-setup')).toBe(true);
       expect(isSpecWeaveSkillInvocation('/sw-jira:sync')).toBe(true);
     });
 

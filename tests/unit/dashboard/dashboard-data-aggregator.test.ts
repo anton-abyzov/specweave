@@ -31,7 +31,7 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
       writeEvents([
         { name: 'sw:pm', type: 'skill', success: true, timestamp: '2026-02-15T10:00:00Z', plugin: 'specweave' },
         { name: 'sw:pm', type: 'skill', success: false, timestamp: '2026-02-15T11:00:00Z', plugin: 'specweave' },
-        { name: 'sw-frontend:frontend-architect', type: 'skill', success: true, timestamp: '2026-02-15T12:00:00Z', plugin: 'sw-frontend' },
+        { name: 'frontend:architect', type: 'skill', success: true, timestamp: '2026-02-15T12:00:00Z', plugin: 'frontend' },
       ]);
 
       const result = await aggregator.getAnalyticsSummary();
@@ -44,10 +44,10 @@ describe('DashboardDataAggregator - Skill & Agent tracking', () => {
       expect(pm!.failureCount).toBe(1);
       expect(pm!.plugin).toBe('specweave');
 
-      const frontend = result.topSkills.find(s => s.name === 'sw-frontend:frontend-architect');
+      const frontend = result.topSkills.find(s => s.name === 'frontend:architect');
       expect(frontend).toBeDefined();
       expect(frontend!.count).toBe(1);
-      expect(frontend!.plugin).toBe('sw-frontend');
+      expect(frontend!.plugin).toBe('frontend');
     });
   });
 

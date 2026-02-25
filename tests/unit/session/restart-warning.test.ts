@@ -21,7 +21,7 @@ describe('Restart Warning Formatter', () => {
       it('should contain "SESSION RESTART REQUIRED" banner', () => {
         // Given: Plugins were installed
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
         };
 
@@ -65,7 +65,7 @@ describe('Restart Warning Formatter', () => {
       it('should list each installed plugin', () => {
         // Given: Multiple plugins installed
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend', 'sw-backend'],
+          plugins: ['sw', 'frontend', 'backend'],
           projectPath: '/path/to/project',
         };
 
@@ -74,14 +74,14 @@ describe('Restart Warning Formatter', () => {
 
         // Then: each plugin should be listed
         expect(result.text).toContain('sw');
-        expect(result.text).toContain('sw-frontend');
-        expect(result.text).toContain('sw-backend');
+        expect(result.text).toContain('frontend');
+        expect(result.text).toContain('backend');
       });
 
       it('should include plugin descriptions when available', () => {
         // Given: Plugins with known descriptions
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           includeDescriptions: true,
         };
@@ -90,7 +90,7 @@ describe('Restart Warning Formatter', () => {
         const result = formatRestartWarning(options);
 
         // Then: descriptions should be included
-        // sw = SpecWeave core, sw-frontend = Frontend development
+        // sw = SpecWeave core, frontend = Frontend development
         expect(result.text).toMatch(/sw.*core|SpecWeave/i);
         expect(result.text).toMatch(/frontend/i);
       });
@@ -114,7 +114,7 @@ describe('Restart Warning Formatter', () => {
       it('should handle many plugins without truncation', () => {
         // Given: Many plugins installed
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend', 'sw-backend', 'sw-github', 'sw-jira'],
+          plugins: ['sw', 'frontend', 'backend', 'sw-github', 'sw-jira'],
           projectPath: '/path/to/project',
         };
 
@@ -219,7 +219,7 @@ describe('Restart Warning Formatter', () => {
       it('should return structured output with text and metadata', () => {
         // Given: Warning options
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
         };
 
@@ -231,7 +231,7 @@ describe('Restart Warning Formatter', () => {
         expect(result).toHaveProperty('plugins');
         expect(result).toHaveProperty('projectPath');
         expect(typeof result.text).toBe('string');
-        expect(result.plugins).toEqual(['sw', 'sw-frontend']);
+        expect(result.plugins).toEqual(['sw', 'frontend']);
         expect(result.projectPath).toBe('/path/to/project');
       });
 
@@ -255,7 +255,7 @@ describe('Restart Warning Formatter', () => {
       it('should include handoff context when provided', () => {
         // Given: Options with original intent
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Create a React dashboard with Stripe',
         };
@@ -271,7 +271,7 @@ describe('Restart Warning Formatter', () => {
       it('should suggest copy-paste continuation prompt', () => {
         // Given: Options with context
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Build auth system',
         };
@@ -286,7 +286,7 @@ describe('Restart Warning Formatter', () => {
       it('should list available skills from installed plugins', () => {
         // Given: Plugins installed
         const options: RestartWarningOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           includeSkillsList: true,
         };
@@ -365,17 +365,17 @@ describe('Restart Warning Formatter', () => {
         // Given: Many plugins
         const manyPlugins = [
           'sw',
-          'sw-frontend',
-          'sw-backend',
+          'frontend',
+          'backend',
           'sw-github',
           'sw-jira',
           'sw-ado',
-          'sw-k8s',
-          'sw-infra',
-          'sw-testing',
-          'sw-mobile',
-          'sw-ml',
-          'sw-payments',
+          'k8s',
+          'infra',
+          'testing',
+          'mobile',
+          'ml',
+          'payments',
         ];
         const options: RestartWarningOptions = {
           plugins: manyPlugins,

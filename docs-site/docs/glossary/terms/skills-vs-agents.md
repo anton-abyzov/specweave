@@ -97,11 +97,11 @@ graph LR
 ### Example Agents
 
 ```
-sw-frontend:frontend-architect  # React/Vue/Angular architecture
-sw-backend:database-optimizer   # Database and API design
-sw-testing:qa-engineer          # Test strategy and E2E automation
-sw-k8s:kubernetes-architect     # Kubernetes manifests and GitOps
-sw-infra:devops                 # Infrastructure-as-Code, CI/CD
+frontend:architect              # React/Vue/Angular architecture
+backend:database-optimizer      # Database and API design
+testing:qa                      # Test strategy and E2E automation
+k8s:kubernetes-architect        # Kubernetes manifests and GitOps
+infra:devops                    # Infrastructure-as-Code, CI/CD
 ```
 
 **Note**: PM, Architect, Tech-Lead, and QA-Lead are SKILLS (auto-activate), NOT agents.

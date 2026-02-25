@@ -282,8 +282,8 @@ OWASP compliance and security"
 **Note**: Architect and Security are SKILLS that auto-activate based on keywords in your prompt. For explicit skill invocation, use the Skill tool:
 
 ```typescript
-Skill({ skill: "sw-frontend:frontend-architect", args: "..." })
-Skill({ skill: "sw-k8s:kubernetes-architect", args: "..." })
+Skill({ skill: "frontend:architect", args: "..." })
+Skill({ skill: "k8s:kubernetes-architect", args: "..." })
 ```
 
 ---

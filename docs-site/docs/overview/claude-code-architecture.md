@@ -138,11 +138,11 @@ my-plugin/
 | **sw** (core) | 9 | 22 | 22 | Increment lifecycle |
 | **sw-github** | 2 | 1 | 8 | GitHub sync |
 | **sw-jira** | 2 | 1 | 8 | JIRA sync |
-| **sw-frontend** | 3 | 3 | 0 | React/Vue/Next.js |
-| **sw-backend** | 2 | 2 | 1 | Node.js/Python APIs |
-| **sw-k8s** | 1 | 1 | 0 | Kubernetes/GitOps |
-| **sw-ml** | 2 | 3 | 4 | ML pipelines |
-| **sw-infra** | 5 | 5 | 1 | DevOps/SRE |
+| **frontend** | 3 | 3 | 0 | React/Vue/Next.js |
+| **backend** | 2 | 2 | 1 | Node.js/Python APIs |
+| **k8s** | 1 | 1 | 0 | Kubernetes/GitOps |
+| **ml** | 2 | 3 | 4 | ML pipelines |
+| **infra** | 5 | 5 | 1 | DevOps/SRE |
 | ... | | | | |
 
 **Total: 100+ skills, 68+ agents, 100+ commands**
@@ -587,10 +587,10 @@ SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 │   ├── sw (core)           - Increment lifecycle                     │
 │   ├── sw-github           - GitHub Issues sync                      │
 │   ├── sw-jira             - JIRA Epic/Story sync                    │
-│   ├── sw-frontend         - React/Vue/Next.js expertise             │
-│   ├── sw-backend          - Node.js/Python APIs                     │
-│   ├── sw-k8s              - Kubernetes/GitOps                       │
-│   ├── sw-ml               - ML pipelines/MLOps                      │
+│   ├── frontend            - React/Vue/Next.js expertise             │
+│   ├── backend             - Node.js/Python APIs                     │
+│   ├── k8s                 - Kubernetes/GitOps                       │
+│   ├── ml                  - ML pipelines/MLOps                      │
 │   └── ... 17 more                                                   │
 │                                                                      │
 │   136 SKILLS (auto-activate based on keywords)                      │

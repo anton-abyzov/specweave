@@ -31,7 +31,7 @@ if (moduleExists) {
  * Bug Context (2025-11-22):
  * - PLUGIN_KEYWORDS had: specweave-backend-nodejs, specweave-backend-python,
  *   specweave-backend-dotnet, specweave-e2e-testing (4 non-existent plugins)
- * - Actual marketplace has: sw-backend, sw-testing (2 plugins)
+ * - Actual marketplace has: backend, testing (2 plugins)
  * - This caused "Plugin not found in marketplace" errors on client projects
  *
  * Updated (2025-12-11):
@@ -70,16 +70,16 @@ describe.skipIf(!moduleExists)('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should have keywords for all major marketplace plugins', () => {
-    // Core plugins that SHOULD have keyword mappings (using sw-* names)
+    // Core plugins that SHOULD have keyword mappings
     const corePlugins = [
       'sw-github',
       'sw-jira',
       'sw-ado',
-      'sw-backend',
-      'sw-frontend',
-      'sw-testing',
-      'sw-k8s',
-      'sw-payments',
+      'backend',
+      'frontend',
+      'testing',
+      'k8s',
+      'payments',
       'sw-diagrams',
     ];
 
@@ -102,8 +102,8 @@ describe.skipIf(!moduleExists)('PLUGIN_KEYWORDS Validation', () => {
     Object.entries(PLUGIN_KEYWORDS).forEach(([plugin, keywords]) => {
       expect(Array.isArray(keywords)).toBe(true);
       expect(keywords.length).toBeGreaterThan(0);
-      // Plugin names should start with sw- (new naming convention)
-      expect(plugin).toMatch(/^sw-/);
+      // Plugin names should be valid (integration plugins have sw- prefix, domain plugins don't)
+      expect(plugin).toMatch(/^(sw-|[a-z])/);
 
       // Each keyword should be a non-empty string
       keywords.forEach((keyword) => {
@@ -114,8 +114,8 @@ describe.skipIf(!moduleExists)('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should detect backend plugin with multi-stack keywords', () => {
-    // Test that sw-backend covers all backend stacks
-    const backendKeywords = PLUGIN_KEYWORDS['sw-backend'];
+    // Test that backend covers all backend stacks
+    const backendKeywords = PLUGIN_KEYWORDS['backend'];
 
     expect(backendKeywords).toBeDefined();
     expect(backendKeywords).toContain('nodejs');
@@ -124,8 +124,8 @@ describe.skipIf(!moduleExists)('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should detect testing plugin with E2E keywords', () => {
-    // Test that sw-testing covers E2E testing
-    const testingKeywords = PLUGIN_KEYWORDS['sw-testing'];
+    // Test that testing covers E2E testing
+    const testingKeywords = PLUGIN_KEYWORDS['testing'];
 
     expect(testingKeywords).toBeDefined();
     expect(testingKeywords).toContain('playwright');

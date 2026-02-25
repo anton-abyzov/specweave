@@ -154,7 +154,9 @@ find_specweave_config() {
 }
 
 # Check if this is a SpecWeave skill invocation
-if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]]; then
+# Matches: /sw:*, /sw-github:*, /frontend:*, /backend:*, /testing:*, etc.
+DOMAIN_PLUGIN_PATTERN="^[[:space:]]*/([Ff]rontend|[Bb]ackend|[Tt]esting|[Mm]obile|[Ii]nfra|[Kk]8s|[Mm]l|[Pp]ayments|[Kk]afka|[Cc]onfluent|[Cc]ost|[Dd]ocs|[Ss]ecurity|[Ss]cout|[Bb]lockchain):[a-zA-Z-]+"
+if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]] || [[ "$PROMPT" =~ $DOMAIN_PLUGIN_PATTERN ]]; then
   # Check if guard is disabled via environment variable
   if [[ "${SPECWEAVE_DISABLE_GUARD:-0}" != "1" ]]; then
     # Check if project is initialized (walk up tree to find .specweave/config.json)
@@ -162,7 +164,7 @@ if [[ "$PROMPT" =~ ^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+ ]]; then
     if [[ -z "$FOUND_CONFIG" ]]; then
       # Check if guard is disabled in config (would fail since no config exists yet)
       # Extract skill name for error message
-      SKILL_NAME=$(echo "$PROMPT" | grep -oE '^[[:space:]]*/[Ss][Ww](-[a-zA-Z0-9-]+)?:[a-zA-Z-]+' | tr '[:upper:]' '[:lower:]')
+      SKILL_NAME=$(echo "$PROMPT" | grep -oiE '^[[:space:]]*/[a-z0-9-]+:[a-zA-Z-]+' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//')
 
       # Generate helpful error message
       cat <<EOF
@@ -194,7 +196,7 @@ You invoked \`${SKILL_NAME}\`, but this project hasn't been initialized with Spe
    {
      \"enabledPlugins\": {
        \"sw@specweave\": false,
-       \"sw-frontend@specweave\": false
+       \"frontend@vskill\": false
      }
    }
    \`\`\`
@@ -449,9 +451,9 @@ output_approve_with_context() {
 # was eliminated to save ~800 chars of context budget per turn. The skill reads
 # the user's prompt from conversation context (it's already there).
 
-# Helper: Check if sw-* plugin is in vskill.lock (fast-path skip) (v1.0.272)
+# Helper: Check if plugin is in vskill.lock (fast-path skip) (v1.0.272)
 # vskill.lock is the SOURCE OF TRUTH for vskill-installed plugins.
-# Args: $1=plugin name (e.g., "sw-frontend")
+# Args: $1=plugin name (e.g., "frontend")
 # Returns: 0 if in lockfile, 1 if not
 check_plugin_in_vskill_lock() {
   local plugin="$1"
@@ -478,9 +480,9 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install sw-* plugin via vskill (v1.0.272)
+# Helper: Install plugin via vskill (v1.0.272)
 # Uses npx vskill add with --plugin and --plugin-dir flags.
-# Args: $1=plugin name (e.g., "sw-frontend")
+# Args: $1=plugin name (e.g., "frontend")
 # Returns: 0 if installed successfully, 1 if failed
 # Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
 install_plugin_via_vskill() {
@@ -556,7 +558,7 @@ install_vskill_repo_plugin() {
 
 # Helper: Check if plugin is installed by reading installed_plugins.json (v1.0.175)
 # This is the SOURCE OF TRUTH - more reliable than `claude plugin list` which can have timing issues.
-# Args: $1=plugin name (e.g., "sw-frontend"), $2=marketplace (e.g., "specweave")
+# Args: $1=plugin name (e.g., "frontend"), $2=marketplace (e.g., "vskill")
 # Returns: 0 if installed, 1 if not installed
 check_plugin_installed_from_json() {
   local plugin="$1"
@@ -572,7 +574,7 @@ check_plugin_installed_from_json() {
   fi
 
   # Check if plugin exists in registry
-  # Format: {"plugins": {"sw-frontend@specweave": [...], ...}}
+  # Format: {"plugins": {"frontend@vskill": [...], ...}}
   local full_name="${plugin}@${marketplace}"
   local has_plugin
   has_plugin=$(jq -r --arg key "$full_name" '.plugins[$key] // null' "$registry_path" 2>/dev/null)
@@ -588,7 +590,7 @@ check_plugin_installed_from_json() {
 # KEYWORD-BASED PLUGIN DETECTION REMOVED (v1.0.159)
 # ==============================================================================
 # Keyword fallback was removed because it was too aggressive.
-# Example: "run tests" would install sw-testing even for simple test runs.
+# Example: "run tests" would install testing even for simple test runs.
 #
 # Plugin detection now happens ONLY via LLM analysis (specweave detect-intent).
 # The LLM understands user INTENT - it only recommends plugins when user

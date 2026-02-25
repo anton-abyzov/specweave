@@ -271,7 +271,7 @@ describe('plugin-copier', () => {
 
       createFakeSpecweaveRoot(specweaveRoot, [
         { name: 'sw', source: './plugins/specweave' },
-        { name: 'sw-frontend', source: './plugins/sw-frontend' },
+        { name: 'frontend', source: './plugins/frontend' },
       ]);
     });
 
@@ -364,7 +364,7 @@ describe('plugin-copier', () => {
 
     it('should handle multiple plugins independently', () => {
       const r1 = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-      const r2 = copyPlugin('sw-frontend', specweaveRoot, { targetBaseDir: targetDir });
+      const r2 = copyPlugin('frontend', specweaveRoot, { targetBaseDir: targetDir });
 
       expect(r1.success).toBe(true);
       expect(r2.success).toBe(true);
@@ -372,7 +372,7 @@ describe('plugin-copier', () => {
       // Both should be in lockfile
       const lock = readLockfile(tmpDir);
       expect(lock!.skills.sw).toBeDefined();
-      expect(lock!.skills['sw-frontend']).toBeDefined();
+      expect(lock!.skills['frontend']).toBeDefined();
     });
 
     it('should not copy SKILL.md files marked as user-invokable: false', () => {

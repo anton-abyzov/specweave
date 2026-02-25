@@ -70,10 +70,10 @@ describe('registerPluginsWithClaudeCli', () => {
   });
 
   it('should register marketplace and install plugins on success', () => {
-    const result = registerPluginsWithClaudeCli('/mock/root', ['sw', 'sw-frontend']);
+    const result = registerPluginsWithClaudeCli('/mock/root', ['sw', 'frontend']);
 
     expect(result.marketplaceRegistered).toBe(true);
-    expect(result.installedPlugins).toEqual(['sw', 'sw-frontend']);
+    expect(result.installedPlugins).toEqual(['sw', 'frontend']);
     expect(result.failedPlugins).toEqual([]);
 
     expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
@@ -83,7 +83,7 @@ describe('registerPluginsWithClaudeCli', () => {
       'claude', ['plugin', 'install', 'sw@specweave'],
     );
     expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
-      'claude', ['plugin', 'install', 'sw-frontend@specweave'],
+      'claude', ['plugin', 'install', 'frontend@vskill'],
     );
   });
 

@@ -378,7 +378,7 @@ exit 1
   describe('Increment Detection Scenarios', () => {
     it('should detect multi-file feature requests', async () => {
       await createMockSpecweaveCli({
-        plugins: ['sw-frontend', 'sw-backend'],
+        plugins: ['frontend', 'backend'],
         increment: {
           action: 'new',
           confidence: 0.95,

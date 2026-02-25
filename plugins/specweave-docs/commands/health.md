@@ -10,16 +10,16 @@ Analyze your documentation for health issues including freshness, coverage, nami
 
 ```bash
 # Full health report
-/sw-docs:health
+/docs:health
 
 # Include archived documents
-/sw-docs:health --include-archived
+/docs:health --include-archived
 
 # Output as JSON
-/sw-docs:health --format json
+/docs:health --format json
 
 # Save report to file
-/sw-docs:health --output health-report.md
+/docs:health --output health-report.md
 ```
 
 ## Your Task
@@ -187,7 +187,7 @@ Actionable suggestions based on analysis:
 - Add acceptance criteria
 - Fix naming conventions
 - Consolidate duplicates
-- Run `/sw-docs:organize` for large folders
+- Run `/docs:organize` for large folders
 
 ## Output Example
 
@@ -220,7 +220,7 @@ RECOMMENDATIONS
 • Documentation coverage is limited. Add acceptance criteria to more documents.
 • 8 files use ALL CAPS naming. Rename to lowercase-kebab-case.
 • 3 sets of duplicate documents detected. Consider consolidating.
-• "ADRs" has 147 files. Run /sw-docs:organize to generate themed indexes.
+• "ADRs" has 147 files. Run /docs:organize to generate themed indexes.
 
 Full report saved to: .specweave/docs/ENTERPRISE-HEALTH.md
 ```
@@ -262,6 +262,6 @@ jobs:
 
 ## See Also
 
-- `/sw-docs:organize` - Organize large folders with themed indexes
-- `/sw-docs:view` - View documentation with Docusaurus
-- `/sw-docs:generate` - Generate docs from code
+- `/docs:organize` - Organize large folders with themed indexes
+- `/docs:view` - View documentation with Docusaurus
+- `/docs:generate` - Generate docs from code

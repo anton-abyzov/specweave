@@ -42,7 +42,7 @@ Mode: Native Agent Teams
 | Agent 3  | shared   | 0195-checkout-shared    | 4/4    | 100%     | done    |
 
 Overall: 12/18 tasks (67%)
-Active Skills: sw-frontend:frontend-architect, sw:architect, sw:architect
+Active Skills: frontend:architect, sw:architect, sw:architect
 ```
 
 ## Agent State Icons

@@ -39,7 +39,7 @@ describe('Plugin Installer Flags', () => {
   describe('createPluginInstallFlag()', () => {
     it('should create flag file when plugins are installed', () => {
       // Given: Successful plugin installation via specweave init
-      const plugins = ['sw', 'sw-frontend'];
+      const plugins = ['sw', 'frontend'];
 
       // When: createPluginInstallFlag() is called
       createPluginInstallFlag(tempDir, {
@@ -55,7 +55,7 @@ describe('Plugin Installer Flags', () => {
 
     it('should include plugin names in the flag file', () => {
       // Given: Plugin installation
-      const plugins = ['sw', 'sw-frontend', 'sw-backend'];
+      const plugins = ['sw', 'frontend', 'backend'];
 
       // When: createPluginInstallFlag() is called
       createPluginInstallFlag(tempDir, {
@@ -69,8 +69,8 @@ describe('Plugin Installer Flags', () => {
 
       const content = fs.readFileSync(pluginsFile, 'utf-8');
       expect(content).toContain('sw');
-      expect(content).toContain('sw-frontend');
-      expect(content).toContain('sw-backend');
+      expect(content).toContain('frontend');
+      expect(content).toContain('backend');
     });
 
     it('should record the trigger type', () => {
@@ -130,24 +130,24 @@ describe('Plugin Installer Flags', () => {
       });
 
       // When: More plugins are installed
-      appendInstalledPlugins(tempDir, ['sw-frontend', 'sw-backend']);
+      appendInstalledPlugins(tempDir, ['frontend', 'backend']);
 
       // Then: All plugins should be in the flag
       const flag = readPluginInstallFlag(tempDir);
       expect(flag?.plugins).toContain('sw');
-      expect(flag?.plugins).toContain('sw-frontend');
-      expect(flag?.plugins).toContain('sw-backend');
+      expect(flag?.plugins).toContain('frontend');
+      expect(flag?.plugins).toContain('backend');
     });
 
     it('should not duplicate plugins', () => {
       // Given: Existing flag
       createPluginInstallFlag(tempDir, {
-        plugins: ['sw', 'sw-frontend'],
+        plugins: ['sw', 'frontend'],
         trigger: 'specweave-init',
       });
 
       // When: Same plugin is appended again
-      appendInstalledPlugins(tempDir, ['sw', 'sw-backend']);
+      appendInstalledPlugins(tempDir, ['sw', 'backend']);
 
       // Then: No duplicates
       const flag = readPluginInstallFlag(tempDir);
@@ -172,7 +172,7 @@ describe('Plugin Installer Flags', () => {
     it('should return flag data when flag exists', () => {
       // Given: Flag file exists
       createPluginInstallFlag(tempDir, {
-        plugins: ['sw', 'sw-frontend'],
+        plugins: ['sw', 'frontend'],
         trigger: 'claude-plugin-install',
         projectPath: '/test/path',
       });
@@ -182,7 +182,7 @@ describe('Plugin Installer Flags', () => {
 
       // Then: should return complete flag data
       expect(flag).not.toBeNull();
-      expect(flag?.plugins).toEqual(['sw', 'sw-frontend']);
+      expect(flag?.plugins).toEqual(['sw', 'frontend']);
       expect(flag?.trigger).toBe('claude-plugin-install');
       expect(flag?.projectPath).toBe('/test/path');
     });
@@ -255,7 +255,7 @@ describe('Plugin Installer Flags', () => {
     it('should have one plugin per line in plugins text file', () => {
       // Given: Multiple plugins
       createPluginInstallFlag(tempDir, {
-        plugins: ['sw', 'sw-frontend', 'sw-backend'],
+        plugins: ['sw', 'frontend', 'backend'],
         trigger: 'specweave-init',
       });
 
@@ -266,8 +266,8 @@ describe('Plugin Installer Flags', () => {
 
       // Then: should have one plugin per line
       expect(lines).toContain('sw');
-      expect(lines).toContain('sw-frontend');
-      expect(lines).toContain('sw-backend');
+      expect(lines).toContain('frontend');
+      expect(lines).toContain('backend');
       expect(lines.length).toBe(3);
     });
   });

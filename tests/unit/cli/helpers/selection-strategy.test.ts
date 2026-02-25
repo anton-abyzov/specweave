@@ -97,7 +97,7 @@ describe('selection-strategy', () => {
 
   describe('parsePatternShortcut', () => {
     it('should convert "starts: prefix" to "prefix*"', () => {
-      expect(parsePatternShortcut('starts: sw-')).toBe('sw-*');
+      expect(parsePatternShortcut('starts: app-')).toBe('app-*');
     });
 
     it('should convert "start: prefix" (singular) to "prefix*"', () => {
@@ -127,7 +127,7 @@ describe('selection-strategy', () => {
     });
 
     it('should trim whitespace around the value', () => {
-      expect(parsePatternShortcut('  starts:   sw-  ')).toBe('sw-*');
+      expect(parsePatternShortcut('  starts:   app-  ')).toBe('app-*');
     });
 
     it('should trim leading/trailing whitespace from input', () => {
@@ -135,7 +135,7 @@ describe('selection-strategy', () => {
     });
 
     it('should auto-expand plain text without glob chars to prefix match', () => {
-      expect(parsePatternShortcut('sw-ecom')).toBe('sw-ecom*');
+      expect(parsePatternShortcut('app-ecom')).toBe('app-ecom*');
     });
 
     it('should auto-expand single word to prefix match', () => {
@@ -143,15 +143,15 @@ describe('selection-strategy', () => {
     });
 
     it('should NOT modify patterns that already contain glob char *', () => {
-      expect(parsePatternShortcut('sw-*')).toBe('sw-*');
+      expect(parsePatternShortcut('app-*')).toBe('app-*');
     });
 
     it('should NOT modify patterns that already contain glob char ?', () => {
-      expect(parsePatternShortcut('sw-?')).toBe('sw-?');
+      expect(parsePatternShortcut('app-?')).toBe('app-?');
     });
 
     it('should NOT modify patterns that already contain glob char [', () => {
-      expect(parsePatternShortcut('sw-[ab]')).toBe('sw-[ab]');
+      expect(parsePatternShortcut('app-[ab]')).toBe('app-[ab]');
     });
 
     it('should return empty string for empty input', () => {
@@ -173,7 +173,7 @@ describe('selection-strategy', () => {
   // =========================================================================
 
   describe('matchByGlob', () => {
-    const items = makeItems('sw-frontend', 'sw-backend', 'other-service', 'api-gateway');
+    const items = makeItems('frontend', 'backend', 'other-service', 'api-gateway');
 
     beforeEach(() => {
       // Default: delegate to real minimatch behavior via a simple implementation
@@ -186,11 +186,11 @@ describe('selection-strategy', () => {
       });
     });
 
-    it('should filter items matching a glob prefix pattern', () => {
-      // "starts: sw-" is parsed to "sw-*" by parsePatternShortcut internally
-      const result = matchByGlob(items, 'sw-*');
+    it('should filter items matching a glob suffix pattern (end)', () => {
+      // "ends: end" is parsed to "*end" by parsePatternShortcut internally
+      const result = matchByGlob(items, '*end');
       expect(result).toHaveLength(2);
-      expect(result.map(i => i.name)).toEqual(['sw-frontend', 'sw-backend']);
+      expect(result.map(i => i.name)).toEqual(['frontend', 'backend']);
     });
 
     it('should filter items matching a glob suffix pattern', () => {
@@ -199,21 +199,21 @@ describe('selection-strategy', () => {
       expect(result[0].name).toBe('other-service');
     });
 
-    it('should apply shortcut parsing internally (starts:)', () => {
-      const result = matchByGlob(items, 'starts: sw-');
+    it('should apply shortcut parsing internally (ends:)', () => {
+      const result = matchByGlob(items, 'ends: end');
       expect(result).toHaveLength(2);
     });
 
     it('should apply shortcut parsing internally (contains:)', () => {
       const result = matchByGlob(items, 'contains: end');
-      expect(result.map(i => i.name)).toEqual(['sw-frontend', 'sw-backend']);
+      expect(result.map(i => i.name)).toEqual(['frontend', 'backend']);
     });
 
     it('should auto-expand plain text to prefix match', () => {
-      const result = matchByGlob(items, 'sw-front');
-      // parsePatternShortcut turns "sw-front" into "sw-front*"
+      const result = matchByGlob(items, 'front');
+      // parsePatternShortcut turns "front" into "front*"
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('sw-frontend');
+      expect(result[0].name).toBe('frontend');
     });
 
     it('should return empty array when no items match', () => {
@@ -222,17 +222,17 @@ describe('selection-strategy', () => {
     });
 
     it('should handle empty items array', () => {
-      const result = matchByGlob([], 'sw-*');
+      const result = matchByGlob([], '*end');
       expect(result).toHaveLength(0);
     });
 
     it('should match against a custom field', () => {
       const itemsWithPath: SelectableItem[] = [
-        { name: 'FE', value: 'fe', path: '/repos/sw-frontend' },
-        { name: 'BE', value: 'be', path: '/repos/sw-backend' },
+        { name: 'FE', value: 'fe', path: '/repos/frontend' },
+        { name: 'BE', value: 'be', path: '/repos/backend' },
         { name: 'Other', value: 'other', path: '/repos/other-service' },
       ];
-      const result = matchByGlob(itemsWithPath, '*/sw-*', 'path');
+      const result = matchByGlob(itemsWithPath, '*/*end', 'path');
       expect(result).toHaveLength(2);
     });
 
@@ -261,13 +261,13 @@ describe('selection-strategy', () => {
   // =========================================================================
 
   describe('matchByRegex', () => {
-    const items = makeItems('sw-frontend', 'sw-backend', 'other-service', 'api-gateway');
+    const items = makeItems('frontend', 'backend', 'other-service', 'api-gateway');
 
-    it('should filter items matching a regex prefix pattern', () => {
-      const result = matchByRegex(items, '^sw-');
+    it('should filter items matching a regex suffix pattern (end)', () => {
+      const result = matchByRegex(items, 'end$');
       expect(result.error).toBeUndefined();
       expect(result.items).toHaveLength(2);
-      expect(result.items.map(i => i.name)).toEqual(['sw-frontend', 'sw-backend']);
+      expect(result.items.map(i => i.name)).toEqual(['frontend', 'backend']);
     });
 
     it('should filter items matching a regex suffix pattern', () => {
@@ -277,7 +277,7 @@ describe('selection-strategy', () => {
     });
 
     it('should be case-insensitive by default', () => {
-      const result = matchByRegex(items, '^SW-');
+      const result = matchByRegex(items, 'END$');
       expect(result.items).toHaveLength(2);
     });
 
@@ -302,10 +302,10 @@ describe('selection-strategy', () => {
 
     it('should match against a custom field', () => {
       const itemsWithPath: SelectableItem[] = [
-        { name: 'FE', value: 'fe', path: '/repos/sw-frontend' },
+        { name: 'FE', value: 'fe', path: '/repos/frontend' },
         { name: 'BE', value: 'be', path: '/repos/other-service' },
       ];
-      const result = matchByRegex(itemsWithPath, 'sw-', 'path');
+      const result = matchByRegex(itemsWithPath, 'frontend', 'path');
       expect(result.items).toHaveLength(1);
       expect(result.items[0].name).toBe('FE');
     });
@@ -340,7 +340,7 @@ describe('selection-strategy', () => {
 
   describe('validateRegex', () => {
     it('should return true for a valid regex', () => {
-      expect(validateRegex('^sw-.*$')).toBe(true);
+      expect(validateRegex('^app-.*$')).toBe(true);
     });
 
     it('should return true for a simple string pattern', () => {
@@ -450,8 +450,8 @@ describe('selection-strategy', () => {
 
   describe('filterRepositoriesByPattern', () => {
     const repos = [
-      { name: 'sw-frontend', url: 'https://example.com/sw-frontend' },
-      { name: 'sw-backend', url: 'https://example.com/sw-backend' },
+      { name: 'frontend', url: 'https://example.com/frontend' },
+      { name: 'backend', url: 'https://example.com/backend' },
       { name: 'other-service', url: 'https://example.com/other-service' },
       { name: 'api-gateway', url: 'https://example.com/api-gateway' },
     ];
@@ -486,13 +486,13 @@ describe('selection-strategy', () => {
     });
 
     describe('strategy: pattern-glob', () => {
-      it('should filter repos by glob prefix pattern', () => {
+      it('should filter repos by glob suffix pattern (end)', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'pattern-glob',
-          pattern: 'sw-*',
+          pattern: '*end',
         });
         expect(result).toHaveLength(2);
-        expect(result.map(r => r.name)).toEqual(['sw-frontend', 'sw-backend']);
+        expect(result.map(r => r.name)).toEqual(['frontend', 'backend']);
       });
 
       it('should filter repos by glob suffix pattern', () => {
@@ -523,21 +523,21 @@ describe('selection-strategy', () => {
       it('should preserve additional fields on matched repos', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'pattern-glob',
-          pattern: 'sw-frontend*',
+          pattern: 'frontend*',
         });
         expect(result[0]).toEqual(repos[0]);
-        expect(result[0].url).toBe('https://example.com/sw-frontend');
+        expect(result[0].url).toBe('https://example.com/frontend');
       });
     });
 
     describe('strategy: pattern-regex', () => {
-      it('should filter repos by regex prefix pattern', () => {
+      it('should filter repos by regex suffix pattern (end)', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'pattern-regex',
-          pattern: '^sw-',
+          pattern: 'end$',
         });
         expect(result).toHaveLength(2);
-        expect(result.map(r => r.name)).toEqual(['sw-frontend', 'sw-backend']);
+        expect(result.map(r => r.name)).toEqual(['frontend', 'backend']);
       });
 
       it('should filter repos by regex suffix pattern', () => {
@@ -569,7 +569,7 @@ describe('selection-strategy', () => {
       it('should filter repos with complex regex', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'pattern-regex',
-          pattern: '^(sw|api)-',
+          pattern: '(end$|api-)',
         });
         expect(result).toHaveLength(3);
       });
@@ -579,10 +579,10 @@ describe('selection-strategy', () => {
       it('should filter repos to only those in selectedRepos', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'manual',
-          selectedRepos: ['sw-frontend', 'api-gateway'],
+          selectedRepos: ['frontend', 'api-gateway'],
         });
         expect(result).toHaveLength(2);
-        expect(result.map(r => r.name)).toEqual(['sw-frontend', 'api-gateway']);
+        expect(result.map(r => r.name)).toEqual(['frontend', 'api-gateway']);
       });
 
       it('should return empty array when selectedRepos is empty', () => {
@@ -603,19 +603,19 @@ describe('selection-strategy', () => {
       it('should preserve additional fields on matched repos', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'manual',
-          selectedRepos: ['sw-frontend'],
+          selectedRepos: ['frontend'],
         });
         expect(result[0]).toEqual(repos[0]);
-        expect(result[0].url).toBe('https://example.com/sw-frontend');
+        expect(result[0].url).toBe('https://example.com/frontend');
       });
 
       it('should ignore names not present in repos', () => {
         const result = filterRepositoriesByPattern(repos, {
           strategy: 'manual',
-          selectedRepos: ['sw-frontend', 'nonexistent-repo'],
+          selectedRepos: ['frontend', 'nonexistent-repo'],
         });
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('sw-frontend');
+        expect(result[0].name).toBe('frontend');
       });
     });
 
@@ -634,7 +634,7 @@ describe('selection-strategy', () => {
   // =========================================================================
 
   describe('promptSelection', () => {
-    const defaultItems = makeItems('sw-frontend', 'sw-backend', 'other-service');
+    const defaultItems = makeItems('frontend', 'backend', 'other-service');
 
     function makeOptions(overrides?: Partial<SelectionPromptOptions>): SelectionPromptOptions {
       return {
@@ -708,14 +708,14 @@ describe('selection-strategy', () => {
     describe('strategy: pattern-glob', () => {
       it('should filter and return matching items', async () => {
         mockSelect.mockResolvedValue('pattern-glob');
-        mockInput.mockResolvedValue('sw-*');
+        mockInput.mockResolvedValue('*end');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection(makeOptions());
 
         expect(result.strategy).toBe('pattern-glob');
         expect(result.items).toHaveLength(2);
-        expect(result.pattern).toBe('sw-*');
+        expect(result.pattern).toBe('*end');
         expect(result.cancelled).toBe(false);
       });
 
@@ -736,7 +736,7 @@ describe('selection-strategy', () => {
         mockSelect.mockResolvedValue('pattern-glob');
         mockInput.mockImplementation(() => {
           callCount++;
-          return callCount === 1 ? 'nonexistent-*' : 'sw-*';
+          return callCount === 1 ? 'nonexistent-*' : '*end';
         });
         // First confirm is retry (true), second is final confirmation (true)
         mockConfirm
@@ -757,14 +757,14 @@ describe('selection-strategy', () => {
     describe('strategy: pattern-regex', () => {
       it('should filter and return matching items', async () => {
         mockSelect.mockResolvedValue('pattern-regex');
-        mockInput.mockResolvedValue('^sw-');
+        mockInput.mockResolvedValue('end$');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection(makeOptions());
 
         expect(result.strategy).toBe('pattern-regex');
         expect(result.items).toHaveLength(2);
-        expect(result.pattern).toBe('^sw-');
+        expect(result.pattern).toBe('end$');
         expect(result.cancelled).toBe(false);
       });
 
@@ -812,7 +812,7 @@ describe('selection-strategy', () => {
 
         expect(result.strategy).toBe('select-specific');
         expect(result.items).toHaveLength(2);
-        expect(result.items[0].name).toBe('sw-frontend');
+        expect(result.items[0].name).toBe('frontend');
         expect(result.items[1].name).toBe('other-service');
         expect(result.cancelled).toBe(false);
       });
@@ -836,7 +836,7 @@ describe('selection-strategy', () => {
     describe('strategy: manual-entry', () => {
       it('should match entered names against available items', async () => {
         mockSelect.mockResolvedValue('manual-entry');
-        mockInput.mockResolvedValue('sw-frontend, other-service');
+        mockInput.mockResolvedValue('frontend, other-service');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection(makeOptions());
@@ -848,14 +848,14 @@ describe('selection-strategy', () => {
 
       it('should add not-found entries as new items', async () => {
         mockSelect.mockResolvedValue('manual-entry');
-        mockInput.mockResolvedValue('sw-frontend, brand-new-repo');
+        mockInput.mockResolvedValue('frontend, brand-new-repo');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection(makeOptions());
 
         expect(result.items).toHaveLength(2);
         const names = result.items.map(i => i.name);
-        expect(names).toContain('sw-frontend');
+        expect(names).toContain('frontend');
         expect(names).toContain('brand-new-repo');
       });
 
@@ -892,13 +892,13 @@ describe('selection-strategy', () => {
 
       it('should match entries case-insensitively', async () => {
         mockSelect.mockResolvedValue('manual-entry');
-        mockInput.mockResolvedValue('SW-Frontend');
+        mockInput.mockResolvedValue('Frontend');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection(makeOptions());
 
         expect(result.items).toHaveLength(1);
-        expect(result.items[0].name).toBe('sw-frontend');
+        expect(result.items[0].name).toBe('frontend');
       });
     });
 
@@ -920,7 +920,7 @@ describe('selection-strategy', () => {
 
       it('should exclude all option when showAllOption is false', async () => {
         mockSelect.mockResolvedValue('pattern-glob');
-        mockInput.mockResolvedValue('sw-*');
+        mockInput.mockResolvedValue('*end');
         mockConfirm.mockResolvedValue(true);
 
         await promptSelection(makeOptions({ showAllOption: false }));
@@ -932,7 +932,7 @@ describe('selection-strategy', () => {
 
       it('should default to pattern-glob when all option is hidden', async () => {
         mockSelect.mockResolvedValue('pattern-glob');
-        mockInput.mockResolvedValue('sw-*');
+        mockInput.mockResolvedValue('*end');
         mockConfirm.mockResolvedValue(true);
 
         await promptSelection(makeOptions({ showAllOption: false }));
@@ -1027,12 +1027,12 @@ describe('selection-strategy', () => {
     describe('matchField', () => {
       it('should use custom matchField for glob matching', async () => {
         const items: SelectableItem[] = [
-          { name: 'Frontend', value: 'fe', path: '/sw-frontend' },
-          { name: 'Backend', value: 'be', path: '/sw-backend' },
+          { name: 'Frontend', value: 'fe', path: '/frontend' },
+          { name: 'Backend', value: 'be', path: '/backend' },
           { name: 'Other', value: 'other', path: '/other-service' },
         ];
         mockSelect.mockResolvedValue('pattern-glob');
-        mockInput.mockResolvedValue('*/sw-*');
+        mockInput.mockResolvedValue('/*end');
         mockConfirm.mockResolvedValue(true);
 
         const result = await promptSelection({

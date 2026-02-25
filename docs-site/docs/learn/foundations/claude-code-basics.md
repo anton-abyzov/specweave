@@ -61,7 +61,7 @@ Plugins bundle related skills, agents, and hooks into installable packages.
 
 ```bash
 claude plugin install sw@specweave          # Core SpecWeave
-claude plugin install sw-frontend@specweave # Frontend expertise
+claude plugin install frontend@vskill      # Frontend expertise
 claude plugin list                          # Show installed
 ```
 
@@ -156,7 +156,7 @@ If a skill didn't auto-activate, Claude can explicitly invoke it:
 
 ```typescript
 // Skill didn't auto-load? Invoke explicitly:
-Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
+Skill({ skill: "frontend:architect", args: "dashboard" })
 ```
 
 ### Via Task Tool (Subagents)

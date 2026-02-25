@@ -365,10 +365,10 @@ ls .claude/plugins/
 # sw-github/       - GitHub integration
 # sw-jira/         - JIRA integration
 # sw-ado/          - Azure DevOps
-# sw-frontend/     - Frontend expertise
-# sw-backend/      - Backend expertise
-# sw-ml/           - Machine learning
-# sw-kafka/        - Kafka expertise
+# frontend/        - Frontend expertise
+# backend/         - Backend expertise
+# ml/              - Machine learning
+# kafka/           - Kafka expertise
 # ...24 total plugins
 ```
 
@@ -455,17 +455,17 @@ User: "Write API documentation"
 ```bash
 # Invoke Kubernetes skill for complex manifest generation
 Skill({
-  skill: "sw-k8s:kubernetes-architect",
+  skill: "k8s:kubernetes-architect",
   args: "Generate K8s manifests for 3-tier app with Istio service mesh"
 })
 ```
 
 > "68 specialized agents in SpecWeave:
-> - `sw-frontend:frontend-architect` → React, Vue, Next.js expertise
-> - `sw-k8s:kubernetes-architect` → K8s, Helm, ArgoCD, GitOps
-> - `sw-ml:ml-engineer` → Model training, MLOps, data pipelines
-> - `sw-mobile:mobile-architect` → React Native, Expo, native iOS/Android
-> - `sw-testing:qa-engineer` → Playwright, Vitest, comprehensive testing
+> - `frontend:architect` → React, Vue, Next.js expertise
+> - `k8s:kubernetes-architect` → K8s, Helm, ArgoCD, GitOps
+> - `ml:engineer` → Model training, MLOps, data pipelines
+> - `mobile:react-native` → React Native, Expo, native iOS/Android
+> - `testing:qa` → Playwright, Vitest, comprehensive testing
 >
 > **Why agents?** Context isolation — complex tasks don't pollute your main conversation. Tool restrictions — read-only agents can't modify files. Parallelization — multiple agents can run concurrently."
 
@@ -2589,10 +2589,10 @@ eas submit --platform ios
 > "SpecWeave includes mobile-specific skills that auto-activate:"
 
 ```
-sw-mobile:mobile-architect    → React Native architecture
-sw-mobile:expo-specialist     → Expo-specific patterns
-sw-mobile:ios-specialist      → iOS platform issues
-sw-mobile:android-specialist  → Android platform issues
+mobile:react-native           → React Native architecture
+mobile:expo                   → Expo-specific patterns
+mobile:ios-specialist         → iOS platform issues
+mobile:android-specialist     → Android platform issues
 ```
 
 > "Ask about navigation patterns — mobile-architect activates. Ask about EAS builds — expo-specialist activates. The right expertise, automatically."

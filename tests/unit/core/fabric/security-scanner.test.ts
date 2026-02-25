@@ -10,7 +10,7 @@ describe('scanSkillContent', () => {
       'description: A helpful skill for generating components',
       '---',
       '',
-      '# /sw-frontend:component-generate',
+      '# /frontend:component-generate',
       '',
       'You are a component generation assistant.',
       '',

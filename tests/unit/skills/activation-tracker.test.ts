@@ -69,7 +69,7 @@ describe('ActivationTracker', () => {
 
       trackActivation({
         type: 'skill',
-        fqn: 'sw-frontend:component',
+        fqn: 'frontend:component',
         domain: 'frontend',
         trigger: 'react, component',
         confidence: 0.85,
@@ -77,7 +77,7 @@ describe('ActivationTracker', () => {
 
       const state = loadActivations(tempDir);
       expect(state?.activations).toHaveLength(1);
-      expect(state?.activations[0].fqn).toBe('sw-frontend:component');
+      expect(state?.activations[0].fqn).toBe('frontend:component');
       expect(state?.activations[0].domain).toBe('frontend');
       expect(state?.domains).toContain('frontend');
     });
@@ -87,7 +87,7 @@ describe('ActivationTracker', () => {
 
       trackActivation({
         type: 'skill',
-        fqn: 'sw-frontend:component',
+        fqn: 'frontend:component',
         domain: 'frontend',
         trigger: 'react',
         confidence: 0.8,
@@ -95,7 +95,7 @@ describe('ActivationTracker', () => {
 
       trackActivation({
         type: 'agent',
-        fqn: 'sw-backend:api-architect',
+        fqn: 'backend:api-architect',
         domain: 'backend',
         trigger: 'api, express',
         confidence: 0.9,
@@ -112,7 +112,7 @@ describe('ActivationTracker', () => {
 
       trackActivation({
         type: 'skill',
-        fqn: 'sw-frontend:component',
+        fqn: 'frontend:component',
         domain: 'frontend',
         trigger: 'react',
         confidence: 0.8,
@@ -120,7 +120,7 @@ describe('ActivationTracker', () => {
 
       trackActivation({
         type: 'skill',
-        fqn: 'sw-frontend:styling',
+        fqn: 'frontend:styling',
         domain: 'frontend',
         trigger: 'css',
         confidence: 0.7,
@@ -135,7 +135,7 @@ describe('ActivationTracker', () => {
       // Don't call initSession - trackActivation should handle it
       trackActivation({
         type: 'skill',
-        fqn: 'sw-testing:qa',
+        fqn: 'testing:qa',
         domain: 'testing',
         trigger: 'test',
         confidence: 0.75,
@@ -194,8 +194,8 @@ describe('ActivationTracker', () => {
 
     it('should return activated domains', () => {
       initSession('test', tempDir);
-      trackActivation({ type: 'skill', fqn: 'sw-ml:model', domain: 'ml', trigger: 'training', confidence: 0.8 }, tempDir);
-      trackActivation({ type: 'skill', fqn: 'sw-infra:terraform', domain: 'infrastructure', trigger: 'terraform', confidence: 0.9 }, tempDir);
+      trackActivation({ type: 'skill', fqn: 'ml:model', domain: 'ml', trigger: 'training', confidence: 0.8 }, tempDir);
+      trackActivation({ type: 'skill', fqn: 'infra:terraform', domain: 'infrastructure', trigger: 'terraform', confidence: 0.9 }, tempDir);
 
       const domains = getActivatedDomains(tempDir);
       expect(domains).toContain('ml');
@@ -226,7 +226,7 @@ describe('ActivationTracker', () => {
       initSession('summary-test', tempDir);
       trackActivation({
         type: 'skill',
-        fqn: 'sw-frontend:react',
+        fqn: 'frontend:react',
         domain: 'frontend',
         trigger: 'react, component',
         confidence: 0.85,
@@ -236,46 +236,46 @@ describe('ActivationTracker', () => {
       expect(summary).toContain('summary-test');
       expect(summary).toContain('Activations: 1');
       expect(summary).toContain('frontend');
-      expect(summary).toContain('sw-frontend:react');
+      expect(summary).toContain('frontend:react');
     });
   });
 
   describe('inferDomain', () => {
     it('should detect frontend domain', () => {
-      expect(inferDomain('sw-frontend:component')).toBe('frontend');
+      expect(inferDomain('frontend:component')).toBe('frontend');
       expect(inferDomain('react-dashboard')).toBe('frontend');
       expect(inferDomain('vue-app')).toBe('frontend');
       expect(inferDomain('angular-component')).toBe('frontend');
     });
 
     it('should detect backend domain', () => {
-      expect(inferDomain('sw-backend:api')).toBe('backend');
+      expect(inferDomain('backend:api')).toBe('backend');
       expect(inferDomain('express-router')).toBe('backend');
       expect(inferDomain('fastapi-endpoint')).toBe('backend');
     });
 
     it('should detect mobile domain', () => {
-      expect(inferDomain('sw-mobile:expo')).toBe('mobile');
+      expect(inferDomain('mobile:expo')).toBe('mobile');
       expect(inferDomain('expo-app')).toBe('mobile');
       expect(inferDomain('ios-screen')).toBe('mobile');
       expect(inferDomain('android-activity')).toBe('mobile');
     });
 
     it('should detect infrastructure domain', () => {
-      expect(inferDomain('sw-infra:terraform')).toBe('infrastructure');
+      expect(inferDomain('infra:terraform')).toBe('infrastructure');
       expect(inferDomain('terraform-module')).toBe('infrastructure');
       expect(inferDomain('k8s-deployment')).toBe('infrastructure');
       expect(inferDomain('docker-compose')).toBe('infrastructure');
     });
 
     it('should detect ML domain', () => {
-      expect(inferDomain('sw-ml:model')).toBe('ml');
+      expect(inferDomain('ml:model')).toBe('ml');
       expect(inferDomain('training-pipeline')).toBe('ml');
       expect(inferDomain('ai-assistant')).toBe('ml');
     });
 
     it('should detect testing domain', () => {
-      expect(inferDomain('sw-testing:qa')).toBe('testing');
+      expect(inferDomain('testing:qa')).toBe('testing');
       expect(inferDomain('vitest-suite')).toBe('testing');
       expect(inferDomain('playwright-e2e')).toBe('testing');
     });
