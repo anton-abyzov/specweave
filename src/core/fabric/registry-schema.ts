@@ -35,7 +35,7 @@ export interface FabricSkillEntry {
 
 /** A plugin entry in the Fabric registry */
 export interface FabricRegistryEntry {
-  /** Plugin name (e.g., "sw-frontend") */
+  /** Plugin name (e.g., "frontend") */
   name: string;
   /** Human-readable display name */
   displayName: string;

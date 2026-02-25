@@ -43,8 +43,8 @@ Build features end-to-end with a shared-types-first contract approach. Agent 1 e
 | # | Role | Skill(s) | Owns | Responsibility |
 |---|------|----------|------|----------------|
 | 1 | Shared/Types | `sw:architect` | `src/types/`, `src/utils/`, `src/shared/` | Define TypeScript interfaces, shared validators, utility functions, and API contracts |
-| 2 | Backend | `sw:architect` + `sw-infra:devops` | `src/api/`, `src/services/` | Implement API endpoints, service layer, database queries, and infrastructure config |
-| 3 | Frontend | `sw-frontend:frontend-architect` | `src/components/`, `src/pages/` | Build UI components, pages, state management, and client-side logic |
+| 2 | Backend | `sw:architect` + `infra:devops` | `src/api/`, `src/services/` | Implement API endpoints, service layer, database queries, and infrastructure config |
+| 3 | Frontend | `frontend:architect` | `src/components/`, `src/pages/` | Build UI components, pages, state management, and client-side logic |
 
 #### Execution Chain
 
@@ -133,15 +133,15 @@ This spawns three parallel reviewers:
 
 Generate comprehensive test coverage across all test levels simultaneously. Each agent focuses on a different testing layer and operates independently.
 
-> **Note:** `sw-testing:qa-engineer` is the primary orchestration skill for testing workflows. This preset splits its responsibilities into specialized agents for parallel execution.
+> **Note:** `testing:qa` is the primary orchestration skill for testing workflows. This preset splits its responsibilities into specialized agents for parallel execution.
 
 #### Agent Composition
 
 | # | Role | Skill(s) | Owns | Responsibility |
 |---|------|----------|------|----------------|
-| 1 | Unit | `sw-testing:unit-testing` | `tests/unit/` | Write unit tests for individual functions, classes, and modules with proper mocking |
-| 2 | E2E | `sw-testing:e2e-testing` | `tests/e2e/` | Write end-to-end tests for user flows, API sequences, and cross-service interactions |
-| 3 | Coverage | `sw-testing:qa-engineer` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
+| 1 | Unit | `testing:unit` | `tests/unit/` | Write unit tests for individual functions, classes, and modules with proper mocking |
+| 2 | E2E | `testing:e2e` | `tests/e2e/` | Write end-to-end tests for user flows, API sequences, and cross-service interactions |
+| 3 | Coverage | `testing:qa` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
 
 #### Execution Chain
 
@@ -243,7 +243,7 @@ Migrate data schemas safely with a schema-first approach. The schema agent defin
 |---|------|----------|------|----------------|
 | 1 | Schema | `sw:architect` | `src/types/`, `migrations/`, `prisma/`, `drizzle/` | Define new schema, write migration scripts, update type definitions, ensure backward compatibility |
 | 2 | Backend | `sw:architect` | `src/api/`, `src/services/` | Update API endpoints, service logic, queries, and serializers to work with new schema |
-| 3 | Frontend | `sw-frontend:frontend-architect` | `src/components/`, `src/pages/` | Update UI components, forms, and state to reflect schema changes |
+| 3 | Frontend | `frontend:architect` | `src/components/`, `src/pages/` | Update UI components, forms, and state to reflect schema changes |
 
 #### Execution Chain
 

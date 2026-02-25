@@ -55,7 +55,7 @@ export interface GuardResult {
  *
  * Detects patterns like:
  * - /sw:increment "feature"
- * - /sw-frontend:frontend-architect
+ * - /frontend:architect
  * - /SW:DO (case-insensitive)
  *
  * @param prompt - User's prompt

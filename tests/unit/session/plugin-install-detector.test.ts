@@ -43,9 +43,9 @@ describe('Plugin Installation Detector', () => {
         🚀 SpecWeave Initialization
         - Creating SpecWeave project...
         ✔ sw installed
-        ✔ sw-frontend installed
-        ✔ sw-payments installed
-        ✔ sw-backend installed
+        ✔ frontend installed
+        ✔ payments installed
+        ✔ backend installed
         ✅ Lazy Loading Enabled
       `;
 
@@ -55,9 +55,9 @@ describe('Plugin Installation Detector', () => {
       // Then: it should return all installed plugins
       expect(result.detected).toBe(true);
       expect(result.event?.plugins).toContain('sw');
-      expect(result.event?.plugins).toContain('sw-frontend');
-      expect(result.event?.plugins).toContain('sw-payments');
-      expect(result.event?.plugins).toContain('sw-backend');
+      expect(result.event?.plugins).toContain('frontend');
+      expect(result.event?.plugins).toContain('payments');
+      expect(result.event?.plugins).toContain('backend');
       expect(result.event?.plugins.length).toBe(4);
     });
 

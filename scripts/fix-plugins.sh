@@ -54,10 +54,10 @@ CORE_PLUGINS=(
     "sw-github"
     "sw-jira"
     "sw-ado"
-    "sw-infra"
-    "sw-testing"
-    "sw-frontend"
-    "sw-backend"
+    "infra"
+    "testing"
+    "frontend"
+    "backend"
     "sw-release"
 )
 
@@ -78,18 +78,17 @@ echo ""
 echo -e "${YELLOW}Step 5: Installing additional plugins...${NC}"
 
 EXTRA_PLUGINS=(
-    "sw-ml"
-    "sw-kafka"
-    "sw-kafka-streams"
-    "sw-confluent"
-    "sw-k8s"
-    "sw-mobile"
-    "sw-payments"
+    "ml"
+    "kafka"
+    "confluent"
+    "k8s"
+    "mobile"
+    "payments"
     "sw-diagrams"
-    "sw-ui"
-    "sw-docs"
-    "sw-n8n"
-    "sw-cost"
+    "docs"
+    "cost"
+    "security"
+    "scout"
 )
 
 for plugin in "${EXTRA_PLUGINS[@]}"; do

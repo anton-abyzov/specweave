@@ -45,7 +45,7 @@ export interface DetectionResult {
 
 /**
  * Regex pattern for checkmark-style success messages
- * Matches: "✔ sw installed", "✓ sw-frontend installed", "✅ sw installed"
+ * Matches: "✔ sw installed", "✓ frontend installed", "✅ sw installed"
  */
 const CHECKMARK_INSTALL_PATTERN = /[✔✓✅]\s+([\w-]+)\s+installed/g;
 
@@ -132,8 +132,8 @@ export function detectPluginInstallation(hookOutput: string): DetectionResult {
  *
  * @example
  * ```typescript
- * const plugins = parseInstalledPlugins('✔ sw installed\n✔ sw-frontend installed');
- * // Returns: ['sw', 'sw-frontend']
+ * const plugins = parseInstalledPlugins('✔ sw installed\n✔ frontend installed');
+ * // Returns: ['sw', 'frontend']
  * ```
  */
 export function parseInstalledPlugins(output: string): string[] {

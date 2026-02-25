@@ -169,16 +169,16 @@ Ensure code quality and test coverage.
 | `sw:tdd-cycle` | core | Full TDD workflow |
 | `sw:code-reviewer` | core | Elite code review with AI techniques |
 | `sw:increment-quality-judge-v2` | core | LLM-as-Judge quality assessment |
-| `unit-testing` | sw-testing | Unit test patterns and Vitest |
-| `e2e-testing` | sw-testing | Playwright E2E testing |
-| `qa-engineer` | sw-testing | Manual QA processes |
+| `unit-testing` | testing | Unit test patterns and Vitest |
+| `e2e-testing` | testing | Playwright E2E testing |
+| `qa-engineer` | testing | Manual QA processes |
 
-### qa-engineer (sw-testing plugin)
+### qa-engineer (testing plugin)
 
 **Purpose**: QA expert for test strategy and automation frameworks.
 
 ```bash
-/sw-testing:qa-engineer  # Get QA guidance
+/testing:qa  # Get QA guidance
 ```
 
 **Covers:**
@@ -209,19 +209,19 @@ Build modern web applications with best practices.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `frontend` | sw-frontend | General frontend development |
-| `frontend-architect` | sw-frontend | React/Vue/Angular architecture |
-| `frontend-design` | sw-frontend | UI/UX implementation |
-| `design-system-architect` | sw-frontend | Component library design |
-| `nextjs` | sw-frontend | Next.js App Router patterns |
-| `code-explorer` | sw-frontend | Codebase navigation |
+| `frontend` | frontend | General frontend development |
+| `frontend-architect` | frontend | React/Vue/Angular architecture |
+| `frontend-design` | frontend | UI/UX implementation |
+| `design-system-architect` | frontend | Component library design |
+| `nextjs` | frontend | Next.js App Router patterns |
+| `code-explorer` | frontend | Codebase navigation |
 
 ### frontend-architect
 
 **Purpose**: Frontend architecture for React, Vue, or Angular.
 
 ```bash
-/sw-frontend:frontend-architect  # Frontend architecture guidance
+/frontend:architect  # Frontend architecture guidance
 ```
 
 **Covers:**
@@ -235,7 +235,7 @@ Build modern web applications with best practices.
 **Purpose**: Next.js 14+ App Router patterns.
 
 ```bash
-/sw-frontend:nextjs  # Next.js guidance
+/frontend:nextjs  # Next.js guidance
 ```
 
 **Covers:**
@@ -252,17 +252,17 @@ Build scalable APIs and services.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `nodejs-backend` | sw-backend | Node.js/Express/Fastify APIs |
-| `python-backend` | sw-backend | Python/FastAPI/Django services |
-| `dotnet-backend` | sw-backend | .NET Core APIs |
-| `database-optimizer` | sw-backend | SQL and NoSQL optimization |
+| `nodejs-backend` | backend | Node.js/Express/Fastify APIs |
+| `python-backend` | backend | Python/FastAPI/Django services |
+| `dotnet-backend` | backend | .NET Core APIs |
+| `database-optimizer` | backend | SQL and NoSQL optimization |
 
 ### nodejs-backend
 
 **Purpose**: Node.js backend development.
 
 ```bash
-/sw-backend:nodejs-backend  # Node.js guidance
+/backend:nodejs  # Node.js guidance
 ```
 
 **Covers:**
@@ -276,7 +276,7 @@ Build scalable APIs and services.
 **Purpose**: Database performance and design.
 
 ```bash
-/sw-backend:database-optimizer  # DB optimization
+/backend:database-optimizer  # DB optimization
 ```
 
 **Covers:**
@@ -293,20 +293,20 @@ Deploy and operate at scale.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `devops` | sw-infrastructure | CI/CD pipelines and deployment |
-| `observability` | sw-infrastructure | Logging, metrics, tracing |
+| `devops` | infra | CI/CD pipelines and deployment |
+| `observability` | infra | Logging, metrics, tracing |
 | `infrastructure` | core | Terraform and cloud IaC |
-| `k8s-manifest-generator` | sw-kubernetes | Kubernetes manifests |
-| `k8s-security-policies` | sw-kubernetes | Pod security and RBAC |
-| `helm-chart-scaffolding` | sw-kubernetes | Helm chart creation |
-| `gitops-workflow` | sw-kubernetes | ArgoCD/Flux workflows |
+| `k8s-manifest-generator` | k8s | Kubernetes manifests |
+| `k8s-security-policies` | k8s | Pod security and RBAC |
+| `helm-chart-scaffolding` | k8s | Helm chart creation |
+| `gitops-workflow` | k8s | ArgoCD/Flux workflows |
 
 ### devops
 
 **Purpose**: CI/CD and deployment automation.
 
 ```bash
-/sw-infrastructure:devops  # DevOps guidance
+/infra:devops  # DevOps guidance
 ```
 
 **Covers:**
@@ -320,7 +320,7 @@ Deploy and operate at scale.
 **Purpose**: Generate Kubernetes manifests.
 
 ```bash
-/sw-kubernetes:k8s-manifest-generator  # K8s manifests
+/k8s:deployment-generate  # K8s manifests
 ```
 
 **Generates:**
@@ -382,19 +382,19 @@ Build event-driven architectures.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `kafka-architect` | sw-kafka | Kafka architecture design |
-| `kafka-ops` | sw-kafka | Kafka operations and monitoring |
-| `kafka-streams-topology` | sw-kafka-streams | Stream processing topologies |
-| `confluent-kafka-connect` | sw-confluent | Kafka Connect configuration |
-| `confluent-schema-registry` | sw-confluent | Avro/Protobuf schemas |
-| `confluent-ksqldb` | sw-confluent | ksqlDB streaming queries |
+| `kafka-architect` | kafka | Kafka architecture design |
+| `kafka-ops` | kafka | Kafka operations and monitoring |
+| `kafka-streams-topology` | kafka | Stream processing topologies |
+| `confluent-kafka-connect` | confluent | Kafka Connect configuration |
+| `confluent-schema-registry` | confluent | Avro/Protobuf schemas |
+| `confluent-ksqldb` | confluent | ksqlDB streaming queries |
 
 ### kafka-architect
 
 **Purpose**: Kafka event-driven architecture.
 
 ```bash
-/sw-kafka:kafka-architect  # Kafka architecture guidance
+/kafka:architect  # Kafka architecture guidance
 ```
 
 **Covers:**
@@ -411,10 +411,10 @@ Build machine learning systems.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `ml-specialist` | sw-ml | ML model development |
-| `ml-engineer` | sw-ml | ML pipeline engineering |
-| `mlops-engineer` | sw-ml | MLOps and model deployment |
-| `data-scientist` | sw-ml | Data analysis and experimentation |
+| `ml-specialist` | ml | ML model development |
+| `ml-engineer` | ml | ML pipeline engineering |
+| `mlops-engineer` | ml | MLOps and model deployment |
+| `data-scientist` | ml | Data analysis and experimentation |
 | `image` | sw-media | AI image generation (Google Imagen 4 / Pollinations.ai) |
 | `video` | sw-media | AI video generation (Google Veo 3.1 / Pollinations.ai) |
 | `remotion` | sw-media | Programmatic video from React with Remotion |
@@ -424,7 +424,7 @@ Build machine learning systems.
 **Purpose**: Machine learning model development.
 
 ```bash
-/sw-ml:ml-specialist  # ML guidance
+/ml:engineer  # ML guidance
 ```
 
 **Covers:**
@@ -471,14 +471,14 @@ Build cross-platform mobile apps.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `react-native-expert` | sw-mobile | Mobile architecture and React Native development |
+| `react-native-expert` | mobile | Mobile architecture and React Native development |
 
 ### react-native-expert
 
 **Purpose**: React Native cross-platform development.
 
 ```bash
-/sw-mobile:react-native-expert  # React Native guidance
+/mobile:react-native  # React Native guidance
 ```
 
 **Covers:**
@@ -498,7 +498,7 @@ Build secure, compliant systems.
 | `security` | core | Security assessment and hardening |
 | `security-patterns` | core | Real-time security pattern detection |
 | `compliance-architecture` | core | SOC 2, HIPAA, GDPR compliance |
-| `pci-compliance` | sw-payments | PCI-DSS for payments |
+| `pci-compliance` | payments | PCI-DSS for payments |
 
 ### security
 
@@ -536,16 +536,16 @@ Build payment systems.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `payments` | sw-payments | Payment integration patterns |
-| `billing-automation` | sw-payments | Subscription and billing |
-| `pci-compliance` | sw-payments | PCI-DSS compliance |
+| `payments` | payments | Payment integration patterns |
+| `billing-automation` | payments | Subscription and billing |
+| `pci-compliance` | payments | PCI-DSS compliance |
 
 ### payments
 
 **Purpose**: Payment gateway integration.
 
 ```bash
-/sw-payments:payments  # Payment guidance
+/payments:core  # Payment guidance
 ```
 
 **Covers:**

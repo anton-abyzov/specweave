@@ -135,7 +135,7 @@ export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
  * - mermaid, c4, architecture diagram skills are built-in
  * - docs-writer, docs-updater skills are built-in
  *
- * v1.0.315 (0331): Domain skills migrated to vskill repo — see VSKILL_PLUGINS below.
+ * v2.1.0: Domain skills live in vskill marketplace as per-category plugins.
  * Only workflow/integration plugins remain here.
  */
 export const SPECWEAVE_PLUGINS = [
@@ -150,11 +150,12 @@ export const SPECWEAVE_PLUGINS = [
 ] as const;
 
 /**
- * Plugins migrated to vskill repo (installed via --repo)
+ * Domain skill plugins in the vskill marketplace.
  *
- * v1.0.315 (0331): ~75 generic domain skills moved from specweave to vskill repo.
- * Plugin names changed: sw-frontend → frontend, sw-backend → backend, etc.
- * Install command: vskill add dummy --repo anton-abyzov/vskill --plugin <name> --force --yes
+ * Each category is a standalone plugin (e.g., `frontend@vskill`, `backend@vskill`).
+ * Skills are invoked as `plugin:skill` (e.g., `frontend:nextjs`, `backend:dotnet`).
+ *
+ * v2.1.0: Split from monolithic `vs` plugin into per-category plugins for granularity.
  */
 export const VSKILL_PLUGINS = [
   'frontend',        // React, Vue, Angular, Next.js, UI components
@@ -165,29 +166,32 @@ export const VSKILL_PLUGINS = [
   'k8s',             // K8s, Helm, pods, deployments, EKS/AKS/GKE
   'payments',        // Stripe, PayPal, checkout
   'ml',              // Machine learning, PyTorch, TensorFlow
-  'kafka',           // Apache Kafka, event streaming
+  'kafka',           // Apache Kafka, event streaming, n8n
   'confluent',       // Confluent Cloud, Schema Registry, ksqlDB
-  'kafka-streams',   // Kafka Streams specific
-  'n8n',             // n8n workflow automation
   'cost',            // Cloud cost optimization
   'docs',            // Extended documentation
   'security',        // Security scanning and hardening
   'scout',           // Skill discovery — find and install skills
+  'blockchain',      // Web3, Solidity, smart contracts
 ] as const;
+
+/** @deprecated Use VSKILL_PLUGINS */
+export const VSKILL_CATEGORIES = VSKILL_PLUGINS;
 
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
 export type VskillPlugin = (typeof VSKILL_PLUGINS)[number];
+/** @deprecated Use VskillPlugin */
+export type VskillCategory = VskillPlugin;
 
 /**
- * Combined list of all known plugins for validation
- * v1.0.315 (0331): Includes both specweave and vskill repo plugins
+ * Combined list of all known plugins for validation.
+ * Includes specweave plugins and vskill marketplace plugins.
  */
 export const ALL_KNOWN_PLUGINS = [...SPECWEAVE_PLUGINS, ...VSKILL_PLUGINS] as const;
 export type KnownPlugin = SpecWeavePlugin | VskillPlugin;
 
 /**
- * All valid plugins — both specweave and vskill repo.
- * v1.0.315 (0331): Updated to include migrated vskill plugins.
+ * All valid plugins — specweave plugins and vskill plugins.
  */
 export const ALL_VALID_PLUGINS = ALL_KNOWN_PLUGINS;
 export type ValidPlugin = KnownPlugin;
@@ -200,16 +204,14 @@ export function isSpecWeavePlugin(plugin: string): plugin is SpecWeavePlugin {
 }
 
 /**
- * Check if a plugin is a vskill repo plugin (installed via --repo)
- * v1.0.315 (0331): New function for migrated plugins
+ * Check if a plugin is a vskill marketplace plugin.
  */
 export function isVskillPlugin(plugin: string): plugin is VskillPlugin {
   return VSKILL_PLUGINS.includes(plugin as VskillPlugin);
 }
 
 /**
- * Check if a plugin is any known plugin (specweave or vskill repo)
- * v1.0.315 (0331): Unified validation for both sources
+ * Check if a plugin is any known plugin (specweave or vskill).
  */
 export function isKnownPlugin(plugin: string): plugin is KnownPlugin {
   return (ALL_KNOWN_PLUGINS as readonly string[]).includes(plugin);
@@ -217,7 +219,7 @@ export function isKnownPlugin(plugin: string): plugin is KnownPlugin {
 
 /**
  * Get the marketplace name for a plugin.
- * v1.0.315 (0331): Returns 'specweave' for sw-* plugins, 'vskill' for migrated plugins.
+ * Returns 'specweave' for sw-* plugins, 'vskill' for domain skills.
  */
 export function getPluginMarketplace(plugin: string): string {
   if (isVskillPlugin(plugin)) {
@@ -308,13 +310,13 @@ export type SkillPriority = 'primary' | 'secondary';
  * Information about a skill to invoke
  */
 export interface SkillInfo {
-  /** Skill name (e.g., "frontend-architect") */
+  /** Skill name (e.g., "architect", "nextjs") */
   name: string;
 
-  /** Plugin that provides this skill (e.g., "frontend" or "sw-github") */
+  /** Plugin that provides this skill (e.g., "frontend", "backend", "sw-github") */
   plugin: string;
 
-  /** Full qualified name for invocation (e.g., "frontend:frontend-architect") */
+  /** Full qualified name for invocation (e.g., "frontend:architect", "backend:dotnet") */
   fullName: string;
 
   /** Priority level */
@@ -362,7 +364,7 @@ export interface SkillRouting {
  * NOTE: LSP plugins (csharp-lsp, typescript-lsp) are NOT skills - they work automatically!
  */
 export interface SkillInvocation {
-  /** Full skill name (e.g., "ml:ml-engineer", "payments:stripe-integration") */
+  /** Full skill name (e.g., "ml:engineer", "payments:core") */
   skill: string;
 
   /** Why this skill should be used */
@@ -527,19 +529,19 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
  */
 function buildDetectionPrompt(): string {
   return `You detect which plugins to load based on the user's prompt.
-Return specweave (sw-*) or vskill repo (no prefix) plugin names.
+Return specweave (sw-*) or vskill domain plugin names.
 
 DETECTION RULES:
 1. EXPLICIT tech - user says "React" → frontend, ".NET" → backend
 2. IMPLIED - "dashboard" needs API → backend
 3. Questions/discussions → ZERO plugins
-4. ONLY suggest @specweave plugins (sw-*) for workflow/integrations, or vskill plugins (no prefix) for domain skills
+4. ONLY suggest @specweave plugins (sw-*) for workflow/integrations, or vskill plugins for domain skills
 
 OUTPUT FORMAT (JSON only):
 {"plugins":["frontend"],"confidence":0.9,"reasoning":"one-line"}
 
 ═══════════════════════════════════════════════════════════════
-PLUGINS - Use specweave (sw-*) or vskill repo (no prefix) names
+PLUGINS - Use specweave (sw-*) or vskill domain plugin names
 ═══════════════════════════════════════════════════════════════
 
 frontend: React, Vue, Angular, Next.js, Svelte, UI, dashboard, components, Tailwind
@@ -646,34 +648,73 @@ EXAMPLES (one per action type — keep prompt size minimal)
 {"plugins":[],"confidence":0.8,"reasoning":"Investigation/debugging work","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"investigate-api-sync-failure","reasoning":"Multi-component investigation requiring structured tracking"}}
 
 ═══════════════════════════════════════════════════════════════
-SKILL INVOCATION (v1.0.168 - tell Claude which skills to use)
+SKILL INVOCATION (v2.1.0 - tell Claude which plugin:skill to use)
 ═══════════════════════════════════════════════════════════════
 
-ALSO specify which skills Claude SHOULD invoke for this task.
+ALSO specify which skill Claude SHOULD invoke for this task.
+Skills use "plugin:skill" format (e.g., "backend:dotnet", "frontend:nextjs").
 
 "skillInvocation" field with:
-- skill: full skill name (e.g., "ml:ml-engineer", "payments:stripe-integration")
+- skill: full skill name as plugin:skill (e.g., "ml:engineer", "payments:core")
 - reason: why this skill should be used
 - mandatory: true if Claude MUST use this skill, false if optional
 
 ⚠️ IMPORTANT: DO NOT suggest *-lsp plugins - they are BROKEN in official marketplace!
 LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
 
-SKILL INVOCATION RULES:
-- .NET/C# → backend:dotnet-backend MANDATORY
-- ML/AI → ml:ml-engineer MANDATORY
-- Payments → payments:stripe-integration MANDATORY
-- Testing → testing:unit-testing or testing:e2e-testing MANDATORY
-- Architecture → relevant architect skill recommended
+SKILL CATALOG (use exact plugin:skill names):
+frontend: frontend:core, frontend:architect, frontend:code-explorer, frontend:design, frontend:design-system, frontend:figma, frontend:i18n, frontend:nextjs
+backend: backend:db-optimizer, backend:dotnet, backend:go, backend:graphql, backend:java-spring, backend:nodejs, backend:python, backend:rust
+testing: testing:accessibility, testing:e2e, testing:mutation, testing:performance, testing:qa, testing:unit
+mobile: mobile:appstore, mobile:capacitor, mobile:deep-linking, mobile:expo, mobile:flutter, mobile:jetpack, mobile:react-native, mobile:swiftui, mobile:testing
+infra: infra:aws, infra:azure, infra:devops, infra:devsecops, infra:gcp, infra:github-actions, infra:observability, infra:opentelemetry, infra:secrets, infra:terraform
+k8s: k8s:gitops, k8s:helm, k8s:manifests, k8s:security
+ml: ml:data-scientist, ml:edge, ml:engineer, ml:fine-tuning, ml:huggingface, ml:langchain, ml:mlops, ml:rag, ml:specialist
+kafka: kafka:architect, kafka:ops, kafka:streams-topology, kafka:n8n
+confluent: confluent:kafka-connect, confluent:ksqldb, confluent:schema-registry
+payments: payments:core, payments:billing, payments:pci
+docs: docs:brainstorming, docs:docusaurus, docs:technical-writing
+cost: cost:aws, cost:cloud-pricing, cost:optimization
+security: security:core, security:patterns, security:simplifier
+blockchain: blockchain:core
+scout: scout:core
+
+SKILL INVOCATION RULES (pick the most specific skill):
+- .NET/C# → backend:dotnet MANDATORY
+- Go/Golang → backend:go MANDATORY
+- Python/FastAPI/Django → backend:python MANDATORY
+- Java/Spring → backend:java-spring MANDATORY
+- Rust → backend:rust MANDATORY
+- Node.js/Express/NestJS → backend:nodejs MANDATORY
+- GraphQL → backend:graphql MANDATORY
+- Next.js → frontend:nextjs MANDATORY
+- React/Vue/Angular → frontend:core MANDATORY
+- Figma design → frontend:figma MANDATORY
+- ML/AI → ml:engineer MANDATORY
+- Stripe/PayPal → payments:core MANDATORY
+- Unit testing → testing:unit MANDATORY
+- E2E testing → testing:e2e MANDATORY
+- React Native → mobile:react-native MANDATORY
+- Flutter → mobile:flutter MANDATORY
+- SwiftUI/iOS → mobile:swiftui MANDATORY
+- Jetpack/Android → mobile:jetpack MANDATORY
+- Expo → mobile:expo MANDATORY
+- Terraform → infra:terraform MANDATORY
+- AWS → infra:aws MANDATORY
+- Azure → infra:azure MANDATORY
+- GCP → infra:gcp MANDATORY
+- GitHub Actions → infra:github-actions MANDATORY
+- Kubernetes → k8s:manifests recommended
+- Architecture → frontend:architect or relevant architect skill recommended
 - DO NOT suggest *-lsp plugins (broken in marketplace)
 
 SKILL EXAMPLES:
 
 "Build .NET API with Entity Framework"
-{"plugins":["backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API"},"skillInvocation":{"skill":"backend:dotnet-backend","reason":".NET patterns and EF Core","mandatory":true}}
+{"plugins":["backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API"},"skillInvocation":{"skill":"backend:dotnet","reason":".NET patterns and EF Core","mandatory":true}}
 
 "Write unit tests for the auth service"
-{"plugins":["testing"],"confidence":0.95,"reasoning":"Unit testing","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing extends existing work"},"skillInvocation":{"skill":"testing:unit-testing","reason":"Vitest/Jest patterns and TDD","mandatory":true}}
+{"plugins":["testing"],"confidence":0.95,"reasoning":"Unit testing","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing extends existing work"},"skillInvocation":{"skill":"testing:unit","reason":"Vitest/Jest patterns and TDD","mandatory":true}}
 
 ═══════════════════════════════════════════════════════════════
 LSP OPERATION DETECTION (v1.0.198 - unified detection)
@@ -1082,7 +1123,7 @@ Which plugins should be loaded?`;
           continue;
         }
 
-        // Validate plugin name (v1.0.315: accept both specweave and vskill repo plugins)
+        // Validate plugin name (v2.1.0: accept both specweave and vskill plugins)
         if (!isKnownPlugin(skill.plugin)) {
           logger.debug(`Skipping skill with invalid plugin: ${skill.plugin}`);
           continue;
@@ -1270,10 +1311,10 @@ async function installSpecweaveLocalPlugin(
 /**
  * Install a vskill repo plugin via vskill add --repo
  *
- * v1.0.315 (0331): For plugins migrated from specweave to vskill repo.
+ * v2.1.0: Per-category plugins in vskill marketplace (frontend, backend, etc.).
  * Uses: vskill add dummy --repo anton-abyzov/vskill --plugin <name> --force --yes
  *
- * @param pluginName - Name of the migrated plugin (e.g., "frontend", "backend")
+ * @param pluginName - Name of the vskill plugin (e.g., "frontend", "backend")
  * @param timeout - Timeout in milliseconds
  * @returns Installation result
  */
@@ -1325,8 +1366,8 @@ async function installVskillRepoPlugin(
 /**
  * Install a plugin using vskill (routes to correct installer)
  *
- * v1.0.315 (0331): Routes to installSpecweaveLocalPlugin for sw-* plugins,
- * or installVskillRepoPlugin for migrated domain plugins.
+ * v2.1.0: Routes to installSpecweaveLocalPlugin for sw-* plugins,
+ * or installVskillRepoPlugin for vskill domain plugins.
  *
  * Fast-path: If plugin is already in vskill.lock, skip installation.
  *
@@ -1338,7 +1379,7 @@ export async function installPluginViaCli(
   pluginName: string,
   timeout: number = 30000
 ): Promise<PluginInstallResult> {
-  // v1.0.315: Accept both specweave and vskill repo plugins
+  // v2.1.0: Accept both specweave and vskill plugins
   if (!isKnownPlugin(pluginName)) {
     return {
       success: false,

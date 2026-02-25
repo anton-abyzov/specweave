@@ -63,7 +63,7 @@ if [ $ERRORS -gt 0 ]; then
                 echo "✓ Marketplace reinstalled"
 
                 # Install core plugins
-                for plugin in sw sw-github sw-jira sw-ado sw-infra sw-testing; do
+                for plugin in sw sw-github sw-jira sw-ado infra testing; do
                     claude plugin install "$plugin" 2>/dev/null && echo "  ✓ $plugin"
                 done
 

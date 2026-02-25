@@ -16,7 +16,7 @@ import * as path from 'path';
 export interface ActivationRecord {
   timestamp: string;
   type: 'skill' | 'agent';
-  fqn: string;  // Fully qualified name (e.g., "sw-frontend:frontend-architect")
+  fqn: string;  // Fully qualified name (e.g., "frontend:architect")
   domain: string;  // Detected domain (frontend, backend, mobile, etc.)
   trigger: string;  // What triggered it (keyword, prompt snippet)
   confidence: number;

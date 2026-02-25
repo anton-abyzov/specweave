@@ -23,7 +23,7 @@ describe('Handoff Context Generator', () => {
       it('should include summary of session accomplishments', () => {
         // Given: Session state with installed plugins
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Create a React dashboard',
         };
@@ -57,7 +57,7 @@ describe('Handoff Context Generator', () => {
       it('should list all installed plugins', () => {
         // Given: Multiple plugins installed
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend', 'sw-payments'],
+          plugins: ['sw', 'frontend', 'payments'],
           projectPath: '/path/to/project',
         };
 
@@ -65,7 +65,7 @@ describe('Handoff Context Generator', () => {
         const context = generateHandoffContext(options);
 
         // Then: all plugins should be listed
-        expect(context.plugins).toEqual(['sw', 'sw-frontend', 'sw-payments']);
+        expect(context.plugins).toEqual(['sw', 'frontend', 'payments']);
       });
     });
 
@@ -118,7 +118,7 @@ describe('Handoff Context Generator', () => {
       it('should list available skills for installed plugins', () => {
         // Given: Plugins with known skills
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
         };
 
@@ -147,10 +147,10 @@ describe('Handoff Context Generator', () => {
         expect(skillNames).toContain('/sw:done');
       });
 
-      it('should map sw-frontend to frontend skills', () => {
+      it('should map frontend to frontend skills', () => {
         // Given: Frontend plugin installed
         const options: HandoffContextOptions = {
-          plugins: ['sw-frontend'],
+          plugins: ['frontend'],
           projectPath: '/path/to/project',
         };
 
@@ -187,7 +187,7 @@ describe('Handoff Context Generator', () => {
       it('should generate suggested continuation prompt', () => {
         // Given: Complete session state
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Create React dashboard',
         };
@@ -222,7 +222,7 @@ describe('Handoff Context Generator', () => {
       it('should format context as copy-paste ready text', () => {
         // Given: Complete session state
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Create React dashboard',
         };
@@ -252,7 +252,7 @@ describe('Handoff Context Generator', () => {
       it('should include all plugins in formatted text', () => {
         // Given: Multiple plugins
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend', 'sw-backend'],
+          plugins: ['sw', 'frontend', 'backend'],
           projectPath: '/path/to/project',
         };
 
@@ -261,8 +261,8 @@ describe('Handoff Context Generator', () => {
 
         // Then: all plugins should appear
         expect(text).toContain('sw');
-        expect(text).toContain('sw-frontend');
-        expect(text).toContain('sw-backend');
+        expect(text).toContain('frontend');
+        expect(text).toContain('backend');
       });
 
       it('should include continuation instructions', () => {
@@ -283,7 +283,7 @@ describe('Handoff Context Generator', () => {
       it('should have clear section headers', () => {
         // Given: Complete options
         const options: HandoffContextOptions = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: '/path/to/project',
           originalIntent: 'Create dashboard',
         };
