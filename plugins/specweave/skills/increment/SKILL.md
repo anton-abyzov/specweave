@@ -22,6 +22,10 @@ hooks:
       hooks:
         - type: command
           command: bash plugins/specweave/hooks/v2/guards/increment-duplicate-guard.sh
+    - matcher: Skill|Task
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/dispatchers/post-tool-use-analytics.sh
 ---
 
 # Plan Product Increment
