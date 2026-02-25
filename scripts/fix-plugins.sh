@@ -88,7 +88,7 @@ EXTRA_PLUGINS=(
     "docs"
     "cost"
     "security"
-    "scout"
+    "skills"
 )
 
 for plugin in "${EXTRA_PLUGINS[@]}"; do
