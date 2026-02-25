@@ -69,7 +69,7 @@ for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
 // All vskill plugins with manifests
 const VSKILL_PLUGINS_WITH_MANIFESTS = [
   'frontend', 'backend', 'testing', 'mobile', 'infra', 'k8s', 'ml',
-  'kafka', 'confluent', 'payments', 'docs', 'cost', 'security', 'scout', 'blockchain',
+  'kafka', 'confluent', 'payments', 'docs', 'cost', 'security', 'skills', 'blockchain',
 ];
 
 function parseFrontmatter(content: string): {
