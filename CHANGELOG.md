@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.324] - 2026-02-25
+
+### Changes
+- remove deprecated claude settings
+- add owner to marketplace.json, support --force for blocked skills
+- remove dead scripts, screenshots, and deprecated utilities
+
+---
+
+
+
 ## [1.0.322] - 2026-02-25
 
 ### Changes
