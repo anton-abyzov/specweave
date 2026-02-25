@@ -171,7 +171,7 @@ export const VSKILL_PLUGINS = [
   'cost',            // Cloud cost optimization
   'docs',            // Extended documentation
   'security',        // Security scanning and hardening
-  'scout',           // Skill discovery — find and install skills
+  'skills',          // Skill discovery — find and install skills
   'blockchain',      // Web3, Solidity, smart contracts
 ] as const;
 
@@ -677,7 +677,7 @@ docs: docs:brainstorming, docs:docusaurus, docs:technical-writing
 cost: cost:aws, cost:cloud-pricing, cost:optimization
 security: security:security-core, security:patterns, security:simplifier
 blockchain: blockchain:blockchain-core
-scout: scout:scout
+skills: skills:scout
 
 SKILL INVOCATION RULES (pick the most specific skill):
 - .NET/C# → backend:dotnet MANDATORY
