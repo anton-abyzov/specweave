@@ -82,14 +82,14 @@ All domain experts are now skills with `context: fork`:
 
 | Domain | Skill | Triggers (Auto-activate) |
 |--------|-------|--------------------------|
-| **Frontend** | `sw-frontend:frontend-architect` | React, Vue, Next.js, dashboard, component, UI |
-| **Backend** | `sw-backend:database-optimizer` | API, database, SQL, PostgreSQL, optimization |
-| **Payments** | `sw-payments:payment-integration` | Stripe, PayPal, checkout, billing, subscriptions |
-| **Testing** | `sw-testing:qa-engineer` | E2E, Playwright, Vitest, Jest, TDD, QA |
-| **Kubernetes** | `sw-k8s:kubernetes-architect` | K8s, pods, deployments, Helm, GitOps |
-| **Infrastructure** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
-| **Mobile** | `sw-mobile:react-native-expert` | React Native, iOS, Android, Expo |
-| **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, TensorFlow, PyTorch |
+| **Frontend** | `frontend:architect` | React, Vue, Next.js, dashboard, component, UI |
+| **Backend** | `backend:database-optimizer` | API, database, SQL, PostgreSQL, optimization |
+| **Payments** | `payments:payment-integration` | Stripe, PayPal, checkout, billing, subscriptions |
+| **Testing** | `testing:qa` | E2E, Playwright, Vitest, Jest, TDD, QA |
+| **Kubernetes** | `k8s:kubernetes-architect` | K8s, pods, deployments, Helm, GitOps |
+| **Infrastructure** | `infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
+| **Mobile** | `mobile:react-native-expert` | React Native, iOS, Android, Expo |
+| **ML/AI** | `ml:ml-engineer` | ML, model, training, TensorFlow, PyTorch |
 | **Diagrams** | `sw-diagrams:diagrams` | Mermaid, C4, architecture diagram, flowchart |
 | **Release** | `sw-release:release-expert` | release, version, changelog, npm publish |
 
@@ -102,8 +102,8 @@ All run in isolated context without polluting the main conversation.
 **What happens:**
 1. Claude detects keywords: "React", "dashboard", "Stripe", "checkout"
 2. Skills auto-activate (primary mechanism):
-   - `sw-frontend:frontend-architect` (React, dashboard)
-   - `sw-payments:payment-integration` (Stripe, checkout)
+   - `frontend:architect` (React, dashboard)
+   - `payments:payment-integration` (Stripe, checkout)
 3. Each skill runs in isolated context (`context: fork`)
 4. Results return to main conversation
 
@@ -113,7 +113,7 @@ All run in isolated context without polluting the main conversation.
 
 ```typescript
 // If auto-activation didn't work, explicitly invoke:
-Skill({ skill: "sw-frontend:frontend-architect", args: "dashboard" })
+Skill({ skill: "frontend:architect", args: "dashboard" })
 ```
 
 ## Migration Complete
@@ -152,8 +152,8 @@ plugins/specweave-frontend/
 
 ### Q: How do I invoke a skill explicitly?
 **A:** Two ways:
-1. **User**: Type `/sw-frontend:frontend-architect` in chat
-2. **Claude**: Use `Skill({ skill: "sw-frontend:frontend-architect" })` when auto-activation didn't trigger
+1. **User**: Type `/frontend:architect` in chat
+2. **Claude**: Use `Skill({ skill: "frontend:architect" })` when auto-activation didn't trigger
 
 Usually just describe what you need - skills auto-activate on keywords. Use explicit invocation as fallback.
 

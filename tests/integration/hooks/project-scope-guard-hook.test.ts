@@ -73,7 +73,7 @@ describe('Project-Scope Guard in Hook', () => {
 
     it('should block plugin-namespaced skills', () => {
       const result = executeHook(
-        { prompt: '/sw-frontend:component-generate' },
+        { prompt: '/frontend:component-generate' },
         tempDir
       );
 
@@ -153,7 +153,7 @@ describe('Project-Scope Guard in Hook', () => {
 
     it('should NOT block plugin-namespaced skills', () => {
       const result = executeHook(
-        { prompt: '/sw-frontend:component-generate' },
+        { prompt: '/frontend:component-generate' },
         tempDir
       );
 

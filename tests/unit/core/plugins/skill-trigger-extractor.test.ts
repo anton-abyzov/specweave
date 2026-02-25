@@ -1776,13 +1776,13 @@ description: Kubernetes expert. Activates for: kubernetes, k8s, helm, EKS, GKE.
 `;
 
       const reactTriggers = extractor.extractFromContent(
-        reactSkillContent, 'react-expert', 'sw-frontend', 'skill', '/p1'
+        reactSkillContent, 'react-expert', 'frontend', 'skill', '/p1'
       );
       const djangoTriggers = extractor.extractFromContent(
-        djangoSkillContent, 'django-expert', 'sw-backend', 'skill', '/p2'
+        djangoSkillContent, 'django-expert', 'backend', 'skill', '/p2'
       );
       const k8sTriggers = extractor.extractFromContent(
-        k8sSkillContent, 'k8s-expert', 'sw-infra', 'skill', '/p3'
+        k8sSkillContent, 'k8s-expert', 'infra', 'skill', '/p3'
       );
 
       const index = extractor.buildIndex([reactTriggers, djangoTriggers, k8sTriggers]);
@@ -1792,7 +1792,7 @@ description: Kubernetes expert. Activates for: kubernetes, k8s, helm, EKS, GKE.
         'Build a Next.js app with React and Tailwind CSS',
         index
       );
-      expect(reactMatches[0].fqn).toBe('sw-frontend:react-expert');
+      expect(reactMatches[0].fqn).toBe('frontend:react-expert');
 
       // Test 2: Django-specific prompt
       const djangoMatches = extractor.matchPrompt(
@@ -1800,14 +1800,14 @@ description: Kubernetes expert. Activates for: kubernetes, k8s, helm, EKS, GKE.
         index
       );
       const djangoFqns = djangoMatches.map(m => m.fqn);
-      expect(djangoFqns).toContain('sw-backend:django-expert');
+      expect(djangoFqns).toContain('backend:django-expert');
 
       // Test 3: K8s-specific prompt
       const k8sMatches = extractor.matchPrompt(
         'Deploy to EKS with helm charts',
         index
       );
-      expect(k8sMatches[0].fqn).toBe('sw-infra:k8s-expert');
+      expect(k8sMatches[0].fqn).toBe('infra:k8s-expert');
 
       // Test 4: Multi-domain prompt
       const multiMatches = extractor.matchPrompt(

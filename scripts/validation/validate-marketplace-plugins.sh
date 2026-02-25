@@ -138,7 +138,7 @@ map_plugin_to_dir() {
         sw-ado) echo "specweave-ado" ;;
         sw-release) echo "specweave-release" ;;
         sw-diagrams) echo "specweave-diagrams" ;;
-        sw-docs) echo "specweave-docs" ;;
+        docs) echo "specweave-docs" ;;
         sw-media) echo "specweave-media" ;;
         *) echo "$plugin_name" ;;  # Default: use as-is
     esac

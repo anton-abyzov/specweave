@@ -7,10 +7,10 @@ sidebar_label: QA Lead Agent
 # QA Lead Agent (Deprecated)
 
 :::note
-The `qa-lead` skill has been removed from the core plugin. Use `sw-testing:qa-engineer` instead, which provides the same QA strategy and test coverage capabilities.
+The `qa-lead` skill has been removed from the core plugin. Use `testing:qa` instead, which provides the same QA strategy and test coverage capabilities.
 :::
 
-The **QA Engineer Agent** (`sw-testing:qa-engineer`) is SpecWeave's AI-powered Quality Assurance specialist that handles test strategy, test case generation, and coverage validation.
+The **QA Engineer Agent** (`testing:qa`) is SpecWeave's AI-powered Quality Assurance specialist that handles test strategy, test case generation, and coverage validation.
 
 ## What It Does
 

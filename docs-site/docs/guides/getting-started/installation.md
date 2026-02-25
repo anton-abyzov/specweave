@@ -126,7 +126,7 @@ your-project/
 │   │   ├── pm/               # Product Manager AI
 │   │   ├── architect/        # System Architect
 │   │   ├── tech-lead/        # Tech Lead
-│   │   ├── qa-engineer/      # QA Engineer (sw-testing plugin)
+│   │   ├── qa-engineer/      # QA Engineer (testing plugin)
 │   │   ├── security/         # Security Engineer
 │   │   ├── performance/      # Performance Engineer
 │   │   ├── docs-writer/      # Technical Documentation

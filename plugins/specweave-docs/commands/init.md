@@ -9,7 +9,7 @@ Initialize a Docusaurus documentation site with spec-driven documentation struct
 ## Usage
 
 ```
-/sw-docs:init [options]
+/docs:init [options]
 ```
 
 ## What I Do
@@ -287,29 +287,29 @@ themeConfig: {
 
 ### Basic Initialization
 ```bash
-/sw-docs:docs-init
+/docs:docs-init
 ```
 
 ### TypeScript with Mermaid
 ```bash
-/sw-docs:docs-init --typescript --mermaid
+/docs:docs-init --typescript --mermaid
 ```
 
 ### Material Theme with Versioning
 ```bash
-/sw-docs:docs-init --template material --versioning
+/docs:docs-init --template material --versioning
 ```
 
 ### Custom Output Directory
 ```bash
-/sw-docs:init --output ./documentation
+/docs:init --output ./documentation
 ```
 
 ## Related Commands
 
-- `/sw-docs:generate` - Generate docs from code/specs
-- `/sw-docs:view` - Launch documentation server
-- `/sw-docs:build` - Build static documentation site
+- `/docs:generate` - Generate docs from code/specs
+- `/docs:view` - Launch documentation server
+- `/docs:build` - Build static documentation site
 
 ## Requirements
 

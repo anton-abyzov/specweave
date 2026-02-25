@@ -19,19 +19,19 @@ When folders grow beyond 30+ files, navigation becomes painful:
 
 ```bash
 # Analyze and organize all internal docs
-/sw-docs:organize
+/docs:organize
 
 # Analyze specific folder only
-/sw-docs:organize --folder architecture/adr
+/docs:organize --folder architecture/adr
 
 # Preview without generating files
-/sw-docs:organize --dry-run
+/docs:organize --dry-run
 
 # Force regeneration even if under threshold
-/sw-docs:organize --force
+/docs:organize --force
 
 # Set custom threshold (default: 30)
-/sw-docs:organize --threshold 20
+/docs:organize --threshold 20
 ```
 
 ## Your Task
@@ -160,7 +160,7 @@ Generated 9 index files:
 After running this command, use:
 
 ```bash
-/sw-docs:view
+/docs:view
 ```
 
 The generated indexes will appear in the sidebar:
@@ -178,6 +178,6 @@ The generated indexes will appear in the sidebar:
 
 ## See Also
 
-- `/sw-docs:view` - View documentation with Docusaurus
-- `/sw-docs:build` - Build static documentation site
-- `/sw-docs:health` - Documentation health report
+- `/docs:view` - View documentation with Docusaurus
+- `/docs:build` - Build static documentation site
+- `/docs:health` - Documentation health report

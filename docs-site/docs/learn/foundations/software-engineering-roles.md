@@ -47,7 +47,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 
 ### Quality & Testing Agents
 
-**4. QA Engineer Agent** (`sw-testing:qa-engineer`)
+**4. QA Engineer Agent** (`testing:qa`)
 - **Role**: QA Engineer
 - **Expertise**: Test strategy, test planning, quality gates
 - **Activates**: When planning test coverage, validating quality
@@ -296,7 +296,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 - Report bugs with reproduction steps
 - Validate features against acceptance criteria
 
-**SpecWeave Agents: QA Engineer + Test-Aware Planner** (`sw-testing:qa-engineer`, `test-aware-planner`)
+**SpecWeave Agents: QA Engineer + Test-Aware Planner** (`testing:qa`, `test-aware-planner`)
 
 **How QA Agents Help**:
 

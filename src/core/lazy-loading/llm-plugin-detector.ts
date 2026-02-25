@@ -364,7 +364,7 @@ export interface SkillRouting {
  * NOTE: LSP plugins (csharp-lsp, typescript-lsp) are NOT skills - they work automatically!
  */
 export interface SkillInvocation {
-  /** Full skill name (e.g., "ml:engineer", "payments:core") */
+  /** Full skill name (e.g., "ml:engineer", "payments:payment-core") */
   skill: string;
 
   /** Why this skill should be used */
@@ -655,7 +655,7 @@ ALSO specify which skill Claude SHOULD invoke for this task.
 Skills use "plugin:skill" format (e.g., "backend:dotnet", "frontend:nextjs").
 
 "skillInvocation" field with:
-- skill: full skill name as plugin:skill (e.g., "ml:engineer", "payments:core")
+- skill: full skill name as plugin:skill (e.g., "ml:engineer", "payments:payment-core")
 - reason: why this skill should be used
 - mandatory: true if Claude MUST use this skill, false if optional
 
@@ -663,7 +663,7 @@ Skills use "plugin:skill" format (e.g., "backend:dotnet", "frontend:nextjs").
 LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
 
 SKILL CATALOG (use exact plugin:skill names):
-frontend: frontend:core, frontend:architect, frontend:code-explorer, frontend:design, frontend:design-system, frontend:figma, frontend:i18n, frontend:nextjs
+frontend: frontend:frontend-core, frontend:architect, frontend:code-explorer, frontend:design, frontend:design-system, frontend:figma, frontend:i18n, frontend:nextjs
 backend: backend:db-optimizer, backend:dotnet, backend:go, backend:graphql, backend:java-spring, backend:nodejs, backend:python, backend:rust
 testing: testing:accessibility, testing:e2e, testing:mutation, testing:performance, testing:qa, testing:unit
 mobile: mobile:appstore, mobile:capacitor, mobile:deep-linking, mobile:expo, mobile:flutter, mobile:jetpack, mobile:react-native, mobile:swiftui, mobile:testing
@@ -672,12 +672,12 @@ k8s: k8s:gitops, k8s:helm, k8s:manifests, k8s:security
 ml: ml:data-scientist, ml:edge, ml:engineer, ml:fine-tuning, ml:huggingface, ml:langchain, ml:mlops, ml:rag, ml:specialist
 kafka: kafka:architect, kafka:ops, kafka:streams-topology, kafka:n8n
 confluent: confluent:kafka-connect, confluent:ksqldb, confluent:schema-registry
-payments: payments:core, payments:billing, payments:pci
+payments: payments:payment-core, payments:billing, payments:pci
 docs: docs:brainstorming, docs:docusaurus, docs:technical-writing
 cost: cost:aws, cost:cloud-pricing, cost:optimization
-security: security:core, security:patterns, security:simplifier
-blockchain: blockchain:core
-scout: scout:core
+security: security:security-core, security:patterns, security:simplifier
+blockchain: blockchain:blockchain-core
+scout: scout:scout
 
 SKILL INVOCATION RULES (pick the most specific skill):
 - .NET/C# → backend:dotnet MANDATORY
@@ -688,10 +688,10 @@ SKILL INVOCATION RULES (pick the most specific skill):
 - Node.js/Express/NestJS → backend:nodejs MANDATORY
 - GraphQL → backend:graphql MANDATORY
 - Next.js → frontend:nextjs MANDATORY
-- React/Vue/Angular → frontend:core MANDATORY
+- React/Vue/Angular → frontend:frontend-core MANDATORY
 - Figma design → frontend:figma MANDATORY
 - ML/AI → ml:engineer MANDATORY
-- Stripe/PayPal → payments:core MANDATORY
+- Stripe/PayPal → payments:payment-core MANDATORY
 - Unit testing → testing:unit MANDATORY
 - E2E testing → testing:e2e MANDATORY
 - React Native → mobile:react-native MANDATORY
@@ -1542,7 +1542,7 @@ Plugin auto-loading is disabled. Install Claude CLI to enable automatic plugin d
       const pluginList = detection.plugins.join(', ');
       output.systemMessage = `SpecWeave: Plugins that may help: ${pluginList}
 
-To install: claude plugin install <plugin>@specweave
+To install: claude plugin install <plugin>@vskill
 After installing, restart Claude Code session to use new plugins.`;
       return JSON.stringify(output);
     }

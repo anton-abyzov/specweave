@@ -39,7 +39,7 @@ describe.skip('Session Warning CLI Command', () => {
       it('should accept plugins list as argument', () => {
         // Given: Plugins list provided
         const args: SessionWarningArgs = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: tempDir,
         };
 
@@ -84,7 +84,7 @@ describe.skip('Session Warning CLI Command', () => {
       it('should display warning to stdout', () => {
         // Given: Plugins and project path
         const args: SessionWarningArgs = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: tempDir,
         };
 
@@ -98,7 +98,7 @@ describe.skip('Session Warning CLI Command', () => {
       it('should list all installed plugins', () => {
         // Given: Multiple plugins
         const args: SessionWarningArgs = {
-          plugins: ['sw', 'sw-frontend', 'sw-backend'],
+          plugins: ['sw', 'frontend', 'backend'],
           projectPath: tempDir,
         };
 
@@ -107,8 +107,8 @@ describe.skip('Session Warning CLI Command', () => {
 
         // Then: all plugins should be listed
         expect(result.output).toContain('sw');
-        expect(result.output).toContain('sw-frontend');
-        expect(result.output).toContain('sw-backend');
+        expect(result.output).toContain('frontend');
+        expect(result.output).toContain('backend');
       });
 
       it('should include restart instructions', () => {
@@ -177,7 +177,7 @@ describe.skip('Session Warning CLI Command', () => {
       it('should include handoff context when original intent provided', () => {
         // Given: Original intent
         const args: SessionWarningArgs = {
-          plugins: ['sw', 'sw-frontend'],
+          plugins: ['sw', 'frontend'],
           projectPath: tempDir,
           originalIntent: 'Create a React dashboard',
         };
@@ -221,7 +221,7 @@ describe.skip('Session Warning CLI Command', () => {
     it('should format plugins as bullet list', () => {
       // Given: Multiple plugins
       const output = formatSessionWarningOutput({
-        plugins: ['sw', 'sw-frontend', 'sw-backend'],
+        plugins: ['sw', 'frontend', 'backend'],
         projectPath: tempDir,
       });
 
@@ -247,14 +247,14 @@ describe.skip('Session Warning CLI Command', () => {
       const { recordPluginInstallation } = await import(
         '../../../src/core/session/session-state.js'
       );
-      recordPluginInstallation(tempDir, ['sw', 'sw-frontend'], {
+      recordPluginInstallation(tempDir, ['sw', 'frontend'], {
         trigger: 'specweave-init',
         projectPath: tempDir,
       });
 
       // When: session-warning command runs
       const args: SessionWarningArgs = {
-        plugins: ['sw', 'sw-frontend'],
+        plugins: ['sw', 'frontend'],
         projectPath: tempDir,
       };
       const result = runSessionWarningCommand(args);

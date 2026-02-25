@@ -337,17 +337,17 @@ SpecWeave's `marketplace.json` registers **22 plugins** with **126 skills** tota
 | Plugin | Skills | Domain |
 |--------|--------|--------|
 | `sw` (core) | 37 | Workflow, PM, TDD, team orchestration |
-| `sw-frontend` | 7 | React, Next.js, Vue, design systems |
-| `sw-backend` | 8 | Node.js, Python, .NET, Go, Java, GraphQL, Rust |
-| `sw-testing` | 5 | QA, E2E, unit, mutation, performance |
-| `sw-infra` | 10 | Terraform, AWS, GCP, monitoring |
-| `sw-mobile` | 10 | React Native, Flutter, SwiftUI, Compose |
-| `sw-k8s` | 6 | Kubernetes, Helm, GitOps |
+| `frontend` | 7 | React, Next.js, Vue, design systems |
+| `backend` | 8 | Node.js, Python, .NET, Go, Java, GraphQL, Rust |
+| `testing` | 5 | QA, E2E, unit, mutation, performance |
+| `infra` | 10 | Terraform, AWS, GCP, monitoring |
+| `mobile` | 10 | React Native, Flutter, SwiftUI, Compose |
+| `k8s` | 6 | Kubernetes, Helm, GitOps |
 | `sw-github` | 10 | GitHub sync |
 | `sw-jira` | 10 | JIRA sync |
-| `sw-ml` | 10 | ML pipelines, RAG, fine-tuning |
-| `sw-payments` | 6 | Stripe, billing, PCI compliance |
-| `sw-docs` | 8 | Docusaurus, living docs |
+| `ml` | 10 | ML pipelines, RAG, fine-tuning |
+| `payments` | 6 | Stripe, billing, PCI compliance |
+| `docs` | 8 | Docusaurus, living docs |
 | ...and more | | |
 
 ### Simple vs Complex Skills
@@ -395,7 +395,7 @@ Skills invoke other skills for multi-step workflows:
 /sw:increment "user auth"
     → sw:pm skill activates (Product Manager writes spec)
         → sw:architect skill activates (designs the system)
-            → sw-backend:nodejs-backend activates (implements)
+            → backend:nodejs activates (implements)
 ```
 
 ### Dynamic Context Injection
@@ -415,9 +415,9 @@ This loads "skill memories" — corrections you've made that persist across sess
 
 You don't install 22 plugins manually. SpecWeave plugins load based on what you're working on:
 
-- Say "React frontend" → `sw-frontend` activates
-- Say "deploy to Kubernetes" → `sw-k8s` activates
-- Say "write tests" → `sw-testing` activates
+- Say "React frontend" → `frontend` activates
+- Say "deploy to Kubernetes" → `k8s` activates
+- Say "write tests" → `testing` activates
 
 ---
 

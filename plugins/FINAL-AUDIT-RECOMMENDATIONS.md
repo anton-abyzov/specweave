@@ -67,10 +67,10 @@ These have **explicit task instructions** (e.g., "create tests", "generate code"
 
 | Skill | Has Explicit Task? | Keep `context: fork`? |
 |-------|-------------------|----------------------|
-| `qa-engineer` (sw-testing) | ✅ "Creates test suites ONE FILE AT A TIME" | ✅ Keep |
+| `qa-engineer` (testing) | ✅ "Creates test suites ONE FILE AT A TIME" | ✅ Keep |
 | `tech-lead` | ✅ "Implements code ONE FILE AT A TIME" | ✅ Keep |
 | `docs-writer` | ✅ "Generates docs ONE SECTION AT A TIME" | ✅ Keep |
-| `devops` (sw-infra) | ✅ "Generates IaC ONE LAYER AT A TIME" | ✅ Keep |
+| `devops` (infra) | ✅ "Generates IaC ONE LAYER AT A TIME" | ✅ Keep |
 | `increment` | ✅ Creates increment structure | ✅ Keep |
 | `test-aware-planner` | ✅ Generates tasks.md with tests | ✅ Keep |
 | `tdd-cycle` | ✅ Coordinates TDD workflow | ✅ Keep |
@@ -153,7 +153,7 @@ disable-model-invocation: true
 |---------|-------|--------------|---------|
 | `reflect.md` | `reflect/SKILL.md` | **Complementary** | Command is workflow, skill is knowledge |
 | `translate.md` | `translator/SKILL.md` | **Complementary** | Command is batch workflow, skill is expertise |
-| `qa.md` | `sw-testing:qa-engineer` | **Complementary** | Command runs CLI, skill creates tests |
+| `qa.md` | `testing:qa` | **Complementary** | Command runs CLI, skill creates tests |
 | `plan.md` | `increment/SKILL.md` | **Complementary** | Command for existing, skill for new increments |
 | `tdd-cycle.md` | `tdd-cycle/SKILL.md` | **Complementary** | Command starts workflow, skill orchestrates |
 

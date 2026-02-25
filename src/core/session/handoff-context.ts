@@ -187,7 +187,7 @@ const PLUGIN_SKILLS: Record<string, Skill[]> = {
   ],
   'payments': [
     {
-      name: 'payments:core',
+      name: 'payments:payment-core',
       description: 'Stripe payment integration',
       category: 'payments',
     },
@@ -372,7 +372,7 @@ function generateContinuationPrompt(
  * @example
  * ```typescript
  * const context = generateHandoffContext({
- *   plugins: ['sw', 'sw-frontend'],
+ *   plugins: ['sw', 'frontend'],
  *   projectPath: '/path/to/project',
  *   originalIntent: 'Create React dashboard'
  * });
@@ -419,7 +419,7 @@ export function generateHandoffContext(
  * @example
  * ```typescript
  * const text = formatHandoffText({
- *   plugins: ['sw', 'sw-frontend'],
+ *   plugins: ['sw', 'frontend'],
  *   projectPath: '/path/to/project',
  *   originalIntent: 'Create React dashboard'
  * });

@@ -7,7 +7,7 @@
  * 3. Skill({ skill: "..." }) syntax is correctly generated
  * 4. Non-mandatory skills show as recommendations (not required)
  *
- * This ensures domain skills (csharp-lsp, sw-ml:ml-engineer, etc.) are
+ * This ensures domain skills (csharp-lsp, ml:engineer, etc.) are
  * invoked when plugins are installed.
  *
  * @since 1.0.168
@@ -185,7 +185,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-ml:ml-engineer',
+          skill: 'ml:engineer',
           reason: 'Building a machine learning model requires ML expertise',
           mandatory: true
         }
@@ -200,7 +200,7 @@ exit 1
       // Compact format (v1.0.260+): uses "MANDATORY: Also call" prefix
       expect(additionalContext).toBeTruthy();
       expect(additionalContext).toContain('MANDATORY');
-      expect(additionalContext).toContain('sw-ml:ml-engineer');
+      expect(additionalContext).toContain('ml:engineer');
     });
 
     it('should include Skill tool syntax for mandatory skills', async () => {
@@ -215,7 +215,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-backend:dotnet-backend',
+          skill: 'backend:dotnet',
           reason: '.NET development requires backend skill for patterns and best practices',
           mandatory: true
         }
@@ -227,7 +227,7 @@ exit 1
 
       // Should include explicit Skill tool syntax (note: LSP plugins work automatically, not as skills)
       expect(additionalContext).toContain('Skill({');
-      expect(additionalContext).toContain('sw-backend:dotnet-backend');
+      expect(additionalContext).toContain('backend:dotnet');
     });
 
     it('should include MANDATORY label and call BEFORE instruction', async () => {
@@ -242,7 +242,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-frontend:frontend-architect',
+          skill: 'frontend:architect',
           reason: 'Complex React dashboard needs frontend architecture expertise',
           mandatory: true
         }
@@ -271,7 +271,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-testing:qa-engineer',
+          skill: 'testing:qa',
           reason: 'Testing could benefit from QA expertise',
           mandatory: false // Non-mandatory
         }
@@ -286,7 +286,7 @@ exit 1
         expect(additionalContext).not.toContain('MANDATORY');
 
         // Should show as recommendation
-        expect(additionalContext).toContain('sw-testing:qa-engineer');
+        expect(additionalContext).toContain('testing:qa');
         expect(additionalContext).toMatch(/Recommended|Consider/i);
       }
     });
@@ -303,7 +303,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-backend:database-optimizer',
+          skill: 'backend:database-optimizer',
           reason: 'Database operations might benefit from optimization',
           mandatory: false
         }
@@ -316,7 +316,7 @@ exit 1
       if (additionalContext) {
         // Should still include Skill syntax for easy invocation
         expect(additionalContext).toContain('Skill({');
-        expect(additionalContext).toContain('sw-backend:database-optimizer');
+        expect(additionalContext).toContain('backend:database-optimizer');
       }
     });
   });
@@ -385,16 +385,16 @@ exit 1
         routing: {
           skills: [
             {
-              plugin: 'sw-infra',
+              plugin: 'infra',
               name: 'devops',
-              fullName: 'sw-infra:devops',
+              fullName: 'infra:devops',
               priority: 'primary',
               reason: 'Infrastructure work'
             }
           ]
         },
         skillInvocation: {
-          skill: 'sw-k8s:kubernetes-architect',
+          skill: 'k8s:architect',
           reason: 'Kubernetes-specific deployment needs K8s expertise',
           mandatory: true
         }
@@ -406,7 +406,7 @@ exit 1
 
       // Should use skillInvocation (kubernetes-architect) not routing (devops)
       // Compact format (v1.0.260+): uses "MANDATORY: Also call" prefix
-      expect(additionalContext).toContain('sw-k8s:kubernetes-architect');
+      expect(additionalContext).toContain('k8s:architect');
       expect(additionalContext).toContain('MANDATORY');
     });
 
@@ -423,9 +423,9 @@ exit 1
         routing: {
           skills: [
             {
-              plugin: 'sw-infra',
+              plugin: 'infra',
               name: 'devops',
-              fullName: 'sw-infra:devops',
+              fullName: 'infra:devops',
               priority: 'primary',
               reason: 'Terraform infrastructure'
             }
@@ -442,7 +442,7 @@ exit 1
       if (additionalContext) {
         // Should have Task tool syntax (not Skill)
         expect(additionalContext).toContain('Task({');
-        expect(additionalContext).toContain('sw-infra');
+        expect(additionalContext).toContain('infra');
       }
     });
   });
@@ -451,37 +451,37 @@ exit 1
     const skillScenarios = [
       {
         name: 'Frontend React',
-        skill: 'sw-frontend:frontend-architect',
+        skill: 'frontend:architect',
         prompt: 'Build a React component library',
         reason: 'React component development'
       },
       {
         name: 'Backend .NET',
-        skill: 'sw-backend:dotnet-backend',
+        skill: 'backend:dotnet',
         prompt: 'Create ASP.NET Core Web API',
         reason: '.NET backend development'
       },
       {
         name: 'Machine Learning',
-        skill: 'sw-ml:ml-engineer',
+        skill: 'ml:engineer',
         prompt: 'Train a neural network for image classification',
         reason: 'Machine learning model training'
       },
       {
         name: 'Kubernetes',
-        skill: 'sw-k8s:kubernetes-architect',
+        skill: 'k8s:architect',
         prompt: 'Set up Kubernetes cluster with Helm',
         reason: 'Kubernetes orchestration'
       },
       {
         name: 'Payments',
-        skill: 'sw-payments:stripe-integration',
+        skill: 'payments:stripe',
         prompt: 'Integrate Stripe payment processing',
         reason: 'Payment integration'
       },
       {
         name: 'Testing',
-        skill: 'sw-testing:qa-engineer',
+        skill: 'testing:qa',
         prompt: 'Create E2E test suite with Playwright',
         reason: 'End-to-end testing'
       }
@@ -767,7 +767,7 @@ exit 1
         },
         routing: { skills: [] },
         skillInvocation: {
-          skill: 'sw-backend:nodejs-backend',
+          skill: 'backend:nodejs',
           reason: 'Node.js API development',
           mandatory: true
         }
@@ -781,7 +781,7 @@ exit 1
       if (additionalContext) {
         expect(additionalContext).not.toContain('sw:lsp');
         // But should contain the recommended skill
-        expect(additionalContext).toContain('sw-backend:nodejs-backend');
+        expect(additionalContext).toContain('backend:nodejs');
       }
     });
 

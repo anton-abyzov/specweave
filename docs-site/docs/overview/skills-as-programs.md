@@ -53,11 +53,11 @@ SpecWeave ships with specialized skills for every role:
 
 - **PM** (`/sw:pm`) — writes user stories with acceptance criteria
 - **Architect** (`/sw:architect`) — designs systems, writes ADRs
-- **Frontend** (`/sw-frontend:frontend`) — React, Vue, Angular, Next.js
-- **Backend** (`/sw-backend:nodejs-backend`, `python-backend`, `go-backend`, etc.)
-- **QA** (`/sw-testing:qa-engineer`) — test strategy and automation
+- **Frontend** (`/frontend:frontend-core`) — React, Vue, Angular, Next.js
+- **Backend** (`/backend:nodejs`, `backend:python`, `backend:go`, etc.)
+- **QA** (`/testing:qa`) — test strategy and automation
 - **Security** (`/sw:security`) — OWASP, threat modeling, secure code review
-- **DevOps** (`/sw-backend:database-optimizer`) — performance, infrastructure
+- **DevOps** (`/backend:database-optimizer`) — performance, infrastructure
 - **Code Review** (`/sw:code-review`) — parallel review with confidence scoring
 
 Each skill can be customized independently. Your frontend preferences don't affect your backend patterns.
