@@ -39,15 +39,15 @@ Analyze the feature request and map affected domains to SpecWeave skills.
 
 | Domain | Primary Skill | Additional Skills | When to Use |
 |--------|--------------|-------------------|-------------|
-| **Frontend** | `sw-frontend:frontend-architect` | `sw-frontend:nextjs`, `sw-frontend:frontend-design` | UI components, pages, client-side state |
-| **Backend** | `sw:architect` | `sw-infra:devops` | API endpoints, services, business logic |
+| **Frontend** | `frontend:architect` | `frontend:nextjs`, `frontend:design` | UI components, pages, client-side state |
+| **Backend** | `sw:architect` | `infra:devops` | API endpoints, services, business logic |
 | **Database** | `sw:architect` | | Schema design, migrations, seed data |
 | **Shared/Types** | `sw:architect` | `sw:code-simplifier` | TypeScript interfaces, shared constants, API contracts |
-| **Testing** | `sw-testing:qa-engineer` | `sw-testing:e2e-testing`, `sw-testing:unit-testing` | Test strategy, E2E suites, integration tests |
-| **Security** | `sw:security` | `sw:security-patterns` | Auth, authorization, threat modeling, OWASP |
-| **DevOps** | `sw-infra:devops` | `sw-k8s:deployment-generate`, `sw-infra:observability` | CI/CD, Docker, K8s, monitoring |
-| **Mobile** | `sw-mobile:react-native-expert` | `sw-mobile:screen-generate`, `sw-mobile:expo` | Native/cross-platform mobile apps |
-| **ML** | `sw-ml:ml-engineer` | `sw-ml:pipeline`, `sw-ml:deploy` | Model training, inference pipelines, deployment |
+| **Testing** | `testing:qa` | `testing:e2e`, `testing:unit` | Test strategy, E2E suites, integration tests |
+| **Security** | `sw:security` | `security:patterns` | Auth, authorization, threat modeling, OWASP |
+| **DevOps** | `infra:devops` | `k8s:deployment-generate`, `infra:observability` | CI/CD, Docker, K8s, monitoring |
+| **Mobile** | `mobile:react-native` | `mobile:screen-generate`, `mobile:expo` | Native/cross-platform mobile apps |
+| **ML** | `ml:engineer` | `ml:pipeline`, `ml:deploy` | Model training, inference pipelines, deployment |
 
 ### Auto-Detection Signals
 
@@ -276,9 +276,9 @@ Each agent receives a detailed prompt that includes its skill invocations, file 
 You are the FRONTEND agent for increment [INCREMENT_ID].
 
 SKILLS TO INVOKE:
-  Skill({ skill: "sw-frontend:frontend-architect" })
-  Skill({ skill: "sw-frontend:nextjs" })         // if Next.js project
-  Skill({ skill: "sw-frontend:frontend-design" }) // for polished, world-class UI
+  Skill({ skill: "frontend:architect" })
+  Skill({ skill: "frontend:nextjs" })         // if Next.js project
+  Skill({ skill: "frontend:design" })         // for polished, world-class UI
   Skill({ skill: "sw:service-connect" })          // for external service setup
 
 FILE OWNERSHIP (WRITE access):
@@ -296,7 +296,7 @@ DESIGN QUALITY:
   - Default to world-class, sleek, polished, production-ready design
   - All UI must be responsive (mobile-first) and accessible (WCAG 2.1 AA)
   - Use modern design patterns: clean spacing, typography hierarchy, subtle animations
-  - Invoke `sw-frontend:frontend-design` for high-quality UI polish
+  - Invoke `frontend:design` for high-quality UI polish
 
 WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
@@ -337,7 +337,7 @@ You are the BACKEND agent for increment [INCREMENT_ID].
 
 SKILLS TO INVOKE:
   Skill({ skill: "sw:architect" })
-  Skill({ skill: "sw-infra:devops" })      // if deployment config needed
+  Skill({ skill: "infra:devops" })          // if deployment config needed
   Skill({ skill: "sw:service-connect" })    // for auth provider and external service setup
 
 FILE OWNERSHIP (WRITE access):
@@ -445,9 +445,9 @@ RULES:
 You are the TESTING agent for increment [INCREMENT_ID].
 
 SKILLS TO INVOKE:
-  Skill({ skill: "sw-testing:qa-engineer" })
-  Skill({ skill: "sw-testing:e2e-testing" })   // for E2E test suites
-  Skill({ skill: "sw-testing:unit-testing" })   // for unit test coverage
+  Skill({ skill: "testing:qa" })
+  Skill({ skill: "testing:e2e" })        // for E2E test suites
+  Skill({ skill: "testing:unit" })       // for unit test coverage
 
 FILE OWNERSHIP (WRITE access):
   tests/**
@@ -767,8 +767,8 @@ Phase 1 (upstream):
   2. database     -> sw:architect                 | Increment: 0201-checkout-database
 
 Phase 2 (downstream, parallel):
-  3. backend      -> sw:architect, sw-infra:devops          | Increment: 0202-checkout-backend
-  4. frontend     -> sw-frontend:frontend-architect         | Increment: 0203-checkout-frontend
+  3. backend      -> sw:architect, infra:devops              | Increment: 0202-checkout-backend
+  4. frontend     -> frontend:architect                     | Increment: 0203-checkout-frontend
 
 Max agents: 4 (2 sequential + 2 parallel)
 To execute, run without --dry-run.

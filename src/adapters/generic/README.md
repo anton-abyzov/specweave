@@ -148,7 +148,7 @@ You manually execute the entire workflow!
 
 **Claude Code (automatic)**:
 ```typescript
-Skill({ skill: "sw-frontend:frontend-architect", args: "design components" })
+Skill({ skill: "frontend:architect", args: "design components" })
 → Frontend skill activates and provides specialized guidance
 ```
 

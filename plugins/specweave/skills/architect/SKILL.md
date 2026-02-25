@@ -51,7 +51,7 @@ When a service exposes 50+ API endpoints to AI agents, avoid exposing each as a 
 ## Delegation
 
 After architecture is ready, delegate to domain skills:
-- Frontend: `sw-frontend:frontend-architect`
-- Backend: `sw-backend:*` (dotnet, nodejs, python, go, java-spring, rust)
+- Frontend: `frontend:architect`
+- Backend: `backend:*` (dotnet, nodejs, python, go, java-spring, rust)
 
 Output: `plan.md` with architecture decisions and component breakdown.
