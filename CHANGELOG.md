@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.321] - 2026-02-25
+
+### Changes
+- bump version to 1.0.320
+- update increment skill, add auto-create vendor libs
+- fix auto-create dispatcher path resolution for npm installs
+
+---
+
+
+
 ## [1.0.320] - 2026-02-25
 
 ### Changes

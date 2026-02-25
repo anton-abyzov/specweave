@@ -144,10 +144,6 @@ async function main() {
     }
 
     console.log('\n✅ All hook dependencies copied successfully!');
-    console.log('\nNext steps:');
-    console.log('1. Update hook imports to use ./vendor/ instead of ../../../../dist/src/');
-    console.log('2. Test hooks work without project dist/ directory');
-    console.log('3. Add this script to build process');
   } catch (error) {
     console.error('\n❌ Copy failed:', error);
     process.exit(1);
