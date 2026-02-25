@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.322] - 2026-02-25
+
+### Changes
+- fix dispatcher: hoist PKG_ROOT, correct vendor path, log gh exit code
+- fix dispatcher: hoist PKG_ROOT, correct vendor path, log gh exit code
+- bump version to 1.0.320
+- update increment skill, add auto-create vendor libs
+- fix auto-create dispatcher path resolution for npm installs
+
+---
+
+
+
 ## [1.0.321] - 2026-02-25
 
 ### Changes
