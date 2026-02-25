@@ -148,8 +148,8 @@ describe('Plugin Installation Detector', () => {
       // Given: Output with multiple plugin installations
       const output = `
         ✔ sw installed
-        ✔ sw-frontend installed
-        ✔ sw-backend installed
+        ✔ frontend installed
+        ✔ backend installed
       `;
 
       // When: parseInstalledPlugins() is called
@@ -157,8 +157,8 @@ describe('Plugin Installation Detector', () => {
 
       // Then: should return array of all installed plugin names
       expect(plugins).toContain('sw');
-      expect(plugins).toContain('sw-frontend');
-      expect(plugins).toContain('sw-backend');
+      expect(plugins).toContain('frontend');
+      expect(plugins).toContain('backend');
       expect(plugins.length).toBe(3);
     });
 
@@ -188,8 +188,8 @@ describe('Plugin Installation Detector', () => {
       // Given: Output with different checkmark styles
       const output = `
         ✔ sw installed
-        ✓ sw-frontend installed
-        ✅ sw-backend installed
+        ✓ frontend installed
+        ✅ backend installed
       `;
 
       // When: parseInstalledPlugins() is called

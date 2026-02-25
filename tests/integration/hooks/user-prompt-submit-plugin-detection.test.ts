@@ -176,15 +176,15 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
   });
 
   describe('Integration: Realistic Scenario', () => {
-    it('should correctly identify sw-frontend@specweave as installed when in registry', () => {
+    it('should correctly identify frontend@vskill as installed when in registry', () => {
       // Create a mock installed_plugins.json
       const mockRegistry = {
         version: 2,
         plugins: {
-          'sw-frontend@specweave': [
+          'frontend@vskill': [
             {
               scope: 'user',
-              installPath: '/Users/test/.claude/plugins/cache/specweave/sw-frontend/1.0.0',
+              installPath: '/Users/test/.claude/plugins/cache/vskill/frontend/1.0.0',
               version: '1.0.0',
               installedAt: '2026-01-27T05:00:00.000Z',
               lastUpdated: '2026-01-27T05:00:00.000Z',
@@ -207,7 +207,7 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
       fs.writeFileSync(mockRegistryPath, JSON.stringify(mockRegistry, null, 2), 'utf-8');
 
       // Test that jq can correctly identify the plugin
-      const checkCmd = `jq -r --arg key "sw-frontend@specweave" '.plugins[$key] // null' "${mockRegistryPath}"`;
+      const checkCmd = `jq -r --arg key "frontend@vskill" '.plugins[$key] // null' "${mockRegistryPath}"`;
       const result = execFileSync('bash', ['-c', checkCmd], { encoding: 'utf-8' });
 
       expect(result.trim()).not.toBe('null');
@@ -215,14 +215,14 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
     });
 
     it('should return null for plugin not in registry', () => {
-      // Create a mock installed_plugins.json WITHOUT sw-testing
+      // Create a mock installed_plugins.json WITHOUT testing
       const mockRegistry = {
         version: 2,
         plugins: {
-          'sw-frontend@specweave': [
+          'frontend@vskill': [
             {
               scope: 'user',
-              installPath: '/Users/test/.claude/plugins/cache/specweave/sw-frontend/1.0.0',
+              installPath: '/Users/test/.claude/plugins/cache/vskill/frontend/1.0.0',
               version: '1.0.0',
               installedAt: '2026-01-27T05:00:00.000Z',
               lastUpdated: '2026-01-27T05:00:00.000Z',
@@ -234,7 +234,7 @@ describe('User Prompt Submit Hook - Plugin Detection Accuracy (v1.0.175)', () =>
       fs.writeFileSync(mockRegistryPath, JSON.stringify(mockRegistry, null, 2), 'utf-8');
 
       // Test that jq correctly identifies plugin is NOT installed
-      const checkCmd = `jq -r --arg key "sw-testing@specweave" '.plugins[$key] // null' "${mockRegistryPath}"`;
+      const checkCmd = `jq -r --arg key "testing@vskill" '.plugins[$key] // null' "${mockRegistryPath}"`;
       const result = execFileSync('bash', ['-c', checkCmd], { encoding: 'utf-8' });
 
       expect(result.trim()).toBe('null');

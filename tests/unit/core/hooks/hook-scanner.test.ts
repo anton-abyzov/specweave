@@ -913,7 +913,7 @@ describe('HookScanner', () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValue([
         makeDirent('specweave', true),
-        makeDirent('sw-frontend', true),
+        makeDirent('frontend', true),
         makeDirent('.DS_Store', false),
         makeDirent('README.md', false),
       ]);
@@ -922,7 +922,7 @@ describe('HookScanner', () => {
 
       expect(dirs).toEqual([
         '/project/plugins/specweave',
-        '/project/plugins/sw-frontend',
+        '/project/plugins/frontend',
       ]);
     });
 
@@ -956,14 +956,14 @@ describe('HookScanner', () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValue([
         makeDirent('specweave', true),
-        makeDirent('sw-testing', true),
+        makeDirent('testing', true),
       ]);
 
       const config = await HookScanner.createDefaultConfig('/project');
 
       expect(config).toEqual({
         projectRoot: '/project',
-        pluginDirs: ['/project/plugins/specweave', '/project/plugins/sw-testing'],
+        pluginDirs: ['/project/plugins/specweave', '/project/plugins/testing'],
         includeNonTestable: true,
       });
     });

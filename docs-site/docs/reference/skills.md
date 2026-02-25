@@ -545,7 +545,7 @@ Build payment systems.
 **Purpose**: Payment gateway integration.
 
 ```bash
-/payments:core  # Payment guidance
+/payments:payment-core  # Payment guidance
 ```
 
 **Covers:**
@@ -566,9 +566,9 @@ Create and maintain documentation.
 | `docs-updater` | core | Living docs synchronization |
 | `living-docs` | core | Living documentation management |
 | `living-docs-navigator` | core | Navigate project docs |
-| `technical-writing` | sw-docs | Technical writing best practices |
-| `docusaurus` | sw-docs | Docusaurus site management |
-| `spec-driven-brainstorming` | sw-docs | Structured ideation |
+| `technical-writing` | docs | Technical writing best practices |
+| `docusaurus` | docs | Docusaurus site management |
+| `spec-driven-brainstorming` | docs | Structured ideation |
 
 ### docs-writer
 
@@ -589,7 +589,7 @@ Create and maintain documentation.
 **Purpose**: Docusaurus documentation site.
 
 ```bash
-/sw-docs:docusaurus  # Docusaurus guidance
+/docs:docusaurus  # Docusaurus guidance
 ```
 
 **Covers:**
@@ -606,16 +606,16 @@ Optimize cloud spending.
 
 | Skill | Plugin | Description |
 |-------|--------|-------------|
-| `cost-optimization` | sw-cost-optimizer | General cost reduction |
-| `aws-cost-expert` | sw-cost-optimizer | AWS cost analysis |
-| `cloud-pricing` | sw-cost-optimizer | Multi-cloud pricing comparison |
+| `cost-optimization` | cost | General cost reduction |
+| `aws-cost-expert` | cost | AWS cost analysis |
+| `cloud-pricing` | cost | Multi-cloud pricing comparison |
 
 ### cost-optimization
 
 **Purpose**: Cloud cost reduction strategies.
 
 ```bash
-/sw-cost-optimizer:cost-optimization  # Cost analysis
+/cost:cost-optimization  # Cost analysis
 ```
 
 **Covers:**
@@ -745,21 +745,23 @@ Automate with n8n.
 Skills are loaded from plugins. The core `sw` plugin is always installed. Domain plugins install automatically based on your tech stack, or manually:
 
 ```bash
-# Install domain plugins
-vskill add specweave --plugin sw-frontend
-vskill add specweave --plugin sw-backend
-vskill add specweave --plugin sw-infrastructure
-vskill add specweave --plugin sw-testing
+# Install domain plugins (from vskill marketplace)
+vskill install --repo anton-abyzov/vskill --plugin frontend
+vskill install --repo anton-abyzov/vskill --plugin backend
+vskill install --repo anton-abyzov/vskill --plugin infra
+vskill install --repo anton-abyzov/vskill --plugin testing
+vskill install --repo anton-abyzov/vskill --plugin kafka
+vskill install --repo anton-abyzov/vskill --plugin ml
+vskill install --repo anton-abyzov/vskill --plugin mobile
+vskill install --repo anton-abyzov/vskill --plugin payments
+vskill install --repo anton-abyzov/vskill --plugin k8s
+vskill install --repo anton-abyzov/vskill --plugin cost
+vskill install --repo anton-abyzov/vskill --plugin docs
+
+# Install integration plugins (from specweave marketplace)
 vskill add specweave --plugin sw-github
 vskill add specweave --plugin sw-jira
 vskill add specweave --plugin sw-ado
-vskill add specweave --plugin sw-kafka
-vskill add specweave --plugin sw-ml
-vskill add specweave --plugin sw-mobile
-vskill add specweave --plugin sw-payments
-vskill add specweave --plugin sw-kubernetes
-vskill add specweave --plugin sw-cost-optimizer
-vskill add specweave --plugin sw-docs
 vskill add specweave --plugin sw-diagrams
 vskill add specweave --plugin sw-release
 ```

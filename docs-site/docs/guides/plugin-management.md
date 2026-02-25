@@ -18,7 +18,7 @@ SpecWeave uses a **plugin architecture** to provide domain-specific expertise (f
 │   │   ├── sw/1.0.0/         # Core plugin (hooks, skills)
 │   │   │   └── hooks/        # ← Hooks run from HERE, not source
 │   │   ├── sw-router/1.0.1/
-│   │   └── sw-frontend/1.0.0/
+│   │   └── frontend/1.0.0/
 │   └── claude-plugins-official/  # Optional MCP plugins (user-installed)
 │       ├── context7/             # Install: claude plugin install context7@claude-plugins-official
 │       └── playwright/           # Install: claude plugin install playwright@claude-plugins-official
@@ -88,7 +88,7 @@ export SPECWEAVE_DISABLE_AUTO_LOAD=1
 
 ```bash
 # Install a specific plugin
-claude plugin install sw-frontend@specweave
+claude plugin install frontend@vskill
 
 # Install from official registry
 claude plugin install context7@claude-plugins-official
@@ -101,11 +101,11 @@ claude plugin list --available
 
 ```bash
 # Uninstall a single plugin
-claude plugin uninstall sw-frontend@specweave
+claude plugin uninstall frontend@vskill
 
 # Uninstall multiple (run multiple times)
-claude plugin uninstall sw-backend@specweave
-claude plugin uninstall sw-testing@specweave
+claude plugin uninstall backend@vskill
+claude plugin uninstall testing@vskill
 ```
 
 ### Listing Installed Plugins
@@ -145,15 +145,15 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 | Plugin | Domain | Triggers |
 |--------|--------|----------|
-| `sw-frontend` | React, Vue, Next.js, UI | "Build dashboard", "Create component" |
-| `sw-backend` | Node.js, APIs, databases | "Build API", "Create endpoint" |
-| `sw-testing` | Playwright, Vitest, TDD | "Write E2E tests", "TDD workflow" |
-| `sw-payments` | Stripe, PayPal, checkout | "Add Stripe", "Payment integration" |
-| `sw-infra` | Terraform, Docker, CI/CD | "Deploy to AWS", "Create Dockerfile" |
-| `sw-k8s` | Kubernetes, Helm, GitOps | "K8s manifests", "Helm chart" |
-| `sw-mobile` | React Native, Expo | "Build mobile app", "iOS/Android" |
-| `sw-ml` | ML, PyTorch, TensorFlow | "Train model", "ML pipeline" |
-| `sw-kafka` | Kafka, event streaming | "Kafka topics", "Event architecture" |
+| `frontend` | React, Vue, Next.js, UI | "Build dashboard", "Create component" |
+| `backend` | Node.js, APIs, databases | "Build API", "Create endpoint" |
+| `testing` | Playwright, Vitest, TDD | "Write E2E tests", "TDD workflow" |
+| `payments` | Stripe, PayPal, checkout | "Add Stripe", "Payment integration" |
+| `infra` | Terraform, Docker, CI/CD | "Deploy to AWS", "Create Dockerfile" |
+| `k8s` | Kubernetes, Helm, GitOps | "K8s manifests", "Helm chart" |
+| `mobile` | React Native, Expo | "Build mobile app", "iOS/Android" |
+| `ml` | ML, PyTorch, TensorFlow | "Train model", "ML pipeline" |
+| `kafka` | Kafka, event streaming | "Kafka topics", "Event architecture" |
 | `sw-github` | GitHub issues, PRs | "Sync to GitHub", "Create PR" |
 | `sw-jira` | JIRA integration | "Sync to JIRA", "Create epic" |
 | `sw-ado` | Azure DevOps | "Sync to ADO", "Work items" |
@@ -212,7 +212,7 @@ The registry at `~/.claude/plugins/installed_plugins.json` tracks installed plug
 
 ### New Skills Not Available After Install
 
-**Symptom**: Plugin installed but `/sw-frontend:*` commands don't work.
+**Symptom**: Plugin installed but `/frontend:*` commands don't work.
 
 **Cause**: Claude Code loads skills at session start, not dynamically.
 
@@ -255,7 +255,7 @@ tail -50 ~/.specweave/logs/lazy-loading.log
 Example output:
 ```
 [2026-01-25T00:10:35] detect-intent | duration=1500ms | cached=false
-[2026-01-25T00:10:36] plugins | installed=sw-frontend,sw-backend | already=none
+[2026-01-25T00:10:36] plugins | installed=frontend,backend | already=none
 ```
 
 ## Character Budget & When to Disable Plugins
@@ -289,10 +289,10 @@ export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
 
 **Disable plugins not needed for current project:**
 ```bash
-claude plugin disable sw-ml@specweave        # If not doing ML
-claude plugin disable sw-kafka@specweave     # If not using Kafka
-claude plugin disable sw-kubernetes@specweave # If not using K8s
-claude plugin disable sw-mobile@specweave    # If not building mobile
+claude plugin disable ml@vskill              # If not doing ML
+claude plugin disable kafka@vskill           # If not using Kafka
+claude plugin disable k8s@vskill             # If not using K8s
+claude plugin disable mobile@vskill          # If not building mobile
 ```
 
 ### For Multi-Domain Requests
@@ -301,9 +301,9 @@ For "React + .NET + Stripe" type requests, auto-activation is unreliable. Use ex
 
 ```typescript
 // More reliable than auto-activation
-Skill({ skill: "sw-frontend:frontend-architect" })
-Skill({ skill: "sw-backend:dotnet-backend" })
-Skill({ skill: "sw-payments:stripe-integration" })
+Skill({ skill: "frontend:architect" })
+Skill({ skill: "backend:dotnet" })
+Skill({ skill: "payments:payment-core" })
 ```
 
 See [Skill Truncation Troubleshooting](../troubleshooting/skill-truncation-budget.md) for details.

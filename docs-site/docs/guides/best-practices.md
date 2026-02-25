@@ -88,9 +88,9 @@ SpecWeave automatically spawns subagents for specialized tasks:
 
 ```markdown
 # When you run /sw:do, SpecWeave may spawn:
-- sw-frontend:frontend-architect → For React/Vue/Next.js
-- sw-backend:database-optimizer → For API/database work
-- sw-testing:qa-engineer → For E2E tests
+- frontend:architect → For React/Vue/Next.js
+- backend:database-optimizer → For API/database work
+- testing:qa → For E2E tests
 ```
 
 These run in **isolated context**, keeping your main conversation clean.
@@ -134,17 +134,17 @@ npm run build:prod  # NOT npm build
 Use Claude's native plugin commands with **short names** from marketplace.json:
 
 ```bash
-# Install SpecWeave plugins (use short names: sw, sw-frontend, etc.)
+# Install SpecWeave plugins (use short names: sw, frontend, etc.)
 claude plugin install sw@specweave
-claude plugin install sw-frontend@specweave
+claude plugin install frontend@vskill
 claude plugin install sw-github@specweave
 
 # List all installed plugins
 claude plugin list
 
 # Enable/disable plugins
-claude plugin enable sw-frontend@specweave
-claude plugin disable sw-frontend@specweave
+claude plugin enable frontend@vskill
+claude plugin disable frontend@vskill
 
 # Install from official marketplace
 claude plugin install commit-commands@claude-plugins-official
@@ -155,11 +155,11 @@ claude plugin install commit-commands@claude-plugins-official
 | Plugin | Install Command | Description |
 |--------|-----------------|-------------|
 | `sw` | `claude plugin install sw@specweave` | Core framework |
-| `sw-frontend` | `claude plugin install sw-frontend@specweave` | React, Next.js, Vue |
-| `sw-backend` | `claude plugin install sw-backend@specweave` | Node.js, Python, APIs |
-| `sw-testing` | `claude plugin install sw-testing@specweave` | Playwright, Vitest |
+| `frontend` | `claude plugin install frontend@vskill` | React, Next.js, Vue |
+| `backend` | `claude plugin install backend@vskill` | Node.js, Python, APIs |
+| `testing` | `claude plugin install testing@vskill` | Playwright, Vitest |
 | `sw-github` | `claude plugin install sw-github@specweave` | GitHub integration |
-| `sw-k8s` | `claude plugin install sw-k8s@specweave` | Kubernetes |
+| `k8s` | `claude plugin install k8s@vskill` | Kubernetes |
 
 ### Troubleshooting Plugin Installation
 
@@ -171,7 +171,7 @@ cd ~/.claude/plugins/marketplaces/specweave
 git checkout HEAD -- plugins
 
 # Then retry installation
-claude plugin install sw-frontend@specweave
+claude plugin install frontend@vskill
 ```
 
 ### Lazy Loading (Automatic)
@@ -180,10 +180,10 @@ SpecWeave auto-loads plugins when you need them:
 
 ```markdown
 You type: "Add Stripe checkout"
-→ sw-payments plugin loads automatically
+→ payments plugin loads automatically
 
 You type: "Deploy to Kubernetes"
-→ sw-k8s plugin loads automatically
+→ k8s plugin loads automatically
 ```
 
 To disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
@@ -313,22 +313,22 @@ SpecWeave provides built-in hooks for:
 /sw:increment → pm skill → architect skill
 
 # Implementation chain
-Spec complete → sw-frontend/backend skills → LSP automatic
+Spec complete → frontend/backend skills → LSP automatic
 
 # Payment integration
-Stripe work → sw-payments:stripe-integration (auto-activates)
+Stripe work → payments:payment-core (auto-activates)
 
 # Kubernetes deployment
-K8s work → sw-k8s:kubernetes-architect (auto-activates)
+K8s work → k8s:kubernetes-architect (auto-activates)
 ```
 
 ### When Skills Auto-Activate
 
 Skills trigger on keywords in their descriptions:
-- "React dashboard" → `sw-frontend:frontend-architect`
-- ".NET API" → `sw-backend:dotnet-backend`
-- "Stripe checkout" → `sw-payments:stripe-integration`
-- "database optimization" → `sw-backend:database-optimizer`
+- "React dashboard" → `frontend:architect`
+- ".NET API" → `backend:dotnet`
+- "Stripe checkout" → `payments:payment-core`
+- "database optimization" → `backend:database-optimizer`
 
 **If a skill doesn't auto-activate**, invoke it explicitly with `Skill()` tool.
 

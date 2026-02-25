@@ -12,7 +12,7 @@ Complete reference for all SpecWeave skills, commands, and capabilities.
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| **Skills** | Domain expertise and best practices | `/sw:architect`, `/sw-frontend:nextjs` |
+| **Skills** | Domain expertise and best practices | `/sw:architect`, `/frontend:nextjs` |
 | **Commands** | Execute specific actions | `/sw:auto`, `/sw:done`, `/sw:validate` |
 
 :::tip Both Are Slash Commands Now
@@ -94,20 +94,20 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 | Plugin | Skills Count | Domain |
 |--------|--------------|--------|
 | `sw` (core) | 60+ | Planning, execution, quality, utilities |
-| `sw-frontend` | 6 | React, Vue, Next.js, design systems |
-| `sw-backend` | 4 | Node.js, Python, .NET, databases |
-| `sw-infrastructure` | 2 | DevOps, observability |
-| `sw-kubernetes` | 4 | K8s manifests, Helm, GitOps |
-| `sw-testing` | 3 | Unit, E2E, QA engineering |
+| `frontend` | 6 | React, Vue, Next.js, design systems |
+| `backend` | 4 | Node.js, Python, .NET, databases |
+| `infra` | 2 | DevOps, observability |
+| `k8s` | 4 | K8s manifests, Helm, GitOps |
+| `testing` | 3 | Unit, E2E, QA engineering |
 | `sw-github` | 4 | GitHub Issues, multi-repo |
 | `sw-jira` | 3 | JIRA sync, mapping |
 | `sw-ado` | 4 | Azure DevOps sync |
-| `sw-kafka` | 2 | Kafka architecture, ops |
-| `sw-ml` | 4 | ML, MLOps, data science |
-| `sw-mobile` | 2 | Mobile, React Native |
-| `sw-payments` | 3 | Stripe, billing, PCI |
-| `sw-docs` | 5 | Technical writing, Docusaurus |
-| `sw-cost-optimizer` | 3 | Cloud cost reduction |
+| `kafka` | 2 | Kafka architecture, ops |
+| `ml` | 4 | ML, MLOps, data science |
+| `mobile` | 2 | Mobile, React Native |
+| `payments` | 3 | Stripe, billing, PCI |
+| `docs` | 5 | Technical writing, Docusaurus |
+| `cost` | 3 | Cloud cost reduction |
 | `sw-diagrams` | 2 | Architecture diagrams |
 | `sw-release` | 2 | Release management |
 
@@ -116,8 +116,8 @@ Skills come from plugins. Core plugin `sw` is always installed. Domain plugins a
 ```bash
 # Plugins auto-install based on detected tech stack
 # Or install manually:
-vskill add specweave --plugin sw-frontend
-vskill add specweave --plugin sw-backend
+vskill install --repo anton-abyzov/vskill --plugin frontend
+vskill install --repo anton-abyzov/vskill --plugin backend
 vskill add specweave --plugin sw-github
 ```
 

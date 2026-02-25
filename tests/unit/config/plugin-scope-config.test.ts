@@ -118,8 +118,8 @@ describe('Plugin Scope Configuration', () => {
 
     it('should return project scope for domain SpecWeave plugins', () => {
       // With default config, domain plugins get project scope
-      expect(getPluginScope('sw-frontend', 'specweave')).toBe('project');
-      expect(getPluginScope('sw-backend', 'specweave')).toBe('project');
+      expect(getPluginScope('frontend', 'vskill')).toBe('project');
+      expect(getPluginScope('backend', 'vskill')).toBe('project');
       expect(getPluginScope('sw-github', 'specweave')).toBe('project');
       expect(getPluginScope('sw-jira', 'specweave')).toBe('project');
     });

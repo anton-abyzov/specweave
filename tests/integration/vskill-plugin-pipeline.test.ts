@@ -269,7 +269,7 @@ const MARKETPLACE_JSON = JSON.stringify({
   version: '1.0.0',
   plugins: [
     { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework' },
-    { name: 'sw-frontend', source: './plugins/specweave-frontend', version: '1.0.50', description: 'Frontend' },
+    { name: 'frontend', source: './plugins/specweave-frontend', version: '1.0.50', description: 'Frontend' },
     { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.30', description: 'GitHub sync' },
   ],
 });
@@ -315,7 +315,7 @@ describe('vskill plugin pipeline integration', () => {
 
       const pluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
       expect(pluginNames).toContain('sw');
-      expect(pluginNames).toContain('sw-frontend');
+      expect(pluginNames).toContain('frontend');
       expect(pluginNames).toContain('sw-github');
     });
 
@@ -406,7 +406,7 @@ describe('vskill plugin pipeline integration', () => {
       // Then: registerPluginsWithClaudeCli is called with processed plugin names
       expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalledWith(
         '/mock/specweave-root',
-        expect.arrayContaining(['sw', 'sw-frontend', 'sw-github'])
+        expect.arrayContaining(['sw', 'frontend', 'sw-github'])
       );
     });
   });
@@ -472,7 +472,7 @@ describe('vskill plugin pipeline integration', () => {
     });
 
     it('should install only the core sw plugin in lazy mode (default)', async () => {
-      setupInitMocks([{ name: 'sw' }, { name: 'sw-frontend' }, { name: 'sw-github' }]);
+      setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
 
       // When: installAllPlugins runs in lazy mode
       const result = await installAllPlugins({ dirname: '/test', lazyMode: true });
@@ -484,12 +484,12 @@ describe('vskill plugin pipeline integration', () => {
       // Verify: only sw plugin was installed via copyPlugin
       const copiedPluginNames = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
       expect(copiedPluginNames).toContain('sw');
-      expect(copiedPluginNames).not.toContain('sw-frontend');
+      expect(copiedPluginNames).not.toContain('frontend');
       expect(copiedPluginNames).not.toContain('sw-github');
     });
 
     it('should install all plugins when lazyMode is false', async () => {
-      setupInitMocks([{ name: 'sw' }, { name: 'sw-frontend' }, { name: 'sw-github' }]);
+      setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
 
       // When: installAllPlugins runs in full mode
       const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
@@ -535,7 +535,7 @@ describe('vskill plugin pipeline integration', () => {
   describe('TC-028: Migration end-to-end', () => {
     it('should create a lockfile with entries for all discovered marketplace plugins', () => {
       // Given: marketplace-installed plugins at ~/.claude/plugins/cache/specweave/
-      const pluginDirs = ['sw', 'sw-frontend', 'sw-backend', 'sw-testing', 'sw-github'];
+      const pluginDirs = ['sw', 'frontend', 'backend', 'testing', 'sw-github'];
 
       mockExistsSync.mockImplementation((p: string) => {
         if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
@@ -607,7 +607,7 @@ describe('vskill plugin pipeline integration', () => {
 
     it('should preserve original plugin files (non-destructive migration)', () => {
       // Given: marketplace-installed plugins
-      const pluginDirs = ['sw', 'sw-frontend'];
+      const pluginDirs = ['sw', 'frontend'];
 
       mockExistsSync.mockImplementation((p: string) => {
         if (p === '/home/testuser/.claude/plugins/cache/specweave') return true;
@@ -649,7 +649,7 @@ describe('vskill plugin pipeline integration', () => {
       for (const call of writeCalls) {
         const filePath = call[0] as string;
         expect(filePath).not.toContain('/cache/specweave/sw/');
-        expect(filePath).not.toContain('/cache/specweave/sw-frontend/');
+        expect(filePath).not.toContain('/cache/specweave/frontend/');
       }
     });
 
@@ -665,7 +665,7 @@ describe('vskill plugin pipeline integration', () => {
         if (typeof p === 'string' && p.endsWith('/cache/specweave')) {
           return [
             { name: 'sw', isDirectory: () => true, isFile: () => false },
-            { name: 'sw-frontend', isDirectory: () => true, isFile: () => false },
+            { name: 'frontend', isDirectory: () => true, isFile: () => false },
           ];
         }
         return [];

@@ -19,7 +19,7 @@ Complete documentation ecosystem for technical writers, product teams, and devel
 ## Installation
 
 ```bash
-vskill add specweave --plugin sw-docs
+vskill add vskill --plugin docs
 ```
 
 ## Requirements
