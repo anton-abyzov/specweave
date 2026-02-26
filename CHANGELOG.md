@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.328] - 2026-02-26
+
+### Changes
+- release 1.0.327
+- fix github sync: module paths, labels, AC parsing, graceful fallback
+- regenerate hero image and icons with Nano Banana Pro
+- release 1.0.326
+- update hooks, plugins, and tests
+- remove done/in-progress fallback in github feature sync
+
+---
+
+
+
 ## [1.0.327] - 2026-02-26
 
 ### Changes
