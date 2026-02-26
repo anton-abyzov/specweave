@@ -333,23 +333,27 @@ extract_acs_for_us() {
 }
 
 # Function to extract description for a given US
+# Collects ALL text between the US heading and the Acceptance Criteria / next section
 extract_desc_for_us() {
   local us_id="$1"
   local in_section=false
   local desc=""
-  local collecting=false
 
   while IFS= read -r line; do
     if [[ "$line" =~ ^###[[:space:]]+"$us_id": ]]; then
       in_section=true
       continue
     fi
-    if $in_section && [[ "$line" =~ ^###[[:space:]]+US- ]]; then
-      break
-    fi
     if $in_section; then
-      # Collect the As a/I want/So that lines
-      if [[ "$line" =~ ^\*\*As\ a\*\* ]] || [[ "$line" =~ ^\*\*I\ want\*\* ]] || [[ "$line" =~ ^\*\*So\ that\*\* ]]; then
+      # Stop at next US heading, next ## section, or Acceptance Criteria
+      if [[ "$line" =~ ^###[[:space:]]+US- ]] || [[ "$line" =~ ^##[[:space:]] ]]; then
+        break
+      fi
+      if [[ "$line" =~ ^\*\*Acceptance[[:space:]]Criteria ]]; then
+        break
+      fi
+      # Collect non-empty lines as description
+      if [[ -n "$line" ]]; then
         desc+="$line"$'\n'
       fi
     fi

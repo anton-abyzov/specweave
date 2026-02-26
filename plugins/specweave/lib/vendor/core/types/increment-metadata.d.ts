@@ -124,6 +124,17 @@ export interface IncrementMetadataExtended extends IncrementMetadata {
  */
 export declare const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]>;
 /**
+ * Compute the shortest valid transition path from `from` to `to`.
+ *
+ * Uses BFS over the VALID_TRANSITIONS graph.
+ * Returns the sequence of intermediate + final states (excluding the starting state).
+ * Returns null if no valid path exists.
+ *
+ * Example: computeTransitionPath(PLANNING, COMPLETED)
+ *   => [ACTIVE, READY_FOR_REVIEW, COMPLETED]
+ */
+export declare function computeTransitionPath(from: IncrementStatus, to: IncrementStatus): IncrementStatus[] | null;
+/**
  * Type-based limits
  * Maximum active increments per type
  *
