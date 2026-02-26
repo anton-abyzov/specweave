@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.332] - 2026-02-26
+
+### Changes
+- update sync handler and metadata types
+- bump version to 1.0.331
+- fix github sync: auto-walk status transitions, pre-completion sync
+
+---
+
+
+
 ## [1.0.331] - 2026-02-26
 
 ### Changes
