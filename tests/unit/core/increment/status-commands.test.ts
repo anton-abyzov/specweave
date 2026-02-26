@@ -32,6 +32,13 @@ vi.mock('../../../../src/core/hooks/LifecycleHookDispatcher.js', () => ({
   },
 }));
 
+const mockSyncIncrement = vi.fn().mockResolvedValue({ success: true });
+vi.mock('../../../../src/core/living-docs/living-docs-sync.js', () => ({
+  LivingDocsSync: class {
+    syncIncrement = mockSyncIncrement;
+  },
+}));
+
 // Mock process.exit — throw to halt code execution (like real process.exit)
 class ProcessExitError extends Error {
   code: number;
@@ -275,19 +282,10 @@ describe('status-commands', () => {
       expect(mockUpdateStatus).not.toHaveBeenCalled();
     });
 
-    it('should return false for paused increment', async () => {
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.PAUSED }));
-
-      const result = await completeIncrement({
-        incrementId: '0001-test',
-        skipValidation: true,
-      });
-
-      expect(result).toBe(false);
-    });
-
-    it('should complete active increment with skipValidation', async () => {
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+    it('should auto-walk paused increment through READY_FOR_REVIEW to COMPLETED', async () => {
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.PAUSED }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
 
       const result = await completeIncrement({
         incrementId: '0001-test',
@@ -295,6 +293,35 @@ describe('status-commands', () => {
       });
 
       expect(result).toBe(true);
+      // Intermediate: PAUSED -> READY_FOR_REVIEW
+      expect(mockUpdateStatus).toHaveBeenCalledWith(
+        '0001-test',
+        IncrementStatus.READY_FOR_REVIEW
+      );
+      // Final: READY_FOR_REVIEW -> COMPLETED
+      expect(mockUpdateStatus).toHaveBeenCalledWith(
+        '0001-test',
+        IncrementStatus.COMPLETED
+      );
+    });
+
+    it('should auto-walk active increment through READY_FOR_REVIEW to COMPLETED', async () => {
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
+
+      const result = await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      expect(result).toBe(true);
+      // Intermediate: ACTIVE -> READY_FOR_REVIEW
+      expect(mockUpdateStatus).toHaveBeenCalledWith(
+        '0001-test',
+        IncrementStatus.READY_FOR_REVIEW
+      );
+      // Final: READY_FOR_REVIEW -> COMPLETED
       expect(mockUpdateStatus).toHaveBeenCalledWith(
         '0001-test',
         IncrementStatus.COMPLETED
@@ -318,7 +345,9 @@ describe('status-commands', () => {
       const logSpy = vi.spyOn(console, 'log');
       logSpy.mockClear();
 
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
 
       await completeIncrement({
         incrementId: '0001-test',
@@ -331,7 +360,9 @@ describe('status-commands', () => {
 
     it('should await LifecycleHookDispatcher.onIncrementDone after completion', async () => {
       const callOrder: string[] = [];
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
       mockOnIncrementDone.mockImplementation(async () => {
         callOrder.push('hooks');
       });
@@ -347,8 +378,54 @@ describe('status-commands', () => {
       expect(callOrder).toContain('hooks');
     });
 
+    it('should auto-walk PLANNING through ACTIVE, READY_FOR_REVIEW to COMPLETED', async () => {
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.PLANNING }))
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
+
+      const result = await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      expect(result).toBe(true);
+      expect(mockUpdateStatus).toHaveBeenCalledWith('0001-test', IncrementStatus.ACTIVE);
+      expect(mockUpdateStatus).toHaveBeenCalledWith('0001-test', IncrementStatus.READY_FOR_REVIEW);
+      expect(mockUpdateStatus).toHaveBeenCalledWith('0001-test', IncrementStatus.COMPLETED);
+    });
+
+    it('should return false if intermediate transition fails', async () => {
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.PLANNING }));
+      mockUpdateStatus.mockImplementationOnce(() => {
+        throw new Error('spec.md write failed');
+      });
+
+      const result = await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should run pre-completion living docs sync', async () => {
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
+
+      await completeIncrement({
+        incrementId: '0001-test',
+        skipValidation: true,
+      });
+
+      expect(mockSyncIncrement).toHaveBeenCalledWith('0001-test');
+    });
+
     it('should return true even when hooks throw (error-isolated)', async () => {
-      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
       mockOnIncrementDone.mockRejectedValue(new Error('Hook dispatch failed'));
 
       const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);

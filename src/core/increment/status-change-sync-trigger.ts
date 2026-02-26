@@ -166,7 +166,14 @@ export class StatusChangeSyncTrigger {
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
       'completed → active',           // Work reopened
       'backlog → active',             // Backlog item started
-      'paused → active'               // Work resumed
+      'paused → active',              // Work resumed
+      // Defense-in-depth: catch-up sync for direct-to-completed transitions.
+      // Auto-walk goes through intermediates, but if metadata is edited
+      // directly these ensure sync still happens.
+      'planning → completed',         // Direct completion (bypassed CLI)
+      'backlog → completed',          // Direct completion (bypassed CLI)
+      'paused → completed',           // Direct completion (bypassed CLI)
+      'paused → ready_for_review'     // Paused -> review (valid transition)
     ];
 
     return SYNC_WORTHY.includes(transition);

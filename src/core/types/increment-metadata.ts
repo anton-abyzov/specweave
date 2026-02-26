@@ -195,6 +195,45 @@ export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
 };
 
 /**
+ * Compute the shortest valid transition path from `from` to `to`.
+ *
+ * Uses BFS over the VALID_TRANSITIONS graph.
+ * Returns the sequence of intermediate + final states (excluding the starting state).
+ * Returns null if no valid path exists.
+ *
+ * Example: computeTransitionPath(PLANNING, COMPLETED)
+ *   => [ACTIVE, READY_FOR_REVIEW, COMPLETED]
+ */
+export function computeTransitionPath(
+  from: IncrementStatus,
+  to: IncrementStatus
+): IncrementStatus[] | null {
+  if (from === to) return [];
+
+  const queue: Array<{ status: IncrementStatus; path: IncrementStatus[] }> = [
+    { status: from, path: [] }
+  ];
+  const visited = new Set<IncrementStatus>([from]);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const neighbors = VALID_TRANSITIONS[current.status] ?? [];
+
+    for (const next of neighbors) {
+      if (visited.has(next)) continue;
+      const newPath = [...current.path, next];
+
+      if (next === to) return newPath;
+
+      visited.add(next);
+      queue.push({ status: next, path: newPath });
+    }
+  }
+
+  return null;
+}
+
+/**
  * Type-based limits
  * Maximum active increments per type
  *
