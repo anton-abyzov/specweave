@@ -151,6 +151,25 @@
   display: block;
 }
 
+/* Video caption */
+.videoCaption {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 1rem auto 2.5rem;
+  text-align: center;
+}
+
+.videoCaption a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.videoCaption a:hover {
+  color: #c4b5fd;
+}
+
 /* Badges */
 .heroBadges {
   display: flex;

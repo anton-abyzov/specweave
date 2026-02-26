@@ -390,6 +390,8 @@ for i in $(seq 0 $((US_COUNT - 1))); do
 
   # Build issue body
   US_DESC=$(extract_desc_for_us "$US_ID")
+  # Ensure blank line after description for proper markdown paragraph separation
+  [[ -n "$US_DESC" ]] && US_DESC="${US_DESC}"$'\n'
   US_ACS=$(extract_acs_for_us "$US_ID")
 
   ISSUE_BODY="## Description
