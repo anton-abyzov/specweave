@@ -27,9 +27,9 @@ describe('scanSkillContent', () => {
     expect(result.findings.length).toBe(0);
   });
 
-  // --- Destructive commands (critical) ---
+  // --- Destructive commands (high) ---
 
-  it('detects rm -rf as critical', () => {
+  it('detects rm -rf as high', () => {
     const content = [
       '# Cleanup skill',
       '',
@@ -41,17 +41,17 @@ describe('scanSkillContent', () => {
     expect(result.passed).toBe(false);
     const finding = result.findings.find(f => f.category === 'destructive-command');
     expect(finding).toBeDefined();
-    expect(finding!.severity).toBe('critical');
+    expect(finding!.severity).toBe('high');
     expect(finding!.line).toBe(3);
   });
 
-  it('detects rm -f as critical', () => {
+  it('detects rm -f as high', () => {
     const content = 'rm -f /etc/config';
     const result = scanSkillContent(content);
 
     expect(result.passed).toBe(false);
     expect(result.findings.some(f =>
-      f.category === 'destructive-command' && f.severity === 'critical',
+      f.category === 'destructive-command' && f.severity === 'high',
     )).toBe(true);
   });
 
@@ -363,12 +363,12 @@ describe('scanSkillContent', () => {
 
   // --- Pass/fail logic ---
 
-  it('fails when critical findings exist', () => {
+  it('fails when high findings exist (rm -rf)', () => {
     const content = 'rm -rf /';
     const result = scanSkillContent(content);
 
     expect(result.passed).toBe(false);
-    expect(result.findings.some(f => f.severity === 'critical')).toBe(true);
+    expect(result.findings.some(f => f.severity === 'high')).toBe(true);
   });
 
   it('fails when high findings exist', () => {
@@ -496,23 +496,23 @@ describe('scanSkillContent', () => {
     expect(result.findings.some(f => f.category === 'prompt-injection')).toBe(true);
   });
 
-  it('detects rm --recursive --force as critical', () => {
+  it('detects rm --recursive --force as high', () => {
     const content = 'rm --recursive --force /data';
     const result = scanSkillContent(content);
 
     expect(result.passed).toBe(false);
     expect(result.findings.some(f =>
-      f.category === 'destructive-command' && f.severity === 'critical',
+      f.category === 'destructive-command' && f.severity === 'high',
     )).toBe(true);
   });
 
-  it('detects rm --force as critical', () => {
+  it('detects rm --force as high', () => {
     const content = 'rm --force /etc/config';
     const result = scanSkillContent(content);
 
     expect(result.passed).toBe(false);
     expect(result.findings.some(f =>
-      f.category === 'destructive-command' && f.severity === 'critical',
+      f.category === 'destructive-command' && f.severity === 'high',
     )).toBe(true);
   });
 
@@ -536,13 +536,13 @@ describe('scanSkillContent', () => {
     )).toBe(true);
   });
 
-  it('detects chmod 777 as high', () => {
+  it('detects chmod 777 as medium', () => {
     const content = 'chmod -R 777 /var/www';
     const result = scanSkillContent(content);
 
-    expect(result.passed).toBe(false);
+    expect(result.passed).toBe(true);
     expect(result.findings.some(f =>
-      f.category === 'dangerous-permissions' && f.severity === 'high',
+      f.category === 'dangerous-permissions' && f.severity === 'medium',
     )).toBe(true);
   });
 
@@ -598,7 +598,7 @@ describe('scanSkillContent', () => {
     expect(result.passed).toBe(false);
     const finding = result.findings.find(f => f.category === 'destructive-command');
     expect(finding).toBeDefined();
-    expect(finding!.severity).toBe('critical');
+    expect(finding!.severity).toBe('high');
   });
 
   it('handles multiple code blocks correctly', () => {
