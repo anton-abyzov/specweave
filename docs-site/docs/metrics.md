@@ -6,7 +6,7 @@ description: Live DORA metrics for SpecWeave development performance
 
 # 📊 DORA Metrics Dashboard
 
-Real-time DevOps performance metrics for SpecWeave, updated daily.
+Real-time DevOps performance metrics for SpecWeave, updated twice daily.
 
 <div style={{marginBottom: '2rem'}}>
   <a href="https://github.com/anton-abyzov/specweave/actions/workflows/dora-metrics.yml" target="_blank">
@@ -46,7 +46,7 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 **What it measures:** Time from commit to production
 **Industry benchmarks:**
 - 🏆 **Elite**: Less than 1 hour
-- ⭐ **High**: 1 day to 1 week
+- ⭐ **High**: 1 hour to 1 week
 - 📊 **Medium**: 1 week to 1 month
 - ⚠️ **Low**: More than 1 month
 
@@ -68,8 +68,8 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 **What it measures:** Percentage of deployments that fail
 **Industry benchmarks:**
 - 🏆 **Elite**: 0-15%
-- ⭐ **High**: 16-30%
-- 📊 **Medium**: 31-45%
+- ⭐ **High**: 15-30%
+- 📊 **Medium**: 30-45%
 - ⚠️ **Low**: More than 45%
 
 **Failed Releases:** ![Failed](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.failedReleases&label=Failed&color=red) / ![Total](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.totalReleases&label=Total&color=blue)
@@ -110,14 +110,14 @@ graph LR
     D --> E[README.md]
     C --> F[This Dashboard]
     G[GitHub Actions] --> B
-    G -->|Daily 06:00 UTC| B
+    G -->|06:00 & 18:00 UTC| B
 ```
 
 ### Data Sources
 
 All metrics are calculated from GitHub data:
 
-1. **Deployment Frequency**: Counts GitHub Releases
+1. **Deployment Frequency**: Counts commits to develop branch
 2. **Lead Time**: Measures commit → release time
 3. **Change Failure Rate**: Tracks issues labeled `incident` or `production-bug`
 4. **MTTR**: Measures incident creation → closure time
@@ -135,7 +135,7 @@ All metrics are calculated from GitHub data:
 
 Metrics update automatically:
 
-- **Schedule**: Daily at 06:00 UTC
+- **Schedule**: Twice daily at 06:00 and 18:00 UTC
 - **Workflow**: [`.github/workflows/dora-metrics.yml`](https://github.com/anton-abyzov/specweave/blob/develop/.github/workflows/dora-metrics.yml)
 - **Manual Trigger**: `gh workflow run dora-metrics.yml`
 
@@ -167,7 +167,7 @@ The DORA (DevOps Research and Assessment) metrics are industry-standard KPIs for
 Track our progress over time as we optimize SpecWeave's delivery performance:
 
 **Current Goals:**
-- 🚀 Deployment Frequency: High → Elite (8/month → 30/month)
-- ⚡ Lead Time: High → Elite (15.6h → &lt;1h)
-- ✅ Change Failure Rate: Elite (maintain 0-15%)
-- 🔧 MTTR: Track once we have incidents (target: &lt;1 hour)
+- 🚀 Deployment Frequency: Maintain Elite tier (>365 deploys/year)
+- ⚡ Lead Time: High → Elite (target: &lt;1h median)
+- ✅ Change Failure Rate: Maintain Elite (&lt;15%)
+- 🔧 MTTR: Track once incidents occur (target: &lt;1 hour)
