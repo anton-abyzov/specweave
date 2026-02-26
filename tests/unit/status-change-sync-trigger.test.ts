@@ -32,7 +32,11 @@ class StatusChangeSyncTriggerTestable {
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
       'completed → active',           // Work reopened
       'backlog → active',             // Backlog item started
-      'paused → active'               // Work resumed
+      'paused → active',              // Work resumed
+      'planning → completed',         // Direct completion (bypassed CLI)
+      'backlog → completed',          // Direct completion (bypassed CLI)
+      'paused → completed',           // Direct completion (bypassed CLI)
+      'paused → ready_for_review'     // Paused -> review (valid transition)
     ];
 
     return SYNC_WORTHY.includes(transition);
@@ -85,6 +89,38 @@ describe('StatusChangeSyncTrigger', () => {
       const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
         IncrementStatus.PAUSED,
         IncrementStatus.ACTIVE
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should trigger sync for planning → completed (defense-in-depth)', () => {
+      const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
+        IncrementStatus.PLANNING,
+        IncrementStatus.COMPLETED
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should trigger sync for backlog → completed (defense-in-depth)', () => {
+      const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
+        IncrementStatus.BACKLOG,
+        IncrementStatus.COMPLETED
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should trigger sync for paused → completed (defense-in-depth)', () => {
+      const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
+        IncrementStatus.PAUSED,
+        IncrementStatus.COMPLETED
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should trigger sync for paused → ready_for_review', () => {
+      const result = StatusChangeSyncTriggerTestable.isSyncWorthy(
+        IncrementStatus.PAUSED,
+        IncrementStatus.READY_FOR_REVIEW
       );
       expect(result).toBe(true);
     });
