@@ -50,6 +50,7 @@ export interface IncrementInfo {
   userStories: Array<{
     id: string;
     title: string;
+    description?: string;
     project?: string;
   }>;
 }
@@ -335,8 +336,8 @@ export class ExternalIssueAutoCreator {
   /**
    * Parse user stories from spec.md body
    */
-  private parseUserStories(specContent: string): Array<{ id: string; title: string; project?: string }> {
-    const userStories: Array<{ id: string; title: string; project?: string }> = [];
+  private parseUserStories(specContent: string): Array<{ id: string; title: string; description?: string; project?: string }> {
+    const userStories: Array<{ id: string; title: string; description?: string; project?: string }> = [];
 
     // Match ### US-XXX: Title patterns
     const usRegex = /^### (US-\d+):?\s*(.+)$/gm;
@@ -351,18 +352,30 @@ export class ExternalIssueAutoCreator {
       const titleForCheck = title.replace(/\s*\(P\d\)\s*$/, '');
       if (titleForCheck === '[Story Title]' || /^\[.+\]$/.test(titleForCheck)) continue;
 
-      // Try to find **Project**: field after the US header
+      // Extract the US section (from heading to next ### US- or ## heading)
       const usStartIndex = match.index;
-      const nextUsMatch = specContent.substring(usStartIndex + match[0].length).match(/^### US-\d+/m);
+      const nextUsMatch = specContent.substring(usStartIndex + match[0].length).match(/^### US-\d+|^## /m);
       const usEndIndex = nextUsMatch
         ? usStartIndex + match[0].length + (nextUsMatch.index || 0)
         : specContent.length;
 
       const usSection = specContent.substring(usStartIndex, usEndIndex);
+
+      // Extract description: text between the heading and **Acceptance Criteria** (or end of section)
+      const afterHeading = usSection.substring(match[0].length);
+      const acIndex = afterHeading.search(/\*\*Acceptance\s+Criteria/i);
+      const descBlock = acIndex >= 0 ? afterHeading.substring(0, acIndex) : afterHeading;
+      const description = descBlock
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0 && !l.startsWith('**Project**:'))
+        .join('\n')
+        .trim() || undefined;
+
       const projectMatch = usSection.match(/\*\*Project\*\*:\s*(\S+)/);
       const project = projectMatch ? projectMatch[1] : undefined;
 
-      userStories.push({ id: usId, title, project });
+      userStories.push({ id: usId, title, description, project });
     }
 
     return userStories;
@@ -752,10 +765,11 @@ export class ExternalIssueAutoCreator {
   private buildGitHubIssueBody(
     incrementId: string,
     incrementInfo: IncrementInfo,
-    us: { id: string; title: string; project?: string }
+    us: { id: string; title: string; description?: string; project?: string }
   ): string {
+    const descSection = us.description ? `\n${us.description}\n` : '';
     return `## ${us.title}
-
+${descSection}
 **Feature**: ${incrementInfo.featureId}
 **Increment**: ${incrementId}
 **User Story**: ${us.id}
@@ -810,7 +824,10 @@ ${userStoriesList || '_No user stories defined_'}
     incrementInfo: IncrementInfo
   ): string {
     const userStoriesList = incrementInfo.userStories
-      .map((us) => `* ${us.id}: ${us.title}`)
+      .map((us) => {
+        const desc = us.description ? `\n${us.description}` : '';
+        return `* ${us.id}: ${us.title}${desc}`;
+      })
       .join('\n');
 
     return `h2. ${incrementInfo.title}
@@ -836,7 +853,10 @@ ${userStoriesList || '_No user stories defined_'}
     incrementInfo: IncrementInfo
   ): string {
     const userStoriesList = incrementInfo.userStories
-      .map((us) => `<li>${us.id}: ${us.title}</li>`)
+      .map((us) => {
+        const desc = us.description ? `<br/><em>${us.description}</em>` : '';
+        return `<li>${us.id}: ${us.title}${desc}</li>`;
+      })
       .join('\n');
 
     return `<h2>${incrementInfo.title}</h2>
