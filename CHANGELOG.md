@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.329] - 2026-02-26
+
+### Changes
+- relax scanner severity for rm and chmod patterns
+
+---
+
+
+
 ## [1.0.328] - 2026-02-26
 
 ### Changes
