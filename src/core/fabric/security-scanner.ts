@@ -35,17 +35,17 @@ interface PatternCheck {
 }
 
 const PATTERN_CHECKS: PatternCheck[] = [
-  // --- Destructive commands (critical) ---
+  // --- Destructive commands (high) ---
   {
     pattern: /\brm\s+-[a-z]*r[a-z]*f|rm\s+-[a-z]*f[a-z]*r|\brm\s+-rf\b|\brm\s+-f\b/,
-    severity: 'critical',
+    severity: 'high',
     category: 'destructive-command',
     message: 'Destructive rm command detected (rm -rf / rm -f)',
     safeContexts: SAFE_RM_CONTEXTS,
   },
   {
     pattern: /\brm\s+--force\b|\brm\s+--recursive\b/,
-    severity: 'critical',
+    severity: 'high',
     category: 'destructive-command',
     message: 'Destructive rm command detected (long-form flags)',
     safeContexts: SAFE_RM_LONG_FORM_CONTEXTS,
@@ -157,10 +157,10 @@ const PATTERN_CHECKS: PatternCheck[] = [
     message: 'secrets.yaml file access detected',
   },
 
-  // --- Dangerous permissions (high) ---
+  // --- Dangerous permissions (medium) ---
   {
     pattern: /\bchmod\s+(-R\s+)?777\b/,
-    severity: 'high',
+    severity: 'medium',
     category: 'dangerous-permissions',
     message: 'chmod 777 detected (world-writable permissions)',
   },
