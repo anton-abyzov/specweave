@@ -346,7 +346,7 @@ describe('generateMarkdownReport', () => {
 
     it('should show High insights with stats', () => {
       const report = generateMarkdownReport(makeMetrics({ cfrTier: 'High', cfrFailed: 5, cfrTotal: 20 }));
-      expect(report).toContain('**Good Performance**: 16-30%');
+      expect(report).toContain('**Good Performance**: 15-30%');
       expect(report).toContain('5 failures out of 20 deployments');
       expect(report).toContain('test coverage and pre-deployment');
       expect(report).toContain('smoke tests and canary');
@@ -354,7 +354,7 @@ describe('generateMarkdownReport', () => {
 
     it('should show Medium insights with stats', () => {
       const report = generateMarkdownReport(makeMetrics({ cfrTier: 'Medium', cfrFailed: 8, cfrTotal: 20 }));
-      expect(report).toContain('**Concerning**: 31-45%');
+      expect(report).toContain('**Concerning**: 30-45%');
       expect(report).toContain('8 failures out of 20 deployments');
       expect(report).toContain('Increase automated test coverage');
       expect(report).toContain('pre-commit hooks');
