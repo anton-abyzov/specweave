@@ -8,7 +8,7 @@
 
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
-import { IncrementStatus, IncrementType, TYPE_LIMITS } from '../types/increment-metadata.js';
+import { IncrementStatus, IncrementType, TYPE_LIMITS, computeTransitionPath } from '../types/increment-metadata.js';
 
 export interface PauseOptions {
   incrementId: string;
@@ -252,12 +252,28 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       return true;  // Not an error - already complete
     }
 
-    if (metadata.status !== IncrementStatus.ACTIVE &&
-        metadata.status !== IncrementStatus.READY_FOR_REVIEW) {
+    // Compute transition path to COMPLETED (auto-walk intermediate states)
+    const path = computeTransitionPath(metadata.status, IncrementStatus.COMPLETED);
+
+    if (path === null || path.length === 0) {
       log(chalk.red(`❌ Cannot complete increment ${incrementId}`));
       log(chalk.gray(`   Current status: ${metadata.status}`));
-      log(chalk.gray(`   Only active or ready_for_review increments can be completed`));
+      log(chalk.gray(`   No valid transition path to completed`));
       return false;
+    }
+
+    // Walk intermediate transitions (all states before the final COMPLETED)
+    const intermediateSteps = path.slice(0, -1);
+    for (const intermediateStatus of intermediateSteps) {
+      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
+      try {
+        MetadataManager.updateStatus(incrementId, intermediateStatus);
+        Object.assign(metadata, MetadataManager.read(incrementId));
+      } catch (error) {
+        log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
+        log(chalk.gray(`   ${error instanceof Error ? error.message : String(error)}`));
+        return false;
+      }
     }
 
     // Run quality gate validation unless skipped
@@ -282,14 +298,26 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
       }
     } else {
-      // v1.0.240: Soft gate — warn if grill wasn't run before direct completion
-      // Auto mode and /sw:done both set skipValidation=false so this only triggers
-      // for direct callers bypassing the standard closure flow
       log(chalk.yellow(`⚠️  Validation skipped — quality gates (grill, PM review) may not have been run`));
       log(chalk.gray(`   Consider running /sw:grill ${incrementId} and /sw:done ${incrementId} for proper closure`));
     }
 
-    // Update status to completed
+    // Pre-completion sync: ensure GitHub issues exist before marking COMPLETED.
+    // This catches up if planning sync was missed (e.g., increment created without
+    // running through LifecycleHookDispatcher.onIncrementPlanned()).
+    try {
+      const { LivingDocsSync } = await import(
+        '../living-docs/living-docs-sync.js'
+      );
+      const sync = new LivingDocsSync(process.cwd());
+      await sync.syncIncrement(incrementId);
+      log(chalk.gray(`   Pre-completion sync: living docs synced`));
+    } catch (syncError) {
+      const msg = syncError instanceof Error ? syncError.message : String(syncError);
+      log(chalk.yellow(`⚠️  Pre-completion sync warning: ${msg}`));
+    }
+
+    // Update status to completed (final transition)
     // This triggers StatusChangeSyncTrigger → external tool sync!
     MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
