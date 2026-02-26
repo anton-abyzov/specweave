@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.334] - 2026-02-26
+
+### Changes
+- release 1.0.333
+- update docs-site hero section, fix github hook markdown spacing
+
+---
+
+
+
 ## [1.0.333] - 2026-02-26
 
 ### Changes
