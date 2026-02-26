@@ -225,12 +225,37 @@ fi
 # BUILD CONFIG FROM SPECWEAVE CONFIG + METADATA
 # ============================================================================
 
-# Find the sync module (compiled output)
-SYNC_MODULE="$PROJECT_ROOT/dist/src/core/ac-progress-sync.js"
-if [[ ! -f "$SYNC_MODULE" ]]; then
-  log "Sync module not found at $SYNC_MODULE. Skipping."
+# Find the sync module (compiled output) — check multiple locations
+# Same fallback pattern as universal-auto-create-dispatcher.sh
+SYNC_MODULE=""
+# Derive package root from script location (handlers/ → v2/ → hooks/ → specweave/ → plugins/ → package root)
+PKG_ROOT="$(cd "$HANDLER_DIR/../../../../.." 2>/dev/null && pwd)"
+# 0. SPECWEAVE_PKG (set by Claude Code hook infrastructure, most reliable)
+if [[ -n "${SPECWEAVE_PKG:-}" ]]; then
+  CANDIDATE="${SPECWEAVE_PKG}/dist/src/core/ac-progress-sync.js"
+  [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
+fi
+# 1. Package root (derived from script location — works for both npm and dev)
+if [[ -z "$SYNC_MODULE" ]]; then
+  CANDIDATE="${PKG_ROOT:-$PROJECT_ROOT}/dist/src/core/ac-progress-sync.js"
+  [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
+fi
+# 2. node_modules/specweave/ (direct npm install)
+if [[ -z "$SYNC_MODULE" ]]; then
+  CANDIDATE="$PROJECT_ROOT/node_modules/specweave/dist/src/core/ac-progress-sync.js"
+  [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
+fi
+# 3. Legacy: PROJECT_ROOT/dist/ (dev-only, running from source repo)
+if [[ -z "$SYNC_MODULE" ]]; then
+  CANDIDATE="$PROJECT_ROOT/dist/src/core/ac-progress-sync.js"
+  [[ -f "$CANDIDATE" ]] && SYNC_MODULE="$CANDIDATE"
+fi
+
+if [[ -z "$SYNC_MODULE" ]]; then
+  log "Sync module not found at any known path. Checked: SPECWEAVE_PKG=${SPECWEAVE_PKG:-unset}, PKG_ROOT=${PKG_ROOT:-unset}, node_modules, PROJECT_ROOT/dist. Skipping."
   exit 0
 fi
+log "Using sync module: $SYNC_MODULE"
 
 log "Syncing AC progress for increment $INC_ID to enabled providers..."
 log "Providers: github=$GH_ENABLED jira=$JIRA_ENABLED ado=$ADO_ENABLED"
