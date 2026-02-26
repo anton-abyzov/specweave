@@ -106,13 +106,20 @@ function VideoHero(): ReactNode {
             <Link className={styles.btnPrimary} to="/docs/intro">
               Get Started
             </Link>
-            <Link className={styles.btnSecondary} to="https://youtube.com/@antonabyzov">
+            <a
+              className={styles.btnSecondary}
+              href="#hero-video"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('hero-video')?.scrollIntoView({behavior: 'smooth'});
+              }}
+            >
               Watch Demo →
-            </Link>
+            </a>
           </div>
         </div>
 
-        <div className={styles.videoWrapper}>
+        <div id="hero-video" className={styles.videoWrapper}>
           <video
             className={styles.heroVideo}
             autoPlay
@@ -125,6 +132,13 @@ function VideoHero(): ReactNode {
             <source src="/video/ship-while-you-sleep.mp4" type="video/mp4" />
           </video>
         </div>
+
+        <p className={styles.videoCaption}>
+          Full video walkthrough coming soon on{' '}
+          <a href="https://youtube.com/@antonabyzov" target="_blank" rel="noopener noreferrer">
+            YouTube
+          </a>
+        </p>
 
         <div className={styles.heroBadges}>
           <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
