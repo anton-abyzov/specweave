@@ -58,9 +58,11 @@ And the threat actors are still active on other registries.
 
 **SCRIPT:**
 
-Most skill platforms have no security scanning at all. Skills.sh — the most popular community registry — has zero automated checks. Smithery added protections only after a path traversal breach exposed three thousand MCP server configurations.
+Most skill platforms have no meaningful security gate. Some of the largest community registries have zero automated checks. Others added protections only after breaches — Smithery, for example, responded only after a path traversal vulnerability exposed three thousand MCP server configurations.
 
-The fundamental problem is that these platforms were designed for convenience, not security. Publishing a skill is as easy as pushing a markdown file. There is no review, no scanning, no verification of who the author is.
+But here is the deeper problem. On most platforms, getting listed requires no submission at all. You push a markdown file to a public repo. Users install it. The platform tracks the install telemetry and automatically surfaces the skill on its leaderboard. No review, no scanning, no verification of who the author is. The more installs a skill gets, the higher it ranks — whether it is legitimate or malware.
+
+That is the fundamental design flaw. These platforms were built for convenience and discovery, not security. Popularity is treated as a signal of quality when it is actually just a signal of distribution. A malicious skill that tricks a hundred developers into installing it ranks HIGHER than a safe skill with ten installs.
 
 This is the same pattern that hit npm in its early years. Open registries with no gatekeeping. Except skills are more dangerous than npm packages, because they execute with the agent's full permissions and developers rarely read the source before installing.
 

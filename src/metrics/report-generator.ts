@@ -112,12 +112,12 @@ function generateCFRInsights(value: number, tier: string, failed: number, total:
     }
     insights.push('✅ Maintain current quality standards');
   } else if (tier === 'High') {
-    insights.push('✅ **Good Performance**: 16-30% failure rate is manageable');
+    insights.push('✅ **Good Performance**: 15-30% failure rate is manageable');
     insights.push(`📊 **Stats**: ${failed} failures out of ${total} deployments`);
     insights.push('📈 **Next Level**: Focus on test coverage and pre-deployment validation');
     insights.push('💡 **Tip**: Implement smoke tests and canary deployments');
   } else if (tier === 'Medium') {
-    insights.push('⚠️ **Concerning**: 31-45% failure rate impacts reliability');
+    insights.push('⚠️ **Concerning**: 30-45% failure rate impacts reliability');
     insights.push(`📊 **Stats**: ${failed} failures out of ${total} deployments`);
     insights.push('🎯 **Action**: Increase automated test coverage');
     insights.push('🔧 **Focus**: Implement pre-commit hooks and PR validation');
@@ -238,7 +238,7 @@ ${generateDFInsights(deploymentFrequency.value, deploymentFrequency.tier).map(i 
   report += `
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
-- ⭐ High: 1 day to 1 week
+- ⭐ High: 1 hour to 1 week
 - 📊 Medium: 1 week to 1 month
 - ⚠️ Low: More than 1 month
 
@@ -255,8 +255,8 @@ ${generateLTInsights(leadTime.value, leadTime.tier, leadTime.p50, leadTime.p90).
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
-- ⭐ High: 16-30%
-- 📊 Medium: 31-45%
+- ⭐ High: 15-30%
+- 📊 Medium: 30-45%
 - ⚠️ Low: More than 45%
 
 ### Insights

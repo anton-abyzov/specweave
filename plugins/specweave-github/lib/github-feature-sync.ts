@@ -154,7 +154,15 @@ export class GitHubFeatureSync {
     // 1. Load Feature FEATURE.md
     const featureFolder = await this.findFeatureFolder(featureId);
     if (!featureFolder) {
-      throw new Error(`Feature ${featureId} not found in ${this.specsDir}`);
+      console.log(`   ⚠️  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
+      console.log(`   💡 Run /sw:sync-docs or /sw:living-docs to generate living docs first`);
+      return {
+        milestoneNumber: 0,
+        milestoneUrl: '',
+        issuesCreated: 0,
+        issuesUpdated: 0,
+        userStoriesProcessed: 0,
+      };
     }
 
     const featurePath = path.join(featureFolder, 'FEATURE.md');
@@ -407,19 +415,25 @@ export class GitHubFeatureSync {
 
       const specContent = await readFile(specPath, 'utf-8');
 
-      // Parse frontmatter
+      // Parse frontmatter (optional — many specs don't have YAML frontmatter)
       const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
-      if (!fmMatch) {
-        console.log(`   ⚠️  spec.md has no YAML frontmatter`);
-        return null;
+      let frontmatter: Record<string, string> = {};
+      if (fmMatch) {
+        try {
+          frontmatter = yaml.parse(fmMatch[1]) || {};
+        } catch {
+          // Invalid YAML — proceed without frontmatter
+        }
       }
 
-      const frontmatter = yaml.parse(fmMatch[1]);
-      const title = frontmatter.title || path.basename(incrementFolder).replace(/^\d+-/, '');
+      const incrementBasename = path.basename(incrementFolder);
+      const title = frontmatter.title
+        || specContent.match(/^#\s+(.+)/m)?.[1]?.trim()
+        || incrementBasename.replace(/^\d+-/, '').replace(/-/g, ' ');
       const status = frontmatter.status || 'active';
       const priority = frontmatter.priority || 'P2';
       const created = frontmatter.created || new Date().toISOString().split('T')[0];
-      const incrementId = frontmatter.increment || path.basename(incrementFolder);
+      const incrementId = frontmatter.increment || incrementBasename;
 
       // Determine target project folder from spec.md user stories or first available
       let targetProjectFolder = projectFolders[0]; // Default: first project folder

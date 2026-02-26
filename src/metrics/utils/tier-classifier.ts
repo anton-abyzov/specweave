@@ -33,18 +33,19 @@ export function classifyDeploymentFrequency(deploysPerYear: number): DORAType {
  *
  * Benchmarks (hours from commit to production):
  * - Elite: <1 hour
- * - High: 1 hour to 1 day (24 hours)
- * - Medium: 1 day to 1 week (168 hours)
- * - Low: 1 week to 1 month (720 hours)
+ * - High: 1 hour to 1 week (168 hours)
+ * - Medium: 1 week to 1 month (720 hours)
+ * - Low: >1 month
  *
+ * @see https://dora.dev/ - DORA Research benchmarks
  * @param hours - Average lead time in hours
  * @returns DORA tier
  */
 export function classifyLeadTime(hours: number): DORAType {
   if (hours === 0) return 'N/A';
   if (hours < 1) return 'Elite';
-  if (hours < 24) return 'High';
-  if (hours < 168) return 'Medium';  // 7 days
+  if (hours < 168) return 'High';    // 1 week
+  if (hours < 720) return 'Medium';  // 1 month
   return 'Low';
 }
 
@@ -52,19 +53,20 @@ export function classifyLeadTime(hours: number): DORAType {
  * Classify Change Failure Rate
  *
  * Benchmarks (percentage of failed deployments):
- * - Elite: <5%
- * - High: 5-10%
- * - Medium: 10-15%
- * - Low: >15%
+ * - Elite: 0-15%
+ * - High: 15-30%
+ * - Medium: 30-45%
+ * - Low: >45%
  *
+ * @see https://dora.dev/ - DORA Research benchmarks
  * @param percentage - Change failure rate (0-100)
  * @returns DORA tier
  */
 export function classifyChangeFailureRate(percentage: number): DORAType {
   if (percentage < 0) return 'N/A';  // Invalid
-  if (percentage < 5) return 'Elite';
-  if (percentage < 10) return 'High';
-  if (percentage < 15) return 'Medium';
+  if (percentage < 15) return 'Elite';
+  if (percentage < 30) return 'High';
+  if (percentage < 45) return 'Medium';
   return 'Low';
 }
 

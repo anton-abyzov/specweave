@@ -252,6 +252,8 @@ ensure_label "user-story" "0075ca" "User story from SpecWeave spec"
 ensure_label "specweave" "6f42c1" "Managed by SpecWeave"
 ensure_label "$PROJECT_LABEL" "c5def5" "$PROJECT_NAME project"
 ensure_label "status:active" "0e8a16" "Active work item"
+ensure_label "status:completed" "6f42c1" "Completed work item"
+ensure_label "status:not_started" "fbca04" "User story not started"
 
 # Priority labels (collect unique priorities from parsed user stories)
 for i in $(seq 0 $((US_COUNT - 1))); do
@@ -271,6 +273,9 @@ log "Labels ensured"
 # ============================================================================
 
 # Function to extract ACs for a given US from spec.md
+# Handles both formats:
+#   - [ ] **AC-US1-01**: Description   (bold AC ID)
+#   - [ ] AC-US1-01: Description       (plain AC ID)
 extract_acs_for_us() {
   local us_id="$1"
   local in_section=false
@@ -279,12 +284,12 @@ extract_acs_for_us() {
 
   while IFS= read -r line; do
     # Start of our US section
-    if [[ "$line" =~ ^###[[:space:]]+"$us_id": ]]; then
+    if [[ "$line" =~ ^###[[:space:]]+"$us_id": ]] || [[ "$line" =~ ^###[[:space:]]+"$us_id"[[:space:]] ]]; then
       in_section=true
       continue
     fi
-    # Start of next US section — stop
-    if $in_section && [[ "$line" =~ ^###[[:space:]]+US- ]]; then
+    # Start of next US section or next ## section — stop
+    if $in_section && [[ "$line" =~ ^##[[:space:]] ]]; then
       break
     fi
     # Inside our section, look for AC lines
@@ -293,6 +298,7 @@ extract_acs_for_us() {
         in_ac=true
         continue
       fi
+      # Format 1: Bold AC ID — - [ ] **AC-US1-01**: Description
       if $in_ac && [[ "$line" =~ ^-[[:space:]]+\[(.)\][[:space:]]+\*\*([^*]+)\*\*:[[:space:]]*(.*) ]]; then
         local checked="${BASH_REMATCH[1]}"
         local ac_id="${BASH_REMATCH[2]}"
@@ -302,8 +308,21 @@ extract_acs_for_us() {
         else
           acs+="- [ ] **${ac_id}**: ${ac_desc}"$'\n'
         fi
+        continue
       fi
-      # Stop ACs at next section or empty line after ACs
+      # Format 2: Plain AC ID — - [ ] AC-US1-01: Description
+      if $in_ac && [[ "$line" =~ ^-[[:space:]]+\[(.)\][[:space:]]+(AC-[^:]+):[[:space:]]*(.*) ]]; then
+        local checked="${BASH_REMATCH[1]}"
+        local ac_id="${BASH_REMATCH[2]}"
+        local ac_desc="${BASH_REMATCH[3]}"
+        if [[ "$checked" == "x" ]]; then
+          acs+="- [x] **${ac_id}**: ${ac_desc}"$'\n'
+        else
+          acs+="- [ ] **${ac_id}**: ${ac_desc}"$'\n'
+        fi
+        continue
+      fi
+      # Stop ACs at section divider or next heading
       if $in_ac && [[ "$line" =~ ^---$ ]]; then
         break
       fi

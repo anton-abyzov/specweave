@@ -125,10 +125,22 @@ EOF
   exit 0
 fi
 
-# Check if github-spec-content-sync CLI exists
-SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
-if [ ! -f "$SYNC_CLI" ]; then
-  echo "[$(date)] [GitHub] ⚠️  sync-spec-content CLI not found at $SYNC_CLI, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+# Find sync-spec-content CLI — check multiple locations
+SYNC_CLI=""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Derive package root: hooks/ → specweave-github/ → plugins/ → package root (3 levels up)
+_PKG_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)"
+# 0. SPECWEAVE_PKG (set by hook infrastructure)
+[[ -n "${SPECWEAVE_PKG:-}" ]] && [[ -f "${SPECWEAVE_PKG}/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="${SPECWEAVE_PKG}/dist/src/cli/commands/sync-spec-content.js"
+# 1. Package root (derived from script location)
+[[ -z "$SYNC_CLI" ]] && [[ -f "${_PKG_ROOT}/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="${_PKG_ROOT}/dist/src/cli/commands/sync-spec-content.js"
+# 2. node_modules/specweave/
+[[ -z "$SYNC_CLI" ]] && [[ -f "$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/sync-spec-content.js"
+# 3. Legacy: PROJECT_ROOT/dist/
+[[ -z "$SYNC_CLI" ]] && [[ -f "$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js" ]] && SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
+
+if [ -z "$SYNC_CLI" ]; then
+  echo "[$(date)] [GitHub] ⚠️  sync-spec-content CLI not found at any known path, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
   cat <<EOF
 {
   "continue": true
@@ -136,6 +148,7 @@ if [ ! -f "$SYNC_CLI" ]; then
 EOF
   exit 0
 fi
+echo "[$(date)] [GitHub] Using sync CLI: $SYNC_CLI" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # Check for gh CLI
 if ! command -v gh &> /dev/null; then
@@ -162,10 +175,14 @@ if [ -z "$CURRENT_INCREMENT" ]; then
   # Fall through to sync all changed specs
 fi
 
-# 2. Use TypeScript CLI to detect all specs
-DETECT_CLI="$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js"
+# 2. Use TypeScript CLI to detect all specs — check multiple locations
+DETECT_CLI=""
+[[ -n "${SPECWEAVE_PKG:-}" ]] && [[ -f "${SPECWEAVE_PKG}/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="${SPECWEAVE_PKG}/dist/src/cli/commands/detect-specs.js"
+[[ -z "$DETECT_CLI" ]] && [[ -f "${_PKG_ROOT}/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="${_PKG_ROOT}/dist/src/cli/commands/detect-specs.js"
+[[ -z "$DETECT_CLI" ]] && [[ -f "$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="$PROJECT_ROOT/node_modules/specweave/dist/src/cli/commands/detect-specs.js"
+[[ -z "$DETECT_CLI" ]] && [[ -f "$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js" ]] && DETECT_CLI="$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js"
 
-if [ -f "$DETECT_CLI" ]; then
+if [ -n "$DETECT_CLI" ] && [ -f "$DETECT_CLI" ]; then
   echo "[$(date)] [GitHub] 🔍 Detecting all specs in increment $CURRENT_INCREMENT..." >> "$DEBUG_LOG" 2>/dev/null || true
 
   # Call detect-specs CLI and capture JSON output
@@ -179,7 +196,7 @@ if [ -f "$DETECT_CLI" ]; then
   # Store detection result for later use
   echo "$DETECTION_RESULT" > /tmp/specweave-detected-specs.json
 else
-  echo "[$(date)] [GitHub] ⚠️  detect-specs CLI not found at $DETECT_CLI, falling back to git diff" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] [GitHub] ⚠️  detect-specs CLI not found at any known path, falling back to git diff" >> "$DEBUG_LOG" 2>/dev/null || true
   SPEC_COUNT=0
 fi
 

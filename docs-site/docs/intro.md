@@ -257,16 +257,16 @@ Run `/sw:auto` and watch AI work for **hours** without intervention:
 
 <div className="stats-row">
 <div className="stat-item">
-<div className="stat-number">200+</div>
+<div className="stat-number">500+</div>
 <div className="stat-label">Features Shipped</div>
 </div>
 <div className="stat-item">
-<div className="stat-number">10k+</div>
+<div className="stat-number">70k+</div>
 <div className="stat-label">Downloads</div>
 </div>
 <div className="stat-item">
-<div className="stat-number">500+</div>
-<div className="stat-label">Discord Members</div>
+<div className="stat-number">10k+</div>
+<div className="stat-label">Verified Skills</div>
 </div>
 </div>
 

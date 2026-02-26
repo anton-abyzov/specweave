@@ -130,6 +130,12 @@ export async function autoCloseCompletedUserStories(
     );
 
     if (closeResult.success) {
+      // Update labels: remove status:active, add status:completed
+      await execFileNoThrow(
+        'gh',
+        ['issue', 'edit', issueNum, '--remove-label', 'status:active', '--add-label', 'status:completed', '-R', repoSlug],
+        execOpts,
+      );
       result.closed.push({ usId, issueNumber: link.issueNumber });
     } else {
       result.errors.push({
