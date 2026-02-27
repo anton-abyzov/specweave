@@ -132,11 +132,44 @@ export function extractUserStories(content: string, defaultProject?: string): Us
 
     const storyContent = storyLines.join('\n');
 
-    // Extract description
+    // Extract description — cascading format detection
     let description = '';
-    const descMatch = storyContent.match(/\*\*As a\*\*\s*([^\n]+)\s*\n\*\*I want\*\*\s*([^\n]+)\s*\n\*\*So that\*\*\s*([^\n]+)/i);
-    if (descMatch) {
-      description = `**As a** ${descMatch[1].trim()}\n**I want** ${descMatch[2].trim()}\n**So that** ${descMatch[3].trim()}`;
+
+    // Format 1: Bold structured (**As a** X / **I want** Y / **So that** Z)
+    const boldDescMatch = storyContent.match(/\*\*As a\*\*\s*([^\n]+)\s*\n\*\*I want\*\*\s*([^\n]+)\s*\n\*\*So that\*\*\s*([^\n]+)/i);
+    if (boldDescMatch) {
+      description = `**As a** ${boldDescMatch[1].trim()}\n**I want** ${boldDescMatch[2].trim()}\n**So that** ${boldDescMatch[3].trim()}`;
+    }
+
+    // Format 2: Plain 3-line (As a X / I want Y / So that Z)
+    if (!description) {
+      const plainThreeLineMatch = storyContent.match(/^As an?\s+([^\n]+)\s*\nI want\s+([^\n]+)\s*\nSo that\s+([^\n]+)/im);
+      if (plainThreeLineMatch) {
+        description = `As a ${plainThreeLineMatch[1].trim()}\nI want ${plainThreeLineMatch[2].trim()}\nSo that ${plainThreeLineMatch[3].trim()}`;
+      }
+    }
+
+    // Format 3: Single-line narrative (As a/an/the ...)
+    if (!description) {
+      const narrativeMatch = storyContent.match(/^(As (?:a|an|the)\s+[^\n]+)/im);
+      if (narrativeMatch) {
+        description = narrativeMatch[1].trim();
+      }
+    }
+
+    // Format 4: Free-form text before first AC section or AC checkbox
+    if (!description) {
+      const freeformMatch = storyContent.match(/^([\s\S]*?)(?=\n\*\*(?:Acceptance Criteria|ACs?|Priority)\*\*:|\n[-*]\s+\[[ xX]\]\s+\*\*AC-|$)/i);
+      if (freeformMatch) {
+        const cleaned = freeformMatch[1]
+          .split('\n')
+          .filter(line => !/^\*\*(?:Project|Board|External|Acceptance Criteria|ACs?|Priority)\*\*:/i.test(line))
+          .join('\n')
+          .trim();
+        if (cleaned) {
+          description = cleaned;
+        }
+      }
     }
 
     // Extract acceptance criteria with full descriptions (flexible pattern)
