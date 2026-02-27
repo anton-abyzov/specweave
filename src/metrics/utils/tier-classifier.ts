@@ -64,9 +64,9 @@ export function classifyLeadTime(hours: number): DORAType {
  */
 export function classifyChangeFailureRate(percentage: number): DORAType {
   if (percentage < 0) return 'N/A';  // Invalid
-  if (percentage < 15) return 'Elite';
-  if (percentage < 30) return 'High';
-  if (percentage < 45) return 'Medium';
+  if (percentage <= 15) return 'Elite';
+  if (percentage <= 30) return 'High';
+  if (percentage <= 45) return 'Medium';
   return 'Low';
 }
 
