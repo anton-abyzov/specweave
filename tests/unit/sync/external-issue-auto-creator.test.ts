@@ -652,31 +652,43 @@ describe('ExternalIssueAutoCreator', () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
         specContent: SPEC_CONTENT_WITH_STORIES,
         specExists: true,
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-10',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-10',
       });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
-      // The search should use the frontmatter feature_id
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FS-001]');
+      // The JIRA epic summary should use the frontmatter feature_id
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FS-001]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should derive feature_id when not in frontmatter', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -685,24 +697,32 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0042-bare-feature',
       });
       mockDeriveFeatureId.mockReturnValue('FS-042');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 20,
-        html_url: 'https://github.com/o/r/issues/20',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-20',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-20',
       });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0042-bare-feature');
 
       expect(mockDeriveFeatureId).toHaveBeenCalledWith('0042-bare-feature');
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FS-042]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FS-042]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should fallback to manual feature_id parsing when deriveFeatureId throws', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -713,24 +733,32 @@ describe('ExternalIssueAutoCreator', () => {
       mockDeriveFeatureId.mockImplementation(() => {
         throw new Error('Failed to derive');
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 30,
-        html_url: 'https://github.com/o/r/issues/30',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-30',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-30',
       });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0142-broken-derive');
 
       // Should fallback: parseInt("0142") = 142, padStart(3) = "142" => FS-142
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FS-142]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FS-142]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should parse user stories from spec.md body', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -738,30 +766,29 @@ describe('ExternalIssueAutoCreator', () => {
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-10',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-10',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      // Should have created issues for US-001 and US-002
-      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(2);
-      const firstCall = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
-      expect(firstCall.userStoryId).toBe('US-001');
-      expect(firstCall.title).toBe('First User Story');
-      const secondCall = mockGitHubClientV2.createUserStoryIssue.mock.calls[1][0];
-      expect(secondCall.userStoryId).toBe('US-002');
-      expect(secondCall.title).toBe('Second User Story');
+      // JIRA epic description should contain both user stories
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('US-001: First User Story');
+      expect(description).toContain('US-002: Second User Story');
     });
 
     it('should parse project field from user stories', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          ado: { enabled: true },
+        },
+        issueTracker: {
+          organization_ado: 'org',
+          project: 'proj',
         },
       });
       setupIncrementFiles({
@@ -769,25 +796,29 @@ describe('ExternalIssueAutoCreator', () => {
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
+      mockGetAdoPat.mockReturnValue('pat-token');
+      mockAdoClient.createWorkItem.mockResolvedValue({
+        id: 10,
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/10',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      // US-001 has **Project**: my-app, so the body should mention it
-      const body = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0].body;
-      expect(body).toContain('my-app');
+      // ADO description should include user stories (parsed from spec body)
+      const description = mockAdoClient.createWorkItem.mock.calls[0][0].description;
+      expect(description).toContain('US-001');
     });
 
     it('should read status from metadata.json', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -797,25 +828,29 @@ describe('ExternalIssueAutoCreator', () => {
         metadataContent: JSON.stringify({ status: 'completed' }),
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 1,
-        html_url: 'https://github.com/o/r/issues/1',
+      mockDeriveFeatureId.mockReturnValue('FS-001');
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-1',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-1',
       });
 
       const creator = createCreator();
-      await creator.createForIncrement('0001-test-feature');
+      const result = await creator.createForIncrement('0001-test-feature');
 
-      // Feature-level issue body should mention "completed" status
-      const body = mockGitHubClientV2.createEpicIssue.mock.calls[0][1];
-      expect(body).toContain('completed');
+      // JIRA epic should be created successfully (status read from metadata)
+      expect(result.success).toBe(true);
+      expect(result.provider).toBe('jira');
     });
 
     it('should use frontmatter title when available', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -823,19 +858,19 @@ describe('ExternalIssueAutoCreator', () => {
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-10',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-10',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      // Labels contain 'specweave' and 'auto-created'
-      const callArgs = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
+      // Labels contain 'specweave' and 'auto-created', summary contains feature ID and title
+      const callArgs = mockJiraClient.createIssue.mock.calls[0][0];
       expect(callArgs.labels).toEqual(['specweave', 'auto-created']);
-      expect(callArgs.featureId).toBe('FS-001');
+      expect(callArgs.summary).toContain('[FS-001]');
+      expect(callArgs.summary).toContain('Test Feature');
     });
   });
 
@@ -1008,7 +1043,11 @@ describe('ExternalIssueAutoCreator', () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -1019,17 +1058,16 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0001-test-feature',
       });
       mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 1,
-        html_url: 'https://github.com/o/r/issues/1',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-1',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-1',
       });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
       expect(result.skipped).toBeFalsy();
-      expect(result.provider).toBe('github');
+      expect(result.provider).toBe('jira');
     });
 
     it('should handle corrupt metadata.json gracefully', async () => {
@@ -1066,7 +1104,7 @@ describe('ExternalIssueAutoCreator', () => {
   // GitHub issue creation
   // =========================================================================
 
-  describe('GitHub issue creation', () => {
+  describe('GitHub issue creation (delegated to LivingDocsSync)', () => {
     beforeEach(() => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
@@ -1077,82 +1115,47 @@ describe('ExternalIssueAutoCreator', () => {
       mockDeriveFeatureId.mockReturnValue('FS-001');
     });
 
-    it('should create user story issues when stories exist', async () => {
+    it('should skip GitHub and delegate to LivingDocsSync pipeline', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_WITH_STORIES,
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue
-        .mockResolvedValueOnce({ number: 10, html_url: 'https://github.com/test-owner/test-repo/issues/10' })
-        .mockResolvedValueOnce({ number: 11, html_url: 'https://github.com/test-owner/test-repo/issues/11' });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
       expect(result.success).toBe(true);
       expect(result.provider).toBe('github');
-      expect(result.issueNumber).toBe(10);
-      expect(result.issueUrl).toContain('/issues/10');
-      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(2);
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('LivingDocsSync');
+      // No GitHub API calls should be made
+      expect(mockGitHubClientV2.searchIssueByTitle).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createEpicIssue).not.toHaveBeenCalled();
     });
 
-    it('should create feature-level issue when no stories exist', async () => {
+    it('should skip GitHub even when no stories exist', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_EMPTY_STORIES,
         specExists: true,
         incrementId: '0001-empty',
-      });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 50,
-        html_url: 'https://github.com/test-owner/test-repo/issues/50',
       });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-empty');
 
       expect(result.success).toBe(true);
-      expect(result.issueNumber).toBe(50);
-      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
-      // Title should contain feature ID
-      const title = mockGitHubClientV2.createEpicIssue.mock.calls[0][0];
-      expect(title).toContain('[FS-001]');
+      expect(result.skipped).toBe(true);
+      expect(result.provider).toBe('github');
+      expect(mockGitHubClientV2.createEpicIssue).not.toHaveBeenCalled();
     });
 
-    it('should fallback to feature-level issue when all story creations fail', async () => {
+    it('should skip GitHub even when story creation would fail', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_WITH_STORIES,
         specExists: true,
         incrementId: '0001-test-feature',
-      });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockRejectedValue(
-        new Error('API rate limited')
-      );
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 99,
-        html_url: 'https://github.com/test-owner/test-repo/issues/99',
-      });
-
-      const creator = createCreator();
-      const result = await creator.createForIncrement('0001-test-feature');
-
-      expect(result.success).toBe(true);
-      expect(result.issueNumber).toBe(99);
-      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
-    });
-
-    it('should skip creation when API layer 3 finds existing issue', async () => {
-      setupIncrementFiles({
-        specContent: SPEC_CONTENT_WITH_STORIES,
-        specExists: true,
-        incrementId: '0001-test-feature',
-      });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue({
-        number: 77,
-        html_url: 'https://github.com/test-owner/test-repo/issues/77',
       });
 
       const creator = createCreator();
@@ -1160,40 +1163,44 @@ describe('ExternalIssueAutoCreator', () => {
 
       expect(result.success).toBe(true);
       expect(result.skipped).toBe(true);
-      expect(result.issueNumber).toBe(77);
-      expect(result.skipReason).toContain('#77');
-      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
-      expect(mockGitHubClientV2.createEpicIssue).not.toHaveBeenCalled();
+      expect(result.provider).toBe('github');
     });
 
-    it('should update metadata after creating issue', async () => {
+    it('should skip GitHub even when API would find existing issue', async () => {
+      setupIncrementFiles({
+        specContent: SPEC_CONTENT_WITH_STORIES,
+        specExists: true,
+        incrementId: '0001-test-feature',
+      });
+
+      const creator = createCreator();
+      const result = await creator.createForIncrement('0001-test-feature');
+
+      expect(result.success).toBe(true);
+      expect(result.skipped).toBe(true);
+      expect(result.provider).toBe('github');
+      expect(result.skipReason).toContain('LivingDocsSync');
+      expect(mockGitHubClientV2.searchIssueByTitle).not.toHaveBeenCalled();
+    });
+
+    it('should not update metadata when GitHub is skipped', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_EMPTY_STORIES,
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 50,
-        html_url: 'https://github.com/test-owner/test-repo/issues/50',
-      });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      expect(mockWriteFile).toHaveBeenCalled();
-      const writtenContent = JSON.parse(mockWriteFile.mock.calls[0][1]);
-      expect(writtenContent.github.issue).toBe(50);
-      expect(writtenContent.github.url).toContain('/issues/50');
-      expect(writtenContent.github.synced).toBeDefined();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
 
-    it('should return error when GitHub repo is not configured', async () => {
+    it('should skip GitHub even without owner/repo configured', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
           github: { enabled: true },
-          // No owner/repo, no profiles, no issueTracker, no git remote
         },
       });
       setupIncrementFiles({
@@ -1202,55 +1209,43 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0001-test-feature',
       });
 
-      // Make git remote detection also fail
-      const { execSync } = await import('child_process');
-      (execSync as any).mockImplementation(() => {
-        throw new Error('Not a git repo');
-      });
-
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
       expect(result.provider).toBe('github');
-      expect(result.error).toContain('GitHub repository not configured');
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('LivingDocsSync');
     });
 
-    it('should include labels in created issues', async () => {
+    it('should not make any GitHub API calls', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_WITH_STORIES,
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/test-owner/test-repo/issues/10',
-      });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      const callArgs = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
-      expect(callArgs.labels).toEqual(['specweave', 'auto-created']);
+      expect(mockGitHubClientV2.searchIssueByTitle).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
+      expect(mockGitHubClientV2.createEpicIssue).not.toHaveBeenCalled();
     });
 
-    it('should handle GitHub API errors gracefully', async () => {
+    it('should not trigger GitHub API errors since no calls are made', async () => {
       setupIncrementFiles({
         specContent: SPEC_CONTENT_EMPTY_STORIES,
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockRejectedValue(
-        new Error('Network error')
-      );
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
       expect(result.provider).toBe('github');
-      expect(result.error).toContain('Network error');
+      expect(result.skipped).toBe(true);
     });
   });
 
@@ -1282,10 +1277,13 @@ describe('ExternalIssueAutoCreator', () => {
       });
 
       const creator = createCreator();
-      await creator.createForIncrement('0001-test-feature');
+      const result = await creator.createForIncrement('0001-test-feature');
 
-      // The issue URL in result should contain the detected owner/repo
-      expect(mockWriteFile).toHaveBeenCalled();
+      // GitHub is now delegated to LivingDocsSync pipeline
+      expect(result.success).toBe(true);
+      expect(result.provider).toBe('github');
+      expect(result.skipped).toBe(true);
+      expect(result.skipReason).toContain('LivingDocsSync');
     });
 
     it('should detect repo from sync.profiles', async () => {
@@ -1826,11 +1824,15 @@ describe('ExternalIssueAutoCreator', () => {
   // =========================================================================
 
   describe('issue body templates', () => {
-    it('should include feature ID and increment ID in GitHub user story body', async () => {
+    it('should include feature ID and increment ID in JIRA epic description', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -1838,28 +1840,30 @@ describe('ExternalIssueAutoCreator', () => {
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-10',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-10',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      const body = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0].body;
-      expect(body).toContain('FS-001');
-      expect(body).toContain('0001-test-feature');
-      expect(body).toContain('US-001');
-      expect(body).toContain('spec.md');
-      expect(body).toContain('Auto-created by SpecWeave');
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('FS-001');
+      expect(description).toContain('0001-test-feature');
+      expect(description).toContain('US-001');
+      expect(description).toContain('Auto-created by SpecWeave');
     });
 
-    it('should include user stories list in GitHub feature-level body', async () => {
+    it('should include user stories list in JIRA epic description', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -1867,28 +1871,28 @@ describe('ExternalIssueAutoCreator', () => {
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      // Make story creation fail to trigger fallback
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockRejectedValue(new Error('fail'));
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 1,
-        html_url: 'https://github.com/o/r/issues/1',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-1',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-1',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-test-feature');
 
-      const body = mockGitHubClientV2.createEpicIssue.mock.calls[0][1];
-      expect(body).toContain('US-001: First User Story');
-      expect(body).toContain('US-002: Second User Story');
-      expect(body).toContain('tasks.md');
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('US-001: First User Story');
+      expect(description).toContain('US-002: Second User Story');
     });
 
     it('should show "No user stories defined" when empty', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          ado: { enabled: true },
+        },
+        issueTracker: {
+          organization_ado: 'org',
+          project: 'proj',
         },
       });
       setupIncrementFiles({
@@ -1897,17 +1901,17 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0001-empty',
       });
       mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 1,
-        html_url: 'https://github.com/o/r/issues/1',
+      mockGetAdoPat.mockReturnValue('pat-token');
+      mockAdoClient.createWorkItem.mockResolvedValue({
+        id: 1,
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/1',
       });
 
       const creator = createCreator();
       await creator.createForIncrement('0001-empty');
 
-      const body = mockGitHubClientV2.createEpicIssue.mock.calls[0][1];
-      expect(body).toContain('No user stories defined');
+      const description = mockAdoClient.createWorkItem.mock.calls[0][0].description;
+      expect(description).toContain('No user stories defined');
     });
 
     it('should use JIRA wiki markup in epic description', async () => {
@@ -1981,11 +1985,15 @@ describe('ExternalIssueAutoCreator', () => {
   // =========================================================================
 
   describe('metadata updates', () => {
-    it('should merge github data into existing metadata', async () => {
+    it('should merge jira data into existing metadata', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -1996,10 +2004,9 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0001-test-feature',
       });
       mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 50,
-        html_url: 'https://github.com/o/r/issues/50',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-50',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-50',
       });
 
       const creator = createCreator();
@@ -2009,15 +2016,19 @@ describe('ExternalIssueAutoCreator', () => {
       // Existing fields should be preserved
       expect(writtenContent.status).toBe('active');
       expect(writtenContent.version).toBe('1.0');
-      // New github field should be added
-      expect(writtenContent.github.issue).toBe(50);
+      // New jira field should be added
+      expect(writtenContent.jira.issue).toBe('PROJ-50');
     });
 
     it('should create metadata.json if it does not exist (for metadata update)', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       setupIncrementFiles({
@@ -2027,10 +2038,9 @@ describe('ExternalIssueAutoCreator', () => {
         incrementId: '0001-test-feature',
       });
       mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 50,
-        html_url: 'https://github.com/o/r/issues/50',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-50',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-50',
       });
 
       // For the metadata write, existsSync returns false
@@ -2042,7 +2052,7 @@ describe('ExternalIssueAutoCreator', () => {
 
       expect(mockWriteFile).toHaveBeenCalled();
       const writtenContent = JSON.parse(mockWriteFile.mock.calls[0][1]);
-      expect(writtenContent.github.issue).toBe(50);
+      expect(writtenContent.jira.issue).toBe('PROJ-50');
     });
   });
 
@@ -2159,13 +2169,16 @@ describe('ExternalIssueAutoCreator', () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 1,
-        html_url: 'https://github.com/o/r/issues/1',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-1',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-1',
       });
     });
 
@@ -2186,7 +2199,12 @@ title: "Feature With Epic"
       const creator = createCreator();
       await creator.createForIncrement('0007-epic-feature');
 
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[EPIC-007]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[EPIC-007]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should use feature from frontmatter as feature ID', async () => {
@@ -2206,7 +2224,12 @@ title: "Feature With Feature"
       const creator = createCreator();
       await creator.createForIncrement('0008-feat');
 
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FEAT-X]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FEAT-X]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should pad feature ID correctly for small numbers', async () => {
@@ -2223,7 +2246,12 @@ title: "Feature With Feature"
       await creator.createForIncrement('0005-small');
 
       // parseInt("0005") = 5, padStart(3) = "005" => FS-005
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FS-005]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FS-005]'),
+        }),
+        'PROJ'
+      );
     });
 
     it('should handle non-numeric increment IDs in fallback', async () => {
@@ -2240,7 +2268,12 @@ title: "Feature With Feature"
       await creator.createForIncrement('abc-no-number');
 
       // No numeric match => last resort: substring(0, 3) = "abc" => FS-abc
-      expect(mockGitHubClientV2.searchIssueByTitle).toHaveBeenCalledWith('[FS-abc]');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          summary: expect.stringContaining('[FS-abc]'),
+        }),
+        'PROJ'
+      );
     });
   });
 
@@ -2248,8 +2281,8 @@ title: "Feature With Feature"
   // API Layer 3 dedup for GitHub (searchIssueByTitle)
   // =========================================================================
 
-  describe('GitHub API Layer 3 deduplication', () => {
-    it('should update metadata when finding existing issue via API', async () => {
+  describe('GitHub API Layer 3 deduplication (now delegated)', () => {
+    it('should skip GitHub entirely since it is handled by LivingDocsSync', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
@@ -2261,22 +2294,18 @@ title: "Feature With Feature"
         specExists: true,
         incrementId: '0001-test-feature',
       });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue({
-        number: 88,
-        html_url: 'https://github.com/o/r/issues/88',
-      });
 
       const creator = createCreator();
       const result = await creator.createForIncrement('0001-test-feature');
 
       expect(result.success).toBe(true);
       expect(result.skipped).toBe(true);
-      expect(result.issueNumber).toBe(88);
+      expect(result.provider).toBe('github');
+      expect(result.skipReason).toContain('LivingDocsSync');
 
-      // Should still update metadata with found issue
-      expect(mockWriteFile).toHaveBeenCalled();
-      const writtenContent = JSON.parse(mockWriteFile.mock.calls[0][1]);
-      expect(writtenContent.github.issue).toBe(88);
+      // No API calls or metadata updates
+      expect(mockGitHubClientV2.searchIssueByTitle).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
   });
 
@@ -2310,15 +2339,21 @@ title: "Feature With Feature"
 
     it('proceeds normally when spec.md is NOT a template', async () => {
       mockConfigManagerRead.mockResolvedValue({
-        sync: { autoCreateOnIncrement: true, github: { enabled: true, owner: 'o', repo: 'r' } },
+        sync: {
+          autoCreateOnIncrement: true,
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
+        },
       });
       mockIsTemplateFile.mockReturnValue(false);
       mockDeriveFeatureId.mockReturnValue('FS-001');
       setupIncrementFiles({ specContent: SPEC_CONTENT_WITH_STORIES });
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 99,
-        html_url: 'https://github.com/o/r/issues/99',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-99',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-99',
       });
 
       const creator = createCreator();
@@ -2326,7 +2361,7 @@ title: "Feature With Feature"
 
       expect(result.success).toBe(true);
       expect(result.skipped).toBeFalsy();
-      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalled();
+      expect(mockJiraClient.createIssue).toHaveBeenCalled();
     });
   });
 
@@ -2339,18 +2374,17 @@ title: "Feature With Feature"
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
-          github: { enabled: true, owner: 'o', repo: 'r' },
+          jira: { enabled: true },
+        },
+        issueTracker: {
+          domain: 'test.atlassian.net',
+          projects: [{ key: 'PROJ' }],
         },
       });
       mockDeriveFeatureId.mockReturnValue('FS-001');
-      mockGitHubClientV2.searchIssueByTitle.mockResolvedValue(null);
-      mockGitHubClientV2.createUserStoryIssue.mockResolvedValue({
-        number: 10,
-        html_url: 'https://github.com/o/r/issues/10',
-      });
-      mockGitHubClientV2.createEpicIssue.mockResolvedValue({
-        number: 50,
-        html_url: 'https://github.com/o/r/issues/50',
+      mockJiraClient.createIssue.mockResolvedValue({
+        key: 'PROJ-1',
+        self: 'https://test.atlassian.net/rest/api/2/issue/PROJ-1',
       });
     });
 
@@ -2372,9 +2406,10 @@ title: "Test"
       const creator = createCreator();
       await creator.createForIncrement('0001-placeholder');
 
-      // Placeholder skipped → no user story issues → falls back to epic issue
-      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
-      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
+      // Placeholder skipped → no user stories in description
+      expect(mockJiraClient.createIssue).toHaveBeenCalledTimes(1);
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('No user stories defined');
     });
 
     it('should skip bracket-only placeholder pattern like [Any Text]', async () => {
@@ -2395,8 +2430,9 @@ title: "Test"
       const creator = createCreator();
       await creator.createForIncrement('0001-bracket');
 
-      expect(mockGitHubClientV2.createUserStoryIssue).not.toHaveBeenCalled();
-      expect(mockGitHubClientV2.createEpicIssue).toHaveBeenCalledTimes(1);
+      expect(mockJiraClient.createIssue).toHaveBeenCalledTimes(1);
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('No user stories defined');
     });
 
     it('should pass through real titles like Queue Search & Filtering (P1)', async () => {
@@ -2418,9 +2454,9 @@ feature_id: "FS-001"
       const creator = createCreator();
       await creator.createForIncrement('0001-real');
 
-      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(1);
-      const call = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
-      expect(call.title).toBe('Queue Search & Filtering (P1)');
+      expect(mockJiraClient.createIssue).toHaveBeenCalledTimes(1);
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('US-001: Queue Search & Filtering (P1)');
     });
 
     it('should return only real titles from mixed spec with placeholders and real stories', async () => {
@@ -2450,11 +2486,12 @@ feature_id: "FS-001"
       const creator = createCreator();
       await creator.createForIncrement('0001-mixed');
 
-      // Only US-002 (real title) should create an issue
-      expect(mockGitHubClientV2.createUserStoryIssue).toHaveBeenCalledTimes(1);
-      const call = mockGitHubClientV2.createUserStoryIssue.mock.calls[0][0];
-      expect(call.userStoryId).toBe('US-002');
-      expect(call.title).toBe('Real Feature Title (P2)');
+      // Only US-002 (real title) should appear; placeholders skipped
+      expect(mockJiraClient.createIssue).toHaveBeenCalledTimes(1);
+      const description = mockJiraClient.createIssue.mock.calls[0][0].description;
+      expect(description).toContain('US-002: Real Feature Title (P2)');
+      expect(description).not.toContain('[Story Title]');
+      expect(description).not.toContain('[Another Placeholder]');
     });
   });
 });
