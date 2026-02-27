@@ -29,6 +29,7 @@ const projectRoot = join(__dirname, '..', '..', '..', '..');
 
 // vskill repo plugins directory (sibling repo in umbrella)
 const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
+const hasVskillRepo = existsSync(vskillPluginsDir);
 
 // Skills that migrated to vskill repo (v1.0.315)
 const VSKILL_SKILLS: Record<string, string[]> = {
@@ -62,7 +63,8 @@ const VSKILL_SKILLS: Record<string, string[]> = {
   ],
 };
 
-describe('New Skills Trigger Activation (Increment 0191)', () => {
+// Skip when vskill sibling repo is not available (e.g., CI only checks out specweave)
+describe.skipIf(!hasVskillRepo)('New Skills Trigger Activation (Increment 0191)', () => {
   let extractor: SkillTriggerExtractor;
   let allTriggers: ExtractedTriggers[];
   let index: ReturnType<SkillTriggerExtractor['buildIndex']>;
