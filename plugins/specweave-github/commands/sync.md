@@ -66,11 +66,11 @@ fi
 Use the Feature Sync CLI:
 
 ```bash
-# Run feature sync
-node dist/plugins/specweave-github/lib/github-feature-sync-cli.js <feature-id>
+# Run feature sync via CLI
+specweave sync-progress <increment-id>
 
 # Example
-node dist/plugins/specweave-github/lib/github-feature-sync-cli.js FS-062
+specweave sync-progress 0062
 ```
 
 ---

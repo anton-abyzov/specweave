@@ -99,12 +99,8 @@ Write the following:
 Run a test sync (read-only) to verify configuration:
 
 ```bash
-# Test each enabled provider
-node -e "
-  import { SyncEngine } from './src/sync/engine.js';
-  import { GitHubAdapter } from './src/sync/providers/github.js';
-  // ... test connection for each provider
-"
+# Test each enabled provider with dry-run
+specweave sync-progress --dry-run
 ```
 
 Report results and confirm setup is complete.

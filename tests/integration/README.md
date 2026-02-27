@@ -121,13 +121,13 @@ npm run test:integration
 
 ```bash
 # GitHub only
-npx tsx tests/integration/github-sync/github-sync.test.ts
+npx vitest run tests/integration/external-tools/github/
 
 # Azure DevOps only
-npx tsx tests/integration/ado-sync/ado-sync.test.ts
+npx vitest run tests/integration/external-tools/ado/
 
 # Jira only
-npx tsx tests/integration/jira-sync/jira-sync.test.ts
+npx vitest run tests/integration/jira/
 ```
 
 ## 🧪 Test Coverage
