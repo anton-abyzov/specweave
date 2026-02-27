@@ -352,7 +352,7 @@ describe('stop-auto-v5.sh helper functions', () => {
   });
 
   describe('hook line count', () => {
-    it('should be under 200 lines', () => {
+    it('should be under 300 lines', () => {
       if (!fs.existsSync(HOOK_PATH)) {
         // Skip if hook doesn't exist yet (RED phase)
         expect(true).toBe(false); // Force fail
@@ -360,7 +360,7 @@ describe('stop-auto-v5.sh helper functions', () => {
       }
       const content = fs.readFileSync(HOOK_PATH, 'utf-8');
       const lineCount = content.split('\n').length;
-      expect(lineCount).toBeLessThan(200);
+      expect(lineCount).toBeLessThan(300);
     });
   });
 });

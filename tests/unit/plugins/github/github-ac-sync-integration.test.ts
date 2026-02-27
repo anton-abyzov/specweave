@@ -204,6 +204,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close -> success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // gh issue edit (update labels after close) -> success
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
     const closeResult = await autoCloseCompletedUserStories(
       '0193',
@@ -215,12 +217,13 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     expect(closeResult.closed).toHaveLength(1);
     expect(closeResult.closed[0].issueNumber).toBe(42);
 
-    // Verify auto-closer call order: view -> comment -> close
+    // Verify auto-closer call order: view -> comment -> close -> edit
     const closerCalls = mockExecFileNoThrow.mock.calls;
-    expect(closerCalls).toHaveLength(3);
+    expect(closerCalls).toHaveLength(4);
     expect((closerCalls[0][1] as string[])[1]).toBe('view');
     expect((closerCalls[1][1] as string[])[1]).toBe('comment');
     expect((closerCalls[2][1] as string[])[1]).toBe('close');
+    expect((closerCalls[3][1] as string[])[1]).toBe('edit');
   });
 
   // -------------------------------------------------------------------------
@@ -309,6 +312,7 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     );
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // completion comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // close
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // edit (label update)
 
     await autoCloseCompletedUserStories(
       '0193',

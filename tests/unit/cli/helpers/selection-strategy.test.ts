@@ -321,7 +321,8 @@ describe('selection-strategy', () => {
 
     it('should handle complex regex patterns', () => {
       const result = matchByRegex(items, '^(sw|api)-');
-      expect(result.items).toHaveLength(3);
+      // Only 'api-gateway' matches ^(sw|api)- from ['frontend', 'backend', 'other-service', 'api-gateway']
+      expect(result.items).toHaveLength(1);
     });
 
     it('should capture non-Error throws as string', () => {

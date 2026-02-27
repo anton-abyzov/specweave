@@ -168,8 +168,12 @@ export class InstallationHealthChecker implements HealthChecker {
     if (fix) {
       for (const dir of tempDirs) {
         const fullPath = join(this.cacheDir, dir);
-        if (existsSync(fullPath)) {
-          rmSync(fullPath, { recursive: true, force: true });
+        try {
+          if (existsSync(fullPath)) {
+            rmSync(fullPath, { recursive: true, force: true });
+          }
+        } catch {
+          // Ignore cleanup errors (e.g. race conditions with concurrent processes)
         }
       }
       return {

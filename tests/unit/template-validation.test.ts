@@ -152,8 +152,8 @@ describe('Template Validation Tests', () => {
       expect(agentsContent.length).toBeGreaterThan(0);
     });
 
-    test('should have Section Index', () => {
-      expect(agentsContent).toContain('Section Index');
+    test('should have Commands Reference', () => {
+      expect(agentsContent).toContain('Commands Reference');
     });
 
     test('should have Essential Rules section', () => {
@@ -164,8 +164,8 @@ describe('Template Validation Tests', () => {
       expect(agentsContent).toContain('NEVER pollute project root');
     });
 
-    test('should have Quick Start section', () => {
-      expect(agentsContent).toContain('Quick Start');
+    test('should have Workflow Orchestration section', () => {
+      expect(agentsContent).toContain('Workflow Orchestration');
     });
 
     test('should have Troubleshooting section', () => {

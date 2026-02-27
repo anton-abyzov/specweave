@@ -3,7 +3,11 @@ name: Dependabot Auto-Merge
 # Auto-approve and auto-merge Dependabot PRs for minor/patch updates.
 # Major updates are auto-approved but require manual merge (may have breaking changes).
 #
-# Requires "Allow auto-merge" enabled in repo Settings > General.
+# REQUIRED REPO SETTINGS (Settings > Actions > General):
+#   1. "Allow GitHub Actions to create and approve pull requests" must be ENABLED
+#      (without this, the auto-approve step fails with "not permitted to approve")
+#   2. "Allow auto-merge" must be ENABLED in Settings > General
+#
 # Uses --auto flag: merge only happens AFTER all required checks pass.
 
 on: pull_request

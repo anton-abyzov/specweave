@@ -552,14 +552,19 @@ describe('update command', () => {
         mockExecSync
           .mockReturnValueOnce('1.0.200\n') // npm view
           .mockReturnValueOnce('') // npm install
-          .mockReturnValueOnce('specweave/1.0.199\n') // version mismatch
-          .mockReturnValueOnce(''); // spawned update
+          .mockReturnValueOnce('specweave/1.0.199\n'); // version mismatch
 
         await updateCommand({ noPlugins: true });
 
-        // Should still proceed - updated flag set to true
+        // Version mismatch returns updated=false, so no spawn happens
+        // Verify the version check was attempted
         expect(mockExecSync).toHaveBeenCalledWith(
-          expect.stringContaining('specweave update --no-self --no-plugins'),
+          'specweave --version',
+          expect.any(Object)
+        );
+        // Should NOT spawn new CLI since updated=false
+        expect(mockExecSync).not.toHaveBeenCalledWith(
+          expect.stringContaining('specweave update --no-self'),
           expect.any(Object)
         );
       });
@@ -576,7 +581,7 @@ describe('update command', () => {
 
         await updateCommand({ noPlugins: true });
 
-        // Should still proceed despite verification failure
+        // Verification failure still sets updated=true, so spawn should happen
         expect(mockExecSync).toHaveBeenCalledWith(
           expect.stringContaining('specweave update --no-self'),
           expect.any(Object)
