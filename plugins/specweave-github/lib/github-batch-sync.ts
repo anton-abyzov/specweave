@@ -104,6 +104,10 @@ const US_HEADER_RE = /^###?\s+(US-\d{3,}E?):\s*(.+)$/;
 const AC_CHECKBOX_RE = /^-\s+\[([ xX])\]\s+\*\*(?<acId>AC-US\d+E?-\d{2})\*\*:\s*(?<desc>.+)$/;
 // Priority: **Priority**: P1
 const PRIORITY_RE = /\*\*Priority\*\*:\s*(P[0-3])/;
+// Section headers that end description collection
+const AC_SECTION_RE = /^\*\*(?:Acceptance Criteria|ACs?)\*\*:/i;
+// Metadata lines to exclude from description
+const METADATA_RE = /^\*\*(?:Project|Board|External)\*\*:/i;
 
 /**
  * Parse user stories from spec.md content.
@@ -112,11 +116,15 @@ function parseUserStoriesFromSpec(content: string): UserStoryForSync[] {
   const lines = content.split('\n');
   const userStories: UserStoryForSync[] = [];
   let current: UserStoryForSync | null = null;
+  let collectingDescription = false;
 
   for (const line of lines) {
     const usMatch = line.match(US_HEADER_RE);
     if (usMatch) {
-      if (current) userStories.push(current);
+      if (current) {
+        current.description = current.description.trim();
+        userStories.push(current);
+      }
       current = {
         id: usMatch[1],
         title: usMatch[2],
@@ -125,6 +133,7 @@ function parseUserStoriesFromSpec(content: string): UserStoryForSync[] {
         status: 'planned',
         acceptanceCriteria: [],
       };
+      collectingDescription = true;
       continue;
     }
 
@@ -132,6 +141,7 @@ function parseUserStoriesFromSpec(content: string): UserStoryForSync[] {
 
     const acMatch = line.match(AC_CHECKBOX_RE);
     if (acMatch?.groups) {
+      collectingDescription = false;
       current.acceptanceCriteria.push({
         id: acMatch.groups.acId,
         description: acMatch.groups.desc.trim(),
@@ -142,11 +152,29 @@ function parseUserStoriesFromSpec(content: string): UserStoryForSync[] {
 
     const prioMatch = line.match(PRIORITY_RE);
     if (prioMatch) {
+      collectingDescription = false;
       current.priority = prioMatch[1];
+      continue;
+    }
+
+    if (AC_SECTION_RE.test(line)) {
+      collectingDescription = false;
+      continue;
+    }
+
+    // Collect description lines between US header and first AC/Priority
+    if (collectingDescription) {
+      if (METADATA_RE.test(line)) continue;
+      if (line.trim() !== '' || current.description.length > 0) {
+        current.description += line + '\n';
+      }
     }
   }
 
-  if (current) userStories.push(current);
+  if (current) {
+    current.description = current.description.trim();
+    userStories.push(current);
+  }
 
   return userStories;
 }

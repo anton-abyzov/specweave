@@ -46,6 +46,7 @@ describe('quality-gates-config', () => {
         requireValidation: true,
         requireLLMEval: true,
         requireJudgeLLM: false, // Too heavy for every run
+        requireGrill: true,
         skipQualityGates: false,
       });
     });
@@ -58,6 +59,7 @@ describe('quality-gates-config', () => {
         requireValidation: true,
         requireLLMEval: false,
         requireJudgeLLM: false,
+        requireGrill: true,
         skipQualityGates: false,
       });
     });
@@ -70,6 +72,7 @@ describe('quality-gates-config', () => {
         requireValidation: true,
         requireLLMEval: false,
         requireJudgeLLM: false,
+        requireGrill: false,
         skipQualityGates: false,
       });
     });
@@ -82,6 +85,7 @@ describe('quality-gates-config', () => {
         requireValidation: false,
         requireLLMEval: false,
         requireJudgeLLM: false,
+        requireGrill: false,
         skipQualityGates: true,
       });
     });

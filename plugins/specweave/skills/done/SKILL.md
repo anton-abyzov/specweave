@@ -35,20 +35,27 @@ Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name
 
 If closing a SpecWeave framework increment, show post-closure reminders: update CHANGELOG.md, CLAUDE.md, consider version bump, run `npm test && npm run rebuild`, check for breaking changes. Informational only, not blocking.
 
-### Step 2: Inline Grill Review (MANDATORY)
+### Step 2: Inline Grill Review (MANDATORY — STOP GATE)
 
-1. Check config: `jq -r '.grill.required // true' .specweave/config.json` -- if `false`, skip
+**The CLI blocks closure if `grill-report.json` is missing.** Do NOT skip this step.
+
+1. Check config: `jq -r '.grill.required // true' .specweave/config.json` — if `false`, skip to Step 3
 2. Invoke `Skill({ skill: "sw:grill" })` with incrementId
-3. BLOCKERs or CRITICALs found -> STOP closure, show findings, ask user to fix
-4. Passes -> continue
+3. **Verify report written**: `Bash({ command: "test -f .specweave/increments/<id>/reports/grill-report.json && echo OK || echo MISSING" })`
+4. If report MISSING: write it manually from grill output using the Write tool
+5. BLOCKERs or CRITICALs (shipReadiness: NOT READY) → STOP closure, ask user to fix
+6. Passes → continue
 
-### Step 3: Judge LLM Validation (MANDATORY)
+### Step 3: Judge LLM Validation (MANDATORY — STOP GATE)
 
-1. **Consent check first**: Judge-LLM uses the Anthropic API (costs extra). Check `externalModels` in config. If consent not granted, ask user or skip to pattern matching fallback. See `/sw:judge-llm` consent section for full flow.
+**A report file MUST be written regardless of outcome (even WAIVED if consent denied).**
+
+1. **Consent check**: Check `externalModels` in config. If denied, write WAIVED report and continue
 2. Invoke `Skill({ skill: "sw:judge-llm" })` with `--last-commit` (or `--staged`)
-3. Uses ultrathink extended thinking via separate Opus API call
-4. **APPROVED** -> continue | **CONCERNS** -> show, allow continuation | **REJECTED** -> STOP closure
-5. No ANTHROPIC_API_KEY or consent denied -> falls back to pattern matching, does not block
+3. **Verify report written**: `Bash({ command: "test -f .specweave/increments/<id>/reports/judge-llm-report.json && echo OK || echo MISSING" })`
+4. If report MISSING: write a WAIVED report with reason "Skill did not produce report"
+5. **APPROVED** → continue | **CONCERNS** → show, allow continuation | **REJECTED** → STOP closure
+6. No ANTHROPIC_API_KEY or consent denied → write WAIVED report, continue
 
 ### Step 4: Status Validation
 
@@ -97,7 +104,7 @@ PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDA
 
 **All gates pass**:
 1. Create marker file: `mkdir -p .specweave/state && touch .specweave/state/.sw-done-in-progress`
-2. Run completion via CLI: `Bash({ command: "specweave complete <id> --skip-validation --yes" })` — this is safe because quality gates already ran in Steps 2-3 and 6-7. The CLI call triggers `LifecycleHookDispatcher.onIncrementDone()` which fires living docs sync, GitHub Project sync, and issue closure automatically.
+2. Run completion via CLI: `Bash({ command: "specweave complete <id> --yes" })` — the CLI re-verifies quality gate reports (grill-report.json, judge-llm-report.json) exist. It also triggers `LifecycleHookDispatcher.onIncrementDone()` for living docs sync, GitHub Project sync, and issue closure.
 3. Remove marker file: `rm -f .specweave/state/.sw-done-in-progress`
 4. Generate completion report, update backlog
 

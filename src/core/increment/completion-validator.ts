@@ -175,7 +175,20 @@ export class IncrementCompletionValidator {
       warnings.push('External tool drift detection skipped due to error');
     }
 
-    // NOTE: Grill validation removed (v1.0.232) — /sw:done now calls /sw:grill inline
+    // NEW (v1.0.337): Quality gate report validation
+    // Checks that grill and judge-llm reports exist and passed before allowing closure.
+    // Grill report is required by default (config: grill.required, default: true).
+    // Judge-llm report is optional (warns if missing, blocks only on REJECTED).
+    try {
+      const gateResult = await this.validateQualityGateReports(
+        incrementId, incrementPath, { logger }
+      );
+      errors.push(...gateResult.errors);
+      warnings.push(...gateResult.warnings);
+    } catch (error) {
+      logger.warn(`Quality gate report validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push('Quality gate report validation skipped due to error');
+    }
 
     // NEW (v1.0.105): Test coverage validation for TDD increments
     // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
@@ -228,6 +241,130 @@ export class IncrementCompletionValidator {
       errors,
       warnings
     };
+  }
+
+  /**
+   * Validate that quality gate reports exist and passed (NEW - v1.0.337)
+   *
+   * Checks for:
+   * 1. grill-report.json - Required by default (config: grill.required)
+   * 2. judge-llm-report.json - Optional (warns if missing, blocks on REJECTED)
+   *
+   * Skip conditions:
+   * - grill.required === false in config.json
+   * - auto.skipQualityGates === true in config.json
+   * - metadata.type === 'hotfix' or 'experiment'
+   *
+   * @param incrementId - The increment ID
+   * @param incrementPath - Path to increment directory
+   * @param options - Validation options
+   */
+  private static async validateQualityGateReports(
+    incrementId: string,
+    incrementPath: string,
+    options: { logger?: Logger } = {}
+  ): Promise<{ errors: string[]; warnings: string[] }> {
+    const logger = options.logger ?? consoleLogger;
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const reportsDir = path.join(incrementPath, 'reports');
+
+    // Check if quality gates are globally disabled via auto config
+    let skipAll = false;
+    let grillRequired = true;
+    try {
+      const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+      if (await fs.pathExists(configPath)) {
+        const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+        if (config.auto?.skipQualityGates === true) {
+          skipAll = true;
+        }
+        if (config.grill?.required === false) {
+          grillRequired = false;
+        }
+      }
+    } catch {
+      // Fallback to defaults
+    }
+
+    if (skipAll) {
+      logger.info('Quality gate reports: skipped (auto.skipQualityGates=true)');
+      return { errors, warnings };
+    }
+
+    // Check if increment is hotfix/experiment (skip grill for those)
+    try {
+      const metadataPath = path.join(incrementPath, 'metadata.json');
+      if (await fs.pathExists(metadataPath)) {
+        const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+        if (metadata.type === 'hotfix' || metadata.type === 'experiment') {
+          logger.info(`Quality gate reports: skipped for ${metadata.type} increment`);
+          return { errors, warnings };
+        }
+      }
+    } catch {
+      // Fallback: proceed with validation
+    }
+
+    // --- Grill report validation ---
+    if (grillRequired) {
+      const grillReportPath = path.join(reportsDir, 'grill-report.json');
+      if (!(await fs.pathExists(grillReportPath))) {
+        errors.push(
+          'Quality gate: grill-report.json not found.\n' +
+          `    Run /sw:grill before closing, or set "grill": { "required": false } in config.json.\n` +
+          `    The grill report is written by /sw:grill to .specweave/increments/${incrementId}/reports/grill-report.json`
+        );
+      } else {
+        try {
+          const report = JSON.parse(await fs.readFile(grillReportPath, 'utf-8'));
+          if (report.shipReadiness === 'NOT READY' || (report.summary?.critical ?? 0) > 0) {
+            errors.push(
+              `Quality gate: grill report verdict is NOT READY (${report.summary?.critical ?? 0} critical findings).\n` +
+              '    Fix critical issues and re-run /sw:grill.'
+            );
+          } else if (report.shipReadiness === 'NEEDS REVIEW') {
+            warnings.push(
+              `Quality gate: grill report has concerns (${report.summary?.high ?? 0} high findings).\n` +
+              '    Consider addressing high-severity findings before shipping.'
+            );
+          }
+        } catch {
+          warnings.push('Quality gate: grill-report.json exists but could not be parsed.');
+        }
+      }
+    } else {
+      logger.info('Quality gate reports: grill report not required (grill.required=false)');
+    }
+
+    // --- Judge-LLM report validation ---
+    const judgeLlmReportPath = path.join(reportsDir, 'judge-llm-report.json');
+    if (await fs.pathExists(judgeLlmReportPath)) {
+      try {
+        const report = JSON.parse(await fs.readFile(judgeLlmReportPath, 'utf-8'));
+        if (report.verdict === 'REJECTED') {
+          errors.push(
+            'Quality gate: judge-llm verdict is REJECTED.\n' +
+            '    Fix critical issues identified by judge-llm and re-run /sw:judge-llm.'
+          );
+        } else if (report.verdict === 'CONCERNS') {
+          warnings.push(
+            'Quality gate: judge-llm verdict has CONCERNS.\n' +
+            '    Review concerns and address if possible before shipping.'
+          );
+        }
+        // WAIVED and APPROVED are both acceptable — no action needed
+      } catch {
+        warnings.push('Quality gate: judge-llm-report.json exists but could not be parsed.');
+      }
+    } else {
+      warnings.push(
+        'Quality gate: judge-llm-report.json not found.\n' +
+        '    Consider running /sw:judge-llm for independent validation.'
+      );
+    }
+
+    return { errors, warnings };
   }
 
   /**
