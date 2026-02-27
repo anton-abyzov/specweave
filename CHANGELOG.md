@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.335] - 2026-02-27
+
+### Changes
+- update docs, plugins, add sync-living-docs command
+
+---
+
+
+
 ## [1.0.334] - 2026-02-26
 
 ### Changes
