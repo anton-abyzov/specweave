@@ -332,9 +332,33 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       process.stderr.write(`[completeIncrement] Post-closure hook error: ${msg}\n`);
     }
 
+    // Direct GitHub issue closure from metadata (fallback).
+    // The hook chain above may silently skip GitHub closure when living docs
+    // files don't exist. This fallback reads issue numbers directly from
+    // metadata.json and closes any that are still open. Idempotent.
+    try {
+      const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
+      const closureResult = await GitHubReconciler.closeCompletedIncrementIssues(
+        process.cwd(),
+        incrementId,
+        log,
+      );
+      if (closureResult.closed > 0) {
+        log(chalk.green(`   Closed ${closureResult.closed} GitHub issue(s)`));
+      }
+      if (closureResult.milestoneClose) {
+        log(chalk.green(`   Closed GitHub milestone`));
+      }
+      for (const err of closureResult.errors) {
+        log(chalk.yellow(`   GitHub sync: ${err}`));
+      }
+    } catch (fallbackError) {
+      const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      log(chalk.yellow(`   GitHub closure: ${msg}`));
+    }
+
     log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
     log(chalk.gray(`📦 Status changed to: completed`));
-    log(chalk.gray(`🔄 External sync triggered (GitHub/JIRA/ADO will be updated)\n`));
 
     return true;
 
