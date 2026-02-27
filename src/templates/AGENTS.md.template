@@ -51,7 +51,9 @@ See **Task Format** and **User Story Format** sections for templates.
 
 Never mark a task complete without proving it works:
 - Code compiles/builds successfully
-- Tests pass
+- Run tests: `npx vitest run` (unit) + `npx playwright test` (E2E) after every task
+- For critical paths: `/sw:grill` for quality, `/sw:judge-llm` for independent validation
+- Ask user to manually verify: new UI flows, auth, payments, data migrations
 - Acceptance criteria actually satisfied
 - Ask: "Would a staff engineer approve this?"
 
@@ -105,6 +107,12 @@ Good: npm run build → node script.js → Success
 - Verify plan covers all ACs and edge cases before implementation
 - If the plan has gaps, fix the plan first — don't discover them mid-coding
 - Re-read the plan between tasks to stay aligned
+
+### Test Before Ship
+- Tests pass at every step — unit after each task, E2E before close, no exceptions
+- `/sw:test-aware-planner` generates BDD test plans during design — verify they exist before `/sw:do`
+- TDD cycle: `/sw:tdd-red` → `/sw:tdd-green` → `/sw:tdd-refactor`
+- E2E with Playwright CLI (`npx playwright test`) is a blocking closure gate
 <!-- /SECTION -->
 
 ---
@@ -348,17 +356,27 @@ specweave context projects
 4. Create `spec.md` — every US needs `**Project**:` field (see User Story Format)
 5. Create `tasks.md` (task checklist with BDD tests)
 6. Optional: `plan.md` for complex features
+7. **Verify** tasks.md has `**Test Plan**:` for every task with testable ACs
+8. **Verify** E2E scenarios exist for user-facing user stories — re-run `/sw:test-aware-planner` if missing
 
 ### Completing Tasks
 1. Implement the task
-2. Update tasks.md: `[ ] pending` → `[x] completed`
-3. Update spec.md: check off satisfied ACs
-4. Sync to external trackers if enabled
+2. Run unit tests: `npx vitest run`
+3. Run E2E tests (if task touches UI/API): `npx playwright test`
+4. Only mark task `[x]` after tests pass
+5. Update tasks.md: `[ ] pending` → `[x] completed`
+6. Update spec.md: check off satisfied ACs
+7. Sync to external trackers if enabled
+8. If 3 consecutive test failures: STOP, re-plan, ask user
 
 ### Closing Increment
-1. `/sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
-2. Living docs synced automatically
-3. GitHub/Jira issue closed if enabled
+1. Full test suite: `npx vitest run` (all unit + integration)
+2. Full E2E suite: `npx playwright test` (all scenarios)
+3. Coverage check: `npx vitest run --coverage` (must meet targets in config.json)
+4. Ask user for manual acceptance: new UI, auth, payments, data migrations
+5. `/sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
+6. Living docs synced automatically
+7. GitHub/Jira issue closed if enabled
 <!-- /SECTION -->
 
 ---

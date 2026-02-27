@@ -77,8 +77,10 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
+- Run tests: `npx vitest run` (unit) + `npx playwright test` (E2E) after every task
+- For critical paths: `/sw:grill` for quality, `/sw:judge-llm` for independent validation
+- Ask user to manually verify: new UI flows, auth, payments, data migrations
 - Ask yourself: **"Would a staff engineer approve this?"**
-- Run tests, check logs, demonstrate correctness
 
 ### 4. Think-Before-Act (Dependencies)
 **Satisfy dependencies BEFORE dependent operations.**
@@ -184,9 +186,29 @@ Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`.
 <!-- /SECTION -->
 
 <!-- SECTION:testing -->
-## Testing
+## Testing Pipeline (MANDATORY)
 
-BDD in tasks.md | Unit >80% | `.test.ts` (Vitest) | ESM mocking: `vi.hoisted()` + `vi.mock()`
+**Testing is a pipeline step, not an afterthought.**
+
+### During Design (`/sw:increment`)
+- `/sw:test-aware-planner` generates tasks.md with BDD test plans (Given/When/Then) for every AC
+- Every task MUST have a `**Test Plan**:` block before implementation begins
+- E2E test scenarios MUST be specified for user-facing features
+
+### During Implementation (`/sw:do`)
+- TDD cycle: `/sw:tdd-red` → `/sw:tdd-green` → `/sw:tdd-refactor`
+- Run tests after EVERY task: `npx vitest run` (unit) + `npx playwright test` (E2E when applicable)
+- Never mark a task `[x]` until its tests pass
+
+### Before Closing (`/sw:done`)
+- `/sw:grill` + `/sw:validate` — code quality + 130+ rule checks
+- E2E with Playwright CLI: `npx playwright test` (blocking gate)
+- Ask user for manual acceptance testing when: new UI flows, auth changes, payment flows, data migrations
+
+### Test Stack
+- Unit/Integration: Vitest (`.test.ts`), ESM mocking with `vi.hoisted()` + `vi.mock()`
+- E2E: Playwright CLI (`npx playwright test`)
+- Coverage targets: unit 95%, integration 90%, e2e 100% of AC scenarios
 <!-- /SECTION -->
 
 <!-- SECTION:tdd -->
@@ -231,6 +253,7 @@ Plugins load automatically. Manual: `vskill install --repo anton-abyzov/vskill -
 4. **No Laziness**: Root causes, senior standards
 5. **DRY**: Don't Repeat Yourself — flag and eliminate repetitions aggressively
 6. **Plan Review**: Review the plan thoroughly before making any code changes
+7. **Test before ship**: Tests pass at every step — unit after each task, E2E before close, no exceptions
 <!-- /SECTION -->
 
 <!-- SECTION:linking -->
