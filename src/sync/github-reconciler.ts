@@ -640,4 +640,143 @@ This issue was closed because increment \`${incrementId}\` was abandoned.
       return result;
     }
   }
+
+  /**
+   * Close all GitHub issues for a completed increment.
+   *
+   * Fallback path that reads issue numbers directly from metadata.json
+   * (does NOT depend on living docs files existing).
+   *
+   * Reads from BOTH metadata formats:
+   *   - metadata.externalLinks.github.issues (keyed by US-ID, has issueNumber)
+   *   - metadata.github.issues (array, has number)
+   *
+   * Idempotent: skips already-closed issues.
+   * Also closes the milestone if present in metadata.
+   */
+  static async closeCompletedIncrementIssues(
+    projectRoot: string,
+    incrementId: string,
+    logger?: Logger | ((msg: string) => void),
+  ): Promise<{ closed: number; milestoneClose: boolean; errors: string[] }> {
+    const log = typeof logger === 'function'
+      ? { log: logger }
+      : (logger ?? consoleLogger);
+    const result = { closed: 0, milestoneClose: false, errors: [] as string[] };
+    const closedNumbers = new Set<number>();
+
+    try {
+      const metadataPath = path.join(
+        projectRoot,
+        '.specweave/increments',
+        incrementId,
+        'metadata.json',
+      );
+
+      if (!existsSync(metadataPath)) {
+        return result; // No metadata = nothing to close
+      }
+
+      const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+
+      // Collect unique issue numbers from both metadata formats
+      const issueNumbers = new Set<number>();
+
+      // Format 1: externalLinks.github.issues (keyed by US-ID)
+      const extIssues = metadata.externalLinks?.github?.issues;
+      if (extIssues && typeof extIssues === 'object') {
+        for (const usId of Object.keys(extIssues)) {
+          const num = extIssues[usId]?.issueNumber;
+          if (typeof num === 'number') issueNumbers.add(num);
+        }
+      }
+
+      // Format 2: github.issues (array with number field)
+      if (Array.isArray(metadata.github?.issues)) {
+        for (const entry of metadata.github.issues) {
+          if (typeof entry.number === 'number') issueNumbers.add(entry.number);
+        }
+      }
+
+      if (issueNumbers.size === 0) return result;
+
+      const repoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
+      if (!repoInfo) {
+        result.errors.push('Could not detect GitHub repository');
+        return result;
+      }
+
+      const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
+
+      const comment = `## Increment Completed
+
+All tasks for increment \`${incrementId}\` have been completed.
+
+---
+Auto-closed by SpecWeave`;
+
+      // Close each open issue
+      for (const num of issueNumbers) {
+        try {
+          const issue = await client.getIssue(num);
+          if (issue.state === 'open') {
+            await client.closeIssue(num, comment);
+            closedNumbers.add(num);
+            result.closed++;
+            log.log(`   Closed GitHub issue #${num}`);
+          } else {
+            log.log(`   Issue #${num} already closed`);
+          }
+        } catch (error: any) {
+          result.errors.push(`Issue #${num}: ${error.message}`);
+        }
+      }
+
+      // Close milestone if present
+      const milestoneNum =
+        metadata.externalLinks?.github?.milestone ?? metadata.github?.milestone;
+      if (typeof milestoneNum === 'number') {
+        try {
+          const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
+          const msResult = await execFileNoThrow('gh', [
+            'api',
+            '-X',
+            'PATCH',
+            `repos/${repoInfo.owner}/${repoInfo.repo}/milestones/${milestoneNum}`,
+            '-f',
+            'state=closed',
+          ]);
+          if (msResult.exitCode === 0) {
+            result.milestoneClose = true;
+          }
+        } catch (error: any) {
+          result.errors.push(`Milestone #${milestoneNum}: ${error.message}`);
+        }
+      }
+
+      // Update metadata externalLinks status (only for actually-closed issues)
+      if (closedNumbers.size > 0 && extIssues) {
+        let changed = false;
+        for (const usId of Object.keys(extIssues)) {
+          const num = extIssues[usId]?.issueNumber;
+          if (typeof num === 'number' && closedNumbers.has(num) && extIssues[usId]?.status !== 'closed') {
+            extIssues[usId].status = 'closed';
+            changed = true;
+          }
+        }
+        if (changed) {
+          metadata.externalLinks.github.syncedAt = new Date().toISOString();
+          await fs.writeFile(
+            metadataPath,
+            JSON.stringify(metadata, null, 2) + '\n',
+          );
+        }
+      }
+
+      return result;
+    } catch (error: any) {
+      result.errors.push(error.message);
+      return result;
+    }
+  }
 }
