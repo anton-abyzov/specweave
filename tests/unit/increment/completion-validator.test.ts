@@ -20,6 +20,11 @@ describe('IncrementCompletionValidator', () => {
     incrementPath = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
 
+    // Disable grill report requirement so these tests focus on their specific checks.
+    // Quality gate report validation has its own dedicated test file.
+    const configDir = path.join(testRoot, '.specweave');
+    await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify({ grill: { required: false } }));
+
     // Mock process.cwd() to return test root
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
   });
@@ -412,13 +417,13 @@ No tasks in this increment.
     });
   });
 
-  describe('grill marker removal', () => {
-    it('should not have validateGrillPassed method (replaced by inline grill in /sw:done)', () => {
+  describe('grill report-based validation', () => {
+    it('should not have validateGrillPassed method (replaced by report-based validation)', () => {
       expect(IncrementCompletionValidator).not.toHaveProperty('validateGrillPassed');
     });
 
-    it('should not check grill markers in validateCompletion', async () => {
-      // Arrange: Complete increment with NO grill config and NO marker file
+    it('should skip grill report check when grill.required is false', async () => {
+      // Arrange: Complete increment with grill.required: false (set in beforeEach)
       const specContent = `---
 increment: ${incrementId}
 ---

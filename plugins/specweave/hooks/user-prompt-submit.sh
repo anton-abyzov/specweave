@@ -1237,6 +1237,22 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
 
           if [[ -n "$JSON_OUTPUT" ]]; then
             # ==================================================================
+            # ERROR RESPONSE DETECTION (v1.0.337)
+            # ==================================================================
+            # When detect-intent returns valid JSON but with error data (e.g.,
+            # nested session error, timeout, auth failure), the JSON has
+            # installMessage with error text, confidence=0, and no increment
+            # field. Without this check, the hook treats error responses as
+            # "LLM worked, nothing needed" and skips keyword fallback entirely.
+            INSTALL_MSG=$(echo "$JSON_OUTPUT" | jq -r '.installMessage // empty' 2>/dev/null)
+            HAS_INCREMENT=$(echo "$JSON_OUTPUT" | jq -r 'has("increment")' 2>/dev/null)
+            RESP_CONFIDENCE=$(echo "$JSON_OUTPUT" | jq -r '.confidence // 0' 2>/dev/null)
+            if [[ -n "$INSTALL_MSG" && "$HAS_INCREMENT" != "true" && "$RESP_CONFIDENCE" == "0" ]]; then
+              LLM_DETECTION_FAILED=true
+              echo "[$(date -Iseconds)] LLM detection failed | reason=error_response | msg=${INSTALL_MSG:0:100}" >> "$LAZY_LOAD_LOG"
+            fi
+
+            # ==================================================================
             # PLUGIN INSTALLATION/SUGGESTION (from LLM response)
             # ==================================================================
             if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then

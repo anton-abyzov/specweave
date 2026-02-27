@@ -28,6 +28,7 @@ export interface QualityGateSettings {
   requireValidation: boolean;
   requireLLMEval: boolean;
   requireJudgeLLM: boolean;
+  requireGrill: boolean;
   skipQualityGates: boolean;
 }
 
@@ -221,6 +222,7 @@ export function getQualityGatePreset(preset: QualityGatePreset): QualityGateSett
       requireValidation: true,
       requireLLMEval: true, // Lightweight LLM check in stop hook
       requireJudgeLLM: false, // Heavy /sw:judge-llm - too expensive for every run
+      requireGrill: true, // Grill report required before closure
       skipQualityGates: false,
     },
     standard: {
@@ -228,6 +230,7 @@ export function getQualityGatePreset(preset: QualityGatePreset): QualityGateSett
       requireValidation: true,
       requireLLMEval: false,
       requireJudgeLLM: false,
+      requireGrill: true,
       skipQualityGates: false,
     },
     minimal: {
@@ -235,6 +238,7 @@ export function getQualityGatePreset(preset: QualityGatePreset): QualityGateSett
       requireValidation: true,
       requireLLMEval: false,
       requireJudgeLLM: false,
+      requireGrill: false,
       skipQualityGates: false,
     },
     none: {
@@ -242,6 +246,7 @@ export function getQualityGatePreset(preset: QualityGatePreset): QualityGateSett
       requireValidation: false,
       requireLLMEval: false,
       requireJudgeLLM: false,
+      requireGrill: false,
       skipQualityGates: true,
     },
   };
@@ -356,6 +361,12 @@ export function updateConfigWithQualityGates(
     requireJudgeLLM: settings.requireJudgeLLM,
     skipQualityGates: settings.skipQualityGates,
   };
+
+  // Set grill requirement at top level (used by completion-validator)
+  if (!config.grill) {
+    config.grill = {};
+  }
+  config.grill.required = settings.requireGrill;
 
   fs.writeJsonSync(configPath, config, { spaces: 2 });
 }

@@ -270,14 +270,37 @@ When called, you can specify a focus area:
 
 ---
 
+## Persistent Report (MANDATORY)
+
+After displaying the grill verdict, you **MUST** write a JSON report file. The CLI's completion-validator checks for this file and **blocks closure without it**.
+
+**Path**: `.specweave/increments/<id>/reports/grill-report.json`
+
+```bash
+mkdir -p .specweave/increments/<id>/reports
+```
+
+Then write the report using the Write tool:
+
+```json
+{
+  "version": "1.0",
+  "incrementId": "<id>",
+  "timestamp": "<ISO-8601>",
+  "verdict": "PASS|FAIL",
+  "shipReadiness": "READY|NEEDS REVIEW|NOT READY",
+  "summary": { "totalFindings": 0, "critical": 0, "high": 0, "medium": 0 },
+  "findings": []
+}
+```
+
+**Ship readiness**: `READY` = 0 critical + 0 high | `NEEDS REVIEW` = 0 critical + 1+ high | `NOT READY` = 1+ critical
+
+---
+
 ## Integration with /sw:done
 
-`/sw:done` calls `/sw:grill` inline as its first step — no marker files needed.
-
-1. Developer runs `/sw:done {increment-id}`
-2. `/sw:done` invokes `/sw:grill` automatically
-3. If grill finds BLOCKERs/CRITICALs → closure stops, user fixes issues
-4. If grill passes → closure continues to PM validation
+`/sw:done` calls `/sw:grill` as Step 2 (blocking gate). The CLI re-verifies `grill-report.json` exists when running `specweave complete`.
 
 You can also run `/sw:grill` standalone at any time for early feedback.
 

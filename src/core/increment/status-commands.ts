@@ -298,8 +298,8 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
       }
     } else {
-      log(chalk.yellow(`⚠️  Validation skipped — quality gates (grill, PM review) may not have been run`));
-      log(chalk.gray(`   Consider running /sw:grill ${incrementId} and /sw:done ${incrementId} for proper closure`));
+      log(chalk.yellow(`⚠️  Validation skipped — quality gate reports (grill, judge-llm) not checked`));
+      log(chalk.gray(`   Run: specweave complete ${incrementId} --yes (without --skip-validation) for enforced closure`));
     }
 
     // Pre-completion sync: ensure GitHub issues exist before marking COMPLETED.
