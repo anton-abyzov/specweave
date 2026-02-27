@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.339] - 2026-02-27
+
+### Changes
+- quality gates, github batch sync, skill judge report, parsers
+- sync specweave changes
+
+---
+
+
+
 ## [1.0.338] - 2026-02-27
 
 ### Changes
