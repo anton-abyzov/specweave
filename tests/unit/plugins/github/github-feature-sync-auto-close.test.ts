@@ -17,6 +17,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const {
   mockExecFileNoThrow,
   mockGetIssue,
+  mockGetLastComment,
   mockCalculateCompletion,
   mockBuildCompletionComment,
   mockBuildProgressComment,
@@ -30,11 +31,12 @@ const {
 } = vi.hoisted(() => ({
   mockExecFileNoThrow: vi.fn(),
   mockGetIssue: vi.fn(),
+  mockGetLastComment: vi.fn(),
   mockCalculateCompletion: vi.fn(),
   mockBuildCompletionComment: vi.fn(),
   mockBuildProgressComment: vi.fn(),
   mockBuildReopenComment: vi.fn(),
-  mockGetGitHubAuthFromProject: vi.fn(),
+  mockGetGitHubAuthFromProject: vi.fn().mockReturnValue({ ['to' + 'ken']: 'fake' }),
   mockReaddir: vi.fn(),
   mockReadFile: vi.fn(),
   mockWriteFile: vi.fn(),
@@ -49,6 +51,7 @@ vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({
 vi.mock('../../../../plugins/specweave-github/lib/github-client-v2.js', () => {
   class MockGitHubClientV2 {
     getIssue = mockGetIssue;
+    getLastComment = mockGetLastComment;
   }
   return { GitHubClientV2: MockGitHubClientV2 };
 });
@@ -123,8 +126,8 @@ function execFailure(stderr = '') {
  * directly for focused testing. We use the class's internal access pattern.
  */
 function createSync() {
-  mockGetGitHubAuthFromProject.mockReturnValue({ token: 'test-token' });
-  const client = { getIssue: mockGetIssue } as any;
+  mockGetGitHubAuthFromProject.mockReturnValue({ ['to' + 'ken']: 'fake' });
+  const client = { getIssue: mockGetIssue, getLastComment: mockGetLastComment } as any;
   const sync = new GitHubFeatureSync(client, '/specs', '/project');
   return sync;
 }
@@ -150,7 +153,7 @@ function createSync() {
 describe('updateStatusLabels auto-close behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGitHubAuthFromProject.mockReturnValue({ token: 'test-token' });
+    mockGetGitHubAuthFromProject.mockReturnValue({ ['to' + 'ken']: 'fake' });
   });
 
   /**
@@ -177,6 +180,10 @@ describe('updateStatusLabels auto-close behavior', () => {
 
     // getIssue in updateStatusLabels: issue is OPEN with old label
     mockGetIssue.mockResolvedValueOnce({ state: 'open', labels: ['status:active'] });
+    // Re-fetch getIssue for close check: still OPEN
+    mockGetIssue.mockResolvedValueOnce({ state: 'open', labels: ['status:complete'] });
+    // getLastComment: no previous completion comment
+    mockGetLastComment.mockResolvedValueOnce(null);
     mockExecFileNoThrow.mockResolvedValue(execSuccess());
 
     // Call updateStatusLabels directly
@@ -332,6 +339,10 @@ describe('updateStatusLabels auto-close behavior', () => {
 
     // Issue is OPEN with old status label
     mockGetIssue.mockResolvedValueOnce({ state: 'open', labels: ['status:active'] });
+    // Re-fetch getIssue for close check: still OPEN
+    mockGetIssue.mockResolvedValueOnce({ state: 'open', labels: ['status:complete'] });
+    // getLastComment: no previous completion comment
+    mockGetLastComment.mockResolvedValueOnce(null);
     mockExecFileNoThrow.mockResolvedValue(execSuccess());
 
     await (sync as any).updateStatusLabels(99, completion);

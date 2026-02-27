@@ -83,7 +83,7 @@ describe('registerPluginsWithClaudeCli', () => {
       'claude', ['plugin', 'install', 'sw@specweave'],
     );
     expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
-      'claude', ['plugin', 'install', 'frontend@vskill'],
+      'claude', ['plugin', 'install', 'frontend@specweave'],
     );
   });
 
