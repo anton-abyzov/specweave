@@ -117,11 +117,12 @@ describe('Plugin Scope Configuration', () => {
     });
 
     it('should return project scope for domain SpecWeave plugins', () => {
-      // With default config, domain plugins get project scope
-      expect(getPluginScope('frontend', 'vskill')).toBe('project');
-      expect(getPluginScope('backend', 'vskill')).toBe('project');
+      // sw-github and sw-jira match specweave marketplace → specweaveScope = 'project'
       expect(getPluginScope('sw-github', 'specweave')).toBe('project');
       expect(getPluginScope('sw-jira', 'specweave')).toBe('project');
+      // vskill marketplace plugins without sw- prefix fall through to defaultScope = 'user'
+      expect(getPluginScope('frontend', 'vskill')).toBe('user');
+      expect(getPluginScope('backend', 'vskill')).toBe('user');
     });
 
     it('should return user scope for core sw plugin via override', () => {

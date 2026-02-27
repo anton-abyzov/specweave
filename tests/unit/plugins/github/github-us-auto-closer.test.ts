@@ -171,6 +171,8 @@ describe('autoCloseCompletedUserStories', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // gh issue edit (update labels after close) → success
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
     const result = await autoCloseCompletedUserStories(
       '0193',
@@ -209,6 +211,8 @@ describe('autoCloseCompletedUserStories', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // gh issue edit (update labels after close) → success
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
     await autoCloseCompletedUserStories(
       '0193',
@@ -217,8 +221,8 @@ describe('autoCloseCompletedUserStories', () => {
       makeOptions(),
     );
 
-    // Verify call order: view(0) → comment(1) → close(2)
-    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(3);
+    // Verify call order: view(0) → comment(1) → close(2) → edit(3)
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(4);
 
     const calls = mockExecFileNoThrow.mock.calls;
     // First call: issue view
@@ -227,6 +231,8 @@ describe('autoCloseCompletedUserStories', () => {
     expect((calls[1][1] as string[])[1]).toBe('comment');
     // Third call: issue close
     expect((calls[2][1] as string[])[1]).toBe('close');
+    // Fourth call: issue edit (label update)
+    expect((calls[3][1] as string[])[1]).toBe('edit');
 
     // Comment body should indicate completion
     const commentBody: string = (calls[1][1] as string[])[4]; // --body arg
