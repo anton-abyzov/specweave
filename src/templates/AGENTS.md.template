@@ -51,11 +51,10 @@ See **Task Format** and **User Story Format** sections for templates.
 
 Never mark a task complete without proving it works:
 - Code compiles/builds successfully
-- Run tests: `npx vitest run` (unit) + `npx playwright test` (E2E) after every task
-- For critical paths: `/sw:grill` for quality, `/sw:judge-llm` for independent validation
-- Ask user to manually verify: new UI flows, auth, payments, data migrations
+- Run tests after every task: `npx vitest run` + `npx playwright test`
+- `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
+- `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Acceptance criteria actually satisfied
-- Ask: "Would a staff engineer approve this?"
 
 ### 3. Dependencies First
 
@@ -370,13 +369,11 @@ specweave context projects
 8. If 3 consecutive test failures: STOP, re-plan, ask user
 
 ### Closing Increment
-1. Full test suite: `npx vitest run` (all unit + integration)
-2. Full E2E suite: `npx playwright test` (all scenarios)
-3. Coverage check: `npx vitest run --coverage` (must meet targets in config.json)
-4. Ask user for manual acceptance: new UI, auth, payments, data migrations
-5. `/sw:done 0001` — PM validates 3 gates (tasks, tests, docs)
-6. Living docs synced automatically
-7. GitHub/Jira issue closed if enabled
+1. Full test suite: `npx vitest run`
+2. Full E2E: `npx playwright test`
+3. `/sw:grill <id>` — writes `grill-report.json` (CLI requires it)
+4. User acceptance for critical flows (UI, auth, payments)
+5. `/sw:done <id>` — validates report files + PM 3 gates (tasks, tests, docs)
 <!-- /SECTION -->
 
 ---

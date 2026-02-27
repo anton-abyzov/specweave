@@ -520,6 +520,78 @@ export class SkillJudge {
   }
 
   /**
+   * Write judge result to persistent report file for CLI verification.
+   * The completion-validator checks for this file before allowing closure.
+   */
+  writeReport(
+    incrementId: string,
+    result: JudgeResult,
+    consentStatus: 'granted' | 'denied' | 'no-api-key'
+  ): string {
+    const reportsDir = path.join(
+      this.projectRoot, '.specweave', 'increments', incrementId, 'reports'
+    );
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
+    const reportPath = path.join(reportsDir, 'judge-llm-report.json');
+    const verdictMap: Record<JudgeVerdict, string> = {
+      'PASS': 'APPROVED',
+      'CONCERNS': 'CONCERNS',
+      'FAIL': 'REJECTED',
+    };
+
+    const report = {
+      version: '1.0',
+      incrementId,
+      timestamp: new Date().toISOString(),
+      verdict: verdictMap[result.verdict] ?? result.verdict,
+      score: result.score,
+      mode: this.client ? 'ultrathink' : 'pattern-match',
+      timedOut: result.timedOut,
+      duration_ms: result.duration_ms,
+      consentStatus,
+      summary: result.summary,
+      strengths: result.strengths,
+      concerns: result.concerns,
+      recommendations: result.recommendations,
+      domainChecks: result.domainChecks,
+    };
+
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    return reportPath;
+  }
+
+  /**
+   * Write a WAIVED report when consent is denied or no API key available.
+   */
+  writeWaivedReport(
+    incrementId: string,
+    reason: string
+  ): string {
+    const reportsDir = path.join(
+      this.projectRoot, '.specweave', 'increments', incrementId, 'reports'
+    );
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
+    const reportPath = path.join(reportsDir, 'judge-llm-report.json');
+    const report = {
+      version: '1.0',
+      incrementId,
+      timestamp: new Date().toISOString(),
+      verdict: 'WAIVED',
+      consentStatus: 'denied',
+      reason,
+    };
+
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    return reportPath;
+  }
+
+  /**
    * Format result for display
    */
   formatResult(result: JudgeResult): string {

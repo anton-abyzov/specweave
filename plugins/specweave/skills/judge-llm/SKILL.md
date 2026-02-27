@@ -140,15 +140,45 @@ VERDICT: [summary sentence]
 | **CONCERNS** | Issues found worth addressing | Review and fix recommended |
 | **REJECTED** | Critical issues found | MUST fix before proceeding |
 
+## Persistent Report (MANDATORY)
+
+After evaluation (including consent-denied fallback), you **MUST** write a JSON report. The CLI checks for this file during closure.
+
+**Path**: `.specweave/increments/<id>/reports/judge-llm-report.json`
+
+**Full evaluation report**:
+```json
+{
+  "version": "1.0",
+  "incrementId": "<id>",
+  "timestamp": "<ISO-8601>",
+  "verdict": "APPROVED|CONCERNS|REJECTED",
+  "score": 87,
+  "mode": "ultrathink|quick|pattern-match",
+  "timedOut": false,
+  "duration_ms": 45000,
+  "consentStatus": "granted",
+  "summary": "..."
+}
+```
+
+**Consent denied / no API key**:
+```json
+{
+  "version": "1.0",
+  "incrementId": "<id>",
+  "timestamp": "<ISO-8601>",
+  "verdict": "WAIVED",
+  "consentStatus": "denied",
+  "reason": "External API consent denied by user"
+}
+```
+
+A `WAIVED` verdict is accepted by the CLI — does not block closure.
+
 ## Visibility & Stuck Detection
 
-Progress is **always logged** to `.specweave/logs/judge-llm.log`.
-
-**If evaluation gets stuck**:
-1. Check `.specweave/logs/judge-llm.log` for last progress
-2. Default timeout (60s) will abort if stuck
-3. Increase timeout with `--timeout` if legitimately slow
-4. Result will show `timedOut: true` if aborted
+Progress logged to `.specweave/logs/judge-llm.log`. Default timeout 60s aborts if stuck (`timedOut: true`).
 
 ## Related
 

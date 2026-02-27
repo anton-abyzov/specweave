@@ -77,9 +77,9 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
-- Run tests: `npx vitest run` (unit) + `npx playwright test` (E2E) after every task
-- For critical paths: `/sw:grill` for quality, `/sw:judge-llm` for independent validation
-- Ask user to manually verify: new UI flows, auth, payments, data migrations
+- Run tests after every task: `npx vitest run` + `npx playwright test`
+- `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
+- `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Ask yourself: **"Would a staff engineer approve this?"**
 
 ### 4. Think-Before-Act (Dependencies)
@@ -201,9 +201,10 @@ Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`.
 - Never mark a task `[x]` until its tests pass
 
 ### Before Closing (`/sw:done`)
-- `/sw:grill` + `/sw:validate` — code quality + 130+ rule checks
-- E2E with Playwright CLI: `npx playwright test` (blocking gate)
-- Ask user for manual acceptance testing when: new UI flows, auth changes, payment flows, data migrations
+- `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
+- `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
+- `/sw:validate` — 130+ rule checks
+- E2E: `npx playwright test` (blocking gate)
 
 ### Test Stack
 - Unit/Integration: Vitest (`.test.ts`), ESM mocking with `vi.hoisted()` + `vi.mock()`

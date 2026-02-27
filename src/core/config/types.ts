@@ -767,6 +767,16 @@ export interface ContextBudgetConfig {
   autoAdapt?: boolean;
 }
 
+/**
+ * Grill quality gate configuration
+ * Controls whether a grill report is required before increment closure.
+ * @since v1.0.337
+ */
+export interface GrillConfig {
+  /** Whether grill report is required before closure. Default: true */
+  required?: boolean;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // End consolidated interfaces
 // ═══════════════════════════════════════════════════════════════════
@@ -899,6 +909,9 @@ export interface SpecWeaveConfig {
 
   /** Context budget configuration for hook output size (v1.0.262+) */
   contextBudget?: ContextBudgetConfig;
+
+  /** Grill quality gate configuration (v1.0.337+) */
+  grill?: GrillConfig;
 
   /** Allow additional properties for forward compatibility */
   [key: string]: any;

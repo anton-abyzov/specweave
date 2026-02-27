@@ -159,7 +159,9 @@ After testable tasks: run relevant tests, fix failures immediately, only continu
 
 When all tasks done:
 1. Run `/sw:sync-docs update` to sync living docs
-2. Suggest: `npm test` then `/sw:validate <id> --quality` then `/sw:done <id>`
+2. Run tests: `npx vitest run` (if test framework detected)
+3. Invoke `Skill({ skill: "sw:grill" })` with increment ID — writes required `grill-report.json`
+4. Then: `/sw:done <id>` (which also runs judge-llm and PM gates)
 
 ---
 
