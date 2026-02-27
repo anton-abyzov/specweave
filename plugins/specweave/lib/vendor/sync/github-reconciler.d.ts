@@ -100,5 +100,23 @@ export declare class GitHubReconciler {
         closed: number;
         errors: string[];
     }>;
+    /**
+     * Close all GitHub issues for a completed increment.
+     *
+     * Fallback path that reads issue numbers directly from metadata.json
+     * (does NOT depend on living docs files existing).
+     *
+     * Reads from BOTH metadata formats:
+     *   - metadata.externalLinks.github.issues (keyed by US-ID, has issueNumber)
+     *   - metadata.github.issues (array, has number)
+     *
+     * Idempotent: skips already-closed issues.
+     * Also closes the milestone if present in metadata.
+     */
+    static closeCompletedIncrementIssues(projectRoot: string, incrementId: string, logger?: Logger | ((msg: string) => void)): Promise<{
+        closed: number;
+        milestoneClose: boolean;
+        errors: string[];
+    }>;
 }
 //# sourceMappingURL=github-reconciler.d.ts.map
