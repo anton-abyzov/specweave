@@ -909,6 +909,21 @@ program
     await syncProgress(args);
   });
 
+// Sync-living-docs command - Sync living docs for a specific increment
+program
+  .command('sync-living-docs [increment-id]')
+  .description('Sync living documentation for an increment (feature spec + user story files)')
+  .option('--dry-run', 'Preview without making changes')
+  .option('--force', 'Force sync even if no changes detected')
+  .action(async (incrementId, options) => {
+    const { syncLivingDocs } = await import('../dist/src/cli/commands/sync-living-docs.js');
+    const args = [];
+    if (incrementId) args.push(incrementId);
+    if (options.dryRun) args.push('--dry-run');
+    if (options.force) args.push('--force');
+    await syncLivingDocs(args);
+  });
+
 // Docs command - Documentation preview, build, validation
 const docsCmd = program
   .command('docs')

@@ -10,7 +10,7 @@ draft: true
 **Duration**: ~45 minutes (main tutorial) + optional deep dives
 **Format**: Cold open → live demos → screen recording → terminal demos
 **Diagrams**: Mermaid (already embedded in docs) + 5 Excalidraw transitions
-**Companion videos**: "AI Skills Are Not Safe" (15 min standalone), "App Showcase" (10 min standalone)
+**Companion video**: "App Showcase" (10 min standalone)
 
 ---
 
@@ -3321,7 +3321,7 @@ These topics are mentioned briefly but have full documentation available:
 
 ## ARE AI SKILLS SAFE? THE SUPPLY CHAIN RISK (71:30 - 79:30)
 
-> **Standalone video potential**: This entire section (71:30-79:30) works as a self-contained 15-minute video titled **"AI Skills Are Not Safe: What Snyk Found"**. The Snyk data, platform comparison table, SkillGuard malware twist, and vskill three-tier solution form a complete narrative arc. Film it as a standalone first, then embed the same footage here. Two videos from one recording session.
+> **Note**: Originally planned as a standalone companion video ("AI Skills Are Not Safe: What Snyk Found"), now merged into this main tutorial as a single continuous narrative.
 
 **[SCREEN: Dark slide — white text: "Are AI Skills Safe?"]**
 
@@ -3527,10 +3527,30 @@ npx vskill install claude-memory-manager
 > If you're installing skills from Skills.sh or ClawHub right now without scanning them first — you're trusting strangers with your codebase, your credentials, and your users' data. That's not vibe coding. That's reckless.
 >
 > The AI skills ecosystem is where npm was in 2015 — before left-pad, before event-stream, before the industry learned that supply chain security matters. We have a narrow window to get this right before something truly catastrophic happens.
+
+**[SCREEN: Terminal — running `vskill scan` on a downloaded skill file]**
+
+> "Three things you can do right now.
+>
+> First — review every skill you have installed. Open the source files and look for shell commands, network requests, and file access patterns you did not put there.
+>
+> Second — prefer registries that scan skills before publication, not after. If a platform has no security scanning, assume some of its skills are compromised, because statistically, they are.
+>
+> Third — run `vskill scan` on any community skill before you install it. It is free, it takes under a second, and it catches 75 percent of known attack patterns at Tier 1 alone.
+>
+> And one more thing — if you are building open source projects, you can apply for Claude Max for free from Anthropic. They have a program called Claude for Open Source — six months of Claude Max 20x, no cost, for maintainers of public repositories. If you are already using Claude Code to build and maintain open source, this is worth looking into. Link in the description.
 >
 > Scan your skills. Pin your versions. Verify before you trust. And if a skill asks your agent to curl a remote URL or execute a downloaded script — delete it. Immediately.
 >
 > Your users are counting on you to care about this. Even if the platforms don't."
+
+**Description links for security section:**
+- Claude for Open Source (free Max plan): https://claude.com/contact-sales/claude-for-oss
+- Snyk ToxicSkills study: https://snyk.io/blog/toxicskills
+- ToxicSkills PoC repo: https://github.com/snyk-labs/toxicskills-goof
+- Verified Skills registry: https://verifiedskill.com
+- Security landscape docs: https://spec-weave.com/docs/skills/skills-ecosystem-security
+- Verified Skills standard: https://spec-weave.com/docs/skills/verified-skills
 
 **[TRANSITION]**
 

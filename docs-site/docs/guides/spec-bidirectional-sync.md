@@ -86,7 +86,7 @@ SpecWeave syncs **different data types in different directions**:
 
 **Manual** (CLI):
 - When spec content is manually updated
-- Run: `node dist/cli/commands/sync-spec-content.js --spec <path> --provider github|jira|ado`
+- Run: `specweave sync-progress <increment-id>`
 
 ### What It Does
 
@@ -350,10 +350,8 @@ vim .specweave/docs/internal/specs/spec-001-user-auth.md
 # **Acceptance Criteria**:
 # - AC-US4-01: User can request password reset link
 
-# 2. Manual sync (automatic in future)
-node dist/cli/commands/sync-spec-content.js \
-  --spec .specweave/docs/internal/specs/spec-001-user-auth.md \
-  --provider github
+# 2. Manual sync
+specweave sync-progress
 
 # Output:
 # 🔄 Syncing spec content to github...
@@ -416,10 +414,7 @@ node dist/cli/commands/sync-spec-content.js \
 
 **Manual sync**:
 ```bash
-node dist/cli/commands/sync-spec-content.js \
-  --spec .specweave/docs/internal/specs/spec-001.md \
-  --provider github \
-  --verbose
+specweave sync-progress --force
 ```
 
 ### "Changes not detected"

@@ -470,11 +470,8 @@ npx specweave init
 # Via skill activation
 "Can you validate my Azure DevOps configuration?"
 
-# Via TypeScript directly
-npx tsx -e "import { validateAzureDevOpsResources } from './dist/utils/external-resource-validator.js'; await validateAzureDevOpsResources();"
-
-# Via CLI (future command - planned)
-specweave validate-ado
+# Via ADO sync (validates automatically before syncing)
+/sw-ado:sync <increment-id>
 ```
 
 **Validation output**:
@@ -771,11 +768,8 @@ Run validation independently:
 # Via skill
 "Validate my Azure DevOps configuration"
 
-# Via TypeScript
-npx tsx src/utils/external-resource-validator.ts --provider=ado
-
-# Via CLI (future)
-specweave validate-ado
+# Via ADO sync (validates automatically before syncing)
+/sw-ado:sync <increment-id>
 ```
 
 ## Best Practices

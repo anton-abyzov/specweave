@@ -185,10 +185,7 @@ Comments appear automatically in:
 Force sync commits without waiting for task completion:
 
 ```bash
-node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
-  --provider github \
-  --verbose
+specweave sync-progress 0001-feature --force
 ```
 
 ### Dry Run
@@ -196,10 +193,7 @@ node dist/cli/commands/sync-spec-commits.js \
 Preview what would be posted without actually posting:
 
 ```bash
-node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
-  --provider github \
-  --dry-run
+specweave sync-progress 0001-feature --dry-run
 ```
 
 ### Debug
@@ -229,10 +223,7 @@ cat .specweave/increments/0001-feature/metadata.json
 cat .specweave/logs/hooks-debug.log | grep "spec commit sync"
 
 # Test manually
-node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
-  --provider github \
-  --verbose
+specweave sync-progress 0001-feature --force
 ```
 
 ### Wrong Repository
@@ -371,9 +362,7 @@ Each comment shows only commits for that repo.
 
 **A**: Run manual sync:
 ```bash
-node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
-  --provider github
+specweave sync-progress 0001-feature
 ```
 
 ### Q: Can I customize comment format?

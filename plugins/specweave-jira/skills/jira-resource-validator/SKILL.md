@@ -401,8 +401,8 @@ Enter correct board ID or name: 3
 
 **Manual validation**:
 ```bash
-# From TypeScript
-npx tsx src/utils/external-resource-validator.ts
+# Via CLI
+specweave validate-jira
 
 # Or via skill activation
 "Can you validate my Jira configuration?"
@@ -684,10 +684,7 @@ Run validation independently:
 # Via skill
 "Validate my Jira configuration"
 
-# Via TypeScript
-npx tsx src/utils/external-resource-validator.ts
-
-# Via CLI (future)
+# Via CLI
 specweave validate-jira
 ```
 

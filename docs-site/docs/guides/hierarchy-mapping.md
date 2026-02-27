@@ -178,9 +178,9 @@ type: epic  # ← Internal SpecWeave type
 
 **Problem**: GitHub issue shows `**Type**: Epic`
 
-**Solution**: Run fix script:
+**Solution**: Run sync to fix the issue type:
 ```bash
-npx tsx scripts/fix-feature-github-issues.ts <issue-number>
+specweave sync-progress <increment-id> --force
 ```
 
 This converts `Type: Epic` → `Type: Feature` automatically.
@@ -189,9 +189,9 @@ This converts `Type: Epic` → `Type: Feature` automatically.
 
 **Problem**: Links like `.specweave/docs/...` don't work on GitHub
 
-**Solution**: Run fix script:
+**Solution**: Run sync to fix local paths:
 ```bash
-npx tsx scripts/fix-feature-github-issues.ts <issue-number>
+specweave sync-progress <increment-id> --force
 ```
 
 This converts local paths to GitHub URLs automatically.
@@ -200,12 +200,12 @@ This converts local paths to GitHub URLs automatically.
 
 **Problem**: Only 4 [FS-*] issues exist, should be 29
 
-**Solution**: Run bulk sync:
+**Solution**: Run sync for all increments:
 ```bash
-npx tsx scripts/bulk-spec-sync.ts
+specweave sync-progress --force
 ```
 
-This creates issues for all 29 FS-* folders.
+This creates issues for all feature spec folders.
 
 ---
 

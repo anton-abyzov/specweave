@@ -464,11 +464,8 @@ Add:
 Force sync for a specific increment:
 
 ```bash
-# Via CLI (future)
-specweave sync-docs --increment 0016-authentication
-
-# Via Node.js script
-node dist/hooks/lib/sync-living-docs.js 0016-authentication
+# Via CLI
+specweave sync-living-docs 0016-authentication
 ```
 
 ### Disable Intelligent Sync
@@ -561,7 +558,7 @@ cat .specweave/config.json | grep sync_living_docs
 cat .specweave/logs/hooks-debug.log
 
 # 3. Test manual sync
-node dist/hooks/lib/sync-living-docs.js 0016-test
+specweave sync-living-docs 0016-test
 ```
 
 ## Examples

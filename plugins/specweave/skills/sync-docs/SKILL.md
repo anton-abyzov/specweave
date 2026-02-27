@@ -39,12 +39,11 @@ Run the living docs sync via CLI:
 # Normal mode
 specweave sync-living-docs <increment-id>
 
-# If CLI command not available, use Node.js directly:
-node -e "
-  const { LivingDocsSync } = require('./dist/src/core/living-docs/living-docs-sync.js');
-  const sync = new LivingDocsSync(process.cwd());
-  sync.syncIncrement('<increment-id>').then(r => console.log(JSON.stringify(r, null, 2)));
-"
+# Review mode (dry-run)
+specweave sync-living-docs <increment-id> --dry-run
+
+# If CLI command not available, use sync-progress as fallback:
+specweave sync-progress <increment-id> --no-github --no-jira --no-ado
 ```
 
 ### Step 4: Report Results

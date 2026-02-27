@@ -329,10 +329,7 @@ To disable bidirectional linking (not recommended):
 If automatic sync didn't work during `/specweave:done`:
 
 ```bash
-node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {
-  const distributor = new SpecDistributor(process.cwd());
-  await distributor.distribute('0031-external-tool-status-sync');
-});"
+specweave sync-living-docs 0031-external-tool-status-sync
 ```
 
 **Output**:
