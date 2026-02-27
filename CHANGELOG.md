@@ -4,6 +4,23 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.340] - 2026-02-27
+
+### Changes
+- fix github issue auto-closure on increment completion
+- fix: skip vskill trigger tests when sibling repo absent in CI
+- chore(deps)(deps-dev): bump @types/node in the typescript-tooling group (#1170)
+- chore(deps)(deps-dev): bump the development-dependencies group across 1 directory with 5 updates (#1406)
+- chore(deps)(deps): bump the production-dependencies group across 1 directory with 3 updates (#1300)
+- fix: resolve 75 unit test failures on develop branch
+- v1.0.339
+- quality gates, github batch sync, skill judge report, parsers
+- sync specweave changes
+
+---
+
+
+
 ## [1.0.339] - 2026-02-27
 
 ### Changes
