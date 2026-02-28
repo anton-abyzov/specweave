@@ -1168,6 +1168,17 @@ program
     process.exit(result.types.length > 0 ? 0 : 1);
   });
 
+// Resolve structure command - Resolve deferred structure decision for greenfield projects
+program
+  .command('resolve-structure')
+  .description('Resolve deferred repository structure decision')
+  .requiredOption('--type <type>', 'Structure type: single or multiple')
+  .action(async (options) => {
+    const { resolveStructureCommand } = await import('../dist/src/cli/commands/resolve-structure.js');
+    const result = await resolveStructureCommand({ type: options.type });
+    process.exit(result.success ? 0 : 1);
+  });
+
 // Export skills command - Export to Agent Skills open standard
 program
   .command('export-skills')
