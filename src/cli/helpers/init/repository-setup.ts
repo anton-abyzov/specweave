@@ -6,7 +6,7 @@
 import chalk from 'chalk';
 import { select, input, checkbox, password } from '@inquirer/prompts';
 import ora from 'ora';
-import type { RepositoryHosting, GitHubRemote } from './types.js';
+import type { RepositoryHosting, GitHubRemote, ProjectMaturity } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { parsePatternShortcut, validateRegex } from '../selection-strategy.js';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
@@ -78,6 +78,58 @@ async function fetchGitHubReposForSelection(
 }
 
 /**
+ * Create a new GitHub repository via the API.
+ *
+ * Tries org endpoint first, falls back to user endpoint.
+ * Returns true on success, false on failure.
+ */
+async function createGitHubRepo(
+  org: string,
+  pat: string,
+  name: string,
+  isPrivate: boolean
+): Promise<boolean> {
+  const body = JSON.stringify({
+    name,
+    private: isPrivate,
+    auto_init: true, // Create with README so it's not empty
+  });
+
+  const headers = {
+    'Authorization': `Bearer ${pat}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json',
+  };
+
+  // Try org endpoint first
+  let response = await fetch(
+    `https://api.github.com/orgs/${encodeURIComponent(org)}/repos`,
+    { method: 'POST', headers, body }
+  );
+
+  // Fallback to user repos if org not found (personal account)
+  if (response.status === 404) {
+    response = await fetch(
+      'https://api.github.com/user/repos',
+      { method: 'POST', headers, body }
+    );
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let message = `HTTP ${response.status}`;
+    try {
+      const parsed = JSON.parse(errorText);
+      if (parsed.message) message = parsed.message;
+    } catch { /* ignore */ }
+    throw new Error(message);
+  }
+
+  return true;
+}
+
+/**
  * Safely parse JSON response with HTML detection
  *
  * Azure DevOps may return HTML error pages instead of JSON when:
@@ -141,6 +193,8 @@ export interface RepositorySetupOptions {
   isCI: boolean;
   gitHubRemote: GitHubRemote | null;
   language?: SupportedLanguage;
+  /** Project maturity — greenfield gets "Define later" option for structure (v1.0.342+) */
+  projectMaturity?: ProjectMaturity;
 }
 
 /**
@@ -212,6 +266,8 @@ export interface RepositorySetupResult {
   umbrellaRepo?: string;
   /** How umbrella was selected: 'current-dir' (already here) or 'select' (needs cloning) */
   umbrellaSource?: 'current-dir' | 'select';
+  /** True when greenfield user chose "Define later" for structure (v1.0.342+) */
+  structureDeferred?: boolean;
 }
 
 /**
@@ -558,6 +614,19 @@ function getRepoStrings(language: SupportedLanguage): {
   gitUrlFormatHttps: string;
   gitUrlFormatSshDesc: string;
   gitUrlFormatHttpsDesc: string;
+  // Greenfield: "Define later" option (v1.0.342+)
+  structureDefineLater: string;
+  structureDefineLaterDesc: string;
+  // Umbrella: "Create new repository" option (v1.0.342+)
+  umbrellaCreate: string;
+  umbrellaCreateDesc: string;
+  umbrellaCreateNamePrompt: string;
+  umbrellaCreateVisibility: string;
+  umbrellaCreatePublic: string;
+  umbrellaCreatePrivate: string;
+  umbrellaCreateCreating: string;
+  umbrellaCreateSuccess: string;
+  umbrellaCreateFailed: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getRepoStrings>> = {
     en: {
@@ -636,6 +705,19 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requires SSH key)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (uses PAT for auth)',
+      // Greenfield: "Define later" (v1.0.342+)
+      structureDefineLater: 'Define later',
+      structureDefineLaterDesc: "I'll decide after my first feature",
+      // Umbrella: "Create new repository" (v1.0.342+)
+      umbrellaCreate: 'Create new repository',
+      umbrellaCreateDesc: 'Create a new GitHub repository as umbrella',
+      umbrellaCreateNamePrompt: 'Repository name:',
+      umbrellaCreateVisibility: 'Visibility:',
+      umbrellaCreatePublic: 'Public',
+      umbrellaCreatePrivate: 'Private',
+      umbrellaCreateCreating: 'Creating repository...',
+      umbrellaCreateSuccess: 'Repository "{name}" created on GitHub',
+      umbrellaCreateFailed: 'Failed to create repository',
     },
     ru: {
       header: '📦 Хостинг репозитория',
@@ -712,6 +794,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (требуется SSH-ключ)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (использует PAT для авторизации)',
+      structureDefineLater: 'Определить позже',
+      structureDefineLaterDesc: 'Решу после первой фичи',
+      umbrellaCreate: 'Создать новый репозиторий',
+      umbrellaCreateDesc: 'Создать новый GitHub-репозиторий как зонтичный',
+      umbrellaCreateNamePrompt: 'Имя репозитория:',
+      umbrellaCreateVisibility: 'Видимость:',
+      umbrellaCreatePublic: 'Публичный',
+      umbrellaCreatePrivate: 'Приватный',
+      umbrellaCreateCreating: 'Создание репозитория...',
+      umbrellaCreateSuccess: 'Репозиторий "{name}" создан на GitHub',
+      umbrellaCreateFailed: 'Не удалось создать репозиторий',
     },
     es: {
       header: '📦 Alojamiento del repositorio',
@@ -788,6 +881,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requiere clave SSH)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (usa PAT para autenticación)',
+      structureDefineLater: 'Definir después',
+      structureDefineLaterDesc: 'Decidiré después de mi primera función',
+      umbrellaCreate: 'Crear nuevo repositorio',
+      umbrellaCreateDesc: 'Crear un nuevo repositorio GitHub como paraguas',
+      umbrellaCreateNamePrompt: 'Nombre del repositorio:',
+      umbrellaCreateVisibility: 'Visibilidad:',
+      umbrellaCreatePublic: 'Público',
+      umbrellaCreatePrivate: 'Privado',
+      umbrellaCreateCreating: 'Creando repositorio...',
+      umbrellaCreateSuccess: 'Repositorio "{name}" creado en GitHub',
+      umbrellaCreateFailed: 'Error al crear repositorio',
     },
     zh: {
       header: '📦 仓库托管',
@@ -864,6 +968,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git（需要 SSH 密钥）',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git（使用 PAT 进行身份验证）',
+      structureDefineLater: '稍后定义',
+      structureDefineLaterDesc: '等第一个功能开发后再决定',
+      umbrellaCreate: '创建新仓库',
+      umbrellaCreateDesc: '在 GitHub 上创建新的伞仓库',
+      umbrellaCreateNamePrompt: '仓库名称：',
+      umbrellaCreateVisibility: '可见性：',
+      umbrellaCreatePublic: '公开',
+      umbrellaCreatePrivate: '私有',
+      umbrellaCreateCreating: '正在创建仓库...',
+      umbrellaCreateSuccess: '仓库 "{name}" 已在 GitHub 上创建',
+      umbrellaCreateFailed: '创建仓库失败',
     },
     de: {
       header: '📦 Repository-Hosting',
@@ -940,6 +1055,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (erfordert SSH-Schlüssel)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (verwendet PAT für Auth)',
+      structureDefineLater: 'Später festlegen',
+      structureDefineLaterDesc: 'Entscheide ich nach dem ersten Feature',
+      umbrellaCreate: 'Neues Repository erstellen',
+      umbrellaCreateDesc: 'Neues GitHub-Repository als Umbrella erstellen',
+      umbrellaCreateNamePrompt: 'Repository-Name:',
+      umbrellaCreateVisibility: 'Sichtbarkeit:',
+      umbrellaCreatePublic: 'Öffentlich',
+      umbrellaCreatePrivate: 'Privat',
+      umbrellaCreateCreating: 'Repository wird erstellt...',
+      umbrellaCreateSuccess: 'Repository "{name}" auf GitHub erstellt',
+      umbrellaCreateFailed: 'Repository konnte nicht erstellt werden',
     },
     fr: {
       header: '📦 Hébergement du dépôt',
@@ -1016,6 +1142,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (nécessite une clé SSH)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (utilise PAT pour l\'auth)',
+      structureDefineLater: 'Définir plus tard',
+      structureDefineLaterDesc: 'Je déciderai après ma première fonctionnalité',
+      umbrellaCreate: 'Créer un nouveau dépôt',
+      umbrellaCreateDesc: 'Créer un nouveau dépôt GitHub comme parapluie',
+      umbrellaCreateNamePrompt: 'Nom du dépôt :',
+      umbrellaCreateVisibility: 'Visibilité :',
+      umbrellaCreatePublic: 'Public',
+      umbrellaCreatePrivate: 'Privé',
+      umbrellaCreateCreating: 'Création du dépôt...',
+      umbrellaCreateSuccess: 'Dépôt "{name}" créé sur GitHub',
+      umbrellaCreateFailed: 'Échec de la création du dépôt',
     },
     ja: {
       header: '📦 リポジトリホスティング',
@@ -1092,6 +1229,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git（SSHキーが必要）',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git（認証にPATを使用）',
+      structureDefineLater: '後で決める',
+      structureDefineLaterDesc: '最初の機能を開発した後に決めます',
+      umbrellaCreate: '新しいリポジトリを作成',
+      umbrellaCreateDesc: '新しいGitHubリポジトリをアンブレラとして作成',
+      umbrellaCreateNamePrompt: 'リポジトリ名：',
+      umbrellaCreateVisibility: '公開設定：',
+      umbrellaCreatePublic: 'パブリック',
+      umbrellaCreatePrivate: 'プライベート',
+      umbrellaCreateCreating: 'リポジトリを作成中...',
+      umbrellaCreateSuccess: 'リポジトリ "{name}" がGitHubに作成されました',
+      umbrellaCreateFailed: 'リポジトリの作成に失敗しました',
     },
     ko: {
       header: '📦 저장소 호스팅',
@@ -1168,6 +1316,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (SSH 키 필요)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (인증에 PAT 사용)',
+      structureDefineLater: '나중에 결정',
+      structureDefineLaterDesc: '첫 번째 기능 개발 후 결정하겠습니다',
+      umbrellaCreate: '새 저장소 만들기',
+      umbrellaCreateDesc: 'GitHub에 새 우산 저장소 만들기',
+      umbrellaCreateNamePrompt: '저장소 이름:',
+      umbrellaCreateVisibility: '공개 설정:',
+      umbrellaCreatePublic: '공개',
+      umbrellaCreatePrivate: '비공개',
+      umbrellaCreateCreating: '저장소 생성 중...',
+      umbrellaCreateSuccess: 'GitHub에 저장소 "{name}" 생성됨',
+      umbrellaCreateFailed: '저장소 생성 실패',
     },
     pt: {
       header: '📦 Hospedagem do repositório',
@@ -1244,6 +1403,17 @@ function getRepoStrings(language: SupportedLanguage): {
       gitUrlFormatHttps: 'HTTPS',
       gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requer chave SSH)',
       gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (usa PAT para autenticação)',
+      structureDefineLater: 'Definir depois',
+      structureDefineLaterDesc: 'Decidirei após minha primeira funcionalidade',
+      umbrellaCreate: 'Criar novo repositório',
+      umbrellaCreateDesc: 'Criar um novo repositório GitHub como guarda-chuva',
+      umbrellaCreateNamePrompt: 'Nome do repositório:',
+      umbrellaCreateVisibility: 'Visibilidade:',
+      umbrellaCreatePublic: 'Público',
+      umbrellaCreatePrivate: 'Privado',
+      umbrellaCreateCreating: 'Criando repositório...',
+      umbrellaCreateSuccess: 'Repositório "{name}" criado no GitHub',
+      umbrellaCreateFailed: 'Falha ao criar repositório',
     },
   };
   return strings[language] || strings.en;
@@ -1425,7 +1595,7 @@ async function promptMultiRepoPatternSelection(
  * @returns Repository configuration
  */
 export async function setupRepositoryHosting(options: RepositorySetupOptions): Promise<RepositorySetupResult> {
-  const { isCI, gitHubRemote, language = 'en' } = options;
+  const { isCI, gitHubRemote, language = 'en', projectMaturity } = options;
   const strings = getRepoStrings(language);
 
   console.log('');
@@ -1434,6 +1604,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
 
   let repositoryHosting: RepositoryHosting = 'github-single';
   let isMultiRepo = false;
+  let structureDeferred = false;
 
   if (isCI) {
     // CI mode: auto-detect
@@ -1443,20 +1614,42 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   }
 
   // Step 1: Ask about repository structure
+  // Greenfield projects get "Define later" as first option (v1.0.342+)
+  const isGreenfield = projectMaturity === 'greenfield';
+  const structureChoices: Array<{ name: string; value: string }> = [];
+
+  if (isGreenfield) {
+    structureChoices.push({
+      name: `⏳ ${strings.structureDefineLater} ${chalk.gray(`- ${strings.structureDefineLaterDesc}`)}`,
+      value: 'deferred',
+    });
+  }
+  structureChoices.push(
+    {
+      name: strings.structureSingle,
+      value: 'single',
+    },
+    {
+      name: strings.structureMultiple,
+      value: 'multirepo',
+    },
+  );
+
   const structure = await select({
     message: strings.structureQuestion,
-    choices: [
-      {
-        name: strings.structureSingle,
-        value: 'single' as const
-      },
-      {
-        name: strings.structureMultiple,
-        value: 'multirepo' as const
-      }
-    ],
-    default: 'single'
+    choices: structureChoices,
+    default: isGreenfield ? 'deferred' : 'single',
   });
+
+  if (structure === 'deferred') {
+    // Greenfield user chose to define later — skip all provider/umbrella/pattern questions
+    console.log(chalk.gray('   → Structure will be configured during your first increment\n'));
+    return {
+      hosting: 'local',
+      isMultiRepo: false,
+      structureDeferred: true,
+    };
+  }
 
   isMultiRepo = structure === 'multirepo';
 
@@ -1584,6 +1777,10 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
           value: 'select',
         },
         {
+          name: `➕ ${strings.umbrellaCreate} ${chalk.gray(`- ${strings.umbrellaCreateDesc}`)}`,
+          value: 'create',
+        },
+        {
           name: `\u23ED\uFE0F  No umbrella needed ${chalk.gray('- Just clone nested repos')}`,
           value: 'none',
         },
@@ -1598,6 +1795,44 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
         umbrellaRepo = gitHubRemote.repo;
         umbrellaSource = 'current-dir';
         console.log(chalk.green(`   \u2713 Umbrella: ${umbrellaRepo} (current directory)`));
+      } else if (umbrellaChoice === 'create') {
+        // Create a new GitHub repository as umbrella (v1.0.342+)
+        const repoName = await input({
+          message: strings.umbrellaCreateNamePrompt,
+          validate: (value: string) => {
+            if (!value.trim()) return 'Repository name is required';
+            if (!/^[a-zA-Z0-9._-]+$/.test(value.trim())) return 'Invalid repository name';
+            return true;
+          },
+        });
+
+        const visibility = await select<'public' | 'private'>({
+          message: strings.umbrellaCreateVisibility,
+          choices: [
+            { name: `🔓 ${strings.umbrellaCreatePrivate}`, value: 'private' as const },
+            { name: `🌍 ${strings.umbrellaCreatePublic}`, value: 'public' as const },
+          ],
+          default: 'private',
+        });
+
+        const createSpinner = ora(strings.umbrellaCreateCreating).start();
+        try {
+          const created = await createGitHubRepo(
+            githubRepoSelection.org,
+            githubRepoSelection.pat,
+            repoName.trim(),
+            visibility === 'private'
+          );
+          if (created) {
+            createSpinner.succeed(strings.umbrellaCreateSuccess.replace('{name}', repoName.trim()));
+            umbrellaRepo = repoName.trim();
+            umbrellaSource = 'select'; // treat as 'select' so it gets cloned
+          } else {
+            createSpinner.fail(strings.umbrellaCreateFailed);
+          }
+        } catch (err) {
+          createSpinner.fail(`${strings.umbrellaCreateFailed}: ${err instanceof Error ? err.message : String(err)}`);
+        }
       } else if (umbrellaChoice === 'select') {
         console.log(chalk.gray('   Fetching repositories...'));
         const fetchResult = await fetchGitHubReposForSelection(
@@ -1681,5 +1916,6 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     bitbucketRepoSelection,
     umbrellaRepo,
     umbrellaSource,
+    structureDeferred,
   };
 }

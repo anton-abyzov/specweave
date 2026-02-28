@@ -56,6 +56,7 @@ Increment planning produces specs, plans, and task breakdowns that require user 
 STEP 0A: Discipline Check (BLOCKING)
 STEP 0B: WIP Enforcement
 STEP 0C: Tech Stack Detection
+STEP 0D: Structure Resolution (if deferred from init)
 STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview check)
 STEP 2:  Project Context (resolve project/board)
 STEP 3:  Create Increment (via Template API) ← folder + ID exist after this
@@ -125,6 +126,31 @@ Auto-detect from project files:
 | *.csproj | C#/.NET |
 
 If detection fails, ask user.
+
+## Step 0D: Structure Resolution (if deferred)
+
+Check if the user deferred their repository structure decision during init (greenfield projects):
+
+```bash
+DEFERRED=$(jq -r '.project.structureDeferred // false' .specweave/config.json 2>/dev/null)
+```
+
+If `DEFERRED` is `true`, this is the user's **first increment** and they need to define their project structure.
+
+Based on the user's feature description and what you've learned from tech stack detection:
+
+1. **Ask the user** about their repository structure:
+   - **Single repo** — one repository (monorepo or standard project)
+   - **Multiple repos** — microservices, EDA, parent/child architecture
+
+2. **Run the resolve command** based on their answer:
+   ```bash
+   specweave resolve-structure --type single
+   # OR
+   specweave resolve-structure --type multiple
+   ```
+
+3. This clears the deferred flag and configures the project accordingly. Continue with the normal increment flow.
 
 ## Step 1: Pre-flight Checks
 

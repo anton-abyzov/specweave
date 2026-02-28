@@ -1296,6 +1296,178 @@ describe('repository-setup', () => {
   });
 
   // ----------------------------------------------------------------
+  // Greenfield "Define later" (deferred structure)
+  // ----------------------------------------------------------------
+  describe('greenfield deferred structure', () => {
+    it('should return structureDeferred: true when greenfield user picks "deferred"', async () => {
+      mockSelect.mockResolvedValueOnce('deferred'); // structure
+
+      const result = await setupRepositoryHosting(
+        makeOptions({ projectMaturity: 'greenfield' })
+      );
+
+      expect(result.hosting).toBe('local');
+      expect(result.isMultiRepo).toBe(false);
+      expect(result.structureDeferred).toBe(true);
+      // Should not prompt for provider/umbrella/pattern
+      expect(mockSelect).toHaveBeenCalledTimes(1);
+      expect(mockInput).not.toHaveBeenCalled();
+      expect(mockPassword).not.toHaveBeenCalled();
+    });
+
+    it('should allow greenfield user to pick single instead of deferred', async () => {
+      mockSelect
+        .mockResolvedValueOnce('single')   // structure (skip deferred)
+        .mockResolvedValueOnce('local');   // provider
+
+      const result = await setupRepositoryHosting(
+        makeOptions({ projectMaturity: 'greenfield' })
+      );
+
+      expect(result.hosting).toBe('local');
+      expect(result.isMultiRepo).toBe(false);
+      expect(result.structureDeferred).toBe(false);
+    });
+
+    it('should NOT offer "deferred" option for brownfield projects', async () => {
+      mockSelect
+        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('local');
+
+      await setupRepositoryHosting(
+        makeOptions({ projectMaturity: 'brownfield' })
+      );
+
+      // First call is structure question — check that 'deferred' was NOT in choices
+      const structureCall = mockSelect.mock.calls[0][0];
+      const choiceValues = structureCall.choices.map((c: { value: string }) => c.value);
+      expect(choiceValues).not.toContain('deferred');
+      expect(choiceValues).toContain('single');
+      expect(choiceValues).toContain('multirepo');
+    });
+
+    it('should NOT offer "deferred" when projectMaturity is undefined', async () => {
+      mockSelect
+        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('local');
+
+      await setupRepositoryHosting(makeOptions()); // no projectMaturity
+
+      const structureCall = mockSelect.mock.calls[0][0];
+      const choiceValues = structureCall.choices.map((c: { value: string }) => c.value);
+      expect(choiceValues).not.toContain('deferred');
+    });
+
+    it('should set default to "deferred" for greenfield', async () => {
+      mockSelect.mockResolvedValueOnce('deferred');
+
+      await setupRepositoryHosting(
+        makeOptions({ projectMaturity: 'greenfield' })
+      );
+
+      const structureCall = mockSelect.mock.calls[0][0];
+      expect(structureCall.default).toBe('deferred');
+    });
+
+    it('should set default to "single" for brownfield', async () => {
+      mockSelect
+        .mockResolvedValueOnce('single')
+        .mockResolvedValueOnce('local');
+
+      await setupRepositoryHosting(
+        makeOptions({ projectMaturity: 'brownfield' })
+      );
+
+      const structureCall = mockSelect.mock.calls[0][0];
+      expect(structureCall.default).toBe('single');
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // "Create new repository" umbrella option
+  // ----------------------------------------------------------------
+  describe('umbrella "Create new repository" option', () => {
+    it('should create a GitHub repo when user picks "create" umbrella option', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')      // structure
+        .mockResolvedValueOnce('github')          // provider
+        .mockResolvedValueOnce('ssh')             // url format
+        .mockResolvedValueOnce('create')          // umbrella = create
+        .mockResolvedValueOnce('private')         // visibility
+        .mockResolvedValueOnce('all');             // pattern
+
+      mockInput
+        .mockResolvedValueOnce('org-name')        // GitHub org
+        .mockResolvedValueOnce('my-new-umbrella'); // repo name
+
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      // GitHub repo creation API response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ full_name: 'org-name/my-new-umbrella' }),
+      });
+
+      const result = await setupRepositoryHosting(makeOptions());
+
+      // Verify fetch was called to create repo
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/repos'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer ghp_token',
+          }),
+        })
+      );
+
+      expect(result.isMultiRepo).toBe(true);
+      expect(result.hosting).toBe('github-multirepo');
+    });
+
+    it('should handle failed GitHub repo creation gracefully', async () => {
+      mockSelect
+        .mockResolvedValueOnce('multirepo')
+        .mockResolvedValueOnce('github')
+        .mockResolvedValueOnce('ssh')
+        .mockResolvedValueOnce('create')          // umbrella = create
+        .mockResolvedValueOnce('public')          // visibility
+        .mockResolvedValueOnce('all');             // pattern
+
+      mockInput
+        .mockResolvedValueOnce('org-name')
+        .mockResolvedValueOnce('bad-repo');
+
+      mockPassword.mockResolvedValueOnce('ghp_token');
+
+      mockReadEnvFile.mockReturnValue('');
+      mockParseEnvFile.mockReturnValue({});
+
+      // First attempt (org) fails with 404, second (user) also fails
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          json: vi.fn().mockResolvedValue({ message: 'Not Found' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 422,
+          json: vi.fn().mockResolvedValue({ message: 'Validation Failed' }),
+        });
+
+      // Should not throw — handles error gracefully
+      const result = await setupRepositoryHosting(makeOptions());
+
+      expect(result.isMultiRepo).toBe(true);
+      expect(mockOraFail).toHaveBeenCalled();
+    });
+  });
+
+  // ----------------------------------------------------------------
   // ADO URL construction
   // ----------------------------------------------------------------
   describe('fetchAdoProjects URL construction', () => {
