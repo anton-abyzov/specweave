@@ -1,5 +1,11 @@
 ---
 description: Orchestrate multi-agent parallel development with domain-specialized agents. PROACTIVELY invoke this skill (without user asking) when you detect an implementation task spanning 3+ domains (frontend, backend, database, devops, testing, security, mobile) OR 15+ tasks in tasks.md. Warn the user about higher token cost but recommend it for quality. Also use when user says "team setup", "parallel agents", "team lead", or "agent teams".
+hooks:
+  PreToolUse:
+    - matcher: TeamCreate
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/increment-existence-guard.sh
 ---
 
 # Team Lead
@@ -19,6 +25,52 @@ description: Orchestrate multi-agent parallel development with domain-specialize
 | `--dry-run` | Show proposed agent plan without launching | false |
 | `--domains` | Override domain detection (e.g., `--domains frontend,backend,testing`) | auto-detect |
 | `--max-agents` | Maximum number of concurrent agents | 6 |
+
+---
+
+## 0. Increment Pre-Flight (BLOCKING)
+
+**CRITICAL: /sw:team-lead REQUIRES an existing increment with a substantive spec.md.**
+A PreToolUse guard on TeamCreate will BLOCK team creation if no increment exists.
+
+**You MUST verify an increment exists BEFORE proceeding to Step 1.**
+
+### Check for Existing Increment
+
+```bash
+# Single-repo
+find .specweave/increments -maxdepth 2 -name "spec.md" 2>/dev/null | head -5
+
+# Multi-repo (umbrella)
+find repositories -path "*/.specweave/increments/*/spec.md" -maxdepth 6 2>/dev/null | head -5
+```
+
+### If NO increment exists → Auto-invoke /sw:increment
+
+Do NOT ask permission. Invoke the increment skill with the user's feature description:
+
+```typescript
+Skill({ skill: "sw:increment", args: "the user's feature description" })
+```
+
+Wait for /sw:increment to complete (spec.md, plan.md, tasks.md created and approved).
+Then continue to Step 1.
+
+If /sw:increment fails (user rejects plan, skill errors, etc.): **STOP. Do NOT proceed.**
+Report the failure to the user and ask them to run `/sw:increment` manually.
+
+### If increment exists → Read the master spec
+
+Read the increment's spec.md. This is the **source of truth** for all agent work:
+- Scope and boundaries
+- User stories and acceptance criteria
+- Task breakdown and dependencies
+
+Store the increment path as `MASTER_INCREMENT_PATH` — you will reference it in agent prompts.
+
+**WHY THIS MATTERS**: Without a spec, agents infer scope from natural language alone.
+This leads to uncoordinated implementation, scope creep, and missing acceptance criteria.
+The spec-first principle exists because specs are the contract between user intent and agent execution.
 
 ---
 
@@ -275,6 +327,12 @@ Each agent receives a detailed prompt that includes its skill invocations, file 
 ```
 You are the FRONTEND agent for increment [INCREMENT_ID].
 
+MASTER SPEC (SOURCE OF TRUTH):
+  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
+  This spec defines scope, user stories, and acceptance criteria.
+  Your work MUST satisfy the ACs relevant to your domain.
+  Read the master spec BEFORE planning any work.
+
 SKILLS TO INVOKE:
   Skill({ skill: "frontend:architect" })
   Skill({ skill: "frontend:nextjs" })         // if Next.js project
@@ -302,7 +360,7 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec and tasks
+  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Verify services are running and accessible (check dev server, API endpoints)
   6. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
@@ -335,6 +393,12 @@ RULES:
 ```
 You are the BACKEND agent for increment [INCREMENT_ID].
 
+MASTER SPEC (SOURCE OF TRUTH):
+  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
+  This spec defines scope, user stories, and acceptance criteria.
+  Your work MUST satisfy the ACs relevant to your domain.
+  Read the master spec BEFORE planning any work.
+
 SKILLS TO INVOKE:
   Skill({ skill: "sw:architect" })
   Skill({ skill: "infra:devops" })          // if deployment config needed
@@ -360,7 +424,7 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec and tasks
+  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Verify services are running and accessible (database, auth provider, external APIs)
   6. Wait for contract artifacts if Phase 1 is active:
      - Read prisma/schema.prisma for database schema
@@ -394,6 +458,12 @@ RULES:
 ```
 You are the DATABASE agent for increment [INCREMENT_ID].
 
+MASTER SPEC (SOURCE OF TRUTH):
+  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
+  This spec defines scope, user stories, and acceptance criteria.
+  Your work MUST satisfy the ACs relevant to your domain.
+  Read the master spec BEFORE planning any work.
+
 SKILLS TO INVOKE:
   Skill({ skill: "sw:architect" })
 
@@ -411,7 +481,7 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec and tasks
+  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Design database schema changes
   6. Create plan files (plan.md, tasks.md) for your increment
   7. Send plan to team-lead and WAIT for approval:
@@ -444,6 +514,12 @@ RULES:
 ```
 You are the TESTING agent for increment [INCREMENT_ID].
 
+MASTER SPEC (SOURCE OF TRUTH):
+  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
+  This spec defines scope, user stories, and acceptance criteria.
+  Your tests MUST cover ALL ACs from the master spec.
+  Read the master spec BEFORE planning any work.
+
 SKILLS TO INVOKE:
   Skill({ skill: "testing:qa" })
   Skill({ skill: "testing:e2e" })        // for E2E test suites
@@ -467,7 +543,7 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec and tasks
+  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Wait for ALL other agents to produce initial code
   6. Create plan files (plan.md, tasks.md) for your increment
   7. Send plan to team-lead and WAIT for approval:
@@ -500,6 +576,12 @@ RULES:
 ```
 You are the SECURITY agent for increment [INCREMENT_ID].
 
+MASTER SPEC (SOURCE OF TRUTH):
+  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
+  This spec defines scope, user stories, and acceptance criteria.
+  Your security hardening MUST address all ACs from the master spec.
+  Read the master spec BEFORE planning any work.
+
 SKILLS TO INVOKE:
   Skill({ skill: "sw:security" })
   Skill({ skill: "sw:security-patterns" })
@@ -519,7 +601,7 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the increment spec and tasks
+  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Audit code produced by other agents for security issues
   6. Create plan files (plan.md, tasks.md) for your increment
   7. Send plan to team-lead and WAIT for approval:
@@ -739,9 +821,12 @@ Orchestrator Final Check:
 ```
 /sw:team-lead "Build checkout flow"
   │
-  ├── Step 1: Analyze feature -> identify domains -> decide increment split
+  ├── Step 0: VERIFY INCREMENT EXISTS (BLOCKING)
+  │     ├── Found? → Read master spec.md as source of truth
+  │     └── Missing? → Auto-invoke /sw:increment, wait for completion
+  ├── Step 1: Analyze feature (from master spec) -> identify domains -> decide increment split
   ├── Step 2: Create team via TeamCreate
-  ├── Step 3: Create per-domain increments
+  ├── Step 3: Create per-domain increments (derived from master spec)
   ├── Step 4: Contract-first spawning (all agents with mode: "bypassPermissions")
   │     ├── Phase 1: Spawn shared + database
   │     │     └── Receive PLAN_READY, review & approve via SendMessage (Section 3b)
@@ -753,9 +838,13 @@ Orchestrator Final Check:
   └── Step 7: Merge and close (/sw:team-merge)
 ```
 
+**IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
+Direct invocation of `/sw:team-lead` without an existing increment will trigger the guard and auto-invoke `/sw:increment`.
+
 ### --dry-run Output
 
-When `--dry-run` is specified, display the proposed plan without executing:
+When `--dry-run` is specified, display the proposed plan without executing.
+**Do NOT call TeamCreate in dry-run mode** — just show the formatted plan text.
 
 ```
 Team Orchestration Plan (DRY RUN)
@@ -780,6 +869,7 @@ To execute, run without --dry-run.
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
+| **TeamCreate blocked by guard** | No increment with spec.md exists | Run `/sw:increment "feature"` first, then retry `/sw:team-lead`. The guard requires a substantive spec.md (>200 bytes, not a template) |
 | **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |

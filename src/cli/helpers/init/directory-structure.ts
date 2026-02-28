@@ -11,7 +11,7 @@ import { ClaudeMdGenerator } from '../../../adapters/claude-md-generator.js';
 import { AgentsMdGenerator } from '../../../adapters/agents-md-generator.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
-import type { TestMode } from './types.js';
+import type { TestMode, ProjectMaturity } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
@@ -358,7 +358,9 @@ export function createConfigFile(
   language: SupportedLanguage,
   enableDocsPreview: boolean = true,
   testMode?: TestMode,
-  coverageTarget?: number
+  coverageTarget?: number,
+  projectMaturity?: ProjectMaturity,
+  structureDeferred?: boolean
 ): void {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
@@ -367,6 +369,8 @@ export function createConfigFile(
     project: {
       name: projectName,
       version: '0.1.0',
+      ...(projectMaturity && { maturity: projectMaturity }),
+      ...(structureDeferred && { structureDeferred: true }),
     },
     multiProject: {
       enabled: false,  // Single-project mode by default (v0.34.0+)

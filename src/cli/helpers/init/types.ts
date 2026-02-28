@@ -42,6 +42,12 @@ export interface InitOptions {
 export type ReinitAction = 'continue' | 'fresh' | 'cancel';
 
 /**
+ * Project maturity — greenfield (new) vs brownfield (existing code)
+ * Greenfield projects may defer structure decisions to first increment.
+ */
+export type ProjectMaturity = 'greenfield' | 'brownfield';
+
+/**
  * Repository hosting configuration
  */
 export type RepositoryHosting =

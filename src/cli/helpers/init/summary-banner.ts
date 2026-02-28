@@ -39,6 +39,10 @@ export interface SummaryBannerOptions {
     canUpdate: boolean;
     canUpdateStatus: boolean;
   };
+  /** Project maturity — greenfield vs brownfield (v1.0.342+) */
+  projectMaturity?: 'greenfield' | 'brownfield';
+  /** Whether repo structure decision was deferred (v1.0.342+) */
+  structureDeferred?: boolean;
 }
 
 const adapterDisplayNames: Record<string, string> = {
@@ -94,6 +98,15 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
   // Adapter info
   const adapterLabel = adapterDisplayNames[options.adapter] || options.adapter;
   lines.push(chalk.cyan('  Adapter:   ') + adapterLabel);
+
+  // Project maturity (v1.0.342+)
+  if (options.projectMaturity) {
+    let maturityLabel = options.projectMaturity;
+    if (options.structureDeferred) {
+      maturityLabel += chalk.yellow(' (structure pending)');
+    }
+    lines.push(chalk.cyan('  Project:   ') + maturityLabel);
+  }
 
   // Config path
   lines.push(chalk.cyan('  Config:    ') + '.specweave/config.json');

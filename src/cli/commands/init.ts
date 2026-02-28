@@ -16,7 +16,7 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { input, confirm } from '@inquirer/prompts';
+import { input, confirm, select } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
@@ -31,6 +31,7 @@ import {
   type InitOptions,
   type RepositoryHosting,
   type LanguageSelectionResult,
+  type ProjectMaturity,
   findSourceDir,
   findPackageRoot,
   detectNestedSpecweave,
@@ -560,6 +561,36 @@ export async function initCommand(
     }
 
     // ========================================================================
+    // PROJECT MATURITY: Greenfield vs Brownfield (v1.0.342)
+    // Ask BEFORE repository hosting so greenfield users can defer structure.
+    // ========================================================================
+    spinner.stop();
+    let projectMaturity: ProjectMaturity;
+    const autoDetectedGreenfield = isGreenfieldCheck(targetDir);
+
+    if (isCI) {
+      projectMaturity = autoDetectedGreenfield ? 'greenfield' : 'brownfield';
+      console.log(chalk.gray(`   → Auto-detected: ${projectMaturity} project\n`));
+    } else {
+      console.log(chalk.cyan.bold('\n🌱 Project Type\n'));
+      projectMaturity = await select<ProjectMaturity>({
+        message: locale.t('cli', 'init.maturity.question', { fallback: 'Is this a new or existing project?' }),
+        choices: [
+          {
+            name: `🆕 ${locale.t('cli', 'init.maturity.greenfield', { fallback: 'New project (greenfield)' })} ${chalk.gray('- Starting from scratch, no existing codebase')}`,
+            value: 'greenfield' as const,
+          },
+          {
+            name: `📦 ${locale.t('cli', 'init.maturity.brownfield', { fallback: 'Existing project (brownfield)' })} ${chalk.gray('- Has existing code, dependencies, or repos')}`,
+            value: 'brownfield' as const,
+          },
+        ],
+        default: autoDetectedGreenfield ? 'greenfield' : 'brownfield',
+      });
+    }
+    spinner.start('Configuring project...');
+
+    // ========================================================================
     // INTERACTIVE: Repository hosting + umbrella selection (BEFORE file creation)
     // v1.0.286: Moved BEFORE directory structure creation so that:
     // - Umbrella clone runs on a clean slate (no .specweave/ to conflict with)
@@ -568,7 +599,7 @@ export async function initCommand(
     // ========================================================================
     spinner.stop();
     const gitHubRemote = detectGitHubRemote(targetDir);
-    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
+    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language, projectMaturity });
     spinner.start('Creating project files...');
 
     // Create directory structure
@@ -624,7 +655,7 @@ export async function initCommand(
     }
 
     // Create config.json
-    createConfigFile(targetDir, finalProjectName, toolName, language, false);
+    createConfigFile(targetDir, finalProjectName, toolName, language, false, undefined, undefined, projectMaturity, repoResult.structureDeferred);
 
     // Auto-install plugins for Claude ONLY
     let autoInstallSucceeded = false;
@@ -927,6 +958,8 @@ export async function initCommand(
         defaults: finalDefaults,
         externalPluginInstalled,
         syncPermissions,
+        projectMaturity,
+        structureDeferred: repoResult.structureDeferred,
       });
     }
 
