@@ -1,5 +1,11 @@
 ---
 description: "Preset-driven team building — spawn coordinated multi-agent teams from battle-tested presets for full-stack, review, testing, TDD, and migration workflows"
+hooks:
+  PreToolUse:
+    - matcher: TeamCreate
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/increment-existence-guard.sh
 ---
 
 # Team Build

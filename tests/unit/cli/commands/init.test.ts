@@ -614,6 +614,10 @@ describe('init command', () => {
         expect.any(String),
         expect.any(String),
         false,
+        undefined,
+        undefined,
+        expect.any(String), // projectMaturity
+        undefined,
       );
     });
 
@@ -676,6 +680,10 @@ describe('init command', () => {
         expect.any(String),
         expect.any(String),
         false,
+        undefined,
+        undefined,
+        expect.any(String), // projectMaturity
+        undefined,
       );
 
       cwdSpy.mockRestore();
@@ -948,6 +956,10 @@ describe('init command', () => {
         expect.any(String),
         'en',
         false,
+        undefined,
+        undefined,
+        expect.any(String), // projectMaturity
+        undefined,
       );
     });
   });
