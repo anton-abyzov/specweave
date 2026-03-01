@@ -621,8 +621,8 @@ ls .claude/hooks/
 │                                                                      │
 │  CLAUDE MODELS (Jan-Feb 2026)                                        │
 │  • Claude Opus 4.6 — most capable coding model ever released        │
-│  • Claude Sonnet 4.5 — fast, accurate, great for routine tasks      │
-│  • SpecWeave uses Opus 4.6 for architecture + Sonnet 4.5 for speed  │
+│  • Claude Sonnet 4.6 — fast, accurate, great for routine tasks      │
+│  • SpecWeave uses Opus 4.6 for architecture + Sonnet 4.6 for speed  │
 │                                                                      │
 │  v2.1.6 (Jan 2026)                                                  │
 │  • Automatic skill discovery from nested directories                 │
@@ -649,7 +649,7 @@ ls .claude/hooks/
 
 > "The Claude Code team ships updates weekly. And then there's the model side — Claude Opus 4.6. I already told you what this model means to me. Let me tell you what it means for YOUR development workflow.
 >
-> Complex multi-file refactors across 20+ files? Opus 4.6 handles it without losing context. Architectural reasoning about microservice boundaries? It thinks like a staff engineer. Understanding a 10-year legacy codebase you dropped it into? It reads, understands, and respects existing patterns. Pair it with Sonnet 4.5 for faster routine tasks — code formatting, simple tests, documentation updates — and you have a duo that's greater than the sum of its parts.
+> Complex multi-file refactors across 20+ files? Opus 4.6 handles it without losing context. Architectural reasoning about microservice boundaries? It thinks like a staff engineer. Understanding a 10-year legacy codebase you dropped it into? It reads, understands, and respects existing patterns. Pair it with Sonnet 4.6 for faster routine tasks — code formatting, simple tests, documentation updates — and you have a duo that's greater than the sum of its parts.
 >
 > These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
 
@@ -1470,6 +1470,14 @@ cat .specweave/skill-memories/frontend.md
 > Any corrections you made during autonomous work? Permanent learning. Saved to skill-memories. Applied next session.
 >
 > **Correct once. Never again.**"
+
+**[PRO TIP - THE REPETITION SIGNAL]**
+
+> "And here's a practical rule of thumb: **if you find yourself repeatedly telling Claude the same thing — the same convention, the same workflow step, the same 'always do X before Y' — that's your signal to create a skill.**
+>
+> Don't keep typing it. Capture it. A skill is just a markdown file with instructions. Write it once, and Claude follows it automatically every time.
+>
+> Repeating yourself to an AI is like copy-pasting code — it works, but it doesn't scale. Skills are your DRY principle for AI instructions."
 
 **[SHOW GIT INTEGRATION]**
 
@@ -2883,7 +2891,7 @@ specweave init .
 │    Programmable AI | Autonomous Teams | Enterprise Ready    │
 │                                                              │
 │    100+ skills | Agent swarms | Zero config                 │
-│    Powered by Claude Opus 4.6 & Sonnet 4.5                 │
+│    Powered by Claude Opus 4.6 & Sonnet 4.6                 │
 │                                                              │
 │    spec-weave.com                                           │
 │    discord.gg/UYg4BGJ65V                                    │

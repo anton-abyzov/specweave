@@ -37,7 +37,7 @@ export class OpenAIProvider implements LLMProvider {
 
   constructor(config: OpenAIProviderConfig) {
     this.apiKey = config.apiKey;
-    this.defaultModel = config.model || 'gpt-4o';
+    this.defaultModel = config.model || 'gpt-5.3';
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.baseUrl = config.baseUrl || 'https://api.openai.com/v1';

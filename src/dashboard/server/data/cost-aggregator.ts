@@ -30,12 +30,11 @@ export interface CostsSummaryPayload {
   billingContext: BillingContext;
 }
 
-// Pricing per million tokens — official Anthropic rates (Feb 2026)
+// Pricing per million tokens — official Anthropic rates (Mar 2026)
 // Source: https://platform.claude.com/docs/en/about-claude/pricing
 const PRICING: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
   'claude-opus-4-6': { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.50 },
   'claude-sonnet-4-6': { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.30 },
-  'claude-sonnet-4-5-20250929': { input: 3, output: 15, cacheWrite: 3.75, cacheRead: 0.30 },
   'claude-haiku-4-5-20251001': { input: 1, output: 5, cacheWrite: 1.25, cacheRead: 0.10 },
 };
 
@@ -43,7 +42,6 @@ const PRICING: Record<string, { input: number; output: number; cacheWrite: numbe
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   'claude-opus-4-6': 'Opus 4.6',
   'claude-sonnet-4-6': 'Sonnet 4.6',
-  'claude-sonnet-4-5-20250929': 'Sonnet 4.5',
   'claude-haiku-4-5-20251001': 'Haiku 4.5',
 };
 
@@ -58,14 +56,13 @@ function resolveModel(raw: string): string {
   if (!raw) return 'unknown';
   if (PRICING[raw]) return raw;
   if (raw.includes('opus')) return 'claude-opus-4-6';
-  if (raw.includes('sonnet-4-6')) return 'claude-sonnet-4-6';
-  if (raw.includes('sonnet')) return 'claude-sonnet-4-5-20250929';
+  if (raw.includes('sonnet')) return 'claude-sonnet-4-6';
   if (raw.includes('haiku')) return 'claude-haiku-4-5-20251001';
   return raw;
 }
 
 function getPricing(model: string) {
-  return PRICING[model] || PRICING[resolveModel(model)] || PRICING['claude-sonnet-4-5-20250929'];
+  return PRICING[model] || PRICING[resolveModel(model)] || PRICING['claude-sonnet-4-6'];
 }
 
 /** Per-file cache entry: mtime + parsed summary */

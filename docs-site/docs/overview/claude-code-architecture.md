@@ -643,5 +643,5 @@ SpecWeave works with any AI coding assistant. Each has different integration dep
   - *Global*: Cross-cutting (always fire)
   - *Skill-scoped*: Command-specific (~50% fewer invocations)
 
-SpecWeave bundles 23 plugins with 100+ skills, 68+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.5.
+SpecWeave bundles 23 plugins with 100+ skills, 68+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.6.
 :::

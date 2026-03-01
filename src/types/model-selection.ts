@@ -6,16 +6,16 @@
  * - Phase detection (planning vs execution vs review)
  * - User overrides (manual model selection)
  *
- * Strategy (Opus 4.5 Default):
+ * Strategy (Opus 4.6 Default):
  * - Haiku: Simple/cheap operations, translations, mechanical tasks
  * - Opus: Default for complex work, analysis, architecture, planning
  */
 
 /**
  * Available AI models
- * - opus: Latest Opus 4.5 (default - planning, analysis, complex work)
+ * - opus: Latest Opus 4.6 (default - planning, analysis, complex work)
  * - haiku: Latest Haiku 4.5 (simple tasks, translations, cheap ops)
- * - sonnet: Sonnet 4 (legacy, rarely used)
+ * - sonnet: Sonnet 4.6 (balanced speed and quality)
  * - auto: System decides based on context
  */
 export type Model = 'sonnet' | 'haiku' | 'opus' | 'auto';

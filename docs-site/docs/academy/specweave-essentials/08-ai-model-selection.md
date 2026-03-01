@@ -17,18 +17,17 @@ description: "Choose the right model for each task"
 | Model | Best For | Cost | Speed |
 |-------|----------|------|-------|
 | **Opus 4.6** | All complex work (latest, most capable) | $$$ | Best quality |
-| **Opus 4.5** | Complex work (previous generation) | $$$ | Best quality |
-| **Sonnet 4.5** | Balanced speed + capability | $$ | Fast |
+| **Sonnet 4.6** | Balanced speed + capability | $$ | Fast |
 | **Haiku 4.5** | Quick lookups, simple edits | $ | Fastest |
 
 > **Opus 4.6 is the most capable coding model available and the recommended default.**
-> Use Sonnet 4.5 for routine tasks. Use Haiku for mechanical tasks to save costs.
+> Use Sonnet 4.6 for routine tasks. Use Haiku for mechanical tasks to save costs.
 
 ---
 
 ## When to Use Each Model
 
-### Opus 4.6 / 4.5
+### Opus 4.6
 
 ```
 ✅ Architecture decisions
@@ -91,7 +90,7 @@ Step 2: Sonnet analysis
 
 Step 3: Opus architecture (if needed)
   "Redesign for multi-tenant"
-  Cost: ~$0.15
+  Cost: ~$0.05
 ```
 
 ### Strategy 2: Batch Similar Tasks
@@ -125,9 +124,9 @@ Step 3: Opus architecture (if needed)
 | Phase | Model | Cost | Action |
 |-------|-------|------|--------|
 | Research | Haiku | $0.005 | Find existing code |
-| Planning | Opus | $0.20 | Create increment |
+| Planning | Opus | $0.06 | Create increment |
 | Implementation | Sonnet | $1.20 | Build 8 tasks |
-| **Total** | | **$1.40** | vs $3.00 all-Opus |
+| **Total** | | **$1.27** | vs $1.00 all-Opus |
 
 ---
 
@@ -170,14 +169,14 @@ ai:
 │                                                         │
 │  "I need to..."                                         │
 │                                                         │
-│  Design / Architect     ────────────► OPUS 4.5         │
+│  Design / Architect     ────────────► OPUS 4.6          │
 │  Complex refactor                     (DEFAULT)         │
 │  Security review                                        │
 │  Feature implementation                                 │
 │  Writing tests                                          │
 │  Bug fixes                                              │
 │                                                         │
-│  Quick lookup           ────────────► HAIKU 4.5        │
+│  Quick lookup           ────────────► HAIKU 4.5         │
 │  Simple edit                                            │
 │  Bulk operation                                         │
 │                                                         │
