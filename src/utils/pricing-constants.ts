@@ -1,11 +1,11 @@
 /**
  * Anthropic API Pricing Constants
  *
- * Pricing as of 2025-10-31 (verified against https://www.anthropic.com/pricing)
+ * Pricing as of 2026-03-01 (verified against https://www.anthropic.com/pricing)
  *
  * Model Tier Mapping:
- * - opus → claude-opus-4-5-20251101 (latest Opus 4.5 - DEFAULT)
- * - sonnet → claude-sonnet-4-5-20250929 (latest Sonnet 4.5)
+ * - opus → claude-opus-4-6 (latest Opus 4.6 - DEFAULT)
+ * - sonnet → claude-sonnet-4-6 (latest Sonnet 4.6)
  * - haiku → claude-haiku-4-5-20251001 (latest Haiku 4.5)
  *
  * Note: This file should be updated when Anthropic releases new models.
@@ -24,8 +24,8 @@ export const PRICING = {
     output: 0.000005,  // $5 per 1M output tokens
   },
   opus: {
-    input: 0.000015,   // $15 per 1M input tokens
-    output: 0.000075,  // $75 per 1M output tokens
+    input: 0.000005,   // $5 per 1M input tokens
+    output: 0.000025,  // $25 per 1M output tokens
   },
 } as const;
 

@@ -1257,7 +1257,8 @@ function resolveSpecweaveDir(): string {
 }
 
 /**
- * Install a specweave local plugin via vskill add with --plugin-dir
+ * Install a specweave local plugin via vskill install with --plugin-dir
+ * (v1.0.343: fixed 'add' → 'install' to match vskill CLI)
  *
  * @param pluginName - Name of the sw-* plugin to install
  * @param timeout - Timeout in milliseconds
@@ -1273,11 +1274,11 @@ async function installSpecweaveLocalPlugin(
 
     const result = spawnSync('node', [
       vskillPath,
-      'add',
-      pluginDir,
-      '--plugin', pluginName,
+      'install',
       '--plugin-dir', pluginDir,
+      '--plugin', pluginName,
       '--force', // Auto-accept scan results during lazy loading
+      '--yes',
     ], {
       encoding: 'utf8',
       timeout,
@@ -1309,10 +1310,11 @@ async function installSpecweaveLocalPlugin(
 }
 
 /**
- * Install a vskill repo plugin via vskill add --repo
+ * Install a vskill repo plugin via vskill install --repo
+ * (v1.0.343: fixed 'add' → 'install' to match vskill CLI)
  *
  * v2.1.0: Per-category plugins in vskill marketplace (frontend, backend, etc.).
- * Uses: vskill add dummy --repo anton-abyzov/vskill --plugin <name> --force --yes
+ * Uses: vskill install --repo anton-abyzov/vskill --plugin <name> --force --yes
  *
  * @param pluginName - Name of the vskill plugin (e.g., "frontend", "backend")
  * @param timeout - Timeout in milliseconds
@@ -1327,8 +1329,7 @@ async function installVskillRepoPlugin(
 
     const result = spawnSync('node', [
       vskillPath,
-      'add',
-      'dummy',          // source arg (required but unused for --repo)
+      'install',
       '--repo', 'anton-abyzov/vskill',
       '--plugin', pluginName,
       '--force',

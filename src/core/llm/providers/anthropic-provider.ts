@@ -71,7 +71,7 @@ export class AnthropicProvider implements LLMProvider {
    */
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    // Resolve model alias (opus → claude-opus-4-5-20251101)
+    // Resolve model alias (opus → claude-opus-4-6)
     const model = resolveModelAlias(options.model || this.defaultModel);
     const maxTokens = options.maxTokens || this.maxTokens;
     const temperature = options.temperature ?? this.temperature;
