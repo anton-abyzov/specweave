@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.343] - 2026-03-01
+
+### Changes
+- update docs, LLM providers, model selection, and plugin hooks
+- 1.0.342: init multi-repo resolve, team-lead improvements, increment hooks
+
+---
+
+
+
 ## [1.0.342] - 2026-02-28
 
 ### Changes
