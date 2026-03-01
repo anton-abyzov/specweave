@@ -212,7 +212,7 @@ SpecWeave doesn't impose technology choices:
 
 **Best AI coding assistant for production software.**
 
-- Sonnet 4.5: Best for coding and complex agents
+- Sonnet 4.6: Best for coding and complex agents
 - Agentic workflows: Multi-agent orchestration
 - Tool use: Read, Write, Edit, Bash, etc.
 - Context awareness: Large context window

@@ -4,7 +4,7 @@
  * Intelligent model selection for SpecWeave tasks based on complexity,
  * instruction detail, and task characteristics.
  *
- * Strategy (Opus 4.5 Default):
+ * Strategy (Opus 4.6 Default):
  * - Haiku: Simple/cheap operations, translations, mechanical work
  * - Opus: Default for all complex work, architecture, creative problem-solving
  */
@@ -245,7 +245,7 @@ export function estimateTaskCost(
   const costPer1M = {
     haiku: 1.25,   // $0.25 input + $1.25 output = ~$1.25 blended
     sonnet: 15.00, // $3 input + $15 output = ~$15 blended
-    opus: 75.00    // $15 input + $75 output = ~$75 blended
+    opus: 25.00    // $5 input + $25 output = ~$25 blended
   };
 
   return (estimatedTokens / 1_000_000) * costPer1M[model];

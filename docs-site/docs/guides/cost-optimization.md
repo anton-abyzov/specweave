@@ -7,10 +7,10 @@
 ## Overview
 
 SpecWeave automatically optimizes your AI costs by intelligently routing work to the most cost-effective model:
-- **Opus 4.5** ($15/$75 per 1M tokens) for planning, architecture, and complex reasoning (default)
+- **Opus 4.6** ($5/$25 per 1M tokens) for planning, architecture, and complex reasoning (default)
 - **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple implementation
 
-**Result**: Maximum quality with Opus 4.5 as default, with Haiku optimization for routine tasks.
+**Result**: Maximum quality with Opus 4.6 as default, with Haiku optimization for routine tasks.
 
 ---
 
@@ -39,7 +39,7 @@ Savings: $0.84 (93%)
 
 **Layer 1: Agent Preferences**
 Each agent knows its optimal model:
-- **All agents** → Opus 4.5 (PM, Architect, Security, QA Lead, Tech Lead, etc.)
+- **All agents** → Opus 4.6 (PM, Architect, Security, QA Lead, Tech Lead, etc.)
 - **Simple tasks** → Haiku (when task has detailed spec + clear instructions)
 
 **Layer 2: Phase Detection**
@@ -49,7 +49,7 @@ Analyzes your prompt to detect:
 - **Mechanical Execution**: clear spec, simple "implement X" → Haiku
 
 **Layer 3: Safe Defaults**
-When uncertain, defaults to Opus 4.5 (maximum quality and reasoning).
+When uncertain, defaults to Opus 4.6 (maximum quality and reasoning).
 
 ### 3. Real-Time Cost Tracking
 
@@ -392,7 +392,7 @@ Since we store NO personal data:
 
 ### Q: Is quality affected?
 
-**A**: No. Haiku 4.5 matches Sonnet 3.5 quality, perfect for execution tasks. Sonnet 4.5 is still used for all complex planning.
+**A**: No. Haiku 4.5 matches Sonnet 4 quality, perfect for execution tasks. Opus 4.6 is used for all complex planning.
 
 ### Q: Can I opt out?
 
@@ -404,7 +404,7 @@ Since we store NO personal data:
 
 ### Q: Does this work with Opus?
 
-**A**: Yes! Opus 4.0 will be supported when released. Currently: planning=Sonnet, execution=Haiku.
+**A**: Yes! Opus 4.6 is the default for planning and complex work, Haiku for execution.
 
 ---
 
@@ -420,4 +420,4 @@ Since we store NO personal data:
 
 ---
 
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+*Last updated: 2026-03-01 | SpecWeave v1.0.342*

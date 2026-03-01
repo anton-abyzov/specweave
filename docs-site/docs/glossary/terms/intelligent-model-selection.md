@@ -6,7 +6,7 @@ sidebar_label: Intelligent Model Selection
 
 # Intelligent Model Selection
 
-**Intelligent Model Selection** is SpecWeave's automatic system for choosing the right AI model. With Opus 4.5 as the default for maximum quality, SpecWeave uses Haiku for simple mechanical tasks to optimize costs while maintaining quality.
+**Intelligent Model Selection** is SpecWeave's automatic system for choosing the right AI model. With Opus 4.6 as the default for maximum quality, SpecWeave uses Haiku for simple mechanical tasks to optimize costs while maintaining quality.
 
 ---
 
@@ -16,7 +16,7 @@ sidebar_label: Intelligent Model Selection
 flowchart TD
     A[Task Request] --> B{Task Complexity}
     B -->|Simple/Mechanical| C[Haiku]
-    B -->|Standard/Complex| D[Opus 4.5]
+    B -->|Standard/Complex| D[Opus 4.6]
 
     C --> E[Execute with Model]
     D --> E
@@ -29,7 +29,7 @@ flowchart TD
 | Model | Cost | Best For | Use Cases |
 |-------|------|----------|-----------|
 | **Haiku** | $ | Mechanical tasks | Simple file generation, log parsing, test data |
-| **Opus 4.5** | $$$ | All complex work (default) | Planning, architecture, implementation, code review |
+| **Opus 4.6** | $$$ | All complex work (default) | Planning, architecture, implementation, code review |
 
 ---
 

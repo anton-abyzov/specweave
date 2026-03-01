@@ -102,7 +102,7 @@ export class ClaudeCodeProvider implements LLMProvider {
   private skipPermissions: boolean;
 
   constructor(config: ClaudeCodeProviderConfig = {}) {
-    this.model = config.model || 'opus';  // Use Opus 4.5 by default for best quality
+    this.model = config.model || 'opus';  // Use Opus 4.6 by default for best quality
     this.defaultModel = this.model;
     this.maxTokens = config.maxTokens || 4096;
     this.timeout = config.timeout || 120000;

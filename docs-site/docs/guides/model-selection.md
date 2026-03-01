@@ -7,14 +7,14 @@
 ## Overview
 
 SpecWeave uses a two-tier model strategy:
-1. **Opus 4.5** - Default for all complex work (planning, analysis, architecture, code review)
+1. **Opus 4.6** - Default for all complex work (planning, analysis, architecture, code review)
 2. **Haiku** - For simple/cheap operations (translations, mechanical tasks)
 
 ---
 
 ## The Models
 
-### Opus 4.5 (Default - Planning, Analysis & Complex Work)
+### Opus 4.6 (Default - Planning, Analysis & Complex Work)
 
 **Use for**:
 - Strategic planning
@@ -24,7 +24,7 @@ SpecWeave uses a two-tier model strategy:
 - Code review
 - Quality assessment
 
-**Pricing**: $15 per 1M input tokens, $75 per 1M output tokens
+**Pricing**: $5 per 1M input tokens, $25 per 1M output tokens
 
 **Characteristics**:
 - Deepest reasoning
@@ -49,9 +49,9 @@ SpecWeave uses a two-tier model strategy:
 - Good for repetitive tasks
 - Used when task has detailed spec
 
-### Sonnet 4 (Legacy)
+### Sonnet 4.6 (Balanced)
 
-**Rarely used** - Available for backwards compatibility.
+**Use for balanced speed and quality** - Good middle ground between Opus and Haiku.
 
 **Pricing**: $3 per 1M input tokens, $15 per 1M output tokens
 
@@ -63,4 +63,4 @@ SpecWeave uses a two-tier model strategy:
 
 ---
 
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+*Last updated: 2026-03-01 | SpecWeave v1.0.342*
