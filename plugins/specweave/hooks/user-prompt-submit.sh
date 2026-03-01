@@ -480,8 +480,8 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install plugin via vskill (v1.0.272, fixed v1.0.343)
-# Uses npx vskill install with --plugin and --plugin-dir flags.
+# Helper: Install plugin via vskill (v1.0.272, fixed v1.0.343, v1.0.344: --repo)
+# Uses npx vskill install with --repo anton-abyzov/specweave for sw-* plugins.
 # Args: $1=plugin name (e.g., "sw-github")
 # Returns: 0 if installed successfully, 1 if failed
 # Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
