@@ -181,7 +181,7 @@ Add to project configuration:
 
 ---
 
-### OpenAI API / GPT-4
+### OpenAI API / GPT-5.3
 
 Include in system prompt:
 ```
@@ -220,7 +220,7 @@ with open(".specweave/increments/0001-feature/tasks.md") as f:
     tasks = f.read()
 
 message = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="claude-sonnet-4-6",
     max_tokens=4096,
     system=f"""You are working with SpecWeave framework.
 

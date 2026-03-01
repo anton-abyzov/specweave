@@ -117,7 +117,7 @@ describe('lazy loading vskill integration', () => {
   // TC-020: Detector uses vskill for installation
   // ============================================================
   describe('TC-020: Detector uses vskill for installation', () => {
-    it('should invoke vskill add instead of claude plugin install', async () => {
+    it('should invoke vskill install instead of claude plugin install', async () => {
       setupCliAvailable();
 
       // Mock spawnSync to simulate successful vskill execution
@@ -146,17 +146,17 @@ describe('lazy loading vskill integration', () => {
       // After migration: ZERO calls to claude plugin install
       expect(claudePluginCalls).toHaveLength(0);
 
-      // Should have calls to node with vskill args (add, --plugin, --repo)
+      // Should have calls to node with vskill args (install, --plugin, --repo)
       const vskillCalls = allCalls.filter(
         (call: any[]) => {
           const args = (call[1] || []).join(' ');
-          return args.includes('add') && args.includes('--plugin');
+          return args.includes('install') && args.includes('--plugin');
         }
       );
       expect(vskillCalls.length).toBeGreaterThan(0);
     });
 
-    it('should use vskill add with correct plugin name for vskill plugins', async () => {
+    it('should use vskill install with correct plugin name for vskill plugins', async () => {
       setupCliAvailable();
 
       mockSpawnSync.mockReturnValue({
@@ -168,16 +168,16 @@ describe('lazy loading vskill integration', () => {
 
       await installPluginViaCli('frontend');
 
-      // Verify vskill add was called with --plugin frontend --repo
+      // Verify vskill install was called with --plugin frontend --repo
       const allCalls = mockSpawnSync.mock.calls;
       const addCalls = allCalls.filter((call: any[]) => {
         const args = (call[1] || []).join(' ');
-        return args.includes('add') && args.includes('--plugin') && args.includes('frontend');
+        return args.includes('install') && args.includes('--plugin') && args.includes('frontend');
       });
       expect(addCalls.length).toBeGreaterThan(0);
     });
 
-    it('should handle vskill add failure gracefully', async () => {
+    it('should handle vskill install failure gracefully', async () => {
       setupCliAvailable();
 
       mockSpawnSync.mockReturnValue({

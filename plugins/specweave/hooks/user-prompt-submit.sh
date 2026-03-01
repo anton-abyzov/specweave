@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.272 - vskill Plugin Installation)
+# SpecWeave UserPromptSubmit Hook (v1.0.343 - vskill Plugin Installation Fix)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
@@ -480,8 +480,8 @@ check_plugin_in_vskill_lock() {
   fi
 }
 
-# Helper: Install plugin via vskill (v1.0.272)
-# Uses npx vskill add with --plugin and --plugin-dir flags.
+# Helper: Install plugin via vskill (v1.0.272, fixed v1.0.343)
+# Uses npx vskill install with --plugin and --plugin-dir flags.
 # Args: $1=plugin name (e.g., "frontend")
 # Returns: 0 if installed successfully, 1 if failed
 # Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
@@ -498,15 +498,15 @@ install_plugin_via_vskill() {
   VSKILL_INSTALL_OUTPUT=""
   if command -v npx >/dev/null 2>&1; then
     if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
     else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(npx vskill install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
     fi
   else
     # Fallback: try node with direct path
     local vskill_js="${HOME}/.claude/plugins/marketplaces/specweave/node_modules/.bin/vskill"
     if [[ -f "$vskill_js" ]]; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" add "$plugin_dir" --plugin "$plugin" --plugin-dir "$plugin_dir" --force 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
     else
       VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
       return 1
@@ -532,16 +532,16 @@ is_vskill_repo_plugin() {
   echo " $VSKILL_REPO_PLUGINS " | grep -q " $plugin "
 }
 
-# Install vskill marketplace plugin via --repo flag.
+# Install vskill marketplace plugin via --repo flag. (fixed v1.0.343: add→install)
 # Args: $1=plugin name (e.g., "frontend")
 install_vskill_repo_plugin() {
   local plugin="$1"
   VSKILL_INSTALL_OUTPUT=""
   if command -v npx >/dev/null 2>&1; then
     if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill add dummy --repo anton-abyzov/vskill --plugin "$plugin" --force --yes 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill install --repo anton-abyzov/vskill --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
     else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill add dummy --repo anton-abyzov/vskill --plugin "$plugin" --force --yes 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(npx vskill install --repo anton-abyzov/vskill --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
     fi
   else
     VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
@@ -1658,14 +1658,61 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
         fi
 
         # ==================================================================
+        # KEYWORD FALLBACK: PLUGIN INSTALLATION (v1.0.343)
+        # ==================================================================
+        # When LLM detection fails/times out, try lightweight keyword-based
+        # plugin detection. Only installs if plugin NOT already in vskill.lock.
+        # Targeted domain keywords (not generic action verbs) to avoid over-installing.
+        if [[ "$LLM_DETECTION_FAILED" == "true" && "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
+          FALLBACK_PLUGINS=""
+          if echo "$PROMPT" | grep -qiE "(react|vue|angular|next\.?js|svelte|frontend|component|tailwind|CSS|UI design|dashboard)"; then
+            check_plugin_in_vskill_lock "frontend" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}frontend "
+          fi
+          if echo "$PROMPT" | grep -qiE "(API|REST|GraphQL|\.NET|C#|express|fastapi|django|spring boot|NestJS|backend|database|postgres|mongo)"; then
+            check_plugin_in_vskill_lock "backend" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}backend "
+          fi
+          if echo "$PROMPT" | grep -qiE "(vitest|playwright|jest|cypress|E2E|unit test|integration test|test coverage|TDD|mutation test)"; then
+            check_plugin_in_vskill_lock "testing" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}testing "
+          fi
+          if echo "$PROMPT" | grep -qiE "(react native|iOS|android|expo|flutter|swift|kotlin|mobile app)"; then
+            check_plugin_in_vskill_lock "mobile" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}mobile "
+          fi
+          if echo "$PROMPT" | grep -qiE "(terraform|AWS|Azure|GCP|docker|kubernetes|k8s|CI/CD|github actions|helm)"; then
+            check_plugin_in_vskill_lock "infra" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}infra "
+          fi
+          if echo "$PROMPT" | grep -qiE "(security scan|vulnerability|OWASP|penetration|CVE|hardening|devsecops)"; then
+            check_plugin_in_vskill_lock "security" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}security "
+          fi
+          if echo "$PROMPT" | grep -qiE "(kafka|event stream|confluent|schema registry)"; then
+            check_plugin_in_vskill_lock "kafka" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}kafka "
+          fi
+          if echo "$PROMPT" | grep -qiE "(machine learning|pytorch|tensorflow|LLM|RAG|fine.?tun|hugging.?face|langchain)"; then
+            check_plugin_in_vskill_lock "ml" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}ml "
+          fi
+          if echo "$PROMPT" | grep -qiE "(stripe|payment|billing|subscription|checkout|PCI)"; then
+            check_plugin_in_vskill_lock "payments" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}payments "
+          fi
+
+          # Install detected plugins (limit to first 2 to avoid long delays)
+          if [[ -n "$FALLBACK_PLUGINS" ]]; then
+            FALLBACK_INSTALLED=""
+            FALLBACK_COUNT=0
+            for fp in $FALLBACK_PLUGINS; do
+              [[ "$FALLBACK_COUNT" -ge 2 ]] && break
+              if install_vskill_repo_plugin "$fp"; then
+                FALLBACK_INSTALLED="${FALLBACK_INSTALLED}${fp} "
+                FALLBACK_COUNT=$((FALLBACK_COUNT + 1))
+              fi
+            done
+            [[ -n "$FALLBACK_INSTALLED" ]] && echo "[$(date -Iseconds)] keyword-plugin-fallback | installed=${FALLBACK_INSTALLED}" >> "$LAZY_LOAD_LOG"
+          fi
+        fi
+
+        # ==================================================================
         # KEYWORD FALLBACK FOR INCREMENT DISCIPLINE (v1.0.257)
         # ==================================================================
-        # Plugin keyword fallback was removed in v1.0.159 (too aggressive for
-        # auto-installing plugins). But INCREMENT DISCIPLINE still needs a
-        # fallback when LLM detection fails/times out. Without this, prompts
-        # like "big test react component" silently bypass spec-first discipline.
-        #
-        # This fallback ONLY handles increment suggestions (not plugin installs).
+        # When LLM detection fails/times out, use keyword matching for
+        # increment suggestions.
         if [[ "$LLM_DETECTION_FAILED" == "true" && "$INCREMENT_ASSIST_ENABLED" == "true" ]]; then
           # Check for implementation-intent keywords
           # v1.0.261: Expanded from 20 to 65+ keywords across 9 categories:

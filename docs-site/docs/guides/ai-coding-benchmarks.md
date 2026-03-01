@@ -132,7 +132,7 @@ Source: [livecodebench.github.io](https://livecodebench.github.io/)
 ### The Three Tiers (February 2026)
 
 **Tier 1 — Leading** (consistently top across decontaminated benchmarks):
-- **Anthropic**: Claude Opus 4.6, Claude Code, Sonnet 4.5
+- **Anthropic**: Claude Opus 4.6, Claude Code, Sonnet 4.6
 - **OpenAI**: GPT-5.2, GPT-5.1 Codex
 
 **Tier 2 — Strong but behind** (competitive on some benchmarks):
@@ -159,7 +159,7 @@ The gap between Tier 1 and Tier 3 is **10-15 percentage points** on fresh, unsee
 
 SpecWeave defaults to **Claude Opus 4.6** as the primary model for planning, architecture, and complex implementation — the #1 model on the most rigorous decontaminated benchmark (SWE-rebench).
 
-For routine tasks, **Haiku 4.5** provides excellent cost efficiency. **Sonnet 4.5** balances capability and speed for standard implementation work.
+For routine tasks, **Haiku 4.5** provides excellent cost efficiency. **Sonnet 4.6** balances capability and speed for standard implementation work.
 
 ### Non-Claude Support
 

@@ -2,8 +2,8 @@
  * LLM Provider Abstraction Layer
  *
  * Provides a unified interface for multiple LLM providers:
- * - Anthropic Claude (claude-sonnet, claude-opus, claude-haiku)
- * - OpenAI GPT (gpt-4o, gpt-4o-mini, o1)
+ * - Anthropic Claude (claude-sonnet-4-6, claude-opus-4-6, claude-haiku-4-5)
+ * - OpenAI GPT (gpt-5.3, gpt-5.3-mini, o3)
  * - Azure OpenAI (enterprise deployments)
  * - AWS Bedrock (Claude, Titan)
  * - Google Vertex AI (Gemini)

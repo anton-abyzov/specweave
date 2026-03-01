@@ -57,7 +57,7 @@ export class BedrockProvider implements LLMProvider {
 
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    // Resolve model alias (opus → anthropic.claude-opus-4-5-20251101-v1:0)
+    // Resolve model alias (opus → anthropic.claude-opus-4-6-v1:0)
     const model = resolveModelAlias(options.model || this.defaultModel, 'bedrock');
 
     const client = await this.getClient();

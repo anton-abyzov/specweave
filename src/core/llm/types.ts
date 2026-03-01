@@ -261,24 +261,24 @@ export interface ModelPricing {
  * Model alias to full model ID mapping
  *
  * SINGLE SOURCE OF TRUTH for model aliases.
- * When Anthropic releases new models, update this mapping ONLY.
+ * When providers release new models, update this mapping ONLY.
  *
  * Usage:
  * - Use aliases (opus, sonnet, haiku) in AGENT.md, SKILL.md, and configs
- * - resolveModelAlias('opus') → 'claude-opus-4-5-20251101'
+ * - resolveModelAlias('opus') → 'claude-opus-4-6'
  *
- * Updated: 2025-01-18
+ * Updated: 2026-03-01
  */
 export const MODEL_ALIASES: Record<string, string> = {
   // Anthropic Claude aliases
-  'opus': 'claude-opus-4-5-20251101',
-  'sonnet': 'claude-sonnet-4-5-20250929',
-  'haiku': 'claude-3-5-haiku-20241022',
+  'opus': 'claude-opus-4-6',
+  'sonnet': 'claude-sonnet-4-6',
+  'haiku': 'claude-haiku-4-5-20251001',
 
   // AWS Bedrock aliases (includes provider prefix)
-  'bedrock:opus': 'anthropic.claude-opus-4-5-20251101-v1:0',
-  'bedrock:sonnet': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
-  'bedrock:haiku': 'anthropic.claude-3-haiku-20240307-v1:0',
+  'bedrock:opus': 'anthropic.claude-opus-4-6-v1:0',
+  'bedrock:sonnet': 'anthropic.claude-sonnet-4-6-v1:0',
+  'bedrock:haiku': 'anthropic.claude-haiku-4-5-20251001-v1:0',
 
   // Cloudflare Workers AI aliases
   'workers-ai:gpt-oss': '@cf/openai/gpt-oss-120b',
@@ -292,9 +292,9 @@ export const MODEL_ALIASES: Record<string, string> = {
  * @returns Full model ID
  *
  * @example
- * resolveModelAlias('opus') // → 'claude-opus-4-5-20251101'
- * resolveModelAlias('opus', 'bedrock') // → 'anthropic.claude-opus-4-5-20251101-v1:0'
- * resolveModelAlias('claude-opus-4-5-20251101') // → 'claude-opus-4-5-20251101' (passthrough)
+ * resolveModelAlias('opus') // → 'claude-opus-4-6'
+ * resolveModelAlias('opus', 'bedrock') // → 'anthropic.claude-opus-4-6-v1:0'
+ * resolveModelAlias('claude-opus-4-6') // → 'claude-opus-4-6' (passthrough)
  */
 export function resolveModelAlias(modelOrAlias: string, provider?: string): string {
   // Check provider-specific alias first
@@ -316,25 +316,26 @@ export function resolveModelAlias(modelOrAlias: string, provider?: string): stri
 
 /**
  * Default pricing for known models (USD per 1M tokens)
- * Updated: 2025-01-18
+ * Updated: 2026-03-01
  */
 export const MODEL_PRICING: Record<string, ModelPricing> = {
   // Anthropic (use full IDs for API calls, aliases for display)
-  'claude-opus-4-5-20251101': { inputPer1M: 15, outputPer1M: 75 },
-  'claude-sonnet-4-5-20250929': { inputPer1M: 3, outputPer1M: 15 },
-  'claude-sonnet-4-20250514': { inputPer1M: 3, outputPer1M: 15 },
-  'claude-3-5-haiku-20241022': { inputPer1M: 1, outputPer1M: 5 },
+  'claude-opus-4-6': { inputPer1M: 5, outputPer1M: 25 },
+  'claude-sonnet-4-6': { inputPer1M: 3, outputPer1M: 15 },
+  'claude-haiku-4-5-20251001': { inputPer1M: 1, outputPer1M: 5 },
   // Aliases pointing to same pricing
-  'opus': { inputPer1M: 15, outputPer1M: 75 },
+  'opus': { inputPer1M: 5, outputPer1M: 25 },
   'sonnet': { inputPer1M: 3, outputPer1M: 15 },
   'haiku': { inputPer1M: 1, outputPer1M: 5 },
 
   // OpenAI
-  'gpt-4o': { inputPer1M: 5, outputPer1M: 15 },
-  'gpt-4o-mini': { inputPer1M: 0.15, outputPer1M: 0.6 },
-  'gpt-4-turbo': { inputPer1M: 10, outputPer1M: 30 },
-  'o1-preview': { inputPer1M: 15, outputPer1M: 60 },
-  'o1-mini': { inputPer1M: 3, outputPer1M: 12 },
+  'gpt-5.3': { inputPer1M: 5, outputPer1M: 15 },
+  'gpt-5.3-mini': { inputPer1M: 0.15, outputPer1M: 0.6 },
+  'o3-mini': { inputPer1M: 3, outputPer1M: 12 },
+
+  // Google
+  'gemini-3-pro': { inputPer1M: 1.25, outputPer1M: 5 },
+  'gemini-3-flash': { inputPer1M: 0.075, outputPer1M: 0.3 },
 
   // Local (free)
   'ollama/*': { inputPer1M: 0, outputPer1M: 0 },
@@ -349,24 +350,24 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
 export const RECOMMENDED_MODELS: Record<string, Partial<Record<LLMProviderType, string>>> = {
   // Deep analysis - needs reasoning
   'deep-analysis': {
-    'claude-code': 'opus',  // Uses MAX subscription via CLI - Opus 4.5 for best quality
-    'anthropic': 'claude-sonnet-4-20250514',
-    'openai': 'gpt-4o',
-    'azure-openai': 'gpt-4o',
-    'bedrock': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+    'claude-code': 'opus',  // Uses MAX subscription via CLI - Opus 4.6 for best quality
+    'anthropic': 'claude-sonnet-4-6',
+    'openai': 'gpt-5.3',
+    'azure-openai': 'gpt-5.3',
+    'bedrock': 'anthropic.claude-sonnet-4-6-v1:0',
     'ollama': 'llama3.1:70b',
-    'vertex-ai': 'gemini-1.5-pro',
+    'vertex-ai': 'gemini-3-pro',
     'workers-ai': '@cf/openai/gpt-oss-120b',
   },
   // Quick tasks - cost-effective
   'quick-task': {
     'claude-code': 'haiku',  // Uses MAX subscription via CLI
-    'anthropic': 'claude-3-5-haiku-20241022',
-    'openai': 'gpt-4o-mini',
-    'azure-openai': 'gpt-4o-mini',
-    'bedrock': 'anthropic.claude-3-haiku-20240307-v1:0',
+    'anthropic': 'claude-haiku-4-5-20251001',
+    'openai': 'gpt-5.3-mini',
+    'azure-openai': 'gpt-5.3-mini',
+    'bedrock': 'anthropic.claude-haiku-4-5-20251001-v1:0',
     'ollama': 'llama3.1:8b',
-    'vertex-ai': 'gemini-1.5-flash',
+    'vertex-ai': 'gemini-3-flash',
     'workers-ai': '@cf/openai/gpt-oss-120b',
   },
 };

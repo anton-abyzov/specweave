@@ -41,7 +41,7 @@ export class VertexAIProvider implements LLMProvider {
   constructor(config: VertexAIProviderConfig) {
     this.projectId = config.projectId || process.env.GOOGLE_CLOUD_PROJECT || '';
     this.location = config.location || process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
-    this.defaultModel = config.model || 'gemini-1.5-pro';
+    this.defaultModel = config.model || 'gemini-3-pro';
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.logger = config.logger || consoleLogger;
@@ -140,7 +140,7 @@ Return ONLY the JSON object, no markdown.`;
   }
 
   estimateCost(inputTokens: number, outputTokens: number): number {
-    const pricing = this.defaultModel.includes('gemini-1.5-flash')
+    const pricing = this.defaultModel.includes('gemini-3-flash')
       ? { input: 0.075, output: 0.3 }
       : { input: 1.25, output: 5 }; // Default to Pro pricing
 

@@ -296,7 +296,7 @@ COMPARISON:
 | **Skills** | Native | Via AGENTS.md |
 | **Agents** | Native | Via AGENTS.md |
 | **Access** | CLI only | CLI + Web + IDE + GitHub + iOS |
-| **Model** | Opus 4.5 | GPT-5-Codex |
+| **Model** | Opus 4.6 | GPT-5-Codex |
 | **Task Isolation** | No | Yes (isolated environments) |
 
 LIMITATIONS:

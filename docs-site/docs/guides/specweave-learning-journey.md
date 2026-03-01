@@ -320,7 +320,7 @@ Session 2: "How did we decide to handle JWT?"
 | Claude 3 Opus | Mar 2024 | Near-human reasoning |
 | Claude 3.5 Sonnet | Jun 2024 | Speed + capability |
 | Claude 3.5 Sonnet (v2) | Oct 2024 | Computer use |
-| **Claude Opus 4.5** | **Nov 2025** | **Extended reasoning** |
+| **Claude Opus 4.6** | **2026** | **Best reasoning and coding** |
 
 **What Makes Claude Different:**
 
@@ -1574,7 +1574,7 @@ You've completed the SpecWeave Learning Journey. You now understand:
 - Why discipline matters in AI era
 
 ✅ **AI Tool Landscape**
-- Claude's evolution to Opus 4.5
+- Claude's evolution to Opus 4.6
 - Non-Claude alternatives
 - Web sessions capability
 

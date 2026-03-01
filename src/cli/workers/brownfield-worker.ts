@@ -134,7 +134,7 @@ export class BrownfieldAnalysisWorker {
       try {
         this.llmProvider = await createProvider({
           provider: 'claude-code',
-          model: 'opus',  // Use Opus 4.5 for best analysis quality
+          model: 'opus',  // Use Opus 4.6 for best analysis quality
         }, { logger: this.logger });
         this.logger.log('Initialized Claude Code native provider (using MAX subscription)');
       } catch (error) {

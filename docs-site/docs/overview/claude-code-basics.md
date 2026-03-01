@@ -23,7 +23,7 @@ Claude Code is Anthropic's **CLI-based AI coding assistant**. Unlike chat-based 
 - Can **read, write, and edit files** directly
 - Can **run commands** (tests, builds, git operations)
 - Supports **plugins** that extend its capabilities
-- Works with the latest Claude models (Opus 4.6, Sonnet 4.5, Haiku 4.5)
+- Works with the latest Claude models (Opus 4.6, Sonnet 4.6, Haiku 4.5)
 
 ```bash
 # Install Claude Code
@@ -45,7 +45,7 @@ Claude Code supports multiple AI models with different strengths:
 | Model | Best For | Speed | Cost |
 |-------|----------|-------|------|
 | **Opus 4.6** | Complex architecture, multi-file changes, autonomous work | Slower | Higher |
-| **Sonnet 4.5** | Balanced daily coding, reviews, refactoring | Medium | Medium |
+| **Sonnet 4.6** | Balanced daily coding, reviews, refactoring | Medium | Medium |
 | **Haiku 4.5** | Quick lookups, simple edits, documentation | Fast | Low |
 
 **Recommendation**: Use **Opus 4.6** for SpecWeave workflows (especially `/sw:auto`). Its reasoning depth is critical for multi-step planning and implementation.

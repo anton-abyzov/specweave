@@ -49,7 +49,7 @@ This guide teaches you:
 graph LR
     Input[User Input:<br/>'What is'] --> Tokenize[Tokenization]
     Tokenize --> Tokens['What', 'is', '...']
-    Tokens --> Model[LLM Model<br/>GPT-5, Claude 4.5, etc.]
+    Tokens --> Model[LLM Model<br/>GPT-5.3, Claude 4.6, etc.]
     Model --> Predict[Predict Next Token]
     Predict --> Output['the', 'capital', 'of', 'France']
 
@@ -63,8 +63,8 @@ graph LR
    - "Artificial Intelligence" = 3 tokens
 
 2. **Context Window**: Maximum input length
-   - GPT-5: 128K tokens (~96K words)
-   - Claude Opus 4.5: 200K tokens (~150K words)
+   - GPT-5.3: 128K tokens (~96K words)
+   - Claude Opus 4.6: 200K tokens (~150K words)
    - Claude Haiku 4.5: 200K tokens (ultra-fast, simple tasks)
 
 3. **Temperature**: Randomness of output
@@ -105,7 +105,7 @@ const openai = new OpenAI({
 
 async function generateProductDescription(product) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-5',
+    model: 'gpt-5.3',
     messages: [
       {
         role: 'system',
@@ -140,7 +140,7 @@ const anthropic = new Anthropic({
 
 async function analyzeCodeQuality(code) {
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-5',
+    model: 'claude-opus-4-6',
     max_tokens: 1024,
     messages: [
       {
@@ -226,7 +226,7 @@ const tools = [
 
 async function chatWithTools(userMessage) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-5',
+    model: 'gpt-5.3',
     messages: [{ role: 'user', content: userMessage }],
     tools: tools,
     tool_choice: 'auto'
@@ -248,7 +248,7 @@ async function chatWithTools(userMessage) {
 
     // Send function result back to LLM
     const finalResponse = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: 'gpt-5.3',
       messages: [
         { role: 'user', content: userMessage },
         message, // Original assistant message with tool call
@@ -364,7 +364,7 @@ async function answerQuestion(question) {
 
   // Step 3: Generate answer using context
   const response = await openai.chat.completions.create({
-    model: 'gpt-5',
+    model: 'gpt-5.3',
     messages: [
       {
         role: 'system',
@@ -546,7 +546,7 @@ async function selfConsistentAnswer(question) {
   const answers = await Promise.all(
     Array(5).fill(null).map(() =>
       openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-5.3',
         messages: [{ role: 'user', content: question }],
         temperature: 0.8 // Higher temperature for variety
       })
@@ -564,16 +564,16 @@ async function selfConsistentAnswer(question) {
 
 | Model | Provider | Context | Strengths | Cost (per 1M tokens) |
 |-------|----------|---------|-----------|---------------------|
-| **Claude Opus 4.5** | Anthropic | 200K | Best-in-class coding, complex reasoning, architecture | $15 in / $75 out |
-| **GPT-5** | OpenAI | 128K | General purpose, reasoning, creative | $10 in / $30 out |
+| **Claude Opus 4.6** | Anthropic | 200K | Best-in-class coding, complex reasoning, architecture | $15 in / $75 out |
+| **GPT-5.3** | OpenAI | 128K | General purpose, reasoning, creative | $5 in / $15 out |
 | **Claude Haiku 4.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $1 in / $5 out |
 | **o1** | OpenAI | 128K | Complex reasoning, math, science | $15 in / $60 out |
 | **Llama 3.1 405B** | Meta | 128K | Open source, self-hosted | Free (compute costs) |
 
 ### When to Use Each Model
 
-**Claude Opus 4.5**: Best for coding, complex architecture, technical writing, research
-**GPT-5**: Complex reasoning, creative content, general-purpose tasks
+**Claude Opus 4.6**: Best for coding, complex architecture, technical writing, research
+**GPT-5.3**: Complex reasoning, creative content, general-purpose tasks
 **Claude Haiku 4.5**: Real-time chat, simple classifications, high-volume processing
 **o1**: Advanced reasoning tasks, mathematical proofs, scientific analysis
 **Llama 3.1**: Privacy-sensitive data, no API costs, offline usage, customization
@@ -589,26 +589,26 @@ function selectModel(taskType, contextLength, budget) {
 
   // Long context
   if (contextLength > 100000) {
-    return 'claude-opus-4-5'; // 200K context
+    return 'claude-opus-4-6'; // 200K context
   }
 
   // Complex reasoning
   if (taskType === 'complex' || taskType === 'reasoning') {
-    return 'claude-opus-4-5'; // Best for complex reasoning
+    return 'claude-opus-4-6'; // Best for complex reasoning
   }
 
   // Creative tasks
   if (taskType === 'creative') {
-    return 'gpt-5';
+    return 'gpt-5.3';
   }
 
   // Coding tasks
   if (taskType === 'code') {
-    return 'claude-opus-4-5'; // Best for code
+    return 'claude-opus-4-6'; // Best for code
   }
 
   // Default
-  return 'claude-opus-4-5';
+  return 'claude-opus-4-6';
 }
 ```
 
@@ -621,7 +621,7 @@ function selectModel(taskType, contextLength, budget) {
 ```javascript
 // No training required - just call API
 const response = await openai.chat.completions.create({
-  model: 'gpt-5',
+  model: 'gpt-5.3',
   messages: [{ role: 'user', content: 'Explain quantum computing' }]
 });
 ```
@@ -919,7 +919,7 @@ class BaseAgent {
     const userPrompt = this.buildUserPrompt(task);
 
     const response = await this.llm.chat.completions.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-6',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -1083,9 +1083,9 @@ async function generateWithCascade(prompt) {
     return cheapResponse; // Good enough!
   }
 
-  // Fallback to Opus 4.5 (more capable)
+  // Fallback to Opus 4.6 (more capable)
   return await anthropic.messages.create({
-    model: 'claude-opus-4-5',
+    model: 'claude-opus-4-6',
     messages: [{ role: 'user', content: prompt }]
   });
 }
@@ -1100,7 +1100,7 @@ async function robustLLMCall(prompt, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-5.3',
         messages: [{ role: 'user', content: prompt }],
         timeout: 30000 // 30 seconds
       });
@@ -1168,7 +1168,7 @@ const limiter = new Bottleneck({
 
 const rateLimitedCompletion = limiter.wrap(async (prompt) => {
   return await openai.chat.completions.create({
-    model: 'gpt-5',
+    model: 'gpt-5.3',
     messages: [{ role: 'user', content: prompt }]
   });
 });
@@ -1221,9 +1221,9 @@ SpecWeave increments document AI usage:
 - AC-US1-03: AI provides explanations for suggestions
 
 **AI Integration**:
-- Model: Claude Opus 4.5 (200K context for large PRs)
+- Model: Claude Opus 4.6 (200K context for large PRs)
 - Prompt: "Analyze this code for quality issues..."
-- Fallback: GPT-5 if Claude unavailable
+- Fallback: GPT-5.3 if Claude unavailable
 - Cost estimate: $1.50 per PR review
 - Caching: Cache identical file reviews for 24h
 

@@ -52,7 +52,7 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 **[Context Window](/docs/glossary/terms/context-window)**
 - Maximum tokens an LLM can process
-- Claude Sonnet 4.5: 200K tokens
+- Claude Sonnet 4.6: 200K tokens
 - SpecWeave optimization: 75%+ reduction via plugins
 - Trade-off: context size vs cost/speed
 
@@ -422,7 +422,7 @@ Be concise. Only report significant issues.
 - Response: ~3K tokens (output)
 - Total: ~10K tokens/PR
 
-**Pricing** (Claude Sonnet 4.5):
+**Pricing** (Claude Sonnet 4.6):
 - Input: $3 / 1M tokens
 - Output: $15 / 1M tokens
 - Cost per PR: $0.06 (6 cents)

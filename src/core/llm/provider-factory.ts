@@ -129,7 +129,7 @@ async function createClaudeCodeProvider(
   }
 
   return new ClaudeCodeProvider({
-    model: config.model || 'opus',  // Opus 4.5 by default for best analysis quality
+    model: config.model || 'opus',  // Opus 4.6 by default for best analysis quality
     maxTokens: config.maxTokensPerRequest,
     logger,
   });
@@ -185,7 +185,7 @@ async function createOpenAIProvider(
 
   return new OpenAIProvider({
     apiKey,
-    model: config.model || 'gpt-4o',
+    model: config.model || 'gpt-5.3',
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,
@@ -271,7 +271,7 @@ async function createVertexAIProvider(
   return new VertexAIProvider({
     projectId: process.env.GOOGLE_CLOUD_PROJECT,
     location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-    model: config.model || 'gemini-1.5-pro',
+    model: config.model || 'gemini-3-pro',
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,

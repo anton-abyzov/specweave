@@ -148,7 +148,7 @@ ${exportsSummary}`;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const attemptLabel = attempt === 0 ? '' : ` (retry ${attempt}/${maxRetries})`;
-      log(`    Sending to Claude Code Opus 4.5...${attemptLabel}`);
+      log(`    Sending to Claude Code Opus 4.6...${attemptLabel}`);
 
       const currentPrompt = attempt === 0 ? prompt : generateCorrectionPrompt(prompt, lastResponse);
       const result = await provider.analyze(currentPrompt);
@@ -408,10 +408,10 @@ async function main(): Promise<void> {
         if (available) {
           llmProvider = await createProvider({
             provider: 'claude-code',
-            model: 'opus',  // Opus 4.5 for best quality
+            model: 'opus',  // Opus 4.6 for best quality
           });
           log('  ✓ Claude Code native provider initialized (using MAX subscription)');
-          log('    Model: Opus 4.5');
+          log('    Model: Opus 4.6');
           log('    Cost: FREE (included in MAX)');
         } else {
           // Show detailed availability message with installation instructions
@@ -728,7 +728,7 @@ async function main(): Promise<void> {
       const usingAI = llmProvider !== null;
       log(`PHASE: Deep Dive - Analyzing modules...${usingAI ? ' (AI-POWERED)' : ''}`);
       if (usingAI) {
-        log('  Using Claude Code Opus 4.5 for semantic analysis');
+        log('  Using Claude Code Opus 4.6 for semantic analysis');
       }
 
       // Determine which modules to analyze based on depth setting
