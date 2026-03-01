@@ -482,35 +482,23 @@ check_plugin_in_vskill_lock() {
 
 # Helper: Install plugin via vskill (v1.0.272, fixed v1.0.343)
 # Uses npx vskill install with --plugin and --plugin-dir flags.
-# Args: $1=plugin name (e.g., "frontend")
+# Args: $1=plugin name (e.g., "sw-github")
 # Returns: 0 if installed successfully, 1 if failed
 # Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
+# v1.0.344 (0394): Uses --repo anton-abyzov/specweave instead of local marketplace directory
 install_plugin_via_vskill() {
   local plugin="$1"
-  local plugin_dir="${HOME}/.claude/plugins/marketplaces/specweave"
-
-  # Verify marketplace directory exists
-  if [[ ! -d "$plugin_dir" ]] || [[ ! -f "$plugin_dir/.claude-plugin/marketplace.json" ]]; then
-    VSKILL_INSTALL_OUTPUT="marketplace directory not found at $plugin_dir"
-    return 1
-  fi
-
   VSKILL_INSTALL_OUTPUT=""
+
   if command -v npx >/dev/null 2>&1; then
     if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 npx vskill install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill install --repo anton-abyzov/specweave --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
     else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
+      VSKILL_INSTALL_OUTPUT=$(npx vskill install --repo anton-abyzov/specweave --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
     fi
   else
-    # Fallback: try node with direct path
-    local vskill_js="${HOME}/.claude/plugins/marketplaces/specweave/node_modules/.bin/vskill"
-    if [[ -f "$vskill_js" ]]; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 15 "$vskill_js" install --plugin-dir "$plugin_dir" --plugin "$plugin" --force --yes 2>&1) || true
-    else
-      VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
-      return 1
-    fi
+    VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
+    return 1
   fi
 
   # Check if install succeeded
@@ -524,7 +512,8 @@ install_plugin_via_vskill() {
 # Domain skill plugins in vskill marketplace (per-category plugins).
 # Each is a standalone plugin: frontend@vskill, backend@vskill, etc.
 # Skills are invoked as plugin:skill (e.g., frontend:nextjs, backend:dotnet).
-VSKILL_REPO_PLUGINS="frontend backend testing mobile infra k8s payments ml kafka confluent cost docs security skills blockchain"
+# v1.0.344 (0394): Removed k8s (use infra), cost (not in marketplace), docs (in specweave repo)
+VSKILL_REPO_PLUGINS="frontend backend testing mobile infra payments ml kafka confluent security skills blockchain"
 
 # Check if plugin name is a vskill marketplace plugin
 is_vskill_repo_plugin() {
@@ -1263,7 +1252,7 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                 if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
                   PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill add ~/.claude/plugins/marketplaces/specweave --plugin <plugin> --plugin-dir ~/.claude/plugins/marketplaces/specweave --force\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill install --repo anton-abyzov/specweave --plugin <plugin> --force\` (sw-*) or \`npx vskill install --repo anton-abyzov/vskill --plugin <plugin> --force\` (domain)\\n"
                   AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
                   [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
@@ -1291,7 +1280,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                     # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
                     # v1.0.240 (0198): context7/playwright removed from auto-install
                     # v1.0.272 (0232): sw-* plugins now installed via vskill instead of claude plugin install
-                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]]; then
+                    # v1.0.344 (0394): docs plugin routes through specweave repo (not vskill)
+                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
                       # ---- SW-* PLUGINS: Install via vskill (v1.0.272) ----
                       # Fast-path: check vskill.lock first (no CLI invocation needed)
                       if check_plugin_in_vskill_lock "$plugin"; then

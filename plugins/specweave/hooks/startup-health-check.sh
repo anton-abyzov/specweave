@@ -11,9 +11,6 @@ if [ ! -f ".specweave/config.json" ]; then
     exit 0
 fi
 
-PLUGINS_DIR="$HOME/.claude/plugins"
-SPECWEAVE_DIR="$PLUGINS_DIR/marketplaces/specweave"
-PLUGINS_SUBDIR="$SPECWEAVE_DIR/plugins"
 HEALTH_LOG="$HOME/.claude/plugins/.health-check.log"
 
 # Function to log with timestamp
@@ -52,58 +49,9 @@ if [ -f "$AUTO_MODE_FILE" ]; then
     log "Cleared all auto-mode session files - new session starts fresh"
 fi
 
-# Check 1: Is marketplace installed?
-if [ ! -d "$SPECWEAVE_DIR" ]; then
-    log "WARN: SpecWeave marketplace not found"
-    exit 0  # Not an error, just not installed
-fi
+# v1.0.344 (0394): Removed marketplace directory checks (Checks 1-4).
+# Plugins are now installed on-demand via `npx vskill install --repo` in user-prompt-submit.sh.
+# No local marketplace directory at ~/.claude/plugins/marketplaces/specweave is required.
 
-# Check 2: Is plugins folder present and populated?
-if [ ! -d "$PLUGINS_SUBDIR" ]; then
-    log "ERROR: plugins/ folder MISSING - triggering auto-repair"
-
-    # Attempt auto-repair
-    if command -v claude &> /dev/null; then
-        log "Attempting marketplace re-clone..."
-        claude plugin marketplace remove specweave 2>/dev/null
-        rm -rf "$PLUGINS_DIR/cache/specweave" 2>/dev/null
-
-        if claude plugin marketplace add https://github.com/anton-abyzov/specweave 2>&1 | tee -a "$HEALTH_LOG"; then
-            log "SUCCESS: Marketplace re-cloned"
-
-            # === REMOVED (v1.0.159) ===
-            # Automatic plugin installation removed.
-            # REASON: Users want to control which plugins are installed.
-            # Plugin installation should be manual via `claude plugin install sw@specweave`
-            # or via LLM detection in user-prompt-submit.sh when user explicitly requests
-            # to BUILD/IMPLEMENT something requiring specialized skills.
-            log "NOTE: Plugins NOT auto-installed. Use: claude plugin install sw@specweave"
-        else
-            log "FAILED: Could not re-clone marketplace"
-        fi
-    fi
-    exit 0
-fi
-
-# Check 3: Is specweave plugin present?
-if [ ! -d "$PLUGINS_SUBDIR/specweave" ]; then
-    log "ERROR: Core specweave plugin MISSING - incomplete clone detected"
-
-    # Check if this is an iCloud offload issue
-    if find "$PLUGINS_DIR" -name "*.icloud" 2>/dev/null | grep -q .; then
-        log "WARN: iCloud offloaded files detected - user needs to download from iCloud"
-    else
-        log "Attempting git re-fetch..."
-        cd "$SPECWEAVE_DIR" 2>/dev/null && git fetch --depth 1 origin develop && git reset --hard origin/develop
-    fi
-    exit 0
-fi
-
-# Check 4: Count plugins (should be ~25)
-PLUGIN_COUNT=$(ls -d "$PLUGINS_SUBDIR"/*/ 2>/dev/null | wc -l | tr -d ' ')
-if [ "$PLUGIN_COUNT" -lt 10 ]; then
-    log "WARN: Only $PLUGIN_COUNT plugins found (expected ~25) - possible incomplete clone"
-fi
-
-log "OK: Health check passed ($PLUGIN_COUNT plugins)"
+log "OK: Health check passed (session cleanup complete)"
 exit 0
