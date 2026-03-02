@@ -24,6 +24,15 @@ export interface DispatchOptions {
 }
 
 /**
+ * Result from onIncrementDone with sync status details.
+ * Callers can inspect this to display sync outcome to the user.
+ */
+export interface IncrementDoneResult {
+  syncErrors: string[];
+  syncSuccess: string[];
+}
+
+/**
  * Dispatches configured actions at lifecycle hook points.
  *
  * All dispatches are error-isolated (catch + log, never crash).
@@ -141,13 +150,15 @@ export class LifecycleHookDispatcher {
     projectRoot: string,
     incrementId: string,
     options: DispatchOptions = {},
-  ): Promise<void> {
-    if (LifecycleHookDispatcher.shouldSkip(options)) return;
+  ): Promise<IncrementDoneResult> {
+    const result: IncrementDoneResult = { syncErrors: [], syncSuccess: [] };
+
+    if (LifecycleHookDispatcher.shouldSkip(options)) return result;
 
     try {
       const hooks = await LifecycleHookDispatcher.readHooksConfig(projectRoot);
       const doneConfig = hooks?.post_increment_done;
-      if (!doneConfig) return;
+      if (!doneConfig) return result;
 
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true;
       const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
@@ -164,7 +175,10 @@ export class LifecycleHookDispatcher {
           );
           const sync = new LivingDocsSync(projectRoot);
           await sync.syncIncrement(incrementId);
+          result.syncSuccess.push('Living docs synced');
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          result.syncErrors.push(`Living docs sync failed: ${msg}`);
           LifecycleHookDispatcher.logError('onIncrementDone:livingDocs', error);
         }
       }
@@ -181,7 +195,10 @@ export class LifecycleHookDispatcher {
             './github-project-sync.js'
           );
           await syncFeatureToGitHub(projectRoot, featureId);
+          result.syncSuccess.push('GitHub project synced');
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          result.syncErrors.push(`GitHub project sync failed: ${msg}`);
           LifecycleHookDispatcher.logError('onIncrementDone:githubProject', error);
         }
       };
@@ -189,20 +206,31 @@ export class LifecycleHookDispatcher {
       // SyncCoordinator only handles JIRA/ADO closure (GitHub handled by step 1)
       const syncClosure = async () => {
         if (!shouldCloseIssue) return;
-        const { SyncCoordinator } = await import(
-          '../../sync/sync-coordinator.js'
-        );
-        const coordinator = new SyncCoordinator({
-          projectRoot,
-          incrementId,
-        });
-        await coordinator.syncIncrementClosure();
+        try {
+          const { SyncCoordinator } = await import(
+            '../../sync/sync-coordinator.js'
+          );
+          const coordinator = new SyncCoordinator({
+            projectRoot,
+            incrementId,
+          });
+          await coordinator.syncIncrementClosure();
+          result.syncSuccess.push('Closure sync completed');
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          result.syncErrors.push(`Closure sync failed: ${msg}`);
+          LifecycleHookDispatcher.logError('onIncrementDone:closure', error);
+        }
       };
 
       await Promise.all([syncClosure(), syncGitHubProject()]);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      result.syncErrors.push(`Hook dispatch failed: ${msg}`);
       LifecycleHookDispatcher.logError('onIncrementDone', error);
     }
+
+    return result;
   }
 
   /**
