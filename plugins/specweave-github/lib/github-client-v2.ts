@@ -148,17 +148,20 @@ export class GitHubClientV2 {
   async createOrGetMilestone(
     title: string,
     description?: string,
-    daysFromNow: number = 2
+    daysFromNow?: number
   ): Promise<GitHubMilestone> {
+    // Use configured value or default to 2 days
+    const dueDays = daysFromNow ?? 2;
+
     // Check if milestone already exists
     const existing = await this.getMilestoneByTitle(title);
     if (existing) {
       return existing;
     }
 
-    // Calculate due date
+    // Calculate due date from creation timestamp
     const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + daysFromNow);
+    dueDate.setDate(dueDate.getDate() + dueDays);
     const dueDateISO = dueDate.toISOString();
 
     // Build API request
@@ -194,7 +197,7 @@ export class GitHubClientV2 {
   ): Promise<GitHubMilestone | null> {
     const result = await execFileNoThrow('gh', [
       'api',
-      `repos/${this.fullRepo}/milestones`,
+      `repos/${this.fullRepo}/milestones?per_page=100&state=all`,
       '--jq',
       `.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}`,
     ], { env: this.getGhEnv() });
@@ -607,12 +610,13 @@ export class GitHubClientV2 {
    * Returns the most recent comment body, or null if no comments exist
    */
   async getLastComment(issueNumber: number): Promise<{body: string; author: string} | null> {
-    // Get all comments (sorted by creation date, newest last)
+    // Query the last comment directly using per_page=1 + page from last page
+    // sort=created&direction=desc gives newest first, per_page=1 returns just one
     const result = await execFileNoThrow('gh', [
       'api',
-      `repos/${this.fullRepo}/issues/${issueNumber}/comments`,
+      `repos/${this.fullRepo}/issues/${issueNumber}/comments?sort=created&direction=desc&per_page=1`,
       '--jq',
-      '.[-1] | {body: .body, author: .user.login}',  // Get last comment only
+      '.[0] | {body: .body, author: .user.login}',
     ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {

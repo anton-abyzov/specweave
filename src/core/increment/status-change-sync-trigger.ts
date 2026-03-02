@@ -138,6 +138,7 @@ export class StatusChangeSyncTrigger {
    * SYNC-WORTHY TRANSITIONS:
    * - planning → active (work started)
    * - active → completed (work finished - legacy direct completion)
+   * - active → ready_for_review (all tasks complete, ready for user confirmation)
    * - ready_for_review → completed (work approved - v0.28.63+ user confirmation)
    * - completed → active (work reopened)
    * - backlog → active (backlog item started)
@@ -146,7 +147,6 @@ export class StatusChangeSyncTrigger {
    * NOT SYNC-WORTHY:
    * - active → paused (temporary pause)
    * - active → backlog (deprioritized)
-   * - active → ready_for_review (internal state - sync when actually completed)
    * - Any → abandoned (cancelled)
    *
    * @param oldStatus - Previous status
@@ -163,6 +163,7 @@ export class StatusChangeSyncTrigger {
       'planning → active',            // Work started
       'planned → active',             // Work started (alternate status value)
       'active → completed',           // Work finished (legacy direct completion)
+      'active → ready_for_review',    // All tasks complete, pending user confirmation
       'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
       'completed → active',           // Work reopened
       'backlog → active',             // Backlog item started

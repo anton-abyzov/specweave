@@ -81,21 +81,20 @@ export async function buildHierarchicalWIQL(
       }
     }
 
+    // Per-container filters (each container applies its own filters)
+    if (container.filters) {
+      const containerFilterClauses = buildFilterClauses(container.filters);
+      if (containerFilterClauses.length > 0) {
+        parts.push(...containerFilterClauses);
+      }
+    }
+
     // Combine parts with AND
     projectClauses.push(`(${parts.join(' AND ')})`);
   }
 
   // Build WHERE clause with project clauses
   let whereClause = projectClauses.join(' OR ');
-
-  // Add global filters (apply to all projects)
-  const filters = containers[0]?.filters;
-  if (filters) {
-    const filterClauses = buildFilterClauses(filters);
-    if (filterClauses.length > 0) {
-      whereClause = `(${whereClause}) AND ${filterClauses.join(' AND ')}`;
-    }
-  }
 
   // Build complete WIQL query
   return `
@@ -185,15 +184,29 @@ function addTimeRangeFilter(wiql: string, timeRange: string): string {
 
   const { since, until } = calculateTimeRange(timeRange as TimeRangePreset);
 
-  // Add time range to WHERE clause
   const timeFilter = `[System.CreatedDate] >= '${since}' AND [System.CreatedDate] <= '${until}'`;
 
-  // Insert before ORDER BY if present, otherwise append
-  if (wiql.includes('ORDER BY')) {
-    return wiql.replace('ORDER BY', `AND ${timeFilter} ORDER BY`);
-  } else {
+  // Find the last ORDER BY outside of string literals (case-insensitive)
+  // Strategy: find ORDER BY keyword, ensuring it's not inside single quotes
+  const orderByRegex = /\bORDER\s+BY\b/i;
+  const match = wiql.match(orderByRegex);
+
+  if (match && match.index !== undefined) {
+    // Insert AND timeFilter before ORDER BY
+    const before = wiql.substring(0, match.index).trimEnd();
+    const after = wiql.substring(match.index);
+    return `${before} AND ${timeFilter} ${after}`;
+  }
+
+  // No ORDER BY — check if there's a WHERE clause
+  const whereRegex = /\bWHERE\b/i;
+  if (whereRegex.test(wiql)) {
+    // Append to existing WHERE clause
     return `${wiql} AND ${timeFilter}`;
   }
+
+  // No WHERE clause at all — add one
+  return `${wiql} WHERE ${timeFilter}`;
 }
 
 /**
@@ -364,9 +377,15 @@ async function fetchWorkItemsFiltered(
 
   console.log('🔍 Fetching work items (FILTERED strategy):', wiql);
 
-  // Use first project for API endpoint (WIQL can query across projects)
-  const project = containers[0].id;
+  // Detect multi-project: if containers span more than one project, use org-level endpoint
+  const uniqueProjects = new Set(containers.map(c => c.id));
+  if (uniqueProjects.size > 1) {
+    // Cross-project: use org-level WIQL endpoint
+    return executeQueryOrgLevel(organization, pat, wiql);
+  }
 
+  // Single-project: use project-scoped endpoint
+  const project = containers[0].id;
   return executeQuery(organization, project, pat, wiql);
 }
 
@@ -419,13 +438,58 @@ async function executeQuery(
 }
 
 /**
- * Make HTTPS request to ADO API
+ * Execute WIQL query at org level (cross-project)
+ */
+async function executeQueryOrgLevel(
+  organization: string,
+  pat: string,
+  wiql: string
+): Promise<WorkItem[]> {
+  const baseUrl = `https://dev.azure.com/${organization}`;
+
+  // Execute query at org level
+  const queryUrl = `${baseUrl}/_apis/wit/wiql?api-version=7.1`;
+  const queryResult: any = await makeRequest(queryUrl, pat, 'POST', { query: wiql });
+
+  if (!queryResult.workItems || queryResult.workItems.length === 0) {
+    return [];
+  }
+
+  // Get full work item details (batch request at org level)
+  const ids = queryResult.workItems.map((wi: any) => wi.id);
+  const batchUrl = `${baseUrl}/_apis/wit/workitemsbatch?api-version=7.1`;
+
+  const response: any = await makeRequest(batchUrl, pat, 'POST', {
+    ids,
+    fields: [
+      'System.Id',
+      'System.Title',
+      'System.Description',
+      'System.State',
+      'System.CreatedDate',
+      'System.ChangedDate',
+      'System.WorkItemType',
+      'System.AreaPath',
+      'System.IterationPath',
+      'System.Tags',
+    ],
+  });
+
+  return response.value || [];
+}
+
+/** Default request timeout in ms (configurable via ado.requestTimeoutMs) */
+const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
+
+/**
+ * Make HTTPS request to ADO API with timeout
  */
 function makeRequest(
   url: string,
   pat: string,
   method: string = 'GET',
-  body?: any
+  body?: any,
+  timeoutMs: number = DEFAULT_REQUEST_TIMEOUT_MS
 ): Promise<any> {
   return new Promise((resolve, reject) => {
     const { hostname, pathname, search } = new URL(url);
@@ -446,6 +510,7 @@ function makeRequest(
       path: pathname + search,
       method,
       headers,
+      timeout: timeoutMs,
     };
 
     const req = https.request(options, (res) => {
@@ -468,6 +533,11 @@ function makeRequest(
           reject(new Error(`Failed to parse response: ${data}`));
         }
       });
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error(`ADO request timed out after ${timeoutMs}ms: ${method} ${url}`));
     });
 
     req.on('error', (error) => {

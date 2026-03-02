@@ -434,6 +434,37 @@ check_auto_transition() {
 check_auto_transition
 
 # ============================================================================
+# STEP 5: Trigger LifecycleHookDispatcher.onTaskCompleted (NON-BLOCKING)
+# ============================================================================
+
+trigger_sync_task() {
+  # Extract increment folder name (e.g. "0400-sync-pipeline-reliability")
+  local increment_id
+  increment_id=$(basename "$INCREMENT_DIR")
+
+  [[ -z "$increment_id" ]] && return 0
+
+  # Find specweave CLI (npx fallback)
+  local sw_bin=""
+  if command -v specweave >/dev/null 2>&1; then
+    sw_bin="specweave"
+  elif command -v npx >/dev/null 2>&1; then
+    sw_bin="npx specweave"
+  else
+    log_debug "specweave CLI not found, skipping sync-task"
+    return 0
+  fi
+
+  # Run in background — must not block the Edit operation
+  (cd "$PROJECT_ROOT" && $sw_bin sync-task "$increment_id" >>"$DEBUG_LOG" 2>&1) &
+  log_debug "Spawned sync-task for $increment_id (pid $!)"
+  return 0
+}
+
+# Run sync-task trigger (never fails, never blocks)
+trigger_sync_task
+
+# ============================================================================
 # ALWAYS EXIT SUCCESS
 # ============================================================================
 

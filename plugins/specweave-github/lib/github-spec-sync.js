@@ -3,8 +3,20 @@ import { SpecParser } from "../../../src/core/specs/spec-parser.js";
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
 import { ProjectContextManager } from "../../../src/core/sync/project-context.js";
 import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+const DEFAULT_CROSS_TEAM_KEYWORDS = [
+  "integration",
+  "cross-team",
+  "cross-project",
+  "shared",
+  "common",
+  "auth",
+  "api-contract",
+  "sync"
+];
 class GitHubSpecSync {
   constructor(projectRoot = process.cwd()) {
+    /** Configurable keywords for cross-team spec detection. Case-insensitive matching. */
+    this.crossTeamKeywords = DEFAULT_CROSS_TEAM_KEYWORDS;
     this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot);
     this.projectContextManager = new ProjectContextManager(projectRoot);
@@ -395,15 +407,28 @@ ${acList}
   }
   /**
    * Resolve conflicts
+   *
+   * GUARD: Only overwrites local spec title if the user explicitly configured
+   * "remote-wins" as the conflict resolution strategy. Default conflicts
+   * detected by detectConflicts() use 'remote-wins' but this guard ensures
+   * API-sourced titles never silently replace local titles.
    */
   async resolveConflicts(spec, conflicts) {
     for (const conflict of conflicts) {
       if (conflict.resolution === "remote-wins") {
-        console.log(`   \u{1F504} Resolving: ${conflict.description} (GitHub wins)`);
         if (conflict.field === "title") {
+          const remoteTitle = conflict.remoteValue;
+          const remoteSuffix = remoteTitle.replace(/^\[.*?\]\s*/, "");
+          const localTitle = spec.metadata.title;
+          if (remoteSuffix === localTitle || !remoteSuffix) {
+            continue;
+          }
+          console.log(`   \u{1F504} Resolving: ${conflict.description} (GitHub wins \u2014 explicit remote-wins)`);
           await this.specManager.saveMetadata(spec.metadata.id, {
             title: conflict.remoteValue
           });
+        } else {
+          console.log(`   \u{1F504} Resolving: ${conflict.description} (GitHub wins)`);
         }
       }
     }
@@ -439,18 +464,65 @@ ${acList}
     return result.data.repositoryOwner.id;
   }
   /**
-   * Fetch GitHub Project details
+   * Fetch GitHub Project details via GraphQL ProjectV2 API
    */
   async fetchGitHubProject(owner, repo, projectId) {
-    return {
-      id: projectId,
-      title: "Project Title",
-      number: 1,
-      url: "https://github.com/...",
-      state: "open",
-      owner,
-      repo
-    };
+    const query = `
+      query GetProject($owner: String!, $number: Int!) {
+        user(login: $owner) {
+          projectV2(number: $number) {
+            id
+            title
+            number
+            url
+            closed
+          }
+        }
+      }
+    `;
+    try {
+      const result = await this.executeGraphQL(query, {
+        owner,
+        number: projectId
+      });
+      let project = result.data?.user?.projectV2;
+      if (!project) {
+        const orgQuery = `
+          query GetOrgProject($owner: String!, $number: Int!) {
+            organization(login: $owner) {
+              projectV2(number: $number) {
+                id
+                title
+                number
+                url
+                closed
+              }
+            }
+          }
+        `;
+        const orgResult = await this.executeGraphQL(orgQuery, {
+          owner,
+          number: projectId
+        });
+        project = orgResult.data?.organization?.projectV2;
+      }
+      if (!project) {
+        throw new Error(`GitHub Project #${projectId} not found for ${owner}`);
+      }
+      return {
+        id: projectId,
+        title: project.title,
+        number: project.number,
+        url: project.url,
+        state: project.closed ? "closed" : "open",
+        owner,
+        repo
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch GitHub Project #${projectId}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
   /**
    * Find issue by title pattern
@@ -637,20 +709,9 @@ ${acList}
    * - Tags include multiple project names
    */
   isCrossTeamSpec(spec) {
-    const crossTeamKeywords = [
-      "integration",
-      "cross-team",
-      "cross-project",
-      "shared",
-      "common",
-      "auth",
-      // Auth often touches frontend + backend
-      "api-contract",
-      "sync"
-    ];
     const title = spec.metadata.title.toLowerCase();
-    const hasCrossTeamKeyword = crossTeamKeywords.some(
-      (keyword) => title.includes(keyword)
+    const hasCrossTeamKeyword = this.crossTeamKeywords.some(
+      (keyword) => title.toLowerCase().includes(keyword.toLowerCase())
     );
     const tags = spec.metadata.tags || [];
     const projectTags = tags.filter((tag) => tag.startsWith("project:"));

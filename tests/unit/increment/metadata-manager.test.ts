@@ -133,11 +133,15 @@ describe('MetadataManager', () => {
       expect(() => MetadataManager.read(testIncrementId)).toThrow(MetadataError);
     });
 
-    it('validates schema on read', () => {
-      // Write metadata missing required field
+    it('auto-fills missing fields on read instead of throwing', () => {
+      // Write metadata missing required fields (status, type, created, etc.)
       fs.writeJsonSync(testMetadataPath, { id: testIncrementId });
 
-      expect(() => MetadataManager.read(testIncrementId)).toThrow('Invalid status');
+      const metadata = MetadataManager.read(testIncrementId);
+      expect(metadata.status).toBe('planning');
+      expect(metadata.type).toBe('feature');
+      expect(metadata.created).toBeDefined();
+      expect(metadata.lastActivity).toBeDefined();
     });
   });
 

@@ -12,6 +12,8 @@
  */
 
 import { JiraClient, JiraIssue } from '../../../src/integrations/jira/jira-client.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 // ============================================================================
 // Types
@@ -54,7 +56,20 @@ export interface ReorganizationDetectionResult {
 // ============================================================================
 
 export class JiraReorganizationDetector {
+  /** Track known parent keys for reparent detection */
+  private previousParents = new Map<string, string>();
+
   constructor(private client: JiraClient) {}
+
+  /**
+   * Set known parent keys from previous sync metadata.
+   * Call before detectReorganization() to enable accurate reparent detection.
+   */
+  setKnownParents(parents: Record<string, string>): void {
+    for (const [key, parent] of Object.entries(parents)) {
+      this.previousParents.set(key, parent);
+    }
+  }
 
   /**
    * Detect all reorganization events for tracked issues
@@ -220,32 +235,34 @@ export class JiraReorganizationDetector {
   }
 
   /**
-   * Detect if issue was moved to different epic
+   * Detect if issue was moved to different epic.
+   *
+   * Requires previousParents map to track known parent keys.
+   * Only fires REPARENTED when the parent actually changed.
    */
   private detectReparent(
     originalKey: string,
     issue: JiraIssue,
     lastSyncTimestamp?: string
   ): ReorganizationEvent | null {
-    // Check if issue has parent (epic)
-    const currentParent = issue.fields.parent?.key;
+    const currentParent = issue.fields.parent?.key || null;
+    const previousParent = this.previousParents.get(originalKey) || null;
 
-    // We need to track previous parent from metadata
-    // For now, just detect if parent exists and was recently updated
-    if (currentParent && lastSyncTimestamp) {
-      const updatedAt = new Date(issue.fields.updated);
-      const lastSync = new Date(lastSyncTimestamp);
+    // Only fire REPARENTED if we know the previous parent AND it differs
+    if (previousParent !== null && currentParent !== previousParent) {
+      return {
+        type: 'REPARENTED',
+        timestamp: issue.fields.updated,
+        description: `Issue ${originalKey} reparented from ${previousParent} to ${currentParent || 'none'}`,
+        originalKeys: [originalKey],
+        fromEpic: previousParent,
+        toEpic: currentParent || undefined,
+      };
+    }
 
-      if (updatedAt > lastSync) {
-        // Parent might have changed (we'd need to store previous parent to be sure)
-        return {
-          type: 'REPARENTED',
-          timestamp: issue.fields.updated,
-          description: `Issue ${originalKey} may have been reparented to ${currentParent}`,
-          originalKeys: [originalKey],
-          toEpic: currentParent,
-        };
-      }
+    // Update tracked parent for future comparisons
+    if (currentParent) {
+      this.previousParents.set(originalKey, currentParent);
     }
 
     return null;
@@ -313,7 +330,10 @@ export class JiraReorganizationDetector {
 // ============================================================================
 
 /**
- * Handle reorganization events by updating SpecWeave increment
+ * Handle reorganization events by updating SpecWeave increment metadata.
+ *
+ * For each event type, updates local metadata.json to reflect
+ * the reorganization that happened in JIRA.
  */
 export async function handleReorganization(
   events: ReorganizationEvent[],
@@ -326,33 +346,103 @@ export async function handleReorganization(
 
   console.log(`\n🔧 Handling ${events.length} reorganization events...\n`);
 
+  const metadataPath = path.join(
+    projectRoot,
+    '.specweave',
+    'increments',
+    incrementId,
+    'metadata.json'
+  );
+
+  let metadata: any = {};
+  try {
+    metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+  } catch {
+    console.warn(`   ⚠️  Could not read metadata.json for ${incrementId}`);
+  }
+
+  // Ensure reorganization log exists
+  if (!metadata.reorganization) {
+    metadata.reorganization = { events: [], lastHandled: null };
+  }
+
   for (const event of events) {
     switch (event.type) {
-      case 'MOVED_PROJECT':
+      case 'MOVED_PROJECT': {
+        // Update tracked project key in metadata
+        if (event.newKeys?.[0]) {
+          if (!metadata.external_sync) metadata.external_sync = {};
+          if (!metadata.external_sync.jira) metadata.external_sync.jira = {};
+          metadata.external_sync.jira.issueKey = event.newKeys[0];
+          metadata.external_sync.jira.project = event.toProject;
+        }
         console.log(`   ✓ Updated project mapping: ${event.fromProject} → ${event.toProject}`);
-        // Update metadata with new project/key
         break;
+      }
 
-      case 'SPLIT':
-        console.log(`   ✓ Added new story from split: ${event.newKeys?.join(', ')}`);
-        // Add new user story to spec.md
+      case 'SPLIT': {
+        // Record split — new keys added as related issues
+        if (!metadata.external_sync?.jira?.relatedKeys) {
+          if (!metadata.external_sync) metadata.external_sync = {};
+          if (!metadata.external_sync.jira) metadata.external_sync.jira = {};
+          metadata.external_sync.jira.relatedKeys = [];
+        }
+        if (event.newKeys) {
+          metadata.external_sync.jira.relatedKeys.push(...event.newKeys);
+        }
+        console.log(`   ✓ Recorded split: ${event.newKeys?.join(', ')}`);
         break;
+      }
 
-      case 'MERGED':
-        console.log(`   ✓ Marked story as merged: ${event.originalKeys[0]} → ${event.newKeys?.[0]}`);
-        // Update spec.md to mark as merged
+      case 'MERGED': {
+        // Update issue key to the merge target
+        if (event.newKeys?.[0]) {
+          if (!metadata.external_sync) metadata.external_sync = {};
+          if (!metadata.external_sync.jira) metadata.external_sync.jira = {};
+          metadata.external_sync.jira.issueKey = event.newKeys[0];
+          metadata.external_sync.jira.mergedFrom = event.originalKeys[0];
+        }
+        console.log(`   ✓ Updated merged issue: ${event.originalKeys[0]} → ${event.newKeys?.[0]}`);
         break;
+      }
 
-      case 'REPARENTED':
-        console.log(`   ✓ Updated epic link: ${event.toEpic}`);
-        // Update metadata
+      case 'REPARENTED': {
+        // Update parent epic key in metadata
+        if (!metadata.external_sync) metadata.external_sync = {};
+        if (!metadata.external_sync.jira) metadata.external_sync.jira = {};
+        metadata.external_sync.jira.epicKey = event.toEpic || null;
+        metadata.external_sync.jira.previousEpicKey = event.fromEpic || null;
+        console.log(`   ✓ Updated epic link: ${event.fromEpic || 'none'} → ${event.toEpic || 'none'}`);
         break;
+      }
 
-      case 'DELETED':
-        console.log(`   ⚠️  Story deleted from Jira: ${event.originalKeys[0]}`);
-        // Mark as deleted in spec.md (don't remove, just mark)
+      case 'DELETED': {
+        // Mark issue as deleted (don't remove metadata, just flag)
+        if (!metadata.external_sync) metadata.external_sync = {};
+        if (!metadata.external_sync.jira) metadata.external_sync.jira = {};
+        metadata.external_sync.jira.deleted = true;
+        metadata.external_sync.jira.deletedAt = event.timestamp;
+        console.log(`   ⚠️  Marked as deleted: ${event.originalKeys[0]}`);
         break;
+      }
     }
+
+    // Log event for audit trail
+    metadata.reorganization.events.push({
+      type: event.type,
+      timestamp: event.timestamp,
+      description: event.description,
+    });
+  }
+
+  metadata.reorganization.lastHandled = new Date().toISOString();
+
+  // Write updated metadata
+  try {
+    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+    console.log(`   📄 Updated metadata.json for ${incrementId}`);
+  } catch (err) {
+    console.warn(`   ⚠️  Failed to write metadata: ${(err as Error).message}`);
   }
 
   console.log('\n✅ Reorganization handled\n');
