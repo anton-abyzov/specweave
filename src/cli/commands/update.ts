@@ -386,18 +386,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       // Non-critical — hooks still work from ~/.claude/commands/
     }
 
-    // Step 4b: Ensure plugins are enabled in project settings
-    // init.ts does this but update.ts didn't — projects created before this fix
-    // may have .claude/settings.json without enabledPlugins
-    if (isSpecWeaveProject) {
-      try {
-        const { enablePlugin } = await import('../helpers/init/claude-plugin-enabler.js');
-        const projectSettingsPath = path.join(projectPath, '.claude', 'settings.json');
-        enablePlugin('sw', 'specweave', projectSettingsPath);
-      } catch {
-        // Non-critical
-      }
-    }
+    // NOTE: sw@specweave is enabled at USER level by plugin-installer.ts
+    // Do NOT enable it at project level — that would make the core framework
+    // plugin appear as "Project" scope instead of "User" scope in Claude Code UI.
   }
 
   // Summary

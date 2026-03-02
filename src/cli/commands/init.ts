@@ -705,19 +705,9 @@ export async function initCommand(
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
 
-        // CRITICAL: Enable plugins in PROJECT-level settings as well!
-        // Claude Code uses project settings when they exist (takes precedence over global)
-        // Without this, plugins appear disabled even though they're enabled globally
-        if (result.success && !marketplaceOnly) {
-          try {
-            const { enablePlugin } = await import('../helpers/init/claude-plugin-enabler.js');
-            const projectSettingsPath = path.join(targetDir, '.claude', 'settings.json');
-            enablePlugin('sw', 'specweave', projectSettingsPath);
-            console.log(chalk.green('   ✓ Plugins enabled in project settings'));
-          } catch {
-            // Non-critical - user can enable manually
-          }
-        }
+        // NOTE: sw@specweave is enabled at USER level by plugin-installer.ts
+        // Do NOT enable it at project level — that would make the core framework
+        // plugin appear as "Project" scope instead of "User" scope in Claude Code UI.
       }
 
       // Enable agent teams env var in .claude/settings.json
