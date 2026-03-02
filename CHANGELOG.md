@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.350] - 2026-03-02
+
+### Changes
+- update sync skills and github feature sync
+- fix e2e tests for CI: skip init-dependent tests, make skill-matching vskill-aware
+- update package-lock.json
+- fix unit tests for plugin scope changes
+
+---
+
+
+
 ## [1.0.349] - 2026-03-02
 
 ### Changes
