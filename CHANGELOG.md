@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.353] - 2026-03-02
+
+### Changes
+- update plugin hooks, skill-chain guard, and increment skill
+- fix AC sync: patch issue body checkboxes directly, fix AC regex
+- fix AC sync: support plain AC format and search closed issues
+
+---
+
+
+
 ## [1.0.352] - 2026-03-02
 
 ### Changes
