@@ -101,6 +101,11 @@ const sidebars: SidebarsConfig = {
           id: 'guides/core-concepts/living-documentation',
           label: 'Living Documentation',
         },
+        {
+          type: 'doc',
+          id: 'guides/core-concepts/skills-first-architecture',
+          label: 'Skills-First Architecture',
+        },
       ],
     },
     {
@@ -314,6 +319,11 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'guides/core-concepts/living-documentation',
           label: 'Living Documentation',
+        },
+        {
+          type: 'doc',
+          id: 'guides/core-concepts/skills-first-architecture',
+          label: 'Skills-First Architecture',
         },
       ],
     },
