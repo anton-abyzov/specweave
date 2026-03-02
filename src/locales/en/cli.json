@@ -65,6 +65,13 @@
     "gitHooks": {
       "prompt": "Install git hooks for quality enforcement?"
     },
+    "maturity": {
+      "question": "Is this a new or existing project?",
+      "greenfield": "New project (greenfield)",
+      "greenfieldDesc": "Starting from scratch, no existing codebase",
+      "brownfield": "Existing project (brownfield)",
+      "brownfieldDesc": "Has existing code, dependencies, or repos"
+    },
     "toolDetection": {
       "header": "AI Tool Detection",
       "detected": "Detected: {{tool}}",

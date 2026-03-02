@@ -605,14 +605,14 @@ export async function initCommand(
     } else {
       console.log(chalk.cyan.bold('\n🌱 Project Type\n'));
       projectMaturity = await select<ProjectMaturity>({
-        message: locale.t('cli', 'init.maturity.question', { fallback: 'Is this a new or existing project?' }),
+        message: locale.t('cli', 'init.maturity.question'),
         choices: [
           {
-            name: `🆕 ${locale.t('cli', 'init.maturity.greenfield', { fallback: 'New project (greenfield)' })} ${chalk.gray('- Starting from scratch, no existing codebase')}`,
+            name: `🆕 ${locale.t('cli', 'init.maturity.greenfield')} ${chalk.gray('- ' + locale.t('cli', 'init.maturity.greenfieldDesc'))}`,
             value: 'greenfield' as const,
           },
           {
-            name: `📦 ${locale.t('cli', 'init.maturity.brownfield', { fallback: 'Existing project (brownfield)' })} ${chalk.gray('- Has existing code, dependencies, or repos')}`,
+            name: `📦 ${locale.t('cli', 'init.maturity.brownfield')} ${chalk.gray('- ' + locale.t('cli', 'init.maturity.brownfieldDesc'))}`,
             value: 'brownfield' as const,
           },
         ],
@@ -813,33 +813,37 @@ export async function initCommand(
       console.log('');
     }
 
-    // Issue tracker setup (MANDATORY for all tools)
-    const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
-    const githubRepoSelection = repoResult.githubRepoSelection
-      ? {
-          org: repoResult.githubRepoSelection.org,
-          pat: repoResult.githubRepoSelection.pat,
-          clonedRepos: githubClonedRepos
-        }
-      : undefined;
-
-    await setupIssueTrackerWrapper(
-      targetDir,
-      language,
-      isFrameworkRepo,
-      repoResult.hosting,
-      isCI,
-      repoResult.adoProjectSelection,
-      githubRepoSelection,
-      repoResult.gitUrlFormat
-    );
-
-    // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
-    // Based on issue tracker selection, pre-load the appropriate plugin
-    // This saves tokens by NOT loading all 24 plugins - just router + selected tool
+    // Issue tracker setup
+    // Skip when greenfield user deferred structure — they'll configure via /sw:sync-setup
     let externalPluginInstalled: boolean | undefined;
-    if (toolName === 'claude' && autoInstallSucceeded) {
-      externalPluginInstalled = await autoInstallSelectedExternalPlugin(targetDir);
+    if (repoResult.structureDeferred) {
+      console.log(chalk.gray('\n⏭️  Skipping issue tracker setup (deferred with repository structure)'));
+      console.log(chalk.gray('   Configure later via /sw:sync-setup\n'));
+    } else {
+      const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
+      const githubRepoSelection = repoResult.githubRepoSelection
+        ? {
+            org: repoResult.githubRepoSelection.org,
+            pat: repoResult.githubRepoSelection.pat,
+            clonedRepos: githubClonedRepos
+          }
+        : undefined;
+
+      await setupIssueTrackerWrapper(
+        targetDir,
+        language,
+        isFrameworkRepo,
+        repoResult.hosting,
+        isCI,
+        repoResult.adoProjectSelection,
+        githubRepoSelection,
+        repoResult.gitUrlFormat
+      );
+
+      // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
+      if (toolName === 'claude' && autoInstallSucceeded) {
+        externalPluginInstalled = await autoInstallSelectedExternalPlugin(targetDir);
+      }
     }
 
     // Multi-project folders
