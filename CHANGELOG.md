@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.349] - 2026-03-02
+
+### Changes
+- fix flaky timing test, update templates with simplify/batch docs
+- v1.0.348
+- fix import guard, pricing constants, test stability improvements
+- v1.0.347
+- fix grill findings: YAML injection, || vs ??, rename overwrite, regex
+- fix testMode default: test-after → TDD everywhere (v1.0.346)
+- fix living docs sync: template guard, slug cleanup, safe rename (v1.0.345)
+- 1.0.344: fix reconciler archive scanning, init guard rails, skill updates
+- fix stale comment referencing --plugin-dir in install_plugin_via_vskill
+- unify plugin install via --repo, remove local marketplace dependency
+
+---
+
+
+
 ## [1.0.348] - 2026-03-02
 
 ### Changes
