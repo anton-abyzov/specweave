@@ -135,7 +135,9 @@ export abstract class BaseReconciler<
   }
 
   /**
-   * Scan increments directory for non-archived increments
+   * Scan increments directory including archived/abandoned increments.
+   * All increments with external links are included so the reconciler can
+   * close issues for completed/abandoned increments that were moved to _archive.
    */
   protected async scanIncrements(): Promise<TState[]> {
     const incrementsPath = path.join(this.projectRoot, '.specweave', 'increments');
@@ -145,29 +147,38 @@ export abstract class BaseReconciler<
       return results;
     }
 
-    const entries = await fs.readdir(incrementsPath, { withFileTypes: true });
+    // Scan active increments + archive + abandoned subdirectories
+    const dirsToScan = [incrementsPath];
+    for (const sub of ['_archive', '_abandoned']) {
+      const subPath = path.join(incrementsPath, sub);
+      if (existsSync(subPath)) dirsToScan.push(subPath);
+    }
 
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name === '_archive' || entry.name.startsWith('.')) continue;
+    for (const dir of dirsToScan) {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
 
-      const incrementPath = path.join(incrementsPath, entry.name);
-      const metadataPath = path.join(incrementPath, 'metadata.json');
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
 
-      if (!existsSync(metadataPath)) continue;
+        const incrementPath = path.join(dir, entry.name);
+        const metadataPath = path.join(incrementPath, 'metadata.json');
 
-      try {
-        const metadataContent = await fs.readFile(metadataPath, 'utf-8');
-        const metadata = JSON.parse(metadataContent);
+        if (!existsSync(metadataPath)) continue;
 
-        // Delegate to subclass to extract platform-specific state
-        const state = await this.extractIncrementState(entry.name, incrementPath, metadata);
-        if (state) {
-          results.push(state);
+        try {
+          const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+          const metadata = JSON.parse(metadataContent);
+
+          // Delegate to subclass to extract platform-specific state
+          const state = await this.extractIncrementState(entry.name, incrementPath, metadata);
+          if (state) {
+            results.push(state);
+          }
+        } catch {
+          // Skip invalid metadata
+          this.logger.log(`  ⚠️  Skipping ${entry.name}: Invalid metadata.json`);
         }
-      } catch {
-        // Skip invalid metadata
-        this.logger.log(`  ⚠️  Skipping ${entry.name}: Invalid metadata.json`);
       }
     }
 

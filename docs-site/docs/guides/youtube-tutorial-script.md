@@ -1273,6 +1273,8 @@ specweave init .
 >
 > **First, the compact command** — this is huge for VSCode users. Before, you'd have to keep switching between terminal and editor windows, constantly losing context. Now with compact mode, Claude Code lives right inside your VSCode window. You can work continuously for hours, even days, without context switching. It's the same persistent session, the same window, zero interruptions.
 >
+> And it's not just VSCode — **Claude is now built directly into Xcode 26.3**. If you've downloaded the latest version, it's already there. I'll show you briefly — you open Xcode, and Claude is available as a native assistant right inside the IDE. No extensions, no plugins, no terminal. Apple integrated it directly. That's how mainstream this has become.
+>
 > **Second, STOP hooks** — and they work with subagents too. This means you can set up autonomous workflows where Claude spawns specialized agents, those agents do their work, and your stop hooks validate the results before allowing the session to complete. It's quality gates at every level of execution.
 >
 > And let me tell you what's changed since I started building this. Remember what I said about Opus 4.6 at the beginning? That emotional moment? Here's what it means in practice. SpecWeave now defaults to TDD — Test-Driven Development — with strict enforcement and 90% coverage targets. Not 50%. Not 60%. NINETY percent. Unit coverage target: 95%. Integration: 90%. E2E: 100%. And with Opus 4.6 powering the autonomous mode, it actually achieves these numbers. It writes tests FIRST, implements minimal code, refactors — the full red-green-refactor cycle — without human intervention. That's not a demo. That's 18 years of software engineering discipline, automated.
@@ -2041,7 +2043,15 @@ wrangler deploy
 >
 > The increment model doesn't care what the output is. Code, research documents, reorganized file systems, published content — the structure is the same: define it in a spec, break it into tasks, execute, validate.
 >
-> We have a full Life Automation guide at spec-weave.com covering Obsidian automation, internet research, rapid prototyping, publishing workflows, and more. Link in the description.
+> And here's a real example that blew my mind. I set up OpenClaw — formerly ClawdBot — as a social media coworker on my Threads account. No paid promotion. No ad spend. Zero investment beyond configuring the agent. Just an AI coworker creating and posting content autonomously."
+
+**[SCREEN: Show Threads Insights screenshot — 130K views, 12.2K interactions, 171 followers, hockey stick graph from Dec 31 to Feb 28]**
+
+> "Look at this. 130,000 views in 30 days. 12,200 interactions. Starting from essentially zero — and that hockey stick curve at the end? That's what happens when an AI agent finds the right content pattern and doubles down on it. No human could post that consistently while also building software full-time.
+>
+> OpenClaw handles the social media identity — the voice, the persona, the posting schedule. SpecWeave handles the workflow structure — what to post, when to analyze, how to iterate. Together, they turn social media growth into a managed, reproducible process instead of a guessing game.
+>
+> We have a full Life Automation guide at spec-weave.com covering Obsidian automation, internet research, rapid prototyping, publishing workflows, social media growth, and more. Link in the description.
 >
 > And the beautiful part? Quality gates work the same way for all of it."
 

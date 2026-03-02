@@ -235,6 +235,38 @@ Planning for framework features requires different considerations than user apps
 - ACTIVE → ACTIVE (regenerate plan/tasks)
 - BACKLOG → (no change - spec.md already exists)
 
+## Markdown Preview Guidelines
+
+When the execution strategy analysis (Step 6) identifies **2+ viable execution approaches** or when task dependency ordering has meaningful alternatives, use `AskUserQuestion` with the `markdown` preview field to show DAG diagrams of task dependencies.
+
+**When to use**: Presenting execution strategy options where the task dependency graph helps visualize parallelism, critical path, or execution order trade-offs.
+
+**When NOT to use**: When there's only one viable strategy, or when the choice is purely about tooling (e.g., `/sw:do` vs `/sw:auto`) without structural implications.
+
+### Example: Task Execution Strategy with DAG Preview
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which execution strategy should we use for this increment?",
+    header: "Strategy",
+    multiSelect: false,
+    options: [
+      {
+        label: "Parallel (Recommended)",
+        description: "Frontend and backend in parallel, merge at integration. 2 parallel lanes.",
+        markdown: "T-001 [DB Schema]  ──► T-003 [API Routes] ──┐\n                                             ├──► T-006 [E2E Tests]\nT-002 [JWT Utils]  ──► T-004 [Middleware] ──┘\n                   └──► T-005 [Frontend]  ──► T-007 [Docs]\n\nCritical path: T-001 → T-003 → T-006\nParallel lanes: 2  |  Tasks: 7"
+      },
+      {
+        label: "Sequential",
+        description: "All tasks in order. Simpler but slower, no parallelism.",
+        markdown: "T-001 [DB Schema] ──► T-002 [JWT Utils] ──► T-003 [API Routes]\n    ──► T-004 [Middleware] ──► T-005 [Frontend]\n    ──► T-006 [E2E Tests] ──► T-007 [Docs]\n\nCritical path: T-001 → T-002 → ... → T-007 (all)\nParallel lanes: 0  |  Tasks: 7"
+      }
+    ]
+  }]
+})
+```
+
 ## Related Commands
 
 - `/sw:increment` - Create new increment (generates spec.md)

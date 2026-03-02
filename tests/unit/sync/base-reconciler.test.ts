@@ -275,21 +275,68 @@ describe('BaseReconciler', () => {
       expect(states).toEqual([]);
     });
 
-    it('should skip _archive directory', async () => {
+    it('should include _archive directory in scan', async () => {
       const incDir = path.join(tmpDir, '.specweave', 'increments');
       await fs.mkdir(incDir, { recursive: true });
 
-      // Create archive
+      // Create archived increment
       const archivePath = path.join(incDir, '_archive', '0001-old');
       await fs.mkdir(archivePath, { recursive: true });
       await fs.writeFile(
         path.join(archivePath, 'metadata.json'),
-        JSON.stringify({ status: 'completed', test: { issueId: 1 } })
+        JSON.stringify({ status: 'completed', test: { issueId: 1, state: 'open' } })
       );
 
       const states = await reconciler.testScanIncrements();
 
-      expect(states).toEqual([]);
+      expect(states).toHaveLength(1);
+      expect(states[0].incrementId).toBe('0001-old');
+      expect(states[0].metadataStatus).toBe('completed');
+    });
+
+    it('should include _abandoned directory in scan', async () => {
+      const incDir = path.join(tmpDir, '.specweave', 'increments');
+      await fs.mkdir(incDir, { recursive: true });
+
+      // Create abandoned increment
+      const abandonedPath = path.join(incDir, '_abandoned', '0002-dropped');
+      await fs.mkdir(abandonedPath, { recursive: true });
+      await fs.writeFile(
+        path.join(abandonedPath, 'metadata.json'),
+        JSON.stringify({ status: 'abandoned', test: { issueId: 2, state: 'open' } })
+      );
+
+      const states = await reconciler.testScanIncrements();
+
+      expect(states).toHaveLength(1);
+      expect(states[0].incrementId).toBe('0002-dropped');
+      expect(states[0].metadataStatus).toBe('abandoned');
+    });
+
+    it('should combine active and archived increments', async () => {
+      const incDir = path.join(tmpDir, '.specweave', 'increments');
+
+      // Active increment
+      const activePath = path.join(incDir, '0010-active');
+      await fs.mkdir(activePath, { recursive: true });
+      await fs.writeFile(
+        path.join(activePath, 'metadata.json'),
+        JSON.stringify({ status: 'active', test: { issueId: 10, state: 'open' } })
+      );
+
+      // Archived increment
+      const archivePath = path.join(incDir, '_archive', '0005-done');
+      await fs.mkdir(archivePath, { recursive: true });
+      await fs.writeFile(
+        path.join(archivePath, 'metadata.json'),
+        JSON.stringify({ status: 'completed', test: { issueId: 5, state: 'open' } })
+      );
+
+      const states = await reconciler.testScanIncrements();
+
+      expect(states).toHaveLength(2);
+      const ids = states.map(s => s.incrementId).sort();
+      expect(ids).toEqual(['0005-done', '0010-active']);
     });
 
     it('should skip directories without metadata.json', async () => {

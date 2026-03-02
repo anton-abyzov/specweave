@@ -186,7 +186,9 @@ This typically happens when:
         }
     }
     /**
-     * Scan all non-archived increments and extract GitHub state
+     * Scan all increments (active + archived + abandoned) and extract GitHub state.
+     * Archived/abandoned increments are included so the reconciler can close their
+     * stale open issues.
      */
     async scanIncrements() {
         const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
@@ -194,106 +196,122 @@ This typically happens when:
         if (!existsSync(incrementsDir)) {
             return results;
         }
-        const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
-        for (const entry of entries) {
-            // Skip non-directories and archive
-            if (!entry.isDirectory() || entry.name === '_archive' || entry.name.startsWith('.')) {
-                continue;
-            }
-            const incrementPath = path.join(incrementsDir, entry.name);
-            const metadataPath = path.join(incrementPath, 'metadata.json');
-            if (!existsSync(metadataPath)) {
-                continue;
-            }
-            try {
-                const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
-                const state = {
-                    incrementId: entry.name,
-                    incrementPath,
-                    metadataStatus: metadata.status || 'unknown',
-                    featureId: metadata.feature_id,
-                    userStoryIssues: [],
-                };
-                // Extract main issue
-                if (metadata.github?.issue) {
-                    state.mainIssue = {
-                        number: metadata.github.issue,
-                        url: metadata.github.url,
-                    };
+        // Collect all directories to scan: active + archive + abandoned
+        const dirsToScan = [incrementsDir];
+        for (const sub of ['_archive', '_abandoned']) {
+            const subPath = path.join(incrementsDir, sub);
+            if (existsSync(subPath))
+                dirsToScan.push(subPath);
+        }
+        for (const dir of dirsToScan) {
+            const entries = await fs.readdir(dir, { withFileTypes: true });
+            const isArchiveDir = dir !== incrementsDir;
+            for (const entry of entries) {
+                if (!entry.isDirectory() || entry.name.startsWith('_') || entry.name.startsWith('.')) {
+                    continue;
                 }
-                // Extract User Story issues from metadata (OLD format: metadata.github.issues[])
-                if (metadata.github?.issues && Array.isArray(metadata.github.issues)) {
-                    for (const issue of metadata.github.issues) {
-                        if (issue.userStory && issue.number) {
-                            state.userStoryIssues.push({
-                                userStoryId: issue.userStory,
-                                issueNumber: issue.number,
-                            });
-                        }
+                const incrementPath = path.join(dir, entry.name);
+                const metadataPath = path.join(incrementPath, 'metadata.json');
+                if (!existsSync(metadataPath)) {
+                    continue;
+                }
+                try {
+                    const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+                    const state = this.extractGitHubState(entry.name, incrementPath, metadata);
+                    // For archived increments, skip the expensive GitHub API search fallback —
+                    // only use metadata-based issue references (they're already stored)
+                    if (!isArchiveDir && state.userStoryIssues.length === 0 && state.featureId && this.client) {
+                        await this.searchGitHubForIssues(state);
+                    }
+                    if (state.mainIssue || state.userStoryIssues.length > 0) {
+                        results.push(state);
                     }
                 }
-                // v1.0.240 FIX: Also read NEW format (externalLinks.github.issues{})
-                // Hook path (github-auto-create-handler.sh) writes this keyed object format
-                if (state.userStoryIssues.length === 0 && metadata.externalLinks?.github?.issues) {
-                    const newFormatIssues = metadata.externalLinks.github.issues;
-                    for (const [usId, issueData] of Object.entries(newFormatIssues)) {
-                        if (issueData && typeof issueData === 'object' && 'issueNumber' in issueData) {
-                            state.userStoryIssues.push({
-                                userStoryId: usId,
-                                issueNumber: issueData.issueNumber,
-                            });
-                        }
-                    }
-                    if (state.userStoryIssues.length > 0) {
-                        this.logger.log(`  📋 Found ${state.userStoryIssues.length} issue(s) from externalLinks format`);
-                    }
+                catch (error) {
+                    this.logger.log(`  ⚠️  Skipping ${entry.name}: Invalid metadata.json`);
                 }
-                // v1.0.240 FIX: Auto-derive featureId when metadata.feature_id is null
-                if (!state.featureId) {
-                    try {
-                        state.featureId = deriveFeatureId(entry.name) || undefined;
-                    }
-                    catch {
-                        // Non-critical: featureId derivation may fail for non-standard names
-                    }
-                }
-                // FALLBACK: Search GitHub if metadata doesn't have issues stored
-                // v1.0.240 FIX: Removed user_stories.length requirement — search by featureId alone
-                if (state.userStoryIssues.length === 0 && state.featureId && this.client) {
-                    this.logger.log(`  🔍 Searching GitHub for ${state.featureId} issues (not in metadata)...`);
-                    try {
-                        // Search for all issues matching the feature pattern
-                        const foundIssues = await this.client.searchIssuesByFeature(state.featureId);
-                        for (const issue of foundIssues) {
-                            // Extract user story ID from title: [FS-063][US-001] Title
-                            const match = issue.title.match(/\[([A-Z]+-\d+)\]\[([A-Z]+-\d+)\]/);
-                            if (match && match[1] === state.featureId) {
-                                const usId = match[2];
-                                state.userStoryIssues.push({
-                                    userStoryId: usId,
-                                    issueNumber: issue.number,
-                                });
-                            }
-                        }
-                        if (state.userStoryIssues.length > 0) {
-                            this.logger.log(`     Found ${state.userStoryIssues.length} issue(s) via GitHub search`);
-                        }
-                    }
-                    catch (error) {
-                        this.logger.log(`  ⚠️  GitHub search failed: ${error.message}`);
-                    }
-                }
-                // Only include if has GitHub links
-                if (state.mainIssue || state.userStoryIssues.length > 0) {
-                    results.push(state);
-                }
-            }
-            catch (error) {
-                // Skip invalid metadata
-                this.logger.log(`  ⚠️  Skipping ${entry.name}: Invalid metadata.json`);
             }
         }
         return results;
+    }
+    /**
+     * Extract GitHub state from increment metadata (both old and new formats)
+     */
+    extractGitHubState(incrementId, incrementPath, metadata) {
+        const state = {
+            incrementId,
+            incrementPath,
+            metadataStatus: metadata.status || 'unknown',
+            featureId: metadata.feature_id,
+            userStoryIssues: [],
+        };
+        // Extract main issue
+        if (metadata.github?.issue) {
+            state.mainIssue = {
+                number: metadata.github.issue,
+                url: metadata.github.url,
+            };
+        }
+        // OLD format: metadata.github.issues[]
+        if (metadata.github?.issues && Array.isArray(metadata.github.issues)) {
+            for (const issue of metadata.github.issues) {
+                if (issue.userStory && issue.number) {
+                    state.userStoryIssues.push({
+                        userStoryId: issue.userStory,
+                        issueNumber: issue.number,
+                    });
+                }
+            }
+        }
+        // NEW format: externalLinks.github.issues{} (keyed by US-ID)
+        if (state.userStoryIssues.length === 0 && metadata.externalLinks?.github?.issues) {
+            const newFormatIssues = metadata.externalLinks.github.issues;
+            for (const [usId, issueData] of Object.entries(newFormatIssues)) {
+                if (issueData && typeof issueData === 'object' && 'issueNumber' in issueData) {
+                    state.userStoryIssues.push({
+                        userStoryId: usId,
+                        issueNumber: issueData.issueNumber,
+                    });
+                }
+            }
+        }
+        // Auto-derive featureId when metadata.feature_id is null
+        if (!state.featureId) {
+            try {
+                state.featureId = deriveFeatureId(incrementId) || undefined;
+            }
+            catch {
+                // Non-critical
+            }
+        }
+        return state;
+    }
+    /**
+     * Fallback: search GitHub API for issues when metadata has no references.
+     * Only used for active (non-archived) increments to avoid excessive API calls.
+     */
+    async searchGitHubForIssues(state) {
+        if (!state.featureId || !this.client)
+            return;
+        this.logger.log(`  🔍 Searching GitHub for ${state.featureId} issues (not in metadata)...`);
+        try {
+            const foundIssues = await this.client.searchIssuesByFeature(state.featureId);
+            for (const issue of foundIssues) {
+                const match = issue.title.match(/\[([A-Z]+-\d+)\]\[([A-Z]+-\d+)\]/);
+                if (match && match[1] === state.featureId) {
+                    state.userStoryIssues.push({
+                        userStoryId: match[2],
+                        issueNumber: issue.number,
+                    });
+                }
+            }
+            if (state.userStoryIssues.length > 0) {
+                this.logger.log(`     Found ${state.userStoryIssues.length} issue(s) via GitHub search`);
+            }
+        }
+        catch (error) {
+            this.logger.log(`  ⚠️  GitHub search failed: ${error.message}`);
+        }
     }
     /**
      * Initialize GitHub client
