@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.351] - 2026-03-02
+
+### Changes
+- docs-site rework, team-lead agents, sync fixes, init improvements
+- fix commentOnlySync error reporting and fullSync TODO stub removal
+- fix sync integration: 17 critical bugs across all providers
+- chore(deps)(deps): bump axios in the production-dependencies group (#1462)
+- chore(deps)(deps-dev): bump @types/node in the typescript-tooling group (#1461)
+
+---
+
+
+
 ## [1.0.350] - 2026-03-02
 
 ### Changes
