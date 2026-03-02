@@ -80,15 +80,17 @@ const Icons = {
 };
 
 /* ===================================================================
-   Section 1: VideoHero — cinematic dark hero with video centerpiece
+   Section 1: VideoHero — cinematic dark hero with Loom positioning
    =================================================================== */
 function VideoHero(): ReactNode {
   return (
     <section className={styles.videoHero}>
-      <div className={styles.videoHeroGlow} />
+      <div className={styles.heroTexture} aria-hidden="true" />
+      <div className={styles.heroGlow} aria-hidden="true" />
       <div className="container">
         <div className={styles.heroContent}>
           <div className={styles.heroPills}>
+            <span className={styles.heroPillLoom}>The Development Loom</span>
             <span className={styles.heroPill}>Open Source</span>
             <span className={styles.heroPill}>Claude Code Native</span>
           </div>
@@ -99,11 +101,11 @@ function VideoHero(): ReactNode {
           </Heading>
 
           <p className={styles.heroSubtitle}>
-            The spec-driven framework for AI coding agents. Persistent memory, autonomous execution, quality gates, and living documentation — all from your terminal.
+            Weave specs into shipping software. Describe features in plain English, AI builds autonomously, ship while you sleep.
           </p>
 
           <div className={styles.heroCtas}>
-            <Link className={styles.btnPrimary} to="/docs/intro">
+            <Link className={styles.btnPrimary} to="/docs/quick-start">
               Get Started
             </Link>
             <a
@@ -114,7 +116,8 @@ function VideoHero(): ReactNode {
                 document.getElementById('hero-video')?.scrollIntoView({behavior: 'smooth'});
               }}
             >
-              Watch Demo →
+              Watch Demo
+              <span className={styles.btnArrow}>&rarr;</span>
             </a>
           </div>
         </div>
@@ -142,10 +145,10 @@ function VideoHero(): ReactNode {
 
         <div className={styles.heroBadges}>
           <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
-            <img src="https://img.shields.io/npm/v/specweave?color=7c3aed&style=for-the-badge" alt="NPM Version" />
+            <img src="https://img.shields.io/npm/v/specweave?color=6b58b8&style=for-the-badge" alt="NPM Version" />
           </a>
           <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
-            <img src="https://img.shields.io/npm/dm/specweave?color=22c55e&style=for-the-badge" alt="Downloads" />
+            <img src="https://img.shields.io/npm/dm/specweave?color=10b981&style=for-the-badge" alt="Downloads" />
           </a>
           <a href="https://discord.gg/UYg4BGJ65V" target="_blank" rel="noopener noreferrer">
             <img src="https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
@@ -157,36 +160,36 @@ function VideoHero(): ReactNode {
 }
 
 /* ===================================================================
-   Section 2: Workflow — three-command horizontal stepper
+   Section 2: Workflow — Three Threads, One Tapestry
    =================================================================== */
 function WorkflowSection(): ReactNode {
   const steps = [
     {
       num: '01',
       cmd: '/sw:increment',
-      title: 'Define',
-      desc: 'Describe the feature in plain English. AI generates spec, plan, and tasks.',
+      title: 'Thread the Loom',
+      desc: 'Describe the feature in plain English. AI interviews you, then generates spec, plan, and tasks.',
     },
     {
       num: '02',
       cmd: '/sw:auto',
-      title: 'Execute',
-      desc: 'Walk away. Autonomous implementation with tests, docs, and quality gates.',
+      title: 'Let It Run',
+      desc: 'Walk away. Autonomous implementation with tests, docs, and quality gates — for hours.',
     },
     {
       num: '03',
       cmd: '/sw:done',
-      title: 'Ship',
-      desc: 'Validate, sync to GitHub/JIRA, and deploy with confidence.',
+      title: 'Ship the Fabric',
+      desc: 'Validate, sync to GitHub/JIRA, and deploy with confidence. Production-grade every time.',
     },
   ];
 
   return (
     <section className={styles.workflowSection}>
       <div className="container">
-        <span className={styles.sectionLabel}>HOW IT WORKS</span>
+        <span className={styles.sectionLabel}>How It Works</span>
         <Heading as="h2" className={styles.sectionTitle}>
-          Three Commands. Zero Babysitting.
+          Three Threads. One Tapestry.
         </Heading>
 
         <div className={styles.workflowTimeline}>
@@ -244,7 +247,7 @@ function CapabilitiesSection(): ReactNode {
   return (
     <section className={styles.capabilitiesSection} id="capabilities">
       <div className="container">
-        <span className={styles.sectionLabel}>CAPABILITIES</span>
+        <span className={styles.sectionLabel}>Capabilities</span>
         <Heading as="h2" className={styles.sectionTitle}>
           Everything You Need to Ship at Scale
         </Heading>
@@ -272,8 +275,9 @@ function CapabilitiesSection(): ReactNode {
 function TrustSection(): ReactNode {
   return (
     <section className={styles.trustSection}>
+      <div className={styles.trustGlow} aria-hidden="true" />
       <div className="container">
-        <span className={styles.sectionLabelLight}>TRUSTED & PROVEN</span>
+        <span className={styles.sectionLabelLight}>Trusted &amp; Proven</span>
         <Heading as="h2" className={styles.sectionTitleLight}>
           Built With Itself. Production Ready.
         </Heading>
@@ -308,7 +312,7 @@ function TrustSection(): ReactNode {
             </p>
           </div>
           <Link className={styles.verifiedLink} to="/docs/skills/verified/verified-skills">
-            Learn More →
+            Learn More &rarr;
           </Link>
         </div>
 
@@ -339,14 +343,16 @@ function TrustSection(): ReactNode {
 }
 
 /* ===================================================================
-   Section 5: CTA — final call-to-action
+   Section 5: CTA — Start Weaving
    =================================================================== */
 function CTASection(): ReactNode {
   return (
     <section className={styles.ctaSection}>
+      <div className={styles.ctaGlow} aria-hidden="true" />
       <div className="container">
         <Heading as="h2" className={styles.ctaTitle}>
-          Stop Losing Context. Start Shipping.
+          Start Weaving.<br />
+          <span className={styles.ctaTitleAccent}>Ship While You Sleep.</span>
         </Heading>
         <p className={styles.ctaSubtitle}>
           Two commands. Permanent memory. Autonomous execution for hours. Your AI coding assistant finally remembers everything.
@@ -359,8 +365,8 @@ function CTASection(): ReactNode {
         </div>
 
         <div className={styles.ctaButtons}>
-          <Link className={styles.btnPrimaryLarge} to="/docs/guides/getting-started/quickstart">
-            Get Started →
+          <Link className={styles.btnPrimaryLarge} to="/docs/quick-start">
+            Get Started &rarr;
           </Link>
           <Link className={styles.btnGhost} to="https://github.com/anton-abyzov/specweave">
             View on GitHub
@@ -369,10 +375,10 @@ function CTASection(): ReactNode {
 
         <div className={styles.ctaLinks}>
           <Link to="https://discord.gg/UYg4BGJ65V">Community</Link>
-          <span>·</span>
+          <span>&middot;</span>
           <Link to="https://youtube.com/@antonabyzov">Tutorials</Link>
-          <span>·</span>
-          <Link to="/docs/commands/overview">Documentation</Link>
+          <span>&middot;</span>
+          <Link to="/docs/overview/introduction">Documentation</Link>
         </div>
       </div>
     </section>
@@ -382,8 +388,8 @@ function CTASection(): ReactNode {
 export default function Home(): ReactNode {
   return (
     <Layout
-      title="Ship Features While You Sleep"
-      description="The spec-driven framework for AI coding agents. Persistent memory, autonomous execution, quality gates, and living documentation. First-class Claude Code support.">
+      title="The Development Loom — Ship Features While You Sleep"
+      description="Weave specs into shipping software. Describe features in English, AI builds autonomously, ship while you sleep. Persistent memory, quality gates, and living documentation.">
       <VideoHero />
       <main>
         <WorkflowSection />

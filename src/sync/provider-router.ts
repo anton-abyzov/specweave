@@ -68,7 +68,8 @@ export class ProviderRouter {
       const { execSync } = await import('child_process');
       const remote = execSync('git remote get-url origin', {
         cwd: this.projectRoot,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        stdio: 'pipe'
       }).trim();
 
       // Parse GitHub URL: git@github.com:owner/repo.git or https://github.com/owner/repo.git

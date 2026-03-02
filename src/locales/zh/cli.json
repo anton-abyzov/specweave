@@ -40,6 +40,13 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "maturity": {
+      "question": "这是一个新项目还是现有项目？",
+      "greenfield": "新项目（绿地）",
+      "greenfieldDesc": "从零开始，没有现有代码库",
+      "brownfield": "现有项目（棕地）",
+      "brownfieldDesc": "已有代码、依赖项或代码仓库"
+    },
     "toolDetection": {
       "header": "AI工具检测",
       "detected": "检测到: {{tool}}",

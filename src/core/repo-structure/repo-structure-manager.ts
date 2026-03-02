@@ -323,7 +323,8 @@ export class RepoStructureManager {
       try {
         const remote = execSync('git remote get-url origin', {
           cwd: this.projectPath,
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          stdio: 'pipe'
         }).trim();
 
         const match = remote.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);

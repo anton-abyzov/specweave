@@ -1,5 +1,7 @@
 ---
 description: System architect for scalable technical designs and ADRs. Use for system architecture, microservices, database design, trade-off analysis, component diagrams, tech selection.
+context: fork
+model: opus
 ---
 
 # Architect

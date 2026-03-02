@@ -40,6 +40,13 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "maturity": {
+      "question": "Ist dies ein neues oder bestehendes Projekt?",
+      "greenfield": "Neues Projekt (Greenfield)",
+      "greenfieldDesc": "Von Grund auf neu, keine bestehende Codebasis",
+      "brownfield": "Bestehendes Projekt (Brownfield)",
+      "brownfieldDesc": "Hat bestehenden Code, Abhängigkeiten oder Repositories"
+    },
     "toolDetection": {
       "header": "KI-Tool-Erkennung",
       "detected": "Erkannt: {{tool}}",

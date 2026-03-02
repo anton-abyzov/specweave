@@ -16,6 +16,7 @@ import path from 'path';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import { consoleLogger } from '../utils/logger.js';
 import { resolvePermissions } from './config.js';
+import { isProviderEnabled } from './status-mapper.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 export class GitHubReconciler {
     constructor(options) {
@@ -44,7 +45,7 @@ export class GitHubReconciler {
             const syncAny = config.sync;
             const permissions = resolvePermissions(syncAny?.preset, undefined, config.sync?.settings);
             const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
-            const githubEnabled = config.sync?.github?.enabled ?? false;
+            const githubEnabled = isProviderEnabled(config, 'github');
             if (!canUpdate || !githubEnabled) {
                 this.logger.log('ℹ️  GitHub sync is disabled - skipping reconciliation');
                 this.logger.log('   Enable with: canUpdateExternalItems=true AND sync.github.enabled=true');
@@ -92,7 +93,11 @@ export class GitHubReconciler {
         const status = inc.metadataStatus;
         // Determine expected GitHub state
         const shouldBeClosed = status === 'completed' || status === 'abandoned';
-        const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
+        const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
+        if (!shouldBeClosed && !shouldBeOpen) {
+            this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
+            return;
+        }
         // Check main issue
         if (inc.mainIssue) {
             await this.reconcileIssue(inc.incrementId, inc.mainIssue.number, shouldBeClosed, shouldBeOpen, status, result);

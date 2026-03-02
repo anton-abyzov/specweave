@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'Program Your AI in English — Skills, Agent Swarms, Enterprise Ready',
+  tagline: 'The Development Loom — Weave Specs into Shipping Software',
   // Use proper favicon.ico for broad compatibility (Teams, etc.)
   favicon: 'favicon.ico',
 
@@ -73,6 +73,21 @@ const config: Config = {
         href: 'https://fonts.gstatic.com',
       },
     },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
+      },
+    },
     // Additional favicon links for broad compatibility (Apple, Android, etc.)
     {
       tagName: 'link',
@@ -122,7 +137,23 @@ const config: Config = {
       onBrokenMarkdownImages: () => {},
     },
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: [
+    '@docusaurus/theme-mermaid',
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        docsRouteBasePath: '/docs',
+        blogRouteBasePath: '/blog',
+        searchBarShortcut: true,
+        searchBarShortcutHint: true,
+        searchBarPosition: 'right',
+        highlightSearchTermsOnTargetPage: true,
+        docsDir: 'docs',
+        blogDir: 'blog',
+      },
+    ],
+  ],
 
   presets: [
     [
@@ -195,6 +226,11 @@ const config: Config = {
           {
             from: '/docs/skills/verified-skills',
             to: '/docs/skills/verified/verified-skills',
+          },
+          // Intro page redirect
+          {
+            from: '/docs/intro',
+            to: '/docs/overview/introduction',
           },
           // Ecosystem — unchanged locations
           {
@@ -369,21 +405,13 @@ const config: Config = {
       ],
     },
 
-    // Algolia search (configure later)
-    // algolia: {
-    //   appId: 'YOUR_APP_ID',
-    //   apiKey: 'YOUR_SEARCH_API_KEY',
-    //   indexName: 'specweave',
-    //   contextualSearch: true,
-    // },
-
     // Announcement bar (for important updates)
     announcementBar: {
       id: 'announcement-bar',
       content:
-        '⭐️ If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>! ⭐️',
-      backgroundColor: '#ede9fe',
-      textColor: '#5b21b6',
+        'If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!',
+      backgroundColor: '#eeeafc',
+      textColor: '#4a3d8f',
       isCloseable: true,
     },
   } satisfies Preset.ThemeConfig,
