@@ -25,8 +25,8 @@ export interface MergeResult {
 }
 
 const META_RE = /<!-- SW:META template="(\w+)" version="([\d.]+)" sections="([^"]*)" -->/;
-const START_RE = /<!-- SW:SECTION:(\w+) version="([\d.]+)" -->/;
-const END_RE = /<!-- SW:END:(\w+) -->/;
+const START_RE = /<!-- SW:SECTION:([\w-]+) version="([\d.]+)" -->/;
+const END_RE = /<!-- SW:END:([\w-]+) -->/;
 
 interface ParsedFile {
   meta: { template: TemplateType; version: string; sections: string[] } | null;
@@ -263,7 +263,7 @@ export function parseTemplateSections(content: string): TemplateSection[] {
   let ord = 0;
 
   for (const l of lines) {
-    const d = l.match(/<!-- SECTION:(\w+)(?:\s+(required))? -->/);
+    const d = l.match(/<!-- SECTION:([\w-]+)(?:\s+(required))? -->/);
     if (d) {
       if (cur) {
         secs.push({
