@@ -54,9 +54,9 @@ export async function fetchBoardsForRepo(
       'Accept: application/vnd.github+json',
     ], { env: getGhEnv() });
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       console.error(`❌ Failed to fetch boards for ${owner}/${repo}:`, result.stderr);
-      throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);
+      throw new Error(`GitHub API error (exit code ${result.exitCode}): ${result.stderr}`);
     }
 
     // Parse JSONL (one JSON object per line)
@@ -98,9 +98,9 @@ export async function fetchBoardsForOrg(
       'Accept: application/vnd.github+json',
     ], { env: getGhEnv() });
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       console.error(`❌ Failed to fetch boards for org ${org}:`, result.stderr);
-      throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);
+      throw new Error(`GitHub API error (exit code ${result.exitCode}): ${result.stderr}`);
     }
 
     // Parse JSONL

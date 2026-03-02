@@ -32,17 +32,17 @@ export class GitHubGraphQLClient {
    * Tries user first, falls back to organization.
    */
   async getOwnerNodeId(login: string): Promise<string> {
-    // Try user query first
-    const userQuery = `query { user(login: "${login}") { id } }`;
-    const userResult = await this.executeGraphQL(userQuery);
+    // Try user query first (parameterized)
+    const userQuery = `query($login: String!) { user(login: $login) { id } }`;
+    const userResult = await this.executeGraphQL(userQuery, { login });
 
     if (userResult.data?.user && (userResult.data.user as { id?: string }).id) {
       return (userResult.data.user as { id: string }).id;
     }
 
-    // Fallback to organization
-    const orgQuery = `query { organization(login: "${login}") { id } }`;
-    const orgResult = await this.executeGraphQL(orgQuery);
+    // Fallback to organization (parameterized)
+    const orgQuery = `query($login: String!) { organization(login: $login) { id } }`;
+    const orgResult = await this.executeGraphQL(orgQuery, { login });
 
     if (orgResult.data?.organization && (orgResult.data.organization as { id?: string }).id) {
       return (orgResult.data.organization as { id: string }).id;
@@ -55,13 +55,13 @@ export class GitHubGraphQLClient {
    * Create a new GitHub Projects V2 board.
    */
   async createProjectV2(ownerId: string, title: string): Promise<{ id: string; number: number }> {
-    const query = `mutation {
-      createProjectV2(input: { ownerId: "${ownerId}", title: "${title}" }) {
+    const query = `mutation($ownerId: ID!, $title: String!) {
+      createProjectV2(input: { ownerId: $ownerId, title: $title }) {
         projectV2 { id number }
       }
     }`;
 
-    const result = await this.executeGraphQL(query);
+    const result = await this.executeGraphQL(query, { ownerId, title });
     const project = (result.data?.createProjectV2 as { projectV2: { id: string; number: number } })?.projectV2;
     return { id: project.id, number: project.number };
   }
@@ -71,13 +71,13 @@ export class GitHubGraphQLClient {
    * Returns the project item ID. Idempotent.
    */
   async addProjectV2Item(projectId: string, contentId: string): Promise<string> {
-    const query = `mutation {
-      addProjectV2ItemById(input: { projectId: "${projectId}", contentId: "${contentId}" }) {
+    const query = `mutation($projectId: ID!, $contentId: ID!) {
+      addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
         item { id }
       }
     }`;
 
-    const result = await this.executeGraphQL(query);
+    const result = await this.executeGraphQL(query, { projectId, contentId });
     const item = (result.data?.addProjectV2ItemById as { item: { id: string } })?.item;
     return item.id;
   }
@@ -91,26 +91,31 @@ export class GitHubGraphQLClient {
     fieldId: string,
     value: { singleSelectOptionId: string },
   ): Promise<void> {
-    const query = `mutation {
+    const query = `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
       updateProjectV2ItemFieldValue(input: {
-        projectId: "${projectId}",
-        itemId: "${itemId}",
-        fieldId: "${fieldId}",
-        value: { singleSelectOptionId: "${value.singleSelectOptionId}" }
+        projectId: $projectId,
+        itemId: $itemId,
+        fieldId: $fieldId,
+        value: { singleSelectOptionId: $optionId }
       }) {
         projectV2Item { id }
       }
     }`;
 
-    await this.executeGraphQL(query);
+    await this.executeGraphQL(query, {
+      projectId,
+      itemId,
+      fieldId,
+      optionId: value.singleSelectOptionId,
+    });
   }
 
   /**
    * Get field definitions for a Projects V2 board.
    */
   async getProjectFields(projectId: string): Promise<ProjectField[]> {
-    const query = `query {
-      node(id: "${projectId}") {
+    const query = `query($nodeId: ID!) {
+      node(id: $nodeId) {
         ... on ProjectV2 {
           fields(first: 50) {
             nodes {
@@ -125,7 +130,7 @@ export class GitHubGraphQLClient {
       }
     }`;
 
-    const result = await this.executeGraphQL(query);
+    const result = await this.executeGraphQL(query, { nodeId: projectId });
     const fields = (result.data?.node as { fields?: { nodes: Array<{
       id: string;
       name: string;
@@ -144,10 +149,17 @@ export class GitHubGraphQLClient {
 
   /**
    * Execute a GraphQL query via `gh api graphql`.
+   * All variables are passed via `-F` flags to prevent injection.
    */
-  private executeGraphQL(query: string): Promise<GraphQLResponse> {
+  private executeGraphQL(query: string, variables: Record<string, string> = {}): Promise<GraphQLResponse> {
     return new Promise((resolve, reject) => {
       const args = ['api', 'graphql', '-f', `query=${query}`];
+
+      // Pass all variables as structured parameters via -F
+      for (const [key, value] of Object.entries(variables)) {
+        args.push('-F', `${key}=${value}`);
+      }
+
       const opts: { env?: NodeJS.ProcessEnv } = {};
 
       if (this.token) {

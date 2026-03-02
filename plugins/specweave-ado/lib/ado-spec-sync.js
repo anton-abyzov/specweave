@@ -163,7 +163,8 @@ class AdoSpecSync {
         value: this.mapPriorityToAdo(spec.metadata.priority)
       }
     ];
-    const response = await this.client.post("/wit/workitems/$Feature?api-version=7.0", payload);
+    const encodedType = encodeURIComponent(workItemType);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload);
     const featureData = response.data;
     console.log(`   \u2705 Created ADO Feature #${featureData.id}: ${featureData._links.html.href}`);
     return {
@@ -173,29 +174,41 @@ class AdoSpecSync {
     };
   }
   /**
-   * Update existing ADO Feature
+   * Update existing ADO Feature (conditional — only writes changed fields)
    */
   async updateAdoFeature(featureId, spec) {
     const featureTitle = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const featureDescription = this.generateFeatureDescription(spec);
-    const payload = [
-      {
+    const current = await this.fetchAdoFeature(featureId);
+    const payload = [];
+    if (current.fields["System.Title"] !== featureTitle) {
+      payload.push({
         op: "replace",
         path: "/fields/System.Title",
         value: featureTitle
-      },
-      {
+      });
+    } else {
+      console.log(`   \u2139\uFE0F  Title unchanged, skipping`);
+    }
+    if (current.fields["System.Description"] !== featureDescription) {
+      payload.push({
         op: "replace",
         path: "/fields/System.Description",
         value: featureDescription
-      }
-    ];
+      });
+    } else {
+      console.log(`   \u2139\uFE0F  Description unchanged, skipping`);
+    }
+    if (payload.length === 0) {
+      console.log(`   \u2139\uFE0F  No changes detected for ADO Feature #${featureId}`);
+      return current;
+    }
     const response = await this.client.patch(
       `/wit/workitems/${featureId}?api-version=7.0`,
       payload
     );
     const featureData = response.data;
-    console.log(`   \u2705 Updated ADO Feature #${featureId}`);
+    console.log(`   \u2705 Updated ADO Feature #${featureId} (${payload.length} field(s) changed)`);
     return {
       id: featureData.id,
       url: featureData._links.html.href,

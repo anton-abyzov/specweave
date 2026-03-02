@@ -31,6 +31,8 @@ import {
   formatForJira,
   CommentContent,
 } from '../../../src/core/comment-builder.js';
+import { readIssueKey } from './metadata-paths.js';
+import { getApiBaseUrl } from './jira-deployment-detector.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -84,7 +86,7 @@ export async function syncSpecCommitsToJira(
       return result;
     }
 
-    const jiraIssueKey = metadata.jira?.issueKey;
+    const jiraIssueKey = readIssueKey(metadata);
     if (!jiraIssueKey) {
       if (verbose) {
         console.log('No JIRA issue linked to increment');
@@ -94,7 +96,7 @@ export async function syncSpecCommitsToJira(
 
     // 2. Create JIRA client
     const client = axios.create({
-      baseURL: `https://${config.domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(config.domain),
       auth: {
         username: config.email,
         password: config.apiToken,
@@ -285,7 +287,7 @@ export async function postCommitBatchUpdate(
 ): Promise<boolean> {
   try {
     const client = axios.create({
-      baseURL: `https://${config.domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(config.domain),
       auth: {
         username: config.email,
         password: config.apiToken,

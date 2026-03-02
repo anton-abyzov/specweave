@@ -129,5 +129,35 @@ export declare class GitHubReconciler {
         milestoneClose: boolean;
         errors: string[];
     }>;
+    /**
+     * Result from milestone reconciliation
+     */
+    static readonly MILESTONE_RECONCILE_RESULT_TEMPLATE: {
+        staleClosed: number;
+        duplicatesClosed: number;
+        errors: string[];
+    };
+    /**
+     * Reconcile stale and duplicate milestones on GitHub.
+     *
+     * - Closes open milestones with 0 open issues and 1+ closed issues (stale)
+     * - Closes open milestones matching completed local increments
+     * - Detects duplicate milestones (same FS-XXX prefix) and closes the
+     *   smaller/empty one, keeping the one with the most issues
+     *
+     * @param projectRoot - Project root directory
+     * @param dryRun - If true, only report what would happen
+     * @param logger - Logger instance
+     */
+    static reconcileMilestones(projectRoot: string, dryRun?: boolean, logger?: Logger): Promise<{
+        staleClosed: number;
+        duplicatesClosed: number;
+        errors: string[];
+    }>;
+    /**
+     * Collect FS-IDs of all completed/archived/abandoned increments.
+     * Returns a Set of strings like "FS-400", "FS-391", etc.
+     */
+    private static collectCompletedIncrementFsIds;
 }
 //# sourceMappingURL=github-reconciler.d.ts.map

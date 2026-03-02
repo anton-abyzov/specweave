@@ -226,12 +226,25 @@ async function appendToIssueBody(
   section: string,
   env: NodeJS.ProcessEnv,
 ): Promise<void> {
-  // Use gh issue edit with --add-body
+  // Read existing body first to avoid overwriting it
+  const viewRes = await execFileNoThrow('gh', [
+    'issue', 'view', String(issueNumber),
+    '--repo', repo,
+    '--json', 'body',
+    '-q', '.body',
+  ], { env });
+
+  const existingBody = viewRes.success ? (viewRes.stdout || '').trim() : '';
+
+  // Concatenate: if existing body is empty, use section directly (no leading separator)
+  const combinedBody = existingBody
+    ? `${existingBody}\n\n---\n${section}`
+    : section;
+
   const res = await execFileNoThrow('gh', [
     'issue', 'edit', String(issueNumber),
     '--repo', repo,
-    '--body', section,
-    '--json', 'number,url',
+    '--body', combinedBody,
   ], { env });
 
   if (!res.success) {

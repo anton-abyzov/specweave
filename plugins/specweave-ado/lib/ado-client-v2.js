@@ -42,6 +42,18 @@ class AdoClientV2 {
   // Authentication & Setup
   // ==========================================================================
   /**
+   * Resolve PAT for an organization.
+   * Priority: AZURE_DEVOPS_PAT_{ORG_UPPER} > AZURE_DEVOPS_PAT > fallback
+   */
+  static resolvePatForOrg(organization, fallbackPat) {
+    const orgKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, "_")}`;
+    const orgPat = process.env[orgKey];
+    if (orgPat) return orgPat;
+    const genericPat = process.env.AZURE_DEVOPS_PAT;
+    if (genericPat) return genericPat;
+    return fallbackPat || "";
+  }
+  /**
    * Test connection and authentication
    */
   async testConnection() {
@@ -49,11 +61,16 @@ class AdoClientV2 {
       if (this.isMultiProject) {
         await this.request("GET", `https://dev.azure.com/${this.organization}/_apis/projects?api-version=7.1`);
       } else {
-        await this.request("GET", `/_apis/projects/${this.project}?api-version=7.1`);
+        await this.request("GET", `https://dev.azure.com/${this.organization}/_apis/projects/${this.project}?api-version=7.1`);
       }
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      const statusMatch = error.message?.match(/HTTP (\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      let hint = "";
+      if (status === 401) hint = " (check your Personal Access Token)";
+      else if (status === 404) hint = " (check organization/project name)";
+      return { success: false, error: error.message + hint };
     }
   }
   // ==========================================================================
@@ -207,25 +224,32 @@ class AdoClientV2 {
     if (queryResult.workItems.length === 0) {
       return [];
     }
-    const ids = queryResult.workItems.map((wi) => wi.id);
+    const allIds = queryResult.workItems.map((wi) => wi.id);
     const batchUrl = this.isMultiProject ? `https://dev.azure.com/${this.organization}/_apis/wit/workitemsbatch?api-version=7.1` : `/_apis/wit/workitemsbatch?api-version=7.1`;
-    const workItems = await this.request("POST", batchUrl, {
-      ids,
-      fields: [
-        "System.Id",
-        "System.Title",
-        "System.Description",
-        "System.State",
-        "System.CreatedDate",
-        "System.ChangedDate",
-        "System.WorkItemType",
-        "System.Tags",
-        "System.AreaPath",
-        "System.IterationPath",
-        "System.TeamProject"
-      ]
-    });
-    return workItems.value || [];
+    const batchFields = [
+      "System.Id",
+      "System.Title",
+      "System.Description",
+      "System.State",
+      "System.CreatedDate",
+      "System.ChangedDate",
+      "System.WorkItemType",
+      "System.Tags",
+      "System.AreaPath",
+      "System.IterationPath",
+      "System.TeamProject"
+    ];
+    const PAGE_SIZE = 200;
+    const allWorkItems = [];
+    for (let i = 0; i < allIds.length; i += PAGE_SIZE) {
+      const pageIds = allIds.slice(i, i + PAGE_SIZE);
+      const workItems = await this.request("POST", batchUrl, {
+        ids: pageIds,
+        fields: batchFields
+      });
+      allWorkItems.push(...workItems.value || []);
+    }
+    return allWorkItems;
   }
   /**
    * List work items within time range
@@ -280,7 +304,13 @@ class AdoClientV2 {
     conditions.push(`[System.CreatedDate] >= '${since}'`);
     conditions.push(`[System.CreatedDate] <= '${until}'`);
     if (this.areaPaths && this.areaPaths.length > 0) {
-      const areaPathConditions = this.areaPaths.map((ap) => `[System.AreaPath] UNDER '${projectName}\\${ap}'`).join(" OR ");
+      const areaPathConditions = this.areaPaths.map((ap) => {
+        const normalizedAp = ap.replace(/\//g, "\\");
+        if (normalizedAp === projectName || normalizedAp.startsWith(`${projectName}\\`)) {
+          return `[System.AreaPath] UNDER '${normalizedAp}'`;
+        }
+        return `[System.AreaPath] UNDER '${projectName}\\${normalizedAp}'`;
+      }).join(" OR ");
       conditions.push(`(${areaPathConditions})`);
     }
     if (this.workItemTypes) {

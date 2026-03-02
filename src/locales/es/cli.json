@@ -2,16 +2,68 @@
   "init": {
     "welcome": "🚀 Inicialización de SpecWeave",
     "projectName": "Nombre del proyecto:",
+    "projectNamePrompt": "Nombre del proyecto (para plantillas):",
+    "projectNameDefault": "my-saas",
     "detectingTool": "Detectando herramienta de IA...",
     "foundClaude": "✅ Claude Code encontrado",
     "foundCursor": "✅ Cursor encontrado",
     "foundCopilot": "✅ GitHub Copilot encontrado",
     "noToolDetected": "No se detectó herramienta de IA, usando adaptador Generic",
     "complete": "✨ ¡Inicialización completa!",
+    "claudeNativeComplete": "✨ ¡Instalación nativa de Claude Code completa!",
+    "claudeNativeBenefits": "✅ Skills, agentes y hooks nativos funcionan de inmediato",
+    "projectSuccess": "¡Proyecto SpecWeave creado exitosamente!",
+    "readyToBuild": "🚀 ¡Listo para construir con SpecWeave!",
+    "nestedCdCommand": "cd {{path}}",
+    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "pluginEnableLater": "Puedes habilitar plugins más tarde con: specweave plugin enable <name>",
+    "genericError": "Error:",
     "errors": {
       "invalidName": "El nombre del proyecto debe contener solo letras minúsculas, números y guiones",
       "alreadyExists": "El directorio .specweave ya existe",
-      "cancelled": "❌ Inicialización cancelada"
+      "cancelled": "❌ Inicialización cancelada",
+      "invalidLanguage": "❌ Idioma no válido: {{language}}",
+      "supportedLanguages": "Idiomas soportados: {{languages}}",
+      "nestedNotSupported": "❌ ¡Las carpetas .specweave/ anidadas NO son compatibles!",
+      "parentFound": "Se encontró .specweave/ padre en:",
+      "projectCreationFailed": "Error al crear el proyecto",
+      "commandsCopyFailed": "❌ Error al copiar comandos: {{error}}",
+      "agentsCopyFailed": "❌ Error al copiar agentes: {{error}}",
+      "skillsCopyFailed": "❌ Error al copiar skills: {{error}}",
+      "hooksCopyFailed": "❌ Error al copiar hooks: {{error}}",
+      "templatesNotFound": "❌ Error: Directorio de plantillas no encontrado en: {{path}}",
+      "packageRoot": "Raíz del paquete: {{root}}",
+      "tryingAlternate": "Probando ubicaciones alternativas...",
+      "foundTemplatesAt": "✓ Plantillas encontradas en: {{path}}",
+      "sourceNotFound": "❌ Error: Directorio fuente de {{type}} no encontrado",
+      "expectedAt": "Esperado en: {{path}}",
+      "dirname": "__dirname: {{path}}",
+      "couldNotFindRoot": "No se pudo encontrar la raíz del paquete (buscando package.json con name=\"specweave\")",
+      "sourceEmpty": "❌ Error: El directorio fuente de {{type}} está vacío",
+      "directory": "Directorio: {{path}}",
+      "installationIssue": "Esto indica un problema con la instalación del paquete.",
+      "errorCopying": "❌ Error al copiar {{type}}: {{error}}",
+      "source": "Origen: {{path}}",
+      "target": "Destino: {{path}}"
+    },
+    "warnings": {
+      "invalidDirName": "⚠️  El nombre del directorio actual '{{dirName}}' contiene caracteres no válidos.",
+      "directoryNotEmpty": "⚠️  El directorio actual contiene {{count}} archivo{{plural}}.",
+      "skillsIndexWarning": "⚠️  Advertencia: No se pudo generar el índice de skills: {{error}}",
+      "skillsIndexNote": "Los skills seguirán funcionando, pero puede ser necesaria la indexación manual.",
+      "marketplaceCopyFailed": "⚠️  Advertencia: No se pudo copiar el marketplace de plugins",
+      "marketplaceNotFound": "⚠️  Advertencia: Marketplace de plugins no encontrado",
+      "pluginAutoSetupFailed": "⚠️  Advertencia: No se pudo configurar el registro automático de plugins",
+      "pluginAutoInstallFailed": "La instalación automática de plugins falló (CLI de claude no disponible)"
+    },
+    "prompts": {
+      "confirmInitInCurrent": "¿Inicializar SpecWeave en el directorio actual?",
+      "overwriteSpecweave": "El directorio .specweave ya existe. ¿Sobrescribir?",
+      "overwriteDirectory": "El directorio {{projectName}} ya existe. ¿Sobrescribir?",
+      "enablePlugins": "¿Habilitar los plugins sugeridos ahora?"
+    },
+    "gitHooks": {
+      "prompt": "¿Instalar git hooks para control de calidad?"
     },
     "maturity": {
       "question": "¿Es un proyecto nuevo o existente?",
@@ -33,7 +85,190 @@
         "copilot": "GitHub Copilot",
         "generic": "Otro (ChatGPT, Gemini, etc.)"
       }
+    },
+    "info": {
+      "nestedEnforcement": "SpecWeave impone una única fuente de verdad:",
+      "nestedBullet1": "• Usa la carpeta padre para todos los increments",
+      "nestedBullet2": "• Los increments pueden abarcar múltiples subdirectorios",
+      "nestedBullet3": "• Consulta la sección \"Root-Level .specweave/ Folder\" en CLAUDE.md",
+      "nestedToFix": "Para solucionar:",
+      "suggestedPlugins": "💡 Plugins sugeridos:",
+      "copiedFiles": "✓ {{count}} archivos de comandos copiados",
+      "copiedAgents": "✓ {{count}} directorios de agentes copiados",
+      "copiedSkills": "✓ {{count}} directorios de skills copiados",
+      "copiedHooks": "✓ {{count}} archivos de hooks copiados",
+      "pluginAutoSetupDetails": "Claude Code cargará automáticamente el marketplace de SpecWeave cuando confíes en esta carpeta",
+      "manualInstallInstructions": "Ejecutar manualmente: /plugin install specweave",
+      "ciSkipPlugins": "Entorno CI detectado - omitiendo habilitación de plugins (puedes configurar manualmente después)"
+    },
+    "success": {
+      "pluginAutoSetup": "Marketplace de plugins configurado para carga automática",
+      "pluginAutoInstall": "Comandos slash disponibles de inmediato (¡no es necesario reiniciar!)"
+    },
+    "progress": {
+      "creatingProject": "Creando proyecto SpecWeave...",
+      "detected": "{{tool}} detectado...",
+      "usingTool": "Usando {{tool}}...",
+      "directoryCreated": "Estructura de directorios creada...",
+      "templatesCopied": "Plantillas base copiadas...",
+      "installingComponents": "Instalando componentes de Claude Code...",
+      "commandsInstalled": "Comandos slash instalados...",
+      "agentsInstalled": "Agentes instalados...",
+      "skillsInstalled": "Skills instalados...",
+      "hooksInstalled": "Hooks instalados...",
+      "generatingIndex": "Generando índice de skills...",
+      "indexGenerated": "Índice de skills generado...",
+      "installingAdapter": "Instalando adaptador de {{tool}}...",
+      "projectSuccess": "¡Proyecto SpecWeave creado exitosamente!",
+      "detectingPlugins": "Detectando plugins...",
+      "detectedPlugins": "{{count}} plugins sugeridos detectados",
+      "enablingPlugins": "Habilitando plugins...",
+      "enabledPlugin": "{{plugin}} habilitado",
+      "pluginsEnabled": "Plugins habilitados"
+    },
+    "nextSteps": {
+      "header": "🎯 Próximos pasos:",
+      "cd": "cd {{projectName}}",
+      "footer": "🚀 ¡Listo para construir con SpecWeave!",
+      "docsLink": "Documentación: https://spec-weave.com",
+      "githubLink": "GitHub: https://github.com/anton-abyzov/specweave",
+      "claude": {
+        "step1": "Abre Claude Code en este directorio",
+        "step2": "Instala el plugin principal de SpecWeave (REQUERIDO):",
+        "installCore": "Ejecuta: /plugin install specweave",
+        "step3": "Opcional: Instala plugins adicionales según sea necesario:",
+        "installGitHub": "/plugin install sw-github@specweave",
+        "installFrontend": "/plugin install frontend@vskill",
+        "step4": "Comienza a construir:",
+        "example": "\"/sw:increment 'user authentication'\"",
+        "autoActivate": "Los skills y agentes se activan automáticamente según el contexto"
+      },
+      "cursor": {
+        "step1": "Abre el proyecto en Cursor",
+        "step2": "Di: \"Create increment for [tu funcionalidad]\"",
+        "guide": "Cursor leerá .cursorrules y te guiará",
+        "step3": "Usa atajos @:",
+        "shortcuts": "@increments, @docs, @strategy, @tests"
+      },
+      "copilot": {
+        "step1": "Abre el proyecto en VS Code con Copilot",
+        "step2": "Copilot leerá las instrucciones del workspace automáticamente",
+        "action": "Comienza a crear carpetas e incrementos",
+        "step3": "Usa Copilot Chat para orientación:",
+        "example": "\"How do I create a spec.md?\""
+      },
+      "generic": {
+        "step1": "Lee SPECWEAVE-MANUAL.md",
+        "step2": "Sigue las instrucciones paso a paso",
+        "compatibility": "Funciona con CUALQUIER herramienta de IA (ChatGPT, Claude web, Gemini)"
+      }
     }
+  },
+  "plugin": {
+    "list": {
+      "header": "📦 Plugins de SpecWeave",
+      "enabledHeader": "✅ Plugins habilitados:",
+      "enabledNone": "(ninguno)",
+      "errorLoading": "(error al cargar)",
+      "availableHeader": "📚 Plugins disponibles:",
+      "availableNone": "(todos habilitados)",
+      "suggestedHeader": "💡 Plugins sugeridos (auto-detectados):",
+      "enableHint": "Ejecuta `specweave plugin enable <name>` para habilitar un plugin",
+      "statsFormat": "Skills: {{skills}}, Agentes: {{agents}}, Comandos: {{commands}}",
+      "errorListing": "❌ Error al listar plugins:"
+    },
+    "enable": {
+      "enablingPlugin": "🔌 Habilitando plugin: {{name}}",
+      "alreadyEnabled": "⚠️  El plugin {{name}} ya está habilitado",
+      "useForce": "Usa --force para reinstalar",
+      "success": "✅ ¡Plugin {{name}} habilitado exitosamente!",
+      "installed": "Instalado:",
+      "skills": "Skills: {{names}}",
+      "agents": "Agentes: {{names}}",
+      "commands": "Comandos: {{names}}",
+      "installedTo": "Plugin instalado en: {{location}}",
+      "restartClaude": "⚠️  Reinicia Claude Code para activar el nuevo plugin",
+      "errorEnabling": "❌ Error al habilitar plugin:"
+    },
+    "disable": {
+      "disablingPlugin": "🔌 Deshabilitando plugin: {{name}}",
+      "notEnabled": "⚠️  El plugin {{name}} no está habilitado actualmente",
+      "success": "✅ ¡Plugin {{name}} deshabilitado exitosamente!",
+      "restartClaude": "⚠️  Reinicia Claude Code para desactivar el plugin",
+      "errorDisabling": "❌ Error al deshabilitar plugin:"
+    },
+    "info": {
+      "header": "📋 Información del plugin: {{name}}",
+      "notFound": "❌ Plugin {{name}} no encontrado",
+      "listHint": "Ejecuta `specweave plugin list --available` para ver los plugins disponibles",
+      "name": "Nombre:",
+      "version": "Versión:",
+      "description": "Descripción:",
+      "author": "Autor:",
+      "license": "Licencia:",
+      "coreVersion": "Versión de SpecWeave Core:",
+      "status": "Estado:",
+      "statusEnabled": "✅ Habilitado",
+      "statusDisabled": "⚪ Deshabilitado",
+      "provides": "Proporciona:",
+      "skillsFormat": "Skills: {{skills}}",
+      "agentsFormat": "Agentes: {{agents}}",
+      "commandsFormat": "Comandos: {{commands}}",
+      "noneValue": "(ninguno)",
+      "dependencies": "Dependencias:",
+      "autoDetect": "Disparadores de auto-detección:",
+      "autoDetectFiles": "Archivos: {{files}}",
+      "autoDetectPackages": "Paquetes: {{packages}}",
+      "autoDetectEnv": "Variables de entorno: {{env}}",
+      "autoDetectGit": "Patrón de Git remoto: {{pattern}}",
+      "credits": "Créditos:",
+      "basedOn": "Basado en: {{source}}",
+      "originalAuthor": "Autor original: {{author}}",
+      "contributors": "Contribuidores: {{contributors}}",
+      "errorGettingInfo": "❌ Error al obtener información del plugin:"
+    },
+    "errors": {
+      "nameRequired": "❌ Nombre del plugin requerido para el comando {{command}}",
+      "usageEnable": "Uso: specweave plugin enable <plugin-name>",
+      "usageDisable": "Uso: specweave plugin disable <plugin-name>",
+      "usageInfo": "Uso: specweave plugin info <plugin-name>",
+      "unknownAction": "❌ Acción de plugin desconocida: {{action}}",
+      "validActions": "Acciones válidas: list, enable, disable, info"
+    }
+  },
+  "list": {
+    "header": "📋 Componentes de SpecWeave",
+    "agentsHeader": "🤖 Agentes:",
+    "skillsHeader": "✨ Skills:",
+    "availableFormat": "Disponibles en SpecWeave: {{count}} {{type}}",
+    "agents": "agentes",
+    "skills": "skills",
+    "noDescription": "Sin descripción",
+    "noAgents": "⚠️  No se encontraron agentes en src/agents/",
+    "noSkills": "⚠️  No se encontraron skills en src/skills/",
+    "hintInstalled": "Ejecuta `specweave list --installed` para ver los componentes instalados",
+    "hintInstall": "Ejecuta `specweave install <name>` para instalar un componente específico",
+    "localInstallation": "📁 Instalación local (.claude/):",
+    "globalInstallation": "🌍 Instalación global (~/.claude/):",
+    "noComponentsInstalled": "⚠️  No hay componentes instalados",
+    "installPrompt": "Ejecuta `specweave install` para instalar componentes"
+  },
+  "install": {
+    "header": "📦 Instalación de componentes de SpecWeave",
+    "notFound": "❌ Componente \"{{name}}\" no encontrado",
+    "listHint": "Ejecuta `specweave list` para ver los componentes disponibles",
+    "complete": "✅ ¡Instalación completa!",
+    "installedTo": "Instalado en: {{location}}",
+    "installingFormat": "Instalando {{type}}: {{name}}...",
+    "installedFormat": "{{type}} instalado: {{name}}",
+    "failedFormat": "Error al instalar {{type}}: {{name}}",
+    "noAgentsWarning": "⚠️  No se encontraron agentes en src/agents/",
+    "noSkillsWarning": "⚠️  No se encontraron skills en src/skills/",
+    "installingCount": "📦 Instalando {{count}} {{type}}...",
+    "agent": "agente",
+    "agents": "agentes",
+    "skill": "skill",
+    "skills": "skills"
   },
   "increment": {
     "creating": "📝 Creando increment: {name}",
@@ -44,7 +279,7 @@
     }
   },
   "progress": {
-    "currentIncrement": "Increment Actual: {id}",
+    "currentIncrement": "Increment actual: {id}",
     "status": "Estado: {status}",
     "completion": "Completado: {percent}%"
   },
@@ -57,6 +292,6 @@
   },
   "errors": {
     "fileNotFound": "❌ Archivo no encontrado: {path}",
-    "invalidConfig": "❌ Configuración inválida: {error}"
+    "invalidConfig": "❌ Configuración no válida: {error}"
   }
 }

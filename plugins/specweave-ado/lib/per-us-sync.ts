@@ -82,6 +82,16 @@ export interface AdoClient {
 }
 
 /**
+ * Default work item type by process template
+ */
+const WORK_ITEM_TYPE_BY_TEMPLATE: Record<string, string> = {
+  agile: 'User Story',
+  scrum: 'Product Backlog Item',
+  cmmi: 'Requirement',
+  basic: 'Issue',
+};
+
+/**
  * Per-US ADO Sync
  *
  * Syncs each US to its declared project's ADO project/area path.
@@ -91,15 +101,20 @@ export class PerUSAdoSync {
   private projectMappings: ProjectMappings;
   private adoClient: AdoClient;
   private logger: Logger;
+  private workItemType: string;
 
   constructor(
     adoClient: AdoClient,
     projectMappings: ProjectMappings,
-    options: { logger?: Logger } = {}
+    options: { logger?: Logger; workItemType?: string; processTemplate?: string } = {}
   ) {
     this.adoClient = adoClient;
     this.projectMappings = projectMappings;
     this.logger = options.logger ?? consoleLogger;
+    // Explicit workItemType takes priority, then process template lookup, then default
+    this.workItemType = options.workItemType
+      ?? WORK_ITEM_TYPE_BY_TEMPLATE[options.processTemplate?.toLowerCase() ?? '']
+      ?? 'User Story';
   }
 
   /**
@@ -268,7 +283,7 @@ export class PerUSAdoSync {
       // Create new work item
       const newItem = await this.adoClient.createWorkItem(
         mapping.project,
-        'User Story',
+        this.workItemType,
         title,
         description,
         areaPath

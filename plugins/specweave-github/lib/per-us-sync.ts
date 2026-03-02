@@ -249,25 +249,43 @@ export class PerUSGitHubSync {
 
   /**
    * Find existing issue by US ID in title
+   *
+   * Paginates through all issues to avoid missing matches on repos with 100+ issues.
+   * Deduplicates by issue number before returning.
    */
   private async findExistingIssue(
     mapping: GitHubMapping,
     usId: string
   ): Promise<{ number: number } | null> {
     try {
-      const response = await this.octokit.issues.listForRepo({
-        owner: mapping.owner,
-        repo: mapping.repo,
-        labels: 'specweave',
-        state: 'all',
-        per_page: 100
-      });
+      const seenNumbers = new Set<number>();
+      let page = 1;
+      const perPage = 100;
 
-      const existing = response.data.find(issue =>
-        issue.title.includes(`[${usId}]`)
-      );
+      while (true) {
+        const response = await this.octokit.issues.listForRepo({
+          owner: mapping.owner,
+          repo: mapping.repo,
+          labels: 'specweave',
+          state: 'all',
+          per_page: perPage,
+          page,
+        });
 
-      return existing ? { number: existing.number } : null;
+        for (const issue of response.data) {
+          if (seenNumbers.has(issue.number)) continue;
+          seenNumbers.add(issue.number);
+          if (issue.title.includes(`[${usId}]`)) {
+            return { number: issue.number };
+          }
+        }
+
+        // No more pages
+        if (response.data.length < perPage) break;
+        page++;
+      }
+
+      return null;
     } catch {
       return null;
     }

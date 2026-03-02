@@ -1,44 +1,69 @@
 {
   "init": {
-    "welcome": "🚀 SpecWeave Initialization",
-    "projectName": "Project name:",
-    "projectNamePrompt": "Project name (for templates):",
+    "welcome": "🚀 SpecWeave 初期化",
+    "projectName": "プロジェクト名:",
+    "projectNamePrompt": "プロジェクト名（テンプレート用）:",
     "projectNameDefault": "my-saas",
-    "detectingTool": "Detecting AI tool...",
-    "foundClaude": "✅ Found Claude Code",
-    "foundCursor": "✅ Found Cursor",
-    "foundCopilot": "✅ Found GitHub Copilot",
-    "noToolDetected": "No AI tool detected, using Generic adapter",
-    "complete": "✨ Initialization complete!",
-    "claudeNativeComplete": "✨ Claude Code native installation complete!",
-    "claudeNativeBenefits": "✅ Native skills, agents, hooks work out of the box",
-    "projectSuccess": "SpecWeave project created successfully!",
-    "readyToBuild": "🚀 Ready to build with SpecWeave!",
+    "detectingTool": "AIツールを検出中...",
+    "foundClaude": "✅ Claude Code を検出しました",
+    "foundCursor": "✅ Cursor を検出しました",
+    "foundCopilot": "✅ GitHub Copilot を検出しました",
+    "noToolDetected": "AIツールが検出されませんでした。Genericアダプターを使用します",
+    "complete": "✨ 初期化が完了しました！",
+    "claudeNativeComplete": "✨ Claude Code ネイティブインストールが完了しました！",
+    "claudeNativeBenefits": "✅ ネイティブのスキル、エージェント、フックがそのまま動作します",
+    "projectSuccess": "SpecWeave プロジェクトが正常に作成されました！",
+    "readyToBuild": "🚀 SpecWeave でビルドする準備ができました！",
+    "nestedCdCommand": "cd {{path}}",
+    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "pluginEnableLater": "プラグインは後から有効にできます: specweave plugin enable <name>",
+    "genericError": "エラー:",
     "errors": {
-      "invalidName": "Project name must contain only lowercase letters, numbers, and hyphens",
-      "alreadyExists": ".specweave directory already exists",
-      "cancelled": "❌ Initialization cancelled",
-      "invalidLanguage": "❌ Invalid language: {{language}}",
-      "supportedLanguages": "Supported languages: {{languages}}",
-      "nestedNotSupported": "❌ Nested .specweave/ folders are NOT supported!",
-      "parentFound": "Found parent .specweave/ at:",
-      "projectCreationFailed": "Failed to create project",
-      "commandsCopyFailed": "❌ Commands copy failed: {{error}}",
-      "agentsCopyFailed": "❌ Agents copy failed: {{error}}",
-      "skillsCopyFailed": "❌ Skills copy failed: {{error}}",
-      "hooksCopyFailed": "❌ Hooks copy failed: {{error}}"
+      "invalidName": "プロジェクト名には小文字の英字、数字、ハイフンのみ使用できます",
+      "alreadyExists": ".specweave ディレクトリは既に存在します",
+      "cancelled": "❌ 初期化がキャンセルされました",
+      "invalidLanguage": "❌ 無効な言語: {{language}}",
+      "supportedLanguages": "対応言語: {{languages}}",
+      "nestedNotSupported": "❌ ネストされた .specweave/ フォルダーはサポートされていません！",
+      "parentFound": "親の .specweave/ が見つかりました:",
+      "projectCreationFailed": "プロジェクトの作成に失敗しました",
+      "commandsCopyFailed": "❌ コマンドのコピーに失敗しました: {{error}}",
+      "agentsCopyFailed": "❌ エージェントのコピーに失敗しました: {{error}}",
+      "skillsCopyFailed": "❌ スキルのコピーに失敗しました: {{error}}",
+      "hooksCopyFailed": "❌ フックのコピーに失敗しました: {{error}}",
+      "templatesNotFound": "❌ エラー: テンプレートディレクトリが見つかりません: {{path}}",
+      "packageRoot": "パッケージルート: {{root}}",
+      "tryingAlternate": "代替の場所を試行中...",
+      "foundTemplatesAt": "✓ テンプレートが見つかりました: {{path}}",
+      "sourceNotFound": "❌ エラー: ソース {{type}} ディレクトリが見つかりません",
+      "expectedAt": "期待される場所: {{path}}",
+      "dirname": "__dirname: {{path}}",
+      "couldNotFindRoot": "パッケージルートが見つかりませんでした（name=\"specweave\" の package.json を検索中）",
+      "sourceEmpty": "❌ エラー: ソース {{type}} ディレクトリが空です",
+      "directory": "ディレクトリ: {{path}}",
+      "installationIssue": "パッケージのインストールに問題があります。",
+      "errorCopying": "❌ {{type}} のコピー中にエラーが発生しました: {{error}}",
+      "source": "ソース: {{path}}",
+      "target": "ターゲット: {{path}}"
     },
     "warnings": {
-      "invalidDirName": "⚠️  Current directory name '{{dirName}}' contains invalid characters.",
-      "directoryNotEmpty": "⚠️  Current directory contains {{count}} file{{plural}}.",
-      "skillsIndexWarning": "⚠️  Warning: Could not generate skills index: {{error}}",
-      "skillsIndexNote": "Skills will still work, but manual indexing may be needed."
+      "invalidDirName": "⚠️  現在のディレクトリ名 '{{dirName}}' に無効な文字が含まれています。",
+      "directoryNotEmpty": "⚠️  現在のディレクトリには {{count}} 個のファイルが含まれています。",
+      "skillsIndexWarning": "⚠️  警告: スキルインデックスを生成できませんでした: {{error}}",
+      "skillsIndexNote": "スキルは引き続き動作しますが、手動でのインデックス作成が必要になる場合があります。",
+      "marketplaceCopyFailed": "⚠️  警告: プラグインマーケットプレイスをコピーできませんでした",
+      "marketplaceNotFound": "⚠️  警告: プラグインマーケットプレイスが見つかりません",
+      "pluginAutoSetupFailed": "⚠️  警告: プラグインの自動登録をセットアップできませんでした",
+      "pluginAutoInstallFailed": "プラグインの自動インストールに失敗しました（claude CLI が利用できません）"
     },
     "prompts": {
-      "confirmInitInCurrent": "Initialize SpecWeave in current directory?",
-      "overwriteSpecweave": ".specweave directory already exists. Overwrite?",
-      "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
-      "enablePlugins": "Enable suggested plugins now?"
+      "confirmInitInCurrent": "現在のディレクトリで SpecWeave を初期化しますか？",
+      "overwriteSpecweave": ".specweave ディレクトリは既に存在します。上書きしますか？",
+      "overwriteDirectory": "ディレクトリ {{projectName}} は既に存在します。上書きしますか？",
+      "enablePlugins": "推奨プラグインを今すぐ有効にしますか？"
+    },
+    "gitHooks": {
+      "prompt": "品質管理用の git フックをインストールしますか？"
     },
     "maturity": {
       "question": "新規プロジェクトですか、既存のプロジェクトですか？",
@@ -62,68 +87,211 @@
       }
     },
     "info": {
-      "nestedEnforcement": "SpecWeave enforces a single source of truth:",
-      "nestedBullet1": "• Use the parent folder for all increments",
-      "nestedBullet2": "• Increments can span multiple subdirectories",
-      "nestedBullet3": "• See CLAUDE.md section \"Root-Level .specweave/ Folder\"",
-      "nestedToFix": "To fix:",
-      "suggestedPlugins": "💡 Suggested Plugins:",
-      "copiedFiles": "✓ Copied {{count}} command files",
-      "copiedAgents": "✓ Copied {{count}} agent directories",
-      "copiedSkills": "✓ Copied {{count}} skill directories",
-      "copiedHooks": "✓ Copied {{count}} hook files"
+      "nestedEnforcement": "SpecWeave は単一の信頼できるソースを強制します:",
+      "nestedBullet1": "• すべてのインクリメントに親フォルダーを使用してください",
+      "nestedBullet2": "• インクリメントは複数のサブディレクトリにまたがることができます",
+      "nestedBullet3": "• CLAUDE.md の「Root-Level .specweave/ Folder」セクションを参照してください",
+      "nestedToFix": "修正方法:",
+      "suggestedPlugins": "💡 推奨プラグイン:",
+      "copiedFiles": "✓ {{count}} 個のコマンドファイルをコピーしました",
+      "copiedAgents": "✓ {{count}} 個のエージェントディレクトリをコピーしました",
+      "copiedSkills": "✓ {{count}} 個のスキルディレクトリをコピーしました",
+      "copiedHooks": "✓ {{count}} 個のフックファイルをコピーしました",
+      "pluginAutoSetupDetails": "Claude Code はこのフォルダーを信頼すると、SpecWeave マーケットプレイスを自動的に読み込みます",
+      "manualInstallInstructions": "手動で実行: /plugin install specweave",
+      "ciSkipPlugins": "CI環境を検出 - プラグインの有効化をスキップします（後から手動で設定できます）"
+    },
+    "success": {
+      "pluginAutoSetup": "プラグインマーケットプレイスが自動読み込み用に設定されました",
+      "pluginAutoInstall": "スラッシュコマンドがすぐに利用可能です（再起動は不要です！）"
     },
     "progress": {
-      "creatingProject": "Creating SpecWeave project...",
-      "detected": "Detected {{tool}}...",
-      "usingTool": "Using {{tool}}...",
-      "directoryCreated": "Directory structure created...",
-      "templatesCopied": "Base templates copied...",
-      "installingComponents": "Installing Claude Code components...",
-      "commandsInstalled": "Slash commands installed...",
-      "agentsInstalled": "Agents installed...",
-      "skillsInstalled": "Skills installed...",
-      "hooksInstalled": "Hooks installed...",
-      "generatingIndex": "Generating skills index...",
-      "indexGenerated": "Skills index generated...",
-      "installingAdapter": "Installing {{tool}} adapter...",
-      "projectSuccess": "SpecWeave project created successfully!",
-      "detectingPlugins": "Detecting plugins...",
-      "detectedPlugins": "Detected {{count}} suggested plugins",
-      "enablingPlugins": "Enabling plugins...",
-      "enabledPlugin": "Enabled {{plugin}}",
-      "pluginsEnabled": "Plugins enabled"
+      "creatingProject": "SpecWeave プロジェクトを作成中...",
+      "detected": "{{tool}} を検出しました...",
+      "usingTool": "{{tool}} を使用中...",
+      "directoryCreated": "ディレクトリ構造を作成しました...",
+      "templatesCopied": "ベーステンプレートをコピーしました...",
+      "installingComponents": "Claude Code コンポーネントをインストール中...",
+      "commandsInstalled": "スラッシュコマンドをインストールしました...",
+      "agentsInstalled": "エージェントをインストールしました...",
+      "skillsInstalled": "スキルをインストールしました...",
+      "hooksInstalled": "フックをインストールしました...",
+      "generatingIndex": "スキルインデックスを生成中...",
+      "indexGenerated": "スキルインデックスを生成しました...",
+      "installingAdapter": "{{tool}} アダプターをインストール中...",
+      "projectSuccess": "SpecWeave プロジェクトが正常に作成されました！",
+      "detectingPlugins": "プラグインを検出中...",
+      "detectedPlugins": "{{count}} 個の推奨プラグインを検出しました",
+      "enablingPlugins": "プラグインを有効化中...",
+      "enabledPlugin": "{{plugin}} を有効にしました",
+      "pluginsEnabled": "プラグインが有効になりました"
     },
     "nextSteps": {
-      "header": "🎯 Next steps:",
+      "header": "🎯 次のステップ:",
       "cd": "cd {{projectName}}",
-      "footer": "🚀 Ready to build with SpecWeave!",
-      "docsLink": "Documentation: https://spec-weave.com",
-      "githubLink": "GitHub: https://github.com/anton-abyzov/specweave"
+      "footer": "🚀 SpecWeave でビルドする準備ができました！",
+      "docsLink": "ドキュメント: https://spec-weave.com",
+      "githubLink": "GitHub: https://github.com/anton-abyzov/specweave",
+      "claude": {
+        "step1": "このディレクトリで Claude Code を開いてください",
+        "step2": "SpecWeave コアプラグインをインストールしてください（必須）:",
+        "installCore": "実行: /plugin install specweave",
+        "step3": "オプション: 必要に応じて追加のプラグインをインストールしてください:",
+        "installGitHub": "/plugin install sw-github@specweave",
+        "installFrontend": "/plugin install frontend@vskill",
+        "step4": "ビルドを開始:",
+        "example": "\"/sw:increment 'user authentication'\"",
+        "autoActivate": "スキルとエージェントはコンテキストに基づいて自動的にアクティブになります"
+      },
+      "cursor": {
+        "step1": "Cursor でプロジェクトを開いてください",
+        "step2": "「[機能] のインクリメントを作成」と入力してください",
+        "guide": "Cursor は .cursorrules を読み取り、ガイドします",
+        "step3": "@ ショートカットを使用してください:",
+        "shortcuts": "@increments, @docs, @strategy, @tests"
+      },
+      "copilot": {
+        "step1": "Copilot が有効な VS Code でプロジェクトを開いてください",
+        "step2": "Copilot はワークスペースの指示を自動的に読み取ります",
+        "action": "インクリメントフォルダーとファイルの作成を開始してください",
+        "step3": "Copilot Chat をガイダンスに使用してください:",
+        "example": "「spec.md の作成方法は？」"
+      },
+      "generic": {
+        "step1": "SPECWEAVE-MANUAL.md を読んでください",
+        "step2": "ステップバイステップの手順に従ってください",
+        "compatibility": "すべてのAIツールで動作します（ChatGPT, Claude web, Gemini）"
+      }
     }
   },
-  "increment": {
-    "creating": "📝 Creating increment: {name}",
-    "created": "✅ Increment {id} created successfully!",
-    "nextStepDo": "Next: Run /sw:do to start implementation",
+  "plugin": {
+    "list": {
+      "header": "📦 SpecWeave プラグイン",
+      "enabledHeader": "✅ 有効なプラグイン:",
+      "enabledNone": "（なし）",
+      "errorLoading": "（読み込みエラー）",
+      "availableHeader": "📚 利用可能なプラグイン:",
+      "availableNone": "（すべて有効）",
+      "suggestedHeader": "💡 推奨プラグイン（自動検出）:",
+      "enableHint": "`specweave plugin enable <name>` を実行してプラグインを有効にしてください",
+      "statsFormat": "スキル: {{skills}}, エージェント: {{agents}}, コマンド: {{commands}}",
+      "errorListing": "❌ プラグイン一覧の取得中にエラーが発生しました:"
+    },
+    "enable": {
+      "enablingPlugin": "🔌 プラグインを有効化中: {{name}}",
+      "alreadyEnabled": "⚠️  プラグイン {{name}} は既に有効です",
+      "useForce": "--force を使用して再インストールしてください",
+      "success": "✅ プラグイン {{name}} が正常に有効になりました！",
+      "installed": "インストール済み:",
+      "skills": "スキル: {{names}}",
+      "agents": "エージェント: {{names}}",
+      "commands": "コマンド: {{names}}",
+      "installedTo": "プラグインのインストール先: {{location}}",
+      "restartClaude": "⚠️  新しいプラグインを有効にするには Claude Code を再起動してください",
+      "errorEnabling": "❌ プラグインの有効化中にエラーが発生しました:"
+    },
+    "disable": {
+      "disablingPlugin": "🔌 プラグインを無効化中: {{name}}",
+      "notEnabled": "⚠️  プラグイン {{name}} は現在有効ではありません",
+      "success": "✅ プラグイン {{name}} が正常に無効になりました！",
+      "restartClaude": "⚠️  プラグインを無効にするには Claude Code を再起動してください",
+      "errorDisabling": "❌ プラグインの無効化中にエラーが発生しました:"
+    },
+    "info": {
+      "header": "📋 プラグイン情報: {{name}}",
+      "notFound": "❌ プラグイン {{name}} が見つかりません",
+      "listHint": "`specweave plugin list --available` を実行して利用可能なプラグインを確認してください",
+      "name": "名前:",
+      "version": "バージョン:",
+      "description": "説明:",
+      "author": "作者:",
+      "license": "ライセンス:",
+      "coreVersion": "SpecWeave コアバージョン:",
+      "status": "ステータス:",
+      "statusEnabled": "✅ 有効",
+      "statusDisabled": "⚪ 無効",
+      "provides": "提供内容:",
+      "skillsFormat": "スキル: {{skills}}",
+      "agentsFormat": "エージェント: {{agents}}",
+      "commandsFormat": "コマンド: {{commands}}",
+      "noneValue": "（なし）",
+      "dependencies": "依存関係:",
+      "autoDetect": "自動検出トリガー:",
+      "autoDetectFiles": "ファイル: {{files}}",
+      "autoDetectPackages": "パッケージ: {{packages}}",
+      "autoDetectEnv": "環境変数: {{env}}",
+      "autoDetectGit": "Git リモートパターン: {{pattern}}",
+      "credits": "クレジット:",
+      "basedOn": "ベース: {{source}}",
+      "originalAuthor": "原作者: {{author}}",
+      "contributors": "コントリビューター: {{contributors}}",
+      "errorGettingInfo": "❌ プラグイン情報の取得中にエラーが発生しました:"
+    },
     "errors": {
-      "incompleteFound": "Cannot create new increment! Previous increments incomplete"
+      "nameRequired": "❌ {{command}} コマンドにはプラグイン名が必要です",
+      "usageEnable": "使用方法: specweave plugin enable <plugin-name>",
+      "usageDisable": "使用方法: specweave plugin disable <plugin-name>",
+      "usageInfo": "使用方法: specweave plugin info <plugin-name>",
+      "unknownAction": "❌ 不明なプラグインアクション: {{action}}",
+      "validActions": "有効なアクション: list, enable, disable, info"
+    }
+  },
+  "list": {
+    "header": "📋 SpecWeave コンポーネント",
+    "agentsHeader": "🤖 エージェント:",
+    "skillsHeader": "✨ スキル:",
+    "availableFormat": "SpecWeave で利用可能: {{count}} 個の{{type}}",
+    "agents": "エージェント",
+    "skills": "スキル",
+    "noDescription": "説明なし",
+    "noAgents": "⚠️  src/agents/ にエージェントが見つかりません",
+    "noSkills": "⚠️  src/skills/ にスキルが見つかりません",
+    "hintInstalled": "`specweave list --installed` を実行してインストール済みコンポーネントを確認してください",
+    "hintInstall": "`specweave install <name>` を実行して特定のコンポーネントをインストールしてください",
+    "localInstallation": "📁 ローカルインストール (.claude/):",
+    "globalInstallation": "🌍 グローバルインストール (~/.claude/):",
+    "noComponentsInstalled": "⚠️  コンポーネントがインストールされていません",
+    "installPrompt": "`specweave install` を実行してコンポーネントをインストールしてください"
+  },
+  "install": {
+    "header": "📦 SpecWeave コンポーネントインストール",
+    "notFound": "❌ コンポーネント \"{{name}}\" が見つかりません",
+    "listHint": "`specweave list` を実行して利用可能なコンポーネントを確認してください",
+    "complete": "✅ インストールが完了しました！",
+    "installedTo": "インストール先: {{location}}",
+    "installingFormat": "{{type}}をインストール中: {{name}}...",
+    "installedFormat": "{{type}}をインストールしました: {{name}}",
+    "failedFormat": "{{type}}のインストールに失敗しました: {{name}}",
+    "noAgentsWarning": "⚠️  src/agents/ にエージェントが見つかりません",
+    "noSkillsWarning": "⚠️  src/skills/ にスキルが見つかりません",
+    "installingCount": "📦 {{count}} 個の{{type}}をインストール中...",
+    "agent": "エージェント",
+    "agents": "エージェント",
+    "skill": "スキル",
+    "skills": "スキル"
+  },
+  "increment": {
+    "creating": "📝 インクリメントを作成中: {name}",
+    "created": "✅ インクリメント {id} が正常に作成されました！",
+    "nextStepDo": "次のステップ: /sw:do を実行して実装を開始してください",
+    "errors": {
+      "incompleteFound": "新しいインクリメントを作成できません！前のインクリメントが未完了です"
     }
   },
   "progress": {
-    "currentIncrement": "Current Increment: {id}",
-    "status": "Status: {status}",
-    "completion": "Completion: {percent}%"
+    "currentIncrement": "現在のインクリメント: {id}",
+    "status": "ステータス: {status}",
+    "completion": "完了率: {percent}%"
   },
   "translate": {
-    "translating": "🌐 Translating content to {language}...",
-    "complete": "✅ Translation complete!"
+    "translating": "🌐 {language} に翻訳中...",
+    "complete": "✅ 翻訳が完了しました！"
   },
   "version": {
-    "current": "SpecWeave version: {version}"
+    "current": "SpecWeave バージョン: {version}"
   },
   "errors": {
-    "fileNotFound": "❌ File not found: {path}",
-    "invalidConfig": "❌ Invalid configuration: {error}"
+    "fileNotFound": "❌ ファイルが見つかりません: {path}",
+    "invalidConfig": "❌ 無効な設定: {error}"
   }
 }

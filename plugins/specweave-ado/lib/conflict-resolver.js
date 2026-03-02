@@ -3,6 +3,7 @@ import * as path from "path";
 import * as yaml from "yaml";
 const STATUS_MAPPING = {
   ado: {
+    // Agile process template
     "New": "draft",
     "Active": "in-progress",
     "Resolved": "implemented",
@@ -10,7 +11,20 @@ const STATUS_MAPPING = {
     "In Review": "in-qa",
     "In QA": "in-qa",
     "Blocked": "blocked",
-    "Removed": "cancelled"
+    "Removed": "cancelled",
+    // Scrum process template
+    "Approved": "draft",
+    "Committed": "in-progress",
+    "Done": "complete",
+    // CMMI process template
+    "Proposed": "draft",
+    // 'Active' already mapped above (shared with CMMI)
+    // 'Resolved' already mapped above (shared with CMMI)
+    // 'Closed' already mapped above (shared with CMMI)
+    // Basic process template
+    "To Do": "draft",
+    "Doing": "in-progress"
+    // 'Done' already mapped above (shared with Basic)
   },
   jira: {
     "To Do": "draft",
@@ -30,6 +44,8 @@ const STATUS_MAPPING = {
   }
 };
 const REVERSE_STATUS_MAPPING = {
+  // Default reverse mapping uses Agile states (most common)
+  // Callers should use process-template-aware mapping when template is known
   ado: {
     "draft": "New",
     "in-progress": "Active",

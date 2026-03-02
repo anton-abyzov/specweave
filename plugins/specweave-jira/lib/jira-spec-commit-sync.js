@@ -18,6 +18,8 @@ import {
   generateSmartSummary,
   formatForJira
 } from "../../../src/core/comment-builder.js";
+import { readIssueKey } from "./metadata-paths.js";
+import { getApiBaseUrl } from "./jira-deployment-detector.js";
 import path from "path";
 import fs from "fs/promises";
 async function syncSpecCommitsToJira(config, options) {
@@ -38,7 +40,7 @@ async function syncSpecCommitsToJira(config, options) {
       result.errors.push("No metadata.json found");
       return result;
     }
-    const jiraIssueKey = metadata.jira?.issueKey;
+    const jiraIssueKey = readIssueKey(metadata);
     if (!jiraIssueKey) {
       if (verbose) {
         console.log("No JIRA issue linked to increment");
@@ -46,7 +48,7 @@ async function syncSpecCommitsToJira(config, options) {
       return result;
     }
     const client = axios.create({
-      baseURL: `https://${config.domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(config.domain),
       auth: {
         username: config.email,
         password: config.apiToken
@@ -194,7 +196,7 @@ Short update comment (JIRA format):`);
 async function postCommitBatchUpdate(config, incrementPath, commits, issueKey, repo, dryRun = false) {
   try {
     const client = axios.create({
-      baseURL: `https://${config.domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(config.domain),
       auth: {
         username: config.email,
         password: config.apiToken

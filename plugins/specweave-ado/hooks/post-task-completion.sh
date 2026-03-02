@@ -10,7 +10,7 @@
 # Dependencies:
 # - Node.js for running sync scripts
 # - jq for JSON parsing
-# - metadata.json must have .ado.item field
+# - metadata.json must have .external_sync.ado.workItemId field (fallback: .ado.item)
 # - Azure DevOps PAT in .env
 
 set +e  # EMERGENCY FIX: Prevents Claude Code crashes
@@ -96,7 +96,7 @@ EOF
   exit 0
 fi
 
-ADO_ITEM=$(jq -r '.ado.item // empty' "$METADATA_FILE" 2>/dev/null)
+ADO_ITEM=$(jq -r '.external_sync.ado.workItemId // .ado.item // empty' "$METADATA_FILE" 2>/dev/null)
 
 if [ -z "$ADO_ITEM" ]; then
   echo "[$(date)] [ADO] ℹ️  No Azure DevOps work item linked to $CURRENT_INCREMENT, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true

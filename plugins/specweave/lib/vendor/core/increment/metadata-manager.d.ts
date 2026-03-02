@@ -165,6 +165,19 @@ export declare class MetadataManager {
      */
     static getExtended(incrementId: string): IncrementMetadataExtended;
     /**
+     * Validate and auto-correct metadata schema issues.
+     *
+     * Fixes:
+     *  - id: short numeric IDs (e.g. "0399") expanded to full slug using folderName
+     *  - type: non-standard aliases mapped to canonical enum values
+     *  - created/createdAt: legacy field renamed
+     *  - externalLinks: ensured to exist (defaults to {})
+     *  - status/priority/testMode/coverageTarget: sensible defaults applied
+     *
+     * @returns corrected metadata, whether any correction was made, and warnings
+     */
+    private static validateMetadataSchema;
+    /**
      * Validate metadata schema
      */
     static validate(metadata: IncrementMetadata): boolean;

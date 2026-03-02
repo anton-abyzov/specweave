@@ -33,16 +33,15 @@ async function buildHierarchicalWIQL(organization, pat, containers) {
         );
       }
     }
+    if (container.filters) {
+      const containerFilterClauses = buildFilterClauses(container.filters);
+      if (containerFilterClauses.length > 0) {
+        parts.push(...containerFilterClauses);
+      }
+    }
     projectClauses.push(`(${parts.join(" AND ")})`);
   }
   let whereClause = projectClauses.join(" OR ");
-  const filters = containers[0]?.filters;
-  if (filters) {
-    const filterClauses = buildFilterClauses(filters);
-    if (filterClauses.length > 0) {
-      whereClause = `(${whereClause}) AND ${filterClauses.join(" AND ")}`;
-    }
-  }
   return `
     SELECT [System.Id], [System.Title], [System.Description], [System.State],
            [System.CreatedDate], [System.ChangedDate], [System.WorkItemType],
@@ -91,11 +90,18 @@ function addTimeRangeFilter(wiql, timeRange) {
   }
   const { since, until } = calculateTimeRange(timeRange);
   const timeFilter = `[System.CreatedDate] >= '${since}' AND [System.CreatedDate] <= '${until}'`;
-  if (wiql.includes("ORDER BY")) {
-    return wiql.replace("ORDER BY", `AND ${timeFilter} ORDER BY`);
-  } else {
+  const orderByRegex = /\bORDER\s+BY\b/i;
+  const match = wiql.match(orderByRegex);
+  if (match && match.index !== void 0) {
+    const before = wiql.substring(0, match.index).trimEnd();
+    const after = wiql.substring(match.index);
+    return `${before} AND ${timeFilter} ${after}`;
+  }
+  const whereRegex = /\bWHERE\b/i;
+  if (whereRegex.test(wiql)) {
     return `${wiql} AND ${timeFilter}`;
   }
+  return `${wiql} WHERE ${timeFilter}`;
 }
 function calculateTimeRange(timeRange) {
   const now = /* @__PURE__ */ new Date();
@@ -179,6 +185,10 @@ async function fetchWorkItemsFiltered(config, pat, timeRange) {
   const baseWiql = await buildHierarchicalWIQL(organization, pat, containers);
   const wiql = addTimeRangeFilter(baseWiql, timeRange);
   console.log("\u{1F50D} Fetching work items (FILTERED strategy):", wiql);
+  const uniqueProjects = new Set(containers.map((c) => c.id));
+  if (uniqueProjects.size > 1) {
+    return executeQueryOrgLevel(organization, pat, wiql);
+  }
   const project = containers[0].id;
   return executeQuery(organization, project, pat, wiql);
 }
@@ -208,7 +218,34 @@ async function executeQuery(organization, project, pat, wiql) {
   });
   return response.value || [];
 }
-function makeRequest(url, pat, method = "GET", body) {
+async function executeQueryOrgLevel(organization, pat, wiql) {
+  const baseUrl = `https://dev.azure.com/${organization}`;
+  const queryUrl = `${baseUrl}/_apis/wit/wiql?api-version=7.1`;
+  const queryResult = await makeRequest(queryUrl, pat, "POST", { query: wiql });
+  if (!queryResult.workItems || queryResult.workItems.length === 0) {
+    return [];
+  }
+  const ids = queryResult.workItems.map((wi) => wi.id);
+  const batchUrl = `${baseUrl}/_apis/wit/workitemsbatch?api-version=7.1`;
+  const response = await makeRequest(batchUrl, pat, "POST", {
+    ids,
+    fields: [
+      "System.Id",
+      "System.Title",
+      "System.Description",
+      "System.State",
+      "System.CreatedDate",
+      "System.ChangedDate",
+      "System.WorkItemType",
+      "System.AreaPath",
+      "System.IterationPath",
+      "System.Tags"
+    ]
+  });
+  return response.value || [];
+}
+const DEFAULT_REQUEST_TIMEOUT_MS = 3e4;
+function makeRequest(url, pat, method = "GET", body, timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
   return new Promise((resolve, reject) => {
     const { hostname, pathname, search } = new URL(url);
     const authHeader = "Basic " + Buffer.from(`:${pat}`).toString("base64");
@@ -223,7 +260,8 @@ function makeRequest(url, pat, method = "GET", body) {
       hostname,
       path: pathname + search,
       method,
-      headers
+      headers,
+      timeout: timeoutMs
     };
     const req = https.request(options, (res) => {
       let data = "";
@@ -242,6 +280,10 @@ function makeRequest(url, pat, method = "GET", body) {
           reject(new Error(`Failed to parse response: ${data}`));
         }
       });
+    });
+    req.on("timeout", () => {
+      req.destroy();
+      reject(new Error(`ADO request timed out after ${timeoutMs}ms: ${method} ${url}`));
     });
     req.on("error", (error) => {
       reject(error);

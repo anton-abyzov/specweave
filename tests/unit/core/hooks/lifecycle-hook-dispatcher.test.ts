@@ -278,10 +278,9 @@ describe('LifecycleHookDispatcher', () => {
       mocks.mockSyncIncrement.mockResolvedValue({ success: true });
       mocks.mockSyncIncrementClosure.mockResolvedValue({ success: true, closedIssues: [] });
 
-      // Should not throw
-      await expect(
-        LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass),
-      ).resolves.toBeUndefined();
+      // Should not throw — returns result with error captured
+      const result = await LifecycleHookDispatcher.onIncrementDone(projectRoot, incrementId, bypass);
+      expect(result.syncErrors.length).toBeGreaterThan(0);
 
       // Other hooks should still have run
       expect(mocks.mockSyncIncrement).toHaveBeenCalledWith(incrementId);

@@ -138,6 +138,24 @@ export class AdoClientV2 {
   // ==========================================================================
 
   /**
+   * Resolve PAT for an organization.
+   * Priority: AZURE_DEVOPS_PAT_{ORG_UPPER} > AZURE_DEVOPS_PAT > fallback
+   */
+  static resolvePatForOrg(organization: string, fallbackPat?: string): string {
+    // Org-specific: AZURE_DEVOPS_PAT_CONTOSO (uppercased, hyphens → underscores)
+    const orgKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
+    const orgPat = process.env[orgKey];
+    if (orgPat) return orgPat;
+
+    // Generic PAT
+    const genericPat = process.env.AZURE_DEVOPS_PAT;
+    if (genericPat) return genericPat;
+
+    // Fallback (e.g., profile-stored PAT)
+    return fallbackPat || '';
+  }
+
+  /**
    * Test connection and authentication
    */
   async testConnection(): Promise<{ success: boolean; error?: string }> {
@@ -146,12 +164,17 @@ export class AdoClientV2 {
         // Test org-level access
         await this.request('GET', `https://dev.azure.com/${this.organization}/_apis/projects?api-version=7.1`);
       } else {
-        // Test project-level access
-        await this.request('GET', `/_apis/projects/${this.project}?api-version=7.1`);
+        // Test project-level access using absolute URL to avoid double project path
+        await this.request('GET', `https://dev.azure.com/${this.organization}/_apis/projects/${this.project}?api-version=7.1`);
       }
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message };
+      const statusMatch = error.message?.match(/HTTP (\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      let hint = '';
+      if (status === 401) hint = ' (check your Personal Access Token)';
+      else if (status === 404) hint = ' (check organization/project name)';
+      return { success: false, error: error.message + hint };
     }
   }
 
@@ -344,32 +367,41 @@ export class AdoClientV2 {
       return [];
     }
 
-    // Get full work item details (batch request)
-    const ids = queryResult.workItems.map((wi) => wi.id);
+    // Get full work item details (batch request, paginated in chunks of 200)
+    const allIds = queryResult.workItems.map((wi) => wi.id);
 
     // For multi-project, use org-level batch API
     const batchUrl = this.isMultiProject
       ? `https://dev.azure.com/${this.organization}/_apis/wit/workitemsbatch?api-version=7.1`
       : `/_apis/wit/workitemsbatch?api-version=7.1`;
 
-    const workItems = await this.request('POST', batchUrl, {
-      ids,
-      fields: [
-        'System.Id',
-        'System.Title',
-        'System.Description',
-        'System.State',
-        'System.CreatedDate',
-        'System.ChangedDate',
-        'System.WorkItemType',
-        'System.Tags',
-        'System.AreaPath',
-        'System.IterationPath',
-        'System.TeamProject',
-      ],
-    });
+    const batchFields = [
+      'System.Id',
+      'System.Title',
+      'System.Description',
+      'System.State',
+      'System.CreatedDate',
+      'System.ChangedDate',
+      'System.WorkItemType',
+      'System.Tags',
+      'System.AreaPath',
+      'System.IterationPath',
+      'System.TeamProject',
+    ];
 
-    return workItems.value || [];
+    const PAGE_SIZE = 200;
+    const allWorkItems: WorkItem[] = [];
+
+    for (let i = 0; i < allIds.length; i += PAGE_SIZE) {
+      const pageIds = allIds.slice(i, i + PAGE_SIZE);
+      const workItems = await this.request('POST', batchUrl, {
+        ids: pageIds,
+        fields: batchFields,
+      });
+      allWorkItems.push(...(workItems.value || []));
+    }
+
+    return allWorkItems;
   }
 
   /**
@@ -457,7 +489,14 @@ export class AdoClientV2 {
     // Area paths filter (if configured)
     if (this.areaPaths && this.areaPaths.length > 0) {
       const areaPathConditions = this.areaPaths
-        .map((ap: string) => `[System.AreaPath] UNDER '${projectName}\\${ap}'`)
+        .map((ap: string) => {
+          // Avoid double-prepending project name if path already starts with it
+          const normalizedAp = ap.replace(/\//g, '\\');
+          if (normalizedAp === projectName || normalizedAp.startsWith(`${projectName}\\`)) {
+            return `[System.AreaPath] UNDER '${normalizedAp}'`;
+          }
+          return `[System.AreaPath] UNDER '${projectName}\\${normalizedAp}'`;
+        })
         .join(' OR ');
       conditions.push(`(${areaPathConditions})`);
     }

@@ -924,6 +924,15 @@ program
     await syncLivingDocs(args);
   });
 
+// Sync-task command - Lightweight hook for task-ac-sync-guard.sh
+program
+  .command('sync-task <increment-id>')
+  .description('Trigger post-task-completion hooks (called by shell hook, not for manual use)')
+  .action(async (incrementId) => {
+    const { syncTask } = await import('../dist/src/cli/commands/sync-task.js');
+    await syncTask([incrementId]);
+  });
+
 // Docs command - Documentation preview, build, validation
 const docsCmd = program
   .command('docs')

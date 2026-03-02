@@ -15,9 +15,9 @@ async function fetchBoardsForRepo(owner, repo) {
       "-H",
       "Accept: application/vnd.github+json"
     ], { env: getGhEnv() });
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       console.error(`\u274C Failed to fetch boards for ${owner}/${repo}:`, result.stderr);
-      throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);
+      throw new Error(`GitHub API error (exit code ${result.exitCode}): ${result.stderr}`);
     }
     const boards = result.stdout.trim().split("\n").filter((line) => line.trim()).map((line) => JSON.parse(line));
     console.log(`\u2705 Found ${boards.length} board(s) for repo ${owner}/${repo}`);
@@ -38,9 +38,9 @@ async function fetchBoardsForOrg(org) {
       "-H",
       "Accept: application/vnd.github+json"
     ], { env: getGhEnv() });
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       console.error(`\u274C Failed to fetch boards for org ${org}:`, result.stderr);
-      throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);
+      throw new Error(`GitHub API error (exit code ${result.exitCode}): ${result.stderr}`);
     }
     const boards = result.stdout.trim().split("\n").filter((line) => line.trim()).map((line) => JSON.parse(line));
     console.log(`\u2705 Found ${boards.length} board(s) for org ${org}`);

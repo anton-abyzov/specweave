@@ -255,7 +255,8 @@ export class AdoSpecSync {
       }
     ];
 
-    const response = await this.client.post('/wit/workitems/$Feature?api-version=7.0', payload);
+    const encodedType = encodeURIComponent(workItemType);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload);
     const featureData = response.data;
 
     console.log(`   ✅ Created ADO Feature #${featureData.id}: ${featureData._links.html.href}`);
@@ -268,24 +269,41 @@ export class AdoSpecSync {
   }
 
   /**
-   * Update existing ADO Feature
+   * Update existing ADO Feature (conditional — only writes changed fields)
    */
   private async updateAdoFeature(featureId: number, spec: SpecContent): Promise<AdoFeature> {
     const featureTitle = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const featureDescription = this.generateFeatureDescription(spec);
 
-    const payload = [
-      {
+    // Fetch current values to avoid overwriting ADO-side edits
+    const current = await this.fetchAdoFeature(featureId);
+
+    const payload: any[] = [];
+
+    if (current.fields['System.Title'] !== featureTitle) {
+      payload.push({
         op: 'replace',
         path: '/fields/System.Title',
         value: featureTitle
-      },
-      {
+      });
+    } else {
+      console.log(`   ℹ️  Title unchanged, skipping`);
+    }
+
+    if (current.fields['System.Description'] !== featureDescription) {
+      payload.push({
         op: 'replace',
         path: '/fields/System.Description',
         value: featureDescription
-      }
-    ];
+      });
+    } else {
+      console.log(`   ℹ️  Description unchanged, skipping`);
+    }
+
+    if (payload.length === 0) {
+      console.log(`   ℹ️  No changes detected for ADO Feature #${featureId}`);
+      return current;
+    }
 
     const response = await this.client.patch(
       `/wit/workitems/${featureId}?api-version=7.0`,
@@ -293,7 +311,7 @@ export class AdoSpecSync {
     );
     const featureData = response.data;
 
-    console.log(`   ✅ Updated ADO Feature #${featureId}`);
+    console.log(`   ✅ Updated ADO Feature #${featureId} (${payload.length} field(s) changed)`);
 
     return {
       id: featureData.id,

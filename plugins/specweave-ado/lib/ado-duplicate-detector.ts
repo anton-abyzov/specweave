@@ -122,11 +122,12 @@ export class AdoDuplicateDetector {
     } catch (error: any) {
       this.logger.log(`⚠️  Verification check failed: ${error.message}`);
       return {
-        success: true, // Assume success on error
+        success: false,
         expectedCount,
-        actualCount: expectedCount,
+        actualCount: -1,
         duplicates: [],
-      };
+        error: `Verification failed: ${error.message}`,
+      } as VerificationResult & { error: string };
     }
   }
 

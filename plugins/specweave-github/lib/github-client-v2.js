@@ -103,13 +103,14 @@ class GitHubClientV2 {
   /**
    * Create or get existing milestone
    */
-  async createOrGetMilestone(title, description, daysFromNow = 2) {
+  async createOrGetMilestone(title, description, daysFromNow) {
+    const dueDays = daysFromNow ?? 2;
     const existing = await this.getMilestoneByTitle(title);
     if (existing) {
       return existing;
     }
     const dueDate = /* @__PURE__ */ new Date();
-    dueDate.setDate(dueDate.getDate() + daysFromNow);
+    dueDate.setDate(dueDate.getDate() + dueDays);
     const dueDateISO = dueDate.toISOString();
     const args = [
       "api",
@@ -136,7 +137,7 @@ class GitHubClientV2 {
   async getMilestoneByTitle(title) {
     const result = await execFileNoThrow("gh", [
       "api",
-      `repos/${this.fullRepo}/milestones`,
+      `repos/${this.fullRepo}/milestones?per_page=100&state=all`,
       "--jq",
       `.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}`
     ], { env: this.getGhEnv() });
@@ -477,10 +478,9 @@ ${body}`;
   async getLastComment(issueNumber) {
     const result = await execFileNoThrow("gh", [
       "api",
-      `repos/${this.fullRepo}/issues/${issueNumber}/comments`,
+      `repos/${this.fullRepo}/issues/${issueNumber}/comments?sort=created&direction=desc&per_page=1`,
       "--jq",
-      ".[-1] | {body: .body, author: .user.login}"
-      // Get last comment only
+      ".[0] | {body: .body, author: .user.login}"
     ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       return null;

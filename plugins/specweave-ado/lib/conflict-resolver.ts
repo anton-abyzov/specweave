@@ -87,6 +87,7 @@ export interface ExternalStatus {
 
 const STATUS_MAPPING = {
   ado: {
+    // Agile process template
     'New': 'draft' as SpecStatus,
     'Active': 'in-progress' as SpecStatus,
     'Resolved': 'implemented' as SpecStatus,
@@ -94,7 +95,20 @@ const STATUS_MAPPING = {
     'In Review': 'in-qa' as SpecStatus,
     'In QA': 'in-qa' as SpecStatus,
     'Blocked': 'blocked' as SpecStatus,
-    'Removed': 'cancelled' as SpecStatus
+    'Removed': 'cancelled' as SpecStatus,
+    // Scrum process template
+    'Approved': 'draft' as SpecStatus,
+    'Committed': 'in-progress' as SpecStatus,
+    'Done': 'complete' as SpecStatus,
+    // CMMI process template
+    'Proposed': 'draft' as SpecStatus,
+    // 'Active' already mapped above (shared with CMMI)
+    // 'Resolved' already mapped above (shared with CMMI)
+    // 'Closed' already mapped above (shared with CMMI)
+    // Basic process template
+    'To Do': 'draft' as SpecStatus,
+    'Doing': 'in-progress' as SpecStatus,
+    // 'Done' already mapped above (shared with Basic)
   },
   jira: {
     'To Do': 'draft' as SpecStatus,
@@ -115,6 +129,8 @@ const STATUS_MAPPING = {
 };
 
 const REVERSE_STATUS_MAPPING = {
+  // Default reverse mapping uses Agile states (most common)
+  // Callers should use process-template-aware mapping when template is known
   ado: {
     'draft': 'New',
     'in-progress': 'Active',

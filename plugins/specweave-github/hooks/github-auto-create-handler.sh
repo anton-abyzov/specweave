@@ -74,12 +74,36 @@ else
   [[ "$GH_ENABLED" != "true" ]] && { log "GitHub sync not enabled"; exit 0; }
 fi
 
-# Check auto-create enabled (either autoSync OR auto_create_github_issue)
+# Check auto-create enabled
+# Two flags control auto-creation behavior:
+#   - sync.autoSync (boolean): Global auto-sync toggle. When true, enables ALL auto-sync
+#     operations including issue creation, progress sync, and status updates.
+#   - hooks.post_increment_planning.auto_create_github_issue (boolean): Fine-grained toggle
+#     for ONLY the auto-create-issue behavior in post-increment-planning hooks.
+#
+# Precedence: auto_create_github_issue (specific) > autoSync (global)
+# If BOTH are set, auto_create_github_issue takes precedence for issue creation.
+# If ONLY autoSync is true, issue creation is enabled (as part of the global auto-sync).
 AUTO_SYNC=$(jq -r '.sync.autoSync // false' "$CONFIG_PATH" 2>/dev/null)
 AUTO_CREATE=$(jq -r '.hooks.post_increment_planning.auto_create_github_issue // false' "$CONFIG_PATH" 2>/dev/null)
+
+# Warn if only one flag is set (likely misconfiguration)
+if [[ "$AUTO_SYNC" == "true" ]] && [[ "$AUTO_CREATE" == "false" ]]; then
+  log "Warning: sync.autoSync=true but auto_create_github_issue=false. Issue creation enabled via autoSync. Set auto_create_github_issue=true to be explicit."
+elif [[ "$AUTO_SYNC" == "false" ]] && [[ "$AUTO_CREATE" == "true" ]]; then
+  log "Warning: auto_create_github_issue=true but sync.autoSync=false. Only issue creation is enabled; other sync operations are disabled."
+fi
+
 if [[ "$AUTO_SYNC" != "true" ]] && [[ "$AUTO_CREATE" != "true" ]]; then
   log "Auto-sync disabled (autoSync=$AUTO_SYNC, auto_create=$AUTO_CREATE)"
   exit 0
+fi
+
+# Log which flag triggered activation
+if [[ "$AUTO_CREATE" == "true" ]]; then
+  log "Auto-create enabled via hooks.post_increment_planning.auto_create_github_issue"
+else
+  log "Auto-create enabled via sync.autoSync (global toggle)"
 fi
 
 # Get owner/repo
@@ -115,7 +139,9 @@ fi
 if [[ "${SPECWEAVE_SKIP_DEBOUNCE:-0}" != "1" ]]; then
   DEBOUNCE_FILE="$STATE_DIR/.github-auto-create-pending-$INC_ID"
   if [[ -f "$DEBOUNCE_FILE" ]]; then
-    SIGNAL_AGE=$(($(date +%s) - $(stat -f "%m" "$DEBOUNCE_FILE" 2>/dev/null || echo 0)))
+    # POSIX-portable: use perl for mtime (works on macOS and Linux)
+    FILE_MTIME=$(perl -e 'print((stat($ARGV[0]))[9])' "$DEBOUNCE_FILE" 2>/dev/null || echo 0)
+    SIGNAL_AGE=$(($(date +%s) - FILE_MTIME))
     if (( SIGNAL_AGE < 30 )); then
       log "Debounce: signal age ${SIGNAL_AGE}s < 30s. Deferring."
       exit 0

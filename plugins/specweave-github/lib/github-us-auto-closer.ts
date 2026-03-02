@@ -130,6 +130,12 @@ export async function autoCloseCompletedUserStories(
     );
 
     if (closeResult.success) {
+      // Ensure required labels exist before applying them
+      await ensureLabelExists('status:completed', repoSlug, execOpts, {
+        color: '6f42c1',
+        description: 'Completed work item',
+      });
+
       // Update labels: remove status:active, add status:completed
       await execFileNoThrow(
         'gh',
@@ -222,6 +228,43 @@ async function parseIssueLinks(specPath: string): Promise<Record<string, ParsedU
   }
 
   return links;
+}
+
+/**
+ * Ensure a label exists in the repo before applying it.
+ * Creates the label if missing; logs a warning and continues on permission errors.
+ */
+async function ensureLabelExists(
+  labelName: string,
+  repoSlug: string,
+  execOpts: { env?: Record<string, string> },
+  defaults: { color: string; description: string },
+): Promise<void> {
+  // Check if label exists
+  const checkResult = await execFileNoThrow(
+    'gh',
+    ['label', 'list', '--repo', repoSlug, '--search', labelName, '--json', 'name', '--jq', '.[].name'],
+    execOpts,
+  );
+
+  if (checkResult.success) {
+    const existing = (checkResult.stdout || '').trim().split('\n').filter(Boolean);
+    if (existing.some(name => name === labelName)) {
+      return; // Label already exists
+    }
+  }
+
+  // Create the label
+  const createResult = await execFileNoThrow(
+    'gh',
+    ['label', 'create', labelName, '--repo', repoSlug, '--color', defaults.color, '--description', defaults.description, '--force'],
+    execOpts,
+  );
+
+  if (!createResult.success) {
+    // Permission error or other failure — log warning and continue
+    console.warn(`⚠️  Could not create label "${labelName}": ${createResult.stderr || 'unknown error'} (continuing without label)`);
+  }
 }
 
 /**

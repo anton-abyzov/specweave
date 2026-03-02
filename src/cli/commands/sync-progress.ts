@@ -27,6 +27,7 @@ export interface SyncProgressArgs {
   noJira?: boolean;
   noAdo?: boolean;
   force?: boolean;
+  reconcile?: boolean;
 }
 
 export interface SyncProgressResult {
@@ -39,6 +40,11 @@ export interface SyncProgressResult {
     github?: { success: boolean; issueNumber?: number; error?: string };
     jira?: { success: boolean; issueKey?: string; error?: string };
     ado?: { success: boolean; workItemId?: number; error?: string };
+  };
+  reconcileResult?: {
+    staleClosed: number;
+    duplicatesClosed: number;
+    errors: string[];
   };
   errors: string[];
   warnings: string[];
@@ -316,6 +322,37 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       logger.log('   [DRY-RUN] Would update status line cache');
     }
 
+    // Step 8 (optional): Milestone reconciliation when --reconcile is passed
+    if (parsedArgs.reconcile && githubConfigured && !parsedArgs.noGithub) {
+      logger.log('');
+      logger.log('🔄 Reconciliation: Cleaning up stale/duplicate milestones...');
+      try {
+        const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
+        const reconcileResult = await GitHubReconciler.reconcileMilestones(
+          projectRoot,
+          parsedArgs.dryRun ?? false,
+          logger,
+        );
+        result.reconcileResult = reconcileResult;
+
+        const totalClosed = reconcileResult.staleClosed + reconcileResult.duplicatesClosed;
+        if (totalClosed > 0) {
+          logger.log(`   ✅ ${reconcileResult.staleClosed} stale milestone(s) closed, ${reconcileResult.duplicatesClosed} duplicate(s) closed`);
+        } else {
+          logger.log('   ℹ️  No stale or duplicate milestones found');
+        }
+        if (reconcileResult.errors.length > 0) {
+          for (const err of reconcileResult.errors) {
+            result.warnings.push(`Reconcile: ${err}`);
+          }
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        result.warnings.push(`Milestone reconciliation failed: ${errorMsg}`);
+        logger.log(`   ⚠️  Milestone reconciliation failed: ${errorMsg}`);
+      }
+    }
+
     // Final report
     logger.log('');
     logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -333,6 +370,13 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       logger.log(`   • GitHub issue AUTO-CREATED: #${result.externalIssueCreated.issueNumber}`);
     }
     logger.log('   • Status line cache');
+    if (result.reconcileResult) {
+      const rc = result.reconcileResult;
+      const total = rc.staleClosed + rc.duplicatesClosed;
+      if (total > 0) {
+        logger.log(`   • Milestone reconciliation: ${rc.staleClosed} stale closed, ${rc.duplicatesClosed} duplicates closed`);
+      }
+    }
     logger.log('');
 
     if (result.warnings.length > 0) {
@@ -378,6 +422,8 @@ function parseArgs(args: string[]): SyncProgressArgs {
       result.noAdo = true;
     } else if (arg === '--force') {
       result.force = true;
+    } else if (arg === '--reconcile') {
+      result.reconcile = true;
     } else if (!arg.startsWith('-') && !result.incrementId) {
       result.incrementId = arg;
     }

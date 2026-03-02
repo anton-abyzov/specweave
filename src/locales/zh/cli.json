@@ -1,44 +1,69 @@
 {
   "init": {
-    "welcome": "🚀 SpecWeave Initialization",
-    "projectName": "Project name:",
-    "projectNamePrompt": "Project name (for templates):",
+    "welcome": "🚀 SpecWeave 初始化",
+    "projectName": "项目名称：",
+    "projectNamePrompt": "项目名称（用于模板）：",
     "projectNameDefault": "my-saas",
-    "detectingTool": "Detecting AI tool...",
-    "foundClaude": "✅ Found Claude Code",
-    "foundCursor": "✅ Found Cursor",
-    "foundCopilot": "✅ Found GitHub Copilot",
-    "noToolDetected": "No AI tool detected, using Generic adapter",
-    "complete": "✨ Initialization complete!",
-    "claudeNativeComplete": "✨ Claude Code native installation complete!",
-    "claudeNativeBenefits": "✅ Native skills, agents, hooks work out of the box",
-    "projectSuccess": "SpecWeave project created successfully!",
-    "readyToBuild": "🚀 Ready to build with SpecWeave!",
+    "detectingTool": "正在检测 AI 工具...",
+    "foundClaude": "✅ 检测到 Claude Code",
+    "foundCursor": "✅ 检测到 Cursor",
+    "foundCopilot": "✅ 检测到 GitHub Copilot",
+    "noToolDetected": "未检测到 AI 工具，使用通用适配器",
+    "complete": "✨ 初始化完成！",
+    "claudeNativeComplete": "✨ Claude Code 原生安装完成！",
+    "claudeNativeBenefits": "✅ 原生技能、代理、钩子开箱即用",
+    "projectSuccess": "SpecWeave 项目创建成功！",
+    "readyToBuild": "🚀 准备好使用 SpecWeave 构建了！",
+    "nestedCdCommand": "cd {{path}}",
+    "nestedIncCommand": "/sw:increment \"your-feature\"",
+    "pluginEnableLater": "您可以稍后使用以下命令启用插件：specweave plugin enable <name>",
+    "genericError": "错误：",
     "errors": {
-      "invalidName": "Project name must contain only lowercase letters, numbers, and hyphens",
-      "alreadyExists": ".specweave directory already exists",
-      "cancelled": "❌ Initialization cancelled",
-      "invalidLanguage": "❌ Invalid language: {{language}}",
-      "supportedLanguages": "Supported languages: {{languages}}",
-      "nestedNotSupported": "❌ Nested .specweave/ folders are NOT supported!",
-      "parentFound": "Found parent .specweave/ at:",
-      "projectCreationFailed": "Failed to create project",
-      "commandsCopyFailed": "❌ Commands copy failed: {{error}}",
-      "agentsCopyFailed": "❌ Agents copy failed: {{error}}",
-      "skillsCopyFailed": "❌ Skills copy failed: {{error}}",
-      "hooksCopyFailed": "❌ Hooks copy failed: {{error}}"
+      "invalidName": "项目名称只能包含小写字母、数字和连字符",
+      "alreadyExists": ".specweave 目录已存在",
+      "cancelled": "❌ 初始化已取消",
+      "invalidLanguage": "❌ 无效的语言：{{language}}",
+      "supportedLanguages": "支持的语言：{{languages}}",
+      "nestedNotSupported": "❌ 不支持嵌套的 .specweave/ 文件夹！",
+      "parentFound": "在以下位置找到父级 .specweave/：",
+      "projectCreationFailed": "项目创建失败",
+      "commandsCopyFailed": "❌ 命令复制失败：{{error}}",
+      "agentsCopyFailed": "❌ 代理复制失败：{{error}}",
+      "skillsCopyFailed": "❌ 技能复制失败：{{error}}",
+      "hooksCopyFailed": "❌ 钩子复制失败：{{error}}",
+      "templatesNotFound": "❌ 错误：未找到模板目录：{{path}}",
+      "packageRoot": "包根目录：{{root}}",
+      "tryingAlternate": "正在尝试其他位置...",
+      "foundTemplatesAt": "✓ 在以下位置找到模板：{{path}}",
+      "sourceNotFound": "❌ 错误：未找到源 {{type}} 目录",
+      "expectedAt": "预期位置：{{path}}",
+      "dirname": "__dirname: {{path}}",
+      "couldNotFindRoot": "无法找到包根目录（正在查找 name=\"specweave\" 的 package.json）",
+      "sourceEmpty": "❌ 错误：源 {{type}} 目录为空",
+      "directory": "目录：{{path}}",
+      "installationIssue": "这表明存在包安装问题。",
+      "errorCopying": "❌ 复制 {{type}} 时出错：{{error}}",
+      "source": "来源：{{path}}",
+      "target": "目标：{{path}}"
     },
     "warnings": {
-      "invalidDirName": "⚠️  Current directory name '{{dirName}}' contains invalid characters.",
-      "directoryNotEmpty": "⚠️  Current directory contains {{count}} file{{plural}}.",
-      "skillsIndexWarning": "⚠️  Warning: Could not generate skills index: {{error}}",
-      "skillsIndexNote": "Skills will still work, but manual indexing may be needed."
+      "invalidDirName": "⚠️  当前目录名 '{{dirName}}' 包含无效字符。",
+      "directoryNotEmpty": "⚠️  当前目录包含 {{count}} 个文件{{plural}}。",
+      "skillsIndexWarning": "⚠️  警告：无法生成技能索引：{{error}}",
+      "skillsIndexNote": "技能仍可正常使用，但可能需要手动索引。",
+      "marketplaceCopyFailed": "⚠️  警告：无法复制插件市场",
+      "marketplaceNotFound": "⚠️  警告：未找到插件市场",
+      "pluginAutoSetupFailed": "⚠️  警告：无法设置插件自动注册",
+      "pluginAutoInstallFailed": "插件自动安装失败（claude CLI 不可用）"
     },
     "prompts": {
-      "confirmInitInCurrent": "Initialize SpecWeave in current directory?",
-      "overwriteSpecweave": ".specweave directory already exists. Overwrite?",
-      "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
-      "enablePlugins": "Enable suggested plugins now?"
+      "confirmInitInCurrent": "在当前目录中初始化 SpecWeave？",
+      "overwriteSpecweave": ".specweave 目录已存在。是否覆盖？",
+      "overwriteDirectory": "目录 {{projectName}} 已存在。是否覆盖？",
+      "enablePlugins": "现在启用推荐的插件？"
+    },
+    "gitHooks": {
+      "prompt": "是否安装 git 钩子以进行质量检查？"
     },
     "maturity": {
       "question": "这是一个新项目还是现有项目？",
@@ -48,82 +73,225 @@
       "brownfieldDesc": "已有代码、依赖项或代码仓库"
     },
     "toolDetection": {
-      "header": "AI工具检测",
-      "detected": "检测到: {{tool}}",
+      "header": "AI 工具检测",
+      "detected": "检测到：{{tool}}",
       "confirmPrompt": "使用 {{tool}} 来开发此项目？",
-      "ciAutoConfirm": "检测到CI环境 - 自动确认 {{tool}}",
-      "selectPrompt": "您将使用哪个AI工具？",
+      "ciAutoConfirm": "检测到 CI 环境 - 自动确认 {{tool}}",
+      "selectPrompt": "您将使用哪个 AI 工具？",
       "recommended": "推荐 - 全自动化",
       "tools": {
         "claude": "Claude Code",
         "cursor": "Cursor",
         "copilot": "GitHub Copilot",
-        "generic": "其他 (ChatGPT, Gemini 等)"
+        "generic": "其他（ChatGPT、Gemini 等）"
       }
     },
     "info": {
-      "nestedEnforcement": "SpecWeave enforces a single source of truth:",
-      "nestedBullet1": "• Use the parent folder for all increments",
-      "nestedBullet2": "• Increments can span multiple subdirectories",
-      "nestedBullet3": "• See CLAUDE.md section \"Root-Level .specweave/ Folder\"",
-      "nestedToFix": "To fix:",
-      "suggestedPlugins": "💡 Suggested Plugins:",
-      "copiedFiles": "✓ Copied {{count}} command files",
-      "copiedAgents": "✓ Copied {{count}} agent directories",
-      "copiedSkills": "✓ Copied {{count}} skill directories",
-      "copiedHooks": "✓ Copied {{count}} hook files"
+      "nestedEnforcement": "SpecWeave 强制使用单一事实来源：",
+      "nestedBullet1": "• 使用父文件夹管理所有增量",
+      "nestedBullet2": "• 增量可以跨越多个子目录",
+      "nestedBullet3": "• 请参阅 CLAUDE.md 中的 \"Root-Level .specweave/ Folder\" 部分",
+      "nestedToFix": "修复方法：",
+      "suggestedPlugins": "💡 推荐插件：",
+      "copiedFiles": "✓ 已复制 {{count}} 个命令文件",
+      "copiedAgents": "✓ 已复制 {{count}} 个代理目录",
+      "copiedSkills": "✓ 已复制 {{count}} 个技能目录",
+      "copiedHooks": "✓ 已复制 {{count}} 个钩子文件",
+      "pluginAutoSetupDetails": "当您信任此文件夹时，Claude Code 将自动加载 SpecWeave 市场",
+      "manualInstallInstructions": "手动运行：/plugin install specweave",
+      "ciSkipPlugins": "检测到 CI 环境 - 跳过插件启用（可稍后手动配置）"
+    },
+    "success": {
+      "pluginAutoSetup": "插件市场已配置为自动加载",
+      "pluginAutoInstall": "斜杠命令立即可用（无需重启！）"
     },
     "progress": {
-      "creatingProject": "Creating SpecWeave project...",
-      "detected": "Detected {{tool}}...",
-      "usingTool": "Using {{tool}}...",
-      "directoryCreated": "Directory structure created...",
-      "templatesCopied": "Base templates copied...",
-      "installingComponents": "Installing Claude Code components...",
-      "commandsInstalled": "Slash commands installed...",
-      "agentsInstalled": "Agents installed...",
-      "skillsInstalled": "Skills installed...",
-      "hooksInstalled": "Hooks installed...",
-      "generatingIndex": "Generating skills index...",
-      "indexGenerated": "Skills index generated...",
-      "installingAdapter": "Installing {{tool}} adapter...",
-      "projectSuccess": "SpecWeave project created successfully!",
-      "detectingPlugins": "Detecting plugins...",
-      "detectedPlugins": "Detected {{count}} suggested plugins",
-      "enablingPlugins": "Enabling plugins...",
-      "enabledPlugin": "Enabled {{plugin}}",
-      "pluginsEnabled": "Plugins enabled"
+      "creatingProject": "正在创建 SpecWeave 项目...",
+      "detected": "检测到 {{tool}}...",
+      "usingTool": "正在使用 {{tool}}...",
+      "directoryCreated": "目录结构已创建...",
+      "templatesCopied": "基础模板已复制...",
+      "installingComponents": "正在安装 Claude Code 组件...",
+      "commandsInstalled": "斜杠命令已安装...",
+      "agentsInstalled": "代理已安装...",
+      "skillsInstalled": "技能已安装...",
+      "hooksInstalled": "钩子已安装...",
+      "generatingIndex": "正在生成技能索引...",
+      "indexGenerated": "技能索引已生成...",
+      "installingAdapter": "正在安装 {{tool}} 适配器...",
+      "projectSuccess": "SpecWeave 项目创建成功！",
+      "detectingPlugins": "正在检测插件...",
+      "detectedPlugins": "检测到 {{count}} 个推荐插件",
+      "enablingPlugins": "正在启用插件...",
+      "enabledPlugin": "已启用 {{plugin}}",
+      "pluginsEnabled": "插件已启用"
     },
     "nextSteps": {
-      "header": "🎯 Next steps:",
+      "header": "🎯 后续步骤：",
       "cd": "cd {{projectName}}",
-      "footer": "🚀 Ready to build with SpecWeave!",
-      "docsLink": "Documentation: https://spec-weave.com",
-      "githubLink": "GitHub: https://github.com/anton-abyzov/specweave"
+      "footer": "🚀 准备好使用 SpecWeave 构建了！",
+      "docsLink": "文档：https://spec-weave.com",
+      "githubLink": "GitHub：https://github.com/anton-abyzov/specweave",
+      "claude": {
+        "step1": "在此目录中打开 Claude Code",
+        "step2": "安装 SpecWeave 核心插件（必需）：",
+        "installCore": "运行：/plugin install specweave",
+        "step3": "可选：根据需要安装其他插件：",
+        "installGitHub": "/plugin install sw-github@specweave",
+        "installFrontend": "/plugin install frontend@vskill",
+        "step4": "开始构建：",
+        "example": "\"/sw:increment 'user authentication'\"",
+        "autoActivate": "技能和代理会根据上下文自动激活"
+      },
+      "cursor": {
+        "step1": "在 Cursor 中打开项目",
+        "step2": "输入：\"Create increment for [your feature]\"",
+        "guide": "Cursor 将读取 .cursorrules 并引导您",
+        "step3": "使用 @ 快捷方式：",
+        "shortcuts": "@increments, @docs, @strategy, @tests"
+      },
+      "copilot": {
+        "step1": "在带有 Copilot 的 VS Code 中打开项目",
+        "step2": "Copilot 将自动读取工作区指令",
+        "action": "开始创建增量文件夹和文件",
+        "step3": "使用 Copilot Chat 获取指导：",
+        "example": "\"How do I create a spec.md?\""
+      },
+      "generic": {
+        "step1": "阅读 SPECWEAVE-MANUAL.md",
+        "step2": "按照分步说明操作",
+        "compatibility": "兼容任何 AI 工具（ChatGPT、Claude web、Gemini）"
+      }
     }
   },
-  "increment": {
-    "creating": "📝 Creating increment: {name}",
-    "created": "✅ Increment {id} created successfully!",
-    "nextStepDo": "Next: Run /sw:do to start implementation",
+  "plugin": {
+    "list": {
+      "header": "📦 SpecWeave 插件",
+      "enabledHeader": "✅ 已启用的插件：",
+      "enabledNone": "（无）",
+      "errorLoading": "（加载出错）",
+      "availableHeader": "📚 可用插件：",
+      "availableNone": "（已全部启用）",
+      "suggestedHeader": "💡 推荐插件（自动检测）：",
+      "enableHint": "运行 `specweave plugin enable <name>` 以启用插件",
+      "statsFormat": "技能：{{skills}}，代理：{{agents}}，命令：{{commands}}",
+      "errorListing": "❌ 列出插件时出错："
+    },
+    "enable": {
+      "enablingPlugin": "🔌 正在启用插件：{{name}}",
+      "alreadyEnabled": "⚠️  插件 {{name}} 已经启用",
+      "useForce": "使用 --force 重新安装",
+      "success": "✅ 插件 {{name}} 启用成功！",
+      "installed": "已安装：",
+      "skills": "技能：{{names}}",
+      "agents": "代理：{{names}}",
+      "commands": "命令：{{names}}",
+      "installedTo": "插件已安装到：{{location}}",
+      "restartClaude": "⚠️  请重启 Claude Code 以激活新插件",
+      "errorEnabling": "❌ 启用插件时出错："
+    },
+    "disable": {
+      "disablingPlugin": "🔌 正在禁用插件：{{name}}",
+      "notEnabled": "⚠️  插件 {{name}} 当前未启用",
+      "success": "✅ 插件 {{name}} 禁用成功！",
+      "restartClaude": "⚠️  请重启 Claude Code 以停用该插件",
+      "errorDisabling": "❌ 禁用插件时出错："
+    },
+    "info": {
+      "header": "📋 插件信息：{{name}}",
+      "notFound": "❌ 未找到插件 {{name}}",
+      "listHint": "运行 `specweave plugin list --available` 查看可用插件",
+      "name": "名称：",
+      "version": "版本：",
+      "description": "描述：",
+      "author": "作者：",
+      "license": "许可证：",
+      "coreVersion": "SpecWeave 核心版本：",
+      "status": "状态：",
+      "statusEnabled": "✅ 已启用",
+      "statusDisabled": "⚪ 已禁用",
+      "provides": "提供：",
+      "skillsFormat": "技能：{{skills}}",
+      "agentsFormat": "代理：{{agents}}",
+      "commandsFormat": "命令：{{commands}}",
+      "noneValue": "（无）",
+      "dependencies": "依赖项：",
+      "autoDetect": "自动检测触发条件：",
+      "autoDetectFiles": "文件：{{files}}",
+      "autoDetectPackages": "包：{{packages}}",
+      "autoDetectEnv": "环境变量：{{env}}",
+      "autoDetectGit": "Git 远程模式：{{pattern}}",
+      "credits": "致谢：",
+      "basedOn": "基于：{{source}}",
+      "originalAuthor": "原作者：{{author}}",
+      "contributors": "贡献者：{{contributors}}",
+      "errorGettingInfo": "❌ 获取插件信息时出错："
+    },
     "errors": {
-      "incompleteFound": "Cannot create new increment! Previous increments incomplete"
+      "nameRequired": "❌ {{command}} 命令需要提供插件名称",
+      "usageEnable": "用法：specweave plugin enable <plugin-name>",
+      "usageDisable": "用法：specweave plugin disable <plugin-name>",
+      "usageInfo": "用法：specweave plugin info <plugin-name>",
+      "unknownAction": "❌ 未知的插件操作：{{action}}",
+      "validActions": "有效操作：list、enable、disable、info"
+    }
+  },
+  "list": {
+    "header": "📋 SpecWeave 组件",
+    "agentsHeader": "🤖 代理：",
+    "skillsHeader": "✨ 技能：",
+    "availableFormat": "SpecWeave 中可用：{{count}} 个{{type}}",
+    "agents": "代理",
+    "skills": "技能",
+    "noDescription": "无描述",
+    "noAgents": "⚠️  在 src/agents/ 中未找到代理",
+    "noSkills": "⚠️  在 src/skills/ 中未找到技能",
+    "hintInstalled": "运行 `specweave list --installed` 查看已安装的组件",
+    "hintInstall": "运行 `specweave install <name>` 安装特定组件",
+    "localInstallation": "📁 本地安装（.claude/）：",
+    "globalInstallation": "🌍 全局安装（~/.claude/）：",
+    "noComponentsInstalled": "⚠️  未安装任何组件",
+    "installPrompt": "运行 `specweave install` 安装组件"
+  },
+  "install": {
+    "header": "📦 SpecWeave 组件安装",
+    "notFound": "❌ 未找到组件 \"{{name}}\"",
+    "listHint": "运行 `specweave list` 查看可用组件",
+    "complete": "✅ 安装完成！",
+    "installedTo": "已安装到：{{location}}",
+    "installingFormat": "正在安装{{type}}：{{name}}...",
+    "installedFormat": "已安装{{type}}：{{name}}",
+    "failedFormat": "安装{{type}}失败：{{name}}",
+    "noAgentsWarning": "⚠️  在 src/agents/ 中未找到代理",
+    "noSkillsWarning": "⚠️  在 src/skills/ 中未找到技能",
+    "installingCount": "📦 正在安装 {{count}} 个{{type}}...",
+    "agent": "代理",
+    "agents": "代理",
+    "skill": "技能",
+    "skills": "技能"
+  },
+  "increment": {
+    "creating": "📝 正在创建增量：{name}",
+    "created": "✅ 增量 {id} 创建成功！",
+    "nextStepDo": "下一步：运行 /sw:do 开始实施",
+    "errors": {
+      "incompleteFound": "无法创建新增量！之前的增量尚未完成"
     }
   },
   "progress": {
-    "currentIncrement": "Current Increment: {id}",
-    "status": "Status: {status}",
-    "completion": "Completion: {percent}%"
+    "currentIncrement": "当前增量：{id}",
+    "status": "状态：{status}",
+    "completion": "完成度：{percent}%"
   },
   "translate": {
-    "translating": "🌐 Translating content to {language}...",
-    "complete": "✅ Translation complete!"
+    "translating": "🌐 正在将内容翻译为{language}...",
+    "complete": "✅ 翻译完成！"
   },
   "version": {
-    "current": "SpecWeave version: {version}"
+    "current": "SpecWeave 版本：{version}"
   },
   "errors": {
-    "fileNotFound": "❌ File not found: {path}",
-    "invalidConfig": "❌ Invalid configuration: {error}"
+    "fileNotFound": "❌ 未找到文件：{path}",
+    "invalidConfig": "❌ 无效配置：{error}"
   }
 }

@@ -23,6 +23,7 @@ import {
   mapUserStoryToProjects
 } from '../../../src/utils/project-mapper.js';
 import { parseSpecFile } from '../../../src/utils/spec-splitter.js';
+import { getEpicLinkFieldForProject } from './jira-field-discovery.js';
 
 export interface JiraMultiProjectConfig {
   domain: string;
@@ -108,18 +109,7 @@ export class JiraMultiProjectSync {
     // Parse spec
     const parsedSpec = await parseSpecFile(specPath);
 
-    // Step 1: Create epic per project (if enabled)
-    const epicsByProject = new Map<string, string>();  // projectId → epicKey
-
-    if (this.config.autoCreateEpics !== false) {
-      for (const project of this.config.projects) {
-        const epicResult = await this.createEpicForProject(parsedSpec, project);
-        epicsByProject.set(project, epicResult.issueKey);
-        results.push(epicResult);
-      }
-    }
-
-    // Step 2: Classify user stories by project
+    // Step 1: Classify user stories by project FIRST (before creating epics)
     const projectStories = new Map<string, Array<{ story: UserStory; confidence: number }>>();
 
     for (const userStory of parsedSpec.userStories) {
@@ -159,6 +149,17 @@ export class JiraMultiProjectSync {
           existing.push({ story: userStory, confidence: 0 });
           projectStories.set(fallback, existing);
         }
+      }
+    }
+
+    // Step 2: Create epics ONLY for projects that have classified stories
+    const epicsByProject = new Map<string, string>();  // projectId → epicKey
+
+    if (this.config.autoCreateEpics !== false) {
+      for (const projectId of projectStories.keys()) {
+        const epicResult = await this.createEpicForProject(parsedSpec, projectId);
+        epicsByProject.set(projectId, epicResult.issueKey);
+        results.push(epicResult);
       }
     }
 
@@ -255,9 +256,19 @@ ${confidence !== undefined ? `\n_Classification confidence: ${(confidence * 100)
       issuetype: { name: this.getIssueTypeName(itemType) }
     };
 
-    // Link to epic if provided
+    // Link to epic using dynamic field discovery
     if (epicKey) {
-      issueData.parent = { key: epicKey };
+      const { field: epicField, style } = await getEpicLinkFieldForProject(
+        this.config.domain,
+        projectId,
+        { email: this.config.email, apiToken: this.config.apiToken }
+      );
+
+      if (style === 'next-gen') {
+        issueData.parent = { key: epicKey };
+      } else {
+        issueData[epicField] = epicKey;
+      }
     }
 
     const issue = await this.client.createIssue(issueData);

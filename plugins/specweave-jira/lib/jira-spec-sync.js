@@ -1,12 +1,18 @@
 import { SpecMetadataManager } from "../../../src/core/specs/spec-metadata-manager.js";
 import { SpecParser } from "../../../src/core/specs/spec-parser.js";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { detectDeploymentType, getApiBaseUrl } from "./jira-deployment-detector.js";
+import { toDescription } from "./content-format-adapter.js";
+import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
+import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
 class JiraSpecSync {
   constructor(config, projectRoot = process.cwd()) {
     this.specManager = new SpecMetadataManager(projectRoot);
     this.config = config;
     this.client = axios.create({
-      baseURL: `https://${config.domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(config.domain),
       auth: {
         username: config.email,
         password: config.apiToken
@@ -16,6 +22,16 @@ class JiraSpecSync {
         "Content-Type": "application/json"
       }
     });
+  }
+  /**
+   * Initialize: detect deployment type and update client baseURL
+   */
+  async init() {
+    const deployment = await detectDeploymentType(this.config.domain, {
+      email: this.config.email,
+      apiToken: this.config.apiToken
+    });
+    this.client.defaults.baseURL = deployment.baseUrl;
   }
   /**
    * Sync spec to Jira Epic (CREATE or UPDATE)
@@ -106,6 +122,7 @@ class JiraSpecSync {
         };
       }
       console.log(`\u26A0\uFE0F  Detected ${conflicts.length} conflict(s)`);
+      await this.writeConflictReport(specId, conflicts);
       await this.resolveConflicts(spec, conflicts);
       console.log("\u2705 Sync FROM Jira complete!");
       return {
@@ -131,7 +148,7 @@ class JiraSpecSync {
    */
   async createJiraEpic(spec) {
     const epicSummary = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
-    const epicDescription = this.generateEpicDescription(spec);
+    const epicDescription = toDescription(this.generateEpicDescription(spec), this.config.domain);
     const issueType = this.mapTypeToJira(spec.metadata.type, "Epic");
     const payload = {
       fields: {
@@ -169,7 +186,7 @@ class JiraSpecSync {
    */
   async updateJiraEpic(epicKey, spec) {
     const epicSummary = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
-    const epicDescription = this.generateEpicDescription(spec);
+    const epicDescription = toDescription(this.generateEpicDescription(spec), this.config.domain);
     const payload = {
       fields: {
         summary: epicSummary,
@@ -295,18 +312,70 @@ ${acList}
     return conflicts;
   }
   /**
-   * Resolve conflicts
+   * Resolve conflicts based on configurable strategy.
+   *
+   * Strategies:
+   * - 'manual' (default): Halt sync, report conflicts to user, no auto-resolve
+   * - 'remote-wins': Auto-resolve in favor of JIRA (remote)
+   * - 'local-wins': Auto-resolve in favor of spec (local)
+   * - 'report-only': Log conflicts, continue without resolving
    */
-  async resolveConflicts(spec, conflicts) {
+  async resolveConflicts(spec, conflicts, strategy = "manual") {
+    if (strategy === "manual") {
+      console.log(`   \u26A0\uFE0F  ${conflicts.length} conflict(s) require manual resolution.`);
+      for (const conflict of conflicts) {
+        console.log(`   - ${conflict.field}: local="${conflict.localValue}" vs remote="${conflict.remoteValue}"`);
+      }
+      console.log(`   Sync halted. Review conflicts and resolve manually.`);
+      return;
+    }
+    if (strategy === "report-only") {
+      console.log(`   \u2139\uFE0F  ${conflicts.length} conflict(s) detected (report-only mode):`);
+      for (const conflict of conflicts) {
+        console.log(`   - ${conflict.field}: local="${conflict.localValue}" vs remote="${conflict.remoteValue}"`);
+      }
+      return;
+    }
     for (const conflict of conflicts) {
-      if (conflict.resolution === "remote-wins") {
+      if (strategy === "remote-wins") {
         console.log(`   \u{1F504} Resolving: ${conflict.description} (Jira wins)`);
         if (conflict.field === "title") {
           await this.specManager.saveMetadata(spec.metadata.id, {
             title: conflict.remoteValue
           });
         }
+      } else if (strategy === "local-wins") {
+        console.log(`   \u{1F504} Resolving: ${conflict.description} (local wins \u2014 no remote update)`);
       }
+    }
+  }
+  /**
+   * Write conflict report JSON file for detected conflicts.
+   */
+  async writeConflictReport(specId, conflicts) {
+    try {
+      const report = {
+        specId,
+        provider: "jira",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        conflicts: conflicts.map((c) => ({
+          field: c.field,
+          localValue: c.localValue,
+          remoteValue: c.remoteValue,
+          description: c.description
+        }))
+      };
+      const reportsDir = path.join(
+        this.specManager.projectRoot || process.cwd(),
+        ".specweave",
+        "reports"
+      );
+      await fs.mkdir(reportsDir, { recursive: true });
+      const reportPath = path.join(reportsDir, "conflict-report.json");
+      await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
+      console.log(`   \u{1F4C4} Conflict report written to ${reportPath}`);
+    } catch (err) {
+      console.warn("   \u26A0\uFE0F  Failed to write conflict report:", err.message);
     }
   }
   /**
@@ -329,14 +398,11 @@ ${acList}
    */
   async findStoryByTitle(usId) {
     const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype = Story`;
-    const response = await this.client.get("/search", {
-      params: {
-        jql,
-        maxResults: 1,
-        fields: "summary,description,status,labels"
-      }
+    const issues = await searchAllIssues(this.client, {
+      jql,
+      fields: "summary,description,status,labels",
+      maxResults: 1
     });
-    const issues = response.data.issues;
     return issues.length > 0 ? {
       id: issues[0].id,
       key: issues[0].key,
@@ -351,26 +417,31 @@ ${acList}
    */
   async createStory(story) {
     const issueType = this.mapTypeToJira(story.type, "Story");
-    const payload = {
-      fields: {
-        project: {
-          key: this.config.projectKey
-        },
-        summary: story.summary,
-        description: story.description,
-        issuetype: {
-          name: issueType
-        },
-        labels: story.labels,
-        // Link to epic (field name may vary by Jira configuration)
-        customfield_10014: story.epicLink,
-        // Epic Link field (adjust if needed)
-        // Set native JIRA priority field
-        priority: {
-          name: this.mapPriorityToJira(story.priority)
-        }
+    const { field: epicField, style } = await getEpicLinkFieldForProject(
+      this.config.domain,
+      this.config.projectKey,
+      { email: this.config.email, apiToken: this.config.apiToken }
+    );
+    const fields = {
+      project: {
+        key: this.config.projectKey
+      },
+      summary: story.summary,
+      description: story.description,
+      issuetype: {
+        name: issueType
+      },
+      labels: story.labels,
+      priority: {
+        name: this.mapPriorityToJira(story.priority)
       }
     };
+    if (style === "next-gen") {
+      fields.parent = { key: story.epicLink };
+    } else {
+      fields[epicField] = story.epicLink;
+    }
+    const payload = { fields };
     const response = await this.client.post("/issue", payload);
     const storyData = response.data;
     return {
