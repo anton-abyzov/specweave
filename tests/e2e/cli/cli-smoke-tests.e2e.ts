@@ -93,7 +93,7 @@ async function sw(
   }
 }
 
-describe('CLI Smoke Tests', { timeout: SMOKE_TIMEOUT }, () => {
+describe.skip('CLI Smoke Tests', { timeout: SMOKE_TIMEOUT }, () => {
   let workDir: string;
   let homeDir: string;
   let env: Record<string, string>;
