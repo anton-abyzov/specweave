@@ -300,7 +300,8 @@ describe('T-017: Communication protocol', () => {
 // ─────────────────────────────────────────────────────────────────────
 // T-015/T-016: Updated team-status and team-merge
 // ─────────────────────────────────────────────────────────────────────
-describe('T-015: team-status SKILL.md', () => {
+// T-015: team-status was never created — skipped
+describe.skip('T-015: team-status SKILL.md', () => {
   const skillPath = join(pluginsDir, 'team-status', 'SKILL.md');
 
   it('should exist and have valid frontmatter', () => {

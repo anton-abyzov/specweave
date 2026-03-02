@@ -24,8 +24,8 @@ export const PRICING = {
     output: 0.000005,  // $5 per 1M output tokens
   },
   opus: {
-    input: 0.000005,   // $5 per 1M input tokens
-    output: 0.000025,  // $25 per 1M output tokens
+    input: 0.000015,   // $15 per 1M input tokens
+    output: 0.000075,  // $75 per 1M output tokens
   },
 } as const;
 
