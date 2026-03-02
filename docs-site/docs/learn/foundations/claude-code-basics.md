@@ -223,6 +223,53 @@ Only runs when user types /deploy explicitly.
 
 ---
 
+## Built-in Claude Code Commands
+
+Beyond skills and plugins, Claude Code ships with powerful built-in commands (v2.1.63+) that require no installation.
+
+### /simplify
+
+Automated code quality review using three parallel agents:
+
+| Agent | Focus |
+|-------|-------|
+| **Dedup** | Duplicated logic, redundant patterns |
+| **Readability** | Structure, naming, conventions |
+| **Performance** | Inefficiencies, unnecessary allocations |
+
+```bash
+/simplify                              # Review recent changes
+/simplify focus on memory efficiency   # Targeted review
+```
+
+**When to use**: After implementing features, before committing. Applies fixes directly to your working copy (reviewable via `git diff`).
+
+**Recommended workflow**: Implement feature → run tests → `/simplify` → commit.
+
+**Cross-tool equivalent**: For non-Claude tools (Cursor, Copilot, etc.), run your linter and manually review for duplication, readability, and performance issues before committing.
+
+### /batch
+
+Orchestrates large-scale, parallelizable changes across entire codebases:
+
+1. **Research & Plan** — Explores codebase, decomposes into 5-30 independent units
+2. **Execute** — Spawns one agent per unit in isolated git worktrees
+3. **Track** — Shows progress table, collects PRs from each unit
+
+```bash
+/batch migrate from Solid to React
+/batch replace all uses of lodash with native equivalents
+/batch add type annotations to all untyped function parameters
+```
+
+**When to use**: Codebase-wide migrations, API pattern changes, bulk refactors. Each unit gets its own PR with `/simplify` applied automatically.
+
+**Requires**: Git repository (uses worktree isolation). Includes an approval step before execution begins.
+
+**Cross-tool equivalent**: For non-Claude tools, break migrations into isolated branches (one per unit of work), implement each independently, then review and merge separately.
+
+---
+
 ## Summary
 
 1. **Skills = Commands** (since 2.1.3) - same system, different activation
@@ -230,3 +277,4 @@ Only runs when user types /deploy explicitly.
 3. **Agents** are isolated subagents with own context
 4. **`context: fork`** makes a skill run as a subagent
 5. Use frontmatter to control who can invoke (`disable-model-invocation`, `user-invocable`)
+6. **`/simplify`** reviews code quality before commits; **`/batch`** handles codebase-wide migrations

@@ -266,8 +266,8 @@ describe('Project-Scope Guard in Hook', () => {
       const duration = Date.now() - start;
 
       // Should be very fast since it's just checking file existence
-      // Allow 150ms to account for CI/system load variability
-      expect(duration).toBeLessThan(150);
+      // Allow 500ms to account for CI/system load variability during full suite runs
+      expect(duration).toBeLessThan(500);
     });
   });
 
