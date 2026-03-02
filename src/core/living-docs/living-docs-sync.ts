@@ -327,9 +327,16 @@ export class LivingDocsSync {
                 const oldPath = path.join(crossProjectPath, existingFile);
                 const newPath = path.join(crossProjectPath, expectedFilename);
                 try {
-                  await fs.rename(oldPath, newPath);
-                  this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
-                  storyFile = newPath;
+                  // Guard: don't overwrite an existing file belonging to a different story
+                  const destExists = await fs.stat(newPath).then(() => true, () => false);
+                  if (destExists) {
+                    this.logger.log(`   ⚠️  Skipped rename: ${expectedFilename} already exists`);
+                    storyFile = path.join(crossProjectPath, existingFile);
+                  } else {
+                    await fs.rename(oldPath, newPath);
+                    this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
+                    storyFile = newPath;
+                  }
                 } catch {
                   // Old file may not exist (fresh directory); use expected filename
                   storyFile = path.join(crossProjectPath, expectedFilename);
@@ -470,14 +477,24 @@ export class LivingDocsSync {
             const newPath = path.join(projectPath, expectedFilename);
             if (!options.dryRun) {
               try {
-                await fs.rename(oldPath, newPath);
-                this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
+                // Guard: don't overwrite an existing file belonging to a different story
+                const destExists = await fs.stat(newPath).then(() => true, () => false);
+                if (destExists) {
+                  this.logger.log(`   ⚠️  Skipped rename: ${expectedFilename} already exists`);
+                  storyFile = path.join(projectPath, existingFile);
+                } else {
+                  await fs.rename(oldPath, newPath);
+                  this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
+                  storyFile = newPath;
+                }
               } catch {
                 // Old file may not exist; use expected filename
                 this.logger.log(`   ⚠️  Could not rename ${existingFile}, using ${expectedFilename}`);
+                storyFile = path.join(projectPath, expectedFilename);
               }
+            } else {
+              storyFile = newPath;
             }
-            storyFile = newPath;
           } else {
             storyFile = path.join(projectPath, existingFile);
             this.logger.log(`   ♻️  Reusing existing file: ${existingFile}`);

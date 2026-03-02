@@ -110,7 +110,7 @@ export function generateFeatureFile(
 
   lines.push('---');
   lines.push('id: ' + featureId);
-  lines.push('title: "' + parsed.title + '"');
+  lines.push('title: "' + parsed.title.replace(/"/g, "'") + '"');
   lines.push('type: feature');
   lines.push('status: ' + parsed.status);
   lines.push('priority: ' + parsed.priority);
@@ -198,7 +198,7 @@ export function generateReadmeFile(
 
   lines.push('---');
   lines.push('id: ' + featureId + projectSuffix);
-  lines.push('title: "' + parsed.title + ' - ' + projectDisplay + ' Implementation"');
+  lines.push('title: "' + parsed.title.replace(/"/g, "'") + ' - ' + projectDisplay + ' Implementation"');
   lines.push('feature: ' + featureId);
   lines.push('project: ' + ctx.projectId);
   lines.push('type: feature-context');
@@ -258,7 +258,7 @@ export function generateUserStoryFile(
   lines.push('---');
   lines.push('id: ' + story.id);
   lines.push('feature: ' + featureId);
-  lines.push('title: "' + story.title + '"');
+  lines.push('title: "' + story.title.replace(/"/g, "'") + '"');
   lines.push('status: ' + (story.status || parsed.status));
   lines.push('priority: ' + parsed.priority);
   lines.push('created: ' + parsed.created);
@@ -293,7 +293,7 @@ export function generateUserStoryFile(
     lines.push('format_preservation: ' + story.format_preservation);
   }
   if (story.external_title) {
-    lines.push('external_title: "' + story.external_title + '"');
+    lines.push('external_title: "' + story.external_title.replace(/"/g, "'") + '"');
   }
   if (story.external_source) {
     lines.push('external_source: ' + story.external_source);
