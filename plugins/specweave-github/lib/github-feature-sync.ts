@@ -1296,7 +1296,7 @@ export class GitHubFeatureSync {
       frontmatter.external.github = {};
     }
     frontmatter.external.github.issue = issueNumber;
-    frontmatter.external.github.url = `https://github.com/anton-abyzov/specweave/issues/${issueNumber}`;
+    frontmatter.external.github.url = `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`;
 
     // Rebuild content
     const newFrontmatter = yaml.stringify(frontmatter);

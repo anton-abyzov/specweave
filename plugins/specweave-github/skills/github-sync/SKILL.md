@@ -197,19 +197,29 @@ Configure GitHub sync in `.specweave/config.json`:
 
 ```json
 {
-  "plugins": {
-    "enabled": ["specweave-github"],
-    "settings": {
-      "specweave-github": {
-        "repo": "owner/repo",
-        "autoSyncSpecs": true,
-        "syncDirection": "two-way",
-        "defaultLabels": ["specweave", "spec"],
-        "syncFrequency": "on-change"
+  "sync": {
+    "enabled": true,
+    "preset": "bidirectional",
+    "activeProfile": "default",
+    "profiles": {
+      "default": {
+        "provider": "github",
+        "config": {
+          "owner": "myorg",
+          "repo": "myrepo",
+          "autoSyncSpecs": true,
+          "defaultLabels": ["specweave", "spec"]
+        }
       }
     }
   }
 }
+```
+
+**Credentials** (in `.env`, gitignored):
+```bash
+GITHUB_TOKEN=ghp_xxxxx
+# Or just run: gh auth login (auto-detected)
 ```
 
 ---
@@ -418,13 +428,18 @@ Sync only specific specs:
 
 ```json
 {
-  "plugins": {
-    "settings": {
-      "specweave-github": {
-        "syncSpecs": [
-          "spec-001-core-framework",
-          "spec-005-user-authentication"
-        ]
+  "sync": {
+    "profiles": {
+      "default": {
+        "provider": "github",
+        "config": {
+          "owner": "myorg",
+          "repo": "myrepo",
+          "syncSpecs": [
+            "spec-001-core-framework",
+            "spec-005-user-authentication"
+          ]
+        }
       }
     }
   }
@@ -433,22 +448,26 @@ Sync only specific specs:
 
 ### Multi-Repo Sync
 
-For monorepos with multiple GitHub repositories:
+For monorepos with multiple GitHub repositories, use multiple profiles:
 
 ```json
 {
-  "plugins": {
-    "settings": {
-      "specweave-github": {
-        "repos": {
-          "frontend": {
-            "repo": "myorg/frontend",
-            "specs": ["spec-001-*", "spec-002-*"]
-          },
-          "backend": {
-            "repo": "myorg/backend",
-            "specs": ["spec-003-*", "spec-004-*"]
-          }
+  "sync": {
+    "profiles": {
+      "frontend": {
+        "provider": "github",
+        "config": {
+          "owner": "myorg",
+          "repo": "frontend",
+          "syncSpecs": ["spec-001-*", "spec-002-*"]
+        }
+      },
+      "backend": {
+        "provider": "github",
+        "config": {
+          "owner": "myorg",
+          "repo": "backend",
+          "syncSpecs": ["spec-003-*", "spec-004-*"]
         }
       }
     }
