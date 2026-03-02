@@ -35,6 +35,8 @@ import {
   findSourceDir,
   findPackageRoot,
   detectNestedSpecweave,
+  detectUmbrellaParent,
+  detectSuspiciousPath,
   detectGitHubRemote,
   promptSmartReinit,
   installAllPlugins,
@@ -452,6 +454,35 @@ export async function initCommand(
       } else {
         fs.mkdirSync(targetDir, { recursive: true });
       }
+    }
+  }
+
+  // Guard: Prevent init inside umbrella sub-repos
+  const umbrellaResult = detectUmbrellaParent(targetDir);
+  if (umbrellaResult) {
+    if (options.force) {
+      console.log(chalk.yellow(`\n⚠️  Warning: This directory is inside an umbrella project at ${umbrellaResult.umbrellaRoot}`));
+      console.log(chalk.yellow('   Proceeding because --force was specified.\n'));
+    } else {
+      console.log(chalk.red.bold('\n❌ Cannot initialize here: this directory is inside an umbrella project.\n'));
+      console.log(chalk.yellow(`   Umbrella root: ${umbrellaResult.umbrellaRoot}`));
+      console.log(chalk.yellow(`   Detected via: ${umbrellaResult.reason === 'config-umbrella-repo' ? 'config.json umbrellaRepo flag' : 'repositories/ directory'}`));
+      console.log(chalk.cyan('\n💡 Run specweave init in the umbrella root instead, or use --force to override.\n'));
+      process.exit(1);
+    }
+  }
+
+  // Guard: Prevent init in suspicious paths (node_modules, dist, .git, etc.)
+  const suspiciousResult = detectSuspiciousPath(targetDir);
+  if (suspiciousResult) {
+    if (options.force) {
+      console.log(chalk.yellow(`\n⚠️  Warning: Path contains suspicious segment "${suspiciousResult.segment}"`));
+      console.log(chalk.yellow('   Proceeding because --force was specified.\n'));
+    } else {
+      console.log(chalk.red.bold(`\n❌ Cannot initialize here: path contains "${suspiciousResult.segment}" which is not a project root.\n`));
+      console.log(chalk.yellow(`   Suggested project root: ${suspiciousResult.suggestedRoot}`));
+      console.log(chalk.cyan('\n💡 Run specweave init in your project root instead, or use --force to override.\n'));
+      process.exit(1);
     }
   }
 

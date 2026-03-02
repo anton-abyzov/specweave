@@ -48,6 +48,62 @@ When a service exposes 50+ API endpoints to AI agents, avoid exposing each as a 
 
 **Reference**: ADR-0140 (Code Execution Over Direct MCP Tool Calls) in `.specweave/docs/internal/architecture/adr/`
 
+## Markdown Preview Guidelines
+
+When presenting **2+ architectural approaches** for the user to choose between, use `AskUserQuestion` with the `markdown` preview field to show ASCII diagrams. This lets the user visually compare structural trade-offs in a side-by-side panel.
+
+**When to use**: Any decision point with 2+ options that have structural differences (service layout, schema design, component boundaries, data flow).
+
+**When NOT to use**: Simple yes/no questions, single-option confirmations, or text-only trade-offs without structural implications.
+
+### Example 1: Service Architecture Decision (Box Diagrams)
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which service architecture should we use for the payment system?",
+    header: "Architecture",
+    multiSelect: false,
+    options: [
+      {
+        label: "Gateway Pattern (Recommended)",
+        description: "Single API gateway routes to microservices. Centralized auth, rate limiting.",
+        markdown: "┌─────────────┐     ┌─────────────┐\n│  Frontend   │────►│ API Gateway │\n│  (Next.js)  │     │  (Workers)  │\n└─────────────┘     └──────┬──────┘\n                      ┌────┴────┐\n                ┌─────▼───┐ ┌───▼───────┐\n                │ Payment │ │  Billing  │\n                │ Service │ │  Service  │\n                └─────────┘ └───────────┘"
+      },
+      {
+        label: "Direct Service Mesh",
+        description: "Services communicate directly via mesh. More resilient but complex.",
+        markdown: "┌─────────────┐     ┌───────────┐\n│  Frontend   │────►│  Payment  │\n│  (Next.js)  │  ┌─►│  Service  │\n└──────┬──────┘  │  └─────┬─────┘\n       │         │        │\n       │    ┌────┴────┐   │\n       └───►│ Billing │◄──┘\n            │ Service │\n            └─────────┘"
+      }
+    ]
+  }]
+})
+```
+
+### Example 2: Database Schema Decision (ASCII Tables)
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which schema design should we use for user sessions?",
+    header: "Schema",
+    multiSelect: false,
+    options: [
+      {
+        label: "Normalized (Recommended)",
+        description: "Separate tables with foreign keys. Strict integrity, standard JOINs.",
+        markdown: "users                sessions\n────────────────     ────────────────────\nid     UUID PK       id       UUID PK\nemail  TEXT UNIQUE    user_id  UUID FK ──► users.id\nname   TEXT           token    TEXT UNIQUE\n                     expires  TIMESTAMP\n\nIndexes: users(email), sessions(token, user_id)"
+      },
+      {
+        label: "Denormalized",
+        description: "Single table with embedded session data. Faster reads, no JOINs.",
+        markdown: "user_sessions\n──────────────────────────────\nid            UUID PK\nemail         TEXT UNIQUE\nname          TEXT\nsession_token TEXT UNIQUE\nsession_exp   TIMESTAMP\nmetadata      JSONB\n\nIndexes: user_sessions(email, session_token)"
+      }
+    ]
+  }]
+})
+```
+
 ## Delegation
 
 After architecture is ready, delegate to domain skills:

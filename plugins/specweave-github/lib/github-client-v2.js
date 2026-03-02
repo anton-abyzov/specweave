@@ -336,6 +336,9 @@ ${body}`;
     const issue = JSON.parse(result.stdout);
     return {
       ...issue,
+      // gh CLI returns state as UPPERCASE ("OPEN"/"CLOSED"), normalize to lowercase
+      // for consistency with GitHub REST API which uses lowercase
+      state: issue.state?.toLowerCase() ?? issue.state,
       html_url: issue.url,
       labels: issue.labels?.map((l) => l.name) || []
     };
