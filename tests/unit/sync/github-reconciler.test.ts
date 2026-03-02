@@ -557,9 +557,10 @@ describe('GitHubReconciler', () => {
   // =========================================================================
 
   describe('scanIncrements', () => {
-    it('should skip _archive directory', async () => {
+    it('should skip _archive and dot entries in main dir listing', async () => {
       mockReadFile.mockResolvedValueOnce(enabledConfig());
 
+      // Main dir only has _archive and .hidden — no active increments
       mockReaddir.mockResolvedValue([
         dirent('_archive', true),
         dirent('.hidden', true),
@@ -572,6 +573,88 @@ describe('GitHubReconciler', () => {
 
       const result = await reconciler.reconcile();
 
+      expect(result.scanned).toBe(0);
+    });
+
+    it('should scan _archive directory for completed increments', async () => {
+      const archivedMetadata = {
+        status: 'completed',
+        feature_id: 'FS-050',
+        externalLinks: {
+          github: {
+            issues: {
+              'US-001': { issueNumber: 700 },
+            },
+          },
+        },
+      };
+
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p !== 'string') return false;
+        if (p.endsWith('config.json')) return true;
+        if (p.endsWith('metadata.json')) return true;
+        if (p.endsWith('/increments') || p.endsWith('/increments/')) return true;
+        if (p.endsWith('/_archive')) return true;
+        return false;
+      });
+
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify(archivedMetadata));
+
+      // Main dir has no active increments; archive has one
+      mockReaddir
+        .mockResolvedValueOnce([dirent('_archive', true)])
+        .mockResolvedValueOnce([dirent('0050-archived-feature', true)]);
+
+      mockGetIssue.mockResolvedValue({ state: 'open' });
+      mockCloseIssue.mockResolvedValue(undefined);
+
+      const reconciler = new GitHubReconciler({
+        projectRoot: PROJECT_ROOT,
+        logger,
+      });
+
+      const result = await reconciler.reconcile();
+
+      expect(result.scanned).toBe(1);
+      expect(result.closed).toBe(1);
+      expect(mockCloseIssue).toHaveBeenCalledWith(700, expect.any(String));
+    });
+
+    it('should NOT do GitHub API search fallback for archived increments', async () => {
+      const archivedMetadata = {
+        status: 'completed',
+        feature_id: 'FS-060',
+        // No github issue references — would trigger search for active increments
+      };
+
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p !== 'string') return false;
+        if (p.endsWith('config.json')) return true;
+        if (p.endsWith('metadata.json')) return true;
+        if (p.endsWith('/increments') || p.endsWith('/increments/')) return true;
+        if (p.endsWith('/_archive')) return true;
+        return false;
+      });
+
+      mockReadFile
+        .mockResolvedValueOnce(enabledConfig())
+        .mockResolvedValueOnce(JSON.stringify(archivedMetadata));
+
+      mockReaddir
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([dirent('0060-no-links', true)]);
+
+      const reconciler = new GitHubReconciler({
+        projectRoot: PROJECT_ROOT,
+        logger,
+      });
+
+      const result = await reconciler.reconcile();
+
+      // Should NOT search GitHub for archived increments
+      expect(mockSearchIssuesByFeature).not.toHaveBeenCalled();
       expect(result.scanned).toBe(0);
     });
 

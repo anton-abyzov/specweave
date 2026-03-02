@@ -64,9 +64,20 @@ export declare class GitHubReconciler {
      */
     private reconcileIssue;
     /**
-     * Scan all non-archived increments and extract GitHub state
+     * Scan all increments (active + archived + abandoned) and extract GitHub state.
+     * Archived/abandoned increments are included so the reconciler can close their
+     * stale open issues.
      */
     private scanIncrements;
+    /**
+     * Extract GitHub state from increment metadata (both old and new formats)
+     */
+    private extractGitHubState;
+    /**
+     * Fallback: search GitHub API for issues when metadata has no references.
+     * Only used for active (non-archived) increments to avoid excessive API calls.
+     */
+    private searchGitHubForIssues;
     /**
      * Initialize GitHub client
      *

@@ -21,6 +21,9 @@ export {
   findSourceDir,
   detectNestedSpecweave,
   countFilesRecursive,
+  detectUmbrellaParent,
+  detectSuspiciousPath,
+  SUSPICIOUS_PATH_SEGMENTS,
 } from './path-utils.js';
 
 // Config detection
