@@ -26,11 +26,11 @@ describe('Skill memory loading architecture', () => {
   // Skills that should have DCI blocks (user-invocable or referenced by other skills)
   // Note: code-simplifier, security, security-patterns migrated to vskill repo
   // and no longer use the specweave DCI pattern
+  // Note: cancel-auto, docs, docs-updater, framework, lsp, progress, save
+  // were moved to other repos or renamed and no longer exist in this plugins dir.
   const DCI_SKILLS = [
-    'architect', 'auto', 'cancel-auto', 'do', 'docs',
-    'docs-updater', 'done', 'framework', 'grill', 'increment',
-    'lsp', 'pm', 'progress', 'save', 'tdd-cycle', 'tdd-green',
-    'tdd-red', 'validate',
+    'architect', 'auto', 'do', 'done', 'grill', 'increment',
+    'pm', 'tdd-cycle', 'tdd-green', 'tdd-red', 'validate',
   ].map(s => ({ skill: s, dir: pluginsDir }));
 
   // Get all SKILL.md files

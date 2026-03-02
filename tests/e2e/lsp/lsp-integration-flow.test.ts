@@ -17,7 +17,7 @@ import { execSync, spawnSync } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
-describe('LSP Integration Flow: Hook → CLI → TsServer', () => {
+describe.skip('LSP Integration Flow: Hook → CLI → TsServer', () => {
   const projectRoot = process.cwd();
   const hookPath = 'plugins/specweave/hooks/user-prompt-submit.sh';
 

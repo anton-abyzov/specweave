@@ -13,6 +13,7 @@ import { createIncrementTemplates, type ExternalSourceInfo } from '../core/incre
 import { IncrementExternalRefDetector, formatExternalRef } from './increment-external-ref-detector.js';
 import { SUFFIX_MAP, type Platform } from '../sync/types.js';
 import type { ExternalItem } from './external-importer.js';
+import { readConfig } from '../core/config/config-manager.js';
 
 /**
  * Result of a single increment import.
@@ -150,6 +151,17 @@ export class ImportToIncrementConverter {
     // Map external type to SpecWeave type
     const type = mapExternalType(item.type);
 
+    // Read testing config for testMode and coverageTarget
+    let testMode: string | undefined;
+    let coverageTarget: number | undefined;
+    try {
+      const config = await readConfig(this.projectRoot);
+      testMode = config?.testing?.defaultTestMode;
+      coverageTarget = config?.testing?.defaultCoverageTarget;
+    } catch {
+      // Fallback to template-creator defaults if config reading fails
+    }
+
     // Create increment via template creator
     const result = await createIncrementTemplates({
       incrementId,
@@ -158,6 +170,8 @@ export class ImportToIncrementConverter {
       projectId: this.projectId || 'default',
       type,
       priority,
+      testMode,
+      coverageTarget,
       projectRoot: this.projectRoot,
       externalSource,
     });

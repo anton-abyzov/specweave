@@ -35,17 +35,21 @@ vi.mock('../../../plugins/specweave-github/lib/github-client-v2.js', () => ({
 }));
 
 vi.mock('../../../src/integrations/jira/jira-client.js', () => ({
-  JiraClient: vi.fn().mockImplementation(() => ({
-    getIssue: vi.fn(),
-    updateIssue: vi.fn(),
-  }))
+  JiraClient: vi.fn().mockImplementation(function() {
+    return {
+      getIssue: vi.fn(),
+      updateIssue: vi.fn(),
+    };
+  })
 }));
 
 vi.mock('../../../src/integrations/ado/ado-client.js', () => ({
-  AdoClient: vi.fn().mockImplementation(() => ({
-    listWorkItems: vi.fn(),
-    updateWorkItem: vi.fn(),
-  }))
+  AdoClient: vi.fn().mockImplementation(function() {
+    return {
+      listWorkItems: vi.fn(),
+      updateWorkItem: vi.fn(),
+    };
+  })
 }));
 
 vi.mock('../../../src/integrations/ado/ado-pat-provider.js', () => ({
@@ -327,7 +331,7 @@ external_tools:
         updateIssue: vi.fn().mockResolvedValue(undefined),
       };
 
-      (JiraClient as unknown as Mock).mockImplementation(() => mockJiraClient);
+      (JiraClient as unknown as Mock).mockImplementation(function() { return mockJiraClient; });
 
       // Disable GitHub to test JIRA only
       const config = {
@@ -381,7 +385,7 @@ external_tools:
         updateIssue: vi.fn(),
       };
 
-      (JiraClient as unknown as Mock).mockImplementation(() => mockJiraClient);
+      (JiraClient as unknown as Mock).mockImplementation(function() { return mockJiraClient; });
 
       const coordinator = new SyncCoordinator({
         projectRoot,
@@ -433,7 +437,7 @@ external_tools:
         updateWorkItem: vi.fn().mockResolvedValue(undefined),
       };
 
-      (AdoClient as unknown as Mock).mockImplementation(() => mockAdoClient);
+      (AdoClient as unknown as Mock).mockImplementation(function() { return mockAdoClient; });
 
       // Disable GitHub/JIRA to test ADO only
       const config = {
@@ -486,7 +490,7 @@ external_tools:
         updateWorkItem: vi.fn(),
       };
 
-      (AdoClient as unknown as Mock).mockImplementation(() => mockAdoClient);
+      (AdoClient as unknown as Mock).mockImplementation(function() { return mockAdoClient; });
 
       const coordinator = new SyncCoordinator({
         projectRoot,
@@ -521,7 +525,7 @@ external_tools:
         updateWorkItem: vi.fn(),
       };
 
-      (AdoClient as unknown as Mock).mockImplementation(() => mockAdoClient);
+      (AdoClient as unknown as Mock).mockImplementation(function() { return mockAdoClient; });
 
       const coordinator = new SyncCoordinator({
         projectRoot,

@@ -147,32 +147,19 @@ describe('Marketplace Protection - Source Code Verification', () => {
   });
 
   describe('Developer Script Safety', () => {
-    const scriptPath = path.join(process.cwd(), 'scripts/refresh-marketplace.sh');
+    // scripts/refresh-marketplace.sh was removed; plugin refresh is now handled
+    // by `specweave refresh-plugins` CLI (see CLAUDE.md rule #6)
 
-    it('should have prominent warning banner', async () => {
-      const content = await fs.readFile(scriptPath, 'utf-8');
-
-      // Must have ASCII art warning box
-      expect(content).toContain('╔═');
-      expect(content).toContain('WARNING');
-      expect(content).toContain('DEVELOPER-ONLY');
+    it.skip('should have prominent warning banner', async () => {
+      // Script removed - skipped
     });
 
-    it('should list destructive operations', async () => {
-      const content = await fs.readFile(scriptPath, 'utf-8');
-
-      expect(content).toContain('REMOVES');
-      expect(content).toContain('plugins');
-      expect(content).toContain('marketplace');
-      expect(content).toContain('DESTRUCTIVE');
+    it.skip('should list destructive operations', async () => {
+      // Script removed - skipped
     });
 
-    it('should provide safe alternatives for users', async () => {
-      const content = await fs.readFile(scriptPath, 'utf-8');
-
-      expect(content).toContain('/plugin install specweave');
-      expect(content).toContain('specweave init .');
-      expect(content).toContain('non-destructive');
+    it.skip('should provide safe alternatives for users', async () => {
+      // Script removed - skipped
     });
   });
 });
