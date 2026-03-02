@@ -78,6 +78,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ### 3. Verification Before Done
 - Never mark a task complete without proving it works
 - Run tests after every task: `npx vitest run` + `npx playwright test`
+- Run `/simplify` before committing — catches duplication, readability issues, and inefficiencies via 3 parallel review agents
 - `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Ask yourself: **"Would a staff engineer approve this?"**
@@ -124,6 +125,8 @@ Good: npm run build → node script.js → Success
 | `/sw-github:push` | Push progress to GitHub |
 
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
+
+**Large-scale changes**: For codebase-wide migrations or bulk refactors, use `/batch` — decomposes work into parallel agents with worktree isolation, each producing its own PR. Example: `/batch migrate from Solid to React`
 <!-- /SECTION -->
 
 <!-- SECTION:save-nested-repos required -->
