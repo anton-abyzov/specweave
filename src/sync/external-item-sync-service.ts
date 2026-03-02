@@ -305,6 +305,8 @@ export class ExternalItemSyncService {
     }
 
     // Post comment via external tool API
+    let syncError: string | undefined;
+
     if (options.externalTool === 'github') {
       try {
         const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
@@ -325,6 +327,7 @@ export class ExternalItemSyncService {
           }
         }
       } catch (error: any) {
+        syncError = error.message;
         this.logger.error(`   ⚠️ Failed to post comment to GitHub: ${error.message}`);
       }
     } else if (options.externalTool === 'jira') {
@@ -340,6 +343,7 @@ export class ExternalItemSyncService {
           this.logger.log(`   ⚠️ No JIRA issue linked to ${completionData.usId} — comment logged only`);
         }
       } catch (error: any) {
+        syncError = error.message;
         this.logger.error(`   ⚠️ Failed to post comment to JIRA: ${error.message}`);
       }
     } else if (options.externalTool === 'ado') {
@@ -364,10 +368,21 @@ export class ExternalItemSyncService {
           this.logger.log(`   ⚠️ No ADO work item linked to ${completionData.usId} — comment logged only`);
         }
       } catch (error: any) {
+        syncError = error.message;
         this.logger.error(`   ⚠️ Failed to post comment to ADO: ${error.message}`);
       }
     } else {
       this.logger.log(`   💬 Comment to post (no external tool configured):\n${comment}`);
+    }
+
+    if (syncError) {
+      return {
+        success: false,
+        mode: 'comment-only',
+        reason: 'Format preservation enabled (external item)',
+        error: syncError,
+        comment
+      };
     }
 
     return {
@@ -429,17 +444,106 @@ export class ExternalItemSyncService {
       };
     }
 
-    // TODO: Implement full sync logic
-    // - Update external item title
-    // - Update external item description
-    // - Update acceptance criteria checkboxes
-    this.logger.log(`   📝 Full sync for ${completionData.usId} (not yet implemented)`);
+    // Build field updates based on allowed fields
+    const allowed = new Set(validation.allowedFields || ['title', 'description', 'acceptance_criteria']);
+    const title = allowed.has('title') ? `${completionData.usId}: ${completionData.taskTitle}` : undefined;
+    const acList = completionData.satisfiesACs.length > 0
+      ? completionData.satisfiesACs.map(ac => `- [${completionData.status === 'completed' ? 'x' : ' '}] ${ac}`).join('\n')
+      : undefined;
+    const description = allowed.has('description') || allowed.has('acceptance_criteria')
+      ? `Progress: ${completionData.completedTasks}/${completionData.totalTasks} (${completionData.percentage}%)\n\n${acList || ''}`
+      : undefined;
+
+    let syncError: string | undefined;
+
+    if (options.externalTool === 'github') {
+      try {
+        const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
+        const configPath = path.join(options.projectRoot, '.specweave/config.json');
+        const configContent = await fs.readFile(configPath, 'utf-8');
+        const config = JSON.parse(configContent);
+        const owner = config.sync?.github?.owner ?? config.sync?.profiles?.default?.config?.owner;
+        const repo = config.sync?.github?.repo ?? config.sync?.profiles?.default?.config?.repo;
+        if (owner && repo) {
+          const client = GitHubClientV2.fromRepo(owner, repo);
+          const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+          const issueNumber = usFile?.external?.github?.issue;
+          if (issueNumber) {
+            if (description) {
+              await client.updateIssueBody(issueNumber, description);
+            }
+            this.logger.log(`   ✅ Full sync to GitHub issue #${issueNumber} (fields: ${[...allowed].join(', ')})`);
+            updatedFields.push(...allowed);
+          }
+        }
+      } catch (error: any) {
+        syncError = error.message;
+        this.logger.error(`   ⚠️ Failed full sync to GitHub: ${error.message}`);
+      }
+    } else if (options.externalTool === 'jira') {
+      try {
+        const { JiraClient } = await import('../integrations/jira/jira-client.js');
+        const jiraClient = new JiraClient();
+        const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+        const jiraKey = usFile?.external?.jira?.issueKey;
+        if (jiraKey) {
+          const update: { key: string; summary?: string; description?: string } = { key: jiraKey };
+          if (title && allowed.has('title')) update.summary = title;
+          if (description) update.description = description;
+          await jiraClient.updateIssue(update);
+          this.logger.log(`   ✅ Full sync to JIRA issue ${jiraKey} (fields: ${[...allowed].join(', ')})`);
+          updatedFields.push(...allowed);
+        }
+      } catch (error: any) {
+        syncError = error.message;
+        this.logger.error(`   ⚠️ Failed full sync to JIRA: ${error.message}`);
+      }
+    } else if (options.externalTool === 'ado') {
+      try {
+        const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+        const workItemId = usFile?.external?.ado?.workItemId;
+        if (workItemId) {
+          const { AdoClient } = await import('../integrations/ado/ado-client.js');
+          const { getAdoPat } = await import('../integrations/ado/ado-pat-provider.js');
+          const configPath = path.join(options.projectRoot, '.specweave/config.json');
+          const configContent = await fs.readFile(configPath, 'utf-8');
+          const config = JSON.parse(configContent);
+          const org = config.sync?.ado?.organization ?? config.sync?.profiles?.default?.config?.organization;
+          const project = config.sync?.ado?.project ?? config.sync?.profiles?.default?.config?.project;
+          if (org && project) {
+            const pat = getAdoPat(org);
+            const adoClient = new AdoClient({ pat, organization: org, project });
+            const update: { id: number; title?: string; description?: string } = { id: workItemId };
+            if (title && allowed.has('title')) update.title = title;
+            if (description) update.description = description;
+            await adoClient.updateWorkItem(update);
+            this.logger.log(`   ✅ Full sync to ADO work item #${workItemId} (fields: ${[...allowed].join(', ')})`);
+            updatedFields.push(...allowed);
+          }
+        }
+      } catch (error: any) {
+        syncError = error.message;
+        this.logger.error(`   ⚠️ Failed full sync to ADO: ${error.message}`);
+      }
+    } else {
+      this.logger.log(`   📝 Full sync for ${completionData.usId} (no external tool configured)`);
+    }
+
+    if (syncError) {
+      return {
+        success: false,
+        mode: 'full-sync',
+        reason: 'Format preservation disabled (internal item)',
+        error: syncError,
+        updatedFields
+      };
+    }
 
     return {
       success: true,
       mode: 'full-sync',
       reason: 'Format preservation disabled (internal item)',
-      updatedFields: validation.allowedFields
+      updatedFields
     };
   }
 
