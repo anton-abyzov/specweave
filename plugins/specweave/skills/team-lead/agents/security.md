@@ -8,7 +8,6 @@ MASTER SPEC (SOURCE OF TRUTH):
 
 SKILLS TO INVOKE:
   Skill({ skill: "sw:security" })
-  Skill({ skill: "sw:security-patterns" })
 
 FILE OWNERSHIP (WRITE access):
   src/auth/**
