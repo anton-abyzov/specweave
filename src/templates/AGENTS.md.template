@@ -52,9 +52,17 @@ See **Task Format** and **User Story Format** sections for templates.
 Never mark a task complete without proving it works:
 - Code compiles/builds successfully
 - Run tests after every task: `npx vitest run` + `npx playwright test`
+- Review code quality before committing — check for duplication, readability issues, and inefficiencies (Claude Code: `/simplify`; other tools: manual review or linter)
 - `/sw:grill` writes `grill-report.json` — CLI blocks closure without it
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Acceptance criteria actually satisfied
+
+### 4. Large-Scale Changes
+
+For codebase-wide migrations or bulk refactors:
+- **Claude Code**: Use `/batch` — decomposes work into parallel agents with worktree isolation, each producing its own PR
+- **Other tools**: Break work into isolated branches (one per unit), implement each independently, review and merge separately
+- Always get approval on the decomposition plan before executing
 
 ### 3. Dependencies First
 
@@ -147,6 +155,8 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 | **Plan Mode** | `EnterPlanMode` → `/sw:increment` | Manual: Create spec.md + plan.md + tasks.md |
 | **Subagents** | `Task` tool for parallel work | Split into multiple chat sessions |
 | **Verification** | PostToolUse hooks auto-validate | Manual: Run tests, check ACs |
+| **Code quality** | `/simplify` (3 parallel review agents) | Manual: lint, review for duplication/readability/perf |
+| **Batch migration** | `/batch` (worktree-isolated parallel agents) | Manual: one branch per unit, implement separately |
 | **Hooks** | Auto-run on events | YOU must mimic (see below) |
 | **Task sync** | Automatic AC updates | Manual: Edit tasks.md + spec.md |
 | **Skills** | Auto-activate on keywords | Read SKILL.md, follow manually |
@@ -156,8 +166,9 @@ Claude Code has automatic hooks and orchestration. Other tools must do these man
 **After EVERY task completion:**
 1. Update tasks.md: `[ ] pending` → `[x] completed`
 2. Update spec.md ACs if satisfied: `[ ] AC` → `[x] AC`
-3. Run `/sw:progress-sync`
-4. Run `/sw-github:sync <id>` (if GitHub configured)
+3. Review code quality: check for duplication, readability, performance issues (Claude Code: `/simplify`)
+4. Run `/sw:progress-sync`
+5. Run `/sw-github:sync <id>` (if GitHub configured)
 
 **After all ACs for a User Story are done:**
 - Run `/sw:sync-docs update`
@@ -363,10 +374,11 @@ specweave context projects
 2. Run unit tests: `npx vitest run`
 3. Run E2E tests (if task touches UI/API): `npx playwright test`
 4. Only mark task `[x]` after tests pass
-5. Update tasks.md: `[ ] pending` → `[x] completed`
-6. Update spec.md: check off satisfied ACs
-7. Sync to external trackers if enabled
-8. If 3 consecutive test failures: STOP, re-plan, ask user
+5. Review code quality before committing (Claude Code: `/simplify`; other tools: lint + manual review)
+6. Update tasks.md: `[ ] pending` → `[x] completed`
+7. Update spec.md: check off satisfied ACs
+8. Sync to external trackers if enabled
+9. If 3 consecutive test failures: STOP, re-plan, ask user
 
 ### Closing Increment
 1. Full test suite: `npx vitest run`
