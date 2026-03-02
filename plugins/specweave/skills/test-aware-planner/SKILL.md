@@ -1,5 +1,7 @@
 ---
 description: Generate tasks.md with embedded test plans in BDD format, one user story at a time to prevent crashes. Use for test-first task planning where each task includes Given/When/Then scenarios. Produces implementation tasks with inline test specifications.
+context: fork
+model: opus
 ---
 
 # Test-Aware Planner Skill

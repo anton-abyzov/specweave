@@ -1,0 +1,107 @@
+.callout {
+  border-radius: var(--sw-radius-lg);
+  border: 1px solid transparent;
+  border-left-width: 3px;
+  padding: var(--sw-space-4) var(--sw-space-5);
+  margin: var(--sw-space-6) 0;
+  box-shadow: var(--sw-shadow-xs);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-2);
+  margin-bottom: var(--sw-space-2);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.title {
+  font-weight: var(--sw-font-weight-semibold);
+  font-size: var(--sw-font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.content {
+  font-size: var(--sw-font-size-base);
+  line-height: var(--sw-line-height-relaxed);
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Note */
+.note {
+  background: var(--sw-color-info-light);
+  border-color: rgba(59, 130, 246, 0.12);
+  border-left-color: var(--sw-color-info);
+}
+
+.note .icon { color: var(--sw-color-info); }
+.note .title { color: var(--sw-color-info-dark); }
+
+/* Tip */
+.tip {
+  background: var(--sw-color-tip-light);
+  border-color: rgba(139, 92, 246, 0.12);
+  border-left-color: var(--sw-color-tip);
+}
+
+.tip .icon { color: var(--sw-color-tip); }
+.tip .title { color: var(--sw-color-tip-dark); }
+
+/* Warning */
+.warning {
+  background: var(--sw-color-warning-light);
+  border-color: rgba(245, 158, 11, 0.12);
+  border-left-color: var(--sw-color-warning);
+}
+
+.warning .icon { color: var(--sw-color-warning); }
+.warning .title { color: var(--sw-color-warning-dark); }
+
+/* Info */
+.info {
+  background: var(--sw-color-info-light);
+  border-color: rgba(59, 130, 246, 0.12);
+  border-left-color: var(--sw-color-info);
+}
+
+.info .icon { color: var(--sw-color-info); }
+.info .title { color: var(--sw-color-info-dark); }
+
+/* Dark mode */
+[data-theme='dark'] .note,
+[data-theme='dark'] .info {
+  background: var(--sw-color-info-light);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme='dark'] .note .title,
+[data-theme='dark'] .info .title {
+  color: var(--sw-color-info);
+}
+
+[data-theme='dark'] .tip {
+  background: var(--sw-color-tip-light);
+  border-color: rgba(139, 92, 246, 0.15);
+}
+
+[data-theme='dark'] .tip .title {
+  color: var(--sw-color-tip);
+}
+
+[data-theme='dark'] .warning {
+  background: var(--sw-color-warning-light);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+[data-theme='dark'] .warning .title {
+  color: var(--sw-color-warning);
+}

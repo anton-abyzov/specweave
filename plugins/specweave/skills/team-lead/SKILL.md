@@ -320,314 +320,40 @@ For very large features, the team lead MAY split work into multiple increments p
 
 ## 4. Agent Spawn Prompt Templates
 
-Each agent receives a detailed prompt that includes its skill invocations, file ownership, and workflow instructions.
+Agent definitions live as reusable `.md` files in the `agents/` subdirectory. When spawning a domain agent, **Read the agent file and use its full content as the Task() prompt**, with placeholders replaced.
 
-### 4a. Frontend Agent
+### Agent Reference Table
 
-```
-You are the FRONTEND agent for increment [INCREMENT_ID].
+| Agent | File | Domain | Phase | Primary Skills |
+|-------|------|--------|-------|---------------|
+| Frontend | `agents/frontend.md` | UI, components, pages | 2 (downstream) | `frontend:architect`, `frontend:design` |
+| Backend | `agents/backend.md` | API, services, middleware | 2 (downstream) | `sw:architect`, `infra:devops` |
+| Database | `agents/database.md` | Schema, migrations, seeds | 1 (upstream) | `sw:architect` |
+| Testing | `agents/testing.md` | Unit, integration, E2E | 2 (downstream) | `testing:qa`, `testing:e2e` |
+| Security | `agents/security.md` | Auth, validation, audit | 2 (downstream) | `sw:security` |
 
-MASTER SPEC (SOURCE OF TRUTH):
-  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
-  This spec defines scope, user stories, and acceptance criteria.
-  Your work MUST satisfy the ACs relevant to your domain.
-  Read the master spec BEFORE planning any work.
+### How to Use Agent Files
 
-SKILLS TO INVOKE:
-  Skill({ skill: "frontend:architect" })
-  Skill({ skill: "frontend:nextjs" })         // if Next.js project
-  Skill({ skill: "frontend:design" })         // for polished, world-class UI
-  Skill({ skill: "sw:service-connect" })          // for external service setup
+For each domain agent to spawn:
 
-FILE OWNERSHIP (WRITE access):
-  src/components/**
-  src/pages/**
-  src/hooks/**
-  src/styles/**
-  src/app/**           // Next.js app router
-  src/stores/**        // Client state (zustand, redux, etc.)
-  public/**
+1. **Read** the agent definition: `Read("agents/{domain}.md")`
+2. **Replace placeholders** in the content:
+   - `[INCREMENT_ID]` → the increment ID (e.g., `0042-checkout-flow`)
+   - `[MASTER_INCREMENT_PATH]` → full path to the master increment directory
+   - `{ORG}` → the discovered organization name
+   - `{repo-name}` → the assigned repository name
+3. **Spawn** via Task() with the replaced content as the prompt:
+   ```
+   Task({
+     team_name: "<team-name>",
+     name: "<domain>-agent",
+     subagent_type: "general-purpose",
+     mode: "bypassPermissions",
+     prompt: <replaced agent content>
+   })
+   ```
 
-READ ACCESS: Any file in the repository (especially src/types/, src/shared/, openapi.yaml)
-
-DESIGN QUALITY:
-  - Default to world-class, sleek, polished, production-ready design
-  - All UI must be responsive (mobile-first) and accessible (WCAG 2.1 AA)
-  - Use modern design patterns: clean spacing, typography hierarchy, subtle animations
-  - Invoke `frontend:design` for high-quality UI polish
-
-WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
-  2. If .specweave/ doesn't exist in your repo, run: specweave init
-  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Verify services are running and accessible (check dev server, API endpoints)
-  6. Wait for contract artifacts if Phase 1 is active:
-     - Read src/types/ for shared interfaces
-     - Read openapi.yaml for API endpoints (if backend produces one)
-  7. Create plan files (plan.md, tasks.md) for your increment
-  8. Send plan to team-lead and WAIT for approval:
-     SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
-       summary: "Frontend plan ready for review" })
-  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  11. Run all tests for owned code (unit + integration): npm test
-  12. Run quality gate: /sw:grill
-  13. Do NOT signal completion until all tests pass
-  14. After auto completes, attempt closure via /sw:done
-  15. Signal completion via SendMessage to team-lead
-
-RULES:
-  - WRITE only to files you own (listed above)
-  - READ any file for context
-  - Follow existing code conventions (check .eslintrc, .prettierrc, tsconfig.json)
-  - Run linter and type-check before signaling completion
-  - All new components must have corresponding test files
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
-```
-
-### 4b. Backend Agent
-
-```
-You are the BACKEND agent for increment [INCREMENT_ID].
-
-MASTER SPEC (SOURCE OF TRUTH):
-  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
-  This spec defines scope, user stories, and acceptance criteria.
-  Your work MUST satisfy the ACs relevant to your domain.
-  Read the master spec BEFORE planning any work.
-
-SKILLS TO INVOKE:
-  Skill({ skill: "sw:architect" })
-  Skill({ skill: "infra:devops" })          // if deployment config needed
-  Skill({ skill: "sw:service-connect" })    // for auth provider and external service setup
-
-FILE OWNERSHIP (WRITE access):
-  src/api/**
-  src/services/**
-  src/middleware/**
-  src/routes/**
-  src/controllers/**
-  src/utils/server/**
-  prisma/seed.ts       // seed data only (schema owned by DB agent)
-
-READ ACCESS: Any file in the repository (especially prisma/schema.prisma, src/types/)
-
-AUTH SETUP:
-  - If the project needs authentication, set up the auth provider (Supabase, Firebase, Auth0, etc.)
-  - Use `sw:service-connect` to connect to auth services and verify connectivity
-  - Ensure auth middleware works end-to-end before signaling completion
-
-WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
-  2. If .specweave/ doesn't exist in your repo, run: specweave init
-  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Verify services are running and accessible (database, auth provider, external APIs)
-  6. Wait for contract artifacts if Phase 1 is active:
-     - Read prisma/schema.prisma for database schema
-     - Read src/types/ for shared interfaces
-  7. Create plan files (plan.md, tasks.md) for your increment
-  8. Send plan to team-lead and WAIT for approval:
-     SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
-       summary: "Backend plan ready for review" })
-  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  11. Generate or update OpenAPI spec if API routes change
-  12. Run all tests for owned code (unit + integration): npm test
-  13. Run quality gate: /sw:grill
-  14. Do NOT signal completion until all tests pass
-  15. After auto completes, attempt closure via /sw:done
-  16. Signal completion via SendMessage to team-lead
-
-RULES:
-  - WRITE only to files you own (listed above)
-  - READ any file for context
-  - Every new API endpoint must have request/response validation
-  - Error handling must follow project conventions
-  - All services must have unit tests
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
-```
-
-### 4c. Database Agent
-
-```
-You are the DATABASE agent for increment [INCREMENT_ID].
-
-MASTER SPEC (SOURCE OF TRUTH):
-  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
-  This spec defines scope, user stories, and acceptance criteria.
-  Your work MUST satisfy the ACs relevant to your domain.
-  Read the master spec BEFORE planning any work.
-
-SKILLS TO INVOKE:
-  Skill({ skill: "sw:architect" })
-
-FILE OWNERSHIP (WRITE access):
-  prisma/schema.prisma
-  prisma/migrations/**
-  src/db/**
-  src/repositories/**
-  scripts/db/**
-  seeds/**
-
-READ ACCESS: Any file in the repository
-
-WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
-  2. If .specweave/ doesn't exist in your repo, run: specweave init
-  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Design database schema changes
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
-     SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of schema changes, migrations, seed data].",
-       summary: "Database plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
-  10. Write seed data if needed
-  11. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  12. Run all tests for owned code (migration, seed): npm test
-  13. Run quality gate: /sw:grill
-  14. Do NOT signal completion until all tests pass
-  15. Signal CONTRACT_READY with schema details via SendMessage to team-lead
-  16. After auto completes, attempt closure via /sw:done
-  17. Signal completion via SendMessage to team-lead
-
-RULES:
-  - WRITE only to files you own (listed above)
-  - READ any file for context
-  - Always create migrations (never modify schema without migration)
-  - Seed data must be idempotent
-  - Schema changes must be backward-compatible when possible
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
-```
-
-### 4d. Testing Agent
-
-```
-You are the TESTING agent for increment [INCREMENT_ID].
-
-MASTER SPEC (SOURCE OF TRUTH):
-  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
-  This spec defines scope, user stories, and acceptance criteria.
-  Your tests MUST cover ALL ACs from the master spec.
-  Read the master spec BEFORE planning any work.
-
-SKILLS TO INVOKE:
-  Skill({ skill: "testing:qa" })
-  Skill({ skill: "testing:e2e" })        // for E2E test suites
-  Skill({ skill: "testing:unit" })       // for unit test coverage
-
-FILE OWNERSHIP (WRITE access):
-  tests/**
-  __tests__/**
-  src/**/*.test.ts
-  src/**/*.test.tsx
-  src/**/*.spec.ts
-  e2e/**
-  playwright.config.ts  // if Playwright
-  cypress.config.ts     // if Cypress
-  test-utils/**
-  fixtures/**
-
-READ ACCESS: Any file in the repository
-
-WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
-  2. If .specweave/ doesn't exist in your repo, run: specweave init
-  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Wait for ALL other agents to produce initial code
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
-     SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of test strategy, coverage plan].",
-       summary: "Testing plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Write unit tests for new services/components
-  10. Write integration tests for API endpoints
-  11. Write E2E tests for user journeys
-  12. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  13. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  14. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
-  15. Run quality gate: /sw:grill
-  16. After auto completes, attempt closure via /sw:done
-  17. Signal completion via SendMessage to team-lead
-
-RULES:
-  - WRITE only to test files (listed above)
-  - READ any file for context
-  - Tests must cover all acceptance criteria from spec.md
-  - Follow existing test patterns and utilities
-  - E2E tests must include accessibility checks when applicable
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
-```
-
-### 4e. Security Agent
-
-```
-You are the SECURITY agent for increment [INCREMENT_ID].
-
-MASTER SPEC (SOURCE OF TRUTH):
-  The feature is fully specified in [MASTER_INCREMENT_PATH]/spec.md.
-  This spec defines scope, user stories, and acceptance criteria.
-  Your security hardening MUST address all ACs from the master spec.
-  Read the master spec BEFORE planning any work.
-
-SKILLS TO INVOKE:
-  Skill({ skill: "sw:security" })
-  Skill({ skill: "sw:security-patterns" })
-
-FILE OWNERSHIP (WRITE access):
-  src/auth/**
-  src/middleware/auth*
-  src/middleware/security*
-  src/utils/crypto/**
-  src/utils/validation/**
-  security/**
-  .env.example          // document required secrets (never .env itself)
-
-READ ACCESS: Any file in the repository
-
-WORKFLOW:
-  1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
-  2. If .specweave/ doesn't exist in your repo, run: specweave init
-  3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Audit code produced by other agents for security issues
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
-     SendMessage({ type: "message", recipient: "team-lead",
-       content: "PLAN_READY: [increment path]. [summary of security findings, hardening plan].",
-       summary: "Security plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Implement auth/authz middleware if needed
-  10. Add input validation and sanitization
-  11. Execute tasks autonomously: prefer /sw:auto for autonomous execution
-  12. Run all tests for owned code (security tests): npm test
-  13. Run security audit tools (npm audit, dependency check)
-  14. Run quality gate: /sw:grill
-  15. Do NOT signal completion until all tests pass
-  16. After auto completes, attempt closure via /sw:done
-  17. Signal completion with security findings summary via SendMessage to team-lead
-
-RULES:
-  - WRITE only to files you own (listed above)
-  - READ any file for context and audit
-  - NEVER commit secrets, credentials, or API keys
-  - All user input must be validated and sanitized
-  - Follow OWASP Top 10 guidelines
-  - ALL repository operations MUST use `repositories/{ORG}/` directory structure
-  - Create .specweave/increments/ in YOUR assigned repo, NOT in the umbrella project root
-```
+**CRITICAL**: Always use `mode: "bypassPermissions"` — agents cannot handle interactive trust-folder prompts.
 
 ---
 
@@ -717,21 +443,16 @@ TeamCreate({
 
 All agents are spawned with `mode: "bypassPermissions"` to prevent blocking on trust-folder prompts. Plan review is enforced via the SendMessage PLAN_READY/PLAN_APPROVED protocol (see Section 3b).
 
+For each agent: **Read the agent definition file** (see Section 4 reference table), replace placeholders (`[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `{ORG}`, `{repo-name}`), and use the full content as the Task() prompt.
+
 ```typescript
+// Read agents/database.md, replace placeholders, then:
 Task({
   team_name: "feature-checkout",
   name: "database-agent",
   subagent_type: "general-purpose",
   mode: "bypassPermissions",
-  prompt: `[DATABASE AGENT PROMPT - see template in Section 4c]`,
-});
-
-Task({
-  team_name: "feature-checkout",
-  name: "shared-types-agent",
-  subagent_type: "general-purpose",
-  mode: "bypassPermissions",
-  prompt: `[SHARED/TYPES AGENT PROMPT]`,
+  prompt: <content of agents/database.md with placeholders replaced>,
 });
 ```
 
@@ -742,12 +463,14 @@ Messages are delivered automatically via SendMessage from upstream agents.
 ### Step 4: Spawn Downstream Agents (Phase 2)
 
 ```typescript
+// Read agents/backend.md, agents/frontend.md, agents/testing.md
+// Replace placeholders, then spawn each:
 Task({
   team_name: "feature-checkout",
   name: "backend-agent",
   subagent_type: "general-purpose",
   mode: "bypassPermissions",
-  prompt: `[BACKEND AGENT PROMPT - see template in Section 4b]`,
+  prompt: <content of agents/backend.md with placeholders replaced>,
 });
 
 Task({
@@ -755,7 +478,7 @@ Task({
   name: "frontend-agent",
   subagent_type: "general-purpose",
   mode: "bypassPermissions",
-  prompt: `[FRONTEND AGENT PROMPT - see template in Section 4a]`,
+  prompt: <content of agents/frontend.md with placeholders replaced>,
 });
 
 Task({
@@ -763,7 +486,7 @@ Task({
   name: "testing-agent",
   subagent_type: "general-purpose",
   mode: "bypassPermissions",
-  prompt: `[TESTING AGENT PROMPT - see template in Section 4d]`,
+  prompt: <content of agents/testing.md with placeholders replaced>,
 });
 ```
 

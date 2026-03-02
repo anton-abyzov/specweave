@@ -133,27 +133,62 @@ description: Frontend architecture agent for React/Vue/Angular.
 
 ### Use Skills When:
 
-- Need information or guidance
-- Want auto-activation on keywords
-- Response should be inline
-- Task is advisory, not generative
+Choose Skills when you need Claude to perform specialized tasks consistently and efficiently. They're ideal for:
+
+- **Organizational workflows**: Brand guidelines, compliance procedures, document templates
+- **Domain expertise**: Excel formulas, PDF manipulation, data analysis, coding patterns
+- **Personal preferences**: Note-taking systems, coding conventions, research methods
+- **Repetitive instructions**: Anything you find yourself telling Claude more than once
+
+Skills are like training materials — they make Claude better at specific tasks across all conversations. Any Claude instance can load and use them.
 
 **Examples**:
 - "How do I handle brownfield projects?" → `brownfield-analyzer` skill
 - "What's the TDD workflow?" → `tdd-workflow` skill
 - "Which serverless platform?" → `serverless-recommender` skill
+- "Always use React Hook Form, not useState" → custom project skill
 
 ### Use Agents When:
 
-- Need to generate complex output
-- Task requires isolated context
-- Multiple files need creation
-- Heavy computation needed
+Use agents (subagents) for complete, self-contained work that handles workflows independently. Each subagent operates with its own configuration — you define what it does, how it approaches problems, and which tools it can access.
+
+- **Task specialization**: Code review, test generation, security audits
+- **Context management**: Keep the main conversation focused while offloading specialized work
+- **Parallel processing**: Multiple subagents can work on different aspects simultaneously
+- **Tool restriction**: Limit specific subagents to safe operations (e.g., read-only access)
+
+Subagents are like specialized employees with their own context and tool permissions.
 
 **Examples**:
 - Generate spec.md → `pm` agent
 - Design architecture → `architect` agent
 - Create infrastructure → `devops` agent
+
+### Use Them Together When:
+
+You want subagents with specialized expertise. For example, a code-review subagent can use Skills for language-specific best practices, combining the independence of a subagent with the portable expertise of Skills.
+
+```
+Subagent (isolated context, tool restrictions)
+├── Loads project Skills (coding conventions, patterns)
+├── Loads domain Skills (language best practices)
+└── Executes task with combined expertise
+```
+
+---
+
+## Skills vs MCP
+
+MCP connects Claude to data; Skills teach Claude what to do with that data.
+
+| Need | Use | Example |
+|------|-----|---------|
+| **Access** a database or API | MCP | Query your PostgreSQL database |
+| **Procedure** for using that data | Skill | "When querying our database, always filter by date range first" |
+| **Read** Excel files | MCP | Open and parse spreadsheet data |
+| **Format** Excel reports | Skill | "Format reports with these specific formulas and layouts" |
+
+Use both together: **MCP for connectivity, Skills for procedural knowledge**.
 
 ---
 
@@ -213,6 +248,63 @@ Main Context (100K tokens)
 - Use agents for simple questions
 - Skip quality gates
 - Process files one by one when dealing with large codebases
+
+---
+
+## When to Create a Skill
+
+**The repetition signal**: If you find yourself repeatedly giving Claude the same instructions — the same convention, workflow step, or "always do X before Y" — that's your signal to create a skill.
+
+Instead of typing the same guidance every session, capture it in a `SKILL.md` file. Claude will follow it automatically, every time, without reminders.
+
+Think of it as the **DRY principle for AI instructions** — repeating yourself to an AI is like copy-pasting code. It works, but it doesn't scale.
+
+### Examples of repetition → skill opportunities
+
+| You keep saying... | Create a skill for... |
+|---|---|
+| "Always use React Hook Form, not useState" | Form handling conventions |
+| "Run lint before committing" | Pre-commit workflow |
+| "Check the design system before creating components" | Component creation rules |
+| "Use snake_case for database columns" | Naming conventions |
+| "Add error boundaries around async components" | Error handling patterns |
+
+### How to create one
+
+```markdown
+# .claude/skills/my-convention/SKILL.md
+---
+description: Enforces [your pattern]. Activates when [keywords].
+---
+
+## Rules
+1. Always do X before Y
+2. Use Z library for W
+3. Never use deprecated pattern Q
+```
+
+Once saved, the skill auto-activates when relevant keywords appear — no manual invocation needed.
+
+---
+
+## Decision Framework Summary
+
+| Question | Skills | Subagents | MCP |
+|----------|--------|-----------|-----|
+| What does it teach? | How to do something | Nothing — it does the work | Nothing — it provides access |
+| Who can use it? | Any Claude instance | Spawned by the orchestrator | Any Claude with the server |
+| Context model | Shared (main conversation) | Isolated (separate window) | Shared (tool results) |
+| Persistence | Always available when loaded | Exists only during task | Always available when connected |
+| Best for | Conventions, expertise, procedures | Complex workflows, parallel work | Data access, external services |
+
+---
+
+## Further Reading
+
+- [Skills Explained](https://claude.com/blog/skills-explained) — Anthropic's official guide to Skills, subagents, and MCP
+- [Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
+- [Extensible Skills Standard](/docs/skills/extensible/) — Customizing skills for your project
+- [Verified Skills Standard](/docs/skills/verified/) — Security certification for skills
 
 ---
 

@@ -40,6 +40,13 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "maturity": {
+      "question": "새 프로젝트인가요, 기존 프로젝트인가요?",
+      "greenfield": "새 프로젝트 (그린필드)",
+      "greenfieldDesc": "처음부터 시작, 기존 코드베이스 없음",
+      "brownfield": "기존 프로젝트 (브라운필드)",
+      "brownfieldDesc": "기존 코드, 의존성 또는 저장소가 있음"
+    },
     "toolDetection": {
       "header": "AI 도구 감지",
       "detected": "감지됨: {{tool}}",

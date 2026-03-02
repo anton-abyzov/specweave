@@ -13,6 +13,13 @@
       "alreadyExists": "El directorio .specweave ya existe",
       "cancelled": "❌ Inicialización cancelada"
     },
+    "maturity": {
+      "question": "¿Es un proyecto nuevo o existente?",
+      "greenfield": "Proyecto nuevo (greenfield)",
+      "greenfieldDesc": "Empezando desde cero, sin código existente",
+      "brownfield": "Proyecto existente (brownfield)",
+      "brownfieldDesc": "Tiene código, dependencias o repositorios existentes"
+    },
     "toolDetection": {
       "header": "Detección de herramienta de IA",
       "detected": "Detectado: {{tool}}",

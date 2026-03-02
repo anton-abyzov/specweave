@@ -40,6 +40,13 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "maturity": {
+      "question": "Est-ce un nouveau projet ou un projet existant ?",
+      "greenfield": "Nouveau projet (greenfield)",
+      "greenfieldDesc": "Partir de zéro, pas de code existant",
+      "brownfield": "Projet existant (brownfield)",
+      "brownfieldDesc": "A du code, des dépendances ou des dépôts existants"
+    },
     "toolDetection": {
       "header": "Détection de l'outil IA",
       "detected": "Détecté: {{tool}}",

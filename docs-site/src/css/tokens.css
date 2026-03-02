@@ -1,0 +1,211 @@
+/**
+ * SpecWeave Design Token System
+ * Refined indigo-purple palette — sophisticated, professional.
+ */
+
+/* ============================================
+   COLOR PALETTE
+   ============================================ */
+:root {
+  /* Primary — refined indigo-purple (less saturated than pure violet) */
+  --sw-color-primary-50: #f3f1fa;
+  --sw-color-primary-100: #e8e4f6;
+  --sw-color-primary-200: #d1c9ed;
+  --sw-color-primary-300: #b0a3de;
+  --sw-color-primary-400: #8f7dce;
+  --sw-color-primary-500: #6b58b8;
+  --sw-color-primary-600: #56469a;
+  --sw-color-primary-700: #43377b;
+  --sw-color-primary-800: #30285c;
+  --sw-color-primary-900: #1d193d;
+
+  /* Semantic colors */
+  --sw-color-info: #3b82f6;
+  --sw-color-info-light: #eff6ff;
+  --sw-color-info-dark: #1d4ed8;
+  --sw-color-success: #10b981;
+  --sw-color-success-light: #ecfdf5;
+  --sw-color-success-dark: #059669;
+  --sw-color-warning: #f59e0b;
+  --sw-color-warning-light: #fffbeb;
+  --sw-color-warning-dark: #d97706;
+  --sw-color-danger: #ef4444;
+  --sw-color-danger-light: #fef2f2;
+  --sw-color-danger-dark: #dc2626;
+  --sw-color-tip: #8b5cf6;
+  --sw-color-tip-light: #f5f3ff;
+  --sw-color-tip-dark: #7c3aed;
+
+  /* Neutral scale */
+  --sw-gray-50: #f8fafc;
+  --sw-gray-100: #f1f5f9;
+  --sw-gray-200: #e2e8f0;
+  --sw-gray-300: #cbd5e1;
+  --sw-gray-400: #94a3b8;
+  --sw-gray-500: #64748b;
+  --sw-gray-600: #475569;
+  --sw-gray-700: #334155;
+  --sw-gray-800: #1e293b;
+  --sw-gray-900: #0f172a;
+
+  /* Surface colors */
+  --sw-surface-primary: #ffffff;
+  --sw-surface-secondary: var(--sw-gray-50);
+  --sw-surface-elevated: #ffffff;
+  --sw-surface-dark: #0b0816;
+  --sw-surface-dark-secondary: #110e1e;
+
+  /* Text colors */
+  --sw-text-primary: var(--sw-gray-900);
+  --sw-text-secondary: var(--sw-gray-500);
+  --sw-text-tertiary: var(--sw-gray-400);
+  --sw-text-inverse: #ffffff;
+  --sw-text-link: var(--sw-color-primary-500);
+
+  /* Border colors */
+  --sw-border-light: var(--sw-gray-200);
+  --sw-border-default: var(--sw-gray-300);
+  --sw-border-subtle: rgba(0, 0, 0, 0.06);
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  --sw-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sw-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
+
+  --sw-font-size-xs: 0.75rem;    /* 12px */
+  --sw-font-size-sm: 0.875rem;   /* 14px */
+  --sw-font-size-base: 1rem;     /* 16px */
+  --sw-font-size-lg: 1.125rem;   /* 18px */
+  --sw-font-size-xl: 1.25rem;    /* 20px */
+  --sw-font-size-2xl: 1.5rem;    /* 24px */
+  --sw-font-size-3xl: 1.875rem;  /* 30px */
+  --sw-font-size-4xl: 2.25rem;   /* 36px */
+  --sw-font-size-5xl: 3rem;      /* 48px */
+
+  --sw-font-weight-normal: 400;
+  --sw-font-weight-medium: 500;
+  --sw-font-weight-semibold: 600;
+  --sw-font-weight-bold: 700;
+  --sw-font-weight-extrabold: 800;
+
+  --sw-line-height-tight: 1.1;
+  --sw-line-height-snug: 1.3;
+  --sw-line-height-normal: 1.5;
+  --sw-line-height-relaxed: 1.65;
+
+  /* ============================================
+     SPACING (4px base grid)
+     ============================================ */
+  --sw-space-0: 0;
+  --sw-space-1: 0.25rem;     /* 4px */
+  --sw-space-2: 0.5rem;      /* 8px */
+  --sw-space-3: 0.75rem;     /* 12px */
+  --sw-space-4: 1rem;        /* 16px */
+  --sw-space-5: 1.25rem;     /* 20px */
+  --sw-space-6: 1.5rem;      /* 24px */
+  --sw-space-8: 2rem;        /* 32px */
+  --sw-space-10: 2.5rem;     /* 40px */
+  --sw-space-12: 3rem;       /* 48px */
+  --sw-space-16: 4rem;       /* 64px */
+  --sw-space-20: 5rem;       /* 80px */
+  --sw-space-24: 6rem;       /* 96px */
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --sw-radius-sm: 6px;
+  --sw-radius-md: 8px;
+  --sw-radius-lg: 12px;
+  --sw-radius-xl: 16px;
+  --sw-radius-2xl: 20px;
+  --sw-radius-full: 9999px;
+
+  /* ============================================
+     SHADOWS
+     ============================================ */
+  --sw-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --sw-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sw-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --sw-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --sw-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --sw-shadow-glow: 0 0 80px rgba(107, 88, 184, 0.15);
+
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  --sw-transition-fast: 150ms ease;
+  --sw-transition-base: 200ms ease;
+  --sw-transition-slow: 300ms ease;
+
+  /* ============================================
+     INFIMA MAPPINGS
+     ============================================ */
+  --ifm-color-primary: var(--sw-color-primary-500);
+  --ifm-color-primary-dark: var(--sw-color-primary-600);
+  --ifm-color-primary-darker: var(--sw-color-primary-700);
+  --ifm-color-primary-darkest: var(--sw-color-primary-800);
+  --ifm-color-primary-light: var(--sw-color-primary-400);
+  --ifm-color-primary-lighter: var(--sw-color-primary-300);
+  --ifm-color-primary-lightest: var(--sw-color-primary-200);
+
+  --ifm-font-family-base: var(--sw-font-sans);
+  --ifm-font-family-monospace: var(--sw-font-mono);
+  --ifm-heading-font-weight: var(--sw-font-weight-semibold);
+  --ifm-font-weight-semibold: var(--sw-font-weight-semibold);
+  --ifm-font-weight-bold: var(--sw-font-weight-bold);
+  --ifm-code-font-size: 95%;
+
+  --docusaurus-highlighted-code-line-bg: rgba(107, 88, 184, 0.1);
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+[data-theme='dark'] {
+  /* Primary palette inverted for readability */
+  --sw-color-primary-50: #1d193d;
+  --sw-color-primary-100: #2a2458;
+  --sw-color-primary-200: #3d3577;
+  --sw-color-primary-300: #564c96;
+  --sw-color-primary-400: #7b6fbc;
+  --sw-color-primary-500: #a99bd8;
+  --sw-color-primary-600: #c4b9e8;
+  --sw-color-primary-700: #d9d1f0;
+  --sw-color-primary-800: #eae6f6;
+  --sw-color-primary-900: #f3f1fa;
+
+  /* Semantic colors (dark mode variants) */
+  --sw-color-info-light: rgba(59, 130, 246, 0.1);
+  --sw-color-success-light: rgba(16, 185, 129, 0.1);
+  --sw-color-warning-light: rgba(245, 158, 11, 0.1);
+  --sw-color-danger-light: rgba(239, 68, 68, 0.1);
+  --sw-color-tip-light: rgba(139, 92, 246, 0.1);
+
+  /* Surface colors */
+  --sw-surface-primary: #0f0d19;
+  --sw-surface-secondary: #161326;
+  --sw-surface-elevated: #1c1830;
+
+  /* Text colors */
+  --sw-text-primary: var(--sw-gray-100);
+  --sw-text-secondary: var(--sw-gray-400);
+  --sw-text-tertiary: var(--sw-gray-500);
+  --sw-text-link: var(--sw-color-primary-500);
+
+  /* Border colors */
+  --sw-border-light: rgba(255, 255, 255, 0.08);
+  --sw-border-default: rgba(255, 255, 255, 0.12);
+  --sw-border-subtle: rgba(255, 255, 255, 0.05);
+
+  /* Infima dark mode overrides */
+  --ifm-color-primary: #a99bd8;
+  --ifm-color-primary-dark: #8f7dce;
+  --ifm-color-primary-darker: #7b6fbc;
+  --ifm-color-primary-darkest: #6b58b8;
+  --ifm-color-primary-light: #c4b9e8;
+  --ifm-color-primary-lighter: #d9d1f0;
+  --ifm-color-primary-lightest: #eae6f6;
+
+  --docusaurus-highlighted-code-line-bg: rgba(169, 155, 216, 0.12);
+}

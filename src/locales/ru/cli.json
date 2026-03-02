@@ -53,13 +53,24 @@
       "skillsIndexNote": "Навыки всё равно будут работать, но может потребоваться ручная индексация.",
       "marketplaceCopyFailed": "⚠️  Предупреждение: Не удалось скопировать маркетплейс плагинов",
       "marketplaceNotFound": "⚠️  Предупреждение: Маркетплейс плагинов не найден",
-      "pluginAutoSetupFailed": "⚠️  Предупреждение: Не удалось настроить автоматическую регистрацию плагинов"
+      "pluginAutoSetupFailed": "⚠️  Предупреждение: Не удалось настроить автоматическую регистрацию плагинов",
+      "pluginAutoInstallFailed": "Автоматическая установка плагинов не удалась (CLI claude недоступен)"
     },
     "prompts": {
       "confirmInitInCurrent": "Инициализировать SpecWeave в текущей директории?",
       "overwriteSpecweave": "Директория .specweave уже существует. Перезаписать?",
       "overwriteDirectory": "Директория {{projectName}} уже существует. Перезаписать?",
       "enablePlugins": "Включить предложенные плагины сейчас?"
+    },
+    "gitHooks": {
+      "prompt": "Установить git-хуки для контроля качества?"
+    },
+    "maturity": {
+      "question": "Это новый или существующий проект?",
+      "greenfield": "Новый проект (greenfield)",
+      "greenfieldDesc": "Начинаем с нуля, без существующей кодовой базы",
+      "brownfield": "Существующий проект (brownfield)",
+      "brownfieldDesc": "Есть существующий код, зависимости или репозитории"
     },
     "toolDetection": {
       "header": "Определение AI-инструмента",
@@ -86,10 +97,13 @@
       "copiedAgents": "✓ Скопировано {{count}} директорий агентов",
       "copiedSkills": "✓ Скопировано {{count}} директорий навыков",
       "copiedHooks": "✓ Скопировано {{count}} файлов хуков",
-      "pluginAutoSetupDetails": "Claude Code автоматически загрузит маркетплейс SpecWeave когда вы доверитесь этой папке"
+      "pluginAutoSetupDetails": "Claude Code автоматически загрузит маркетплейс SpecWeave когда вы доверитесь этой папке",
+      "manualInstallInstructions": "Запустите вручную: /plugin install specweave",
+      "ciSkipPlugins": "Обнаружена CI среда - пропуск включения плагинов (можно настроить вручную позже)"
     },
     "success": {
-      "pluginAutoSetup": "Маркетплейс плагинов настроен для автоматической загрузки"
+      "pluginAutoSetup": "Маркетплейс плагинов настроен для автоматической загрузки",
+      "pluginAutoInstall": "Команды доступны сразу (перезапуск не требуется!)"
     },
     "progress": {
       "creatingProject": "Создание проекта SpecWeave...",
