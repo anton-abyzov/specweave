@@ -12,6 +12,8 @@ import {
   generateFeatureFile,
   generateReadmeFile,
   generateUserStoryFile,
+  slugifyTitle,
+  extractFirstSentence,
 } from '../../../../src/core/living-docs/sync-helpers/generators.js';
 import type { GeneratorContext } from '../../../../src/core/living-docs/sync-helpers/generators.js';
 import type { ParsedSpec, UserStoryData } from '../../../../src/core/living-docs/types.js';
@@ -376,8 +378,8 @@ describe('generateFeatureFile', () => {
       makeParsedSpec({ userStories: stories }),
       '0001-x',
     );
-    // id.toLowerCase() + '-' + slug
-    expect(result).toContain('./us1-my-cool-feature-.md');
+    // id.toLowerCase() + '-' + slugifyTitle(title) — trailing dashes stripped
+    expect(result).toContain('./us1-my-cool-feature.md');
   });
 
   it('should omit User Stories section when no stories exist', () => {
@@ -1092,5 +1094,109 @@ describe('Context handling', () => {
     expect(fm['id']).toBe('FS-001-dashboard');
     expect(fm['project']).toBe('dashboard');
     expect(fm['title']).toContain('Dashboard App Implementation');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// slugifyTitle
+// ---------------------------------------------------------------------------
+
+describe('slugifyTitle', () => {
+  it('should convert to lowercase kebab-case', () => {
+    expect(slugifyTitle('My Cool Feature')).toBe('my-cool-feature');
+  });
+
+  it('should strip trailing dashes from special chars at end', () => {
+    expect(slugifyTitle('Feature Name (P1)')).toBe('feature-name-p1');
+    expect(slugifyTitle('My Cool Feature!')).toBe('my-cool-feature');
+  });
+
+  it('should strip leading dashes from special chars at start', () => {
+    expect(slugifyTitle('[Story Title] (P1)')).toBe('story-title-p1');
+    expect(slugifyTitle('(Leading) Parens')).toBe('leading-parens');
+  });
+
+  it('should collapse multiple non-alnum chars into one dash', () => {
+    expect(slugifyTitle('foo---bar///baz')).toBe('foo-bar-baz');
+  });
+
+  it('should handle empty string', () => {
+    expect(slugifyTitle('')).toBe('');
+  });
+
+  it('should handle already clean slug', () => {
+    expect(slugifyTitle('already-clean-slug')).toBe('already-clean-slug');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// extractFirstSentence
+// ---------------------------------------------------------------------------
+
+describe('extractFirstSentence', () => {
+  it('should extract first sentence ending with period + space', () => {
+    expect(extractFirstSentence('First sentence. Second sentence.'))
+      .toBe('First sentence.');
+  });
+
+  it('should preserve backticked content with periods', () => {
+    const text = 'Add guard rails to `specweave init` to prevent creating `.specweave/` folders. More details.';
+    expect(extractFirstSentence(text))
+      .toBe('Add guard rails to `specweave init` to prevent creating `.specweave/` folders.');
+  });
+
+  it('should not split on period inside backticks like `.specweave/`', () => {
+    const text = 'Prevent creating `.specweave/` folders in wrong locations. Two new checks.';
+    const result = extractFirstSentence(text);
+    expect(result).toBe('Prevent creating `.specweave/` folders in wrong locations.');
+    expect(result).not.toBe('Prevent creating `.');
+  });
+
+  it('should handle backticked file names like `file.ts`', () => {
+    const text = 'The `config.json` file controls settings. More info follows.';
+    expect(extractFirstSentence(text))
+      .toBe('The `config.json` file controls settings.');
+  });
+
+  it('should fall back to first line if no sentence boundary found', () => {
+    expect(extractFirstSentence('No period here'))
+      .toBe('No period here.');
+  });
+
+  it('should handle text that is already a single sentence', () => {
+    expect(extractFirstSentence('Just one sentence.'))
+      .toBe('Just one sentence.');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TL;DR with backticked content
+// ---------------------------------------------------------------------------
+
+describe('generateFeatureFile TL;DR backtick handling', () => {
+  it('should not truncate TL;DR at period inside backticks', () => {
+    const result = generateFeatureFile(
+      'FS-395',
+      makeParsedSpec({
+        overview: 'Add guard rails to `specweave init` to prevent creating `.specweave/` folders in wrong locations. Two new checks.',
+      }),
+      '0395-init-guard-rails',
+    );
+    // The TL;DR must include the full first sentence (not truncated at `.specweave/`)
+    expect(result).toContain('**What**: Add guard rails to `specweave init` to prevent creating `.specweave/` folders in wrong locations.');
+    // Verify the frontmatter tldr also has the full sentence
+    const fm = parseFrontmatter(result);
+    expect(fm['tldr']).toContain('folders in wrong locations');
+  });
+
+  it('should handle overview with multiple backtick segments', () => {
+    const result = generateFeatureFile(
+      'FS-100',
+      makeParsedSpec({
+        overview: 'The `foo.bar` and `baz.qux` modules handle auth. Details here.',
+      }),
+      '0100-x',
+    );
+    expect(result).toContain('**What**: The `foo.bar` and `baz.qux` modules handle auth.');
   });
 });

@@ -211,20 +211,28 @@ vi.mock('../../../../src/utils/feature-id-derivation.js', () => ({
   extractIncrementNumber: mockExtractIncrementNumber,
 }));
 
-vi.mock('../../../../src/core/living-docs/sync-helpers/index.js', () => ({
-  calculateUSStatus: mockCalculateUSStatus,
-  extractUserStories: mockExtractUserStories,
-  extractAcceptanceCriteria: mockExtractAcceptanceCriteria,
-  generateFeatureFile: mockGenerateFeatureFile,
-  generateReadmeFile: mockGenerateReadmeFile,
-  generateUserStoryFile: mockGenerateUserStoryFile,
-  pathExists: mockPathExists,
-  readJson: mockReadJson,
-  ensureDir: mockEnsureDir,
-  findExistingUserStoryFile: mockFindExistingUserStoryFile,
-  cleanupDuplicateFiles: mockCleanupDuplicateFiles,
-  cleanupTempFiles: mockCleanupTempFiles,
-}));
+vi.mock('../../../../src/core/living-docs/sync-helpers/index.js', async () => {
+  const actual = await vi.importActual<typeof import('../../../../src/core/living-docs/sync-helpers/index.js')>(
+    '../../../../src/core/living-docs/sync-helpers/index.js'
+  );
+  return {
+    calculateUSStatus: mockCalculateUSStatus,
+    extractUserStories: mockExtractUserStories,
+    extractAcceptanceCriteria: mockExtractAcceptanceCriteria,
+    generateFeatureFile: mockGenerateFeatureFile,
+    generateReadmeFile: mockGenerateReadmeFile,
+    generateUserStoryFile: mockGenerateUserStoryFile,
+    pathExists: mockPathExists,
+    readJson: mockReadJson,
+    ensureDir: mockEnsureDir,
+    findExistingUserStoryFile: mockFindExistingUserStoryFile,
+    cleanupDuplicateFiles: mockCleanupDuplicateFiles,
+    cleanupTempFiles: mockCleanupTempFiles,
+    // Pass through real utility functions that don't need mocking
+    slugifyTitle: actual.slugifyTitle,
+    extractFirstSentence: actual.extractFirstSentence,
+  };
+});
 
 vi.mock('../../../../src/utils/image-generator.js', () => ({
   generateLivingDocsImagesEnhanced: mockGenerateLivingDocsImagesEnhanced,
@@ -339,6 +347,7 @@ describe('LivingDocsSync', () => {
     mockExtractAcceptanceCriteria.mockReturnValue([]);
     mockPathExists.mockResolvedValue(false);
     mockReadJson.mockResolvedValue({});
+    mockFindExistingUserStoryFile.mockResolvedValue(null);
     mockCrossProjectSyncInstance.isCrossProject.mockReturnValue(false);
     mockProjectResolutionInstance.resolveProjectForIncrement.mockResolvedValue({
       projectId: 'test-project',
@@ -465,11 +474,11 @@ describe('LivingDocsSync', () => {
 
       const result = await sync.syncIncrement(incrementId);
 
-      // The outer try/catch should catch the ENOENT and return a failure result
-      // (not throw an unhandled exception)
-      expect(result.success).toBe(false);
+      // After folder deletion, isTemplateFile detects the missing spec.md and skips
+      // sync gracefully (v1.0.344+ template guard catches TOCTOU races early)
+      expect(result.success).toBe(true);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors[0]).toMatch(/Sync failed/);
+      expect(result.errors[0]).toMatch(/template/);
 
       accessSpy.mockRestore();
     });
@@ -1373,8 +1382,8 @@ status: planning
       );
     });
 
-    it('should throw when spec.md does not exist', async () => {
-      // No spec.md written
+    it('should skip sync when spec.md does not exist (treated as template)', async () => {
+      // No spec.md written — only metadata.json
       await fsPromises.writeFile(
         path.join(testDir, '.specweave', 'increments', incrementId, 'metadata.json'),
         JSON.stringify({ status: 'planning' }),
@@ -1385,8 +1394,10 @@ status: planning
 
       const result = await sync.syncIncrement(incrementId);
 
-      expect(result.success).toBe(false);
-      expect(result.errors[0]).toContain('Sync failed');
+      // v1.0.344+: Missing spec.md is detected by isTemplateFile guard
+      // and gracefully skipped (not a failure — spec just isn't ready yet)
+      expect(result.success).toBe(true);
+      expect(result.errors[0]).toContain('template');
     });
   });
 
