@@ -441,8 +441,9 @@ function parseACStatesForUS(content: string, usId: string): ACState[] {
   // AC IDs use unpadded US number: US-001 → AC-US1-XX
   const usNum = String(parseInt(usId.replace('US-', ''), 10));
 
+  // Support both bold (**AC-US1-01**:) and plain (AC-US1-01:) formats
   const acPattern = new RegExp(
-    `- \\[([ x])\\] \\*\\*AC-US${usNum}-(\\d+)\\*\\*:\\s*(.+)`,
+    `- \\[([ x])\\] (?:\\*\\*)?AC-US${usNum}-(\\d+)(?:\\*\\*)?:\\s*(.+)`,
     'g',
   );
 
