@@ -101,20 +101,55 @@ export async function updateSpecFrontmatter(
 
 /**
  * Simple YAML parser for spec frontmatter.
- * Handles nested objects, strings, numbers, booleans, null.
+ * Handles nested objects, strings, numbers, booleans, null, and arrays.
+ * Supports block arrays (`- item`) and flow arrays (`[a, b, c]`).
  */
 function parseYamlSimple(yaml: string): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   const lines = yaml.split('\n');
-  const stack: Array<{ obj: Record<string, unknown>; indent: number }> = [
+  const stack: Array<{ obj: Record<string, unknown>; indent: number; currentKey?: string }> = [
     { obj: result, indent: -1 },
   ];
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (!line.trim() || line.trim().startsWith('#')) continue;
 
     const indent = line.search(/\S/);
     const trimmed = line.trim();
+
+    // Block array item: `- value` or `- key: value` (nested object in array)
+    if (trimmed.startsWith('- ')) {
+      // Find the parent that owns this array
+      while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
+        stack.pop();
+      }
+      const parent = stack[stack.length - 1];
+      const key = parent.currentKey;
+      if (key && parent.obj[key] !== undefined) {
+        const arr = parent.obj[key];
+        if (Array.isArray(arr)) {
+          const itemText = trimmed.slice(2).trim();
+          // Check if it's a nested object item (- key: value)
+          const nestedColonIdx = itemText.indexOf(':');
+          if (nestedColonIdx > 0 && !itemText.startsWith('"') && !itemText.startsWith("'")) {
+            const nestedKey = itemText.slice(0, nestedColonIdx).trim();
+            const nestedVal = itemText.slice(nestedColonIdx + 1).trim();
+            if (nestedVal) {
+              // Simple key:value object item
+              const obj: Record<string, unknown> = { [nestedKey]: parseYamlValue(nestedVal) };
+              arr.push(obj);
+            } else {
+              arr.push(parseYamlValue(itemText));
+            }
+          } else {
+            arr.push(parseYamlValue(itemText));
+          }
+        }
+      }
+      continue;
+    }
+
     const colonIdx = trimmed.indexOf(':');
     if (colonIdx === -1) continue;
 
@@ -129,16 +164,73 @@ function parseYamlSimple(yaml: string): Record<string, unknown> {
     const parent = stack[stack.length - 1].obj;
 
     if (rawValue === '' || rawValue === undefined) {
-      // Nested object
-      const child: Record<string, unknown> = {};
-      parent[key] = child;
-      stack.push({ obj: child, indent });
+      // Check if next non-empty line is a block array item
+      const nextIdx = findNextNonEmptyLine(lines, i + 1);
+      if (nextIdx !== -1 && lines[nextIdx].trim().startsWith('- ')) {
+        // This key holds an array
+        parent[key] = [] as unknown[];
+        stack.push({ obj: parent, indent, currentKey: key });
+      } else {
+        // Nested object
+        const child: Record<string, unknown> = {};
+        parent[key] = child;
+        stack.push({ obj: child, indent });
+      }
+    } else if (rawValue.startsWith('[') && rawValue.endsWith(']')) {
+      // Flow array: [a, b, c]
+      parent[key] = parseFlowArray(rawValue);
     } else {
       parent[key] = parseYamlValue(rawValue);
     }
   }
 
   return result;
+}
+
+/**
+ * Find the next non-empty, non-comment line index.
+ */
+function findNextNonEmptyLine(lines: string[], start: number): number {
+  for (let i = start; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed && !trimmed.startsWith('#')) return i;
+  }
+  return -1;
+}
+
+/**
+ * Parse a YAML flow array like [a, b, c] or ["a", "b"]
+ */
+function parseFlowArray(raw: string): unknown[] {
+  const inner = raw.slice(1, -1).trim();
+  if (!inner) return [];
+  // Split on commas, respecting quoted strings
+  const items: unknown[] = [];
+  let current = '';
+  let inQuote = false;
+  let quoteChar = '';
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i];
+    if (inQuote) {
+      if (ch === quoteChar) {
+        inQuote = false;
+      }
+      current += ch;
+    } else if (ch === '"' || ch === "'") {
+      inQuote = true;
+      quoteChar = ch;
+      current += ch;
+    } else if (ch === ',') {
+      items.push(parseYamlValue(current.trim()));
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) {
+    items.push(parseYamlValue(current.trim()));
+  }
+  return items;
 }
 
 function parseYamlValue(raw: string): unknown {
@@ -155,7 +247,7 @@ function parseYamlValue(raw: string): unknown {
 }
 
 /**
- * Simple YAML stringifier.
+ * Simple YAML stringifier with array support.
  */
 function stringifyYaml(obj: Record<string, unknown>, indent = 0): string {
   const prefix = '  '.repeat(indent);
@@ -164,7 +256,41 @@ function stringifyYaml(obj: Record<string, unknown>, indent = 0): string {
   for (const [key, value] of Object.entries(obj)) {
     if (value === null || value === undefined) {
       parts.push(`${prefix}${key}: null`);
-    } else if (typeof value === 'object' && !Array.isArray(value)) {
+    } else if (Array.isArray(value)) {
+      if (value.length === 0) {
+        parts.push(`${prefix}${key}: []`);
+      } else if (value.every(v => typeof v !== 'object' || v === null)) {
+        // Simple array — use block style
+        parts.push(`${prefix}${key}:`);
+        for (const item of value) {
+          if (typeof item === 'string') {
+            parts.push(`${prefix}  - "${item}"`);
+          } else {
+            parts.push(`${prefix}  - ${item}`);
+          }
+        }
+      } else {
+        // Array of objects — use block style with nested keys
+        parts.push(`${prefix}${key}:`);
+        for (const item of value) {
+          if (typeof item === 'object' && item !== null) {
+            const entries = Object.entries(item as Record<string, unknown>);
+            if (entries.length > 0) {
+              const [firstKey, firstVal] = entries[0];
+              const formattedVal = typeof firstVal === 'string' ? `"${firstVal}"` : firstVal;
+              parts.push(`${prefix}  - ${firstKey}: ${formattedVal}`);
+              for (let j = 1; j < entries.length; j++) {
+                const [k, v] = entries[j];
+                const fv = typeof v === 'string' ? `"${v}"` : v;
+                parts.push(`${prefix}    ${k}: ${fv}`);
+              }
+            }
+          } else {
+            parts.push(`${prefix}  - ${item}`);
+          }
+        }
+      }
+    } else if (typeof value === 'object') {
       parts.push(`${prefix}${key}:`);
       parts.push(stringifyYaml(value as Record<string, unknown>, indent + 1));
     } else if (typeof value === 'string') {

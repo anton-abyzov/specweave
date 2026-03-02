@@ -54,22 +54,24 @@ export class GitHubClient {
    *
    * @param title Milestone title
    * @param description Milestone description
-   * @param daysFromNow Days until milestone due (default: 2 days - SpecWeave AI velocity)
+   * @param daysFromNow Days until milestone due (configurable via github.milestoneDueDays, default: 2)
    */
   async createOrGetMilestone(
     title: string,
     description?: string,
-    daysFromNow: number = 2
+    daysFromNow?: number
   ): Promise<GitHubMilestone> {
+    // Use configured value or default to 2 days
+    const dueDays = daysFromNow ?? 2;
     // Check if milestone already exists
     const existing = await this.getMilestoneByTitle(title);
     if (existing) {
       return existing;
     }
 
-    // Calculate due date (SpecWeave default: 1-2 days with AI assistance)
+    // Calculate due date from creation timestamp
     const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + daysFromNow);
+    dueDate.setDate(dueDate.getDate() + dueDays);
     const dueDateISO = dueDate.toISOString();
 
     // Create new milestone with due date
@@ -88,7 +90,7 @@ export class GitHubClient {
    */
   private async getMilestoneByTitle(title: string): Promise<GitHubMilestone | null> {
     try {
-      const cmd = `gh api repos/${this.repo}/milestones --jq '.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}'`;
+      const cmd = `gh api "repos/${this.repo}/milestones?per_page=100&state=all" --jq '.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}'`;
       const output = execSync(cmd, { encoding: 'utf-8' }).trim();
       return output ? JSON.parse(output) : null;
     } catch {

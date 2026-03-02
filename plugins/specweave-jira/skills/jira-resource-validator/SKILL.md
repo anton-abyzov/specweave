@@ -59,11 +59,9 @@ if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9](
   exit 1
 fi
 
-# Cloud JIRA: must match <subdomain>.atlassian.net
-if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
-  exit 1
-fi
+# JIRA Cloud and Server/DC are both supported.
+# Cloud domains match <subdomain>.atlassian.net; self-hosted use custom domains.
+# No hard-block — deployment type is auto-detected at runtime.
 ```
 
 ### API Call Pattern (HTTPS only, quoted variables)

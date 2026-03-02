@@ -38,6 +38,25 @@ export class MetadataError extends Error {
 }
 
 /**
+ * Result of validateMetadataSchema: corrected metadata + any warnings emitted.
+ */
+interface SchemaValidationResult {
+  metadata: IncrementMetadata;
+  corrected: boolean;
+  warnings: string[];
+}
+
+/**
+ * Non-standard type values mapped to their canonical IncrementType equivalents.
+ */
+const TYPE_ALIAS_MAP: Record<string, IncrementType> = {
+  enhancement: IncrementType.FEATURE,
+  improvement: IncrementType.FEATURE,
+  task: IncrementType.EXPERIMENT,
+  spike: IncrementType.EXPERIMENT,
+};
+
+/**
  * Metadata Manager
  *
  * Provides CRUD operations and queries for increment metadata
@@ -111,8 +130,12 @@ export class MetadataManager {
         );
       }
 
-      // Create default metadata
-      const defaultMetadata = createDefaultMetadata(incrementId);
+      // Create default metadata and run through schema validation
+      const raw = createDefaultMetadata(incrementId) as any;
+      const { metadata: defaultMetadata, warnings } = this.validateMetadataSchema(raw, incrementId);
+      for (const w of warnings) {
+        this.logger.warn(`metadata(${incrementId}): ${w}`);
+      }
       this.write(incrementId, defaultMetadata, rootDir);
 
       // **CRITICAL**: Update active increment state if default status is ACTIVE
@@ -130,24 +153,24 @@ export class MetadataManager {
       const content = fs.readFileSync(metadataPath, 'utf-8');
       const rawMetadata: any = JSON.parse(content);
 
-      // **SCHEMA NORMALIZATION**: Handle legacy schemas with different field names
-      // This makes the status command schema-agnostic
-      const metadata: IncrementMetadata = {
-        ...rawMetadata,
-        // Normalize: createdAt → created (legacy schema compatibility)
-        created: rawMetadata.created || rawMetadata.createdAt || new Date().toISOString(),
-        // Normalize: updatedAt → updated (legacy schema compatibility)
-        updated: rawMetadata.updated || rawMetadata.updatedAt || rawMetadata.lastActivity || new Date().toISOString(),
-        // Ensure lastActivity exists (required by standard schema)
-        lastActivity: rawMetadata.lastActivity || rawMetadata.updated || rawMetadata.updatedAt || new Date().toISOString()
-      };
+      // Validate & auto-correct schema issues (T-012/T-013)
+      const { metadata, corrected, warnings } = this.validateMetadataSchema(
+        rawMetadata,
+        incrementId
+      );
 
-      // Remove legacy fields after normalization
-      delete (metadata as any).createdAt;
-      delete (metadata as any).updatedAt;
+      // Emit warnings to stderr so they are visible but non-blocking
+      for (const w of warnings) {
+        this.logger.warn(`metadata(${incrementId}): ${w}`);
+      }
 
-      // Validate schema
+      // Validate hard constraints (id, status enum, type enum, required fields)
       this.validate(metadata);
+
+      // Write corrected file back so the fix persists
+      if (corrected) {
+        this.write(incrementId, metadata, rootDir);
+      }
 
       return metadata;
     } catch (error) {
@@ -778,6 +801,142 @@ export class MetadataManager {
     }
 
     return extended;
+  }
+
+  /**
+   * Validate and auto-correct metadata schema issues.
+   *
+   * Fixes:
+   *  - id: short numeric IDs (e.g. "0399") expanded to full slug using folderName
+   *  - type: non-standard aliases mapped to canonical enum values
+   *  - created/createdAt: legacy field renamed
+   *  - externalLinks: ensured to exist (defaults to {})
+   *  - status/priority/testMode/coverageTarget: sensible defaults applied
+   *
+   * @returns corrected metadata, whether any correction was made, and warnings
+   */
+  private static validateMetadataSchema(
+    raw: any,
+    folderName?: string
+  ): SchemaValidationResult {
+    const warnings: string[] = [];
+    let corrected = false;
+    const metadata = { ...raw };
+
+    // --- id: expand short numeric-only IDs to full slug ---
+    if (metadata.id && /^\d{4}[A-Za-z]?$/.test(metadata.id) && folderName) {
+      warnings.push(`Short ID '${metadata.id}' expanded to full slug '${folderName}'`);
+      metadata.id = folderName;
+      corrected = true;
+    }
+
+    // --- type: map non-standard aliases ---
+    if (metadata.type) {
+      const alias = TYPE_ALIAS_MAP[metadata.type as string];
+      if (alias) {
+        warnings.push(`Non-standard type '${metadata.type}' mapped to '${alias}'`);
+        metadata.type = alias;
+        corrected = true;
+      } else if (!Object.values(IncrementType).includes(metadata.type as IncrementType)) {
+        warnings.push(`Unknown type '${metadata.type}' — keeping as-is`);
+      }
+    }
+
+    // --- createdAt → created ---
+    if (!metadata.created && metadata.createdAt) {
+      metadata.created = metadata.createdAt;
+      delete metadata.createdAt;
+      warnings.push(`Renamed legacy field 'createdAt' to 'created'`);
+      corrected = true;
+    } else if (metadata.createdAt) {
+      // Both exist — drop the legacy one
+      delete metadata.createdAt;
+      corrected = true;
+    }
+
+    // --- updatedAt → updated (bonus, same pattern already in read()) ---
+    if (metadata.updatedAt) {
+      if (!metadata.updated) {
+        metadata.updated = metadata.updatedAt;
+      }
+      delete metadata.updatedAt;
+      corrected = true;
+    }
+
+    // --- externalLinks default ---
+    if (!metadata.externalLinks) {
+      metadata.externalLinks = {};
+      corrected = true;
+    }
+
+    // --- normalizeExternalLinks: copy legacy github → externalLinks.github ---
+    const elGithub = metadata.externalLinks?.github;
+    const hasNewGithubData = elGithub && elGithub.issues && Object.keys(elGithub.issues).length > 0;
+    const oldGithub = metadata.github;
+    const hasOldGithubData = oldGithub && Array.isArray(oldGithub.issues) && oldGithub.issues.length > 0;
+
+    if (!hasNewGithubData && hasOldGithubData) {
+      const issues: Record<string, { issueNumber: number; issueUrl: string; status: string }> = {};
+      for (const issue of oldGithub.issues) {
+        if (issue.userStory && issue.number) {
+          issues[issue.userStory] = {
+            issueNumber: issue.number,
+            issueUrl: issue.url || '',
+            status: 'active',
+          };
+        }
+      }
+
+      if (Object.keys(issues).length > 0) {
+        metadata.externalLinks.github = {
+          issues,
+          ...(oldGithub.milestone != null ? { milestone: oldGithub.milestone } : {}),
+          syncedAt: oldGithub.lastSync || new Date().toISOString(),
+        };
+        warnings.push('Copied legacy github data to externalLinks.github');
+        corrected = true;
+      }
+    }
+
+    // --- sensible defaults ---
+    if (!metadata.status) {
+      metadata.status = IncrementStatus.PLANNING;
+      warnings.push(`Missing 'status' — defaulted to '${IncrementStatus.PLANNING}'`);
+      corrected = true;
+    }
+
+    if (!metadata.priority) {
+      metadata.priority = 'medium';
+      corrected = true;
+    }
+
+    if (!metadata.created) {
+      metadata.created = new Date().toISOString();
+      corrected = true;
+    }
+
+    if (!metadata.lastActivity) {
+      metadata.lastActivity = metadata.updated || metadata.created;
+      corrected = true;
+    }
+
+    if (metadata.testMode === undefined) {
+      metadata.testMode = 'test-after';
+      corrected = true;
+    }
+
+    if (metadata.coverageTarget === undefined) {
+      metadata.coverageTarget = 80;
+      corrected = true;
+    }
+
+    if (!metadata.type) {
+      metadata.type = IncrementType.FEATURE;
+      warnings.push(`Missing 'type' — defaulted to '${IncrementType.FEATURE}'`);
+      corrected = true;
+    }
+
+    return { metadata, corrected, warnings };
   }
 
   /**

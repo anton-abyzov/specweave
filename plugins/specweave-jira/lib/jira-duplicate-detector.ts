@@ -10,6 +10,8 @@
  */
 
 import { Logger, consoleLogger } from '../../../src/utils/logger.js';
+import { getApiBaseUrl } from './jira-deployment-detector.js';
+import { toCommentBody } from './content-format-adapter.js';
 
 export interface JiraIssue {
   key: string;
@@ -122,9 +124,9 @@ export class JiraDuplicateDetector {
     } catch (error: any) {
       this.logger.log(`⚠️  Verification check failed: ${error.message}`);
       return {
-        success: true, // Assume success on error
+        success: false,
         expectedCount,
-        actualCount: expectedCount,
+        actualCount: -1,
         duplicates: [],
       };
     }
@@ -281,7 +283,7 @@ export class JiraDuplicateDetector {
     }
 
     const jql = encodeURIComponent(`summary ~ "${summaryPattern}" ORDER BY created ASC`);
-    const url = `https://${this.domain}/rest/api/3/search?jql=${jql}&fields=summary,status,created`;
+    const url = `${getApiBaseUrl(this.domain)}/search?jql=${jql}&fields=summary,status,created`;
 
     const response = await fetch(url, {
       headers: {
@@ -328,7 +330,7 @@ export class JiraDuplicateDetector {
       throw new Error(`No close transition found. Available: ${transitions.map((t: any) => t.name).join(', ')}`);
     }
 
-    const url = `https://${this.domain}/rest/api/3/issue/${issueKey}/transitions`;
+    const url = `${getApiBaseUrl(this.domain)}/issue/${issueKey}/transitions`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -351,7 +353,7 @@ export class JiraDuplicateDetector {
    * Get available transitions for an issue
    */
   private async getTransitions(issueKey: string): Promise<any[]> {
-    const url = `https://${this.domain}/rest/api/3/issue/${issueKey}/transitions`;
+    const url = `${getApiBaseUrl(this.domain)}/issue/${issueKey}/transitions`;
 
     const response = await fetch(url, {
       headers: {
@@ -372,16 +374,16 @@ export class JiraDuplicateDetector {
    * Add duplicate comment to issue
    */
   private async addComment(issueKey: string, originalKey: string): Promise<void> {
-    const url = `https://${this.domain}/rest/api/3/issue/${issueKey}/comment`;
+    const url = `${getApiBaseUrl(this.domain)}/issue/${issueKey}/comment`;
 
-    const comment = `h2. Duplicate of ${originalKey}
+    const commentText = `h2. Duplicate of ${originalKey}
 
 This issue was automatically closed by SpecWeave cleanup because it is a duplicate.
 
-The original issue (${originalKey}) contains the same content and should be used for tracking instead.
+The original issue (${originalKey}) contains the same content and should be used for tracking instead.`;
 
-----
-🤖 Auto-closed by SpecWeave Duplicate Cleanup`;
+    // Use format adapter for correct format (ADF for Cloud, wiki for Server)
+    const body = toCommentBody(commentText, this.domain);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -389,23 +391,7 @@ The original issue (${originalKey}) contains the same content and should be used
         Authorization: `Basic ${this.auth}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        body: {
-          type: 'doc',
-          version: 1,
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  text: comment,
-                },
-              ],
-            },
-          ],
-        },
-      }),
+      body: JSON.stringify({ body }),
     });
 
     if (!response.ok) {

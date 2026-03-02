@@ -29,26 +29,46 @@ interface GitHubConfig {
   token: string;
 }
 
-async function loadGitHubConfig(): Promise<GitHubConfig | null> {
-  const projectRoot = process.cwd();
+/**
+ * Resolve GitHub config (owner/repo) with a single canonical precedence order.
+ *
+ * Resolution order (documented for both CLI and hooks):
+ * 1. CLI flags / env vars: GITHUB_OWNER, GITHUB_REPO
+ * 2. .specweave/config.json — sync.github.owner/repo
+ * 3. .specweave/config.json — multiProject.projects[active].externalTools.github
+ * 4. .specweave/config.json — sync.profiles[defaultProfile].config
+ * 5. .specweave/config.json — first GitHub profile (fallback)
+ * 6. Git remote detection (git remote get-url origin)
+ *
+ * This is the SINGLE source of truth for owner/repo config.
+ * Shell hooks should read the same config.json paths in the same order.
+ */
+export async function resolveGitHubConfig(options?: {
+  cliOwner?: string;
+  cliRepo?: string;
+  cliToken?: string;
+  projectRoot?: string;
+}): Promise<{ owner: string; repo: string; token: string } | null> {
+  const projectRoot = options?.projectRoot || process.cwd();
   const configPath = path.join(projectRoot, '.specweave/config.json');
 
-  let owner = process.env.GITHUB_OWNER || '';
-  let repo = process.env.GITHUB_REPO || '';
-  const token = process.env.GITHUB_TOKEN || '';
+  // Step 1: CLI flags / env vars (highest precedence)
+  let owner = options?.cliOwner || process.env.GITHUB_OWNER || '';
+  let repo = options?.cliRepo || process.env.GITHUB_REPO || '';
+  const token = options?.cliToken || process.env.GITHUB_TOKEN || '';
 
-  // Try to load from config.json
-  if (existsSync(configPath)) {
+  // Step 2-5: config.json methods (only if not already resolved)
+  if ((!owner || !repo) && existsSync(configPath)) {
     try {
       const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-      // Method 1: sync.github
-      if (config.sync?.github?.owner && config.sync?.github?.repo) {
+      // Method 2: sync.github
+      if (!owner && !repo && config.sync?.github?.owner && config.sync?.github?.repo) {
         owner = config.sync.github.owner;
         repo = config.sync.github.repo;
       }
-      // Method 2: multiProject.projects[activeProject].externalTools.github
-      else if (config.multiProject?.enabled && config.multiProject?.activeProject) {
+      // Method 3: multiProject.projects[activeProject].externalTools.github
+      if (!owner && !repo && config.multiProject?.enabled && config.multiProject?.activeProject) {
         const activeProject = config.multiProject.activeProject;
         const projectConfig = config.multiProject.projects?.[activeProject];
         if (projectConfig?.externalTools?.github?.repository) {
@@ -59,17 +79,16 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
           }
         }
       }
-      // Method 3: sync.profiles[defaultProfile]
-      else if (config.sync?.defaultProfile && config.sync?.profiles) {
+      // Method 4: sync.profiles[defaultProfile]
+      if (!owner && !repo && config.sync?.defaultProfile && config.sync?.profiles) {
         const profile = config.sync.profiles[config.sync.defaultProfile];
         if (profile?.config?.owner && profile?.config?.repo) {
           owner = profile.config.owner;
           repo = profile.config.repo;
         }
       }
-      // Method 4 (v1.0.46): First GitHub profile if no defaultProfile is set
-      // This handles the common case where user has profiles but forgot to set defaultProfile
-      else if (config.sync?.profiles) {
+      // Method 5: First GitHub profile if no defaultProfile is set
+      if (!owner && !repo && config.sync?.profiles) {
         const profileNames = Object.keys(config.sync.profiles);
         for (const name of profileNames) {
           const profile = config.sync.profiles[name];
@@ -86,7 +105,7 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
     }
   }
 
-  // Fallback: detect from git remote
+  // Step 6: Git remote detection (lowest precedence)
   if (!owner || !repo) {
     try {
       const { execSync } = await import('child_process');
@@ -95,14 +114,13 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
         cwd: projectRoot
       }).trim();
 
-      // Parse GitHub URL (HTTPS or SSH)
       const match = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/.]+)/);
       if (match) {
         owner = owner || match[1];
         repo = repo || match[2];
       }
     } catch {
-      // Git detection failed, continue with what we have
+      // Git detection failed
     }
   }
 
@@ -121,6 +139,10 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
   return { owner, repo, token };
 }
 
+async function loadGitHubConfig(): Promise<GitHubConfig | null> {
+  return resolveGitHubConfig();
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -131,7 +153,7 @@ async function main() {
     console.log('  feature-id   Feature ID (e.g., FS-062)');
     console.log('');
     console.log('Environment:');
-    console.log('  GITHUB_TOKEN  Required - GitHub personal access token');
+    console.log('  GITHUB_TOKEN  Required - GitHub PAT with repo scope');
     console.log('');
     console.log('Example:');
     console.log('  GITHUB_TOKEN=ghp_xxx node github-feature-sync-cli.js FS-062');

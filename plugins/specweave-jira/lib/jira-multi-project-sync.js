@@ -5,6 +5,7 @@ import {
   mapUserStoryToProjects
 } from "../../../src/utils/project-mapper.js";
 import { parseSpecFile } from "../../../src/utils/spec-splitter.js";
+import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 class JiraMultiProjectSync {
   constructor(config) {
     this.config = config;
@@ -43,14 +44,6 @@ Please verify project keys and access permissions.`
     const results = [];
     await this.validateProjects();
     const parsedSpec = await parseSpecFile(specPath);
-    const epicsByProject = /* @__PURE__ */ new Map();
-    if (this.config.autoCreateEpics !== false) {
-      for (const project of this.config.projects) {
-        const epicResult = await this.createEpicForProject(parsedSpec, project);
-        epicsByProject.set(project, epicResult.issueKey);
-        results.push(epicResult);
-      }
-    }
     const projectStories = /* @__PURE__ */ new Map();
     for (const userStory of parsedSpec.userStories) {
       if (this.config.intelligentMapping !== false) {
@@ -83,6 +76,14 @@ Please verify project keys and access permissions.`
           existing.push({ story: userStory, confidence: 0 });
           projectStories.set(fallback, existing);
         }
+      }
+    }
+    const epicsByProject = /* @__PURE__ */ new Map();
+    if (this.config.autoCreateEpics !== false) {
+      for (const projectId of projectStories.keys()) {
+        const epicResult = await this.createEpicForProject(parsedSpec, projectId);
+        epicsByProject.set(projectId, epicResult.issueKey);
+        results.push(epicResult);
       }
     }
     for (const [projectId, stories] of projectStories.entries()) {
@@ -167,7 +168,16 @@ _Classification confidence: ${(confidence * 100).toFixed(0)}%_
       issuetype: { name: this.getIssueTypeName(itemType) }
     };
     if (epicKey) {
-      issueData.parent = { key: epicKey };
+      const { field: epicField, style } = await getEpicLinkFieldForProject(
+        this.config.domain,
+        projectId,
+        { email: this.config.email, apiToken: this.config.apiToken }
+      );
+      if (style === "next-gen") {
+        issueData.parent = { key: epicKey };
+      } else {
+        issueData[epicField] = epicKey;
+      }
     }
     const issue = await this.client.createIssue(issueData);
     return {
