@@ -315,12 +315,13 @@ extract_acs_for_us() {
       continue
     fi
     # Start of next US section or next ## section — stop
-    if $in_section && [[ "$line" =~ ^##[[:space:]] ]]; then
+    if $in_section && { [[ "$line" =~ ^###[[:space:]]+US- ]] || [[ "$line" =~ ^##[[:space:]] ]]; }; then
       break
     fi
     # Inside our section, look for AC lines
     if $in_section; then
-      if [[ "$line" =~ ^\*\*Acceptance[[:space:]]Criteria ]]; then
+      # Acceptance Criteria heading: both bold (**AC**) and heading (#### AC) formats
+      if [[ "$line" =~ ^\*\*Acceptance[[:space:]]Criteria ]] || [[ "$line" =~ ^#+[[:space:]]+Acceptance[[:space:]]Criteria ]]; then
         in_ac=true
         continue
       fi
@@ -372,10 +373,13 @@ extract_desc_for_us() {
     fi
     if $in_section; then
       # Stop at next US heading, next ## section, or Acceptance Criteria
+      # Match ## but NOT ### or ####: ^##[[:space:]] catches "## Heading"
+      # Match ### US- for next user story: ^###[[:space:]]+US-
       if [[ "$line" =~ ^###[[:space:]]+US- ]] || [[ "$line" =~ ^##[[:space:]] ]]; then
         break
       fi
-      if [[ "$line" =~ ^\*\*Acceptance[[:space:]]Criteria ]]; then
+      # Acceptance Criteria heading: both bold (**AC**) and heading (#### AC) formats
+      if [[ "$line" =~ ^\*\*Acceptance[[:space:]]Criteria ]] || [[ "$line" =~ ^#+[[:space:]]+Acceptance[[:space:]]Criteria ]]; then
         break
       fi
       # Collect non-empty lines as description
