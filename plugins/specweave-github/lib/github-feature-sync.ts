@@ -300,7 +300,7 @@ export class GitHubFeatureSync {
       // v1.0.240 FIX: Backfill increment metadata.json for reconciler compatibility
       // Previously only US frontmatter was updated, leaving metadata.json empty.
       // This caused reconciler and closure flows to miss these issues.
-      await this.backfillIncrementMetadata(featureId, userStory.id, issueNumber);
+      await this.backfillIncrementMetadata(featureId, userStory.id, issueNumber, milestoneNumber!);
 
       // ✅ CRITICAL FIX (2025-11-24): Check completion for ALL issues (new AND reused)
       // BUG: Previously only checked completion for reused issues, not new ones
@@ -657,13 +657,16 @@ export class GitHubFeatureSync {
   /**
    * Backfill increment metadata.json with GitHub issue reference (v1.0.240)
    *
-   * Writes in the old format (metadata.github.issues[]) that the reconciler
-   * and closure flows expect. Non-blocking — errors are logged but don't halt sync.
+   * Writes in BOTH formats:
+   * - OLD format (metadata.github.issues[]) for backward compatibility
+   * - NEW format (metadata.externalLinks.github) for reconciler/closure flows
+   * Non-blocking — errors are logged but don't halt sync.
    */
   private async backfillIncrementMetadata(
     featureId: string,
     userStoryId: string,
-    issueNumber: number
+    issueNumber: number,
+    milestoneNumber: number
   ): Promise<void> {
     try {
       // Derive increment ID from feature ID (reverse of deriveFeatureId)
@@ -685,25 +688,54 @@ export class GitHubFeatureSync {
       if (!existsSync(metadataPath)) return;
 
       const metadata = JSON.parse(await readFile(metadataPath, 'utf-8'));
+      const issueUrl = `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`;
+      let changed = false;
 
-      // Write in OLD format for reconciler compatibility
+      // Write in OLD format for backward compatibility
       if (!metadata.github) metadata.github = {};
       if (!metadata.github.issues) metadata.github.issues = [];
 
-      const exists = metadata.github.issues.some(
+      const existsOld = metadata.github.issues.some(
         (i: { userStory: string }) => i.userStory === userStoryId
       );
 
-      if (!exists) {
+      if (!existsOld) {
         metadata.github.issues.push({
           userStory: userStoryId,
           number: issueNumber,
-          url: `https://github.com/${this.client.getOwner()}/${this.client.getRepo()}/issues/${issueNumber}`,
+          url: issueUrl,
           createdAt: new Date().toISOString(),
         });
         metadata.github.lastSync = new Date().toISOString();
+        changed = true;
+      }
+
+      // Write in NEW format (externalLinks.github) for reconciler/closure flows
+      if (!metadata.externalLinks) metadata.externalLinks = {};
+      if (!metadata.externalLinks.github) metadata.externalLinks.github = {};
+      if (!metadata.externalLinks.github.issues) metadata.externalLinks.github.issues = {};
+
+      const existsNew = metadata.externalLinks.github.issues[userStoryId];
+
+      if (!existsNew) {
+        metadata.externalLinks.github.issues[userStoryId] = {
+          issueNumber,
+          issueUrl,
+          status: 'active',
+        };
+        changed = true;
+      }
+
+      // Always set milestone and syncedAt on the new format
+      if (milestoneNumber && metadata.externalLinks.github.milestone !== milestoneNumber) {
+        metadata.externalLinks.github.milestone = milestoneNumber;
+        changed = true;
+      }
+
+      if (changed) {
+        metadata.externalLinks.github.syncedAt = new Date().toISOString();
         await writeFile(metadataPath, JSON.stringify(metadata, null, 2) + '\n', 'utf-8');
-        console.log(`      📝 Backfilled metadata.json for ${userStoryId}`);
+        console.log(`      📝 Backfilled metadata.json for ${userStoryId} (dual-format)`);
       }
     } catch (error) {
       // Non-blocking
