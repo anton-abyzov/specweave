@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.345] - 2026-03-02
+
+### Changes
+- 1.0.344: fix reconciler archive scanning, init guard rails, skill updates
+- fix stale comment referencing --plugin-dir in install_plugin_via_vskill
+- unify plugin install via --repo, remove local marketplace dependency
+
+---
+
+
+
 ## [1.0.344] - 2026-03-02
 
 ### Changes
