@@ -69,18 +69,30 @@ export AZURE_DEVOPS_PAT="your-token-here"
 Add to `.specweave/config.json`:
 ```json
 {
-  "externalPM": {
-    "tool": "ado",
+  "sync": {
     "enabled": true,
-    "config": {
-      "organization": "myorg",
-      "project": "MyProject",
-      "workItemType": "Epic",
-      "areaPath": "MyProject\\Team A",
-      "syncOnTaskComplete": true
+    "preset": "bidirectional",
+    "activeProfile": "default",
+    "profiles": {
+      "default": {
+        "provider": "ado",
+        "config": {
+          "organization": "myorg",
+          "project": "MyProject",
+          "workItemType": "Epic",
+          "areaPath": "MyProject\\Team A",
+          "syncOnTaskComplete": true
+        }
+      }
     }
   }
 }
+```
+
+**Credentials** (in `.env`, gitignored):
+```bash
+AZURE_DEVOPS_PAT=your-token-here
+# Or org-specific: AZURE_DEVOPS_PAT_MYORG=your-token
 ```
 
 ---
@@ -257,27 +269,37 @@ Sync Enabled: ✅
 **`.specweave/config.json`**:
 ```json
 {
-  "externalPM": {
-    "tool": "ado",
+  "sync": {
     "enabled": true,
-    "config": {
-      "organization": "myorg",
-      "project": "MyProject",
-      "personalAccessToken": "${AZURE_DEVOPS_PAT}",
-      "workItemType": "Epic",
-      "areaPath": "MyProject\\Team A",
-      "iterationPath": "MyProject\\Sprint 1",
-      "syncOnTaskComplete": true,
-      "syncOnIncrementComplete": true,
-      "createWorkItemsAutomatically": true,
-      "bidirectional": false,
-      "tags": ["specweave", "increment"],
-      "customFields": {
-        "incrementId": "Custom.IncrementId"
+    "preset": "bidirectional",
+    "activeProfile": "default",
+    "profiles": {
+      "default": {
+        "provider": "ado",
+        "config": {
+          "organization": "myorg",
+          "project": "MyProject",
+          "workItemType": "Epic",
+          "areaPath": "MyProject\\Team A",
+          "iterationPath": "MyProject\\Sprint 1",
+          "syncOnTaskComplete": true,
+          "syncOnIncrementComplete": true,
+          "createWorkItemsAutomatically": true,
+          "bidirectional": false,
+          "tags": ["specweave", "increment"],
+          "customFields": {
+            "incrementId": "Custom.IncrementId"
+          }
+        }
       }
     }
   }
 }
+```
+
+**Credentials** (in `.env`, gitignored — never commit tokens):
+```bash
+AZURE_DEVOPS_PAT=your-token-here
 ```
 
 ---
@@ -319,14 +341,19 @@ Sync Enabled: ✅
 - Burst limit: 5000 requests per hour
 - Recommendation: Enable rate limiting in config
 
-**Config**:
+**Config** (add to your profile's `config` block):
 ```json
 {
-  "externalPM": {
-    "config": {
-      "rateLimiting": {
-        "enabled": true,
-        "maxRequestsPerMinute": 150
+  "sync": {
+    "profiles": {
+      "default": {
+        "provider": "ado",
+        "config": {
+          "rateLimiting": {
+            "enabled": true,
+            "maxRequestsPerMinute": 150
+          }
+        }
       }
     }
   }
