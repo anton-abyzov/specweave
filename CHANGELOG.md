@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.344] - 2026-03-02
+
+### Changes
+- fix stale comment referencing --plugin-dir in install_plugin_via_vskill
+- unify plugin install via --repo, remove local marketplace dependency
+
+---
+
+
+
 ## [1.0.343] - 2026-03-01
 
 ### Changes

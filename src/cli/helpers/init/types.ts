@@ -193,6 +193,22 @@ export interface TranslationConfig {
 }
 
 /**
+ * Result of umbrella parent detection
+ */
+export interface UmbrellaParentResult {
+  umbrellaRoot: string;
+  reason: 'config-umbrella-repo' | 'repositories-dir';
+}
+
+/**
+ * Result of suspicious path detection
+ */
+export interface SuspiciousPathResult {
+  segment: string;
+  suggestedRoot: string;
+}
+
+/**
  * Context passed between init steps
  */
 export interface InitContext {

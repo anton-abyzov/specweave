@@ -381,6 +381,62 @@ Tasks: [N] | Domains: [M] | Complexity: [Low/Medium/High]
 
 See CLAUDE.md Execution Strategy section for the full decision matrix.
 
+## Markdown Preview Guidelines
+
+When presenting **scope or structure decisions** that have 2+ meaningful options, use `AskUserQuestion` with the `markdown` preview field to show tree diagrams (folder structures) or tables (AC coverage). This helps the user visually compare what each approach delivers.
+
+**When to use**: Choosing between increment scopes (MVP vs full), folder structures, or comparing AC coverage across approaches.
+
+**When NOT to use**: Simple type classification (feature vs bug), single-option confirmations, or questions without structural implications.
+
+### Example 1: Scope Decision with AC Coverage Table
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which scope should this increment cover?",
+    header: "Scope",
+    multiSelect: false,
+    options: [
+      {
+        label: "MVP (Recommended)",
+        description: "Core auth flow only. Ship fast, iterate in next increment.",
+        markdown: "Task        AC Coverage      Stories\n──────────  ───────────────  ───────\nDB Schema   AC-US1-01        US-001\nJWT Utils   AC-US1-02        US-001\nLogin API   AC-US1-01,03     US-001\nAuth MW     AC-US2-01        US-002\n\nTotal: 4 tasks | 2 stories | 4 ACs covered"
+      },
+      {
+        label: "Full Feature",
+        description: "Auth + password reset + OAuth. More complete but 3x the work.",
+        markdown: "Task          AC Coverage        Stories\n────────────  ─────────────────  ───────\nDB Schema     AC-US1-01          US-001\nJWT Utils     AC-US1-02          US-001\nLogin API     AC-US1-01,03       US-001\nAuth MW       AC-US2-01          US-002\nPwd Reset     AC-US3-01,02       US-003\nOAuth Flow    AC-US4-01,02,03    US-004\nE2E Tests     AC-US1-01..US4-03  All\n\nTotal: 7 tasks | 4 stories | 10 ACs covered"
+      }
+    ]
+  }]
+})
+```
+
+### Example 2: Structure Decision with Tree Preview
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which folder structure should we use for this feature?",
+    header: "Structure",
+    multiSelect: false,
+    options: [
+      {
+        label: "By Domain (Recommended)",
+        description: "Group files by business domain. Better for feature isolation.",
+        markdown: "src/\n├── auth/\n│   ├── api/\n│   │   ├── login.ts\n│   │   └── register.ts\n│   ├── middleware.ts\n│   └── jwt-utils.ts\n├── billing/\n│   ├── api/\n│   └── stripe-client.ts\n└── shared/\n    └── db.ts"
+      },
+      {
+        label: "By Layer",
+        description: "Group by technical layer. Familiar MVC-style structure.",
+        markdown: "src/\n├── api/\n│   ├── auth.ts\n│   └── billing.ts\n├── middleware/\n│   └── auth.ts\n├── services/\n│   ├── jwt-utils.ts\n│   └── stripe-client.ts\n└── db/\n    └── client.ts"
+      }
+    ]
+  }]
+})
+```
+
 ## Output
 
 ```
