@@ -122,6 +122,7 @@ interface PartialSyncConfig {
   jira?: { enabled?: boolean; domain?: string; projectKey?: string };
   ado?: { enabled?: boolean; organization?: string; project?: string };
   preset?: SyncPreset;
+  profiles?: Record<string, { provider?: string; config?: Record<string, unknown> }>;
 }
 
 interface PlatformSyncMetadata {
@@ -150,23 +151,28 @@ export function validateSyncConfigConsistency(
     }
   }
 
-  // Check: provider enabled but incomplete config
+  // Check: provider enabled but incomplete config (legacy format only)
+  // Skip these checks when the provider is configured via profiles instead
   if (config.enabled !== false) {
-    if (config.github?.enabled && !config.github.owner && !config.github.repo) {
+    const profileProviders = new Set(
+      Object.values(config.profiles ?? {}).map((p) => p.provider).filter(Boolean),
+    );
+
+    if (config.github?.enabled && !config.github.owner && !config.github.repo && !profileProviders.has('github')) {
       issues.push({
         type: 'warning',
         message: 'GitHub sync enabled but github.owner and github.repo are not configured.',
         suggestedFix: 'Set sync.github.owner and sync.github.repo in config.json, or run /sw:sync-setup.',
       });
     }
-    if (config.jira?.enabled && !config.jira.domain) {
+    if (config.jira?.enabled && !config.jira.domain && !profileProviders.has('jira')) {
       issues.push({
         type: 'warning',
         message: 'JIRA sync enabled but jira.domain is not configured.',
         suggestedFix: 'Set sync.jira.domain and sync.jira.projectKey in config.json.',
       });
     }
-    if (config.ado?.enabled && !config.ado.organization) {
+    if (config.ado?.enabled && !config.ado.organization && !profileProviders.has('ado')) {
       issues.push({
         type: 'warning',
         message: 'ADO sync enabled but ado.organization is not configured.',

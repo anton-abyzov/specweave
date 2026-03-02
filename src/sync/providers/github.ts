@@ -129,34 +129,45 @@ export class GitHubAdapter implements ProviderAdapter {
   }
 
   async pullChanges(since?: Date): Promise<ExternalChange[]> {
-    const params = new URLSearchParams({ state: 'all', sort: 'updated', direction: 'desc', per_page: '50' });
-    if (since) params.set('since', since.toISOString());
-
-    const response = await this.apiRequest('GET', `/issues?${params}`);
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Failed to pull GitHub changes: ${response.status} ${text.substring(0, 200)}`);
-    }
-    const issues = await response.json() as GitHubIssue[];
     const changes: ExternalChange[] = [];
+    const maxPages = 5;
+    let page = 1;
+    let hasMore = true;
 
-    for (const issue of issues) {
-      if (issue.title.match(/^US-\d+[GJAE]?:/)) {
-        changes.push({
-          type: issue.state === 'closed' ? 'closed' : 'status_change',
-          ref: {
-            platform: 'github',
-            id: String(issue.number),
-            url: issue.html_url,
-            userStory: this.extractUsId(issue.title) || '',
-          },
-          data: {
-            status: issue.state,
-            title: issue.title,
-            labels: issue.labels.map(l => l.name),
-          },
-        });
+    while (hasMore && page <= maxPages) {
+      const params = new URLSearchParams({ state: 'all', sort: 'updated', direction: 'desc', per_page: '50', page: String(page) });
+      if (since) params.set('since', since.toISOString());
+
+      const response = await this.apiRequest('GET', `/issues?${params}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to pull GitHub changes: ${response.status} ${text.substring(0, 200)}`);
       }
+      const issues = await response.json() as GitHubIssue[];
+
+      for (const issue of issues) {
+        if (issue.title.match(/^US-\d+[GJAE]?:/)) {
+          changes.push({
+            type: issue.state === 'closed' ? 'closed' : 'status_change',
+            ref: {
+              platform: 'github',
+              id: String(issue.number),
+              url: issue.html_url,
+              userStory: this.extractUsId(issue.title) || '',
+            },
+            data: {
+              status: issue.state,
+              title: issue.title,
+              labels: issue.labels.map(l => l.name),
+            },
+          });
+        }
+      }
+
+      // Check for more pages
+      const linkHeader = response.headers.get('link') || '';
+      hasMore = linkHeader.includes('rel="next"');
+      page++;
     }
 
     return changes;
@@ -184,7 +195,11 @@ export class GitHubAdapter implements ProviderAdapter {
       await this.ensureLabelExists(label);
     }
 
-    await this.apiRequest('PUT', `/issues/${ref.id}/labels`, { labels: labelNames });
+    const response = await this.apiRequest('PUT', `/issues/${ref.id}/labels`, { labels: labelNames });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to apply labels to issue #${ref.id}: ${response.status} ${text.substring(0, 200)}`);
+    }
   }
 
   async detectHierarchy(): Promise<DetectedHierarchy> {
@@ -264,14 +279,15 @@ export class GitHubAdapter implements ProviderAdapter {
   }
 
   private async ensureLabelExists(label: Label): Promise<void> {
-    try {
-      await this.apiRequest('POST', '/labels', {
-        name: label.name,
-        color: label.color,
-        description: label.description || '',
-      });
-    } catch {
-      // Label likely already exists, ignore
+    const response = await this.apiRequest('POST', '/labels', {
+      name: label.name,
+      color: label.color,
+      description: label.description || '',
+    });
+    if (!response.ok && response.status !== 422) {
+      // 422 = label already exists (expected), other errors should propagate
+      const text = await response.text();
+      throw new Error(`Failed to create label "${label.name}": ${response.status} ${text.substring(0, 200)}`);
     }
   }
 
