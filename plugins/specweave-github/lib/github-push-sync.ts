@@ -102,6 +102,7 @@ async function searchIssueByPrefix(
   const res = await execFileNoThrow('gh', [
     'issue', 'list',
     '--repo', repoSlug,
+    '--state', 'all',
     '--search', `[${usId}] in:title`,
     '--json', 'number,title,node_id',
     '--limit', '1',
