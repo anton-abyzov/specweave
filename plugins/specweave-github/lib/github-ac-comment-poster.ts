@@ -12,8 +12,6 @@ import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
-import { pushSyncUserStories } from './github-push-sync.js';
-import type { UserStoryForSync } from './github-push-sync.js';
 
 export interface CommentPostOptions {
   owner: string;
@@ -99,20 +97,15 @@ export async function postACProgressComments(
       });
     }
 
-    // Targeted push-sync: update issue body with current AC states
-    const usForSync = buildUserStoryForSync(content, usId, acStates, incrementId);
-    if (usForSync) {
+    // Patch AC checkboxes directly in the issue body using the known issue number
+    if (acStates.length > 0) {
       try {
-        await pushSyncUserStories([usForSync], {
-          owner: options.owner,
-          repo: options.repo,
-          token: options.token,
-        });
-      } catch (pushErr) {
-        // Push-sync failure is non-blocking but should be visible
+        await patchIssueBodyCheckboxes(link.issueNumber, acStates, repoSlug, env);
+      } catch (patchErr) {
+        // Body patch failure is non-blocking but should be visible
         result.errors.push({
           usId,
-          error: `push-sync: ${pushErr instanceof Error ? pushErr.message : String(pushErr)}`,
+          error: `body-patch: ${patchErr instanceof Error ? patchErr.message : String(patchErr)}`,
         });
       }
     }
@@ -200,35 +193,6 @@ function parseACStatesForUS(content: string, usId: string): ParsedACState[] {
 }
 
 /**
- * Build a UserStoryForSync object for targeted push-sync.
- */
-function buildUserStoryForSync(
-  content: string,
-  usId: string,
-  acStates: ParsedACState[],
-  incrementId: string,
-): UserStoryForSync | null {
-  // Extract US title from content
-  const usNum = String(parseInt(usId.replace('US-', ''), 10)).padStart(3, '0');
-  const titleMatch = content.match(new RegExp(`### US-${usNum}:\\s*(.+)`));
-  const title = titleMatch ? titleMatch[1].trim() : usId;
-
-  return {
-    id: usId,
-    title,
-    description: '',
-    priority: 'P1',
-    status: 'in-progress',
-    acceptanceCriteria: acStates.map(ac => ({
-      id: ac.id,
-      description: ac.description,
-      completed: ac.completed,
-    })),
-    specId: incrementId,
-  };
-}
-
-/**
  * Build a progress comment for a specific user story.
  * Follows ProgressCommentBuilder format: percentage, AC checkboxes, timestamp.
  */
@@ -264,4 +228,52 @@ function buildProgressCommentForUS(
   comment += `Auto-synced by SpecWeave | ${new Date().toISOString().split('T')[0]}\n`;
 
   return comment;
+}
+
+/**
+ * Patch AC checkboxes in the GitHub issue body in-place.
+ * Fetches the current body, flips checkboxes to match local AC states,
+ * and updates the issue. Only modifies lines matching AC-USXX-YY patterns.
+ */
+async function patchIssueBodyCheckboxes(
+  issueNumber: number,
+  acStates: ParsedACState[],
+  repoSlug: string,
+  env?: NodeJS.ProcessEnv,
+): Promise<void> {
+  // Build a map of AC ID → completed
+  const acMap = new Map(acStates.map(ac => [ac.id, ac.completed]));
+
+  // Fetch current issue body
+  const fetchResult = await execFileNoThrow(
+    'gh',
+    ['issue', 'view', String(issueNumber), '--json', 'body', '-q', '.body', '-R', repoSlug],
+    env ? { env } : {},
+  );
+  if (!fetchResult.success || !fetchResult.stdout) return;
+
+  const body = fetchResult.stdout;
+
+  // Patch AC checkboxes: match both bold and plain AC-ID patterns
+  const patchedBody = body.replace(
+    /^(- \[)[ x](\] (?:\*\*)?)(AC-[A-Z0-9]+-\d+)((?:\*\*)?: .+)$/gm,
+    (_match: string, prefix: string, mid: string, acId: string, suffix: string) => {
+      const completed = acMap.get(acId);
+      if (completed !== undefined) {
+        return `${prefix}${completed ? 'x' : ' '}${mid}${acId}${suffix}`;
+      }
+      return _match;
+    },
+  );
+
+  if (patchedBody === body) return; // No changes needed
+
+  const editResult = await execFileNoThrow(
+    'gh',
+    ['issue', 'edit', String(issueNumber), '--body', patchedBody, '-R', repoSlug],
+    env ? { env } : {},
+  );
+  if (!editResult.success) {
+    throw new Error(editResult.stderr || 'Failed to update issue body');
+  }
 }
