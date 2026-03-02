@@ -172,35 +172,46 @@ export class JiraAdapter implements ProviderAdapter {
       jql = `project = "${safeKey}" AND labels = specweave AND updated >= "${dateStr}" ORDER BY updated DESC`;
     }
 
-    // Use /search/jql (JIRA deprecated /search in 2025, see CHANGE-2046)
-    const response = await this.apiRequest('POST', `/search/jql`, {
-      jql,
-      maxResults: 50,
-      fields: ['summary', 'status', 'issuetype', 'priority', 'labels', 'parent'],
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Failed to pull JIRA changes: ${response.status} ${text.substring(0, 200)}`);
-    }
-    const data = await response.json() as { issues: JiraIssue[] };
     const changes: ExternalChange[] = [];
+    let startAt = 0;
+    const maxResults = 50;
+    const maxTotal = 250; // Cap at 250 issues
+    let hasMore = true;
 
-    for (const issue of data.issues || []) {
-      const isClosed = JIRA_CLOSED_STATUSES.includes(issue.fields.status.name);
-      changes.push({
-        type: isClosed ? 'closed' : 'status_change',
-        ref: {
-          platform: 'jira',
-          id: issue.key,
-          url: `https://${this.domain}/browse/${issue.key}`,
-          userStory: this.extractUsId(issue.fields.summary) || '',
-        },
-        data: {
-          status: issue.fields.status.name,
-          title: issue.fields.summary,
-          labels: issue.fields.labels || [],
-        },
+    while (hasMore && startAt < maxTotal) {
+      // Use /search/jql (JIRA deprecated /search in 2025, see CHANGE-2046)
+      const response = await this.apiRequest('POST', `/search/jql`, {
+        jql,
+        maxResults,
+        startAt,
+        fields: ['summary', 'status', 'issuetype', 'priority', 'labels', 'parent'],
       });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to pull JIRA changes: ${response.status} ${text.substring(0, 200)}`);
+      }
+      const data = await response.json() as { issues: JiraIssue[]; total: number; startAt: number; maxResults: number };
+
+      for (const issue of data.issues || []) {
+        const isClosed = JIRA_CLOSED_STATUSES.includes(issue.fields.status.name);
+        changes.push({
+          type: isClosed ? 'closed' : 'status_change',
+          ref: {
+            platform: 'jira',
+            id: issue.key,
+            url: `https://${this.domain}/browse/${issue.key}`,
+            userStory: this.extractUsId(issue.fields.summary) || '',
+          },
+          data: {
+            status: issue.fields.status.name,
+            title: issue.fields.summary,
+            labels: issue.fields.labels || [],
+          },
+        });
+      }
+
+      startAt += maxResults;
+      hasMore = (data.issues?.length || 0) >= maxResults && startAt < (data.total || 0);
     }
 
     return changes;
@@ -230,6 +241,9 @@ export class JiraAdapter implements ProviderAdapter {
   async detectHierarchy(): Promise<DetectedHierarchy> {
     try {
       const response = await this.apiRequest('GET', `/project/${this.projectKey}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get JIRA project ${this.projectKey}: ${response.status}`);
+      }
       const project = await response.json() as { issueTypes?: Array<{ name: string }> };
       const types = (project.issueTypes || []).map(t => t.name.toLowerCase());
 
@@ -333,6 +347,10 @@ export class JiraAdapter implements ProviderAdapter {
 
   private async transitionIssue(issueKey: string, targetStatusName: string): Promise<void> {
     const response = await this.apiRequest('GET', `/issue/${issueKey}/transitions`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to get transitions for JIRA issue ${issueKey}: ${response.status} ${text.substring(0, 200)}`);
+    }
     const data = await response.json() as { transitions: JiraTransition[] };
 
     const transition = data.transitions.find(

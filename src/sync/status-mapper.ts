@@ -16,6 +16,7 @@ import type {
   AzureDevOpsConfig,
   SyncProfile,
 } from '../core/config/types.js';
+import { resolvePermissions, type SyncPreset } from './config.js';
 
 /**
  * Status sync mapping configuration (runtime config, not in core types)
@@ -189,10 +190,21 @@ export class StatusMapper {
   }
 
   /**
-   * Check if external sync is allowed
+   * Check if external sync is allowed.
+   * Aligns with SyncCoordinator: explicit setting wins, otherwise falls back
+   * to resolvePermissions(preset).canUpsert (not a hard-coded false).
    */
   canUpdateExternal(): boolean {
-    return this.config.sync?.settings?.canUpdateExternalItems ?? false;
+    if (this.config.sync?.settings?.canUpdateExternalItems !== undefined) {
+      return this.config.sync.settings.canUpdateExternalItems;
+    }
+    const syncAny = this.config.sync as Record<string, unknown> | undefined;
+    const permissions = resolvePermissions(
+      syncAny?.preset as SyncPreset | undefined,
+      undefined,
+      this.config.sync?.settings,
+    );
+    return permissions.canUpsert;
   }
 
   /**

@@ -169,7 +169,12 @@ export class JiraReconciler {
 
     // Determine expected JIRA state
     const shouldBeClosed = status === 'completed' || status === 'abandoned';
-    const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
+    const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
+
+    if (!shouldBeClosed && !shouldBeOpen) {
+      this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
+      return;
+    }
 
     // Check main issue
     if (inc.issue) {

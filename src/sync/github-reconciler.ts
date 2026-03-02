@@ -17,6 +17,7 @@ import path from 'path';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { resolvePermissions, SyncPreset } from './config.js';
+import { isProviderEnabled } from './status-mapper.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 
 export interface ReconcileOptions {
@@ -91,7 +92,7 @@ export class GitHubReconciler {
         config.sync?.settings,
       );
       const canUpdate = config.sync?.settings?.canUpdateExternalItems ?? permissions.canUpsert;
-      const githubEnabled = config.sync?.github?.enabled ?? false;
+      const githubEnabled = isProviderEnabled(config, 'github');
 
       if (!canUpdate || !githubEnabled) {
         this.logger.log('ℹ️  GitHub sync is disabled - skipping reconciliation');
@@ -150,7 +151,12 @@ export class GitHubReconciler {
 
     // Determine expected GitHub state
     const shouldBeClosed = status === 'completed' || status === 'abandoned';
-    const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
+    const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
+
+    if (!shouldBeClosed && !shouldBeOpen) {
+      this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
+      return;
+    }
 
     // Check main issue
     if (inc.mainIssue) {

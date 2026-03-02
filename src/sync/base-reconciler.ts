@@ -128,7 +128,13 @@ export abstract class BaseReconciler<
       status === 'active' ||
       status === 'planning' ||
       status === 'backlog' ||
-      status === 'ready_for_review';
+      status === 'ready_for_review' ||
+      status === 'paused';
+
+    if (!shouldBeClosed && !shouldBeOpen) {
+      this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
+      return;
+    }
 
     // Delegate to subclass for platform-specific reconciliation
     await this.reconcileIncrementItems(inc, shouldBeClosed, shouldBeOpen, status, result);

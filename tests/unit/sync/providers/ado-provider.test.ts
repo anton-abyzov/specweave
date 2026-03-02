@@ -260,14 +260,14 @@ describe('AdoAdapter', () => {
       expect(headers['Content-Type']).toBe('application/json-patch+json');
     });
 
-    it('uses $Issue work item type in URL', async () => {
+    it('uses User Story work item type in URL by default', async () => {
       const workItem = { id: 1, rev: 1, url: '', fields: {}, _links: { html: { href: '' } } };
       fetchSpy.mockResolvedValue(mockResponse(true, workItem));
 
       await adapter.createIssue(makeStory(), makeFeature());
 
       const url = fetchSpy.mock.calls[0]![0] as string;
-      expect(url).toContain('/wit/workitems/$Issue');
+      expect(url).toContain('/wit/workitems/$User%20Story');
     });
 
     it('throws on non-ok response', async () => {
@@ -363,13 +363,13 @@ describe('AdoAdapter', () => {
   // -----------------------------------------------------------------------
 
   describe('closeIssue', () => {
-    it('sets state to Done', async () => {
+    it('sets state to Closed by default', async () => {
       fetchSpy.mockResolvedValue(mockResponse(true, {}));
       await adapter.closeIssue(makeRef());
 
       const body = JSON.parse((fetchSpy.mock.calls[0]![1] as RequestInit).body as string);
       expect(body).toEqual(expect.arrayContaining([
-        { op: 'add', path: '/fields/System.State', value: 'Done' },
+        { op: 'add', path: '/fields/System.State', value: 'Closed' },
       ]));
     });
 
@@ -379,7 +379,7 @@ describe('AdoAdapter', () => {
 
       const body = JSON.parse((fetchSpy.mock.calls[0]![1] as RequestInit).body as string);
       expect(body).toEqual(expect.arrayContaining([
-        { op: 'add', path: '/fields/System.State', value: 'Done' },
+        { op: 'add', path: '/fields/System.State', value: 'Closed' },
         { op: 'add', path: '/fields/System.History', value: 'Closing note' },
       ]));
     });
@@ -495,7 +495,7 @@ describe('AdoAdapter', () => {
       expect(body.query).toContain('[System.ChangedDate] >=');
     });
 
-    it('limits to 50 items', async () => {
+    it('fetches all items in batches of 200', async () => {
       const ids = Array.from({ length: 100 }, (_, i) => ({ id: i + 1 }));
       const wiqlResult = { workItems: ids };
       const itemsResult = { value: [] };
@@ -506,10 +506,11 @@ describe('AdoAdapter', () => {
 
       await adapter.pullChanges();
 
+      // All 100 IDs should be fetched (within single batch of 200)
       const url = fetchSpy.mock.calls[1]![0] as string;
       const idsParam = url.match(/ids=([^&]+)/)?.[1];
       const idCount = idsParam?.split(',').length;
-      expect(idCount).toBe(50);
+      expect(idCount).toBe(100);
     });
 
     it('identifies all ADO closed states', async () => {
