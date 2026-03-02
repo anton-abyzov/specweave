@@ -149,8 +149,8 @@ export async function createIncrementTemplates(
     boardId,
     type = 'feature',
     priority = 'P1',
-    testMode = 'test-after',
-    coverageTarget = 80,
+    testMode = 'TDD',
+    coverageTarget = 90,
     projectRoot = process.cwd(),
     externalSource,
   } = options;

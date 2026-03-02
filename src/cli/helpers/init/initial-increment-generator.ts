@@ -53,13 +53,13 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
 
   // Read config to get testMode and coverageTarget defaults
   const configPath = path.join(projectPath, '.specweave', 'config.json');
-  let testMode: 'TDD' | 'test-after' | 'manual' = 'test-after';
+  let testMode: 'TDD' | 'test-after' | 'manual' = 'TDD';
   let coverageTarget = 80;
 
   if (fs.existsSync(configPath)) {
     try {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      testMode = config?.testing?.defaultTestMode || 'test-after';
+      testMode = config?.testing?.defaultTestMode || 'TDD';
       coverageTarget = config?.testing?.defaultCoverageTarget || 80;
     } catch (error) {
       // Fallback to defaults if config reading fails
