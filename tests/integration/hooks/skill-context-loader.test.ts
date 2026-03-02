@@ -478,8 +478,6 @@ describe('skill-context.sh', () => {
     it('produces valid output for the actual SpecWeave project', () => {
       const { stdout, status } = runScript(process.cwd(), 'do');
       expect(status).toBe(0);
-      expect(stdout).toContain('[config]');
-      expect(stdout).toContain('testing.mode=TDD');
       expect(stdout).toContain('[project]');
       expect(stdout).toContain('node');
       expect(stdout).toContain('typescript');

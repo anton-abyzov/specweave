@@ -74,11 +74,13 @@ describe('Judge LLM: integration in /sw:done', () => {
 
   it('should run judge-llm AFTER grill passes', () => {
     const content = readFileSync(donePath, 'utf-8');
-    const grillIndex = content.search(/Step 2.*Grill/i);
-    const judgeLlmIndex = content.search(/Judge.LLM|judge-llm/i);
-    expect(grillIndex).toBeGreaterThan(-1);
-    expect(judgeLlmIndex).toBeGreaterThan(-1);
-    expect(judgeLlmIndex).toBeGreaterThan(grillIndex);
+    // Grill is Step 2, Judge LLM is Step 3 — verify both step markers exist
+    const step2GrillIndex = content.search(/Step 2[^#]*Grill/i);
+    const step3JudgeIndex = content.search(/Step 3[^#]*Judge/i);
+    expect(step2GrillIndex).toBeGreaterThan(-1);
+    expect(step3JudgeIndex).toBeGreaterThan(-1);
+    // Step 3 must appear after Step 2 in the document
+    expect(step3JudgeIndex).toBeGreaterThan(step2GrillIndex);
   });
 
   it('should invoke judge-llm via Skill tool or /sw:judge-llm', () => {

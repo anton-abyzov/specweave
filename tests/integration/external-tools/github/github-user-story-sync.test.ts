@@ -192,13 +192,13 @@ External stakeholders need complete context in GitHub issues without accessing t
     expect(result.body).toContain('#t-001-create-test');
 
     // Links section
-    // Note: Feature spec is now in project folder (test-repo/) not _features/ (v0.34.0+)
+    // Note: Feature spec is now in increment spec.md (v1.0.302+)
     expect(result.body).toContain('## Links');
     expect(result.body).toContain(
-      '**Feature Spec**: [FS-999](https://github.com/test-owner/test-repo/blob/main/.specweave/docs/internal/specs/test-repo/FS-999/FEATURE.md)'
+      '**Feature Spec**: [FS-999](https://github.com/test-owner/test-repo/blob/main/.specweave/increments/0099-test-increment/spec.md)'
     );
     expect(result.body).toContain(
-      '**User Story File**: [us-001-complete-test.md](https://github.com/test-owner/test-repo/blob/main/.specweave/docs/internal/specs/test-repo/FS-999/us-001-complete-test.md)'
+      '**User Story File**: [us-001-complete-test.md](https://github.com/test-owner/test-repo/blob/main/.specweave/increments/0099-test-increment/spec.md)'
     );
 
     // Footer
