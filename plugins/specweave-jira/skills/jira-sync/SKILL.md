@@ -125,19 +125,45 @@ if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9](
   exit 1
 fi
 
-# Must end with .atlassian.net for cloud JIRA
-# Agent: use AskUserQuestion to confirm non-standard domain before retrying
+# Cloud JIRA: must end with .atlassian.net
+# Self-hosted JIRA: any valid hostname is accepted after user confirmation
 if [[ ! "$JIRA_DOMAIN" =~ ^[a-zA-Z0-9-]+\.atlassian\.net$ ]]; then
-  echo "Error: Domain does not match <subdomain>.atlassian.net pattern"
-  exit 1
+  echo "Warning: Domain does not match <subdomain>.atlassian.net (Jira Cloud) pattern"
+  echo "If this is a self-hosted JIRA instance, confirm the domain is correct and proceed."
+  # Agent: use AskUserQuestion to confirm non-standard domain before continuing
 fi
 ```
 
-### Step 5: Credential Loading and API Calls
+### Step 5: Configure Sync Profile
+
+Add to `.specweave/config.json`:
+```json
+{
+  "sync": {
+    "enabled": true,
+    "preset": "bidirectional",
+    "activeProfile": "default",
+    "profiles": {
+      "default": {
+        "provider": "jira",
+        "config": {
+          "domain": "mycompany.atlassian.net",
+          "projectKey": "MYPROJ",
+          "syncOnTaskComplete": true
+        }
+      }
+    }
+  }
+}
+```
+
+For self-hosted JIRA, use your server's hostname as the domain (e.g., `jira.internal.company.com`).
+
+### Step 6: Credential Loading and API Calls
 
 This skill does NOT execute API calls directly (no Bash tool). Credential loading, authentication, and API operations are handled by the `jira-mapper` skill — see its **Security Rules** section for the hardened patterns (domain validation, HTTPS enforcement, SSRF prevention, variable quoting).
 
-### Step 6: Production Recommendations
+### Step 7: Production Recommendations
 
 **For production deployments, use OAuth 2.0** instead of API tokens:
 

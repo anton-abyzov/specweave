@@ -93,10 +93,46 @@ For each closed increment, trigger external sync:
 /sw-jira:push <increment-id>
 ```
 
-### Step 6: Clean Up
+### Step 6: Archive Team Execution Data
 
-- Signal team completion
-- Archive completed increments if configured
+Before destroying the team, preserve execution logs for debugging and tracing:
+
+```bash
+# Determine team name from current session context
+# Read ~/.claude/teams/{team-name}/config.json for team metadata
+
+TEAM_NAME="<team-name>"
+TIMESTAMP=$(date +%Y%m%dT%H%M%S)
+ARCHIVE_DIR=".specweave/team-logs/${TEAM_NAME}--${TIMESTAMP}"
+
+mkdir -p "$ARCHIVE_DIR"
+
+# Copy team config and message inboxes
+cp -r ~/.claude/teams/${TEAM_NAME}/ "$ARCHIVE_DIR/team/"
+
+# Copy shared task list (ownership, status transitions, dependencies)
+cp -r ~/.claude/tasks/${TEAM_NAME}/ "$ARCHIVE_DIR/tasks/"
+```
+
+This preserves:
+- **Team config** — members, roles, models, spawn timestamps
+- **Message inboxes** — full inter-agent communication history
+- **Task list** — ownership, status, dependency chains, completion order
+
+### Step 7: Destroy Team Session
+
+After archiving, call `TeamDelete` to clear the session's team context. This allows creating a new team in the same terminal without restarting.
+
+```
+TeamDelete()   # Removes ~/.claude/teams/{name}/ and ~/.claude/tasks/{name}/, clears session context
+```
+
+**Important**: `TeamDelete` fails if teammates are still active. Ensure all teammates were shut down in Step 4 (via `/sw:done` which triggers shutdown).
+
+If `TeamDelete` fails due to active members, send shutdown requests to remaining teammates first:
+```
+SendMessage({ type: "shutdown_request", recipient: "<teammate-name>", content: "Merge complete, shutting down" })
+```
 
 ## Options
 
@@ -127,5 +163,11 @@ Syncing to GitHub...
   0301 -> issue #46 closed
   0302 -> issue #47 closed
 
-All increments merged and synced.
+Archiving team execution data...
+  -> .specweave/team-logs/feature-0300--20260302T143012/
+
+Cleaning up team session...
+  -> TeamDelete: session context cleared
+
+All increments merged, synced, and team archived.
 ```
