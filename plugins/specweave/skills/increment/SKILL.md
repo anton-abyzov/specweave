@@ -156,7 +156,7 @@ Based on the user's feature description and what you've learned from tech stack 
 
 ```bash
 # 1. Check TDD mode
-jq -r '.testing.defaultTestMode // "test-after"' .specweave/config.json 2>/dev/null
+jq -r '.testing.defaultTestMode // "TDD"' .specweave/config.json 2>/dev/null
 
 # 2. Check multi-project config
 specweave context projects 2>/dev/null
