@@ -14,6 +14,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileNoThrowSync } from './execFileNoThrow.js';
+import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,9 +75,11 @@ export function registerPluginsWithClaudeCli(
     // Don't bail — install may still work if marketplace was already registered
   }
 
-  // Install each plugin
+  // Install each plugin with correct scope
   for (const name of pluginNames) {
-    const installResult = execFileNoThrowSync('claude', ['plugin', 'install', `${name}@specweave`]);
+    const scope = getPluginScope(name, 'specweave');
+    const scopeArgs = getScopeArgs(scope);
+    const installResult = execFileNoThrowSync('claude', ['plugin', 'install', `${name}@specweave`, ...scopeArgs]);
     if (installResult.success || installResult.exitCode === 0) {
       result.installedPlugins.push(name);
     } else {
