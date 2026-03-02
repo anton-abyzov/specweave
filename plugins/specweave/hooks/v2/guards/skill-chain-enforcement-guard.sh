@@ -1,4 +1,12 @@
 #!/bin/bash
+# DEPRECATED: v1.0.352 — No longer referenced by /sw:increment SKILL.md
+# The increment skill now uses Agent() delegation (sw-pm, sw-architect, sw-planner agents)
+# instead of Skill() chains with marker-based enforcement.
+# This guard remains on disk for backward compatibility with older cached plugin versions.
+# It can be safely removed in a future version.
+#
+# --- Original documentation below ---
+#
 # skill-chain-enforcement-guard.sh - Enforces skill delegation in /sw:increment
 #
 # PURPOSE:

@@ -9,6 +9,7 @@
 #
 # @since 1.0.167
 # @updated 1.0.196 - Added status-completion-guard for Edit operations
+# @updated 1.0.352 - Added interview-enforcement-guard for agent-spawned spec.md writes
 
 set -e
 
@@ -64,6 +65,20 @@ if [[ "$TOOL_NAME" == "Write" ]]; then
 
     if [[ "$SPEC_DECISION" == "block" ]]; then
       echo "$SPEC_RESULT"
+      exit 0
+    fi
+  fi
+
+  # Interview Enforcement Guard
+  # Blocks spec.md writes until deep interview is complete (when strict mode enabled)
+  # Needed here because agent-spawned writes don't inherit skill-level hooks
+  INTERVIEW_GUARD="$GUARDS_DIR/interview-enforcement-guard.sh"
+  if [[ -x "$INTERVIEW_GUARD" ]]; then
+    INTERVIEW_RESULT=$(echo "$INPUT" | "$INTERVIEW_GUARD" 2>/dev/null || echo '{"decision":"allow"}')
+    INTERVIEW_DECISION=$(echo "$INTERVIEW_RESULT" | jq -r '.decision // "allow"')
+
+    if [[ "$INTERVIEW_DECISION" == "block" ]]; then
+      echo "$INTERVIEW_RESULT"
       exit 0
     fi
   fi
