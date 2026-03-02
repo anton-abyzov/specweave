@@ -47,8 +47,13 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     const config = await readConfig(projectRoot);
     testMode = config?.testing?.defaultTestMode;
     coverageTarget = config?.testing?.defaultCoverageTarget;
-  } catch {
-    // Fallback to template-creator defaults if config reading fails
+  } catch (error) {
+    // Config reading can fail for missing file (expected) or malformed JSON (unexpected)
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('JSON') || msg.includes('parse')) {
+      console.error(chalk.yellow(`⚠️  Config parse error, using defaults: ${msg}`));
+    }
+    // Fallback to template-creator defaults
   }
 
   const result = await createIncrementTemplates({
