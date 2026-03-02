@@ -199,7 +199,7 @@ export class IncrementCompletionValidator {
         const metadataContent = await fs.readFile(metadataPath, 'utf-8');
         const metadata = JSON.parse(metadataContent);
 
-        const testMode = (metadata.testMode || 'test-after') as TestMode;
+        const testMode = (metadata.testMode || 'TDD') as TestMode;
         const coverageTarget = metadata.coverageTarget ?? 0;
 
         // Only validate if coverage target is set and testMode is not 'none'
