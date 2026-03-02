@@ -11,6 +11,52 @@
 import type { ParsedSpec, UserStoryData } from '../types.js';
 
 /**
+ * Convert a title to a URL-safe slug for filenames.
+ * Strips leading/trailing dashes that occur when titles contain
+ * special characters at the edges (e.g., "[Story Title] (P1)" → "story-title-p1").
+ */
+/**
+ * Convert a title to a URL-safe slug for filenames.
+ * Strips leading/trailing dashes that occur when titles contain
+ * special characters at the edges (e.g., "[Story Title] (P1)" → "story-title-p1").
+ */
+export function slugifyTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Extract the first sentence from text, respecting backtick-quoted content.
+ * Avoids splitting on periods inside backticks (e.g., `.specweave/` or `file.ts`).
+ * Falls back to the full text if no sentence boundary is found.
+ */
+export function extractFirstSentence(text: string): string {
+  // Remove backtick content temporarily to find real sentence boundaries
+  const placeholders: string[] = [];
+  const stripped = text.replace(/`[^`]+`/g, (match) => {
+    placeholders.push(match);
+    return `__BT${placeholders.length - 1}__`;
+  });
+
+  // Find first period followed by space, newline, or end of string
+  const sentenceEnd = stripped.match(/^(.*?\.)\s/);
+  if (sentenceEnd) {
+    // Restore backtick content
+    let result = sentenceEnd[1];
+    for (let i = 0; i < placeholders.length; i++) {
+      result = result.replace(`__BT${i}__`, placeholders[i]);
+    }
+    return result.trim();
+  }
+
+  // No clear sentence boundary found - use first line/paragraph
+  const firstLine = text.split('\n')[0].trim();
+  return firstLine.endsWith('.') ? firstLine : firstLine + '.';
+}
+
+/**
  * Generator context - provides project-specific information
  * for template generation without hardcoding paths.
  */
@@ -75,7 +121,7 @@ export function generateFeatureFile(
   }
   // LLM-optimized fields for quick context loading
   const tldrSummary = parsed.overview
-    ? parsed.overview.split('.')[0].trim() + '.'
+    ? extractFirstSentence(parsed.overview)
     : parsed.title;
   lines.push('tldr: "' + tldrSummary.replace(/"/g, "'") + '"');
   lines.push('complexity: ' + (parsed.userStories.length > 3 ? 'high' : parsed.userStories.length > 1 ? 'medium' : 'low'));
@@ -88,7 +134,7 @@ export function generateFeatureFile(
   // TL;DR summary block for LLM and stakeholder quick context
   lines.push('## TL;DR');
   lines.push('');
-  lines.push('**What**: ' + (parsed.overview ? parsed.overview.split('.')[0].trim() + '.' : parsed.title));
+  lines.push('**What**: ' + (parsed.overview ? extractFirstSentence(parsed.overview) : parsed.title));
   lines.push('**Status**: ' + parsed.status + ' | **Priority**: ' + parsed.priority);
   lines.push('**User Stories**: ' + parsed.userStories.length);
   lines.push('');
@@ -118,7 +164,7 @@ export function generateFeatureFile(
     lines.push('## User Stories');
     lines.push('');
     for (const story of parsed.userStories) {
-      const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const storySlug = slugifyTitle(story.title);
       // User story files are in the SAME directory as FEATURE.md - use relative path
       const storyFile = './' + story.id.toLowerCase() + '-' + storySlug + '.md';
       lines.push('- [' + story.id + ': ' + story.title + '](' + storyFile + ')');
@@ -218,7 +264,7 @@ export function generateUserStoryFile(
   lines.push('created: ' + parsed.created);
   // LLM-optimized fields
   const storyTldr = story.description
-    ? story.description.split('.')[0].trim() + '.'
+    ? extractFirstSentence(story.description)
     : story.title;
   lines.push('tldr: "' + storyTldr.replace(/"/g, "'") + '"');
 

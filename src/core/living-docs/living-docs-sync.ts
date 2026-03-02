@@ -31,6 +31,7 @@ import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
 // NOTE: findNextAvailableInternalIdSync no longer used - collision detection moved inline
 // to fix chain shift bug (2025-12-04). See getFeatureIdForIncrement() for details.
 import { deriveFeatureId, extractIncrementNumber } from '../../utils/feature-id-derivation.js';
+import { isTemplateFile } from '../increment/template-creator.js';
 // Import types from centralized location
 import type {
   SyncOptions,
@@ -55,6 +56,7 @@ import {
   findExistingUserStoryFile,
   cleanupDuplicateFiles,
   cleanupTempFiles,
+  slugifyTitle,
 } from './sync-helpers/index.js';
 // Image generation for living docs (v1.0.148+)
 import {
@@ -139,6 +141,23 @@ export class LivingDocsSync {
           filesCreated: [],
           filesUpdated: [],
           errors: ['Increment not in active folder - sync skipped to prevent issues']
+        };
+      }
+
+      // Step 0: Guard against template specs (v1.0.344+)
+      // Skip sync if spec.md still contains placeholder markers like [Story Title].
+      // The ExternalIssueAutoCreator already has this guard, but living docs sync was missing it,
+      // causing placeholder content to be written to living docs before PM/Architect fills in the spec.
+      const specPath = path.join(activeIncrementPath, 'spec.md');
+      if (isTemplateFile(specPath)) {
+        this.logger.log(`⏭️  Skipping living docs sync for ${incrementId}: spec.md is still a template`);
+        return {
+          success: true,
+          featureId: '',
+          incrementId,
+          filesCreated: [],
+          filesUpdated: [],
+          errors: ['spec.md is still a template - deferring sync until spec is complete']
         };
       }
 
@@ -299,12 +318,26 @@ export class LivingDocsSync {
             const allTargetPaths = [...groups.keys()];
             for (const story of projectStories) {
               const existingFile = await findExistingUserStoryFile(crossProjectPath, story.id, this.logger);
+              const storySlug = slugifyTitle(story.title);
+              const expectedFilename = `${story.id.toLowerCase()}-${storySlug}.md`;
+
               let storyFile: string;
-              if (existingFile) {
+              if (existingFile && existingFile !== expectedFilename) {
+                // Rename file if title changed (e.g., from template placeholder to real title)
+                const oldPath = path.join(crossProjectPath, existingFile);
+                const newPath = path.join(crossProjectPath, expectedFilename);
+                try {
+                  await fs.rename(oldPath, newPath);
+                  this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
+                  storyFile = newPath;
+                } catch {
+                  // Old file may not exist (fresh directory); use expected filename
+                  storyFile = path.join(crossProjectPath, expectedFilename);
+                }
+              } else if (existingFile) {
                 storyFile = path.join(crossProjectPath, existingFile);
               } else {
-                const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                storyFile = path.join(crossProjectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+                storyFile = path.join(crossProjectPath, expectedFilename);
               }
               // Pass allProjects for related_projects frontmatter (v0.33.0+, v0.34.0 paths)
               const storyContent = generateUserStoryFile(story, featureId, incrementId, {
@@ -426,16 +459,32 @@ export class LivingDocsSync {
       for (const story of parsed.userStories) {
         // CRITICAL: Find existing file by US-ID first to prevent duplicates
         const existingFile = await findExistingUserStoryFile(projectPath, story.id, this.logger);
+        const storySlug = slugifyTitle(story.title);
+        const expectedFilename = `${story.id.toLowerCase()}-${storySlug}.md`;
 
         let storyFile: string;
         if (existingFile) {
-          // Reuse existing file (prevent duplicate creation)
-          storyFile = path.join(projectPath, existingFile);
-          this.logger.log(`   ♻️  Reusing existing file: ${existingFile}`);
+          // Check if filename needs updating (e.g., title changed from template placeholder)
+          if (existingFile !== expectedFilename) {
+            const oldPath = path.join(projectPath, existingFile);
+            const newPath = path.join(projectPath, expectedFilename);
+            if (!options.dryRun) {
+              try {
+                await fs.rename(oldPath, newPath);
+                this.logger.log(`   📝 Renamed: ${existingFile} → ${expectedFilename}`);
+              } catch {
+                // Old file may not exist; use expected filename
+                this.logger.log(`   ⚠️  Could not rename ${existingFile}, using ${expectedFilename}`);
+              }
+            }
+            storyFile = newPath;
+          } else {
+            storyFile = path.join(projectPath, existingFile);
+            this.logger.log(`   ♻️  Reusing existing file: ${existingFile}`);
+          }
         } else {
           // Create new file with standardized naming
-          const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          storyFile = path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+          storyFile = path.join(projectPath, expectedFilename);
         }
 
         if (!options.dryRun) {
@@ -1394,9 +1443,12 @@ export class LivingDocsSync {
         // Format tasks as markdown
         const tasksMarkdown = taskGenerator.formatTasksAsMarkdown(tasks);
 
-        // Update user story file
-        const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const storyFile = path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+        // Update user story file (find by ID, fall back to slug)
+        const existingFile = await findExistingUserStoryFile(projectPath, story.id, this.logger);
+        const storySlug = slugifyTitle(story.title);
+        const storyFile = existingFile
+          ? path.join(projectPath, existingFile)
+          : path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
 
         await this.updateTasksSection(storyFile, tasksMarkdown);
 

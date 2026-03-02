@@ -15,6 +15,8 @@ export {
   generateFeatureFile,
   generateReadmeFile,
   generateUserStoryFile,
+  slugifyTitle,
+  extractFirstSentence,
   type UserStoryFileOptions,
   type GeneratorContext,
 } from './generators.js';
