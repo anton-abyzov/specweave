@@ -13,6 +13,7 @@
 import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
 import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
+import { readConfig } from '../../core/config/config-manager.js';
 
 export interface CreateIncrementOptions {
   id: string;
@@ -39,6 +40,17 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     projectRoot = process.cwd(),
   } = options;
 
+  // Read testing config to pass testMode and coverageTarget
+  let testMode: string | undefined;
+  let coverageTarget: number | undefined;
+  try {
+    const config = await readConfig(projectRoot);
+    testMode = config?.testing?.defaultTestMode;
+    coverageTarget = config?.testing?.defaultCoverageTarget;
+  } catch {
+    // Fallback to template-creator defaults if config reading fails
+  }
+
   const result = await createIncrementTemplates({
     incrementId: id,
     title,
@@ -47,6 +59,8 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     boardId: board,
     type,
     priority,
+    testMode,
+    coverageTarget,
     projectRoot,
   });
 
