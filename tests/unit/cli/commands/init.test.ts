@@ -1901,11 +1901,10 @@ describe('init command', () => {
 
       await initCommand('plugin-enable', { quick: true });
 
-      expect(mockEnablePlugin).toHaveBeenCalledWith(
-        'sw',
-        'specweave',
-        expect.stringContaining('.claude')
-      );
+      // Plugin enablement is now delegated to installAllPlugins internally.
+      // Verify installAllPlugins was called (it handles enablement via enablePluginsInSettings).
+      expect(mockInstallAllPlugins).toHaveBeenCalled();
+      expect(mockEnablePlugin).not.toHaveBeenCalled();
     });
 
     it('should skip plugin enablement when marketplace-only install', async () => {
