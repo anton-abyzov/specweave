@@ -244,7 +244,7 @@ export class SyncCoordinator {
       }
 
       // Get PAT from environment
-      const adoPat = await getAdoPat(adoConfig.organization);
+      const adoPat = getAdoPat(adoConfig.organization);
       if (!adoPat) {
         this.logger.log('⚠️  ADO PAT not available');
         return 0;
@@ -696,8 +696,13 @@ export class SyncCoordinator {
 
         // Idempotency check: Don't post duplicate comments
         // See: ADR-0051 - Idempotent sync operations
+        // Use comment marker for idempotency (body may be ADF object from JIRA API)
+        const syncMarker = `<!-- specweave-sync:${this.incrementId}:${usFile.id} -->`;
         const lastComment = await jiraClient.getLastComment(jiraKey);
-        if (lastComment && lastComment.body === completionComment) {
+        const lastCommentText = typeof lastComment?.body === 'string'
+          ? lastComment.body
+          : JSON.stringify(lastComment?.body || '');
+        if (lastComment && lastCommentText.includes(syncMarker)) {
           this.logger.log(`  ⏭️  Skipping duplicate comment (already posted to ${jiraKey})`);
           return;
         }
@@ -831,17 +836,19 @@ export class SyncCoordinator {
     if (existsSync(tasksFile)) {
       const content = await fs.readFile(tasksFile, 'utf-8');
 
-      // Parse tasks (simplified - just count completed for now)
-      const taskMatches = content.match(/### T-\d+:/g) || [];
-      const completedMatches = content.match(/\*\*Status\*\*: \[x\] completed/g) || [];
-
-      // Add mock data for demo (real implementation would parse tasks.md properly)
-      for (let i = 0; i < taskMatches.length; i++) {
-        tasks.push({
-          taskId: `T-${String(i + 1).padStart(3, '0')}`,
-          title: 'Task title',
-          completed: i < completedMatches.length
-        });
+      // Parse tasks with real IDs and titles
+      const taskRegex = /### (T-\d+):\s*(.+)/g;
+      let taskMatch;
+      while ((taskMatch = taskRegex.exec(content)) !== null) {
+        const taskId = taskMatch[1];
+        const title = taskMatch[2].trim();
+        // Check if this task has **Status**: [x] completed
+        // Look at content after this match until next ### T- or end of file
+        const afterMatch = content.slice(taskMatch.index + taskMatch[0].length);
+        const nextTaskIdx = afterMatch.search(/### T-\d+:/);
+        const taskSection = nextTaskIdx >= 0 ? afterMatch.slice(0, nextTaskIdx) : afterMatch;
+        const completed = /\*\*Status\*\*:\s*\[x\]\s*completed/i.test(taskSection);
+        tasks.push({ taskId, title, completed });
       }
     }
 
@@ -856,15 +863,14 @@ export class SyncCoordinator {
     if (existsSync(specFile)) {
       const content = await fs.readFile(specFile, 'utf-8');
 
-      // Parse ACs
-      const acMatches = content.match(/- \[x\] \*\*AC-[^:]+\*\*:/g) || [];
-
-      for (const match of acMatches) {
-        const acId = match.match(/AC-[^*]+/)?.[0] || '';
+      // Parse ACs - both satisfied [x] and unsatisfied [ ]
+      const acRegex = /- \[(x| )\] \*\*(AC-[^*]+)\*\*:\s*(.+)/g;
+      let acMatch;
+      while ((acMatch = acRegex.exec(content)) !== null) {
         acs.push({
-          acId: acId.trim(),
-          description: 'AC description',
-          satisfied: true
+          acId: acMatch[2].trim(),
+          description: acMatch[3].trim(),
+          satisfied: acMatch[1] === 'x'
         });
       }
     }
@@ -1102,6 +1108,8 @@ export class SyncCoordinator {
   ): string {
     const lines: string[] = [];
 
+    // Sync marker for idempotency check (invisible in rendered output)
+    lines.push(`<!-- specweave-sync:${this.incrementId}:${usFile.id} -->`);
     lines.push(`✅ SpecWeave Progress Update`);
     lines.push(``);
     lines.push(`User Story: ${usFile.id} - ${usFile.title || 'N/A'}`);

@@ -29,6 +29,9 @@ export interface AdoAdapterConfig {
   organization: string;
   project: string;
   pat: string;
+  workItemType?: string;  // Default: 'User Story'
+  closedState?: string;   // Default: 'Closed'
+  activeState?: string;   // Default: 'Active'
 }
 
 interface AdoWorkItem {
@@ -54,12 +57,14 @@ export class AdoAdapter implements ProviderAdapter {
   private project: string;
   private pat: string;
   private baseUrl: string;
+  private config: AdoAdapterConfig;
 
   constructor(config: AdoAdapterConfig) {
     this.organization = config.organization;
     this.project = config.project;
     this.pat = config.pat;
     this.baseUrl = `https://dev.azure.com/${this.organization}/${this.project}/_apis`;
+    this.config = config;
   }
 
   async testConnection(): Promise<{ ok: boolean; error?: string }> {
@@ -91,11 +96,11 @@ export class AdoAdapter implements ProviderAdapter {
       operations.push({ op: 'add', path: '/fields/Microsoft.VSTS.Common.AcceptanceCriteria', value: `<ul>${acHtml}</ul>` });
     }
 
-    // Note: Work item type varies by process template (Agile/Scrum use "User Story", Basic uses "Issue")
-    // For now, use "Issue" which is most common in Basic template projects
+    // Work item type varies by process template — configurable via config.workItemType
+    const workItemType = encodeURIComponent(this.config.workItemType || 'User Story');
     const response = await this.apiRequest(
       'POST',
-      `/wit/workitems/$Issue?api-version=7.1`,
+      `/wit/workitems/$${workItemType}?api-version=7.1`,
       operations,
       'application/json-patch+json'
     );
@@ -146,30 +151,39 @@ export class AdoAdapter implements ProviderAdapter {
   }
 
   async closeIssue(ref: ExternalRef, comment?: string): Promise<void> {
-    // Note: State names vary by process template (Agile/Scrum use "Closed", Basic uses "Done")
+    const closedState = this.config.closedState || 'Closed';
     const operations: Array<{ op: string; path: string; value: unknown }> = [
-      { op: 'add', path: '/fields/System.State', value: 'Done' },
+      { op: 'add', path: '/fields/System.State', value: closedState },
     ];
 
     if (comment) {
       operations.push({ op: 'add', path: '/fields/System.History', value: comment });
     }
 
-    await this.apiRequest(
+    const closeResponse = await this.apiRequest(
       'PATCH',
       `/wit/workitems/${ref.id}?api-version=7.1`,
       operations,
       'application/json-patch+json'
     );
+    if (!closeResponse.ok) {
+      const text = await closeResponse.text();
+      throw new Error(`Failed to close ADO work item ${ref.id}: ${closeResponse.status} ${text.substring(0, 200)}`);
+    }
   }
 
   async reopenIssue(ref: ExternalRef): Promise<void> {
-    await this.apiRequest(
+    const activeState = this.config.activeState || 'Active';
+    const reopenResponse = await this.apiRequest(
       'PATCH',
       `/wit/workitems/${ref.id}?api-version=7.1`,
-      [{ op: 'add', path: '/fields/System.State', value: 'Active' }],
+      [{ op: 'add', path: '/fields/System.State', value: activeState }],
       'application/json-patch+json'
     );
+    if (!reopenResponse.ok) {
+      const text = await reopenResponse.text();
+      throw new Error(`Failed to reopen ADO work item ${ref.id}: ${reopenResponse.status} ${text.substring(0, 200)}`);
+    }
   }
 
   async pullChanges(since?: Date): Promise<ExternalChange[]> {
@@ -184,19 +198,35 @@ export class AdoAdapter implements ProviderAdapter {
     const wiql = `SELECT [System.Id] FROM WorkItems WHERE ${whereClause} ORDER BY [System.ChangedDate] DESC`;
 
     const response = await this.apiRequest('POST', `/wit/wiql?api-version=7.1`, { query: wiql });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to query ADO work items: ${response.status} ${text.substring(0, 200)}`);
+    }
     const data = await response.json() as { workItems: Array<{ id: number }> };
 
     if (!data.workItems || data.workItems.length === 0) return [];
 
-    const ids = data.workItems.slice(0, 50).map(w => w.id);
-    const itemsResponse = await this.apiRequest(
-      'GET',
-      `/wit/workitems?ids=${ids.join(',')}&$expand=all&api-version=7.1`
-    );
-    const items = await itemsResponse.json() as { value: AdoWorkItem[] };
+    // Batch work item fetches in groups of 200 (ADO API limit)
+    const allIds = data.workItems.map(w => w.id);
+    const batchSize = 200;
+    const allItems: AdoWorkItem[] = [];
+
+    for (let i = 0; i < allIds.length; i += batchSize) {
+      const batchIds = allIds.slice(i, i + batchSize);
+      const itemsResponse = await this.apiRequest(
+        'GET',
+        `/wit/workitems?ids=${batchIds.join(',')}&$expand=all&api-version=7.1`
+      );
+      if (!itemsResponse.ok) {
+        const text = await itemsResponse.text();
+        throw new Error(`Failed to fetch ADO work items batch: ${itemsResponse.status} ${text.substring(0, 200)}`);
+      }
+      const items = await itemsResponse.json() as { value: AdoWorkItem[] };
+      allItems.push(...(items.value || []));
+    }
 
     const changes: ExternalChange[] = [];
-    for (const item of items.value || []) {
+    for (const item of allItems) {
       const title = String(item.fields['System.Title'] || '');
       const state = String(item.fields['System.State'] || '');
       const isClosed = ADO_CLOSED_STATES.includes(state);

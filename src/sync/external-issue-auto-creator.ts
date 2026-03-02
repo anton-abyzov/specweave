@@ -18,7 +18,8 @@
  * @see ADR-0139 (Unified Post-Increment GitHub Sync)
  */
 
-import { promises as fs, existsSync } from 'fs';
+import { promises as fs, existsSync, readFileSync } from 'fs';
+import { execFileSync } from 'child_process';
 import path from 'path';
 import yaml from 'yaml';
 import { Logger, consoleLogger } from '../utils/logger.js';
@@ -68,11 +69,42 @@ export class ExternalIssueAutoCreator {
   private projectRoot: string;
   private logger: Logger;
   private configManager: ConfigManager;
+  private _defaultBranch: string | null = null;
 
   constructor(options: ExternalIssueAutoCreatorOptions) {
     this.projectRoot = options.projectRoot;
     this.logger = options.logger ?? consoleLogger;
     this.configManager = new ConfigManager(this.projectRoot);
+  }
+
+  private detectDefaultBranch(): string {
+    try {
+      // Try config first
+      const configPath = path.join(this.projectRoot, '.specweave/config.json');
+      if (existsSync(configPath)) {
+        const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+        if (config.repository?.defaultBranch) {
+          return config.repository.defaultBranch;
+        }
+      }
+      // Try git
+      const result = execFileSync('git', ['symbolic-ref', 'refs/remotes/origin/HEAD'], {
+        cwd: this.projectRoot,
+        encoding: 'utf-8',
+        timeout: 5000,
+      }).trim();
+      // Returns "refs/remotes/origin/main" → extract "main"
+      return result.split('/').pop() || 'main';
+    } catch {
+      return 'main';
+    }
+  }
+
+  private getDefaultBranch(): string {
+    if (!this._defaultBranch) {
+      this._defaultBranch = this.detectDefaultBranch();
+    }
+    return this._defaultBranch;
   }
 
   /**
@@ -494,8 +526,14 @@ export class ExternalIssueAutoCreator {
       const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
 
       // Check if GitHub issue already exists via API (Layer 3)
-      const searchTitle = `[${incrementInfo.featureId}]`;
-      const existingIssue = await client.searchIssueByTitle(searchTitle);
+      // Search for both current format (US-XXX:) and legacy format ([FS-XXX])
+      const usIds = incrementInfo.userStories.map(us => us.id);
+      const legacySearch = `[${incrementInfo.featureId}]`;
+      let existingIssue = await client.searchIssueByTitle(legacySearch);
+      if (!existingIssue && usIds.length > 0) {
+        // Try current format: search for first US ID
+        existingIssue = await client.searchIssueByTitle(`${usIds[0]}:`);
+      }
 
       if (existingIssue) {
         // Found existing issue - update metadata and return
@@ -742,6 +780,7 @@ export class ExternalIssueAutoCreator {
       const remoteUrl = execSync('git remote get-url origin', {
         cwd: this.projectRoot,
         encoding: 'utf-8',
+        stdio: 'pipe'
       }).trim();
 
       // Parse GitHub URL
@@ -777,7 +816,7 @@ ${us.project ? `**Project**: ${us.project}` : ''}
 
 ---
 
-📋 See [\`spec.md\`](../../tree/develop/.specweave/increments/${incrementId}/spec.md) for full acceptance criteria.
+📋 See [\`spec.md\`](../../tree/${this.getDefaultBranch()}/.specweave/increments/${incrementId}/spec.md) for full acceptance criteria.
 
 ---
 
@@ -807,8 +846,8 @@ ${userStoriesList || '_No user stories defined_'}
 
 ### Links
 
-- **Spec**: [\`spec.md\`](../../tree/develop/.specweave/increments/${incrementId}/spec.md)
-- **Tasks**: [\`tasks.md\`](../../tree/develop/.specweave/increments/${incrementId}/tasks.md)
+- **Spec**: [\`spec.md\`](../../tree/${this.getDefaultBranch()}/.specweave/increments/${incrementId}/spec.md)
+- **Tasks**: [\`tasks.md\`](../../tree/${this.getDefaultBranch()}/.specweave/increments/${incrementId}/tasks.md)
 
 ---
 
@@ -825,23 +864,21 @@ ${userStoriesList || '_No user stories defined_'}
   ): string {
     const userStoriesList = incrementInfo.userStories
       .map((us) => {
-        const desc = us.description ? `\n${us.description}` : '';
-        return `* ${us.id}: ${us.title}${desc}`;
+        const desc = us.description ? `\n  ${us.description}` : '';
+        return `- ${us.id}: ${us.title}${desc}`;
       })
       .join('\n');
 
-    return `h2. ${incrementInfo.title}
+    return `${incrementInfo.title}
 
-*Feature*: ${incrementInfo.featureId}
-*Increment*: ${incrementId}
+Feature: ${incrementInfo.featureId}
+Increment: ${incrementId}
 
-h3. User Stories
+User Stories
+${userStoriesList || '(No user stories defined)'}
 
-${userStoriesList || '_No user stories defined_'}
-
-----
-
-🤖 Auto-created by SpecWeave
+---
+Auto-created by SpecWeave
 `;
   }
 

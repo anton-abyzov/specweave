@@ -63,7 +63,7 @@ function makeConfig(overrides?: Partial<GitHubAdapterConfig>): GitHubAdapterConf
   return {
     owner: 'test-owner',
     repo: 'test-repo',
-    token: 'ghp_testtoken123',
+    token: 'tok_T',
     ...overrides,
   };
 }
@@ -127,13 +127,13 @@ describe('GitHubAdapter', () => {
     });
 
     it('uses provided token', () => {
-      const a = new GitHubAdapter(makeConfig({ token: 'my-token' }));
+      const a = new GitHubAdapter(makeConfig({ token: 'tok_2' }));
       // token is private, so we verify via an API call
       fetchSpy.mockResolvedValue(mockResponse(true, {}));
       a.testConnection();
       expect(fetchSpy).toHaveBeenCalled();
       const headers = (fetchSpy.mock.calls[0]![1] as RequestInit).headers as Record<string, string>;
-      expect(headers.Authorization).toBe('Bearer my-token');
+      expect(headers.Authorization).toBe('Bearer tok_2');
     });
 
     it('falls back to GITHUB_TOKEN env var when no token given', () => {
@@ -528,10 +528,10 @@ describe('GitHubAdapter', () => {
       expect(putBody.labels).toEqual(['bug', 'priority:P0']);
     });
 
-    it('handles label creation failure gracefully', async () => {
-      // ensureLabelExists catches errors silently
+    it('handles label already exists (422) gracefully', async () => {
+      // ensureLabelExists treats 422 as "already exists" and continues
       fetchSpy
-        .mockRejectedValueOnce(new Error('Label exists'))
+        .mockResolvedValueOnce(mockResponse(false, 'Validation Failed', 422))
         .mockResolvedValueOnce(mockResponse(true, {}))
         .mockResolvedValueOnce(mockResponse(true, {}));
 
@@ -540,7 +540,7 @@ describe('GitHubAdapter', () => {
         { name: 'new-label', color: '111111' },
       ];
 
-      // Should not throw
+      // Should not throw — 422 means label already exists
       await adapter.applyLabels(makeRef(), labels);
     });
   });
@@ -692,7 +692,7 @@ describe('GitHubAdapter', () => {
       const headers = opts.headers as Record<string, string>;
       expect(headers.Accept).toBe('application/vnd.github.v3+json');
       expect(headers['User-Agent']).toBe('SpecWeave-Sync');
-      expect(headers.Authorization).toBe('Bearer ghp_testtoken123');
+      expect(headers.Authorization).toBe('Bearer tok_T');
     });
 
     it('sets Content-Type for requests with body', async () => {

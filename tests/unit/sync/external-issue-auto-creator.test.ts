@@ -1914,7 +1914,7 @@ describe('ExternalIssueAutoCreator', () => {
       expect(description).toContain('No user stories defined');
     });
 
-    it('should use JIRA wiki markup in epic description', async () => {
+    it('should use plain text in JIRA epic description', async () => {
       mockConfigManagerRead.mockResolvedValue({
         sync: {
           autoCreateOnIncrement: true,
@@ -1939,11 +1939,10 @@ describe('ExternalIssueAutoCreator', () => {
       await creator.createForIncrement('0001-test-feature');
 
       const description = mockJiraClient.createIssue.mock.calls[0][0].description;
-      // JIRA wiki markup uses h2. h3. *bold* and * bullets
-      expect(description).toContain('h2.');
-      expect(description).toContain('h3.');
-      expect(description).toContain('*Feature*');
-      expect(description).toContain('* US-001');
+      // Plain text format (no wiki markup) for ADF compatibility
+      expect(description).toContain('Feature:');
+      expect(description).toContain('User Stories');
+      expect(description).toContain('- US-001');
     });
 
     it('should use HTML in ADO description', async () => {
