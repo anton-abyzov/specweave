@@ -27,6 +27,7 @@ export interface SyncOrchestratorConfig {
   projectV2Enabled?: boolean;
   projectV2Number?: number;
   projectV2Id?: string;
+  boardName?: string;
   statusFieldMapping?: Record<string, string>;
   priorityFieldMapping?: Record<string, string>;
 }
@@ -106,7 +107,8 @@ export class GitHubSyncOrchestrator {
       projectV2Id: this.config.projectV2Id,
     });
 
-    const project = await boardResolver.findOrCreateProject('SpecWeave Sync Board');
+    const boardName = this.config.boardName || 'SpecWeave Sync Board';
+    const project = await boardResolver.findOrCreateProject(boardName);
 
     // Collect issue node IDs from created issues
     const nodeIds = pushResult.created

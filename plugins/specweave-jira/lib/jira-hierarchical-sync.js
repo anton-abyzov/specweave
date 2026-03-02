@@ -4,6 +4,7 @@ import {
   isCustomStrategy
 } from "../../../src/core/types/sync-profile.js";
 import { getBoardIds } from "./jira-board-resolver.js";
+import { searchAllIssues } from "./jira-paginated-search.js";
 async function buildHierarchicalJQL(client, containers) {
   const clauses = [];
   for (const container of containers) {
@@ -107,6 +108,9 @@ async function fetchIssuesSimple(client, config, timeRange) {
   let jql = `project=${projectKey}`;
   jql = addTimeRangeFilter(jql, timeRange);
   console.log("\u{1F50D} Fetching issues (SIMPLE strategy):", jql);
+  if (typeof client.getAxiosClient === "function") {
+    return searchAllIssues(client.getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }
 async function fetchIssuesCustom(client, config, timeRange) {
@@ -116,6 +120,9 @@ async function fetchIssuesCustom(client, config, timeRange) {
   }
   const jql = addTimeRangeFilter(customQuery, timeRange);
   console.log("\u{1F50D} Fetching issues (CUSTOM strategy):", jql);
+  if (typeof client.getAxiosClient === "function") {
+    return searchAllIssues(client.getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }
 async function fetchIssuesFiltered(client, config, timeRange) {
@@ -126,6 +133,9 @@ async function fetchIssuesFiltered(client, config, timeRange) {
   const baseJql = await buildHierarchicalJQL(client, containers);
   const jql = addTimeRangeFilter(baseJql, timeRange);
   console.log("\u{1F50D} Fetching issues (FILTERED strategy):", jql);
+  if (typeof client.getAxiosClient === "function") {
+    return searchAllIssues(client.getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }
 export {

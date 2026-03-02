@@ -80,10 +80,13 @@ for i in {1..15}; do
     break
   fi
 
-  # Check for stale lock
+  # Check for stale lock (POSIX-portable: works on macOS and Linux)
   if [[ -d "$LOCK_FILE" ]]; then
-    LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
-    if (( LOCK_AGE > LOCK_TIMEOUT )); then
+    # Use find -mmin which works on both macOS and Linux
+    LOCK_TIMEOUT_MIN=$(( (LOCK_TIMEOUT + 59) / 60 ))  # Convert seconds to minutes (ceil)
+    [[ $LOCK_TIMEOUT_MIN -lt 1 ]] && LOCK_TIMEOUT_MIN=1
+    STALE=$(find "$LOCK_FILE" -maxdepth 0 -mmin +${LOCK_TIMEOUT_MIN} 2>/dev/null)
+    if [[ -n "$STALE" ]]; then
       rmdir "$LOCK_FILE" 2>/dev/null || true
       continue
     fi

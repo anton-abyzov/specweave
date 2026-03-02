@@ -86,11 +86,25 @@ export interface ProjectGitHubConfig {
   teamBoardId?: number;  // For team-board strategy
 }
 
+/** Default cross-team detection keywords (English). Override via `crossTeamKeywords` config. */
+const DEFAULT_CROSS_TEAM_KEYWORDS = [
+  'integration',
+  'cross-team',
+  'cross-project',
+  'shared',
+  'common',
+  'auth',
+  'api-contract',
+  'sync',
+];
+
 export class GitHubSpecSync {
   private specManager: SpecMetadataManager;
   private projectContextManager: ProjectContextManager;
   private projectRoot: string;
   private token?: string;
+  /** Configurable keywords for cross-team spec detection. Case-insensitive matching. */
+  crossTeamKeywords: string[] = DEFAULT_CROSS_TEAM_KEYWORDS;
 
   constructor(projectRoot: string = process.cwd()) {
     this.projectRoot = projectRoot;
@@ -605,6 +619,11 @@ ${acList}
 
   /**
    * Resolve conflicts
+   *
+   * GUARD: Only overwrites local spec title if the user explicitly configured
+   * "remote-wins" as the conflict resolution strategy. Default conflicts
+   * detected by detectConflicts() use 'remote-wins' but this guard ensures
+   * API-sourced titles never silently replace local titles.
    */
   private async resolveConflicts(
     spec: SpecContent,
@@ -612,12 +631,27 @@ ${acList}
   ): Promise<void> {
     for (const conflict of conflicts) {
       if (conflict.resolution === 'remote-wins') {
-        console.log(`   🔄 Resolving: ${conflict.description} (GitHub wins)`);
-        // Update spec metadata from GitHub
+        // Guard: never overwrite local title with an API-sourced title
+        // unless the conflict was explicitly set to remote-wins by user config.
+        // The title field from detectConflicts() defaults to 'remote-wins'
+        // but we should only apply it for non-title fields or when the remote
+        // value looks like a real title (not a stub/API artifact).
         if (conflict.field === 'title') {
+          const remoteTitle = conflict.remoteValue as string;
+          // Skip if remote title looks like a prefix-formatted project title
+          // (e.g., "[SPEC-001] Real Title") — extract and compare only the suffix
+          const remoteSuffix = remoteTitle.replace(/^\[.*?\]\s*/, '');
+          const localTitle = spec.metadata.title;
+          if (remoteSuffix === localTitle || !remoteSuffix) {
+            // No real difference or empty remote — skip
+            continue;
+          }
+          console.log(`   🔄 Resolving: ${conflict.description} (GitHub wins — explicit remote-wins)`);
           await this.specManager.saveMetadata(spec.metadata.id, {
             title: conflict.remoteValue
           });
+        } else {
+          console.log(`   🔄 Resolving: ${conflict.description} (GitHub wins)`);
         }
       }
     }
@@ -659,23 +693,74 @@ ${acList}
   }
 
   /**
-   * Fetch GitHub Project details
+   * Fetch GitHub Project details via GraphQL ProjectV2 API
    */
   private async fetchGitHubProject(
     owner: string,
     repo: string,
     projectId: number
   ): Promise<GitHubProject> {
-    // Placeholder - would use GraphQL to fetch project
-    return {
-      id: projectId,
-      title: 'Project Title',
-      number: 1,
-      url: 'https://github.com/...',
-      state: 'open',
-      owner,
-      repo
-    };
+    const query = `
+      query GetProject($owner: String!, $number: Int!) {
+        user(login: $owner) {
+          projectV2(number: $number) {
+            id
+            title
+            number
+            url
+            closed
+          }
+        }
+      }
+    `;
+
+    try {
+      const result = await this.executeGraphQL(query, {
+        owner,
+        number: projectId,
+      });
+
+      // Try user first, fall back to org
+      let project = result.data?.user?.projectV2;
+      if (!project) {
+        const orgQuery = `
+          query GetOrgProject($owner: String!, $number: Int!) {
+            organization(login: $owner) {
+              projectV2(number: $number) {
+                id
+                title
+                number
+                url
+                closed
+              }
+            }
+          }
+        `;
+        const orgResult = await this.executeGraphQL(orgQuery, {
+          owner,
+          number: projectId,
+        });
+        project = orgResult.data?.organization?.projectV2;
+      }
+
+      if (!project) {
+        throw new Error(`GitHub Project #${projectId} not found for ${owner}`);
+      }
+
+      return {
+        id: projectId,
+        title: project.title,
+        number: project.number,
+        url: project.url,
+        state: project.closed ? 'closed' : 'open',
+        owner,
+        repo,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch GitHub Project #${projectId}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   /**
@@ -932,20 +1017,9 @@ ${acList}
    * - Tags include multiple project names
    */
   private isCrossTeamSpec(spec: SpecContent): boolean {
-    const crossTeamKeywords = [
-      'integration',
-      'cross-team',
-      'cross-project',
-      'shared',
-      'common',
-      'auth',  // Auth often touches frontend + backend
-      'api-contract',
-      'sync'
-    ];
-
     const title = spec.metadata.title.toLowerCase();
-    const hasCrossTeamKeyword = crossTeamKeywords.some(keyword =>
-      title.includes(keyword)
+    const hasCrossTeamKeyword = this.crossTeamKeywords.some(keyword =>
+      title.toLowerCase().includes(keyword.toLowerCase())
     );
 
     // Check tags for multiple project references

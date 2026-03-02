@@ -12,6 +12,7 @@ import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import { JiraClient, JiraIssue, JiraIssueCreate } from '../../../src/integrations/jira/jira-client.js';
+import { toDescription } from './content-format-adapter.js';
 
 interface EpicFrontmatter {
   id: string;
@@ -77,11 +78,13 @@ export class JiraEpicSync {
   private client: JiraClient;
   private specsDir: string;
   private projectKey: string;
+  private domain: string;
 
-  constructor(client: JiraClient, specsDir: string, projectKey: string) {
+  constructor(client: JiraClient, specsDir: string, projectKey: string, domain?: string) {
     this.client = client;
     this.specsDir = specsDir;
     this.projectKey = projectKey;
+    this.domain = domain || (client as any)['credentials']?.domain || '';
   }
 
   /**
@@ -193,11 +196,21 @@ export class JiraEpicSync {
    * Find Epic folder by ID (FS-001 or just 001)
    */
   private async findEpicFolder(epicId: string): Promise<string | null> {
-    const normalizedId = epicId.startsWith('FS-')
-      ? epicId
-      : `FS-${epicId.padStart(3, '0')}`;
-
     const folders = await fs.readdir(this.specsDir);
+
+    // Try exact match first
+    for (const folder of folders) {
+      if (folder.startsWith(epicId)) {
+        return path.join(this.specsDir, folder);
+      }
+    }
+
+    // Try with project key prefix (derived from projectKey, not hardcoded FS-)
+    const prefix = `${this.projectKey}-`;
+    const normalizedId = epicId.startsWith(prefix)
+      ? epicId
+      : `${prefix}${epicId.padStart(3, '0')}`;
+
     for (const folder of folders) {
       if (folder.startsWith(normalizedId)) {
         return path.join(this.specsDir, folder);
@@ -274,7 +287,8 @@ export class JiraEpicSync {
     url: string;
   }> {
     const summary = `[${epic.id}] ${epic.title}`;
-    const description = `Epic: ${epic.title}\n\nProgress: ${epic.completed_increments}/${epic.total_increments} increments (${epic.progress})\n\nPriority: ${epic.priority}\nStatus: ${epic.status}`;
+    const rawDescription = `Epic: ${epic.title}\n\nProgress: ${epic.completed_increments}/${epic.total_increments} increments (${epic.progress})\n\nPriority: ${epic.priority}\nStatus: ${epic.status}`;
+    const description = toDescription(rawDescription, this.domain) as any;
 
     const issueData: JiraIssueCreate = {
       issueType: 'Epic',
@@ -288,7 +302,7 @@ export class JiraEpicSync {
 
     return {
       key: issue.key,
-      url: issue.self.replace('/rest/api/3/issue/', '/browse/'),
+      url: issue.self.replace(/\/rest\/api\/\d+\/issue\//, '/browse/'),
     };
   }
 
@@ -297,7 +311,8 @@ export class JiraEpicSync {
    */
   private async updateEpic(epicKey: string, epic: EpicFrontmatter): Promise<void> {
     const summary = `[${epic.id}] ${epic.title}`;
-    const description = `Epic: ${epic.title}\n\nProgress: ${epic.completed_increments}/${epic.total_increments} increments (${epic.progress})\n\nPriority: ${epic.priority}\nStatus: ${epic.status}`;
+    const rawDescription = `Epic: ${epic.title}\n\nProgress: ${epic.completed_increments}/${epic.total_increments} increments (${epic.progress})\n\nPriority: ${epic.priority}\nStatus: ${epic.status}`;
+    const description = toDescription(rawDescription, this.domain) as any;
 
     await this.client.updateIssue({
       key: epicKey,

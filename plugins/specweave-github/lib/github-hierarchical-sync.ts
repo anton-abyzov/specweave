@@ -317,8 +317,8 @@ async function executeSearch(query: string): Promise<GitHubIssue[]> {
     '1000', // Max results
   ], { env: getGhEnv() });
 
-  if (result.status !== 0) {
-    throw new Error(`Failed to search issues: ${result.stderr || result.stdout}`);
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to search issues (exit code ${result.exitCode}): ${result.stderr || result.stdout}`);
   }
 
   if (!result.stdout.trim()) {

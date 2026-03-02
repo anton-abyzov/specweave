@@ -55,6 +55,16 @@ export interface ReconcileResult {
   }>;
 }
 
+function hasAnyGitHubSyncData(metadata: any): boolean {
+  if (metadata.github?.issue || metadata.github?.milestone) return true;
+  if (Array.isArray(metadata.github?.issues) && metadata.github.issues.length > 0) return true;
+  const ext = metadata.externalLinks?.github;
+  if (!ext) return false;
+  if (ext.milestone || ext.issueNumber) return true;
+  if (ext.issues && typeof ext.issues === 'object' && Object.keys(ext.issues).length > 0) return true;
+  return false;
+}
+
 export class GitHubReconciler {
   private projectRoot: string;
   private dryRun: boolean;
@@ -704,7 +714,20 @@ This issue was closed because increment \`${incrementId}\` was abandoned.
         return result; // No metadata = nothing to close
       }
 
-      const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+      let metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+
+      // Auto-recovery: if no sync data at all, run full sync before closure
+      if (!hasAnyGitHubSyncData(metadata)) {
+        try {
+          const { LivingDocsSync } = await import('../core/living-docs/living-docs-sync.js');
+          const sync = new LivingDocsSync(projectRoot);
+          await sync.syncIncrement(incrementId);
+          // Re-read metadata after sync
+          metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+        } catch {
+          // Non-critical: sync may fail if no living docs exist yet
+        }
+      }
 
       // Collect unique issue numbers from both metadata formats
       const issueNumbers = new Set<number>();
@@ -805,5 +828,242 @@ Auto-closed by SpecWeave`;
       result.errors.push(error.message);
       return result;
     }
+  }
+
+  // ==========================================================================
+  // Milestone reconciliation (T-014, T-015)
+  // ==========================================================================
+
+  /**
+   * Result from milestone reconciliation
+   */
+  static readonly MILESTONE_RECONCILE_RESULT_TEMPLATE = {
+    staleClosed: 0,
+    duplicatesClosed: 0,
+    errors: [] as string[],
+  };
+
+  /**
+   * Reconcile stale and duplicate milestones on GitHub.
+   *
+   * - Closes open milestones with 0 open issues and 1+ closed issues (stale)
+   * - Closes open milestones matching completed local increments
+   * - Detects duplicate milestones (same FS-XXX prefix) and closes the
+   *   smaller/empty one, keeping the one with the most issues
+   *
+   * @param projectRoot - Project root directory
+   * @param dryRun - If true, only report what would happen
+   * @param logger - Logger instance
+   */
+  static async reconcileMilestones(
+    projectRoot: string,
+    dryRun: boolean = false,
+    logger?: Logger,
+  ): Promise<{ staleClosed: number; duplicatesClosed: number; errors: string[] }> {
+    const log = logger ?? consoleLogger;
+    const result = { staleClosed: 0, duplicatesClosed: 0, errors: [] as string[] };
+
+    try {
+      // Resolve repo info
+      const repoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
+      if (!repoInfo) {
+        result.errors.push('Could not detect GitHub repository');
+        return result;
+      }
+
+      const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
+      const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
+
+      // 1. Fetch all open milestones from GitHub
+      log.log('   Fetching open milestones from GitHub...');
+      const msResult = await execFileNoThrow('gh', [
+        'api',
+        `repos/${repoSlug}/milestones`,
+        '--paginate',
+        '-q',
+        '.[] | {number, title, open_issues, closed_issues, state}',
+      ]);
+
+      if (!msResult.success) {
+        result.errors.push(`Failed to list milestones: ${msResult.stderr}`);
+        return result;
+      }
+
+      // Parse NDJSON output (one JSON object per line)
+      interface MilestoneInfo {
+        number: number;
+        title: string;
+        open_issues: number;
+        closed_issues: number;
+        state: string;
+      }
+
+      const milestones: MilestoneInfo[] = [];
+      for (const line of msResult.stdout.trim().split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          milestones.push(JSON.parse(line));
+        } catch {
+          // Skip unparseable lines
+        }
+      }
+
+      if (milestones.length === 0) {
+        log.log('   No open milestones found on GitHub');
+        return result;
+      }
+
+      log.log(`   Found ${milestones.length} open milestone(s)`);
+
+      // 2. Collect completed local increment FS-IDs for cross-reference
+      const completedFsIds = await GitHubReconciler.collectCompletedIncrementFsIds(projectRoot);
+
+      // 3. T-014: Close stale milestones
+      // A milestone is stale if:
+      //   (a) it has 0 open issues AND 1+ closed issues, OR
+      //   (b) it matches a completed local increment (FS-XXX prefix)
+      const closedNumbers = new Set<number>();
+
+      for (const ms of milestones) {
+        const fsMatch = ms.title.match(/^(FS-\d+)/);
+        const fsId = fsMatch ? fsMatch[1] : null;
+
+        const isAllIssuesClosed = ms.open_issues === 0 && ms.closed_issues > 0;
+        const matchesCompletedIncrement = fsId ? completedFsIds.has(fsId) : false;
+
+        if (isAllIssuesClosed || matchesCompletedIncrement) {
+          const reason = isAllIssuesClosed
+            ? `0 open / ${ms.closed_issues} closed issues`
+            : `matches completed increment ${fsId}`;
+
+          if (!dryRun) {
+            const closeResult = await execFileNoThrow('gh', [
+              'api',
+              '-X', 'PATCH',
+              `repos/${repoSlug}/milestones/${ms.number}`,
+              '-f', 'state=closed',
+            ]);
+
+            if (closeResult.success) {
+              result.staleClosed++;
+              closedNumbers.add(ms.number);
+              log.log(`   Closed stale milestone #${ms.number} "${ms.title}" (${reason})`);
+            } else {
+              result.errors.push(`Failed to close milestone #${ms.number}: ${closeResult.stderr}`);
+            }
+          } else {
+            result.staleClosed++;
+            closedNumbers.add(ms.number);
+            log.log(`   [DRY-RUN] Would close stale milestone #${ms.number} "${ms.title}" (${reason})`);
+          }
+        }
+      }
+
+      // 4. T-015: Detect and close duplicate milestones
+      // Group remaining open milestones by FS-XXX prefix
+      const fsPrefixGroups = new Map<string, MilestoneInfo[]>();
+      for (const ms of milestones) {
+        // Skip milestones we already closed in step 3
+        if (closedNumbers.has(ms.number)) continue;
+
+        const fsMatch = ms.title.match(/^(FS-\d+)/);
+        if (!fsMatch) continue;
+
+        const prefix = fsMatch[1];
+        const group = fsPrefixGroups.get(prefix) || [];
+        group.push(ms);
+        fsPrefixGroups.set(prefix, group);
+      }
+
+      for (const [prefix, group] of fsPrefixGroups) {
+        if (group.length < 2) continue;
+
+        // Sort by total issue count descending — keep the one with most issues
+        const sorted = [...group].sort((a, b) => {
+          const totalA = a.open_issues + a.closed_issues;
+          const totalB = b.open_issues + b.closed_issues;
+          return totalB - totalA;
+        });
+
+        const keep = sorted[0];
+        const toClose = sorted.slice(1);
+
+        for (const dup of toClose) {
+          if (!dryRun) {
+            const closeResult = await execFileNoThrow('gh', [
+              'api',
+              '-X', 'PATCH',
+              `repos/${repoSlug}/milestones/${dup.number}`,
+              '-f', 'state=closed',
+            ]);
+
+            if (closeResult.success) {
+              result.duplicatesClosed++;
+              log.log(`   Closed duplicate milestone #${dup.number} "${dup.title}" (keeping #${keep.number} with ${keep.open_issues + keep.closed_issues} issues)`);
+            } else {
+              result.errors.push(`Failed to close duplicate milestone #${dup.number}: ${closeResult.stderr}`);
+            }
+          } else {
+            result.duplicatesClosed++;
+            log.log(`   [DRY-RUN] Would close duplicate milestone #${dup.number} "${dup.title}" (keeping #${keep.number})`);
+          }
+        }
+      }
+
+      return result;
+    } catch (error: any) {
+      result.errors.push(error.message);
+      return result;
+    }
+  }
+
+  /**
+   * Collect FS-IDs of all completed/archived/abandoned increments.
+   * Returns a Set of strings like "FS-400", "FS-391", etc.
+   */
+  private static async collectCompletedIncrementFsIds(projectRoot: string): Promise<Set<string>> {
+    const fsIds = new Set<string>();
+    const incrementsDir = path.join(projectRoot, '.specweave/increments');
+
+    if (!existsSync(incrementsDir)) return fsIds;
+
+    // Check archive and abandoned dirs for completed increments
+    for (const sub of ['_archive', '_abandoned']) {
+      const subDir = path.join(incrementsDir, sub);
+      if (!existsSync(subDir)) continue;
+
+      const entries = await fs.readdir(subDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+        const match = entry.name.match(/^(\d{4})/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          fsIds.add(`FS-${String(num).padStart(3, '0')}`);
+        }
+      }
+    }
+
+    // Also check active increments with completed/abandoned status
+    const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
+      const metadataPath = path.join(incrementsDir, entry.name, 'metadata.json');
+      if (!existsSync(metadataPath)) continue;
+
+      try {
+        const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+        if (metadata.status === 'completed' || metadata.status === 'abandoned') {
+          const match = entry.name.match(/^(\d{4})/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            fsIds.add(`FS-${String(num).padStart(3, '0')}`);
+          }
+        }
+      } catch {
+        // Skip invalid metadata
+      }
+    }
+
+    return fsIds;
   }
 }

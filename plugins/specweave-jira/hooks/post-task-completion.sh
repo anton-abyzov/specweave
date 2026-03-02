@@ -96,7 +96,8 @@ EOF
   exit 0
 fi
 
-JIRA_ISSUE=$(jq -r '.jira.issue // empty' "$METADATA_FILE" 2>/dev/null)
+# Read JIRA issue key: canonical path first, then legacy fallbacks
+JIRA_ISSUE=$(jq -r '.external_sync.jira.issueKey // .jira.issueKey // .jira.issue // empty' "$METADATA_FILE" 2>/dev/null)
 
 if [ -z "$JIRA_ISSUE" ]; then
   echo "[$(date)] [JIRA] ℹ️  No JIRA issue linked to $CURRENT_INCREMENT, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true

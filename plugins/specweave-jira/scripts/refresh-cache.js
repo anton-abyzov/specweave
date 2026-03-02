@@ -17,7 +17,7 @@ async function refreshJiraCache(projectRoot = process.cwd()) {
   }
   console.log(`\u2705 Cleared ${cleared} cache files`);
 }
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   refreshJiraCache().catch(console.error);
 }
 export {

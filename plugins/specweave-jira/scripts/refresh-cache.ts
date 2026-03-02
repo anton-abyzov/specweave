@@ -34,7 +34,7 @@ export async function refreshJiraCache(projectRoot: string = process.cwd()): Pro
   console.log(`✅ Cleared ${cleared} cache files`);
 }
 
-// CLI entry
-if (require.main === module) {
+// CLI entry (ESM-compatible)
+if (import.meta.url === `file://${process.argv[1]}`) {
   refreshJiraCache().catch(console.error);
 }

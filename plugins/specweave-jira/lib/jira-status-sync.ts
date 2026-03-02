@@ -12,6 +12,8 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
+import { detectDeploymentType, getApiBaseUrl } from './jira-deployment-detector.js';
+import { toCommentBody } from './content-format-adapter.js';
 
 /**
  * External status representation (JIRA-specific)
@@ -51,9 +53,9 @@ export class JiraStatusSync {
     this.domain = domain;
     this.projectKey = projectKey;
 
-    // Create JIRA API client
+    // Create JIRA API client — baseURL set dynamically via init()
     this.client = axios.create({
-      baseURL: `https://${domain}/rest/api/3`,
+      baseURL: getApiBaseUrl(domain),
       auth: {
         username: email,
         password: apiToken
@@ -63,6 +65,17 @@ export class JiraStatusSync {
         'Content-Type': 'application/json'
       }
     });
+  }
+
+  /**
+   * Initialize: detect deployment type and update client baseURL
+   */
+  async init(): Promise<void> {
+    const deployment = await detectDeploymentType(this.domain, {
+      email: this.client.defaults.auth?.username || '',
+      apiToken: this.client.defaults.auth?.password || '',
+    });
+    this.client.defaults.baseURL = deployment.baseUrl;
   }
 
   /**
@@ -134,12 +147,14 @@ export class JiraStatusSync {
     oldStatus: string,
     newStatus: string
   ): Promise<void> {
-    const body = `🔄 *Status Update*\n\n` +
+    const rawBody = `*Status Update*\n\n` +
       `SpecWeave status changed:\n` +
-      `• *From*: ${oldStatus}\n` +
-      `• *To*: ${newStatus}\n` +
-      `• *When*: ${new Date().toISOString()}\n\n` +
+      `* *From*: ${oldStatus}\n` +
+      `* *To*: ${newStatus}\n` +
+      `* *When*: ${new Date().toISOString()}\n\n` +
       `_Synced from SpecWeave_`;
+
+    const body = toCommentBody(rawBody, this.domain);
 
     await this.client.post(`/issue/${issueKey}/comment`, {
       body

@@ -17,6 +17,7 @@ import {
 } from '../../../src/core/types/sync-profile.js';
 import { JiraClient, JiraIssue } from '../../../src/integrations/jira/jira-client.js';
 import { getBoardIds } from './jira-board-resolver.js';
+import { searchAllIssues } from './jira-paginated-search.js';
 
 /**
  * Build hierarchical JQL query from containers
@@ -222,6 +223,10 @@ async function fetchIssuesSimple(
 
   console.log('🔍 Fetching issues (SIMPLE strategy):', jql);
 
+  // Use paginated search if client exposes axios instance, otherwise fallback
+  if (typeof (client as any).getAxiosClient === 'function') {
+    return searchAllIssues((client as any).getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }
 
@@ -249,6 +254,9 @@ async function fetchIssuesCustom(
 
   console.log('🔍 Fetching issues (CUSTOM strategy):', jql);
 
+  if (typeof (client as any).getAxiosClient === 'function') {
+    return searchAllIssues((client as any).getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }
 
@@ -279,5 +287,8 @@ async function fetchIssuesFiltered(
 
   console.log('🔍 Fetching issues (FILTERED strategy):', jql);
 
+  if (typeof (client as any).getAxiosClient === 'function') {
+    return searchAllIssues((client as any).getAxiosClient(), { jql });
+  }
   return client.searchIssues({ jql });
 }

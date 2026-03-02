@@ -108,6 +108,7 @@ interface ConfigProfile {
  * Sync config from config.json
  */
 interface SyncConfig {
+  activeProfile?: string;
   defaultProfile?: string;
   profiles?: Record<string, ConfigProfile>;
 }
@@ -158,7 +159,8 @@ export class AdoProfileResolver {
     const incrementProfile = await this.getIncrementProfile(incrementId);
 
     // Determine which profile to use
-    const globalDefaultProfile = config.sync?.defaultProfile;
+    // Read both activeProfile (canonical) and defaultProfile (legacy) with fallback
+    const globalDefaultProfile = config.sync?.activeProfile ?? config.sync?.defaultProfile;
     const profileName = incrementProfile || globalDefaultProfile;
 
     if (!profileName) {
