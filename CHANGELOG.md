@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.352] - 2026-03-02
+
+### Changes
+- sync pipeline reliability fixes and jira plugin improvements
+- remove non-existent sw:security-patterns skill reference from security agent
+- add Skills-First Architecture docs page to Core Concepts
+- make sync failures visible in /sw:done output (T-010, T-011)
+- dual-write externalLinks.github in backfillIncrementMetadata
+
+---
+
+
+
 ## [1.0.351] - 2026-03-02
 
 ### Changes
