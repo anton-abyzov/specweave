@@ -168,7 +168,12 @@ export class AdoReconciler {
 
     // Determine expected ADO state
     const shouldBeClosed = status === 'completed' || status === 'abandoned';
-    const shouldBeActive = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
+    const shouldBeActive = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review' || status === 'paused';
+
+    if (!shouldBeClosed && !shouldBeActive) {
+      this.logger.log(`  ⚠️ Unknown increment status '${status}' for ${inc.incrementId} — skipping`);
+      return;
+    }
 
     // Check main work item
     if (inc.workItem) {

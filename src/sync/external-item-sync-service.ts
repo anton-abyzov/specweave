@@ -254,6 +254,30 @@ export class ExternalItemSyncService {
   }
 
   /**
+   * Get User Story file frontmatter (for external issue links)
+   *
+   * @param usId - User Story ID (e.g., "US-009")
+   * @param featureId - Feature ID (e.g., "FS-047")
+   * @param projectRoot - Project root directory
+   * @returns Parsed frontmatter or null
+   */
+  private async getUsFileFrontmatter(
+    usId: string,
+    featureId: string,
+    projectRoot: string
+  ): Promise<Record<string, any> | null> {
+    try {
+      const usFilePath = await this.findUSFile(projectRoot, featureId, usId);
+      if (!usFilePath) return null;
+      const content = await fs.readFile(usFilePath, 'utf-8');
+      const parsed = matter(content);
+      return parsed.data as Record<string, any>;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Comment-only sync: Post completion update as comment
    *
    * Does NOT modify external item title, description, or acceptance criteria.
@@ -280,9 +304,71 @@ export class ExternalItemSyncService {
       };
     }
 
-    // TODO: Integrate with external tool APIs (GitHub, JIRA, ADO)
-    // For now, just log the comment that would be posted
-    this.logger.log(`   💬 Comment to post:\n${comment}`);
+    // Post comment via external tool API
+    if (options.externalTool === 'github') {
+      try {
+        const { GitHubClientV2 } = await import('../../plugins/specweave-github/lib/github-client-v2.js');
+        const configPath = path.join(options.projectRoot, '.specweave/config.json');
+        const configContent = await fs.readFile(configPath, 'utf-8');
+        const config = JSON.parse(configContent);
+        const owner = config.sync?.github?.owner ?? config.sync?.profiles?.default?.config?.owner;
+        const repo = config.sync?.github?.repo ?? config.sync?.profiles?.default?.config?.repo;
+        if (owner && repo) {
+          const client = GitHubClientV2.fromRepo(owner, repo);
+          const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+          const issueNumber = usFile?.external?.github?.issue;
+          if (issueNumber) {
+            await client.addComment(issueNumber, comment);
+            this.logger.log(`   ✅ Comment posted to GitHub issue #${issueNumber}`);
+          } else {
+            this.logger.log(`   ⚠️ No GitHub issue linked to ${completionData.usId} — comment logged only`);
+          }
+        }
+      } catch (error: any) {
+        this.logger.error(`   ⚠️ Failed to post comment to GitHub: ${error.message}`);
+      }
+    } else if (options.externalTool === 'jira') {
+      try {
+        const { JiraClient } = await import('../integrations/jira/jira-client.js');
+        const jiraClient = new JiraClient();
+        const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+        const jiraKey = usFile?.external?.jira?.issueKey;
+        if (jiraKey) {
+          await jiraClient.addComment(jiraKey, comment);
+          this.logger.log(`   ✅ Comment posted to JIRA issue ${jiraKey}`);
+        } else {
+          this.logger.log(`   ⚠️ No JIRA issue linked to ${completionData.usId} — comment logged only`);
+        }
+      } catch (error: any) {
+        this.logger.error(`   ⚠️ Failed to post comment to JIRA: ${error.message}`);
+      }
+    } else if (options.externalTool === 'ado') {
+      try {
+        const usFile = await this.getUsFileFrontmatter(completionData.usId, completionData.featureId, options.projectRoot);
+        const workItemId = usFile?.external?.ado?.workItemId;
+        if (workItemId) {
+          const { AdoClient } = await import('../integrations/ado/ado-client.js');
+          const { getAdoPat } = await import('../integrations/ado/ado-pat-provider.js');
+          const configPath = path.join(options.projectRoot, '.specweave/config.json');
+          const configContent = await fs.readFile(configPath, 'utf-8');
+          const config = JSON.parse(configContent);
+          const org = config.sync?.ado?.organization ?? config.sync?.profiles?.default?.config?.organization;
+          const project = config.sync?.ado?.project ?? config.sync?.profiles?.default?.config?.project;
+          if (org && project) {
+            const pat = getAdoPat(org);
+            const adoClient = new AdoClient({ pat, organization: org, project });
+            await adoClient.addComment(workItemId, comment);
+            this.logger.log(`   ✅ Comment posted to ADO work item #${workItemId}`);
+          }
+        } else {
+          this.logger.log(`   ⚠️ No ADO work item linked to ${completionData.usId} — comment logged only`);
+        }
+      } catch (error: any) {
+        this.logger.error(`   ⚠️ Failed to post comment to ADO: ${error.message}`);
+      }
+    } else {
+      this.logger.log(`   💬 Comment to post (no external tool configured):\n${comment}`);
+    }
 
     return {
       success: true,
