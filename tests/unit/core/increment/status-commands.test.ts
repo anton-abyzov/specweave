@@ -14,7 +14,7 @@ const mockUpdateStatus = vi.fn();
 const mockGetActive = vi.fn().mockReturnValue([]);
 const mockGetAll = vi.fn().mockReturnValue([]);
 const mockGetExtended = vi.fn();
-const mockOnIncrementDone = vi.fn();
+const mockOnIncrementDone = vi.fn().mockResolvedValue({ syncErrors: [], syncSuccess: [] });
 
 vi.mock('../../../../src/core/increment/metadata-manager.js', () => ({
   MetadataManager: {
@@ -36,6 +36,13 @@ const mockSyncIncrement = vi.fn().mockResolvedValue({ success: true });
 vi.mock('../../../../src/core/living-docs/living-docs-sync.js', () => ({
   LivingDocsSync: class {
     syncIncrement = mockSyncIncrement;
+  },
+}));
+
+const mockCloseCompletedIncrementIssues = vi.fn().mockResolvedValue({ closed: 0, milestoneClose: false, errors: [] });
+vi.mock('../../../../src/sync/github-reconciler.js', () => ({
+  GitHubReconciler: {
+    closeCompletedIncrementIssues: (...args: unknown[]) => mockCloseCompletedIncrementIssues(...args),
   },
 }));
 
@@ -365,6 +372,7 @@ describe('status-commands', () => {
         .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
       mockOnIncrementDone.mockImplementation(async () => {
         callOrder.push('hooks');
+        return { syncErrors: [], syncSuccess: ['Living docs synced'] };
       });
 
       const result = await completeIncrement({

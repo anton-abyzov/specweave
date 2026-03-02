@@ -322,13 +322,18 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
     // Dispatch post-increment-done hooks (awaited, error-isolated)
+    let hookSyncErrors: string[] = [];
+    let hookSyncSuccess: string[] = [];
     try {
       const { LifecycleHookDispatcher } = await import(
         '../hooks/LifecycleHookDispatcher.js'
       );
-      await LifecycleHookDispatcher.onIncrementDone(process.cwd(), incrementId);
+      const hookResult = await LifecycleHookDispatcher.onIncrementDone(process.cwd(), incrementId);
+      hookSyncErrors = hookResult.syncErrors;
+      hookSyncSuccess = hookResult.syncSuccess;
     } catch (hookError) {
       const msg = hookError instanceof Error ? hookError.message : String(hookError);
+      hookSyncErrors.push(`Hook dispatch failed: ${msg}`);
       process.stderr.write(`[completeIncrement] Post-closure hook error: ${msg}\n`);
     }
 
@@ -336,6 +341,9 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     // The hook chain above may silently skip GitHub closure when living docs
     // files don't exist. This fallback reads issue numbers directly from
     // metadata.json and closes any that are still open. Idempotent.
+    let ghClosed = 0;
+    let ghMilestoneClosed = false;
+    const ghErrors: string[] = [];
     try {
       const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
       const closureResult = await GitHubReconciler.closeCompletedIncrementIssues(
@@ -343,22 +351,36 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         incrementId,
         log,
       );
-      if (closureResult.closed > 0) {
-        log(chalk.green(`   Closed ${closureResult.closed} GitHub issue(s)`));
-      }
-      if (closureResult.milestoneClose) {
-        log(chalk.green(`   Closed GitHub milestone`));
-      }
-      for (const err of closureResult.errors) {
-        log(chalk.yellow(`   GitHub sync: ${err}`));
-      }
+      ghClosed = closureResult.closed;
+      ghMilestoneClosed = closureResult.milestoneClose;
+      ghErrors.push(...closureResult.errors);
     } catch (fallbackError) {
       const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-      log(chalk.yellow(`   GitHub closure: ${msg}`));
+      ghErrors.push(msg);
     }
 
     log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
     log(chalk.gray(`📦 Status changed to: completed`));
+
+    // ── Sync status summary ──────────────────────────────────
+    // GitHub issue/milestone closure summary
+    if (ghClosed > 0 || ghMilestoneClosed) {
+      const parts: string[] = [];
+      if (ghClosed > 0) parts.push(`${ghClosed} issue(s) closed`);
+      if (ghMilestoneClosed) parts.push('milestone closed');
+      log(chalk.green(`   GitHub sync: ${parts.join(', ')}`));
+    }
+    for (const err of ghErrors) {
+      log(chalk.yellow(`   GitHub sync: failed (${err}) — run /sw:progress-sync to retry`));
+    }
+
+    // Hook-level sync results (living docs, GitHub project, closure coordinator)
+    for (const s of hookSyncSuccess) {
+      log(chalk.green(`   Sync: ${s}`));
+    }
+    for (const e of hookSyncErrors) {
+      log(chalk.yellow(`   Sync: ${e} — run /sw:progress-sync to retry`));
+    }
 
     return true;
 
