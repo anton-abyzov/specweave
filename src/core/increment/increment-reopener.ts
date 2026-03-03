@@ -16,6 +16,7 @@ import {
   IncrementStatus,
   TYPE_LIMITS
 } from '../types/increment-metadata.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Reopen target types
@@ -263,7 +264,7 @@ export class IncrementReopener {
 
       // 3. Read tasks.md
       const incrementPath = path.join(
-        process.cwd(),
+        resolveEffectiveRoot(),
         '.specweave',
         'increments',
         incrementId
@@ -463,7 +464,7 @@ export class IncrementReopener {
     reason: string
   ): Promise<string[]> {
     const incrementPath = path.join(
-      process.cwd(),
+      resolveEffectiveRoot(),
       '.specweave',
       'increments',
       incrementId
@@ -511,7 +512,7 @@ export class IncrementReopener {
     userStoryId: string
   ): Promise<string[]> {
     const incrementPath = path.join(
-      process.cwd(),
+      resolveEffectiveRoot(),
       '.specweave',
       'increments',
       incrementId
@@ -561,7 +562,7 @@ export class IncrementReopener {
     try {
       // Find user story file in living docs
       const specPath = path.join(
-        process.cwd(),
+        resolveEffectiveRoot(),
         '.specweave',
         'docs',
         'internal',

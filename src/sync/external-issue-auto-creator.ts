@@ -117,7 +117,7 @@ export class ExternalIssueAutoCreator {
    * 4. Creates issues if missing
    * 5. Updates metadata with issue links
    */
-  async createForIncrement(incrementId: string): Promise<AutoCreateResult> {
+  async createForIncrement(incrementId: string, targetProvider?: 'github' | 'jira' | 'ado'): Promise<AutoCreateResult> {
     try {
       // Load config
       const config = await this.configManager.read();
@@ -133,8 +133,8 @@ export class ExternalIssueAutoCreator {
         };
       }
 
-      // Detect provider
-      const provider = this.detectProvider(config);
+      // Use target provider if specified, otherwise auto-detect
+      const provider = targetProvider || this.detectProvider(config);
       if (!provider) {
         return {
           success: true,
@@ -649,8 +649,9 @@ export class ExternalIssueAutoCreator {
         projectKey
       );
 
-      // Update metadata
-      await this.updateMetadataWithJiraIssue(incrementId, epic.key, epic.self);
+      // Update metadata with JIRA issue + userStories mapping
+      const issueUrl = `https://${domain}/browse/${epic.key}`;
+      await this.updateMetadataWithJiraIssue(incrementId, epic.key, issueUrl, incrementInfo.userStories);
 
       this.logger.log(`✅ Created JIRA Epic: ${epic.key}`);
 
@@ -720,8 +721,8 @@ export class ExternalIssueAutoCreator {
         tags: ['specweave', 'auto-created'],
       });
 
-      // Update metadata
-      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, workItem.url);
+      // Update metadata with ADO work item + userStories mapping
+      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, workItem.url, incrementInfo.userStories);
 
       this.logger.log(`✅ Created ADO Feature: #${workItem.id}`);
 
@@ -946,7 +947,8 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
   private async updateMetadataWithJiraIssue(
     incrementId: string,
     issueKey: string,
-    issueUrl: string
+    issueUrl: string,
+    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>
   ): Promise<void> {
     const metadataPath = path.join(
       this.projectRoot,
@@ -960,11 +962,28 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
     }
 
+    const now = new Date().toISOString();
+
     metadata.jira = {
       issue: issueKey,
       url: issueUrl,
-      synced: new Date().toISOString(),
+      synced: now,
     };
+
+    // v1.0.358: Also populate externalLinks.jira.userStories for AC progress sync
+    if (userStories && userStories.length > 0) {
+      if (!metadata.externalLinks) metadata.externalLinks = {};
+      if (!metadata.externalLinks.jira) metadata.externalLinks.jira = {};
+      if (!metadata.externalLinks.jira.userStories) metadata.externalLinks.jira.userStories = {};
+
+      for (const us of userStories) {
+        metadata.externalLinks.jira.userStories[us.id] = {
+          issueKey,
+          issueUrl,
+          syncedAt: now,
+        };
+      }
+    }
 
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
   }
@@ -975,7 +994,8 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
   private async updateMetadataWithAdoWorkItem(
     incrementId: string,
     workItemId: number,
-    workItemUrl: string
+    workItemUrl: string,
+    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>
   ): Promise<void> {
     const metadataPath = path.join(
       this.projectRoot,
@@ -989,11 +1009,28 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
     }
 
+    const now = new Date().toISOString();
+
     metadata.ado = {
       workItem: workItemId,
       url: workItemUrl,
-      synced: new Date().toISOString(),
+      synced: now,
     };
+
+    // v1.0.358: Also populate externalLinks.ado.userStories for AC progress sync
+    if (userStories && userStories.length > 0) {
+      if (!metadata.externalLinks) metadata.externalLinks = {};
+      if (!metadata.externalLinks.ado) metadata.externalLinks.ado = {};
+      if (!metadata.externalLinks.ado.userStories) metadata.externalLinks.ado.userStories = {};
+
+      for (const us of userStories) {
+        metadata.externalLinks.ado.userStories[us.id] = {
+          workItemId,
+          workItemUrl,
+          syncedAt: now,
+        };
+      }
+    }
 
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
   }
@@ -1001,15 +1038,20 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
 
 /**
  * Convenience function to auto-create issues for an increment
+ *
+ * @param targetProvider - Optional: force creation for a specific provider.
+ *   Without this, detectProvider() picks the highest-priority enabled provider.
+ *   Use this when you know which provider you want (e.g., JIRA section of sync-progress).
  */
 export async function autoCreateExternalIssue(
   projectRoot: string,
   incrementId: string,
-  logger?: Logger
+  logger?: Logger,
+  targetProvider?: 'github' | 'jira' | 'ado'
 ): Promise<AutoCreateResult> {
   const creator = new ExternalIssueAutoCreator({
     projectRoot,
     logger,
   });
-  return creator.createForIncrement(incrementId);
+  return creator.createForIncrement(incrementId, targetProvider);
 }

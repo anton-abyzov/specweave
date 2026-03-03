@@ -9,6 +9,7 @@
 import chalk from 'chalk';
 import { MetadataManager } from './metadata-manager.js';
 import { IncrementStatus, IncrementType, TYPE_LIMITS, computeTransitionPath } from '../types/increment-metadata.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface PauseOptions {
   incrementId: string;
@@ -309,7 +310,7 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       const { LivingDocsSync } = await import(
         '../living-docs/living-docs-sync.js'
       );
-      const sync = new LivingDocsSync(process.cwd());
+      const sync = new LivingDocsSync(resolveEffectiveRoot());
       await sync.syncIncrement(incrementId);
       log(chalk.gray(`   Pre-completion sync: living docs synced`));
     } catch (syncError) {
@@ -328,7 +329,7 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       const { LifecycleHookDispatcher } = await import(
         '../hooks/LifecycleHookDispatcher.js'
       );
-      const hookResult = await LifecycleHookDispatcher.onIncrementDone(process.cwd(), incrementId);
+      const hookResult = await LifecycleHookDispatcher.onIncrementDone(resolveEffectiveRoot(), incrementId);
       hookSyncErrors = hookResult.syncErrors;
       hookSyncSuccess = hookResult.syncSuccess;
     } catch (hookError) {
@@ -347,7 +348,7 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
     try {
       const { GitHubReconciler } = await import('../../sync/github-reconciler.js');
       const closureResult = await GitHubReconciler.closeCompletedIncrementIssues(
-        process.cwd(),
+        resolveEffectiveRoot(),
         incrementId,
         log,
       );

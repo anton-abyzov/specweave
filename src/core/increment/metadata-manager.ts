@@ -24,7 +24,7 @@ import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
-import { getProjectRoot } from '../../utils/find-project-root.js';
+import { getProjectRoot, resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { validateIncrementId } from '../../utils/increment-id-validator.js';
 
 /**
@@ -79,28 +79,28 @@ export class MetadataManager {
   /**
    * Get metadata file path for increment
    *
-   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-   * creating/accessing .specweave in wrong location when CWD != project root.
+   * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+   * or the nearest project root in single-repo setups.
    *
    * SECURITY: Validates increment ID to prevent path traversal attacks.
    */
   private static getMetadataPath(incrementId: string, rootDir?: string): string {
     validateIncrementId(incrementId); // SECURITY: Prevent path traversal
-    const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
+    const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
   }
 
   /**
    * Get increment directory path
    *
-   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-   * creating/accessing .specweave in wrong location when CWD != project root.
+   * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+   * or the nearest project root in single-repo setups.
    *
    * SECURITY: Validates increment ID to prevent path traversal attacks.
    */
   private static getIncrementPath(incrementId: string, rootDir?: string): string {
     validateIncrementId(incrementId); // SECURITY: Prevent path traversal
-    const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
+    const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId);
   }
 
@@ -260,7 +260,7 @@ export class MetadataManager {
     const incrementNumber = numberMatch[1];
 
     // Check for duplicates
-    const duplicates = await detectDuplicatesByNumber(incrementNumber, rootDir || process.cwd());
+    const duplicates = await detectDuplicatesByNumber(incrementNumber, rootDir || resolveEffectiveRoot());
 
     if (duplicates.length > 0) {
       const locations = duplicates.map(d => d.path).join('\n  - ');
@@ -342,7 +342,7 @@ export class MetadataManager {
         (async () => {
           try {
             const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
-            const sync = new LivingDocsSync(rootDir || process.cwd(), {
+            const sync = new LivingDocsSync(rootDir || resolveEffectiveRoot(), {
               logger: this.logger
             });
 
@@ -552,7 +552,7 @@ export class MetadataManager {
 
     // Build spec.md path
     const specPath = path.join(
-      rootDir || process.cwd(),
+      rootDir || resolveEffectiveRoot(),
       '.specweave',
       'increments',
       incrementId,
@@ -605,11 +605,10 @@ export class MetadataManager {
   /**
    * Get all increments
    *
-   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-   * accessing wrong .specweave folder when CWD != project root.
+   * Uses resolveEffectiveRoot() to find umbrella root in multi-repo setups.
    */
   static getAll(): IncrementMetadata[] {
-    const incrementsPath = path.join(getProjectRoot(), '.specweave', 'increments');
+    const incrementsPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments');
 
     if (!fs.existsSync(incrementsPath)) {
       return [];

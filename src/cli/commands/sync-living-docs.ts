@@ -14,6 +14,7 @@ import { existsSync, readdirSync } from 'fs';
 import { LivingDocsSync } from '../../core/living-docs/living-docs-sync.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface SyncLivingDocsArgs {
   incrementId?: string;
@@ -27,7 +28,7 @@ export async function syncLivingDocs(
 ): Promise<void> {
   const logger = options.logger ?? consoleLogger;
   const parsedArgs = parseArgs(args);
-  const projectRoot = process.cwd();
+  const projectRoot = resolveEffectiveRoot(process.cwd());
 
   // Resolve increment ID
   let incrementId = parsedArgs.incrementId;
