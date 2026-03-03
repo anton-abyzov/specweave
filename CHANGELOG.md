@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.361] - 2026-03-03
+
+### Changes
+- fix: resolve incrementId early in syncIncrement for short-form IDs
+
+---
+
+
+
 ## [1.0.360] - 2026-03-03
 
 ### Changes

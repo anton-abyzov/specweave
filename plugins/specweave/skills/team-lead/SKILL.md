@@ -72,6 +72,25 @@ Store the increment path as `MASTER_INCREMENT_PATH` — you will reference it in
 This leads to uncoordinated implementation, scope creep, and missing acceptance criteria.
 The spec-first principle exists because specs are the contract between user intent and agent execution.
 
+### Activate the Master Increment (MANDATORY)
+
+**Before spawning ANY agents**, transition the master increment to `"active"` status. The `specweave complete` command silently exits on increments with `"planned"` or `"backlog"` status — if you skip this step, closure will fail.
+
+```bash
+# Read current status
+STATUS=$(jq -r '.status' [MASTER_INCREMENT_PATH]/metadata.json)
+
+# If not already active, activate it
+if [ "$STATUS" != "active" ] && [ "$STATUS" != "ready_for_review" ]; then
+  # Edit metadata.json: set status to "active" and update lastActivity
+  Edit metadata.json:
+    "status": "planned" → "status": "active"
+    "lastActivity": "<current ISO timestamp>"
+fi
+```
+
+**Why**: Agents implement tasks but don't manage the increment lifecycle. The team-lead owns status transitions — activate before work begins, close after work completes.
+
 ---
 
 ## 1. Tool Reference
