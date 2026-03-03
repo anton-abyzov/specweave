@@ -34,7 +34,7 @@ vi.mock('../../../plugins/specweave-github/lib/github-us-auto-closer.js', () => 
 vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
   class MockJiraStatusSync {
     updateStatus = mockJiraUpdateStatus;
-    postStatusComment = mockJiraPostStatusComment;
+    postProgressComment = mockJiraPostStatusComment;
   }
   return { JiraStatusSync: MockJiraStatusSync };
 });
