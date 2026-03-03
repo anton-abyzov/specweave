@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.360] - 2026-03-03
+
+### Changes
+- fix: resolve increment dir names in auto-creator and living-docs-sync
+
+---
+
+
+
 ## [1.0.359] - 2026-03-03
 
 ### Changes
