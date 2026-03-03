@@ -171,6 +171,8 @@ describe('autoCloseCompletedUserStories', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // ensureLabelExists: gh label list → label found
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('status:completed'));
     // gh issue edit (update labels after close) → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
@@ -211,6 +213,8 @@ describe('autoCloseCompletedUserStories', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // ensureLabelExists: gh label list → label found
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('status:completed'));
     // gh issue edit (update labels after close) → success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
@@ -221,8 +225,8 @@ describe('autoCloseCompletedUserStories', () => {
       makeOptions(),
     );
 
-    // Verify call order: view(0) → comment(1) → close(2) → edit(3)
-    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(4);
+    // Verify call order: view(0) → comment(1) → close(2) → label-list(3) → edit(4)
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(5);
 
     const calls = mockExecFileNoThrow.mock.calls;
     // First call: issue view
@@ -231,8 +235,10 @@ describe('autoCloseCompletedUserStories', () => {
     expect((calls[1][1] as string[])[1]).toBe('comment');
     // Third call: issue close
     expect((calls[2][1] as string[])[1]).toBe('close');
-    // Fourth call: issue edit (label update)
-    expect((calls[3][1] as string[])[1]).toBe('edit');
+    // Fourth call: label list (ensureLabelExists)
+    expect((calls[3][1] as string[])[0]).toBe('label');
+    // Fifth call: issue edit (label update)
+    expect((calls[4][1] as string[])[1]).toBe('edit');
 
     // Comment body should indicate completion
     const commentBody: string = (calls[1][1] as string[])[4]; // --body arg

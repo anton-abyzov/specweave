@@ -141,7 +141,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     // Comment poster reads spec + metadata
     setupReadFileMock(SPEC_PARTIAL);
     // gh issue comment succeeds
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     const commentResult = await postACProgressComments(
       '0193',
@@ -153,27 +154,22 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     // Verify comment posted
     expect(commentResult.posted).toHaveLength(1);
     expect(commentResult.posted[0].issueNumber).toBe(42);
+    expect(commentResult.errors).toHaveLength(0);
 
-    // Verify push-sync was called (updates issue body)
-    expect(mockPushSyncUserStories).toHaveBeenCalledTimes(1);
-    const pushArgs = mockPushSyncUserStories.mock.calls[0];
-    expect(pushArgs[0]).toHaveLength(1);
-    expect(pushArgs[0][0].id).toBe('US-001');
-    expect(pushArgs[0][0].acceptanceCriteria).toHaveLength(5);
-
-    // Verify gh calls: comment only (no close -- partial ACs)
+    // Verify gh calls: comment + patchIssueBodyCheckboxes view
     const ghCalls = mockExecFileNoThrow.mock.calls;
-    expect(ghCalls).toHaveLength(1);
+    expect(ghCalls).toHaveLength(2);
     expect((ghCalls[0][1] as string[])[1]).toBe('comment');
+    expect((ghCalls[1][1] as string[])[1]).toBe('view');
   });
 
   // -------------------------------------------------------------------------
   // TC-023: Full chain -- all ACs done triggers comment + push + close
   // -------------------------------------------------------------------------
-  it('should post comment, update body, then close when all ACs are done', async () => {
-    // --- Phase 1: Comment poster ---
+  it('should patch issue body (no comment) then close when all ACs are done', async () => {
+    // --- Phase 1: Comment poster (all ACs done → skip comment, patch body only) ---
     setupReadFileMock(SPEC_ALL_DONE);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     const commentResult = await postACProgressComments(
       '0193',
@@ -181,13 +177,14 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
       '/path/to/spec.md',
       baseOptions,
     );
-    expect(commentResult.posted).toHaveLength(1);
+    // No comment posted (allComplete skips comment), but no errors
+    expect(commentResult.posted).toHaveLength(0);
+    expect(commentResult.errors).toHaveLength(0);
 
     // Reset exec mock for auto-closer phase
     mockExecFileNoThrow.mockReset();
 
     // --- Phase 2: Auto-closer ---
-    // Note: auto-closer reads spec.md directly (not metadata.json)
     mockReadFile.mockReset();
     mockReadFile.mockImplementation((filePath: string) => {
       if (filePath.endsWith('metadata.json')) {
@@ -204,6 +201,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
     // gh issue close -> success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // ensureLabelExists: gh label list → label found
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('status:completed'));
     // gh issue edit (update labels after close) -> success
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
 
@@ -217,13 +216,14 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     expect(closeResult.closed).toHaveLength(1);
     expect(closeResult.closed[0].issueNumber).toBe(42);
 
-    // Verify auto-closer call order: view -> comment -> close -> edit
+    // Verify auto-closer call order: view → comment → close → label-list → edit
     const closerCalls = mockExecFileNoThrow.mock.calls;
-    expect(closerCalls).toHaveLength(4);
+    expect(closerCalls).toHaveLength(5);
     expect((closerCalls[0][1] as string[])[1]).toBe('view');
     expect((closerCalls[1][1] as string[])[1]).toBe('comment');
     expect((closerCalls[2][1] as string[])[1]).toBe('close');
-    expect((closerCalls[3][1] as string[])[1]).toBe('edit');
+    expect((closerCalls[3][1] as string[])[0]).toBe('label');
+    expect((closerCalls[4][1] as string[])[1]).toBe('edit');
   });
 
   // -------------------------------------------------------------------------
@@ -232,7 +232,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   it('should record errors without throwing when GitHub is down', async () => {
     // --- Comment poster: GitHub down ---
     setupReadFileMock(SPEC_PARTIAL);
-    mockExecFileNoThrow.mockResolvedValueOnce(execFailure('connect ECONNREFUSED'));
+    mockExecFileNoThrow.mockResolvedValueOnce(execFailure('connect ECONNREFUSED')); // comment fails
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     const commentResult = await postACProgressComments(
       '0193',
@@ -281,7 +282,8 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
   it('should include correct progress percentages in comment bodies', async () => {
     // Partial progress comment
     setupReadFileMock(SPEC_PARTIAL);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     await postACProgressComments(
       '0193',
@@ -312,6 +314,7 @@ describe('AC -> Comment -> Issue Body -> Auto-Close (integration)', () => {
     );
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // completion comment
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // close
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('status:completed')); // label list → found
     mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // edit (label update)
 
     await autoCloseCompletedUserStories(

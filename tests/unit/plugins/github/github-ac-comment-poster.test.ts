@@ -225,7 +225,8 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should post progress comment to the correct GitHub issue', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty body → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -277,9 +278,11 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should post comments to multiple affected user story issues', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    // Two gh calls, one per US
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // For each US: comment + patchIssueBodyCheckboxes view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 patch view (empty → return)
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 comment
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 patch view (empty → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -295,8 +298,8 @@ describe('postACProgressComments', () => {
     expect(result.posted[1].issueNumber).toBe(43);
     expect(result.errors).toHaveLength(0);
 
-    // Two gh calls
-    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(2);
+    // Four gh calls: comment + patch-view per US
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(4);
   });
 
   // -------------------------------------------------------------------------
@@ -325,7 +328,8 @@ describe('postACProgressComments', () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('API rate limit exceeded'),
-    );
+    ); // comment fails
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -377,7 +381,8 @@ describe('postACProgressComments', () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('connect ECONNREFUSED'),
-    );
+    ); // comment fails
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // patchIssueBodyCheckboxes: view (empty → return)
 
     // Must not throw
     const result = await postACProgressComments(
@@ -397,11 +402,13 @@ describe('postACProgressComments', () => {
   // -------------------------------------------------------------------------
   it('should handle mixed success/failure across user stories', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    // US-001 succeeds, US-002 fails
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    // For each US: comment + patchIssueBodyCheckboxes view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 comment → success
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-001 patch view (empty → return)
     mockExecFileNoThrow.mockResolvedValueOnce(
       execFailure('Not Found'),
-    );
+    ); // US-002 comment → failure
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // US-002 patch view (empty → return)
 
     const result = await postACProgressComments(
       '0193',
@@ -539,19 +546,26 @@ describe('postACProgressComments', () => {
 // Targeted Push-Sync Tests
 // ---------------------------------------------------------------------------
 
-describe('postACProgressComments -- targeted push-sync', () => {
+describe('postACProgressComments -- issue body patching', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPushSyncUserStories.mockResolvedValue({ created: [], updated: [], errors: [] });
   });
 
   // -------------------------------------------------------------------------
-  // TC-007: Targeted push-sync updates only affected US issue body
+  // TC-007: patchIssueBodyCheckboxes is called after posting comment
   // -------------------------------------------------------------------------
-  it('should call pushSyncUserStories with only the affected US', async () => {
+  it('should patch issue body checkboxes after posting comment', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    // Comment post succeeds
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    const issueBody = [
+      '- [ ] **AC-US1-01**: First criterion done',
+      '- [ ] **AC-US1-02**: Second criterion done',
+      '- [ ] **AC-US1-03**: Third criterion done',
+      '- [ ] **AC-US1-04**: Fourth criterion pending',
+      '- [ ] **AC-US1-05**: Fifth criterion pending',
+    ].join('\n');
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(issueBody)); // view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // edit
 
     await postACProgressComments(
       '0193',
@@ -560,25 +574,29 @@ describe('postACProgressComments -- targeted push-sync', () => {
       makeOptions(),
     );
 
-    // pushSyncUserStories should be called with a single-element array
-    expect(mockPushSyncUserStories).toHaveBeenCalledTimes(1);
-    const pushArgs = mockPushSyncUserStories.mock.calls[0];
-    // First arg: array of user stories -- should contain only US-001
-    expect(pushArgs[0]).toHaveLength(1);
-    expect(pushArgs[0][0].id).toBe('US-001');
-    // Second arg: options with owner/repo
-    expect(pushArgs[1]).toMatchObject({
-      owner: 'test-owner',
-      repo: 'test-repo',
-    });
+    // 3 calls: comment + view + edit
+    expect(mockExecFileNoThrow).toHaveBeenCalledTimes(3);
+    const calls = mockExecFileNoThrow.mock.calls;
+    expect((calls[0][1] as string[])[1]).toBe('comment');
+    expect((calls[1][1] as string[])[1]).toBe('view');
+    expect((calls[2][1] as string[])[1]).toBe('edit');
   });
 
   // -------------------------------------------------------------------------
-  // TC-008: Push-sync is idempotent -- same AC state produces same body
+  // TC-008: Correct AC checkbox states are patched in the issue body
   // -------------------------------------------------------------------------
-  it('should pass correct AC states to push-sync for body generation', async () => {
+  it('should patch correct AC checkbox states in issue body', async () => {
     setupMocks(SPEC_CONTENT_PARTIAL, METADATA_OLD_FORMAT);
-    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(''));
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // comment
+    const issueBody = [
+      '- [ ] **AC-US1-01**: First criterion done',
+      '- [ ] **AC-US1-02**: Second criterion done',
+      '- [ ] **AC-US1-03**: Third criterion done',
+      '- [ ] **AC-US1-04**: Fourth criterion pending',
+      '- [ ] **AC-US1-05**: Fifth criterion pending',
+    ].join('\n');
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess(issueBody)); // view
+    mockExecFileNoThrow.mockResolvedValueOnce(execSuccess('')); // edit
 
     await postACProgressComments(
       '0193',
@@ -587,17 +605,23 @@ describe('postACProgressComments -- targeted push-sync', () => {
       makeOptions(),
     );
 
-    // Check the user story object passed to pushSync has correct AC states
-    const userStory = mockPushSyncUserStories.mock.calls[0][0][0];
-    expect(userStory.acceptanceCriteria).toHaveLength(5);
-    expect(userStory.acceptanceCriteria.filter((ac: { completed: boolean }) => ac.completed)).toHaveLength(3);
-    expect(userStory.acceptanceCriteria.filter((ac: { completed: boolean }) => !ac.completed)).toHaveLength(2);
+    // The edit call's --body should have correct checkbox states
+    const editArgs = mockExecFileNoThrow.mock.calls[2][1] as string[];
+    const bodyIndex = editArgs.indexOf('--body') + 1;
+    const patchedBody = editArgs[bodyIndex];
+
+    // First 3 ACs completed, last 2 still pending
+    expect(patchedBody).toContain('- [x] **AC-US1-01**');
+    expect(patchedBody).toContain('- [x] **AC-US1-02**');
+    expect(patchedBody).toContain('- [x] **AC-US1-03**');
+    expect(patchedBody).toContain('- [ ] **AC-US1-04**');
+    expect(patchedBody).toContain('- [ ] **AC-US1-05**');
   });
 
   // -------------------------------------------------------------------------
-  // TC-009: Push-sync only called for USs with issue links
+  // TC-009: No patching for USs without issue links
   // -------------------------------------------------------------------------
-  it('should not call pushSyncUserStories for USs without issue links', async () => {
+  it('should not patch issue body for USs without issue links', async () => {
     setupMocks(SPEC_CONTENT_NO_LINK, METADATA_NO_US003);
 
     await postACProgressComments(
@@ -607,6 +631,6 @@ describe('postACProgressComments -- targeted push-sync', () => {
       makeOptions(),
     );
 
-    expect(mockPushSyncUserStories).not.toHaveBeenCalled();
+    expect(mockExecFileNoThrow).not.toHaveBeenCalled();
   });
 });
