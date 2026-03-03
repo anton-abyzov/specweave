@@ -5,7 +5,7 @@ hooks:
     - matcher: TeamCreate
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/increment-existence-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/increment-existence-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
 ---
 
 # Team Build
