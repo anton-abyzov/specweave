@@ -342,7 +342,10 @@ export async function syncACProgressToProviders(
       const providerResult = await syncFn(incrementId, affectedUSIds, ctx, config);
       result[provider] = providerResult;
       // Record circuit breaker outcome based on provider errors
-      if (providerResult.errors.length > 0 && providerResult.posted.length === 0) {
+      // A successful sync can have posted (comments), closed (issues), or both.
+      // Only record failure when there were errors AND nothing succeeded.
+      const anySuccess = providerResult.posted.length > 0 || providerResult.closed.length > 0;
+      if (providerResult.errors.length > 0 && !anySuccess) {
         breaker.recordFailure();
       } else {
         breaker.recordSuccess();

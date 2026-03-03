@@ -103,9 +103,6 @@ export async function postACProgressComments(
           error: execResult.stderr || 'Unknown error posting comment',
         });
       }
-    } else {
-      // Still track as posted for body-patch below
-      result.posted.push({ usId, issueNumber: link.issueNumber });
     }
 
     // Patch AC checkboxes directly in the issue body using the known issue number
