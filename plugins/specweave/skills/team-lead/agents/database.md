@@ -33,13 +33,12 @@ WORKFLOW:
   8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
   9. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
   10. Write seed data if needed
-  11. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
   12. Run all tests for owned code (migration, seed): npm test
-  13. Run quality gate: /sw:grill
-  14. Do NOT signal completion until all tests pass
-  15. Signal CONTRACT_READY with schema details via SendMessage to team-lead
-  16. After auto completes, attempt closure via /sw:done
-  17. Signal completion via SendMessage to team-lead
+  13. Do NOT signal completion until all tests pass
+  14. Signal CONTRACT_READY with schema details via SendMessage to team-lead
+  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

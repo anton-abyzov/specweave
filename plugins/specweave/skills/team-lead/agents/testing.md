@@ -40,12 +40,11 @@ WORKFLOW:
   9. Write unit tests for new services/components
   10. Write integration tests for API endpoints
   11. Write E2E tests for user journeys
-  12. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
   13. Run all tests (unit + integration + E2E): npm test && npx playwright test
   14. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
-  15. Run quality gate: /sw:grill
-  16. After auto completes, attempt closure via /sw:done
-  17. Signal completion via SendMessage to team-lead
+  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to test files (listed above)
