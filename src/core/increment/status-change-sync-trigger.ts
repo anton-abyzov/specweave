@@ -33,6 +33,7 @@
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { SyncCircuitBreaker } from './sync-circuit-breaker.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export class StatusChangeSyncTrigger {
   private static circuitBreaker = new SyncCircuitBreaker();
@@ -106,7 +107,7 @@ export class StatusChangeSyncTrigger {
       const path = await import('path');
 
       const incrementPath = path.join(
-        process.cwd(),
+        resolveEffectiveRoot(),
         '.specweave/increments',
         incrementId
       );
@@ -199,7 +200,7 @@ export class StatusChangeSyncTrigger {
     const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
 
     const syncFn = async () => {
-      const projectRoot = process.cwd();
+      const projectRoot = resolveEffectiveRoot();
 
       // v1.0.19: Check if we need to auto-create external issues
       await this.autoCreateIfNeeded(projectRoot, incrementId);

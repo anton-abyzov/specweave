@@ -11,7 +11,7 @@ import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransitio
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { consoleLogger } from '../../utils/logger.js';
-import { getProjectRoot } from '../../utils/find-project-root.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { validateIncrementId } from '../../utils/increment-id-validator.js';
 /**
  * Error thrown when metadata operations fail
@@ -50,27 +50,27 @@ export class MetadataManager {
     /**
      * Get metadata file path for increment
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * creating/accessing .specweave in wrong location when CWD != project root.
+     * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+     * or the nearest project root in single-repo setups.
      *
      * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     static getMetadataPath(incrementId, rootDir) {
         validateIncrementId(incrementId); // SECURITY: Prevent path traversal
-        const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
+        const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
     }
     /**
      * Get increment directory path
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * creating/accessing .specweave in wrong location when CWD != project root.
+     * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+     * or the nearest project root in single-repo setups.
      *
      * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
     static getIncrementPath(incrementId, rootDir) {
         validateIncrementId(incrementId); // SECURITY: Prevent path traversal
-        const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
+        const specweavePath = path.join(rootDir || resolveEffectiveRoot(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId);
     }
     /**
@@ -172,7 +172,7 @@ export class MetadataManager {
         }
         const incrementNumber = numberMatch[1];
         // Check for duplicates
-        const duplicates = await detectDuplicatesByNumber(incrementNumber, rootDir || process.cwd());
+        const duplicates = await detectDuplicatesByNumber(incrementNumber, rootDir || resolveEffectiveRoot());
         if (duplicates.length > 0) {
             const locations = duplicates.map(d => d.path).join('\n  - ');
             throw new MetadataError(`Cannot create increment ${incrementId}: Increment number ${incrementNumber} already exists in other location(s):\n  - ${locations}\n\n` +
@@ -237,7 +237,7 @@ export class MetadataManager {
                 (async () => {
                     try {
                         const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
-                        const sync = new LivingDocsSync(rootDir || process.cwd(), {
+                        const sync = new LivingDocsSync(rootDir || resolveEffectiveRoot(), {
                             logger: this.logger
                         });
                         const result = await sync.syncIncrement(incrementId);
@@ -403,7 +403,7 @@ export class MetadataManager {
             throw new MetadataError(`Invalid status value: "${status}". Must be one of: ${Object.values(IncrementStatus).join(', ')}`, incrementId);
         }
         // Build spec.md path
-        const specPath = path.join(rootDir || process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
+        const specPath = path.join(rootDir || resolveEffectiveRoot(), '.specweave', 'increments', incrementId, 'spec.md');
         // Check if spec.md exists
         if (!fs.existsSync(specPath)) {
             // Spec doesn't exist - this is OK for legacy increments
@@ -443,11 +443,10 @@ export class MetadataManager {
     /**
      * Get all increments
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * accessing wrong .specweave folder when CWD != project root.
+     * Uses resolveEffectiveRoot() to find umbrella root in multi-repo setups.
      */
     static getAll() {
-        const incrementsPath = path.join(getProjectRoot(), '.specweave', 'increments');
+        const incrementsPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments');
         if (!fs.existsSync(incrementsPath)) {
             return [];
         }

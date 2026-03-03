@@ -6,6 +6,7 @@ import type { Logger } from '../../utils/logger.js';
 import { consoleLogger } from '../../utils/logger.js';
 import { ExternalToolDriftDetector } from '../../utils/external-tool-drift-detector.js';
 import { validateCoverage, type TestMode } from '../qa/coverage-validator.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Validation result for increment completion
@@ -64,7 +65,7 @@ export class IncrementCompletionValidator {
     const blockOnP0Orphans = options.blockOnP0Orphans ?? true; // Default: block for P0 orphans
     const errors: string[] = [];
     const warnings: string[] = [];
-    const incrementPath = path.join(process.cwd(), '.specweave', 'increments', incrementId);
+    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
 
     // Check that required files exist
     const specPath = path.join(incrementPath, 'spec.md');
@@ -104,7 +105,7 @@ export class IncrementCompletionValidator {
 
     // NEW (v0.23.0): Validate AC coverage
     try {
-      const acManager = new ACStatusManager(process.cwd());
+      const acManager = new ACStatusManager(resolveEffectiveRoot());
       const coverageResult = await this.validateACCoverage(incrementId, specPath, tasksPath, acManager);
 
       // CRITICAL: Block closure if P0 ACs are orphaned
@@ -143,7 +144,7 @@ export class IncrementCompletionValidator {
     // This prevents "completed locally but external tools never updated" scenarios
     // See: ADR-0131 (External Tool Sync Context Detection)
     try {
-      const driftDetector = new ExternalToolDriftDetector(process.cwd(), { logger });
+      const driftDetector = new ExternalToolDriftDetector(resolveEffectiveRoot(), { logger });
       const drift = await driftDetector.detectDrift(incrementId);
 
       if (drift.externalToolsConfigured && drift.hasDrift) {
@@ -205,7 +206,7 @@ export class IncrementCompletionValidator {
         // Only validate if coverage target is set and testMode is not 'none'
         if (coverageTarget > 0 && testMode !== 'none') {
           const coverageResult = await validateCoverage({
-            projectRoot: process.cwd(),
+            projectRoot: resolveEffectiveRoot(),
             coverageTarget,
             testMode,
           });
@@ -273,7 +274,7 @@ export class IncrementCompletionValidator {
     let skipAll = false;
     let grillRequired = true;
     try {
-      const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+      const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
       if (await fs.pathExists(configPath)) {
         const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
         if (config.auto?.skipQualityGates === true) {
@@ -512,7 +513,7 @@ export class IncrementCompletionValidator {
    * @returns Number of open ACs
    */
   static async countOpenACs(incrementId: string): Promise<number> {
-    const specPath = path.join(process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
+    const specPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId, 'spec.md');
 
     const content = await fs.readFile(specPath, 'utf-8');
 
@@ -533,7 +534,7 @@ export class IncrementCompletionValidator {
    * @returns Number of pending tasks
    */
   static async countPendingTasks(incrementId: string): Promise<number> {
-    const tasksPath = path.join(process.cwd(), '.specweave', 'increments', incrementId, 'tasks.md');
+    const tasksPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId, 'tasks.md');
 
     const content = await fs.readFile(tasksPath, 'utf-8');
 

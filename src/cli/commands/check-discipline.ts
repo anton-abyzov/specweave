@@ -16,6 +16,7 @@ import { DisciplineChecker } from '../../core/increment/discipline-checker.js';
 import { DisciplineCheckOptions } from '../../core/increment/types.js';
 import chalk from 'chalk';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 // NOTE: This CLI discipline checker is primarily user-facing output (console.log/console.error).
 // All console.* calls in this file are legitimate user-facing exceptions
@@ -24,7 +25,7 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 
 export async function checkDisciplineCommand(options: DisciplineCheckOptions): Promise<void> {
     try {
-      const checker = new DisciplineChecker(options.projectRoot || process.cwd());
+      const checker = new DisciplineChecker(options.projectRoot || resolveEffectiveRoot());
       const result = await checker.validate(options);
 
       // JSON output mode

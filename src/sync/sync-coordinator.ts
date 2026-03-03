@@ -148,9 +148,12 @@ export class SyncCoordinator {
         return 0;
       }
 
-      // Get JIRA config (use extended type for runtime email field)
+      // Get JIRA config - v1.0.357: check issueTracker.domain as primary, sync.jira as fallback
       const jiraConfig = config.sync?.jira as JiraConfigExtended | undefined;
-      if (!jiraConfig?.domain) {
+      const domain = jiraConfig?.domain
+        || (config as any).issueTracker?.domain
+        || config.sync?.profiles?.[config.sync?.defaultProfile || '']?.config?.domain;
+      if (!domain) {
         this.logger.log('⚠️  JIRA config incomplete (missing domain)');
         return 0;
       }
@@ -164,10 +167,28 @@ export class SyncCoordinator {
       const syncConfigExt = config.sync as SyncConfigurationExtended | undefined;
       const targetStatus = syncConfigExt?.statusSync?.mappings?.jira?.completed || 'Done';
 
+      // v1.0.357: Also check metadata.json for JIRA key (set by auto-creator)
+      let metadataJiraKey: string | undefined;
+      try {
+        const metadataFile = path.join(
+          this.projectRoot,
+          '.specweave/increments',
+          this.incrementId,
+          'metadata.json'
+        );
+        if (existsSync(metadataFile)) {
+          const metadataContent = await fs.readFile(metadataFile, 'utf-8');
+          const metadata = JSON.parse(metadataContent);
+          metadataJiraKey = metadata.jira?.issue;
+        }
+      } catch {
+        // Ignore metadata read errors
+      }
+
       for (const usFile of userStories) {
         try {
-          // Check if US has JIRA reference in frontmatter (key not issue_key per type def)
-          const jiraKey = usFile.external_tools?.jira?.key || usFile.external_id;
+          // Check if US has JIRA reference in frontmatter, or fall back to metadata
+          const jiraKey = usFile.external_tools?.jira?.key || usFile.external_id || metadataJiraKey;
           if (!jiraKey || !String(jiraKey).includes('-')) {
             this.logger.log(`  ⏭️  ${usFile.id} - No JIRA issue reference`);
             continue;

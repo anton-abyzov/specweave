@@ -15,6 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { IncrementNumberManager } from './increment-utils.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Template markers that indicate a file is still a template
@@ -151,7 +152,7 @@ export async function createIncrementTemplates(
     priority = 'P1',
     testMode = 'TDD',
     coverageTarget = 90,
-    projectRoot = process.cwd(),
+    projectRoot = resolveEffectiveRoot(),
     externalSource,
   } = options;
 
@@ -187,11 +188,56 @@ export async function createIncrementTemplates(
       metadata.origin = 'external';
       metadata.source_platform = externalSource.platform;
       metadata.external_ref = externalSource.externalId;
+
+      const now = new Date().toISOString();
+      const platformLinks: Record<string, unknown> = {
+        url: externalSource.externalUrl,
+        synced: now,
+      };
+
+      // v1.0.358: Build userStories mapping for JIRA/ADO AC progress sync
+      if (externalSource.platform === 'jira') {
+        // Extract issue key from externalId (format: "jira#PROJECT#PROJ-123")
+        const parts = externalSource.externalId.split('#');
+        const issueKey = parts[parts.length - 1] || '';
+        if (issueKey) {
+          // Map US-001 (default single user story from import) to the JIRA issue
+          platformLinks.userStories = {
+            'US-001': {
+              issueKey,
+              issueUrl: externalSource.externalUrl,
+              syncedAt: now,
+            },
+          };
+          // Also set metadata.jira so sync-progress auto-build can find it
+          metadata.jira = {
+            issue: issueKey,
+            url: externalSource.externalUrl,
+            synced: now,
+          };
+        }
+      } else if (externalSource.platform === 'ado') {
+        // Extract work item ID from externalId (format: "ado#org/project#123")
+        const parts = externalSource.externalId.split('#');
+        const workItemId = parts[parts.length - 1] || '';
+        if (workItemId) {
+          platformLinks.userStories = {
+            'US-001': {
+              workItemId,
+              workItemUrl: externalSource.externalUrl,
+              syncedAt: now,
+            },
+          };
+          metadata.ado = {
+            workItem: parseInt(workItemId, 10) || workItemId,
+            url: externalSource.externalUrl,
+            synced: now,
+          };
+        }
+      }
+
       metadata.externalLinks = {
-        [externalSource.platform]: {
-          url: externalSource.externalUrl,
-          synced: new Date().toISOString(),
-        },
+        [externalSource.platform]: platformLinks,
       };
     }
 

@@ -162,7 +162,12 @@ export class LifecycleHookDispatcher {
 
       const shouldSyncLivingDocs = doneConfig.sync_living_docs === true;
       const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
-      const shouldCloseIssue = doneConfig.close_github_issue === true;
+      // v1.0.357: Support closing issues for ALL providers (JIRA/ADO/GitHub)
+      // close_github_issue is the legacy flag; close_external_issue is the new generic one.
+      // SyncCoordinator handles ALL providers despite the legacy flag name.
+      const shouldCloseIssue = doneConfig.close_github_issue === true
+        || doneConfig.close_external_issue === true
+        || doneConfig.close_jira_issue === true;
 
       // STEP 1: Living docs sync MUST run first.
       // It updates living docs files AND chains to GitHub via syncToExternalTools().
