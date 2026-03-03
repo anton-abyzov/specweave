@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.355] - 2026-03-03
+
+### Changes
+- update team-lead agents and instruction templates
+
+---
+
+
+
 ## [1.0.354] - 2026-03-03
 
 ### Changes
