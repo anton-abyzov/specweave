@@ -93,6 +93,32 @@ export class LivingDocsSync {
   }
 
   /**
+   * Resolve increment directory from a short or full ID.
+   * Handles "0421" → "0421-umbrella-docs-update" prefix matching.
+   */
+  private async resolveIncrementDir(incrementId: string): Promise<string> {
+    const directPath = path.join(this.projectRoot, '.specweave/increments', incrementId);
+    try {
+      await fs.access(directPath);
+      return incrementId;
+    } catch {
+      // Try prefix match
+      const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+      try {
+        const entries = await fs.readdir(incrementsDir);
+        for (const entry of entries) {
+          if (entry.startsWith(incrementId + '-')) {
+            return entry;
+          }
+        }
+      } catch {
+        // Fall through to original ID
+      }
+    }
+    return incrementId;
+  }
+
+  /**
    * Get current project ID
    *
    * Priority:
@@ -122,10 +148,13 @@ export class LivingDocsSync {
       // Not truly atomic (fs.access + later reads are separate syscalls), but narrows
       // the race window. The outer try/catch (line ~493) is the real safety net if the
       // folder moves between check and use. See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md
+      //
+      // Resolve full increment directory name (e.g., "0421" → "0421-umbrella-docs-update")
+      const resolvedIncrementId = await this.resolveIncrementDir(incrementId);
       const activeIncrementPath = path.join(
         this.projectRoot,
         '.specweave/increments',
-        incrementId
+        resolvedIncrementId
       );
 
       // Early-exit check: is increment still in active folder?
