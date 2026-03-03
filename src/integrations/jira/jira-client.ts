@@ -307,21 +307,7 @@ export class JiraClient {
 
     // Add description (Jira uses Atlassian Document Format - ADF)
     if (issue.description) {
-      payload.fields.description = {
-        type: 'doc',
-        version: 1,
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: issue.description
-              }
-            ]
-          }
-        ]
-      };
+      payload.fields.description = textToAdf(issue.description);
     }
 
     // Add priority (skip if not available in project)
@@ -400,21 +386,7 @@ export class JiraClient {
     }
 
     if (update.description !== undefined) {
-      payload.fields.description = {
-        type: 'doc',
-        version: 1,
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: update.description
-              }
-            ]
-          }
-        ]
-      };
+      payload.fields.description = textToAdf(update.description);
     }
 
     if (update.priority) {
@@ -960,4 +932,95 @@ export class JiraClient {
       total: data.total || 0
     };
   }
+}
+
+/**
+ * Convert plain text (with optional markdown bold/italic) to Atlassian Document Format.
+ * Splits on blank lines into paragraphs; converts **bold** and *italic* to ADF marks;
+ * preserves --- as horizontal rules and lines starting with - as bullet lists.
+ */
+function textToAdf(text: string): any {
+  const lines = text.split('\n');
+  const content: any[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Blank line — skip (paragraph break)
+    if (line.trim() === '') {
+      i++;
+      continue;
+    }
+
+    // Horizontal rule
+    if (line.trim() === '---') {
+      content.push({ type: 'rule' });
+      i++;
+      continue;
+    }
+
+    // Bullet list: collect consecutive lines starting with -
+    if (/^\s*-\s/.test(line)) {
+      const items: any[] = [];
+      while (i < lines.length && /^\s*-\s/.test(lines[i])) {
+        const itemText = lines[i].replace(/^\s*-\s*/, '');
+        items.push({
+          type: 'listItem',
+          content: [{ type: 'paragraph', content: inlineToAdf(itemText) }],
+        });
+        i++;
+      }
+      content.push({ type: 'bulletList', content: items });
+      continue;
+    }
+
+    // Regular paragraph: collect lines until blank line, rule, or list item
+    const paraLines: string[] = [];
+    while (i < lines.length && lines[i].trim() !== '' && lines[i].trim() !== '---' && !/^\s*-\s/.test(lines[i])) {
+      paraLines.push(lines[i]);
+      i++;
+    }
+    const paraText = paraLines.join('\n');
+    content.push({ type: 'paragraph', content: inlineToAdf(paraText) });
+  }
+
+  return { type: 'doc', version: 1, content: content.length > 0 ? content : [{ type: 'paragraph', content: [] }] };
+}
+
+/**
+ * Convert inline markdown (bold, italic) to ADF inline nodes.
+ */
+function inlineToAdf(text: string): any[] {
+  const nodes: any[] = [];
+  // Match **bold**, *italic*, or plain text segments
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Plain text before this match
+    if (match.index > lastIndex) {
+      const plain = text.substring(lastIndex, match.index);
+      if (plain) nodes.push({ type: 'text', text: plain });
+    }
+
+    if (match[2]) {
+      // **bold**
+      nodes.push({ type: 'text', text: match[2], marks: [{ type: 'strong' }] });
+    } else if (match[3]) {
+      // *italic*
+      nodes.push({ type: 'text', text: match[3], marks: [{ type: 'em' }] });
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Remaining plain text
+  if (lastIndex < text.length) {
+    const remaining = text.substring(lastIndex);
+    if (remaining) nodes.push({ type: 'text', text: remaining });
+  }
+
+  return nodes.length > 0 ? nodes : [{ type: 'text', text: text || ' ' }];
 }
