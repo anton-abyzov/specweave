@@ -25,21 +25,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Activate the increment: Edit metadata.json to set "status": "active" and update "lastActivity" timestamp
   5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Design database schema changes
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
+  6. Design database schema changes
+  7. Create plan files (plan.md, tasks.md) for your increment
+  8. Send plan to team-lead and WAIT for approval:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "PLAN_READY: [increment path]. [summary of schema changes, migrations, seed data].",
        summary: "Database plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
-  10. Write seed data if needed
-  11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  12. Run all tests for owned code (migration, seed): npm test
-  13. Do NOT signal completion until all tests pass
-  14. Signal CONTRACT_READY with schema details via SendMessage to team-lead
-  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  10. Generate Prisma migration: npx prisma migrate dev --name <migration-name>
+  11. Write seed data if needed
+  12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  13. Run all tests for owned code (migration, seed): npm test
+  14. Do NOT signal completion until all tests pass
+  15. Signal CONTRACT_READY with schema details via SendMessage to team-lead
+  16. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  17. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

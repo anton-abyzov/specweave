@@ -31,21 +31,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Activate the increment: Edit metadata.json to set "status": "active" and update "lastActivity" timestamp
   5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Wait for ALL other agents to produce initial code
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
+  6. Wait for ALL other agents to produce initial code
+  7. Create plan files (plan.md, tasks.md) for your increment
+  8. Send plan to team-lead and WAIT for approval:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "PLAN_READY: [increment path]. [summary of test strategy, coverage plan].",
        summary: "Testing plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Write unit tests for new services/components
-  10. Write integration tests for API endpoints
-  11. Write E2E tests for user journeys
-  12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  13. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  14. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
-  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  10. Write unit tests for new services/components
+  11. Write integration tests for API endpoints
+  12. Write E2E tests for user journeys
+  13. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  14. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  15. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
+  16. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  17. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to test files (listed above)
