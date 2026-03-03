@@ -653,8 +653,11 @@ export class ExternalIssueAutoCreator {
 
       const client = new JiraClient();
 
-      // Create Epic for the feature
-      const epicSummary = `[${incrementInfo.featureId}] ${incrementInfo.title}`;
+      // Create Epic for the feature — use same [FS-XXX][US-YYY] format as GitHub
+      // For single-story increments, include the US ID in the epic title
+      const epicSummary = incrementInfo.userStories.length === 1
+        ? `[${incrementInfo.featureId}][${incrementInfo.userStories[0].id}] ${incrementInfo.userStories[0].title}`
+        : `[${incrementInfo.featureId}] ${incrementInfo.title}`;
       const epicDescription = this.buildJiraEpicDescription(incrementId, incrementInfo);
 
       const epic = await client.createIssue(
@@ -667,11 +670,47 @@ export class ExternalIssueAutoCreator {
         projectKey
       );
 
-      // Update metadata with JIRA issue + userStories mapping
-      const issueUrl = `https://${domain}/browse/${epic.key}`;
-      await this.updateMetadataWithJiraIssue(incrementId, epic.key, issueUrl, incrementInfo.userStories);
-
       this.logger.log(`✅ Created JIRA Epic: ${epic.key}`);
+
+      // Create per-user-story Story issues under the Epic (for multi-story increments)
+      const storyKeyMap: Record<string, { issueKey: string; issueUrl: string }> = {};
+      if (incrementInfo.userStories.length > 1) {
+        for (const us of incrementInfo.userStories) {
+          try {
+            const storySummary = `[${incrementInfo.featureId}][${us.id}] ${us.title}`;
+            const storyDesc = us.description
+              ? `${us.description}\n\n---\n*Auto-created by SpecWeave*`
+              : `User story for ${us.title}\n\n---\n*Auto-created by SpecWeave*`;
+            const story = await client.createIssue(
+              {
+                issueType: 'Story',
+                summary: storySummary,
+                description: storyDesc,
+                labels: ['specweave', 'auto-created', 'user-story'],
+                parentKey: epic.key,
+              },
+              projectKey
+            );
+            storyKeyMap[us.id] = {
+              issueKey: story.key,
+              issueUrl: `https://${domain}/browse/${story.key}`,
+            };
+            this.logger.log(`  ✅ Created JIRA Story: ${story.key} (${us.id})`);
+          } catch (storyErr) {
+            this.logger.log(`  ⚠️ Failed to create JIRA Story for ${us.id}: ${storyErr instanceof Error ? storyErr.message : String(storyErr)}`);
+          }
+        }
+      } else if (incrementInfo.userStories.length === 1) {
+        // Single-story: the epic IS the user story issue
+        storyKeyMap[incrementInfo.userStories[0].id] = {
+          issueKey: epic.key,
+          issueUrl: `https://${domain}/browse/${epic.key}`,
+        };
+      }
+
+      // Update metadata with JIRA issue + per-US story keys
+      const issueUrl = `https://${domain}/browse/${epic.key}`;
+      await this.updateMetadataWithJiraIssue(incrementId, epic.key, issueUrl, incrementInfo.userStories, storyKeyMap);
 
       return {
         success: true,
@@ -729,8 +768,10 @@ export class ExternalIssueAutoCreator {
         project,
       });
 
-      // Create Feature work item
-      const title = `[${incrementInfo.featureId}] ${incrementInfo.title}`;
+      // Create Feature work item — use same [FS-XXX][US-YYY] format as GitHub
+      const title = incrementInfo.userStories.length === 1
+        ? `[${incrementInfo.featureId}][${incrementInfo.userStories[0].id}] ${incrementInfo.userStories[0].title}`
+        : `[${incrementInfo.featureId}] ${incrementInfo.title}`;
       const description = this.buildAdoDescription(incrementId, incrementInfo);
 
       const workItem = await client.createWorkItem({
@@ -740,10 +781,40 @@ export class ExternalIssueAutoCreator {
         tags: ['specweave', 'auto-created'],
       });
 
-      // Update metadata with ADO work item + userStories mapping
-      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, workItem.url, incrementInfo.userStories);
-
       this.logger.log(`✅ Created ADO Feature: #${workItem.id}`);
+
+      // Create per-user-story User Story work items under the Feature (multi-story)
+      const storyItemMap: Record<string, { workItemId: number; workItemUrl: string }> = {};
+      if (incrementInfo.userStories.length > 1) {
+        for (const us of incrementInfo.userStories) {
+          try {
+            const usTitle = `[${incrementInfo.featureId}][${us.id}] ${us.title}`;
+            const usDesc = us.description || `User story for ${us.title}`;
+            const usItem = await client.createWorkItem({
+              workItemType: 'User Story',
+              title: usTitle,
+              description: usDesc,
+              tags: ['specweave', 'auto-created', 'user-story'],
+              parentId: workItem.id,
+            });
+            storyItemMap[us.id] = {
+              workItemId: usItem.id,
+              workItemUrl: usItem.url,
+            };
+            this.logger.log(`  ✅ Created ADO User Story: #${usItem.id} (${us.id})`);
+          } catch (usErr) {
+            this.logger.log(`  ⚠️ Failed to create ADO User Story for ${us.id}: ${usErr instanceof Error ? usErr.message : String(usErr)}`);
+          }
+        }
+      } else if (incrementInfo.userStories.length === 1) {
+        storyItemMap[incrementInfo.userStories[0].id] = {
+          workItemId: workItem.id,
+          workItemUrl: workItem.url,
+        };
+      }
+
+      // Update metadata with ADO work item + per-US story keys
+      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, workItem.url, incrementInfo.userStories, storyItemMap);
 
       return {
         success: true,
@@ -967,7 +1038,8 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
     incrementId: string,
     issueKey: string,
     issueUrl: string,
-    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>
+    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>,
+    storyKeyMap?: Record<string, { issueKey: string; issueUrl: string }>
   ): Promise<void> {
     const metadataPath = path.join(
       this.projectRoot,
@@ -989,16 +1061,17 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       synced: now,
     };
 
-    // v1.0.358: Also populate externalLinks.jira.userStories for AC progress sync
+    // Populate externalLinks.jira.userStories with per-story JIRA keys
     if (userStories && userStories.length > 0) {
       if (!metadata.externalLinks) metadata.externalLinks = {};
       if (!metadata.externalLinks.jira) metadata.externalLinks.jira = {};
       if (!metadata.externalLinks.jira.userStories) metadata.externalLinks.jira.userStories = {};
 
       for (const us of userStories) {
+        const storyInfo = storyKeyMap?.[us.id];
         metadata.externalLinks.jira.userStories[us.id] = {
-          issueKey,
-          issueUrl,
+          issueKey: storyInfo?.issueKey || issueKey,
+          issueUrl: storyInfo?.issueUrl || issueUrl,
           syncedAt: now,
         };
       }
@@ -1014,7 +1087,8 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
     incrementId: string,
     workItemId: number,
     workItemUrl: string,
-    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>
+    userStories?: Array<{ id: string; title?: string; description?: string; project?: string }>,
+    storyItemMap?: Record<string, { workItemId: number; workItemUrl: string }>
   ): Promise<void> {
     const metadataPath = path.join(
       this.projectRoot,
@@ -1036,16 +1110,17 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       synced: now,
     };
 
-    // v1.0.358: Also populate externalLinks.ado.userStories for AC progress sync
+    // Populate externalLinks.ado.userStories with per-story work item IDs
     if (userStories && userStories.length > 0) {
       if (!metadata.externalLinks) metadata.externalLinks = {};
       if (!metadata.externalLinks.ado) metadata.externalLinks.ado = {};
       if (!metadata.externalLinks.ado.userStories) metadata.externalLinks.ado.userStories = {};
 
       for (const us of userStories) {
+        const storyInfo = storyItemMap?.[us.id];
         metadata.externalLinks.ado.userStories[us.id] = {
-          workItemId,
-          workItemUrl,
+          workItemId: storyInfo?.workItemId || workItemId,
+          workItemUrl: storyInfo?.workItemUrl || workItemUrl,
           syncedAt: now,
         };
       }
