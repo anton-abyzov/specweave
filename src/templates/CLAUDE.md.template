@@ -9,6 +9,10 @@
 |---|---|
 | **"RESTART REQUIRED"** | ALL tools blocked → STOP, wait for restart |
 | **"SKILL FIRST"** | Call shown skill FIRST → chain domain skills → implement |
+
+**"SKILL FIRST" is mandatory** — "simple", "quick", "basic" are NOT opt-out phrases. The ONLY exception: user explicitly says "don't create an increment" or similar. Perceived simplicity never overrides hook instructions.
+
+**Setup actions are NOT implementation** — "connect github", "setup sync", "import issues" → route to the matching setup skill (`sw:sync-setup`, `sw:import`, `sw:progress-sync`), NOT `/sw:increment`.
 <!-- /SECTION -->
 
 <!-- SECTION:header required -->
@@ -27,6 +31,12 @@
 1. **Planning**: `sw:pm` (specs) → `sw:architect` (design)
 2. **Implementation**: Invoke domain skill per tech (React → `frontend:architect`, .NET → `backend:dotnet`, Stripe → `payments:payment-core`, etc.)
 3. **Closure**: `sw:grill` runs automatically via `/sw:done`
+
+**Complexity gate** — before chaining domain skills:
+1. **Tech stack specified?** → Chain ONLY the matching skill. If unspecified, ASK or default to minimal (vanilla JS/HTML, simple Express)
+2. **Complexity triage** → Simple (calculator, todo) = 0 domain plugins. Medium (auth, dashboard) = 1-2. Complex (SaaS) = full chain
+3. **Sanity check** → Would a senior engineer use this tool for this task? If obviously not, don't invoke it
+4. **Never** load all available plugins for a domain — pick ONE per domain based on the actual tech stack
 
 If auto-activation fails, invoke explicitly: `Skill({ skill: "name" })`
 <!-- /SECTION -->
@@ -55,6 +65,10 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Signals** (5+ = auto-route): Project name | Features list (3+) | Tech stack | Timeline/MVP | Problem statement | Business model
 
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
+
+**NOT opt-out phrases**: "simple" | "quick" | "basic" | "small" — these still require `/sw:increment`
+
+**Setup/config requests bypass auto-detection** → route directly to the matching skill (e.g., `sw:sync-setup`, `sw:import`)
 <!-- /SECTION -->
 
 <!-- SECTION:metarule required -->
@@ -123,6 +137,8 @@ Good: npm run build → node script.js → Success
 | `/sw:done` | Close |
 | `/sw:progress-sync` | Sync progress to all external tools |
 | `/sw-github:push` | Push progress to GitHub |
+| `/sw:sync-setup` | Connect GitHub/Jira/ADO integration |
+| `/sw:import` | Import issues from external tools |
 
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 
@@ -251,7 +267,7 @@ Plugins load automatically. Manual: `vskill install --repo anton-abyzov/vskill -
 <!-- SECTION:principles -->
 ## Principles
 
-1. **Spec-first**: `/sw:increment` before coding
+1. **Spec-first**: `/sw:increment` before coding — mandatory for ALL implementation requests, no exceptions unless user explicitly opts out
 2. **Docs = truth**: Specs guide implementation
 3. **Simplicity First**: Minimal code, minimal impact
 4. **No Laziness**: Root causes, senior standards

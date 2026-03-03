@@ -44,12 +44,11 @@ WORKFLOW:
        content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
        summary: "Frontend plan ready for review" })
   9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  10. Execute tasks autonomously: prefer /sw:auto for autonomous execution
+  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
   11. Run all tests for owned code (unit + integration): npm test
-  12. Run quality gate: /sw:grill
-  13. Do NOT signal completion until all tests pass
-  14. After auto completes, attempt closure via /sw:done
-  15. Signal completion via SendMessage to team-lead
+  12. Do NOT signal completion until all tests pass
+  13. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  14. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

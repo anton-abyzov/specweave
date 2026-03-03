@@ -316,6 +316,24 @@ Plan review MUST NOT block other agents. Review plans as they arrive — agents 
 
 For very large features, the team lead MAY split work into multiple increments per domain for better tracking and independent closure. Decide this during initial analysis (Step 1), before spawning agents.
 
+### Task Cap Per Agent (CRITICAL — Context Overflow Prevention)
+
+**Maximum 15 tasks per agent.** Agents with more tasks accumulate too much context in auto-mode, leading to extended thinking loops and stuck agents.
+
+When distributing tasks from the master spec:
+1. Count tasks per domain
+2. If a domain has >15 tasks: **split into 2 agents** (e.g., `jira-agent-a`, `jira-agent-b`) with non-overlapping task ranges
+3. If splitting isn't natural, group tasks into phases and create 2 increments per domain
+
+```
+Domain tasks analysis:
+  Frontend: 12 tasks -> 1 agent (OK)
+  Backend:  8 tasks  -> 1 agent (OK)
+  JIRA:     23 tasks -> SPLIT into 2 agents (tasks 1-12, tasks 13-23)
+```
+
+**Why**: Each auto-mode iteration adds context (spec reads, edits, test outputs). At 20+ tasks, accumulated context causes the model to enter extended thinking (30+ min) and effectively hang. The 15-task cap keeps agents within a safe context budget.
+
 ---
 
 ## 4. Agent Spawn Prompt Templates
@@ -494,36 +512,38 @@ Task({
 
 ## 8. Quality Gates
 
-Every agent MUST run quality validation before signaling completion.
+Quality gates are split: agents handle tests, team-lead handles closure (grill, done, judge-llm). This prevents context overflow in agents from loading 4+ additional skill definitions during closure.
 
-### Per-Agent Quality Gate
+### Per-Agent Quality Gate (Lightweight)
 
 ```
 Agent Workflow:
-  1. Execute all assigned tasks (prefer /sw:auto for autonomous execution)
+  1. Execute all assigned tasks via /sw:auto --simple
   2. Run all tests for owned code (unit + integration + E2E)
   3. Run linter/type-check for owned code
-  4. Run /sw:grill
-  5. If tests fail -> fix issues and repeat from step 2. Do NOT signal completion until all tests pass.
-  6. If /sw:grill passes -> attempt closure via /sw:done
-  7. If /sw:grill fails -> fix issues, repeat from step 2
-  8. Signal COMPLETION via SendMessage
+  4. If tests fail -> fix issues and repeat from step 2
+  5. Do NOT signal completion until all tests pass
+  6. Signal COMPLETION via SendMessage (include task count, test results summary)
+  7. Do NOT run /sw:grill or /sw:done — team-lead handles closure centrally
 ```
 
-### Orchestrator Quality Gate
+**Why agents don't run /sw:done**: The /sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
 
-After all agents complete, the orchestrator (team lead) runs a final validation:
+### Orchestrator Quality Gate (Centralized Closure)
+
+After all agents complete, the team-lead runs closure **centrally** for each increment:
 
 ```
 Orchestrator Final Check:
   1. All agents signaled COMPLETION
   2. No unresolved BLOCKING_ISSUE messages
   3. Run full test suite (all domains combined)
-  4. Run /sw:grill on the combined increment
-  5. Run /sw:done --auto <id> for each increment in dependency order
-  6. If any /sw:done --auto fails, report the failure and continue with remaining increments
-  7. If all pass -> /sw:team-merge
-  8. If failures -> identify owning agent, send fix request via SendMessage
+  4. For EACH increment in dependency order:
+     a. Run /sw:grill on the increment
+     b. Run /sw:done --auto <id>
+     c. If /sw:done fails, report the failure and continue with remaining increments
+  5. If all pass -> /sw:team-merge
+  6. If failures -> identify owning agent, send fix request via SendMessage
 ```
 
 ### Grill Checklist per Domain
@@ -536,6 +556,36 @@ Orchestrator Final Check:
 | Testing | All tests pass, coverage threshold met, no flaky tests |
 | Security | No exposed secrets, input validation, auth working |
 | DevOps | Docker builds, CI passes, deployment config valid |
+
+---
+
+## 8b. Agent Timeout and Stuck Detection
+
+Agents can get stuck in extended thinking if their context overflows. The team-lead MUST monitor for stuck agents.
+
+### Timeout Rules
+
+| Condition | Action |
+|-----------|--------|
+| Agent idle >20 min after last message | Send `STATUS_CHECK` message to agent |
+| No response to STATUS_CHECK within 5 min | Declare agent stuck |
+| Agent stuck | Log warning, proceed with other agents, handle stuck agent's increment manually in team-merge |
+| All agents stuck | STOP team, report to user |
+
+### Stuck Agent Recovery
+
+When an agent is declared stuck:
+1. Do NOT wait for it — proceed with closure of other agents' increments
+2. Note the stuck agent's increment ID and last known task progress
+3. During /sw:team-merge, the stuck agent's increment is left open for manual completion
+4. Send shutdown_request to the stuck agent to free resources
+
+### Preventing Stuck Agents
+
+- Enforce the 15-task cap (Section 3b)
+- Agents use `--simple` flag in auto-mode (reduces context per iteration)
+- Agents do NOT run /sw:done (team-lead handles closure centrally)
+- If an agent's task count exceeds 15 despite the cap, the team-lead should split it before spawning
 
 ---
 
@@ -556,9 +606,10 @@ Orchestrator Final Check:
   │     │     └── Wait for CONTRACT_READY after approval
   │     └── Phase 2: Spawn backend + frontend + testing
   │           └── Receive PLAN_READY, review & approve via SendMessage
-  ├── Step 5: Monitor progress via SendMessage
-  ├── Step 6: Quality gates (each agent runs /sw:grill)
-  └── Step 7: Merge and close (/sw:team-merge)
+  ├── Step 5: Monitor progress via SendMessage (timeout: 20min idle → STATUS_CHECK)
+  ├── Step 6: Agents signal COMPLETION (tests pass, no /sw:grill or /sw:done on agents)
+  ├── Step 7: Team-lead runs /sw:grill + /sw:done --auto per increment (centralized closure)
+  └── Step 8: Merge and close (/sw:team-merge)
 ```
 
 **IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
@@ -596,6 +647,8 @@ To execute, run without --dry-run.
 | **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
 | **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
 | **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
+| **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |
+| **Agent hung on /sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run /sw:done — team-lead handles closure centrally |
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
 | **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
 | **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `/sw:auto` on its increment |
