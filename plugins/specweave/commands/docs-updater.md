@@ -1,5 +1,5 @@
 ---
-description: Living documentation updater that syncs implementation progress to product docs. Use when updating docs after task completion, changing DRAFT status to published, or ensuring documentation reflects current implementation state.
+description: "DEPRECATED: Use /sw:docs-updater skill instead. Living documentation updater that syncs implementation progress to product docs."
 user-invocable: false
 ---
 
