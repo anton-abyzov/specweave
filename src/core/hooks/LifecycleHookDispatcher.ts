@@ -174,8 +174,27 @@ export class LifecycleHookDispatcher {
             '../living-docs/living-docs-sync.js'
           );
           const sync = new LivingDocsSync(projectRoot);
-          await sync.syncIncrement(incrementId);
+          const syncResult = await sync.syncIncrement(incrementId);
           result.syncSuccess.push('Living docs synced');
+
+          // STEP 1b: Update cross-references in existing docs after feature specs are created.
+          // This ensures FEATURE-CATALOG, module docs, and specs README contain links
+          // to the newly created feature spec files. Without this, the link update is
+          // deferred to the AI skill step (sw:docs-updater) which may not always run.
+          if (syncResult.success && syncResult.featureId) {
+            try {
+              await LifecycleHookDispatcher.updateDocsLinks(
+                projectRoot,
+                syncResult.featureId,
+                sync.getProjectId(),
+              );
+              result.syncSuccess.push('Docs links updated');
+            } catch (linkError) {
+              const linkMsg = linkError instanceof Error ? linkError.message : String(linkError);
+              result.syncErrors.push(`Docs link update failed: ${linkMsg}`);
+              LifecycleHookDispatcher.logError('onIncrementDone:docsLinks', linkError);
+            }
+          }
         } catch (error) {
           const msg = error instanceof Error ? error.message : String(error);
           result.syncErrors.push(`Living docs sync failed: ${msg}`);
@@ -255,6 +274,92 @@ export class LifecycleHookDispatcher {
     const configManager = new ConfigManager(projectRoot);
     const config = await configManager.read();
     return config.hooks;
+  }
+
+  /**
+   * Update cross-references in existing living docs after feature specs are created.
+   *
+   * Lightweight post-sync step that:
+   * 1. Updates specs/{project}/README.md with links to the new FS-XXX folder
+   * 2. Logs verification of FEATURE.md existence
+   *
+   * This runs automatically so the link update doesn't depend on the AI skill step.
+   */
+  private static async updateDocsLinks(
+    projectRoot: string,
+    featureId: string,
+    projectId: string,
+  ): Promise<void> {
+    const { existsSync, promises: fs } = await import('fs');
+    const path = await import('path');
+
+    const specsDir = path.join(
+      projectRoot,
+      '.specweave/docs/internal/specs',
+      projectId,
+    );
+    const featureDir = path.join(specsDir, featureId);
+    const featureFile = path.join(featureDir, 'FEATURE.md');
+
+    // Verify feature spec was actually created
+    if (!existsSync(featureFile)) {
+      process.stderr.write(
+        `[LifecycleHookDispatcher.updateDocsLinks] Feature spec missing: ${featureFile}\n`,
+      );
+      return;
+    }
+
+    // Read feature title from FEATURE.md first line (# Title)
+    let featureTitle = featureId;
+    try {
+      const content = await fs.readFile(featureFile, 'utf-8');
+      const titleMatch = content.match(/^#\s+(.+)/m);
+      if (titleMatch) {
+        featureTitle = titleMatch[1].replace(/\s*\(FS-\d+\)/, '').trim();
+      }
+    } catch {
+      // Use featureId as fallback title
+    }
+
+    // Update specs/{project}/README.md with link to the new feature
+    const readmePath = path.join(specsDir, 'README.md');
+    if (existsSync(readmePath)) {
+      try {
+        let readme = await fs.readFile(readmePath, 'utf-8');
+        const featureLink = `- [${featureId}: ${featureTitle}](${featureId}/FEATURE.md)`;
+
+        // Check if this feature is already linked
+        if (!readme.includes(`${featureId}/FEATURE.md`)) {
+          // Find or create the feature list section
+          if (readme.includes('## Active Features')) {
+            // Append to existing section
+            readme = readme.replace(
+              /(## Active Features\n(?:[\s\S]*?))((?:\n## |\n---|\Z))/,
+              `$1${featureLink}\n$2`,
+            );
+          } else {
+            // Add section before the footer or at end
+            const footerIdx = readme.lastIndexOf('\n---\n');
+            const section = `\n## Active Features\n\n${featureLink}\n`;
+            if (footerIdx !== -1) {
+              readme =
+                readme.substring(0, footerIdx) +
+                section +
+                readme.substring(footerIdx);
+            } else {
+              readme += section;
+            }
+          }
+          await fs.writeFile(readmePath, readme, 'utf-8');
+        }
+      } catch (readmeError) {
+        // Non-fatal: README update is best-effort
+        const msg = readmeError instanceof Error ? readmeError.message : String(readmeError);
+        process.stderr.write(
+          `[LifecycleHookDispatcher.updateDocsLinks] README update warning: ${msg}\n`,
+        );
+      }
+    }
   }
 
   /**
