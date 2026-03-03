@@ -18,6 +18,16 @@ const config: Config = {
 
   // SEO: Schema.org structured data for search engines
   headTags: [
+    // Cloudflare Web Analytics
+    {
+      tagName: 'script',
+      attributes: {
+        defer: 'true',
+        src: 'https://static.cloudflareinsights.com/beacon.min.js',
+        'data-cf-beacon': '{"token": "a08755392f8d4369acfb5775e954080c"}',
+      },
+      innerHTML: '',
+    },
     {
       tagName: 'script',
       attributes: {
