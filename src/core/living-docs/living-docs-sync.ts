@@ -150,11 +150,12 @@ export class LivingDocsSync {
       // folder moves between check and use. See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md
       //
       // Resolve full increment directory name (e.g., "0421" → "0421-umbrella-docs-update")
-      const resolvedIncrementId = await this.resolveIncrementDir(incrementId);
+      incrementId = await this.resolveIncrementDir(incrementId);
+      result.incrementId = incrementId;
       const activeIncrementPath = path.join(
         this.projectRoot,
         '.specweave/increments',
-        resolvedIncrementId
+        incrementId
       );
 
       // Early-exit check: is increment still in active folder?
