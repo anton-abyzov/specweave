@@ -419,6 +419,20 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       console.log(`   Creating new GitHub issue...`);
 
       try {
+        // Ensure all labels exist in target repo before creating issue
+        if (repo) {
+          for (const label of labels) {
+            try {
+              execFileSync('gh', [
+                'label', 'create', label, '--repo', repo,
+                '--color', 'ededed', '--description', 'SpecWeave auto-label', '--force'
+              ], { encoding: 'utf-8', env: getGhEnv() });
+            } catch {
+              // Label creation failure is non-fatal
+            }
+          }
+        }
+
         const args = [
           'issue',
           'create',

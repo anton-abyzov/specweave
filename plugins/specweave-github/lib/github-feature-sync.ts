@@ -907,10 +907,21 @@ export class GitHubFeatureSync {
     milestoneTitle: string,
     userStoryPath: string
   ): Promise<number> {
+    // Step 0: Ensure all required labels exist in the target repo
+    const repoSlug = `${this.client.getOwner()}/${this.client.getRepo()}`;
+    for (const label of issueContent.labels) {
+      await execFileNoThrow('gh', [
+        'label', 'create', label, '--repo', repoSlug,
+        '--color', 'ededed', '--description', 'SpecWeave auto-label', '--force'
+      ], { env: this.getGhEnv() });
+    }
+
     // Step 1: Create issue (always open initially - gh CLI limitation)
     const result = await execFileNoThrow('gh', [
       'issue',
       'create',
+      '--repo',
+      repoSlug,
       '--title',
       issueContent.title,
       '--body',
