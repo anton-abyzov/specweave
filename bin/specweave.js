@@ -1374,13 +1374,14 @@ program
 // Migrate-to-umbrella command - Convert single-repo to umbrella workspace
 program
   .command('migrate-to-umbrella')
-  .description('Convert single-repo project to umbrella/multi-repo workspace')
+  .description('Convert single-repo project to umbrella/multi-repo workspace. Supports distributed (per-repo) and centralized (single-repo) sync strategies via umbrella.syncStrategy config.')
   .option('--execute', 'Execute migration (default is dry-run)')
   .option('--umbrella-path <path>', 'Custom umbrella directory path')
   .option('--org <name>', 'GitHub organization name')
   .option('--rollback', 'Rollback a previous migration')
   .option('--add-repo <name>', 'Add a new repo to existing umbrella (name or org/name)')
   .option('--reorganize-specs', 'Reorganize spec folders into per-project directories')
+  .option('--consolidate', 'Consolidate orphaned increments/docs from nested repos to umbrella root')
   .option('--yes', 'Skip confirmation prompts')
   .action(async (opts) => {
     const { migrateToUmbrellaCommand } = await import('../dist/src/cli/commands/migrate-to-umbrella.js');
@@ -1391,6 +1392,7 @@ program
       rollback: opts.rollback,
       addRepo: opts.addRepo,
       reorganizeSpecs: opts.reorganizeSpecs,
+      consolidate: opts.consolidate,
       yes: opts.yes,
     });
   });

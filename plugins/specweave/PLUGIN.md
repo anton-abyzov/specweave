@@ -34,6 +34,7 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | grill | Critical code review before increment completion |
 | self-validating-example | Example skill demonstrating self-validating REST API generation |
 | lsp | Language Server Protocol support for code navigation |
+| brainstorm | Multi-perspective ideation with cognitive lenses, persistent idea trees, and sw:increment handoff |
 
 ## Commands
 

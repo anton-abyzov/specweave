@@ -28,6 +28,7 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { ProjectResolutionService } from '../project/project-resolution.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
+import { resolveSyncTarget } from '../../sync/sync-target-resolver.js';
 // NOTE: findNextAvailableInternalIdSync no longer used - collision detection moved inline
 // to fix chain shift bug (2025-12-04). See getFeatureIdForIncrement() for details.
 import { deriveFeatureId, extractIncrementNumber } from '../../utils/feature-id-derivation.js';
@@ -533,7 +534,7 @@ export class LivingDocsSync {
       );
 
       if (!options.dryRun && !skipExternalSync) {
-        await this.syncToExternalTools(incrementId, featureId, projectPath);
+        await this.syncToExternalTools(incrementId, featureId, projectPath, defaultProject);
       } else if (skipExternalSync) {
         this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
         this.logger.log(`   ℹ️  Run /sw:sync-progress to manually sync when ready`);
@@ -704,8 +705,8 @@ export class LivingDocsSync {
     board: string | null;
   }> {
     // SECURITY FIX (2025-12-02): Validate incrementId format FIRST
-    // CRITICAL (v0.33.0): Allow E suffix for external increments (e.g., 0111E-name)
-    if (!incrementId || !/^\d{4}E?-[a-z0-9-]+$/i.test(incrementId)) {
+    // CRITICAL (v0.33.0): Allow E/G/J/A suffixes for external increments (e.g., 0111E-name, 0417J-name)
+    if (!incrementId || !/^\d{4}[EGJA]?-[a-z0-9-]+$/i.test(incrementId)) {
       this.logger.warn(`   ⚠️  Invalid increment ID format: ${incrementId}`);
       return { project: null, board: null };
     }
@@ -1531,7 +1532,8 @@ export class LivingDocsSync {
   private async syncToExternalTools(
     incrementId: string,
     featureId: string,
-    projectPath: string
+    projectPath: string,
+    projectName?: string
   ): Promise<void> {
     try {
       // 1. Detect external tool configuration from metadata.json
@@ -1581,7 +1583,7 @@ export class LivingDocsSync {
         try {
           switch (tool) {
             case 'github':
-              await this.syncToGitHub(featureId, projectPath);
+              await this.syncToGitHub(featureId, projectPath, projectName);
               break;
             case 'jira':
               await this.syncToJira(featureId, projectPath);
@@ -1771,7 +1773,7 @@ export class LivingDocsSync {
    * - Updates existing issues (triple idempotency check)
    * - Only creates new issues if they don't exist
    */
-  private async syncToGitHub(featureId: string, projectPath: string): Promise<void> {
+  private async syncToGitHub(featureId: string, projectPath: string, projectName?: string): Promise<void> {
     try {
       this.logger.log(`   🔄 Syncing to GitHub...`);
 
@@ -1812,6 +1814,15 @@ export class LivingDocsSync {
                 this.logger.log(`   📝 Using GitHub config (multiProject): ${owner}/${repo}`);
               }
             }
+          }
+
+          // Method 3: Distributed sync routing — resolve per-project target
+          // Only apply when resolver found a non-global match to avoid clobbering Method 2
+          const resolved = resolveSyncTarget(projectName, config);
+          if (resolved.github && resolved.source !== 'global') {
+            owner = resolved.github.owner;
+            repo = resolved.github.repo;
+            this.logger.log(`   📝 Using distributed sync target (${resolved.source}): ${owner}/${repo}`);
           }
         } catch (error) {
           this.logger.warn(`   ⚠️  Failed to read config.json, using environment variables`);

@@ -64,7 +64,9 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 **Signals** (5+ = auto-route): Project name | Features list (3+) | Tech stack | Timeline/MVP | Problem statement | Business model
 
-**Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
+**Opt-out phrases**: "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
+
+**Brainstorm routing**: "Just brainstorm first" | "brainstorm" | "ideate" | "what are our options" → routes to `/sw:brainstorm`
 
 **NOT opt-out phrases**: "simple" | "quick" | "basic" | "small" — these still require `/sw:increment`
 

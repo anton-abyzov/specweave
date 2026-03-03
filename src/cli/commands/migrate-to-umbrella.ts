@@ -28,6 +28,10 @@ import {
   generateReorganizationPlan,
   reorganizeSpecs,
 } from '../../core/migration/spec-project-mapper.js';
+import {
+  scanForOrphans,
+  executeConsolidation,
+} from '../../core/migration/consolidation-engine.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { MigrationOptions, MigrationPlan } from '../../core/migration/types.js';
@@ -55,6 +59,12 @@ export async function migrateToUmbrellaCommand(
   // Handle reorganize-specs
   if (options.reorganizeSpecs) {
     await handleReorganizeSpecs(projectRoot, options);
+    return;
+  }
+
+  // Handle consolidate
+  if (options.consolidate) {
+    await handleConsolidate(projectRoot, options);
     return;
   }
 
@@ -447,5 +457,49 @@ async function handleReorganizeSpecs(
   if (!config.multiProject?.enabled) {
     console.log(chalk.dim('  multiProject.enabled set to true.'));
   }
+}
+
+/**
+ * Handle --consolidate: move orphaned increments/docs from nested repos to umbrella root.
+ */
+async function handleConsolidate(
+  projectRoot: string,
+  options: MigrationOptions,
+): Promise<void> {
+  console.log(chalk.blue('\n  Consolidate Nested Increments\n'));
+
+  const plan = await scanForOrphans(projectRoot);
+
+  if (plan.moves.length === 0 && plan.deletions.length === 0) {
+    console.log(chalk.green('  No orphaned increments or docs found. Nothing to consolidate.'));
+    return;
+  }
+
+  // Display plan
+  console.log(chalk.blue(`  Consolidation Plan (${plan.moves.length} moves, ${plan.deletions.length} deletions):\n`));
+
+  for (const move of plan.moves) {
+    const label = move.type === 'increment' ? '[MOVE INCREMENT]' : '[MOVE DOC]';
+    console.log(chalk.yellow(`  ${label} ${path.basename(move.from)}`));
+    console.log(chalk.dim(`    from: ${move.from}`));
+    console.log(chalk.dim(`    to:   ${move.to}`));
+  }
+
+  for (const deletion of plan.deletions) {
+    console.log(chalk.red(`  [DELETE] ${path.basename(deletion.path)} (${deletion.reason})`));
+    console.log(chalk.dim(`    path: ${deletion.path}`));
+  }
+
+  if (!options.execute) {
+    console.log(chalk.yellow('\n  Dry-run complete. Run with --consolidate --execute to apply changes.\n'));
+    return;
+  }
+
+  // Execute
+  console.log(chalk.blue('\n  Executing consolidation...\n'));
+  await executeConsolidation(plan, projectRoot);
+
+  console.log(chalk.green(`\n  Consolidation complete!`));
+  console.log(chalk.dim(`  ${plan.moves.length} items moved, ${plan.deletions.length} duplicates removed.`));
 }
 

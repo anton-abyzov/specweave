@@ -673,7 +673,7 @@ ml: ml:data-scientist, ml:edge, ml:engineer, ml:fine-tuning, ml:huggingface, ml:
 kafka: kafka:architect, kafka:ops, kafka:streams-topology, kafka:n8n
 confluent: confluent:kafka-connect, confluent:ksqldb, confluent:schema-registry
 payments: payments:payment-core, payments:billing, payments:pci
-docs: docs:brainstorming, docs:docusaurus, docs:technical-writing
+docs: docs:docusaurus, docs:technical-writing
 cost: cost:aws, cost:cloud-pricing, cost:optimization
 security: security:security-core, security:patterns, security:simplifier
 blockchain: blockchain:blockchain-core

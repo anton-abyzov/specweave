@@ -14,7 +14,7 @@ Complete documentation ecosystem for technical writers, product teams, and devel
 |-------|-------------|
 | technical-writing | Expert in API documentation, README files, tutorials, changelog management, and developer documentation with style guides and OpenAPI/Swagger support |
 | docusaurus | Docusaurus 3.x framework expert for MDX authoring, theming, versioning, and internationalization |
-| spec-driven-brainstorming | Product discovery expert for feature ideation, story mapping, MoSCoW/RICE prioritization, and MVP definition |
+| spec-driven-brainstorming | DEPRECATED: Use `/sw:brainstorm` (core plugin). Multi-perspective ideation with cognitive lenses |
 
 ## Installation
 

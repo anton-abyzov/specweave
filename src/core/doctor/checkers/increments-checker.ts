@@ -126,8 +126,8 @@ export class IncrementsChecker implements HealthChecker {
       }
     }
 
-    // Extract ID from name (e.g., "0001-feature" -> "0001")
-    const idMatch = name.match(/^(\d{4}E?)/);
+    // Extract ID from name (e.g., "0001-feature" -> "0001", "0417J-name" -> "0417J")
+    const idMatch = name.match(/^(\d{4}[EGJA]?)/);
     const id = idMatch ? idMatch[1] : name;
 
     return {

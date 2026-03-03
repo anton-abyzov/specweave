@@ -389,6 +389,13 @@ export class ProjectResolutionService {
       );
     }
 
+    if (config.umbrella?.enabled && config.umbrella.childRepos?.length) {
+      return config.umbrella.childRepos.map((repo: any) => ({
+        id: repo.id,
+        keywords: repo.techStack || [],
+      }));
+    }
+
     if (config.project?.name) {
       return [{ id: config.project.name, keywords: [] }];
     }

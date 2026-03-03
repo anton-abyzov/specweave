@@ -27,6 +27,7 @@ import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 import { ConfigManager } from '../core/config/config-manager.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
 import { isTemplateFile } from '../core/increment/template-creator.js';
+import { resolveSyncTarget } from './sync-target-resolver.js';
 
 export interface ExternalIssueAutoCreatorOptions {
   projectRoot: string;
@@ -183,6 +184,22 @@ export class ExternalIssueAutoCreator {
         };
       }
 
+      // Resolve distributed sync target for per-project Jira/ADO routing
+      let projectName: string | undefined;
+      if (existsSync(specPath)) {
+        try {
+          const specContent = await fs.readFile(specPath, 'utf-8');
+          const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
+          if (fmMatch) {
+            const parsed = yaml.parse(fmMatch[1]);
+            projectName = parsed?.project;
+          }
+        } catch {
+          // Ignore frontmatter parse errors
+        }
+      }
+      const resolvedTarget = resolveSyncTarget(projectName, config);
+
       // Create issues based on provider
       // NOTE (0348): GitHub is handled by LivingDocsSync → GitHubFeatureSync chain.
       // ExternalIssueAutoCreator only handles JIRA and ADO now.
@@ -195,9 +212,9 @@ export class ExternalIssueAutoCreator {
             skipReason: 'GitHub sync handled by LivingDocsSync → GitHubFeatureSync pipeline',
           };
         case 'jira':
-          return await this.createJiraIssues(incrementId, incrementInfo, config);
+          return await this.createJiraIssues(incrementId, incrementInfo, config, resolvedTarget.jira?.projectKey);
         case 'ado':
-          return await this.createAdoIssues(incrementId, incrementInfo, config);
+          return await this.createAdoIssues(incrementId, incrementInfo, config, resolvedTarget.ado?.project);
         default:
           return {
             success: false,
@@ -615,7 +632,8 @@ export class ExternalIssueAutoCreator {
   private async createJiraIssues(
     incrementId: string,
     incrementInfo: IncrementInfo,
-    config: any
+    config: any,
+    overrideProjectKey?: string
   ): Promise<AutoCreateResult> {
     try {
       // Import JIRA client dynamically
@@ -623,7 +641,7 @@ export class ExternalIssueAutoCreator {
 
       const jiraConfig = config.issueTracker || config.sync?.jira || {};
       const domain = jiraConfig.domain;
-      const projectKey = jiraConfig.projects?.[0]?.key || jiraConfig.projectKey;
+      const projectKey = overrideProjectKey || jiraConfig.projects?.[0]?.key || jiraConfig.projectKey;
 
       if (!domain || !projectKey) {
         return {
@@ -677,7 +695,8 @@ export class ExternalIssueAutoCreator {
   private async createAdoIssues(
     incrementId: string,
     incrementInfo: IncrementInfo,
-    config: any
+    config: any,
+    overrideProject?: string
   ): Promise<AutoCreateResult> {
     try {
       const { AdoClient } = await import('../integrations/ado/ado-client.js');
@@ -685,7 +704,7 @@ export class ExternalIssueAutoCreator {
 
       const adoConfig = config.issueTracker || config.sync?.ado || {};
       const organization = adoConfig.organization_ado || adoConfig.organization;
-      const project = adoConfig.project;
+      const project = overrideProject || adoConfig.project;
 
       if (!organization || !project) {
         return {

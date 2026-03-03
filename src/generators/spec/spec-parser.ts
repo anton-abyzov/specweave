@@ -179,8 +179,8 @@ function parseFrontmatter(lines: string[]): { incrementId: string; title: string
     );
   }
 
-  // Validate increment ID format (0001-feature-name)
-  const incrementIdRegex = /^[0-9]{4}-[a-z0-9-]+$/;
+  // Validate increment ID format (0001-feature-name, 0417J-name, 0111E-name)
+  const incrementIdRegex = /^[0-9]{4}[EGJA]?-[a-z0-9-]+$/i;
   if (!incrementIdRegex.test(frontmatter.increment)) {
     throw new Error(
       `Invalid increment ID format: "${frontmatter.increment}"\n\n` +

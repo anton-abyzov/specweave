@@ -138,7 +138,7 @@ export class AgentsMdGenerator {
       'context-loader': 'Working on increments, need to load relevant context',
       'skill-router': 'Ambiguous requests that need routing to specific skills',
       'spec-driven-debugging': 'Bug investigation, test failures, unexpected behavior',
-      'spec-driven-brainstorming': 'Brainstorming ideas, refining concepts, design thinking',
+      'brainstorm': 'Multi-perspective ideation, brainstorming, design thinking, tree of thought exploration',
       'nodejs-backend': 'Node.js/Express/NestJS backend development',
       'python-backend': 'Python/FastAPI/Django backend development',
       'nextjs': 'Next.js App Router application development',
