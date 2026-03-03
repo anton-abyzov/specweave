@@ -149,6 +149,18 @@ If any operation failed, display: "Run `/sw:progress-sync` to retry failed sync 
 
 Execute: `Skill({ skill: "sw:sync-docs" })` with the increment ID. Do NOT just mention it -- actually invoke it. This serves as a verification pass to confirm living docs are up to date after closure.
 
+### Step 10b: Update Links in Docs (MANDATORY)
+
+After living docs sync, update cross-references and bidirectional links so existing docs reference the newly created feature specs.
+
+Execute: `Skill({ skill: "sw:docs-updater" })` — this verifies and repairs links between living docs, feature specs, and increment references. Do NOT skip this step. The docs-updater:
+1. Reads the feature spec files created by Step 10
+2. Updates existing docs (FEATURE-CATALOG, module docs, etc.) with links to the new specs
+3. Verifies bidirectional links between increment → feature spec → living docs
+4. Changes `[DRAFT]` → `[COMPLETE]` on doc sections matching completed ACs
+
+If `sw:docs-updater` is unavailable, manually verify that `.specweave/docs/internal/specs/{project}/FS-XXX/` contains `FEATURE.md` and `us-*.md` files. If missing, re-run Step 10.
+
 ### Step 11: Post-Closure Quality Assessment
 
 Runs ONLY if closure succeeded. Invoke: `/sw:qa ${incrementId}`
