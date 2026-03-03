@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.358] - 2026-03-03
+
+### Changes
+- fix: standardize JIRA/ADO title format to match GitHub [FS-XXX][US-YYY]
+
+---
+
+
+
 ## [1.0.357] - 2026-03-03
 
 ### Changes
