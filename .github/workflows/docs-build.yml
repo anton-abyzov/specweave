@@ -80,7 +80,7 @@ jobs:
 
     steps:
       - name: Download docs build artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: docs-build
           path: docs-site-build
