@@ -623,6 +623,7 @@ export class ProjectResolutionService {
     // Fallback to config.json for backward compatibility
     let allowedProjects: string[] = [];
     const projectIdLower = projectId.toLowerCase();
+    const config = await this.configManager.read() as any;
 
     try {
       // Check ProjectRegistry FIRST (.specweave/state/projects.json)
@@ -651,7 +652,20 @@ export class ProjectResolutionService {
           };
         }
 
-        // Project not in registry - REJECT
+        // Check umbrella.childRepos as additional source before rejecting
+        if (config?.umbrella?.enabled && Array.isArray(config.umbrella.childRepos)) {
+          const childRepoIds = config.umbrella.childRepos.map((r: any) => (r.id || r.name || '').toLowerCase());
+          if (childRepoIds.includes(projectIdLower)) {
+            return {
+              valid: true,
+              projectId,
+              reason: 'Project exists in umbrella.childRepos',
+              allowedProjects: [...allowedProjects, ...childRepoIds]
+            };
+          }
+        }
+
+        // Project not in registry or umbrella childRepos - REJECT
         return {
           valid: false,
           projectId,
@@ -664,7 +678,6 @@ export class ProjectResolutionService {
     }
 
     // FALLBACK: Use config.json if registry is empty or failed
-    const config = await this.configManager.read() as any;
     const isSingleProject = config.multiProject?.enabled !== true;
 
     if (isSingleProject) {
