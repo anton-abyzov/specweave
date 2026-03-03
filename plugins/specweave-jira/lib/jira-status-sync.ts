@@ -13,7 +13,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { detectDeploymentType, getApiBaseUrl } from './jira-deployment-detector.js';
-import { toCommentBody } from './content-format-adapter.js';
+import { toCommentBody, type AdfDocument, type AdfNode } from './content-format-adapter.js';
 
 /**
  * External status representation (JIRA-specific)
@@ -160,4 +160,94 @@ export class JiraStatusSync {
       body
     });
   }
+
+  /**
+   * Post AC progress comment with proper ADF formatting and dedup.
+   *
+   * Builds native ADF with:
+   * - Bold header showing completion percentage
+   * - Bullet list with checkmark/cross emojis per AC
+   * - Fingerprint marker to prevent duplicate comments
+   *
+   * @param issueKey - JIRA issue key (e.g., PROJ-123)
+   * @param acStates - Array of AC states with id, description, completed
+   * @returns true if comment was posted, false if skipped (duplicate)
+   */
+  async postProgressComment(
+    issueKey: string,
+    acStates: Array<{ id: string; description: string; completed: boolean }>,
+  ): Promise<boolean> {
+    const total = acStates.length;
+    const completed = acStates.filter(ac => ac.completed).length;
+    const percentage = Math.round((completed / total) * 100);
+    const fingerprint = `sw-progress:${completed}/${total}`;
+
+    // Dedup: check last comment for same fingerprint
+    try {
+      const commentsResp = await this.client.get(`/issue/${issueKey}/comment`, {
+        params: { orderBy: '-created', maxResults: 1 },
+      });
+      const lastComment = commentsResp.data?.comments?.[0];
+      if (lastComment) {
+        const lastText = extractAdfText(lastComment.body);
+        if (lastText.includes(fingerprint)) {
+          return false; // Already posted for this state
+        }
+      }
+    } catch {
+      // If comment fetch fails, proceed with posting
+    }
+
+    // Build ADF body directly — ✅ for done, ❌ for pending
+    const listItems: AdfNode[] = acStates.map(ac => ({
+      type: 'listItem',
+      content: [{
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: `${ac.completed ? '\u2705' : '\u274C'} ${ac.id}: ${ac.description}` },
+        ],
+      }],
+    }));
+
+    const body: AdfDocument = {
+      type: 'doc',
+      version: 1,
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 3 },
+          content: [{ type: 'text', text: `Progress: ${completed}/${total} ACs (${percentage}%)` }],
+        },
+        {
+          type: 'bulletList',
+          content: listItems,
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: `${fingerprint} | Synced from SpecWeave`, marks: [{ type: 'em' }] },
+          ],
+        },
+      ],
+    };
+
+    await this.client.post(`/issue/${issueKey}/comment`, { body });
+    return true;
+  }
+}
+
+/**
+ * Extract plain text from an ADF document (for dedup comparison).
+ */
+function extractAdfText(adf: any): string {
+  if (!adf) return '';
+  if (typeof adf === 'string') return adf;
+  let text = '';
+  if (adf.text) text += adf.text;
+  if (Array.isArray(adf.content)) {
+    for (const child of adf.content) {
+      text += extractAdfText(child);
+    }
+  }
+  return text;
 }

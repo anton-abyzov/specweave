@@ -18,6 +18,7 @@ import { ConfigManager } from '../../core/config/config-manager.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
 import { syncACProgressToProviders, parseAllUserStoryIds, type ACProgressSyncConfig } from '../../core/ac-progress-sync.js';
 import { existsSync } from 'fs';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface SyncProgressArgs {
   incrementId?: string;
@@ -63,7 +64,7 @@ export interface SyncProgressResult {
 export async function syncProgress(args: string[], options: { logger?: Logger } = {}): Promise<void> {
   const logger = options.logger ?? consoleLogger;
   const parsedArgs = parseArgs(args);
-  const projectRoot = process.cwd();
+  const projectRoot = resolveEffectiveRoot(process.cwd());
 
   logger.log('');
   logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -182,7 +183,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
           const hasGitHubIssue = await checkExistingGitHubIssue(incrementPath);
           if (!hasGitHubIssue) {
             logger.log('   📝 No GitHub issue linked - AUTO-CREATING...');
-            const createResult = await autoCreateExternalIssue(projectRoot, incrementId, logger);
+            const createResult = await autoCreateExternalIssue(projectRoot, incrementId, logger, 'github');
             result.externalIssueCreated = createResult;
 
             if (createResult.success && !createResult.skipped) {
@@ -197,7 +198,51 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
             logger.log(`   ✅ GitHub issue already exists`);
           }
         }
-        // Similar for JIRA and ADO can be added here
+        // JIRA auto-create (v1.0.357)
+        if (jiraConfigured && !parsedArgs.noJira) {
+          const hasJiraIssue = await checkExistingJiraIssue(incrementPath);
+          if (!hasJiraIssue) {
+            logger.log('   📝 No JIRA issue linked - AUTO-CREATING...');
+            const createResult = await autoCreateExternalIssue(projectRoot, incrementId, logger, 'jira');
+            if (!result.externalIssueCreated) {
+              result.externalIssueCreated = createResult;
+            }
+
+            if (createResult.success && !createResult.skipped) {
+              logger.log(`   ✅ JIRA issue auto-created: ${createResult.issueNumber}`);
+            } else if (createResult.skipped) {
+              logger.log(`   ⏭️  Skipped: ${createResult.skipReason}`);
+            } else {
+              result.warnings.push(`JIRA issue creation failed: ${createResult.error}`);
+              logger.log(`   ⚠️  JIRA issue creation failed: ${createResult.error}`);
+            }
+          } else {
+            logger.log(`   ✅ JIRA issue already exists`);
+          }
+        }
+
+        // ADO auto-create (v1.0.357)
+        if (adoConfigured && !parsedArgs.noAdo) {
+          const hasAdoIssue = await checkExistingAdoIssue(incrementPath);
+          if (!hasAdoIssue) {
+            logger.log('   📝 No ADO work item linked - AUTO-CREATING...');
+            const createResult = await autoCreateExternalIssue(projectRoot, incrementId, logger, 'ado');
+            if (!result.externalIssueCreated) {
+              result.externalIssueCreated = createResult;
+            }
+
+            if (createResult.success && !createResult.skipped) {
+              logger.log(`   ✅ ADO work item auto-created: #${createResult.issueNumber}`);
+            } else if (createResult.skipped) {
+              logger.log(`   ⏭️  Skipped: ${createResult.skipReason}`);
+            } else {
+              result.warnings.push(`ADO work item creation failed: ${createResult.error}`);
+              logger.log(`   ⚠️  ADO work item creation failed: ${createResult.error}`);
+            }
+          } else {
+            logger.log(`   ✅ ADO work item already exists`);
+          }
+        }
       } else {
         logger.log('   [DRY-RUN] Would auto-create external issues if missing');
       }
@@ -264,15 +309,71 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
               // Build metadata for external links
               const metadataPath = path.join(incrementPath!, 'metadata.json');
               let externalLinks: any = {};
+              let metadata: any = {};
               if (existsSync(metadataPath)) {
                 try {
                   const metaContent = await fs.readFile(metadataPath, 'utf-8');
-                  const metadata = JSON.parse(metaContent);
+                  metadata = JSON.parse(metaContent);
                   externalLinks = metadata.externalLinks || {};
                 } catch {
                   // Ignore metadata parse errors
                 }
               }
+
+              // v1.0.358: Auto-build JIRA userStories mapping for unmapped stories
+              // Covers local-first increments and spec expansions after import
+              if (jiraConfigured && metadata.jira?.issue) {
+                const jiraUS = externalLinks.jira?.userStories || {};
+                const unmappedIds = allUSIds.filter(id => !jiraUS[id]);
+                if (unmappedIds.length > 0) {
+                  const domain = config.issueTracker?.domain || config.sync?.jira?.domain || process.env.JIRA_DOMAIN || '';
+                  const issueKey = metadata.jira.issue;
+                  const issueUrl = metadata.jira.url || `https://${domain}/browse/${issueKey}`;
+                  const now = new Date().toISOString();
+
+                  // Map unmapped user stories to the JIRA issue (preserve existing)
+                  if (!externalLinks.jira) externalLinks.jira = {};
+                  if (!externalLinks.jira.userStories) externalLinks.jira.userStories = {};
+                  for (const usId of unmappedIds) {
+                    externalLinks.jira.userStories[usId] = { issueKey, issueUrl, syncedAt: now };
+                  }
+
+                  // Persist the mapping back to metadata.json
+                  metadata.externalLinks = externalLinks;
+                  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
+                  logger.log(`   🔗 Auto-mapped ${unmappedIds.length} user story(s) to JIRA ${issueKey}`);
+                }
+              }
+
+              // v1.0.358: Auto-build ADO userStories mapping for unmapped stories
+              if (adoConfigured && metadata.ado?.workItem) {
+                const adoUS = externalLinks.ado?.userStories || {};
+                const unmappedAdoIds = allUSIds.filter(id => !adoUS[id]);
+                if (unmappedAdoIds.length > 0) {
+                  const workItemId = metadata.ado.workItem;
+                  const workItemUrl = metadata.ado.url || '';
+                  const now = new Date().toISOString();
+
+                  if (!externalLinks.ado) externalLinks.ado = {};
+                  if (!externalLinks.ado.userStories) externalLinks.ado.userStories = {};
+                  for (const usId of unmappedAdoIds) {
+                    externalLinks.ado.userStories[usId] = { workItemId, workItemUrl, syncedAt: now };
+                  }
+
+                  metadata.externalLinks = externalLinks;
+                  await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
+                  logger.log(`   🔗 Auto-mapped ${unmappedAdoIds.length} user story(s) to ADO #${workItemId}`);
+                }
+              }
+
+              // v1.0.357: Resolve JIRA credentials from env vars + config profile
+              const jiraProfile = config.sync?.profiles?.[config.sync?.defaultProfile || '']?.config as Record<string, string> | undefined;
+              const resolvedJira = (jiraConfigured && !parsedArgs.noJira) ? {
+                domain: config.jira?.domain || config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || process.env.JIRA_DOMAIN || '',
+                email: process.env.JIRA_EMAIL || '',
+                apiToken: process.env.JIRA_API_TOKEN || '',
+                projectKey: config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
+              } : undefined;
 
               const acSyncConfig: ACProgressSyncConfig = {
                 sync: {
@@ -281,7 +382,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                   ado: (adoConfigured && !parsedArgs.noAdo) ? { enabled: true } : undefined,
                 },
                 github: config.github || config.sync?.github,
-                jira: config.jira || config.sync?.jira,
+                jira: resolvedJira,
                 ado: config.ado || config.sync?.ado,
                 externalLinks,
               };
@@ -292,11 +393,18 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
 
               // Log results per provider
               for (const [provider, providerResult] of Object.entries(acProgressResult)) {
+                if (providerResult.posted.length > 0) {
+                  logger.log(`   📝 ${provider}: Posted progress for ${providerResult.posted.map(p => p.ref).join(', ')}`);
+                }
                 if (providerResult.closed.length > 0) {
                   logger.log(`   ✅ ${provider}: Auto-closed ${providerResult.closed.length} completed user story issue(s)`);
                 }
+                if (providerResult.skipped.length > 0) {
+                  logger.log(`   ⏭️  ${provider}: Skipped ${providerResult.skipped.map(s => `${s.usId}(${s.reason})`).join(', ')}`);
+                }
                 if (providerResult.errors.length > 0) {
                   for (const err of providerResult.errors) {
+                    logger.log(`   ⚠️  ${provider} error (${err.usId}): ${err.error}`);
                     result.warnings.push(`${provider} AC progress sync error (${err.usId}): ${err.error}`);
                   }
                 }
@@ -582,6 +690,60 @@ async function checkExistingGitHubIssue(incrementPath: string): Promise<boolean>
   } catch (error) {
     // FIX (v1.0.302 / 0271): Log error instead of silent swallow
     console.warn(`   ⚠️  Failed to check existing GitHub issue: ${error}`);
+    return false;
+  }
+}
+
+/**
+ * Check if JIRA issue already exists for this increment (v1.0.357)
+ */
+async function checkExistingJiraIssue(incrementPath: string): Promise<boolean> {
+  try {
+    const metadataPath = path.join(incrementPath, 'metadata.json');
+    if (!existsSync(metadataPath)) {
+      return false;
+    }
+
+    const content = await fs.readFile(metadataPath, 'utf-8');
+    const metadata = JSON.parse(content);
+
+    if (metadata.jira?.issue) {
+      return true;
+    }
+    if (metadata.externalLinks?.jira?.issueKey) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.warn(`   ⚠️  Failed to check existing JIRA issue: ${error}`);
+    return false;
+  }
+}
+
+/**
+ * Check if ADO work item already exists for this increment (v1.0.357)
+ */
+async function checkExistingAdoIssue(incrementPath: string): Promise<boolean> {
+  try {
+    const metadataPath = path.join(incrementPath, 'metadata.json');
+    if (!existsSync(metadataPath)) {
+      return false;
+    }
+
+    const content = await fs.readFile(metadataPath, 'utf-8');
+    const metadata = JSON.parse(content);
+
+    if (metadata.ado?.workItem) {
+      return true;
+    }
+    if (metadata.externalLinks?.ado?.workItemId) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.warn(`   ⚠️  Failed to check existing ADO work item: ${error}`);
     return false;
   }
 }

@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
 import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
 import { readConfig } from '../../core/config/config-manager.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface CreateIncrementOptions {
   id: string;
@@ -37,8 +38,11 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     type,
     priority,
     json = false,
-    projectRoot = process.cwd(),
+    projectRoot: rawProjectRoot,
   } = options;
+
+  // Resolve effective root: umbrella root in multi-repo, local root in single-repo
+  const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
 
   // Read testing config to pass testMode and coverageTarget
   let testMode: string | undefined;

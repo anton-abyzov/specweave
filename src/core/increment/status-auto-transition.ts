@@ -18,6 +18,7 @@ import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * File paths that trigger status transitions
@@ -33,7 +34,7 @@ const TRANSITION_TRIGGERS = {
  * Check if increment folder has specific file
  */
 function hasFile(incrementId: string, fileName: string): boolean {
-  const incrementPath = path.join(process.cwd(), '.specweave', 'increments', incrementId);
+  const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
   const filePath = path.join(incrementPath, fileName);
   return fs.existsSync(filePath);
 }
@@ -42,7 +43,7 @@ function hasFile(incrementId: string, fileName: string): boolean {
  * Check if tasks.md has any in-progress tasks
  */
 function hasInProgressTasks(incrementId: string): boolean {
-  const incrementPath = path.join(process.cwd(), '.specweave', 'increments', incrementId);
+  const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
   const tasksPath = path.join(incrementPath, TRANSITION_TRIGGERS.TASKS_FILE);
 
   if (!fs.existsSync(tasksPath)) {
@@ -87,7 +88,7 @@ export interface TaskCompletionStatus {
  * @returns Task completion status or null if tasks.md doesn't exist
  */
 export function getTaskCompletionStatus(incrementId: string): TaskCompletionStatus | null {
-  const incrementPath = path.join(process.cwd(), '.specweave', 'increments', incrementId);
+  const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
   const tasksPath = path.join(incrementPath, TRANSITION_TRIGGERS.TASKS_FILE);
 
   if (!fs.existsSync(tasksPath)) {
@@ -335,7 +336,7 @@ export function migrateLegacyStatuses(): number {
   let migratedCount = 0;
 
   try {
-    const incrementsPath = path.join(process.cwd(), '.specweave', 'increments');
+    const incrementsPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments');
 
     if (!fs.existsSync(incrementsPath)) {
       return 0;

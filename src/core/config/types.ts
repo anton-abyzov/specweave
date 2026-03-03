@@ -254,6 +254,8 @@ export interface HookConfiguration {
     sync_living_docs?: boolean;
     sync_to_github_project?: boolean;
     close_github_issue?: boolean;
+    close_jira_issue?: boolean;
+    close_external_issue?: boolean;
     update_living_docs_first?: boolean;
   };
 }
