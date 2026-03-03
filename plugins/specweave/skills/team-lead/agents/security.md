@@ -26,21 +26,21 @@ WORKFLOW:
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
   4. Activate the increment: Edit metadata.json to set "status": "active" and update "lastActivity" timestamp
   5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Audit code produced by other agents for security issues
-  6. Create plan files (plan.md, tasks.md) for your increment
-  7. Send plan to team-lead and WAIT for approval:
+  6. Audit code produced by other agents for security issues
+  7. Create plan files (plan.md, tasks.md) for your increment
+  8. Send plan to team-lead and WAIT for approval:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "PLAN_READY: [increment path]. [summary of security findings, hardening plan].",
        summary: "Security plan ready for review" })
-  8. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  9. Implement auth/authz middleware if needed
-  10. Add input validation and sanitization
-  11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  12. Run all tests for owned code (security tests): npm test
-  13. Run security audit tools (npm audit, dependency check)
-  14. Do NOT signal completion until all tests pass
-  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done, test results, and security findings
-  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  10. Implement auth/authz middleware if needed
+  11. Add input validation and sanitization
+  12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  13. Run all tests for owned code (security tests): npm test
+  14. Run security audit tools (npm audit, dependency check)
+  15. Do NOT signal completion until all tests pass
+  16. Signal COMPLETION via SendMessage to team-lead with summary of tasks done, test results, and security findings
+  17. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)
