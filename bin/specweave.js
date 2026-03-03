@@ -1093,6 +1093,24 @@ program
     }
   });
 
+// Health command - Quick deployment verification
+program
+  .command('health')
+  .description('Quick deployment health check (config, plugins, sync connectivity)')
+  .option('--json', 'Output as JSON for CI/CD pipelines')
+  .option('--verbose', 'Show detailed output')
+  .action(async (options) => {
+    const { runHealthCheck } = await import('../dist/src/cli/commands/health.js');
+    const report = await runHealthCheck(process.cwd(), {
+      json: options.json,
+      verbose: options.verbose,
+    });
+
+    if (report.status === 'unhealthy') {
+      process.exit(1);
+    }
+  });
+
 // Detect intent command - Hook helper for automatic plugin loading (internal)
 program
   .command('detect-intent [prompt]')

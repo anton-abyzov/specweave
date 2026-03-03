@@ -61,6 +61,10 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
  * This is the RECOMMENDED function to use in most cases.
  * It returns a valid path even if .specweave doesn't exist.
  *
+ * NOTE: This returns the NEAREST project root (for config reading).
+ * For increment operations in multi-repo setups, use resolveEffectiveRoot()
+ * which returns the umbrella root.
+ *
  * @param startDir - Directory to start searching from (defaults to process.cwd())
  * @returns Project root path or process.cwd() if not found
  *
@@ -83,6 +87,85 @@ export function getProjectRoot(startDir: string = process.cwd()): string {
  */
 export function isInsideSpecWeaveProject(startDir: string = process.cwd()): boolean {
   return findProjectRoot(startDir) !== null;
+}
+
+/**
+ * Find the umbrella root by walking up from the nearest project root.
+ *
+ * In a multi-repo umbrella project, nested repos each have their own
+ * .specweave/config.json, but the umbrella root is the TOPMOST one
+ * with `umbrella.enabled: true` or a sibling `repositories/` directory.
+ *
+ * @param startDir - Directory to start searching from (defaults to process.cwd())
+ * @returns Umbrella root path or null if not inside an umbrella project
+ */
+export function findUmbrellaRoot(startDir: string = process.cwd()): string | null {
+  // Find the nearest project root first
+  const nearestRoot = findProjectRoot(startDir);
+  if (!nearestRoot) return null;
+
+  // Check if the nearest root IS an umbrella root
+  const nearestConfigPath = path.join(nearestRoot, '.specweave', 'config.json');
+  if (fs.existsSync(nearestConfigPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(nearestConfigPath, 'utf-8'));
+      if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
+        return nearestRoot;
+      }
+    } catch {
+      // Invalid JSON, continue walking up
+    }
+    const reposDir = path.join(nearestRoot, 'repositories');
+    if (fs.existsSync(reposDir) && fs.statSync(reposDir).isDirectory()) {
+      return nearestRoot;
+    }
+  }
+
+  // Walk up from the parent of the nearest root
+  let current = path.dirname(nearestRoot);
+  const root = path.parse(current).root;
+
+  while (current !== root) {
+    const configPath = path.join(current, '.specweave', 'config.json');
+
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        // Check umbrella config flags
+        if (config?.umbrella?.enabled || config?.repository?.umbrellaRepo) {
+          return current;
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+
+      // Check for sibling repositories/ directory (the multi-repo marker)
+      const reposDir = path.join(current, 'repositories');
+      if (fs.existsSync(reposDir) && fs.statSync(reposDir).isDirectory()) {
+        return current;
+      }
+    }
+
+    current = path.dirname(current);
+  }
+
+  return null;
+}
+
+/**
+ * Resolve the effective project root for increment operations.
+ *
+ * - In a multi-repo umbrella: returns the umbrella root (increments belong there)
+ * - In a single-repo project: returns the nearest project root
+ * - Fallback: returns process.cwd()
+ *
+ * @param startDir - Directory to start searching from (defaults to process.cwd())
+ * @returns Effective project root path
+ */
+export function resolveEffectiveRoot(startDir: string = process.cwd()): string {
+  const umbrellaRoot = findUmbrellaRoot(startDir);
+  if (umbrellaRoot) return umbrellaRoot;
+  return findProjectRoot(startDir) || process.cwd();
 }
 
 /**

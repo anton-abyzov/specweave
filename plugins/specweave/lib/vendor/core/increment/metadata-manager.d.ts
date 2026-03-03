@@ -33,8 +33,8 @@ export declare class MetadataManager {
     /**
      * Get metadata file path for increment
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * creating/accessing .specweave in wrong location when CWD != project root.
+     * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+     * or the nearest project root in single-repo setups.
      *
      * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
@@ -42,8 +42,8 @@ export declare class MetadataManager {
     /**
      * Get increment directory path
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * creating/accessing .specweave in wrong location when CWD != project root.
+     * Uses resolveEffectiveRoot() to find the umbrella root in multi-repo setups,
+     * or the nearest project root in single-repo setups.
      *
      * SECURITY: Validates increment ID to prevent path traversal attacks.
      */
@@ -114,8 +114,7 @@ export declare class MetadataManager {
     /**
      * Get all increments
      *
-     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
-     * accessing wrong .specweave folder when CWD != project root.
+     * Uses resolveEffectiveRoot() to find umbrella root in multi-repo setups.
      */
     static getAll(): IncrementMetadata[];
     /**

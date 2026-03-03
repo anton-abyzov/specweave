@@ -183,10 +183,19 @@ async function syncJiraACProgress(
     const acStates = us?.acStates || [];
 
     try {
-      // Post progress comment
-      const progressText = formatProgressText(acStates, 'jira');
-      await jiraSync.postStatusComment(link.issueKey, 'in-progress', progressText);
-      result.posted.push({ usId, ref: link.issueKey });
+      // Post progress comment with proper ADF formatting and dedup
+      const posted = await jiraSync.postProgressComment(link.issueKey, acStates);
+      if (posted) {
+        result.posted.push({ usId, ref: link.issueKey });
+      } else {
+        result.skipped.push({ usId, reason: 'duplicate-progress' });
+      }
+
+      // Auto-transition to "In Progress" when work has started (partial completion)
+      const completed = acStates.filter(ac => ac.completed).length;
+      if (completed > 0 && !isAllComplete(acStates)) {
+        await jiraSync.updateStatus(link.issueKey, { state: 'In Progress' });
+      }
 
       // Auto-transition to Done if all ACs complete
       if (isAllComplete(acStates)) {

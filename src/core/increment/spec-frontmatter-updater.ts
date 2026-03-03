@@ -14,6 +14,7 @@ import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { IncrementStatus } from '../types/increment-metadata.js';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Error thrown when spec.md frontmatter update fails
@@ -79,7 +80,7 @@ export class SpecFrontmatterUpdater {
 
       // Build spec.md path
       const specPath = path.join(
-        process.cwd(),
+        resolveEffectiveRoot(),
         '.specweave',
         'increments',
         incrementId,
@@ -138,7 +139,7 @@ export class SpecFrontmatterUpdater {
     try {
       // Build spec.md path
       const specPath = path.join(
-        process.cwd(),
+        resolveEffectiveRoot(),
         '.specweave',
         'increments',
         incrementId,
