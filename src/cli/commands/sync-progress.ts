@@ -19,6 +19,8 @@ import { ActiveIncrementManager } from '../../core/increment/active-increment-ma
 import { syncACProgressToProviders, parseAllUserStoryIds, type ACProgressSyncConfig } from '../../core/ac-progress-sync.js';
 import { existsSync } from 'fs';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { resolveSyncTarget } from '../../sync/sync-target-resolver.js';
+import yaml from 'yaml';
 
 export interface SyncProgressArgs {
   incrementId?: string;
@@ -260,6 +262,40 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
     if (!parsedArgs.dryRun) {
       result.externalSyncResult = {};
 
+      // Extract project name from spec.md for distributed sync routing
+      let projectName: string | undefined;
+      const specPath = path.join(incrementPath!, 'spec.md');
+      if (existsSync(specPath)) {
+        try {
+          const specContent = await fs.readFile(specPath, 'utf-8');
+          const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
+          if (fmMatch) {
+            const parsed = yaml.parse(fmMatch[1]);
+            projectName = parsed?.project;
+          }
+        } catch {
+          // Ignore frontmatter parse errors
+        }
+      }
+
+      // Resolve sync target for distributed routing
+      const resolved = resolveSyncTarget(projectName, config);
+      let effectiveConfig = config;
+      if (resolved.github && resolved.source !== 'global') {
+        effectiveConfig = {
+          ...config,
+          sync: {
+            ...config.sync!,
+            github: {
+              ...config.sync?.github,
+              owner: resolved.github.owner,
+              repo: resolved.github.repo,
+            },
+          },
+        };
+        logger.log(`   📍 Distributed routing (${resolved.source}): ${resolved.github.owner}/${resolved.github.repo}`);
+      }
+
       if (githubConfigured && !parsedArgs.noGithub && permissionsOk) {
         logger.log('   🐙 GitHub: Syncing AC checkboxes...');
         try {
@@ -272,7 +308,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
             incrementId,
             logger
           });
-          const acSyncResult = await acSync.syncACCheckboxesToGitHub(config, {
+          const acSyncResult = await acSync.syncACCheckboxesToGitHub(effectiveConfig, {
             addComment: true  // Add progress comment
           });
 

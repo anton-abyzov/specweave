@@ -197,7 +197,7 @@ ${this.generateIntegrationSkillsTable(skills)}
   private generateFrameworkSkillsTable(skills: any[]): string {
     const frameworkSkills = skills.filter(s =>
       ['specweave-detector', 'increment', 'context-loader', 'skill-router',
-       'spec-driven-debugging', 'spec-driven-brainstorming'].includes(s.name)
+       'spec-driven-debugging', 'brainstorm'].includes(s.name)
     );
 
     let table = '| Skill | Purpose | Activates When |\n';
@@ -261,7 +261,7 @@ ${this.generateIntegrationSkillsTable(skills)}
       'context-loader': 'Working on increments',
       'skill-router': 'Ambiguous requests',
       'spec-driven-debugging': 'Bug or test failure',
-      'spec-driven-brainstorming': 'Brainstorm or refine idea',
+      'brainstorm': 'Brainstorm or refine idea',
       'nodejs-backend': 'Node.js backend',
       'python-backend': 'Python backend',
       'nextjs': 'Next.js',

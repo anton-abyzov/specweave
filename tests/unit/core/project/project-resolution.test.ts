@@ -249,6 +249,57 @@ No project-specific keywords here.
     });
   });
 
+  describe('getAvailableProjects umbrella fallback (AC-US3-04)', () => {
+    it('falls back to childRepos names when umbrella enabled and multiProject absent', async () => {
+      const spec = `
+# Increment: VSkill Feature
+
+This increment improves vskill functionality.
+      `;
+
+      vi.mocked(fs.readFile).mockResolvedValue(spec);
+      mockConfigManager.read.mockResolvedValue({
+        umbrella: {
+          enabled: true,
+          childRepos: [
+            { id: 'specweave', name: 'SpecWeave', path: 'repositories/org/specweave', prefix: 'SW' },
+            { id: 'vskill', name: 'VSkill', path: 'repositories/org/vskill', prefix: 'VS' },
+          ],
+        },
+      });
+
+      const result = await service.resolveProjectForIncrement('0001-vskill-feature');
+
+      // Should use detection with the umbrella childRepos as available projects
+      expect(result.projectId).toBe('vskill');
+      expect(result.source).toBe('detection');
+    });
+
+    it('returns populated projects list normally when multiProject is configured', async () => {
+      const spec = `
+# Increment: Frontend Feature
+
+This increment improves the frontend-app.
+      `;
+
+      vi.mocked(fs.readFile).mockResolvedValue(spec);
+      mockConfigManager.read.mockResolvedValue({
+        multiProject: {
+          enabled: true,
+          projects: {
+            'frontend-app': { name: 'Frontend', keywords: [] },
+            'backend-api': { name: 'Backend', keywords: [] },
+          },
+        },
+      });
+
+      const result = await service.resolveProjectForIncrement('0001-frontend-feature');
+
+      expect(result.projectId).toBe('frontend-app');
+      expect(result.source).toBe('detection');
+    });
+  });
+
   describe('resolveFallback', () => {
     it('returns "default" with low confidence', async () => {
       vi.mocked(fs.readFile).mockRejectedValue(new Error('No spec'));

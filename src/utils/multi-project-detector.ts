@@ -119,7 +119,7 @@ function parseChildRepos(childRepos: any[]): DetectedProject[] {
     projects.push({
       id: repo.id,
       prefix: repo.prefix || inferProjectPrefix(repo.id),
-      name: repo.displayName || repo.id,
+      name: repo.name || repo.id,
       path: repo.path
     });
   }
