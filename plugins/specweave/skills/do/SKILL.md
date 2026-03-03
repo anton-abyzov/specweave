@@ -6,11 +6,11 @@ hooks:
     - matcher: Edit
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/task-ac-sync-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
     - matcher: Write
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/task-ac-sync-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
 ---
 
 # Do Increment
@@ -69,7 +69,7 @@ This ensures the execution loop stays focused on the contextually correct increm
 5. **Task count validation**: If >25 tasks, warn and offer to split, phase, or use `/sw:auto`/`/sw:team-lead`
 6. **Validate AC presence** (MANDATORY):
    ```bash
-   bash plugins/specweave/hooks/pre-increment-start.sh <increment-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/hooks/pre-increment-start.sh" <increment-path>
    ```
    If fails: manually add ACs to spec.md, then retry. Do NOT proceed without ACs in spec.md.
 

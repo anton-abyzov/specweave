@@ -72,9 +72,13 @@ vi.mock('../../../../src/core/reflection/skill-memories.js', () => ({
   listSkillMemoryFiles: mockListSkillMemoryFiles,
 }));
 
-vi.mock('child_process', () => ({
-  execSync: mockExecSync,
-}));
+vi.mock('child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('child_process')>();
+  return {
+    ...actual,
+    execSync: mockExecSync,
+  };
+});
 
 vi.mock('ora', () => ({
   default: () => mockOraInstance,

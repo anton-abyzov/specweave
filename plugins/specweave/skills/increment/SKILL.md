@@ -7,14 +7,14 @@ hooks:
     - matcher: Write
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/interview-enforcement-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/interview-enforcement-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/spec-template-enforcement-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/spec-template-enforcement-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
   PostToolUse:
     - matcher: Write
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/increment-duplicate-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/increment-duplicate-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
 ---
 
 # Plan Product Increment

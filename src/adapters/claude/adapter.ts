@@ -234,10 +234,9 @@ Using SpecWeave CLI for plugin management.
   /**
    * Compile and install a plugin for Claude Code
    *
-   * Claude uses native plugin installation:
-   * - Copy skills to .claude/skills/{plugin-name}/{skill-name}/
-   * - Copy agents to .claude/agents/{plugin-name}/{agent-name}/
-   * - Copy commands to .claude/commands/
+   * Claude uses native plugin installation via `claude plugin install`:
+   * - Skills installed to ~/.claude/plugins/cache/{marketplace}/{plugin}/
+   * - Agents, hooks, and commands are resolved from the plugin cache
    *
    * Supports both:
    * - Native /plugin install (if Claude Code supports it)

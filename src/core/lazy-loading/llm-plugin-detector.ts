@@ -159,7 +159,7 @@ export const SPECWEAVE_PLUGINS = [
  */
 export const VSKILL_PLUGINS = [
   'frontend',        // React, Vue, Angular, Next.js, UI components
-  'backend',         // Node.js, Express, NestJS, APIs, databases
+  'backend',         // Java Spring Boot, Rust Axum — specialized backend skills
   'testing',         // Jest, Vitest, Playwright, E2E, unit tests
   'mobile',          // React Native, iOS, Android, Expo
   'infra',           // Terraform, AWS, Azure, GCP, Docker, CI/CD
@@ -545,7 +545,7 @@ PLUGINS - Use specweave (sw-*) or vskill domain plugin names
 ═══════════════════════════════════════════════════════════════
 
 frontend: React, Vue, Angular, Next.js, Svelte, UI, dashboard, components, Tailwind
-backend: API, REST, GraphQL, .NET, C#, Node.js, Express, FastAPI, Django, Spring Boot, Go, PostgreSQL, MongoDB
+backend: Java, Spring Boot, Rust, Axum (ONLY for Java/Spring or Rust backends — NOT for Node.js, Express, Python, Go, .NET)
 payments: Stripe, PayPal, checkout, billing, subscriptions
 testing: test, testing, unit test, integration test, coverage, TDD, Jest, Vitest, Playwright, Cypress, E2E, QA, test strategy, code coverage, test automation
 infra: Terraform, Docker, AWS, CI/CD, CloudFormation (ONLY if explicit)
@@ -629,8 +629,8 @@ EXPLICIT OPT-OUT → action: "none":
 EXAMPLES (one per action type — keep prompt size minimal)
 ═══════════════════════════════════════════════════════════════
 
-"Create React dashboard with Stripe checkout and .NET backend"
-{"plugins":["frontend","backend","payments"],"confidence":0.95,"reasoning":"React→frontend, .NET→backend, Stripe→payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature"}}
+"Create React dashboard with Stripe checkout and Spring Boot backend"
+{"plugins":["frontend","backend","payments"],"confidence":0.95,"reasoning":"React→frontend, Spring Boot→backend, Stripe→payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature"}}
 
 "The auth feature is broken again"
 {"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
@@ -710,8 +710,8 @@ SKILL INVOCATION RULES (pick the most specific skill):
 
 SKILL EXAMPLES:
 
-"Build .NET API with Entity Framework"
-{"plugins":["backend"],"confidence":0.95,"reasoning":".NET→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"dotnet-api","reasoning":"New API"},"skillInvocation":{"skill":"backend:dotnet","reason":".NET patterns and EF Core","mandatory":true}}
+"Build Spring Boot API with JPA"
+{"plugins":["backend"],"confidence":0.95,"reasoning":"Spring Boot→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"spring-boot-api","reasoning":"New API"},"skillInvocation":{"skill":"backend:java-spring","reason":"Spring Boot patterns and JPA","mandatory":true}}
 
 "Write unit tests for the auth service"
 {"plugins":["testing"],"confidence":0.95,"reasoning":"Unit testing","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing extends existing work"},"skillInvocation":{"skill":"testing:unit","reason":"Vitest/Jest patterns and TDD","mandatory":true}}
@@ -1322,19 +1322,28 @@ async function installSpecweaveLocalPlugin(
  */
 async function installVskillRepoPlugin(
   pluginName: string,
-  timeout: number
+  timeout: number,
+  skillFilter?: string
 ): Promise<PluginInstallResult> {
   try {
     const vskillPath = resolveVskillCliPath();
 
-    const result = spawnSync('node', [
+    const args = [
       vskillPath,
       'install',
       '--repo', 'anton-abyzov/vskill',
       '--plugin', pluginName,
       '--force',
       '--yes',
-    ], {
+    ];
+
+    // Filter skills within the plugin to only install relevant ones
+    if (skillFilter) {
+      args.push('--only-skills', skillFilter);
+      logger.debug(`Installing ${pluginName} with skill filter: ${skillFilter}`);
+    }
+
+    const result = spawnSync('node', args, {
       encoding: 'utf8',
       timeout,
       maxBuffer: 1024 * 1024,
@@ -1378,7 +1387,8 @@ async function installVskillRepoPlugin(
  */
 export async function installPluginViaCli(
   pluginName: string,
-  timeout: number = 30000
+  timeout: number = 30000,
+  skillFilter?: string
 ): Promise<PluginInstallResult> {
   // v2.1.0: Accept both specweave and vskill plugins
   if (!isKnownPlugin(pluginName)) {
@@ -1411,7 +1421,7 @@ export async function installPluginViaCli(
 
   // Route to correct installer based on plugin source
   if (isVskillPlugin(pluginName)) {
-    return installVskillRepoPlugin(pluginName, timeout);
+    return installVskillRepoPlugin(pluginName, timeout, skillFilter);
   }
 
   return installSpecweaveLocalPlugin(pluginName, timeout);
@@ -1424,12 +1434,24 @@ export async function installPluginViaCli(
  * @returns Array of installation results
  */
 export async function installPluginsViaCli(
-  plugins: string[]
+  plugins: string[],
+  skillInvocation?: SkillInvocation
 ): Promise<PluginInstallResult[]> {
   const results: PluginInstallResult[] = [];
 
+  // Extract sub-skill filter from skillInvocation (e.g., "backend:dotnet" → "dotnet")
+  let skillFilterMap: Map<string, string> | undefined;
+  if (skillInvocation?.skill && skillInvocation.skill.includes(':')) {
+    const [pluginPart, skillPart] = skillInvocation.skill.split(':');
+    if (pluginPart && skillPart) {
+      skillFilterMap = new Map([[pluginPart, skillPart]]);
+      logger.debug(`Skill filter from invocation: ${pluginPart} → only install ${skillPart}`);
+    }
+  }
+
   for (const plugin of plugins) {
-    const result = await installPluginViaCli(plugin);
+    const skillFilter = skillFilterMap?.get(plugin);
+    const result = await installPluginViaCli(plugin, 30000, skillFilter);
     results.push(result);
 
     // Log progress
@@ -1500,8 +1522,8 @@ export async function detectAndInstallPlugins(userPrompt: string): Promise<{
     };
   }
 
-  // Step 3: Install detected plugins (original behavior)
-  const installations = await installPluginsViaCli(detection.plugins);
+  // Step 3: Install detected plugins with skill-level filtering from LLM detection
+  const installations = await installPluginsViaCli(detection.plugins, detection.skillInvocation);
 
   return {
     detection,

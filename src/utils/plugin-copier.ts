@@ -1,22 +1,18 @@
 /**
- * First-party plugin copier for SpecWeave.
+ * First-party plugin installer for SpecWeave.
  *
- * Copies plugin directories from specweave's bundled plugins/ folder
- * to the Claude Code commands directory (~/.claude/commands/<name>/).
- * Handles permissions, hash comparison, and lockfile updates.
+ * Installs plugins via Claude Code's native plugin system:
+ *   1. Registers the specweave marketplace
+ *   2. Runs `claude plugin install <name>@specweave`
+ *   3. Fixes hook permissions in the plugin cache
+ *   4. Migrates legacy ~/.claude/commands/<name>/ installations
  *
- * This replaces the vskill CLI shell-out for first-party (bundled) plugins.
- * Third-party plugins should still use vskill CLI directly.
- *
- * @since 1.0.279
+ * @since 1.0.279 (originally copy-based, migrated to native in 1.0.356)
  */
 
 import {
-  copyFileSync,
-  mkdirSync,
   chmodSync,
   readdirSync,
-  statSync,
   readFileSync,
   writeFileSync,
   existsSync,
@@ -24,103 +20,10 @@ import {
 } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
-import { execSync } from 'node:child_process';
 import { homedir } from 'node:os';
+import { execFileNoThrowSync } from './execFileNoThrow.js';
 import { getProjectRoot } from './find-project-root.js';
-
-// ---------------------------------------------------------------------------
-// Command file filter
-// ---------------------------------------------------------------------------
-
-/**
- * Determine if a plugin file should be excluded from the Claude Code commands
- * directory. Claude Code treats every .md file found recursively in
- * ~/.claude/commands/ as a slash command, deriving the command name from
- * the file path. Plugin internals (manifests, docs, sub-resources) must be
- * excluded to avoid polluting the user's slash-command namespace.
- *
- * Rules:
- * - PLUGIN.md at root → plugin manifest, not a command
- * - README.md anywhere → documentation, not a command
- * - FRESHNESS.md anywhere → data file, not a command
- * - knowledge-base/, lib/, templates/ root dirs → internal data/libraries
- * - skills/<name>/anything other than SKILL.md → sub-resources (phases, templates)
- */
-export function shouldSkipFromCommands(relPath: string): boolean {
-  const normalized = relPath.replace(/\\/g, '/');
-  const parts = normalized.split('/');
-  const filename = parts[parts.length - 1];
-
-  // Only .md files pollute the command namespace; non-.md files are safe
-  if (!filename.endsWith('.md')) return false;
-
-  // Root-level plugin manifest
-  if (parts.length === 1 && filename === 'PLUGIN.md') return true;
-
-  // Documentation files at any depth
-  if (filename === 'README.md') return true;
-
-  // Data files at any depth
-  if (filename === 'FRESHNESS.md') return true;
-
-  // Dot-prefixed directories are metadata, never commands
-  if (parts.length > 1 && parts[0].startsWith('.')) return true;
-
-  // Root directories that are plugin internals, not commands
-  const internalRootDirs = new Set(['knowledge-base', 'lib', 'templates', 'scripts', 'hooks']);
-  if (parts.length > 1 && internalRootDirs.has(parts[0])) return true;
-
-  // Inside skills/<name>/, only SKILL.md is a real command;
-  // subdirectories like phases/ and templates/ are lazy-load sub-resources
-  if (parts[0] === 'skills' && parts.length > 2 && filename !== 'SKILL.md') return true;
-
-  return false;
-}
-
-/**
- * Check if a SKILL.md file is marked as non-user-invokable via frontmatter.
- * Files with `user-invokable: false` should not be copied to the commands dir.
- */
-export function isNonInvokableSkill(filePath: string): boolean {
-  try {
-    const content = readFileSync(filePath, 'utf-8');
-    const fmMatch = content.match(/^---\n([\s\S]+?)\n---/);
-    if (!fmMatch) return false;
-    return /^user-invokable:\s*false$/m.test(fmMatch[1]);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Recursively copy a plugin directory, skipping files that would pollute
- * the Claude Code commands namespace (see shouldSkipFromCommands).
- *
- * Root-level `commands/` and `skills/` directories are flattened into the
- * target so that Claude Code's path-based scanner produces short names
- * matching the plugin system (e.g. `sw:qa` instead of `sw:commands:qa`).
- */
-function copyPluginFiltered(sourceDir: string, targetDir: string, relBase = ''): void {
-  mkdirSync(targetDir, { recursive: true });
-  const entries = readdirSync(sourceDir);
-
-  for (const entry of entries) {
-    const relPath = relBase ? `${relBase}/${entry}` : entry;
-    const sourcePath = join(sourceDir, entry);
-    const stat = statSync(sourcePath);
-
-    if (stat.isDirectory()) {
-      // Flatten: root-level commands/ and skills/ merge into the parent target dir
-      const isFlattened = !relBase && (entry === 'commands' || entry === 'skills');
-      const nextTargetDir = isFlattened ? targetDir : join(targetDir, entry);
-      copyPluginFiltered(sourcePath, nextTargetDir, relPath);
-    } else if (stat.isFile() && !shouldSkipFromCommands(relPath)) {
-      // Skip SKILL.md files marked as non-user-invokable (e.g., internal tools)
-      if (entry === 'SKILL.md' && isNonInvokableSkill(sourcePath)) continue;
-      copyFileSync(sourcePath, join(targetDir, entry));
-    }
-  }
-}
+import { getPluginScope, getScopeArgs } from '../core/types/plugin-scope.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,8 +32,6 @@ function copyPluginFiltered(sourceDir: string, targetDir: string, relBase = ''):
 export interface CopyPluginOptions {
   /** Force reinstall even if hash matches lockfile */
   force?: boolean;
-  /** Override target dir (default: ~/.claude/commands) */
-  targetBaseDir?: string;
 }
 
 export interface CopyPluginResult {
@@ -171,8 +72,13 @@ interface MarketplacePlugin {
 // Constants
 // ---------------------------------------------------------------------------
 
-const CLAUDE_CODE_COMMANDS_DIR = join(homedir(), '.claude', 'commands');
 const LOCKFILE_NAME = 'vskill.lock';
+
+/** Legacy installation path — used only for migration cleanup */
+const LEGACY_COMMANDS_DIR = join(homedir(), '.claude', 'commands');
+
+/** Native plugin cache base path */
+const PLUGIN_CACHE_DIR = join(homedir(), '.claude', 'plugins', 'cache');
 
 // ---------------------------------------------------------------------------
 // Hash
@@ -180,27 +86,26 @@ const LOCKFILE_NAME = 'vskill.lock';
 
 /**
  * Compute SHA-256 content hash (first 12 hex chars) for a plugin directory.
- *
- * Only hashes files that will actually be installed (i.e. not filtered out by
- * shouldSkipFromCommands). This ensures the stored hash represents exactly the
- * installed content, so any change to the filter rules causes a hash mismatch
- * on existing installations and triggers a clean reinstall automatically.
+ * Hashes filename + content for every readable file to detect any change.
+ * Path separators are normalized to '/' for cross-platform consistency.
  */
 export function computePluginHash(pluginDir: string): string {
   if (!existsSync(pluginDir)) return '';
 
   const hash = createHash('sha256');
   try {
-    const files = readdirSync(pluginDir, { recursive: true }) as string[];
+    const files = readdirSync(pluginDir, { recursive: true, encoding: 'utf-8' });
     for (const file of files.sort()) {
-      if (shouldSkipFromCommands(file)) continue;
       const fullPath = join(pluginDir, file);
-      // Skip non-user-invokable SKILL.md files (same as copyPluginFiltered)
-      if (file.endsWith('SKILL.md') && isNonInvokableSkill(fullPath)) continue;
       try {
-        hash.update(readFileSync(fullPath, 'utf-8'));
+        const content = readFileSync(fullPath);
+        // Normalize path separators for cross-platform hash consistency
+        hash.update(file.replace(/\\/g, '/'));
+        hash.update('\0');
+        hash.update(content);
+        hash.update('\0');
       } catch {
-        // Skip directories, binary files, etc.
+        // Skip directories and unreadable files
       }
     }
   } catch {
@@ -219,7 +124,7 @@ export function computePluginHash(pluginDir: string): string {
  */
 export function fixHookPermissions(targetDir: string): void {
   try {
-    const files = readdirSync(targetDir, { recursive: true }) as string[];
+    const files = readdirSync(targetDir, { recursive: true, encoding: 'utf-8' });
     for (const file of files) {
       if (file.endsWith('.sh')) {
         chmodSync(join(targetDir, file), 0o755);
@@ -231,25 +136,27 @@ export function fixHookPermissions(targetDir: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Plugin cache cleanup
+// Legacy migration
 // ---------------------------------------------------------------------------
 
 /**
- * Remove a plugin installed via Claude Code's plugin system.
+ * Remove legacy ~/.claude/commands/<name>/ installation.
  *
- * Claude Code's `claude plugin install` copies ALL files to its cache
- * without any filtering, causing internal .md files (README.md, FRESHNESS.md,
- * etc.) to leak as ghost slash commands. Since we install via copyPlugin() to
- * ~/.claude/commands/ with proper filtering, the unfiltered cache is harmful.
- *
- * Uses `claude plugin uninstall` CLI to properly remove the plugin through
- * Claude Code's own API rather than directly manipulating internal files.
+ * Prior to 1.0.356, SpecWeave installed plugins by manually copying files to
+ * ~/.claude/commands/<name>/ with custom flattening and filtering. This
+ * bypassed Claude Code's native plugin system. Now that we use the native
+ * system, the legacy directory must be removed to avoid duplicate commands.
  */
-export function cleanPluginCache(pluginName: string, marketplace: string): void {
-  const pluginKey = `${pluginName}@${marketplace}`;
+export function migrateLegacyCommandsDir(pluginName: string): boolean {
+  const legacyDir = join(LEGACY_COMMANDS_DIR, pluginName);
+  if (!existsSync(legacyDir)) return false;
+
   try {
-    execSync(`claude plugin uninstall "${pluginKey}"`, { stdio: 'ignore', timeout: 10_000 });
-  } catch { /* ignore - plugin might not be installed via CLI */ }
+    rmSync(legacyDir, { recursive: true, force: true });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -290,8 +197,8 @@ export function readLockfile(dir: string): VskillLock | null {
  * Write vskill.lock to a directory.
  */
 export function writeLockfile(lock: VskillLock, dir: string): void {
-  lock.updatedAt = new Date().toISOString();
-  writeFileSync(join(dir, LOCKFILE_NAME), JSON.stringify(lock, null, 2) + '\n', 'utf-8');
+  const toWrite = { ...lock, updatedAt: new Date().toISOString() };
+  writeFileSync(join(dir, LOCKFILE_NAME), JSON.stringify(toWrite, null, 2) + '\n', 'utf-8');
 }
 
 /**
@@ -346,21 +253,25 @@ export function findSpecweaveRoot(startDir: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Core: copyPlugin
+// Core: installPlugin (replaces copyPlugin)
 // ---------------------------------------------------------------------------
 
 /**
- * Copy a single first-party plugin to ~/.claude/commands/<name>/
+ * Install a first-party plugin via Claude Code's native plugin system.
  *
- * This replaces `vskill add --plugin <name> --force` for bundled plugins.
+ * Steps:
+ *   1. Compute content hash and check lockfile for changes
+ *   2. Register the specweave marketplace with Claude CLI
+ *   3. Install the plugin via `claude plugin install <name>@specweave`
+ *   4. Fix hook permissions in the native plugin cache
+ *   5. Remove legacy ~/.claude/commands/<name>/ if present
+ *   6. Update lockfile
  */
-export function copyPlugin(
+export function installPlugin(
   pluginName: string,
   specweaveRoot: string,
   options: CopyPluginOptions = {},
 ): CopyPluginResult {
-  const targetBaseDir = options.targetBaseDir ?? CLAUDE_CODE_COMMANDS_DIR;
-
   // 1. Find marketplace.json
   const marketplacePath = join(specweaveRoot, '.claude-plugin', 'marketplace.json');
   if (!existsSync(marketplacePath)) {
@@ -388,27 +299,44 @@ export function copyPlugin(
     return { success: true, sha, skipped: true };
   }
 
-  // 4. Remove unfiltered plugin cache that Claude Code's plugin system creates.
-  //    The cache contains ALL files (including internal README.md, FRESHNESS.md, etc.)
-  //    which leak as ghost slash commands. Our filtered copy in ~/.claude/commands/ is
-  //    the canonical installation.
-  cleanPluginCache(pluginName, 'specweave');
+  // 4. Register marketplace with Claude CLI
+  execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
 
-  // 5. Copy plugin to target, excluding internal files that would leak as commands
-  const targetDir = join(targetBaseDir, pluginName);
-  try {
-    // Full clean before copy: removes stale files from older installs that lacked
-    // proper filtering (e.g. PLUGIN.md, FRESHNESS.md, README.md in knowledge-base/).
-    if (existsSync(targetDir)) {
-      rmSync(targetDir, { recursive: true, force: true });
-    }
-    copyPluginFiltered(sourceDir, targetDir);
-    fixHookPermissions(targetDir);
-  } catch (err) {
-    return { success: false, sha, error: `Copy failed: ${(err as Error).message}` };
+  // 5. Install via Claude Code's native plugin system (scope per plugin-scope config)
+  const scope = getPluginScope(pluginName, 'specweave');
+  const scopeArgs = getScopeArgs(scope);
+  const installResult = execFileNoThrowSync(
+    'claude',
+    ['plugin', 'install', `${pluginName}@specweave`, ...scopeArgs],
+    { timeout: 15_000 },
+  );
+
+  if (!installResult.success) {
+    return {
+      success: false,
+      sha,
+      error: `claude plugin install failed (exit ${installResult.exitCode}): ${installResult.stderr}`,
+    };
   }
 
-  // 6. Update lockfile
+  // 6. Fix hook permissions in the plugin cache
+  const cacheDir = join(PLUGIN_CACHE_DIR, 'specweave', pluginName);
+  if (existsSync(cacheDir)) {
+    // Walk version dirs (e.g. 1.0.0/) and fix permissions in each
+    try {
+      for (const versionDir of readdirSync(cacheDir)) {
+        const versionPath = join(cacheDir, versionDir);
+        fixHookPermissions(versionPath);
+      }
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present
+  migrateLegacyCommandsDir(pluginName);
+
+  // 8. Update lockfile
   lock.skills[pluginName] = {
     version: pluginEntry.version || '0.0.0',
     sha,
@@ -425,5 +353,10 @@ export function copyPlugin(
     // Non-fatal: lockfile write failure shouldn't block install
   }
 
-  return { success: true, sha, targetDir };
+  return { success: true, sha, targetDir: cacheDir };
 }
+
+/**
+ * @deprecated Use installPlugin() instead. Alias kept for backward compatibility.
+ */
+export const copyPlugin = installPlugin;
