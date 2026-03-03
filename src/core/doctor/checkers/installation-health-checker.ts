@@ -1,6 +1,9 @@
 /**
- * Installation Health Checker - detects ghost commands, stale cache,
- * lockfile integrity issues, and namespace pollution in ~/.claude/
+ * Installation Health Checker - detects legacy commands dirs, stale cache,
+ * lockfile integrity issues, and plugin cache hook freshness in ~/.claude/
+ *
+ * @since 1.0.279
+ * @updated 1.0.356 - Migrated from commands-based to native plugin cache checks
  */
 
 import {
@@ -9,7 +12,6 @@ import {
   statSync,
   readFileSync,
   writeFileSync,
-  unlinkSync,
   rmSync,
   copyFileSync,
 } from 'node:fs';
@@ -23,10 +25,7 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
-import {
-  shouldSkipFromCommands,
-  computePluginHash,
-} from '../../../utils/plugin-copier.js';
+import { computePluginHash } from '../../../utils/plugin-copier.js';
 
 interface InstallationHealthOptions {
   commandsDir?: string;
@@ -50,10 +49,9 @@ export class InstallationHealthChecker implements HealthChecker {
   ): Promise<CategoryResult> {
     const checks: CheckResult[] = [];
 
-    checks.push(this.checkGhostCommands(options.fix ?? false));
+    checks.push(this.checkLegacyCommandsDirs(options.fix ?? false));
     checks.push(this.checkStaleCacheDirs(options.fix ?? false));
     checks.push(this.checkLockfileIntegrity(projectRoot, options.fix ?? false));
-    checks.push(this.checkNamespacePollution(options.fix ?? false));
     checks.push(this.checkPluginCacheHookFreshness(options.fix ?? false));
 
     return {
@@ -64,61 +62,56 @@ export class InstallationHealthChecker implements HealthChecker {
   }
 
   /**
-   * Scan commands dir for ghost .md files that should have been filtered.
-   * Ghost files = files that shouldSkipFromCommands() would exclude.
+   * Detect legacy ~/.claude/commands/<name>/ directories.
+   *
+   * Since 1.0.356, plugins are installed via Claude Code's native plugin system
+   * to ~/.claude/plugins/cache/. Any remaining dirs in ~/.claude/commands/ are
+   * legacy artifacts that should be removed to avoid duplicate slash commands.
    */
-  private checkGhostCommands(fix: boolean): CheckResult {
+  private checkLegacyCommandsDirs(fix: boolean): CheckResult {
     if (!existsSync(this.commandsDir)) {
       return {
-        name: 'Ghost slash commands',
+        name: 'Legacy commands directories',
         status: 'pass',
-        message: 'commands directory not found (clean)',
+        message: 'no legacy commands directory (clean)',
       };
     }
 
-    const ghosts: string[] = [];
+    const legacyDirs = this.listDirs(this.commandsDir);
 
-    // Walk each plugin directory inside commands/
-    for (const pluginName of this.listDirs(this.commandsDir)) {
-      const pluginDir = join(this.commandsDir, pluginName);
-      const mdFiles = this.walkMdFiles(pluginDir, '');
-
-      for (const relPath of mdFiles) {
-        if (shouldSkipFromCommands(relPath)) {
-          ghosts.push(join(pluginName, relPath));
-        }
-      }
-    }
-
-    if (ghosts.length === 0) {
+    if (legacyDirs.length === 0) {
       return {
-        name: 'Ghost slash commands',
+        name: 'Legacy commands directories',
         status: 'pass',
-        message: 'no ghost commands found',
+        message: 'commands directory is empty',
       };
     }
 
     if (fix) {
-      for (const ghost of ghosts) {
-        const fullPath = join(this.commandsDir, ghost);
-        if (existsSync(fullPath)) {
-          unlinkSync(fullPath);
+      let removed = 0;
+      for (const dir of legacyDirs) {
+        const fullPath = join(this.commandsDir, dir);
+        try {
+          rmSync(fullPath, { recursive: true, force: true });
+          removed++;
+        } catch {
+          // Best effort
         }
       }
       return {
-        name: 'Ghost slash commands',
-        status: 'warn',
-        message: `${ghosts.length} ghost command(s) found and removed`,
-        details: ghosts.map(g => `Ghost: ${g}`),
-        fixSuggestion: `Deleted ${ghosts.length} ghost file(s)`,
+        name: 'Legacy commands directories',
+        status: removed === legacyDirs.length ? 'pass' : 'warn',
+        message: `${removed}/${legacyDirs.length} legacy dir(s) removed (migrated to native plugin cache)`,
+        details: legacyDirs.map(d => `Legacy: ~/.claude/commands/${d}`),
+        fixSuggestion: 'Restart Claude Code to use native plugin cache',
       };
     }
 
     return {
-      name: 'Ghost slash commands',
+      name: 'Legacy commands directories',
       status: 'warn',
-      message: `${ghosts.length} ghost command(s) detected`,
-      details: ghosts.map(g => `Ghost: ${g}`),
+      message: `${legacyDirs.length} legacy commands dir(s) found (should use native plugin cache)`,
+      details: legacyDirs.map(d => `Legacy: ~/.claude/commands/${d}`),
       fixSuggestion: 'Run: specweave doctor --fix',
     };
   }
@@ -166,11 +159,13 @@ export class InstallationHealthChecker implements HealthChecker {
     }
 
     if (fix) {
+      let removed = 0;
       for (const dir of tempDirs) {
         const fullPath = join(this.cacheDir, dir);
         try {
           if (existsSync(fullPath)) {
             rmSync(fullPath, { recursive: true, force: true });
+            removed++;
           }
         } catch {
           // Ignore cleanup errors (e.g. race conditions with concurrent processes)
@@ -178,10 +173,10 @@ export class InstallationHealthChecker implements HealthChecker {
       }
       return {
         name: 'Stale cache directories',
-        status: 'warn',
-        message: `${tempDirs.length} stale dir(s) found and removed`,
+        status: removed === tempDirs.length ? 'pass' : 'warn',
+        message: `${removed}/${tempDirs.length} stale dir(s) removed`,
         details,
-        fixSuggestion: `Deleted ${tempDirs.length} temp_local dir(s)`,
+        fixSuggestion: `Deleted ${removed} temp_local dir(s)`,
       };
     }
 
@@ -195,7 +190,8 @@ export class InstallationHealthChecker implements HealthChecker {
   }
 
   /**
-   * Verify installed command hashes match vskill.lock entries.
+   * Verify installed plugin hashes match vskill.lock entries.
+   * Checks the native plugin cache (~/.claude/plugins/cache/specweave/<name>/).
    */
   private checkLockfileIntegrity(
     projectRoot: string,
@@ -239,14 +235,24 @@ export class InstallationHealthChecker implements HealthChecker {
     const missing: string[] = [];
 
     for (const [name, entry] of Object.entries(lockfile.skills)) {
-      const skillDir = join(this.commandsDir, name);
-      if (!existsSync(skillDir)) {
+      // Check native plugin cache first, fall back to legacy commands dir
+      const cachePluginDir = join(this.cacheDir, 'specweave', name);
+      const legacyPluginDir = join(this.commandsDir, name);
+      let pluginDir: string | null = null;
+
+      if (existsSync(cachePluginDir)) {
+        pluginDir = cachePluginDir;
+      } else if (existsSync(legacyPluginDir)) {
+        pluginDir = legacyPluginDir;
+      }
+
+      if (!pluginDir) {
         missing.push(name);
         continue;
       }
 
       try {
-        const currentHash = computePluginHash(skillDir);
+        const currentHash = computePluginHash(pluginDir);
         if (currentHash !== entry.sha) {
           mismatches.push(
             `${name}: expected ${entry.sha}, got ${currentHash}`
@@ -258,14 +264,22 @@ export class InstallationHealthChecker implements HealthChecker {
     }
 
     if (missing.length > 0) {
+      const allDetails = [
+        ...missing.map(m => `Missing: ${m}`),
+        ...mismatches.map(m => `Mismatch: ${m}`),
+      ];
+      const mismatchNote = mismatches.length > 0
+        ? ` (also ${mismatches.length} hash mismatch(es))`
+        : '';
+
       if (fix) {
         try {
           execSync('specweave refresh-plugins', { stdio: 'pipe' });
           return {
             name: 'Lockfile integrity',
             status: 'warn',
-            message: `${missing.length} skill(s) were missing, ran refresh-plugins`,
-            details: missing.map(m => `Missing: ${m}`),
+            message: `${missing.length} skill(s) were missing${mismatchNote}, ran refresh-plugins`,
+            details: allDetails,
             fixSuggestion: 'Ran: specweave refresh-plugins',
           };
         } catch (err) {
@@ -273,6 +287,7 @@ export class InstallationHealthChecker implements HealthChecker {
             name: 'Lockfile integrity',
             status: 'fail',
             message: `refresh-plugins failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            details: allDetails,
             fixSuggestion: 'Run: specweave refresh-plugins',
           };
         }
@@ -280,8 +295,8 @@ export class InstallationHealthChecker implements HealthChecker {
       return {
         name: 'Lockfile integrity',
         status: 'fail',
-        message: `${missing.length} skill(s) missing from commands dir`,
-        details: missing.map(m => `Missing: ${m}`),
+        message: `${missing.length} skill(s) missing from plugin cache${mismatchNote}`,
+        details: allDetails,
         fixSuggestion: 'Run: specweave refresh-plugins',
       };
     }
@@ -292,10 +307,12 @@ export class InstallationHealthChecker implements HealthChecker {
         try {
           const updatedSkills: typeof lockfile.skills = {};
           for (const [name, entry] of Object.entries(lockfile.skills)) {
-            const skillDir = join(this.commandsDir, name);
-            if (existsSync(skillDir)) {
+            const cachePluginDir = join(this.cacheDir, 'specweave', name);
+            const legacyDir = join(this.commandsDir, name);
+            const dir = existsSync(cachePluginDir) ? cachePluginDir : existsSync(legacyDir) ? legacyDir : null;
+            if (dir) {
               try {
-                updatedSkills[name] = { ...entry, sha: computePluginHash(skillDir) };
+                updatedSkills[name] = { ...entry, sha: computePluginHash(dir) };
               } catch {
                 updatedSkills[name] = entry;
               }
@@ -303,7 +320,7 @@ export class InstallationHealthChecker implements HealthChecker {
               updatedSkills[name] = entry;
             }
           }
-          writeFileSync(lockPath, JSON.stringify({ ...lockfile, skills: updatedSkills }, null, 2), 'utf-8');
+          writeFileSync(lockPath, JSON.stringify({ ...lockfile, skills: updatedSkills }, null, 2) + '\n', 'utf-8');
           return {
             name: 'Lockfile integrity',
             status: 'pass',
@@ -337,74 +354,6 @@ export class InstallationHealthChecker implements HealthChecker {
   }
 
   /**
-   * Detect .md files inside internal plugin directories that should not
-   * be treated as slash commands by Claude Code.
-   */
-  private checkNamespacePollution(fix: boolean): CheckResult {
-    if (!existsSync(this.commandsDir)) {
-      return {
-        name: 'Command namespace pollution',
-        status: 'pass',
-        message: 'commands directory not found (clean)',
-      };
-    }
-
-    const pollutants: string[] = [];
-
-    for (const pluginName of this.listDirs(this.commandsDir)) {
-      const pluginDir = join(this.commandsDir, pluginName);
-      const mdFiles = this.walkMdFiles(pluginDir, '');
-
-      for (const relPath of mdFiles) {
-        // Ghost commands (PLUGIN.md, README.md, FRESHNESS.md) are handled
-        // by checkGhostCommands. Here we catch the remaining pollution:
-        // files in internal dirs (knowledge-base/, lib/, templates/, etc.)
-        const filename = relPath.split('/').pop() ?? '';
-        const isGhostFile =
-          filename === 'PLUGIN.md' ||
-          filename === 'README.md' ||
-          filename === 'FRESHNESS.md';
-
-        if (!isGhostFile && shouldSkipFromCommands(relPath)) {
-          pollutants.push(join(pluginName, relPath));
-        }
-      }
-    }
-
-    if (pollutants.length === 0) {
-      return {
-        name: 'Command namespace pollution',
-        status: 'pass',
-        message: 'no namespace pollution found',
-      };
-    }
-
-    if (fix) {
-      for (const p of pollutants) {
-        const fullPath = join(this.commandsDir, p);
-        if (existsSync(fullPath)) {
-          unlinkSync(fullPath);
-        }
-      }
-      return {
-        name: 'Command namespace pollution',
-        status: 'warn',
-        message: `${pollutants.length} polluting file(s) found and removed`,
-        details: pollutants.map(p => `Pollution: ${p}`),
-        fixSuggestion: `Deleted ${pollutants.length} polluting file(s)`,
-      };
-    }
-
-    return {
-      name: 'Command namespace pollution',
-      status: 'warn',
-      message: `${pollutants.length} polluting file(s) detected`,
-      details: pollutants.map(p => `Pollution: ${p}`),
-      fixSuggestion: 'Run: specweave doctor --fix',
-    };
-  }
-
-  /**
    * Detect stale hooks in ~/.claude/plugins/cache/specweave/.
    *
    * Claude Code's plugin system copies hooks to its own cache directory when
@@ -415,8 +364,7 @@ export class InstallationHealthChecker implements HealthChecker {
    * @since 1.0.306
    */
   private checkPluginCacheHookFreshness(fix: boolean): CheckResult {
-    const home = homedir();
-    const pluginCacheBase = join(home, '.claude', 'plugins', 'cache', 'specweave', 'sw');
+    const pluginCacheBase = join(this.cacheDir, 'specweave', 'sw');
 
     if (!existsSync(pluginCacheBase)) {
       return {
@@ -505,8 +453,7 @@ export class InstallationHealthChecker implements HealthChecker {
    * Resolution order:
    * 1. Walk up from __dirname to find package.json with name "specweave"
    * 2. Global npm install via `npm root -g`
-   * 3. ~/.claude/commands/sw/hooks/ (installed by specweave refresh-plugins)
-   * 4. ~/.claude/plugins/marketplaces/specweave/
+   * 3. ~/.claude/plugins/marketplaces/specweave/
    */
   private findSourceHookPath(): string | null {
     const hookRelPath = join('plugins', 'specweave', 'hooks', 'user-prompt-submit.sh');
@@ -533,18 +480,13 @@ export class InstallationHealthChecker implements HealthChecker {
 
     // 2. Global npm install
     try {
-      const { execSync: exec } = require('node:child_process');
-      const npmRoot = exec('npm root -g', { encoding: 'utf-8', timeout: 5000 }).trim();
+      const npmRoot = execSync('npm root -g', { encoding: 'utf-8', timeout: 5000 }).trim();
       const globalPath = join(npmRoot, 'specweave', hookRelPath);
       if (existsSync(globalPath)) return globalPath;
     } catch { /* fallback */ }
 
-    // 3. ~/.claude/commands/sw/hooks/ (installed by refresh-plugins)
+    // 3. Marketplace path
     const home = homedir();
-    const commandsHookPath = join(home, '.claude', 'commands', 'sw', 'hooks', 'user-prompt-submit.sh');
-    if (existsSync(commandsHookPath)) return commandsHookPath;
-
-    // 4. Marketplace path
     const marketplacePath = join(home, '.claude', 'plugins', 'marketplaces', 'specweave', hookRelPath);
     if (existsSync(marketplacePath)) return marketplacePath;
 
@@ -566,29 +508,5 @@ export class InstallationHealthChecker implements HealthChecker {
     } catch {
       return [];
     }
-  }
-
-  /** Recursively collect all .md file relative paths under a directory. */
-  private walkMdFiles(dir: string, prefix: string): string[] {
-    const results: string[] = [];
-    try {
-      for (const entry of readdirSync(dir)) {
-        const fullPath = join(dir, entry);
-        const relPath = prefix ? `${prefix}/${entry}` : entry;
-        try {
-          const stat = statSync(fullPath);
-          if (stat.isDirectory()) {
-            results.push(...this.walkMdFiles(fullPath, relPath));
-          } else if (stat.isFile() && entry.endsWith('.md')) {
-            results.push(relPath);
-          }
-        } catch {
-          // Skip unreadable entries
-        }
-      }
-    } catch {
-      // Skip unreadable directories
-    }
-    return results;
   }
 }

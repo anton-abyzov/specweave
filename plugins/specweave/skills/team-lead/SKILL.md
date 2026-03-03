@@ -5,7 +5,7 @@ hooks:
     - matcher: TeamCreate
       hooks:
         - type: command
-          command: bash plugins/specweave/hooks/v2/guards/increment-existence-guard.sh
+          command: bash -c 'W="${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh"; S="${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/increment-existence-guard.sh"; [[ -x "$W" ]] && exec "$W" "$S" || (cat >/dev/null && printf "{\"decision\":\"allow\"}")'
 ---
 
 # Team Lead
@@ -439,7 +439,7 @@ SendMessage({
 SendMessage({
   type: "message",
   recipient: "team-lead",
-  content: "COMPLETION: All 8 tasks done. Tests passing (24/24). /sw:grill passed. Frontend increment ready for merge.",
+  content: "COMPLETION: All 8 tasks done. Tests passing (24/24). Ready for team-lead closure.",
   summary: "Frontend agent completed all tasks"
 });
 ```
@@ -563,12 +563,14 @@ Orchestrator Final Check:
 
 Agents can get stuck in extended thinking if their context overflows. The team-lead MUST monitor for stuck agents.
 
-### Timeout Rules
+### Stuck Detection Rules
+
+**Note**: Claude Code has no built-in timers. These are best-effort heuristics applied when the team-lead regains control (e.g., after processing other agent messages).
 
 | Condition | Action |
 |-----------|--------|
-| Agent idle >20 min after last message | Send `STATUS_CHECK` message to agent |
-| No response to STATUS_CHECK within 5 min | Declare agent stuck |
+| Agent has not messaged since team-lead's last turn | Send `STATUS_CHECK` message to agent |
+| Agent does not respond to STATUS_CHECK on next team-lead turn | Declare agent stuck |
 | Agent stuck | Log warning, proceed with other agents, handle stuck agent's increment manually in team-merge |
 | All agents stuck | STOP team, report to user |
 

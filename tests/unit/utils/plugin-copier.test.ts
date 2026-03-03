@@ -1,74 +1,34 @@
 /**
  * Unit tests for plugin-copier.ts
  *
- * Tests the inline first-party plugin copier that replaces vskill CLI shell-out.
- * Uses real temp directories for reliable file-system testing.
+ * Tests pure utility functions: hash computation, permissions, lockfile management,
+ * root discovery, and legacy migration. The main installPlugin() function shells out
+ * to `claude plugin install` and is tested via integration tests.
+ *
+ * @updated 1.0.356 - Removed copy-to-commands tests, added migration tests
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { createHash } from 'node:crypto';
 
 import {
-  copyPlugin,
   computePluginHash,
   fixHookPermissions,
   findSpecweaveRoot,
   readLockfile,
   writeLockfile,
   ensureLockfile,
-  isNonInvokableSkill,
+  migrateLegacyCommandsDir,
 } from '../../../src/utils/plugin-copier.js';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-let tmpDir: string;
-let originalCwd: string;
-
-/** Create a fake specweave root with marketplace.json and plugin dirs */
-function createFakeSpecweaveRoot(rootDir: string, plugins: Array<{ name: string; source: string }>): void {
-  // Create package.json
-  fs.writeFileSync(
-    path.join(rootDir, 'package.json'),
-    JSON.stringify({ name: 'specweave', version: '1.0.278' }),
-  );
-
-  // Create .claude-plugin/marketplace.json
-  const claudePluginDir = path.join(rootDir, '.claude-plugin');
-  fs.mkdirSync(claudePluginDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(claudePluginDir, 'marketplace.json'),
-    JSON.stringify({
-      name: 'specweave',
-      version: '1.0.0',
-      plugins: plugins.map(p => ({ name: p.name, source: p.source, version: '1.0.0' })),
-    }),
-  );
-
-  // Create plugin source directories with sample files
-  for (const plugin of plugins) {
-    const pluginDir = path.join(rootDir, plugin.source);
-    fs.mkdirSync(pluginDir, { recursive: true });
-
-    // Create a SKILL.md
-    fs.writeFileSync(path.join(pluginDir, 'SKILL.md'), `# ${plugin.name} skill`);
-
-    // Create hooks directory with a .sh file
-    const hooksDir = path.join(pluginDir, 'hooks');
-    fs.mkdirSync(hooksDir, { recursive: true });
-    fs.writeFileSync(path.join(hooksDir, 'user-prompt-submit.sh'), '#!/bin/bash\necho "hook"');
-    // Set to non-executable initially
-    fs.chmodSync(path.join(hooksDir, 'user-prompt-submit.sh'), 0o644);
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Setup / Teardown
 // ---------------------------------------------------------------------------
+
+let tmpDir: string;
+let originalCwd: string;
 
 beforeEach(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-plugin-copier-'));
@@ -115,6 +75,57 @@ describe('plugin-copier', () => {
       const hash2 = computePluginHash(dir);
 
       expect(hash1).not.toBe(hash2);
+    });
+
+    it('should return different hash when file is renamed', () => {
+      const dir = path.join(tmpDir, 'hash-rename');
+      fs.mkdirSync(dir, { recursive: true });
+
+      fs.writeFileSync(path.join(dir, 'original.txt'), 'content');
+      const hash1 = computePluginHash(dir);
+
+      fs.unlinkSync(path.join(dir, 'original.txt'));
+      fs.writeFileSync(path.join(dir, 'renamed.txt'), 'content');
+      const hash2 = computePluginHash(dir);
+
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should detect changes in nested subdirectories', () => {
+      const dir = path.join(tmpDir, 'hash-nested');
+      fs.mkdirSync(path.join(dir, 'hooks'), { recursive: true });
+      fs.writeFileSync(path.join(dir, 'hooks', 'submit.sh'), '#!/bin/bash\necho v1');
+
+      const hash1 = computePluginHash(dir);
+
+      fs.writeFileSync(path.join(dir, 'hooks', 'submit.sh'), '#!/bin/bash\necho v2');
+      const hash2 = computePluginHash(dir);
+
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should return deterministic hash for empty directory', () => {
+      const dir = path.join(tmpDir, 'hash-empty');
+      fs.mkdirSync(dir, { recursive: true });
+
+      const hash1 = computePluginHash(dir);
+      const hash2 = computePluginHash(dir);
+
+      expect(hash1).toBe(hash2);
+      expect(hash1).toHaveLength(12);
+    });
+
+    it('should not collide when filename and content are swapped', () => {
+      // file "ab" content "c" vs file "a" content "bc" — delimiter prevents collision
+      const dir1 = path.join(tmpDir, 'collision-1');
+      fs.mkdirSync(dir1, { recursive: true });
+      fs.writeFileSync(path.join(dir1, 'ab'), 'c');
+
+      const dir2 = path.join(tmpDir, 'collision-2');
+      fs.mkdirSync(dir2, { recursive: true });
+      fs.writeFileSync(path.join(dir2, 'a'), 'bc');
+
+      expect(computePluginHash(dir1)).not.toBe(computePluginHash(dir2));
     });
 
     it('should return empty string for non-existent directory', () => {
@@ -257,190 +268,14 @@ describe('plugin-copier', () => {
   });
 
   // =========================================================================
-  // copyPlugin — main function
+  // migrateLegacyCommandsDir
   // =========================================================================
-  describe('copyPlugin', () => {
-    let specweaveRoot: string;
-    let targetDir: string;
-
-    beforeEach(() => {
-      specweaveRoot = path.join(tmpDir, 'specweave');
-      targetDir = path.join(tmpDir, 'target-commands');
-      fs.mkdirSync(specweaveRoot, { recursive: true });
-      fs.mkdirSync(targetDir, { recursive: true });
-
-      createFakeSpecweaveRoot(specweaveRoot, [
-        { name: 'sw', source: './plugins/specweave' },
-        { name: 'frontend', source: './plugins/frontend' },
-      ]);
-    });
-
-    it('should copy plugin files to target directory', () => {
-      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-
-      expect(result.success).toBe(true);
-      expect(result.sha).toMatch(/^[a-f0-9]{12}$/);
-      expect(result.targetDir).toBe(path.join(targetDir, 'sw'));
-
-      // Verify files were copied
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'SKILL.md'))).toBe(true);
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'hooks', 'user-prompt-submit.sh'))).toBe(true);
-    });
-
-    it('should fix hook permissions after copy', () => {
-      copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-
-      const hookPath = path.join(targetDir, 'sw', 'hooks', 'user-prompt-submit.sh');
-      const stat = fs.statSync(hookPath);
-      expect(stat.mode & 0o755).toBe(0o755);
-    });
-
-    it('should update lockfile with BUNDLED tier', () => {
-      copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-
-      const lock = readLockfile(tmpDir);
-      expect(lock).not.toBeNull();
-      expect(lock!.skills.sw).toBeDefined();
-      expect(lock!.skills.sw.tier).toBe('BUNDLED');
-      expect(lock!.skills.sw.source).toBe('local:specweave');
-      expect(lock!.agents).toContain('claude-code');
-    });
-
-    it('should skip when hash matches lockfile (no force)', () => {
-      // First install
-      const first = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-      expect(first.success).toBe(true);
-      expect(first.skipped).toBeUndefined();
-
-      // Second install — should skip
-      const second = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-      expect(second.success).toBe(true);
-      expect(second.skipped).toBe(true);
-    });
-
-    it('should reinstall when force is true even if hash matches', () => {
-      // First install
-      copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-
-      // Force reinstall
-      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
-      expect(result.success).toBe(true);
-      expect(result.skipped).toBeUndefined();
-    });
-
-    it('should return error for plugin not in marketplace.json', () => {
-      const result = copyPlugin('nonexistent', specweaveRoot, { targetBaseDir: targetDir });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not in marketplace');
-    });
-
-    it('should return error when marketplace.json is missing', () => {
-      const emptyRoot = path.join(tmpDir, 'empty-root');
-      fs.mkdirSync(emptyRoot, { recursive: true });
-
-      const result = copyPlugin('sw', emptyRoot, { targetBaseDir: targetDir });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('marketplace.json not found');
-    });
-
-    it('should return error when plugin source directory is missing', () => {
-      // Create marketplace.json referencing a non-existent source
-      const brokenRoot = path.join(tmpDir, 'broken-root');
-      fs.mkdirSync(path.join(brokenRoot, '.claude-plugin'), { recursive: true });
-      fs.writeFileSync(
-        path.join(brokenRoot, '.claude-plugin', 'marketplace.json'),
-        JSON.stringify({
-          plugins: [{ name: 'sw', source: './plugins/missing', version: '1.0.0' }],
-        }),
-      );
-
-      const result = copyPlugin('sw', brokenRoot, { targetBaseDir: targetDir });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Source dir not found');
-    });
-
-    it('should handle multiple plugins independently', () => {
-      const r1 = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir });
-      const r2 = copyPlugin('frontend', specweaveRoot, { targetBaseDir: targetDir });
-
-      expect(r1.success).toBe(true);
-      expect(r2.success).toBe(true);
-
-      // Both should be in lockfile
-      const lock = readLockfile(tmpDir);
-      expect(lock!.skills.sw).toBeDefined();
-      expect(lock!.skills['frontend']).toBeDefined();
-    });
-
-    it('should not copy SKILL.md files marked as user-invokable: false', () => {
-      // Create a skill with user-invokable: false
-      const skillDir = path.join(specweaveRoot, 'plugins', 'specweave', 'skills', 'internal-tool');
-      fs.mkdirSync(skillDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(skillDir, 'SKILL.md'),
-        '---\ndescription: Internal tool\nuser-invokable: false\n---\n# Internal\n',
-      );
-
-      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
-      expect(result.success).toBe(true);
-
-      // The non-invokable SKILL.md should NOT be copied (skills/ is flattened into parent)
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'internal-tool', 'SKILL.md'))).toBe(false);
-
-      // The root SKILL.md (no frontmatter restriction) should still be there
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'SKILL.md'))).toBe(true);
-    });
-
-    it('should still copy SKILL.md files without user-invokable restriction', () => {
-      // Create a normal skill (user-invokable by default)
-      const skillDir = path.join(specweaveRoot, 'plugins', 'specweave', 'skills', 'public-tool');
-      fs.mkdirSync(skillDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(skillDir, 'SKILL.md'),
-        '---\ndescription: Public tool\n---\n# Public\n',
-      );
-
-      const result = copyPlugin('sw', specweaveRoot, { targetBaseDir: targetDir, force: true });
-      expect(result.success).toBe(true);
-
-      // Normal skill should be copied (skills/ is flattened into parent)
-      expect(fs.existsSync(path.join(targetDir, 'sw', 'public-tool', 'SKILL.md'))).toBe(true);
-    });
-  });
-
-  // =========================================================================
-  // isNonInvokableSkill
-  // =========================================================================
-  describe('isNonInvokableSkill', () => {
-    it('should return true for user-invokable: false', () => {
-      const filePath = path.join(tmpDir, 'internal-SKILL.md');
-      fs.writeFileSync(filePath, '---\ndescription: Internal\nuser-invokable: false\n---\n# Skill\n');
-      expect(isNonInvokableSkill(filePath)).toBe(true);
-    });
-
-    it('should return false for normal skills', () => {
-      const filePath = path.join(tmpDir, 'normal-SKILL.md');
-      fs.writeFileSync(filePath, '---\ndescription: Normal skill\n---\n# Skill\n');
-      expect(isNonInvokableSkill(filePath)).toBe(false);
-    });
-
-    it('should return false for skills without frontmatter', () => {
-      const filePath = path.join(tmpDir, 'no-fm-SKILL.md');
-      fs.writeFileSync(filePath, '# Skill without frontmatter\n');
-      expect(isNonInvokableSkill(filePath)).toBe(false);
-    });
-
-    it('should return false for non-existent file', () => {
-      expect(isNonInvokableSkill(path.join(tmpDir, 'does-not-exist.md'))).toBe(false);
-    });
-
-    it('should return false for user-invokable: true', () => {
-      const filePath = path.join(tmpDir, 'explicit-true-SKILL.md');
-      fs.writeFileSync(filePath, '---\ndescription: Explicit\nuser-invokable: true\n---\n# Skill\n');
-      expect(isNonInvokableSkill(filePath)).toBe(false);
+  describe('migrateLegacyCommandsDir', () => {
+    it('should return false when legacy dir does not exist', () => {
+      // migrateLegacyCommandsDir checks ~/.claude/commands/<name>,
+      // which won't exist in the test environment
+      const result = migrateLegacyCommandsDir('nonexistent-plugin-xyz');
+      expect(result).toBe(false);
     });
   });
 });

@@ -44,6 +44,18 @@ argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
 | `--cov <n>` | Code coverage threshold (%) | 80 |
 | `--cmd "<command>"` | Custom command must pass | None |
 
+## Simple Mode (`--simple`)
+
+When `simple: true` is set in the session marker, reduce context consumption per iteration:
+
+1. **Skip spec re-reads** — Do NOT re-read `spec.md` on each task iteration. Read it once at session start, then rely on `tasks.md` alone for task-by-task execution.
+2. **Minimal task context** — Read only the current task's section from `tasks.md`, not the entire file. Use line offsets if the file is long.
+3. **No sub-skill loading** — Do NOT invoke domain skills (frontend:architect, testing:qa, etc.) during auto execution. Execute tasks directly using code tools.
+4. **Shorter status output** — Skip banners and progress tables between tasks. Just implement, test, mark complete, move on.
+5. **No complexity re-check** — Skip Step 1.5a (team-lead routing check) since the caller already decided the execution mode.
+
+**When to use**: Primarily for sub-agents in team-lead mode where the team-lead has already loaded specs, assigned tasks, and the agent just needs to execute. Also useful for simple increments with <10 tasks.
+
 ## Core Loop
 
 ```
@@ -73,6 +85,7 @@ Use Read/Write/Edit/Glob tools directly (no CLI needed):
   "active": true,
   "timestamp": "<ISO>",
   "incrementIds": ["0001-feature"],
+  "simple": false,
   "tddMode": false,
   "requireTests": false,
   "userGoal": null,
@@ -84,7 +97,8 @@ Use Read/Write/Edit/Glob tools directly (no CLI needed):
 }
 ```
 
-Map flags to extra `successCriteria` entries:
+Map flags to session marker fields:
+- `--simple` -> set `"simple": true`
 - `--tests` -> `{ "type": "tests_pass", "required": true }`
 - `--build` -> `{ "type": "build_succeeds", "required": true }`
 - `--e2e` -> `{ "type": "tests_pass", "description": "E2E tests", "required": true }`

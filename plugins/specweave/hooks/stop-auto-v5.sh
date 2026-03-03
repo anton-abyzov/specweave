@@ -155,8 +155,9 @@ if [ -f "$DEDUP_PREV" ]; then
 fi
 echo "$NOW" > "$DEDUP_PREV" 2>/dev/null
 
-# 7. Read userGoal from session marker
+# 7. Read userGoal and simple mode from session marker
 USER_GOAL=$(jq -r '.userGoal // ""' "$SESSION" 2>/dev/null || echo "")
+SIMPLE=$(jq -r '.simple // false' "$SESSION" 2>/dev/null || echo "false")
 
 # 8. Scan active increments (enriched: next task, progress fraction)
 TP=0; TAC=0; IC=0; ILIST=""
@@ -212,7 +213,7 @@ if [ "$IC" -eq 0 ]; then
     fi
 fi
 
-# 10. Work remains → block with enriched context message
+# 10. Work remains → block with context message (simple or enriched)
 # Sort entries by score descending (highest-relevance first) when userGoal is set
 SORTED_ILIST="$ILIST"
 if [ -n "$USER_GOAL" ] && [ "$IC" -gt 1 ]; then
@@ -221,24 +222,32 @@ if [ -n "$USER_GOAL" ] && [ "$IC" -gt 1 ]; then
     SORTED_ILIST="${SORTED_ILIST%,}"  # trim trailing comma
 fi
 
-DETAILS=""
+# Extract best increment ID (first entry after sorting)
 _BEST_ID=""
 IFS=',' read -ra ENTRIES <<< "$SORTED_ILIST"
-for entry in "${ENTRIES[@]}"; do
-    IFS='|' read -r eid ep ea enext edone etotal escore <<< "$entry"
-    [ -z "$_BEST_ID" ] && _BEST_ID="$eid"
-    _progress="${edone:-0}/${etotal:-0} tasks"
-    _next_info=""
-    [ -n "$enext" ] && _next_info=" | Next: $enext"
-    DETAILS="${DETAILS}\n  ▸ ${eid}: ${_progress}${_next_info}"
-done
+IFS='|' read -r _BEST_ID _rest <<< "${ENTRIES[0]}"
 
-# Build enriched block message
-BMSG=""
-[ -n "$USER_GOAL" ] && BMSG="Goal: ${USER_GOAL}\n"
-BMSG="${BMSG}Auto Mode: ${IC} increment(s) need work${DETAILS}"
-BMSG="${BMSG}\nTurn $TURN/$MAX_TURNS | Continue: /sw:do ${_BEST_ID}"
-BMSG=$(echo -e "$BMSG")
+if [ "$SIMPLE" = "true" ]; then
+    # Simple mode: minimal message to reduce context tokens per turn
+    BMSG="Continue: /sw:do ${_BEST_ID} ($TP tasks left, turn $TURN/$MAX_TURNS)"
+    BMSG=$(echo -e "$BMSG")
+else
+    # Full mode: enriched context with per-increment progress and next task
+    DETAILS=""
+    for entry in "${ENTRIES[@]}"; do
+        IFS='|' read -r eid ep ea enext edone etotal escore <<< "$entry"
+        _progress="${edone:-0}/${etotal:-0} tasks"
+        _next_info=""
+        [ -n "$enext" ] && _next_info=" | Next: $enext"
+        DETAILS="${DETAILS}\n  ▸ ${eid}: ${_progress}${_next_info}"
+    done
+
+    BMSG=""
+    [ -n "$USER_GOAL" ] && BMSG="Goal: ${USER_GOAL}\n"
+    BMSG="${BMSG}Auto Mode: ${IC} increment(s) need work${DETAILS}"
+    BMSG="${BMSG}\nTurn $TURN/$MAX_TURNS | Continue: /sw:do ${_BEST_ID}"
+    BMSG=$(echo -e "$BMSG")
+fi
 
 block "Work remaining: $TP tasks, $TAC ACs" "work_remaining" \
     "$(jq -n --argjson p "$TP" --argjson a "$TAC" --argjson i "$IC" \

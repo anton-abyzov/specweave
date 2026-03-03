@@ -63,7 +63,6 @@ const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 // Inline copier mocks (replaces vskill CLI)
 const mockCopyPlugin = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
-const mockRegisterPluginsWithClaudeCli = vi.hoisted(() => vi.fn());
 
 const mockOra = vi.hoisted(() => {
   const spinner = {
@@ -235,20 +234,14 @@ vi.mock('../../src/utils/vskill-resolver.js', () => ({
 // Mock plugin-copier (inline copier used by refresh-plugins and plugin-installer)
 vi.mock('../../src/utils/plugin-copier.js', () => ({
   copyPlugin: mockCopyPlugin,
+  installPlugin: mockCopyPlugin,
   findSpecweaveRoot: mockFindSpecweaveRoot,
   computePluginHash: vi.fn(() => 'mock-hash-abc123'),
   readLockfile: vi.fn(() => null),
   writeLockfile: vi.fn(),
   ensureLockfile: vi.fn(() => ({ version: 1, agents: [], skills: {}, createdAt: '', updatedAt: '' })),
-  shouldSkipFromCommands: vi.fn(() => false),
-  isNonInvokableSkill: vi.fn(() => false),
+  migrateLegacyCommandsDir: vi.fn(() => false),
   fixHookPermissions: vi.fn(),
-  cleanPluginCache: vi.fn(),
-}));
-
-// Mock claude-plugin-cli (registration with Claude CLI)
-vi.mock('../../src/utils/claude-plugin-cli.js', () => ({
-  registerPluginsWithClaudeCli: mockRegisterPluginsWithClaudeCli,
 }));
 
 // ---------------------------------------------------------------------------
@@ -388,7 +381,7 @@ describe('vskill plugin pipeline integration', () => {
       expect(claudePluginInstallCalls).toHaveLength(0);
     });
 
-    it('should register processed plugins with Claude CLI', async () => {
+    it('should install plugins via copyPlugin without separate CLI registration', async () => {
       // Given: marketplace.json exists
       mockExistsSync.mockImplementation((p: string) => {
         if (p.includes('marketplace.json')) return true;
@@ -403,11 +396,8 @@ describe('vskill plugin pipeline integration', () => {
       // When: refreshPluginsCommand runs
       await refreshPluginsCommand({ all: true });
 
-      // Then: registerPluginsWithClaudeCli is called with processed plugin names
-      expect(mockRegisterPluginsWithClaudeCli).toHaveBeenCalledWith(
-        '/mock/specweave-root',
-        expect.arrayContaining(['sw', 'frontend', 'sw-github'])
-      );
+      // Then: copyPlugin (now installPlugin) handles native install directly
+      expect(mockCopyPlugin).toHaveBeenCalledTimes(3); // sw, frontend, sw-github
     });
   });
 
