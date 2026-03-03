@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.356] - 2026-03-03
+
+### Changes
+- remove claude-plugin-cli, simplify plugin copier and health checker
+- chore(ci): bump upload-artifact to v7 and download-artifact to v8
+- chore: update DORA metrics - Mar 02, 2026 [skip ci] (#1464)
+- fix(ci): deduplicate DORA metrics PRs
+- fix test mocks for patchIssueBodyCheckboxes and ensureLabelExists
+
+---
+
+
+
 ## [1.0.355] - 2026-03-03
 
 ### Changes
