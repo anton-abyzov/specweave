@@ -892,18 +892,20 @@ export class LivingDocsSync {
 
     // 3. For 1-level structures, project is REQUIRED (but not board)
     if (project) {
-      this.logger.log(`   📎 Using project from spec.md: ${project}`);
+      // Umbrella awareness: resolve project name through umbrella config
+      const resolvedProject = this.resolveUmbrellaProject(project, config);
+      this.logger.log(`   📎 Using project from spec.md: ${project}${resolvedProject !== project ? ` → ${resolvedProject} (umbrella)` : ''}`);
 
       // Try to find existing hierarchical path (for backward compatibility)
       const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
       if (existsSync(specsBase)) {
-        const foundPath = await this.findBestProjectMatch(specsBase, project);
+        const foundPath = await this.findBestProjectMatch(specsBase, resolvedProject);
         if (foundPath) {
           this.logger.log(`   🔍 Found existing project path: ${foundPath}`);
           return foundPath;
         }
       }
-      return project;
+      return resolvedProject;
     }
 
     // 4. No project in spec.md - WARN and fallback to auto-detection (deprecated behavior)
@@ -951,6 +953,34 @@ export class LivingDocsSync {
     }
 
     return await this.askUserForBoardSelection(incrementId, matchDecision);
+  }
+
+  /**
+   * Resolve project name through umbrella config.
+   * When umbrella.enabled and the project matches umbrella.projectName or doesn't match
+   * any child repo, return the umbrella project name for proper folder routing.
+   */
+  private resolveUmbrellaProject(project: string, config: any): string {
+    if (!config.umbrella?.enabled) return project;
+
+    const umbrellaName = config.umbrella.projectName;
+    if (!umbrellaName) return project;
+
+    // If the project explicitly matches the umbrella project name, use it as-is
+    if (project === umbrellaName) return project;
+
+    // Check if the project matches a child repo — if so, keep it
+    const childRepos: any[] = config.umbrella.childRepos || [];
+    const isChildRepo = childRepos.some(
+      (r: any) => (r.id || '').toLowerCase() === project.toLowerCase()
+        || (r.name || '').toLowerCase() === project.toLowerCase()
+    );
+    if (isChildRepo) return project;
+
+    // Project doesn't match any child repo — route to umbrella folder
+    // This handles cases where config.project.name matches a child repo name
+    this.logger.log(`   🏠 Project '${project}' not in childRepos, routing to umbrella: ${umbrellaName}`);
+    return umbrellaName;
   }
 
   /**
