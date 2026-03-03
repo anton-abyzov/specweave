@@ -123,8 +123,17 @@ export async function executeConsolidation(
     const parentDir = path.dirname(move.to);
     await fs.promises.mkdir(parentDir, { recursive: true });
 
-    // Move via rename (same filesystem assumed for umbrella)
-    await fs.promises.rename(move.from, move.to);
+    // Move via rename; fall back to copy+delete if across filesystems (EXDEV)
+    try {
+      await fs.promises.rename(move.from, move.to);
+    } catch (e: any) {
+      if (e.code === 'EXDEV') {
+        await fs.promises.cp(move.from, move.to, { recursive: true });
+        await fs.promises.rm(move.from, { recursive: true, force: true });
+      } else {
+        throw e;
+      }
+    }
   }
 
   // Execute deletions
