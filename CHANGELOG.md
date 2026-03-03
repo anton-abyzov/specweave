@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.354] - 2026-03-03
+
+### Changes
+- update plugins and lifecycle hook dispatcher
+- fix duplicate comments: skip progress post when auto-closer handles 100% completion
+- skip progress comment when all ACs complete (dedup with auto-closer)
+
+---
+
+
+
 ## [1.0.353] - 2026-03-02
 
 ### Changes
