@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.357] - 2026-03-03
+
+### Changes
+- fix: convert JIRA descriptions to proper ADF with bold, lists, rules
+- fix: grill findings for distributed sync implementation
+- fix: umbrella project validation and label auto-creation for distributed sync
+- add Cloudflare Web Analytics beacon to docs-site
+- fix: distributed sync routing, consolidation CLI, and platform suffix regex
+- fix: multi-repo root resolution and JIRA/ADO bidirectional sync
+
+---
+
+
+
 ## [1.0.356] - 2026-03-03
 
 ### Changes
