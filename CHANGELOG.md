@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.359] - 2026-03-03
+
+### Changes
+- feat: umbrella project awareness for living docs and project validation
+
+---
+
+
+
 ## [1.0.358] - 2026-03-03
 
 ### Changes
