@@ -33,22 +33,23 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
-  5. Verify services are running and accessible (check dev server, API endpoints)
-  6. Wait for contract artifacts if Phase 1 is active:
+  4. Activate the increment: Edit metadata.json to set "status": "active" and update "lastActivity" timestamp
+  5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
+  6. Verify services are running and accessible (check dev server, API endpoints)
+  7. Wait for contract artifacts if Phase 1 is active:
      - Read src/types/ for shared interfaces
      - Read openapi.yaml for API endpoints (if backend produces one)
-  7. Create plan files (plan.md, tasks.md) for your increment
-  8. Send plan to team-lead and WAIT for approval:
+  8. Create plan files (plan.md, tasks.md) for your increment
+  9. Send plan to team-lead and WAIT for approval:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "PLAN_READY: [increment path]. [summary of planned tasks and files].",
        summary: "Frontend plan ready for review" })
-  9. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
-  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  11. Run all tests for owned code (unit + integration): npm test
-  12. Do NOT signal completion until all tests pass
-  13. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
-  14. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  10. WAIT for "PLAN_APPROVED" message. If "PLAN_REJECTED", revise and re-submit.
+  11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+  12. Run all tests for owned code (unit + integration): npm test
+  13. Do NOT signal completion until all tests pass
+  14. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  15. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)

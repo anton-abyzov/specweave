@@ -550,20 +550,47 @@ Agent Workflow:
 
 ### Orchestrator Quality Gate (Centralized Closure)
 
-After all agents complete, the team-lead runs closure **centrally** for each increment:
+After all agents complete, the team-lead runs closure **centrally** for each increment.
+
+**CRITICAL: Increments MUST be closed sequentially, not skipped on failure.**
 
 ```
 Orchestrator Final Check:
   1. All agents signaled COMPLETION
   2. No unresolved BLOCKING_ISSUE messages
   3. Run full test suite (all domains combined)
-  4. For EACH increment in dependency order:
-     a. Run /sw:grill on the increment
-     b. Run /sw:done --auto <id>
-     c. If /sw:done fails, report the failure and continue with remaining increments
-  5. If all pass -> /sw:team-merge
-  6. If failures -> identify owning agent, send fix request via SendMessage
+  4. For EACH increment in dependency order (shared → database → backend → frontend → testing → security):
+     a. PRE-CLOSURE STATUS CHECK:
+        - Read metadata.json status
+        - If status is "planned" or "backlog" → Edit to "active" (agents may not have activated)
+        - If status is "completed" → Skip (already closed)
+     b. Run /sw:grill on the increment
+     c. If grill finds CRITICAL/BLOCKER issues:
+        → Fix them directly (team-lead has cleaner context than agents)
+        → Re-run /sw:grill (max 2 retries)
+        → If still failing after 2 retries → log failure, move to next increment
+     d. Run /sw:done --auto <id>
+     e. If /sw:done fails (quality gate, desync, missing reports):
+        → Read the error output carefully
+        → Fix the root cause (sync ACs, update task counts, write missing reports)
+        → Re-run /sw:done --auto <id> (max 2 retries)
+     f. Verify closure: check metadata.json status == "completed"
+  5. After all increments attempted:
+     - If ALL closed → /sw:team-merge
+     - If SOME failed → report which increments are still open with failure reasons
+     - Do NOT leave increments in limbo — either close them or clearly report why they can't close
 ```
+
+**Common closure failures and fixes:**
+
+| Failure | Root Cause | Fix |
+|---------|-----------|-----|
+| `specweave complete` exits silently | metadata.json status is "planned" | Edit metadata.json: set status to "active" |
+| Desync error | spec.md AC count != metadata.json | Run `specweave sync-acs <id>` or fix manually |
+| Missing grill-report.json | Grill wasn't run or didn't write report | Run `/sw:grill <id>` — it writes the report |
+| Missing judge-llm-report.json | Judge wasn't run | Write WAIVED report if no external model consent |
+| Task count mismatch | tasks.md frontmatter != actual checked tasks | Update `completed_tasks` in tasks.md frontmatter |
+| ACs not all checked | Some ACs still `[ ]` in spec.md | Verify implementation, then check them `[x]` |
 
 ### Grill Checklist per Domain
 
@@ -618,6 +645,8 @@ When an agent is declared stuck:
   ├── Step 0: VERIFY INCREMENT EXISTS (BLOCKING)
   │     ├── Found? → Read master spec.md as source of truth
   │     └── Missing? → Auto-invoke /sw:increment, wait for completion
+  ├── Step 0b: ACTIVATE MASTER INCREMENT (MANDATORY)
+  │     └── Edit metadata.json: set status to "active" BEFORE spawning agents
   ├── Step 1: Analyze feature (from master spec) -> identify domains -> decide increment split
   ├── Step 2: Create team via TeamCreate
   ├── Step 3: Create per-domain increments (derived from master spec)
@@ -629,7 +658,10 @@ When an agent is declared stuck:
   │           └── Receive PLAN_READY, review & approve via SendMessage
   ├── Step 5: Monitor progress via SendMessage (timeout: 20min idle → STATUS_CHECK)
   ├── Step 6: Agents signal COMPLETION (tests pass, no /sw:grill or /sw:done on agents)
-  ├── Step 7: Team-lead runs /sw:grill + /sw:done --auto per increment (centralized closure)
+  ├── Step 7: Team-lead runs centralized closure per increment:
+  │     ├── Pre-closure: verify/fix metadata.json status → must be "active"
+  │     ├── /sw:grill → fix findings → retry if needed (max 2)
+  │     └── /sw:done --auto → fix gate failures → retry if needed (max 2)
   └── Step 8: Merge and close (/sw:team-merge)
 ```
 
@@ -673,6 +705,8 @@ To execute, run without --dry-run.
 | **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
 | **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
 | **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `/sw:auto` on its increment |
+| **`specweave complete` exits silently** | metadata.json status is "planned" (not "active") | Agents don't manage lifecycle status. Team-lead MUST activate the increment before spawning agents (see Step 0). Fix: edit metadata.json to set `"status": "active"` before running `specweave complete` |
+| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Fix each issue and retry `/sw:done --auto` (max 2 retries per increment). See Section 8 closure failure table |
 
 ---
 
