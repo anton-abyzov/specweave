@@ -71,15 +71,26 @@ Closure order respects contract chain:
 For each teammate's increment, in dependency order:
 
 ```bash
+# PRE-CLOSURE: Ensure increment is in "active" status (agents may not have activated it)
+STATUS=$(jq -r '.status' .specweave/increments/<id>/metadata.json)
+if [ "$STATUS" = "planned" ] || [ "$STATUS" = "backlog" ]; then
+  # Edit metadata.json to set "status": "active"
+fi
+
 # Run /sw:done --auto per increment -- triggers quality gates, skips user confirmation
 /sw:done <increment-id> --auto
+
+# If /sw:done fails, fix root cause and retry (max 2 retries)
+# Common fixes: sync ACs, update task counts, write missing reports
 ```
 
 This ensures:
+- Increment is in correct lifecycle status before closure attempt
 - `/sw:grill` runs for each increment
 - `tasks.md` and `spec.md` ACs are validated
 - `metadata.json` is updated to `completed`
 - Living docs are generated
+- Failures are retried rather than silently skipped
 
 ### Step 5: Trigger Sync
 
