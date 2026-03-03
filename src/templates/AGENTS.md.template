@@ -38,12 +38,16 @@
 <!-- SECTION:orchestration required -->
 ## Workflow Orchestration
 
-### 1. Plan Before Code
+### 1. Plan Before Code (MANDATORY)
 
-BEFORE implementing ANY non-trivial task (3+ steps):
+BEFORE implementing ANY task — create an increment FIRST:
 1. Create increment: spec.md (WHAT/WHY) + plan.md (HOW) + tasks.md (checklist)
 2. Get user approval before implementing
 3. If something goes sideways → STOP and re-plan
+
+**No exceptions for "simple" tasks** — "simple", "quick", "basic" still require an increment. The only exception: user explicitly says "don't create an increment."
+
+**Setup/config actions are NOT implementation** — "connect github", "setup sync", "import issues" → use the matching setup command directly, not the increment workflow.
 
 See **Task Format** and **User Story Format** sections for templates.
 
@@ -84,6 +88,7 @@ Good: npm run build → node script.js → Success
 - Avoid over-engineering and premature optimization
 - One function = one responsibility
 - If you can delete code and tests still pass, delete it
+- **Match tooling to complexity** — simple tasks (calculator, todo) need 0 domain plugins and vanilla code. Don't load heavyweight frameworks, design systems, or i18n for trivial features
 
 ### No Laziness
 - Don't leave TODO comments for "later"
@@ -139,6 +144,8 @@ Good: npm run build → node script.js → Success
 | `/sw-github:sync 0001` | Sync increment to GitHub issue |
 | `/sw-jira:sync 0001` | Sync to Jira |
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
+| `/sw:sync-setup` | Connect GitHub/Jira/ADO integration |
+| `/sw:import` | Import issues from external tools |
 <!-- /SECTION -->
 
 ---
