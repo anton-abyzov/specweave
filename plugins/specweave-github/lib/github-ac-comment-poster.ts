@@ -80,21 +80,32 @@ export async function postACProgressComments(
     }
 
     const acStates = parseACStatesForUS(content, usId);
-    const commentBody = buildProgressCommentForUS(incrementId, usId, acStates);
 
-    const execResult = await execFileNoThrow(
-      'gh',
-      ['issue', 'comment', String(link.issueNumber), '--body', commentBody, '-R', repoSlug],
-      env ? { env } : {},
-    );
+    // Skip progress comment when all ACs are complete — the auto-closer will
+    // post its own "All acceptance criteria completed" comment instead,
+    // preventing duplicate comments on the same issue.
+    const allComplete = acStates.length > 0 && acStates.every(ac => ac.completed);
 
-    if (execResult.success) {
-      result.posted.push({ usId, issueNumber: link.issueNumber });
+    if (!allComplete) {
+      const commentBody = buildProgressCommentForUS(incrementId, usId, acStates);
+
+      const execResult = await execFileNoThrow(
+        'gh',
+        ['issue', 'comment', String(link.issueNumber), '--body', commentBody, '-R', repoSlug],
+        env ? { env } : {},
+      );
+
+      if (execResult.success) {
+        result.posted.push({ usId, issueNumber: link.issueNumber });
+      } else {
+        result.errors.push({
+          usId,
+          error: execResult.stderr || 'Unknown error posting comment',
+        });
+      }
     } else {
-      result.errors.push({
-        usId,
-        error: execResult.stderr || 'Unknown error posting comment',
-      });
+      // Still track as posted for body-patch below
+      result.posted.push({ usId, issueNumber: link.issueNumber });
     }
 
     // Patch AC checkboxes directly in the issue body using the known issue number
