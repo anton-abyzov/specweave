@@ -273,8 +273,8 @@ describe('multi-project-detector', () => {
           umbrella: {
             enabled: true,
             childRepos: [
-              { id: 'my-fe', displayName: 'Frontend', path: 'packages/fe' },
-              { id: 'my-be', displayName: 'Backend', path: 'packages/be' },
+              { id: 'my-fe', name: 'Frontend', path: 'packages/fe' },
+              { id: 'my-be', name: 'Backend', path: 'packages/be' },
             ],
           },
         });
@@ -370,7 +370,7 @@ describe('multi-project-detector', () => {
         expect(result.projects).toHaveLength(2);
       });
 
-      it('should use id as name when displayName is absent', () => {
+      it('should use id as name when name is absent', () => {
         createConfig({
           umbrella: {
             enabled: true,
@@ -384,6 +384,23 @@ describe('multi-project-detector', () => {
         const result = detectMultiProjectMode(tempDir);
         expect(result.projects[0].name).toBe('frontend');
         expect(result.projects[1].name).toBe('backend');
+      });
+
+      it('should read name field (not displayName) from childRepos (AC-US3-03)', () => {
+        createConfig({
+          umbrella: {
+            enabled: true,
+            childRepos: [
+              { id: 'specweave', name: 'SpecWeave', path: 'repositories/org/specweave', prefix: 'SW' },
+              { id: 'vskill', name: 'VSkill', path: 'repositories/org/vskill', prefix: 'VS' },
+            ],
+          },
+        });
+
+        const result = detectMultiProjectMode(tempDir);
+        expect(result.isMultiProject).toBe(true);
+        expect(result.projects[0].name).toBe('SpecWeave');
+        expect(result.projects[1].name).toBe('VSkill');
       });
     });
 
@@ -908,8 +925,8 @@ describe('multi-project-detector', () => {
         umbrella: {
           enabled: true,
           childRepos: [
-            { id: 'my-fe', prefix: 'FE', displayName: 'Frontend' },
-            { id: 'my-be', prefix: 'BE', displayName: 'Backend' },
+            { id: 'my-fe', prefix: 'FE', name: 'Frontend' },
+            { id: 'my-be', prefix: 'BE', name: 'Backend' },
           ],
         },
       });

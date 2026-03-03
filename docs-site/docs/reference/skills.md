@@ -43,6 +43,39 @@ These skills form the foundation of spec-driven development.
 | [`sw:roadmap-planner`](#roadmap-planner) | Product roadmap and feature prioritization | Quarterly planning |
 | [`sw:spec-generator`](#spec-generator) | Generate spec.md, plan.md, tasks.md from ideas | Converting ideas to specs |
 | [`sw:test-aware-planner`](#test-aware-planner) | Tasks with embedded BDD test plans | Test-first planning |
+| [`sw:brainstorm`](#brainstorm) | Multi-perspective ideation with cognitive lenses | Exploring approaches before committing |
+
+### brainstorm
+
+**Purpose**: Explore a problem from multiple angles before committing to an implementation path. Uses Tree of Thought divergent exploration with selectable cognitive lenses.
+
+```bash
+/sw:brainstorm "real-time notifications"              # Standard depth
+/sw:brainstorm "auth system" --depth deep              # All 5 phases + deepening
+/sw:brainstorm "payment gateway" --lens six-hats       # Specific lens
+/sw:brainstorm "API design" --depth quick              # Fast 3-approach comparison
+```
+
+**5-Phase Flow:**
+1. **Frame** — Problem statement, starbursting (5W1H), clarifying questions
+2. **Diverge** — Generate 4-6 approaches via selected cognitive lens
+3. **Evaluate** — Comparison matrix with scoring and explicit recommendation
+4. **Deepen** (deep only) — Abstraction laddering, analogies, pre-mortem analysis
+5. **Output** — Save persistent brainstorm doc, offer handoff to `/sw:increment`
+
+**Depth Modes:**
+- `quick` — 3 inline approaches, skip lenses (Phase 1+3)
+- `standard` — Default lens, 4-6 approaches (Phase 1-3+5)
+- `deep` — Multiple lenses via parallel subagents, all 5 phases
+
+**Cognitive Lenses:**
+- `default` — Independent parallel generation (conservative, bold, speed, extensibility)
+- `six-hats` — Six Thinking Hats (facts, feelings, caution, optimism, creativity, process)
+- `scamper` — SCAMPER transformations (substitute, combine, adapt, modify, repurpose, eliminate, reverse)
+- `triz` — Constraint inversion (negate core assumptions)
+- `adjacent` — Adjacent Possible (what recently became feasible)
+
+**Output:** Persistent brainstorm document at `.specweave/docs/brainstorms/YYYY-MM-DD-topic.md` with idea tree for revisiting later.
 
 ### increment
 
@@ -568,7 +601,6 @@ Create and maintain documentation.
 | `living-docs-navigator` | core | Navigate project docs |
 | `technical-writing` | docs | Technical writing best practices |
 | `docusaurus` | docs | Docusaurus site management |
-| `spec-driven-brainstorming` | docs | Structured ideation |
 
 ### docs-writer
 
