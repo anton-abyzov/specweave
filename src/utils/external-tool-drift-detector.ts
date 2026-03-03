@@ -47,10 +47,10 @@ export class ExternalToolDriftDetector {
    * @throws Error if increment ID format is invalid
    */
   private validateIncrementId(incrementId: string): void {
-    // Expected format: 4 digits + optional E suffix + hyphen + kebab-case
-    // CRITICAL (v0.33.0): Allow E suffix for external increments (e.g., 0111E-name)
-    if (!/^\d{4}E?-[a-z0-9-]+$/i.test(incrementId)) {
-      throw new Error(`Invalid increment ID format: ${incrementId}. Expected format: XXXX-kebab-case or XXXXE-kebab-case`);
+    // Expected format: 4 digits + optional E/G/J/A suffix + hyphen + kebab-case
+    // CRITICAL (v0.33.0): Allow E suffix, (v1.0.356): Also G (GitHub), J (JIRA), A (ADO)
+    if (!/^\d{4}[EGJA]?-[a-z0-9-]+$/i.test(incrementId)) {
+      throw new Error(`Invalid increment ID format: ${incrementId}. Expected format: XXXX-kebab-case or XXXX[E|G|J|A]-kebab-case`);
     }
 
     // Additional safety: reject path traversal attempts

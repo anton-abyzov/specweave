@@ -103,6 +103,8 @@ export interface MigrationOptions {
   addRepo?: string;
   /** Reorganize spec folders into per-project directories */
   reorganizeSpecs?: boolean;
+  /** Consolidate orphaned increments/docs from nested repos to umbrella root */
+  consolidate?: boolean;
 }
 
 /**

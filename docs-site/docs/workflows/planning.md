@@ -8,11 +8,13 @@ The planning phase transforms a feature idea into a **complete, executable imple
 
 ```mermaid
 graph LR
+    Z[🧠 Brainstorm] -.->|optional| A
     A[💡 Feature Idea] --> B[📋 Create Spec]
     B --> C[🏗️ Design Architecture]
     C --> D[✅ Generate Tasks]
     D --> E[📊 Review & Approve]
 
+    style Z fill:#fff3e0
     style A fill:#e3f2fd
     style E fill:#c8e6c9
 ```
@@ -24,6 +26,22 @@ graph LR
 **Output**: Complete increment with spec.md, plan.md, tasks.md
 
 ## The Planning Flow
+
+### Step 0 (Optional): Brainstorm Before Planning
+
+Not sure which approach to take? Explore options first with `/sw:brainstorm`:
+
+```bash
+/sw:brainstorm "real-time notifications"         # Standard: 4-6 approaches
+/sw:brainstorm "auth system" --depth deep        # Deep: multiple cognitive lenses
+/sw:brainstorm "API design" --depth quick        # Quick: 3-approach comparison
+```
+
+This produces a persistent brainstorm document with a comparison matrix and recommendation. When ready, it hands off directly to `/sw:increment` with the selected approach as context.
+
+**Cognitive lenses available:** Default (parallel generation), Six Thinking Hats, SCAMPER, TRIZ/Constraint Inversion, Adjacent Possible.
+
+See [Skills Reference: brainstorm](/docs/reference/skills#brainstorm) for full details.
 
 ### Step 1: Describe Your Feature
 

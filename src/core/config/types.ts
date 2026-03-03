@@ -337,6 +337,37 @@ export interface StatusLineConfiguration {
  * - ✅ `id: "sw-qr-menu-fe"` (matches repo name)
  * - ❌ `id: "fe"` (arbitrary, what if 2 frontend repos?)
  */
+/**
+ * Per-child-repo GitHub sync target
+ */
+export interface ChildRepoGitHubSync {
+  owner: string;
+  repo: string;
+}
+
+/**
+ * Per-child-repo Jira sync target
+ */
+export interface ChildRepoJiraSync {
+  projectKey: string;
+}
+
+/**
+ * Per-child-repo Azure DevOps sync target
+ */
+export interface ChildRepoAdoSync {
+  project: string;
+}
+
+/**
+ * Sync configuration for a child repo in umbrella mode
+ */
+export interface ChildRepoSyncConfig {
+  github?: ChildRepoGitHubSync;
+  jira?: ChildRepoJiraSync;
+  ado?: ChildRepoAdoSync;
+}
+
 export interface ChildRepoConfig {
   /**
    * Repo identifier - MUST match canonical source name:
@@ -365,6 +396,8 @@ export interface ChildRepoConfig {
   techStack?: string[];
   /** Repository role (frontend, backend, mobile, infra, shared, other) */
   role?: string;
+  /** Per-repo sync targets for distributed sync routing */
+  sync?: ChildRepoSyncConfig;
 }
 
 /**
@@ -384,6 +417,8 @@ export interface UmbrellaConfig {
     /** Default repo for cross-cutting stories */
     defaultRepo: string;
   };
+  /** Sync strategy: 'centralized' routes all to global config, 'distributed' routes per child repo */
+  syncStrategy?: 'centralized' | 'distributed';
 }
 
 /**
