@@ -1817,7 +1817,8 @@ export class LivingDocsSync {
           }
 
           // Method 3: Distributed sync routing — resolve per-project target
-          // Only apply when resolver found a non-global match to avoid clobbering Method 2
+          // Takes priority over Method 2 when a specific child repo match is found
+          // LivingDocsSync only handles GitHub; Jira/ADO routing handled by sync-progress/ExternalIssueAutoCreator
           const resolved = resolveSyncTarget(projectName, config);
           if (resolved.github && resolved.source !== 'global') {
             owner = resolved.github.owner;

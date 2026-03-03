@@ -420,8 +420,10 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
 
       try {
         // Ensure all labels exist in target repo before creating issue
+        // Sanitize labels: only allow alphanumeric, hyphens, colons, spaces
+        const safeLabels = labels.filter(l => /^[a-zA-Z0-9:_\- ]+$/.test(l));
         if (repo) {
-          for (const label of labels) {
+          for (const label of safeLabels) {
             try {
               execFileSync('gh', [
                 'label', 'create', label, '--repo', repo,
@@ -444,8 +446,8 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
           args.push('--repo', repo);
         }
 
-        // Add labels
-        labels.forEach(label => {
+        // Add sanitized labels
+        safeLabels.forEach(label => {
           args.push('--label', label);
         });
 

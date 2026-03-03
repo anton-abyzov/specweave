@@ -285,13 +285,13 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
         effectiveConfig = {
           ...config,
           sync: {
-            ...config.sync!,
+            ...config.sync,
             github: {
               ...config.sync?.github,
               owner: resolved.github.owner,
               repo: resolved.github.repo,
             },
-          },
+          } as typeof config.sync,
         };
         logger.log(`   📍 Distributed routing (${resolved.source}): ${resolved.github.owner}/${resolved.github.repo}`);
       }
@@ -404,12 +404,23 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
 
               // v1.0.357: Resolve JIRA credentials from env vars + config profile
               const jiraProfile = config.sync?.profiles?.[config.sync?.defaultProfile || '']?.config as Record<string, string> | undefined;
+              // Apply distributed routing overrides for Jira/ADO
+              const distributedJiraProjectKey = (resolved.jira && resolved.source !== 'global')
+                ? resolved.jira.projectKey : undefined;
+              const distributedAdoProject = (resolved.ado && resolved.source !== 'global')
+                ? resolved.ado.project : undefined;
+
               const resolvedJira = (jiraConfigured && !parsedArgs.noJira) ? {
                 domain: config.jira?.domain || config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || process.env.JIRA_DOMAIN || '',
                 email: process.env.JIRA_EMAIL || '',
                 apiToken: process.env.JIRA_API_TOKEN || '',
-                projectKey: config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
+                projectKey: distributedJiraProjectKey || config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
               } : undefined;
+
+              const resolvedAdo = config.ado || config.sync?.ado;
+              const effectiveAdo = (adoConfigured && distributedAdoProject && resolvedAdo)
+                ? { ...resolvedAdo, project: distributedAdoProject }
+                : resolvedAdo;
 
               const acSyncConfig: ACProgressSyncConfig = {
                 sync: {
@@ -417,9 +428,9 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                   jira: (jiraConfigured && !parsedArgs.noJira) ? { enabled: true } : undefined,
                   ado: (adoConfigured && !parsedArgs.noAdo) ? { enabled: true } : undefined,
                 },
-                github: config.github || config.sync?.github,
+                github: effectiveConfig.sync?.github || config.github || config.sync?.github,
                 jira: resolvedJira,
-                ado: config.ado || config.sync?.ado,
+                ado: effectiveAdo,
                 externalLinks,
               };
 
