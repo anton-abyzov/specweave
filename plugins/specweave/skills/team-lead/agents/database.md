@@ -23,7 +23,8 @@ WORKFLOW:
   1. Set working directory to your assigned repo: cd repositories/{ORG}/{repo-name}
   2. If .specweave/ doesn't exist in your repo, run: specweave init
   3. Create YOUR increment in YOUR repo: .specweave/increments/[ID]/
-  4. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
+  4. Activate the increment: Edit metadata.json to set "status": "active" and update "lastActivity" timestamp
+  5. Read the MASTER SPEC at [MASTER_INCREMENT_PATH]/spec.md for scope and ACs
   5. Design database schema changes
   6. Create plan files (plan.md, tasks.md) for your increment
   7. Send plan to team-lead and WAIT for approval:
