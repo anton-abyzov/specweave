@@ -652,9 +652,23 @@ export class ProjectResolutionService {
           };
         }
 
-        // Check umbrella.childRepos as additional source before rejecting
-        if (config?.umbrella?.enabled && Array.isArray(config.umbrella.childRepos)) {
-          const childRepoIds = config.umbrella.childRepos.map((r: any) => (r.id || r.name || '').toLowerCase());
+        // Check umbrella.childRepos and umbrella.projectName as additional sources
+        if (config?.umbrella?.enabled) {
+          const childRepoIds = Array.isArray(config.umbrella.childRepos)
+            ? config.umbrella.childRepos.map((r: any) => (r.id || r.name || '').toLowerCase())
+            : [];
+
+          // Accept umbrella project name itself
+          const umbrellaName = (config.umbrella.projectName || '').toLowerCase();
+          if (umbrellaName && projectIdLower === umbrellaName) {
+            return {
+              valid: true,
+              projectId,
+              reason: 'Project matches umbrella.projectName',
+              allowedProjects: [...allowedProjects, umbrellaName, ...childRepoIds]
+            };
+          }
+
           if (childRepoIds.includes(projectIdLower)) {
             return {
               valid: true,

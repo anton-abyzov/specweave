@@ -408,6 +408,8 @@ export interface UmbrellaConfig {
   enabled: boolean;
   /** Optional parent/coordination repo name */
   parentRepo?: string;
+  /** Umbrella project name for umbrella-scoped increments (distinct from child repos) */
+  projectName?: string;
   /** Child repos with their prefixes */
   childRepos: ChildRepoConfig[];
   /** Story routing configuration */
