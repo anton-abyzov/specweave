@@ -1,8 +1,8 @@
 /**
  * Refresh SpecWeave Plugins
  *
- * Copies first-party plugins from specweave's bundled plugins/ directory
- * to ~/.claude/commands/<name>/. Uses inline plugin copier (no vskill dependency).
+ * Installs first-party plugins via Claude Code's native plugin system
+ * (`claude plugin install`). Uses inline installer (no vskill dependency).
  *
  * Modes:
  *   - Default (lazy): Install only core `sw` plugin
@@ -10,6 +10,7 @@
  *   - Hash comparison: Skip plugins whose content hash hasn't changed
  *
  * @since 1.0.279
+ * @updated 1.0.356 - Migrated from copy-to-commands to native plugin install
  */
 
 import chalk from 'chalk';
@@ -19,13 +20,8 @@ import { consoleLogger as logger } from '../../utils/logger.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import {
   copyPlugin,
-  computePluginHash,
   findSpecweaveRoot,
-  readLockfile as readLockfileFromDir,
-  writeLockfile as writeLockfileToDir,
-  ensureLockfile as ensureLockfileInDir,
 } from '../../utils/plugin-copier.js';
-import { registerPluginsWithClaudeCli } from '../../utils/claude-plugin-cli.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -168,12 +164,6 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
         console.log(chalk.gray(`    ${result.error}`));
       }
     }
-  }
-
-  // Step 4b: Register with Claude CLI (ensures plugins appear in /plugin Installed)
-  // This is non-fatal — file-copy is the primary installation mechanism.
-  if (processedPlugins.length > 0) {
-    registerPluginsWithClaudeCli(specweaveRoot, processedPlugins);
   }
 
   // Step 5: Summary

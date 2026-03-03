@@ -193,7 +193,36 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2.4: Plugin cache cleanup removed (v1.0.210) - Claude Code manages its own cache
+  // Step 2.4: Migrate legacy ~/.claude/commands/ to native plugin cache (v1.0.356)
+  // Prior to 1.0.356, plugins were manually copied to ~/.claude/commands/<name>/.
+  // Now they're installed via `claude plugin install` to ~/.claude/plugins/cache/.
+  {
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    const legacyCommandsDir = path.join(home, '.claude', 'commands');
+    if (fs.existsSync(legacyCommandsDir)) {
+      const legacyPluginDirs = ['sw', 'sw-github', 'sw-jira', 'sw-ado'];
+      let migratedCount = 0;
+      for (const pluginName of legacyPluginDirs) {
+        const legacyDir = path.join(legacyCommandsDir, pluginName);
+        if (fs.existsSync(legacyDir)) {
+          if (options.check) {
+            console.log(chalk.yellow(`  \u26a0\ufe0f  Legacy ~/.claude/commands/${pluginName}/ will be removed (migrated to native plugin cache)`));
+            migratedCount++;
+          } else {
+            try {
+              fs.rmSync(legacyDir, { recursive: true, force: true });
+              migratedCount++;
+            } catch {
+              // Best effort
+            }
+          }
+        }
+      }
+      if (migratedCount > 0 && !options.check) {
+        console.log(chalk.green(`  \u2713 Migrated ${migratedCount} legacy plugin(s) from ~/.claude/commands/ to native cache`));
+      }
+    }
+  }
 
   // Step 2.5: Remove deprecated .specweave/memory/ directory
   // No migration needed - just delete. Learnings now go to CLAUDE.md
@@ -377,13 +406,13 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     try {
       const { InstallationHealthChecker } = await import('../../core/doctor/checkers/installation-health-checker.js');
       const cacheChecker = new InstallationHealthChecker();
-      const cacheResult = await cacheChecker.check(projectPath, { fix: true });
+      const cacheResult = await cacheChecker.check(projectPath, { fix: !options.check });
       const cacheFixed = cacheResult.checks.find(c => c.name === 'Plugin cache hook freshness');
       if (cacheFixed && cacheFixed.status !== 'pass') {
         console.log(chalk.green(`  ✓ Plugin cache hooks updated`));
       }
     } catch {
-      // Non-critical — hooks still work from ~/.claude/commands/
+      // Non-critical — plugin cache freshness is best-effort
     }
 
     // NOTE: sw@specweave is enabled at USER level by plugin-installer.ts
@@ -542,7 +571,7 @@ function findStaleSpecweaveFolders(projectPath: string): string[] {
   }
 
   // Also check $HOME/.specweave (created by hooks using $HOME paths)
-  const homeSpecweave = path.join(process.env.HOME || '', '.specweave');
+  const homeSpecweave = path.join(process.env.HOME || process.env.USERPROFILE || '', '.specweave');
   if (
     homeSpecweave &&
     fs.existsSync(homeSpecweave) &&
