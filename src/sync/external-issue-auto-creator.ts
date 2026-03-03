@@ -78,6 +78,31 @@ export class ExternalIssueAutoCreator {
     this.configManager = new ConfigManager(this.projectRoot);
   }
 
+  /**
+   * Resolve increment directory from a short or full ID.
+   * Handles "0421" → "0421-umbrella-docs-update" prefix matching.
+   */
+  private resolveIncrementDir(incrementId: string): string {
+    const directPath = path.join(this.projectRoot, '.specweave/increments', incrementId);
+    if (existsSync(directPath)) return incrementId;
+
+    // Try prefix match
+    const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+    if (existsSync(incrementsDir)) {
+      try {
+        const entries = require('fs').readdirSync(incrementsDir);
+        for (const entry of entries) {
+          if (entry.startsWith(incrementId + '-')) {
+            return entry;
+          }
+        }
+      } catch {
+        // Fall through to original ID
+      }
+    }
+    return incrementId;
+  }
+
   private detectDefaultBranch(): string {
     try {
       // Try config first
@@ -145,11 +170,14 @@ export class ExternalIssueAutoCreator {
         };
       }
 
+      // Resolve full increment directory name (e.g., "0421" → "0421-umbrella-docs-update")
+      const resolvedId = this.resolveIncrementDir(incrementId);
+
       // Guard: skip if spec.md is still a template with placeholders
       const specPath = path.join(
         this.projectRoot,
         '.specweave/increments',
-        incrementId,
+        resolvedId,
         'spec.md'
       );
       if (isTemplateFile(specPath)) {
@@ -163,7 +191,7 @@ export class ExternalIssueAutoCreator {
       }
 
       // Load increment info
-      const incrementInfo = await this.loadIncrementInfo(incrementId);
+      const incrementInfo = await this.loadIncrementInfo(resolvedId);
       if (!incrementInfo) {
         return {
           success: false,
@@ -173,7 +201,7 @@ export class ExternalIssueAutoCreator {
       }
 
       // Check if already has external issue (Layer 1 & 2)
-      const existingIssue = await this.checkExistingIssue(incrementId, provider);
+      const existingIssue = await this.checkExistingIssue(resolvedId, provider);
       if (existingIssue) {
         this.logger.log(`✅ ${incrementId} already has ${provider} issue: ${existingIssue}`);
         return {
@@ -212,9 +240,9 @@ export class ExternalIssueAutoCreator {
             skipReason: 'GitHub sync handled by LivingDocsSync → GitHubFeatureSync pipeline',
           };
         case 'jira':
-          return await this.createJiraIssues(incrementId, incrementInfo, config, resolvedTarget.jira?.projectKey);
+          return await this.createJiraIssues(resolvedId, incrementInfo, config, resolvedTarget.jira?.projectKey);
         case 'ado':
-          return await this.createAdoIssues(incrementId, incrementInfo, config, resolvedTarget.ado?.project);
+          return await this.createAdoIssues(resolvedId, incrementInfo, config, resolvedTarget.ado?.project);
         default:
           return {
             success: false,
