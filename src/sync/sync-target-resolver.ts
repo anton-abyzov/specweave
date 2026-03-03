@@ -45,6 +45,20 @@ export function resolveSyncTarget(
     return globalTarget;
   }
 
+  // Phase 0: Umbrella project match (project === umbrella.projectName)
+  if (config.umbrella?.projectName && projectName === config.umbrella.projectName) {
+    if (config.umbrella.sync) {
+      return {
+        github: config.umbrella.sync.github,
+        jira: config.umbrella.sync.jira,
+        ado: config.umbrella.sync.ado,
+        source: 'child-repo-name', // Treat umbrella as a named project
+      };
+    }
+    // No umbrella-specific sync config → fall through to global
+    return globalTarget;
+  }
+
   // Phase 1: Name/ID match
   const nameMatch = childRepos.find(
     r => r.name === projectName || r.id === projectName,
