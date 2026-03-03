@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.363] - 2026-03-03
+
+### Changes
+- fix: route umbrella project sync to umbrella repo via umbrella.sync config
+
+---
+
+
+
 ## [1.0.362] - 2026-03-03
 
 ### Changes
