@@ -4,6 +4,28 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.367] - 2026-03-04
+
+### Changes
+- send source=session metadata in plugin load tracking, add session dedup
+- fix skill template example to match actual frontmatter
+- update skills-vs-agents docs and add subagent architecture tests
+- add extensibility overview, fix planner model and PM context docs
+- make PM/increment skills umbrella-aware for cross-cutting specs
+- add sw:brainstorm skill with cognitive lenses, public docs, and v2 improvements
+- v1.0.366
+- add umbrella sync routing docs page
+- remove syncStrategy, umbrella.enabled controls routing via Project field
+- fix: track installs on vskill.lock fast-path
+- release: specweave 1.0.365
+- fix: check umbrella.enabled in sync routing, fix JIRA per-project routing
+- release: specweave 1.0.364
+- fix: test fixes and umbrella migration genericity
+
+---
+
+
+
 ## [1.0.366] - 2026-03-04
 
 ### Changes
