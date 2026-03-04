@@ -1,8 +1,8 @@
 /**
  * SyncTargetResolver Unit Tests
  *
- * Tests the three-phase resolution logic for distributed sync routing.
- * ACs: AC-US1-01, AC-US1-02
+ * Tests the three-phase resolution logic for umbrella sync routing.
+ * Routing is controlled by umbrella.enabled + **Project** field in specs.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -51,14 +51,13 @@ function makeConfig(overrides: Partial<SpecWeaveConfig> = {}): SpecWeaveConfig {
           prefix: 'NS',
         },
       ],
-      syncStrategy: 'distributed',
     },
     ...overrides,
   };
 }
 
 describe('resolveSyncTarget', () => {
-  describe('Phase 1: Name match (distributed)', () => {
+  describe('Phase 1: Name match', () => {
     it('should resolve by name when project matches childRepos[].name', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('vskill', config);
@@ -87,7 +86,7 @@ describe('resolveSyncTarget', () => {
     });
   });
 
-  describe('Phase 2: Prefix fallback (distributed)', () => {
+  describe('Phase 2: Prefix fallback', () => {
     it('should resolve by prefix when story ID has matching prefix', () => {
       const config = makeConfig();
       // "US-VSK-001" prefix is "VSK" which matches vskill repo
@@ -98,7 +97,7 @@ describe('resolveSyncTarget', () => {
     });
   });
 
-  describe('Phase 3: Global fallback (distributed)', () => {
+  describe('Phase 3: Global fallback', () => {
     it('should fall back to global config when no child repo matches', () => {
       const config = makeConfig();
       const result = resolveSyncTarget('unknown-project', config);
@@ -120,13 +119,10 @@ describe('resolveSyncTarget', () => {
     });
   });
 
-  describe('Centralized mode (AC-US1-02)', () => {
-    it('should always return global config when syncStrategy is "centralized"', () => {
+  describe('Umbrella disabled (single-repo mode)', () => {
+    it('should always return global config when umbrella is not enabled', () => {
       const config = makeConfig({
-        umbrella: {
-          ...makeConfig().umbrella!,
-          syncStrategy: 'centralized',
-        },
+        umbrella: undefined,
       });
       const result = resolveSyncTarget('vskill', config);
 
@@ -134,9 +130,13 @@ describe('resolveSyncTarget', () => {
       expect(result.github).toEqual({ owner: 'global-org', repo: 'global-repo' });
     });
 
-    it('should always return global config when syncStrategy is absent', () => {
-      const config = makeConfig();
-      delete config.umbrella!.syncStrategy;
+    it('should always return global config when umbrella.enabled is false', () => {
+      const config = makeConfig({
+        umbrella: {
+          ...makeConfig().umbrella!,
+          enabled: false,
+        },
+      });
       const result = resolveSyncTarget('vskill', config);
 
       expect(result.source).toBe('global');
@@ -153,21 +153,11 @@ describe('resolveSyncTarget', () => {
       expect(result.github).toEqual({ owner: 'global-org', repo: 'global-repo' });
     });
 
-    it('should fall back to global when umbrella is not enabled', () => {
-      const config = makeConfig({
-        umbrella: undefined,
-      });
-      const result = resolveSyncTarget('vskill', config);
-
-      expect(result.source).toBe('global');
-    });
-
     it('should fall back to global when childRepos is empty', () => {
       const config = makeConfig({
         umbrella: {
           enabled: true,
           childRepos: [],
-          syncStrategy: 'distributed',
         },
       });
       const result = resolveSyncTarget('vskill', config);
