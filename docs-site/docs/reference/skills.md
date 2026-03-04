@@ -75,7 +75,15 @@ These skills form the foundation of spec-driven development.
 - `triz` — Constraint inversion (negate core assumptions)
 - `adjacent` — Adjacent Possible (what recently became feasible)
 
+**Additional features:**
+- `--resume` — Pick up a previous brainstorm session
+- `--criteria` — Custom evaluation criteria (e.g., `brand-fit,audience-reach,cost`)
+- TRIZ lens includes 13 inventive principles adapted for software
+- Adjacent Possible lens uses live web search to ground ideas in reality
+
 **Output:** Persistent brainstorm document at `.specweave/docs/brainstorms/YYYY-MM-DD-topic.md` with idea tree for revisiting later.
+
+**Full guide:** [Brainstorming with Cognitive Lenses](/docs/guides/brainstorming)
 
 ### increment
 

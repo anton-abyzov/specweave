@@ -120,6 +120,11 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'guides/brainstorming',
+          label: 'Brainstorming',
+        },
+        {
+          type: 'doc',
           id: 'workflows/planning',
           label: 'Planning',
         },
@@ -346,6 +351,11 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'workflows/overview',
           label: 'Overview',
+        },
+        {
+          type: 'doc',
+          id: 'guides/brainstorming',
+          label: 'Brainstorming',
         },
         {
           type: 'doc',
