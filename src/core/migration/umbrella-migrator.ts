@@ -465,17 +465,36 @@ async function executeStep(
         prefix: repoName.substring(0, 3).toUpperCase(),
       };
 
+      // Derive umbrella project name from directory (e.g., "my-umbrella-project")
+      const umbrellaProjectName = path.basename(plan.umbrellaPath);
+
       config.umbrella = {
         enabled: true,
+        projectName: umbrellaProjectName,
         childRepos: [childRepo],
       };
+
+      // Copy existing sync config to umbrella.sync so umbrella-scoped
+      // increments route to the umbrella repo (not to a child repo)
+      if (config.sync?.github?.owner && config.sync?.github?.repo) {
+        config.umbrella.sync = {
+          github: { owner: config.sync.github.owner, repo: config.sync.github.repo },
+        };
+        if (config.sync?.jira?.projectKey) {
+          config.umbrella.sync.jira = { projectKey: config.sync.jira.projectKey };
+        }
+        if (config.sync?.ado?.project) {
+          config.umbrella.sync.ado = { project: config.sync.ado.project };
+        }
+      }
+
       // Ensure directory exists (config.json was moved as part of .specweave/)
       const configDir = path.dirname(configPath);
       if (!fs.existsSync(configDir)) {
         await fs.promises.mkdir(configDir, { recursive: true });
       }
       await fs.promises.writeFile(configPath, JSON.stringify(config, null, 2));
-      logger.log(`   Config updated: umbrella.enabled=true, childRepo=${repoName}`);
+      logger.log(`   Config updated: umbrella.enabled=true, projectName=${umbrellaProjectName}, childRepo=${repoName}`);
       break;
     }
 
