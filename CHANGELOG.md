@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.365] - 2026-03-04
+
+### Changes
+- fix: check umbrella.enabled in sync routing, fix JIRA per-project routing
+- release: specweave 1.0.364
+- fix: test fixes and umbrella migration genericity
+
+---
+
+
+
 ## [1.0.364] - 2026-03-04
 
 ### Changes
