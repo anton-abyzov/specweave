@@ -1,176 +1,202 @@
-# Skills vs Agents: SpecWeave's Approach
+# Skills and Subagents: SpecWeave's Architecture
 
 > Based on official Claude Code documentation: https://code.claude.com/docs/en/skills and https://code.claude.com/docs/en/sub-agents
 
 ## TL;DR
 
-**SpecWeave uses Skills exclusively. No custom agents needed.**
+**SpecWeave uses both Skills AND Custom Subagents — each for what it's best at.**
 
-Skills with `context: fork` provide 100% of the functionality we need:
-- **Auto-activation** by keywords (Claude detects "React dashboard" → loads frontend skill)
-- **Isolated execution** via `context: fork` (like subagents)
-- **User-invocable** via `/skill-name`
-- **Domain expertise** loaded on-demand
+- **Skills** = reusable instructions (reference knowledge, standalone tasks, user-invocable `/commands`)
+- **Custom Subagents** = persistent, isolated workers that preload skills (memory, resumability, background execution)
+- **The pattern**: Subagents preload skills via the `skills:` field — subagent owns isolation + memory, skill owns domain logic
 
-For explicit research/exploration tasks, use **built-in subagents** (Explore, Plan, general-purpose).
+## When to Use What
 
-## Why Skills Over Custom Agents?
+| Use Case | Mechanism | Why |
+|----------|-----------|-----|
+| **Orchestrated agent** (PM, Architect, Planner) | Custom subagent + preloaded skill | Memory, resumability, auto-compaction, guaranteed skill injection |
+| **Standalone heavy task** (grill, brainstorm) | Skill with `context: fork` | Self-contained, user-invocable, no memory needed |
+| **Reference knowledge** (api-conventions, style guide) | Skill, NO `context: fork` | Must run inline to enrich main conversation |
+| **Quick research** | Built-in subagent (Explore, Plan, general-purpose) | Read-only, disposable, no custom setup |
 
-| Feature | Skills (`context: fork`) | Custom Agents |
-|---------|-------------------------|---------------|
-| **Auto-activation** | ✅ By keywords | ❌ Must be explicitly spawned |
-| **Isolated context** | ✅ With `context: fork` | ✅ Always isolated |
-| **User-invocable** | ✅ `/skill-name` | ❌ Only via Task tool |
-| **Discovery** | ✅ Works with subfolder structure | ❌ Requires flat files |
-| **Token efficient** | ✅ Loads on-demand | ❌ Same |
-| **Maintenance** | ✅ Simple SKILL.md format | ❌ Stricter requirements |
+### Decision Flowchart
 
-**Bottom line**: Skills do everything custom agents do, plus auto-activation and simpler maintenance.
-
-## The Pattern: Skills with `context: fork`
-
-```yaml
----
-name: frontend-architect
-description: Frontend architecture expert. Activates for React, Vue, Next.js, dashboard, component...
-context: fork          # <-- Runs in isolated subagent context
-model: opus
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep
----
-
-# Frontend Architect Skill
-
-You are an expert frontend architect...
+```
+Does the agent need persistent memory or resumability?
+  YES → Custom subagent (with skills: preloading)
+  NO  →
+    Is it a standalone task producing output?
+      YES → Skill with context: fork
+      NO  →
+        Is it reference/knowledge for the main conversation?
+          YES → Skill, NO context: fork (runs inline)
+          NO  → Built-in subagent (Explore/Plan/general-purpose)
 ```
 
-**This gives you:**
-- Auto-activation on keywords ("Build React dashboard" → skill activates)
-- Isolated context (doesn't pollute main conversation)
-- Full tool access within the isolated context
-- Results summarized back to main conversation
+## The Core Pattern: Subagents Preloading Skills
+
+This is the recommended architecture for SpecWeave's orchestrated agents:
+
+```
+plugins/specweave/
+├── agents/
+│   ├── sw-pm.md            # Subagent definition (model, memory, skills)
+│   ├── sw-architect.md     # Each preloads its corresponding skill
+│   └── sw-planner.md
+├── skills/
+│   ├── pm/
+│   │   ├── SKILL.md        # Domain logic, phases, templates
+│   │   ├── phases/         # Supporting files loaded on demand
+│   │   └── templates/
+│   ├── architect/
+│   │   └── SKILL.md
+│   └── test-aware-planner/
+│       └── SKILL.md
+```
+
+### How It Works
+
+**Subagent file** (`agents/sw-pm.md`):
+```yaml
+---
+name: sw-pm
+description: Product Manager for writing spec.md...
+model: opus
+memory: project
+skills:
+  - sw:pm              # Preloads the PM skill content at startup
+---
+
+You are a Product Manager specializing in spec-driven development.
+```
+
+**Skill file** (`skills/pm/SKILL.md`):
+```yaml
+---
+description: Product Manager for spec-driven development...
+# NO context: fork — the subagent provides isolation
+# NO model — the subagent controls the model
+---
+
+# Product Manager Skill
+...full domain logic, phases, templates...
+```
+
+**Why this works**:
+- The **subagent** owns: isolation, memory, model, resumability, background execution
+- The **skill** owns: domain logic, supporting files (phases, templates), user-invocable `/sw:pm`
+- The `skills:` field **guarantees** skill content is injected at startup (no discovery step needed)
+- Users can still run `/sw:pm` directly for ad-hoc spec work outside increment flow
+
+### Invocation from the Increment Orchestrator
+
+```typescript
+// The increment skill spawns subagents (NOT skills):
+Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: ..." })
+Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name..." })
+Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name..." })
+```
+
+## Feature Comparison
+
+| Feature | Skill (`context: fork`) | Custom Subagent |
+|---------|------------------------|-----------------|
+| **Isolated context** | Yes | Yes |
+| **Auto-activation by keywords** | Yes | No (must be explicitly spawned) |
+| **User-invocable** (`/name`) | Yes | No (only via Agent tool) |
+| **Persistent memory** | No | Yes (`memory: project/user/local`) |
+| **Resumable** (by agent ID) | No | Yes |
+| **Background execution** | No (blocks caller) | Yes (`run_in_background: true` or Ctrl+B) |
+| **Auto-compaction** | No | Yes (at ~95% capacity) |
+| **Permission mode override** | No | Yes (`permissionMode:`) |
+| **Skills preloading** | No | Yes (`skills:` field) |
+| **Hooks** | Yes | Yes |
+| **Custom model** | Yes (`model:`) | Yes (`model:`) |
+| **Distributed via plugins** | `plugins/X/skills/` | `plugins/X/agents/` |
+| **Supporting files** | Yes (phases/, templates/) | No (but preloaded skills can have them) |
+
+## When NOT to Use `context: fork`
+
+A skill should **not** have `context: fork` when:
+
+1. **A subagent preloads it** — the subagent already provides isolation. Adding `context: fork` would double-fork (skill forks inside already-forked subagent = wasted tokens)
+2. **It provides reference knowledge** — conventions, patterns, style guides that Claude needs in the main conversation context
+3. **It needs conversation history** — `context: fork` creates a fresh context; the skill won't see prior messages
+
+**DO use `context: fork`** when:
+- The skill is a **standalone task** producing output (grill, brainstorm, code-simplifier)
+- No custom subagent wraps it
+- You want isolation without creating a full subagent definition
 
 ## Built-in Subagents for Research
 
-For explicit research/exploration tasks, use Claude Code's **built-in subagents** via the Task tool:
+For explicit research/exploration, use Claude Code's built-in subagents:
 
-| Subagent | Use Case | Example |
-|----------|----------|---------|
-| **Explore** | Codebase exploration, finding files | "Find all API endpoints" |
-| **Plan** | Architecture planning, design | "Design auth system" |
-| **general-purpose** | Open-ended research | "Research Stripe vs PayPal for Israel" |
-
-**Example usage:**
-```typescript
-Task({
-  subagent_type: "Explore",
-  prompt: "Find all payment-related files and how they're organized",
-  description: "Explore payments codebase"
-})
-
-Task({
-  subagent_type: "general-purpose",
-  prompt: "Research best payment providers for businesses in Israel",
-  description: "Payment provider research"
-})
-```
-
-**Key insight**: Built-in subagents handle explicit research needs. Skills handle domain expertise. No custom agents needed!
-
-## SpecWeave Skill Catalog
-
-All domain experts are now skills with `context: fork`:
-
-| Domain | Skill | Triggers (Auto-activate) |
-|--------|-------|--------------------------|
-| **Frontend** | `frontend:architect` | React, Vue, Next.js, dashboard, component, UI |
-| **Backend** | `backend:database-optimizer` | API, database, SQL, PostgreSQL, optimization |
-| **Payments** | `payments:payment-integration` | Stripe, PayPal, checkout, billing, subscriptions |
-| **Testing** | `testing:qa` | E2E, Playwright, Vitest, Jest, TDD, QA |
-| **Kubernetes** | `k8s:kubernetes-architect` | K8s, pods, deployments, Helm, GitOps |
-| **Infrastructure** | `infra:devops` | Terraform, Docker, CI/CD, AWS, Azure |
-| **Mobile** | `mobile:react-native-expert` | React Native, iOS, Android, Expo |
-| **ML/AI** | `ml:ml-engineer` | ML, model, training, TensorFlow, PyTorch |
-| **Diagrams** | `sw-diagrams:diagrams` | Mermaid, C4, architecture diagram, flowchart |
-| **Release** | `sw-release:release-expert` | release, version, changelog, npm publish |
-
-All run in isolated context without polluting the main conversation.
-
-## How It Works in Practice
-
-**User says:** "Build a React dashboard with Stripe checkout"
-
-**What happens:**
-1. Claude detects keywords: "React", "dashboard", "Stripe", "checkout"
-2. Skills auto-activate (primary mechanism):
-   - `frontend:architect` (React, dashboard)
-   - `payments:payment-integration` (Stripe, checkout)
-3. Each skill runs in isolated context (`context: fork`)
-4. Results return to main conversation
-
-**Two invocation methods** (per [official docs](https://code.claude.com/docs/en/skills)):
-1. **Auto-activation** (primary): Keywords in skill description trigger automatic loading
-2. **Explicit invocation** (fallback): Use Skill tool or `/skill-name` when auto-activation doesn't trigger
+| Subagent | Model | Tools | Use Case |
+|----------|-------|-------|----------|
+| **Explore** | Haiku | Read-only | Fast codebase search, file discovery |
+| **Plan** | Inherited | Read-only | Architecture planning, design research |
+| **general-purpose** | Inherited | All | Complex multi-step research + modification |
 
 ```typescript
-// If auto-activation didn't work, explicitly invoke:
-Skill({ skill: "frontend:architect", args: "dashboard" })
+Agent({ subagent_type: "Explore", prompt: "Find all API endpoints", description: "API exploration" })
+Agent({ subagent_type: "general-purpose", prompt: "Research Stripe integration patterns", description: "Stripe research" })
 ```
 
-## Migration Complete
+## SpecWeave Agent Catalog
 
-All 35 SpecWeave agents have been converted to skills:
+### Core Orchestration Agents (Subagent + Skill)
 
-**Before (Didn't Work):**
-```
-plugins/specweave-frontend/
-└── agents/
-    └── frontend-architect/
-        └── AGENT.md         # NOT discovered by Claude Code!
-```
+| Agent | Subagent | Preloads Skill | Writes | Model |
+|-------|----------|---------------|--------|-------|
+| **PM** | `sw-pm` | `sw:pm` | spec.md | Opus |
+| **Architect** | `sw-architect` | `sw:architect` | plan.md | Opus |
+| **Planner** | `sw-planner` | `sw:test-aware-planner` | tasks.md | Sonnet |
 
-**After (Works):**
-```
-plugins/specweave-frontend/
-└── skills/
-    └── frontend-architect/
-        └── SKILL.md         # Auto-activates on keywords
-```
+### Standalone Skills (context: fork)
 
-**Conversion changes:**
-- `tools:` → `allowed-tools:`
-- Added `context: fork`
-- Removed agent-specific fields (`model_preference`, `cost_profile`, `visibility`)
-- Removed "How to Invoke" sections
+| Skill | Purpose | Why not a subagent? |
+|-------|---------|-------------------|
+| `sw:grill` | Code review before ship | No memory needed, one-shot |
+| `sw:brainstorm` | Multi-perspective ideation | Spawns parallel lenses, disposable |
+| `sw:judge-llm` | Deep validation | One-shot evaluation |
+
+### Reference Skills (inline, no fork)
+
+| Skill | Purpose |
+|-------|---------|
+| `api-conventions` | API design patterns |
+| `error-handling-patterns` | Error handling standards |
 
 ## FAQ
 
-### Q: Do we ever need custom agents?
-**A: No.** Skills with `context: fork` cover 100% of our use cases. Built-in subagents (Explore, Plan, general-purpose) handle explicit research tasks.
+### Q: When should I create a custom subagent vs a skill with `context: fork`?
+**A:** If the agent needs **persistent memory**, **resumability**, or **background execution** — make it a custom subagent. If it's a **one-shot task** or **user-invocable command** — make it a skill with `context: fork`. If it's **reference knowledge** — skill without fork.
 
-### Q: Why did custom agents fail?
-**A:** Claude Code expects flat files (`agents/<name>.md`), but SpecWeave had subfolder structure (`agents/<name>/AGENT.md`). Skills don't have this limitation.
+### Q: Can a skill work both standalone AND preloaded by a subagent?
+**A:** Yes. Remove `context: fork` from the skill. Users invoke it directly via `/sw:pm` (runs inline). The subagent preloads it via `skills: [sw:pm]` (runs in subagent's isolated context). Same logic, two execution modes.
 
-### Q: How do I invoke a skill explicitly?
-**A:** Two ways:
-1. **User**: Type `/frontend:architect` in chat
-2. **Claude**: Use `Skill({ skill: "frontend:architect" })` when auto-activation didn't trigger
+### Q: What happens if the skills: preloading fails?
+**A:** The subagent still runs — it just won't have the skill content injected. The subagent's own markdown body (system prompt) is always available. To guard against this, keep critical instructions in the subagent body and use skills for detailed/phase logic.
 
-Usually just describe what you need - skills auto-activate on keywords. Use explicit invocation as fallback.
+### Q: Can subagents spawn other subagents?
+**A:** No. Subagents cannot nest. If you need chained delegation, the **main conversation** (or orchestrator skill) spawns each subagent sequentially.
 
-### Q: What about parallel execution?
-**A:** Built-in subagents can run in parallel via multiple Task tool calls. Skills with `context: fork` also run in isolated contexts, so multiple can activate without conflict.
+### Q: Why did custom agents fail before?
+**A:** SpecWeave originally used subfolder structure (`agents/<name>/AGENT.md`). Claude Code expected flat files (`agents/<name>.md`). This was fixed — flat `.md` files in `agents/` now work correctly.
 
 ## Official Documentation
 
 - **Skills**: https://code.claude.com/docs/en/skills
 - **Subagents**: https://code.claude.com/docs/en/sub-agents
-- **Features Overview**: https://code.claude.com/docs/en/features-overview
-- **Best Practices**: https://code.claude.com/docs/en/best-practices
+- **Agent Teams**: https://code.claude.com/docs/en/agent-teams
+- **Plugins**: https://code.claude.com/docs/en/plugins
 
 ## Summary
 
-1. **Skills are the only choice** for SpecWeave - no custom agents needed
-2. **`context: fork`** gives isolated execution (subagent behavior)
-3. **Auto-activation by keywords** is the primary mechanism
-4. **Built-in subagents** (Explore, Plan, general-purpose) handle explicit research
-5. **All 35 agents converted** to skills across all plugins
+1. **Subagents + Skills together** — subagent owns isolation/memory, skill owns domain logic
+2. **`context: fork`** for standalone tasks only (grill, brainstorm, judge)
+3. **No `context: fork`** on skills preloaded by subagents (avoids double-fork)
+4. **No `context: fork`** on reference/knowledge skills (need inline context)
+5. **Built-in subagents** (Explore, Plan, general-purpose) for ad-hoc research
+6. **Agent()** to invoke custom subagents, **Skill()** for standalone skills

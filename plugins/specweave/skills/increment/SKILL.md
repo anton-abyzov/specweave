@@ -170,14 +170,20 @@ Every US MUST have `**Project**:` field. For 2-level structures, also `**Board**
 
 ### 3a. Determine Increment Location
 
-**CRITICAL for multi-repo setups:**
+**CRITICAL for umbrella vs single-repo:**
 
 ```bash
-# Check if this is a multi-repo umbrella project
-if [ -d "repositories" ]; then
-  echo "MULTI-REPO: Increments belong in EACH repo's .specweave/"
+# Check umbrella mode
+UMBRELLA_ENABLED=$(jq -r '.umbrella.enabled // false' .specweave/config.json 2>/dev/null)
+
+if [ "$UMBRELLA_ENABLED" = "true" ]; then
+  echo "UMBRELLA MODE: Increments go in UMBRELLA ROOT .specweave/increments/"
+  echo "The **Project**: field in each user story controls sync routing to child repos."
+  # List available child repos for context
+  jq -r '.umbrella.childRepos[]? | "\(.name) (\(.path))"' .specweave/config.json 2>/dev/null
+elif [ -d "repositories" ]; then
+  echo "MULTI-REPO (no umbrella): Increments belong in EACH repo's .specweave/"
   ORG=$(jq -r '.repository.organization // empty' .specweave/config.json 2>/dev/null)
-  [ -z "$ORG" ] && ORG=$(jq -r '[.sync.profiles[].config.owner // .sync.profiles[].config.organization] | map(select(. != null)) | first // empty' .specweave/config.json 2>/dev/null)
   [ -z "$ORG" ] && ORG=$(ls -d repositories/*/ 2>/dev/null | head -1 | xargs basename 2>/dev/null)
   echo "Organization: $ORG"
   ls -d repositories/*/* 2>/dev/null | head -20
@@ -186,12 +192,15 @@ else
 fi
 ```
 
-**Multi-repo rules:**
-- Each repository has its OWN `.specweave/increments/` directory
-- Team agents MUST create increments in their assigned repo's `.specweave/`
-- The umbrella root `.specweave/` is for umbrella-level config ONLY
-- Run `specweave init` in each repo if `.specweave/` doesn't exist
+**Umbrella mode (`umbrella.enabled: true`):**
+- ALL increments go in the umbrella root `.specweave/increments/` — NOT in child repos
+- The `**Project**:` field in each user story controls which repo receives sync (GitHub issues, JIRA tickets)
+- Cross-cutting increments can span multiple child repos — each US targets a different project
 - Repos MUST be at `repositories/{ORG}/{repo-name}/` — NEVER directly under `repositories/`
+
+**Non-umbrella multi-repo (legacy):**
+- Each repository has its OWN `.specweave/increments/` directory
+- Run `specweave init` in each repo if `.specweave/` doesn't exist
 
 ### 3b. Get Unique ID
 
@@ -259,41 +268,42 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 
 ## Critical Rules
 
-1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via Skill() calls to plugin agents
+1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via Agent() calls to custom subagents
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
 3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
-4. **Skill delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — invoke `sw:pm`, `sw:architect`, `sw:test-aware-planner` via Skill() calls
+4. **Agent delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — spawn `sw:sw-pm`, `sw:sw-architect`, `sw:sw-planner` subagents via Agent() calls
 5. **Increment naming** — Format: `####-descriptive-kebab-case`
-6. **Multi-repo** — In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
+6. **Umbrella mode** — When `umbrella.enabled: true`, ALL increments go in the umbrella root `.specweave/increments/`. The `**Project**:` field per user story routes sync to child repos. Do NOT create increments in child repos.
 
-## CRITICAL: Mandatory Skill Delegation
+## CRITICAL: Mandatory Subagent Delegation
 
 **This skill MUST NOT write spec.md, plan.md, or tasks.md directly.**
-Delegate to plugin skills via Skill() calls.
+Delegate to custom subagents via Agent() calls. Each subagent preloads its corresponding skill with full domain logic.
 
-**You MUST invoke these plugin skills:**
+**You MUST spawn these subagents:**
 
-| File | Skill | Invocation |
-|------|-------|------------|
-| spec.md | sw:pm | `Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <description>. Increment path: <path>" })` |
-| plan.md | sw:architect | `Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name. Read spec.md at <path>/spec.md" })` |
-| tasks.md | sw:test-aware-planner | `Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at <path>/spec.md and plan.md at <path>/plan.md" })` |
+| File | Subagent | Invocation |
+|------|----------|------------|
+| spec.md | sw:sw-pm | `Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: <path>. [UMBRELLA: child repos list if enabled]", description: "PM writes spec.md" })` |
+| plan.md | sw:sw-architect | `Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Read spec.md at <path>/spec.md", description: "Architect writes plan.md" })` |
+| tasks.md | sw:sw-planner | `Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name. Read spec.md at <path>/spec.md and plan.md at <path>/plan.md", description: "Planner writes tasks.md" })` |
 
 **DO NOT:**
 - Write user stories, architecture, or tasks inline
 - Copy/paste spec content into Write() calls
 - "Summarize" what an agent would produce
-- Skip any of the 3 Skill() calls
+- Skip any of the 3 Agent() calls
+- Use Skill() for these — subagents provide memory + resumability
 
 ## Step 3a: Deep Interview Mode (if enabled)
 
 **IMPORTANT**: This step runs AFTER the increment folder is created (Step 3), so the
 interview state file can reference the real increment ID.
 
-**If deep interview is enabled, delegate to PM skill:**
+**If deep interview is enabled, delegate to PM subagent:**
 
 ```typescript
-Skill({ skill: "sw:pm", args: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>" })
+Agent({ subagent_type: "sw:sw-pm", prompt: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>", description: "PM deep interview" })
 ```
 
 The PM agent will:
@@ -305,23 +315,31 @@ The PM agent will:
 **After PM agent returns**, read the interview state file to confirm all categories are covered
 before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
-## Step 4: Delegation (MANDATORY - Plugin Skill Based)
+## Step 4: Delegation (MANDATORY - Custom Subagent Based)
 
-**After increment folder + metadata.json are created, you MUST invoke all 3 plugin skills sequentially.**
+**After increment folder + metadata.json are created, you MUST spawn all 3 subagents sequentially.**
 
-### 4a. Invoke PM Skill for spec.md (REQUIRED)
+Each subagent preloads its corresponding skill (with full domain logic, phases, templates). The subagent provides: isolated context, persistent memory, resumability, auto-compaction.
+
+### 4a. Spawn PM Subagent for spec.md (REQUIRED)
+
+**Include umbrella context when `umbrella.enabled: true`:**
 ```typescript
-Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <user's feature description>. Increment path: .specweave/increments/XXXX-name/" })
+// Umbrella mode — pass child repos so PM can assign **Project**: per user story
+Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/. UMBRELLA MODE: Child repos: [repo1, repo2, ...]. Design cross-cutting stories — assign **Project**: to each US based on which repo owns that work.", description: "PM writes spec.md" })
+
+// Single-project mode — standard invocation
+Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment XXXX-name: <description>. Increment path: .specweave/increments/XXXX-name/", description: "PM writes spec.md" })
 ```
 
-### 4b. Invoke Architect Skill for plan.md (REQUIRED)
+### 4b. Spawn Architect Subagent for plan.md (REQUIRED)
 ```typescript
-Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md. ADR directory: .specweave/docs/internal/architecture/adr/" })
+Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md. ADR directory: .specweave/docs/internal/architecture/adr/", description: "Architect writes plan.md" })
 ```
 
-### 4c. Invoke Planner Skill for tasks.md (REQUIRED)
+### 4c. Spawn Planner Subagent for tasks.md (REQUIRED)
 ```typescript
-Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md" })
+Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md", description: "Planner writes tasks.md" })
 ```
 
 **Order matters**: PM first (spec.md) -> Architect second (plan.md) -> Planner last (tasks.md).
@@ -431,7 +449,7 @@ Created increment 0003-user-authentication
 
 - `.specweave/` not found: "Run specweave init first"
 - Vague description: Ask clarifying questions
-- Agent fails: Fall back to invoking `/sw:pm` or `/sw:architect` skills directly
+- Subagent fails: Fall back to invoking `/sw:pm` or `/sw:architect` skills directly (skills still work standalone)
 
 ---
 
