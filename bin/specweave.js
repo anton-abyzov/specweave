@@ -1374,7 +1374,7 @@ program
 // Migrate-to-umbrella command - Convert single-repo to umbrella workspace
 program
   .command('migrate-to-umbrella')
-  .description('Convert single-repo project to umbrella/multi-repo workspace. Supports distributed (per-repo) and centralized (single-repo) sync strategies via umbrella.syncStrategy config.')
+  .description('Convert single-repo project to umbrella/multi-repo workspace. Per-repo sync routing is controlled by the **Project** field in specs.')
   .option('--execute', 'Execute migration (default is dry-run)')
   .option('--umbrella-path <path>', 'Custom umbrella directory path')
   .option('--org <name>', 'GitHub organization name')

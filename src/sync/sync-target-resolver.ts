@@ -2,14 +2,14 @@
  * Sync Target Resolver
  *
  * Resolves sync targets (GitHub, Jira, ADO) for a given project name
- * in umbrella mode with distributed sync routing.
+ * in umbrella mode. The **Project** field in spec.md controls routing.
  *
  * Three-phase resolution:
  * 1. Name match: childRepos.find(r => r.name === projectName || r.id === projectName)
  * 2. Prefix fallback: routeByPrefix(projectName, childRepos) for US-{PREFIX}-NNN IDs
  * 3. Global fallback: return config.sync.{github,jira,ado}
  *
- * When syncStrategy !== 'distributed', always returns global config.
+ * When umbrella.enabled is false, always returns global config.
  */
 
 import type { SpecWeaveConfig } from '../core/config/types.js';
@@ -35,8 +35,8 @@ export function resolveSyncTarget(
 ): SyncTargetConfig {
   const globalTarget = buildGlobalTarget(config);
 
-  // Short-circuit: umbrella disabled or not distributed mode → always global
-  if (!config.umbrella?.enabled || config.umbrella?.syncStrategy !== 'distributed') {
+  // Short-circuit: umbrella disabled → always global
+  if (!config.umbrella?.enabled) {
     return globalTarget;
   }
 

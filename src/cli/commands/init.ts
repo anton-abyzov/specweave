@@ -796,6 +796,40 @@ export async function initCommand(
               ...(org && { organization: org }),
             };
           }
+          // When user selected an umbrella repo, enable umbrella mode
+          // and register cloned repos as child repos
+          if (repoResult.umbrellaRepo) {
+            const org = config.repository?.organization;
+            config.umbrella = {
+              enabled: true,
+              projectName: path.basename(targetDir),
+              childRepos: githubClonedRepos.map(repoName => ({
+                id: repoName,
+                name: repoName,
+                path: `repositories/${org ? org + '/' : ''}${repoName}`,
+                prefix: repoName.substring(0, 3).toUpperCase(),
+                ...(org && {
+                  sync: {
+                    github: { owner: org, repo: repoName },
+                  },
+                }),
+              })),
+            };
+            // Copy global sync config as umbrella.sync so umbrella-scoped
+            // increments route to the umbrella repo, not a child
+            if (config.sync?.github?.owner && config.sync?.github?.repo) {
+              config.umbrella.sync = {
+                github: { owner: config.sync.github.owner, repo: config.sync.github.repo },
+              };
+              if (config.sync?.jira?.projectKey) {
+                config.umbrella.sync.jira = { projectKey: config.sync.jira.projectKey };
+              }
+              if (config.sync?.ado?.project) {
+                config.umbrella.sync.ado = { project: config.sync.ado.project };
+              }
+            }
+          }
+
           await fs.writeJson(configPath, config, { spaces: 2 });
         } catch {
           // Non-critical — config update failed but init can continue

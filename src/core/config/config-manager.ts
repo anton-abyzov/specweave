@@ -97,6 +97,13 @@ export class ConfigManager {
         config = migrationResult.config as SpecWeaveConfig;
       }
 
+      // Strip deprecated syncStrategy from umbrella config (removed in v1.0.366)
+      if (config.umbrella && 'syncStrategy' in config.umbrella) {
+        delete (config.umbrella as Record<string, unknown>).syncStrategy;
+        const content = JSON.stringify(config, null, 2);
+        await fs.writeFile(this.configPath, content, 'utf-8');
+      }
+
       this.config = config;
       return this.config;
     } catch (error: unknown) {
