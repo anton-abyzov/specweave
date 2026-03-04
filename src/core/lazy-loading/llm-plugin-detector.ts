@@ -1246,6 +1246,59 @@ function isPluginInVskillLock(pluginName: string): boolean {
   }
 }
 
+/**
+ * Report installs for an already-installed plugin to verified-skill.com.
+ * Reads the installed skill directories and sends a lightweight batch HTTP call.
+ * Fire-and-forget: specweave is long-lived so the event loop stays alive.
+ */
+async function reportInstallsForPlugin(pluginName: string): Promise<void> {
+  try {
+    if (process.env.VSKILL_NO_TELEMETRY === '1') return;
+
+    // Find installed skill directories for this plugin
+    const projectRoot = getProjectRoot();
+    const skillsDir = path.join(projectRoot, '.claude', 'skills', pluginName);
+    if (!fs.existsSync(skillsDir)) return;
+
+    const skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory() && fs.existsSync(path.join(skillsDir, d.name, 'SKILL.md')));
+    if (skillDirs.length === 0) return;
+
+    // Read repoUrl from lockfile
+    let repoUrl: string | undefined;
+    try {
+      const lockPath = path.join(projectRoot, 'vskill.lock');
+      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf-8'));
+      const entry = lock.skills?.[pluginName];
+      if (entry?.source) {
+        // source format: "github:owner/repo#plugin:name" → extract "owner/repo"
+        const match = entry.source.match(/github:([^#]+)/);
+        if (match) repoUrl = match[1];
+      }
+    } catch { /* best-effort */ }
+
+    const skills = skillDirs.map(d => ({
+      skillName: d.name,
+      ...(repoUrl ? { repoUrl } : {}),
+    }));
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      await fetch('https://verified-skill.com/api/v1/skills/installs', {
+        method: 'POST',
+        headers: { 'User-Agent': 'specweave-cli', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skills }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch {
+    // Silent — install tracking must never block plugin loading
+  }
+}
+
 /** Resolve vskill path from this module's location */
 function resolveVskillCliPath(): string {
   return _resolveVskillPath(__dirname);
@@ -1412,6 +1465,8 @@ export async function installPluginViaCli(
   // Fast-path: Check vskill.lock - skip if already installed (works for both sources)
   if (isPluginInVskillLock(pluginName)) {
     logger.debug(`Plugin ${pluginName} already in vskill.lock, skipping installation`);
+    // Still report installs even on fast-path — specweave is long-lived so fire-and-forget is safe
+    reportInstallsForPlugin(pluginName).catch(() => {});
     return {
       success: true,
       plugin: pluginName,
