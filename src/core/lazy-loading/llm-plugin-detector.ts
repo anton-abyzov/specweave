@@ -1246,14 +1246,24 @@ function isPluginInVskillLock(pluginName: string): boolean {
   }
 }
 
+/** Track which plugins have already been reported this session (daily dedup) */
+const _reportedPlugins = new Set<string>();
+
 /**
- * Report installs for an already-installed plugin to verified-skill.com.
+ * Report session-load installs for an already-installed plugin to verified-skill.com.
  * Reads the installed skill directories and sends a lightweight batch HTTP call.
  * Fire-and-forget: specweave is long-lived so the event loop stays alive.
+ *
+ * Rate-limited: once per plugin per session to avoid inflation on repeated loads.
+ * Server-side dedup (ipHash+source+date) handles cross-session dedup.
  */
 async function reportInstallsForPlugin(pluginName: string): Promise<void> {
   try {
     if (process.env.VSKILL_NO_TELEMETRY === '1') return;
+
+    // Client-side dedup: once per plugin per session
+    if (_reportedPlugins.has(pluginName)) return;
+    _reportedPlugins.add(pluginName);
 
     // Find installed skill directories for this plugin
     const projectRoot = getProjectRoot();
@@ -1288,7 +1298,11 @@ async function reportInstallsForPlugin(pluginName: string): Promise<void> {
       await fetch('https://verified-skill.com/api/v1/skills/installs', {
         method: 'POST',
         headers: { 'User-Agent': 'specweave-cli', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ skills }),
+        body: JSON.stringify({
+          skills,
+          source: 'session',
+          platform: process.platform,
+        }),
         signal: controller.signal,
       });
     } finally {
