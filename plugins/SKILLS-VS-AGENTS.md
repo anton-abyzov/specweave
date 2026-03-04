@@ -2,6 +2,55 @@
 
 > Based on official Claude Code documentation: https://code.claude.com/docs/en/skills and https://code.claude.com/docs/en/sub-agents
 
+## Claude Code Extensibility Overview
+
+Before diving into SpecWeave-specific architecture, here's the full landscape of Claude Code's extension mechanisms — AI and non-AI alike.
+
+### All Extension Points
+
+| Mechanism | What It Is | AI-Powered? | Docs |
+|-----------|-----------|-------------|------|
+| **Skills** | Markdown instructions Claude follows (reference, tasks, `/commands`) | Yes (LLM reads them) | [skills](https://code.claude.com/docs/en/skills) |
+| **Custom Subagents** | Isolated AI workers with own context, memory, model | Yes (separate LLM context) | [sub-agents](https://code.claude.com/docs/en/sub-agents) |
+| **Agent Teams** | Multiple agents working in parallel, communicating via messages | Yes (multiple LLM sessions) | [agent-teams](https://code.claude.com/docs/en/agent-teams) |
+| **Hooks** | Shell scripts triggered by tool events (PreToolUse, PostToolUse, etc.) | No (pure shell) | [hooks](https://code.claude.com/docs/en/hooks) |
+| **MCP Servers** | External tool servers (databases, APIs, Slack, Figma, etc.) | No (tool providers) | [mcp](https://code.claude.com/docs/en/mcp) |
+| **Plugins** | Packages that bundle skills + agents + hooks + commands | Mixed | [plugins](https://code.claude.com/docs/en/plugins) |
+| **CLAUDE.md** | Persistent project/user instructions loaded every session | No (static text) | [memory](https://code.claude.com/docs/en/memory) |
+| **Permissions** | Allow/deny rules for tools, skills, agents | No (configuration) | [permissions](https://code.claude.com/docs/en/permissions) |
+| **Settings** | JSON config for models, tools, environment | No (configuration) | [settings](https://code.claude.com/docs/en/settings) |
+
+### How They Compose
+
+```
+User Request
+    ↓
+Claude Code (main conversation)
+    ├── Reads: CLAUDE.md, settings, permissions
+    ├── Has: Skills (loaded by keyword or /command)
+    ├── Uses: MCP Servers (external tools)
+    ├── Spawns: Custom Subagents (isolated workers)
+    │   └── Subagent preloads: Skills (injected at startup)
+    │   └── Subagent uses: MCP Servers, Hooks
+    ├── Spawns: Built-in Subagents (Explore, Plan, general-purpose)
+    ├── Orchestrates: Agent Teams (parallel multi-agent work)
+    └── Triggers: Hooks (shell scripts on tool events)
+```
+
+### Non-AI Tools in SpecWeave
+
+SpecWeave uses several non-AI extension points:
+
+| Tool | Type | Purpose |
+|------|------|---------|
+| **Guard hooks** (skill-chain, interview, spec-template) | Hooks (shell) | Enforce delegation rules — block writes unless correct agent registered |
+| **`specweave` CLI** | External tool (Node.js) | Create increments, validate specs, manage lifecycle |
+| **`!`command`` injection** | Shell preprocessing | Inject dynamic context (config, project info) into skills before Claude sees them |
+| **State files** (`.specweave/state/`) | File system | Coordination between agents via marker files |
+| **MCP servers** (Figma, Gmail, etc.) | MCP | External integrations Claude can use during any phase |
+
+---
+
 ## TL;DR
 
 **SpecWeave uses both Skills AND Custom Subagents — each for what it's best at.**
@@ -128,6 +177,8 @@ A skill should **not** have `context: fork` when:
 - No custom subagent wraps it
 - You want isolation without creating a full subagent definition
 
+**SpecWeave validator note**: The SpecWeave skill validator does NOT recognize `context`, `model`, `agent`, or `allowed-tools` in frontmatter — these are Claude Code attributes. SpecWeave only supports: `argument-hint`, `compatibility`, `description`, `disable-model-invocation`, `license`, `metadata`, `name`, `user-invokable`. For skills preloaded by subagents, put `model` and `context` on the **subagent**, not the skill.
+
 ## Built-in Subagents for Research
 
 For explicit research/exploration, use Claude Code's built-in subagents:
@@ -187,10 +238,24 @@ Agent({ subagent_type: "general-purpose", prompt: "Research Stripe integration p
 
 ## Official Documentation
 
+### AI Extension Points
 - **Skills**: https://code.claude.com/docs/en/skills
 - **Subagents**: https://code.claude.com/docs/en/sub-agents
 - **Agent Teams**: https://code.claude.com/docs/en/agent-teams
+
+### Non-AI Extension Points
+- **Hooks**: https://code.claude.com/docs/en/hooks
+- **MCP Servers**: https://code.claude.com/docs/en/mcp
+- **Permissions**: https://code.claude.com/docs/en/permissions
+- **Settings**: https://code.claude.com/docs/en/settings
+- **Memory (CLAUDE.md)**: https://code.claude.com/docs/en/memory
+
+### Distribution
 - **Plugins**: https://code.claude.com/docs/en/plugins
+- **Plugin Components Reference**: https://code.claude.com/docs/en/plugins-reference
+
+### Full Index
+- **All docs**: https://code.claude.com/docs/llms.txt
 
 ## Summary
 
