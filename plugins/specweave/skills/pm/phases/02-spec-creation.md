@@ -68,6 +68,23 @@ Edit spec.md to append remaining user stories.
 Report completion.
 ```
 
+## Umbrella Mode: Multi-Project Story Assignment
+
+When the increment uses **umbrella mode** (args contain "UMBRELLA MODE" with child repo list):
+
+1. **Decompose by repo ownership**: Each user story targets ONE child repo via `**Project**:`
+2. **Cross-cutting features**: Split into separate stories per repo (e.g., frontend UI + backend API)
+3. **Use prefixed IDs**: `US-FE-001`, `US-BE-002` — prefix from `specweave context projects`
+4. **Shared/infra work**: Set `**Project**:` to the umbrella project name
+5. **Every US must have exactly one `**Project**:`** — never omit, never assign multiple
+
+**Example split for "user login":**
+- `US-FE-001: Login Page` → `**Project**: frontend`
+- `US-BE-001: Auth API Endpoint` → `**Project**: backend`
+- `US-BE-002: JWT Token Service` → `**Project**: backend`
+
+When NOT in umbrella mode, all stories get the same `**Project**: <project-name>`.
+
 ## User Story Guidelines
 
 ### Good User Story
