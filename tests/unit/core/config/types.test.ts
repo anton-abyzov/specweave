@@ -76,30 +76,28 @@ describe('ChildRepoConfig.sync field (AC-US3-01)', () => {
   });
 });
 
-describe('UmbrellaConfig.syncStrategy field (AC-US3-02)', () => {
-  it('should accept syncStrategy "distributed"', () => {
+describe('UmbrellaConfig umbrella.enabled controls routing', () => {
+  it('should accept umbrella with enabled=true and childRepos with sync', () => {
     const config: UmbrellaConfig = {
       enabled: true,
-      childRepos: [],
-      syncStrategy: 'distributed',
+      childRepos: [
+        {
+          id: 'app',
+          path: 'repositories/org/app',
+          prefix: 'APP',
+          sync: { github: { owner: 'org', repo: 'app' } },
+        },
+      ],
     };
-    expect(config.syncStrategy).toBe('distributed');
+    expect(config.enabled).toBe(true);
+    expect(config.childRepos[0].sync?.github?.repo).toBe('app');
   });
 
-  it('should accept syncStrategy "centralized"', () => {
+  it('should accept umbrella with enabled=false', () => {
     const config: UmbrellaConfig = {
-      enabled: true,
-      childRepos: [],
-      syncStrategy: 'centralized',
-    };
-    expect(config.syncStrategy).toBe('centralized');
-  });
-
-  it('should allow syncStrategy to be undefined (defaults to centralized behavior)', () => {
-    const config: UmbrellaConfig = {
-      enabled: true,
+      enabled: false,
       childRepos: [],
     };
-    expect(config.syncStrategy).toBeUndefined();
+    expect(config.enabled).toBe(false);
   });
 });

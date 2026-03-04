@@ -1,7 +1,7 @@
 /**
- * ExternalIssueAutoCreator distributed routing tests
+ * ExternalIssueAutoCreator umbrella routing tests
  *
- * Tests that Jira/ADO issue creation uses resolveSyncTarget for distributed routing.
+ * Tests that Jira/ADO issue creation uses resolveSyncTarget for umbrella routing.
  * ACs: AC-US1-04, AC-US1-05
  */
 
@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { resolveSyncTarget } from '../../../src/sync/sync-target-resolver.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 
-function makeDistributedConfig(): SpecWeaveConfig {
+function makeUmbrellaConfig(): SpecWeaveConfig {
   return {
     version: '2.0',
     sync: {
@@ -37,24 +37,22 @@ function makeDistributedConfig(): SpecWeaveConfig {
           },
         },
       ],
-      syncStrategy: 'distributed',
     },
   };
 }
 
-describe('ExternalIssueAutoCreator distributed Jira routing (AC-US1-04)', () => {
-  it('should resolve child repo Jira projectKey when distributed', () => {
-    const config = makeDistributedConfig();
+describe('ExternalIssueAutoCreator umbrella Jira routing (AC-US1-04)', () => {
+  it('should resolve child repo Jira projectKey when umbrella enabled', () => {
+    const config = makeUmbrellaConfig();
     const resolved = resolveSyncTarget('vskill', config);
 
-    // In createJiraIssues, the resolved projectKey overrides global
     expect(resolved.jira?.projectKey).toBe('VSK');
     expect(resolved.source).toBe('child-repo-name');
   });
 
-  it('should use global Jira projectKey when centralized', () => {
-    const config = makeDistributedConfig();
-    config.umbrella!.syncStrategy = 'centralized';
+  it('should use global Jira projectKey when umbrella disabled', () => {
+    const config = makeUmbrellaConfig();
+    config.umbrella!.enabled = false;
 
     const resolved = resolveSyncTarget('vskill', config);
 
@@ -63,32 +61,32 @@ describe('ExternalIssueAutoCreator distributed Jira routing (AC-US1-04)', () => 
   });
 
   it('should simulate projectKey override in createJiraIssues', () => {
-    const config = makeDistributedConfig();
+    const config = makeUmbrellaConfig();
     const resolved = resolveSyncTarget('vskill', config);
 
     // Simulates the override pattern used in createJiraIssues
     const jiraConfig = config.issueTracker || (config.sync?.jira as any) || {};
     const globalProjectKey = jiraConfig.projects?.[0]?.key || jiraConfig.projectKey || 'GLOB';
 
-    // Apply distributed override
+    // Apply umbrella override
     const effectiveProjectKey = resolved.jira?.projectKey ?? globalProjectKey;
 
     expect(effectiveProjectKey).toBe('VSK');
   });
 });
 
-describe('ExternalIssueAutoCreator distributed ADO routing (AC-US1-05)', () => {
-  it('should resolve child repo ADO project when distributed', () => {
-    const config = makeDistributedConfig();
+describe('ExternalIssueAutoCreator umbrella ADO routing (AC-US1-05)', () => {
+  it('should resolve child repo ADO project when umbrella enabled', () => {
+    const config = makeUmbrellaConfig();
     const resolved = resolveSyncTarget('vskill', config);
 
     expect(resolved.ado?.project).toBe('VSkillProject');
     expect(resolved.source).toBe('child-repo-name');
   });
 
-  it('should use global ADO project when centralized', () => {
-    const config = makeDistributedConfig();
-    config.umbrella!.syncStrategy = 'centralized';
+  it('should use global ADO project when umbrella disabled', () => {
+    const config = makeUmbrellaConfig();
+    config.umbrella!.enabled = false;
 
     const resolved = resolveSyncTarget('vskill', config);
 
@@ -97,22 +95,19 @@ describe('ExternalIssueAutoCreator distributed ADO routing (AC-US1-05)', () => {
   });
 
   it('should simulate project override in createAdoIssues', () => {
-    const config = makeDistributedConfig();
+    const config = makeUmbrellaConfig();
     const resolved = resolveSyncTarget('vskill', config);
 
-    // Simulates the override pattern used in createAdoIssues
     const adoConfig = config.issueTracker || (config.sync?.ado as any) || {};
     const globalProject = adoConfig.project || 'GlobalProject';
 
-    // Apply distributed override
     const effectiveProject = resolved.ado?.project ?? globalProject;
 
     expect(effectiveProject).toBe('VSkillProject');
   });
 
   it('should fall back to global when no child sync config for ADO', () => {
-    const config = makeDistributedConfig();
-    // Remove ado from vskill sync config
+    const config = makeUmbrellaConfig();
     delete config.umbrella!.childRepos[0].sync!.ado;
 
     const resolved = resolveSyncTarget('vskill', config);
