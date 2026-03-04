@@ -79,8 +79,9 @@ plugins/specweave/
 │   ├── architect/SKILL.md   # → activates on "architecture"
 │   ├── pm/SKILL.md          # → activates on "product", "MVP"
 │   └── tech-lead/SKILL.md   # → activates on "code review"
-└── agents/                   # Isolated subagents
-    └── diagrams/AGENT.md    # Spawned via Task tool
+└── agents/                   # Custom subagents (isolated workers)
+    ├── sw-pm.md             # PM subagent (preloads sw:pm skill)
+    └── sw-architect.md      # Architect subagent (preloads sw:architect skill)
 ```
 
 ---
@@ -94,7 +95,7 @@ Agents are isolated AI instances with their own context window, system prompt, a
 | Aspect | Skills | Agents |
 |--------|--------|--------|
 | **Context** | Same context (or `context: fork`) | Own isolated context |
-| **Invocation** | `/skill-name` or auto-keywords | Task tool spawn |
+| **Invocation** | `/skill-name` or auto-keywords | `Agent()` tool spawn |
 | **Model** | Inherits (or specify `model:`) | Can override model |
 | **Tools** | All available | Can restrict tools |
 
@@ -103,7 +104,7 @@ Agents are isolated AI instances with their own context window, system prompt, a
 | Scenario | Use |
 |----------|-----|
 | Domain expertise (architecture, security) | Skills (auto-activate) |
-| Complex isolated tasks | Agents (Task tool) |
+| Complex isolated tasks | Custom subagents (`Agent()` tool) |
 | Background knowledge | Skills with `user-invocable: false` |
 
 ### Skill with Forked Context
