@@ -95,6 +95,33 @@ jq '.coveredCategories.architecture = {"coveredAt": "'$(date -Iseconds)'", "summ
 `.specweave/state/interview-{increment-id}.json` before allowing spec.md writes. If this file
 is missing or incomplete, spec.md creation is BLOCKED in strict mode.
 
+## Umbrella Mode (Cross-Cutting Specs)
+
+When your invocation args include **UMBRELLA MODE**, the project uses an umbrella workspace with multiple child repos. This changes how you design specs:
+
+**Umbrella mode (`umbrella.enabled: true`):**
+- Design **cross-cutting** user stories that span multiple repos
+- Each US gets `**Project**: <child-repo-name>` based on which repo owns that work
+- Think at a higher level: a "login feature" may need US for frontend (UI) AND backend (API)
+- A single increment can contain stories targeting different child repos
+- Use prefixed IDs when multi-project is detected: `US-FE-001`, `US-BE-001`
+- For umbrella-scoped work (CI, shared config), use the umbrella project name
+
+**Example — umbrella increment with 2 child repos (frontend, backend):**
+```markdown
+### US-FE-001: Login Page UI
+**Project**: frontend
+**As a** user **I want** a login form **So that** I can authenticate
+
+### US-BE-001: Authentication API
+**Project**: backend
+**As a** user **I want** a /login endpoint **So that** the frontend can authenticate
+```
+
+**Single-project mode (no umbrella context in args):**
+- All user stories get the same `**Project**: <project-name>` value
+- Standard single-project spec design
+
 ## Core Principles
 
 1. **Phased Approach**: Work in phases, not all at once
