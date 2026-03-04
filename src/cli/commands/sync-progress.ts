@@ -95,6 +95,7 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
   if (!incrementPath) {
     logger.error(`❌ Increment ${incrementId} not found in active or archive`);
     process.exit(1);
+    return; // Unreachable at runtime, but needed for tests where process.exit is mocked
   }
 
   // Resolve full increment directory name (e.g., "0421" → "0421-umbrella-docs-update")
