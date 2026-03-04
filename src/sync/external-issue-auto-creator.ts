@@ -217,14 +217,26 @@ export class ExternalIssueAutoCreator {
       if (existsSync(specPath)) {
         try {
           const specContent = await fs.readFile(specPath, 'utf-8');
+          // Try YAML frontmatter first
           const fmMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
           if (fmMatch) {
             const parsed = yaml.parse(fmMatch[1]);
             projectName = parsed?.project;
           }
+          // Fallback: extract from first **Project**: field in body (legacy format)
+          if (!projectName) {
+            const projectFieldMatch = specContent.match(/\*\*Project\*\*:\s*(\S+)/);
+            if (projectFieldMatch) {
+              projectName = projectFieldMatch[1];
+            }
+          }
         } catch {
-          // Ignore frontmatter parse errors
+          // Ignore parse errors
         }
+      }
+      // Final fallback: use first user story's project field
+      if (!projectName && incrementInfo.userStories.length > 0) {
+        projectName = incrementInfo.userStories[0].project;
       }
       const resolvedTarget = resolveSyncTarget(projectName, config);
 
