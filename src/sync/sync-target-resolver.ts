@@ -45,8 +45,8 @@ export function resolveSyncTarget(
     return globalTarget;
   }
 
-  // Phase 0: Umbrella project match (project === umbrella.projectName)
-  if (config.umbrella?.projectName && projectName === config.umbrella.projectName) {
+  // Phase 0: Umbrella project match (case-insensitive, like project-resolution.ts)
+  if (config.umbrella?.projectName && projectName.toLowerCase() === config.umbrella.projectName.toLowerCase()) {
     if (config.umbrella.sync) {
       return {
         github: config.umbrella.sync.github,

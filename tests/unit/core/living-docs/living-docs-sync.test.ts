@@ -474,11 +474,11 @@ describe('LivingDocsSync', () => {
 
       const result = await sync.syncIncrement(incrementId);
 
-      // After folder deletion, isTemplateFile detects the missing spec.md and skips
-      // sync gracefully (v1.0.344+ template guard catches TOCTOU races early)
+      // After folder deletion, resolveIncrementDir can't find the folder so
+      // fs.access fails and sync skips gracefully with "not in active folder" error
       expect(result.success).toBe(true);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors[0]).toMatch(/template/);
+      expect(result.errors[0]).toMatch(/not in active folder|template/);
 
       accessSpy.mockRestore();
     });

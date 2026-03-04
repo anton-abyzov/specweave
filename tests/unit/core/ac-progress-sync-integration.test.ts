@@ -35,6 +35,7 @@ vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
   class MockJiraStatusSync {
     updateStatus = mockJiraUpdateStatus;
     postStatusComment = mockJiraPostStatusComment;
+    postProgressComment = mockJiraPostStatusComment;
   }
   return { JiraStatusSync: MockJiraStatusSync };
 });
