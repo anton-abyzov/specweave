@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.366] - 2026-03-04
+
+### Changes
+- add umbrella sync routing docs page
+- remove syncStrategy, umbrella.enabled controls routing via Project field
+- fix: track installs on vskill.lock fast-path
+- release: specweave 1.0.365
+- fix: check umbrella.enabled in sync routing, fix JIRA per-project routing
+- release: specweave 1.0.364
+- fix: test fixes and umbrella migration genericity
+
+---
+
+
+
 ## [1.0.365] - 2026-03-04
 
 ### Changes
