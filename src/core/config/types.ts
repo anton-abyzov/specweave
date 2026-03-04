@@ -419,8 +419,6 @@ export interface UmbrellaConfig {
     /** Default repo for cross-cutting stories */
     defaultRepo: string;
   };
-  /** Sync strategy: 'centralized' routes all to global config, 'distributed' routes per child repo */
-  syncStrategy?: 'centralized' | 'distributed';
   /** Sync targets for the umbrella project itself (used when project matches umbrella.projectName) */
   sync?: ChildRepoSyncConfig;
 }

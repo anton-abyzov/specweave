@@ -1,8 +1,8 @@
 /**
- * LivingDocsSync distributed sync routing tests
+ * LivingDocsSync umbrella sync routing tests
  *
- * Tests that syncToGitHub uses resolveSyncTarget for distributed routing.
- * ACs: AC-US1-01, AC-US1-02
+ * Tests that syncToGitHub uses resolveSyncTarget for umbrella routing.
+ * AC: AC-US1-01
  *
  * Strategy: Since LivingDocsSync.syncToGitHub uses dynamic imports and complex
  * class initialization, we test the integration point by verifying
@@ -14,7 +14,7 @@ import { resolveSyncTarget } from '../../../src/sync/sync-target-resolver.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 
 describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
-  it('should resolve child repo target for distributed mode (AC-US1-01)', () => {
+  it('should resolve child repo target when umbrella is enabled (AC-US1-01)', () => {
     const config: SpecWeaveConfig = {
       version: '2.0',
       sync: {
@@ -36,7 +36,6 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
             sync: { github: { owner: 'anton-abyzov', repo: 'vskill' } },
           },
         ],
-        syncStrategy: 'distributed',
       },
     };
 
@@ -48,7 +47,7 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
     expect(result.source).toBe('child-repo-name');
   });
 
-  it('should resolve global target for centralized mode (AC-US1-02)', () => {
+  it('should resolve global target when umbrella is disabled', () => {
     const config: SpecWeaveConfig = {
       version: '2.0',
       sync: {
@@ -60,7 +59,7 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
         github: { owner: 'global-org', repo: 'global-repo' },
       },
       umbrella: {
-        enabled: true,
+        enabled: false,
         childRepos: [
           {
             id: 'vskill',
@@ -70,13 +69,12 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
             sync: { github: { owner: 'anton-abyzov', repo: 'vskill' } },
           },
         ],
-        syncStrategy: 'centralized',
       },
     };
 
     const result = resolveSyncTarget('vskill', config);
 
-    // Centralized: always uses global regardless of child repo match
+    // Umbrella disabled: always uses global
     expect(result.github?.owner).toBe('global-org');
     expect(result.github?.repo).toBe('global-repo');
     expect(result.source).toBe('global');
@@ -105,7 +103,6 @@ describe('resolveSyncTarget integration with LivingDocsSync pattern', () => {
             sync: { github: { owner: 'anton-abyzov', repo: 'vskill' } },
           },
         ],
-        syncStrategy: 'distributed',
       },
     };
 
