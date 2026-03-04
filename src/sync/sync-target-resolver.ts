@@ -35,8 +35,8 @@ export function resolveSyncTarget(
 ): SyncTargetConfig {
   const globalTarget = buildGlobalTarget(config);
 
-  // Short-circuit: not distributed mode → always global
-  if (config.umbrella?.syncStrategy !== 'distributed') {
+  // Short-circuit: umbrella disabled or not distributed mode → always global
+  if (!config.umbrella?.enabled || config.umbrella?.syncStrategy !== 'distributed') {
     return globalTarget;
   }
 
