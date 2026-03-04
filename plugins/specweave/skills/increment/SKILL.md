@@ -262,22 +262,22 @@ Create files in order: metadata.json FIRST, then spec.md, plan.md, tasks.md.
 1. **NEVER write spec.md/plan.md/tasks.md directly** — ALWAYS delegate via Skill() calls to plugin agents
 2. **Project field is MANDATORY** — Every US MUST have `**Project**:` field
 3. **Use Template Creator CLI** (REQUIRED): `specweave create-increment --id "XXXX-name" --title "Title" --description "Desc" --project "my-app"`
-4. **Agent delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — invoke `sw:agents:sw-pm`, `sw:agents:sw-architect`, `sw:agents:sw-planner` via Skill() calls
+4. **Skill delegation is the ONLY way** to produce spec.md/plan.md/tasks.md — invoke `sw:pm`, `sw:architect`, `sw:test-aware-planner` via Skill() calls
 5. **Increment naming** — Format: `####-descriptive-kebab-case`
 6. **Multi-repo** — In umbrella projects with `repositories/` folder, create increments in EACH repo's `.specweave/`, not the umbrella root
 
-## CRITICAL: Mandatory Agent Delegation
+## CRITICAL: Mandatory Skill Delegation
 
 **This skill MUST NOT write spec.md, plan.md, or tasks.md directly.**
-Delegate to plugin agents via Skill() calls.
+Delegate to plugin skills via Skill() calls.
 
-**You MUST invoke these plugin agents:**
+**You MUST invoke these plugin skills:**
 
-| File | Agent Skill | Invocation |
-|------|-------------|------------|
-| spec.md | sw:agents:sw-pm | `Skill({ skill: "sw:agents:sw-pm", args: "Write spec for increment XXXX-name: <description>. Increment path: <path>" })` |
-| plan.md | sw:agents:sw-architect | `Skill({ skill: "sw:agents:sw-architect", args: "Design architecture for increment XXXX-name. Read spec.md at <path>/spec.md" })` |
-| tasks.md | sw:agents:sw-planner | `Skill({ skill: "sw:agents:sw-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at <path>/spec.md and plan.md at <path>/plan.md" })` |
+| File | Skill | Invocation |
+|------|-------|------------|
+| spec.md | sw:pm | `Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <description>. Increment path: <path>" })` |
+| plan.md | sw:architect | `Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name. Read spec.md at <path>/spec.md" })` |
+| tasks.md | sw:test-aware-planner | `Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at <path>/spec.md and plan.md at <path>/plan.md" })` |
 
 **DO NOT:**
 - Write user stories, architecture, or tasks inline
@@ -290,10 +290,10 @@ Delegate to plugin agents via Skill() calls.
 **IMPORTANT**: This step runs AFTER the increment folder is created (Step 3), so the
 interview state file can reference the real increment ID.
 
-**If deep interview is enabled, delegate to PM agent:**
+**If deep interview is enabled, delegate to PM skill:**
 
 ```typescript
-Skill({ skill: "sw:agents:sw-pm", args: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>" })
+Skill({ skill: "sw:pm", args: "Deep interview for increment XXXX-name: <user description>. Increment path: <path>" })
 ```
 
 The PM agent will:
@@ -305,23 +305,23 @@ The PM agent will:
 **After PM agent returns**, read the interview state file to confirm all categories are covered
 before proceeding to spec.md creation (especially when `enforcement: "strict"`).
 
-## Step 4: Delegation (MANDATORY - Plugin Agent Based)
+## Step 4: Delegation (MANDATORY - Plugin Skill Based)
 
-**After increment folder + metadata.json are created, you MUST invoke all 3 plugin agents sequentially.**
+**After increment folder + metadata.json are created, you MUST invoke all 3 plugin skills sequentially.**
 
-### 4a. Invoke PM Agent for spec.md (REQUIRED)
+### 4a. Invoke PM Skill for spec.md (REQUIRED)
 ```typescript
-Skill({ skill: "sw:agents:sw-pm", args: "Write spec for increment XXXX-name: <user's feature description>. Increment path: .specweave/increments/XXXX-name/" })
+Skill({ skill: "sw:pm", args: "Write spec for increment XXXX-name: <user's feature description>. Increment path: .specweave/increments/XXXX-name/" })
 ```
 
-### 4b. Invoke Architect Agent for plan.md (REQUIRED)
+### 4b. Invoke Architect Skill for plan.md (REQUIRED)
 ```typescript
-Skill({ skill: "sw:agents:sw-architect", args: "Design architecture for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md. ADR directory: .specweave/docs/internal/architecture/adr/" })
+Skill({ skill: "sw:architect", args: "Design architecture for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md. ADR directory: .specweave/docs/internal/architecture/adr/" })
 ```
 
-### 4c. Invoke Planner Agent for tasks.md (REQUIRED)
+### 4c. Invoke Planner Skill for tasks.md (REQUIRED)
 ```typescript
-Skill({ skill: "sw:agents:sw-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md" })
+Skill({ skill: "sw:test-aware-planner", args: "Generate tasks for increment XXXX-name. Read spec.md at .specweave/increments/XXXX-name/spec.md and plan.md at .specweave/increments/XXXX-name/plan.md" })
 ```
 
 **Order matters**: PM first (spec.md) -> Architect second (plan.md) -> Planner last (tasks.md).
