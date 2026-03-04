@@ -18,7 +18,7 @@ import { routeByPrefix } from './story-router.js';
 export interface SyncTargetConfig {
   github?: { owner: string; repo: string };
   jira?: { projectKey: string };
-  ado?: { project: string };
+  ado?: { organization?: string; project: string };
   source: 'child-repo-name' | 'child-repo-prefix' | 'global';
 }
 
@@ -99,7 +99,7 @@ function buildGlobalTarget(config: SpecWeaveConfig): SyncTargetConfig {
       ? { projectKey: config.sync.jira.projectKey }
       : undefined,
     ado: config.sync?.ado?.project
-      ? { project: config.sync.ado.project }
+      ? { organization: config.sync.ado.organization, project: config.sync.ado.project }
       : undefined,
     source: 'global',
   };
