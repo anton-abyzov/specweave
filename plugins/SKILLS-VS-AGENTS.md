@@ -123,13 +123,15 @@ You are a Product Manager specializing in spec-driven development.
 ```yaml
 ---
 description: Product Manager for spec-driven development...
-# NO context: fork — the subagent provides isolation
-# NO model — the subagent controls the model
+context: fork
+model: opus
 ---
 
 # Product Manager Skill
 ...full domain logic, phases, templates...
 ```
+
+> **Note**: Skills have `context: fork` and `model` for standalone invocation (e.g., `/sw:pm`). When preloaded by a subagent, the subagent's isolation takes precedence — `context: fork` doesn't cause "double-forking".
 
 **Why this works**:
 - The **subagent** owns: isolation, memory, model, resumability, background execution
