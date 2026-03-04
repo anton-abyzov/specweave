@@ -205,12 +205,24 @@ If the `**Project**:` field doesn't match any child repo name, ID, or prefix, th
 
 ## How Agents Use the Project Field
 
-When `/sw:increment` creates a new increment, the PM agent (`sw:pm`) sets the `**Project**:` field in each user story. The agent reads `umbrella.enabled` from config:
+When `/sw:increment` creates a new increment, the increment skill detects umbrella mode and passes child repo context to the PM agent (`sw:pm`). The PM then sets the `**Project**:` field in each user story.
 
-- **`umbrella.enabled: true`**: The PM assigns `**Project**:` based on which child repo the work belongs to. Cross-cutting work gets the umbrella project name.
-- **`umbrella.enabled: false`**: The PM uses the global project name. All routing goes to the single global target.
+### Umbrella mode (`umbrella.enabled: true`)
 
-This means routing is determined at spec creation time, not at sync time. The `**Project**:` field is the contract between planning and sync.
+- The increment skill reads `umbrella.childRepos` and passes the list to the PM
+- The PM designs **cross-cutting** user stories — a single increment can span multiple repos
+- Each user story gets `**Project**: <child-repo-name>` based on which repo owns that work
+- Example: A "login feature" becomes `US-FE-001: Login Page` (`**Project**: frontend`) + `US-BE-001: Auth API` (`**Project**: backend`)
+- Umbrella-scoped work (CI, shared config) uses the umbrella project name
+- All increments live in the **umbrella root** `.specweave/increments/`, not in child repos
+
+### Single-project mode (`umbrella.enabled: false` or absent)
+
+- All user stories get the same `**Project**:` value
+- Standard single-project spec design
+- All routing goes to the single global target
+
+**Key insight**: Routing is determined at spec creation time, not at sync time. The `**Project**:` field is the contract between planning and sync.
 
 ---
 
