@@ -6,125 +6,160 @@ sidebar_label: Skills vs Agents
 
 # Skills vs Agents
 
-SpecWeave uses two types of AI components: **Skills** (auto-activating knowledge) and **Agents** (explicitly invoked workers). Understanding the difference is crucial for effective use.
+SpecWeave extends AI coding assistants (Claude Code, Cursor, Copilot, Windsurf, and others) with two core AI components: **Skills** (portable instructions) and **Custom Subagents** (isolated workers with memory). Understanding the difference — and how they compose — is key to building effective AI-assisted workflows.
 
 ---
 
 ## Quick Comparison
 
-| Aspect | Skills | Agents |
-|--------|--------|--------|
-| **Activation** | Automatic (keywords) | Explicit (`Task()` call) |
-| **Context** | Main conversation | Sub-agent (isolated) |
-| **Purpose** | Provide knowledge/guidance | Execute complex tasks |
-| **Output** | Inline response | Final report |
-| **File** | `SKILL.md` | `AGENT.md` |
+| Aspect | Skills | Custom Subagents |
+|--------|--------|-----------------|
+| **Activation** | Automatic (keywords) or `/command` | Explicit (`Agent()` call) |
+| **Context** | Main conversation or forked (`context: fork`) | Always isolated |
+| **Memory** | None (stateless) | Persistent (`memory: project/user/local`) |
+| **Resumable** | No | Yes (by agent ID) |
+| **Background exec** | No | Yes (`run_in_background: true`) |
+| **File** | `skills/name/SKILL.md` | `agents/name.md` |
+| **Preloads skills** | No | Yes (`skills:` field) |
 
 ---
 
 ## Skills
 
-**Skills** are knowledge modules that activate automatically when relevant keywords appear in conversation.
+**Skills** are markdown instructions that AI assistants follow. They can auto-activate on keywords, be invoked as `/commands`, or be preloaded by subagents.
 
 ### How They Work
 
 ```mermaid
 graph LR
-    A[User: "How do I plan an increment?"] --> B{Keyword Match}
-    B -->|"plan", "increment"| C[increment SKILL]
-    C --> D[Knowledge loaded into context]
-    D --> E[Claude responds with guidance]
+    A[User: '/sw:pm'] --> B[PM Skill loaded]
+    B --> C[Instructions injected into context]
+    C --> D[AI follows skill instructions]
+    D --> E[Output: spec.md]
 ```
 
-### Characteristics
+### Execution Modes
 
-- **Auto-activate**: No explicit command needed
-- **Main context**: Runs in current conversation
-- **Knowledge-focused**: Provide information, not execute tasks
-- **Lightweight**: ~2-5K tokens typically
-
-### Example Skills
-
-```
-specweave:increment            # Activates for "plan increment"
-specweave:brownfield-analyzer  # Activates for "existing project"
-specweave:tdd-workflow         # Activates for "TDD", "red-green"
-specweave:serverless-recommender  # Activates for "serverless", "Lambda"
-```
+| Mode | When | How |
+|------|------|-----|
+| **Inline** | Reference knowledge (conventions, patterns) | No `context: fork` — enriches main conversation |
+| **Forked** | Standalone tasks (grill, brainstorm) | `context: fork` — isolated context |
+| **Preloaded** | Inside a subagent | `skills:` field on subagent — subagent provides isolation |
 
 ### Skill File Structure
 
 ```markdown
+# skills/pm/SKILL.md
 ---
-description: Plan and create SpecWeave increments with PM and Architect
-             agent collaboration. Activates for: increment planning,
-             feature planning, hotfix, MVP, new product.
+description: Product Manager for spec-driven development.
+context: fork
+model: opus
 ---
 
-# Increment
+# Product Manager Skill
 
-## When to Activate
-[Keywords and scenarios...]
+## Workflow
+[Phased domain logic, templates, validation rules...]
+```
 
-## How to Use
-[Guidance and templates...]
+### Example Skills
+
+```
+sw:increment          # Orchestrator — spawns PM, Architect, Planner subagents
+sw:pm                 # Product management domain logic (preloaded by sw-pm subagent)
+sw:architect          # Architecture domain logic (preloaded by sw-architect subagent)
+sw:grill              # Code review (standalone, context: fork)
+sw:brainstorm         # Multi-perspective ideation (standalone, context: fork)
 ```
 
 ---
 
-## Agents
+## Custom Subagents
 
-**Agents** are specialized workers that execute complex tasks in isolated sub-contexts.
+**Custom subagents** are isolated AI workers with their own context, persistent memory, and optional skills preloading. They run in a separate conversation, can be resumed, and support background execution.
 
 ### How They Work
 
 ```mermaid
 graph LR
-    A["/specweave:increment"] --> B[PM Agent spawned]
-    B --> C[Isolated context]
-    C --> D[Generate spec.md]
-    D --> E[Return to main context]
-    E --> F[Architect Agent spawned]
+    A[Increment Skill] --> B["Agent(subagent_type: 'sw:sw-pm')"]
+    B --> C[PM Subagent spawned]
+    C --> D[Preloads sw:pm skill]
+    D --> E[Isolated context + persistent memory]
+    E --> F[Writes spec.md]
+    F --> G[Returns result to caller]
 ```
 
-### Characteristics
+### Key Capabilities (beyond Skills)
 
-- **Explicitly invoked**: Via `Task()` tool or commands
-- **Isolated context**: Separate from main conversation
-- **Task-focused**: Execute and produce output
-- **Heavyweight**: Can use 10-50K tokens
+- **Persistent memory** — retains learnings across sessions (`memory: project`)
+- **Resumability** — can be resumed by agent ID for multi-turn workflows
+- **Background execution** — runs concurrently while you keep chatting
+- **Auto-compaction** — handles context overflow at ~95% capacity
+- **Skills preloading** — `skills:` field guarantees domain logic injection at startup
+- **Permission overrides** — can restrict tool access for safety
 
-### Example Agents
-
-```
-frontend:architect              # React/Vue/Angular architecture
-backend:database-optimizer      # Database and API design
-testing:qa                      # Test strategy and E2E automation
-k8s:kubernetes-architect        # Kubernetes manifests and GitOps
-infra:devops                    # Infrastructure-as-Code, CI/CD
-```
-
-**Note**: PM, Architect, Tech-Lead, and QA-Lead are SKILLS (auto-activate), NOT agents.
-
-### Agent File Structure
+### Subagent File Structure
 
 ```markdown
+# agents/sw-pm.md
 ---
-name: frontend-architect
-description: Frontend architecture agent for React/Vue/Angular.
-             Invoked explicitly via Task().
+name: sw-pm
+description: Product Manager for writing spec.md
+model: opus
+memory: project
+skills:
+  - sw:pm
 ---
 
-# Frontend Architect Agent
+# Product Manager Subagent
 
-## Capabilities
-[What the agent can do...]
+You are a PM specializing in spec-driven development.
+The sw:pm skill is preloaded with full domain logic.
+```
 
-## Workflow
-[Step-by-step process...]
+### SpecWeave Core Subagents
 
-## Output Format
-[Expected deliverables...]
+| Subagent | Preloads Skill | Writes | Model |
+|----------|---------------|--------|-------|
+| `sw-pm` | `sw:pm` | spec.md | Opus |
+| `sw-architect` | `sw:architect` | plan.md | Opus |
+| `sw-planner` | `sw:test-aware-planner` | tasks.md | Sonnet |
+
+---
+
+## The Recommended Pattern: Subagents Preloading Skills
+
+The most powerful pattern combines both: **subagents own isolation and memory, skills own domain logic**.
+
+```
+plugins/specweave/
+├── agents/
+│   ├── sw-pm.md            # Subagent: memory, model, skills: [sw:pm]
+│   ├── sw-architect.md     # Subagent: memory, model, skills: [sw:architect]
+│   └── sw-planner.md       # Subagent: memory, model, skills: [sw:test-aware-planner]
+├── skills/
+│   ├── pm/
+│   │   ├── SKILL.md        # Domain logic, phases, templates
+│   │   ├── phases/         # Supporting files loaded on demand
+│   │   └── templates/
+│   ├── architect/
+│   │   └── SKILL.md
+│   └── test-aware-planner/
+│       └── SKILL.md
+```
+
+**How the increment skill orchestrates them:**
+
+```javascript
+// PM writes spec.md
+Agent({ subagent_type: "sw:sw-pm", prompt: "Write spec for increment..." })
+
+// Architect writes plan.md
+Agent({ subagent_type: "sw:sw-architect", prompt: "Design architecture..." })
+
+// Planner writes tasks.md
+Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks..." })
 ```
 
 ---
@@ -133,53 +168,65 @@ description: Frontend architecture agent for React/Vue/Angular.
 
 ### Use Skills When:
 
-Choose Skills when you need Claude to perform specialized tasks consistently and efficiently. They're ideal for:
+- **Reference knowledge** — conventions, patterns, style guides that enrich the main conversation
+- **Standalone tasks** — one-shot work like code review (`sw:grill`), brainstorming, validation
+- **User-invocable commands** — `/sw:pm`, `/sw:grill`, `/sw:brainstorm`
+- **Repetitive instructions** — the DRY principle for AI instructions
 
-- **Organizational workflows**: Brand guidelines, compliance procedures, document templates
-- **Domain expertise**: Excel formulas, PDF manipulation, data analysis, coding patterns
-- **Personal preferences**: Note-taking systems, coding conventions, research methods
-- **Repetitive instructions**: Anything you find yourself telling Claude more than once
+### Use Custom Subagents When:
 
-Skills are like training materials — they make Claude better at specific tasks across all conversations. Any Claude instance can load and use them.
-
-**Examples**:
-- "How do I handle brownfield projects?" → `brownfield-analyzer` skill
-- "What's the TDD workflow?" → `tdd-workflow` skill
-- "Which serverless platform?" → `serverless-recommender` skill
-- "Always use React Hook Form, not useState" → custom project skill
-
-### Use Agents When:
-
-Use agents (subagents) for complete, self-contained work that handles workflows independently. Each subagent operates with its own configuration — you define what it does, how it approaches problems, and which tools it can access.
-
-- **Task specialization**: Code review, test generation, security audits
-- **Context management**: Keep the main conversation focused while offloading specialized work
-- **Parallel processing**: Multiple subagents can work on different aspects simultaneously
-- **Tool restriction**: Limit specific subagents to safe operations (e.g., read-only access)
-
-Subagents are like specialized employees with their own context and tool permissions.
-
-**Examples**:
-- Generate spec.md → `pm` agent
-- Design architecture → `architect` agent
-- Create infrastructure → `devops` agent
+- **Persistent memory needed** — agent retains learnings across sessions
+- **Resumability needed** — multi-turn workflows that may span sessions
+- **Background execution** — run concurrently while user continues chatting
+- **Skills preloading** — guarantee domain logic injection at startup
+- **Orchestrated pipelines** — PM → Architect → Planner chain
 
 ### Use Them Together When:
 
-You want subagents with specialized expertise. For example, a code-review subagent can use Skills for language-specific best practices, combining the independence of a subagent with the portable expertise of Skills.
+Subagents preload skills for combined benefits:
 
 ```
-Subagent (isolated context, tool restrictions)
-├── Loads project Skills (coding conventions, patterns)
-├── Loads domain Skills (language best practices)
-└── Executes task with combined expertise
+Subagent (isolation, memory, resumability)
+├── Preloads: Domain skill (full logic, phases, templates)
+├── Has: Persistent memory across sessions
+└── Produces: Deliverable (spec.md, plan.md, tasks.md)
 ```
+
+### Decision Flowchart
+
+```
+Does it need persistent memory or resumability?
+  YES → Custom subagent (with skills: preloading)
+  NO  →
+    Is it a standalone task producing output?
+      YES → Skill with context: fork
+      NO  →
+        Is it reference knowledge for the main conversation?
+          YES → Skill, NO context: fork (runs inline)
+          NO  → Built-in subagent (Explore/Plan/general-purpose)
+```
+
+---
+
+## Beyond Claude: Extending Any AI Tool
+
+While SpecWeave's skills and subagents are most deeply integrated with Claude Code, the architecture is designed to extend **any AI coding assistant**:
+
+| Extension | Claude Code | Cursor / Copilot / Windsurf |
+|-----------|------------|----------------------------|
+| **Skills** | Full support (auto-activate, `/commands`, `context: fork`) | Via `AGENTS.md` instruction files |
+| **Custom subagents** | Full support (memory, resume, background) | Not available (Claude Code exclusive) |
+| **Hooks** | Shell scripts on tool events | Not available |
+| **MCP servers** | Full support | Varies by tool |
+| **Plugins** | Bundle skills + agents + hooks | Skills only (via `AGENTS.md`) |
+
+See `AGENTS.md` in any SpecWeave project for non-Claude tool instructions.
 
 ---
 
 ## Skills vs MCP
 
-MCP connects Claude to data; Skills teach Claude what to do with that data.
+MCP connects AI to data; Skills teach AI what to do with that data.
 
 | Need | Use | Example |
 |------|-----|---------|
@@ -194,117 +241,51 @@ Use both together: **MCP for connectivity, Skills for procedural knowledge**.
 
 ## Context Management
 
-### Skills: Shared Context
+### Skills: Shared or Forked
 
 ```
-Main Context (100K tokens)
+Main Context (200K tokens)
 ├── User conversation
-├── Skill 1 (loaded, 3K)
-├── Skill 2 (loaded, 2K)
+├── Inline skill (loaded, 3K)       ← shared context
+├── Forked skill (context: fork)    ← isolated context
 └── Response
 ```
 
-### Agents: Isolated Context
+### Subagents: Always Isolated
 
 ```
-Main Context (100K tokens)
+Main Context
 ├── User conversation
-├── Task() call
-│   └── Agent Context (separate)
-│       ├── Agent instructions
+├── Agent() call
+│   └── Subagent Context (separate)
+│       ├── Preloaded skill instructions
+│       ├── Persistent memory
 │       ├── Relevant files
-│       └── Generated output
-└── Agent report returned
+│       └── Generated output (spec.md, plan.md, etc.)
+└── Subagent result returned
 ```
-
----
-
-## Best Practices
-
-### Skills
-
-**DO**:
-- Keep skills focused and small
-- Use clear activation keywords
-- Provide templates and examples
-- **Use other skills when needed** (PM → Architect, LSP after code)
-- Invoke specialized domain skills (frontend, backend, payments)
-
-**DON'T**:
-- Make skills too generic
-- Duplicate existing skill functionality
-- Skip LSP validation after code generation
-
-### Agents
-
-**DO**:
-- Use for multi-step generation
-- Keep context isolated
-- Return clear reports
-- Invoke from skills when task requires isolated execution
-
-**DON'T**:
-- Spawn multiple agents **processing same large files** in parallel (context shared)
-- Use agents for simple questions
-- Skip quality gates
-- Process files one by one when dealing with large codebases
-
----
-
-## When to Create a Skill
-
-**The repetition signal**: If you find yourself repeatedly giving Claude the same instructions — the same convention, workflow step, or "always do X before Y" — that's your signal to create a skill.
-
-Instead of typing the same guidance every session, capture it in a `SKILL.md` file. Claude will follow it automatically, every time, without reminders.
-
-Think of it as the **DRY principle for AI instructions** — repeating yourself to an AI is like copy-pasting code. It works, but it doesn't scale.
-
-### Examples of repetition → skill opportunities
-
-| You keep saying... | Create a skill for... |
-|---|---|
-| "Always use React Hook Form, not useState" | Form handling conventions |
-| "Run lint before committing" | Pre-commit workflow |
-| "Check the design system before creating components" | Component creation rules |
-| "Use snake_case for database columns" | Naming conventions |
-| "Add error boundaries around async components" | Error handling patterns |
-
-### How to create one
-
-```markdown
-# .claude/skills/my-convention/SKILL.md
----
-description: Enforces [your pattern]. Activates when [keywords].
----
-
-## Rules
-1. Always do X before Y
-2. Use Z library for W
-3. Never use deprecated pattern Q
-```
-
-Once saved, the skill auto-activates when relevant keywords appear — no manual invocation needed.
 
 ---
 
 ## Decision Framework Summary
 
-| Question | Skills | Subagents | MCP |
-|----------|--------|-----------|-----|
-| What does it teach? | How to do something | Nothing — it does the work | Nothing — it provides access |
-| Who can use it? | Any Claude instance | Spawned by the orchestrator | Any Claude with the server |
-| Context model | Shared (main conversation) | Isolated (separate window) | Shared (tool results) |
-| Persistence | Always available when loaded | Exists only during task | Always available when connected |
-| Best for | Conventions, expertise, procedures | Complex workflows, parallel work | Data access, external services |
+| Question | Skills | Custom Subagents | MCP |
+|----------|--------|-----------------|-----|
+| What does it do? | Provides instructions | Executes isolated work | Provides data access |
+| Memory | None | Persistent across sessions | None |
+| Context model | Shared or forked | Always isolated | Shared (tool results) |
+| Best for | Conventions, expertise, commands | Complex workflows, pipelines | Data access, external services |
+| AI tool support | Any (via AGENTS.md) | Claude Code only | Varies |
 
 ---
 
 ## Further Reading
 
-- [Skills Explained](https://claude.com/blog/skills-explained) — Anthropic's official guide to Skills, subagents, and MCP
-- [Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
+- [Skills-First Architecture](/docs/guides/core-concepts/skills-first-architecture) — Why skills are the user-facing layer
+- [Skills, Plugins & Marketplaces](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
 - [Extensible Skills Standard](/docs/skills/extensible/) — Customizing skills for your project
-- [Verified Skills Standard](/docs/skills/verified/) — Security certification for skills
+- [Claude Code Skills Docs](https://code.claude.com/docs/en/skills) — Official Claude Code skills documentation
+- [Claude Code Subagents Docs](https://code.claude.com/docs/en/sub-agents) — Official custom subagents documentation
 
 ---
 
