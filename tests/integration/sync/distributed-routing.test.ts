@@ -82,7 +82,7 @@ describe('Umbrella Sync Routing Pipeline', () => {
       const config = makeUmbrellaConfig();
       const result = resolveSyncTarget('vskill', config);
 
-      expect(result.ado).toEqual({ project: 'vskill-ado' });
+      expect(result.ado?.project).toBe('vskill-ado');
     });
 
     it('routes to vskill-platform by project name', () => {
@@ -92,7 +92,7 @@ describe('Umbrella Sync Routing Pipeline', () => {
       expect(result.source).toBe('child-repo-name');
       expect(result.github).toEqual({ owner: 'anton-abyzov', repo: 'vskill-platform' });
       expect(result.jira).toEqual({ projectKey: 'VPL' });
-      expect(result.ado).toEqual({ project: 'vskill-platform-ado' });
+      expect(result.ado?.project).toBe('vskill-platform-ado');
     });
   });
 

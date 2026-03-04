@@ -356,6 +356,7 @@ export interface ChildRepoJiraSync {
  * Per-child-repo Azure DevOps sync target
  */
 export interface ChildRepoAdoSync {
+  organization?: string;
   project: string;
 }
 
