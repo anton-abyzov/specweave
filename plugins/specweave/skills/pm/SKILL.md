@@ -72,7 +72,7 @@ If `true`:
 
 ### Writing Interview State to Disk (CRITICAL)
 
-**This skill runs with `context: fork` (isolated LLM context), but file writes persist.**
+**When invoked via subagent (sw:sw-pm), this runs in an isolated context, but file writes persist.**
 
 When invoked from `sw:increment` with an increment ID (e.g., "Deep interview for increment 0266-foo: ..."),
 you MUST write the interview state file to disk so the enforcement guard can find it:
