@@ -18,11 +18,10 @@ describe('Footer', () => {
     expect(screen.getByText('Company')).toBeInTheDocument();
   });
 
-  it('renders 4 social icon links', () => {
+  it('renders social icon links', () => {
     render(<Footer />);
     expect(screen.getByLabelText('GitHub')).toBeInTheDocument();
-    expect(screen.getByLabelText('Discord')).toBeInTheDocument();
-    expect(screen.getByLabelText('YouTube')).toBeInTheDocument();
+    expect(screen.getByLabelText('Discussions')).toBeInTheDocument();
     expect(screen.getByLabelText('X / Twitter')).toBeInTheDocument();
   });
 
