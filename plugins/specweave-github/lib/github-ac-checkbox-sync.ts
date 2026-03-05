@@ -327,42 +327,61 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
       }
     }
 
-    // Find living docs for this feature
-    const featurePath = path.join(
-      this.projectRoot,
-      '.specweave/docs/internal/specs',
-      this.projectId,
-      featureId
-    );
+    // Find living docs for this feature — scan all project folders for cross-project support
+    const specsRoot = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+    const usFiles: LivingDocsUSFile[] = [];
 
-    if (!existsSync(featurePath)) {
+    // Collect all project folders that have this feature
+    const projectDirs: string[] = [];
+    const primaryPath = path.join(specsRoot, this.projectId, featureId);
+    if (existsSync(primaryPath)) {
+      projectDirs.push(primaryPath);
+    }
+
+    // For cross-project increments, also scan other project folders
+    if (existsSync(specsRoot)) {
+      try {
+        const allProjects = await fs.readdir(specsRoot);
+        for (const proj of allProjects) {
+          if (proj === this.projectId) continue;
+          const projFeaturePath = path.join(specsRoot, proj, featureId);
+          if (existsSync(projFeaturePath)) {
+            projectDirs.push(projFeaturePath);
+          }
+        }
+      } catch {
+        // Ignore readdir errors
+      }
+    }
+
+    if (projectDirs.length === 0) {
       return [];
     }
 
-    // Load all US files
-    const files = await fs.readdir(featurePath);
-    const usFiles: LivingDocsUSFile[] = [];
+    // Load all US files from all matching project/feature folders
+    for (const featurePath of projectDirs) {
+      const files = await fs.readdir(featurePath);
+      for (const file of files) {
+        if (file.startsWith('us-') && file.endsWith('.md')) {
+          const filePath = path.join(featurePath, file);
+          const fileContent = await fs.readFile(filePath, 'utf-8');
 
-    for (const file of files) {
-      if (file.startsWith('us-') && file.endsWith('.md')) {
-        const filePath = path.join(featurePath, file);
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-
-        const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
-        if (match) {
-          const fm = yaml.parse(match[1]);
-          usFiles.push({
-            id: fm.id,
-            title: fm.title,
-            format_preservation: fm.format_preservation,
-            external_title: fm.external_title,
-            external_source: fm.external_source,
-            external_id: fm.external_id,
-            external_url: fm.external_url,
-            imported_at: fm.imported_at,
-            origin: fm.origin,
-            external_tools: fm.external_tools,
-          });
+          const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
+          if (match) {
+            const fm = yaml.parse(match[1]);
+            usFiles.push({
+              id: fm.id,
+              title: fm.title,
+              format_preservation: fm.format_preservation,
+              external_title: fm.external_title,
+              external_source: fm.external_source,
+              external_id: fm.external_id,
+              external_url: fm.external_url,
+              imported_at: fm.imported_at,
+              origin: fm.origin,
+              external_tools: fm.external_tools,
+            });
+          }
         }
       }
     }
