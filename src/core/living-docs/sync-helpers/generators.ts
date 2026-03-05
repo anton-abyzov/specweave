@@ -234,6 +234,9 @@ export interface UserStoryFileOptions {
 
   /** Generator context for project-specific paths */
   context?: Partial<GeneratorContext>;
+
+  /** Existing external tool links to preserve (from previously-written US file) */
+  existingExternal?: Record<string, unknown>;
 }
 
 /**
@@ -309,6 +312,24 @@ export function generateUserStoryFile(
   }
   if (story.origin) {
     lines.push('origin: ' + story.origin);
+  }
+
+  // Preserve existing external tool links (GitHub issue, JIRA key, ADO work item)
+  // These are set by syncToExternalTools and must survive file regeneration
+  if (options?.existingExternal && Object.keys(options.existingExternal).length > 0) {
+    lines.push('external:');
+    for (const [provider, data] of Object.entries(options.existingExternal)) {
+      if (data && typeof data === 'object') {
+        lines.push('  ' + provider + ':');
+        for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+          if (typeof value === 'string') {
+            lines.push('    ' + key + ': ' + value);
+          } else {
+            lines.push('    ' + key + ': ' + String(value));
+          }
+        }
+      }
+    }
   }
 
   lines.push('---');

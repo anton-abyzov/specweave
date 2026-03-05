@@ -3,6 +3,7 @@ import { SpecParser } from "../../../src/core/specs/spec-parser.js";
 import axios from "axios";
 class AdoSpecSync {
   constructor(config, projectRoot = process.cwd()) {
+    this.availableTypes = null;
     this.specManager = new SpecMetadataManager(projectRoot);
     this.config = config;
     this.client = axios.create({
@@ -17,6 +18,38 @@ class AdoSpecSync {
         "Accept": "application/json"
       }
     });
+  }
+  /**
+   * Detect available work item types for this ADO project.
+   * Basic process has Epic/Issue/Task; Agile/Scrum has Feature/User Story/Bug/Task.
+   */
+  async detectAvailableTypes() {
+    if (this.availableTypes) return this.availableTypes;
+    try {
+      const resp = await this.client.get("/wit/workitemtypes?api-version=7.1");
+      this.availableTypes = new Set(resp.data.value.map((t) => t.name));
+    } catch {
+      this.availableTypes = /* @__PURE__ */ new Set(["Feature", "User Story", "Bug", "Task", "Epic"]);
+    }
+    return this.availableTypes;
+  }
+  /**
+   * Resolve a work item type, falling back if not available in the project.
+   * Feature → Epic (Basic process), User Story → Issue (Basic process)
+   */
+  async resolveWorkItemType(desiredType) {
+    const types = await this.detectAvailableTypes();
+    if (types.has(desiredType)) return desiredType;
+    const fallbacks = {
+      "Feature": "Epic",
+      "User Story": "Issue"
+    };
+    const fallback = fallbacks[desiredType];
+    if (fallback && types.has(fallback)) {
+      console.log(`      \u2139\uFE0F  Work item type "${desiredType}" not available, using "${fallback}"`);
+      return fallback;
+    }
+    return desiredType;
   }
   /**
    * Sync spec to ADO Feature (CREATE or UPDATE)
@@ -134,7 +167,8 @@ class AdoSpecSync {
     const featureTitle = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const featureDescription = this.generateFeatureDescription(spec);
     const tags = [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`].join("; ");
-    const workItemType = this.mapTypeToAdo(spec.metadata.type, "Feature");
+    const mappedType = this.mapTypeToAdo(spec.metadata.type, "Feature");
+    const workItemType = await this.resolveWorkItemType(mappedType);
     const payload = [
       {
         op: "add",
@@ -380,7 +414,8 @@ ${acList}
    * Create ADO User Story
    */
   async createStory(story) {
-    const workItemType = this.mapTypeToAdo(story.type, "User Story");
+    const mappedType = this.mapTypeToAdo(story.type, "User Story");
+    const workItemType = await this.resolveWorkItemType(mappedType);
     const payload = [
       {
         op: "add",
