@@ -1659,7 +1659,10 @@ export class LivingDocsSync {
           }
         } catch (error) {
           // AC-US5-05: External tool failures are logged but don't break living docs sync
-          this.logger.error(`   ⚠️  Failed to sync to ${tool}:`, error);
+          const errMsg = error instanceof Error ? error.message : String(error);
+          const errStack = error instanceof Error ? error.stack : '';
+          this.logger.error(`   ⚠️  Failed to sync to ${tool}: ${errMsg}`);
+          if (errStack) this.logger.error(`      ${errStack.split('\n').slice(1, 3).join('\n      ')}`);
           this.logger.error(`      Living docs sync will continue...`);
         }
       }
