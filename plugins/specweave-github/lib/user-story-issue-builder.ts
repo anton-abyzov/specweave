@@ -209,8 +209,9 @@ export class UserStoryIssueBuilder {
     // - [ ] **AC-US1-01**: Description (not completed)
     // - [x] **AC-001**: Description (legacy format, completed)
     // - **AC-US1-01**: Description (no checkbox, default to not completed)
-    const acPatternWithCheckbox = /(?:^|\n)\s*[-*]\s+\[([x ])\]\s+\*\*([A-Z]+-(?:[A-Z]+\d+-)?(\d+))\*\*:\s*([^\n]+)/g;
-    const acPatternNoCheckbox = /(?:^|\n)\s*[-*]?\s*\*\*([A-Z]+-(?:[A-Z]+\d+-)?(\d+))\*\*:\s*([^\n]+)/g;
+    // Support all AC ID formats: AC-001, AC-US1-01, AC-SPE-US1-01
+    const acPatternWithCheckbox = /(?:^|\n)\s*[-*]\s+\[([x ])\]\s+\*\*(AC-(?:[A-Z0-9]+-)*(\d+))\*\*:\s*([^\n]+)/g;
+    const acPatternNoCheckbox = /(?:^|\n)\s*[-*]?\s*\*\*(AC-(?:[A-Z0-9]+-)*(\d+))\*\*:\s*([^\n]+)/g;
 
     // First try pattern with checkboxes
     let match;
