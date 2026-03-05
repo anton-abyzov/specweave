@@ -4,6 +4,52 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.380] - 2026-03-05
+
+### Changes
+- fix: compound AC-ID parsing in issue body generator and completion calculator (v1.0.378)
+- fix: cross-project AC checkbox sync with per-repo clients and external field mapping (v1.0.377)
+- fix: cross-project US loading in AC checkbox sync (v1.0.376)
+- fix: compound US-ID parsing in github-us-auto-closer (v1.0.375)
+- fix: compound US-ID AC sync, ADO status transition, template false positive, spec folder path (v1.0.374)
+- fix compound US-ID regex across sync pipeline
+- fix cross-repo GitHub issue closure in reconciler
+- fix: ADO work item type fallback for Basic process template
+- fix: wire JIRA/ADO distributed sync routing for umbrella mode
+- fix: exclude feature/story IDs from template placeholder detection
+- v1.0.368: cross-project sync routing, prefixed US IDs, ADO support
+- fix: support prefixed US IDs and paginate milestone detection
+- fix: scope GitHubFeatureSync to target project in cross-project mode
+- fix: include owner/repo in sync lock key for cross-project dedup
+- fix: pass projectName to syncToExternalTools in cross-project sync
+
+---
+
+
+
+## [1.0.379] - 2026-03-05
+
+### Changes
+- fix: compound AC-ID parsing in issue body generator and completion calculator (v1.0.378)
+- fix: cross-project AC checkbox sync with per-repo clients and external field mapping (v1.0.377)
+- fix: cross-project US loading in AC checkbox sync (v1.0.376)
+- fix: compound US-ID parsing in github-us-auto-closer (v1.0.375)
+- fix: compound US-ID AC sync, ADO status transition, template false positive, spec folder path (v1.0.374)
+- fix compound US-ID regex across sync pipeline
+- fix cross-repo GitHub issue closure in reconciler
+- fix: ADO work item type fallback for Basic process template
+- fix: wire JIRA/ADO distributed sync routing for umbrella mode
+- fix: exclude feature/story IDs from template placeholder detection
+- v1.0.368: cross-project sync routing, prefixed US IDs, ADO support
+- fix: support prefixed US IDs and paginate milestone detection
+- fix: scope GitHubFeatureSync to target project in cross-project mode
+- fix: include owner/repo in sync lock key for cross-project dedup
+- fix: pass projectName to syncToExternalTools in cross-project sync
+
+---
+
+
+
 ## [1.0.378] - 2026-03-05
 
 ### Changes

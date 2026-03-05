@@ -110,6 +110,15 @@ export class GitHubFeatureSync {
   }
 
   /**
+   * Get the repo slug (owner/repo) for `-R` flag in gh CLI commands.
+   * CRITICAL: All gh issue commands MUST use `-R` to target the correct repo,
+   * not the repo inferred from the current working directory.
+   */
+  private getRepoSlug(): string {
+    return `${this.client.getOwner()}/${this.client.getRepo()}`;
+  }
+
+  /**
    * Sync Feature folder to GitHub (Milestone + User Story Issues)
    *
    * Process:
@@ -972,6 +981,8 @@ export class GitHubFeatureSync {
         issueNumber.toString(),
         '--comment',
         this.calculator.buildCompletionComment(completion),
+        '-R',
+        repoSlug,
       ], { env: this.getGhEnv() });
       console.log(
         `      ✅ Created and verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
@@ -1006,6 +1017,7 @@ export class GitHubFeatureSync {
     userStoryPath: string
   ): Promise<void> {
     // Update issue body
+    const repoSlug = this.getRepoSlug();
     await execFileNoThrow('gh', [
       'issue',
       'edit',
@@ -1014,6 +1026,8 @@ export class GitHubFeatureSync {
       issueContent.title,
       '--body',
       issueContent.body,
+      '-R',
+      repoSlug,
     ], { env: this.getGhEnv() });
 
     // ✅ VERIFICATION GATE: Calculate ACTUAL completion from checkboxes
@@ -1036,6 +1050,8 @@ export class GitHubFeatureSync {
             'issue',
             'close',
             issueNumber.toString(),
+            '-R',
+            repoSlug,
           ], { env: this.getGhEnv() });
           console.log(
             `      ✅ Verified complete (comment already posted): ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
@@ -1047,6 +1063,8 @@ export class GitHubFeatureSync {
             issueNumber.toString(),
             '--comment',
             this.calculator.buildCompletionComment(completion),
+            '-R',
+            repoSlug,
           ], { env: this.getGhEnv() });
           console.log(
             `      ✅ Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
@@ -1063,6 +1081,8 @@ export class GitHubFeatureSync {
           issueNumber.toString(),
           '--comment',
           this.calculator.buildReopenComment(completion, 'Work verification failed'),
+          '-R',
+          repoSlug,
         ], { env: this.getGhEnv() });
         console.log(
           `      ⚠️ Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
@@ -1157,6 +1177,7 @@ export class GitHubFeatureSync {
           'issue',
           'edit',
           issueNumber.toString(),
+          '-R', this.getRepoSlug(),
           '--remove-label',
           ...statusLabels,
         ], { env: this.getGhEnv() });
@@ -1167,6 +1188,7 @@ export class GitHubFeatureSync {
         'issue',
         'edit',
         issueNumber.toString(),
+        '-R', this.getRepoSlug(),
         '--add-label',
         newStatusLabel,
       ], { env: this.getGhEnv() });
@@ -1195,6 +1217,7 @@ export class GitHubFeatureSync {
                 'issue',
                 'close',
                 issueNumber.toString(),
+                '-R', this.getRepoSlug(),
               ], { env: this.getGhEnv() });
               console.log(`      ✅ Auto-closed issue #${issueNumber} (comment already posted)`);
             } else {
@@ -1203,6 +1226,7 @@ export class GitHubFeatureSync {
                 'issue',
                 'close',
                 issueNumber.toString(),
+                '-R', this.getRepoSlug(),
                 '--comment',
                 completionComment,
               ], { env: this.getGhEnv() });
@@ -1241,9 +1265,10 @@ export class GitHubFeatureSync {
   ): Promise<void> {
     try {
       // 1. Fetch last comment from the issue
+      const repoSlug = this.getRepoSlug();
       const commentsResult = await execFileNoThrow('gh', [
         'api',
-        'repos/:owner/:repo/issues/' + issueNumber + '/comments',
+        `repos/${repoSlug}/issues/${issueNumber}/comments`,
         '--jq',
         '.[-1] | {body: .body, created_at: .created_at}',  // Get last comment only
       ], { env: this.getGhEnv() });
@@ -1285,6 +1310,7 @@ export class GitHubFeatureSync {
         'issue',
         'comment',
         issueNumber.toString(),
+        '-R', repoSlug,
         '--body',
         newCommentBody,
       ], { env: this.getGhEnv() });
