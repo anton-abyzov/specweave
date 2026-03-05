@@ -814,14 +814,31 @@ export class ExternalIssueAutoCreator {
         : `[${incrementInfo.featureId}] ${incrementInfo.title}`;
       const description = this.buildAdoDescription(incrementId, incrementInfo);
 
-      const workItem = await client.createWorkItem({
-        workItemType: 'Feature',
-        title,
-        description,
-        tags: ['specweave', 'auto-created'],
-      });
+      // Try "Feature" first (Agile/Scrum), fall back to "Epic" (Basic process)
+      let workItem;
+      try {
+        workItem = await client.createWorkItem({
+          workItemType: 'Feature',
+          title,
+          description,
+          tags: ['specweave', 'auto-created'],
+        });
+      } catch (featureErr) {
+        const msg = featureErr instanceof Error ? featureErr.message : String(featureErr);
+        if (msg.includes('WorkItemTypeNotFoundException') || msg.includes('does not exist')) {
+          this.logger.log(`   ℹ️  "Feature" type not available, using "Epic" (Basic process)`);
+          workItem = await client.createWorkItem({
+            workItemType: 'Epic',
+            title,
+            description,
+            tags: ['specweave', 'auto-created'],
+          });
+        } else {
+          throw featureErr;
+        }
+      }
 
-      this.logger.log(`✅ Created ADO Feature: #${workItem.id}`);
+      this.logger.log(`✅ Created ADO work item: #${workItem.id}`);
 
       // Create per-user-story User Story work items under the Feature (multi-story)
       const storyItemMap: Record<string, { workItemId: number; workItemUrl: string }> = {};
@@ -830,13 +847,30 @@ export class ExternalIssueAutoCreator {
           try {
             const usTitle = `[${incrementInfo.featureId}][${us.id}] ${us.title}`;
             const usDesc = us.description || `User story for ${us.title}`;
-            const usItem = await client.createWorkItem({
-              workItemType: 'User Story',
-              title: usTitle,
-              description: usDesc,
-              tags: ['specweave', 'auto-created', 'user-story'],
-              parentId: workItem.id,
-            });
+            // Try "User Story" first (Agile/Scrum), fall back to "Issue" (Basic process)
+            let usItem;
+            try {
+              usItem = await client.createWorkItem({
+                workItemType: 'User Story',
+                title: usTitle,
+                description: usDesc,
+                tags: ['specweave', 'auto-created', 'user-story'],
+                parentId: workItem.id,
+              });
+            } catch (typeErr) {
+              const typeMsg = typeErr instanceof Error ? typeErr.message : String(typeErr);
+              if (typeMsg.includes('WorkItemTypeNotFoundException') || typeMsg.includes('does not exist')) {
+                usItem = await client.createWorkItem({
+                  workItemType: 'Issue',
+                  title: usTitle,
+                  description: usDesc,
+                  tags: ['specweave', 'auto-created', 'user-story'],
+                  parentId: workItem.id,
+                });
+              } else {
+                throw typeErr;
+              }
+            }
             storyItemMap[us.id] = {
               workItemId: usItem.id,
               workItemUrl: usItem.url,
