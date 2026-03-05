@@ -268,23 +268,42 @@ async function ensureLabelExists(
 }
 
 /**
+ * Build the AC ID prefix for a given US ID.
+ * US-001 → "AC-US1-", US-SPE-001 → "AC-SPE-US1-"
+ */
+function buildACPrefix(usId: string): string {
+  const compoundMatch = usId.match(/^US-([A-Z]+)-(\d+)$/);
+  if (compoundMatch) {
+    return `AC-${compoundMatch[1]}-US${parseInt(compoundMatch[2], 10)}-`;
+  }
+  const simpleMatch = usId.match(/^US-(\d+)$/);
+  if (simpleMatch) {
+    return `AC-US${parseInt(simpleMatch[1], 10)}-`;
+  }
+  const fallback = usId.match(/(\d+)$/);
+  const num = fallback ? parseInt(fallback[1], 10) : 0;
+  return `AC-US${num}-`;
+}
+
+/**
  * Extract AC states for a specific user story from spec.md content.
+ * Supports both simple (AC-US1-01) and compound (AC-SPE-US1-01) AC ID formats.
  */
 function parseACStatesForUS(content: string, usId: string): ParsedACState[] {
   const states: ParsedACState[] = [];
-  // AC IDs use unpadded US number: US-001 → AC-US1-XX
-  const usNum = String(parseInt(usId.replace('US-', ''), 10));
+  const acPrefix = buildACPrefix(usId);
+  const escapedPrefix = acPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Support both bold (**AC-US1-01**:) and plain (AC-US1-01:) formats
+  // Support both bold (**AC-...**:) and plain (AC-...:) formats
   const acPattern = new RegExp(
-    `- \\[([ x])\\] (?:\\*\\*)?AC-US${usNum}-(\\d+)(?:\\*\\*)?:\\s*(.+)`,
+    `- \\[([ x])\\] (?:\\*\\*)?${escapedPrefix}(\\d+)(?:\\*\\*)?:\\s*(.+)`,
     'g',
   );
 
   let match;
   while ((match = acPattern.exec(content)) !== null) {
     states.push({
-      id: `AC-US${usNum}-${match[2]}`,
+      id: `${acPrefix}${match[2]}`,
       description: match[3].trim(),
       completed: match[1] === 'x',
     });
