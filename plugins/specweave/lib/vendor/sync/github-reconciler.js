@@ -570,66 +570,90 @@ This issue was closed because increment \`${incrementId}\` was abandoned.
                     // Non-critical: sync may fail if no living docs exist yet
                 }
             }
-            // Collect unique issue numbers from both metadata formats
-            const issueNumbers = new Set();
+            // Collect issues grouped by owner/repo for cross-repo closure
+            // Map key: "owner/repo" → issue numbers
+            const repoIssues = new Map();
+            const issueRepoMap = new Map(); // issueNum → "owner/repo"
+            // Helper to extract owner/repo from GitHub issue URL
+            const parseRepoFromUrl = (url) => {
+                const match = url?.match(/github\.com\/([^/]+\/[^/]+)\/issues\//);
+                return match ? match[1] : null;
+            };
+            // Fallback repo from global config
+            const globalRepoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
+            const globalRepoSlug = globalRepoInfo ? `${globalRepoInfo.owner}/${globalRepoInfo.repo}` : null;
             // Format 1: externalLinks.github.issues (keyed by US-ID)
             const extIssues = metadata.externalLinks?.github?.issues;
             if (extIssues && typeof extIssues === 'object') {
                 for (const usId of Object.keys(extIssues)) {
-                    const num = extIssues[usId]?.issueNumber;
-                    if (typeof num === 'number')
-                        issueNumbers.add(num);
+                    const entry = extIssues[usId];
+                    const num = entry?.issueNumber;
+                    if (typeof num !== 'number')
+                        continue;
+                    const repoSlug = parseRepoFromUrl(entry?.issueUrl) || globalRepoSlug;
+                    if (!repoSlug)
+                        continue;
+                    if (!repoIssues.has(repoSlug))
+                        repoIssues.set(repoSlug, new Set());
+                    repoIssues.get(repoSlug).add(num);
+                    issueRepoMap.set(num, repoSlug);
                 }
             }
             // Format 2: github.issues (array with number field)
             if (Array.isArray(metadata.github?.issues)) {
                 for (const entry of metadata.github.issues) {
-                    if (typeof entry.number === 'number')
-                        issueNumbers.add(entry.number);
+                    if (typeof entry.number !== 'number')
+                        continue;
+                    const repoSlug = parseRepoFromUrl(entry?.url) || globalRepoSlug;
+                    if (!repoSlug)
+                        continue;
+                    if (!repoIssues.has(repoSlug))
+                        repoIssues.set(repoSlug, new Set());
+                    repoIssues.get(repoSlug).add(entry.number);
+                    issueRepoMap.set(entry.number, repoSlug);
                 }
             }
-            if (issueNumbers.size === 0)
+            const totalIssues = Array.from(repoIssues.values()).reduce((sum, s) => sum + s.size, 0);
+            if (totalIssues === 0)
                 return result;
-            const repoInfo = await GitHubReconciler.resolveRepoInfo(projectRoot);
-            if (!repoInfo) {
-                result.errors.push('Could not detect GitHub repository');
-                return result;
-            }
-            const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
             const comment = `## Increment Completed
 
 All tasks for increment \`${incrementId}\` have been completed.
 
 ---
 Auto-closed by SpecWeave`;
-            // Close each open issue
-            for (const num of issueNumbers) {
-                try {
-                    const issue = await client.getIssue(num);
-                    if (issue.state === 'open') {
-                        await client.closeIssue(num, comment);
-                        closedNumbers.add(num);
-                        result.closed++;
-                        log.log(`   Closed GitHub issue #${num}`);
+            // Close issues per-repo (supports cross-repo distributed sync)
+            for (const [repoSlug, nums] of repoIssues) {
+                const [owner, repo] = repoSlug.split('/');
+                const client = GitHubClientV2.fromRepo(owner, repo);
+                for (const num of nums) {
+                    try {
+                        const issue = await client.getIssue(num);
+                        if (issue.state === 'open') {
+                            await client.closeIssue(num, comment);
+                            closedNumbers.add(num);
+                            result.closed++;
+                            log.log(`   Closed GitHub issue ${repoSlug}#${num}`);
+                        }
+                        else {
+                            log.log(`   Issue ${repoSlug}#${num} already closed`);
+                        }
                     }
-                    else {
-                        log.log(`   Issue #${num} already closed`);
+                    catch (error) {
+                        result.errors.push(`Issue ${repoSlug}#${num}: ${error.message}`);
                     }
-                }
-                catch (error) {
-                    result.errors.push(`Issue #${num}: ${error.message}`);
                 }
             }
-            // Close milestone if present
+            // Close milestone if present (uses global repo — milestones are on the main repo)
             const milestoneNum = metadata.externalLinks?.github?.milestone ?? metadata.github?.milestone;
-            if (typeof milestoneNum === 'number') {
+            if (typeof milestoneNum === 'number' && globalRepoSlug) {
                 try {
                     const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
                     const msResult = await execFileNoThrow('gh', [
                         'api',
                         '-X',
                         'PATCH',
-                        `repos/${repoInfo.owner}/${repoInfo.repo}/milestones/${milestoneNum}`,
+                        `repos/${globalRepoSlug}/milestones/${milestoneNum}`,
                         '-f',
                         'state=closed',
                     ]);
