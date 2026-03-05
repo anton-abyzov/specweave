@@ -1,0 +1,66 @@
+.tiers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-4);
+  margin-top: var(--sw-space-12);
+  flex-wrap: wrap;
+}
+
+.tierCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sw-space-8) var(--sw-space-6);
+  background: var(--sw-surface-dark-secondary);
+  border: 1px solid var(--sw-border-subtle);
+  border-radius: var(--sw-radius-xl);
+  width: 240px;
+}
+
+.tierIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-surface-dark-tertiary);
+  color: var(--sw-color-primary-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--sw-space-4);
+}
+
+.tierDesc {
+  font-size: var(--sw-font-size-sm);
+  color: var(--sw-gray-400);
+  line-height: var(--sw-line-height-relaxed);
+  margin: var(--sw-space-3) 0 0;
+}
+
+.arrow {
+  color: var(--sw-gray-500);
+  display: flex;
+  align-items: center;
+}
+
+.cta {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--sw-space-10);
+}
+
+@media (max-width: 768px) {
+  .tiers {
+    flex-direction: column;
+  }
+
+  .tierCard {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+}

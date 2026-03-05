@@ -2,6 +2,9 @@
 sidebar_position: 1
 title: "Fundamentals"
 description: "Core software engineering knowledge for enterprise development"
+reading_time: "15 min per guide"
+difficulty: "beginner"
+prerequisites: "None"
 ---
 
 # Software Engineering Fundamentals
