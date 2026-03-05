@@ -1,0 +1,26 @@
+.container {
+  display: inline;
+}
+
+.word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 400ms var(--sw-easing-ease-out, cubic-bezier(0, 0, 0.58, 1)),
+    transform 400ms var(--sw-easing-ease-out, cubic-bezier(0, 0, 0.58, 1));
+}
+
+.wordVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.noMotion {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.space {
+  display: inline;
+}
