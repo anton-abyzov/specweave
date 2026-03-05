@@ -1,0 +1,124 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-2);
+  border: none;
+  border-radius: var(--sw-button-radius);
+  font-family: var(--sw-font-sans);
+  font-weight: var(--sw-button-font-weight);
+  line-height: var(--sw-line-height-none);
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--sw-transition-colors), var(--sw-transition-shadow);
+  white-space: nowrap;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--sw-border-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Sizes */
+.sm {
+  height: var(--sw-button-height-sm);
+  padding-inline: var(--sw-button-padding-x-sm);
+  font-size: var(--sw-button-font-size-sm);
+}
+
+.md {
+  height: var(--sw-button-height-md);
+  padding-inline: var(--sw-button-padding-x-md);
+  font-size: var(--sw-button-font-size-md);
+}
+
+.lg {
+  height: var(--sw-button-height-lg);
+  padding-inline: var(--sw-button-padding-x-lg);
+  font-size: var(--sw-button-font-size-lg);
+}
+
+/* Primary variant */
+.primary {
+  background: var(--sw-color-primary-500);
+  color: var(--sw-text-on-primary);
+}
+
+.primary:hover:not(.disabled) {
+  background: var(--sw-color-primary-600);
+  box-shadow: var(--sw-shadow-md);
+}
+
+/* Secondary variant */
+.secondary {
+  background: var(--sw-color-primary-50);
+  color: var(--sw-color-primary-700);
+}
+
+.secondary:hover:not(.disabled) {
+  background: var(--sw-color-primary-100);
+}
+
+/* Ghost variant */
+.ghost {
+  background: transparent;
+  color: var(--sw-text-primary);
+}
+
+.ghost:hover:not(.disabled) {
+  background: var(--sw-gray-100);
+}
+
+/* Outline variant */
+.outline {
+  background: transparent;
+  color: var(--sw-color-primary-500);
+  border: 1px solid var(--sw-border-interactive);
+}
+
+.outline:hover:not(.disabled) {
+  background: var(--sw-color-primary-50);
+}
+
+/* Disabled state */
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Dark mode overrides */
+:global([data-theme='dark']) .primary {
+  background: var(--sw-color-primary-500);
+  color: var(--sw-gray-900);
+}
+
+:global([data-theme='dark']) .primary:hover:not(.disabled) {
+  background: var(--sw-color-primary-400);
+}
+
+:global([data-theme='dark']) .secondary {
+  background: var(--sw-color-primary-100);
+  color: var(--sw-color-primary-500);
+}
+
+:global([data-theme='dark']) .secondary:hover:not(.disabled) {
+  background: var(--sw-color-primary-200);
+}
+
+:global([data-theme='dark']) .ghost {
+  color: var(--sw-text-primary);
+}
+
+:global([data-theme='dark']) .ghost:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme='dark']) .outline {
+  color: var(--sw-color-primary-500);
+  border-color: var(--sw-border-interactive);
+}
+
+:global([data-theme='dark']) .outline:hover:not(.disabled) {
+  background: var(--sw-color-primary-100);
+}

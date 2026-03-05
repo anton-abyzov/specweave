@@ -1,0 +1,110 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sw-space-8);
+  background: var(--sw-card-bg);
+  border: var(--sw-card-border);
+  border-radius: var(--sw-card-radius);
+  transition: var(--sw-transition-shadow);
+}
+
+.highlighted {
+  border-color: var(--sw-color-primary-500);
+  box-shadow: var(--sw-shadow-glow-sm);
+  position: relative;
+}
+
+.header {
+  margin-bottom: var(--sw-space-6);
+}
+
+.plan {
+  font-size: var(--sw-font-size-lg);
+  font-weight: var(--sw-font-weight-semibold);
+  color: var(--sw-text-primary);
+  margin: 0 0 var(--sw-space-2);
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sw-space-1);
+}
+
+.price {
+  font-size: var(--sw-font-size-4xl);
+  font-weight: var(--sw-font-weight-bold);
+  color: var(--sw-text-primary);
+  line-height: var(--sw-line-height-none);
+}
+
+.period {
+  font-size: var(--sw-font-size-base);
+  color: var(--sw-text-secondary);
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--sw-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sw-space-3);
+  flex: 1;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sw-space-3);
+  font-size: var(--sw-font-size-sm);
+  color: var(--sw-text-secondary);
+}
+
+.checkIcon {
+  color: var(--sw-color-success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--sw-button-height-lg);
+  padding-inline: var(--sw-button-padding-x-lg);
+  border-radius: var(--sw-button-radius);
+  font-weight: var(--sw-button-font-weight);
+  text-decoration: none;
+  transition: var(--sw-transition-colors);
+  background: var(--sw-color-primary-50);
+  color: var(--sw-color-primary-700);
+}
+
+.highlighted .cta {
+  background: var(--sw-color-primary-500);
+  color: var(--sw-text-on-primary);
+}
+
+.cta:hover {
+  opacity: 0.9;
+}
+
+:global([data-theme='dark']) .card {
+  background: var(--sw-surface-elevated);
+  border-color: var(--sw-border-default);
+}
+
+:global([data-theme='dark']) .highlighted {
+  border-color: var(--sw-color-primary-500);
+}
+
+:global([data-theme='dark']) .cta {
+  background: var(--sw-color-primary-100);
+  color: var(--sw-color-primary-500);
+}
+
+:global([data-theme='dark']) .highlighted .cta {
+  background: var(--sw-color-primary-500);
+  color: var(--sw-gray-900);
+}

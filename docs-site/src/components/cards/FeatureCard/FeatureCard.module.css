@@ -1,0 +1,47 @@
+.card {
+  padding: var(--sw-card-padding);
+  background: var(--sw-card-bg);
+  border: var(--sw-card-border);
+  border-radius: var(--sw-card-radius);
+  transition: var(--sw-transition-shadow), var(--sw-transition-transform);
+}
+
+.card:hover {
+  box-shadow: var(--sw-card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.iconArea {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sw-color-primary-50);
+  border-radius: var(--sw-radius-lg);
+  color: var(--sw-color-primary-500);
+  margin-bottom: var(--sw-space-4);
+}
+
+.title {
+  font-size: var(--sw-font-size-lg);
+  font-weight: var(--sw-font-weight-bold);
+  color: var(--sw-text-primary);
+  margin: 0 0 var(--sw-space-2);
+}
+
+.description {
+  font-size: var(--sw-font-size-base);
+  color: var(--sw-text-secondary);
+  line-height: var(--sw-line-height-relaxed);
+  margin: 0;
+}
+
+:global([data-theme='dark']) .card {
+  background: var(--sw-surface-elevated);
+  border-color: var(--sw-border-default);
+}
+
+:global([data-theme='dark']) .iconArea {
+  background: rgba(107, 88, 184, 0.15);
+}
