@@ -830,6 +830,31 @@ export class SyncCoordinator {
         await adoClient.addComment(workItemId, completionComment);
 
         this.logger.log(`  ✅ Added completion comment to ADO work item #${workItemId}`);
+
+        // STATUS UPDATE: Transition ADO work item when progress reaches 100%
+        // Mirrors the JIRA status transition pattern above
+        const canUpdateAdoStatus = config.sync?.settings?.canUpdateStatus ?? false;
+        if (canUpdateAdoStatus && completionData.progressPercentage === 100) {
+          const adoSyncConfig = config.sync as SyncConfigurationExtended | undefined;
+          const targetStateConfig = adoSyncConfig?.statusSync?.mappings?.ado?.completed || { state: 'Closed' };
+          const targetState = typeof targetStateConfig === 'string' ? targetStateConfig : targetStateConfig.state;
+
+          this.logger.log(`  🔀 Transitioning ADO #${workItemId} to ${targetState} (100% complete)`);
+          try {
+            await adoClient.updateWorkItem({
+              id: workItemId,
+              state: targetState,
+            });
+            this.logger.log(`  ✅ Transitioned ADO #${workItemId} to ${targetState}`);
+          } catch (transitionError) {
+            // Non-blocking: log warning but don't fail the sync
+            this.logger.log(`  ⚠️  ADO state transition failed: ${transitionError}`);
+            this.logger.log(`     Manual transition may be required`);
+          }
+        } else if (!canUpdateAdoStatus && completionData.progressPercentage === 100) {
+          this.logger.log(`  ℹ️  ADO status update skipped (canUpdateStatus=false)`);
+          this.logger.log(`     Enable with: specweave config set sync.settings.canUpdateStatus true`);
+        }
       } catch (error) {
         this.logger.error(`  ❌ ADO sync failed: ${error}`);
         throw error;

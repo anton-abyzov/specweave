@@ -132,15 +132,12 @@ export class GitHubACCheckboxSync {
         }
 
         // Filter ACs that belong to this user story
+        // Supports both simple (US-001 → AC-US1-XX) and compound (US-SPE-001 → AC-SPE-US1-XX)
         const usAcStatus = new Map<string, boolean>();
+        const acPrefix = GitHubACCheckboxSync.buildACPrefix(usFile.id);
         for (const [acId, completed] of acStatus) {
-          const acUsMatch = acId.match(/AC-US?(\d+)-\d+/i);
-          if (acUsMatch) {
-            const acUsNum = acUsMatch[1];
-            const usNum = usFile.id.match(/US-?(\d+)/i)?.[1] || '';
-            if (parseInt(acUsNum) === parseInt(usNum)) {
-              usAcStatus.set(acId, completed);
-            }
+          if (acId.startsWith(acPrefix)) {
+            usAcStatus.set(acId, completed);
           }
         }
 
@@ -240,8 +237,9 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
     const acStatus = new Map<string, boolean>();
     const lines = specContent.split('\n');
 
-    const boldRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+-\d+)\*\*:/;
-    const plainRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):/;
+    // Support both simple (AC-US1-01) and compound (AC-SPE-US1-01) AC ID formats
+    const boldRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d+)\*\*:/;
+    const plainRegex = /^- \[([ x])\] (AC-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d+):/;
 
     for (const line of lines) {
       let match = line.match(boldRegex);
@@ -257,6 +255,25 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
     }
 
     return acStatus;
+  }
+
+  /**
+   * Build the AC ID prefix for a given US ID.
+   * US-001 → "AC-US1-", US-SPE-001 → "AC-SPE-US1-"
+   */
+  static buildACPrefix(usId: string): string {
+    const compoundMatch = usId.match(/^US-([A-Z]+)-(\d+)$/);
+    if (compoundMatch) {
+      return `AC-${compoundMatch[1]}-US${parseInt(compoundMatch[2], 10)}-`;
+    }
+    const simpleMatch = usId.match(/^US-(\d+)$/);
+    if (simpleMatch) {
+      return `AC-US${parseInt(simpleMatch[1], 10)}-`;
+    }
+    // Fallback: extract trailing number
+    const fallback = usId.match(/(\d+)$/);
+    const num = fallback ? parseInt(fallback[1], 10) : 0;
+    return `AC-US${num}-`;
   }
 
   /**
