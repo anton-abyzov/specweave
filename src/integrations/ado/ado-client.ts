@@ -93,7 +93,7 @@ export interface AdoExternalChange {
 }
 
 export interface AdoWorkItemCreate {
-  workItemType: 'Epic' | 'Feature' | 'User Story' | 'Task';
+  workItemType: 'Epic' | 'Feature' | 'User Story' | 'Task' | 'Issue';
   title: string;
   description?: string;
   acceptanceCriteria?: string;
