@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.385] - 2026-03-05
+
+### Changes
+- fix hero height, mega-menu z-index, render and wire new Remotion video
+- fix grill findings: poster path, hooks order, dead assets, social links, clipboard
+- add 10 landing page sections, replace monolithic index.tsx
+- add rendered hero videos at 1920x1080 (MP4 + WebM)
+- add mega-menu navbar, custom footer, and remotion 1080p theme
+- add component library: Button, Badge, Icon, CodeBlock, Divider, Section, SectionHeader, FeatureCard, StatCard, ContentCard, IntegrationCard, PricingCard
+- add design system foundation: 356 tokens, animations, hooks, components
+- add test infrastructure: vitest, playwright, lucide-react
+
+---
+
+
+
 ## [1.0.384] - 2026-03-05
 
 ### Changes

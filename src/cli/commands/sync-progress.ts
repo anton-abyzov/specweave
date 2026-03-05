@@ -17,9 +17,10 @@ import { autoCreateExternalIssue, AutoCreateResult } from '../../sync/external-i
 import { ConfigManager } from '../../core/config/config-manager.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
 import { syncACProgressToProviders, parseAllUserStoryIds, type ACProgressSyncConfig } from '../../core/ac-progress-sync.js';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveSyncTarget } from '../../sync/sync-target-resolver.js';
+import { parseEnvFile } from '../../utils/env-file.js';
 import yaml from 'yaml';
 
 export interface SyncProgressArgs {
@@ -406,6 +407,15 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
               }
 
               // v1.0.357: Resolve JIRA credentials from env vars + config profile
+              // v1.0.385: Load .env file for credentials (process.env doesn't have them)
+              let envVars: Record<string, string> = {};
+              const envPath = path.join(projectRoot, '.env');
+              if (existsSync(envPath)) {
+                try {
+                  envVars = parseEnvFile(readFileSync(envPath, 'utf-8'));
+                } catch { /* ignore parse errors */ }
+              }
+
               const jiraProfile = config.sync?.profiles?.[config.sync?.defaultProfile || '']?.config as Record<string, string> | undefined;
               // Apply distributed routing overrides for Jira/ADO
               const distributedJiraProjectKey = (resolved.jira && resolved.source !== 'global')
@@ -414,15 +424,18 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
                 ? resolved.ado.project : undefined;
 
               const resolvedJira = (jiraConfigured && !parsedArgs.noJira) ? {
-                domain: config.jira?.domain || config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || process.env.JIRA_DOMAIN || '',
-                email: process.env.JIRA_EMAIL || '',
-                apiToken: process.env.JIRA_API_TOKEN || '',
+                domain: config.jira?.domain || config.sync?.jira?.domain || jiraProfile?.domain || config.issueTracker?.domain || envVars.JIRA_DOMAIN || process.env.JIRA_DOMAIN || '',
+                email: envVars.JIRA_EMAIL || process.env.JIRA_EMAIL || '',
+                apiToken: envVars.JIRA_API_TOKEN || process.env.JIRA_API_TOKEN || '',
                 projectKey: distributedJiraProjectKey || config.jira?.projectKey || config.sync?.jira?.projectKey || jiraProfile?.projectKey || '',
               } : undefined;
 
               const resolvedAdo = config.ado || config.sync?.ado;
-              const effectiveAdo = (adoConfigured && distributedAdoProject && resolvedAdo)
-                ? { ...resolvedAdo, project: distributedAdoProject }
+              const adoPat = envVars.AZURE_DEVOPS_PAT || process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT || '';
+              const adoOrg = envVars.AZURE_DEVOPS_ORG || process.env.AZURE_DEVOPS_ORG || resolvedAdo?.organization || '';
+              const adoProject = distributedAdoProject || envVars.AZURE_DEVOPS_PROJECT || process.env.AZURE_DEVOPS_PROJECT || resolvedAdo?.project || '';
+              const effectiveAdo = (adoConfigured && resolvedAdo)
+                ? { ...resolvedAdo, organization: adoOrg, project: adoProject, pat: adoPat }
                 : resolvedAdo;
 
               const acSyncConfig: ACProgressSyncConfig = {
