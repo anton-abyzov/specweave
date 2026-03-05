@@ -377,11 +377,25 @@ export class LivingDocsSync {
               } else {
                 storyFile = path.join(crossProjectPath, expectedFilename);
               }
+              // Preserve existing external tool links (GitHub issue, JIRA key, etc.)
+              let existingExternal: Record<string, unknown> | undefined;
+              if (existsSync(storyFile)) {
+                try {
+                  const existingContent = await fs.readFile(storyFile, 'utf-8');
+                  const existingFmMatch = existingContent.match(/^---\n([\s\S]*?)\n---/);
+                  if (existingFmMatch) {
+                    const existingFm = yaml.parse(existingFmMatch[1]);
+                    if (existingFm?.external) {
+                      existingExternal = existingFm.external;
+                    }
+                  }
+                } catch { /* ignore read errors */ }
+              }
               // Pass allProjects for related_projects frontmatter (v0.33.0+, v0.34.0 paths)
               const storyContent = generateUserStoryFile(story, featureId, incrementId, {
                 ...parsed,
                 userStories: projectStories
-              }, { allProjects: allTargetPaths });
+              }, { allProjects: allTargetPaths, existingExternal });
               await fs.writeFile(storyFile, storyContent, 'utf-8');
               result.filesCreated.push(storyFile);
             }
@@ -539,7 +553,21 @@ export class LivingDocsSync {
         }
 
         if (!options.dryRun) {
-          const storyContent = generateUserStoryFile(story, featureId, incrementId, parsed);
+          // Preserve existing external tool links (GitHub issue, JIRA key, etc.)
+          let existingExternal: Record<string, unknown> | undefined;
+          if (existsSync(storyFile)) {
+            try {
+              const existingContent = await fs.readFile(storyFile, 'utf-8');
+              const existingFmMatch = existingContent.match(/^---\n([\s\S]*?)\n---/);
+              if (existingFmMatch) {
+                const existingFm = yaml.parse(existingFmMatch[1]);
+                if (existingFm?.external) {
+                  existingExternal = existingFm.external;
+                }
+              }
+            } catch { /* ignore read errors */ }
+          }
+          const storyContent = generateUserStoryFile(story, featureId, incrementId, parsed, { existingExternal });
           await fs.writeFile(storyFile, storyContent, 'utf-8');
           result.filesCreated.push(storyFile);
         } else {
@@ -2008,10 +2036,10 @@ export class LivingDocsSync {
             const envContent = await fs.readFile(envPath, 'utf-8');
             for (const line of envContent.split('\n')) {
               if (line.startsWith('JIRA_API_TOKEN=')) {
-                apiToken = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+                apiToken = line.slice('JIRA_API_TOKEN='.length).trim().replace(/^["']|["']$/g, '') || '';
               }
               if (!email && line.startsWith('JIRA_EMAIL=')) {
-                email = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+                email = line.slice('JIRA_EMAIL='.length).trim().replace(/^["']|["']$/g, '') || '';
               }
             }
           } catch {
@@ -2121,13 +2149,13 @@ export class LivingDocsSync {
           const envContent = await fs.readFile(envPath, 'utf-8');
           for (const line of envContent.split('\n')) {
             if (line.startsWith('AZURE_DEVOPS_PAT=')) {
-              personalAccessToken = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+              personalAccessToken = line.slice('AZURE_DEVOPS_PAT='.length).trim().replace(/^["']|["']$/g, '') || '';
             }
             if (!organization && line.startsWith('AZURE_DEVOPS_ORG=')) {
-              organization = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+              organization = line.slice('AZURE_DEVOPS_ORG='.length).trim().replace(/^["']|["']$/g, '') || '';
             }
             if (!project && line.startsWith('AZURE_DEVOPS_PROJECT=')) {
-              project = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+              project = line.slice('AZURE_DEVOPS_PROJECT='.length).trim().replace(/^["']|["']$/g, '') || '';
             }
           }
         } catch {
