@@ -1,5 +1,6 @@
 .megaMenuTrigger {
   position: relative;
+  z-index: var(--sw-z-popover, 500);
 }
 
 .megaMenuPanel {
@@ -8,12 +9,12 @@
   left: 50%;
   transform: translateX(-50%);
   min-width: 680px;
-  background: var(--ifm-background-color);
+  background: var(--ifm-background-color, #ffffff);
   border: 1px solid var(--ifm-toc-border-color);
   border-radius: 12px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   padding: 24px;
-  z-index: 400;
+  z-index: var(--sw-z-popover, 500);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -21,12 +22,17 @@
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
   transform: translateX(-50%) translateY(4px);
+  isolation: isolate;
 }
 
 .megaMenuPanel[data-visible='true'] {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
+}
+
+:global([data-theme='dark']) .megaMenuPanel {
+  background: var(--sw-surface-elevated, #1c1830);
 }
 
 .megaMenuCategory {
