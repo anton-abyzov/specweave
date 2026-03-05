@@ -1,6 +1,7 @@
 /**
  * SpecWeave Design Token System
  * Refined indigo-purple palette — sophisticated, professional.
+ * 350+ CSS custom properties organized by category.
  */
 
 /* ============================================
@@ -19,19 +20,51 @@
   --sw-color-primary-800: #30285c;
   --sw-color-primary-900: #1d193d;
 
+  /* Secondary accent — emerald */
+  --sw-color-accent-50: #ecfdf5;
+  --sw-color-accent-100: #d1fae5;
+  --sw-color-accent-200: #a7f3d0;
+  --sw-color-accent-300: #6ee7b7;
+  --sw-color-accent-400: #34d399;
+  --sw-color-accent-500: #10b981;
+  --sw-color-accent-600: #059669;
+  --sw-color-accent-700: #047857;
+  --sw-color-accent-800: #065f46;
+  --sw-color-accent-900: #064e3b;
+
   /* Semantic colors */
   --sw-color-info: #3b82f6;
   --sw-color-info-light: #eff6ff;
   --sw-color-info-dark: #1d4ed8;
+  --sw-color-info-50: #eff6ff;
+  --sw-color-info-100: #dbeafe;
+  --sw-color-info-500: #3b82f6;
+  --sw-color-info-700: #1d4ed8;
+  --sw-color-info-900: #1e3a5f;
   --sw-color-success: #10b981;
   --sw-color-success-light: #ecfdf5;
   --sw-color-success-dark: #059669;
+  --sw-color-success-50: #ecfdf5;
+  --sw-color-success-100: #d1fae5;
+  --sw-color-success-500: #10b981;
+  --sw-color-success-700: #047857;
+  --sw-color-success-900: #064e3b;
   --sw-color-warning: #f59e0b;
   --sw-color-warning-light: #fffbeb;
   --sw-color-warning-dark: #d97706;
+  --sw-color-warning-50: #fffbeb;
+  --sw-color-warning-100: #fef3c7;
+  --sw-color-warning-500: #f59e0b;
+  --sw-color-warning-700: #b45309;
+  --sw-color-warning-900: #78350f;
   --sw-color-danger: #ef4444;
   --sw-color-danger-light: #fef2f2;
   --sw-color-danger-dark: #dc2626;
+  --sw-color-danger-50: #fef2f2;
+  --sw-color-danger-100: #fee2e2;
+  --sw-color-danger-500: #ef4444;
+  --sw-color-danger-700: #b91c1c;
+  --sw-color-danger-900: #7f1d1d;
   --sw-color-tip: #8b5cf6;
   --sw-color-tip-light: #f5f3ff;
   --sw-color-tip-dark: #7c3aed;
@@ -47,13 +80,22 @@
   --sw-gray-700: #334155;
   --sw-gray-800: #1e293b;
   --sw-gray-900: #0f172a;
+  --sw-gray-950: #020617;
 
   /* Surface colors */
   --sw-surface-primary: #ffffff;
   --sw-surface-secondary: var(--sw-gray-50);
+  --sw-surface-tertiary: var(--sw-gray-100);
   --sw-surface-elevated: #ffffff;
   --sw-surface-dark: #0b0816;
   --sw-surface-dark-secondary: #110e1e;
+  --sw-surface-dark-tertiary: #1c1830;
+  --sw-surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Surface glass */
+  --sw-surface-glass-bg: rgba(255, 255, 255, 0.6);
+  --sw-surface-glass-border: rgba(255, 255, 255, 0.3);
+  --sw-surface-glass-blur: 16px;
 
   /* Text colors */
   --sw-text-primary: var(--sw-gray-900);
@@ -61,18 +103,29 @@
   --sw-text-tertiary: var(--sw-gray-400);
   --sw-text-inverse: #ffffff;
   --sw-text-link: var(--sw-color-primary-500);
+  --sw-text-link-hover: var(--sw-color-primary-600);
+  --sw-text-on-dark: #ffffff;
+  --sw-text-on-primary: #ffffff;
+  --sw-text-disabled: var(--sw-gray-300);
+  --sw-text-placeholder: var(--sw-gray-400);
 
   /* Border colors */
   --sw-border-light: var(--sw-gray-200);
   --sw-border-default: var(--sw-gray-300);
   --sw-border-subtle: rgba(0, 0, 0, 0.06);
+  --sw-border-strong: var(--sw-gray-400);
+  --sw-border-focus-ring: var(--sw-color-primary-400);
+  --sw-border-interactive: var(--sw-color-primary-300);
+  --sw-border-error: var(--sw-color-danger);
 
   /* ============================================
      TYPOGRAPHY
      ============================================ */
   --sw-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --sw-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
+  --sw-font-display: 'Inter', system-ui, -apple-system, sans-serif;
 
+  /* Static font sizes */
   --sw-font-size-xs: 0.75rem;    /* 12px */
   --sw-font-size-sm: 0.875rem;   /* 14px */
   --sw-font-size-base: 1rem;     /* 16px */
@@ -82,61 +135,306 @@
   --sw-font-size-3xl: 1.875rem;  /* 30px */
   --sw-font-size-4xl: 2.25rem;   /* 36px */
   --sw-font-size-5xl: 3rem;      /* 48px */
+  --sw-font-size-6xl: 3.75rem;   /* 60px */
+  --sw-font-size-7xl: 4.5rem;    /* 72px */
+  --sw-font-size-8xl: 6rem;      /* 96px */
+  --sw-font-size-9xl: 8rem;      /* 128px */
 
+  /* Fluid display typography (clamp) */
+  --sw-font-size-display-1: clamp(3rem, 2.5rem + 2.5vw, 5rem);
+  --sw-font-size-display-2: clamp(2.5rem, 2rem + 2vw, 4rem);
+  --sw-font-size-h1: clamp(2rem, 1.75rem + 1.25vw, 3rem);
+  --sw-font-size-h2: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+  --sw-font-size-h3: clamp(1.25rem, 1.125rem + 0.5vw, 1.75rem);
+  --sw-font-size-h4: clamp(1.125rem, 1rem + 0.25vw, 1.5rem);
+
+  --sw-font-weight-thin: 100;
+  --sw-font-weight-light: 300;
   --sw-font-weight-normal: 400;
   --sw-font-weight-medium: 500;
   --sw-font-weight-semibold: 600;
   --sw-font-weight-bold: 700;
   --sw-font-weight-extrabold: 800;
+  --sw-font-weight-black: 900;
 
+  --sw-line-height-none: 1;
   --sw-line-height-tight: 1.1;
   --sw-line-height-snug: 1.3;
   --sw-line-height-normal: 1.5;
   --sw-line-height-relaxed: 1.65;
+  --sw-line-height-loose: 2;
+
+  /* Letter spacing scale */
+  --sw-letter-spacing-tighter: -0.05em;
+  --sw-letter-spacing-tight: -0.025em;
+  --sw-letter-spacing-normal: 0em;
+  --sw-letter-spacing-wide: 0.025em;
+  --sw-letter-spacing-wider: 0.05em;
+  --sw-letter-spacing-widest: 0.1em;
 
   /* ============================================
      SPACING (4px base grid)
      ============================================ */
   --sw-space-0: 0;
+  --sw-space-px: 1px;
+  --sw-space-0-5: 0.125rem;  /* 2px */
   --sw-space-1: 0.25rem;     /* 4px */
+  --sw-space-1-5: 0.375rem;  /* 6px */
   --sw-space-2: 0.5rem;      /* 8px */
+  --sw-space-2-5: 0.625rem;  /* 10px */
   --sw-space-3: 0.75rem;     /* 12px */
+  --sw-space-3-5: 0.875rem;  /* 14px */
   --sw-space-4: 1rem;        /* 16px */
   --sw-space-5: 1.25rem;     /* 20px */
   --sw-space-6: 1.5rem;      /* 24px */
+  --sw-space-7: 1.75rem;     /* 28px */
   --sw-space-8: 2rem;        /* 32px */
+  --sw-space-9: 2.25rem;     /* 36px */
   --sw-space-10: 2.5rem;     /* 40px */
+  --sw-space-11: 2.75rem;    /* 44px */
   --sw-space-12: 3rem;       /* 48px */
+  --sw-space-14: 3.5rem;     /* 56px */
   --sw-space-16: 4rem;       /* 64px */
   --sw-space-20: 5rem;       /* 80px */
   --sw-space-24: 6rem;       /* 96px */
+  --sw-space-28: 7rem;       /* 112px */
+  --sw-space-32: 8rem;       /* 128px */
+  --sw-space-36: 9rem;       /* 144px */
+  --sw-space-40: 10rem;      /* 160px */
+  --sw-space-44: 11rem;      /* 176px */
+  --sw-space-48: 12rem;      /* 192px */
+  --sw-space-52: 13rem;      /* 208px */
+  --sw-space-56: 14rem;      /* 224px */
+  --sw-space-60: 15rem;      /* 240px */
+  --sw-space-64: 16rem;      /* 256px */
+  --sw-space-72: 18rem;      /* 288px */
+  --sw-space-80: 20rem;      /* 320px */
+  --sw-space-96: 24rem;      /* 384px */
+
+  /* ============================================
+     SIZING
+     ============================================ */
+  --sw-size-0: 0;
+  --sw-size-4: 1rem;
+  --sw-size-5: 1.25rem;
+  --sw-size-6: 1.5rem;
+  --sw-size-8: 2rem;
+  --sw-size-10: 2.5rem;
+  --sw-size-12: 3rem;
+  --sw-size-16: 4rem;
+  --sw-size-20: 5rem;
+  --sw-size-24: 6rem;
+  --sw-size-32: 8rem;
+  --sw-size-40: 10rem;
+  --sw-size-48: 12rem;
+  --sw-size-56: 14rem;
+  --sw-size-64: 16rem;
+  --sw-size-full: 100%;
+  --sw-size-screen: 100vw;
+  --sw-size-min: min-content;
+  --sw-size-max: max-content;
+  --sw-size-fit: fit-content;
 
   /* ============================================
      BORDER RADIUS
      ============================================ */
+  --sw-radius-none: 0;
+  --sw-radius-xs: 4px;
   --sw-radius-sm: 6px;
   --sw-radius-md: 8px;
   --sw-radius-lg: 12px;
   --sw-radius-xl: 16px;
   --sw-radius-2xl: 20px;
+  --sw-radius-3xl: 24px;
   --sw-radius-full: 9999px;
 
   /* ============================================
      SHADOWS
      ============================================ */
+  --sw-shadow-none: none;
   --sw-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --sw-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --sw-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
   --sw-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --sw-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --sw-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --sw-shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
   --sw-shadow-glow: 0 0 80px rgba(107, 88, 184, 0.15);
+  --sw-shadow-glow-sm: 0 0 40px rgba(107, 88, 184, 0.1);
+  --sw-shadow-glow-lg: 0 0 120px rgba(107, 88, 184, 0.2);
+
+  /* Elevation shadows */
+  --sw-shadow-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --sw-shadow-elevation-2: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --sw-shadow-elevation-3: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --sw-shadow-elevation-4: 0 16px 32px rgba(0, 0, 0, 0.14);
+  --sw-shadow-elevation-5: 0 24px 48px rgba(0, 0, 0, 0.18);
+
+  /* Glass morphism shadows */
+  --sw-shadow-glass-sm: 0 2px 8px rgba(107, 88, 184, 0.08);
+  --sw-shadow-glass-md: 0 8px 24px rgba(107, 88, 184, 0.12);
+  --sw-shadow-glass-lg: 0 16px 48px rgba(107, 88, 184, 0.16);
+
+  /* ============================================
+     OPACITY
+     ============================================ */
+  --sw-opacity-0: 0;
+  --sw-opacity-5: 0.05;
+  --sw-opacity-10: 0.1;
+  --sw-opacity-20: 0.2;
+  --sw-opacity-25: 0.25;
+  --sw-opacity-30: 0.3;
+  --sw-opacity-40: 0.4;
+  --sw-opacity-50: 0.5;
+  --sw-opacity-60: 0.6;
+  --sw-opacity-70: 0.7;
+  --sw-opacity-75: 0.75;
+  --sw-opacity-80: 0.8;
+  --sw-opacity-90: 0.9;
+  --sw-opacity-95: 0.95;
+  --sw-opacity-100: 1;
 
   /* ============================================
      TRANSITIONS
      ============================================ */
+  --sw-transition-none: none;
   --sw-transition-fast: 150ms ease;
   --sw-transition-base: 200ms ease;
   --sw-transition-slow: 300ms ease;
+  --sw-transition-colors: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+  --sw-transition-opacity: opacity 200ms ease;
+  --sw-transition-shadow: box-shadow 200ms ease;
+  --sw-transition-transform: transform 200ms ease;
+  --sw-transition-all: all 200ms ease;
+
+  /* ============================================
+     MOTION TOKENS
+     ============================================ */
+  --sw-duration-instant: 0ms;
+  --sw-duration-fast: 150ms;
+  --sw-duration-base: 300ms;
+  --sw-duration-slow: 600ms;
+  --sw-duration-slower: 1000ms;
+  --sw-easing-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --sw-easing-ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --sw-easing-ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --sw-easing-ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --sw-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sw-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --sw-stagger-base: 0ms;
+  --sw-stagger-step: 80ms;
+
+  /* ============================================
+     GRADIENTS
+     ============================================ */
+  --sw-gradient-primary: linear-gradient(135deg, var(--sw-color-primary-400) 0%, var(--sw-color-primary-600) 100%);
+  --sw-gradient-hero: linear-gradient(135deg, #0b0816 0%, #1d193d 50%, #30285c 100%);
+  --sw-gradient-cta: linear-gradient(135deg, var(--sw-color-primary-500) 0%, var(--sw-color-accent-500) 100%);
+  --sw-gradient-dark: linear-gradient(180deg, #0b0816 0%, #110e1e 100%);
+  --sw-gradient-accent: linear-gradient(135deg, var(--sw-color-accent-300) 0%, var(--sw-color-accent-500) 100%);
+  --sw-gradient-text: linear-gradient(135deg, var(--sw-color-primary-300) 0%, var(--sw-color-primary-500) 50%, var(--sw-color-accent-300) 100%);
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  --sw-z-auto: auto;
+  --sw-z-base: 1;
+  --sw-z-dropdown: 100;
+  --sw-z-sticky: 200;
+  --sw-z-modal: 300;
+  --sw-z-overlay: 400;
+  --sw-z-popover: 500;
+  --sw-z-tooltip: 600;
+  --sw-z-max: 9999;
+
+  /* ============================================
+     GRID TOKENS
+     ============================================ */
+  --sw-grid-columns: 12;
+  --sw-grid-gutter: 24px;
+  --sw-grid-max-width: 1280px;
+  --sw-grid-margin: 24px;
+
+  /* ============================================
+     BREAKPOINTS (reference only — CSS can't use in media queries)
+     ============================================ */
+  --sw-breakpoint-xs: 480px;
+  --sw-breakpoint-sm: 640px;
+  --sw-breakpoint-md: 768px;
+  --sw-breakpoint-lg: 1024px;
+  --sw-breakpoint-xl: 1280px;
+  --sw-breakpoint-2xl: 1536px;
+
+  /* ============================================
+     ASPECT RATIOS
+     ============================================ */
+  --sw-aspect-square: 1 / 1;
+  --sw-aspect-video: 16 / 9;
+  --sw-aspect-portrait: 3 / 4;
+  --sw-aspect-landscape: 4 / 3;
+  --sw-aspect-wide: 21 / 9;
+
+  /* ============================================
+     CONTENT WIDTHS
+     ============================================ */
+  --sw-content-xs: 20rem;    /* 320px */
+  --sw-content-sm: 24rem;    /* 384px */
+  --sw-content-md: 28rem;    /* 448px */
+  --sw-content-lg: 32rem;    /* 512px */
+  --sw-content-xl: 36rem;    /* 576px */
+  --sw-content-2xl: 42rem;   /* 672px */
+  --sw-content-3xl: 48rem;   /* 768px */
+  --sw-content-4xl: 56rem;   /* 896px */
+  --sw-content-5xl: 64rem;   /* 1024px */
+  --sw-content-6xl: 72rem;   /* 1152px */
+  --sw-content-7xl: 80rem;   /* 1280px */
+  --sw-content-full: 100%;
+  --sw-content-prose: 65ch;
+
+  /* ============================================
+     COMPONENT TOKENS — BUTTON
+     ============================================ */
+  --sw-button-height-sm: 2rem;
+  --sw-button-height-md: 2.5rem;
+  --sw-button-height-lg: 3rem;
+  --sw-button-padding-x-sm: var(--sw-space-3);
+  --sw-button-padding-x-md: var(--sw-space-4);
+  --sw-button-padding-x-lg: var(--sw-space-6);
+  --sw-button-font-size-sm: var(--sw-font-size-sm);
+  --sw-button-font-size-md: var(--sw-font-size-base);
+  --sw-button-font-size-lg: var(--sw-font-size-lg);
+  --sw-button-radius: var(--sw-radius-md);
+  --sw-button-font-weight: var(--sw-font-weight-semibold);
+
+  /* ============================================
+     COMPONENT TOKENS — CARD
+     ============================================ */
+  --sw-card-padding: var(--sw-space-6);
+  --sw-card-radius: var(--sw-radius-xl);
+  --sw-card-shadow: var(--sw-shadow-md);
+  --sw-card-shadow-hover: var(--sw-shadow-lg);
+  --sw-card-border: 1px solid var(--sw-border-subtle);
+  --sw-card-bg: var(--sw-surface-primary);
+
+  /* ============================================
+     COMPONENT TOKENS — BADGE
+     ============================================ */
+  --sw-badge-height: 1.5rem;
+  --sw-badge-padding-x: var(--sw-space-2);
+  --sw-badge-font-size: var(--sw-font-size-xs);
+  --sw-badge-radius: var(--sw-radius-full);
+  --sw-badge-font-weight: var(--sw-font-weight-medium);
+
+  /* ============================================
+     COMPONENT TOKENS — INPUT
+     ============================================ */
+  --sw-input-height: 2.5rem;
+  --sw-input-padding-x: var(--sw-space-3);
+  --sw-input-radius: var(--sw-radius-md);
+  --sw-input-border: 1px solid var(--sw-border-default);
+  --sw-input-bg: var(--sw-surface-primary);
+  --sw-input-font-size: var(--sw-font-size-base);
+  --sw-input-placeholder-color: var(--sw-text-placeholder);
 
   /* ============================================
      INFIMA MAPPINGS
@@ -154,7 +452,25 @@
   --ifm-heading-font-weight: var(--sw-font-weight-semibold);
   --ifm-font-weight-semibold: var(--sw-font-weight-semibold);
   --ifm-font-weight-bold: var(--sw-font-weight-bold);
+  --ifm-font-weight-normal: var(--sw-font-weight-normal);
   --ifm-code-font-size: 95%;
+
+  --ifm-font-size-base: var(--sw-font-size-base);
+  --ifm-heading-font-family: var(--sw-font-sans);
+  --ifm-line-height-base: var(--sw-line-height-normal);
+  --ifm-spacing-horizontal: var(--sw-space-4);
+  --ifm-spacing-vertical: var(--sw-space-4);
+
+  --ifm-global-radius: var(--sw-radius-md);
+  --ifm-global-shadow-lw: var(--sw-shadow-sm);
+  --ifm-global-shadow-md: var(--sw-shadow-md);
+  --ifm-global-shadow-tl: var(--sw-shadow-xl);
+
+  --ifm-transition-fast: var(--sw-transition-fast);
+  --ifm-transition-slow: var(--sw-transition-slow);
+
+  --ifm-container-width: var(--sw-grid-max-width);
+  --ifm-container-width-xl: var(--sw-content-7xl);
 
   --docusaurus-highlighted-code-line-bg: rgba(107, 88, 184, 0.1);
 }
@@ -175,6 +491,18 @@
   --sw-color-primary-800: #eae6f6;
   --sw-color-primary-900: #f3f1fa;
 
+  /* Secondary accent — emerald (dark mode) */
+  --sw-color-accent-50: #064e3b;
+  --sw-color-accent-100: #065f46;
+  --sw-color-accent-200: #047857;
+  --sw-color-accent-300: #34d399;
+  --sw-color-accent-400: #6ee7b7;
+  --sw-color-accent-500: #6ee7b7;
+  --sw-color-accent-600: #a7f3d0;
+  --sw-color-accent-700: #d1fae5;
+  --sw-color-accent-800: #ecfdf5;
+  --sw-color-accent-900: #ecfdf5;
+
   /* Semantic colors (dark mode variants) */
   --sw-color-info-light: rgba(59, 130, 246, 0.1);
   --sw-color-success-light: rgba(16, 185, 129, 0.1);
@@ -185,18 +513,38 @@
   /* Surface colors */
   --sw-surface-primary: #0f0d19;
   --sw-surface-secondary: #161326;
+  --sw-surface-tertiary: #1c1830;
   --sw-surface-elevated: #1c1830;
+  --sw-surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Surface glass (dark mode) */
+  --sw-surface-glass-bg: rgba(15, 13, 25, 0.7);
+  --sw-surface-glass-border: rgba(255, 255, 255, 0.1);
+  --sw-surface-glass-blur: 20px;
 
   /* Text colors */
   --sw-text-primary: var(--sw-gray-100);
   --sw-text-secondary: var(--sw-gray-400);
   --sw-text-tertiary: var(--sw-gray-500);
   --sw-text-link: var(--sw-color-primary-500);
+  --sw-text-link-hover: var(--sw-color-primary-400);
+  --sw-text-disabled: var(--sw-gray-600);
+  --sw-text-placeholder: var(--sw-gray-500);
 
   /* Border colors */
   --sw-border-light: rgba(255, 255, 255, 0.08);
   --sw-border-default: rgba(255, 255, 255, 0.12);
   --sw-border-subtle: rgba(255, 255, 255, 0.05);
+  --sw-border-strong: rgba(255, 255, 255, 0.2);
+  --sw-border-focus-ring: var(--sw-color-primary-400);
+
+  /* Glass morphism shadows (dark mode) */
+  --sw-shadow-glass-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --sw-shadow-glass-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --sw-shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* Gradient overrides */
+  --sw-gradient-text: linear-gradient(135deg, var(--sw-color-primary-500) 0%, var(--sw-color-primary-300) 50%, var(--sw-color-accent-300) 100%);
 
   /* Infima dark mode overrides */
   --ifm-color-primary: #a99bd8;
