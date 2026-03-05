@@ -2,6 +2,9 @@
 sidebar_position: 1
 title: "Public Talks"
 description: "Video talks and presentations about SpecWeave, Claude Code skills, and spec-driven development"
+reading_time: "45 min per talk"
+difficulty: "advanced"
+prerequisites: "SpecWeave Essentials course, active project experience"
 ---
 
 # Public Talks
