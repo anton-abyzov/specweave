@@ -1,0 +1,62 @@
+.container {
+  position: relative;
+  background: var(--sw-gray-50);
+  border: 1px solid var(--sw-border-light);
+  border-radius: var(--sw-radius-lg);
+  overflow: hidden;
+}
+
+.pre {
+  margin: 0;
+  padding: var(--sw-space-4);
+  overflow-x: auto;
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-sm);
+  line-height: var(--sw-line-height-relaxed);
+}
+
+.code {
+  color: var(--sw-text-primary);
+}
+
+.language {
+  position: absolute;
+  top: var(--sw-space-2);
+  left: var(--sw-space-3);
+  font-size: var(--sw-font-size-xs);
+  color: var(--sw-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--sw-letter-spacing-wider);
+  font-weight: var(--sw-font-weight-medium);
+}
+
+.copyButton {
+  position: absolute;
+  top: var(--sw-space-2);
+  right: var(--sw-space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-text-secondary);
+  cursor: pointer;
+  transition: var(--sw-transition-colors);
+}
+
+.copyButton:hover {
+  background: var(--sw-gray-200);
+  color: var(--sw-text-primary);
+}
+
+:global([data-theme='dark']) .container {
+  background: var(--sw-surface-secondary);
+  border-color: var(--sw-border-default);
+}
+
+:global([data-theme='dark']) .copyButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
