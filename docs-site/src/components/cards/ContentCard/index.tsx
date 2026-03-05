@@ -13,10 +13,10 @@ interface ContentCardProps {
   className?: string;
 }
 
-const difficultyVariant: Record<string, 'success' | 'warning' | 'info'> = {
+const difficultyVariant: Record<string, 'success' | 'warning' | 'primary'> = {
   beginner: 'success',
   intermediate: 'warning',
-  advanced: 'info',
+  advanced: 'primary',
 };
 
 export default function ContentCard({

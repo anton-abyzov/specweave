@@ -2,6 +2,9 @@
 sidebar_position: 1
 title: "SpecWeave Essentials"
 description: "Master SpecWeave from zero to production in 16 hands-on lessons"
+reading_time: "25 min per lesson"
+difficulty: "intermediate"
+prerequisites: "Node.js installed, basic CLI familiarity"
 ---
 
 # SpecWeave Essentials
