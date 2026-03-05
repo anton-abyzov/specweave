@@ -263,14 +263,22 @@ async function syncAdoACProgress(
       await adoClient.addComment(link.workItemId, commentText);
       result.posted.push({ usId, ref: String(link.workItemId) });
 
-      // Auto-transition to Closed if all ACs complete
+      // Auto-transition to Done/Closed if all ACs complete
+      // Basic process uses "Done", Agile/CMMI use "Closed"
       if (isAllComplete(acStates)) {
         const currentStatus = await adoSync.getStatus(link.workItemId);
-        if (currentStatus.state === 'Closed') {
+        const doneStates = ['Closed', 'Done', 'Completed', 'Resolved'];
+        if (doneStates.includes(currentStatus.state)) {
           result.skipped.push({ usId, reason: 'already-closed' });
         } else {
-          await adoSync.updateStatus(link.workItemId, { state: 'Closed' });
-          result.closed.push({ usId, ref: String(link.workItemId) });
+          // Try "Done" first (Basic process), fall back to "Closed" (Agile/CMMI)
+          try {
+            await adoSync.updateStatus(link.workItemId, { state: 'Done' });
+            result.closed.push({ usId, ref: String(link.workItemId) });
+          } catch {
+            await adoSync.updateStatus(link.workItemId, { state: 'Closed' });
+            result.closed.push({ usId, ref: String(link.workItemId) });
+          }
         }
       }
     } catch (err) {
