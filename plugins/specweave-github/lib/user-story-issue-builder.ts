@@ -109,22 +109,25 @@ export class UserStoryIssueBuilder {
     const tasks = await this.extractTasks(bodyContent, frontmatter.id);
 
     // 3. Build issue title
-    // ✅ VALIDATION: Double-check title format before returning
-    // Expected format: [FS-XXX][US-YYY] Title
-    // This prevents issues like [SP-US-XXX] or [undefined][US-XXX]
-    const title = `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
+    // External imports: use plain title (preserve original from source platform)
+    // Internal: [FS-XXX][US-YYY] Title
+    const isExternal = await this.isExternalImport();
+    const title = isExternal
+      ? frontmatter.title
+      : `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
 
-    // ✅ SAFETY CHECK: Ensure title matches expected pattern
-    // Supports: [FS-425][US-001], [FS-425][US-VSK-001], [FS-425E][US-001E]
-    const titlePattern = /^\[FS-\d{3,}E?\]\[US-(?:[A-Z]+-)?(\d{3,})E?\] .+$/;
-    if (!titlePattern.test(title)) {
-      throw new Error(
-        `Generated issue title has incorrect format: "${title}"\n` +
-        `Expected: [FS-XXX][US-YYY] or [FS-XXX][US-PREFIX-YYY] Title\n` +
-        `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
-        `Feature ID: ${this.featureId}\n` +
-        `User Story ID: ${frontmatter.id}`
-      );
+    if (!isExternal) {
+      // ✅ SAFETY CHECK: Ensure title matches expected pattern (internal only)
+      const titlePattern = /^\[FS-\d{3,}E?\]\[US-(?:[A-Z]+-)?(\d{3,})E?\] .+$/;
+      if (!titlePattern.test(title)) {
+        throw new Error(
+          `Generated issue title has incorrect format: "${title}"\n` +
+          `Expected: [FS-XXX][US-YYY] or [FS-XXX][US-PREFIX-YYY] Title\n` +
+          `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
+          `Feature ID: ${this.featureId}\n` +
+          `User Story ID: ${frontmatter.id}`
+        );
+      }
     }
 
     // 4. Build issue body
@@ -634,6 +637,49 @@ export class UserStoryIssueBuilder {
     }
 
     return labels;
+  }
+
+  /**
+   * Check if this issue belongs to an externally imported increment.
+   * External imports should preserve original titles without [FS-XXX] prefix.
+   */
+  private async isExternalImport(): Promise<boolean> {
+    try {
+      // Detect increment path from user story path
+      // Living docs: .specweave/docs/internal/specs/.../us-001.md → need metadata from increment
+      // Direct: .specweave/increments/XXXX-name/spec.md
+      const incrementMatch = this.userStoryPath.match(/\.specweave\/increments\/([^/]+)\//);
+      if (incrementMatch) {
+        const metaPath = path.join(this.projectRoot, '.specweave/increments', incrementMatch[1], 'metadata.json');
+        if (existsSync(metaPath)) {
+          const meta = JSON.parse(await readFile(metaPath, 'utf-8'));
+          return meta.origin === 'external';
+        }
+      }
+      // For living docs paths, check if any active increment with this featureId is external
+      const incrementsDir = path.join(this.projectRoot, '.specweave/increments');
+      if (existsSync(incrementsDir)) {
+        const { readdirSync } = await import('fs');
+        for (const dir of readdirSync(incrementsDir)) {
+          const metaPath = path.join(incrementsDir, dir, 'metadata.json');
+          if (existsSync(metaPath)) {
+            const meta = JSON.parse(await readFile(metaPath, 'utf-8'));
+            if (meta.origin === 'external') {
+              // Check if this increment's featureId matches
+              const numMatch = dir.match(/^(\d+)/);
+              if (numMatch) {
+                const num = parseInt(numMatch[1], 10);
+                const fid = `FS-${String(num).padStart(3, '0')}`;
+                if (fid === this.featureId) return true;
+              }
+            }
+          }
+        }
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   /**
