@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.369] - 2026-03-05
+
+### Changes
+- v1.0.368: cross-project sync routing, prefixed US IDs, ADO support
+- fix: support prefixed US IDs and paginate milestone detection
+- fix: scope GitHubFeatureSync to target project in cross-project mode
+- fix: include owner/repo in sync lock key for cross-project dedup
+- fix: pass projectName to syncToExternalTools in cross-project sync
+- add ADO organization to sync routing and E2E umbrella tests
+
+---
+
+
+
 ## [1.0.368] - 2026-03-05
 
 ### Changes
