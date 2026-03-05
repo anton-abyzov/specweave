@@ -87,7 +87,7 @@ export class GitHubACCheckboxSync {
         return result;
       }
 
-      // Get GitHub repo info
+      // Get default GitHub repo info (used when US doesn't have per-repo URL)
       const githubConfig = config.sync?.github || {};
       const repoInfo = await this.providerRouter.detectGitHubRepo(githubConfig as GitHubRepoConfig);
       if (!repoInfo) {
@@ -95,7 +95,7 @@ export class GitHubACCheckboxSync {
         return result;
       }
 
-      const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
+      const defaultClient = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
 
       this.logger.log(`\n📊 Syncing AC checkboxes to GitHub issues...`);
       this.logger.log(`   Repository: ${repoInfo.owner}/${repoInfo.repo}`);
@@ -122,9 +122,10 @@ export class GitHubACCheckboxSync {
       // Process each user story with a GitHub issue
       for (const usFile of userStories) {
         // Find GitHub issue number from frontmatter
-        const issueNumber = usFile.external_tools?.github?.number ||
-                            usFile.external_id ||
-                            (usFile.external_tools?.github as any)?.issue_number;
+        // Supports: external_tools.github.number, external.github.issue, external_id
+        const ghInfo = usFile.external_tools?.github as Record<string, any> | undefined;
+        const issueNumber = ghInfo?.number || ghInfo?.issue || ghInfo?.issue_number ||
+                            usFile.external_id;
 
         if (!issueNumber) {
           this.logger.log(`   ⏭️  ${usFile.id} - No GitHub issue linked`);
@@ -147,6 +148,16 @@ export class GitHubACCheckboxSync {
         }
 
         try {
+          // Use per-repo client if URL points to a different repo (cross-project support)
+          let client = defaultClient;
+          const ghUrl = ghInfo?.url as string | undefined;
+          if (ghUrl) {
+            const repoMatch = ghUrl.match(/github\.com\/([^/]+)\/([^/]+)\/issues\//);
+            if (repoMatch && `${repoMatch[1]}/${repoMatch[2]}` !== `${repoInfo.owner}/${repoInfo.repo}`) {
+              client = GitHubClientV2.fromRepo(repoMatch[1], repoMatch[2]);
+            }
+          }
+
           // Fetch and update issue
           const issue = await client.getIssue(Number(issueNumber));
           if (!issue) {
@@ -369,6 +380,8 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
           const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
           if (match) {
             const fm = yaml.parse(match[1]);
+            // Support both external_tools (legacy) and external (living docs) formats
+            const externalTools = fm.external_tools || fm.external;
             usFiles.push({
               id: fm.id,
               title: fm.title,
@@ -379,7 +392,7 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
               external_url: fm.external_url,
               imported_at: fm.imported_at,
               origin: fm.origin,
-              external_tools: fm.external_tools,
+              external_tools: externalTools,
             });
           }
         }
