@@ -12,6 +12,8 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc",
     "generate:hero-images": "node scripts/generate-hero-images.js",
     "generate:hero-images-free": "node scripts/generate-hero-images-free.js",
@@ -28,6 +30,7 @@
     "@easyops-cn/docusaurus-search-local": "^0.52.3",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
+    "lucide-react": "^0.577.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -37,13 +40,18 @@
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
     "@google/generative-ai": "^0.24.1",
+    "@playwright/test": "^1.58.2",
     "@remotion/cli": "^4.0.427",
     "@remotion/google-fonts": "^4.0.427",
     "@remotion/transitions": "^4.0.427",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "jsdom": "^28.1.0",
     "png-to-ico": "^3.0.1",
     "remotion": "^4.0.427",
     "sharp": "^0.34.5",
-    "typescript": "~5.6.2"
+    "typescript": "~5.6.2",
+    "vitest": "^4.0.18"
   },
   "browserslist": {
     "production": [
