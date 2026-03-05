@@ -4,6 +4,7 @@
  * Homepage styles live in index.module.css.
  */
 @import './tokens.css';
+@import './animations.css';
 
 /* ============================================
    GLOBAL TRANSITIONS
@@ -335,4 +336,19 @@ button:focus-visible {
 div[class*="announcementBar"] {
   font-size: var(--sw-font-size-sm);
   padding: var(--sw-space-2);
+}
+
+/* ============================================
+   GRID CONTAINER
+   ============================================ */
+.sw-container {
+  max-width: var(--sw-grid-max-width);
+  padding-inline: var(--sw-grid-margin);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --sw-grid-margin: 48px;
+  }
 }

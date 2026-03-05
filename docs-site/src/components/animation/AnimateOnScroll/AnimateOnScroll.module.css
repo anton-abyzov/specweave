@@ -1,0 +1,23 @@
+.wrapper {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 600ms var(--sw-easing-ease-out, cubic-bezier(0, 0, 0.58, 1)),
+    transform 600ms var(--sw-easing-ease-out, cubic-bezier(0, 0, 0.58, 1));
+}
+
+.wrapperFadeIn {
+  opacity: 0;
+  transform: none;
+  transition: opacity 600ms var(--sw-easing-ease-out, cubic-bezier(0, 0, 0.58, 1));
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.noMotion {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
