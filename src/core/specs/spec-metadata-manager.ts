@@ -264,10 +264,16 @@ export class SpecMetadataManager {
   }
 
   /**
-   * Get spec file path
+   * Get spec file path — supports both flat and folder formats.
+   * Living docs generate folder structure: {specsDir}/{specId}/FEATURE.md
+   * Legacy format uses flat files: {specsDir}/spec-{specId}.md
    */
   private getSpecPath(specId: string): string {
-    // Handle both formats: "spec-001" and "001"
+    // Try folder structure first (living docs format)
+    const folderPath = path.join(this.specsDir, specId, 'FEATURE.md');
+    if (fs.existsSync(folderPath)) return folderPath;
+
+    // Fall back to flat file format
     const normalizedId = specId.startsWith('spec-') ? specId : `spec-${specId}`;
     return path.join(this.specsDir, `${normalizedId}.md`);
   }
