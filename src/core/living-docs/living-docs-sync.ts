@@ -1923,7 +1923,8 @@ export class LivingDocsSync {
       const sync = new GitHubFeatureSync(client, specsDir, this.projectRoot);
 
       // Sync feature to GitHub (idempotent - safe to run multiple times)
-      const result = await sync.syncFeatureToGitHub(featureId);
+      // Pass projectName so cross-project mode reads the correct FEATURE.md per repo
+      const result = await sync.syncFeatureToGitHub(featureId, projectName);
 
       this.logger.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
 
