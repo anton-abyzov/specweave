@@ -858,6 +858,7 @@ export class GitHubFeatureSync {
     const existingResult = await execFileNoThrow('gh', [
       'api',
       `repos/${owner}/${repo}/milestones?per_page=100&state=all`,
+      '--paginate',
       '--jq',
       `.[] | select(.title == "${title}") | {number, html_url}`,
     ], { env: this.getGhEnv() });
