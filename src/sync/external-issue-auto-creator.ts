@@ -428,8 +428,8 @@ export class ExternalIssueAutoCreator {
   private parseUserStories(specContent: string): Array<{ id: string; title: string; description?: string; project?: string }> {
     const userStories: Array<{ id: string; title: string; description?: string; project?: string }> = [];
 
-    // Match ### US-XXX: Title patterns
-    const usRegex = /^### (US-\d+):?\s*(.+)$/gm;
+    // Match ### US-XXX: Title patterns (supports US-001, US-SPE-001, US-VPL-001, etc.)
+    const usRegex = /^### (US-(?:[A-Z]+-)*\d+):?\s*(.+)$/gm;
     let match;
 
     while ((match = usRegex.exec(specContent)) !== null) {
@@ -443,7 +443,7 @@ export class ExternalIssueAutoCreator {
 
       // Extract the US section (from heading to next ### US- or ## heading)
       const usStartIndex = match.index;
-      const nextUsMatch = specContent.substring(usStartIndex + match[0].length).match(/^### US-\d+|^## /m);
+      const nextUsMatch = specContent.substring(usStartIndex + match[0].length).match(/^### US-(?:[A-Z]+-)*\d+|^## /m);
       const usEndIndex = nextUsMatch
         ? usStartIndex + match[0].length + (nextUsMatch.index || 0)
         : specContent.length;
