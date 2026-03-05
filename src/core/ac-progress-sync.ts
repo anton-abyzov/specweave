@@ -169,6 +169,7 @@ async function syncJiraACProgress(
     config.jira?.apiToken || '',
     config.jira?.projectKey || '',
   );
+  await jiraSync.init();
 
   const jiraLinks = config.externalLinks?.jira?.userStories || {};
 
