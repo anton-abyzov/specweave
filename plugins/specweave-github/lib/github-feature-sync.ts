@@ -125,11 +125,13 @@ export class GitHubFeatureSync {
     issuesUpdated: number;
     userStoriesProcessed: number;
   }> {
-    // SYNC LOCK CHECK: Prevent concurrent/rapid syncs of the same feature
+    // SYNC LOCK CHECK: Prevent concurrent/rapid syncs of the same feature+repo
     // Root cause: Two sync paths (task completion + status change) can fire simultaneously
     // Result: Duplicate GitHub comments due to race condition
+    // Key includes owner/repo so cross-project syncs (same featureId, different repos) aren't throttled
+    const lockKey = `${this.client.getOwner()}/${this.client.getRepo()}:${featureId}`;
     const now = Date.now();
-    const lastSync = GitHubFeatureSync.syncLocks.get(featureId);
+    const lastSync = GitHubFeatureSync.syncLocks.get(lockKey);
 
     if (lastSync && (now - lastSync) < GitHubFeatureSync.LOCK_DURATION_MS) {
       const secondsRemaining = Math.ceil((GitHubFeatureSync.LOCK_DURATION_MS - (now - lastSync)) / 1000);
@@ -148,7 +150,7 @@ export class GitHubFeatureSync {
     }
 
     // Acquire lock
-    GitHubFeatureSync.syncLocks.set(featureId, now);
+    GitHubFeatureSync.syncLocks.set(lockKey, now);
     console.log(`\n🔄 Syncing Feature ${featureId} to GitHub...`);
 
     // 1. Load Feature FEATURE.md
