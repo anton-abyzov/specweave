@@ -57,6 +57,7 @@ export class AdoSpecSync {
   private specManager: SpecMetadataManager;
   private client: AxiosInstance;
   private config: AdoConfig;
+  private availableTypes: Set<string> | null = null;
 
   constructor(config: AdoConfig, projectRoot: string = process.cwd()) {
     this.specManager = new SpecMetadataManager(projectRoot);
@@ -74,6 +75,43 @@ export class AdoSpecSync {
         'Accept': 'application/json'
       }
     });
+  }
+
+  /**
+   * Detect available work item types for this ADO project.
+   * Basic process has Epic/Issue/Task; Agile/Scrum has Feature/User Story/Bug/Task.
+   */
+  private async detectAvailableTypes(): Promise<Set<string>> {
+    if (this.availableTypes) return this.availableTypes;
+    try {
+      const resp = await this.client.get('/wit/workitemtypes?api-version=7.1');
+      this.availableTypes = new Set(resp.data.value.map((t: { name: string }) => t.name));
+    } catch {
+      // Fallback: assume Agile process
+      this.availableTypes = new Set(['Feature', 'User Story', 'Bug', 'Task', 'Epic']);
+    }
+    return this.availableTypes;
+  }
+
+  /**
+   * Resolve a work item type, falling back if not available in the project.
+   * Feature → Epic (Basic process), User Story → Issue (Basic process)
+   */
+  private async resolveWorkItemType(desiredType: string): Promise<string> {
+    const types = await this.detectAvailableTypes();
+    if (types.has(desiredType)) return desiredType;
+
+    // Fallback mappings for Basic process
+    const fallbacks: Record<string, string> = {
+      'Feature': 'Epic',
+      'User Story': 'Issue',
+    };
+    const fallback = fallbacks[desiredType];
+    if (fallback && types.has(fallback)) {
+      console.log(`      ℹ️  Work item type "${desiredType}" not available, using "${fallback}"`);
+      return fallback;
+    }
+    return desiredType; // Let ADO reject if truly unavailable
   }
 
   /**
@@ -224,7 +262,8 @@ export class AdoSpecSync {
     const tags = [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`].join('; ');
 
     // Determine work item type (supports Bug for bug-type specs)
-    const workItemType = this.mapTypeToAdo(spec.metadata.type, 'Feature');
+    const mappedType = this.mapTypeToAdo(spec.metadata.type, 'Feature');
+    const workItemType = await this.resolveWorkItemType(mappedType);
 
     const payload = [
       {
@@ -539,7 +578,8 @@ ${acList}
     type?: string;
   }): Promise<AdoUserStory> {
     // Determine work item type (supports Bug for bug-type stories)
-    const workItemType = this.mapTypeToAdo(story.type, 'User Story');
+    const mappedType = this.mapTypeToAdo(story.type, 'User Story');
+    const workItemType = await this.resolveWorkItemType(mappedType);
 
     const payload = [
       {
