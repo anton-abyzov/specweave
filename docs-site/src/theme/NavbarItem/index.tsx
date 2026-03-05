@@ -11,15 +11,13 @@ import styles from './MegaMenuPanel.module.css';
 
 type Props = WrapperProps<typeof NavbarItemType>;
 
-export default function NavbarItemWrapper(props: Props): ReactNode {
-  const customProps = (props as any).customProps as
-    | {megaMenu?: boolean; megaMenuCategories?: MegaMenuCategory[]}
-    | undefined;
-
-  if (!customProps?.megaMenu || !customProps.megaMenuCategories) {
-    return <NavbarItem {...props} />;
-  }
-
+function MegaMenuNavbarItem({
+  props,
+  categories,
+}: {
+  props: Props;
+  categories: MegaMenuCategory[];
+}) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,6 +66,13 @@ export default function NavbarItemWrapper(props: Props): ReactNode {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
+  // Clean up close timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -86,10 +91,27 @@ export default function NavbarItemWrapper(props: Props): ReactNode {
         <NavbarItem {...props} />
       </div>
       <MegaMenuPanel
-        categories={customProps.megaMenuCategories}
+        categories={categories}
         visible={open}
         onClose={() => setOpen(false)}
       />
     </div>
+  );
+}
+
+export default function NavbarItemWrapper(props: Props): ReactNode {
+  const customProps = (props as any).customProps as
+    | {megaMenu?: boolean; megaMenuCategories?: MegaMenuCategory[]}
+    | undefined;
+
+  if (!customProps?.megaMenu || !customProps.megaMenuCategories) {
+    return <NavbarItem {...props} />;
+  }
+
+  return (
+    <MegaMenuNavbarItem
+      props={props}
+      categories={customProps.megaMenuCategories}
+    />
   );
 }
