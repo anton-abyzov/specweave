@@ -403,9 +403,12 @@ export class LivingDocsSync {
 
         if (!options.dryRun && !skipExternalSync) {
           // For cross-project, sync external tools for EACH project's feature folder
+          // Pass targetPath as projectName so resolveSyncTarget routes to correct child repo
           for (const [targetPath, _projectStories] of validGroups) {
             const crossProjectFeaturePath = path.join(basePath, targetPath, featureId);
-            await this.syncToExternalTools(incrementId, featureId, crossProjectFeaturePath);
+            // targetPath may be "project" or "project/board" — extract project name
+            const projectNameForSync = targetPath.split('/')[0];
+            await this.syncToExternalTools(incrementId, featureId, crossProjectFeaturePath, projectNameForSync);
           }
         } else if (skipExternalSync) {
           this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
