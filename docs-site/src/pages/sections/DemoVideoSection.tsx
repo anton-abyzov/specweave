@@ -40,7 +40,7 @@ export default function DemoVideoSection() {
           loop
           playsInline
           preload="none"
-          poster="/video/poster.jpg"
+          poster="/video/ship-while-you-sleep-poster.jpg"
         >
           <source src="/video/ship-while-you-sleep.mp4" type="video/mp4" />
         </video>
