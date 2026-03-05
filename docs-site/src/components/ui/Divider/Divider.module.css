@@ -1,0 +1,32 @@
+.divider {
+  border: none;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.horizontal {
+  width: 100%;
+  height: 1px;
+}
+
+.vertical {
+  width: 1px;
+  height: 100%;
+  align-self: stretch;
+}
+
+.subtle {
+  background-color: var(--sw-border-subtle);
+}
+
+.strong {
+  background-color: var(--sw-border-strong);
+}
+
+:global([data-theme='dark']) .subtle {
+  background-color: var(--sw-border-subtle);
+}
+
+:global([data-theme='dark']) .strong {
+  background-color: var(--sw-border-strong);
+}

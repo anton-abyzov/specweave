@@ -1,0 +1,28 @@
+.card {
+  text-align: center;
+  padding: var(--sw-card-padding);
+}
+
+.value {
+  font-size: var(--sw-font-size-display-2);
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-none);
+  color: var(--sw-text-primary);
+  margin-bottom: var(--sw-space-2);
+}
+
+.suffix {
+  font-size: var(--sw-font-size-xl);
+  color: var(--sw-text-secondary);
+  margin-left: var(--sw-space-1);
+}
+
+.label {
+  font-size: var(--sw-font-size-base);
+  color: var(--sw-text-secondary);
+  font-weight: var(--sw-font-weight-medium);
+}
+
+:global([data-theme='dark']) .value {
+  color: var(--sw-text-primary);
+}
