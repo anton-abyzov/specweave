@@ -118,7 +118,7 @@ export class GitHubFeatureSync {
    * 3. Create/update GitHub Issue for EACH user story
    * 4. Update frontmatter with GitHub issue links
    */
-  async syncFeatureToGitHub(featureId: string): Promise<{
+  async syncFeatureToGitHub(featureId: string, projectName?: string): Promise<{
     milestoneNumber: number;
     milestoneUrl: string;
     issuesCreated: number;
@@ -154,7 +154,7 @@ export class GitHubFeatureSync {
     console.log(`\n🔄 Syncing Feature ${featureId} to GitHub...`);
 
     // 1. Load Feature FEATURE.md
-    const featureFolder = await this.findFeatureFolder(featureId);
+    const featureFolder = await this.findFeatureFolder(featureId, projectName);
     if (!featureFolder) {
       console.log(`   ⚠️  Feature ${featureId} not found in ${this.specsDir} (no living docs and auto-create failed)`);
       console.log(`   💡 Run /sw:sync-docs or /sw:living-docs to generate living docs first`);
@@ -195,8 +195,8 @@ export class GitHubFeatureSync {
       milestoneUrl = featureData.external_tools?.github?.url || milestoneUrl;
     }
 
-    // 3. Find all User Story files across all projects
-    const userStories = await this.findUserStories(featureId);
+    // 3. Find User Story files (scoped to projectName in cross-project mode)
+    const userStories = await this.findUserStories(featureId, projectName);
     console.log(`\n   📝 Found ${userStories.length} User Stories to sync...`);
 
     // 4. Sync each User Story as GitHub Issue
@@ -341,8 +341,16 @@ export class GitHubFeatureSync {
    * Find Feature folder in specs directory.
    * Falls back to auto-creating from increment spec.md if living docs don't exist.
    */
-  private async findFeatureFolder(featureId: string): Promise<string | null> {
+  private async findFeatureFolder(featureId: string, projectName?: string): Promise<string | null> {
     // v5.0.0+: NO _features folder - features live in project folders
+    // In cross-project mode, look in the specific project folder first
+    if (projectName) {
+      const projectSpecific = path.join(this.specsDir, projectName, featureId);
+      if (existsSync(projectSpecific) && existsSync(path.join(projectSpecific, 'FEATURE.md'))) {
+        return projectSpecific;
+      }
+    }
+
     // Search all project folders for the feature
     const projectFolders = await this.findProjectFolders();
 
@@ -762,11 +770,17 @@ export class GitHubFeatureSync {
   /**
    * Find all User Story files for this feature across all projects
    */
-  private async findUserStories(featureId: string): Promise<UserStoryInfo[]> {
+  private async findUserStories(featureId: string, projectName?: string): Promise<UserStoryInfo[]> {
     const userStories: UserStoryInfo[] = [];
 
-    // Find all project folders
-    const projectFolders = await this.findProjectFolders();
+    // In cross-project mode, only look in the target project's folder
+    let projectFolders: string[];
+    if (projectName) {
+      const projectSpecific = path.join(this.specsDir, projectName);
+      projectFolders = existsSync(projectSpecific) ? [projectSpecific] : [];
+    } else {
+      projectFolders = await this.findProjectFolders();
+    }
 
     for (const projectFolder of projectFolders) {
       const featureSpecsFolder = path.join(projectFolder, featureId);
