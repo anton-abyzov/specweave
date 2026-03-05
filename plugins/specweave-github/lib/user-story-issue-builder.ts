@@ -114,12 +114,13 @@ export class UserStoryIssueBuilder {
     // This prevents issues like [SP-US-XXX] or [undefined][US-XXX]
     const title = `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
 
-    // ✅ SAFETY CHECK: Ensure title matches expected pattern (3+ digits)
-    const titlePattern = /^\[FS-\d{3,}E?\]\[US-\d{3,}E?\] .+$/;
+    // ✅ SAFETY CHECK: Ensure title matches expected pattern
+    // Supports: [FS-425][US-001], [FS-425][US-VSK-001], [FS-425E][US-001E]
+    const titlePattern = /^\[FS-\d{3,}E?\]\[US-(?:[A-Z]+-)?(\d{3,})E?\] .+$/;
     if (!titlePattern.test(title)) {
       throw new Error(
         `Generated issue title has incorrect format: "${title}"\n` +
-        `Expected: [FS-XXX][US-YYY] or [FS-XXXE][US-YYYE] Title (3+ digits each, E-suffix for external)\n` +
+        `Expected: [FS-XXX][US-YYY] or [FS-XXX][US-PREFIX-YYY] Title\n` +
         `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
         `Feature ID: ${this.featureId}\n` +
         `User Story ID: ${frontmatter.id}`
