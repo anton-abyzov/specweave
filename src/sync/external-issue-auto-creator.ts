@@ -49,6 +49,7 @@ export interface IncrementInfo {
   featureId: string;
   title: string;
   status: string;
+  origin?: 'external' | 'internal';
   userStories: Array<{
     id: string;
     title: string;
@@ -402,11 +403,13 @@ export class ExternalIssueAutoCreator {
       // Parse user stories from spec.md body
       const userStories = this.parseUserStories(specContent);
 
-      // Load status from metadata
+      // Load status and origin from metadata
       let status = 'active';
+      let origin: 'external' | 'internal' | undefined;
       if (existsSync(metadataPath)) {
         const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
         status = metadata.status || 'active';
+        origin = metadata.origin === 'external' ? 'external' : undefined;
       }
 
       return {
@@ -414,6 +417,7 @@ export class ExternalIssueAutoCreator {
         featureId,
         title: frontmatter.title || incrementId,
         status,
+        origin,
         userStories,
       };
     } catch (error) {
@@ -468,6 +472,45 @@ export class ExternalIssueAutoCreator {
     }
 
     return userStories;
+  }
+
+  /**
+   * Format issue title for external tools.
+   * Internal increments: [FS-XXX][US-YYY] Title
+   * External imports: plain title (preserve original)
+   */
+  private formatIssueTitle(incrementInfo: IncrementInfo, usId: string, usTitle: string): string {
+    if (incrementInfo.origin === 'external') {
+      return usTitle;
+    }
+    return `[${incrementInfo.featureId}][${usId}] ${usTitle}`;
+  }
+
+  private formatEpicTitle(incrementInfo: IncrementInfo): string {
+    if (incrementInfo.origin === 'external') {
+      return incrementInfo.title.replace(/^\[EXTERNAL\]\s*/, '');
+    }
+    if (incrementInfo.userStories.length === 1) {
+      return `[${incrementInfo.featureId}][${incrementInfo.userStories[0].id}] ${incrementInfo.userStories[0].title}`;
+    }
+    return `[${incrementInfo.featureId}] ${incrementInfo.title}`;
+  }
+
+  /**
+   * Convert ADO API URL to browser-friendly URL.
+   * API: https://dev.azure.com/org/project/_apis/wit/workItems/39
+   * Browser: https://dev.azure.com/org/project/_workitems/edit/39
+   */
+  private toAdoBrowserUrl(apiUrl: string, workItemId: number): string {
+    // If already a browser URL, return as-is
+    if (apiUrl.includes('/_workitems/edit/')) return apiUrl;
+    // Convert API URL to browser URL
+    const match = apiUrl.match(/^(https:\/\/dev\.azure\.com\/[^/]+\/[^/]+)\/_apis\/wit\/workItems\/\d+/);
+    if (match) {
+      return `${match[1]}/_workitems/edit/${workItemId}`;
+    }
+    // Fallback: return as-is
+    return apiUrl;
   }
 
   /**
@@ -611,15 +654,18 @@ export class ExternalIssueAutoCreator {
 
       for (const us of incrementInfo.userStories) {
         const body = this.buildGitHubIssueBody(incrementId, incrementInfo, us);
+        const issueTitle = this.formatIssueTitle(incrementInfo, us.id, us.title);
 
         try {
-          const issue = await client.createUserStoryIssue({
-            featureId: incrementInfo.featureId,
-            userStoryId: us.id,
-            title: us.title,
-            body,
-            labels: ['specweave', 'auto-created'],
-          });
+          const issue = incrementInfo.origin === 'external'
+            ? await client.createEpicIssue(issueTitle, body, undefined, ['specweave', 'auto-created'])
+            : await client.createUserStoryIssue({
+                featureId: incrementInfo.featureId,
+                userStoryId: us.id,
+                title: us.title,
+                body,
+                labels: ['specweave', 'auto-created'],
+              });
           createdIssues.push(issue.number);
           this.logger.log(`  ✅ Created GitHub issue #${issue.number} for ${us.id}`);
         } catch (error) {
@@ -693,11 +739,8 @@ export class ExternalIssueAutoCreator {
 
       const client = new JiraClient();
 
-      // Create Epic for the feature — use same [FS-XXX][US-YYY] format as GitHub
-      // For single-story increments, include the US ID in the epic title
-      const epicSummary = incrementInfo.userStories.length === 1
-        ? `[${incrementInfo.featureId}][${incrementInfo.userStories[0].id}] ${incrementInfo.userStories[0].title}`
-        : `[${incrementInfo.featureId}] ${incrementInfo.title}`;
+      // Create Epic for the feature
+      const epicSummary = this.formatEpicTitle(incrementInfo);
       const epicDescription = this.buildJiraEpicDescription(incrementId, incrementInfo);
 
       const epic = await client.createIssue(
@@ -717,7 +760,7 @@ export class ExternalIssueAutoCreator {
       if (incrementInfo.userStories.length > 1) {
         for (const us of incrementInfo.userStories) {
           try {
-            const storySummary = `[${incrementInfo.featureId}][${us.id}] ${us.title}`;
+            const storySummary = this.formatIssueTitle(incrementInfo, us.id, us.title);
             const storyDesc = us.description
               ? `${us.description}\n\n---\n*Auto-created by SpecWeave*`
               : `User story for ${us.title}\n\n---\n*Auto-created by SpecWeave*`;
@@ -808,10 +851,8 @@ export class ExternalIssueAutoCreator {
         project,
       });
 
-      // Create Feature work item — use same [FS-XXX][US-YYY] format as GitHub
-      const title = incrementInfo.userStories.length === 1
-        ? `[${incrementInfo.featureId}][${incrementInfo.userStories[0].id}] ${incrementInfo.userStories[0].title}`
-        : `[${incrementInfo.featureId}] ${incrementInfo.title}`;
+      // Create Feature work item
+      const title = this.formatEpicTitle(incrementInfo);
       const description = this.buildAdoDescription(incrementId, incrementInfo);
 
       // Try "Feature" first (Agile/Scrum), fall back to "Epic" (Basic process)
@@ -845,7 +886,7 @@ export class ExternalIssueAutoCreator {
       if (incrementInfo.userStories.length > 1) {
         for (const us of incrementInfo.userStories) {
           try {
-            const usTitle = `[${incrementInfo.featureId}][${us.id}] ${us.title}`;
+            const usTitle = this.formatIssueTitle(incrementInfo, us.id, us.title);
             const usDesc = us.description || `User story for ${us.title}`;
             // Try "User Story" first (Agile/Scrum), fall back to "Issue" (Basic process)
             let usItem;
@@ -873,7 +914,7 @@ export class ExternalIssueAutoCreator {
             }
             storyItemMap[us.id] = {
               workItemId: usItem.id,
-              workItemUrl: usItem.url,
+              workItemUrl: this.toAdoBrowserUrl(usItem.url, usItem.id),
             };
             this.logger.log(`  ✅ Created ADO User Story: #${usItem.id} (${us.id})`);
           } catch (usErr) {
@@ -883,18 +924,20 @@ export class ExternalIssueAutoCreator {
       } else if (incrementInfo.userStories.length === 1) {
         storyItemMap[incrementInfo.userStories[0].id] = {
           workItemId: workItem.id,
-          workItemUrl: workItem.url,
+          workItemUrl: this.toAdoBrowserUrl(workItem.url, workItem.id),
         };
       }
 
+      const browserUrl = this.toAdoBrowserUrl(workItem.url, workItem.id);
+
       // Update metadata with ADO work item + per-US story keys
-      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, workItem.url, incrementInfo.userStories, storyItemMap);
+      await this.updateMetadataWithAdoWorkItem(incrementId, workItem.id, browserUrl, incrementInfo.userStories, storyItemMap);
 
       return {
         success: true,
         provider: 'ado',
         issueNumber: workItem.id,
-        issueUrl: workItem.url,
+        issueUrl: browserUrl,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
