@@ -176,14 +176,15 @@ export class CompletionCalculator {
 
     // Pattern with checkboxes (PREFERRED)
     // Matches: - [x] **AC-US1-01**: Description
-    //          - [ ] **AC-020**: Description
+    //          - [ ] **AC-SPE-US1-01**: Description (compound)
+    //          - [ ] **AC-020**: Description (legacy)
     const acPatternWithCheckbox =
-      /(?:^|\n)\s*[-*]\s+\[([x ])\]\s+\*\*([A-Z]+-(?:[A-Z]+\d+-)?(\d+))\*\*:\s*([^\n]+)/g;
+      /(?:^|\n)\s*[-*]\s+\[([x ])\]\s+\*\*(AC-(?:[A-Z0-9]+-)*(\d+))\*\*:\s*([^\n]+)/g;
 
     // Pattern without checkboxes (FALLBACK)
     // Matches: - **AC-US1-01**: Description
     const acPatternNoCheckbox =
-      /(?:^|\n)\s*[-*]?\s*\*\*([A-Z]+-(?:[A-Z]+\d+-)?(\d+))\*\*:\s*([^\n]+)/g;
+      /(?:^|\n)\s*[-*]?\s*\*\*(AC-(?:[A-Z0-9]+-)*(\d+))\*\*:\s*([^\n]+)/g;
 
     // First try pattern with checkboxes
     let match;
