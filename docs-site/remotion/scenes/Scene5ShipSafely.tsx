@@ -8,24 +8,23 @@ import {
 } from 'remotion';
 import {COLORS} from '../lib/theme';
 import {INTER, JETBRAINS_MONO} from '../lib/fonts';
+import {ShieldCheck, Scan, Globe} from 'lucide-react';
 
 const TRUST_BADGES = [
-  {text: 'Verified Skills Only', color: COLORS.green},
-  {text: '41-Pattern Scan', color: COLORS.purple},
-  {text: 'verifiedskill.com', color: COLORS.amber},
+  {text: 'Verified Skills Only', color: COLORS.success, Icon: ShieldCheck},
+  {text: '41-Pattern Scan', color: COLORS.primary400, Icon: Scan},
+  {text: 'verifiedskill.com', color: COLORS.warning, Icon: Globe},
 ];
 
 export const Scene5ShipSafely: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
 
-  // Radial glow intensifies
   const glowIntensity = interpolate(frame, [0, fps * 3], [0.05, 0.25], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  // "SpecWeave" wordmark slides up with spring
   const wordmarkSpring = spring({
     frame,
     fps,
@@ -33,7 +32,6 @@ export const Scene5ShipSafely: React.FC = () => {
   });
   const wordmarkY = interpolate(wordmarkSpring, [0, 1], [80, 0]);
 
-  // Tagline fades in at 1.5s
   const taglineOpacity = interpolate(frame, [fps * 1.5, fps * 2.5], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -43,19 +41,17 @@ export const Scene5ShipSafely: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Install command at 4s
   const cmdOpacity = interpolate(frame, [fps * 4, fps * 5], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  // Trust badges at 5.5s
   const badgeBaseDelay = fps * 5.5;
 
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.purpleDark,
+        background: `radial-gradient(ellipse at 50% 50%, ${COLORS.primary500}18, ${COLORS.surfaceDark} 65%)`,
         fontFamily: INTER,
         display: 'flex',
         flexDirection: 'column',
@@ -63,12 +59,12 @@ export const Scene5ShipSafely: React.FC = () => {
         justifyContent: 'center',
       }}
     >
-      {/* Purple radial glow */}
+      {/* Radial glow */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: `radial-gradient(circle at 50% 50%, rgba(124,58,237,${glowIntensity}), transparent 70%)`,
+          background: `radial-gradient(circle at 50% 50%, rgba(107,88,184,${glowIntensity}), transparent 70%)`,
         }}
       />
 
@@ -83,9 +79,9 @@ export const Scene5ShipSafely: React.FC = () => {
         {/* SpecWeave wordmark */}
         <div
           style={{
-            fontSize: 80,
+            fontSize: 120,
             fontWeight: 900,
-            background: 'linear-gradient(135deg, #ffffff, #c4b5fd)',
+            background: `linear-gradient(135deg, #ffffff, ${COLORS.primary200})`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -100,14 +96,14 @@ export const Scene5ShipSafely: React.FC = () => {
         {/* Tagline */}
         <div
           style={{
-            marginTop: 24,
+            marginTop: 36,
             opacity: taglineOpacity,
             transform: `translateY(${taglineY}px)`,
           }}
         >
           <span
             style={{
-              fontSize: 28,
+              fontSize: 42,
               fontWeight: 500,
               color: 'rgba(255,255,255,0.85)',
             }}
@@ -116,9 +112,9 @@ export const Scene5ShipSafely: React.FC = () => {
           </span>
           <span
             style={{
-              fontSize: 28,
+              fontSize: 42,
               fontWeight: 700,
-              color: COLORS.green,
+              color: COLORS.success,
             }}
           >
             Safely.
@@ -128,19 +124,19 @@ export const Scene5ShipSafely: React.FC = () => {
         {/* Install command */}
         <div
           style={{
-            marginTop: 40,
+            marginTop: 60,
             opacity: cmdOpacity,
             background: 'rgba(0,0,0,0.4)',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: 12,
-            padding: '12px 28px',
+            borderRadius: 18,
+            padding: '18px 42px',
             display: 'inline-block',
           }}
         >
           <span
             style={{
               fontFamily: JETBRAINS_MONO,
-              fontSize: 16,
+              fontSize: 24,
               color: '#f0fdf4',
               fontWeight: 600,
             }}
@@ -154,8 +150,8 @@ export const Scene5ShipSafely: React.FC = () => {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 16,
-            marginTop: 36,
+            gap: 24,
+            marginTop: 54,
           }}
         >
           {TRUST_BADGES.map((badge, i) => {
@@ -172,13 +168,17 @@ export const Scene5ShipSafely: React.FC = () => {
                   background: `${badge.color}15`,
                   border: `1px solid ${badge.color}40`,
                   borderRadius: 50,
-                  padding: '8px 20px',
-                  fontSize: 13,
+                  padding: '12px 30px',
+                  fontSize: 20,
                   fontWeight: 600,
                   color: badge.color,
                   opacity: badgeOpacity,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
                 }}
               >
+                <badge.Icon size={20} />
                 {badge.text}
               </div>
             );

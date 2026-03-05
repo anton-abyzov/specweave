@@ -1,0 +1,110 @@
+.megaMenuTrigger {
+  position: relative;
+}
+
+.megaMenuPanel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 680px;
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  z-index: 400;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.megaMenuPanel[data-visible='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.megaMenuCategory {
+  padding: 8px;
+}
+
+.megaMenuCategoryTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ifm-color-emphasis-500);
+  margin-bottom: 8px;
+  padding: 0 8px;
+}
+
+.megaMenuLink {
+  display: block;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ifm-font-color-base);
+  transition: background 0.15s ease;
+}
+
+.megaMenuLink:hover {
+  background: var(--ifm-color-emphasis-100);
+  text-decoration: none;
+  color: var(--ifm-font-color-base);
+}
+
+.megaMenuLink:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: -2px;
+}
+
+.megaMenuLinkTitle {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.megaMenuLinkDesc {
+  font-size: 12px;
+  color: var(--ifm-color-emphasis-600);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* Mobile accordion styles */
+@media (max-width: 768px) {
+  .megaMenuPanel {
+    position: static;
+    transform: none;
+    min-width: unset;
+    width: 100%;
+    grid-template-columns: 1fr;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 16px;
+    background: transparent;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+  }
+
+  .megaMenuPanel[data-visible='true'] {
+    max-height: 1000px;
+    transform: none;
+  }
+
+  .megaMenuCategory {
+    border-bottom: 1px solid var(--ifm-toc-border-color);
+    padding: 8px 0;
+  }
+
+  .megaMenuCategory:last-child {
+    border-bottom: none;
+  }
+}
