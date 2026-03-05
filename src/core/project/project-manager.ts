@@ -52,6 +52,18 @@ export class ProjectManager {
     // Multi-project mode - use first project as default
     const projectIds = Object.keys(config.multiProject.projects || {});
     if (projectIds.length === 0) {
+      // Fallback: umbrella mode — derive from childRepos
+      const childRepos = (config as any).umbrella?.childRepos;
+      if (Array.isArray(childRepos) && childRepos.length > 0) {
+        const first = childRepos[0];
+        this.cachedProject = this.createProjectContext(
+          first.id || first.name,
+          first.name || first.id,
+          [],
+          []
+        );
+        return this.cachedProject;
+      }
       throw new Error('Multi-project mode enabled but no projects defined in config');
     }
 

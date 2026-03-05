@@ -1649,10 +1649,10 @@ export class LivingDocsSync {
               await this.syncToGitHub(featureId, projectPath, projectName);
               break;
             case 'jira':
-              await this.syncToJira(featureId, projectPath);
+              await this.syncToJira(featureId, projectPath, projectName);
               break;
             case 'ado':
-              await this.syncToADO(featureId, projectPath);
+              await this.syncToADO(featureId, projectPath, projectName);
               break;
             default:
               this.logger.warn(`   ⚠️  Unknown external tool: ${tool}`);
@@ -1953,7 +1953,7 @@ export class LivingDocsSync {
    * 2. config.sync.profiles[*] with provider='jira'
    * 3. Environment variables (JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN)
    */
-  private async syncToJira(featureId: string, projectPath: string): Promise<void> {
+  private async syncToJira(featureId: string, projectPath: string, projectName?: string): Promise<void> {
     try {
       this.logger.log(`   🔄 Syncing to JIRA...`);
 
@@ -1970,10 +1970,18 @@ export class LivingDocsSync {
       if (existsSync(configPath)) {
         try {
           const config = await readJson(configPath);
+
+          // Distributed sync routing — resolve per-project JIRA target
+          const resolved = resolveSyncTarget(projectName, config);
+          if (resolved.jira && resolved.source !== 'global') {
+            projectKey = resolved.jira.projectKey;
+            this.logger.log(`   📝 Using distributed JIRA target (${resolved.source}): ${projectKey}`);
+          }
+
           // Method 1: Read from config.sync.jira (most common)
           if (config.sync?.jira?.domain) {
             domain = config.sync.jira.domain;
-            projectKey = config.sync.jira.projectKey || '';
+            if (!projectKey) projectKey = config.sync.jira.projectKey || '';
             this.logger.log(`   📝 Using JIRA config: ${domain}`);
           }
           // Method 2: Check profiles
@@ -1983,7 +1991,7 @@ export class LivingDocsSync {
               const [profileName, profile] = jiraProfiles[0];
               const cfg = profile.config as { domain?: string; projectKey?: string };
               domain = cfg?.domain || domain;
-              projectKey = cfg?.projectKey || projectKey;
+              if (!projectKey) projectKey = cfg?.projectKey || projectKey;
               this.logger.log(`   📝 Using JIRA profile: ${profileName}`);
             }
           }
@@ -2055,7 +2063,7 @@ export class LivingDocsSync {
    * 2. config.sync.profiles[*] with provider='ado'
    * 3. Environment variables (AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT, AZURE_DEVOPS_PAT)
    */
-  private async syncToADO(featureId: string, projectPath: string): Promise<void> {
+  private async syncToADO(featureId: string, projectPath: string, projectName?: string): Promise<void> {
     try {
       this.logger.log(`   🔄 Syncing to Azure DevOps...`);
 
@@ -2071,14 +2079,27 @@ export class LivingDocsSync {
       if (existsSync(configPath)) {
         try {
           const config = await readJson(configPath);
+
+          // Distributed sync routing — resolve per-project ADO target
+          const resolved = resolveSyncTarget(projectName, config);
+          if (resolved.ado && resolved.source !== 'global') {
+            organization = resolved.ado.organization || organization;
+            project = resolved.ado.project;
+            this.logger.log(`   📝 Using distributed ADO target (${resolved.source}): ${organization}/${project}`);
+          }
+
           // Method 1: Read from config.sync.ado (most common)
-          if (config.sync?.ado?.organization) {
+          if (!organization && config.sync?.ado?.organization) {
             organization = config.sync.ado.organization;
-            project = config.sync.ado.project || project;
+          }
+          if (!project && config.sync?.ado?.project) {
+            project = config.sync.ado.project;
+          }
+          if (organization && project) {
             this.logger.log(`   📝 Using ADO config: ${organization}/${project}`);
           }
           // Method 2: Check profiles
-          else {
+          if (!organization || !project) {
             const adoProfiles = getProfilesByProvider(config.sync, 'ado');
             if (adoProfiles.length > 0) {
               const [profileName, profile] = adoProfiles[0];

@@ -781,9 +781,9 @@ export class ExternalIssueAutoCreator {
       const { AdoClient } = await import('../integrations/ado/ado-client.js');
       const { getAdoPat } = await import('../integrations/ado/ado-pat-provider.js');
 
-      const adoConfig = config.issueTracker || config.sync?.ado || {};
-      const organization = adoConfig.organization_ado || adoConfig.organization;
-      const project = overrideProject || adoConfig.project;
+      // Prioritize sync.ado config over legacy issueTracker
+      const organization = config.sync?.ado?.organization || config.issueTracker?.organization_ado || config.issueTracker?.organization;
+      const project = overrideProject || config.sync?.ado?.project || config.issueTracker?.project;
 
       if (!organization || !project) {
         return {
