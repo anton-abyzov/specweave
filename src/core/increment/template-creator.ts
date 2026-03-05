@@ -40,8 +40,8 @@ export const TEMPLATE_MARKERS = {
   PROJECT_PLACEHOLDER: '{{RESOLVED_PROJECT}}',
   /** Generic placeholder pattern */
   PLACEHOLDER_PATTERN: /\{\{[A-Z_]+\}\}/,
-  /** Bracket placeholder pattern (excludes markdown links, feature IDs, and user story IDs) */
-  BRACKET_PLACEHOLDER: /\[(?!FS-\d)(?!US-)[A-Za-z][^\]]+\](?!\()/,
+  /** Bracket placeholder pattern (excludes markdown links, feature IDs, user story IDs, and known non-placeholder patterns) */
+  BRACKET_PLACEHOLDER: /\[(?!FS-\d)(?!US-)(?!EXTERNAL)(?!DRAFT)(?!Imported)(?!x\])(?!X\])[A-Za-z][^\]]+\](?!\()/,
 };
 
 /**
