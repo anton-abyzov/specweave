@@ -396,7 +396,7 @@ export function validateSpecCompletion(specPath: string): {
   }
 
   // Check minimum content
-  const userStories = content.match(/### US-\d+:/g) || [];
+  const userStories = content.match(/### US-(?:[A-Z]+-)*\d+:/g) || [];
   if (userStories.length < 1) {
     issues.push('No user stories defined');
   }

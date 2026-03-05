@@ -402,7 +402,7 @@ export async function closeIncrementIssues(
  */
 export function parseAllUserStoryIds(content: string): string[] {
   const ids: string[] = [];
-  const pattern = /###\s+(US-\d+):/g;
+  const pattern = /###\s+(US-(?:[A-Z]+-)*\d+):/g;
   let match;
   while ((match = pattern.exec(content)) !== null) {
     ids.push(match[1]);

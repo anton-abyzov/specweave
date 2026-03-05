@@ -1025,7 +1025,7 @@ export class SyncCoordinator {
    */
   private parseUserStoriesFromSpec(specContent: string, featureId: string): LivingDocsUSFile[] {
     const usFiles: LivingDocsUSFile[] = [];
-    const usRegex = /^### (US-\d+):?\s*(.+?)(?:\s*\(P\d\))?\s*$/gm;
+    const usRegex = /^### (US-(?:[A-Z]+-)*\d+):?\s*(.+?)(?:\s*\(P\d\))?\s*$/gm;
     let match;
 
     while ((match = usRegex.exec(specContent)) !== null) {

@@ -62,7 +62,7 @@ function emptyResult(): ProviderCreateResult {
  */
 export function parseUserStories(content: string): UserStoryInfo[] {
   const stories: UserStoryInfo[] = [];
-  const pattern = /###\s+(US-\d+):\s*(.+)/g;
+  const pattern = /###\s+(US-(?:[A-Z]+-)*\d+):\s*(.+)/g;
   let match;
   while ((match = pattern.exec(content)) !== null) {
     stories.push({ id: match[1], title: match[2].trim() });
