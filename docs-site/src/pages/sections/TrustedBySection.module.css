@@ -1,0 +1,49 @@
+.label {
+  text-align: center;
+  font-size: var(--sw-font-size-sm);
+  font-weight: var(--sw-font-weight-medium);
+  color: var(--sw-text-secondary);
+  letter-spacing: var(--sw-letter-spacing-wider);
+  text-transform: uppercase;
+  margin-bottom: var(--sw-space-6);
+}
+
+.marqueeContainer {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.marqueeTrack {
+  display: flex;
+  gap: var(--sw-space-12);
+  width: max-content;
+  will-change: transform;
+  animation: sw-marquee 30s linear infinite;
+}
+
+.logoItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-2);
+  flex-shrink: 0;
+}
+
+.logoLabel {
+  font-size: var(--sw-font-size-sm);
+  color: var(--sw-text-tertiary);
+  font-weight: var(--sw-font-weight-medium);
+  white-space: nowrap;
+}
