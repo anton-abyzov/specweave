@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.390] - 2026-03-06
+
+### Changes
+- add skill evals section to discovery and evaluation guide
+
+---
+
+
+
 ## [1.0.389] - 2026-03-05
 
 ### Changes
