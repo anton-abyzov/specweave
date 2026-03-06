@@ -33,6 +33,7 @@ vi.mock('../../../plugins/specweave-github/lib/github-us-auto-closer.js', () => 
 
 vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
   class MockJiraStatusSync {
+    init = vi.fn();
     updateStatus = mockJiraUpdateStatus;
     postStatusComment = mockJiraPostStatusComment;
     postProgressComment = mockJiraPostStatusComment;
@@ -265,7 +266,7 @@ describe('multi-provider integration', () => {
       '0194', ['US-001'], '/fake/spec.md', config,
     );
 
-    expect(mockAdoUpdateStatus).toHaveBeenCalledWith(200, { state: 'Closed' });
+    expect(mockAdoUpdateStatus).toHaveBeenCalledWith(200, { state: 'Done' });
     expect(result.ado!.closed).toHaveLength(1);
   });
 
