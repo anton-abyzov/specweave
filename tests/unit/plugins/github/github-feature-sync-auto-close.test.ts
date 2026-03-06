@@ -127,7 +127,12 @@ function execFailure(stderr = '') {
  */
 function createSync() {
   mockGetGitHubAuthFromProject.mockReturnValue({ ['to' + 'ken']: 'fake' });
-  const client = { getIssue: mockGetIssue, getLastComment: mockGetLastComment } as any;
+  const client = {
+    getIssue: mockGetIssue,
+    getLastComment: mockGetLastComment,
+    getOwner: vi.fn().mockReturnValue('test-owner'),
+    getRepo: vi.fn().mockReturnValue('test-repo'),
+  } as any;
   const sync = new GitHubFeatureSync(client, '/specs', '/project');
   return sync;
 }
