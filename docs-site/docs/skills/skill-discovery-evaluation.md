@@ -433,6 +433,42 @@ A score of 21 places this skill in the "Good" range — suitable for production 
 
 ---
 
+## Skill Evals
+
+Beyond manual evaluation, skills can include machine-graded evaluations — standardized test cases that verify the skill actually improves LLM output. The [vskill](https://www.npmjs.com/package/vskill) package manager defines the eval standard.
+
+### How It Works
+
+A skill with evals includes an `evals/evals.json` file alongside its `SKILL.md`:
+
+```
+your-skill/
+├── SKILL.md
+└── evals/
+    └── evals.json
+```
+
+Each eval case contains a realistic user prompt and boolean assertions that are graded by an LLM judge. The system runs each prompt twice — once with the skill loaded and once without — then compares assertion pass rates to measure the skill's impact.
+
+### Platform Integration
+
+Skills with evals get quality scores on [verified-skill.com](https://verified-skill.com):
+- Quality evaluation results displayed at `/skills/[name]/evals`
+- Regression tracking across eval runs
+- Admin editing at `/admin/evals` (admin-only)
+
+### CLI Commands
+
+```bash
+npx vskill eval init <skill-dir>      # Scaffold evals.json from SKILL.md via LLM
+npx vskill eval run <skill-dir>       # Run evals and grade assertions
+npx vskill eval coverage              # Show eval status for all skills
+```
+
+See the [vskill README](https://github.com/anton-abyzov/vskill#skill-evals) for the full evals.json schema and authoring guidelines.
+
+---
+
 ## Summary
 
 The skills ecosystem rewards caution. The combination of rapid growth, fragmented platforms, and minimal cross-platform coordination means that the burden of quality assurance falls on the individual installing the skill. Use the scoring rubric consistently, automate what you can with scanners, and never skip the manual source review. A 15-minute investment reading a SKILL.md before installation can prevent hours of incident response after a compromised skill reaches your codebase.
