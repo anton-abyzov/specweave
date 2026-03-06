@@ -37,6 +37,7 @@ vi.mock('../../../plugins/specweave-github/lib/github-us-auto-closer.js', () => 
 
 vi.mock('../../../plugins/specweave-jira/lib/jira-status-sync.js', () => {
   class MockJiraStatusSync {
+    init = vi.fn();
     getStatus = mockJiraGetStatus;
     updateStatus = mockJiraUpdateStatus;
     postStatusComment = mockJiraPostStatusComment;
@@ -401,7 +402,7 @@ describe('syncACProgressToProviders', () => {
 
       expect(mockAdoUpdateStatus).toHaveBeenCalledWith(
         200,
-        expect.objectContaining({ state: 'Closed' }),
+        expect.objectContaining({ state: 'Done' }),
       );
     });
 

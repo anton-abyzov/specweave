@@ -292,9 +292,9 @@ increment: 0003-auto-detect
 
       // Assert: Should fail (either no increments found or multiple)
       expect(result.success).toBe(false);
-      // Either "multiple" or "No PLANNING" - both are valid failures
+      // Either "Multiple" or "No PLANNING" - both are valid failures
       expect(
-        result.error?.message.includes('multiple') ||
+        result.error?.message.includes('Multiple') ||
         result.error?.message.includes('No PLANNING')
       ).toBe(true);
     });
