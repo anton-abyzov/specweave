@@ -56,6 +56,85 @@ SpecWeave:
 
 ---
 
+## Industry Validation: "No Vibes Allowed"
+
+SpecWeave's approach isn't theoretical — it reflects an emerging industry consensus. In ["No Vibes Allowed: Solving Hard Problems in Complex Codebases"](https://www.youtube.com/watch?v=rmvDxxNubIg), Dex Horthy (HumanLayer, YC F24) presents the **Research-Plan-Implement (RPI)** methodology — a structured workflow that independently validates SpecWeave's core design:
+
+| RPI Concept | SpecWeave Equivalent |
+|-------------|---------------------|
+| **Research** — investigate the codebase before touching code | Built-in: PM scans existing docs, ADRs, and project structure before writing anything. Deep Interview mode for complex features. `/sw:brainstorm` for multi-approach exploration |
+| **Plan** — detailed markdown specs with file locations and test strategy | `spec.md` + `plan.md` + `tasks.md` — the three-file structure |
+| **Implement** — execute the validated plan | `/sw:do` or `/sw:auto` — autonomous execution from the plan |
+| **One step at a time** — incremental, focused work units | **Increments** — each feature is a self-contained unit of work |
+| **Human reviews the plan, not the code** | You review spec + plan at `ExitPlanMode`, AI handles implementation |
+| **"Overkill sometimes"** — scale workflow to match problem complexity | Complexity ceiling: simple features skip brainstorm, complex ones use full RPI with agent teams |
+
+The key insight: **bad plans generate orders of magnitude more problems than bad code.** Errors amplify through each phase — a small mistake in research becomes a bigger mistake in the plan, which becomes an even bigger mistake in code:
+
+```mermaid
+graph LR
+    subgraph Research
+        BR[Bad Research]
+        GR[Good Research]
+    end
+    subgraph Plan
+        GP[Good Plan]
+        BP1[Bad Plan]
+        BP2[Bad Plan]
+    end
+    subgraph Code
+        GC1[Good Code]
+        BC[Bad Code ⬛⬛⬛]
+        GC2[Good Code]
+    end
+
+    BR --> BP1
+    BR --> BP2
+    GR --> GP
+    GP --> GC1
+    BP1 --> BC
+    BP2 --> BC
+    GR --> GC2
+
+    style BR fill:#fff3cd,stroke:#ffc107
+    style BP1 fill:#fff3cd,stroke:#ffc107
+    style BP2 fill:#fff3cd,stroke:#ffc107
+    style BC fill:#fff3cd,stroke:#ffc107
+    style GR fill:#d4edda,stroke:#28a745
+    style GP fill:#d4edda,stroke:#28a745
+    style GC1 fill:#d4edda,stroke:#28a745
+    style GC2 fill:#d4edda,stroke:#28a745
+```
+
+**Errors compound at each stage.** A small flaw in research produces a proportionally larger flaw in the plan, which produces an even larger proportion of bad code. This is why human review should concentrate on **specifications** — the highest-leverage checkpoint where misunderstandings are cheapest to correct.
+
+As Sean Grove puts it: **"Specs are the new code."**
+
+### Where Human Review Matters Most
+
+SpecWeave places human review at the **plan level**, not the code level. You review `spec.md` and `plan.md` — the artifacts that matter most — while AI handles implementation. For complex or uncertain features, `/sw:brainstorm` adds a research phase before planning, giving you a second review checkpoint:
+
+```mermaid
+graph LR
+    A[Feature Idea] --> B["/sw:brainstorm<br/>(Research Phase)"]
+    B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
+    C -->|Yes| D["/sw:increment<br/>(spec + plan + tasks)"]
+    D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
+    E -->|Yes| F["/sw:do or /sw:auto<br/>(Implementation)"]
+    E -->|No| D
+    C -->|No| B
+
+    style C fill:#fff3cd,stroke:#ffc107,color:#000
+    style E fill:#fff3cd,stroke:#ffc107,color:#000
+    style B fill:#e3f2fd,stroke:#1976d2
+    style D fill:#e3f2fd,stroke:#1976d2
+    style F fill:#d4edda,stroke:#28a745
+```
+
+SpecWeave takes this further: as long as the spec and plan are solid, and progress is tracked through external tools (GitHub, JIRA, ADO), the implementation follows naturally — one increment at a time.
+
+---
+
 ## What SpecWeave Does Differently
 
 SpecWeave wraps every AI coding session in a **spec-driven workflow** that turns conversations into permanent, searchable documentation.
