@@ -746,6 +746,73 @@ function versionToNumber(version: string): number {
 }
 
 /**
+ * Install specweave with ETARGET fallback for npm CDN propagation delays.
+ *
+ * 1. Try `npm install -g specweave@{version}` (pinned to resolved version)
+ * 2. If ETARGET: query `npm view specweave versions --json`, pick highest available
+ * 3. Retry with that version
+ * 4. If still fails: throw with actionable suggestion
+ */
+function installWithFallback(targetVersion: string): { installedVersion: string } {
+  try {
+    execSync(`npm install -g specweave@${targetVersion}`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 120000,
+    });
+    return { installedVersion: targetVersion };
+  } catch (error: any) {
+    const stderr = error.stderr?.toString() || error.message || '';
+
+    // Only attempt fallback for ETARGET/notarget errors (CDN propagation)
+    if (!stderr.includes('ETARGET') && !stderr.includes('notarget')) {
+      throw error;
+    }
+
+    // Fallback: get all published versions, pick highest
+    let allVersions: string[];
+    try {
+      const versionsJson = execSync('npm view specweave versions --json', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 30000,
+      }).trim();
+      const parsed = JSON.parse(versionsJson);
+      allVersions = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      throw new Error(
+        `ETARGET: version ${targetVersion} not yet available on npm CDN. ` +
+        `Try: npm cache clean --force && specweave update`
+      );
+    }
+
+    if (allVersions.length === 0) {
+      throw new Error(
+        `ETARGET: version ${targetVersion} not available and no versions found. ` +
+        `Try: npm cache clean --force && specweave update`
+      );
+    }
+
+    // Pick the highest available version
+    const fallbackVersion = allVersions[allVersions.length - 1];
+
+    try {
+      execSync(`npm install -g specweave@${fallbackVersion}`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 120000,
+      });
+      return { installedVersion: fallbackVersion };
+    } catch {
+      throw new Error(
+        `ETARGET: neither ${targetVersion} nor ${fallbackVersion} could be installed. ` +
+        `Try: npm cache clean --force && specweave update`
+      );
+    }
+  }
+}
+
+/**
  * Self-update SpecWeave CLI via npm
  */
 async function selfUpdateSpecWeave(
@@ -814,14 +881,13 @@ async function selfUpdateSpecWeave(
       return { updated: false, newVersion: latestVersion };
     }
 
-    // Perform update
+    // Perform update — pin to the resolved version instead of @latest
+    // to avoid CDN propagation race conditions where the dist-tag points
+    // to a version whose tarball hasn't propagated to all CDN edges yet
     spinner.start(`Updating SpecWeave: v${currentVersion} → v${latestVersion}...`);
 
-    execSync('npm install -g specweave@latest', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 120000, // 2 min timeout for install
-    });
+    const installResult = installWithFallback(latestVersion);
+    const expectedVersion = installResult.installedVersion;
 
     // Verify the new binary is functional before declaring success
     try {
@@ -835,17 +901,17 @@ async function selfUpdateSpecWeave(
       const versionMatch = installedVersion.match(/(\d+\.\d+\.\d+)/);
       const actualVersion = versionMatch ? versionMatch[1] : installedVersion;
 
-      if (actualVersion !== latestVersion) {
-        spinner.warn(`SpecWeave installed but version mismatch: expected v${latestVersion}, got v${actualVersion}`);
-        return { updated: false, error: `Version mismatch after install: expected ${latestVersion}, got ${actualVersion}` };
+      if (actualVersion !== expectedVersion) {
+        spinner.warn(`SpecWeave installed but version mismatch: expected v${expectedVersion}, got v${actualVersion}`);
+        return { updated: false, error: `Version mismatch after install: expected ${expectedVersion}, got ${actualVersion}` };
       }
     } catch {
       spinner.warn('SpecWeave installed but could not verify new binary');
-      return { updated: true, newVersion: latestVersion };
+      return { updated: true, newVersion: expectedVersion };
     }
 
-    spinner.succeed(`SpecWeave updated: v${currentVersion} → v${latestVersion}`);
-    return { updated: true, newVersion: latestVersion };
+    spinner.succeed(`SpecWeave updated: v${currentVersion} → v${expectedVersion}`);
+    return { updated: true, newVersion: expectedVersion };
 
   } catch (error: any) {
     spinner.fail('Failed to check/update SpecWeave');
@@ -869,6 +935,13 @@ async function selfUpdateSpecWeave(
       return {
         updated: false,
         error: 'npm registry timed out. Check your network connection and try again.',
+      };
+    }
+
+    if (error.message?.includes('ETARGET') || error.message?.includes('notarget')) {
+      return {
+        updated: false,
+        error: 'npm CDN propagation delay. Try: npm cache clean --force && specweave update',
       };
     }
 
