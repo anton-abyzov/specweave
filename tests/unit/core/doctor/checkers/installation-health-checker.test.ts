@@ -368,7 +368,7 @@ describe('InstallationHealthChecker', () => {
       fs.writeFileSync(lockPath, JSON.stringify(lockfile, null, 2));
 
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
-      const result = await checker.check(projectRoot, { fix: true });
+      const result = await checker.check(projectRoot, { fix: true, quick: true });
       const lockCheck = result.checks.find(c => c.name === 'Lockfile integrity');
 
       expect(mockExecSync).not.toHaveBeenCalled();
@@ -467,7 +467,7 @@ describe('InstallationHealthChecker', () => {
       );
 
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
-      await checker.check(projectRoot, { fix: false });
+      await checker.check(projectRoot, { fix: false, quick: true });
 
       expect(mockExecSync).not.toHaveBeenCalled();
     });
@@ -477,29 +477,158 @@ describe('InstallationHealthChecker', () => {
   // Full check() method
   // =========================================================================
   describe('check() integration', () => {
-    it('TC-016: should return all 4 check categories', async () => {
+    it('TC-016: should return all 5 check categories', async () => {
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
       const result = await checker.check(projectRoot, {});
 
       expect(result.category).toBe('Installation Health');
-      expect(result.checks.length).toBe(4);
+      expect(result.checks.length).toBe(5);
 
       const checkNames = result.checks.map(c => c.name);
       expect(checkNames).toContain('Legacy commands directories');
       expect(checkNames).toContain('Stale cache directories');
       expect(checkNames).toContain('Lockfile integrity');
       expect(checkNames).toContain('Plugin cache hook freshness');
+      expect(checkNames).toContain('Update health');
     });
 
-    it('TC-016b: should calculate overall status from worst check', async () => {
+    it('TC-016c: should return 4 checks when quick=true (skips update health)', async () => {
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { quick: true });
+
+      expect(result.checks.length).toBe(4);
+      const checkNames = result.checks.map(c => c.name);
+      expect(checkNames).not.toContain('Update health');
+    });
+
+    it('TC-016b: should calculate overall status from worst check (quick mode)', async () => {
       // Create a legacy dir to produce a warning
       fs.mkdirSync(path.join(commandsDir, 'sw'), { recursive: true });
       fs.writeFileSync(path.join(commandsDir, 'sw', 'SKILL.md'), '# Legacy');
 
       const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
-      const result = await checker.check(projectRoot, {});
+      const result = await checker.check(projectRoot, { quick: true });
 
       expect(result.status).toBe('warn');
+    });
+  });
+
+  // =========================================================================
+  // Update Health Check
+  // =========================================================================
+  describe('checkUpdateHealth', () => {
+    it('TC-UH-01: should pass when installed version matches npm latest', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'npm view specweave version') return '1.0.394';
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('pass');
+      expect(check!.message).toContain('up to date');
+    });
+
+    it('TC-UH-02: should warn when outdated but resolvable', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.390';
+        if (cmd === 'npm view specweave version') return '1.0.394';
+        if (cmd === 'npm view specweave@1.0.394 version') return '1.0.394';
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('warn');
+      expect(check!.message).toContain('outdated');
+      expect(check!.fixSuggestion).toContain('specweave update');
+    });
+
+    it('TC-UH-03: should fail when CDN propagation issue detected', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.393';
+        if (cmd === 'npm view specweave version') return '1.0.394';
+        if (cmd === 'npm view specweave@1.0.394 version') {
+          const err = new Error('ETARGET') as any;
+          err.stderr = 'ETARGET No matching version found for specweave@1.0.394';
+          throw err;
+        }
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('fail');
+      expect(check!.message).toContain('propagation delay');
+      expect(check!.fixSuggestion).toContain('doctor --fix');
+    });
+
+    it('TC-UH-04: should clear npm cache on CDN issue with fix=true', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.393';
+        if (cmd === 'npm view specweave version') return '1.0.394';
+        if (cmd === 'npm view specweave@1.0.394 version') {
+          const err = new Error('ETARGET') as any;
+          err.stderr = 'ETARGET';
+          throw err;
+        }
+        if (cmd === 'npm cache clean --force') return '';
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, { fix: true });
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('warn');
+      expect(check!.message).toContain('cache cleared');
+    });
+
+    it('TC-UH-05: should skip when specweave version cannot be determined', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') throw new Error('not found');
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('skip');
+    });
+
+    it('TC-UH-06: should warn when npm registry unreachable', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'npm view specweave version') throw new Error('ETIMEDOUT');
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('warn');
+      expect(check!.message).toContain('npm registry');
     });
   });
 });
