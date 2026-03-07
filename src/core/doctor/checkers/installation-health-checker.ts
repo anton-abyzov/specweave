@@ -53,6 +53,9 @@ export class InstallationHealthChecker implements HealthChecker {
     checks.push(this.checkStaleCacheDirs(options.fix ?? false));
     checks.push(this.checkLockfileIntegrity(projectRoot, options.fix ?? false));
     checks.push(this.checkPluginCacheHookFreshness(options.fix ?? false));
+    if (!options.quick) {
+      checks.push(this.checkUpdateHealth(options.fix ?? false));
+    }
 
     return {
       category: this.category,
@@ -491,6 +494,114 @@ export class InstallationHealthChecker implements HealthChecker {
     if (existsSync(marketplacePath)) return marketplacePath;
 
     return null;
+  }
+
+  /**
+   * Check if specweave can be updated successfully.
+   * Detects stale npm cache and CDN propagation issues.
+   * When fix=true: clears npm cache.
+   *
+   * @since 1.0.395
+   */
+  private checkUpdateHealth(fix: boolean): CheckResult {
+    // Get installed version
+    let installedVersion: string;
+    try {
+      const output = execSync('specweave --version', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 10000,
+      }).trim();
+      const match = output.match(/(\d+\.\d+\.\d+)/);
+      installedVersion = match ? match[1] : output;
+    } catch {
+      return {
+        name: 'Update health',
+        status: 'skip',
+        message: 'could not determine installed version',
+      };
+    }
+
+    // Get latest version from npm
+    let latestVersion: string;
+    try {
+      latestVersion = execSync('npm view specweave version', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 15000,
+      }).trim();
+    } catch {
+      return {
+        name: 'Update health',
+        status: 'warn',
+        message: 'could not query npm registry (network issue or npm not configured)',
+        fixSuggestion: 'Check network connection and npm configuration',
+      };
+    }
+
+    if (installedVersion === latestVersion) {
+      return {
+        name: 'Update health',
+        status: 'pass',
+        message: `up to date (v${installedVersion})`,
+      };
+    }
+
+    // Outdated — verify the latest version is actually installable (detect CDN issues)
+    try {
+      execSync(`npm view specweave@${latestVersion} version`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 15000,
+      });
+      // Version is resolvable, just outdated
+      return {
+        name: 'Update health',
+        status: 'warn',
+        message: `outdated: v${installedVersion} (latest: v${latestVersion})`,
+        fixSuggestion: 'Run: specweave update',
+      };
+    } catch (error: any) {
+      const stderr = error.stderr?.toString() || error.message || '';
+      if (stderr.includes('ETARGET') || stderr.includes('notarget')) {
+        if (fix) {
+          try {
+            execSync('npm cache clean --force', {
+              encoding: 'utf-8',
+              stdio: ['pipe', 'pipe', 'pipe'],
+              timeout: 30000,
+            });
+            return {
+              name: 'Update health',
+              status: 'warn',
+              message: `npm cache cleared (v${latestVersion} had CDN propagation issue)`,
+              fixSuggestion: 'Run: specweave update',
+            };
+          } catch {
+            return {
+              name: 'Update health',
+              status: 'fail',
+              message: 'npm cache clean failed for CDN propagation issue',
+              fixSuggestion: 'Run manually: npm cache clean --force && specweave update',
+            };
+          }
+        }
+        return {
+          name: 'Update health',
+          status: 'fail',
+          message: `v${latestVersion} not yet available on npm CDN (propagation delay)`,
+          fixSuggestion: 'Run: specweave doctor --fix (clears npm cache)',
+        };
+      }
+
+      // Some other resolution error — still outdated
+      return {
+        name: 'Update health',
+        status: 'warn',
+        message: `outdated: v${installedVersion} (latest: v${latestVersion})`,
+        fixSuggestion: 'Run: specweave update',
+      };
+    }
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────
