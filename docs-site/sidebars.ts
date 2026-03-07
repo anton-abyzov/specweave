@@ -548,6 +548,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'doc',
+      id: 'skills/why-skills-matter',
+      label: 'Why Skills Matter',
+    },
+    {
+      type: 'doc',
       id: 'skills/fundamentals',
       label: 'Skills, Plugins & Marketplaces',
     },
