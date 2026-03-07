@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" style="background:#fff">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 28px; font-weight: bold; }
+    .label { font-size: 18px; }
+    .small { font-size: 16px; }
+    .note { font-size: 16px; fill: #868E96; }
+    .mark { font-size: 20px; font-weight: bold; }
+  </style>
+
+  <!-- Left background (red) -->
+  <rect x="0" y="0" width="560" height="600" rx="12" fill="#ffe3e3" stroke="#FF6B6B" stroke-width="2" opacity="0.5"/>
+  <!-- Right background (green) -->
+  <rect x="640" y="0" width="560" height="600" rx="12" fill="#d3f9d8" stroke="#51CF66" stroke-width="2" opacity="0.5"/>
+  <!-- Divider -->
+  <line x1="600" y1="10" x2="600" y2="590" stroke="#868E96" stroke-width="2" stroke-dasharray="8,6"/>
+
+  <!-- Left title -->
+  <text x="280" y="45" text-anchor="middle" class="title" fill="#e03131">Without Skill</text>
+  <!-- Right title -->
+  <text x="920" y="45" text-anchor="middle" class="title" fill="#2f9e44">With Skill</text>
+
+  <!-- Left: Prompt box -->
+  <rect x="60" y="90" width="160" height="50" rx="8" fill="#dee2e6" stroke="#495057" stroke-width="2"/>
+  <text x="140" y="122" text-anchor="middle" class="label" fill="#495057">Same Prompt</text>
+
+  <!-- Left: Arrow to LLM -->
+  <line x1="225" y1="115" x2="310" y2="115" stroke="#495057" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- Left: Raw LLM box -->
+  <rect x="315" y="90" width="160" height="50" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="395" y="122" text-anchor="middle" class="label" fill="#e03131">Raw LLM</text>
+
+  <!-- Left: Arrow down -->
+  <line x1="395" y1="145" x2="395" y2="230" stroke="#e03131" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <!-- Left: Output labels with X marks -->
+  <text x="310" y="255" class="mark" fill="#e03131">✗</text>
+  <text x="335" y="255" class="label" fill="#e03131">Generic</text>
+  <text x="310" y="290" class="mark" fill="#e03131">✗</text>
+  <text x="335" y="290" class="label" fill="#e03131">Cookie-cutter</text>
+  <text x="310" y="325" class="mark" fill="#e03131">✗</text>
+  <text x="335" y="325" class="label" fill="#e03131">AI vibes</text>
+
+  <!-- Left: Sad stick figure -->
+  <circle cx="140" cy="300" r="20" fill="none" stroke="#495057" stroke-width="2"/>
+  <path d="M132 308 Q140 302 148 308" fill="none" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="320" x2="140" y2="390" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="345" x2="110" y2="370" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="345" x2="170" y2="370" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="390" x2="115" y2="430" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="390" x2="165" y2="430" stroke="#495057" stroke-width="2"/>
+
+  <!-- Right: Prompt box -->
+  <rect x="700" y="90" width="160" height="50" rx="8" fill="#dee2e6" stroke="#495057" stroke-width="2"/>
+  <text x="780" y="122" text-anchor="middle" class="label" fill="#495057">Same Prompt</text>
+
+  <!-- Right: Arrow to LLM+Skill -->
+  <line x1="865" y1="115" x2="940" y2="115" stroke="#495057" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- Right: LLM + Skill box -->
+  <rect x="945" y="80" width="190" height="75" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="1040" y="112" text-anchor="middle" class="label" fill="#2f9e44">LLM + Skill</text>
+  <text x="1040" y="140" text-anchor="middle" font-size="22" fill="#2f9e44" opacity="0.7">⚙</text>
+
+  <!-- Right: Arrow down -->
+  <line x1="1040" y1="160" x2="1040" y2="230" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Right: Output labels with checkmarks -->
+  <text x="940" y="255" class="mark" fill="#2f9e44">✓</text>
+  <text x="965" y="255" class="label" fill="#2f9e44">Unique</text>
+  <text x="940" y="290" class="mark" fill="#2f9e44">✓</text>
+  <text x="965" y="290" class="label" fill="#2f9e44">Polished</text>
+  <text x="940" y="325" class="mark" fill="#2f9e44">✓</text>
+  <text x="965" y="325" class="label" fill="#2f9e44">Production-grade</text>
+
+  <!-- Right: Happy stick figure -->
+  <circle cx="790" cy="300" r="20" fill="none" stroke="#495057" stroke-width="2"/>
+  <path d="M782 305 Q790 313 798 305" fill="none" stroke="#495057" stroke-width="2"/>
+  <line x1="790" y1="320" x2="790" y2="390" stroke="#495057" stroke-width="2"/>
+  <line x1="790" y1="340" x2="755" y2="320" stroke="#495057" stroke-width="2"/>
+  <line x1="790" y1="340" x2="825" y2="320" stroke="#495057" stroke-width="2"/>
+  <line x1="790" y1="390" x2="765" y2="430" stroke="#495057" stroke-width="2"/>
+  <line x1="790" y1="390" x2="815" y2="430" stroke="#495057" stroke-width="2"/>
+
+  <!-- Bottom: Add a Skill arrow -->
+  <line x1="420" y1="510" x2="770" y2="510" stroke="#1971c2" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text x="600" y="495" text-anchor="middle" font-size="20" font-weight="bold" fill="#1971c2">Add a Skill</text>
+
+  <!-- Bottom note -->
+  <text x="600" y="565" text-anchor="middle" class="note">Same prompt. Dramatically different quality.</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#495057"/></marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e03131"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2f9e44"/></marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1971c2"/></marker>
+  </defs>
+</svg>

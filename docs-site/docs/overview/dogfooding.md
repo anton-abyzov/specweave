@@ -79,22 +79,34 @@ SpecWeave has been used to build 5+ production applications:
 - **24 plugins**, **47 CLI commands**, **65 hooks**
 - Self-documenting: every feature has a spec
 
-### 2. BizZone Mobile App
+### 2. vskill CLI (Built With SpecWeave)
+- The skill marketplace CLI — installed and used by developers to discover, install, and publish skills
+- Every feature spec'd, planned, and implemented through SpecWeave increments
+- Node.js ESM, TypeScript, Vitest — the same stack, the same workflow
+- **vskill is a SpecWeave product built entirely with SpecWeave.** Just like Claude Code is 100% written by Claude Code, vskill is 100% built with SpecWeave.
+
+### 3. vskill-platform (Built With SpecWeave)
+- The web platform powering the skill marketplace — Next.js 15, Cloudflare Workers, Prisma
+- Skill discovery, publisher pages, trending algorithms, trust scoring — all spec-driven
+- Every API endpoint, every UI page, every database migration went through the increment workflow
+- **The platform developers use to find skills was itself built using the spec-driven discipline that skills enable.**
+
+### 4. BizZone Mobile App
 - React Native mobile application
 - Full spec-driven development
 - Integrated with JIRA for enterprise workflow
 
-### 3. Event Management SaaS
+### 5. Event Management SaaS
 - Next.js 14 + Prisma + Stripe
 - Complete from PRD to deployment
 - Hetzner Cloud infrastructure
 
-### 4. E-Commerce Platform
+### 6. E-Commerce Platform
 - Multi-tenant architecture
 - Azure DevOps integration
 - Living documentation synced daily
 
-### 5. Internal Tools Suite
+### 7. Internal Tools Suite
 - TypeScript CLI applications
 - GitHub Issues sync
 - TDD workflow enforcement
@@ -143,6 +155,8 @@ Every crash, every bug, every friction point — we experienced it ourselves:
 4. **Zombie processes** led to automatic cleanup hooks
 
 **We didn't just build a Skill Fabric. We used it to build itself.**
+
+The same goes for every product in the ecosystem: **vskill** (the skill marketplace CLI) and **vskill-platform** (the web marketplace) are both 100% built with SpecWeave. Not retrofitted, not partially — every feature, every bug fix, every deploy went through the spec-driven workflow. Boris Cherny said "Claude Code is 100% written by Claude Code." The same is true here: SpecWeave builds SpecWeave, and SpecWeave builds vskill, and SpecWeave builds the platform where developers discover skills. It's turtles all the way down.
 
 ### Real Lessons Learned
 
@@ -219,6 +233,6 @@ specweave init .
 | "Autonomous implementation" | 1,327 commits, 26/day average |
 | "Elite DORA metrics" | 100 deploys/month, 0% failure rate |
 | "Works at scale" | 186,719 lines of code |
-| "Real production use" | 5+ production applications |
+| "Real production use" | 7+ production applications |
 
-**SpecWeave isn't theoretical. It's proven in production — on itself.**
+**SpecWeave isn't theoretical. It's proven in production — on itself, on vskill, and on the platform that serves the skill marketplace.**
