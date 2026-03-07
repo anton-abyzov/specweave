@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.391] - 2026-03-07
+
+### Changes
+- docs: update overview and workflow documentation
+- fix 27 test failures: mock gaps, regex bug, assertion mismatches
+- chore: bump version to 1.0.390
+- add evals for github-sync skill: 4 test cases with assertions
+- add skill evals section to discovery and evaluation guide
+
+---
+
+
+
 ## [1.0.390] - 2026-03-06
 
 ### Changes
