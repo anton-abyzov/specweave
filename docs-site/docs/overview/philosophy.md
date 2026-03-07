@@ -15,13 +15,44 @@ Plan → Code (always)
 Code → Plan (never)
 ```
 
+This principle is validated by emerging industry practices like the **Research-Plan-Implement (RPI)** methodology (see Dex Horthy's ["No Vibes Allowed: Solving Hard Problems in Complex Codebases"](https://www.youtube.com/watch?v=rmvDxxNubIg)), which demonstrates that **bad plans generate orders of magnitude more problems than bad code**. Human review should concentrate on the plan — the highest-leverage checkpoint where misunderstandings are cheapest to correct — rather than line-by-line code inspection.
+
+As Sean Grove puts it: **"Specs are the new code."** The specification is the artifact that matters most. Code is its derivative.
+
+A small flaw in the plan amplifies into a disproportionate amount of bad code:
+
+```mermaid
+graph LR
+    subgraph Plan["Plan (small flaw)"]
+        BP["Bad part of plan"]
+        GP["Good part of plan"]
+    end
+    subgraph Code["Code (amplified flaw)"]
+        GC1["Good code"]
+        BC["Bad code"]
+        GC2["Good code"]
+    end
+
+    BP --> GC1
+    BP --> BC
+    GP --> GC2
+
+    style BP fill:#fff3cd,stroke:#ffc107
+    style BC fill:#fff3cd,stroke:#ffc107
+    style GP fill:#d4edda,stroke:#28a745
+    style GC1 fill:#d4edda,stroke:#28a745
+    style GC2 fill:#d4edda,stroke:#28a745
+```
+
+This is why SpecWeave places human review at the **plan level** — catching a mistake in `spec.md` or `plan.md` prevents an entire cascade of bad code. For uncertain features, use `/sw:brainstorm` before `/sw:increment` to add a research phase with its own review checkpoint.
+
 **What this means in practice:**
 - **Before implementing**: Read and understand the current plan
 - **Mid-implementation discovery**: If you find a better approach, **stop coding**, update the plan first, then resume implementation based on the updated plan
 - **Bug fixes**: Assess impact on the plan before writing a fix — update tasks.md if the fix changes scope
 - **Code and plan must always match**: If they diverge, update the plan first, then adjust code to follow — never retrofit the plan to match code you've already written
 
-**Why this matters**: Plans are cheap to change. Code is expensive to change. By keeping the plan as the authoritative source, you catch design problems early (in the plan) rather than late (in code review or production). AI agents working with Claude Code are most efficient in plan mode — skipping planning wastes more tokens on rework than planning costs upfront.
+**Why this matters**: Plans are cheap to change. Code is expensive to change. By keeping the plan as the authoritative source, you catch design problems early (in the plan) rather than late (in code review or production). AI agents working with Claude Code are most efficient in plan mode — skipping planning wastes more tokens on rework than planning costs upfront. As long as the spec and plan are good, and you can track progress through external tools (GitHub, JIRA, ADO), the implementation follows naturally — one increment at a time.
 
 ### 2. Specification Before Implementation
 
@@ -262,6 +293,8 @@ SpecWeave supports TWO valid approaches:
 
 ## Workflow Philosophy
 
+SpecWeave's workflow is an implementation of the **Research/Plan/Implement (RPI)** pattern — though we call it **spec-driven development**. The naming differs but the structure is the same: research the problem, plan the solution, implement from the plan. Scale the workflow to match the problem — RPI is overkill for a one-line fix, essential for a cross-repo feature.
+
 ### [Greenfield](/docs/glossary/terms/greenfield) Projects
 
 1. Choose documentation approach (comprehensive or incremental)
@@ -284,7 +317,7 @@ SpecWeave supports TWO valid approaches:
 
 ### ❌ What SpecWeave Prevents
 
-1. **Vibe Coding**: Implementing without specifications
+1. **Vibe Coding**: Implementing without specifications — what Dex Horthy calls "slop": low-quality code produced by naive chatting with AI agents without structured planning
 2. **Plan Drift**: Code diverging from the plan without updating specs first
 3. **Documentation Divergence**: Code and docs out of sync
 4. **Context Bloat**: Loading entire specs unnecessarily

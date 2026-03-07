@@ -99,9 +99,34 @@ You can also invoke commands directly for fine-grained control.
 
 ## Why SpecWeave?
 
-AI coding agents are powerful individually. Run three of them on the same codebase and you get conflicts, duplicated work, and zero traceability.
+**The plan is more important than the code.**
 
-SpecWeave solves this with **file-based coordination**:
+AI coding agents are powerful, but without structured planning they produce what practitioners call "slop" — code generated through unstructured chat that creates technical debt from day one. The [Research-Plan-Implement (RPI)](https://www.youtube.com/watch?v=rmvDxxNubIg) methodology demonstrates that **bad plans create orders of magnitude more problems than bad code**. Human review should focus on the plan — the highest-leverage checkpoint where misunderstandings are cheapest to correct.
+
+SpecWeave embodies this principle. Each **increment** is a focused, reviewable unit of work — spec, plan, tasks — that you control through a sprint or external tools (GitHub, JIRA, ADO). As long as the spec and plan are solid, the implementation follows naturally, one step at a time.
+
+The more structure in your workflow, the harder the problems you can solve:
+
+```
+Hardest problem          big refactors,              ○  ← /sw:team-lead
+you can solve          whole new features                 (multi-agent)
+    ↑                                          ○
+    │               medium features               ← /sw:brainstorm → /sw:increment → /sw:auto
+    │              across repos                 (research + plan + implement)
+    │                                    ○
+    │           small features              ← /sw:increment → /sw:do
+    │          across 3-5 files                (plan + implement)
+    │                              ○
+    │       small fixes               ← just talk to AI
+    │       copy changes                 (no planning)
+    └────────────────────────────────────────────→
+      just talk     simple plan    research →    multi-phase
+      to AI         then work it   plan → impl   agent teams
+
+                 amount of context engineering →
+```
+
+SpecWeave solves multi-agent chaos with **file-based coordination**:
 
 ```
 .specweave/increments/0001-oauth/

@@ -35,12 +35,14 @@ SpecWeave enforces **Spec-Driven Development**:
 
 ### Key Principles
 
-1. **Specification Before Implementation** - Define WHAT and WHY before HOW
-2. **Living Documentation** - Specs evolve with code, never diverge
-3. **Context Precision** - Load only what's needed (70%+ token reduction)
-4. **Test-Validated Features** - Every feature proven through automated tests
-5. **Regression Prevention** - Document existing code before modification
-6. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
+1. **Plan > Code** - The plan is the source of truth; code is its derivative. Bad plans create orders of magnitude more rework than bad code — review the plan, not just the code ([learn more](/docs/overview/philosophy#1-plan-as-source-of-truth))
+2. **Specification Before Implementation** - Define WHAT and WHY before HOW
+3. **One Increment at a Time** - Each feature is a focused, reviewable unit of work — controllable through your sprint or external tools (GitHub, JIRA, ADO)
+4. **Living Documentation** - Specs evolve with code, never diverge
+5. **Context Precision** - Load only what's needed (70%+ token reduction)
+6. **Test-Validated Features** - Every feature proven through automated tests
+7. **Regression Prevention** - Document existing code before modification
+8. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
 
 ## How It Works
 
