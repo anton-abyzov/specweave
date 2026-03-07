@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" style="background:#fff">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 26px; font-weight: bold; }
+    .label { font-size: 18px; }
+    .small { font-size: 16px; }
+    .note { font-size: 16px; fill: #868E96; }
+  </style>
+
+  <!-- Backgrounds -->
+  <rect x="0" y="0" width="560" height="600" rx="12" fill="#ffe3e3" stroke="#FF6B6B" stroke-width="2" opacity="0.5"/>
+  <rect x="640" y="0" width="560" height="600" rx="12" fill="#d3f9d8" stroke="#51CF66" stroke-width="2" opacity="0.5"/>
+  <line x1="600" y1="10" x2="600" y2="590" stroke="#868E96" stroke-width="2" stroke-dasharray="8,6"/>
+
+  <!-- Titles -->
+  <text x="280" y="45" text-anchor="middle" class="title" fill="#e03131">No Feedback Loop</text>
+  <text x="920" y="45" text-anchor="middle" class="title" fill="#2f9e44">Eval-Driven Quality</text>
+
+  <!-- LEFT: Linear dead-end flow -->
+  <rect x="180" y="100" width="180" height="50" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="270" y="130" text-anchor="middle" class="label" fill="#e03131">Write Skill</text>
+
+  <line x1="270" y1="155" x2="270" y2="215" stroke="#e03131" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <rect x="180" y="220" width="180" height="50" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="270" y="250" text-anchor="middle" class="label" fill="#e03131">Deploy</text>
+
+  <line x1="270" y1="275" x2="270" y2="335" stroke="#e03131" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <rect x="150" y="340" width="240" height="50" rx="8" fill="#fff5f5" stroke="#e03131" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="270" y="370" text-anchor="middle" class="label" fill="#e03131">Hope it works</text>
+
+  <text x="270" y="425" text-anchor="middle" class="note">(dead end — no return)</text>
+
+  <!-- RIGHT: Feedback cycle -->
+  <rect x="820" y="90" width="180" height="50" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="910" y="120" text-anchor="middle" class="label" fill="#2f9e44">Write Skill</text>
+
+  <line x1="910" y1="145" x2="910" y2="195" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <rect x="820" y="200" width="180" height="50" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="910" y="230" text-anchor="middle" class="label" fill="#2f9e44">Run Eval</text>
+
+  <line x1="1005" y1="225" x2="1060" y2="285" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <rect x="980" y="290" width="200" height="50" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="1080" y="320" text-anchor="middle" class="label" fill="#2f9e44">Measure Quality</text>
+
+  <line x1="1080" y1="345" x2="1080" y2="405" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <rect x="980" y="410" width="200" height="50" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="1080" y="440" text-anchor="middle" class="label" fill="#2f9e44">Improve</text>
+
+  <!-- Cycle return arrow (Improve → back to Run Eval) -->
+  <path d="M975 435 L820 435 L820 225 L815 225" fill="none" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Iterate label -->
+  <text x="760" y="380" text-anchor="middle" font-size="16" font-style="italic" fill="#1971c2" opacity="0.8">Iterate</text>
+
+  <!-- Quality badge -->
+  <ellipse cx="740" cy="500" rx="55" ry="35" fill="#d3f9d8" stroke="#2f9e44" stroke-width="2"/>
+  <text x="740" y="506" text-anchor="middle" class="small" fill="#2f9e44">Quality</text>
+
+  <!-- Bottom note -->
+  <text x="600" y="575" text-anchor="middle" class="note">Don't hope. Measure. Iterate. Improve.</text>
+
+  <defs>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e03131"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2f9e44"/></marker>
+  </defs>
+</svg>
