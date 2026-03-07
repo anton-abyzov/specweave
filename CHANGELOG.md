@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.393] - 2026-03-07
+
+### Changes
+- update docs and skill value content
+- add brainstorm skill tests (81 tests) and condense SKILL.md to 559 lines
+
+---
+
+
+
 ## [1.0.392] - 2026-03-07
 
 ### Changes
