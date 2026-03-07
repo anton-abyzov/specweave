@@ -4,6 +4,55 @@ The planning phase transforms a feature idea into a **complete, executable imple
 
 > **Core Principle: The plan is the source of truth. Code is a derivative.** All implementation flows from spec.md → plan.md → tasks.md → code. If the plan changes, code follows. If you discover something during implementation that invalidates the plan, stop and update the plan first. See [Philosophy: Plan as Source of Truth](/docs/overview/philosophy#1-plan-as-source-of-truth).
 
+This workflow follows the **Research-Plan-Implement (RPI)** pattern — an approach independently validated by practitioners shipping production code in 300K+ LOC codebases (see ["No Vibes Allowed"](https://www.youtube.com/watch?v=rmvDxxNubIg)). The core insight: human review of the **plan** is the highest-leverage checkpoint. Bad plans create orders of magnitude more rework than bad code. SpecWeave's increment structure makes this natural — each increment is a focused, reviewable unit of work.
+
+### Why Planning Unlocks Harder Problems
+
+The amount of structure in your workflow directly determines the complexity of problems you can solve:
+
+```mermaid
+quadrantChart
+    title Complexity Ceiling vs. Workflow Structure
+    x-axis "Just talk to AI" --> "Full Research-Plan-Implement"
+    y-axis "Copy changes" --> "Big refactors, new features"
+    Vibe coding: [0.15, 0.12]
+    Simple plan then work it: [0.38, 0.35]
+    Research-Plan-Implement: [0.65, 0.65]
+    Multi-phase RPI with agent teams: [0.88, 0.9]
+```
+
+| Workflow Level | What You Can Ship | SpecWeave Equivalent |
+|---------------|-------------------|---------------------|
+| Just talk to AI | Copy changes, small fixes | No SpecWeave needed |
+| Make a simple plan, work the plan | Small features across 3-5 files | `/sw:increment` + `/sw:do` |
+| Research → Plan → Implement phase by phase | Medium features across projects and repos | `/sw:brainstorm` → `/sw:increment` → `/sw:auto` |
+| Multiple research steps, multiple plans, many sessions | Big refactors, whole new features | `/sw:brainstorm` → `/sw:increment` → `/sw:team-lead` |
+
+The more you invest in planning, the harder the problems you can tackle. SpecWeave scales with you — from a quick increment for simple features to full agent teams for complex multi-repo work.
+
+### Human Review Gates
+
+SpecWeave places human review at the highest-leverage checkpoints — **after research and after planning** — where catching mistakes is cheapest:
+
+```mermaid
+graph LR
+    A["Feature Idea"] --> B["Research Phase<br/>/sw:brainstorm"]
+    B --> C{{"HUMAN REVIEW<br/>Approach OK?"}}
+    C -->|Yes| D["Planning Phase<br/>/sw:increment<br/>(spec + plan + tasks)"]
+    D --> E{{"HUMAN REVIEW<br/>Plan OK?"}}
+    E -->|Yes| F["Implementation<br/>/sw:do or /sw:auto"]
+    E -->|Edit| D
+    C -->|Rethink| B
+
+    style C fill:#fff3cd,stroke:#ffc107,color:#000
+    style E fill:#fff3cd,stroke:#ffc107,color:#000
+    style B fill:#e3f2fd,stroke:#1976d2
+    style D fill:#e3f2fd,stroke:#1976d2
+    style F fill:#d4edda,stroke:#28a745
+```
+
+Errors amplify through each phase — a small flaw in research produces bigger flaws in the plan, which produce even bigger flaws in code. By reviewing at the plan level, you catch problems before they compound.
+
 ## Overview
 
 ```mermaid
@@ -27,9 +76,15 @@ graph LR
 
 ## The Planning Flow
 
-### Step 0 (Optional): Brainstorm Before Planning
+### Step 0: Research Phase
 
-Not sure which approach to take? Explore options first with `/sw:brainstorm`:
+In the [RPI (Research/Plan/Implement)](https://www.youtube.com/watch?v=rmvDxxNubIg) methodology, the **Research phase** is where you investigate the codebase and explore approaches *before* committing to a plan. SpecWeave has research built in at multiple levels:
+
+**Built-in research (always runs):** The PM agent automatically scans existing docs, ADRs, prior increments, and project structure before writing `spec.md`. This happens inside `/sw:increment` — you don't need to do anything extra.
+
+**Deep Interview mode (configurable):** When `planning.deepInterview.enabled: true` in config, the PM asks 5-40 clarifying questions (scaled to complexity) before any spec work begins. This is the most thorough built-in research phase.
+
+**Explicit research with brainstorm (recommended for complex features):**
 
 ```bash
 /sw:brainstorm "real-time notifications"         # Standard: 4-6 approaches
@@ -37,7 +92,11 @@ Not sure which approach to take? Explore options first with `/sw:brainstorm`:
 /sw:brainstorm "API design" --depth quick        # Quick: 3-approach comparison
 ```
 
-This produces a persistent brainstorm document with a comparison matrix and recommendation. When ready, it hands off directly to `/sw:increment` with the selected approach as context.
+This produces a persistent brainstorm document with a comparison matrix and recommendation — your **research artifact** for human review. When ready, it hands off directly to `/sw:increment` with the selected approach as context.
+
+**When to add explicit brainstorm:** Architectural decisions, uncertain approaches, features touching multiple systems, brownfield migrations. The more complex the problem, the more valuable the explicit research phase — see the complexity ceiling chart above.
+
+**When the built-in research is sufficient:** Clear requirements, bug fixes, small-to-medium features where the approach is straightforward. As the RPI talk itself notes: *"Research/Plan/Impl is overkill sometimes"* — scale your workflow to match the problem.
 
 **Cognitive lenses available:** Default (parallel generation), Six Thinking Hats, SCAMPER, TRIZ/Constraint Inversion, Adjacent Possible.
 
