@@ -15,7 +15,9 @@ export type SSEEventType =
   | 'job-progress'
   | 'marketplace-scan'
   | 'submission-update'
-  | 'verification-complete';
+  | 'verification-complete'
+  | 'hook-event'
+  | 'hook-agent';
 
 export interface SSEMessage {
   type: SSEEventType;
@@ -288,3 +290,45 @@ export type RouteHandler = (
   res: import('http').ServerResponse,
   params: Record<string, string>,
 ) => Promise<void>;
+
+// Hook event types (Claude Code HTTP hooks + command-only events)
+export type CCHookEventName =
+  // HTTP-capable events (8)
+  | 'PreToolUse'
+  | 'PostToolUse'
+  | 'Stop'
+  | 'SubagentStop'
+  | 'TaskCompleted'
+  | 'UserPromptSubmit'
+  | 'PostToolUseFailure'
+  | 'PermissionRequest'
+  // Command-only events (forwarded via bridge)
+  | 'SessionStart'
+  | 'SessionEnd'
+  | 'Notification'
+  | 'SubagentStart'
+  | 'ConfigChange'
+  | 'PreCompact'
+  | 'TeammateIdle';
+
+export interface HookEvent {
+  id: string;
+  eventName: CCHookEventName;
+  sessionId: string;
+  timestamp: string;
+  payload: unknown;
+  result?: {
+    decision?: 'allow' | 'deny' | 'approve' | 'block';
+    reason?: string;
+  };
+  durationMs?: number;
+}
+
+export interface AgentRecord {
+  agentId: string;
+  agentType: string;
+  sessionId: string;
+  startedAt: string;
+  stoppedAt?: string;
+  durationMs?: number;
+}
