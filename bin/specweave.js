@@ -1371,6 +1371,28 @@ program
     await dashboardCommand(options);
   });
 
+// Hooks command - Manage HTTP hook system
+const hooksCmd = program.command('hooks').description('Manage HTTP hook system');
+
+hooksCmd
+  .command('status')
+  .description('Check hook server status')
+  .action(async () => {
+    const { getHooksStatus, formatHooksStatus } = await import('../dist/src/hooks/hooks-status.js');
+    const result = await getHooksStatus(process.cwd());
+    console.log(formatHooksStatus(result));
+  });
+
+hooksCmd
+  .command('generate-settings')
+  .description('Generate .claude/settings.json hooks configuration')
+  .option('-p, --port <number>', 'Override port (default: 8340)')
+  .action(async (options) => {
+    const { writeSettings } = await import('../dist/src/hooks/generate-settings.js');
+    writeSettings(process.cwd(), options.port ? parseInt(options.port, 10) : undefined);
+    console.log('Hooks settings written to .claude/settings.json');
+  });
+
 // Migrate-to-umbrella command - Convert single-repo to umbrella workspace
 program
   .command('migrate-to-umbrella')

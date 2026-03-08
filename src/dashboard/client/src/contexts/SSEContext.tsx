@@ -18,6 +18,7 @@ const EVENT_TYPES = [
   'error-detected', 'config-changed', 'activity',
   'command-output', 'command-complete', 'job-progress',
   'marketplace-scan', 'submission-update', 'verification-complete',
+  'hook-event', 'hook-agent',
 ];
 
 export function SSEProvider({ url = '/api/events', children }: { url?: string; children: ReactNode }) {
