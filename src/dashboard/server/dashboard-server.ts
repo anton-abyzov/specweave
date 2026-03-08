@@ -14,6 +14,12 @@ import { SyncAuditReader } from './data/sync-audit-reader.js';
 import { ActivityStream } from './data/activity-stream.js';
 import { CostAggregator } from './data/cost-aggregator.js';
 import { MarketplaceAggregator } from './data/marketplace-aggregator.js';
+import { HookEventStore } from './hooks/hook-event-store.js';
+import { HookEventRouter } from './hooks/hook-event-router.js';
+import { preToolUseHandler } from './hooks/handlers/pre-tool-use.js';
+import { createSubagentStartHandler, createSubagentStopHandler } from './hooks/handlers/subagent-lifecycle.js';
+import { passthroughHandler } from './hooks/handlers/passthrough.js';
+import { isPortReachable } from '../../hooks/hooks-status.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +29,7 @@ export interface DashboardServerOptions {
   port: number;
   projectRoots: string[];
   openBrowser: boolean;
+  hooksEnabled?: boolean;
 }
 
 export interface DashboardServerInstance {
@@ -47,6 +54,9 @@ export class DashboardServer {
   private server: http.Server | null = null;
   private router: Router;
   private sseManager: SSEManager;
+  private hookEventStore: HookEventStore | null = null;
+  private hookEventRouter: HookEventRouter | null = null;
+  private pidFilePath: string | null = null;
   private projects = new Map<string, {
     root: string;
     watcher: FileWatcher;
@@ -67,6 +77,14 @@ export class DashboardServer {
     // Register initial projects
     for (const root of options.projectRoots) {
       this.addProject(root);
+    }
+
+    // Initialize hooks if enabled
+    if (options.hooksEnabled && options.projectRoots.length > 0) {
+      this.hookEventStore = new HookEventStore(options.projectRoots[0]);
+      this.hookEventRouter = new HookEventRouter(this.hookEventStore, options.projectRoots[0]);
+      this.pidFilePath = path.join(options.projectRoots[0], '.specweave', 'state', 'hooks', 'server.pid');
+      this.registerDefaultHookHandlers();
     }
 
     this.registerRoutes();
@@ -149,6 +167,12 @@ export class DashboardServer {
   }
 
   async start(): Promise<DashboardServerInstance> {
+    // Hydrate hook store if hooks enabled
+    if (this.hookEventStore) {
+      await this.hookEventStore.hydrate();
+      this.hookEventStore.cleanup();
+    }
+
     return new Promise((resolve, reject) => {
       this.server = http.createServer((req, res) => this.handleRequest(req, res));
 
@@ -157,10 +181,26 @@ export class DashboardServer {
       });
 
       this.server.listen(this.options.port, () => {
-        const url = `http://localhost:${this.options.port}`;
+        const actualPort = (this.server!.address() as net.AddressInfo)?.port ?? this.options.port;
+        const url = `http://localhost:${actualPort}`;
+
+        // Write PID file if hooks enabled
+        if (this.pidFilePath) {
+          try {
+            fs.mkdirSync(path.dirname(this.pidFilePath), { recursive: true });
+            fs.writeFileSync(this.pidFilePath, JSON.stringify({
+              port: actualPort,
+              pid: process.pid,
+              startedAt: new Date().toISOString(),
+            }));
+          } catch {
+            // Non-fatal
+          }
+        }
+
         resolve({
           url,
-          port: this.options.port,
+          port: actualPort,
           stop: () => this.stop(),
         });
       });
@@ -168,6 +208,16 @@ export class DashboardServer {
   }
 
   async stop(): Promise<void> {
+    // Flush hook events before shutdown
+    if (this.hookEventStore) {
+      this.hookEventStore.flush();
+    }
+
+    // Delete PID file
+    if (this.pidFilePath) {
+      try { fs.rmSync(this.pidFilePath, { force: true }); } catch { /* non-fatal */ }
+    }
+
     for (const project of this.projects.values()) {
       project.watcher.close();
       project.commandRunner.cancel();
@@ -267,6 +317,11 @@ export class DashboardServer {
   }
 
   private registerRoutes(): void {
+    // === Hook routes (before other routes) ===
+    if (this.options.hooksEnabled) {
+      this.registerHookRoutes();
+    }
+
     // === Global routes (not project-scoped) ===
 
     // Health
@@ -857,7 +912,7 @@ export class DashboardServer {
       const docsPort = config?.documentation?.previewPort ?? 3000;
       const services = [
         { name: 'Dashboard Server', status: 'running', detail: `http://localhost:${this.options.port}`, port: this.options.port },
-        { name: 'Docs Preview', status: await checkPort(docsPort) ? 'running' : 'stopped', detail: `http://localhost:${docsPort}`, port: docsPort },
+        { name: 'Docs Preview', status: await isPortReachable(docsPort) ? 'running' : 'stopped', detail: `http://localhost:${docsPort}`, port: docsPort },
       ];
       sendJson(res, { ok: true, data: services });
     });
@@ -1044,6 +1099,74 @@ export class DashboardServer {
       res.end('Internal server error');
     });
     stream.pipe(res);
+  }
+
+  private registerDefaultHookHandlers(): void {
+    if (!this.hookEventRouter || !this.hookEventStore) return;
+
+    // Specialized handlers
+    this.hookEventRouter.register('PreToolUse', preToolUseHandler);
+    this.hookEventRouter.register('SubagentStart', createSubagentStartHandler(this.hookEventStore));
+    this.hookEventRouter.register('SubagentStop', createSubagentStopHandler(this.hookEventStore));
+
+    // All other events are passthrough (store event, return 200)
+    const passthroughEvents = [
+      'PostToolUse', 'Stop', 'TaskCompleted', 'UserPromptSubmit',
+      'SessionStart', 'SessionEnd', 'PostToolUseFailure',
+      'PermissionRequest', 'Notification', 'ConfigChange',
+      'PreCompact', 'TeammateIdle',
+    ];
+    for (const eventName of passthroughEvents) {
+      this.hookEventRouter.register(eventName, passthroughHandler);
+    }
+  }
+
+  private registerHookRoutes(): void {
+    if (!this.hookEventRouter || !this.hookEventStore) return;
+
+    const hookRouter = this.hookEventRouter;
+    const hookStore = this.hookEventStore;
+
+    // GET routes first (literal paths)
+    this.router.get('/api/hooks/events', async (req, res) => {
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const sessionId = url.searchParams.get('sessionId') ?? undefined;
+      const eventType = url.searchParams.get('eventType') ?? undefined;
+      const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!, 10) : 200;
+      const events = hookStore.getEvents({ sessionId, eventType, limit });
+      sendJson(res, { ok: true, data: events });
+    });
+
+    this.router.get('/api/hooks/agents', async (req, res) => {
+      const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+      const sessionId = url.searchParams.get('sessionId') ?? undefined;
+      const status = url.searchParams.get('status') as 'running' | 'stopped' | undefined;
+      const agents = hookStore.getAgents({ sessionId, status: status || undefined });
+      sendJson(res, { ok: true, data: agents });
+    });
+
+    this.router.get('/api/hooks/status', async (_req, res) => {
+      sendJson(res, { ok: true, data: hookStore.getStats() });
+    });
+
+    // POST route for receiving hook events
+    this.router.post('/api/hooks/:event', async (req, res, params) => {
+      let body: unknown;
+      try {
+        body = await readBody(req);
+      } catch {
+        sendJson(res, { error: 'Invalid request body' }, 400);
+        return;
+      }
+
+      const result = await hookRouter.handle(params.event, body);
+      sendJson(res, result.body ?? {}, result.status);
+
+      // Broadcast stored event to SSE clients (includes id for HooksPage live updates)
+      if (result.storedEvent) {
+        this.sseManager.broadcast('hook-event', result.storedEvent);
+      }
+    });
   }
 
   private mapEventToCategory(eventType: SSEEventType): string {
@@ -1301,14 +1424,3 @@ export function scanRepositories(projectRoot: string): Array<{
   return repos.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Check if a port is in use (service running) */
-async function checkPort(port: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const socket = new net.Socket();
-    socket.setTimeout(500);
-    socket.once('connect', () => { socket.destroy(); resolve(true); });
-    socket.once('timeout', () => { socket.destroy(); resolve(false); });
-    socket.once('error', () => { socket.destroy(); resolve(false); });
-    socket.connect(port, '127.0.0.1');
-  });
-}

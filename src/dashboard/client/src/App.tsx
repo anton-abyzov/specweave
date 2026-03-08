@@ -18,6 +18,8 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { ReposPage } from './pages/ReposPage';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { IncrementDetailPage } from './pages/IncrementDetailPage';
+import { HooksPage } from './pages/HooksPage';
+import { AgentsPage } from './pages/AgentsPage';
 
 export default function App() {
   const projectManager = useProjectManager();
@@ -47,6 +49,8 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/repos" element={<ReposPage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
+              <Route path="/hooks" element={<HooksPage />} />
+              <Route path="/agents" element={<AgentsPage />} />
               <Route path="*" element={
                 <div className="p-6 text-center">
                   <h2 className="text-lg font-semibold text-gray-200 mb-2">Page Not Found</h2>
