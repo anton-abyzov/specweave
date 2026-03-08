@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.396] - 2026-03-08
+
+### Changes
+- sync specweave changes
+
+---
+
+
+
 ## [1.0.395] - 2026-03-07
 
 ### Changes
