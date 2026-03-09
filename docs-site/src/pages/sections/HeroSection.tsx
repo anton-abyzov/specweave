@@ -43,7 +43,7 @@ export default function HeroSection() {
             >
               Get Started
             </Button>
-            <Button variant="ghost" size="lg" href="#demo">
+            <Button variant="ghost" size="lg" href="#demo" className={styles.ghostBtn}>
               Watch Demo
             </Button>
           </div>
