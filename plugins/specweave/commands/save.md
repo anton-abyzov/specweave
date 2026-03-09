@@ -24,9 +24,10 @@ argument-hint: "[message]"
 ### 1. Scan for Nested Repos (ALWAYS FIRST)
 
 ```bash
-for dir in repositories packages services apps libs; do
-  [ -d "$dir" ] && for repo in "$dir"/*/; do
-    [ -d "${repo}.git" ] && echo "Found: ${repo%/}"
+for dir in repositories packages services apps libs workspace; do
+  [ -d "$dir" ] && find "$dir" -maxdepth 4 -name ".git" -type d | while read gitdir; do
+    repo="${gitdir%/.git}"
+    echo "Found: $repo"
   done
 done
 [ -d ".git" ] && echo "Found: . (parent project)"
