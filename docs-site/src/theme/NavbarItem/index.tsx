@@ -11,6 +11,11 @@ import styles from './MegaMenuPanel.module.css';
 
 type Props = WrapperProps<typeof NavbarItemType>;
 
+// Global coordination: only one mega menu open at a time.
+// Each instance gets a unique ID; opening one dispatches an event
+// that causes all others to close.
+let instanceCounter = 0;
+
 function MegaMenuNavbarItem({
   props,
   categories,
@@ -21,21 +26,33 @@ function MegaMenuNavbarItem({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const instanceIdRef = useRef(++instanceCounter);
 
   const handleOpen = useCallback(() => {
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
+    // Tell all other mega menus to close
+    window.dispatchEvent(
+      new CustomEvent('megamenu:open', {detail: instanceIdRef.current}),
+    );
     setOpen(true);
   }, []);
 
   const handleClose = useCallback(() => {
-    closeTimeoutRef.current = setTimeout(() => setOpen(false), 150);
+    closeTimeoutRef.current = setTimeout(() => setOpen(false), 120);
   }, []);
 
   const handleToggle = useCallback(() => {
-    setOpen((prev) => !prev);
+    setOpen((prev) => {
+      if (!prev) {
+        window.dispatchEvent(
+          new CustomEvent('megamenu:open', {detail: instanceIdRef.current}),
+        );
+      }
+      return !prev;
+    });
   }, []);
 
   const handleKeyDown = useCallback(
@@ -48,11 +65,27 @@ function MegaMenuNavbarItem({
         handleToggle();
       } else if (e.key === 'ArrowDown' && !open) {
         e.preventDefault();
-        setOpen(true);
+        handleOpen();
       }
     },
-    [open, handleToggle],
+    [open, handleToggle, handleOpen],
   );
+
+  // Listen for other mega menus opening — close this one
+  useEffect(() => {
+    const onOtherOpen = (e: Event) => {
+      const detail = (e as CustomEvent<number>).detail;
+      if (detail !== instanceIdRef.current) {
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current);
+          closeTimeoutRef.current = null;
+        }
+        setOpen(false);
+      }
+    };
+    window.addEventListener('megamenu:open', onOtherOpen);
+    return () => window.removeEventListener('megamenu:open', onOtherOpen);
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -73,6 +106,8 @@ function MegaMenuNavbarItem({
     };
   }, []);
 
+  const colCount = categories.length;
+
   return (
     <div
       ref={containerRef}
@@ -90,10 +125,13 @@ function MegaMenuNavbarItem({
       >
         <NavbarItem {...props} />
       </div>
+      {/* Backdrop dims page content when menu is open */}
+      {open && <div className={styles.megaMenuBackdrop} onClick={() => setOpen(false)} />}
       <MegaMenuPanel
         categories={categories}
         visible={open}
         onClose={() => setOpen(false)}
+        columns={colCount}
       />
     </div>
   );
