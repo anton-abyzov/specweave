@@ -44,7 +44,7 @@ const CAPABILITIES = [
     icon: 'refresh-cw',
     title: 'Bidirectional Sync',
     description:
-      'GitHub Issues, JIRA, Azure DevOps -- real-time two-way synchronization across your toolchain.',
+      'GitHub Issues, JIRA, Azure DevOps — real-time two-way synchronization across your toolchain.',
   },
 ] as const;
 
@@ -56,30 +56,21 @@ export default function CapabilitiesSection() {
         title="Everything You Need to Ship at Scale"
         subtitle="Purpose-built for teams shipping production software with AI coding agents."
       />
-      <div className={styles.list}>
+      <div className={styles.grid}>
         {CAPABILITIES.map((cap, i) => (
           <AnimateOnScroll
             key={cap.title}
             animation="fade-up"
-            delay={i * 100}
+            delay={i * 80}
           >
-            <div
-              className={[
-                styles.row,
-                i % 2 === 1 ? styles.rowReverse : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <div className={styles.textSide}>
-                <div className={styles.iconCircle}>
-                  <Icon name={cap.icon} size={28} />
-                </div>
-                <h3 className={styles.capTitle}>{cap.title}</h3>
-                <p className={styles.capDesc}>{cap.description}</p>
+            <div className={styles.card}>
+              <div className={styles.iconCircle}>
+                <Icon name={cap.icon} size={24} />
               </div>
+              <h3 className={styles.capTitle}>{cap.title}</h3>
+              <p className={styles.capDesc}>{cap.description}</p>
               {cap.code && (
-                <div className={styles.codeSide}>
+                <div className={styles.codeSnippet}>
                   <CodeBlock code={cap.code} showCopy={false} />
                 </div>
               )}
