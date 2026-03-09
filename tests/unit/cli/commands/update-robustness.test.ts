@@ -21,8 +21,8 @@ describe('Update Robustness - Source Code Verification', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       // Find the npm view call and verify it has a timeout
       const npmViewSection = content.substring(
-        content.indexOf("npm view specweave version"),
-        content.indexOf("npm view specweave version") + 200
+        content.indexOf("'npm view specweave version'"),
+        content.indexOf("'npm view specweave version'") + 200
       );
       expect(npmViewSection).toContain('timeout');
     });
@@ -30,8 +30,8 @@ describe('Update Robustness - Source Code Verification', () => {
     it('should have timeout on npm install command', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       const npmInstallSection = content.substring(
-        content.indexOf("npm install -g specweave@latest"),
-        content.indexOf("npm install -g specweave@latest") + 200
+        content.indexOf("npm install -g specweave@$"),
+        content.indexOf("npm install -g specweave@$") + 200
       );
       expect(npmInstallSection).toContain('timeout');
     });
@@ -48,8 +48,8 @@ describe('Update Robustness - Source Code Verification', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       // After npm install, should run specweave --version to verify
       const installSection = content.substring(
-        content.indexOf("npm install -g specweave@latest"),
-        content.indexOf("npm install -g specweave@latest") + 800
+        content.indexOf("installWithFallback(latestVersion)"),
+        content.indexOf("installWithFallback(latestVersion)") + 800
       );
       expect(installSection).toContain('specweave --version');
       expect(installSection).toContain('version mismatch');

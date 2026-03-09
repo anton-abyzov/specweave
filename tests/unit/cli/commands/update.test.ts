@@ -80,6 +80,18 @@ vi.mock('child_process', async (importOriginal) => {
   };
 });
 
+vi.mock('../../../../src/core/doctor/checkers/installation-health-checker.js', () => ({
+  InstallationHealthChecker: class {
+    async check() {
+      return {
+        category: 'Installation Health',
+        status: 'pass',
+        checks: [],
+      };
+    }
+  },
+}));
+
 vi.mock('ora', () => ({
   default: () => mockOraInstance,
 }));
