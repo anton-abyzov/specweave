@@ -3,26 +3,40 @@
   z-index: var(--sw-z-popover, 500);
 }
 
+/* Semi-transparent backdrop that covers the page when a menu is open */
+.megaMenuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 499;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+:global([data-theme='dark']) .megaMenuBackdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
 .megaMenuPanel {
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 680px;
-  background: var(--ifm-background-color, #ffffff);
+  min-width: 580px;
+  background: #ffffff;
   border: 1px solid var(--ifm-toc-border-color);
   border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  padding: 24px;
-  z-index: var(--sw-z-popover, 500);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+  z-index: 501;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 4px;
+
+  /* Hidden by default */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translateX(-50%) translateY(4px);
-  isolation: isolate;
+  transform: translateX(-50%) translateY(6px);
 }
 
 .megaMenuPanel[data-visible='true'] {
@@ -33,17 +47,19 @@
 
 :global([data-theme='dark']) .megaMenuPanel {
   background: var(--sw-surface-elevated, #1c1830);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .megaMenuCategory {
-  padding: 8px;
+  padding: 4px 8px;
 }
 
 .megaMenuCategoryTitle {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--ifm-color-emphasis-500);
   margin-bottom: 8px;
   padding: 0 8px;
@@ -51,7 +67,7 @@
 
 .megaMenuLink {
   display: block;
-  padding: 8px;
+  padding: 10px 8px;
   border-radius: 8px;
   text-decoration: none;
   color: var(--ifm-font-color-base);
@@ -84,6 +100,10 @@
 
 /* Mobile accordion styles */
 @media (max-width: 768px) {
+  .megaMenuBackdrop {
+    display: none;
+  }
+
   .megaMenuPanel {
     position: static;
     transform: none;
