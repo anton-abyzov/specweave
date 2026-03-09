@@ -356,7 +356,7 @@ fi
 
 # Check config for pluginAutoLoad.enabled, suggestOnly and incrementAssist.enabled settings
 PLUGIN_AUTOLOAD_ENABLED=true
-PLUGIN_SUGGEST_ONLY=false
+PLUGIN_SUGGEST_ONLY=true
 INCREMENT_ASSIST_ENABLED=true
 INCREMENT_CONFIDENCE_THRESHOLD=0.7
 INCREMENT_MANDATORY_CONFIG=true
@@ -371,9 +371,9 @@ if [[ -f "$CONFIG_PATH" ]]; then
     AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
     [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
 
-    # Check suggestOnly mode (v1.0.158)
-    SUGGEST_VALUE=$(jq -r '.pluginAutoLoad.suggestOnly // false' "$CONFIG_PATH" 2>/dev/null)
-    [[ "$SUGGEST_VALUE" == "true" ]] && PLUGIN_SUGGEST_ONLY=true
+    # Check suggestOnly mode (v1.0.158, default flipped to true in v1.0.397 — consent-first)
+    SUGGEST_VALUE=$(jq -r '.pluginAutoLoad.suggestOnly // true' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$SUGGEST_VALUE" == "false" ]] && PLUGIN_SUGGEST_ONLY=false
 
     INCREMENT_VALUE=$(jq -r '.incrementAssist.enabled // true' "$CONFIG_PATH" 2>/dev/null)
     [[ "$INCREMENT_VALUE" == "false" ]] && INCREMENT_ASSIST_ENABLED=false
@@ -393,9 +393,9 @@ if [[ -f "$CONFIG_PATH" ]]; then
     if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -q '"enabled"[[:space:]]*:[[:space:]]*false' "$CONFIG_PATH" 2>/dev/null; then
       PLUGIN_AUTOLOAD_ENABLED=false
     fi
-    # Fallback: grep for suggestOnly
-    if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null | grep -q '"suggestOnly"[[:space:]]*:[[:space:]]*true'; then
-      PLUGIN_SUGGEST_ONLY=true
+    # Fallback: grep for explicit suggestOnly=false (opt-in to auto-install)
+    if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null | grep -q '"suggestOnly"[[:space:]]*:[[:space:]]*false'; then
+      PLUGIN_SUGGEST_ONLY=false
     fi
     if grep -q '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null && grep -A5 '"incrementAssist"' "$CONFIG_PATH" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*false'; then
       INCREMENT_ASSIST_ENABLED=false
@@ -510,10 +510,10 @@ install_plugin_via_vskill() {
 }
 
 # Domain skill plugins in vskill marketplace (per-category plugins).
-# Each is a standalone plugin: frontend@vskill, backend@vskill, etc.
-# Skills are invoked as plugin:skill (e.g., frontend:nextjs, backend:dotnet).
-# v1.0.344 (0394): Removed k8s (use infra), cost (not in marketplace), docs (in specweave repo)
-VSKILL_REPO_PLUGINS="frontend backend testing mobile infra payments ml kafka confluent security skills blockchain"
+# Each is a standalone plugin: mobile@vskill, skills@vskill.
+# Skills are invoked as plugin:skill (e.g., mobile:react-native).
+# v1.0.397: Reduced to plugins with actual directories on disk. Phantom entries removed.
+VSKILL_REPO_PLUGINS="mobile skills"
 
 # Check if plugin name is a vskill marketplace plugin
 is_vskill_repo_plugin() {
@@ -983,57 +983,78 @@ if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; 
 fi
 
 if [[ "$LSP_NEEDS_INSTALL" == "true" ]] && [[ "$LSP_AUTO_INSTALL" == "true" ]]; then
-  # Check if marketplace is already installed
-  MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/claude-code-lsps"
-  if [[ ! -d "$MARKETPLACE_DIR" ]] && command -v claude >/dev/null 2>&1; then
-    # Install the marketplace
-    if timeout 15 claude plugin marketplace add "$LSP_MARKETPLACE_URL" >/dev/null 2>&1; then
-      LSP_INSTALL_MSG="✅ **LSP marketplace installed**: \`$LSP_MARKETPLACE\`
-"
+  # v1.0.397: Respect global suggest-only mode for LSP plugins too (consent-first)
+  if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
+    LSP_SUGGEST_CMDS=""
+    if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
+      VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$VTSLS_INSTALLED" != "true" ]] && LSP_SUGGEST_CMDS="${LSP_SUGGEST_CMDS}  - **TypeScript**: \`claude plugin install vtsls@claude-code-lsps --scope ${LSP_PLUGIN_SCOPE}\`\n"
     fi
-  fi
-
-  # Auto-install TypeScript LSP plugin (vtsls) when TypeScript project/prompt detected
-  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
-  if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
-    VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-    if [[ "$VTSLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install vtsls@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **TypeScript LSP installed**: \`vtsls@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
-"
-      fi
+    if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
+      PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$PYRIGHT_INSTALLED" != "true" ]] && LSP_SUGGEST_CMDS="${LSP_SUGGEST_CMDS}  - **Python**: \`claude plugin install pyright@claude-code-lsps --scope ${LSP_PLUGIN_SCOPE}\`\n"
     fi
-  fi
-
-  # Auto-install Python LSP plugin (pyright) when Python project/prompt detected
-  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
-  if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
-    PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-    if [[ "$PYRIGHT_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install pyright@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
+    if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+      RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && LSP_SUGGEST_CMDS="${LSP_SUGGEST_CMDS}  - **Rust**: \`claude plugin install rust-analyzer@claude-code-lsps --scope ${LSP_PLUGIN_SCOPE}\`\n"
+    fi
+    if [[ -n "$LSP_SUGGEST_CMDS" ]]; then
+      LSP_INSTALL_MSG="**Suggested LSP plugins**:\n${LSP_SUGGEST_CMDS}After installing, **restart Claude Code** to use LSP features.\n\n---\n\n"
+    fi
+  else
+    # NORMAL MODE (user opted in with suggestOnly: false) - Actually install LSP plugins
+    # Check if marketplace is already installed
+    MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/claude-code-lsps"
+    if [[ ! -d "$MARKETPLACE_DIR" ]] && command -v claude >/dev/null 2>&1; then
+      # Install the marketplace
+      if timeout 15 claude plugin marketplace add "$LSP_MARKETPLACE_URL" >/dev/null 2>&1; then
+        LSP_INSTALL_MSG="✅ **LSP marketplace installed**: \`$LSP_MARKETPLACE\`
 "
       fi
     fi
-  fi
 
-  # Auto-install Rust LSP plugin (rust-analyzer) when Rust project/prompt detected
-  # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
-  if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
-    RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
-    if [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
-      if timeout 15 claude plugin install rust-analyzer@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
-        LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Rust LSP installed**: \`rust-analyzer@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
+    # Auto-install TypeScript LSP plugin (vtsls) when TypeScript project/prompt detected
+    # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
+    if [[ "$LSP_PROJECT_NEEDS_TS" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_TS" == "true" ]]; then
+      VTSLS_INSTALLED=$(jq -r '."vtsls@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      if [[ "$VTSLS_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+        if timeout 15 claude plugin install vtsls@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+          LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **TypeScript LSP installed**: \`vtsls@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
 "
+        fi
       fi
     fi
-  fi
 
-  if [[ -n "$LSP_INSTALL_MSG" ]]; then
-    LSP_INSTALL_MSG="${LSP_INSTALL_MSG}
+    # Auto-install Python LSP plugin (pyright) when Python project/prompt detected
+    # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
+    if [[ "$LSP_PROJECT_NEEDS_PY" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_PY" == "true" ]]; then
+      PYRIGHT_INSTALLED=$(jq -r '."pyright@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      if [[ "$PYRIGHT_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+        if timeout 15 claude plugin install pyright@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+          LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Python LSP installed**: \`pyright@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
+"
+        fi
+      fi
+    fi
+
+    # Auto-install Rust LSP plugin (rust-analyzer) when Rust project/prompt detected
+    # v1.0.196: Uses --scope $LSP_PLUGIN_SCOPE (default: project)
+    if [[ "$LSP_PROJECT_NEEDS_RUST" == "true" ]] || [[ "$LSP_PROMPT_NEEDS_RUST" == "true" ]]; then
+      RUST_ANALYZER_INSTALLED=$(jq -r '."rust-analyzer@claude-code-lsps" // false' "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null)
+      if [[ "$RUST_ANALYZER_INSTALLED" != "true" ]] && command -v claude >/dev/null 2>&1; then
+        if timeout 15 claude plugin install rust-analyzer@claude-code-lsps --scope $LSP_PLUGIN_SCOPE >/dev/null 2>&1; then
+          LSP_INSTALL_MSG="${LSP_INSTALL_MSG}✅ **Rust LSP installed**: \`rust-analyzer@claude-code-lsps\` (scope: $LSP_PLUGIN_SCOPE)
+"
+        fi
+      fi
+    fi
+
+    if [[ -n "$LSP_INSTALL_MSG" ]]; then
+      LSP_INSTALL_MSG="${LSP_INSTALL_MSG}
 ---
 
 "
+    fi
   fi
 fi
 
@@ -1248,14 +1269,23 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
               DETECTED_PLUGINS=$(echo "$JSON_OUTPUT" | jq -r '.plugins[]?' 2>/dev/null | tr '\n' ' ')
 
               if [[ -n "$DETECTED_PLUGINS" ]]; then
-                # v1.0.158: SUGGEST-ONLY MODE - Don't install, just inform user
+                # v1.0.158/v1.0.397: SUGGEST-ONLY MODE (now the default) - suggest with install commands, don't auto-install
                 if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
-                  PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
-                  AUTOLOAD_PLUGINS_MSG="💡 **Suggested plugins**: ${PLUGIN_LIST}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}To install: \`npx vskill install --repo anton-abyzov/specweave --plugin <plugin> --force\` (sw-*) or \`npx vskill install --repo anton-abyzov/vskill --plugin <plugin> --force\` (domain)\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, restart Claude Code session to use new plugins.\\n"
+                  SUGGEST_CMDS=""
+                  for plugin in $DETECTED_PLUGINS; do
+                    [[ -z "$plugin" ]] && continue
+                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
+                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`npx vskill install --repo anton-abyzov/specweave --plugin ${plugin} --agent claude-code\`\\n"
+                    elif is_vskill_repo_plugin "$plugin"; then
+                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`npx vskill install --repo anton-abyzov/vskill --plugin ${plugin} --agent claude-code\`\\n"
+                    fi
+                  done
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
-                  [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*${LLM_REASON}*\\n\\n---\\n"
+                  AUTOLOAD_PLUGINS_MSG="**Suggested plugins for this task**:\\n${SUGGEST_CMDS}"
+                  [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*Why*: ${LLM_REASON}\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}\\nTo enable auto-install: set \`\"pluginAutoLoad\": { \"suggestOnly\": false }\` in \`.specweave/config.json\`\\n"
+                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, **restart Claude Code** to use new plugins.\\n\\n---\\n"
+                  PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   echo "[$(date -Iseconds)] plugins | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
                 elif command -v claude >/dev/null 2>&1; then
                   # NORMAL MODE - Actually install plugins
