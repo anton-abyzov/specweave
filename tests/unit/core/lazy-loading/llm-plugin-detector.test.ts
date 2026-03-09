@@ -109,33 +109,31 @@ describe('SPECWEAVE_PLUGINS constant (v1.0.315: workflow/integration only)', () 
 // ============================================================
 // VSKILL_PLUGINS constant (v1.0.315: migrated domain plugins)
 // ============================================================
-describe('VSKILL_PLUGINS constant (v2.1.0: per-category plugins)', () => {
+describe('VSKILL_PLUGINS constant (v1.0.397: only plugins with directories on disk)', () => {
   it('should be a non-empty array', () => {
     expect(Array.isArray(VSKILL_PLUGINS)).toBe(true);
-    expect(VSKILL_PLUGINS.length).toBe(15);
+    expect(VSKILL_PLUGINS.length).toBe(2);
   });
 
-  it('should include all vskill marketplace plugins', () => {
-    expect(VSKILL_PLUGINS).toContain('frontend');
-    expect(VSKILL_PLUGINS).toContain('backend');
-    expect(VSKILL_PLUGINS).toContain('testing');
+  it('should include only plugins that exist on disk', () => {
     expect(VSKILL_PLUGINS).toContain('mobile');
-    expect(VSKILL_PLUGINS).toContain('infra');
-    expect(VSKILL_PLUGINS).toContain('k8s');
-    expect(VSKILL_PLUGINS).toContain('payments');
-    expect(VSKILL_PLUGINS).toContain('ml');
-    expect(VSKILL_PLUGINS).toContain('kafka');
-    expect(VSKILL_PLUGINS).toContain('confluent');
-    expect(VSKILL_PLUGINS).toContain('cost');
-    expect(VSKILL_PLUGINS).toContain('docs');
-    expect(VSKILL_PLUGINS).toContain('security');
     expect(VSKILL_PLUGINS).toContain('skills');
-    expect(VSKILL_PLUGINS).toContain('blockchain');
   });
 
-  it('should NOT contain kafka-streams or n8n (merged into kafka plugin)', () => {
-    expect(VSKILL_PLUGINS).not.toContain('kafka-streams');
-    expect(VSKILL_PLUGINS).not.toContain('n8n');
+  it('should NOT contain phantom plugins (no directory on disk)', () => {
+    expect(VSKILL_PLUGINS).not.toContain('frontend');
+    expect(VSKILL_PLUGINS).not.toContain('backend');
+    expect(VSKILL_PLUGINS).not.toContain('testing');
+    expect(VSKILL_PLUGINS).not.toContain('infra');
+    expect(VSKILL_PLUGINS).not.toContain('k8s');
+    expect(VSKILL_PLUGINS).not.toContain('payments');
+    expect(VSKILL_PLUGINS).not.toContain('ml');
+    expect(VSKILL_PLUGINS).not.toContain('kafka');
+    expect(VSKILL_PLUGINS).not.toContain('confluent');
+    expect(VSKILL_PLUGINS).not.toContain('cost');
+    expect(VSKILL_PLUGINS).not.toContain('docs');
+    expect(VSKILL_PLUGINS).not.toContain('security');
+    expect(VSKILL_PLUGINS).not.toContain('blockchain');
   });
 
   it('should NOT contain any sw- prefixed entries', () => {
@@ -262,13 +260,17 @@ describe('isVskillPlugin (v2.1.0: per-category plugins)', () => {
     }
   });
 
-  it('should return true for common domain plugins', () => {
-    expect(isVskillPlugin('frontend')).toBe(true);
-    expect(isVskillPlugin('backend')).toBe(true);
-    expect(isVskillPlugin('ml')).toBe(true);
-    expect(isVskillPlugin('k8s')).toBe(true);
+  it('should return true for available domain plugins', () => {
+    expect(isVskillPlugin('mobile')).toBe(true);
     expect(isVskillPlugin('skills')).toBe(true);
-    expect(isVskillPlugin('blockchain')).toBe(true);
+  });
+
+  it('should return false for phantom plugins (not yet available)', () => {
+    expect(isVskillPlugin('frontend')).toBe(false);
+    expect(isVskillPlugin('backend')).toBe(false);
+    expect(isVskillPlugin('ml')).toBe(false);
+    expect(isVskillPlugin('k8s')).toBe(false);
+    expect(isVskillPlugin('blockchain')).toBe(false);
   });
 
   it('should return false for old "vs" monolithic plugin name', () => {
@@ -301,12 +303,16 @@ describe('isKnownPlugin (v1.0.315: combined validation)', () => {
     expect(isKnownPlugin('sw-github')).toBe(true);
   });
 
-  it('should return true for vskill plugins', () => {
-    expect(isKnownPlugin('frontend')).toBe(true);
-    expect(isKnownPlugin('backend')).toBe(true);
-    expect(isKnownPlugin('security')).toBe(true);
+  it('should return true for available vskill plugins', () => {
+    expect(isKnownPlugin('mobile')).toBe(true);
     expect(isKnownPlugin('skills')).toBe(true);
-    expect(isKnownPlugin('blockchain')).toBe(true);
+  });
+
+  it('should return false for phantom vskill plugins', () => {
+    expect(isKnownPlugin('frontend')).toBe(false);
+    expect(isKnownPlugin('backend')).toBe(false);
+    expect(isKnownPlugin('security')).toBe(false);
+    expect(isKnownPlugin('blockchain')).toBe(false);
   });
 
   it('should return false for old "vs" monolithic plugin name', () => {
@@ -340,12 +346,9 @@ describe('getPluginMarketplace (v1.0.315: dual-source)', () => {
     expect(getPluginMarketplace('sw')).toBe('specweave');
   });
 
-  it('should return "vskill" for domain plugins', () => {
-    expect(getPluginMarketplace('frontend')).toBe('vskill');
-    expect(getPluginMarketplace('backend')).toBe('vskill');
-    expect(getPluginMarketplace('testing')).toBe('vskill');
-    expect(getPluginMarketplace('ml')).toBe('vskill');
-    expect(getPluginMarketplace('blockchain')).toBe('vskill');
+  it('should return "vskill" for available domain plugins', () => {
+    expect(getPluginMarketplace('mobile')).toBe('vskill');
+    expect(getPluginMarketplace('skills')).toBe('vskill');
   });
 
   it('should return "vskill" for all VSKILL_PLUGINS entries', () => {
@@ -386,13 +389,13 @@ describe('readPluginAutoLoadConfig', () => {
 
   it('should return defaults when no config file exists', () => {
     const config = readPluginAutoLoadConfig();
-    expect(config).toEqual({ enabled: true, suggestOnly: false });
+    expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
   it('should return defaults when .specweave dir exists but no config.json', () => {
     fs.mkdirSync(path.join(tmpDir, '.specweave'), { recursive: true });
     const config = readPluginAutoLoadConfig();
-    expect(config).toEqual({ enabled: true, suggestOnly: false });
+    expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
   it('should return defaults when config has no pluginAutoLoad section', () => {
@@ -401,7 +404,7 @@ describe('readPluginAutoLoadConfig', () => {
     fs.writeFileSync(path.join(configDir, 'config.json'), JSON.stringify({ version: '1.0' }));
 
     const config = readPluginAutoLoadConfig();
-    expect(config).toEqual({ enabled: true, suggestOnly: false });
+    expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
   it('should read pluginAutoLoad.enabled: false', () => {
@@ -414,7 +417,7 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.enabled).toBe(false);
-    expect(config.suggestOnly).toBe(false);
+    expect(config.suggestOnly).toBe(true);
   });
 
   it('should read pluginAutoLoad.suggestOnly: true', () => {
@@ -455,12 +458,24 @@ describe('readPluginAutoLoadConfig', () => {
     expect(config.enabled).toBe(true);
   });
 
-  it('should default suggestOnly to false when not explicitly set to true', () => {
+  it('should default suggestOnly to true when not explicitly set to false (consent-first)', () => {
     const configDir = path.join(tmpDir, '.specweave');
     fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(
       path.join(configDir, 'config.json'),
       JSON.stringify({ pluginAutoLoad: { enabled: true } })
+    );
+
+    const config = readPluginAutoLoadConfig();
+    expect(config.suggestOnly).toBe(true);
+  });
+
+  it('should respect explicit suggestOnly: false (opt-in to auto-install)', () => {
+    const configDir = path.join(tmpDir, '.specweave');
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(configDir, 'config.json'),
+      JSON.stringify({ pluginAutoLoad: { enabled: true, suggestOnly: false } })
     );
 
     const config = readPluginAutoLoadConfig();
@@ -495,7 +510,7 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.enabled).toBe(true);
-    expect(config.suggestOnly).toBe(false);
+    expect(config.suggestOnly).toBe(true);
   });
 
   it('should NOT disable when env var is empty string', () => {
@@ -503,7 +518,7 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.enabled).toBe(true);
-    expect(config.suggestOnly).toBe(false);
+    expect(config.suggestOnly).toBe(true);
   });
 
   it('should return defaults for corrupt/invalid JSON config', () => {
@@ -512,7 +527,7 @@ describe('readPluginAutoLoadConfig', () => {
     fs.writeFileSync(path.join(configDir, 'config.json'), 'not valid json {{{');
 
     const config = readPluginAutoLoadConfig();
-    expect(config).toEqual({ enabled: true, suggestOnly: false });
+    expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
   it('should return defaults for empty config file', () => {
@@ -521,7 +536,7 @@ describe('readPluginAutoLoadConfig', () => {
     fs.writeFileSync(path.join(configDir, 'config.json'), '');
 
     const config = readPluginAutoLoadConfig();
-    expect(config).toEqual({ enabled: true, suggestOnly: false });
+    expect(config).toEqual({ enabled: true, suggestOnly: true });
   });
 
   it('should handle pluginAutoLoad as empty object', () => {
@@ -534,7 +549,7 @@ describe('readPluginAutoLoadConfig', () => {
 
     const config = readPluginAutoLoadConfig();
     expect(config.enabled).toBe(true);
-    expect(config.suggestOnly).toBe(false);
+    expect(config.suggestOnly).toBe(true);
   });
 });
 
@@ -669,35 +684,63 @@ describe('formatHookOutput', () => {
 
   // --- suggestOnly mode ---
 
-  it('should show suggest message with install instructions in suggestOnly mode', () => {
+  it('should show suggest message with per-plugin install commands in suggestOnly mode', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['frontend', 'backend'] as any,
+        plugins: ['mobile', 'skills'] as any,
       }),
       installations: [],
       suggestOnly: true,
     });
     const parsed = JSON.parse(result);
     expect(parsed.continue).toBe(true);
-    expect(parsed.systemMessage).toContain('Plugins that may help');
-    expect(parsed.systemMessage).toContain('frontend, backend');
-    expect(parsed.systemMessage).toContain('claude plugin install');
-    expect(parsed.systemMessage).toContain('@vskill');
+    expect(parsed.systemMessage).toContain('Suggested plugins for this task');
+    expect(parsed.systemMessage).toContain('mobile, skills');
+    expect(parsed.systemMessage).toContain('npx vskill install');
+    expect(parsed.systemMessage).toContain('--repo anton-abyzov/vskill');
+    expect(parsed.systemMessage).toContain('suggestOnly');
   });
 
   it('should show single plugin in suggestOnly mode', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
-        plugins: ['frontend'] as any,
+        plugins: ['mobile'] as any,
       }),
       installations: [],
       suggestOnly: true,
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('frontend');
-    expect(parsed.systemMessage).toContain('Plugins that may help');
+    expect(parsed.systemMessage).toContain('mobile');
+    expect(parsed.systemMessage).toContain('Suggested plugins for this task');
+  });
+
+  it('should show specweave repo install command for sw-* plugins in suggestOnly mode', () => {
+    const result = formatHookOutput({
+      detection: makeDetection({
+        success: true,
+        plugins: ['sw-github'] as any,
+      }),
+      installations: [],
+      suggestOnly: true,
+    });
+    const parsed = JSON.parse(result);
+    expect(parsed.systemMessage).toContain('--repo anton-abyzov/specweave');
+  });
+
+  it('should include reasoning in suggestOnly mode when available', () => {
+    const result = formatHookOutput({
+      detection: makeDetection({
+        success: true,
+        plugins: ['mobile'] as any,
+        reasoning: 'React Native app detected',
+      }),
+      installations: [],
+      suggestOnly: true,
+    });
+    const parsed = JSON.parse(result);
+    expect(parsed.systemMessage).toContain('React Native app detected');
   });
 
   // --- Normal mode: newly installed plugins ---
