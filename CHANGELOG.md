@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.399] - 2026-03-09
+
+### Changes
+- fix hero ghost button visibility and redesign capabilities to card grid
+- fix mega menu hover: mutual exclusion, solid backdrop, dynamic columns
+- fix /sw:save nested repo scan to handle org/repo directory depth
+- chore: bump version to 1.0.398
+- chore(deps)(deps-dev): bump memfs in the development-dependencies group (#1520)
+- chore(deps)(deps): bump fs-extra in the production-dependencies group (#1519)
+- chore(deps)(deps-dev): bump @types/node in the typescript-tooling group (#1518)
+
+---
+
+
+
 ## [1.0.398] - 2026-03-09
 
 ### Changes
