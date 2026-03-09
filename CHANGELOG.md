@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.397] - 2026-03-09
+
+### Changes
+- consent-first plugin installation: suggestOnly defaults to true
+
+---
+
+
+
 ## [1.0.396] - 2026-03-08
 
 ### Changes
