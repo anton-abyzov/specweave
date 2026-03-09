@@ -1,67 +1,83 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sw-space-14);
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sw-space-6);
   margin-top: var(--sw-space-14);
 }
 
-.row {
+.card {
   display: flex;
-  align-items: center;
-  gap: var(--sw-space-12);
+  flex-direction: column;
+  padding: var(--sw-space-8);
+  border-radius: var(--sw-radius-xl);
+  border: 1px solid var(--sw-border-subtle);
+  background: var(--sw-surface-card, var(--sw-gray-50));
+  transition: var(--sw-transition-shadow), border-color 0.2s ease;
 }
 
-.rowReverse {
-  flex-direction: row-reverse;
+.card:hover {
+  border-color: var(--sw-color-primary-200);
+  box-shadow: var(--sw-shadow-md);
 }
 
-.textSide {
-  flex: 1;
+[data-theme='dark'] .card {
+  background: var(--sw-surface-dark-secondary, rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-.codeSide {
-  flex: 1;
-  max-width: 400px;
+[data-theme='dark'] .card:hover {
+  border-color: var(--sw-color-primary-500);
+  box-shadow: 0 4px 24px rgba(107, 88, 184, 0.15);
 }
 
 .iconCircle {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--sw-radius-xl);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--sw-radius-lg);
   background: var(--sw-color-primary-50);
   color: var(--sw-color-primary-500);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--sw-space-4);
+  margin-bottom: var(--sw-space-5);
 }
 
 [data-theme='dark'] .iconCircle {
-  background: var(--sw-surface-dark-tertiary);
+  background: var(--sw-surface-dark-tertiary, rgba(107, 88, 184, 0.15));
   color: var(--sw-color-primary-400);
 }
 
 .capTitle {
-  font-size: var(--sw-font-size-h3);
+  font-size: var(--sw-font-size-lg);
   font-weight: var(--sw-font-weight-semibold);
   margin: 0 0 var(--sw-space-2);
 }
 
 .capDesc {
-  font-size: var(--sw-font-size-base);
+  font-size: var(--sw-font-size-sm);
   color: var(--sw-text-secondary);
   line-height: var(--sw-line-height-relaxed);
   margin: 0;
+  flex: 1;
 }
 
-@media (max-width: 768px) {
-  .row,
-  .rowReverse {
-    flex-direction: column;
+.codeSnippet {
+  margin-top: var(--sw-space-4);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--sw-space-4);
   }
 
-  .codeSide {
-    max-width: 100%;
-    width: 100%;
+  .card {
+    padding: var(--sw-space-6);
   }
 }
