@@ -1323,6 +1323,11 @@
           "type": "boolean",
           "description": "Enable automatic plugin detection and installation. When true, uses Claude Haiku to analyze prompts (~5-6s overhead). When false, disables detection for maximum speed.",
           "default": true
+        },
+        "suggestOnly": {
+          "type": "boolean",
+          "description": "When true, detected plugins are suggested with install commands but not auto-installed. User must install manually and restart the session. When false, plugins are installed automatically without asking.",
+          "default": true
         }
       },
       "additionalProperties": false

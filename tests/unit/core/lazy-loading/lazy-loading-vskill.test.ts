@@ -123,15 +123,15 @@ describe('lazy loading vskill integration', () => {
       // Mock spawnSync to simulate successful vskill execution
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed frontend to 1 agent',
+        stdout: 'Installed mobile to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('frontend');
+      const result = await installPluginViaCli('mobile');
 
       expect(result.success).toBe(true);
-      expect(result.plugin).toBe('frontend');
+      expect(result.plugin).toBe('mobile');
 
       // CRITICAL: Verify that vskill was invoked via node, NOT claude plugin install
       const allCalls = mockSpawnSync.mock.calls;
@@ -161,18 +161,18 @@ describe('lazy loading vskill integration', () => {
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed frontend to 1 agent',
+        stdout: 'Installed mobile to 1 agent',
         stderr: '',
         error: null,
       });
 
-      await installPluginViaCli('frontend');
+      await installPluginViaCli('mobile');
 
-      // Verify vskill install was called with --plugin frontend --repo
+      // Verify vskill install was called with --plugin mobile --repo
       const allCalls = mockSpawnSync.mock.calls;
       const addCalls = allCalls.filter((call: any[]) => {
         const args = (call[1] || []).join(' ');
-        return args.includes('install') && args.includes('--plugin') && args.includes('frontend');
+        return args.includes('install') && args.includes('--plugin') && args.includes('mobile');
       });
       expect(addCalls.length).toBeGreaterThan(0);
     });
@@ -183,14 +183,14 @@ describe('lazy loading vskill integration', () => {
       mockSpawnSync.mockReturnValue({
         status: 1,
         stdout: '',
-        stderr: 'Plugin "frontend" not found in marketplace.json',
+        stderr: 'Plugin "mobile" not found in marketplace.json',
         error: null,
       });
 
-      const result = await installPluginViaCli('frontend');
+      const result = await installPluginViaCli('mobile');
 
       expect(result.success).toBe(false);
-      expect(result.plugin).toBe('frontend');
+      expect(result.plugin).toBe('mobile');
       expect(result.error).toBeDefined();
     });
 
@@ -204,7 +204,7 @@ describe('lazy loading vskill integration', () => {
         error: null,
       });
 
-      const results = await installPluginsViaCli(['frontend', 'backend']);
+      const results = await installPluginsViaCli(['mobile', 'skills']);
 
       expect(results).toHaveLength(2);
       expect(results[0].success).toBe(true);
@@ -230,9 +230,9 @@ describe('lazy loading vskill integration', () => {
     it('should skip installation when plugin is in vskill.lock with matching hash', async () => {
       setupCliAvailable();
 
-      // Mock vskill.lock with frontend already installed
+      // Mock vskill.lock with mobile already installed
       mockVskillLock({
-        'frontend': {
+        'mobile': {
           version: '1.0.272',
           sha: 'abc123def456',
           tier: 'SCANNED',
@@ -241,7 +241,7 @@ describe('lazy loading vskill integration', () => {
         },
       });
 
-      const result = await installPluginViaCli('frontend');
+      const result = await installPluginViaCli('mobile');
 
       // Should succeed without invoking vskill
       expect(result.success).toBe(true);
@@ -254,17 +254,17 @@ describe('lazy loading vskill integration', () => {
     it('should install when plugin is NOT in vskill.lock', async () => {
       setupCliAvailable();
 
-      // Mock vskill.lock WITHOUT frontend
+      // Mock vskill.lock WITHOUT mobile
       mockVskillLock({});
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed frontend to 1 agent',
+        stdout: 'Installed mobile to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('frontend');
+      const result = await installPluginViaCli('mobile');
 
       expect(result.success).toBe(true);
 
@@ -283,12 +283,12 @@ describe('lazy loading vskill integration', () => {
 
       mockSpawnSync.mockReturnValue({
         status: 0,
-        stdout: 'Installed frontend to 1 agent',
+        stdout: 'Installed mobile to 1 agent',
         stderr: '',
         error: null,
       });
 
-      const result = await installPluginViaCli('frontend');
+      const result = await installPluginViaCli('mobile');
 
       expect(result.success).toBe(true);
 
@@ -301,14 +301,14 @@ describe('lazy loading vskill integration', () => {
 
       // Mock vskill.lock with both plugins
       mockVskillLock({
-        'frontend': {
+        'mobile': {
           version: '1.0.272',
           sha: 'abc123',
           tier: 'SCANNED',
           installedAt: '2026-02-17T00:00:00Z',
           source: 'local:specweave',
         },
-        'backend': {
+        'skills': {
           version: '1.0.272',
           sha: 'def456',
           tier: 'SCANNED',
@@ -317,7 +317,7 @@ describe('lazy loading vskill integration', () => {
         },
       });
 
-      const results = await installPluginsViaCli(['frontend', 'backend']);
+      const results = await installPluginsViaCli(['mobile', 'skills']);
 
       expect(results).toHaveLength(2);
       expect(results[0].success).toBe(true);

@@ -701,6 +701,7 @@ export interface ApiDocsConfig {
  */
 export interface PluginAutoLoadConfig {
   enabled?: boolean;
+  suggestOnly?: boolean;
 }
 
 /**
@@ -1091,6 +1092,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   },
   pluginAutoLoad: {
     enabled: true,
+    suggestOnly: true,
   },
   incrementAssist: {
     enabled: true,

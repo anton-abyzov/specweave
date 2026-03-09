@@ -89,10 +89,10 @@ export interface PluginAutoLoadConfig {
  * @returns Config object with enabled/suggestOnly flags
  */
 export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
-  // Default: enabled, not suggest-only (original behavior)
+  // Default: enabled, suggest-only (consent-first — never auto-install without asking)
   const defaultConfig: PluginAutoLoadConfig = {
     enabled: true,
-    suggestOnly: false,
+    suggestOnly: true,
   };
 
   // Check env var override first
@@ -111,7 +111,7 @@ export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
       if (config.pluginAutoLoad) {
         const result = {
           enabled: config.pluginAutoLoad.enabled !== false, // default true
-          suggestOnly: config.pluginAutoLoad.suggestOnly === true, // default false
+          suggestOnly: config.pluginAutoLoad.suggestOnly !== false, // default true (consent-first)
         };
         logger.debug(`[readPluginAutoLoadConfig] Config: enabled=${result.enabled}, suggestOnly=${result.suggestOnly}`);
         return result;
@@ -158,21 +158,29 @@ export const SPECWEAVE_PLUGINS = [
  * v2.1.0: Split from monolithic `vs` plugin into per-category plugins for granularity.
  */
 export const VSKILL_PLUGINS = [
-  'frontend',        // React, Vue, Angular, Next.js, UI components
-  'backend',         // Java Spring Boot, Rust Axum — specialized backend skills
-  'testing',         // Jest, Vitest, Playwright, E2E, unit tests
-  'mobile',          // React Native, iOS, Android, Expo
-  'infra',           // Terraform, AWS, Azure, GCP, Docker, CI/CD
-  'k8s',             // K8s, Helm, pods, deployments, EKS/AKS/GKE
-  'payments',        // Stripe, PayPal, checkout
-  'ml',              // Machine learning, PyTorch, TensorFlow
-  'kafka',           // Apache Kafka, event streaming, n8n
-  'confluent',       // Confluent Cloud, Schema Registry, ksqlDB
-  'cost',            // Cloud cost optimization
-  'docs',            // Extended documentation
-  'security',        // Security scanning and hardening
+  'mobile',          // React Native, iOS, Android, Expo, app store publishing
   'skills',          // Skill discovery — find and install skills
-  'blockchain',      // Web3, Solidity, smart contracts
+] as const;
+
+/**
+ * Plugins that are planned but not yet available (no directory on disk).
+ * Kept here so the LLM prompt can inform users these are not yet installable.
+ * v1.0.397: Removed from VSKILL_PLUGINS to prevent suggesting non-existent plugins.
+ */
+export const VSKILL_PLUGINS_PLANNED = [
+  'frontend',        // React, Vue, Angular, Next.js, UI components [NOT YET AVAILABLE]
+  'backend',         // Java Spring Boot, Rust Axum [NOT YET AVAILABLE]
+  'testing',         // Jest, Vitest, Playwright, E2E [NOT YET AVAILABLE]
+  'infra',           // Terraform, AWS, Azure, GCP, Docker, CI/CD [NOT YET AVAILABLE]
+  'k8s',             // K8s, Helm, pods, deployments [NOT YET AVAILABLE]
+  'payments',        // Stripe, PayPal, checkout [NOT YET AVAILABLE]
+  'ml',              // Machine learning, PyTorch, TensorFlow [NOT YET AVAILABLE]
+  'kafka',           // Apache Kafka, event streaming, n8n [NOT YET AVAILABLE]
+  'confluent',       // Confluent Cloud, Schema Registry, ksqlDB [NOT YET AVAILABLE]
+  'cost',            // Cloud cost optimization [NOT YET AVAILABLE]
+  'docs',            // Extended documentation [NOT YET AVAILABLE]
+  'security',        // Security scanning and hardening [NOT YET AVAILABLE]
+  'blockchain',      // Web3, Solidity, smart contracts [NOT YET AVAILABLE]
 ] as const;
 
 /** @deprecated Use VSKILL_PLUGINS */
@@ -544,18 +552,12 @@ OUTPUT FORMAT (JSON only):
 PLUGINS - Use specweave (sw-*) or vskill domain plugin names
 ═══════════════════════════════════════════════════════════════
 
-frontend: React, Vue, Angular, Next.js, Svelte, UI, dashboard, components, Tailwind
-backend: Java, Spring Boot, Rust, Axum (ONLY for Java/Spring or Rust backends — NOT for Node.js, Express, Python, Go, .NET)
-payments: Stripe, PayPal, checkout, billing, subscriptions
-testing: test, testing, unit test, integration test, coverage, TDD, Jest, Vitest, Playwright, Cypress, E2E, QA, test strategy, code coverage, test automation
-infra: Terraform, Docker, AWS, CI/CD, CloudFormation (ONLY if explicit)
-k8s: Kubernetes, Helm, EKS, AKS, GKE (ONLY if explicit)
 mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
-ml: ML, PyTorch, TensorFlow, LLM, MLOps (ONLY if explicit)
-kafka: Kafka, event streaming, MSK (ONLY if explicit)
-confluent: Confluent Cloud, Schema Registry, ksqlDB (ONLY if explicit)
 scout: find skill, discover skill, what skills available, search registry, install a skill, recommend skills, browse skills, vskill, skill for, which skill, explore skills (ONLY if asking about finding/discovering skills — NOT for domain work)
 sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
+
+[NOT YET AVAILABLE — DO NOT suggest these plugins, they are planned but not installable]:
+frontend, backend, testing, infra, k8s, payments, ml, kafka, confluent, security, blockchain
 sw-github: GitHub issues, PRs, Actions, sync
 sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)
@@ -629,14 +631,14 @@ EXPLICIT OPT-OUT → action: "none":
 EXAMPLES (one per action type — keep prompt size minimal)
 ═══════════════════════════════════════════════════════════════
 
-"Create React dashboard with Stripe checkout and Spring Boot backend"
-{"plugins":["frontend","backend","payments"],"confidence":0.95,"reasoning":"React→frontend, Spring Boot→backend, Stripe→payments","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-dashboard-stripe","reasoning":"Multi-component full-stack feature"}}
+"Build a React Native mobile app with app store publishing"
+{"plugins":["mobile"],"confidence":0.95,"reasoning":"React Native→mobile","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-native-mobile-app","reasoning":"Multi-component mobile feature"}}
 
 "The auth feature is broken again"
 {"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
 
-"Urgent: production checkout is failing"
-{"plugins":["payments"],"confidence":0.9,"reasoning":"Payment issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"checkout-hotfix","reasoning":"Production issue"}}
+"Urgent: production mobile app is crashing"
+{"plugins":["mobile"],"confidence":0.9,"reasoning":"Mobile app issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"mobile-crash-hotfix","reasoning":"Production issue"}}
 
 "Fix typo in README"
 {"plugins":[],"confidence":0.9,"reasoning":"Typo fix","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"fix-readme-typo","reasoning":"Trivial 1-line change"}}
@@ -652,32 +654,22 @@ SKILL INVOCATION (v2.1.0 - tell Claude which plugin:skill to use)
 ═══════════════════════════════════════════════════════════════
 
 ALSO specify which skill Claude SHOULD invoke for this task.
-Skills use "plugin:skill" format (e.g., "backend:dotnet", "frontend:nextjs").
+Skills use "plugin:skill" format (e.g., "mobile:react-native", "mobile:appstore").
 
 "skillInvocation" field with:
-- skill: full skill name as plugin:skill (e.g., "ml:engineer", "payments:payment-core")
+- skill: full skill name as plugin:skill (e.g., "mobile:react-native", "mobile:appstore")
 - reason: why this skill should be used
 - mandatory: true if Claude MUST use this skill, false if optional
 
 ⚠️ IMPORTANT: DO NOT suggest *-lsp plugins - they are BROKEN in official marketplace!
 LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
 
-SKILL CATALOG (use exact plugin:skill names):
-frontend: frontend:frontend-core, frontend:architect, frontend:code-explorer, frontend:design, frontend:design-system, frontend:figma, frontend:i18n, frontend:nextjs
-backend: backend:db-optimizer, backend:dotnet, backend:go, backend:graphql, backend:java-spring, backend:nodejs, backend:python, backend:rust
-testing: testing:accessibility, testing:e2e, testing:mutation, testing:performance, testing:qa, testing:unit
+SKILL CATALOG (use exact plugin:skill names — ONLY suggest skills from AVAILABLE plugins):
 mobile: mobile:appstore, mobile:capacitor, mobile:deep-linking, mobile:expo, mobile:flutter, mobile:jetpack, mobile:react-native, mobile:swiftui, mobile:testing
-infra: infra:aws, infra:azure, infra:devops, infra:devsecops, infra:gcp, infra:github-actions, infra:observability, infra:opentelemetry, infra:secrets, infra:terraform
-k8s: k8s:gitops, k8s:helm, k8s:manifests, k8s:security
-ml: ml:data-scientist, ml:edge, ml:engineer, ml:fine-tuning, ml:huggingface, ml:langchain, ml:mlops, ml:rag, ml:specialist
-kafka: kafka:architect, kafka:ops, kafka:streams-topology, kafka:n8n
-confluent: confluent:kafka-connect, confluent:ksqldb, confluent:schema-registry
-payments: payments:payment-core, payments:billing, payments:pci
-docs: docs:docusaurus, docs:technical-writing
-cost: cost:aws, cost:cloud-pricing, cost:optimization
-security: security:security-core, security:patterns, security:simplifier
-blockchain: blockchain:blockchain-core
 skills: skills:scout
+
+[NOT YET AVAILABLE — DO NOT suggest these skills]:
+frontend, backend, testing, infra, k8s, ml, kafka, confluent, payments, docs, cost, security, blockchain
 
 SKILL INVOCATION RULES (pick the most specific skill):
 - .NET/C# → backend:dotnet MANDATORY
@@ -1631,10 +1623,21 @@ Plugin auto-loading is disabled. Install Claude CLI to enable automatic plugin d
   } else if (detection.plugins.length > 0) {
     // SUGGEST-ONLY MODE: Show which plugins would help, but don't install
     if (suggestOnly) {
-      const pluginList = detection.plugins.join(', ');
-      output.systemMessage = `SpecWeave: Plugins that may help: ${pluginList}
+      const installCmds = detection.plugins
+        .map((p) => {
+          if (p.startsWith('sw-') || p === 'sw') {
+            return `  npx vskill install --repo anton-abyzov/specweave --plugin ${p} --agent claude-code`;
+          }
+          return `  npx vskill install --repo anton-abyzov/vskill --plugin ${p} --agent claude-code`;
+        })
+        .join('\n');
+      const reason = detection.reasoning ? `\nWhy: ${detection.reasoning}` : '';
+      output.systemMessage = `SpecWeave: Suggested plugins for this task: ${detection.plugins.join(', ')}${reason}
 
-To install: claude plugin install <plugin>@vskill
+To install:
+${installCmds}
+
+To enable auto-install: set "pluginAutoLoad": { "suggestOnly": false } in .specweave/config.json
 After installing, restart Claude Code session to use new plugins.`;
       return JSON.stringify(output);
     }
