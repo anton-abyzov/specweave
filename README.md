@@ -260,6 +260,8 @@ You: "Add dark mode to the app"
 
 > **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
 
+**Plugin Installation**: SpecWeave detects which plugins your project needs and suggests them with install commands, but never auto-installs without your consent. To opt into automatic installation, set `"pluginAutoLoad": { "suggestOnly": false }` in `.specweave/config.json`.
+
 ---
 
 ## Core Commands

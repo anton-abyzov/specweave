@@ -23,40 +23,15 @@ const vskillPluginsDir = join(projectRoot, '..', 'vskill', 'plugins');
  * plugin names (mobile, ml, backend, infra).
  */
 
-// Skills in vskill repo (v2.1.0 per-category plugins)
-// Note: backend/go, backend/graphql, and infra/terraform were not migrated — excluded
+// Skills in vskill repo — only skills with actual SKILL.md files on disk
+// v1.0.397: Reduced to skills that actually exist
 const VSKILL_SKILLS: Record<string, string[]> = {
   'mobile': [
-    'swiftui',
-    'jetpack',
-    'flutter',
-    'expo',
-    'testing',
-    'deep-linking',
-    'capacitor',
-  ],
-  'ml': [
-    'langchain',
-    'rag',
-    'fine-tuning',
-    'huggingface',
-    'edge',
-  ],
-  'backend': [
-    'java-spring',
-    'rust',
-  ],
-  'infra': [
-    'opentelemetry',
-    'github-actions',
-    'devsecops',
-    'secrets',
-    'azure',
-    'aws',
+    'appstore',
   ],
 };
 
-// Combined for iteration — all 23 skills (desktop and blockchain plugins deleted)
+// Combined for iteration — only skills with files on disk
 const ALL_SKILLS: Array<{ plugin: string; skill: string; baseDir: string }> = [];
 for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
   for (const skill of skills) {
@@ -64,11 +39,10 @@ for (const [plugin, skills] of Object.entries(VSKILL_SKILLS)) {
   }
 }
 
-// All vskill plugins with manifests
-// Note: k8s, docs, and cost plugins don't exist — excluded
+// All vskill plugins with manifests (only plugins with actual directories on disk)
+// v1.0.397: Reduced to plugins that exist — phantom entries removed
 const VSKILL_PLUGINS_WITH_MANIFESTS = [
-  'frontend', 'backend', 'testing', 'mobile', 'infra', 'ml',
-  'kafka', 'confluent', 'payments', 'security', 'skills', 'blockchain',
+  'mobile', 'skills',
 ];
 
 function parseFrontmatter(content: string): {
@@ -200,12 +174,12 @@ describe('New Skills Validation (Increment 0191)', () => {
   });
 
   describe('Skill Count Totals', () => {
-    it('should have exactly 20 new skills', () => {
+    it('should have the expected number of skills with SKILL.md files', () => {
       let totalSkills = 0;
       for (const skills of Object.values(VSKILL_SKILLS)) {
         totalSkills += skills.length;
       }
-      expect(totalSkills).toBe(20);
+      expect(totalSkills).toBe(1);
     });
 
     it('should have all skill directories containing SKILL.md', () => {
