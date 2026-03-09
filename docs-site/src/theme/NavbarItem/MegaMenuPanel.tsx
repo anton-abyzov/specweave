@@ -17,9 +17,10 @@ interface Props {
   categories: MegaMenuCategory[];
   visible: boolean;
   onClose: () => void;
+  columns?: number;
 }
 
-export default function MegaMenuPanel({categories, visible, onClose}: Props) {
+export default function MegaMenuPanel({categories, visible, onClose, columns}: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback(
@@ -56,6 +57,10 @@ export default function MegaMenuPanel({categories, visible, onClose}: Props) {
     }
   }, [visible]);
 
+  const colStyle = columns && columns !== 3
+    ? {gridTemplateColumns: `repeat(${columns}, 1fr)`} as React.CSSProperties
+    : undefined;
+
   return (
     <div
       ref={panelRef}
@@ -64,6 +69,7 @@ export default function MegaMenuPanel({categories, visible, onClose}: Props) {
       aria-hidden={!visible}
       data-visible={visible}
       onKeyDown={handleKeyDown}
+      style={colStyle}
     >
       {categories.map((cat) => (
         <div key={cat.categoryTitle} className={styles.megaMenuCategory}>
