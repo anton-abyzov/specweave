@@ -724,13 +724,19 @@ export async function initCommand(
 
     // ADO Repository cloning (for multi-repo setups)
     if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
-      const cloneJobId = await triggerAdoRepoCloning(
-        targetDir,
-        repoResult.adoProjectSelection,
-        repoResult.adoClonePatternResult
-      );
-      if (cloneJobId) {
-        pendingJobIds.push(cloneJobId);
+      try {
+        const cloneJobId = await triggerAdoRepoCloning(
+          targetDir,
+          repoResult.adoProjectSelection,
+          repoResult.adoClonePatternResult
+        );
+        if (cloneJobId) {
+          pendingJobIds.push(cloneJobId);
+        }
+      } catch (cloneError: unknown) {
+        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
+        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
+        console.log(chalk.gray('   You can clone repositories later with /sw-ado:clone-repos\n'));
       }
     }
 
@@ -740,28 +746,40 @@ export async function initCommand(
     let githubClonedRepos: string[] = [];
     if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
       const excludeRepos = repoResult.umbrellaRepo ? [repoResult.umbrellaRepo] : [];
-      const cloningResult = await triggerGitHubRepoCloning(
-        targetDir,
-        repoResult.githubRepoSelection,
-        repoResult.adoClonePatternResult,
-        repoResult.gitUrlFormat || 'https',
-        excludeRepos
-      );
-      if (cloningResult.jobId) {
-        pendingJobIds.push(cloningResult.jobId);
+      try {
+        const cloningResult = await triggerGitHubRepoCloning(
+          targetDir,
+          repoResult.githubRepoSelection,
+          repoResult.adoClonePatternResult,
+          repoResult.gitUrlFormat || 'https',
+          excludeRepos
+        );
+        if (cloningResult.jobId) {
+          pendingJobIds.push(cloningResult.jobId);
+        }
+        githubClonedRepos = cloningResult.clonedRepos;
+      } catch (cloneError: unknown) {
+        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
+        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
+        console.log(chalk.gray('   You can clone repositories later with /sw-github:clone-repos\n'));
       }
-      githubClonedRepos = cloningResult.clonedRepos;
     }
 
     // Bitbucket Repository cloning (for multi-repo setups)
     if (repoResult.bitbucketRepoSelection && repoResult.adoClonePatternResult) {
-      const cloneJobId = await triggerBitbucketRepoCloning(
-        targetDir,
-        repoResult.bitbucketRepoSelection,
-        repoResult.adoClonePatternResult
-      );
-      if (cloneJobId) {
-        pendingJobIds.push(cloneJobId);
+      try {
+        const cloneJobId = await triggerBitbucketRepoCloning(
+          targetDir,
+          repoResult.bitbucketRepoSelection,
+          repoResult.adoClonePatternResult
+        );
+        if (cloneJobId) {
+          pendingJobIds.push(cloneJobId);
+        }
+      } catch (cloneError: unknown) {
+        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
+        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
+        console.log(chalk.gray('   You can clone repositories later\n'));
       }
     }
 

@@ -179,7 +179,7 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
 
 /**
  * Validate that a worker process started successfully
- * Waits up to 2 seconds for PID file to appear and verifies process is alive
+ * Waits up to 10 seconds for PID file to appear and verifies process is alive
  */
 async function validateWorkerStarted(
   projectPath: string,
@@ -187,7 +187,7 @@ async function validateWorkerStarted(
   expectedPid?: number
 ): Promise<void> {
   const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'worker.pid');
-  const maxWaitMs = 2000;
+  const maxWaitMs = 10000;
   const checkIntervalMs = 100;
   let elapsed = 0;
 
