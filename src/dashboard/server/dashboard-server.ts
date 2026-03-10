@@ -966,6 +966,9 @@ export class DashboardServer {
       try {
         const { launchMarketplaceScanJob } = await import('../../core/background/job-launcher.js');
         const config = await project.aggregator.getConfig() as any;
+        if (config?.marketplace?.enabled !== true) {
+          return sendJson(res, { ok: false, error: 'Marketplace scanning is disabled by default (set marketplace.enabled: true in config.json to enable)' }, 403);
+        }
         const scannerConfig = config?.marketplace?.scanner || {};
         const result = await launchMarketplaceScanJob({
           projectPath: project.root,

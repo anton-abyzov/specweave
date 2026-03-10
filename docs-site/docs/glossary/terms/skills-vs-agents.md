@@ -283,7 +283,7 @@ Main Context
 
 - [Skills-First Architecture](/docs/guides/core-concepts/skills-first-architecture) — Why skills are the user-facing layer
 - [Skills, Plugins & Marketplaces](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
-- [Extensible Skills Standard](/docs/skills/extensible/) — Customizing skills for your project
+- [Extensible Skills](/docs/skills/extensible/) — Customizing skills for your project
 - [Claude Code Skills Docs](https://code.claude.com/docs/en/skills) — Official Claude Code skills documentation
 - [Claude Code Subagents Docs](https://code.claude.com/docs/en/sub-agents) — Official custom subagents documentation
 

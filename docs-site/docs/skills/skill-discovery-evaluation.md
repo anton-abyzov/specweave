@@ -148,7 +148,7 @@ Not all skill sources are equal. Each platform makes different trade-offs betwee
 | Attribute | Detail |
 |-----------|--------|
 | **Trust tiers** | Tier 1 (vendor-verified), Tier 2 (community-reviewed), Tier 3 (unvetted) |
-| **Scanner patterns** | 52 patterns covering prompt injection, credential access, DCI block abuse, obfuscation, destructive commands, and more |
+| **Scanner patterns** | 52 patterns covering prompt injection, credential access, dynamic context injection abuse, obfuscation, destructive commands, and more |
 | **Quality signals** | Trust tier badge; scan results; compatibility matrix; update frequency |
 
 **Strengths:** Integrated directly into the SpecWeave workflow via the `vskill` CLI. Skills are scanned before installation, not after. The 3-tier trust model provides clear expectations — Scanned skills passed automated pattern checks, Verified skills passed LLM intent analysis, and Certified skills passed human security review.
@@ -310,6 +310,8 @@ vskill scan ./path-to-skill/SKILL.md
 ```
 
 This surfaces discrepancies before installation, allowing you to make an informed choice about which source to trust.
+
+Ready to install? See the **[Installing Skills](/docs/skills/installation)** guide for the full installation walkthrough, or the **[vskill CLI Reference](/docs/skills/vskill-cli)** for all available commands.
 
 ---
 

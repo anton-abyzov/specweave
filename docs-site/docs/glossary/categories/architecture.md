@@ -46,12 +46,11 @@ Architecture and design terms cover the foundational concepts of building well-s
 
 ### Design Principles
 
-**SOLID Principles** (coming soon)
-- Single Responsibility
-- Open/Closed
-- Liskov Substitution
-- Interface Segregation
-- Dependency Inversion
+**Core Design Principles** (coming soon)
+- Separation of concerns
+- Stable core with customizable extensions
+- Dependency inversion
+- Interface segregation
 
 **Domain-Driven Design (DDD)** (coming soon)
 - Business-focused software design

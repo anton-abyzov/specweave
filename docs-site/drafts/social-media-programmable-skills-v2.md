@@ -1,17 +1,17 @@
-# Social Media: Programs Written in Human Language
+# Social Media: Structured Markdown Instructions for AI
 
-**Core thesis**: Claude Code Skills are PROGRAMS WRITTEN IN HUMAN LANGUAGE. SpecWeave applied SOLID Open/Closed Principle to make them extendable. First time software engineering principles govern AI instructions written in plain English.
+**Core thesis**: Claude Code Skills are STRUCTURED MARKDOWN INSTRUCTIONS. SpecWeave builds on Claude Code's native skill system to make them extendable. First time software engineering principles govern AI instructions written in plain English.
 
-**Strategy**: Credit Anthropic FIRST → "Programs in human language" shock → 5 innovations → Call to action
+**Strategy**: Credit Anthropic FIRST → "Structured instructions" concept → 5 innovations → Call to action
 
 **Key Differentiators (First in the World)**:
-1. **Extendable Skills Standard** - SOLID Open/Closed Principle for human-language AI programs
+1. **Extensible Skills** - Stable core with customizable extensions for AI skills
 2. **Working LSP Integration** - 100x faster code intelligence vs text search
 3. **Living Documentation** - Auto-synced specs that never drift from code
 4. **Enterprise-Grade Workflow** - Multi-repo coordination, GitHub/JIRA/ADO sync, quality gates
 5. **Production-Ready** - 190+ increments, 15 pre-commit validations, TDD enforcement
 
-**Core Message**: Claude Code shipped the first programs written in human language → SpecWeave applied SOLID principles to make them extendable and production-ready
+**Core Message**: Claude Code shipped the first structured markdown instructions for AI → SpecWeave builds on that foundation to make them extendable and production-ready
 
 **SEE ALSO**: `docs-site/docs/guides/social-media-launch.md` for the polished Twitter thread + Dev.to article version
 
@@ -28,7 +28,7 @@ What @AnthropicAI built with Claude Code Skills is more important than people re
 
 @bchernay @tharik — you didn't just ship a feature.
 
-You shipped the first **programs written in human language**.
+You shipped the first **structured markdown instructions for AI agents**.
 
 Let me explain why this changes everything about AI development:
 
@@ -50,22 +50,22 @@ Each jump: "wait, you can write programs THAT simply?"
 
 @AnthropicAI's Claude Code made the next jump.
 
-A SKILL.md file IS a program. Written in English. Executed by AI.
+A SKILL.md file IS a structured instruction set. Written in English. Executed by AI.
 
-It has instructions, conditionals, logic flow, error handling. That's not a config. That's a program.
+It has instructions, conditionals, logic flow, error handling. That's not a config. That's a structured program.
 
-### Tweet 4 (Innovation #1: SOLID for Human-Language Programs)
-If Skills are programs, then software engineering principles should apply.
+### Tweet 4 (Innovation #1: Extensible Skills)
+If Skills are structured instructions, then software engineering principles should apply.
 
 I built SpecWeave to test that thesis:
 
-**Open/Closed Principle**:
-✅ SKILL.md = core program (closed, stable, versioned)
-✅ skill-memories/ = your extensions (open, customizable)
+**Stable core, customizable extensions**:
+✅ SKILL.md = core instructions (stable, versioned)
+✅ skill-memories/ = your extensions (customizable)
 
 Claude reads both. Your rules override defaults. You never fork the original.
 
-**SOLID. For English.**
+**Software engineering for AI instructions.**
 
 ```markdown
 # .specweave/skill-memories/frontend.md
@@ -171,7 +171,7 @@ This isn't vaporware. SpecWeave is PRODUCTION-READY:
 ### Tweet 10 (The Full Stack)
 The complete picture:
 
-1️⃣ **Extendable Skills** (SOLID Open/Closed) - FIRST IN WORLD
+1️⃣ **Extensible Skills** (stable core + customizable extensions) - FIRST IN WORLD
 2️⃣ **Working LSP** (100x faster code intelligence)
 3️⃣ **Living Docs** (never drift from code)
 4️⃣ **Multi-Repo** (enterprise coordination)
@@ -222,17 +222,17 @@ Credits: @AnthropicAI for pioneering this with Claude Code 🙏
 
 ## Credits First
 
-Massive credit to @AnthropicAI's @bchernay, @tharik, and the Claude Code team. You didn't just ship a feature. You shipped the first programs written in human language.
+Massive credit to @AnthropicAI's @bchernay, @tharik, and the Claude Code team. You didn't just ship a feature. You shipped the first structured markdown instructions for AI agents.
 
 ## The Paradigm Shift
 
-A SKILL.md file is a program. Not metaphorically. Literally. It has instructions, conditionals, logic flow, error handling. Written in English. Executed by AI.
+A SKILL.md file is a structured instruction set. Not metaphorically. Literally. It has instructions, conditionals, logic flow, error handling. Written in English. Executed by AI.
 
 For 70 years: Assembly → C → Python → JavaScript. Each jump made programs more human-readable. Claude Code Skills are the next jump.
 
-**SpecWeave proves that software engineering principles apply to these human-language programs.** Starting with SOLID Open/Closed:
+**SpecWeave proves that software engineering principles apply to these structured instructions.** Starting with extensibility:
 
-1. **Extendable Skills** - SOLID Open/Closed Principle (SKILL.md closed + skill-memories open)
+1. **Extensible Skills** - Stable core in SKILL.md + customizable extensions in skill-memories
 2. **Working LSP Integration** - 100x faster code intelligence vs text search
 3. **Living Documentation** - Auto-synced specs that never drift from code
 4. **Multi-Repo Coordination** - Enterprise-grade brownfield project management
@@ -264,7 +264,7 @@ Let me explain what I built, why this matters, and how it changes AI development
 
 @AnthropicAI's Claude Code did something nobody fully appreciated:
 
-**Skills** = Programs written in human language
+**Skills** = Structured markdown instructions for AI
 - Instructions ("do X, then Y")
 - Conditionals ("when user mentions admin, add RBAC")
 - Logic flow ("check design system first, if exists import, else create")
@@ -276,15 +276,15 @@ This was revolutionary. Credit to @bchernay (PM) and @tharik (Architecture) for 
 
 ---
 
-## Innovation #1: SOLID for Human-Language Programs
+## Innovation #1: Extensible Skills
 
-If Skills are programs, then software engineering principles should apply. SpecWeave proves it — starting with the Open/Closed Principle from SOLID.
+If Skills are structured instructions, then software engineering principles should apply. SpecWeave proves it — starting with a clean separation between stable core and customizable extensions.
 
 ### Technical Specification
 
-**Architecture**: Open/Closed Principle (SOLID, 1988)
-- **SKILL.md** = Closed for modification (stable core, maintained by SpecWeave)
-- **skill-memories/*.md** = Open for extension (your rules, your team's learnings)
+**Architecture**: Stable core with customizable extensions
+- **SKILL.md** = Stable core (maintained by SpecWeave)
+- **skill-memories/*.md** = Your extensions (your rules, your team's learnings)
 
 **Runtime**: Claude reads both files, user rules override defaults
 
@@ -733,7 +733,7 @@ This isn't a demo. SpecWeave is **PRODUCTION-READY**:
 - ✅ **Made AI transparent**
 
 **🥈 SpecWeave** (Built on Claude Code)
-- ✅ **Extendable Skills** (SOLID Open/Closed - FIRST IN WORLD)
+- ✅ **Extensible Skills** (stable core + customizable extensions - FIRST IN WORLD)
 - ✅ **Working LSP** (100x faster, 30x token savings)
 - ✅ **Living Docs** (never drift from code)
 - ✅ **Multi-Repo** (enterprise coordination)
@@ -769,7 +769,7 @@ This isn't a demo. SpecWeave is **PRODUCTION-READY**:
 - **The foundation**
 
 **SpecWeave adds**:
-- SOLID Open/Closed Principle (extendable skills - FIRST IN WORLD)
+- Extensible Skills (stable core + customizable extensions - FIRST IN WORLD)
 - LSP configuration for production (100x faster)
 - Living documentation (auto-synced, never drifts)
 - Multi-repo coordination (enterprise-ready)
@@ -841,10 +841,10 @@ specweave lsp refs src/payment.ts PaymentService
 
 ## Conclusion
 
-**Claude Code shipped programs written in human language.**
+**Claude Code shipped structured markdown instructions for AI.**
 **SpecWeave proved software engineering principles apply to them.**
 
-1. **Extendable Skills** - SOLID Open/Closed for human-language programs
+1. **Extensible Skills** - Stable core with customizable extensions
 2. **Working LSP** - 100x faster, 30x token savings
 3. **Living Docs** - Auto-synced, never drift
 4. **Multi-Repo** - Enterprise coordination (100+ repos proven)
@@ -875,9 +875,9 @@ Structured human-language programming starts now.
 ### Tweet 1
 What @AnthropicAI did with Claude Code Skills is bigger than people realize.
 
-@bchernay @tharik — you shipped the first programs written in human language.
+@bchernay @tharik — you shipped the first structured instructions for AI agents.
 
-Not prompts. Not configs. Programs. With conditionals, logic flow, error handling.
+Not prompts. Not configs. Structured markdown instructions. With conditionals, logic flow, error handling.
 
 Written in English. Executed by AI.
 
@@ -905,15 +905,15 @@ Cursor? Proprietary. Locked logic.
 One is a platform. The rest are products.
 
 ### Tweet 4
-I built SpecWeave to prove software engineering applies to human-language programs.
+I built SpecWeave to prove software engineering applies to structured AI instructions.
 
-Open/Closed Principle:
-- SKILL.md = core program (closed, stable)
-- skill-memories/*.md = your extensions (open, customizable)
+Extensible Skills:
+- SKILL.md = core instructions (stable)
+- skill-memories/*.md = your extensions (customizable)
 
 Claude reads both. Your rules override defaults. You never fork the original.
 
-**SOLID. For English.**
+**Software engineering for AI instructions.**
 
 ### Tweet 5
 What this unlocks:
@@ -930,10 +930,10 @@ All built on Claude Code Skills. Impossible without them.
 ### Tweet 6
 SpecWeave is open source (MIT).
 
-See what programs in human language look like:
+See what structured AI instructions look like:
 https://github.com/anton-abyzov/specweave
 
-Read the deep-dive on SOLID for AI:
+Read the deep-dive on Extensible Skills:
 https://spec-weave.com/docs/skills/extensible-skills
 
 "Prompt engineering" was the assembly language phase.
@@ -948,9 +948,9 @@ Structured human-language programming starts now.
 
 ### The Five Innovations (FIRST IN THE WORLD)
 
-1. **Extendable Skills** (SOLID Open/Closed Principle)
+1. **Extensible Skills** (stable core + customizable extensions)
    - First framework to apply software engineering principles to AI customization
-   - skill-memories/ = open for extension, SKILL.md = closed for modification
+   - skill-memories/ = your extensions, SKILL.md = stable core
    - Git-versioned learnings that persist forever
    - Documented standard: https://spec-weave.com/docs/skills/extensible-skills
 
