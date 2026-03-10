@@ -801,8 +801,43 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
 }
 
 /**
+ * Build a clean environment for npm commands that bypasses all auth config.
+ * Removes NPM_TOKEN and any npm_config_* vars related to authentication
+ * so that stale tokens from CI, AWS CodeArtifact, GitHub Packages, etc.
+ * don't interfere with public registry access.
+ *
+ * Also forces npm to ignore both user and global config files by setting
+ * npm_config_userconfig and npm_config_globalconfig to empty paths.
+ * This is more reliable than CLI flags (which fail when both point to /dev/null).
+ */
+function buildCleanNpmEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  // Strip auth-related env vars
+  delete env['NPM_TOKEN'];
+  for (const key of Object.keys(env)) {
+    if (
+      key.startsWith('npm_config_') &&
+      (key.includes('authToken') || key.includes('_auth') || key.includes('_password'))
+    ) {
+      delete env[key];
+    }
+  }
+  // Point user and global config to non-existent files to bypass all npmrc auth
+  const emptyConfig = process.platform === 'win32' ? 'NUL' : '/dev/null';
+  env['npm_config_userconfig'] = emptyConfig;
+  // Use a distinct path for globalconfig to avoid npm's "double-loading" error
+  env['npm_config_globalconfig'] = path.join(
+    process.platform === 'win32' ? (process.env['TEMP'] || 'C:\\Temp') : '/tmp',
+    '.specweave-npm-noop'
+  );
+  return env;
+}
+
+/**
  * Run an npm command, retrying with explicit public registry on E401.
- * Stale auth tokens in ~/.npmrc cause E401 even for public packages.
+ * Stale/invalid auth tokens in ~/.npmrc, global npmrc, or env vars
+ * cause E401 even for public packages. The retry bypasses ALL auth
+ * sources: user config, global config, and auth-related env vars.
  */
 function npmExecWithAuthFallback(command: string, timeout: number): string {
   try {
@@ -814,12 +849,13 @@ function npmExecWithAuthFallback(command: string, timeout: number): string {
   } catch (error: any) {
     const stderr = error.stderr?.toString() || error.message || '';
     if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
-      // Retry with explicit public registry to bypass stale local auth tokens
+      // Retry: force public registry + clean env that strips all auth sources
       const retryCommand = `${command} --registry https://registry.npmjs.org`;
       return execSync(retryCommand, {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout,
+        env: buildCleanNpmEnv(),
       }).trim();
     }
     throw error;
