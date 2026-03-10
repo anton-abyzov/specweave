@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.403] - 2026-03-10
+
+### Changes
+- fix living-docs sync: preserve external tool links on FEATURE.md regeneration
+
+---
+
+
+
 ## [1.0.402] - 2026-03-10
 
 ### Changes
