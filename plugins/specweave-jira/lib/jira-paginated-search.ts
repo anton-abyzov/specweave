@@ -2,10 +2,13 @@
  * JIRA Paginated Search with Rate-Limit Retry
  *
  * Provides a paginated JQL search that fetches all results
- * by iterating through pages using startAt/maxResults.
+ * using cursor-based pagination (nextPageToken).
  *
  * Uses POST /search/jql endpoint (Atlassian Cloud deprecated
  * GET /search; POST /search also returns 410).
+ *
+ * NOTE: POST /search/jql does NOT accept startAt — it uses
+ * nextPageToken for cursor-based pagination instead.
  *
  * Includes exponential backoff retry on HTTP 429 (rate limit).
  *
@@ -28,7 +31,7 @@ export interface PaginatedSearchOptions {
  * Search all issues matching a JQL query with full pagination.
  * Handles rate limiting with exponential backoff.
  *
- * Uses POST /search/jql (the replacement for the deprecated GET/POST /search).
+ * Uses POST /search/jql with cursor-based pagination (nextPageToken).
  *
  * @param client - Axios instance configured with JIRA auth
  * @param options - Search options (jql, fields, maxResults per page)
@@ -40,15 +43,17 @@ export async function searchAllIssues(
 ): Promise<any[]> {
   const { jql, fields, maxResults = DEFAULT_PAGE_SIZE } = options;
   const allIssues: any[] = [];
-  let startAt = 0;
-  let total = Infinity;
+  let nextPageToken: string | undefined;
 
-  while (startAt < total) {
+  do {
     const body: Record<string, any> = {
       jql,
-      startAt,
       maxResults,
     };
+
+    if (nextPageToken) {
+      body.nextPageToken = nextPageToken;
+    }
 
     if (fields) {
       body.fields = fields.split(',').map((f: string) => f.trim());
@@ -57,15 +62,14 @@ export async function searchAllIssues(
     const response = await requestWithRetry(client, '/search/jql', body);
 
     const data = response.data;
-    total = data.total;
     const issues = data.issues || [];
     allIssues.push(...issues);
 
-    startAt += issues.length;
+    nextPageToken = data.nextPageToken;
 
     // Safety: if no issues returned, break to avoid infinite loop
     if (issues.length === 0) break;
-  }
+  } while (nextPageToken);
 
   return allIssues;
 }

@@ -630,5 +630,50 @@ describe('InstallationHealthChecker', () => {
       expect(check!.status).toBe('warn');
       expect(check!.message).toContain('npm registry');
     });
+
+    it('TC-UH-07: should retry with explicit registry on E401 from stale auth token', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd === 'npm view specweave version') {
+          const err = new Error('Command failed') as any;
+          err.stderr = 'npm error code E401\nnpm error Unable to authenticate';
+          throw err;
+        }
+        if (cmd === 'npm view specweave version --registry https://registry.npmjs.org') {
+          return '1.0.394';
+        }
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('pass');
+      expect(check!.message).toContain('up to date');
+    });
+
+    it('TC-UH-08: should warn when E401 retry also fails', async () => {
+      mockExecSync.mockImplementation((cmd: string) => {
+        if (cmd === 'specweave --version') return '1.0.394';
+        if (cmd.includes('npm view specweave version')) {
+          const err = new Error('Command failed') as any;
+          err.stderr = 'npm error code E401\nnpm error Unable to authenticate';
+          throw err;
+        }
+        if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
+        return '';
+      });
+
+      const checker = new InstallationHealthChecker({ commandsDir, cacheDir });
+      const result = await checker.check(projectRoot, {});
+      const check = result.checks.find(c => c.name === 'Update health');
+
+      expect(check).toBeDefined();
+      expect(check!.status).toBe('warn');
+      expect(check!.message).toContain('npm registry');
+    });
   });
 });

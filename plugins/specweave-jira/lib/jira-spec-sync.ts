@@ -606,7 +606,7 @@ ${acList}
         key: this.config.projectKey
       },
       summary: story.summary,
-      description: story.description,
+      description: toDescription(story.description, this.config.domain),
       issuetype: {
         name: issueType
       },
