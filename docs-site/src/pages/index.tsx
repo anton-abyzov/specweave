@@ -9,6 +9,7 @@ import AcademyPromoSection from './sections/AcademyPromoSection';
 import StatsSection from './sections/StatsSection';
 import IntegrationsSection from './sections/IntegrationsSection';
 import VerifiedSkillsSection from './sections/VerifiedSkillsSection';
+import SkillStudioSection from './sections/SkillStudioSection';
 import CTASection from './sections/CTASection';
 
 export default function Home(): ReactNode {
@@ -27,6 +28,7 @@ export default function Home(): ReactNode {
         <StatsSection />
         <IntegrationsSection />
         <VerifiedSkillsSection />
+        <SkillStudioSection />
         <CTASection />
       </main>
     </Layout>
