@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.408] - 2026-03-10
+
+### Changes
+- fix: update eval llm module and tests
+- fix: update init/update commands, jira sync, doctor checker
+- fix JIRA POST /search/jql endpoint, ADO Content-Type and dynamic work item type
+
+---
+
+
+
 ## [1.0.407] - 2026-03-10
 
 ### Changes
