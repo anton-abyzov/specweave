@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIntersectionObserver } from '@site/src/hooks/useIntersectionObserver';
 import { useReducedMotion } from '@site/src/hooks/useReducedMotion';
 import styles from './WordAnimation.module.css';
@@ -16,6 +16,12 @@ export default function WordAnimation({
 }: WordAnimationProps) {
   const [ref, isIntersecting] = useIntersectionObserver(0.1);
   const prefersReducedMotion = useReducedMotion();
+  // SSR + initial hydration: render visible. After mount, enable word-by-word
+  // animation. Prevents text stuck at opacity:0 on uncached machines.
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => setHasMounted(true), []);
+
+  const shouldAnimate = hasMounted && !prefersReducedMotion;
   const words = text.split(' ');
   const totalDuration = 2000;
   const delayPerWord = words.length > 1 ? totalDuration / words.length : 0;
@@ -26,13 +32,13 @@ export default function WordAnimation({
         <React.Fragment key={i}>
           <span
             className={[
-              prefersReducedMotion ? styles.noMotion : styles.word,
-              isIntersecting && !prefersReducedMotion ? styles.wordVisible : '',
+              shouldAnimate ? styles.word : styles.noMotion,
+              shouldAnimate && isIntersecting ? styles.wordVisible : '',
             ]
               .filter(Boolean)
               .join(' ')}
             style={
-              !prefersReducedMotion
+              shouldAnimate
                 ? { transitionDelay: `${Math.round(i * delayPerWord)}ms` }
                 : undefined
             }

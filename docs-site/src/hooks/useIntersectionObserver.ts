@@ -17,6 +17,20 @@ export function useIntersectionObserver(
         return;
       }
 
+      // Synchronous viewport check: elements already visible don't need the
+      // async observer callback, which can race with hydration and leave
+      // above-the-fold content stuck at opacity 0.
+      const rect = node.getBoundingClientRect();
+      if (
+        rect.top < window.innerHeight &&
+        rect.bottom > 0 &&
+        rect.left < window.innerWidth &&
+        rect.right > 0
+      ) {
+        setIsIntersecting(true);
+        return;
+      }
+
       observerRef.current = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
