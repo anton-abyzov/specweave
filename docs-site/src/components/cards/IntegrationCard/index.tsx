@@ -22,7 +22,7 @@ export default function IntegrationCard({
   const content = (
     <>
       <div className={styles.logo}>
-        <Icon brand={brand} size={48} />
+        <Icon brand={brand} size={56} />
       </div>
       <h3 className={styles.name}>{name}</h3>
       <p className={styles.description}>{description}</p>

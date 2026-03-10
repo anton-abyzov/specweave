@@ -136,12 +136,32 @@ SpecWeave works everywhere:
 
 ---
 
+## Explore the Skill Ecosystem
+
+SpecWeave ships with 100+ built-in skills, and you can install community skills from the [verifiedskill.com](https://verifiedskill.com) registry:
+
+```bash
+# Search for skills
+npx vskill find "react"
+
+# Install a verified skill
+npx vskill install auth-guard
+```
+
+Skills work across 49 AI coding agents — not just Claude Code. See the [Installing Skills](/docs/skills/installation) guide for the full walkthrough.
+
+Want to build your own skills? [Skill Studio](/docs/skills/skill-studio) is a local browser-based IDE for developing, testing, and benchmarking skills.
+
+---
+
 ## Choose Your Path
 
 | Your Goal | Next Step |
 |-----------|-----------|
 | **Quick hands-on** | [Your First Increment](./first-increment) |
 | **Understand concepts** | [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment) |
+| **Install skills** | [Installing Skills](/docs/skills/installation) |
+| **Build skills** | [Skill Studio](/docs/skills/skill-studio) |
 | **Full curriculum** | [SpecWeave Essentials](/docs/academy/specweave-essentials/) |
 | **Existing codebase** | [Brownfield Projects](/docs/workflows/brownfield) |
 | **External tools** | [GitHub/JIRA/ADO Integration](/docs/academy/specweave-essentials/07-external-tools) |

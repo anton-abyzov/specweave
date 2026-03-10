@@ -71,7 +71,7 @@ For the full written reference with code examples, diagrams, and SpecWeave inter
 
 ## Related Resources
 
-- [Extensible Skills Standard](/docs/skills/extensible/) — customizing skills for your project
+- [Extensible Skills](/docs/skills/extensible/) — customizing skills for your project
 - [Verified Skills Standard](/docs/skills/verified/) — evaluating skill security and trust
 - [verifiedskill.com](https://verifiedskill.com) — the trusted skill registry
 - [All 100+ SpecWeave Skills](/docs/reference/skills) — browse the complete catalog

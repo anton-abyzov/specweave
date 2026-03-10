@@ -120,9 +120,9 @@ draft: true
 
 **[SCREEN: Navigate to spec-weave.com homepage]**
 
-> "SpecWeave is the spec-driven Skill Fabric for AI coding agents. And the key idea is this: **skills are programs written in English**.
+> "SpecWeave is the spec-driven Skill Fabric for AI coding agents. And the key idea is this: **skills are structured markdown instructions**.
 >
-> Not prompts. Not templates. Programs — reusable, extensible, shareable. You describe what you want in plain English, AI asks the right questions, builds it while you sleep. You review finished work in the morning."
+> Not prompts. Not templates. Structured, reusable, extensible, shareable instructions — building on Claude Code's native skill system. You describe what you want in plain English, AI asks the right questions, builds it while you sleep. You review finished work in the morning."
 
 **[EXCALIDRAW: The Workflow]**
 
@@ -194,7 +194,7 @@ Describe → AI Interviews You → spec + plan + tasks → Autonomous Build → 
 
 > "Now, I call SpecWeave a 'Skill Fabric' — not a framework. Here's the difference.
 >
-> A framework constrains you. Angular — heavy, opinionated, lots of rules. SpecWeave is the opposite. It's a lightweight layer of skills — programs written in English — that sit on top of Claude Code and give it superpowers:
+> A framework constrains you. Angular — heavy, opinionated, lots of rules. SpecWeave is the opposite. It's a lightweight layer of skills — structured markdown instructions — that build on Claude Code's native skill system and give it superpowers:
 >
 > - **Programmable skills** instead of one-off prompts
 > - **Guided interviews** instead of guessing what the AI needs
@@ -1285,17 +1285,17 @@ specweave init .
 
 ---
 
-## SECTION 12.5: SKILLS ARE PROGRAMS IN ENGLISH (33:30 - 35:30)
+## SECTION 12.5: SKILLS ARE STRUCTURED MARKDOWN INSTRUCTIONS (33:30 - 35:30)
 
 **[SCREEN: Navigate to .specweave/skill-memories/ directory]**
 
-> "Now here's the core idea behind SpecWeave. The thing that sets it apart from every other AI tool. **Skills are programs written in English.**"
+> "Now here's the core idea behind SpecWeave. The thing that sets it apart from every other AI tool. **Skills are structured markdown instructions.**"
 
 **[PAUSE for emphasis]**
 
 > "Not prompts. Not templates. Programs — with logic, conditions, extension points, and memory. You write them in English, and AI executes them like code.
 >
-> And here's where it gets revolutionary — unlike traditional software where behavior is locked and obfuscated, SpecWeave skills follow the **Open/Closed Principle** from SOLID design."
+> And here's where it gets revolutionary — unlike traditional software where behavior is locked and obfuscated, SpecWeave skills have a clean separation: core logic stays stable, your customizations extend it."
 
 **[EXCALIDRAW: Traditional Software vs SpecWeave Skills]**
 
@@ -1437,14 +1437,14 @@ When user mentions "admin":
 >
 > The frontend skill developer never thought of this. But you can add it. And Claude follows it. Every time."
 
-**[CONNECT TO OPEN/CLOSED PRINCIPLE]**
+**[CONNECT TO EXTENSIBILITY MODEL]**
 
-> "This is the **Open/Closed Principle** in action.
+> "This is the extensibility model in action.
 >
-> - **Closed for modification** — you never touch SKILL.md
-> - **Open for extension** — you add behavior through skill-memories
+> - **Core logic stays stable** — you never touch SKILL.md
+> - **Your rules extend it** — you add behavior through skill-memories
 >
-> Software engineering principles from the 1980s, applied to AI tools in 2026. And it works beautifully."
+> A clean separation between stable skill logic and your project-specific customizations. And it works beautifully."
 
 **[SHOW THE COMMANDS]**
 
@@ -2912,7 +2912,7 @@ specweave init .
 
 > "Let me leave you with the three pillars.
 >
-> **Programmable AI** — skills are programs written in English. 100+ skills for PM, Architect, QA, Security, DevOps. Customize any skill without forking. Fix something once, it's remembered permanently.
+> **Programmable AI** — skills are structured markdown instructions that build on Claude Code's native skill system. 100+ skills for PM, Architect, QA, Security, DevOps. Customize any skill without forking. Fix something once, it's remembered permanently.
 >
 > **Autonomous Teams** — agent swarms across iTerm and tmux. Run Claude Code, OpenClaw, GitHub Copilot, Codex — any combination of AI tools — on the same codebase. Each agent owns an increment. File-based coordination prevents conflicts. Quality gates for everyone.
 >

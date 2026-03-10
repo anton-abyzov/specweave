@@ -94,7 +94,7 @@ Additional labels provide context:
 | Label | Meaning |
 |-------|---------|
 | `safe` | No network access, no filesystem writes outside declared scope |
-| `extensible` | Supports DCI and skill memories ([Extensible Skills Standard](/docs/skills/extensible/extensible-skills)) |
+| `extensible` | Supports dynamic context injection (Claude Code's built-in `` !`command` `` syntax) and skill memories ([Extensible Skills](/docs/skills/extensible/extensible-skills)) |
 | `portable` | Works across multiple AI agents |
 | `popular` | High install count / community usage |
 | `deprecated` | No longer maintained |
@@ -185,8 +185,8 @@ This page provides a concise overview of the Verified Skills Standard. For the c
 
 ## See Also
 
-- **[Skills Overview](/docs/skills/)** — Both skill standards at a glance
-- **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills)** — How skills adapt to your project
+- **[Skills Overview](/docs/skills/)** — Both skill layers at a glance
+- **[Extensible Skills](/docs/skills/extensible/extensible-skills)** — How skills adapt to your project
 - **[Security Landscape](/docs/skills/verified/skills-ecosystem-security)** — Full ToxicSkills data and platform comparison
 - **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find and evaluate skills
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry

@@ -13,6 +13,10 @@ SpecWeave's power comes from its **modular plugin architecture**. With **21 spec
 **Progressive Disclosure**: Only relevant plugins activate based on context. Working on React? Frontend plugin loads. Mention Kubernetes? Infrastructure plugin activates. This keeps your AI context lean and efficient.
 :::
 
+:::info Looking to install community skills?
+See the **[Installing Skills](/docs/skills/installation)** guide for installing skills from the registry, GitHub, or local directories. For the full CLI reference, see **[vskill CLI Reference](/docs/skills/vskill-cli)**.
+:::
+
 ## 🎯 Quick Start
 
 All plugins are **automatically installed** during `specweave init`:

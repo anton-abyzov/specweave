@@ -557,8 +557,18 @@ const sidebars: SidebarsConfig = {
       label: 'Skills, Plugins & Marketplaces',
     },
     {
+      type: 'doc',
+      id: 'skills/installation',
+      label: 'Installing Skills',
+    },
+    {
+      type: 'doc',
+      id: 'skills/skill-studio',
+      label: 'Skill Studio',
+    },
+    {
       type: 'category',
-      label: 'Extensible Skills Standard',
+      label: 'Extensible Skills',
       collapsed: false,
       link: {
         type: 'doc',
@@ -636,7 +646,7 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'guides/agent-skills-extensibility-analysis',
-          label: 'Agent Compatibility (39 Agents)',
+          label: 'Agent Compatibility (49 Agents)',
         },
         {
           type: 'doc',
@@ -654,6 +664,11 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'reference/skills',
           label: 'All Skills (100+)',
+        },
+        {
+          type: 'doc',
+          id: 'skills/vskill-cli',
+          label: 'vskill CLI Reference',
         },
         {
           type: 'link',

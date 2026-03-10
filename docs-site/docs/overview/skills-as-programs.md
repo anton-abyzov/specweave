@@ -1,12 +1,12 @@
 ---
 sidebar_position: 2
-title: "Skills Are Programs in English"
-description: "SpecWeave skills are reusable, extensible programs written in natural language — not prompts, not templates, but programmable AI behavior."
+title: "Skills Are Structured Expertise"
+description: "SpecWeave skills are reusable, extensible structured markdown instructions — not prompts, not templates, but programmable AI behavior."
 ---
 
-# Skills Are Programs in English
+# Skills Are Structured Expertise
 
-Most AI coding tools give you prompts. SpecWeave gives you **programs**.
+Most AI coding tools give you prompts. SpecWeave gives you **structured expertise**.
 
 A SpecWeave skill is a structured document that controls how AI thinks, decides, and acts. It has logic, conditions, extension points, and memory. It runs the same way every time — but you can customize it without touching the source.
 
@@ -79,11 +79,11 @@ specweave init .
 /sw:increment "Add user authentication"  # Skills take over from here
 ```
 
-## Extensibility: Open/Closed Principle
+## Extensibility: Stable Core, Customizable Extensions
 
-Skills follow SOLID's Open/Closed Principle:
-- **Closed for modification** — don't edit SKILL.md files
-- **Open for extension** — customize via `.specweave/skill-memories/*.md`
+Skills follow a stable core with customizable extensions:
+- **Stable core** — don't edit SKILL.md files; they keep getting updates
+- **Your extensions** — customize via `.specweave/skill-memories/*.md`
 
 Your customizations override defaults. Original skills keep getting updates. No fork needed.
 

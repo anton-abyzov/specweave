@@ -207,7 +207,7 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
-          // Extensible Skills Standard — old paths → new pillar location
+          // Extensible Skills — old paths → new pillar location
           {
             from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills'],
             to: '/docs/skills/extensible/extensible-skills',

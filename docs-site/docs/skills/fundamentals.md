@@ -40,7 +40,7 @@ flowchart LR
 
 ## Skills — The Building Block
 
-A skill is a **markdown file** (`SKILL.md`) that tells Claude what to do. It's a program written in English.
+A skill is a **markdown file** (`SKILL.md`) that tells Claude what to do. It's a detailed playbook written in markdown.
 
 ### Where Skills Live
 
@@ -141,7 +141,7 @@ Fix GitHub issue $ARGUMENTS following our coding standards.
 
 Running `/fix-issue 123` sends "Fix GitHub issue 123..."
 
-**Dynamic context injection** — `!`command`` runs shell commands before Claude sees the content:
+**Dynamic context injection** — Claude Code's built-in `` !`command` `` syntax runs shell commands before Claude sees the content:
 
 ```yaml
 ---
@@ -289,6 +289,7 @@ Each plugin entry specifies where to fetch it from:
 
 ### The User Flow
 
+**Claude Code native plugins** (Claude Code only):
 ```bash
 # Step 1: Add the marketplace (registers the catalog)
 /plugin marketplace add owner/repo
@@ -302,6 +303,19 @@ Each plugin entry specifies where to fetch it from:
 # Step 4: Use the skills
 /plugin-name:skill-name
 ```
+
+**vskill** (works across 49 AI agents — Claude Code, Cursor, Copilot, etc.):
+```bash
+# Install a plugin from any marketplace repo
+npx vskill install --repo owner/repo --plugin frontend
+
+# Install a standalone skill
+npx vskill install owner/skill-repo
+```
+
+:::tip
+The Claude Code native plugin system and `vskill` serve complementary roles. Native plugins integrate deeply with Claude Code's UI. `vskill` provides cross-agent installation with security scanning. See the **[Installing Skills](/docs/skills/installation)** guide for the full walkthrough, and the **[vskill CLI Reference](/docs/skills/vskill-cli)** for all commands.
+:::
 
 ### Official Marketplace
 
@@ -400,7 +414,7 @@ Skills invoke other skills for multi-step workflows:
 
 ### Dynamic Context Injection
 
-SpecWeave skills inject project-specific overrides at load time using shell one-liners:
+SpecWeave skills inject project-specific overrides at load time using dynamic context injection blocks:
 
 ```yaml
 ## Your Project's Customizations
@@ -435,8 +449,8 @@ You don't install 22 plugins manually. SpecWeave plugins load based on what you'
 
 ## Next Steps
 
-- [Extensible Skills Standard](/docs/skills/extensible/) — How to customize skills for your project
-- [Verified Skills Standard](/docs/skills/verified/) — How to evaluate skill security and trust
+- [Extensible Skills](/docs/skills/extensible/) — How to customize skills for your project
+- [Verified Skills](/docs/skills/verified/) — How to evaluate skill security and trust
 - [Claude Code Skills Docs](https://code.claude.com/docs/en/skills) — Official Anthropic documentation
 - [Claude Code Plugins Docs](https://code.claude.com/docs/en/plugins) — Creating and distributing plugins
 - [All 100+ SpecWeave Skills](/docs/reference/skills) — Browse the complete catalog

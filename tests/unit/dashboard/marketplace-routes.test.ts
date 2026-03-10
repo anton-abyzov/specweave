@@ -357,7 +357,16 @@ describe('Marketplace Routes', () => {
   });
 
   describe('POST /api/marketplace/scanner/start', () => {
-    it('should call launchMarketplaceScanJob', async () => {
+    it('should call launchMarketplaceScanJob when marketplace.enabled is true', async () => {
+      const configPath = path.join(tempDir, '.specweave', 'config.json');
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      config.marketplace = { enabled: true };
+      fs.writeFileSync(configPath, JSON.stringify(config));
+
+      const projectId = tempDir.replace(/^\//, '').replace(/\//g, '-');
+      dashServer.removeProject(projectId);
+      dashServer.addProject(tempDir);
+
       const { status, body } = await fetchJson('/api/marketplace/scanner/start', {
         method: 'POST',
       });
@@ -366,6 +375,48 @@ describe('Marketplace Routes', () => {
       expect(body.ok).toBe(true);
       expect(body.data).toBeDefined();
       expect(body.data.job).toBeDefined();
+
+      // Restore config
+      delete config.marketplace;
+      fs.writeFileSync(configPath, JSON.stringify(config));
+      dashServer.removeProject(projectId);
+      dashServer.addProject(tempDir);
+    });
+
+    it('should reject when marketplace.enabled is false in config', async () => {
+      const configPath = path.join(tempDir, '.specweave', 'config.json');
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      config.marketplace = { enabled: false };
+      fs.writeFileSync(configPath, JSON.stringify(config));
+
+      const projectId = tempDir.replace(/^\//, '').replace(/\//g, '-');
+      dashServer.removeProject(projectId);
+      dashServer.addProject(tempDir);
+
+      const { status, body } = await fetchJson('/api/marketplace/scanner/start', {
+        method: 'POST',
+      });
+
+      expect(status).toBe(403);
+      expect(body.ok).toBe(false);
+      expect(body.error).toContain('disabled');
+
+      // Restore config
+      delete config.marketplace;
+      fs.writeFileSync(configPath, JSON.stringify(config));
+      dashServer.removeProject(projectId);
+      dashServer.addProject(tempDir);
+    });
+
+    it('should reject when marketplace config is absent (opt-in by default)', async () => {
+      // Default test config has no marketplace key — should be blocked
+      const { status, body } = await fetchJson('/api/marketplace/scanner/start', {
+        method: 'POST',
+      });
+
+      expect(status).toBe(403);
+      expect(body.ok).toBe(false);
+      expect(body.error).toContain('disabled');
     });
   });
 

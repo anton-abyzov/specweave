@@ -1,38 +1,38 @@
 ---
 title: "Skills"
-description: "SpecWeave defines two complementary standards for AI agent skills: Extensible Skills for customization and Verified Skills for trust"
+description: "SpecWeave adds two complementary layers to the AI agent skill ecosystem: Extensible Skills for customization and Verified Skills for trust"
 keywords: [skills, extensible-skills, verified-skills, v-skills, standards, AI agent skills]
 ---
 
 # Skills
 
-AI agent skills are programs written in English — transparent markdown files that define how an AI coding agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
+Skills extend what AI coding agents can do — structured markdown files that define how an agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
 
 :::tip New to skills?
 Start with **[Skills, Plugins & Marketplaces Explained](/docs/skills/fundamentals)** — a beginner guide covering what skills, plugins, and marketplaces are, how they relate, and how SpecWeave uses them at scale.
 :::
 
-SpecWeave defines **two complementary standards** that address the two fundamental questions every skill user faces:
+SpecWeave adds **two complementary layers** to the skill ecosystem, addressing the two fundamental questions every skill user faces:
 
-1. **How do I make skills work for MY project?** — The Extensible Skills Standard
-2. **How do I know a skill is safe to install?** — The Verified Skills Standard
+1. **How do I make skills work for MY project?** — Extensible Skills
+2. **How do I know a skill is safe to install?** — Verified Skills
 
 ---
 
-## The Two Standards
+## The Two Layers
 
-### Extensible Skills Standard
+### Extensible Skills
 
-**The customization layer.** Based on the Open/Closed Principle from SOLID design:
+**The customization layer.** SpecWeave builds on Claude Code's native skill system with a clean separation:
 
-- **Closed for modification** — Core skill logic lives in `SKILL.md`, stable and tested
-- **Open for extension** — Your project-specific rules live in `skill-memories/*.md`
+- Core instructions live in `SKILL.md`, stable and versioned
+- Your project-specific rules live in `skill-memories/*.md`
 
-Skills self-load their customizations using **Dynamic Context Injection (DCI)** — a shell one-liner that reads your preferences before the skill executes. Three-tier cascading lookup ensures project-level overrides take priority over global defaults.
+Skills self-load their customizations using **dynamic context injection** (Claude Code's built-in `` !`command` `` syntax) — a shell one-liner that reads your preferences before the skill executes. Skill memories are loaded from project, personal, and global directories, with project-level overrides taking priority over global defaults.
 
 The result: you correct Claude once ("use React Hook Form, not useState for forms"), and that preference is applied automatically in every future session. No reminders needed.
 
-[Read the full Extensible Skills Standard](/docs/skills/extensible/)
+[Read more about Extensible Skills](/docs/skills/extensible/)
 
 ---
 
@@ -62,16 +62,17 @@ The registry at [verifiedskill.com](https://verifiedskill.com) provides a truste
                 BEFORE INSTALL                    AFTER INSTALL
           ┌─────────────────────┐          ┌─────────────────────┐
           │  Verified Skills    │          │  Extensible Skills  │
-          │  Standard           │          │  Standard           │
+          │                     │          │                     │
           │                     │          │                     │
           │  "Is this skill     │    ──►   │  "How do I make     │
           │   safe to use?"     │          │   this skill work   │
           │                     │          │   for MY project?"  │
-          │  3-tier trust       │          │  DCI + memories     │
+          │  3-tier trust       │          │  Injection +        │
+          │                     │          │  memories           │
           └─────────────────────┘          └─────────────────────┘
 ```
 
-A skill can be both **verified** (passed security certification) and **extensible** (customizable via skill memories). The standards address different stages of the skill lifecycle:
+A skill can be both **verified** (passed security certification) and **extensible** (customizable via skill memories). These layers address different stages of the skill lifecycle:
 
 - **Verified Skills** answers: *Should I trust this skill?* — evaluated before installation
 - **Extensible Skills** answers: *How do I adapt this skill?* — customized after installation
@@ -80,9 +81,12 @@ A skill can be both **verified** (passed security certification) and **extensibl
 
 ## Explore Further
 
-- **[Extensible Skills Hub](/docs/skills/extensible/)** — All docs about customization, DCI, skill memories, and self-improving AI
+- **[Installing Skills](/docs/skills/installation)** — Find, install, and manage skills with the `vskill` CLI
+- **[Skill Studio](/docs/skills/skill-studio)** — Develop and test skills locally in a browser-based IDE
+- **[Extensible Skills Hub](/docs/skills/extensible/)** — All docs about customization, dynamic context injection, skill memories, and self-improving AI
 - **[Verified Skills Hub](/docs/skills/verified/)** — All docs about security certification, trust tiers, and the skills ecosystem
 - **[Skill Discovery & Evaluation](/docs/skills/skill-discovery-evaluation)** — Where to find skills and how to evaluate them
-- **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 39 AI coding agents
+- **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference for the skill package manager
+- **[Agent Compatibility](/docs/guides/agent-skills-extensibility-analysis)** — Skills across 49 AI coding agents
 - **[All 100+ Skills](/docs/reference/skills)** — Complete SpecWeave skill catalog
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry

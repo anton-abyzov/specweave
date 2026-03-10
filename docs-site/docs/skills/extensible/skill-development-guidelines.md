@@ -1,18 +1,18 @@
 ---
 sidebar_position: 100
 title: Skill Development Guidelines
-description: Design SpecWeave skills that users can extend without modification using SOLID principles.
+description: Design SpecWeave skills that users can extend without modification.
 ---
 
 # Skill Development Guidelines
 
 **Design skills that users can extend without modification.**
 
-When creating SpecWeave skills, follow the **Open/Closed Principle** (SOLID):
+When creating SpecWeave skills, keep core logic stable while making customization easy:
 
 ## Structure for Extension
 
-**SKILL.md** (closed for modification)
+**SKILL.md** (stable core logic)
 ```markdown
 # Your Skill
 
@@ -31,7 +31,7 @@ Users can customize:
 See `.specweave/skill-memories/{skill-name}.md` for customizations.
 ```
 
-`skill-memories/{skill-name}.md` (open for extension)
+`skill-memories/{skill-name}.md` (user customizations)
 ```markdown
 ### Component Preferences
 - Use Material UI instead of Chakra
@@ -43,15 +43,15 @@ When validating forms:
 2. Require 2FA for admin roles
 ```
 
-## SOLID Principles for Skills
+## Design Principles for Skills
 
 | Principle | Application |
 |-----------|-------------|
 | **Single Responsibility** | One skill = one domain (Frontend, Backend, Testing, etc.) |
-| **Open/Closed** | Core logic in SKILL.md (closed), customizations in skill-memories (open) |
-| **Liskov Substitution** | Customizations shouldn't break skill contracts (output format, interface) |
-| **Interface Segregation** | Expose clear extension points, don't force users to override large blocks |
-| **Dependency Inversion** | Depend on patterns/abstractions, let skill-memories provide concrete implementations |
+| **Stable Core, Extensible Surface** | Core logic in SKILL.md (stable), customizations in skill-memories (extensible) |
+| **Contract Preservation** | Customizations shouldn't break skill contracts (output format, interface) |
+| **Targeted Extension Points** | Expose clear extension points, don't force users to override large blocks |
+| **Abstractions Over Specifics** | Depend on patterns/abstractions, let skill-memories provide concrete implementations |
 
 ## Design Patterns
 
@@ -100,6 +100,6 @@ When validating forms:
 
 ## See Also
 
-- **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills)** — Full architecture of the Open/Closed Principle for skills
+- **[Extensible Skills](/docs/skills/extensible/extensible-skills)** — Full architecture of the extensibility model for skills
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** — Security certification requirements for publishable skills
 - **[Secure Skill Factory Standard](/docs/skills/verified/secure-skill-factory-standard)** — Mandatory sections and forbidden patterns for SKILL.md files

@@ -264,9 +264,9 @@ Each agent has its own spec, plan, and task list. No overlap, no conflicts. Chec
 
 ### Power Features to Explore Next
 
-**🎛️ Extensible Skills (Open/Closed Principle)**
+**Extensible Skills (Stable Core, Customizable Extensions)**
 
-Skills aren't just prompts — they're **programs you can customize** without forking source code.
+Skills aren't just prompts — they're **structured markdown instructions you can customize** without forking source code.
 
 **Example: Teaching the Frontend Skill**
 ```bash
@@ -298,11 +298,11 @@ Claude: *automatically uses @/components/ui* ✓
 - ✅ **Self-improving** — Corrections persist across sessions
 - ✅ **No vendor lock-in** — You control the behavior
 
-**Open/Closed Principle (SOLID):**
-- **Closed for modification** — Don't edit SKILL.md
-- **Open for extension** — Customize via skill-memories
+**Stable core, customizable extensions:**
+- **Stable core** — Don't edit SKILL.md; it keeps getting updates
+- **Your extensions** — Customize via skill-memories
 
-Unlike Copilot or Cursor which you can't customize, SpecWeave skills are **programs you can reprogram**.
+Unlike Copilot or Cursor which you can't customize, SpecWeave skills are **structured expertise you can extend**.
 
 **Enable auto-learning:**
 ```bash
