@@ -12,6 +12,7 @@ When things go wrong, these guides help you get back on track.
 
 | Issue | Guide |
 |-------|-------|
+| npm E401 during install/update | [Common Errors](./common-errors#npm-e401) |
 | Claude Code crashed/froze | [Emergency Recovery](./emergency-recovery) |
 | Hook errors | [Emergency Recovery](./emergency-recovery#hook-specific-issues) |
 | GitHub sync not working | [Emergency Recovery](./emergency-recovery#sync-issues) |
