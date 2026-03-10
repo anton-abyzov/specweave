@@ -209,6 +209,31 @@ npm install --force
 npm update
 ```
 
+### "npm ERR! code E401" / "Unable to authenticate" {#npm-e401}
+
+**Cause**: Your `~/.npmrc` has a stale or expired authentication token. npm sends this token even for public packages like SpecWeave, causing the request to fail.
+
+This commonly happens when you have tokens from GitHub Packages, AWS CodeArtifact, Azure DevOps, or a previous `npm login` session.
+
+**Solution**:
+
+```bash
+# Install or update SpecWeave bypassing all auth config
+npm i -g specweave --registry https://registry.npmjs.org --userconfig /dev/null
+```
+
+Once on **v1.0.416+**, `specweave update` automatically bypasses auth config for self-update — you won't hit this again.
+
+**To fix the root cause** (optional), remove the stale token from `~/.npmrc`:
+
+```bash
+# Remove stale registry.npmjs.org token (keeps other tokens like GitHub Packages)
+sed -i.bak '/registry.npmjs.org.:_authToken/d' ~/.npmrc
+
+# Or refresh it
+npm login
+```
+
 ### "npm ERR! code E404"
 
 **Cause**: Package doesn't exist or is private.
