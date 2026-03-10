@@ -295,6 +295,18 @@ function activateIncrement(incrementsDir: string, incId: string): void {
       metadata.updated = new Date().toISOString();
       fs.writeFileSync(metaPath, JSON.stringify(metadata, null, 2), 'utf-8');
       console.log(chalk.green(`✓ Activated: ${incId}`));
+
+      // Deferred sync: trigger living docs + external tools sync on activation.
+      // At increment creation, spec.md is a template (sync skipped by template guard).
+      // By activation time, PM/Architect have filled in real content.
+      const projectRoot = path.resolve(incrementsDir, '..', '..');
+      import('../../core/hooks/LifecycleHookDispatcher.js').then(({ LifecycleHookDispatcher }) => {
+        LifecycleHookDispatcher.onIncrementPlanned(projectRoot, incId).catch(() => {
+          // Non-blocking: sync failure shouldn't prevent activation
+        });
+      }).catch(() => {
+        // Dynamic import failure (e.g., missing module) — skip silently
+      });
     }
   } catch {
     // Skip invalid metadata

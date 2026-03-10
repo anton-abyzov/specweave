@@ -77,7 +77,7 @@ export default function SkillStudioSection() {
         ))}
       </div>
       <div className={styles.cta}>
-        <Button variant="outline" href="https://verified-skill.com">
+        <Button variant="outline" href="https://verified-skill.com/studio">
           Try Skill Studio at verified-skill.com
         </Button>
       </div>

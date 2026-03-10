@@ -84,10 +84,13 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 - Write detailed specs upfront to reduce ambiguity
 - `/sw:increment` REQUIRES plan mode -- never skip it
 
-### 2. Subagent Strategy
-- Use subagents liberally to keep main context clean
-- Offload research, exploration, and parallel analysis to subagents
-- One task per subagent for focused execution
+### 2. Subagent Strategy (Context Economy)
+- **Protect main context** — the main agent's context window is precious; delegate anything that produces large output
+- **Research via subagents** — when the user provides URLs, links, or references external docs, spawn a subagent to fetch and summarize instead of loading raw content into main context
+- **Codebase exploration** — use Explore subagents for broad searches; only bring concise findings back to main context
+- **One task per subagent** — focused execution produces better results and cleaner summaries
+- **Parallel research** — launch multiple subagents concurrently when investigating independent questions
+- **Summarize, don't relay** — subagent results should be distilled to actionable insights before acting on them in main context
 - Append "use subagents" to requests for safe parallelization
 - In team mode, sub-agents submit plans for team lead review before implementing
 
