@@ -22,8 +22,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
-<script src="/assets/js/runtime~main.d0994d1f.js" defer="defer"></script>
-<script src="/assets/js/main.6a7e1fcb.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.d4ffc139.js" defer="defer"></script>
+<script src="/assets/js/main.f94f6686.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -139,8 +139,8 @@
 <li class=""><a class="" href="/docs/workflows/brownfield">Brownfield Projects</a> - Document existing code</li>
 </ul>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="power-features-to-explore-next">Power Features to Explore Next<a href="#power-features-to-explore-next" class="hash-link" aria-label="Direct link to Power Features to Explore Next" title="Direct link to Power Features to Explore Next" translate="no">​</a></h3>
-<p><strong>🎛️ Extensible Skills (Open/Closed Principle)</strong></p>
-<p>Skills aren&#x27;t just prompts — they&#x27;re <strong>programs you can customize</strong> without forking source code.</p>
+<p><strong>Extensible Skills (Stable Core, Customizable Extensions)</strong></p>
+<p>Skills aren&#x27;t just prompts — they&#x27;re <strong>structured markdown instructions you can customize</strong> without forking source code.</p>
 <p><strong>Example: Teaching the Frontend Skill</strong></p>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># During development</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">You: </span><span class="token string" style="color:#e3116c">&quot;Generate a Button component&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Claude: *creates component with inline styles*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">You: </span><span class="token string" style="color:#e3116c">&quot;No, use our design system from @/components/ui&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># SpecWeave automatically learns this correction</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Saves to .specweave/skill-memories/frontend.md</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Next session (new conversation)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">You: </span><span class="token string" style="color:#e3116c">&quot;Generate a Card component&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Claude: *automatically uses @/components/ui* ✓</span><br></span></code></pre></div></div>
 <p><strong>Your customizations live here:</strong></p>
@@ -152,12 +152,12 @@
 <li class="">✅ <strong>Self-improving</strong> — Corrections persist across sessions</li>
 <li class="">✅ <strong>No vendor lock-in</strong> — You control the behavior</li>
 </ul>
-<p><strong>Open/Closed Principle (SOLID):</strong></p>
+<p><strong>Stable core, customizable extensions:</strong></p>
 <ul>
-<li class=""><strong>Closed for modification</strong> — Don&#x27;t edit SKILL.md</li>
-<li class=""><strong>Open for extension</strong> — Customize via skill-memories</li>
+<li class=""><strong>Stable core</strong> — Don&#x27;t edit SKILL.md; it keeps getting updates</li>
+<li class=""><strong>Your extensions</strong> — Customize via skill-memories</li>
 </ul>
-<p>Unlike Copilot or Cursor which you can&#x27;t customize, SpecWeave skills are <strong>programs you can reprogram</strong>.</p>
+<p>Unlike Copilot or Cursor which you can&#x27;t customize, SpecWeave skills are <strong>structured expertise you can extend</strong>.</p>
 <p><strong>Enable auto-learning:</strong></p>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">/sw:reflect-on      </span><span class="token comment" style="color:#999988;font-style:italic"># Corrections become permanent knowledge</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">/sw:reflect-status  </span><span class="token comment" style="color:#999988;font-style:italic"># See what Claude has learned</span><br></span></code></pre></div></div>
 <p><a class="" href="/docs/guides/self-improving-skills">Learn more →</a></p>
