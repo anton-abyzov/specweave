@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.404] - 2026-03-10
+
+### Changes
+- docs: update skills docs and site content
+- re-render video with bigger phone/fonts, trim integrations to 3
+- fix homepage: static hero, inline SVG icons, revert demo video
+- add Playwright e2e tests for hero section rendering
+- fix invisible feature card text below Skill Studio section
+- fix animation SSR hydration: prevent content stuck at opacity:0 on uncached machines
+- remove buggy mega menu nav, revert to standard docusaurus navigation
+- fix brand icons missing on uncached machines
+
+---
+
+
+
 ## [1.0.403] - 2026-03-10
 
 ### Changes
