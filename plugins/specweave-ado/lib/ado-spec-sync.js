@@ -14,7 +14,6 @@ class AdoSpecSync {
         password: config.personalAccessToken
       },
       headers: {
-        "Content-Type": "application/json-patch+json",
         "Accept": "application/json"
       }
     });
@@ -198,7 +197,9 @@ class AdoSpecSync {
       }
     ];
     const encodedType = encodeURIComponent(workItemType);
-    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload, {
+      headers: { "Content-Type": "application/json-patch+json" }
+    });
     const featureData = response.data;
     console.log(`   \u2705 Created ADO Feature #${featureData.id}: ${featureData._links.html.href}`);
     return {
@@ -239,7 +240,8 @@ class AdoSpecSync {
     }
     const response = await this.client.patch(
       `/wit/workitems/${featureId}?api-version=7.0`,
-      payload
+      payload,
+      { headers: { "Content-Type": "application/json-patch+json" } }
     );
     const featureData = response.data;
     console.log(`   \u2705 Updated ADO Feature #${featureId} (${payload.length} field(s) changed)`);
@@ -396,6 +398,8 @@ ${acList}
     `;
     const response = await this.client.post("/wit/wiql?api-version=7.0", {
       query: wiql
+    }, {
+      headers: { "Content-Type": "application/json" }
     });
     const workItems = response.data.workItems;
     if (workItems.length === 0) {
@@ -455,7 +459,10 @@ ${acList}
         }
       }
     ];
-    const response = await this.client.post("/wit/workitems/$User%20Story?api-version=7.0", payload);
+    const encodedType = encodeURIComponent(workItemType);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload, {
+      headers: { "Content-Type": "application/json-patch+json" }
+    });
     const storyData = response.data;
     return {
       id: storyData.id,
@@ -489,7 +496,9 @@ ${acList}
         value: updates.state
       });
     }
-    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload);
+    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
+      headers: { "Content-Type": "application/json-patch+json" }
+    });
   }
   /**
    * Map SpecWeave priority to ADO priority value
