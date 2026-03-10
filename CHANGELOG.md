@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.414] - 2026-03-10
+
+### Changes
+- fix: update CLI and installation health checker
+
+---
+
+
+
 ## [1.0.413] - 2026-03-10
 
 ### Changes
