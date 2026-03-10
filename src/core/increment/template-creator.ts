@@ -343,11 +343,12 @@ export function isTemplateFile(specPath: string): boolean {
     content.includes(TEMPLATE_MARKERS.CRITERION) ||
     content.includes(TEMPLATE_MARKERS.PROJECT_PLACEHOLDER);
 
-  // Check for placeholder patterns
-  const hasPlaceholders =
-    TEMPLATE_MARKERS.PLACEHOLDER_PATTERN.test(content) ||
-    (TEMPLATE_MARKERS.BRACKET_PLACEHOLDER.test(content) &&
-      content.includes('### US-'));
+  // Check for placeholder patterns (mustache-style {{VAR}} only)
+  // NOTE: BRACKET_PLACEHOLDER check removed — it produced false positives on real specs
+  // containing code references like [skillName], [status], [data-theme='dark'], etc.
+  // Real templates are already caught by hasTemplateMarkers ([Story Title], [user type], etc.)
+  // and mostACsArePlaceholders (50%+ ACs still have bracket content).
+  const hasPlaceholders = TEMPLATE_MARKERS.PLACEHOLDER_PATTERN.test(content);
 
   // Check if acceptance criteria are still placeholders
   const acMatches = content.match(/\*\*AC-US\d+-\d+\*\*:/g) || [];

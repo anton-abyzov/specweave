@@ -27,7 +27,7 @@ export default function CTASection() {
             <Button
               variant="primary"
               size="lg"
-              href="/docs/guides/getting-started/quick-start"
+              href="/docs/getting-started"
             >
               Get Started
             </Button>
