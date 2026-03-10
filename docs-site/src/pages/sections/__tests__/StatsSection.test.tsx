@@ -11,9 +11,9 @@ describe('StatsSection', () => {
 
   it('renders stat labels', () => {
     render(<StatsSection />);
-    expect(screen.getByText('Verified Skills')).toBeInTheDocument();
-    expect(screen.getByText('Autonomous Hours')).toBeInTheDocument();
-    expect(screen.getByText('Increments Shipped')).toBeInTheDocument();
-    expect(screen.getByText('Community Members')).toBeInTheDocument();
+    expect(screen.getByText('Skills Available')).toBeInTheDocument();
+    expect(screen.getByText('Commits Shipped')).toBeInTheDocument();
+    expect(screen.getByText('Active Projects')).toBeInTheDocument();
+    expect(screen.getByText('Core Plugins')).toBeInTheDocument();
   });
 });
