@@ -18,17 +18,17 @@
 }
 
 .logo {
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--sw-space-4);
+  margin-bottom: var(--sw-space-5);
 }
 
 .name {
-  font-size: var(--sw-font-size-base);
-  font-weight: var(--sw-font-weight-semibold);
+  font-size: var(--sw-font-size-lg);
+  font-weight: var(--sw-font-weight-bold);
   color: var(--sw-text-primary);
   margin: 0 0 var(--sw-space-2);
 }

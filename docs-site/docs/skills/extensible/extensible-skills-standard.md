@@ -1,16 +1,16 @@
 ---
-title: "Extensible Skills Standard"
-description: "Formal specification for extensibility categories (extensible, semi-extensible, not-extensible) and DCI blocks"
+title: "Extensible Skills Specification"
+description: "Formal specification for extensibility categories (extensible, semi-extensible, not-extensible) and context injection blocks"
 date: "2026-02-21"
 authors: ["Anton Abyzov"]
-tags: ["extensible-skills", "standard", "DCI", "skill-memories"]
+tags: ["extensible-skills", "specification", "dynamic-context-injection", "skill-memories"]
 ---
 
-# Extensible Skills Standard
+# Extensible Skills Specification
 
 **Version**: 4.0.0 | **Status**: Normative | **Authors**: Anton Abyzov
 
-This document defines the formal standard for skill extensibility classification. It specifies category definitions, detection mechanisms, and the DCI specification.
+Built on Claude Code's native skill system, this document defines the formal specification for skill extensibility classification. It specifies category definitions, detection mechanisms, and the context injection specification.
 
 For practical how-to guidance, see the [Implementation Guide](/docs/skills/extensible/extensible-skills-guide).
 
@@ -22,19 +22,19 @@ Skills MUST be classified into one of three extensibility categories.
 
 ### Extensible
 
-The skill has a working DCI block that loads customizations from the standard `skill-memories` system. Users can create a memory file and know exactly where to put it -- no skill-specific knowledge required.
+The skill has a working context injection block that loads customizations from the standard `skill-memories` system. Users can create a memory file and know exactly where to put it -- no skill-specific knowledge required.
 
 **Requirements**:
-- MUST contain at least one DCI block (`` !`...` ``) outside of fenced code blocks
-- The DCI block MUST reference `skill-memories` for the standard cascading lookup
+- MUST contain at least one context injection block (`` !`...` ``) outside of fenced code blocks
+- The context injection block MUST reference `skill-memories` for the standard cascading lookup
 
 ### Semi-Extensible
 
-The skill mentions customization mechanisms (templates, hooks, configuration, plugins, context providers) in its prose, OR has a DCI block that does not use the standard skill-memories system. Users need skill-specific knowledge to customize behavior.
+The skill mentions customization mechanisms (templates, hooks, configuration, plugins, context providers) in its prose, OR has a context injection block that does not use the standard skill-memories system. Users need skill-specific knowledge to customize behavior.
 
 **Requirements** (any of):
 - Contains one or more keyword patterns matching recognized extension types
-- Contains a DCI block that does NOT reference `skill-memories`
+- Contains a context injection block that does NOT reference `skill-memories`
 
 **Keyword signals** (any match classifies as semi-extensible):
 - **template**: "custom templates", "override templates", "template customization"
@@ -51,11 +51,11 @@ The skill has no detected extension points. Users MUST fork `SKILL.md` to custom
 
 ---
 
-## 2. Dynamic Context Injection (DCI)
+## 2. Dynamic Context Injection
 
 ### 2.1 Syntax
 
-A DCI block is a line in `SKILL.md` that begins with `!` followed by a backtick-enclosed shell command:
+A context injection block is a line in `SKILL.md` that begins with `!` followed by a backtick-enclosed shell command:
 
 ```
 !`<shell-command>`
@@ -65,7 +65,7 @@ The command MUST be a single line. The `!` prefix MUST appear at the start of th
 
 ### 2.2 Standard Skill-Memories Lookup
 
-The canonical DCI one-liner for skill-memories lookup:
+The canonical context injection one-liner for skill-memories lookup:
 
 ```
 !`s="<skill-name>"; for d in .specweave/skill-memories .claude/skill-memories "$HOME/.claude/skill-memories"; do p="$d/$s.md"; [ -f "$p" ] && awk '/^## Learnings$/{ok=1;next}/^## /{ok=0}ok' "$p" && break; done 2>/dev/null; true`
@@ -78,14 +78,14 @@ The canonical DCI one-liner for skill-memories lookup:
 
 ### 2.3 Graceful Degradation
 
-DCI commands MUST end with `2>/dev/null; true` to ensure:
+Context injection commands MUST end with `2>/dev/null; true` to ensure:
 - The skill loads normally if memory files do not exist
 - Shell errors do not prevent skill execution
 - No error output is shown to the user
 
 ### 2.4 Execution Model
 
-DCI blocks are preprocessed by Claude Code before the skill content is interpreted. The shell output replaces the DCI line in the skill content. Only Claude Code (as of February 2026) executes DCI blocks; other agents treat them as plain text.
+Context injection blocks are preprocessed by Claude Code before the skill content is interpreted. The shell output replaces the injection line in the skill content. Only Claude Code (as of February 2026) executes context injection blocks; other agents treat them as plain text.
 
 ---
 
@@ -93,11 +93,11 @@ DCI blocks are preprocessed by Claude Code before the skill content is interpret
 
 The extensibility detector MUST check signals in the following order of strength (highest wins):
 
-1. **Extensible**: DCI block with `skill-memories` reference
-2. **Semi-extensible**: DCI block without `skill-memories`, OR keyword pattern matches
+1. **Extensible**: Context injection block with `skill-memories` reference
+2. **Semi-extensible**: Context injection block without `skill-memories`, OR keyword pattern matches
 3. **Not extensible**: No signals detected
 
-**Pre-processing**: Before scanning for DCI patterns, the detector MUST strip fenced code blocks (` ``` ... ``` `) to avoid false positives from documentation examples.
+**Pre-processing**: Before scanning for context injection patterns, the detector MUST strip fenced code blocks (` ``` ... ``` `) to avoid false positives from documentation examples.
 
 **Backward compatibility**: The `extensible: boolean` field MUST remain derived as `tier !== 'not-extensible'`, ensuring existing API consumers are unaffected.
 
@@ -105,13 +105,13 @@ The extensibility detector MUST check signals in the following order of strength
 
 ## 4. Auto-Learning (Reflect)
 
-The Reflect system (auto-learning from corrections) is an **optional feature orthogonal to extensibility classification**. A skill with DCI + skill-memories is `extensible` regardless of whether it also integrates auto-learning. Reflect enhances the user experience but does not change the extensibility category.
+The Reflect system (auto-learning from corrections) is an **optional feature orthogonal to extensibility classification**. A skill with context injection + skill-memories is `extensible` regardless of whether it also integrates auto-learning. Reflect enhances the user experience but does not change the extensibility category.
 
 ---
 
 ## 5. Conformance
 
-A skill registry implementation conforms to this standard if it:
+A skill registry implementation conforms to this specification if it:
 
 1. Classifies all registered skills into exactly one category (extensible, semi-extensible, not-extensible)
 2. Implements the detection algorithm as specified in Section 3
@@ -125,7 +125,7 @@ A skill registry implementation conforms to this standard if it:
 - **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** -- Getting started, examples, FAQ
 - **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
 - **[Self-Improving Skills](/docs/skills/extensible/self-improving-skills)** -- The Reflect auto-learning system
-- **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- SOLID principles for skill authoring
+- **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Best practices for skill authoring
 
 ---
 

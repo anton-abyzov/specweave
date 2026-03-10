@@ -309,7 +309,7 @@ The `vskill` CLI implements **52 regex-based pattern checks** across **9 detecti
 | **Remote code execution** | 8 | Critical | `curl \| bash`, `wget \| sh`, `\| bash` (generic), `eval()`, `exec()`, `child_process`, `Invoke-Expression`, `new Function()` |
 | **Obfuscation** | 5 | Critical | `atob()`, `btoa()`, `base64 -d/-D`, hex escape sequences, password-protected archives (`unzip -P`, `7z -p`) |
 | **Memory poisoning** | 2 | Critical | Writes to `CLAUDE.md`/`AGENTS.md`/`.claude/`, writes to `SOUL.md`/`MEMORY.md` |
-| **DCI block abuse** | 14 | Critical | DCI credential reads, DCI network exfiltration (curl/wget/fetch/nc), DCI config writes, DCI base64 decode, DCI eval, DCI download-and-execute, DCI reverse shell, DCI sudo, DCI rm -rf, DCI home dir reads, DCI data piping |
+| **Injection block abuse** | 14 | Critical | Injection block credential reads, injection block network exfiltration (curl/wget/fetch/nc), injection block config writes, injection block base64 decode, injection block eval, injection block download-and-execute, injection block reverse shell, injection block sudo, injection block rm -rf, injection block home dir reads, injection block data piping |
 | **Credential access** | 9 | High | `.env` file reads, `GITHUB_TOKEN`, `AWS_SECRET`, `API_KEY`, `credentials.json`, `secrets.yaml`, `~/.ssh/`, `~/.aws/`, crypto wallet paths |
 | **Data exfiltration** | 1 | High | `curl --data` / `curl -d` (data upload to external endpoints) |
 | **Prompt injection** | 4 | High | `<system>` tags, "ignore previous instructions", "you are now", "override system prompt" |
@@ -442,7 +442,7 @@ The following table shows which attack types each security layer is designed to 
 | `curl \| bash` / RCE | Catches | N/A | N/A | Catches | N/A | Catches |
 | `.env` / credential reads | Catches | N/A | Permission check | Catches | N/A | Catches |
 | `<system>` tag injection | Catches | N/A | N/A | Catches | N/A | Catches |
-| DCI block abuse (14 patterns) | Catches | N/A | N/A | Catches | N/A | Catches |
+| Injection block abuse (14 patterns) | Catches | N/A | N/A | Catches | N/A | Catches |
 | Semantic prompt injection (no keywords) | Misses | N/A | N/A | Catches | N/A | Catches |
 | Base64-encoded exfiltration | Partial | N/A | N/A | Catches | N/A | Catches |
 | Trojanized archive payloads | Misses | N/A | N/A | Partial | N/A | Catches |
@@ -540,7 +540,7 @@ flowchart LR
 
 ### Tier Progression Details
 
-**Tier 1: Scanned** is the minimum bar. Every skill in the Verified Skills marketplace must pass this tier. It runs in under 500 milliseconds and costs nothing. The scanner catches the majority of unsophisticated attacks — the `rm -rf` commands, the `curl | bash` patterns, the `<system>` tag injections, and the DCI block abuse patterns (14 patterns covering credential reads, network exfiltration, privilege escalation, and config file writes within executable DCI blocks). It does not catch semantic attacks (e.g., a skill that uses legitimate-sounding language to instruct the agent to exfiltrate data without using any flagged patterns).
+**Tier 1: Scanned** is the minimum bar. Every skill in the Verified Skills marketplace must pass this tier. It runs in under 500 milliseconds and costs nothing. The scanner catches the majority of unsophisticated attacks — the `rm -rf` commands, the `curl | bash` patterns, the `<system>` tag injections, and the dynamic context injection abuse patterns (14 patterns covering credential reads, network exfiltration, privilege escalation, and config file writes within executable injection blocks). It does not catch semantic attacks (e.g., a skill that uses legitimate-sounding language to instruct the agent to exfiltrate data without using any flagged patterns).
 
 **Tier 2: Verified** adds LLM-based intent analysis. The judge model reads the entire skill and evaluates whether its stated purpose aligns with its actual instructions. A skill claiming to be a "React component generator" that also instructs the agent to read `~/.aws/credentials` would be flagged — even if the credential access uses no pattern-matched keywords. This tier costs approximately $0.03 per skill evaluation and takes 5-15 seconds.
 
@@ -660,7 +660,7 @@ The current state of AI agent skill security is comparable to the npm ecosystem 
 | **Agent Skills** | Markdown files (SKILL.md) that provide instructions to AI coding agents. Adopted by 39 agent runtimes as of `skills@1.3.9`. |
 | **ClawHavoc** | A supply chain attack campaign that published 335 infostealer packages to ClawHub, deploying Atomic macOS Stealer. |
 | **Blocklist** | A locally cached list of known-malicious skills, synced from verifiedskill.com via `vskill blocklist sync`. Enforced at install time by the vskill CLI. |
-| **DCI Block** | A "Direct Command Injection" block in SKILL.md — shell commands prefixed with `!` that agents execute directly. The scanners include 14 dedicated DCI-abuse patterns. |
+| **Dynamic Context Injection Block** | A shell command in SKILL.md using Claude Code's built-in `` !`command` `` syntax that runs before the skill content is sent to the agent, injecting runtime context. The scanners include 14 dedicated injection-abuse patterns. |
 | **LLM Judge** | An AI model used in Tier 2 verification to evaluate skill intent beyond what regex patterns can detect. |
 | **Memory Poisoning** | An attack where a skill modifies agent configuration files (CLAUDE.md, MEMORY.md) to persist malicious behavior across sessions. |
 | **MCP** | Model Context Protocol — a standard for connecting AI agents to external tools and data sources. Smithery hosts 3,000+ MCP servers. |

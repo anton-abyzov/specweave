@@ -24,11 +24,11 @@ export default function Home(): ReactNode {
         <DemoVideoSection />
         <HowItWorksSection />
         <CapabilitiesSection />
-        <AcademyPromoSection />
-        <StatsSection />
         <IntegrationsSection />
         <VerifiedSkillsSection />
         <SkillStudioSection />
+        <StatsSection />
+        <AcademyPromoSection />
         <CTASection />
       </main>
     </Layout>

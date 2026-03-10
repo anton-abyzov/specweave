@@ -36,13 +36,14 @@ export default function DemoVideoSection() {
         <video
           ref={videoRef}
           className={styles.video}
+          controls
           muted
           loop
           playsInline
           preload="none"
-          poster="/video/ship-while-you-sleep-poster.jpg"
+          poster="/video/ship-while-you-sleep-poster.jpg?v=3"
         >
-          <source src="/video/ship-while-you-sleep.mp4" type="video/mp4" />
+          <source src="/video/ship-while-you-sleep.mp4?v=3" type="video/mp4" />
         </video>
       </div>
     </Section>
