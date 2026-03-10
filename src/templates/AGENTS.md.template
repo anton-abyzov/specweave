@@ -61,6 +61,10 @@ Never mark a task complete without proving it works:
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Acceptance criteria actually satisfied
 
+### 2b. Auto-Closure (MANDATORY)
+
+When ALL tasks are complete, IMMEDIATELY run `/sw:done` — do NOT stop to ask for user confirmation. Quality gates (grill, judge-llm, PM validation) ARE the review. If gates fail, the increment stays open. User can re-open if they disagree with closure.
+
 ### 4. Large-Scale Changes
 
 For codebase-wide migrations or bulk refactors:
@@ -387,12 +391,13 @@ specweave context projects
 8. Sync to external trackers if enabled
 9. If 3 consecutive test failures: STOP, re-plan, ask user
 
-### Closing Increment
+### Closing Increment (AUTO — do NOT stop to ask)
 1. Full test suite: `npx vitest run`
 2. Full E2E: `npx playwright test`
 3. `/sw:grill <id>` — writes `grill-report.json` (CLI requires it)
-4. User acceptance for critical flows (UI, auth, payments)
-5. `/sw:done <id>` — validates report files + PM 3 gates (tasks, tests, docs)
+4. `/sw:done <id>` — validates report files + PM 3 gates (tasks, tests, docs) + syncs to GitHub/Jira/ADO
+
+**CRITICAL**: When all tasks are done, IMMEDIATELY chain to closure. Quality gates (grill, judge-llm, PM validation) ARE the review. Never stop to ask "should I close?" — just close it. If a gate fails, the increment stays open. User can re-open if they disagree.
 <!-- /SECTION -->
 
 ---
