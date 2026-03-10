@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" style="background:#fff">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 26px; font-weight: bold; }
+    .label { font-size: 18px; }
+    .small { font-size: 16px; }
+    .note { font-size: 16px; fill: #868E96; }
+  </style>
+
+  <!-- Backgrounds -->
+  <rect x="0" y="0" width="560" height="600" rx="12" fill="#ffe3e3" stroke="#FF6B6B" stroke-width="2" opacity="0.5"/>
+  <rect x="640" y="0" width="560" height="600" rx="12" fill="#d3f9d8" stroke="#51CF66" stroke-width="2" opacity="0.5"/>
+  <line x1="600" y1="10" x2="600" y2="590" stroke="#868E96" stroke-width="2" stroke-dasharray="8,6"/>
+
+  <!-- Titles -->
+  <text x="280" y="45" text-anchor="middle" class="title" fill="#e03131">Ad-Hoc Instructions</text>
+  <text x="920" y="45" text-anchor="middle" class="title" fill="#2f9e44">Structured SKILL.md</text>
+
+  <!-- LEFT: Scattered bubbles -->
+  <ellipse cx="140" cy="120" rx="110" ry="30" fill="#ffc9c9" stroke="#e03131" stroke-width="2" transform="rotate(-5 140 120)"/>
+  <text x="140" y="126" text-anchor="middle" class="small" fill="#e03131">"use TypeScript"</text>
+
+  <ellipse cx="340" cy="170" rx="110" ry="30" fill="#ffc9c9" stroke="#e03131" stroke-width="2" transform="rotate(8 340 170)"/>
+  <text x="340" y="176" text-anchor="middle" class="small" fill="#e03131">"handle errors"</text>
+
+  <ellipse cx="170" cy="240" rx="90" ry="30" fill="#ffc9c9" stroke="#e03131" stroke-width="2" transform="rotate(-3 170 240)"/>
+  <text x="170" y="246" text-anchor="middle" class="small" fill="#e03131">"add tests"</text>
+
+  <ellipse cx="380" cy="280" rx="110" ry="30" fill="#ffc9c9" stroke="#e03131" stroke-width="2" transform="rotate(3 380 280)"/>
+  <text x="380" y="286" text-anchor="middle" class="small" fill="#e03131">"be consistent"</text>
+
+  <text x="280" y="360" text-anchor="middle" class="note">Scattered, vague, forgotten</text>
+
+  <text x="100" y="435" class="label" fill="#e03131">→ Inconsistent results</text>
+  <text x="100" y="465" class="label" fill="#e03131">→ Different every time</text>
+
+  <!-- RIGHT: Structured SKILL.md -->
+  <rect x="680" y="75" width="480" height="380" rx="10" fill="#ebfbee" stroke="#2f9e44" stroke-width="2"/>
+  <text x="920" y="102" text-anchor="middle" font-size="20" font-weight="bold" fill="#2f9e44">SKILL.md</text>
+
+  <!-- Frontmatter section -->
+  <rect x="710" y="120" width="420" height="65" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="920" y="158" text-anchor="middle" class="label" fill="#2f9e44">Frontmatter</text>
+
+  <!-- Instructions Body section -->
+  <rect x="710" y="205" width="420" height="110" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="920" y="265" text-anchor="middle" class="label" fill="#2f9e44">Instructions Body</text>
+
+  <!-- Supporting Files section -->
+  <rect x="710" y="335" width="420" height="80" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="920" y="380" text-anchor="middle" class="label" fill="#2f9e44">Supporting Files</text>
+
+  <!-- Result labels -->
+  <text x="710" y="500" class="label" fill="#2f9e44">→ Consistent, testable output</text>
+  <text x="710" y="530" class="label" fill="#2f9e44">→ Repeatable every time</text>
+
+  <!-- Bottom: Formalize arrow -->
+  <line x1="420" y1="520" x2="680" y2="520" stroke="#1971c2" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text x="550" y="505" text-anchor="middle" font-size="18" font-weight="bold" fill="#1971c2">Formalize into SKILL.md</text>
+
+  <!-- Bottom note -->
+  <text x="600" y="575" text-anchor="middle" class="note">Formalize your knowledge. Make it repeatable.</text>
+
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1971c2"/></marker>
+  </defs>
+</svg>

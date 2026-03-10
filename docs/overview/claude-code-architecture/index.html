@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-overview/claude-code-architecture" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Claude Code Architecture | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/overview/claude-code-architecture"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Claude Code Architecture | SpecWeave"><meta data-rh="true" name="description" content="Understanding Claude Code&#x27;s plugin architecture - how skills, agents, hooks, and commands work together"><meta data-rh="true" property="og:description" content="Understanding Claude Code&#x27;s plugin architecture - how skills, agents, hooks, and commands work together"><meta data-rh="true" name="keywords" content="claude code,plugins,skills,agents,hooks,commands,architecture,anthropic"><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/overview/claude-code-architecture"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/overview/claude-code-architecture" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/overview/claude-code-architecture" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Claude Code Architecture","item":"https://spec-weave.com/docs/overview/claude-code-architecture"}]}</script><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a class="navbar__item navbar__link" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG menuWithAnnouncementBar_GW3s"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/docs/overview/introduction"><span title="Overview" class="categoryLinkLabel_W154">Overview</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/introduction"><span title="What is SpecWeave?" class="linkLabel_WmDU">What is SpecWeave?</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/skills-as-programs"><span title="Skills Are Programs in English" class="linkLabel_WmDU">Skills Are Programs in English</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/why-specweave"><span title="Why SpecWeave?" class="linkLabel_WmDU">Why SpecWeave?</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/no-docs-needed"><span title="You Don&#x27;t Need Claude Code Docs" class="linkLabel_WmDU">You Don&#x27;t Need Claude Code Docs</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/claude-code-basics"><span title="Claude Code Basics" class="linkLabel_WmDU">Claude Code Basics</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/overview/claude-code-architecture"><span title="Claude Code Architecture" class="linkLabel_WmDU">Claude Code Architecture</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/features"><span title="Key Features" class="linkLabel_WmDU">Key Features</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/plugins-ecosystem"><span title="Plugin Ecosystem" class="linkLabel_WmDU">Plugin Ecosystem</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/overview/philosophy"><span title="Philosophy" class="linkLabel_WmDU">Philosophy</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/metrics"><span title="DORA Metrics" class="linkLabel_WmDU">DORA Metrics</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/docs/getting-started/"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/getting-started/"><span title="Quick Start" class="linkLabel_WmDU">Quick Start</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/getting-started/first-increment"><span title="Your First Increment" class="linkLabel_WmDU">Your First Increment</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/docs/guides/core-concepts/what-is-an-increment"><span title="Core Concepts" class="categoryLinkLabel_W154">Core Concepts</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/guides/core-concepts/what-is-an-increment"><span title="What is an Increment?" class="linkLabel_WmDU">What is an Increment?</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/guides/core-concepts/living-documentation"><span title="Living Documentation" class="linkLabel_WmDU">Living Documentation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/guides/core-concepts/skills-first-architecture"><span title="Skills-First Architecture" class="linkLabel_WmDU">Skills-First Architecture</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/docs/workflows/overview"><span title="Workflows" class="categoryLinkLabel_W154">Workflows</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/workflows/overview"><span title="Complete Journey" class="linkLabel_WmDU">Complete Journey</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/guides/brainstorming"><span title="Brainstorming" class="linkLabel_WmDU">Brainstorming</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/workflows/planning"><span title="Planning" class="linkLabel_WmDU">Planning</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/workflows/implementation"><span title="Implementation" class="linkLabel_WmDU">Implementation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/workflows/brownfield"><span title="Brownfield Projects" class="linkLabel_WmDU">Brownfield Projects</span></a></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/faq"><span title="FAQ" class="linkLabel_WmDU">FAQ</span></a></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Overview</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Claude Code Architecture</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Claude Code Architecture</h1></header>
+<p>Understanding Claude Code&#x27;s architecture helps you leverage SpecWeave&#x27;s full power. This guide explains how the core components work and relate to each other.</p>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>Official Documentation</div><div class="admonitionContent_BuS1"><p>This guide is based on the <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener noreferrer" class="">official Claude Code documentation</a> and the <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/sdk-overview" target="_blank" rel="noopener noreferrer" class="">Claude Agent SDK</a>.</p></div></div>
+<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>Cross-Platform Compatibility</div><div class="admonitionContent_BuS1"><p><strong>SpecWeave works on all platforms</strong> (macOS, Linux, Windows) and with multiple AI tools:</p><ul>
+<li class=""><strong>Claude Code</strong> — Native integration (best experience)</li>
+<li class=""><strong>Cursor, Windsurf, GitHub Copilot</strong> — Via CLAUDE.md instructions</li>
+<li class=""><strong>Any AI IDE</strong> — Via <code>specweave generate --template=md</code></li>
+</ul><p>While Claude Code provides the deepest integration with native hooks and skills, SpecWeave&#x27;s core workflow (<code>spec.md</code>, <code>plan.md</code>, <code>tasks.md</code>) works with any AI coding assistant.</p></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-big-picture">The Big Picture<a href="#the-big-picture" class="hash-link" aria-label="Direct link to The Big Picture" title="Direct link to The Big Picture" translate="no">​</a></h2>
+<p>Claude Code is an extensible AI coding assistant with a <strong>plugin-based architecture</strong>. Everything flows through plugins, which bundle related functionality together.</p>
+<!-- -->
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="component-relationships">Component Relationships<a href="#component-relationships" class="hash-link" aria-label="Direct link to Component Relationships" title="Direct link to Component Relationships" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-they-differ">How They Differ<a href="#how-they-differ" class="hash-link" aria-label="Direct link to How They Differ" title="Direct link to How They Differ" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Component</th><th>Invocation</th><th>Purpose</th><th>Runs In</th></tr></thead><tbody><tr><td><strong>Skills</strong></td><td>Auto (keyword triggers)</td><td>Provide expertise in conversation</td><td>Main context</td></tr><tr><td><strong>Agents</strong></td><td>Spawned (Task tool)</td><td>Execute complex isolated tasks</td><td>Separate context</td></tr><tr><td><strong>Commands</strong></td><td>Manual (/slash)</td><td>Perform specific actions</td><td>Main context</td></tr><tr><td><strong>Hooks</strong></td><td>Auto (events)</td><td>React to lifecycle events</td><td>Background</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-flow">The Flow<a href="#the-flow" class="hash-link" aria-label="Direct link to The Flow" title="Direct link to The Flow" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                         USER INTERACTION                             │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├─────────────────────────────────────────────────────────────────────┤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   User: &quot;Review this code for security issues&quot;                       │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      │                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      ▼                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ┌──────────────────────────────────────┐                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  SKILL MATCHING (Auto)               │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  &quot;security&quot; keyword detected         │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  → sw:security skill activates       │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └──────────────────────────────────────┘                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      │                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      ▼                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ┌──────────────────────────────────────┐                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  SKILL PROVIDES EXPERTISE            │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  Security patterns, OWASP, etc.      │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  Claude knows HOW to review          │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └──────────────────────────────────────┘                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      │                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│          Complex task? Spawns agent                                  │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      │                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                      ▼                                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ┌──────────────────────────────────────┐                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  AGENT (Isolated Context)            │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  Runs security scan in subprocess    │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │  Returns results when done           │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └──────────────────────────────────────┘                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-plugins-the-container">📦 Plugins: The Container<a href="#-plugins-the-container" class="hash-link" aria-label="Direct link to 📦 Plugins: The Container" title="Direct link to 📦 Plugins: The Container" translate="no">​</a></h2>
+<p>Plugins are <strong>packages that bundle related functionality</strong>. Each plugin can contain any combination of skills, agents, commands, hooks, and MCP servers.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="plugin-structure">Plugin Structure<a href="#plugin-structure" class="hash-link" aria-label="Direct link to Plugin Structure" title="Direct link to Plugin Structure" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">my-plugin/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── .claude-plugin/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── plugin.json          # Required: plugin manifest</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── commands/                 # Custom slash commands</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── my-command.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── agents/                   # Custom agents (subagents)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── specialist.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── skills/                   # Agent Skills</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── my-skill/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│       └── SKILL.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── hooks/                    # Event handlers</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── hooks.json</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└── .mcp.json                # MCP server definitions</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-plugins-24-total">SpecWeave Plugins (24 total)<a href="#specweave-plugins-24-total" class="hash-link" aria-label="Direct link to SpecWeave Plugins (24 total)" title="Direct link to SpecWeave Plugins (24 total)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Plugin</th><th>Skills</th><th>Agents</th><th>Commands</th><th>Purpose</th></tr></thead><tbody><tr><td><strong>sw</strong> (core)</td><td>9</td><td>22</td><td>22</td><td>Increment lifecycle</td></tr><tr><td><strong>sw-github</strong></td><td>2</td><td>1</td><td>8</td><td>GitHub sync</td></tr><tr><td><strong>sw-jira</strong></td><td>2</td><td>1</td><td>8</td><td>JIRA sync</td></tr><tr><td><strong>frontend</strong></td><td>3</td><td>3</td><td>0</td><td>React/Vue/Next.js</td></tr><tr><td><strong>backend</strong></td><td>2</td><td>2</td><td>1</td><td>Node.js/Python APIs</td></tr><tr><td><strong>k8s</strong></td><td>1</td><td>1</td><td>0</td><td>Kubernetes/GitOps</td></tr><tr><td><strong>ml</strong></td><td>2</td><td>3</td><td>4</td><td>ML pipelines</td></tr><tr><td><strong>infra</strong></td><td>5</td><td>5</td><td>1</td><td>DevOps/SRE</td></tr><tr><td>...</td><td></td><td></td><td></td><td></td></tr></tbody></table>
+<p><strong>Total: 100+ skills, 68+ agents, 100+ commands</strong></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-skills-auto-activating-expertise">⚡ Skills: Auto-Activating Expertise<a href="#-skills-auto-activating-expertise" class="hash-link" aria-label="Direct link to ⚡ Skills: Auto-Activating Expertise" title="Direct link to ⚡ Skills: Auto-Activating Expertise" translate="no">​</a></h2>
+<p>Skills are <strong>SKILL.md files</strong> that Claude automatically loads when relevant keywords appear in your conversation.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-skills-work">How Skills Work<a href="#how-skills-work" class="hash-link" aria-label="Direct link to How Skills Work" title="Direct link to How Skills Work" translate="no">​</a></h3>
+<ol>
+<li class=""><strong>Discovery</strong>: Skills are discovered at startup from <code>.claude/skills/</code> directories</li>
+<li class=""><strong>Matching</strong>: Claude matches your request against skill descriptions</li>
+<li class=""><strong>Loading</strong>: Only relevant skill content is loaded (saves tokens!)</li>
+<li class=""><strong>Guidance</strong>: The skill provides expertise inline in your conversation</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="skill-anatomy">Skill Anatomy<a href="#skill-anatomy" class="hash-link" aria-label="Direct link to Skill Anatomy" title="Direct link to Skill Anatomy" translate="no">​</a></h3>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">name</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> security</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">-</span><span class="token front-matter-block front-matter yaml language-yaml">review</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">description</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Security expert for code review and vulnerability detection</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">triggers</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml">  </span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">-</span><span class="token front-matter-block front-matter yaml language-yaml"> security</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml">  </span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">-</span><span class="token front-matter-block front-matter yaml language-yaml"> owasp</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml">  </span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">-</span><span class="token front-matter-block front-matter yaml language-yaml"> vulnerability</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml">  </span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">-</span><span class="token front-matter-block front-matter yaml language-yaml"> authentication</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">allowed-tools</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Read</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Grep</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Glob</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">context</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> fork          </span><span class="token front-matter-block front-matter yaml language-yaml comment" style="color:#999988;font-style:italic"># NEW in 2.1.0: Run in isolated sub-agent</span><span class="token front-matter-block front-matter yaml language-yaml"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">model</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> opus            </span><span class="token front-matter-block front-matter yaml language-yaml comment" style="color:#999988;font-style:italic"># NEW in 2.1.0: Specify execution model</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">#</span><span class="token title important"> Security Review Skill</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">When reviewing code for security issues:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">1.</span><span class="token plain"> Check for OWASP Top 10 vulnerabilities</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">2.</span><span class="token plain"> Review authentication and authorization</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">3.</span><span class="token plain"> Look for SQL injection, XSS, CSRF</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-properties">Key Properties<a href="#key-properties" class="hash-link" aria-label="Direct link to Key Properties" title="Direct link to Key Properties" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Auto-activate</strong>: No manual invocation needed</li>
+<li class=""><strong>Main context</strong>: Runs in your conversation (not isolated) — unless <code>context: fork</code> is set</li>
+<li class=""><strong>Keyword triggers</strong>: Activates when description matches</li>
+<li class=""><strong>Token efficient</strong>: Only loaded when needed</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="new-frontmatter-fields-claude-code-210">New Frontmatter Fields (Claude Code 2.1.0+)<a href="#new-frontmatter-fields-claude-code-210" class="hash-link" aria-label="Direct link to New Frontmatter Fields (Claude Code 2.1.0+)" title="Direct link to New Frontmatter Fields (Claude Code 2.1.0+)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Field</th><th>Purpose</th><th>Example</th></tr></thead><tbody><tr><td><strong><code>context: fork</code></strong></td><td>Run skill in isolated sub-agent context</td><td>Prevents context pollution</td></tr><tr><td><strong><code>model</code></strong></td><td>Specify which model executes</td><td><code>opus</code>, <code>sonnet</code>, <code>haiku</code></td></tr><tr><td><strong><code>hooks</code></strong></td><td>Embed skill-scoped hooks</td><td>See Hooks section below</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="example-flow">Example Flow<a href="#example-flow" class="hash-link" aria-label="Direct link to Example Flow" title="Direct link to Example Flow" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">User: &quot;Check this login function for security issues&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       ┌─────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  Keyword: &quot;security&quot;    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  → security skill loads │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       └─────────────────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       Claude now has security expertise</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       and reviews code accordingly</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-agents-isolated-task-execution">🤖 Agents: Isolated Task Execution<a href="#-agents-isolated-task-execution" class="hash-link" aria-label="Direct link to 🤖 Agents: Isolated Task Execution" title="Direct link to 🤖 Agents: Isolated Task Execution" translate="no">​</a></h2>
+<p>Agents (subagents) are <strong>separate Claude instances</strong> spawned to handle complex tasks in isolation.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-agents-work">How Agents Work<a href="#how-agents-work" class="hash-link" aria-label="Direct link to How Agents Work" title="Direct link to How Agents Work" translate="no">​</a></h3>
+<ol>
+<li class=""><strong>Spawning</strong>: Main Claude uses the <code>Task</code> tool to spawn an agent</li>
+<li class=""><strong>Isolation</strong>: Agent runs with its own context (doesn&#x27;t pollute main conversation)</li>
+<li class=""><strong>Tools</strong>: Agent can have restricted tool access</li>
+<li class=""><strong>Return</strong>: Agent completes and returns results to main Claude</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="agent-anatomy">Agent Anatomy<a href="#agent-anatomy" class="hash-link" aria-label="Direct link to Agent Anatomy" title="Direct link to Agent Anatomy" translate="no">​</a></h3>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">description</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Expert code review specialist for quality</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> security</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> and maintainability</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">model</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> opus</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">tools</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Read</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Grep</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Glob</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">#</span><span class="token title important"> Code Reviewer Agent</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">You are a code review specialist. When reviewing:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">1.</span><span class="token plain"> Identify security vulnerabilities</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">2.</span><span class="token plain"> Check for performance issues</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">3.</span><span class="token plain"> Verify coding standards</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-properties-1">Key Properties<a href="#key-properties-1" class="hash-link" aria-label="Direct link to Key Properties" title="Direct link to Key Properties" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Isolated context</strong>: Separate from main conversation</li>
+<li class=""><strong>Spawned explicitly</strong>: Via Task tool or user request</li>
+<li class=""><strong>Tool restrictions</strong>: Can limit what the agent can do</li>
+<li class=""><strong>Model override</strong>: Can use different model (haiku for speed)</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-use-agents">Why Use Agents?<a href="#why-use-agents" class="hash-link" aria-label="Direct link to Why Use Agents?" title="Direct link to Why Use Agents?" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Benefit</th><th>Description</th></tr></thead><tbody><tr><td><strong>Context isolation</strong></td><td>Complex tasks don&#x27;t pollute main conversation</td></tr><tr><td><strong>Parallelization</strong></td><td>Multiple agents can run concurrently</td></tr><tr><td><strong>Specialization</strong></td><td>Tailored instructions for specific domains</td></tr><tr><td><strong>Tool restrictions</strong></td><td>Read-only agents can&#x27;t modify files</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="example-flow-1">Example Flow<a href="#example-flow-1" class="hash-link" aria-label="Direct link to Example Flow" title="Direct link to Example Flow" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">User: &quot;Use the k8s architect to design my deployment&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       ┌─────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  Task tool spawns       │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  kubernetes-architect   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       └─────────────────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       ┌─────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  Agent works in         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  isolated context       │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       │  (generates manifests)  │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       └─────────────────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       Results returned to main Claude</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-commands-user-invoked-actions">📝 Commands: User-Invoked Actions<a href="#-commands-user-invoked-actions" class="hash-link" aria-label="Direct link to 📝 Commands: User-Invoked Actions" title="Direct link to 📝 Commands: User-Invoked Actions" translate="no">​</a></h2>
+<p>Commands are <strong>slash commands</strong> (<code>/command</code>) that users explicitly invoke.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-commands-work">How Commands Work<a href="#how-commands-work" class="hash-link" aria-label="Direct link to How Commands Work" title="Direct link to How Commands Work" translate="no">​</a></h3>
+<ol>
+<li class=""><strong>Discovery</strong>: Commands from <code>.claude/commands/</code> are listed at startup</li>
+<li class=""><strong>Invocation</strong>: User types <code>/command-name</code> or <code>/plugin:command</code></li>
+<li class=""><strong>Execution</strong>: Command content becomes instructions for Claude</li>
+<li class=""><strong>Arguments</strong>: Can accept <code>$ARGUMENTS</code> or positional <code>$1</code>, <code>$2</code></li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="command-anatomy">Command Anatomy<a href="#command-anatomy" class="hash-link" aria-label="Direct link to Command Anatomy" title="Direct link to Command Anatomy" translate="no">​</a></h3>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">description</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Create git commit with intelligent message</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">allowed-tools</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> Bash</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Read</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">,</span><span class="token front-matter-block front-matter yaml language-yaml"> Grep</span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block front-matter yaml language-yaml"></span><span class="token front-matter-block front-matter yaml language-yaml key atrule" style="color:#00a4db">argument-hint</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">:</span><span class="token front-matter-block front-matter yaml language-yaml"> </span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">[</span><span class="token front-matter-block front-matter yaml language-yaml">optional message</span><span class="token front-matter-block front-matter yaml language-yaml punctuation" style="color:#393A34">]</span><span class="token front-matter-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token front-matter-block"></span><span class="token front-matter-block punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">#</span><span class="token title important"> Commit Command</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">1.</span><span class="token plain"> Run </span><span class="token code-snippet code keyword" style="color:#00009f">`git status`</span><span class="token plain"> to see changes</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">2.</span><span class="token plain"> Run </span><span class="token code-snippet code keyword" style="color:#00009f">`git diff HEAD`</span><span class="token plain"> to understand modifications</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">3.</span><span class="token plain"> Generate a concise commit message</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">4.</span><span class="token plain"> Create the commit: </span><span class="token code-snippet code keyword" style="color:#00009f">`git commit -m &quot;message&quot;`</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-properties-2">Key Properties<a href="#key-properties-2" class="hash-link" aria-label="Direct link to Key Properties" title="Direct link to Key Properties" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>User-invoked</strong>: Only runs when explicitly called</li>
+<li class=""><strong>Namespaced</strong>: Plugin commands use <code>plugin:command</code> format</li>
+<li class=""><strong>Arguments</strong>: Can accept parameters</li>
+<li class=""><strong>Tool restrictions</strong>: Can limit available tools</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="built-in-vs-custom-commands">Built-in vs Custom Commands<a href="#built-in-vs-custom-commands" class="hash-link" aria-label="Direct link to Built-in vs Custom Commands" title="Direct link to Built-in vs Custom Commands" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Type</th><th>Location</th><th>Example</th></tr></thead><tbody><tr><td>Built-in</td><td>Claude Code core</td><td><code>/compact</code>, <code>/clear</code>, <code>/help</code></td></tr><tr><td>Plugin</td><td><code>.claude/plugins/*/commands/</code></td><td><code>/sw:increment</code>, <code>/sw-github:sync</code></td></tr><tr><td>Project</td><td><code>.claude/commands/</code></td><td>Custom project commands</td></tr><tr><td>Personal</td><td><code>~/.claude/commands/</code></td><td>Your global commands</td></tr></tbody></table>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-hooks-event-driven-automation">🪝 Hooks: Event-Driven Automation<a href="#-hooks-event-driven-automation" class="hash-link" aria-label="Direct link to 🪝 Hooks: Event-Driven Automation" title="Direct link to 🪝 Hooks: Event-Driven Automation" translate="no">​</a></h2>
+<p>Hooks are <strong>scripts that run automatically</strong> when specific events occur.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="hook-events">Hook Events<a href="#hook-events" class="hash-link" aria-label="Direct link to Hook Events" title="Direct link to Hook Events" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Event</th><th>When It Fires</th><th>Common Use</th></tr></thead><tbody><tr><td><strong>PreToolUse</strong></td><td>Before any tool executes</td><td>Block dangerous operations</td></tr><tr><td><strong>PostToolUse</strong></td><td>After tool completes</td><td>Log actions, update docs</td></tr><tr><td><strong>Stop</strong></td><td>Session ends</td><td>Save state, cleanup</td></tr><tr><td><strong>SubagentStop</strong></td><td>Subagent completes</td><td>Aggregate results</td></tr><tr><td><strong>UserPromptSubmit</strong></td><td>User sends message</td><td>Inject context</td></tr><tr><td><strong>SessionStart</strong></td><td>Session begins</td><td>Initialize logging</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="hook-anatomy-hooksjson">Hook Anatomy (hooks.json)<a href="#hook-anatomy-hooksjson" class="hash-link" aria-label="Direct link to Hook Anatomy (hooks.json)" title="Direct link to Hook Anatomy (hooks.json)" translate="no">​</a></h3>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;hooks&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;event&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;PreToolUse&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;matcher&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;Write|Edit&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;script&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;./validate-file.sh&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;event&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;PostToolUse&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;script&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;./update-docs.sh&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-properties-3">Key Properties<a href="#key-properties-3" class="hash-link" aria-label="Direct link to Key Properties" title="Direct link to Key Properties" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Auto-execute</strong>: No user action required</li>
+<li class=""><strong>Event-based</strong>: Fires on specific lifecycle events</li>
+<li class=""><strong>Matchers</strong>: Can filter by tool name (for tool hooks)</li>
+<li class=""><strong>Control flow</strong>: Can block, modify, or allow operations</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="skill-scoped-hooks-claude-code-210">Skill-Scoped Hooks (Claude Code 2.1.0+)<a href="#skill-scoped-hooks-claude-code-210" class="hash-link" aria-label="Direct link to Skill-Scoped Hooks (Claude Code 2.1.0+)" title="Direct link to Skill-Scoped Hooks (Claude Code 2.1.0+)" translate="no">​</a></h3>
+<p><strong>New in 2.1.0</strong>: Hooks can be embedded directly in skill/command frontmatter, scoped to the component&#x27;s lifecycle:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> sw</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain">do</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">description</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Execute increment tasks</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">hooks</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">PostToolUse</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token key atrule" style="color:#00a4db">matcher</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Edit</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">hooks</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token key atrule" style="color:#00a4db">type</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> command</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">          </span><span class="token key atrule" style="color:#00a4db">command</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> bash plugins/specweave/hooks/v2/guards/task</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">ac</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">sync</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">guard.sh</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">---</span><br></span></code></pre></div></div>
+<p><strong>Benefits of skill-scoped hooks:</strong></p>
+<ul>
+<li class=""><strong>~50% fewer invocations</strong>: Only fire when that skill is active</li>
+<li class=""><strong>Isolation</strong>: Hooks don&#x27;t interfere across different skills</li>
+<li class=""><strong>Self-contained</strong>: All behavior (instructions + hooks) in one file</li>
+<li class=""><strong>Auto-cleanup</strong>: Hooks removed when skill completes</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-hybrid-hook-architecture">SpecWeave Hybrid Hook Architecture<a href="#specweave-hybrid-hook-architecture" class="hash-link" aria-label="Direct link to SpecWeave Hybrid Hook Architecture" title="Direct link to SpecWeave Hybrid Hook Architecture" translate="no">​</a></h3>
+<p>SpecWeave uses <strong>both</strong> global and skill-scoped hooks for optimal performance:</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                    HYBRID HOOK ARCHITECTURE                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├─────────────────────────────────────────────────────────────────────┤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  GLOBAL HOOKS (hooks.json)                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ─────────────────────────                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  Cross-cutting concerns that always run:                            │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • SessionStart → Initialize logging, load memory                   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • UserPromptSubmit → Inject context, detect patterns               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • PostToolUse (increments) → Update living docs                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • Stop → Reflect learnings, check auto mode                        │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  SKILL-SCOPED HOOKS (command frontmatter)                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ─────────────────────────────────────────                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  Command-specific logic that fires only when skill active:          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • /sw:do → Task-AC sync guard (PostToolUse on Edit/Write)         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • /sw:done → Completion guard (Stop)                               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • /sw:validate → Spec validation guard (Stop)                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • /sw:increment → Duplicate guard (PostToolUse)                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ~50% fewer hook invocations vs all-global approach                 │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-hook-examples">SpecWeave Hook Examples<a href="#specweave-hook-examples" class="hash-link" aria-label="Direct link to SpecWeave Hook Examples" title="Direct link to SpecWeave Hook Examples" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Hook</th><th>Location</th><th>Event</th><th>Purpose</th></tr></thead><tbody><tr><td>Session init</td><td>Global</td><td>SessionStart</td><td>Load memory, initialize state</td></tr><tr><td>Living docs sync</td><td>Global</td><td>PostToolUse</td><td>Auto-update specs on increment changes</td></tr><tr><td>Task-AC sync</td><td>Skill-scoped</td><td>PostToolUse</td><td>Sync ACs when task completed (only during /sw:do)</td></tr><tr><td>Quality gates</td><td>Skill-scoped</td><td>Stop</td><td>Validate before increment closes (only during /sw:done)</td></tr><tr><td>Reflect learning</td><td>Global</td><td>Stop</td><td>Extract learnings from session</td></tr><tr><td>Auto mode check</td><td>Global</td><td>Stop</td><td>Continue autonomous execution</td></tr></tbody></table>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="-mcp-servers-external-integrations">🔌 MCP Servers: External Integrations<a href="#-mcp-servers-external-integrations" class="hash-link" aria-label="Direct link to 🔌 MCP Servers: External Integrations" title="Direct link to 🔌 MCP Servers: External Integrations" translate="no">​</a></h2>
+<p>MCP (Model Context Protocol) servers <strong>connect Claude to external tools</strong>.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="mcp-vs-cli">MCP vs CLI<a href="#mcp-vs-cli" class="hash-link" aria-label="Direct link to MCP vs CLI" title="Direct link to MCP vs CLI" translate="no">​</a></h3>
+<p>SpecWeave prefers <strong>CLI over MCP</strong> when available:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Approach</th><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td><strong>CLI</strong> (preferred)</td><td>Direct, full features, latest APIs</td><td>Requires auth setup</td></tr><tr><td><strong>MCP</strong></td><td>Structured interface</td><td>Extra layer, limited APIs</td></tr></tbody></table>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># CLI (preferred)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">gh issue create </span><span class="token parameter variable" style="color:#36acaa">--title</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;Bug fix&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">wrangler deploy</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">supabase db push</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># MCP (when no CLI available)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">mcp__custom_service__create_item</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-components-interact">How Components Interact<a href="#how-components-interact" class="hash-link" aria-label="Direct link to How Components Interact" title="Direct link to How Components Interact" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="complete-flow-example">Complete Flow Example<a href="#complete-flow-example" class="hash-link" aria-label="Direct link to Complete Flow Example" title="Direct link to Complete Flow Example" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                    SPECWEAVE WORKFLOW                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├─────────────────────────────────────────────────────────────────────┤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  1. User: /sw:increment &quot;Add user auth&quot;                             │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           ▼                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     ┌─────────────────────┐                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  COMMAND executes   │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  /sw:increment      │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     └─────────────────────┘                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           ▼                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     ┌─────────────────────┐                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  SKILL activates    │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  increment           │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     └─────────────────────┘                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           ▼                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     ┌─────────────────────┐                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  AGENTS spawned     │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  PM → Architect →   │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  Tech Lead          │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     └─────────────────────┘                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           ▼                                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     ┌─────────────────────┐                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  HOOK fires         │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  (increment.created)│                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │  → Creates GitHub   │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     │    issue            │                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│     └─────────────────────┘                                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  Result: spec.md + plan.md + tasks.md + GitHub Issue #42            │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="quick-decision-guide">Quick Decision Guide<a href="#quick-decision-guide" class="hash-link" aria-label="Direct link to Quick Decision Guide" title="Direct link to Quick Decision Guide" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="when-to-use-what">When to Use What<a href="#when-to-use-what" class="hash-link" aria-label="Direct link to When to Use What" title="Direct link to When to Use What" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>I want to...</th><th>Use</th></tr></thead><tbody><tr><td>Add domain expertise</td><td><strong>Skill</strong> (auto-activates)</td></tr><tr><td>Run isolated complex task</td><td><strong>Agent</strong> (spawns subprocess)</td></tr><tr><td>Create user action</td><td><strong>Command</strong> (/slash)</td></tr><tr><td>React to events</td><td><strong>Hook</strong> (auto-fires)</td></tr><tr><td>Connect external tool</td><td><strong>MCP</strong> or CLI</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="skills-vs-agents">Skills vs Agents<a href="#skills-vs-agents" class="hash-link" aria-label="Direct link to Skills vs Agents" title="Direct link to Skills vs Agents" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  SKILL                              AGENT                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ──────                             ─────                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • Auto-activates                   • Explicitly spawned            │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • Main conversation                • Isolated context              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • Provides guidance                • Executes tasks                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  • Lightweight                      • Can run in parallel           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  Example:                           Example:                        │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  &quot;How do I optimize SQL?&quot;           &quot;Analyze all 50 files           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  → SQL skill guides you              and write a report&quot;            │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                     → Agent works isolated          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="latest-optimizations-2026">Latest Optimizations (2026)<a href="#latest-optimizations-2026" class="hash-link" aria-label="Direct link to Latest Optimizations (2026)" title="Direct link to Latest Optimizations (2026)" translate="no">​</a></h2>
+<p>Recent Claude Code updates improve the architecture:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Feature</th><th>Version</th><th>Benefit</th></tr></thead><tbody><tr><td><strong>Skill hot-reload</strong></td><td>v2.1.0</td><td>Skills update instantly without restart</td></tr><tr><td><strong>Context fork</strong></td><td>v2.1.0</td><td>Skills can run in isolated sub-agent context</td></tr><tr><td><strong>Skill-scoped hooks</strong></td><td>v2.1.0</td><td>Hooks in frontmatter, scoped to skill lifecycle</td></tr><tr><td><strong>Agent field in skills</strong></td><td>v2.1.0</td><td>Specify which model executes the skill</td></tr><tr><td><strong>Agent type in SessionStart</strong></td><td>v2.1.2</td><td>Agent-specific initialization</td></tr><tr><td><strong>Merged skills/commands</strong></td><td>v2.1.3</td><td>Simpler mental model</td></tr><tr><td><strong>Large output → file ref</strong></td><td>v2.1.2</td><td>Large outputs saved to disk, not truncated</td></tr><tr><td><strong>Nested skill discovery</strong></td><td>v2.1.6</td><td>Auto-finds skills in subdirectories</td></tr><tr><td><strong>Wildcard permissions</strong></td><td>v2.1.0</td><td><code>Bash(npm *)</code> pattern matching</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-21x-optimizations">SpecWeave 2.1.x Optimizations<a href="#specweave-21x-optimizations" class="hash-link" aria-label="Direct link to SpecWeave 2.1.x Optimizations" title="Direct link to SpecWeave 2.1.x Optimizations" translate="no">​</a></h3>
+<p>SpecWeave now leverages these Claude Code 2.1.x features:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Optimization</th><th>Skills Affected</th><th>Benefit</th></tr></thead><tbody><tr><td><strong><code>context: fork</code></strong></td><td>pm, architect, increment</td><td>Prevents context pollution in main conversation</td></tr><tr><td><strong><code>model: opus</code></strong></td><td>pm, architect, increment</td><td>Ensures highest quality for critical decisions</td></tr><tr><td><strong>Skill-scoped hooks</strong></td><td>/sw:do, /sw:done, /sw:validate, /sw:increment</td><td>~50% fewer hook invocations (only fire when skill active)</td></tr><tr><td><strong>Agent-type init</strong></td><td>SessionStart hook</td><td>Agent-specific startup messages and context</td></tr></tbody></table>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-architecture">SpecWeave Architecture<a href="#specweave-architecture" class="hash-link" aria-label="Direct link to SpecWeave Architecture" title="Direct link to SpecWeave Architecture" translate="no">​</a></h2>
+<p>SpecWeave builds on Claude Code&#x27;s architecture with <strong>hybrid hooks</strong>:</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                         SPECWEAVE                                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├─────────────────────────────────────────────────────────────────────┤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   24 PLUGINS                                                        │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── sw (core)           - Increment lifecycle                     │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── sw-github           - GitHub Issues sync                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── sw-jira             - JIRA Epic/Story sync                    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── frontend            - React/Vue/Next.js expertise             │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── backend             - Node.js/Python APIs                     │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── k8s                 - Kubernetes/GitOps                       │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── ml                  - ML pipelines/MLOps                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── ... 17 more                                                   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   136 SKILLS (auto-activate based on keywords)                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   68 AGENTS (spawn for complex isolated tasks)                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   53 COMMANDS (user-invoked slash commands)                         │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   HYBRID HOOKS (65+ total)                                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── Global (hooks.json)      - Cross-cutting: start, stop, prompt│</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── Skill-scoped (frontmatter) - Command-specific: ~50% fewer    │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                    invocations vs all-global        │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="learn-more">Learn More<a href="#learn-more" class="hash-link" aria-label="Direct link to Learn More" title="Direct link to Learn More" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweave-resources">SpecWeave Resources<a href="#specweave-resources" class="hash-link" aria-label="Direct link to SpecWeave Resources" title="Direct link to SpecWeave Resources" translate="no">​</a></h3>
+<ul>
+<li class=""><strong><a class="" href="/docs/overview/plugins-ecosystem">Plugin Ecosystem</a></strong> — All 24 SpecWeave plugins</li>
+<li class=""><strong><a class="" href="/docs/academy/specweave-essentials/">SpecWeave Essentials</a></strong> — 16-lesson hands-on curriculum</li>
+<li class=""><strong><a class="" href="/docs/getting-started/">Getting Started</a></strong> — Quick start guide</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="anthropic-documentation">Anthropic Documentation<a href="#anthropic-documentation" class="hash-link" aria-label="Direct link to Anthropic Documentation" title="Direct link to Anthropic Documentation" translate="no">​</a></h3>
+<ul>
+<li class=""><strong><a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener noreferrer" class="">Claude Code Documentation</a></strong> — Official Claude Code guide</li>
+<li class=""><strong><a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/sdk-overview" target="_blank" rel="noopener noreferrer" class="">Claude Agent SDK</a></strong> — Programmatic usage</li>
+<li class=""><strong><a href="https://docs.anthropic.com/en/api" target="_blank" rel="noopener noreferrer" class="">Claude API Reference</a></strong> — API documentation</li>
+<li class=""><strong><a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noopener noreferrer" class="">Claude Models</a></strong> — Model capabilities and selection</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="ai-tool-alternatives">AI Tool Alternatives<a href="#ai-tool-alternatives" class="hash-link" aria-label="Direct link to AI Tool Alternatives" title="Direct link to AI Tool Alternatives" translate="no">​</a></h3>
+<p>SpecWeave works with any AI coding assistant. Each has different integration depths:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Tool</th><th>Integration</th><th>Hooks</th><th>Skills</th><th>Notes</th></tr></thead><tbody><tr><td><strong>Claude Code</strong></td><td>Native</td><td>Yes</td><td>Yes</td><td>Full SpecWeave support</td></tr><tr><td><strong>Cursor</strong></td><td>Instructions</td><td>No</td><td>Partial</td><td>Via CLAUDE.md</td></tr><tr><td><strong>Windsurf</strong></td><td>Instructions</td><td>No</td><td>Partial</td><td>Via CLAUDE.md</td></tr><tr><td><strong>GitHub Copilot</strong></td><td>Instructions</td><td>No</td><td>No</td><td>Manual workflow</td></tr><tr><td><strong>Cline</strong></td><td>MCP</td><td>Partial</td><td>No</td><td>Via MCP servers</td></tr></tbody></table>
+<hr>
+<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>Key Takeaway</div><div class="admonitionContent_BuS1"><p><strong>Think of it like this:</strong></p><ul>
+<li class=""><strong>Plugins</strong> = Packages (containers for everything)</li>
+<li class=""><strong>Skills</strong> = Expertise (auto-loads when relevant)</li>
+<li class=""><strong>Agents</strong> = Workers (spawn for isolated tasks)</li>
+<li class=""><strong>Commands</strong> = Actions (user explicitly invokes)</li>
+<li class=""><strong>Hooks</strong> = Reactions (auto-fire on events)
+<ul>
+<li class=""><em>Global</em>: Cross-cutting (always fire)</li>
+<li class=""><em>Skill-scoped</em>: Command-specific (~50% fewer invocations)</li>
+</ul>
+</li>
+</ul><p>SpecWeave bundles 23 plugins with 100+ skills, 68+ agents, 100+ commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless. Powered by Claude Opus 4.6 and Sonnet 4.6.</p></div></div></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/overview/claude-code-architecture.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-03-01T07:19:40.000Z" itemprop="dateModified">Mar 1, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/overview/claude-code-basics"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Claude Code Basics</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/overview/features"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Key Features</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-big-picture" class="table-of-contents__link toc-highlight">The Big Picture</a></li><li><a href="#component-relationships" class="table-of-contents__link toc-highlight">Component Relationships</a><ul><li><a href="#how-they-differ" class="table-of-contents__link toc-highlight">How They Differ</a></li><li><a href="#the-flow" class="table-of-contents__link toc-highlight">The Flow</a></li></ul></li><li><a href="#-plugins-the-container" class="table-of-contents__link toc-highlight">📦 Plugins: The Container</a><ul><li><a href="#plugin-structure" class="table-of-contents__link toc-highlight">Plugin Structure</a></li><li><a href="#specweave-plugins-24-total" class="table-of-contents__link toc-highlight">SpecWeave Plugins (24 total)</a></li></ul></li><li><a href="#-skills-auto-activating-expertise" class="table-of-contents__link toc-highlight">⚡ Skills: Auto-Activating Expertise</a><ul><li><a href="#how-skills-work" class="table-of-contents__link toc-highlight">How Skills Work</a></li><li><a href="#skill-anatomy" class="table-of-contents__link toc-highlight">Skill Anatomy</a></li><li><a href="#key-properties" class="table-of-contents__link toc-highlight">Key Properties</a></li><li><a href="#new-frontmatter-fields-claude-code-210" class="table-of-contents__link toc-highlight">New Frontmatter Fields (Claude Code 2.1.0+)</a></li><li><a href="#example-flow" class="table-of-contents__link toc-highlight">Example Flow</a></li></ul></li><li><a href="#-agents-isolated-task-execution" class="table-of-contents__link toc-highlight">🤖 Agents: Isolated Task Execution</a><ul><li><a href="#how-agents-work" class="table-of-contents__link toc-highlight">How Agents Work</a></li><li><a href="#agent-anatomy" class="table-of-contents__link toc-highlight">Agent Anatomy</a></li><li><a href="#key-properties-1" class="table-of-contents__link toc-highlight">Key Properties</a></li><li><a href="#why-use-agents" class="table-of-contents__link toc-highlight">Why Use Agents?</a></li><li><a href="#example-flow-1" class="table-of-contents__link toc-highlight">Example Flow</a></li></ul></li><li><a href="#-commands-user-invoked-actions" class="table-of-contents__link toc-highlight">📝 Commands: User-Invoked Actions</a><ul><li><a href="#how-commands-work" class="table-of-contents__link toc-highlight">How Commands Work</a></li><li><a href="#command-anatomy" class="table-of-contents__link toc-highlight">Command Anatomy</a></li><li><a href="#key-properties-2" class="table-of-contents__link toc-highlight">Key Properties</a></li><li><a href="#built-in-vs-custom-commands" class="table-of-contents__link toc-highlight">Built-in vs Custom Commands</a></li></ul></li><li><a href="#-hooks-event-driven-automation" class="table-of-contents__link toc-highlight">🪝 Hooks: Event-Driven Automation</a><ul><li><a href="#hook-events" class="table-of-contents__link toc-highlight">Hook Events</a></li><li><a href="#hook-anatomy-hooksjson" class="table-of-contents__link toc-highlight">Hook Anatomy (hooks.json)</a></li><li><a href="#key-properties-3" class="table-of-contents__link toc-highlight">Key Properties</a></li><li><a href="#skill-scoped-hooks-claude-code-210" class="table-of-contents__link toc-highlight">Skill-Scoped Hooks (Claude Code 2.1.0+)</a></li><li><a href="#specweave-hybrid-hook-architecture" class="table-of-contents__link toc-highlight">SpecWeave Hybrid Hook Architecture</a></li><li><a href="#specweave-hook-examples" class="table-of-contents__link toc-highlight">SpecWeave Hook Examples</a></li></ul></li><li><a href="#-mcp-servers-external-integrations" class="table-of-contents__link toc-highlight">🔌 MCP Servers: External Integrations</a><ul><li><a href="#mcp-vs-cli" class="table-of-contents__link toc-highlight">MCP vs CLI</a></li></ul></li><li><a href="#how-components-interact" class="table-of-contents__link toc-highlight">How Components Interact</a><ul><li><a href="#complete-flow-example" class="table-of-contents__link toc-highlight">Complete Flow Example</a></li></ul></li><li><a href="#quick-decision-guide" class="table-of-contents__link toc-highlight">Quick Decision Guide</a><ul><li><a href="#when-to-use-what" class="table-of-contents__link toc-highlight">When to Use What</a></li><li><a href="#skills-vs-agents" class="table-of-contents__link toc-highlight">Skills vs Agents</a></li></ul></li><li><a href="#latest-optimizations-2026" class="table-of-contents__link toc-highlight">Latest Optimizations (2026)</a><ul><li><a href="#specweave-21x-optimizations" class="table-of-contents__link toc-highlight">SpecWeave 2.1.x Optimizations</a></li></ul></li><li><a href="#specweave-architecture" class="table-of-contents__link toc-highlight">SpecWeave Architecture</a></li><li><a href="#learn-more" class="table-of-contents__link toc-highlight">Learn More</a><ul><li><a href="#specweave-resources" class="table-of-contents__link toc-highlight">SpecWeave Resources</a></li><li><a href="#anthropic-documentation" class="table-of-contents__link toc-highlight">Anthropic Documentation</a></li><li><a href="#ai-tool-alternatives" class="table-of-contents__link toc-highlight">AI Tool Alternatives</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>

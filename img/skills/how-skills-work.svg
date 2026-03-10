@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" style="background:#fff">
+  <style>
+    text { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .title { font-size: 28px; font-weight: bold; }
+    .label { font-size: 18px; }
+    .small { font-size: 16px; }
+    .note { font-size: 16px; fill: #868E96; }
+  </style>
+
+  <!-- Backgrounds -->
+  <rect x="0" y="0" width="560" height="600" rx="12" fill="#ffe3e3" stroke="#FF6B6B" stroke-width="2" opacity="0.5"/>
+  <rect x="640" y="0" width="560" height="600" rx="12" fill="#d3f9d8" stroke="#51CF66" stroke-width="2" opacity="0.5"/>
+  <line x1="600" y1="10" x2="600" y2="590" stroke="#868E96" stroke-width="2" stroke-dasharray="8,6"/>
+
+  <!-- Titles -->
+  <text x="280" y="45" text-anchor="middle" class="title" fill="#e03131">Without Skill</text>
+  <text x="920" y="45" text-anchor="middle" class="title" fill="#2f9e44">With Skill</text>
+
+  <!-- LEFT: Prompt → Plain LLM → Output with ? -->
+  <rect x="80" y="100" width="140" height="50" rx="8" fill="#dee2e6" stroke="#495057" stroke-width="2"/>
+  <text x="150" y="130" text-anchor="middle" class="label" fill="#495057">Prompt</text>
+
+  <line x1="150" y1="155" x2="150" y2="215" stroke="#e03131" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <rect x="60" y="220" width="180" height="65" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="150" y="258" text-anchor="middle" font-size="20" fill="#e03131">Plain LLM</text>
+
+  <line x1="150" y1="290" x2="150" y2="355" stroke="#e03131" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <rect x="60" y="360" width="180" height="70" rx="8" fill="#fff5f5" stroke="#e03131" stroke-width="2"/>
+  <text x="150" y="400" text-anchor="middle" class="label" fill="#e03131">Output</text>
+
+  <text x="280" y="260" class="small" fill="#868E96">(no domain context)</text>
+
+  <!-- Question marks -->
+  <text x="320" y="385" font-size="28" font-weight="bold" fill="#e03131" opacity="1">?</text>
+  <text x="370" y="355" font-size="24" fill="#e03131" opacity="0.8">?</text>
+  <text x="400" y="415" font-size="20" fill="#e03131" opacity="0.6">?</text>
+
+  <!-- RIGHT: Prompt → LLM+Skill (with knowledge panel) → Output with ✓ -->
+  <rect x="720" y="100" width="140" height="50" rx="8" fill="#dee2e6" stroke="#495057" stroke-width="2"/>
+  <text x="790" y="130" text-anchor="middle" class="label" fill="#495057">Prompt</text>
+
+  <line x1="790" y1="155" x2="790" y2="215" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <rect x="680" y="220" width="220" height="65" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="790" y="258" text-anchor="middle" font-size="20" fill="#2f9e44">LLM + Skill</text>
+
+  <!-- Knowledge panel -->
+  <rect x="950" y="180" width="200" height="140" rx="8" fill="#ebfbee" stroke="#2f9e44" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="1050" y="208" text-anchor="middle" font-size="16" font-weight="bold" fill="#2f9e44">Skill Knowledge</text>
+  <line x1="965" y1="218" x2="1135" y2="218" stroke="#2f9e44" stroke-width="1" opacity="0.4"/>
+  <text x="980" y="242" class="small" fill="#2f9e44">Patterns</text>
+  <text x="980" y="268" class="small" fill="#2f9e44">Rules</text>
+  <text x="980" y="294" class="small" fill="#2f9e44">Examples</text>
+
+  <!-- Arrow from knowledge to LLM -->
+  <line x1="948" y1="255" x2="905" y2="255" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <line x1="790" y1="290" x2="790" y2="355" stroke="#2f9e44" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <rect x="680" y="360" width="220" height="70" rx="8" fill="#d3f9d8" stroke="#2f9e44" stroke-width="2"/>
+  <text x="790" y="400" text-anchor="middle" class="label" fill="#2f9e44">Output</text>
+
+  <!-- Checkmarks -->
+  <text x="920" y="385" font-size="22" font-weight="bold" fill="#2f9e44">✓</text>
+  <text x="940" y="415" font-size="22" font-weight="bold" fill="#2f9e44">✓</text>
+
+  <!-- Injected label -->
+  <text x="1000" y="355" class="small" fill="#1971c2" opacity="0.8">Domain knowledge injected</text>
+
+  <!-- Bottom note -->
+  <text x="600" y="565" text-anchor="middle" class="note">Skills inject patterns, rules, and examples into the LLM.</text>
+
+  <defs>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e03131"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2f9e44"/></marker>
+  </defs>
+</svg>

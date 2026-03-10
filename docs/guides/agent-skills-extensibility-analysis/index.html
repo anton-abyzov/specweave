@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-guides/agent-skills-extensibility-analysis" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Agent Skills Extensibility Analysis | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/guides/agent-skills-extensibility-analysis"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Agent Skills Extensibility Analysis | SpecWeave"><meta data-rh="true" name="description" content="Compatibility matrix for the Agent Skills format across 39 AI coding platforms — universal vs non-universal agents, feature support, and portability guidelines"><meta data-rh="true" property="og:description" content="Compatibility matrix for the Agent Skills format across 39 AI coding platforms — universal vs non-universal agents, feature support, and portability guidelines"><meta data-rh="true" name="keywords" content="agent skills,compatibility,extensibility,SKILL.md,portability,universal agents,cross-platform"><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/guides/agent-skills-extensibility-analysis"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/agent-skills-extensibility-analysis" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/agent-skills-extensibility-analysis" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Extensibility Analysis","item":"https://spec-weave.com/docs/guides/agent-skills-extensibility-analysis"}]}</script><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a class="navbar__item navbar__link" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG menuWithAnnouncementBar_GW3s"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/skills/"><span title="Skills Overview" class="linkLabel_WmDU">Skills Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/skills/why-skills-matter"><span title="Why Skills Matter" class="linkLabel_WmDU">Why Skills Matter</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/skills/fundamentals"><span title="Skills, Plugins &amp; Marketplaces" class="linkLabel_WmDU">Skills, Plugins &amp; Marketplaces</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" href="/docs/skills/extensible/"><span title="Extensible Skills Standard" class="categoryLinkLabel_W154">Extensible Skills Standard</span></a><button aria-label="Collapse sidebar category &#x27;Extensible Skills Standard&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/extensible-skills-standard"><span title="Extensibility Standard" class="linkLabel_WmDU">Extensibility Standard</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/extensible-skills-guide"><span title="Implementation Guide" class="linkLabel_WmDU">Implementation Guide</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/extensible-skills"><span title="Overview (Open/Closed)" class="linkLabel_WmDU">Overview (Open/Closed)</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/claude-skills-deep-dive"><span title="Claude Skills Deep Dive" class="linkLabel_WmDU">Claude Skills Deep Dive</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/self-improving-skills"><span title="Self-Improving Skills (Reflect)" class="linkLabel_WmDU">Self-Improving Skills (Reflect)</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/extensible/skill-development-guidelines"><span title="Development Guidelines" class="linkLabel_WmDU">Development Guidelines</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist" href="/docs/skills/verified/"><span title="Verified Skills Standard" class="categoryLinkLabel_W154">Verified Skills Standard</span></a><button aria-label="Collapse sidebar category &#x27;Verified Skills Standard&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/verified/verified-skills"><span title="The Standard (3-Tier Trust)" class="linkLabel_WmDU">The Standard (3-Tier Trust)</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/verified/secure-skill-factory-standard"><span title="Skill Factory Standard" class="linkLabel_WmDU">Skill Factory Standard</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/verified/skills-ecosystem-security"><span title="Ecosystem Security" class="linkLabel_WmDU">Ecosystem Security</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/docs/skills/skill-discovery-evaluation"><span title="Ecosystem" class="categoryLinkLabel_W154">Ecosystem</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/skill-discovery-evaluation"><span title="Discovery &amp; Evaluation" class="linkLabel_WmDU">Discovery &amp; Evaluation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/guides/agent-skills-extensibility-analysis"><span title="Extensibility Analysis" class="linkLabel_WmDU">Extensibility Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/skills/skill-contradiction-resolution"><span title="Contradiction Resolution" class="linkLabel_WmDU">Contradiction Resolution</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/reference/skills"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Ecosystem</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Extensibility Analysis</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Agent Skills Extensibility Analysis</h1></header>
+<p>The Agent Skills format (SKILL.md) has been adopted by 39 AI coding agents. But &quot;adopted&quot; doesn&#x27;t mean &quot;identical.&quot; This analysis maps exactly what works universally, what varies across platforms, and how to write skills that work everywhere.</p>
+<p><strong>Source data</strong>: <code>skills@1.3.9</code> npm package (vercel-labs/skills), Agent Skills specification (agentskills.io), and primary source analysis of agent configuration registries.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-39-agent-ecosystem">The 39-Agent Ecosystem<a href="#the-39-agent-ecosystem" class="hash-link" aria-label="Direct link to The 39-Agent Ecosystem" title="Direct link to The 39-Agent Ecosystem" translate="no">​</a></h2>
+<p>As of <code>skills@1.3.9</code>, the Agent Skills format is supported by 39 AI coding agents. These split into two categories based on how they discover and load skills.</p>
+<!-- -->
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="universal-agents-7">Universal Agents (7)<a href="#universal-agents-7" class="hash-link" aria-label="Direct link to Universal Agents (7)" title="Direct link to Universal Agents (7)" translate="no">​</a></h3>
+<p>Universal agents share the <code>.agents/skills</code> directory. A skill installed once is available to all of them without symlinks or copies.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Agent</th><th>Display Name</th><th>Global Skills Dir</th><th>Detection Method</th></tr></thead><tbody><tr><td>amp</td><td>Amp</td><td><code>$XDG_CONFIG_HOME/agents/skills</code></td><td><code>$XDG_CONFIG_HOME/amp</code> exists</td></tr><tr><td>codex</td><td>Codex</td><td><code>$CODEX_HOME/skills</code> (default: <code>~/.codex/skills</code>)</td><td><code>~/.codex</code> or <code>/etc/codex</code> exists</td></tr><tr><td>gemini-cli</td><td>Gemini CLI</td><td><code>~/.gemini/skills</code></td><td><code>~/.gemini</code> exists</td></tr><tr><td>github-copilot</td><td>GitHub Copilot</td><td><code>~/.copilot/skills</code></td><td><code>.github</code> dir or <code>~/.copilot</code> exists</td></tr><tr><td>kimi-cli</td><td>Kimi Code CLI</td><td><code>~/.config/agents/skills</code></td><td><code>~/.kimi</code> exists</td></tr><tr><td>opencode</td><td>OpenCode</td><td><code>$XDG_CONFIG_HOME/opencode/skills</code></td><td><code>$XDG_CONFIG_HOME/opencode</code> or <code>~/.claude/skills</code> exists</td></tr><tr><td>replit</td><td>Replit</td><td><code>$XDG_CONFIG_HOME/agents/skills</code></td><td><code>.agents</code> dir in cwd exists</td></tr></tbody></table>
+<p>Replit uses <code>.agents/skills</code> but has <code>showInUniversalList: false</code>, making it a &quot;hidden universal&quot; agent. The <code>getUniversalAgents()</code> function returns 6 visible agents.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="non-universal-agents-32">Non-Universal Agents (32)<a href="#non-universal-agents-32" class="hash-link" aria-label="Direct link to Non-Universal Agents (32)" title="Direct link to Non-Universal Agents (32)" translate="no">​</a></h3>
+<p>Each non-universal agent has its own skills directory. The <code>skills</code> CLI creates symlinks from the canonical <code>.agents/skills/&lt;name&gt;/</code> to each agent-specific path.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Agent</th><th>Local Skills Dir</th><th>Global Skills Dir</th><th>Notable</th></tr></thead><tbody><tr><td>claude-code</td><td><code>.claude/skills</code></td><td><code>$CLAUDE_CONFIG_DIR/skills</code></td><td>Only agent with <code>context: fork</code></td></tr><tr><td>cursor</td><td><code>.cursor/skills</code></td><td><code>~/.cursor/skills</code></td><td></td></tr><tr><td>windsurf</td><td><code>.windsurf/skills</code></td><td><code>~/.codeium/windsurf/skills</code></td><td>Under Codeium parent dir</td></tr><tr><td>cline</td><td><code>.cline/skills</code></td><td><code>~/.cline/skills</code></td><td>One of two agents with hooks</td></tr><tr><td>openclaw</td><td><code>skills</code></td><td><code>~/.openclaw/skills</code></td><td>No dot-prefix; 3 legacy paths</td></tr><tr><td>roo</td><td><code>.roo/skills</code></td><td><code>~/.roo/skills</code></td><td></td></tr><tr><td>antigravity</td><td><code>.agent/skills</code></td><td><code>~/.gemini/antigravity/skills</code></td><td>Singular <code>.agent</code> (not <code>.agents</code>)</td></tr><tr><td>augment</td><td><code>.augment/skills</code></td><td><code>~/.augment/skills</code></td><td></td></tr><tr><td>codebuddy</td><td><code>.codebuddy/skills</code></td><td><code>~/.codebuddy/skills</code></td><td></td></tr><tr><td>command-code</td><td><code>.commandcode/skills</code></td><td><code>~/.commandcode/skills</code></td><td></td></tr><tr><td>continue</td><td><code>.continue/skills</code></td><td><code>~/.continue/skills</code></td><td></td></tr><tr><td>crush</td><td><code>.crush/skills</code></td><td><code>~/.config/crush/skills</code></td><td>Charmbracelet; XDG paths</td></tr><tr><td>droid</td><td><code>.factory/skills</code></td><td><code>~/.factory/skills</code></td><td>Factory AI branding</td></tr><tr><td>goose</td><td><code>.goose/skills</code></td><td><code>$XDG_CONFIG_HOME/goose/skills</code></td><td>XDG-compliant</td></tr><tr><td>iflow-cli</td><td><code>.iflow/skills</code></td><td><code>~/.iflow/skills</code></td><td></td></tr><tr><td>junie</td><td><code>.junie/skills</code></td><td><code>~/.junie/skills</code></td><td></td></tr><tr><td>kilo</td><td><code>.kilocode/skills</code></td><td><code>~/.kilocode/skills</code></td><td></td></tr><tr><td>kiro-cli</td><td><code>.kiro/skills</code></td><td><code>~/.kiro/skills</code></td><td>Requires manual agent.json registration</td></tr><tr><td>kode</td><td><code>.kode/skills</code></td><td><code>~/.kode/skills</code></td><td></td></tr><tr><td>mcpjam</td><td><code>.mcpjam/skills</code></td><td><code>~/.mcpjam/skills</code></td><td></td></tr><tr><td>mistral-vibe</td><td><code>.vibe/skills</code></td><td><code>~/.vibe/skills</code></td><td></td></tr><tr><td>mux</td><td><code>.mux/skills</code></td><td><code>~/.mux/skills</code></td><td></td></tr><tr><td>neovate</td><td><code>.neovate/skills</code></td><td><code>~/.neovate/skills</code></td><td></td></tr><tr><td>openhands</td><td><code>.openhands/skills</code></td><td><code>~/.openhands/skills</code></td><td></td></tr><tr><td>pi</td><td><code>.pi/skills</code></td><td><code>~/.pi/agent/skills</code></td><td>Extra <code>agent/</code> segment</td></tr><tr><td>pochi</td><td><code>.pochi/skills</code></td><td><code>~/.pochi/skills</code></td><td></td></tr><tr><td>qoder</td><td><code>.qoder/skills</code></td><td><code>~/.qoder/skills</code></td><td></td></tr><tr><td>qwen-code</td><td><code>.qwen/skills</code></td><td><code>~/.qwen/skills</code></td><td></td></tr><tr><td>trae</td><td><code>.trae/skills</code></td><td><code>~/.trae/skills</code></td><td>Shares local dir with Trae CN</td></tr><tr><td>trae-cn</td><td><code>.trae/skills</code></td><td><code>~/.trae-cn/skills</code></td><td>China variant</td></tr><tr><td>adal</td><td><code>.adal/skills</code></td><td><code>~/.adal/skills</code></td><td></td></tr><tr><td>zencoder</td><td><code>.zencoder/skills</code></td><td><code>~/.zencoder/skills</code></td><td>No <code>allowed-tools</code> support</td></tr></tbody></table>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="feature-compatibility-matrix">Feature Compatibility Matrix<a href="#feature-compatibility-matrix" class="hash-link" aria-label="Direct link to Feature Compatibility Matrix" title="Direct link to Feature Compatibility Matrix" translate="no">​</a></h2>
+<p>All 39 agents support the base SKILL.md format. Advanced features have varying support:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Feature</th><th>Support</th><th>Supported By</th><th>Not Supported</th></tr></thead><tbody><tr><td><strong>Basic skills</strong> (name, description, markdown)</td><td>All 39 agents</td><td>Universal</td><td>None</td></tr><tr><td><strong><code>allowed-tools</code></strong> (pre-approved tool list)</td><td>37 agents</td><td>All except Kiro CLI, Zencoder</td><td>Kiro CLI, Zencoder</td></tr><tr><td><strong><code>context: fork</code></strong> (skill context forking)</td><td>1 agent</td><td>Claude Code only</td><td>All other 38 agents</td></tr><tr><td><strong>Hooks</strong> (pre/post execution)</td><td>2 agents</td><td>Claude Code, Cline</td><td>All other 37 agents</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="feature-details">Feature Details<a href="#feature-details" class="hash-link" aria-label="Direct link to Feature Details" title="Direct link to Feature Details" translate="no">​</a></h3>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="basic-skills-universal">Basic Skills (Universal)<a href="#basic-skills-universal" class="hash-link" aria-label="Direct link to Basic Skills (Universal)" title="Direct link to Basic Skills (Universal)" translate="no">​</a></h4>
+<p>Every agent supports the core SKILL.md format:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> my</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">skill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">description</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;What this skill does and when to activate it&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Skill Instructions</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Markdown body with instructions for the agent.</span><br></span></code></pre></div></div>
+<p>Optional frontmatter: <code>license</code>, <code>compatibility</code>, <code>metadata</code>. Optional directories: <code>scripts/</code>, <code>references/</code>, <code>assets/</code>.</p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="allowed-tools-near-universal"><code>allowed-tools</code> (Near-Universal)<a href="#allowed-tools-near-universal" class="hash-link" aria-label="Direct link to allowed-tools-near-universal" title="Direct link to allowed-tools-near-universal" translate="no">​</a></h4>
+<p>Pre-approves specific tools for the skill:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">allowed-tools</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Bash(git</span><span class="token punctuation" style="color:#393A34">:</span><span class="token important">*)</span><span class="token plain"> Bash(jq</span><span class="token punctuation" style="color:#393A34">:</span><span class="token important">*)</span><span class="token plain"> Read</span><br></span></code></pre></div></div>
+<p><strong>Not supported</strong> by Kiro CLI and Zencoder. For maximum portability, treat <code>allowed-tools</code> as optional and ensure your skill works without it.</p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="context-fork-claude-code-exclusive"><code>context: fork</code> (Claude Code Exclusive)<a href="#context-fork-claude-code-exclusive" class="hash-link" aria-label="Direct link to context-fork-claude-code-exclusive" title="Direct link to context-fork-claude-code-exclusive" translate="no">​</a></h4>
+<p>Creates an isolated execution environment for the skill. This is a Claude Code-specific extension not part of the base specification. <strong>Do not rely on this for portable skills.</strong></p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="hooks-claude-code--cline-only">Hooks (Claude Code + Cline Only)<a href="#hooks-claude-code--cline-only" class="hash-link" aria-label="Direct link to Hooks (Claude Code + Cline Only)" title="Direct link to Hooks (Claude Code + Cline Only)" translate="no">​</a></h4>
+<p>Pre/post execution hooks triggered around skill activation. Only 2 of 39 agents support this. <strong>Treat hooks as platform-specific enhancements, not core skill functionality.</strong></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="portability-tiers">Portability Tiers<a href="#portability-tiers" class="hash-link" aria-label="Direct link to Portability Tiers" title="Direct link to Portability Tiers" translate="no">​</a></h2>
+<p>Skills can be classified by their portability reach:</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-1-universal-3939-agents">Tier 1: Universal (39/39 Agents)<a href="#tier-1-universal-3939-agents" class="hash-link" aria-label="Direct link to Tier 1: Universal (39/39 Agents)" title="Direct link to Tier 1: Universal (39/39 Agents)" translate="no">​</a></h3>
+<p>Uses only the portable core: <code>name</code>, <code>description</code>, markdown body, optional subdirectories. No <code>allowed-tools</code>, no hooks, no <code>context: fork</code>.</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> my</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">universal</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">skill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">description</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  Works on every Agent Skills</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">compatible coding assistant.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">---</span><br></span></code></pre></div></div>
+<p><strong>Best for</strong>: Style guides, coding standards, documentation templates, project conventions.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-2-near-universal-3739-agents">Tier 2: Near-Universal (37/39 Agents)<a href="#tier-2-near-universal-3739-agents" class="hash-link" aria-label="Direct link to Tier 2: Near-Universal (37/39 Agents)" title="Direct link to Tier 2: Near-Universal (37/39 Agents)" translate="no">​</a></h3>
+<p>Adds <code>allowed-tools</code> frontmatter. Excludes Kiro CLI and Zencoder.</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> my</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">tooling</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">skill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">description</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  Manages project structure with file system tools.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">allowed-tools</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Read Write Bash</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">---</span><br></span></code></pre></div></div>
+<p><strong>Best for</strong>: Skills that need to read/write files, run commands, or interact with the agent&#x27;s tool system.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-3-platform-enhanced-2-3-agents">Tier 3: Platform-Enhanced (2-3 Agents)<a href="#tier-3-platform-enhanced-2-3-agents" class="hash-link" aria-label="Direct link to Tier 3: Platform-Enhanced (2-3 Agents)" title="Direct link to Tier 3: Platform-Enhanced (2-3 Agents)" translate="no">​</a></h3>
+<p>Uses hooks, <code>context: fork</code>, or other platform-exclusive features. Include graceful degradation for other agents.</p>
+<p><strong>Best for</strong>: Security enforcement, CI/CD integration, complex automation workflows.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="format-variation-analysis">Format Variation Analysis<a href="#format-variation-analysis" class="hash-link" aria-label="Direct link to Format Variation Analysis" title="Direct link to Format Variation Analysis" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="directory-naming-conventions">Directory Naming Conventions<a href="#directory-naming-conventions" class="hash-link" aria-label="Direct link to Directory Naming Conventions" title="Direct link to Directory Naming Conventions" translate="no">​</a></h3>
+<p>Three patterns emerge across the 39 agents:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Pattern</th><th>Example</th><th>Count</th><th>Agents</th></tr></thead><tbody><tr><td>Standard dot-prefix</td><td><code>.claude/skills</code></td><td>28</td><td>Most agents</td></tr><tr><td>XDG-compliant</td><td><code>$XDG_CONFIG_HOME/agent/skills</code></td><td>4</td><td>Amp, Crush, Goose, OpenCode</td></tr><tr><td>Non-standard</td><td><code>skills/</code> (no dot), <code>.agent/</code> (singular)</td><td>2</td><td>OpenClaw, Antigravity</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="agent-detection-methods">Agent Detection Methods<a href="#agent-detection-methods" class="hash-link" aria-label="Direct link to Agent Detection Methods" title="Direct link to Agent Detection Methods" translate="no">​</a></h3>
+<p>Agents use filesystem detection (<code>existsSync</code>) to discover if they&#x27;re installed:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Strategy</th><th>Count</th><th>Description</th></tr></thead><tbody><tr><td>Home directory check</td><td>28</td><td><code>existsSync(~/.agent)</code></td></tr><tr><td>XDG config check</td><td>4</td><td><code>existsSync($XDG_CONFIG_HOME/agent)</code></td></tr><tr><td>Multi-path check</td><td>7</td><td>Multiple locations (cwd + home, env vars, legacy paths)</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="environment-variable-support">Environment Variable Support<a href="#environment-variable-support" class="hash-link" aria-label="Direct link to Environment Variable Support" title="Direct link to Environment Variable Support" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Agent</th><th>Variable</th><th>Default</th></tr></thead><tbody><tr><td>Claude Code</td><td><code>CLAUDE_CONFIG_DIR</code></td><td><code>~/.claude</code></td></tr><tr><td>Codex</td><td><code>CODEX_HOME</code></td><td><code>~/.codex</code></td></tr><tr><td>Amp, Crush, Goose, OpenCode, Kimi CLI, Replit</td><td><code>XDG_CONFIG_HOME</code></td><td><code>~/.config</code></td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="platform-specific-quirks">Platform-Specific Quirks<a href="#platform-specific-quirks" class="hash-link" aria-label="Direct link to Platform-Specific Quirks" title="Direct link to Platform-Specific Quirks" translate="no">​</a></h3>
+<p><strong>Kiro CLI</strong> requires manual registration after installation:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> </span><span class="token property" style="color:#36acaa">&quot;resources&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token string" style="color:#e3116c">&quot;skill://.kiro/skills/**/SKILL.md&quot;</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<p>This is the only agent needing a separate configuration step after skill installation.</p>
+<p><strong>OpenCode</strong> cross-detects Claude Code&#x27;s skills directory (<code>~/.claude/skills</code>), suggesting it can discover skills installed for Claude Code.</p>
+<p><strong>Codex</strong> is the only agent checking a system-wide path (<code>/etc/codex</code>) in addition to user directories.</p>
+<p><strong>Trae and Trae CN</strong> share the same local directory (<code>.trae/skills</code>) but use different global paths, meaning project-level skills are shared between them but global skills are separate.</p>
+<p><strong>OpenClaw</strong> uses bare <code>skills/</code> as its local directory (no dot-prefix) and supports three legacy global directory names: <code>~/.openclaw/</code>, <code>~/.clawdbot/</code>, <code>~/.moltbot/</code>.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="portability-guidelines-for-skill-authors">Portability Guidelines for Skill Authors<a href="#portability-guidelines-for-skill-authors" class="hash-link" aria-label="Direct link to Portability Guidelines for Skill Authors" title="Direct link to Portability Guidelines for Skill Authors" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="write-for-the-universal-baseline">Write for the Universal Baseline<a href="#write-for-the-universal-baseline" class="hash-link" aria-label="Direct link to Write for the Universal Baseline" title="Direct link to Write for the Universal Baseline" translate="no">​</a></h3>
+<ol>
+<li class="">
+<p><strong>Use only base SKILL.md features</strong>: <code>name</code>, <code>description</code> in frontmatter, markdown body. These work on all 39 agents.</p>
+</li>
+<li class="">
+<p><strong>Treat <code>allowed-tools</code> as optional</strong>: Include it for better UX on supporting agents, but ensure your skill&#x27;s instructions work without it. Kiro CLI and Zencoder will ignore this field.</p>
+</li>
+<li class="">
+<p><strong>Never depend on <code>context: fork</code></strong>: This is Claude Code exclusive. If your skill needs isolation, document it as a recommendation rather than a requirement.</p>
+</li>
+<li class="">
+<p><strong>Never depend on hooks</strong>: Only 2 agents support them. Use hooks as progressive enhancement, not core functionality.</p>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="avoid-platform-assumptions">Avoid Platform Assumptions<a href="#avoid-platform-assumptions" class="hash-link" aria-label="Direct link to Avoid Platform Assumptions" title="Direct link to Avoid Platform Assumptions" translate="no">​</a></h3>
+<ol start="5">
+<li class="">
+<p><strong>Don&#x27;t hardcode paths</strong>: Skills referencing <code>.claude/skills/</code> or <code>~/.cursor/</code> will break on other agents. Use relative paths from the skill&#x27;s own directory.</p>
+</li>
+<li class="">
+<p><strong>Don&#x27;t assume a specific package manager</strong>: Use generic descriptions like &quot;install dependencies&quot; rather than <code>npm install</code> or <code>bun add</code>. Let the agent choose based on the project context.</p>
+</li>
+<li class="">
+<p><strong>Don&#x27;t assume specific agent capabilities</strong>: Not all agents can run bash commands, create files, or access the network. Write instructions that degrade gracefully.</p>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="graceful-degradation-pattern">Graceful Degradation Pattern<a href="#graceful-degradation-pattern" class="hash-link" aria-label="Direct link to Graceful Degradation Pattern" title="Direct link to Graceful Degradation Pattern" translate="no">​</a></h3>
+<p>When you need platform-exclusive features, provide fallbacks:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> Security Enforcement</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> If your agent supports hooks (Claude Code, Cline):</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Set up a PreToolUse hook to block writes to protected files.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> For all other agents:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Before modifying any file in </span><span class="token code-snippet code keyword" style="color:#00009f">`config/`</span><span class="token plain">, ask the user for explicit confirmation.</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="test-across-platforms">Test Across Platforms<a href="#test-across-platforms" class="hash-link" aria-label="Direct link to Test Across Platforms" title="Direct link to Test Across Platforms" translate="no">​</a></h3>
+<ol start="8">
+<li class="">
+<p><strong>Minimum viable testing</strong>: Verify your skill loads and activates correctly on at least Claude Code + Codex + one other agent.</p>
+</li>
+<li class="">
+<p><strong>Document compatibility</strong>: Include a compatibility note in your SKILL.md description if the skill relies on features not available everywhere.</p>
+</li>
+<li class="">
+<p><strong>Use the <code>skills</code> CLI for installation</strong>: <code>npx skills add &lt;owner/repo&gt;</code> handles symlink creation across all 39 agents automatically.</p>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="portability-checklist">Portability Checklist<a href="#portability-checklist" class="hash-link" aria-label="Direct link to Portability Checklist" title="Direct link to Portability Checklist" translate="no">​</a></h3>
+<ul class="contains-task-list containsTaskList_mC6p">
+<li class="task-list-item"><input type="checkbox" disabled=""> SKILL.md has <code>name</code> and <code>description</code> frontmatter</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> No <code>context: fork</code> dependency</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> No hooks dependency</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> <code>allowed-tools</code> is optional (skill works without it)</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> No hardcoded agent-specific paths</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> No hardcoded package manager commands</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> Instructions use relative paths from skill directory</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> Tested on 2+ different agents</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> Compatibility documented in description or README</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="installation-architecture">Installation Architecture<a href="#installation-architecture" class="hash-link" aria-label="Direct link to Installation Architecture" title="Direct link to Installation Architecture" translate="no">​</a></h2>
+<p>The <code>skills</code> CLI uses a canonical directory pattern for cross-agent installation:</p>
+<!-- -->
+<ol>
+<li class="">Skills are copied to <code>.agents/skills/&lt;name&gt;/</code> (canonical location)</li>
+<li class="">Universal agents read directly from this location</li>
+<li class="">Non-universal agents get symlinks from canonical to their specific directory</li>
+<li class="">On Windows without developer mode, symlinks fall back to file copying</li>
+<li class="">On Windows, <code>junction</code> type symlinks are used</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="security-measures">Security Measures<a href="#security-measures" class="hash-link" aria-label="Direct link to Security Measures" title="Direct link to Security Measures" translate="no">​</a></h3>
+<p>The installer includes path safety protections:</p>
+<ul>
+<li class=""><strong>Name sanitization</strong>: Converts to lowercase kebab-case, strips path traversal characters</li>
+<li class=""><strong>Path containment</strong>: Ensures targets don&#x27;t escape expected base directories</li>
+<li class=""><strong>File exclusion</strong>: <code>README.md</code>, <code>metadata.json</code>, <code>_*</code> prefixed files, and <code>.git/</code> are excluded</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-agentskillscompat-extension">The <code>agentSkillsCompat</code> Extension<a href="#the-agentskillscompat-extension" class="hash-link" aria-label="Direct link to the-agentskillscompat-extension" title="Direct link to the-agentskillscompat-extension" translate="no">​</a></h2>
+<p>The Verified Skills registry tracks per-skill compatibility metadata through the <code>agentSkillsCompat</code> field:</p>
+<p><strong>Portability scoring (0-5)</strong>:</p>
+<ul>
+<li class=""><strong>5</strong>: Tested on 10+ agents, no known issues, portable core only</li>
+<li class=""><strong>4</strong>: Tested on 5-9 agents, no breaking issues</li>
+<li class=""><strong>3</strong>: Tested on 3-4 agents, uses <code>allowed-tools</code> (37/39 reach)</li>
+<li class=""><strong>2</strong>: Tested on 1-2 agents, uses platform-specific features with fallbacks</li>
+<li class=""><strong>1</strong>: Single-agent skill with no portability effort</li>
+<li class=""><strong>0</strong>: Uses features exclusive to one agent with no fallback</li>
+</ul>
+<p>This integrates with the Verified Skills registry&#x27;s quality scoring rubric, where portability is one of six dimensions contributing to a skill&#x27;s overall trust score.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="further-reading">Further Reading<a href="#further-reading" class="hash-link" aria-label="Direct link to Further Reading" title="Direct link to Further Reading" translate="no">​</a></h2>
+<ul>
+<li class=""><a class="" href="/docs/skills/skill-discovery-evaluation">Skill Discovery &amp; Evaluation Guide</a> — Finding and scoring quality skills</li>
+<li class=""><a class="" href="/docs/skills/skill-contradiction-resolution">Skill Contradiction Resolution</a> — Handling conflicting instructions</li>
+<li class=""><a class="" href="/docs/guides/agent-security-best-practices">Agent Security Best Practices</a> — Operational security guidelines</li>
+<li class=""><a href="https://agentskills.io/home" target="_blank" rel="noopener noreferrer" class="">Agent Skills Specification</a> — The open format specification</li>
+<li class=""><a href="https://github.com/vercel-labs/skills" target="_blank" rel="noopener noreferrer" class="">Skills CLI Documentation</a> — Installation tooling</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/guides/agent-skills-extensibility-analysis.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-02-22T04:35:39.000Z" itemprop="dateModified">Feb 22, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/skills/skill-discovery-evaluation"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Discovery &amp; Evaluation</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/skills/skill-contradiction-resolution"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Contradiction Resolution</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-39-agent-ecosystem" class="table-of-contents__link toc-highlight">The 39-Agent Ecosystem</a><ul><li><a href="#universal-agents-7" class="table-of-contents__link toc-highlight">Universal Agents (7)</a></li><li><a href="#non-universal-agents-32" class="table-of-contents__link toc-highlight">Non-Universal Agents (32)</a></li></ul></li><li><a href="#feature-compatibility-matrix" class="table-of-contents__link toc-highlight">Feature Compatibility Matrix</a><ul><li><a href="#feature-details" class="table-of-contents__link toc-highlight">Feature Details</a></li></ul></li><li><a href="#portability-tiers" class="table-of-contents__link toc-highlight">Portability Tiers</a><ul><li><a href="#tier-1-universal-3939-agents" class="table-of-contents__link toc-highlight">Tier 1: Universal (39/39 Agents)</a></li><li><a href="#tier-2-near-universal-3739-agents" class="table-of-contents__link toc-highlight">Tier 2: Near-Universal (37/39 Agents)</a></li><li><a href="#tier-3-platform-enhanced-2-3-agents" class="table-of-contents__link toc-highlight">Tier 3: Platform-Enhanced (2-3 Agents)</a></li></ul></li><li><a href="#format-variation-analysis" class="table-of-contents__link toc-highlight">Format Variation Analysis</a><ul><li><a href="#directory-naming-conventions" class="table-of-contents__link toc-highlight">Directory Naming Conventions</a></li><li><a href="#agent-detection-methods" class="table-of-contents__link toc-highlight">Agent Detection Methods</a></li><li><a href="#environment-variable-support" class="table-of-contents__link toc-highlight">Environment Variable Support</a></li><li><a href="#platform-specific-quirks" class="table-of-contents__link toc-highlight">Platform-Specific Quirks</a></li></ul></li><li><a href="#portability-guidelines-for-skill-authors" class="table-of-contents__link toc-highlight">Portability Guidelines for Skill Authors</a><ul><li><a href="#write-for-the-universal-baseline" class="table-of-contents__link toc-highlight">Write for the Universal Baseline</a></li><li><a href="#avoid-platform-assumptions" class="table-of-contents__link toc-highlight">Avoid Platform Assumptions</a></li><li><a href="#graceful-degradation-pattern" class="table-of-contents__link toc-highlight">Graceful Degradation Pattern</a></li><li><a href="#test-across-platforms" class="table-of-contents__link toc-highlight">Test Across Platforms</a></li><li><a href="#portability-checklist" class="table-of-contents__link toc-highlight">Portability Checklist</a></li></ul></li><li><a href="#installation-architecture" class="table-of-contents__link toc-highlight">Installation Architecture</a><ul><li><a href="#security-measures" class="table-of-contents__link toc-highlight">Security Measures</a></li></ul></li><li><a href="#the-agentskillscompat-extension" class="table-of-contents__link toc-highlight">The <code>agentSkillsCompat</code> Extension</a></li><li><a href="#further-reading" class="table-of-contents__link toc-highlight">Further Reading</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>
