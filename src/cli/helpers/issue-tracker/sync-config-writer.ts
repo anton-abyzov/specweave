@@ -98,6 +98,32 @@ export async function writeSyncConfig(
       break;
   }
 
+  // Propagate tracker config to umbrella childRepos that lack per-repo sync settings.
+  // This prevents child repos from falling back to global config and syncing to the
+  // wrong external project (e.g., JIRA issues landing on the wrong board).
+  if (config.umbrella?.enabled && config.umbrella?.childRepos?.length) {
+    const childRepos = config.umbrella.childRepos;
+    for (const child of childRepos) {
+      if (!child.sync) child.sync = {};
+
+      if (tracker === 'jira' && !child.sync.jira) {
+        const jiraCreds = credentials as any;
+        const projectKey = jiraCreds.projectKey || jiraCreds.project || '';
+        if (projectKey) {
+          child.sync.jira = { projectKey };
+          logger.log(chalk.gray(`   → Inherited JIRA projectKey "${projectKey}" for child repo "${child.id}"`));
+        }
+      }
+      if (tracker === 'ado' && !child.sync.ado) {
+        const adoCreds = credentials as any;
+        if (adoCreds.project) {
+          child.sync.ado = { organization: adoCreds.org, project: adoCreds.project };
+          logger.log(chalk.gray(`   → Inherited ADO project "${adoCreds.project}" for child repo "${child.id}"`));
+        }
+      }
+    }
+  }
+
   // Write config using ConfigManager
   await configManager.write(config);
 
