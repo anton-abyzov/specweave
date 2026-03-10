@@ -755,7 +755,7 @@ function versionToNumber(version: string): number {
  */
 function installWithFallback(targetVersion: string): { installedVersion: string } {
   try {
-    npmExecWithAuthFallback(`npm install -g specweave@${targetVersion}`, 120000);
+    npmPublicExec(`npm install -g specweave@${targetVersion}`, 120000);
     return { installedVersion: targetVersion };
   } catch (error: any) {
     const stderr = error.stderr?.toString() || error.message || '';
@@ -768,7 +768,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
     // Fallback: get all published versions, pick highest
     let allVersions: string[];
     try {
-      const versionsJson = npmExecWithAuthFallback('npm view specweave versions --json', 30000);
+      const versionsJson = npmPublicExec('npm view specweave versions --json', 30000);
       const parsed = JSON.parse(versionsJson);
       allVersions = Array.isArray(parsed) ? parsed : [parsed];
     } catch {
@@ -789,7 +789,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
     const fallbackVersion = allVersions[allVersions.length - 1];
 
     try {
-      npmExecWithAuthFallback(`npm install -g specweave@${fallbackVersion}`, 120000);
+      npmPublicExec(`npm install -g specweave@${fallbackVersion}`, 120000);
       return { installedVersion: fallbackVersion };
     } catch {
       throw new Error(
@@ -801,16 +801,17 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
 }
 
 /**
- * Build a clean environment for npm commands that bypasses all auth config.
- * Removes NPM_TOKEN and any npm_config_* vars related to authentication
- * so that stale tokens from CI, AWS CodeArtifact, GitHub Packages, etc.
- * don't interfere with public registry access.
+ * Build a clean environment for npm commands targeting the public registry.
+ * Bypasses ALL auth config sources that can cause E401 on public packages:
+ *   - ~/.npmrc (user config) — stale tokens from npm login, GitHub Packages
+ *   - $PREFIX/etc/npmrc (global config) — nvm/Homebrew-installed node configs
+ *   - NPM_TOKEN env var — CI environments
+ *   - npm_config_* env vars — AWS CodeArtifact, Azure DevOps, Artifactory, etc.
  *
- * Also forces npm to ignore both user and global config files by setting
- * npm_config_userconfig and npm_config_globalconfig to empty paths.
- * This is more reliable than CLI flags (which fail when both point to /dev/null).
+ * Since specweave self-update ALWAYS targets the public npm registry,
+ * we ALWAYS use this clean env — no fallback/retry needed.
  */
-function buildCleanNpmEnv(): NodeJS.ProcessEnv {
+function buildPublicRegistryEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
   // Strip auth-related env vars
   delete env['NPM_TOKEN'];
@@ -834,32 +835,17 @@ function buildCleanNpmEnv(): NodeJS.ProcessEnv {
 }
 
 /**
- * Run an npm command, retrying with explicit public registry on E401.
- * Stale/invalid auth tokens in ~/.npmrc, global npmrc, or env vars
- * cause E401 even for public packages. The retry bypasses ALL auth
- * sources: user config, global config, and auth-related env vars.
+ * Run an npm command against the public registry with a clean environment.
+ * Always bypasses user auth config to prevent E401 from stale tokens.
+ * Used for all specweave self-update operations (view, install).
  */
-function npmExecWithAuthFallback(command: string, timeout: number): string {
-  try {
-    return execSync(command, {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout,
-    }).trim();
-  } catch (error: any) {
-    const stderr = error.stderr?.toString() || error.message || '';
-    if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
-      // Retry: force public registry + clean env that strips all auth sources
-      const retryCommand = `${command} --registry https://registry.npmjs.org`;
-      return execSync(retryCommand, {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout,
-        env: buildCleanNpmEnv(),
-      }).trim();
-    }
-    throw error;
-  }
+function npmPublicExec(command: string, timeout: number): string {
+  return execSync(`${command} --registry https://registry.npmjs.org`, {
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    timeout,
+    env: buildPublicRegistryEnv(),
+  }).trim();
 }
 
 /**
@@ -874,7 +860,7 @@ async function selfUpdateSpecWeave(
 
   try {
     // Get latest version from npm (30s timeout to prevent indefinite hang)
-    const latestVersion = npmExecWithAuthFallback('npm view specweave version', 30000);
+    const latestVersion = npmPublicExec('npm view specweave version', 30000);
 
     // Compare versions
     if (latestVersion === currentVersion) {
