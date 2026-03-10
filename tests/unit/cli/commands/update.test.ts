@@ -603,6 +603,67 @@ describe('update command', () => {
           expect.any(Object)
         );
       });
+
+      it('should retry with --registry on E401 auth error from stale npmrc token', async () => {
+        setupSpecWeaveProject();
+        let callCount = 0;
+        mockExecSync.mockImplementation((cmd: string) => {
+          callCount++;
+          // First call: npm view fails with E401
+          if (callCount === 1 && cmd === 'npm view specweave version') {
+            const err = new Error('Command failed') as any;
+            err.stderr = 'npm error code E401\nnpm error Unable to authenticate, your authentication token seems to be invalid.';
+            throw err;
+          }
+          // Second call: retry with --registry succeeds
+          if (callCount === 2 && cmd.includes('--registry https://registry.npmjs.org')) {
+            return '1.0.100\n'; // same version, no update needed
+          }
+          return '';
+        });
+
+        await updateCommand({ noPlugins: true });
+
+        // Should have retried with explicit registry
+        expect(mockExecSync).toHaveBeenCalledWith(
+          expect.stringContaining('--registry https://registry.npmjs.org'),
+          expect.any(Object)
+        );
+        // No exitCode set since update succeeded (same version)
+        expect(process.exitCode).toBeUndefined();
+      });
+
+      it('should retry npm install with --registry on E401 during self-update', async () => {
+        setupSpecWeaveProject();
+        let callCount = 0;
+        mockExecSync.mockImplementation((cmd: string) => {
+          callCount++;
+          // npm view succeeds (newer version)
+          if (cmd === 'npm view specweave version') return '1.0.200\n';
+          // First npm install fails with E401
+          if (cmd === 'npm install -g specweave@1.0.200') {
+            const err = new Error('Command failed') as any;
+            err.stderr = 'npm error code E401\nnpm error Unable to authenticate';
+            throw err;
+          }
+          // Retry with --registry succeeds
+          if (cmd.includes('npm install -g specweave@1.0.200') && cmd.includes('--registry')) {
+            return '';
+          }
+          // specweave --version after install
+          if (cmd === 'specweave --version') return 'specweave/1.0.200\n';
+          // spawned update
+          if (cmd.includes('specweave update --no-self')) return '';
+          return '';
+        });
+
+        await updateCommand({ noPlugins: true });
+
+        expect(mockExecSync).toHaveBeenCalledWith(
+          expect.stringContaining('npm install -g specweave@1.0.200 --registry https://registry.npmjs.org'),
+          expect.any(Object)
+        );
+      });
     });
   });
 

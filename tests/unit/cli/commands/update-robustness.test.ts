@@ -17,23 +17,17 @@ describe('Update Robustness - Source Code Verification', () => {
   const updateInstructionsTsPath = path.join(process.cwd(), 'src/cli/commands/update-instructions.ts');
 
   describe('npm timeout protection', () => {
-    it('should have timeout on npm view command', () => {
+    it('should have timeout on npm view command via npmExecWithAuthFallback', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      // Find the npm view call and verify it has a timeout
-      const npmViewSection = content.substring(
-        content.indexOf("'npm view specweave version'"),
-        content.indexOf("'npm view specweave version'") + 200
-      );
-      expect(npmViewSection).toContain('timeout');
+      // npmExecWithAuthFallback passes timeout to execSync internally
+      // Verify the call passes a timeout value
+      expect(content).toContain("npmExecWithAuthFallback('npm view specweave version', 30000)");
     });
 
-    it('should have timeout on npm install command', () => {
+    it('should have timeout on npm install command via npmExecWithAuthFallback', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      const npmInstallSection = content.substring(
-        content.indexOf("npm install -g specweave@$"),
-        content.indexOf("npm install -g specweave@$") + 200
-      );
-      expect(npmInstallSection).toContain('timeout');
+      // installWithFallback passes timeout through npmExecWithAuthFallback
+      expect(content).toMatch(/npmExecWithAuthFallback\(`npm install -g specweave@\$\{.*\}`, 120000\)/);
     });
 
     it('should handle timeout errors in catch block', () => {
@@ -97,6 +91,34 @@ describe('Update Robustness - Source Code Verification', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       expect(content).toContain('cleanupStaleAutoState');
       expect(content).toContain('auto-mode.json');
+    });
+  });
+
+  describe('E401 auth fallback', () => {
+    it('should have npmExecWithAuthFallback helper that retries with explicit registry', () => {
+      const content = fs.readFileSync(updateTsPath, 'utf-8');
+      expect(content).toContain('npmExecWithAuthFallback');
+      expect(content).toContain('--registry https://registry.npmjs.org');
+      expect(content).toContain('E401');
+      expect(content).toContain('Unable to authenticate');
+    });
+
+    it('should use npmExecWithAuthFallback for npm view in selfUpdateSpecWeave', () => {
+      const content = fs.readFileSync(updateTsPath, 'utf-8');
+      // The self-update function should call the helper, not raw execSync
+      const selfUpdateStart = content.indexOf('async function selfUpdateSpecWeave');
+      const selfUpdateSection = content.substring(selfUpdateStart, selfUpdateStart + 600);
+      expect(selfUpdateSection).toContain("npmExecWithAuthFallback('npm view specweave version'");
+    });
+
+    it('should use npmExecWithAuthFallback for npm install in installWithFallback', () => {
+      const content = fs.readFileSync(updateTsPath, 'utf-8');
+      const installSection = content.substring(
+        content.indexOf('function installWithFallback'),
+        content.indexOf('function installWithFallback') + 600
+      );
+      expect(installSection).toContain('npmExecWithAuthFallback');
+      expect(installSection).not.toMatch(/execSync\(`npm install/);
     });
   });
 });

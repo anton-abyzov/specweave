@@ -755,11 +755,7 @@ function versionToNumber(version: string): number {
  */
 function installWithFallback(targetVersion: string): { installedVersion: string } {
   try {
-    execSync(`npm install -g specweave@${targetVersion}`, {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 120000,
-    });
+    npmExecWithAuthFallback(`npm install -g specweave@${targetVersion}`, 120000);
     return { installedVersion: targetVersion };
   } catch (error: any) {
     const stderr = error.stderr?.toString() || error.message || '';
@@ -772,11 +768,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
     // Fallback: get all published versions, pick highest
     let allVersions: string[];
     try {
-      const versionsJson = execSync('npm view specweave versions --json', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 30000,
-      }).trim();
+      const versionsJson = npmExecWithAuthFallback('npm view specweave versions --json', 30000);
       const parsed = JSON.parse(versionsJson);
       allVersions = Array.isArray(parsed) ? parsed : [parsed];
     } catch {
@@ -797,11 +789,7 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
     const fallbackVersion = allVersions[allVersions.length - 1];
 
     try {
-      execSync(`npm install -g specweave@${fallbackVersion}`, {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 120000,
-      });
+      npmExecWithAuthFallback(`npm install -g specweave@${fallbackVersion}`, 120000);
       return { installedVersion: fallbackVersion };
     } catch {
       throw new Error(
@@ -809,6 +797,32 @@ function installWithFallback(targetVersion: string): { installedVersion: string 
         `Try: npm cache clean --force && specweave update`
       );
     }
+  }
+}
+
+/**
+ * Run an npm command, retrying with explicit public registry on E401.
+ * Stale auth tokens in ~/.npmrc cause E401 even for public packages.
+ */
+function npmExecWithAuthFallback(command: string, timeout: number): string {
+  try {
+    return execSync(command, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout,
+    }).trim();
+  } catch (error: any) {
+    const stderr = error.stderr?.toString() || error.message || '';
+    if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
+      // Retry with explicit public registry to bypass stale local auth tokens
+      const retryCommand = `${command} --registry https://registry.npmjs.org`;
+      return execSync(retryCommand, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout,
+      }).trim();
+    }
+    throw error;
   }
 }
 
@@ -824,11 +838,7 @@ async function selfUpdateSpecWeave(
 
   try {
     // Get latest version from npm (30s timeout to prevent indefinite hang)
-    const latestVersion = execSync('npm view specweave version', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 30000,
-    }).trim();
+    const latestVersion = npmExecWithAuthFallback('npm view specweave version', 30000);
 
     // Compare versions
     if (latestVersion === currentVersion) {
