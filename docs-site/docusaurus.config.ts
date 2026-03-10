@@ -294,92 +294,18 @@ const config: Config = {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Docs',
-          customProps: {
-            megaMenu: true,
-            megaMenuCategories: [
-              {
-                categoryTitle: 'Getting Started',
-                links: [
-                  {title: 'Introduction', description: 'What is SpecWeave', to: '/docs/overview/introduction'},
-                  {title: 'Quick Start', description: 'Get up and running in minutes', to: '/docs/getting-started'},
-                  {title: 'Features', description: 'Explore capabilities', to: '/docs/overview/features'},
-                ],
-              },
-              {
-                categoryTitle: 'Guides',
-                links: [
-                  {title: 'Commands', description: 'CLI reference', to: '/docs/reference/commands'},
-                  {title: 'Configuration', description: 'Project configuration', to: '/docs/reference/configuration'},
-                  {title: 'External Sync', description: 'GitHub, Jira, ADO', to: '/docs/reference/external-sync'},
-                ],
-              },
-              {
-                categoryTitle: 'Advanced',
-                links: [
-                  {title: 'Architecture', description: 'How it works under the hood', to: '/docs/reference/architecture'},
-                  {title: 'Enterprise', description: 'Team-scale workflows', to: '/docs/enterprise'},
-                  {title: 'Changelog', description: 'Release history', to: '/docs/reference/changelog'},
-                ],
-              },
-            ],
-          },
         },
         {
           type: 'docSidebar',
           sidebarId: 'academySidebar',
           position: 'left',
           label: 'Learn',
-          customProps: {
-            megaMenu: true,
-            megaMenuCategories: [
-              {
-                categoryTitle: 'Courses',
-                links: [
-                  {title: 'Fundamentals', description: 'Core concepts of spec-driven dev', to: '/docs/academy'},
-                  {title: 'Skill Development', description: 'Build your own skills', to: '/docs/skills/extensible/skill-development-guidelines'},
-                ],
-              },
-              {
-                categoryTitle: 'Resources',
-                links: [
-                  {title: 'Blog', description: 'Articles and tutorials', to: '/blog'},
-                  {title: 'Examples', description: 'Real-world project walkthroughs', to: '/docs/overview/features'},
-                ],
-              },
-            ],
-          },
         },
         {
           type: 'docSidebar',
           sidebarId: 'skillsSidebar',
           position: 'left',
           label: 'Skills',
-          customProps: {
-            megaMenu: true,
-            megaMenuCategories: [
-              {
-                categoryTitle: 'Browse',
-                links: [
-                  {title: 'All Skills (100+)', description: 'Complete skill catalog', to: '/docs/reference/skills'},
-                  {title: 'Verified Skills', description: 'Security-audited skills', to: '/docs/skills/verified/verified-skills'},
-                ],
-              },
-              {
-                categoryTitle: 'Build',
-                links: [
-                  {title: 'Extensible Skills', description: 'Create custom skills', to: '/docs/skills/extensible/extensible-skills'},
-                  {title: 'Skill Discovery', description: 'Find and evaluate skills', to: '/docs/skills/skill-discovery-evaluation'},
-                ],
-              },
-              {
-                categoryTitle: 'Security',
-                links: [
-                  {title: 'Ecosystem Security', description: 'Trust and verification', to: '/docs/skills/verified/skills-ecosystem-security'},
-                  {title: 'Secure Factory', description: 'Safe skill authoring', to: '/docs/skills/verified/secure-skill-factory-standard'},
-                ],
-              },
-            ],
-          },
         },
         {
           type: 'docSidebar',
