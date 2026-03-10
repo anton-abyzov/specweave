@@ -1277,7 +1277,9 @@ title: Custom Title From Frontmatter
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ title: 'Custom Title From Frontmatter' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -1311,7 +1313,9 @@ status: in-progress
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ title: 'My Heading Title' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -1342,7 +1346,9 @@ status: in-progress
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ title: 'Parse Spec' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -1378,7 +1384,9 @@ status: planning
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ status: 'completed' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -2191,7 +2199,9 @@ More details here.
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ overview: 'This is the quick overview.' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -2212,7 +2222,9 @@ Stuff.
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ title: 'My Actual Title' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
   });
@@ -2385,7 +2397,9 @@ title: No Metadata
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ status: 'planning' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
   });
@@ -2437,7 +2451,9 @@ title: Default Priority
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ priority: 'P1' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -2459,7 +2475,9 @@ title: Default Created
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ created: todayStr }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
 
@@ -2480,7 +2498,9 @@ priority: P3
       expect(mockGenerateFeatureFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ priority: 'P3' }),
-        incrementId
+        incrementId,
+        undefined,
+        undefined
       );
     });
   });
