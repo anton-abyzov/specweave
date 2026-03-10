@@ -811,6 +811,13 @@ export async function initCommand(
                 ...(org && {
                   sync: {
                     github: { owner: org, repo: repoName },
+                    // Inherit global JIRA/ADO config so child repos don't need manual setup
+                    ...(config.sync?.jira?.projectKey && {
+                      jira: { projectKey: config.sync.jira.projectKey },
+                    }),
+                    ...(config.sync?.ado?.project && {
+                      ado: { organization: config.sync.ado.organization, project: config.sync.ado.project },
+                    }),
                   },
                 }),
               })),
