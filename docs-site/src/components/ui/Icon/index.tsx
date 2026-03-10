@@ -18,6 +18,8 @@ import CursorSvg from './brands/cursor.svg';
 import DiscordSvg from './brands/discord.svg';
 import GithubSvg from './brands/github.svg';
 import JiraSvg from './brands/jira.svg';
+import LinearSvg from './brands/linear.svg';
+import WindsurfSvg from './brands/windsurf.svg';
 import YoutubeSvg from './brands/youtube.svg';
 
 const brandMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -28,6 +30,8 @@ const brandMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>
   discord: DiscordSvg,
   github: GithubSvg,
   jira: JiraSvg,
+  linear: LinearSvg,
+  windsurf: WindsurfSvg,
   youtube: YoutubeSvg,
 };
 

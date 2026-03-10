@@ -8,7 +8,7 @@ import styles from './IntegrationsSection.module.css';
 const INTEGRATIONS = [
   {
     brand: 'github',
-    name: 'GitHub',
+    name: 'GitHub Issues',
     description: 'Bidirectional sync with issues, milestones, and pull requests.',
   },
   {
@@ -20,11 +20,6 @@ const INTEGRATIONS = [
     brand: 'azure',
     name: 'Azure DevOps',
     description: 'Work items, boards, and pipeline integration out of the box.',
-  },
-  {
-    brand: 'claude',
-    name: 'Claude, Cursor, Copilot',
-    description: 'Works with any AI coding agent that supports Claude Code skills.',
   },
 ] as const;
 
