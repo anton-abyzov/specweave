@@ -90,6 +90,59 @@ export function resolveSyncTarget(
   return globalTarget;
 }
 
+/**
+ * Validate umbrella sync targets for common misconfigurations.
+ * Returns an array of warning messages (empty if all OK).
+ */
+export function validateSyncTargets(config: SpecWeaveConfig): string[] {
+  const warnings: string[] = [];
+  if (!config.umbrella?.enabled || !config.umbrella?.childRepos?.length) {
+    return warnings;
+  }
+
+  const childRepos = config.umbrella.childRepos;
+
+  // Check for child repos missing sync config entirely
+  for (const child of childRepos) {
+    if (!child.sync) {
+      warnings.push(
+        `Child repo "${child.id}" has no sync config — it will fall back to global defaults. ` +
+        `Run /sw:sync-setup to configure per-repo sync targets.`,
+      );
+    }
+  }
+
+  // Check for JIRA projectKey collisions with external projects
+  // (e.g., a child repo accidentally routing to a different project's JIRA board)
+  const jiraKeys = new Map<string, string[]>();
+  for (const child of childRepos) {
+    const key = child.sync?.jira?.projectKey;
+    if (key) {
+      if (!jiraKeys.has(key)) jiraKeys.set(key, []);
+      jiraKeys.get(key)!.push(child.id);
+    }
+  }
+
+  // Warn if umbrella.sync.jira differs from all childRepos (possible misconfiguration)
+  const umbrellaJiraKey = config.umbrella?.sync?.jira?.projectKey;
+  if (umbrellaJiraKey) {
+    for (const [key, repos] of jiraKeys) {
+      if (key !== umbrellaJiraKey && repos.length > 0) {
+        // This is expected for multi-project setups — only warn if a single child differs
+        // which likely indicates a copy-paste error
+        if (jiraKeys.size === 1 && repos.length === 1) {
+          warnings.push(
+            `Child repo "${repos[0]}" uses JIRA project "${key}" while umbrella uses "${umbrellaJiraKey}". ` +
+            `Verify this is intentional (not a misconfiguration).`,
+          );
+        }
+      }
+    }
+  }
+
+  return warnings;
+}
+
 function buildGlobalTarget(config: SpecWeaveConfig): SyncTargetConfig {
   return {
     github: config.sync?.github?.owner && config.sync?.github?.repo

@@ -75,6 +75,31 @@ Options: Yes, select a project | No, just Issues + Labels
 
 If yes, list available projects and ask which one.
 
+### Step 5b: Umbrella Per-Repo Sync Targets (Umbrella projects only)
+
+If the project has `umbrella.enabled: true` and `umbrella.childRepos[]`:
+
+1. Read `config.umbrella.childRepos` to list all child repos
+2. For JIRA: Show the global JIRA projectKey and ask if ALL child repos should use it, or if specific repos need different project keys:
+
+```
+AskUserQuestion: "Your umbrella has [N] child repos. Should all sync to JIRA project [KEY]?"
+Options:
+- Yes, use [KEY] for all child repos (default)
+- No, let me assign per-repo JIRA project keys
+```
+
+If "No", for each child repo ask:
+```
+AskUserQuestion: "Which JIRA project key for child repo '[repoName]'?"
+Default: [global projectKey]
+```
+
+3. Write `childRepo.sync.jira.projectKey` for each child repo in config.json
+4. For GitHub: Each child repo should already have `sync.github` from init. If missing, auto-populate from the repo's git remote.
+
+**IMPORTANT**: Never leave child repos without `sync` config — they fall back to global defaults which may route to the wrong external project.
+
 ### Step 6: Write Config
 
 Write the following:

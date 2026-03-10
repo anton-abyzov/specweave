@@ -458,12 +458,27 @@ async function executeStep(
       }
 
       const repoName = plan.candidate.repoName;
-      const childRepo = {
+      const childRepo: Record<string, any> = {
         id: repoName,
         path: path.relative(plan.umbrellaPath, plan.candidate.projectRoot),
         name: repoName,
         prefix: repoName.substring(0, 3).toUpperCase(),
       };
+
+      // Inherit global sync config so child repos route correctly by default
+      const childSync: Record<string, any> = {};
+      if (config.sync?.github?.owner && config.sync?.github?.repo) {
+        childSync.github = { owner: config.sync.github.owner, repo: repoName };
+      }
+      if (config.sync?.jira?.projectKey) {
+        childSync.jira = { projectKey: config.sync.jira.projectKey };
+      }
+      if (config.sync?.ado?.project) {
+        childSync.ado = { organization: config.sync.ado.organization, project: config.sync.ado.project };
+      }
+      if (Object.keys(childSync).length > 0) {
+        childRepo.sync = childSync;
+      }
 
       // Derive umbrella project name from directory (e.g., "my-umbrella-project")
       const umbrellaProjectName = path.basename(plan.umbrellaPath);
