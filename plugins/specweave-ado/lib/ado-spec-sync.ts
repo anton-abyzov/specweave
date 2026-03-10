@@ -64,6 +64,9 @@ export class AdoSpecSync {
     this.config = config;
 
     // Create ADO API client
+    // NOTE: Do NOT set a default Content-Type here. Work item create/update
+    // requires 'application/json-patch+json', but WIQL queries require
+    // 'application/json'. Each method sets the appropriate Content-Type.
     this.client = axios.create({
       baseURL: `https://dev.azure.com/${config.organization}/${config.project}/_apis`,
       auth: {
@@ -71,7 +74,6 @@ export class AdoSpecSync {
         password: config.personalAccessToken
       },
       headers: {
-        'Content-Type': 'application/json-patch+json',
         'Accept': 'application/json'
       }
     });
@@ -295,7 +297,9 @@ export class AdoSpecSync {
     ];
 
     const encodedType = encodeURIComponent(workItemType);
-    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload, {
+      headers: { 'Content-Type': 'application/json-patch+json' }
+    });
     const featureData = response.data;
 
     console.log(`   ✅ Created ADO Feature #${featureData.id}: ${featureData._links.html.href}`);
@@ -346,7 +350,8 @@ export class AdoSpecSync {
 
     const response = await this.client.patch(
       `/wit/workitems/${featureId}?api-version=7.0`,
-      payload
+      payload,
+      { headers: { 'Content-Type': 'application/json-patch+json' } }
     );
     const featureData = response.data;
 
@@ -547,6 +552,8 @@ ${acList}
 
     const response = await this.client.post('/wit/wiql?api-version=7.0', {
       query: wiql
+    }, {
+      headers: { 'Content-Type': 'application/json' }
     });
 
     const workItems = response.data.workItems;
@@ -621,7 +628,10 @@ ${acList}
       }
     ];
 
-    const response = await this.client.post('/wit/workitems/$User%20Story?api-version=7.0', payload);
+    const encodedType = encodeURIComponent(workItemType);
+    const response = await this.client.post(`/wit/workitems/$${encodedType}?api-version=7.0`, payload, {
+      headers: { 'Content-Type': 'application/json-patch+json' }
+    });
     const storyData = response.data;
 
     return {
@@ -664,7 +674,9 @@ ${acList}
       });
     }
 
-    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload);
+    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
+      headers: { 'Content-Type': 'application/json-patch+json' }
+    });
   }
 
   /**
