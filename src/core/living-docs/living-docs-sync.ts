@@ -1708,10 +1708,10 @@ export class LivingDocsSync {
               await this.syncToGitHub(featureId, projectPath, projectName);
               break;
             case 'jira':
-              await this.syncToJira(featureId, projectPath, projectName);
+              await this.syncToJira(incrementId, featureId, projectPath, projectName);
               break;
             case 'ado':
-              await this.syncToADO(featureId, projectPath, projectName);
+              await this.syncToADO(incrementId, featureId, projectPath, projectName);
               break;
             default:
               this.logger.warn(`   ⚠️  Unknown external tool: ${tool}`);
@@ -2012,7 +2012,7 @@ export class LivingDocsSync {
    * 2. config.sync.profiles[*] with provider='jira'
    * 3. Environment variables (JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN)
    */
-  private async syncToJira(featureId: string, projectPath: string, projectName?: string): Promise<void> {
+  private async syncToJira(incrementId: string, featureId: string, projectPath: string, projectName?: string): Promise<void> {
     try {
       this.logger.log(`   🔄 Syncing to JIRA...`);
 
@@ -2097,6 +2097,17 @@ export class LivingDocsSync {
 
       if (result.success) {
         this.logger.log(`   ✅ Synced to JIRA: ${result.externalId || 'updated'}`);
+
+        // Backfill increment metadata.json with JIRA links (mirrors GitHub's backfillIncrementMetadata)
+        if (result.externalId) {
+          await this.backfillExternalLinks(incrementId, 'jira', {
+            epicKey: result.externalId,
+            epicUrl: result.url,
+            projectKey,
+            domain,
+            syncedAt: new Date().toISOString(),
+          });
+        }
       } else {
         this.logger.warn(`   ⚠️  JIRA sync had issues: ${result.error || 'unknown'}`);
       }
@@ -2123,7 +2134,7 @@ export class LivingDocsSync {
    * 2. config.sync.profiles[*] with provider='ado'
    * 3. Environment variables (AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT, AZURE_DEVOPS_PAT)
    */
-  private async syncToADO(featureId: string, projectPath: string, projectName?: string): Promise<void> {
+  private async syncToADO(incrementId: string, featureId: string, projectPath: string, projectName?: string): Promise<void> {
     try {
       this.logger.log(`   🔄 Syncing to Azure DevOps...`);
 
@@ -2213,6 +2224,17 @@ export class LivingDocsSync {
 
       if (result.success) {
         this.logger.log(`   ✅ Synced to ADO: ${result.externalId || 'updated'}`);
+
+        // Backfill increment metadata.json with ADO links (mirrors GitHub's backfillIncrementMetadata)
+        if (result.externalId) {
+          await this.backfillExternalLinks(incrementId, 'ado', {
+            featureId: result.externalId,
+            featureUrl: result.url,
+            organization,
+            project,
+            syncedAt: new Date().toISOString(),
+          });
+        }
       } else {
         this.logger.warn(`   ⚠️  ADO sync had issues: ${result.error || 'unknown'}`);
       }
@@ -2223,6 +2245,48 @@ export class LivingDocsSync {
       } else {
         throw error;
       }
+    }
+  }
+
+  /**
+   * Backfill external links into increment metadata.json
+   *
+   * Mirrors GitHub's backfillIncrementMetadata() pattern:
+   * writes sync results (JIRA epic keys, ADO work item IDs) to metadata.json
+   * so the system can track which external items exist for each increment.
+   *
+   * Non-blocking — errors are logged but don't halt sync.
+   */
+  private async backfillExternalLinks(
+    incrementId: string,
+    provider: 'jira' | 'ado',
+    data: Record<string, any>
+  ): Promise<void> {
+    try {
+      const metadataPath = path.join(
+        this.projectRoot,
+        '.specweave',
+        'increments',
+        incrementId,
+        'metadata.json'
+      );
+
+      if (!existsSync(metadataPath)) return;
+
+      const metadata = await readJson(metadataPath);
+      if (!metadata.externalLinks) metadata.externalLinks = {};
+
+      // Merge provider data (don't overwrite existing sub-keys like issues)
+      metadata.externalLinks[provider] = {
+        ...(metadata.externalLinks[provider] || {}),
+        ...data,
+      };
+
+      await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2) + '\n', 'utf-8');
+      this.logger.log(`      📝 Backfilled metadata.json with ${provider} links`);
+    } catch (error) {
+      // Non-blocking
+      this.logger.warn(`      ⚠️ ${provider} metadata backfill failed: ${(error as Error).message}`);
     }
   }
 

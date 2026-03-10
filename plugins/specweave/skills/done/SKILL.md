@@ -11,7 +11,7 @@ argument-hint: "<increment-id> [--auto]"
 
 **PM-Led Closure**: Validate tasks, tests, and docs before closing.
 
-**EXPLICIT USER APPROVAL REQUIRED**: Only way to transition `ready_for_review` -> `completed`. Prevents auto-completion without AC checks and user confirmation.
+**AUTO-CLOSURE DEFAULT**: After `/sw:do` completes all tasks, `/sw:done` runs automatically — no user confirmation needed. Quality gates (grill, judge-llm, PM validation) provide the safety net. If something is wrong, the user can re-open the increment.
 
 ## Usage
 
@@ -25,7 +25,7 @@ Argument: Required increment ID (e.g., "001", "0001", "0042", "0153-feature-name
 
 | Option | Description |
 |--------|-------------|
-| `--auto` | Skip user confirmation prompt in Step 4 (for `/sw:auto` and `/sw:team-lead` modes). All quality gates (grill, judge-llm, Gate 0, PM gates) still enforced. |
+| `--auto` | Legacy flag, now a no-op. Auto-closure is the default for all modes. All quality gates (grill, judge-llm, Gate 0, PM gates) always enforced. |
 
 ---
 
@@ -64,7 +64,7 @@ If closing a SpecWeave framework increment, show post-closure reminders: update 
 - `completed` -> Already closed, warn user
 - `backlog` / `paused` / `abandoned` -> BLOCK with error
 
-**User confirmation**: If `--auto` flag is present, skip the explicit user confirmation and proceed directly to closure. Otherwise, require explicit user confirmation before closure ("yes" to close, "no" to cancel). Note: `--auto` does NOT bypass any quality gates (grill, judge-llm, Gate 0, PM gates) — it only skips the interactive confirmation prompt.
+**No confirmation needed**: Proceed directly to closure. Quality gates (grill, judge-llm, Gate 0, PM gates) are the safety net — NOT user confirmation prompts. NEVER stop to ask "should I close this?" — just close it. If a gate fails, the increment stays open automatically. If the user disagrees with closure, they can re-open.
 
 ### Step 5: Load Increment Context
 

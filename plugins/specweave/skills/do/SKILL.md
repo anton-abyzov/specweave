@@ -155,13 +155,17 @@ If task blocked: document in tasks.md, present options to user, skip or pause de
 
 After testable tasks: run relevant tests, fix failures immediately, only continue when green.
 
-### Step 9: Completion
+### Step 9: Completion (MANDATORY AUTO-CHAIN — NEVER STOP HERE)
+
+**CRITICAL**: When all tasks are done, IMMEDIATELY chain to closure. Do NOT stop to ask for review, do NOT report "all tasks complete" and wait. The quality gates inside `/sw:done` (grill, judge-llm, PM validation) ARE the review. If the user wants to re-open, they can.
 
 When all tasks done:
 1. Run `/sw:sync-docs update` to sync living docs
 2. Run tests: `npx vitest run` (if test framework detected)
 3. Invoke `Skill({ skill: "sw:grill" })` with increment ID — writes required `grill-report.json`
-4. Then: `/sw:done <id>` (which also runs judge-llm and PM gates)
+4. Invoke `Skill({ skill: "sw:done" })` with increment ID — runs judge-llm, PM gates, closes, and syncs to GitHub/Jira/ADO
+
+**Anti-pattern** (NEVER do this): "All tasks are complete. Would you like me to close the increment?" — Just close it.
 
 ---
 
