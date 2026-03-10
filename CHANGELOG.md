@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.416] - 2026-03-10
+
+### Changes
+- fix: always bypass npm auth for self-update, add E401 troubleshooting docs
+- fix: universal npm E401 auth bypass for specweave update
+
+---
+
+
+
 ## [1.0.415] - 2026-03-10
 
 ### Changes
