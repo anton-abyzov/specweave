@@ -2054,10 +2054,11 @@ export class LivingDocsSync {
         return;
       }
 
-      // Initialize JIRA sync
+      // Initialize JIRA sync (pass projectName so SpecMetadataManager looks in correct folder)
       const jiraSync = new JiraSpecSync(
         { domain, email, apiToken, projectKey },
-        this.projectRoot
+        this.projectRoot,
+        projectName
       );
 
       // Sync feature to JIRA
@@ -2169,10 +2170,11 @@ export class LivingDocsSync {
         return;
       }
 
-      // Initialize ADO sync
+      // Initialize ADO sync (pass projectName so SpecMetadataManager looks in correct folder)
       const adoSync = new AdoSpecSync(
         { organization, project, personalAccessToken },
-        this.projectRoot
+        this.projectRoot,
+        projectName
       );
 
       // Sync feature to ADO

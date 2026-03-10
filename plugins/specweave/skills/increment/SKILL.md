@@ -345,14 +345,18 @@ Agent({ subagent_type: "sw:sw-planner", prompt: "Generate tasks for increment XX
 **Order matters**: PM first (spec.md) -> Architect second (plan.md) -> Planner last (tasks.md).
 Each agent reads the output of the previous one.
 
-## Step 5: Post-Creation Sync
+## Step 5: Post-Creation Sync (MANDATORY)
 
-After delegation completes:
+After ALL delegation completes (PM + Architect + Planner), sync living docs AND external tools.
+This MUST run — the template guard in `create-increment` skips sync because spec.md is empty at that point.
+By now spec.md has real content, so this is the actual sync trigger.
 
 ```bash
-/sw:sync-specs {increment-id}
-/sw-github:sync {increment-id}  # If configured
+specweave sync-living-docs {increment-id}
 ```
+
+This command chains automatically to external tools (GitHub Issues, JIRA, ADO) via `syncToExternalTools()`.
+No separate GitHub/JIRA/ADO sync call needed — it's all handled by `sync-living-docs`.
 
 ## Step 6: Execution Strategy Recommendation
 

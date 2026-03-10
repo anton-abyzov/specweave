@@ -8,8 +8,8 @@ import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
 class JiraSpecSync {
-  constructor(config, projectRoot = process.cwd()) {
-    this.specManager = new SpecMetadataManager(projectRoot);
+  constructor(config, projectRoot = process.cwd(), projectId) {
+    this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
     this.client = axios.create({
       baseURL: getApiBaseUrl(config.domain),

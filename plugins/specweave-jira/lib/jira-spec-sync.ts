@@ -65,8 +65,8 @@ export class JiraSpecSync {
   private client: AxiosInstance;
   private config: JiraConfig;
 
-  constructor(config: JiraConfig, projectRoot: string = process.cwd()) {
-    this.specManager = new SpecMetadataManager(projectRoot);
+  constructor(config: JiraConfig, projectRoot: string = process.cwd(), projectId?: string) {
+    this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
 
     // Create Jira API client — baseURL set dynamically via init()
