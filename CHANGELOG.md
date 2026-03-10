@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.410] - 2026-03-10
+
+### Changes
+- chore: update jira plugin build artifact
+- fix JIRA issue type fallback and story search query
+- chore: bump version to 1.0.409
+
+---
+
+
+
 ## [1.0.409] - 2026-03-10
 
 ### Changes
