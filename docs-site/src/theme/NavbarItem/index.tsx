@@ -25,25 +25,30 @@ function MegaMenuNavbarItem({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const instanceIdRef = useRef(++instanceCounter);
   const openedViaKeyboardRef = useRef(false);
 
-  const handleOpen = useCallback(() => {
+  const cancelClose = useCallback(() => {
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    cancelClose();
     // Tell all other mega menus to close
     window.dispatchEvent(
       new CustomEvent('megamenu:open', {detail: instanceIdRef.current}),
     );
     openedViaKeyboardRef.current = false;
     setOpen(true);
-  }, []);
+  }, [cancelClose]);
 
   const handleClose = useCallback(() => {
-    closeTimeoutRef.current = setTimeout(() => setOpen(false), 120);
+    closeTimeoutRef.current = setTimeout(() => setOpen(false), 150);
   }, []);
 
   const handleToggle = useCallback(() => {
@@ -80,22 +85,22 @@ function MegaMenuNavbarItem({
     const onOtherOpen = (e: Event) => {
       const detail = (e as CustomEvent<number>).detail;
       if (detail !== instanceIdRef.current) {
-        if (closeTimeoutRef.current) {
-          clearTimeout(closeTimeoutRef.current);
-          closeTimeoutRef.current = null;
-        }
+        cancelClose();
         setOpen(false);
       }
     };
     window.addEventListener('megamenu:open', onOtherOpen);
     return () => window.removeEventListener('megamenu:open', onOtherOpen);
-  }, []);
+  }, [cancelClose]);
 
-  // Close on outside click
+  // Close on outside click — check both container and panel
   useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const inContainer = containerRef.current?.contains(target);
+      const inPanel = panelRef.current?.contains(target);
+      if (!inContainer && !inPanel) {
         setOpen(false);
       }
     };
@@ -109,6 +114,15 @@ function MegaMenuNavbarItem({
       if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     };
   }, []);
+
+  // Panel mouse handlers — cancel close when entering panel, schedule close when leaving
+  const handlePanelEnter = useCallback(() => {
+    cancelClose();
+  }, [cancelClose]);
+
+  const handlePanelLeave = useCallback(() => {
+    handleClose();
+  }, [handleClose]);
 
   const colCount = categories.length;
 
@@ -137,6 +151,10 @@ function MegaMenuNavbarItem({
         onClose={() => setOpen(false)}
         columns={colCount}
         autoFocus={openedViaKeyboardRef.current}
+        triggerRef={containerRef}
+        panelRef={panelRef}
+        onPanelEnter={handlePanelEnter}
+        onPanelLeave={handlePanelLeave}
       />
     </div>
   );
