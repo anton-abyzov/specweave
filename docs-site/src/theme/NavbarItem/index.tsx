@@ -27,6 +27,7 @@ function MegaMenuNavbarItem({
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const instanceIdRef = useRef(++instanceCounter);
+  const openedViaKeyboardRef = useRef(false);
 
   const handleOpen = useCallback(() => {
     if (closeTimeoutRef.current) {
@@ -37,6 +38,7 @@ function MegaMenuNavbarItem({
     window.dispatchEvent(
       new CustomEvent('megamenu:open', {detail: instanceIdRef.current}),
     );
+    openedViaKeyboardRef.current = false;
     setOpen(true);
   }, []);
 
@@ -62,9 +64,11 @@ function MegaMenuNavbarItem({
         setOpen(false);
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        openedViaKeyboardRef.current = true;
         handleToggle();
       } else if (e.key === 'ArrowDown' && !open) {
         e.preventDefault();
+        openedViaKeyboardRef.current = true;
         handleOpen();
       }
     },
@@ -132,6 +136,7 @@ function MegaMenuNavbarItem({
         visible={open}
         onClose={() => setOpen(false)}
         columns={colCount}
+        autoFocus={openedViaKeyboardRef.current}
       />
     </div>
   );

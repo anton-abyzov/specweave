@@ -10,7 +10,8 @@
   display: block;
   text-transform: uppercase;
   letter-spacing: var(--sw-letter-spacing-widest);
-  color: var(--sw-color-primary-500);
+  color: inherit;
+  opacity: 0.6;
   font-size: var(--sw-font-size-sm);
   font-weight: var(--sw-font-weight-semibold);
   margin-bottom: var(--sw-space-3);
@@ -20,12 +21,13 @@
   font-size: var(--sw-font-size-h2);
   font-weight: var(--sw-font-weight-bold);
   line-height: var(--sw-line-height-tight);
-  color: var(--sw-text-primary);
+  color: inherit;
   margin: 0 0 var(--sw-space-4);
 }
 
 .subtitle {
-  color: var(--sw-text-secondary);
+  color: inherit;
+  opacity: 0.7;
   font-size: var(--sw-font-size-lg);
   line-height: var(--sw-line-height-relaxed);
   margin: 0;
@@ -34,8 +36,4 @@
 
 .centered .subtitle {
   margin-inline: auto;
-}
-
-:global([data-theme='dark']) .title {
-  color: var(--sw-text-primary);
 }
