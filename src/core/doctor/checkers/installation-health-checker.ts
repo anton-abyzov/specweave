@@ -504,12 +504,11 @@ export class InstallationHealthChecker implements HealthChecker {
    * @since 1.0.395
    */
   /**
-   * Run an npm command bypassing all auth config sources (user/global npmrc, env vars).
-   * Used as fallback when the default npm command fails with E401.
+   * Run an npm command against the public registry with a clean environment.
+   * Always bypasses user auth config to prevent E401 from stale tokens.
    */
-  private execNpmNoAuth(command: string, timeout: number): string {
+  private npmPublicExec(command: string, timeout: number): string {
     const env = { ...process.env };
-    // Strip auth-related env vars
     delete env['NPM_TOKEN'];
     for (const key of Object.keys(env)) {
       if (
@@ -519,7 +518,6 @@ export class InstallationHealthChecker implements HealthChecker {
         delete env[key];
       }
     }
-    // Point user and global config to non-existent/empty files to bypass all npmrc auth
     const emptyConfig = process.platform === 'win32' ? 'NUL' : '/dev/null';
     env['npm_config_userconfig'] = emptyConfig;
     env['npm_config_globalconfig'] = join(
@@ -553,23 +551,10 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    // Get latest version from npm (retry with clean env on E401 from stale auth tokens)
+    // Get latest version from npm — always use clean env to avoid E401 from stale tokens
     let latestVersion: string;
     try {
-      try {
-        latestVersion = execSync('npm view specweave version', {
-          encoding: 'utf-8',
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 15000,
-        }).trim();
-      } catch (e: any) {
-        const stderr = e.stderr?.toString() || e.message || '';
-        if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
-          latestVersion = this.execNpmNoAuth('npm view specweave version', 15000);
-        } else {
-          throw e;
-        }
-      }
+      latestVersion = this.npmPublicExec('npm view specweave version', 15000);
     } catch {
       return {
         name: 'Update health',
@@ -589,7 +574,7 @@ export class InstallationHealthChecker implements HealthChecker {
 
     // Outdated — verify the latest version is actually installable (detect CDN issues)
     try {
-      this.execNpmNoAuth(`npm view specweave@${latestVersion} version`, 15000);
+      this.npmPublicExec(`npm view specweave@${latestVersion} version`, 15000);
       // Version is resolvable, just outdated
       return {
         name: 'Update health',
