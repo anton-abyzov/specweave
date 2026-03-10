@@ -38,20 +38,22 @@ export default function VerifiedSkillsSection() {
       />
       <div className={styles.tiers}>
         {TIERS.map((tier, i) => (
-          <AnimateOnScroll key={tier.name} animation="fade-up" delay={i * 150}>
-            <div className={styles.tierCard}>
-              <div className={styles.tierIcon}>
-                <Icon name={tier.icon} size={32} />
+          <React.Fragment key={tier.name}>
+            <AnimateOnScroll animation="fade-up" delay={i * 150}>
+              <div className={styles.tierCard}>
+                <div className={styles.tierIcon}>
+                  <Icon name={tier.icon} size={32} />
+                </div>
+                <Badge variant={tier.badge}>{tier.name}</Badge>
+                <p className={styles.tierDesc}>{tier.description}</p>
               </div>
-              <Badge variant={tier.badge}>{tier.name}</Badge>
-              <p className={styles.tierDesc}>{tier.description}</p>
-            </div>
+            </AnimateOnScroll>
             {i < TIERS.length - 1 && (
               <div className={styles.arrow} aria-hidden="true">
                 <Icon name="chevron-right" size={20} />
               </div>
             )}
-          </AnimateOnScroll>
+          </React.Fragment>
         ))}
       </div>
       <div className={styles.cta}>
