@@ -149,8 +149,10 @@ export class JiraSpecSync {
         changes
       };
 
-    } catch (error) {
-      console.error('❌ Error syncing to Jira:', error);
+    } catch (error: any) {
+      const axiosData = error?.response?.data;
+      const detail = axiosData ? JSON.stringify(axiosData) : '';
+      console.error('❌ Error syncing to Jira:', error?.message || error, detail ? `\n   Response: ${detail}` : '');
       return {
         success: false,
         specId,

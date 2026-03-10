@@ -75,7 +75,10 @@ class JiraSpecSync {
         changes
       };
     } catch (error) {
-      console.error("\u274C Error syncing to Jira:", error);
+      const axiosData = error?.response?.data;
+      const detail = axiosData ? JSON.stringify(axiosData) : "";
+      console.error("\u274C Error syncing to Jira:", error?.message || error, detail ? `
+   Response: ${detail}` : "");
       return {
         success: false,
         specId,
@@ -427,7 +430,7 @@ ${acList}
         key: this.config.projectKey
       },
       summary: story.summary,
-      description: story.description,
+      description: toDescription(story.description, this.config.domain),
       issuetype: {
         name: issueType
       },
