@@ -1,16 +1,16 @@
 ---
 title: "Extensible Skills Implementation Guide"
-description: "Practical guide for making skills extensible using Dynamic Context Injection, skill memories, and the Open/Closed Principle"
+description: "Practical guide for making skills extensible using dynamic context injection, skill memories, and customization layers"
 date: "2026-02-21"
 authors: ["Anton Abyzov"]
-tags: ["extensible-skills", "implementation", "skill-memories", "DCI", "getting-started"]
+tags: ["extensible-skills", "implementation", "skill-memories", "dynamic-context-injection", "getting-started"]
 ---
 
 # Extensible Skills Implementation Guide
 
 **Making AI tools transparent, customizable, and extensible**
 
-For formal category definitions and the detection specification, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
+For formal category definitions and the detection specification, see the [Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard).
 
 ---
 
@@ -36,7 +36,7 @@ SpecWeave didn't invent this pattern -- we applied it to AI.
 |    SKILL.md        |  +  | skill-memories/       |
 |  (Core Logic)      |     | (Your Extensions)     |
 |                    |     |                       |
-|  CLOSED            |     |    OPEN               |
+|  STABLE            |     |    CUSTOMIZABLE        |
 |  - Stable          |     |  - Your rules         |
 |  - Tested          |     |  - Your preferences   |
 |  - Predictable     |     |  - Custom logic       |
@@ -52,7 +52,7 @@ SpecWeave didn't invent this pattern -- we applied it to AI.
 
 ### Cascading Lookup (3-Tier Priority)
 
-Skills self-load their memories using **Dynamic Context Injection** (DCI) -- a shell command preprocessed before Claude sees the skill content. The lookup cascades through three directories, **first match wins** (no merging):
+Skills self-load their memories using **dynamic context injection** -- Claude Code's built-in `` !`command` `` syntax that runs a shell command before the skill content is interpreted. The lookup cascades through three directories, **first match wins** (no merging):
 
 ```
 Priority 1: .specweave/skill-memories/{skill}.md  <- SpecWeave project level
@@ -60,7 +60,7 @@ Priority 2: .claude/skill-memories/{skill}.md      <- Claude Code project level
 Priority 3: ~/.claude/skill-memories/{skill}.md    <- User global level
 ```
 
-**How it works**: Each `SKILL.md` contains a DCI one-liner that reads the `## Learnings` section from the first matching memory file:
+**How it works**: Each `SKILL.md` contains a context injection one-liner that reads the `## Learnings` section from the first matching memory file:
 
 ```markdown
 ## Project Overrides
@@ -118,7 +118,7 @@ Categorizes by skill -> Saves to skill-memories/ -> Applied next session
 mkdir -p .claude/skill-memories
 ```
 
-2. Add your skill's `SKILL.md` with the DCI one-liner (see Architecture section above).
+2. Add your skill's `SKILL.md` with the context injection one-liner (see Architecture section above).
 
 3. Create a memory file:
 
@@ -145,7 +145,7 @@ npm install -g specweave
 specweave init .
 ```
 
-2. All SpecWeave skills already have DCI blocks -- just create memory files:
+2. All SpecWeave skills already have context injection blocks -- just create memory files:
 
 ```bash
 cat > .specweave/skill-memories/frontend.md << 'EOF'
@@ -181,11 +181,11 @@ git push
 
 | Category | Meaning | How to Achieve |
 |---|---|---|
-| **Extensible** | DCI block with skill-memories. Standard, discoverable customization. | Add the DCI one-liner referencing `skill-memories` |
+| **Extensible** | Context injection block with skill-memories. Standard, discoverable customization. | Add the context injection one-liner referencing `skill-memories` |
 | **Semi-Extensible** | Mentions customization but not through the standard system. | Mention extension points in prose |
 | **Not Extensible** | No customization mechanism. Fork to change. | Default -- no action needed |
 
-For formal category definitions and the detection algorithm, see the [Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard).
+For formal category definitions and the detection algorithm, see the [Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard).
 
 ---
 
@@ -201,22 +201,22 @@ Memory files are structured Markdown:
 - **2026-02-13**: Your project-specific rule or preference
 - **2026-02-13**: Another rule Claude should follow
 
-## Other Section (ignored by DCI)
+## Other Section (ignored by context injection)
 
 Notes, history, etc. -- only ## Learnings is injected.
 ```
 
-The DCI one-liner extracts **only** the content between `## Learnings` and the next `##` heading (or end of file).
+The context injection one-liner extracts **only** the content between `## Learnings` and the next `##` heading (or end of file).
 
 ---
 
 ## Beyond Memories: Project Context
 
-DCI blocks aren't limited to skill memories -- they can load **any shell command output**. SpecWeave uses this to give skills awareness of the project environment.
+Context injection blocks aren't limited to skill memories -- they can load **any shell command output**. SpecWeave uses this to give skills awareness of the project environment.
 
 ### How It Works
 
-Skills can have multiple DCI blocks. The first loads memories (user corrections), the second loads project context (config, tech stack, active increment):
+Skills can have multiple context injection blocks. The first loads memories (user corrections), the second loads project context (config, tech stack, active increment):
 
 ```markdown
 ## Project Overrides
@@ -254,9 +254,9 @@ Add this block to your `SKILL.md`, right after the title -- change only the `s=`
 
 This makes your skill **extensible** (the highest category).
 
-### Q: Can I add my own DCI blocks?
+### Q: Can I add my own context injection blocks?
 
-Yes. Any `` !`command` `` line in a `SKILL.md` is executed by Claude Code before loading the skill. You can add multiple DCI blocks -- each one is an independent "sensor" that injects context. Always add `2>/dev/null; true` at the end for graceful degradation.
+Yes. Any `` !`command` `` line in a `SKILL.md` is executed by Claude Code before loading the skill. You can add multiple context injection blocks -- each one is an independent "sensor" that injects context. Always add `2>/dev/null; true` at the end for graceful degradation.
 
 ### Q: What if I make a wrong correction?
 
@@ -269,7 +269,7 @@ git checkout <commit> -- .claude/skill-memories/frontend.md
 
 ### Q: Can I customize any skill?
 
-Yes -- any skill with a DCI block. All SpecWeave skills have it built-in. For third-party skills, add the DCI one-liner to their `SKILL.md`.
+Yes -- any skill with a context injection block. All SpecWeave skills have it built-in. For third-party skills, add the context injection one-liner to their `SKILL.md`.
 
 ### Q: What if two rules conflict?
 
@@ -283,10 +283,10 @@ Yes. The `.claude/skill-memories/` and `~/.claude/skill-memories/` paths work wi
 
 ## See Also
 
-- **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)** -- Formal category definitions, DCI specification
-- **[Skills Overview](/docs/skills/)** -- Both skill standards at a glance
+- **[Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard)** -- Formal category definitions, context injection specification
+- **[Skills Overview](/docs/skills/)** -- Both skill layers at a glance
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** -- How skills earn trust through 3-tier security certification
-- **[Skill Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- SOLID principles applied to skill authoring
+- **[Skill Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Best practices for skill authoring
 - **[Self-Improving Skills](/docs/skills/extensible/self-improving-skills)** -- How the Reflect system auto-learns corrections
 
 ---

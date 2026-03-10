@@ -128,7 +128,7 @@ The user says `/sw:judge-llm`. The skill spawns an evaluator agent using extende
 
 You don't need to understand agent configuration, context management, or model selection. You say what you want — `/sw:do`, `/sw:grill`, `/sw:increment` — and the skill handles everything.
 
-This is why SpecWeave's tagline works: *"Skills Are Programs in English."* You invoke a program. The program runs agents internally. You get results.
+This is why SpecWeave's tagline works: *"Skills Are Structured Expertise."* You invoke a skill. The skill runs agents internally. You get results.
 
 ### For skill authors
 
@@ -314,8 +314,8 @@ SpecWeave has followed this pattern since day one — every `/sw:*` command is a
 
 ## Further Reading
 
-- [Skills Are Programs in English](/docs/overview/skills-as-programs) — Why skills are programs, not prompts
+- [Skills Are Structured Expertise](/docs/overview/skills-as-programs) — Why skills are structured expertise, not prompts
 - [Skills, Plugins & Marketplaces](/docs/skills/fundamentals) — How skills, plugins, and marketplaces relate
 - [Claude Code Architecture](/docs/overview/claude-code-architecture) — Technical component reference
-- [Extensible Skills Standard](/docs/skills/extensible/) — How to customize skills for your project
+- [Extensible Skills](/docs/skills/extensible/) — How to customize skills for your project
 - [Development Guidelines](/docs/skills/extensible/skill-development-guidelines) — Writing effective skills

@@ -604,6 +604,19 @@ export async function launchMarketplaceScanJob(options: MarketplaceScanLaunchOpt
     foreground = false,
   } = options;
 
+  // Guard: marketplace scanning requires explicit opt-in via config
+  const swConfigPath = path.join(projectPath, '.specweave', 'config.json');
+  try {
+    const raw = fs.readFileSync(swConfigPath, 'utf-8');
+    const swConfig = JSON.parse(raw);
+    if (swConfig?.marketplace?.enabled !== true) {
+      throw new Error('Marketplace scanning is disabled by default (set marketplace.enabled: true in config.json to enable)');
+    }
+  } catch (e: any) {
+    if (e.message.includes('disabled by default')) throw e;
+    throw new Error('Marketplace scanning requires a valid .specweave/config.json with marketplace.enabled: true');
+  }
+
   // Create job via job manager
   const jobManager = getJobManager(projectPath);
 

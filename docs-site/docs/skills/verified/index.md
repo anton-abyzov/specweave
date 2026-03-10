@@ -35,6 +35,6 @@ Platform comparison, ToxicSkills data, risk taxonomy, threat actors, and real-wo
 
 ## See Also
 
-- **[Skills Overview](/docs/skills/)** — Both skill standards at a glance
-- **[Extensible Skills Standard](/docs/skills/extensible/)** — How skills adapt to your project through customization
+- **[Skills Overview](/docs/skills/)** — Both skill layers at a glance
+- **[Extensible Skills](/docs/skills/extensible/)** — How skills adapt to your project through customization
 - **[verifiedskill.com](https://verifiedskill.com)** — The trusted skill registry

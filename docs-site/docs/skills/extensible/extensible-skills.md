@@ -1,25 +1,25 @@
 ---
-title: "Extensible Skills: The Open/Closed Principle for AI"
-description: "How SpecWeave makes AI skills transparent, customizable, and extensible using the Open/Closed Principle"
+title: "Extensible Skills: Customization Without Modification"
+description: "How SpecWeave makes AI skills transparent, customizable, and extensible"
 date: "2026-02-21"
 authors: ["Anton Abyzov"]
-tags: ["extensible-skills", "open-closed-principle", "skill-memories", "DCI", "customization"]
+tags: ["extensible-skills", "skill-memories", "dynamic-context-injection", "customization"]
 ---
 
-# Extensible Skills: The Open/Closed Principle for AI
+# Extensible Skills: Customization Without Modification
 
 **Making AI tools transparent, customizable, and extensible**
 
-The Extensible Skills Standard has been split into two documents for clarity:
+The Extensible Skills documentation has been split into two documents for clarity:
 
 ---
 
-## Formal Standard (Normative)
+## Formal Specification (Normative)
 
-The **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-standard)** defines:
+The **[Extensible Skills Specification](/docs/skills/extensible/extensible-skills-standard)** defines:
 
 - **Three extensibility categories** -- extensible, semi-extensible, not-extensible
-- **DCI specification** -- Syntax, execution model, and graceful degradation
+- **Dynamic context injection specification** -- Syntax, execution model, and graceful degradation
 - **Detection algorithm** -- How categories are determined from SKILL.md content
 - **Conformance requirements** -- What registries must implement
 
@@ -30,7 +30,7 @@ The **[Extensible Skills Standard](/docs/skills/extensible/extensible-skills-sta
 The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** covers:
 
 - **Getting started** -- For Claude Code users and SpecWeave users
-- **Architecture** -- Cascading lookup, DCI blocks, and the Reflect system
+- **Architecture** -- Cascading lookup, injection blocks, and the Reflect system
 - **Real-world examples** -- How corrections become persistent preferences
 - **Skill memory format** -- Structured Markdown for customizations
 - **FAQ** -- Common questions and troubleshooting
@@ -41,18 +41,18 @@ The **[Implementation Guide](/docs/skills/extensible/extensible-skills-guide)** 
 
 | Category | Meaning | Detection |
 |---|---|---|
-| **Extensible** | DCI block with skill-memories. Standard, discoverable customization. | DCI block referencing `skill-memories` |
-| **Semi-Extensible** | Mentions customization but not through the standard system. | Keyword signals or DCI without skill-memories |
+| **Extensible** | Injection block with skill-memories. Standard, discoverable customization. | Injection block referencing `skill-memories` |
+| **Semi-Extensible** | Mentions customization but not through the standard system. | Keyword signals or injection block without skill-memories |
 | **Not Extensible** | No customization mechanism. Fork to change. | No signals detected |
 
 ---
 
 ## See Also
 
-- **[Skills Overview](/docs/skills/)** -- Both skill standards at a glance
+- **[Skills Overview](/docs/skills/)** -- Both skill layers at a glance
 - **[Claude Skills Deep Dive](/docs/skills/extensible/claude-skills-deep-dive)** -- How skills work under the hood
 - **[Self-Improving Skills](/docs/skills/extensible/self-improving-skills)** -- The Reflect auto-learning system
-- **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- SOLID principles for skill authoring
+- **[Development Guidelines](/docs/skills/extensible/skill-development-guidelines)** -- Design principles for skill authoring
 - **[Verified Skills Standard](/docs/skills/verified/verified-skills)** -- How skills earn trust through 3-tier security certification
 
 ---
