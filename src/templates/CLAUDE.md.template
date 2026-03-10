@@ -102,6 +102,14 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 - `/sw:judge-llm` writes `judge-llm-report.json` — WAIVED if consent denied
 - Ask yourself: **"Would a staff engineer approve this?"**
 
+### 5. Auto-Closure After Implementation (MANDATORY)
+- When `/sw:do` completes all tasks, IMMEDIATELY invoke `/sw:done` — do NOT stop to ask for review
+- The quality gates inside `/sw:done` (grill, judge-llm, PM validation) ARE the review — no user confirmation needed
+- `/sw:done` handles: grill report, judge-llm, PM gates, closure, sync to GitHub/Jira/ADO
+- If a gate fails, the increment stays open automatically — no risk of premature closure
+- If the user disagrees, they can re-open the increment
+- **Anti-pattern**: "All tasks complete. Should I close?" — NEVER ask this. Just close it.
+
 ### 4. Think-Before-Act (Dependencies)
 **Satisfy dependencies BEFORE dependent operations.**
 ```

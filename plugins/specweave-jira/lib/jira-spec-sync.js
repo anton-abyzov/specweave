@@ -400,7 +400,7 @@ ${acList}
    * Find story by title pattern
    */
   async findStoryByTitle(usId) {
-    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype != Epic`;
+    const jql = `project = ${this.config.projectKey} AND summary ~ "${usId}" AND issuetype not in (Epic)`;
     const issues = await searchAllIssues(this.client, {
       jql,
       fields: "summary,description,status,labels",
@@ -468,7 +468,7 @@ ${acList}
       payload.fields.summary = updates.summary;
     }
     if (updates.description) {
-      payload.fields.description = updates.description;
+      payload.fields.description = toDescription(updates.description, this.config.domain);
     }
     await this.client.put(`/issue/${storyKey}`, payload);
     if (updates.status) {
