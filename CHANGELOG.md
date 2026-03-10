@@ -4,6 +4,29 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.401] - 2026-03-10
+
+### Changes
+- update docs-site sections and template-creator
+- fix sync-specs: wire post-increment sync to external tools
+- add Skill Studio teaser section to landing page
+- chore: bump version to 1.0.400
+- fix umbrella JIRA sync: inherit projectKey for child repos
+- fix mega-menu: viewport-clamped fixed positioning, hover stability
+- update StatsSection test to match new real stat labels
+- fix homepage mega menu hover, stats numbers, section contrast
+- chore: bump version to 1.0.399
+- fix(ci): update tests to match current update command implementation (#1516)
+- fix hero ghost button visibility and redesign capabilities to card grid
+- fix mega menu hover: mutual exclusion, solid backdrop, dynamic columns
+- fix /sw:save nested repo scan to handle org/repo directory depth
+- chore: bump version to 1.0.398
+- chore(deps)(deps-dev): bump memfs in the development-dependencies group (#1520)
+
+---
+
+
+
 ## [1.0.400] - 2026-03-10
 
 ### Changes
