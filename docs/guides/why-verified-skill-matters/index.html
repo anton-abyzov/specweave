@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-guides/why-verified-skill-matters" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Why Verified Skill Matters — Lessons from ClawHub&#x27;s Collapse | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/guides/why-verified-skill-matters"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Why Verified Skill Matters — Lessons from ClawHub&#x27;s Collapse | SpecWeave"><meta data-rh="true" name="description" content="The Short Version"><meta data-rh="true" property="og:description" content="The Short Version"><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/guides/why-verified-skill-matters"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/why-verified-skill-matters" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/why-verified-skill-matters" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a class="navbar__item navbar__link" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a class="navbar__item navbar__link" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><main class="docMainContainer_TBSr docMainContainerEnhanced_lQrH"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Why Verified Skill Matters — Lessons from ClawHub&#x27;s Collapse</h1></header>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-short-version">The Short Version<a href="#the-short-version" class="hash-link" aria-label="Direct link to The Short Version" title="Direct link to The Short Version" translate="no">​</a></h2>
+<p>In January-February 2026, security researchers discovered 341+ malicious skills on ClawHub — the largest community skill marketplace for Claude Code. Five of the top seven most-downloaded skills on the platform were malware. ClawHub is now shut down. The threat actors are not.</p>
+<p>This is why we built <a href="https://verified-skill.com" target="_blank" rel="noopener noreferrer" class="">verified-skill.com</a> — a skill registry with mandatory three-tier verification before any skill reaches developers.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-happened-to-clawhub">What Happened to ClawHub<a href="#what-happened-to-clawhub" class="hash-link" aria-label="Direct link to What Happened to ClawHub" title="Direct link to What Happened to ClawHub" translate="no">​</a></h2>
+<p>ClawHub was a community-run marketplace where anyone could publish and install skills for Claude Code and other AI agents. Skills are markdown files that instruct AI agents how to behave — they can execute shell commands, make network requests, read files, and access environment variables.</p>
+<p>ClawHub had:</p>
+<ul>
+<li class="">No automated security scanning</li>
+<li class="">No mechanism to flag skills as malicious</li>
+<li class="">No review process for submissions</li>
+<li class="">No verification of skill authors</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-headlines">The Headlines<a href="#the-headlines" class="hash-link" aria-label="Direct link to The Headlines" title="Direct link to The Headlines" translate="no">​</a></h3>
+<p>In February 2026, the story broke:</p>
+<ul>
+<li class=""><strong>&quot;Researchers Find 341 Malicious ClawHub Skills Stealing Data from OpenClaw Users&quot;</strong></li>
+<li class=""><strong>&quot;OpenClaw&#x27;s AI &#x27;skill&#x27; extensions are a security nightmare&quot;</strong> — The Verge, Emma Roth, Feb 4, 2026</li>
+<li class=""><strong>&quot;Hundreds of Malicious Skills Found in OpenClaw&#x27;s ClawHub&quot;</strong> — Aikido Security</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-the-malicious-skills-actually-did">What the Malicious Skills Actually Did<a href="#what-the-malicious-skills-actually-did" class="hash-link" aria-label="Direct link to What the Malicious Skills Actually Did" title="Direct link to What the Malicious Skills Actually Did" translate="no">​</a></h3>
+<p>Security researcher Paul (Aikido Security) documented the attack patterns found in the wild:</p>
+<p><strong>Social engineering (&quot;ClickFix&quot; attacks):</strong></p>
+<blockquote>
+<p>&quot;The skills say, &#x27;Hey, if you want to talk to Polymarket, you have to download this Polymarket authentication tool.&#x27; You download it. It&#x27;s actually malware.&quot;</p>
+</blockquote>
+<p><strong>Base64-obfuscated credential theft:</strong>
+Commands disguised as configuration that exfiltrate AWS keys, API tokens, and wallet credentials in a single HTTP request.</p>
+<p><strong>Reverse shells and SSH backdoors:</strong>
+Persistent remote access to the developer&#x27;s machine.</p>
+<p><strong>Overlay attacks:</strong>
+Malicious JavaScript that pops open a fake login screen to harvest credentials.</p>
+<p><strong>Prompt injection (91% of malicious skills):</strong>
+Hidden instructions in markdown that hijack the agent&#x27;s behavior silently. The developer sees a normal response. The attacker sees source code.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="one-threat-actor-nine-malicious-skills">One Threat Actor, Nine Malicious Skills<a href="#one-threat-actor-nine-malicious-skills" class="hash-link" aria-label="Direct link to One Threat Actor, Nine Malicious Skills" title="Direct link to One Threat Actor, Nine Malicious Skills" translate="no">​</a></h3>
+<p>The ClawHub profile <code>@hightower6eu</code> published nine skills — every single one malicious:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Skill Name</th><th>Downloads</th><th>Attack Type</th></tr></thead><tbody><tr><td>Autoupdater Skills</td><td>131</td><td>Auto-updater trojan</td></tr><tr><td>Polymarket Tranding [sic]</td><td>115</td><td>Crypto bait + credential theft</td></tr><tr><td>Clawhub</td><td>109</td><td>Platform impersonation</td></tr><tr><td>Skills Update</td><td>640</td><td>Auto-updater trojan</td></tr><tr><td>Polymarket Automatic Trading Bot</td><td>911</td><td>Crypto bait + credential theft</td></tr><tr><td>Clawhub</td><td>1,364</td><td>Platform impersonation</td></tr><tr><td>Skills Auto-Updater</td><td>951</td><td>Auto-updater trojan</td></tr><tr><td>Polymarket Trading Bot</td><td>1,293</td><td>Crypto bait + credential theft</td></tr><tr><td>Clawhub</td><td>1,393</td><td>Platform impersonation</td></tr></tbody></table>
+<p>Three attack strategies in one profile: platform impersonation (skills named &quot;Clawhub&quot;), financial bait (Polymarket trading bots targeting crypto developers), and auto-updater trojans (promising to keep tools current while running malicious code).</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-most-downloaded-skills-were-malware">The Most-Downloaded Skills Were Malware<a href="#the-most-downloaded-skills-were-malware" class="hash-link" aria-label="Direct link to The Most-Downloaded Skills Were Malware" title="Direct link to The Most-Downloaded Skills Were Malware" translate="no">​</a></h3>
+<p>When you sorted ClawHub&#x27;s skill library by downloads, the most popular content on the platform was malicious:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Rank</th><th>Skill</th><th>Downloads</th><th>Status</th></tr></thead><tbody><tr><td>1</td><td>Clawhub /clawhubcli</td><td>1,399</td><td><strong>Malicious</strong></td></tr><tr><td>2</td><td>Clawhub /clawhub</td><td>1,368</td><td><strong>Malicious</strong></td></tr><tr><td>3</td><td>Polymarket Trading Bot /poly</td><td>1,297</td><td><strong>Malicious</strong></td></tr><tr><td>4</td><td>moltbook-interact</td><td>1,141</td><td>Unmarked</td></tr><tr><td>5</td><td>Skills Auto-Updater /updater</td><td>956</td><td><strong>Malicious</strong></td></tr><tr><td>6</td><td>Polymarket Automatic Trading Bot /polym</td><td>921</td><td><strong>Malicious</strong></td></tr><tr><td>7</td><td>Capability Evolver</td><td>695</td><td>Unmarked</td></tr></tbody></table>
+<p><strong>Five of the top seven most-downloaded skills were malware.</strong> Real developers, running real AI agents, executing malicious instructions — with no warning from the platform.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="no-way-to-report-no-way-to-remove">No Way to Report, No Way to Remove<a href="#no-way-to-report-no-way-to-remove" class="hash-link" aria-label="Direct link to No Way to Report, No Way to Remove" title="Direct link to No Way to Report, No Way to Remove" translate="no">​</a></h3>
+<p>When security researcher Paul tried to fix the problem:</p>
+<blockquote>
+<p>&quot;There was no way to label a skill as malicious. Literally no way. I went to the GitHub repo that backs ClawHub and made a PR deleting 400 malicious packages. Their AI closed the PR and said, &#x27;This is a copy of our database, this isn&#x27;t being used.&#x27;&quot;</p>
+</blockquote>
+<p>An AI rejected the security fix. The platform had no infrastructure for safety.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-industry-response--and-its-limits">The Industry Response — And Its Limits<a href="#the-industry-response--and-its-limits" class="hash-link" aria-label="Direct link to The Industry Response — And Its Limits" title="Direct link to The Industry Response — And Its Limits" translate="no">​</a></h2>
+<p>After ClawHub&#x27;s collapse, the industry started responding. Vercel — which runs skills.sh, the largest active skill marketplace — partnered with Gen Digital, Socket, and Snyk to add automated security audits. Every skill now gets scanned by three independent providers:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Provider</th><th>What It Checks</th></tr></thead><tbody><tr><td><strong>Gen Agent Trust Hub</strong></td><td>Content analysis, URL verification, antivirus scanning, AI-powered threat detection</td></tr><tr><td><strong>Socket</strong></td><td>Supply chain risk, package quality, vulnerability scoring</td></tr><tr><td><strong>Snyk</strong></td><td>Prompt injection, data exfiltration vectors, dangerous dependencies</td></tr></tbody></table>
+<p>Results appear publicly on each skill&#x27;s detail page. Skills flagged as malicious are hidden from search and leaderboards. This is meaningful progress.</p>
+<p><strong>But there&#x27;s a critical gap: detection vs prevention.</strong></p>
+<p>Consider the <code>capability-evolver</code> skill on skills.sh (by <code>autogame-17</code>). It FAILS two security audits (Gen Agent Trust Hub, Socket) and gets a WARN from Snyk. Yet it remains live, installable, and receives <strong>55 weekly downloads</strong>. The audits inform. They don&#x27;t block.</p>
+<p>This is the difference between <strong>labeling</strong> and <strong>gating</strong>:</p>
+<ul>
+<li class=""><strong>skills.sh model</strong>: Scan, label, warn — but let developers install anyway</li>
+<li class=""><strong>verified-skill.com model</strong>: Scan, judge, review — reject before publication. A skill that fails Tier 1 never reaches the registry.</li>
+</ul>
+<p>Both approaches have value. But when 5 of the top 7 most-downloaded skills on ClawHub were malware, labeling alone isn&#x27;t enough. Developers under time pressure will click through warnings. Prevention must be the default.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-skillssh-audits-dashboard">The skills.sh Audits Dashboard<a href="#the-skillssh-audits-dashboard" class="hash-link" aria-label="Direct link to The skills.sh Audits Dashboard" title="Direct link to The skills.sh Audits Dashboard" translate="no">​</a></h3>
+<p>Skills.sh now provides a public Security Audits page (<code>skills.sh/audits</code>) showing combined results from all three providers in a single table. Each skill displays its Gen, Socket, and Snyk ratings side by side.</p>
+<p>Even this dashboard reveals the gap: <code>browser-use</code> shows CRITICAL across all three providers yet remains listed. Official skills from Vercel and Anthropic show MED RISK or HIGH RISK from Snyk — demonstrating that even trusted-vendor skills can flag patterns that need review.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-verified-skillcom-adds-prevention--public-blocklist">What verified-skill.com Adds: Prevention + Public Blocklist<a href="#what-verified-skillcom-adds-prevention--public-blocklist" class="hash-link" aria-label="Direct link to What verified-skill.com Adds: Prevention + Public Blocklist" title="Direct link to What verified-skill.com Adds: Prevention + Public Blocklist" translate="no">​</a></h3>
+<p>We match the transparency of skills.sh&#x27;s multi-provider audit model, but add two critical layers:</p>
+<ol>
+<li class="">
+<p><strong>Prevention by default</strong>: A skill that fails Tier 1 scanning is rejected. It never appears in the registry. Developers cannot install a skill that hasn&#x27;t passed verification. This is the difference between a warning label and a locked gate.</p>
+</li>
+<li class="">
+<p><strong>Public Malicious Skills Registry</strong>: We maintain a continuously-updated blocklist of known-malicious skills discovered through our scanning — not just submissions to our platform, but skills found across other marketplaces. If a skill is known-malicious, it is blocked from installation even if a user attempts to install it directly. The blocklist is public and queryable, serving as a shared resource for the entire ecosystem.</p>
+</li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-this-still-matters-after-clawhubs-closure">Why This Still Matters After ClawHub&#x27;s Closure<a href="#why-this-still-matters-after-clawhubs-closure" class="hash-link" aria-label="Direct link to Why This Still Matters After ClawHub&#x27;s Closure" title="Direct link to Why This Still Matters After ClawHub&#x27;s Closure" translate="no">​</a></h2>
+<p>ClawHub is gone. The problem is not. Three reasons:</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-the-threat-actors-didnt-retire">1. The Threat Actors Didn&#x27;t Retire<a href="#1-the-threat-actors-didnt-retire" class="hash-link" aria-label="Direct link to 1. The Threat Actors Didn&#x27;t Retire" title="Direct link to 1. The Threat Actors Didn&#x27;t Retire" translate="no">​</a></h3>
+<p>The same attackers operate across multiple platforms. As Paul noted:</p>
+<blockquote>
+<p>&quot;There&#x27;s a room in North Korea right now that all they&#x27;re doing is figuring out how to drop the same payloads they&#x27;re using in npm and GitHub into these skills.&quot;</p>
+</blockquote>
+<p>The malicious skill files were copied, forked, and republished. A public GitHub repository with 43 ready-to-deploy malicious skills (by threat actor <code>aztr0nutzs</code>) is still live at the time of writing.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-other-marketplaces-face-the-same-risks">2. Other Marketplaces Face the Same Risks<a href="#2-other-marketplaces-face-the-same-risks" class="hash-link" aria-label="Direct link to 2. Other Marketplaces Face the Same Risks" title="Direct link to 2. Other Marketplaces Face the Same Risks" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Skills.sh</strong>: 59,000+ skills. No automated scanning.</li>
+<li class=""><strong>SkillsMP</strong>: 96,000+ skills. Minimal verification.</li>
+<li class=""><strong>At least 10 competing registries</strong> — none share a security standard.</li>
+</ul>
+<p>The Snyk ToxicSkills audit (February 2026) found that <strong>36.82% of skills across registries have security flaws</strong>. That&#x27;s more than 1 in 3. ClawHub wasn&#x27;t uniquely bad — it was just the first to get caught at scale.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-skills-are-more-dangerous-than-npm-packages">3. Skills Are More Dangerous Than npm Packages<a href="#3-skills-are-more-dangerous-than-npm-packages" class="hash-link" aria-label="Direct link to 3. Skills Are More Dangerous Than npm Packages" title="Direct link to 3. Skills Are More Dangerous Than npm Packages" translate="no">​</a></h3>
+<p>This is the critical insight. An npm package runs in a sandboxed JavaScript environment. A Docker container runs in an isolated namespace. A skill runs inside an AI agent that <strong>already has your shell permissions</strong>.</p>
+<blockquote>
+<p>&quot;You&#x27;re inside Claude, right? You&#x27;ve probably already given it access to things. So now you drop this malicious skill that can do all kinds of stuff. Because of that pre-existing set of permissions and trust that you&#x27;ve built with that agent — it&#x27;s ultimately going to have more impact than npm.&quot; — Paul, Aikido Security</p>
+</blockquote>
+<p>A malicious npm package has a scoped attack surface (install scripts). A malicious skill inherits everything the agent can do — file access, network requests, environment variables, SSH keys, shell execution. The blast radius is your entire development environment.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-we-built-verified-skillcom">What We Built: verified-skill.com<a href="#what-we-built-verified-skillcom" class="hash-link" aria-label="Direct link to What We Built: verified-skill.com" title="Direct link to What We Built: verified-skill.com" translate="no">​</a></h2>
+<p>We built <a href="https://verified-skill.com" target="_blank" rel="noopener noreferrer" class="">verified-skill.com</a> because the PATTERN is broken, not just ClawHub. Every skill marketplace will face this problem. The only question is whether security comes before or after developers get compromised.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="three-tier-verification-pipeline">Three-Tier Verification Pipeline<a href="#three-tier-verification-pipeline" class="hash-link" aria-label="Direct link to Three-Tier Verification Pipeline" title="Direct link to Three-Tier Verification Pipeline" translate="no">​</a></h3>
+<p><strong>Tier 1: Automated Pattern Scanning (37 checks)</strong></p>
+<p>Deterministic regex-based analysis across 8 categories:</p>
+<ul>
+<li class="">Command injection (exec, spawn, system calls)</li>
+<li class="">Data exfiltration (fetch to external/dynamic URLs, WebSocket, DNS exfil)</li>
+<li class="">Privilege escalation (sudo, chmod, setuid)</li>
+<li class="">Credential theft (.env files, SSH keys, AWS credentials, keychain access)</li>
+<li class="">Prompt injection (system prompt overrides, instruction boundary escape)</li>
+<li class="">Filesystem access (recursive delete, writes to system paths, path traversal)</li>
+<li class="">Network access (curl/wget to unknown hosts, reverse shell patterns)</li>
+<li class="">Code execution (eval, Function constructor, dynamic imports)</li>
+</ul>
+<p>Score below 50 = immediate rejection. Score 50-79 = flagged for review. Score 80+ = proceeds to Tier 2.</p>
+<p><strong>Tier 2: LLM Intent Analysis</strong></p>
+<p>Llama 3.1 70B analyzes the skill&#x27;s semantic intent — catching what regex cannot:</p>
+<ul>
+<li class="">Social engineering patterns</li>
+<li class="">Indirect prompt injection</li>
+<li class="">Subtle data flows that look benign individually but are malicious in combination</li>
+<li class="">Instructions that contradict the skill&#x27;s stated purpose</li>
+</ul>
+<p>Score below 40 = rejected. Score 80+ = auto-approved.</p>
+<p><strong>Tier 3: Human Expert Review</strong></p>
+<p>A reviewer with admin credentials manually examines the skill. Confirms it does what it claims and nothing else. Decision is recorded in an immutable audit trail: reviewer ID, timestamp, reason, admin email.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-clawhub-didnt-have-and-we-do">What ClawHub Didn&#x27;t Have (and We Do)<a href="#what-clawhub-didnt-have-and-we-do" class="hash-link" aria-label="Direct link to What ClawHub Didn&#x27;t Have (and We Do)" title="Direct link to What ClawHub Didn&#x27;t Have (and We Do)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Capability</th><th>ClawHub</th><th>verified-skill.com</th></tr></thead><tbody><tr><td>Automated scanning</td><td>None</td><td>37 patterns, 8 categories</td></tr><tr><td>AI intent analysis</td><td>None</td><td>LLM-as-judge (Tier 2)</td></tr><tr><td>Human review</td><td>None</td><td>Admin reviewer role (Tier 3)</td></tr><tr><td>Malicious flagging</td><td>No mechanism existed</td><td>Reject at any tier, pull published skills</td></tr><tr><td>Audit trail</td><td>None</td><td>Immutable state event log</td></tr><tr><td>Author verification</td><td>GitHub sign-in only</td><td>GitHub OAuth + account age check</td></tr><tr><td>Rate limiting</td><td>None</td><td>10 submissions/hour/IP</td></tr><tr><td>Content integrity</td><td>None</td><td>SHA hash in vskill.lock</td></tr><tr><td>Version pinning</td><td>None</td><td>Lockfile with scan date + tier</td></tr><tr><td>Vendor trust</td><td>None</td><td>Whitelist for verified orgs (Anthropic, OpenAI, Google)</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="client-side-protection">Client-Side Protection<a href="#client-side-protection" class="hash-link" aria-label="Direct link to Client-Side Protection" title="Direct link to Client-Side Protection" translate="no">​</a></h3>
+<p>Every installed skill gets a lockfile entry (<code>vskill.lock</code>):</p>
+<ul>
+<li class="">SHA hash of skill content</li>
+<li class="">Scan date and verification tier reached</li>
+<li class="">Installation scope (user-global vs project-local)</li>
+<li class="">Installed path</li>
+</ul>
+<p>When a skill updates, the new version is diff-scanned before being applied. New security findings are flagged before installation.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-pattern-were-breaking">The Pattern We&#x27;re Breaking<a href="#the-pattern-were-breaking" class="hash-link" aria-label="Direct link to The Pattern We&#x27;re Breaking" title="Direct link to The Pattern We&#x27;re Breaking" translate="no">​</a></h2>
+<p>Every package ecosystem follows the same arc:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Ecosystem</th><th>Launch</th><th>First Major Incident</th><th>Security Tooling Added</th><th>Gap</th></tr></thead><tbody><tr><td>npm</td><td>2010</td><td>2018 (event-stream)</td><td>2018 (npm audit)</td><td>8 years</td></tr><tr><td>PyPI</td><td>2003</td><td>Ongoing</td><td>Partial (2023+)</td><td>20+ years</td></tr><tr><td>Docker Hub</td><td>2013</td><td>2014 (cryptominers)</td><td>2019 (image scanning)</td><td>5 years</td></tr><tr><td>Skills</td><td>2025</td><td>2026 (ClawHavoc)</td><td>?</td><td><strong>Now</strong></td></tr></tbody></table>
+<p>Explosive growth. No security. Major incident. Retroactive tooling. Every time.</p>
+<p>We built verified-skill.com so the skills ecosystem doesn&#x27;t have to follow this pattern. Security from day one — not year eight.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-you-should-do">What You Should Do<a href="#what-you-should-do" class="hash-link" aria-label="Direct link to What You Should Do" title="Direct link to What You Should Do" translate="no">​</a></h2>
+<ol>
+<li class="">
+<p><strong>Audit your installed skills.</strong> If you installed anything from ClawHub, remove it. Run <code>npx vskill verify</code> on skill files in your project.</p>
+</li>
+<li class="">
+<p><strong>Don&#x27;t install from unverified sources.</strong> If a marketplace doesn&#x27;t show you what security checks a skill has passed, treat every skill as potentially malicious.</p>
+</li>
+<li class="">
+<p><strong>Use verified-skill.com.</strong> Every skill has been through automated scanning, AI intent analysis, and — for certified skills — human review. The methodology is public. Trust is provable.</p>
+</li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="resources">Resources<a href="#resources" class="hash-link" aria-label="Direct link to Resources" title="Direct link to Resources" translate="no">​</a></h2>
+<ul>
+<li class=""><a href="https://verified-skill.com" target="_blank" rel="noopener noreferrer" class="">verified-skill.com</a> — Verified skill registry</li>
+<li class=""><a href="https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/" target="_blank" rel="noopener noreferrer" class="">Snyk ToxicSkills Report</a> — Full security audit</li>
+<li class=""><a href="https://github.com/invariantlabs-ai/mcp-scan" target="_blank" rel="noopener noreferrer" class="">mcp-scan</a> — Open-source skill scanner</li>
+<li class=""><a href="https://spec-weave.com" target="_blank" rel="noopener noreferrer" class="">SpecWeave</a> — Spec-driven development framework</li>
+<li class=""><a class="" href="/docs/academy/videos/003-clawhub-postmortem.md">Video: ClawHub Postmortem</a> — Full video walkthrough</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/guides/why-verified-skill-matters.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-02-20T23:39:56.000Z" itemprop="dateModified">Feb 20, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-short-version" class="table-of-contents__link toc-highlight">The Short Version</a></li><li><a href="#what-happened-to-clawhub" class="table-of-contents__link toc-highlight">What Happened to ClawHub</a><ul><li><a href="#the-headlines" class="table-of-contents__link toc-highlight">The Headlines</a></li><li><a href="#what-the-malicious-skills-actually-did" class="table-of-contents__link toc-highlight">What the Malicious Skills Actually Did</a></li><li><a href="#one-threat-actor-nine-malicious-skills" class="table-of-contents__link toc-highlight">One Threat Actor, Nine Malicious Skills</a></li><li><a href="#the-most-downloaded-skills-were-malware" class="table-of-contents__link toc-highlight">The Most-Downloaded Skills Were Malware</a></li><li><a href="#no-way-to-report-no-way-to-remove" class="table-of-contents__link toc-highlight">No Way to Report, No Way to Remove</a></li></ul></li><li><a href="#the-industry-response--and-its-limits" class="table-of-contents__link toc-highlight">The Industry Response — And Its Limits</a><ul><li><a href="#the-skillssh-audits-dashboard" class="table-of-contents__link toc-highlight">The skills.sh Audits Dashboard</a></li><li><a href="#what-verified-skillcom-adds-prevention--public-blocklist" class="table-of-contents__link toc-highlight">What verified-skill.com Adds: Prevention + Public Blocklist</a></li></ul></li><li><a href="#why-this-still-matters-after-clawhubs-closure" class="table-of-contents__link toc-highlight">Why This Still Matters After ClawHub&#39;s Closure</a><ul><li><a href="#1-the-threat-actors-didnt-retire" class="table-of-contents__link toc-highlight">1. The Threat Actors Didn&#39;t Retire</a></li><li><a href="#2-other-marketplaces-face-the-same-risks" class="table-of-contents__link toc-highlight">2. Other Marketplaces Face the Same Risks</a></li><li><a href="#3-skills-are-more-dangerous-than-npm-packages" class="table-of-contents__link toc-highlight">3. Skills Are More Dangerous Than npm Packages</a></li></ul></li><li><a href="#what-we-built-verified-skillcom" class="table-of-contents__link toc-highlight">What We Built: verified-skill.com</a><ul><li><a href="#three-tier-verification-pipeline" class="table-of-contents__link toc-highlight">Three-Tier Verification Pipeline</a></li><li><a href="#what-clawhub-didnt-have-and-we-do" class="table-of-contents__link toc-highlight">What ClawHub Didn&#39;t Have (and We Do)</a></li><li><a href="#client-side-protection" class="table-of-contents__link toc-highlight">Client-Side Protection</a></li></ul></li><li><a href="#the-pattern-were-breaking" class="table-of-contents__link toc-highlight">The Pattern We&#39;re Breaking</a></li><li><a href="#what-you-should-do" class="table-of-contents__link toc-highlight">What You Should Do</a></li><li><a href="#resources" class="table-of-contents__link toc-highlight">Resources</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>

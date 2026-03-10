@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-guides/lazy-plugin-loading" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Lazy Plugin Loading (Upcoming v1.1) | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/guides/lazy-plugin-loading"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Lazy Plugin Loading (Upcoming v1.1) | SpecWeave"><meta data-rh="true" name="description" content="99% token reduction for non-SpecWeave work through conditional plugin activation."><meta data-rh="true" property="og:description" content="99% token reduction for non-SpecWeave work through conditional plugin activation."><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/guides/lazy-plugin-loading"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/lazy-plugin-loading" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/lazy-plugin-loading" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a class="navbar__item navbar__link" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a class="navbar__item navbar__link" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><main class="docMainContainer_TBSr docMainContainerEnhanced_lQrH"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Lazy Plugin Loading (Upcoming v1.1)</h1></header>
+<p><strong>99% token reduction</strong> for non-SpecWeave work through conditional plugin activation.</p>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>Status</div><div class="admonitionContent_BuS1"><p>This feature is <strong>planned for v1.1</strong>. The specification is complete and approved. Track progress in <a href="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0171-lazy-plugin-loading" target="_blank" rel="noopener noreferrer" class="">increment 0171</a>.</p></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-problem">The Problem<a href="#the-problem" class="hash-link" aria-label="Direct link to The Problem" title="Direct link to The Problem" translate="no">​</a></h2>
+<p>Currently, SpecWeave installs <strong>all 24 plugins</strong> (~251 skills) at startup, consuming ~60,000 tokens even when you&#x27;re doing non-SpecWeave work. This creates several issues:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Problem</th><th>Impact</th></tr></thead><tbody><tr><td><strong>Context bloat</strong></td><td>Only 108 of 251 skills (43%) are shown due to token limits</td></tr><tr><td><strong>Wasted tokens</strong></td><td>~60,000 tokens consumed even when SpecWeave isn&#x27;t needed</td></tr><tr><td><strong>Slower startup</strong></td><td>All plugins loaded regardless of user intent</td></tr><tr><td><strong>Reduced quality</strong></td><td>Important skills get truncated from context</td></tr></tbody></table>
+<p><strong>Evidence</strong>: <code>&lt;!-- Showing 108 of 251 skills due to token limits --&gt;</code> appears in system prompts.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-solution">The Solution<a href="#the-solution" class="hash-link" aria-label="Direct link to The Solution" title="Direct link to The Solution" translate="no">​</a></h2>
+<p>A <strong>lazy loading architecture</strong> that:</p>
+<ol>
+<li class="">Installs only a lightweight <strong>router skill</strong> (~500 tokens) by default</li>
+<li class=""><strong>Detects SpecWeave intent</strong> from user prompts using keyword matching</li>
+<li class=""><strong>Hot-reloads full plugins</strong> only when needed (leveraging Claude Code 2.1.0+ features)</li>
+<li class="">Uses <strong>context forking</strong> for heavy skills to isolate their context</li>
+<li class="">Provides <strong>migration path</strong> for existing installations</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="token-savings">Token Savings<a href="#token-savings" class="hash-link" aria-label="Direct link to Token Savings" title="Direct link to Token Savings" translate="no">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Scenario</th><th>Current</th><th>After v1.1</th><th>Savings</th></tr></thead><tbody><tr><td>Non-SpecWeave work</td><td>~60,000 tokens</td><td>~500 tokens</td><td><strong>99%</strong></td></tr><tr><td>SpecWeave work</td><td>~60,000 tokens</td><td>~60,000 (loaded on demand)</td><td>0%</td></tr><tr><td>Mixed session</td><td>~60,000 tokens</td><td>~30,000 avg</td><td><strong>50%</strong></td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-it-works">How It Works<a href="#how-it-works" class="hash-link" aria-label="Direct link to How It Works" title="Direct link to How It Works" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="architecture">Architecture<a href="#architecture" class="hash-link" aria-label="Direct link to Architecture" title="Direct link to Architecture" translate="no">​</a></h3>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">┌─────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                     LAZY LOADING ARCHITECTURE                        │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├─────────────────────────────────────────────────────────────────────┤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ┌──────────────────┐     ┌──────────────────────────────────────┐ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  Router Skill    │     │  Skills Cache                         │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  (~500 tokens)   │     │  ~/.specweave/skills-cache/           │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │                  │     │                                        │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  - Keyword       │────▶│  ├── specweave/                       │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │    detection     │     │  │   ├── increment/                   │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  - Install       │     │  │   ├── architect/                   │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │    trigger       │     │  │   └── ... (50+ skills)             │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  - State track   │     │  ├── specweave-github/                │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  └──────────────────┘     │  ├── specweave-jira/                  │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │               │  └── ... (24 plugins)                  │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │               └──────────────────────────────────────┘ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           │                              │                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           ▼                              ▼                          │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  ┌──────────────────┐     ┌──────────────────────────────────────┐ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  Active Skills   │◀────│  Hot-Reload Copy                      │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  ~/.claude/      │     │  (on detection)                       │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  skills/         │     │                                        │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │                  │     │  cp -r cache/* ~/.claude/skills/      │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  Loaded on       │     │  → Activates immediately              │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  │  demand only     │     │  → No restart needed                  │ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│  └──────────────────┘     └──────────────────────────────────────┘ │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│                                                                      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└─────────────────────────────────────────────────────────────────────┘</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="keyword-detection">Keyword Detection<a href="#keyword-detection" class="hash-link" aria-label="Direct link to Keyword Detection" title="Direct link to Keyword Detection" translate="no">​</a></h3>
+<p>The router skill detects SpecWeave intent using these keywords:</p>
+<p><strong>Commands:</strong></p>
+<ul>
+<li class=""><code>/sw:</code>, <code>specweave</code>, <code>increment</code></li>
+</ul>
+<p><strong>Files:</strong></p>
+<ul>
+<li class=""><code>spec.md</code>, <code>tasks.md</code>, <code>plan.md</code>, <code>metadata.json</code></li>
+</ul>
+<p><strong>Concepts:</strong></p>
+<ul>
+<li class=""><code>living docs</code>, <code>living documentation</code></li>
+<li class=""><code>feature planning</code>, <code>sprint planning</code></li>
+<li class=""><code>acceptance criteria</code>, <code>user story</code></li>
+</ul>
+<p><strong>Workflow:</strong></p>
+<ul>
+<li class=""><code>backlog</code>, <code>kanban</code>, <code>scrum</code></li>
+</ul>
+<p><strong>Integrations:</strong></p>
+<ul>
+<li class=""><code>jira sync</code>, <code>github sync</code>, <code>ado sync</code></li>
+</ul>
+<p><strong>Advanced:</strong></p>
+<ul>
+<li class=""><code>auto mode</code>, <code>parallel auto</code>, <code>tdd mode</code></li>
+</ul>
+<p>Detection is <strong>case-insensitive</strong> and takes <strong>under 50ms</strong>.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="claude-code-features-used">Claude Code Features Used<a href="#claude-code-features-used" class="hash-link" aria-label="Direct link to Claude Code Features Used" title="Direct link to Claude Code Features Used" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Feature</th><th>Version</th><th>How We Use It</th></tr></thead><tbody><tr><td><strong>Skill Hot-Reload</strong></td><td>2.1.0</td><td>Skills in <code>~/.claude/skills/</code> activate immediately without restart</td></tr><tr><td><strong>Context Forking</strong></td><td>2.1.0</td><td><code>context: fork</code> runs heavy skills in isolated sub-agent</td></tr><tr><td><strong>Setup Hook</strong></td><td>2.1.10</td><td>Runs on <code>--init</code> for conditional plugin setup</td></tr><tr><td><strong>MCP list_changed</strong></td><td>2.1.0</td><td>Alternative: MCP server can dynamically update tools</td></tr><tr><td><strong>Nested Discovery</strong></td><td>2.1.0</td><td>Auto-discovers skills from <code>.claude/skills/</code> subdirectories</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="user-experience">User Experience<a href="#user-experience" class="hash-link" aria-label="Direct link to User Experience" title="Direct link to User Experience" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-new-users">For New Users<a href="#for-new-users" class="hash-link" aria-label="Direct link to For New Users" title="Direct link to For New Users" translate="no">​</a></h3>
+<p>After v1.1, <code>specweave init</code> will:</p>
+<ol>
+<li class="">Install only the router skill (~500 tokens)</li>
+<li class="">Cache full plugins at <code>~/.specweave/skills-cache/</code></li>
+<li class="">Inform user about lazy loading behavior</li>
+<li class="">Full install option: <code>specweave init --full</code></li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-existing-users">For Existing Users<a href="#for-existing-users" class="hash-link" aria-label="Direct link to For Existing Users" title="Direct link to For Existing Users" translate="no">​</a></h3>
+<p>Lazy loading is now enabled by default. To force a full refresh:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">specweave refresh-plugins </span><span class="token parameter variable" style="color:#36acaa">--force</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="manual-control">Manual Control<a href="#manual-control" class="hash-link" aria-label="Direct link to Manual Control" title="Direct link to Manual Control" translate="no">​</a></h3>
+<p>Power users can manually manage plugin loading using the vskill CLI:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Install plugins using vskill (RECOMMENDED)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill </span><span class="token function" style="color:#d73a49">add</span><span class="token plain"> specweave </span><span class="token parameter variable" style="color:#36acaa">--plugin</span><span class="token plain"> sw              </span><span class="token comment" style="color:#999988;font-style:italic"># Core Skill Fabric</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">--repo</span><span class="token plain"> anton-abyzov/vskill </span><span class="token parameter variable" style="color:#36acaa">--plugin</span><span class="token plain"> frontend  </span><span class="token comment" style="color:#999988;font-style:italic"># Frontend development</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill </span><span class="token function" style="color:#d73a49">add</span><span class="token plain"> specweave </span><span class="token parameter variable" style="color:#36acaa">--plugin</span><span class="token plain"> sw-github       </span><span class="token comment" style="color:#999988;font-style:italic"># GitHub integration</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill </span><span class="token function" style="color:#d73a49">add</span><span class="token plain"> specweave </span><span class="token parameter variable" style="color:#36acaa">--plugin</span><span class="token plain"> sw-jira         </span><span class="token comment" style="color:#999988;font-style:italic"># JIRA integration</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># List installed plugins</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill list</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Remove a plugin</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">vskill remove testing</span><br></span></code></pre></div></div>
+<p><strong>Available plugins:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Short Name</th><th>Install Command</th><th>Description</th></tr></thead><tbody><tr><td><code>sw</code></td><td><code>vskill add specweave --plugin sw</code></td><td>Core SpecWeave functionality</td></tr><tr><td><code>sw-router</code></td><td><code>vskill add specweave --plugin sw-router</code></td><td>Agent routing</td></tr><tr><td><code>sw-github</code></td><td><code>vskill add specweave --plugin sw-github</code></td><td>GitHub integration</td></tr><tr><td><code>sw-jira</code></td><td><code>vskill add specweave --plugin sw-jira</code></td><td>JIRA integration</td></tr><tr><td><code>sw-ado</code></td><td><code>vskill add specweave --plugin sw-ado</code></td><td>Azure DevOps integration</td></tr><tr><td><code>frontend</code></td><td><code>vskill install --repo anton-abyzov/vskill --plugin frontend</code></td><td>Frontend development</td></tr><tr><td><code>backend</code></td><td><code>vskill install --repo anton-abyzov/vskill --plugin backend</code></td><td>Backend development</td></tr><tr><td><code>infra</code></td><td><code>vskill install --repo anton-abyzov/vskill --plugin infra</code></td><td>Infrastructure/DevOps</td></tr><tr><td><code>ml</code></td><td><code>vskill install --repo anton-abyzov/vskill --plugin ml</code></td><td>Machine learning</td></tr><tr><td><code>testing</code></td><td><code>vskill install --repo anton-abyzov/vskill --plugin testing</code></td><td>Testing/QA</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="context-forking-for-heavy-skills">Context Forking for Heavy Skills<a href="#context-forking-for-heavy-skills" class="hash-link" aria-label="Direct link to Context Forking for Heavy Skills" title="Direct link to Context Forking for Heavy Skills" translate="no">​</a></h2>
+<p>Skills larger than 200 lines will use <code>context: fork</code> in their frontmatter:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> pm</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">description</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Product Manager expertise</span><span class="token punctuation" style="color:#393A34">...</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">context</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> fork</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">model</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> opus</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">---</span><br></span></code></pre></div></div>
+<p>This runs the skill in an isolated sub-agent, preventing context bloat in the main conversation. Results return to the main conversation when the forked skill completes.</p>
+<p><strong>Skills that will use forking:</strong></p>
+<ul>
+<li class="">PM Agent</li>
+<li class="">Architect Agent</li>
+<li class="">QA Lead Agent</li>
+<li class="">Tech Lead Agent</li>
+<li class="">TDD Orchestrator</li>
+<li class="">And 10+ more heavy skills</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="state-tracking">State Tracking<a href="#state-tracking" class="hash-link" aria-label="Direct link to State Tracking" title="Direct link to State Tracking" translate="no">​</a></h2>
+<p>Loading state is tracked at <code>~/.specweave/state/plugins-loaded.json</code>:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;version&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;1.0.0&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;lazyMode&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">true</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;loadedAt&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;2026-01-18T12:00:00Z&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;loadedPlugins&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;name&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;sw&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;loadedAt&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;2026-01-18T12:00:00Z&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;trigger&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;User mentioned &#x27;increment&#x27;&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;skillCount&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">50</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;cachedPlugins&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token string" style="color:#e3116c">&quot;sw&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;sw-github&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;sw-jira&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> ...</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;analytics&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;totalLoads&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">42</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;avgLoadTimeMs&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">850</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;tokensSaved&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">2500000</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="graceful-degradation">Graceful Degradation<a href="#graceful-degradation" class="hash-link" aria-label="Direct link to Graceful Degradation" title="Direct link to Graceful Degradation" translate="no">​</a></h2>
+<p>If hot-reload fails:</p>
+<ol>
+<li class="">Clear error message shown to user</li>
+<li class="">&quot;Restart Claude Code&quot; option offered</li>
+<li class="">Failure logged to <code>~/.specweave/logs/lazy-loading.log</code></li>
+<li class="">Retry mechanism attempts up to 3 times</li>
+<li class="">Fallback: <code>vskill add specweave --plugin sw</code></li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="cross-platform-support">Cross-Platform Support<a href="#cross-platform-support" class="hash-link" aria-label="Direct link to Cross-Platform Support" title="Direct link to Cross-Platform Support" translate="no">​</a></h2>
+<p><strong>macOS/Linux:</strong> Bash scripts (default)</p>
+<p><strong>Windows:</strong> PowerShell alternative with:</p>
+<ul>
+<li class="">Auto-detection of available shell</li>
+<li class="">Long path support (&gt;260 chars)</li>
+<li class="">Same functionality as Bash version</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="related-features">Related Features<a href="#related-features" class="hash-link" aria-label="Direct link to Related Features" title="Direct link to Related Features" translate="no">​</a></h2>
+<ul>
+<li class=""><strong><a class="" href="/docs/guides/getting-started/quickstart#what-you-get">MCP Tool Search</a></strong> - Current built-in Claude Code feature for tool deferred loading</li>
+<li class=""><strong><a class="" href="/docs/overview/features#-ai-agents--skills">Context Forking</a></strong> - Claude Code 2.1.0+ feature for isolated sub-agents</li>
+<li class=""><strong><a class="" href="/docs/overview/features#-context-precision-70-token-reduction">Token Efficiency</a></strong> - Current progressive disclosure approach</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="timeline">Timeline<a href="#timeline" class="hash-link" aria-label="Direct link to Timeline" title="Direct link to Timeline" translate="no">​</a></h2>
+<ul>
+<li class=""><strong>Planning</strong>: Complete (January 2026)</li>
+<li class=""><strong>Implementation</strong>: Planned for v1.1</li>
+<li class=""><strong>Target</strong>: 12-20 days development time</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="feedback">Feedback<a href="#feedback" class="hash-link" aria-label="Direct link to Feedback" title="Direct link to Feedback" translate="no">​</a></h2>
+<p>Have suggestions for the lazy loading feature? <a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="">Open an issue</a> or <a href="https://discord.gg/UYg4BGJ65V" target="_blank" rel="noopener noreferrer" class="">join our Discord</a>.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/guides/lazy-plugin-loading.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-02-25T18:05:30.000Z" itemprop="dateModified">Feb 25, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-problem" class="table-of-contents__link toc-highlight">The Problem</a></li><li><a href="#the-solution" class="table-of-contents__link toc-highlight">The Solution</a></li><li><a href="#token-savings" class="table-of-contents__link toc-highlight">Token Savings</a></li><li><a href="#how-it-works" class="table-of-contents__link toc-highlight">How It Works</a><ul><li><a href="#architecture" class="table-of-contents__link toc-highlight">Architecture</a></li><li><a href="#keyword-detection" class="table-of-contents__link toc-highlight">Keyword Detection</a></li><li><a href="#claude-code-features-used" class="table-of-contents__link toc-highlight">Claude Code Features Used</a></li></ul></li><li><a href="#user-experience" class="table-of-contents__link toc-highlight">User Experience</a><ul><li><a href="#for-new-users" class="table-of-contents__link toc-highlight">For New Users</a></li><li><a href="#for-existing-users" class="table-of-contents__link toc-highlight">For Existing Users</a></li><li><a href="#manual-control" class="table-of-contents__link toc-highlight">Manual Control</a></li></ul></li><li><a href="#context-forking-for-heavy-skills" class="table-of-contents__link toc-highlight">Context Forking for Heavy Skills</a></li><li><a href="#state-tracking" class="table-of-contents__link toc-highlight">State Tracking</a></li><li><a href="#graceful-degradation" class="table-of-contents__link toc-highlight">Graceful Degradation</a></li><li><a href="#cross-platform-support" class="table-of-contents__link toc-highlight">Cross-Platform Support</a></li><li><a href="#related-features" class="table-of-contents__link toc-highlight">Related Features</a></li><li><a href="#timeline" class="table-of-contents__link toc-highlight">Timeline</a></li><li><a href="#feedback" class="table-of-contents__link toc-highlight">Feedback</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>

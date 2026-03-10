@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-guides/plugin-management" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Plugin Management Guide | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/guides/plugin-management"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Plugin Management Guide | SpecWeave"><meta data-rh="true" name="description" content="Comprehensive guide to managing SpecWeave plugins in Claude Code"><meta data-rh="true" property="og:description" content="Comprehensive guide to managing SpecWeave plugins in Claude Code"><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/guides/plugin-management"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/plugin-management" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/plugin-management" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a class="navbar__item navbar__link" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a class="navbar__item navbar__link" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><main class="docMainContainer_TBSr docMainContainerEnhanced_lQrH"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Plugin Management Guide</h1></header>
+<blockquote>
+<p>Comprehensive guide to managing SpecWeave plugins in Claude Code</p>
+</blockquote>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="overview">Overview<a href="#overview" class="hash-link" aria-label="Direct link to Overview" title="Direct link to Overview" translate="no">​</a></h2>
+<p>SpecWeave uses a <strong>plugin architecture</strong> to provide domain-specific expertise (frontend, backend, payments, etc.) without bloating the base installation. Plugins are loaded on-demand based on your project needs.</p>
+<p><strong>Key Principle</strong>: Plugins install ONLY when you explicitly ask to BUILD something, not when discussing topics or asking questions.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="architecture">Architecture<a href="#architecture" class="hash-link" aria-label="Direct link to Architecture" title="Direct link to Architecture" translate="no">​</a></h2>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">~/.claude/plugins/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── installed_plugins.json     # Registry of installed plugins</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── cache/                     # Installed plugin files</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   ├── specweave/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │   ├── sw/1.0.0/         # Core plugin (hooks, skills)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │   │   └── hooks/        # ← Hooks run from HERE, not source</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │   ├── sw-router/1.0.1/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   │   └── frontend/1.0.0/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── claude-plugins-official/  # Optional MCP plugins (user-installed)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│       ├── context7/             # Install: claude plugin install context7@claude-plugins-official</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│       └── playwright/           # Install: claude plugin install playwright@claude-plugins-official</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└── marketplaces/             # Available plugins from registries</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    └── specweave/</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="critical-understanding-cache-vs-source">Critical Understanding: Cache vs Source<a href="#critical-understanding-cache-vs-source" class="hash-link" aria-label="Direct link to Critical Understanding: Cache vs Source" title="Direct link to Critical Understanding: Cache vs Source" translate="no">​</a></h3>
+<p><strong>Hooks run from the CACHE, not from source code.</strong></p>
+<p>If you&#x27;re developing SpecWeave plugins:</p>
+<ul>
+<li class="">Edits to <code>plugins/specweave/hooks/*.sh</code> affect SOURCE only</li>
+<li class="">Running session uses <code>~/.claude/plugins/cache/specweave/sw/&lt;version&gt;/hooks/</code></li>
+<li class="">Changes only take effect after reinstalling the plugin OR copying to cache</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="plugin-auto-loading">Plugin Auto-Loading<a href="#plugin-auto-loading" class="hash-link" aria-label="Direct link to Plugin Auto-Loading" title="Direct link to Plugin Auto-Loading" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-it-works-v10159">How It Works (v1.0.159+)<a href="#how-it-works-v10159" class="hash-link" aria-label="Direct link to How It Works (v1.0.159+)" title="Direct link to How It Works (v1.0.159+)" translate="no">​</a></h3>
+<ol>
+<li class=""><strong>User submits prompt</strong> (e.g., &quot;Build a React dashboard with Stripe checkout&quot;)</li>
+<li class=""><strong>LLM analyzes intent</strong> via <code>specweave detect-intent</code></li>
+<li class=""><strong>If BUILD task detected</strong>, LLM recommends plugins</li>
+<li class=""><strong>Plugins install</strong> via <code>claude plugin install</code></li>
+<li class=""><strong>Session restart required</strong> for new skills to be available</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="when-plugins-install">When Plugins Install<a href="#when-plugins-install" class="hash-link" aria-label="Direct link to When Plugins Install" title="Direct link to When Plugins Install" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Prompt Type</th><th>Plugins Install?</th><th>Example</th></tr></thead><tbody><tr><td>BUILD request</td><td>Yes</td><td>&quot;Build React dashboard&quot;</td></tr><tr><td>IMPLEMENT request</td><td>Yes</td><td>&quot;Implement Stripe checkout&quot;</td></tr><tr><td>Questions</td><td>No</td><td>&quot;How does React work?&quot;</td></tr><tr><td>Discussions</td><td>No</td><td>&quot;Let&#x27;s discuss plugin architecture&quot;</td></tr><tr><td>Meta-prompts</td><td>No</td><td>&quot;Why are plugins installing?&quot;</td></tr><tr><td>Running tests</td><td>No</td><td>&quot;Run npm test&quot;</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuration">Configuration<a href="#configuration" class="hash-link" aria-label="Direct link to Configuration" title="Direct link to Configuration" translate="no">​</a></h3>
+<p>Control auto-loading in <code>.specweave/config.json</code>:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;pluginAutoLoad&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;enabled&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">true</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain">       </span><span class="token comment" style="color:#999988;font-style:italic">// Master switch for auto-loading</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;suggestOnly&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token plain">   </span><span class="token comment" style="color:#999988;font-style:italic">// If true: suggest but don&#x27;t install</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Setting</th><th>Behavior</th></tr></thead><tbody><tr><td><code>enabled: true, suggestOnly: false</code></td><td><strong>Default</strong>: Auto-install when LLM detects BUILD task</td></tr><tr><td><code>enabled: true, suggestOnly: true</code></td><td>Show suggestions, user installs manually</td></tr><tr><td><code>enabled: false</code></td><td>No detection, no suggestions, fully manual</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="environment-variable-override">Environment Variable Override<a href="#environment-variable-override" class="hash-link" aria-label="Direct link to Environment Variable Override" title="Direct link to Environment Variable Override" translate="no">​</a></h3>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Disable all auto-loading for this session</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token builtin class-name">export</span><span class="token plain"> </span><span class="token assign-left variable" style="color:#36acaa">SPECWEAVE_DISABLE_AUTO_LOAD</span><span class="token operator" style="color:#393A34">=</span><span class="token number" style="color:#36acaa">1</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="manual-plugin-management">Manual Plugin Management<a href="#manual-plugin-management" class="hash-link" aria-label="Direct link to Manual Plugin Management" title="Direct link to Manual Plugin Management" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="installing-plugins">Installing Plugins<a href="#installing-plugins" class="hash-link" aria-label="Direct link to Installing Plugins" title="Direct link to Installing Plugins" translate="no">​</a></h3>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Install a specific plugin</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> frontend@vskill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Install from official registry</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> context7@claude-plugins-official</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># List available plugins</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin list </span><span class="token parameter variable" style="color:#36acaa">--available</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="uninstalling-plugins">Uninstalling Plugins<a href="#uninstalling-plugins" class="hash-link" aria-label="Direct link to Uninstalling Plugins" title="Direct link to Uninstalling Plugins" translate="no">​</a></h3>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Uninstall a single plugin</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin uninstall frontend@vskill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Uninstall multiple (run multiple times)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin uninstall backend@vskill</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin uninstall testing@vskill</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="listing-installed-plugins">Listing Installed Plugins<a href="#listing-installed-plugins" class="hash-link" aria-label="Direct link to Listing Installed Plugins" title="Direct link to Listing Installed Plugins" translate="no">​</a></h3>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin list</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="registry-file">Registry File<a href="#registry-file" class="hash-link" aria-label="Direct link to Registry File" title="Direct link to Registry File" translate="no">​</a></h3>
+<p>The registry at <code>~/.claude/plugins/installed_plugins.json</code> tracks installed plugins:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;version&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">2</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;plugins&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;sw@specweave&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;scope&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;user&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;installPath&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;/Users/.../.claude/plugins/cache/specweave/sw/1.0.0&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;version&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;1.0.0&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token property" style="color:#36acaa">&quot;installedAt&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;2026-01-24T18:50:05.175Z&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="available-plugins">Available Plugins<a href="#available-plugins" class="hash-link" aria-label="Direct link to Available Plugins" title="Direct link to Available Plugins" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="core-always-installed">Core (Always Installed)<a href="#core-always-installed" class="hash-link" aria-label="Direct link to Core (Always Installed)" title="Direct link to Core (Always Installed)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Plugin</th><th>Purpose</th></tr></thead><tbody><tr><td><code>sw@specweave</code></td><td>Core SpecWeave: commands, hooks, workflow</td></tr><tr><td><code>sw-router@specweave</code></td><td>Smart routing to specialized skills</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="domain-specific-install-when-needed">Domain-Specific (Install When Needed)<a href="#domain-specific-install-when-needed" class="hash-link" aria-label="Direct link to Domain-Specific (Install When Needed)" title="Direct link to Domain-Specific (Install When Needed)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Plugin</th><th>Domain</th><th>Triggers</th></tr></thead><tbody><tr><td><code>frontend</code></td><td>React, Vue, Next.js, UI</td><td>&quot;Build dashboard&quot;, &quot;Create component&quot;</td></tr><tr><td><code>backend</code></td><td>Node.js, APIs, databases</td><td>&quot;Build API&quot;, &quot;Create endpoint&quot;</td></tr><tr><td><code>testing</code></td><td>Playwright, Vitest, TDD</td><td>&quot;Write E2E tests&quot;, &quot;TDD workflow&quot;</td></tr><tr><td><code>payments</code></td><td>Stripe, PayPal, checkout</td><td>&quot;Add Stripe&quot;, &quot;Payment integration&quot;</td></tr><tr><td><code>infra</code></td><td>Terraform, Docker, CI/CD</td><td>&quot;Deploy to AWS&quot;, &quot;Create Dockerfile&quot;</td></tr><tr><td><code>k8s</code></td><td>Kubernetes, Helm, GitOps</td><td>&quot;K8s manifests&quot;, &quot;Helm chart&quot;</td></tr><tr><td><code>mobile</code></td><td>React Native, Expo</td><td>&quot;Build mobile app&quot;, &quot;iOS/Android&quot;</td></tr><tr><td><code>ml</code></td><td>ML, PyTorch, TensorFlow</td><td>&quot;Train model&quot;, &quot;ML pipeline&quot;</td></tr><tr><td><code>kafka</code></td><td>Kafka, event streaming</td><td>&quot;Kafka topics&quot;, &quot;Event architecture&quot;</td></tr><tr><td><code>sw-github</code></td><td>GitHub issues, PRs</td><td>&quot;Sync to GitHub&quot;, &quot;Create PR&quot;</td></tr><tr><td><code>sw-jira</code></td><td>JIRA integration</td><td>&quot;Sync to JIRA&quot;, &quot;Create epic&quot;</td></tr><tr><td><code>sw-ado</code></td><td>Azure DevOps</td><td>&quot;Sync to ADO&quot;, &quot;Work items&quot;</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="troubleshooting">Troubleshooting<a href="#troubleshooting" class="hash-link" aria-label="Direct link to Troubleshooting" title="Direct link to Troubleshooting" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="plugins-keep-reinstalling">Plugins Keep Reinstalling<a href="#plugins-keep-reinstalling" class="hash-link" aria-label="Direct link to Plugins Keep Reinstalling" title="Direct link to Plugins Keep Reinstalling" translate="no">​</a></h3>
+<p><strong>Symptom</strong>: You uninstall plugins but they reappear.</p>
+<p><strong>Cause</strong>: Hooks in the plugin CACHE are triggering reinstallation.</p>
+<p><strong>Solution</strong>:</p>
+<ol>
+<li class="">
+<p><strong>Check which hooks are running</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token function" style="color:#d73a49">cat</span><span class="token plain"> ~/.claude/plugins/cache/specweave/sw/*/hooks/hooks.json</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Verify cache has updated hooks</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Should return 0 if keyword fallback removed</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">grep</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-c</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;detect_plugins_by_keywords&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  ~/.claude/plugins/cache/specweave/sw/*/hooks/user-prompt-submit.sh</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>If cache has old hooks, update it</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Option A: Reinstall plugin from source</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin uninstall sw@specweave</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> sw@specweave</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Option B: Copy fixed hooks to cache (for developers)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> /path/to/source/hooks/user-prompt-submit.sh </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   ~/.claude/plugins/cache/specweave/sw/1.0.0/hooks/</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Clean registry manually</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Keep only core plugins (context7 and playwright are optional)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cat</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> ~/.claude/plugins/installed_plugins.json </span><span class="token operator" style="color:#393A34">&lt;&lt;</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;EOF&#x27;</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">{</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">  &quot;version&quot;: 2,</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">  &quot;plugins&quot;: {</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">    &quot;sw@specweave&quot;: [...],</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">    &quot;sw-router@specweave&quot;: [...]</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">}</span><br></span><span class="token-line" style="color:#393A34"><span class="token string" style="color:#e3116c">EOF</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Optionally re-add MCP plugins if you use them:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># claude plugin install context7@claude-plugins-official</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># claude plugin install playwright@claude-plugins-official</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Restart Claude Code</strong> for changes to take effect.</p>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="new-skills-not-available-after-install">New Skills Not Available After Install<a href="#new-skills-not-available-after-install" class="hash-link" aria-label="Direct link to New Skills Not Available After Install" title="Direct link to New Skills Not Available After Install" translate="no">​</a></h3>
+<p><strong>Symptom</strong>: Plugin installed but <code>/frontend:*</code> commands don&#x27;t work.</p>
+<p><strong>Cause</strong>: Claude Code loads skills at session start, not dynamically.</p>
+<p><strong>Solution</strong>: Restart Claude Code session after installing new plugins.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="cache-vs-source-mismatch-developers">Cache vs Source Mismatch (Developers)<a href="#cache-vs-source-mismatch-developers" class="hash-link" aria-label="Direct link to Cache vs Source Mismatch (Developers)" title="Direct link to Cache vs Source Mismatch (Developers)" translate="no">​</a></h3>
+<p><strong>Symptom</strong>: Your hook edits don&#x27;t take effect.</p>
+<p><strong>Cause</strong>: Session uses hooks from cache, not your source edits.</p>
+<p><strong>Solution</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Copy your edited hooks to the cache</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> plugins/specweave/hooks/user-prompt-submit.sh </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   ~/.claude/plugins/cache/specweave/sw/1.0.0/hooks/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> plugins/specweave/hooks/v2/dispatchers/session-start.sh </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   ~/.claude/plugins/cache/specweave/sw/1.0.0/hooks/v2/dispatchers/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Then restart Claude Code</span><br></span></code></pre></div></div>
+<p>Or reinstall from local source:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin uninstall sw@specweave</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token builtin class-name">cd</span><span class="token plain"> /path/to/specweave</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin </span><span class="token function" style="color:#d73a49">install</span><span class="token plain"> </span><span class="token builtin class-name">.</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="checking-whats-triggering-installs">Checking What&#x27;s Triggering Installs<a href="#checking-whats-triggering-installs" class="hash-link" aria-label="Direct link to Checking What&#x27;s Triggering Installs" title="Direct link to Checking What&#x27;s Triggering Installs" translate="no">​</a></h3>
+<p>View the lazy-loading log:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token function" style="color:#d73a49">tail</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-50</span><span class="token plain"> ~/.specweave/logs/lazy-loading.log</span><br></span></code></pre></div></div>
+<p>Example output:</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">[2026-01-25T00:10:35] detect-intent | duration=1500ms | cached=false</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">[2026-01-25T00:10:36] plugins | installed=frontend,backend | already=none</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="character-budget--when-to-disable-plugins">Character Budget &amp; When to Disable Plugins<a href="#character-budget--when-to-disable-plugins" class="hash-link" aria-label="Direct link to Character Budget &amp; When to Disable Plugins" title="Direct link to Character Budget &amp; When to Disable Plugins" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="understanding-the-15k-character-limit">Understanding the 15K Character Limit<a href="#understanding-the-15k-character-limit" class="hash-link" aria-label="Direct link to Understanding the 15K Character Limit" title="Direct link to Understanding the 15K Character Limit" translate="no">​</a></h3>
+<p>Claude Code has a <strong>15,000 character default budget</strong> for skill descriptions. When too many plugins are loaded, skills get truncated and auto-activation becomes unreliable.</p>
+<p><strong>Check total description size:</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token function" style="color:#d73a49">find</span><span class="token plain"> ~/.claude/plugins/cache </span><span class="token parameter variable" style="color:#36acaa">-name</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;SKILL.md&quot;</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-exec</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">grep</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-h</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;^description:&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token operator file-descriptor important" style="color:#393A34">2</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain">/dev/null </span><span class="token operator" style="color:#393A34">|</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">wc</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-c</span><br></span></code></pre></div></div>
+<p><strong>Increase budget if needed:</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Add to ~/.zshrc or ~/.bashrc</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token builtin class-name">export</span><span class="token plain"> </span><span class="token assign-left variable" style="color:#36acaa">SLASH_COMMAND_TOOL_CHAR_BUDGET</span><span class="token operator" style="color:#393A34">=</span><span class="token number" style="color:#36acaa">30000</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="recommended-plugin-sets-by-project-type">Recommended Plugin Sets by Project Type<a href="#recommended-plugin-sets-by-project-type" class="hash-link" aria-label="Direct link to Recommended Plugin Sets by Project Type" title="Direct link to Recommended Plugin Sets by Project Type" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Project Type</th><th>Plugins</th><th>~Description Chars</th></tr></thead><tbody><tr><td><strong>Core only</strong></td><td>sw</td><td>~5,000</td></tr><tr><td><strong>Web dev</strong></td><td>sw + frontend + backend</td><td>~12,000</td></tr><tr><td><strong>Full stack</strong></td><td>sw + frontend + backend + infra + testing</td><td>~20,000</td></tr><tr><td><strong>Mobile</strong></td><td>sw + mobile + payments</td><td>~10,000</td></tr><tr><td><strong>Everything</strong></td><td>All 24 plugins</td><td>~56,000 (never fits!)</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="disabling-unused-plugins">Disabling Unused Plugins<a href="#disabling-unused-plugins" class="hash-link" aria-label="Direct link to Disabling Unused Plugins" title="Direct link to Disabling Unused Plugins" translate="no">​</a></h3>
+<p><strong>Disable plugins not needed for current project:</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin disable ml@vskill              </span><span class="token comment" style="color:#999988;font-style:italic"># If not doing ML</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin disable kafka@vskill           </span><span class="token comment" style="color:#999988;font-style:italic"># If not using Kafka</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin disable k8s@vskill             </span><span class="token comment" style="color:#999988;font-style:italic"># If not using K8s</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">claude plugin disable mobile@vskill          </span><span class="token comment" style="color:#999988;font-style:italic"># If not building mobile</span><br></span></code></pre></div></div>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-multi-domain-requests">For Multi-Domain Requests<a href="#for-multi-domain-requests" class="hash-link" aria-label="Direct link to For Multi-Domain Requests" title="Direct link to For Multi-Domain Requests" translate="no">​</a></h3>
+<p>For &quot;React + .NET + Stripe&quot; type requests, auto-activation is unreliable. Use explicit invocation:</p>
+<div class="language-typescript codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-typescript codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">// More reliable than auto-activation</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function maybe-class-name" style="color:#d73a49">Skill</span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> skill</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;frontend:architect&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function maybe-class-name" style="color:#d73a49">Skill</span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> skill</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;backend:dotnet&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function maybe-class-name" style="color:#d73a49">Skill</span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> skill</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;payments:payment-core&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">)</span><br></span></code></pre></div></div>
+<p>See <a class="" href="/docs/troubleshooting/skill-truncation-budget.md">Skill Truncation Troubleshooting</a> for details.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="best-practices">Best Practices<a href="#best-practices" class="hash-link" aria-label="Direct link to Best Practices" title="Direct link to Best Practices" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="minimal-installation">Minimal Installation<a href="#minimal-installation" class="hash-link" aria-label="Direct link to Minimal Installation" title="Direct link to Minimal Installation" translate="no">​</a></h3>
+<p>Start with only core plugins:</p>
+<ul>
+<li class=""><code>sw@specweave</code> - Core workflow</li>
+<li class=""><code>sw-router@specweave</code> - Smart routing</li>
+</ul>
+<p>Let the system install others when you actually need them.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-teams">For Teams<a href="#for-teams" class="hash-link" aria-label="Direct link to For Teams" title="Direct link to For Teams" translate="no">​</a></h3>
+<ol>
+<li class="">
+<p><strong>Standardize config</strong> in <code>.specweave/config.json</code>:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token property" style="color:#36acaa">&quot;pluginAutoLoad&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;enabled&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">true</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token property" style="color:#36acaa">&quot;suggestOnly&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Commit config</strong> to version control so team shares settings.</p>
+</li>
+<li class="">
+<p><strong>Document required plugins</strong> in project README if specific ones are needed.</p>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-plugin-developers">For Plugin Developers<a href="#for-plugin-developers" class="hash-link" aria-label="Direct link to For Plugin Developers" title="Direct link to For Plugin Developers" translate="no">​</a></h3>
+<ol>
+<li class=""><strong>Always test in fresh session</strong> after hook changes</li>
+<li class=""><strong>Copy hooks to cache</strong> for immediate testing:
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> hooks/*.sh ~/.claude/plugins/cache/specweave/sw/*/hooks/</span><br></span></code></pre></div></div>
+</li>
+<li class=""><strong>Bump plugin version</strong> when publishing updates</li>
+<li class=""><strong>Check lazy-loading logs</strong> to verify detection behavior</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="related-documentation">Related Documentation<a href="#related-documentation" class="hash-link" aria-label="Direct link to Related Documentation" title="Direct link to Related Documentation" translate="no">​</a></h2>
+<ul>
+<li class=""><a class="" href="/docs/troubleshooting/plugin-naming-conventions.md">Plugin Naming Conventions</a></li>
+<li class=""><a class="" href="/docs/guides/cost-optimization">Cost Optimization Guide</a> - Token savings with lazy loading</li>
+<li class=""><a class="" href="/docs/development/claude-cli-automation.md">Claude CLI Automation</a></li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/guides/plugin-management.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-02-25T18:05:30.000Z" itemprop="dateModified">Feb 25, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#overview" class="table-of-contents__link toc-highlight">Overview</a></li><li><a href="#architecture" class="table-of-contents__link toc-highlight">Architecture</a><ul><li><a href="#critical-understanding-cache-vs-source" class="table-of-contents__link toc-highlight">Critical Understanding: Cache vs Source</a></li></ul></li><li><a href="#plugin-auto-loading" class="table-of-contents__link toc-highlight">Plugin Auto-Loading</a><ul><li><a href="#how-it-works-v10159" class="table-of-contents__link toc-highlight">How It Works (v1.0.159+)</a></li><li><a href="#when-plugins-install" class="table-of-contents__link toc-highlight">When Plugins Install</a></li><li><a href="#configuration" class="table-of-contents__link toc-highlight">Configuration</a></li><li><a href="#environment-variable-override" class="table-of-contents__link toc-highlight">Environment Variable Override</a></li></ul></li><li><a href="#manual-plugin-management" class="table-of-contents__link toc-highlight">Manual Plugin Management</a><ul><li><a href="#installing-plugins" class="table-of-contents__link toc-highlight">Installing Plugins</a></li><li><a href="#uninstalling-plugins" class="table-of-contents__link toc-highlight">Uninstalling Plugins</a></li><li><a href="#listing-installed-plugins" class="table-of-contents__link toc-highlight">Listing Installed Plugins</a></li><li><a href="#registry-file" class="table-of-contents__link toc-highlight">Registry File</a></li></ul></li><li><a href="#available-plugins" class="table-of-contents__link toc-highlight">Available Plugins</a><ul><li><a href="#core-always-installed" class="table-of-contents__link toc-highlight">Core (Always Installed)</a></li><li><a href="#domain-specific-install-when-needed" class="table-of-contents__link toc-highlight">Domain-Specific (Install When Needed)</a></li></ul></li><li><a href="#troubleshooting" class="table-of-contents__link toc-highlight">Troubleshooting</a><ul><li><a href="#plugins-keep-reinstalling" class="table-of-contents__link toc-highlight">Plugins Keep Reinstalling</a></li><li><a href="#new-skills-not-available-after-install" class="table-of-contents__link toc-highlight">New Skills Not Available After Install</a></li><li><a href="#cache-vs-source-mismatch-developers" class="table-of-contents__link toc-highlight">Cache vs Source Mismatch (Developers)</a></li><li><a href="#checking-whats-triggering-installs" class="table-of-contents__link toc-highlight">Checking What&#39;s Triggering Installs</a></li></ul></li><li><a href="#character-budget--when-to-disable-plugins" class="table-of-contents__link toc-highlight">Character Budget &amp; When to Disable Plugins</a><ul><li><a href="#understanding-the-15k-character-limit" class="table-of-contents__link toc-highlight">Understanding the 15K Character Limit</a></li><li><a href="#recommended-plugin-sets-by-project-type" class="table-of-contents__link toc-highlight">Recommended Plugin Sets by Project Type</a></li><li><a href="#disabling-unused-plugins" class="table-of-contents__link toc-highlight">Disabling Unused Plugins</a></li><li><a href="#for-multi-domain-requests" class="table-of-contents__link toc-highlight">For Multi-Domain Requests</a></li></ul></li><li><a href="#best-practices" class="table-of-contents__link toc-highlight">Best Practices</a><ul><li><a href="#minimal-installation" class="table-of-contents__link toc-highlight">Minimal Installation</a></li><li><a href="#for-teams" class="table-of-contents__link toc-highlight">For Teams</a></li><li><a href="#for-plugin-developers" class="table-of-contents__link toc-highlight">For Plugin Developers</a></li></ul></li><li><a href="#related-documentation" class="table-of-contents__link toc-highlight">Related Documentation</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>

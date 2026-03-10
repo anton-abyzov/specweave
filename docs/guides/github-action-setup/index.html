@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-guides/github-action-setup" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">GitHub Actions Integration Setup Guide | SpecWeave</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" property="og:url" content="https://spec-weave.com/docs/guides/github-action-setup"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" name="twitter:site" content="@aabyzov"><meta data-rh="true" name="twitter:creator" content="@aabyzov"><meta data-rh="true" name="twitter:title" content="SpecWeave - Program Your AI in English"><meta data-rh="true" name="twitter:description" content="Skills are programs in English. Describe what you want, AI interviews you, builds it while you sleep. 100+ reusable skills for Claude Code."><meta data-rh="true" name="twitter:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" property="og:type" content="website"><meta data-rh="true" property="og:image" content="https://spec-weave.com/img/specweave-social-card-v2.jpg"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="GitHub Actions Integration Setup Guide | SpecWeave"><meta data-rh="true" name="description" content="Complete guide to integrating SpecWeave with GitHub Actions for automated spec-driven development"><meta data-rh="true" property="og:description" content="Complete guide to integrating SpecWeave with GitHub Actions for automated spec-driven development"><link data-rh="true" rel="icon" href="/favicon.ico"><link data-rh="true" rel="canonical" href="https://spec-weave.com/docs/guides/github-action-setup"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/github-action-setup" hreflang="en"><link data-rh="true" rel="alternate" href="https://spec-weave.com/docs/guides/github-action-setup" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="SpecWeave RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="SpecWeave Atom Feed">
+
+
+
+
+
+
+
+<script defer="true" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;a08755392f8d4369acfb5775e954080c&quot;}"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"SpecWeave","url":"https://spec-weave.com","logo":"https://spec-weave.com/img/logo.svg","sameAs":["https://github.com/anton-abyzov/specweave","https://www.npmjs.com/package/specweave"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SpecWeave","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","bestRating":"5","ratingCount":"100"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&amp;display=swap">
+<link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
+<script src="/assets/js/runtime~main.f974f355.js" defer="defer"></script>
+<script src="/assets/js/main.43b6aa25.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}(),document.documentElement.setAttribute("data-announcement-bar-initially-dismissed",function(){try{return"true"===localStorage.getItem("docusaurus.announcement.dismiss")}catch(t){}return!1}())</script><div id="__docusaurus"><link rel="preload" as="image" href="/img/logo.svg"><link rel="preload" as="image" href="/img/logo-dark.svg"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><div class="theme-announcement-bar announcementBar_mb4j" style="background-color:#eeeafc;color:#4a3d8f" role="banner"><div class="announcementBarPlaceholder_vyr4"></div><div class="content_knG7 announcementBarContent_xLdY">If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>!</div><button type="button" aria-label="Close" class="clean-btn close closeButton_CVFx announcementBarClose_gvF7"><svg viewBox="0 0 15 15" width="14" height="14"><g stroke="currentColor" stroke-width="3.1"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/logo-dark.svg" alt="SpecWeave Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">SpecWeave</b></a><a class="navbar__item navbar__link" href="/docs/overview/introduction">Docs</a><a class="navbar__item navbar__link" href="/docs/academy/">Learn</a><a class="navbar__item navbar__link" href="/docs/skills/">Skills</a><a class="navbar__item navbar__link" href="/docs/enterprise/">Enterprise</a><a class="navbar__item navbar__link" href="/docs/reference/">Reference</a><a class="navbar__item navbar__link" href="/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_Bca1"><div class="navbar__search searchBarContainer_NW3z" dir="ltr"><input placeholder="Search" aria-label="Search" class="navbar__search-input searchInput_YFbd" value=""><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><main class="docMainContainer_TBSr docMainContainerEnhanced_lQrH"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>GitHub Actions Integration Setup Guide</h1></header>
+<p><strong>Complete guide to integrating SpecWeave with GitHub Actions for automated spec-driven development</strong></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="table-of-contents">Table of Contents<a href="#table-of-contents" class="hash-link" aria-label="Direct link to Table of Contents" title="Direct link to Table of Contents" translate="no">​</a></h2>
+<ol>
+<li class=""><a href="#overview" class="">Overview</a></li>
+<li class=""><a href="#prerequisites" class="">Prerequisites</a></li>
+<li class=""><a href="#quick-start" class="">Quick Start</a></li>
+<li class=""><a href="#workflow-tiers" class="">Workflow Tiers</a></li>
+<li class=""><a href="#configuration" class="">Configuration</a></li>
+<li class=""><a href="#authentication-setup" class="">Authentication Setup</a></li>
+<li class=""><a href="#workflow-features" class="">Workflow Features</a></li>
+<li class=""><a href="#testing-your-setup" class="">Testing Your Setup</a></li>
+<li class=""><a href="#troubleshooting" class="">Troubleshooting</a></li>
+<li class=""><a href="#advanced-configuration" class="">Advanced Configuration</a></li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="overview">Overview<a href="#overview" class="hash-link" aria-label="Direct link to Overview" title="Direct link to Overview" translate="no">​</a></h2>
+<p>SpecWeave GitHub Actions integration brings <strong>automated spec-driven development</strong> to your GitHub repositories. When enabled, the system:</p>
+<ul>
+<li class="">✅ <strong>Auto-generates increment structures</strong> from issues (spec/plan/tasks/tests)</li>
+<li class="">✅ <strong>Validates PRs against specifications</strong> (spec alignment, test coverage)</li>
+<li class="">✅ <strong>Prevents regressions</strong> (brownfield protection - requires docs before modifications)</li>
+<li class="">✅ <strong>Auto-updates documentation</strong> (CLAUDE.md, <a class="" href="/docs/glossary/terms/api">API</a> docs, changelog)</li>
+<li class="">✅ <strong>Enforces test coverage</strong> (TC-0001 traceability, skill tests, <a class="" href="/docs/glossary/terms/e2e">E2E</a> tests)</li>
+<li class="">✅ <strong>Scans for security</strong> (vulnerabilities, code security, compliance)</li>
+<li class="">✅ <strong>Detects performance regressions</strong> (compare baseline vs PR)</li>
+<li class="">✅ <strong>Syncs external systems</strong> (JIRA, Slack, Azure DevOps)</li>
+</ul>
+<p><strong>Result</strong>: <strong>93% time savings</strong> with <strong>zero spec drift</strong> and <strong>zero regressions</strong>.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="prerequisites">Prerequisites<a href="#prerequisites" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="required">Required<a href="#required" class="hash-link" aria-label="Direct link to Required" title="Direct link to Required" translate="no">​</a></h3>
+<ol>
+<li class="">
+<p><strong>GitHub Repository</strong> with SpecWeave initialized</p>
+<ul>
+<li class=""><code>.specweave/config.yaml</code> exists</li>
+<li class=""><code>CLAUDE.md</code> exists</li>
+<li class=""><code>docs/internal/strategy/</code> folder exists</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Anthropic API Key</strong></p>
+<ul>
+<li class="">Sign up at <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="">https://console.anthropic.com/</a></li>
+<li class="">Create API key with Claude access</li>
+<li class="">Store as GitHub secret</li>
+</ul>
+</li>
+<li class="">
+<p><strong>GitHub Token</strong> (automatically provided)</p>
+<ul>
+<li class="">No setup needed</li>
+<li class="">Auto-available as <code>GITHUB_TOKEN</code></li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="optional-for-advanced-features">Optional (for advanced features)<a href="#optional-for-advanced-features" class="hash-link" aria-label="Direct link to Optional (for advanced features)" title="Direct link to Optional (for advanced features)" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>JIRA Account</strong> + API token (for JIRA sync)</li>
+<li class=""><strong>Slack Webhook</strong> (for notifications)</li>
+<li class=""><strong>Azure DevOps</strong> + PAT (for ADO sync)</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="quick-start">Quick Start<a href="#quick-start" class="hash-link" aria-label="Direct link to Quick Start" title="Direct link to Quick Start" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="step-1-choose-your-workflow-tier">Step 1: Choose Your Workflow Tier<a href="#step-1-choose-your-workflow-tier" class="hash-link" aria-label="Direct link to Step 1: Choose Your Workflow Tier" title="Direct link to Step 1: Choose Your Workflow Tier" translate="no">​</a></h3>
+<p>SpecWeave provides <strong>3 workflow tiers</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Tier</th><th>File</th><th>Features</th><th>Best For</th></tr></thead><tbody><tr><td><strong>Starter</strong></td><td><code>specweave-starter.yml</code></td><td>Feature planning, basic PR validation, auto-docs</td><td>New users, small teams</td></tr><tr><td><strong>Standard</strong></td><td><code>specweave-standard.yml</code></td><td>+ Brownfield protection, test coverage, issue triage</td><td>Production teams</td></tr><tr><td><strong>Enterprise</strong></td><td><code>specweave-enterprise.yml</code></td><td>+ Security scanning, performance, compliance</td><td>Large organizations</td></tr></tbody></table>
+<p><strong>Recommendation</strong>: Start with <strong>Starter</strong>, upgrade to <strong>Standard</strong> after testing.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="step-2-add-anthropic-api-key-to-github-secrets">Step 2: Add Anthropic API Key to GitHub Secrets<a href="#step-2-add-anthropic-api-key-to-github-secrets" class="hash-link" aria-label="Direct link to Step 2: Add Anthropic API Key to GitHub Secrets" title="Direct link to Step 2: Add Anthropic API Key to GitHub Secrets" translate="no">​</a></h3>
+<ol>
+<li class="">Go to your repository on GitHub</li>
+<li class="">Navigate to: <strong>Settings</strong> → <strong>Secrets and variables</strong> → <strong>Actions</strong></li>
+<li class="">Click <strong>New repository secret</strong></li>
+<li class="">Name: <code>ANTHROPIC_API_KEY</code></li>
+<li class="">Value: Your Anthropic API key (starts with <code>sk-ant-</code>)</li>
+<li class="">Click <strong>Add secret</strong></li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="step-3-enable-workflow">Step 3: Enable Workflow<a href="#step-3-enable-workflow" class="hash-link" aria-label="Direct link to Step 3: Enable Workflow" title="Direct link to Step 3: Enable Workflow" translate="no">​</a></h3>
+<p><strong>Option A: Copy from templates</strong> (if SpecWeave installed)</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Copy starter workflow</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> .github/workflows/specweave-starter.yml.template .github/workflows/specweave-starter.yml</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Or use install script</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">./install.sh --enable-github-actions</span><br></span></code></pre></div></div>
+<p><strong>Option B: Already in repository</strong> (workflows are committed)</p>
+<p>The workflows are already in <code>.github/workflows/</code> - just ensure API key is set!</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="step-4-test-the-integration">Step 4: Test the Integration<a href="#step-4-test-the-integration" class="hash-link" aria-label="Direct link to Step 4: Test the Integration" title="Direct link to Step 4: Test the Integration" translate="no">​</a></h3>
+<p>Create a test issue:</p>
+<ol>
+<li class="">Go to <strong>Issues</strong> → <strong>New issue</strong></li>
+<li class="">Title: &quot;Add user authentication&quot;</li>
+<li class="">Add label: <code>feature</code></li>
+<li class="">Submit</li>
+</ol>
+<p><strong>Expected behavior</strong>:</p>
+<ul>
+<li class="">GitHub Action triggers</li>
+<li class="">Feature structure auto-generated in <code>features/0001-user-authentication/</code></li>
+<li class="">Branch created: <code>feature/0001-user-authentication</code></li>
+<li class="">Draft PR created</li>
+<li class="">Comment posted on issue with PR link</li>
+</ul>
+<p><strong>Time</strong>: ~2-3 minutes</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="workflow-tiers">Workflow Tiers<a href="#workflow-tiers" class="hash-link" aria-label="Direct link to Workflow Tiers" title="Direct link to Workflow Tiers" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-1-starter-recommended-for-new-users">Tier 1: Starter (Recommended for New Users)<a href="#tier-1-starter-recommended-for-new-users" class="hash-link" aria-label="Direct link to Tier 1: Starter (Recommended for New Users)" title="Direct link to Tier 1: Starter (Recommended for New Users)" translate="no">​</a></h3>
+<p><strong>File</strong>: <code>.github/workflows/specweave-starter.yml</code></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li class="">✅ Auto increment planning (issue labeled &#x27;feature&#x27;)</li>
+<li class="">✅ Basic PR validation (spec existence, alignment)</li>
+<li class="">✅ Auto-documentation updates (on merge)</li>
+</ul>
+<p><strong>Triggers</strong>:</p>
+<ul>
+<li class="">Issues: labeled</li>
+<li class="">PRs: opened, synchronize</li>
+<li class="">Push: main, features/**</li>
+</ul>
+<p><strong>Estimated cost</strong>: ~$0.50/PR (with 1000 tokens per run)</p>
+<p><strong>Setup time</strong>: 5 minutes</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-2-standard-recommended-for-production">Tier 2: Standard (Recommended for Production)<a href="#tier-2-standard-recommended-for-production" class="hash-link" aria-label="Direct link to Tier 2: Standard (Recommended for Production)" title="Direct link to Tier 2: Standard (Recommended for Production)" translate="no">​</a></h3>
+<p><strong>File</strong>: <code>.github/workflows/specweave-standard.yml</code></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li class="">✅ Everything in Starter, PLUS:</li>
+<li class="">✅ Intelligent issue triage (auto-label, prioritize, assign)</li>
+<li class="">✅ Brownfield protection (blocks modifications without docs)</li>
+<li class="">✅ Test coverage validation (TC-0001 traceability)</li>
+<li class="">✅ External integrations (JIRA, Slack, ADO)</li>
+</ul>
+<p><strong>Triggers</strong>:</p>
+<ul>
+<li class="">Issues: opened, labeled</li>
+<li class="">PRs: opened, synchronize, reopened</li>
+<li class="">Push: main, develop, features/**</li>
+</ul>
+<p><strong>Estimated cost</strong>: ~$1.50/PR (with 3000 tokens per run)</p>
+<p><strong>Setup time</strong>: 15 minutes</p>
+<p><strong>Additional secrets needed</strong>:</p>
+<ul>
+<li class=""><code>JIRA_TOKEN</code> (optional)</li>
+<li class=""><code>SLACK_WEBHOOK</code> (optional)</li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tier-3-enterprise-for-large-organizations">Tier 3: Enterprise (For Large Organizations)<a href="#tier-3-enterprise-for-large-organizations" class="hash-link" aria-label="Direct link to Tier 3: Enterprise (For Large Organizations)" title="Direct link to Tier 3: Enterprise (For Large Organizations)" translate="no">​</a></h3>
+<p><strong>File</strong>: <code>.github/workflows/specweave-enterprise.yml</code></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li class="">✅ Everything in Standard, PLUS:</li>
+<li class="">✅ Security vulnerability scanning</li>
+<li class="">✅ Performance regression detection</li>
+<li class="">✅ Compliance validation (GDPR, HIPAA, SOC 2)</li>
+<li class="">✅ Advanced analytics and reporting</li>
+<li class="">✅ Scheduled security scans</li>
+</ul>
+<p><strong>Triggers</strong>:</p>
+<ul>
+<li class="">Issues: opened, labeled, assigned</li>
+<li class="">PRs: opened, synchronize, reopened, ready_for_review</li>
+<li class="">PR Reviews: submitted</li>
+<li class="">Push: main, develop, release/**</li>
+<li class="">Schedule: Daily at 2 AM UTC (security scans)</li>
+</ul>
+<p><strong>Estimated cost</strong>: ~$3.00/PR (with 6000 tokens per run)</p>
+<p><strong>Setup time</strong>: 30 minutes</p>
+<p><strong>Additional secrets needed</strong>:</p>
+<ul>
+<li class="">All from Standard, PLUS:</li>
+<li class=""><code>AZURE_DEVOPS_TOKEN</code> (optional)</li>
+<li class="">Performance testing setup</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuration">Configuration<a href="#configuration" class="hash-link" aria-label="Direct link to Configuration" title="Direct link to Configuration" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specweaveconfigyaml">.specweave/config.yaml<a href="#specweaveconfigyaml" class="hash-link" aria-label="Direct link to .specweave/config.yaml" title="Direct link to .specweave/config.yaml" translate="no">​</a></h3>
+<p>Add GitHub Actions configuration to your <code>.specweave/config.yaml</code>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># SpecWeave Configuration</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;my-project&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">version</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;1.0.0&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># GitHub Actions Integration</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">github_actions</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">tier</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;standard&quot;</span><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># starter | standard | enterprise</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Feature planning</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">feature_planning</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">auto_create_pr</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">draft_pr</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># PR validation</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">pr_validation</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">require_spec</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">require_tests</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">minimum_coverage</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">80</span><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># percent</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Brownfield protection</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">brownfield</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">block_without_docs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">block_without_tests</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Test coverage</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">test_coverage</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">require_tc_traceability</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">minimum_skill_tests</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">3</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">require_e2e_for_ui</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Documentation</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">auto_docs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">update_claude_md</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">update_api_docs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">update_changelog</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># External integrations</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">integrations</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">jira</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">url</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;https://your-domain.atlassian.net&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">project_key</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;PROJ&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">slack</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">webhook_url</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;${SLACK_WEBHOOK}&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">channel</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;#specweave-notifications&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">azure_devops</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">organization</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;your-org&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">project</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;your-project&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Enterprise features</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">enterprise</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">security_scanning</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">block_on_critical</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">block_on_high</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">performance</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">regression_threshold</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">10</span><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># percent slower</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">block_on_critical_regression</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">compliance</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token key atrule" style="color:#00a4db">frameworks</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> gdpr</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> hipaa</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> soc2</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># AI Model Configuration</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">ai</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">model</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;sonnet&quot;</span><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Use alias: opus, sonnet, or haiku</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">max_tokens</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">16000</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="authentication-setup">Authentication Setup<a href="#authentication-setup" class="hash-link" aria-label="Direct link to Authentication Setup" title="Direct link to Authentication Setup" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="anthropic-api-required">Anthropic API (Required)<a href="#anthropic-api-required" class="hash-link" aria-label="Direct link to Anthropic API (Required)" title="Direct link to Anthropic API (Required)" translate="no">​</a></h3>
+<p><strong>Get API Key</strong>:</p>
+<ol>
+<li class="">Visit <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="">https://console.anthropic.com/</a></li>
+<li class="">Sign up or log in</li>
+<li class="">Go to <strong>API Keys</strong></li>
+<li class="">Create new key</li>
+<li class="">Copy key (starts with <code>sk-ant-</code>)</li>
+</ol>
+<p><strong>Add to GitHub</strong>:</p>
+<ol>
+<li class="">Repository → <strong>Settings</strong> → <strong>Secrets and variables</strong> → <strong>Actions</strong></li>
+<li class=""><strong>New repository secret</strong></li>
+<li class="">Name: <code>ANTHROPIC_API_KEY</code></li>
+<li class="">Value: Your API key</li>
+<li class=""><strong>Add secret</strong></li>
+</ol>
+<p><strong>Cost</strong>: Pay-per-use</p>
+<ul>
+<li class="">Sonnet: $3 per million input tokens, $15 per million output tokens</li>
+<li class="">Estimated: $1-3 per PR depending on tier</li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="jira-integration-optional">JIRA Integration (Optional)<a href="#jira-integration-optional" class="hash-link" aria-label="Direct link to JIRA Integration (Optional)" title="Direct link to JIRA Integration (Optional)" translate="no">​</a></h3>
+<p><strong>Get JIRA Token</strong>:</p>
+<ol>
+<li class="">Log into JIRA</li>
+<li class="">Go to <strong>Account Settings</strong> → <strong>Security</strong> → <strong>API Tokens</strong></li>
+<li class=""><strong>Create API token</strong></li>
+<li class="">Copy token</li>
+</ol>
+<p><strong>Add to GitHub</strong>:</p>
+<ol>
+<li class="">Repository → <strong>Settings</strong> → <strong>Secrets</strong></li>
+<li class="">Name: <code>JIRA_TOKEN</code></li>
+<li class="">Value: Your JIRA token</li>
+</ol>
+<p><strong>Update config.yaml</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">integrations</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">jira</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">url</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;https://your-domain.atlassian.net&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">project_key</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;PROJ&quot;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="slack-integration-optional">Slack Integration (Optional)<a href="#slack-integration-optional" class="hash-link" aria-label="Direct link to Slack Integration (Optional)" title="Direct link to Slack Integration (Optional)" translate="no">​</a></h3>
+<p><strong>Get Webhook URL</strong>:</p>
+<ol>
+<li class="">Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" class="">https://api.slack.com/apps</a></li>
+<li class="">Create app or select existing</li>
+<li class=""><strong>Incoming Webhooks</strong> → <strong>Activate</strong></li>
+<li class=""><strong>Add New Webhook to Workspace</strong></li>
+<li class="">Select channel</li>
+<li class="">Copy webhook URL</li>
+</ol>
+<p><strong>Add to GitHub</strong>:</p>
+<ol>
+<li class="">Repository → <strong>Settings</strong> → <strong>Secrets</strong></li>
+<li class="">Name: <code>SLACK_WEBHOOK</code></li>
+<li class="">Value: Webhook URL</li>
+</ol>
+<p><strong>Update config.yaml</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">integrations</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">slack</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">channel</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;#specweave-notifications&quot;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="azure-devops-integration-optional">Azure DevOps Integration (Optional)<a href="#azure-devops-integration-optional" class="hash-link" aria-label="Direct link to Azure DevOps Integration (Optional)" title="Direct link to Azure DevOps Integration (Optional)" translate="no">​</a></h3>
+<p><strong>Get PAT (Personal Access Token)</strong>:</p>
+<ol>
+<li class="">Azure DevOps → <strong>User Settings</strong> → <strong>Personal Access Tokens</strong></li>
+<li class=""><strong>New Token</strong></li>
+<li class="">Scopes: Work Items (Read, Write), Code (Read)</li>
+<li class="">Copy token</li>
+</ol>
+<p><strong>Add to GitHub</strong>:</p>
+<ol>
+<li class="">Repository → <strong>Settings</strong> → <strong>Secrets</strong></li>
+<li class="">Name: <code>AZURE_DEVOPS_TOKEN</code></li>
+<li class="">Value: Your PAT</li>
+</ol>
+<p><strong>Update config.yaml</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">integrations</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">azure_devops</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">organization</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;your-org&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">project</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;your-project&quot;</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="workflow-features">Workflow Features<a href="#workflow-features" class="hash-link" aria-label="Direct link to Workflow Features" title="Direct link to Workflow Features" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-auto-increment-planning">1. Auto Increment Planning<a href="#1-auto-increment-planning" class="hash-link" aria-label="Direct link to 1. Auto Increment Planning" title="Direct link to 1. Auto Increment Planning" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: Issue labeled with <code>feature</code></p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Reads issue title and description</li>
+<li class="">Activates <code>increment</code> skill</li>
+<li class="">Generates complete increment structure:
+<ul>
+<li class=""><code>.specweave/increments/00001-feature-name/spec.md</code></li>
+<li class=""><code>.specweave/increments/00001-feature-name/plan.md</code></li>
+<li class=""><code>.specweave/increments/00001-feature-name/tasks.md</code></li>
+<li class=""><code>.specweave/increments/00001-feature-name/tests.md</code></li>
+</ul>
+</li>
+<li class="">Creates branch <code>feature/0001-feature-name</code></li>
+<li class="">Commits files</li>
+<li class="">Creates draft PR</li>
+<li class="">Comments on issue with PR link</li>
+</ol>
+<p><strong>Time saved</strong>: 2 hours → 5 minutes (96%)</p>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">Issue: &quot;Add user authentication with OAuth2&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Label: feature</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">→ Auto-generates:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  features/0003-user-authentication/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  ├── spec.md (WHAT/WHY)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  ├── plan.md (HOW)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  ├── tasks.md (checklist)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  └── tests.md (TC-0001 through TC-0010)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">→ Creates: PR #15 (draft)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">→ Comments: &quot;Feature structure created! Review PR #15&quot;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-spec-aware-pr-review">2. Spec-Aware PR Review<a href="#2-spec-aware-pr-review" class="hash-link" aria-label="Direct link to 2. Spec-Aware PR Review" title="Direct link to 2. Spec-Aware PR Review" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR opened or updated</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Loads feature&#x27;s spec files (spec.md, plan.md, tasks.md)</li>
+<li class="">Loads referenced specs from <code>docs/internal/strategy/</code></li>
+<li class="">Validates:
+<ul>
+<li class="">✅ Spec exists for changes</li>
+<li class="">✅ Code aligns with spec</li>
+<li class="">✅ Test coverage (TC-0001 traceability)</li>
+<li class="">✅ Skills have ≥3 test cases</li>
+<li class="">✅ <a class="" href="/docs/glossary/terms/adr">ADRs</a> for architecture changes</li>
+</ul>
+</li>
+<li class="">Posts review comment with findings</li>
+<li class="">Approves, requests changes, or blocks</li>
+</ol>
+<p><strong>Time saved</strong>: 30 minutes → 2 minutes (93%)</p>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> SpecWeave Validation Report</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> ✅ Passed Checks</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Spec exists: docs/internal/strategy/auth/oauth-spec.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Test coverage: 100% (TC-0001 through TC-0010 covered)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token url" style="color:#36acaa">[</span><span class="token url content" style="color:#36acaa">ADR</span><span class="token url" style="color:#36acaa">](</span><span class="token url" style="color:#36acaa">/docs/glossary/terms/adr</span><span class="token url" style="color:#36acaa">)</span><span class="token plain"> exists: .specweave/docs/decisions/005-oauth-strategy.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> ⚠️ Warnings</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Performance: New database queries (review indexing)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> ❌ Required Changes</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Missing skill tests: src/skills/oauth-handler/ has only 2 tests (need 3)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token bold content">Status</span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token plain">: ⚠️ Changes Required</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-brownfield-protection">3. Brownfield Protection<a href="#3-brownfield-protection" class="hash-link" aria-label="Direct link to 3. Brownfield Protection" title="Direct link to 3. Brownfield Protection" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR modifies existing code (src/**/*.ts)</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Detects modifications to existing files</li>
+<li class="">Checks for documentation:
+<ul>
+<li class="">Specs in <code>docs/internal/strategy/</code></li>
+<li class="">Tests in <code>tests/</code></li>
+<li class="">Architecture docs</li>
+</ul>
+</li>
+<li class="">If missing:
+<ul>
+<li class="">❌ <strong>BLOCKS PR</strong></li>
+<li class="">Posts detailed requirements</li>
+<li class="">Provides remediation steps</li>
+</ul>
+</li>
+</ol>
+<p><strong>Prevents</strong>: 100% of regressions from undocumented changes</p>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> 🚨 Brownfield Modification Detected</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Modified Files</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> src/services/payment-processor.ts (146 lines changed)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Missing Documentation</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> ❌ No spec for payment-processor</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> ❌ No tests for current behavior</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Required Actions</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">1.</span><span class="token plain"> Document current behavior:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   </span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Create docs/internal/strategy/payments/existing-flow.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">2.</span><span class="token plain"> Create regression tests:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   </span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Add E2E tests for current payment flow</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">3.</span><span class="token plain"> Get user approval</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token bold content">PR Status</span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token plain">: ⏸️ Blocked</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-test-coverage-validation">4. Test Coverage Validation<a href="#4-test-coverage-validation" class="hash-link" aria-label="Direct link to 4. Test Coverage Validation" title="Direct link to 4. Test Coverage Validation" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR opened or updated</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Runs test suite with coverage</li>
+<li class="">Validates:
+<ul>
+<li class="">TC-0001 traceability (spec → tests)</li>
+<li class="">Skills have ≥3 test cases</li>
+<li class="">E2E tests for UI changes</li>
+<li class="">Coverage &gt;80% for critical paths</li>
+</ul>
+</li>
+<li class="">Posts coverage report</li>
+<li class="">Blocks if requirements not met</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> Test Coverage Report</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> ✅ TC-0001 Traceability</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> TC-0001: Covered in tests/e2e/login.spec.ts</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> TC-0002: Covered in tests/e2e/login.spec.ts</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> TC-0003: Covered in tests/unit/validation.test.ts</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Skill Tests</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">✅ oauth-handler: 5 test cases</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Coverage Metrics</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Overall: 87% ✅</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Changed Files: 92% ✅</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Critical Paths: 95% ✅</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token bold content">Status</span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token plain">: ✅ Passed</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="5-auto-documentation-updates">5. Auto-Documentation Updates<a href="#5-auto-documentation-updates" class="hash-link" aria-label="Direct link to 5. Auto-Documentation Updates" title="Direct link to 5. Auto-Documentation Updates" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR merged to main</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Compares HEAD with HEAD~1</li>
+<li class="">Identifies changes:
+<ul>
+<li class="">Structure changes</li>
+<li class="">CLI changes</li>
+<li class="">Skills API changes</li>
+<li class="">Feature completion</li>
+</ul>
+</li>
+<li class="">Updates relevant docs:
+<ul>
+<li class=""><code>CLAUDE.md</code> (if structure changed)</li>
+<li class=""><code>.specweave/docs/api/</code> (if API changed)</li>
+<li class=""><code>.specweave/docs/changelog/</code> (always)</li>
+</ul>
+</li>
+<li class="">Commits changes with message: &quot;docs: auto-update after merge&quot;</li>
+<li class="">Syncs with JIRA/Slack if configured</li>
+</ol>
+<p><strong>Time saved</strong>: 1 hour → 0 minutes (100%)</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="6-security-scanning-enterprise">6. Security Scanning (Enterprise)<a href="#6-security-scanning-enterprise" class="hash-link" aria-label="Direct link to 6. Security Scanning (Enterprise)" title="Direct link to 6. Security Scanning (Enterprise)" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR opened or daily schedule</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Runs <code>npm audit</code></li>
+<li class="">Analyzes code for security issues:
+<ul>
+<li class="">SQL injection</li>
+<li class="">XSS vulnerabilities</li>
+<li class="">Secret leaks</li>
+<li class="">Authentication issues</li>
+</ul>
+</li>
+<li class="">Posts security report</li>
+<li class="">Blocks if critical vulnerabilities</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> 🔒 Security Scan Report</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Critical Issues</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">None ✅</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> High Priority</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> lodash: Prototype Pollution (CVE-2020-8203)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  Fix: Update to lodash@4.17.21</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Recommendations</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Enable rate limiting on login endpoint</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Add CSRF protection for forms</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token bold content">Status</span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token plain">: ⚠️ Review Needed</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="7-performance-regression-enterprise">7. Performance Regression (Enterprise)<a href="#7-performance-regression-enterprise" class="hash-link" aria-label="Direct link to 7. Performance Regression (Enterprise)" title="Direct link to 7. Performance Regression (Enterprise)" translate="no">​</a></h3>
+<p><strong>Trigger</strong>: PR opened</p>
+<p><strong>What it does</strong>:</p>
+<ol>
+<li class="">Runs performance tests on PR</li>
+<li class="">Runs same tests on base branch</li>
+<li class="">Compares results</li>
+<li class="">Identifies regressions (&gt;10% slower)</li>
+<li class="">Posts performance report</li>
+<li class="">Blocks if critical regression (&gt;25% slower)</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<div class="language-markdown codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-markdown codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token title important punctuation" style="color:#393A34">##</span><span class="token title important"> ⚡ Performance Analysis</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Regression Detected</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> API /users/list: 15% slower (250ms → 287ms)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  Cause: N+1 query detected</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Improvements</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> API /posts/create: 20% faster (cache added) ✅</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token title important punctuation" style="color:#393A34">###</span><span class="token title important"> Optimization Opportunities</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token list punctuation" style="color:#393A34">-</span><span class="token plain"> Database indexing for user queries</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token bold content">Status</span><span class="token bold punctuation" style="color:#393A34">**</span><span class="token plain">: ⚠️ Review (moderate regression)</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="testing-your-setup">Testing Your Setup<a href="#testing-your-setup" class="hash-link" aria-label="Direct link to Testing Your Setup" title="Direct link to Testing Your Setup" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="test-1-feature-planning">Test 1: Feature Planning<a href="#test-1-feature-planning" class="hash-link" aria-label="Direct link to Test 1: Feature Planning" title="Direct link to Test 1: Feature Planning" translate="no">​</a></h3>
+<p><strong>Steps</strong>:</p>
+<ol>
+<li class="">Create new issue</li>
+<li class="">Title: &quot;Add dark mode toggle&quot;</li>
+<li class="">Body: &quot;Users should be able to switch between light and dark themes&quot;</li>
+<li class="">Add label: <code>feature</code></li>
+</ol>
+<p><strong>Expected</strong>:</p>
+<ul>
+<li class="">Workflow runs (check <strong>Actions</strong> tab)</li>
+<li class="">Feature folder created: <code>features/0001-dark-mode/</code></li>
+<li class="">Branch created: <code>feature/0001-dark-mode</code></li>
+<li class="">Draft PR created</li>
+<li class="">Issue commented with PR link</li>
+</ul>
+<p><strong>Verify</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Check increment folder</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">ls</span><span class="token plain"> features/0001-dark-mode/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Should see: spec.md, plan.md, tasks.md, tests.md</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Check branch</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">git</span><span class="token plain"> fetch</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">git</span><span class="token plain"> branch </span><span class="token parameter variable" style="color:#36acaa">-r</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">|</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">grep</span><span class="token plain"> dark-mode</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="test-2-pr-validation">Test 2: PR Validation<a href="#test-2-pr-validation" class="hash-link" aria-label="Direct link to Test 2: PR Validation" title="Direct link to Test 2: PR Validation" translate="no">​</a></h3>
+<p><strong>Steps</strong>:</p>
+<ol>
+<li class="">Create branch: <code>test-validation</code></li>
+<li class="">Make small change to existing file (e.g., README)</li>
+<li class="">Commit and push</li>
+<li class="">Open PR</li>
+</ol>
+<p><strong>Expected</strong>:</p>
+<ul>
+<li class="">Workflow runs</li>
+<li class="">Review comment posted</li>
+<li class="">Status: ✅ or ⚠️ depending on changes</li>
+</ul>
+<p><strong>Verify</strong>:</p>
+<ul>
+<li class="">Check PR comments for validation report</li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="test-3-brownfield-protection">Test 3: Brownfield Protection<a href="#test-3-brownfield-protection" class="hash-link" aria-label="Direct link to Test 3: Brownfield Protection" title="Direct link to Test 3: Brownfield Protection" translate="no">​</a></h3>
+<p><strong>Steps</strong>:</p>
+<ol>
+<li class="">Create branch: <code>test-brownfield</code></li>
+<li class="">Modify existing code in <code>src/</code> (e.g., add comment)</li>
+<li class="">Commit and push</li>
+<li class="">Open PR</li>
+</ol>
+<p><strong>Expected</strong>:</p>
+<ul>
+<li class="">Workflow runs</li>
+<li class="">Brownfield check triggered</li>
+<li class="">If docs exist: ✅ Approved</li>
+<li class="">If docs missing: ❌ Blocked with requirements</li>
+</ul>
+<p><strong>Verify</strong>:</p>
+<ul>
+<li class="">Check PR comments for brownfield report</li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="test-4-documentation-update">Test 4: Documentation Update<a href="#test-4-documentation-update" class="hash-link" aria-label="Direct link to Test 4: Documentation Update" title="Direct link to Test 4: Documentation Update" translate="no">​</a></h3>
+<p><strong>Steps</strong>:</p>
+<ol>
+<li class="">Merge a PR to main</li>
+<li class="">Wait for workflow to complete</li>
+</ol>
+<p><strong>Expected</strong>:</p>
+<ul>
+<li class="">Workflow runs</li>
+<li class="">Changelog updated</li>
+<li class="">Commit made: &quot;docs: auto-update after merge&quot;</li>
+</ul>
+<p><strong>Verify</strong>:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token function" style="color:#d73a49">git</span><span class="token plain"> pull origin main</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">git</span><span class="token plain"> log </span><span class="token parameter variable" style="color:#36acaa">-1</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Should see: docs: auto-update after merge</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cat</span><span class="token plain"> .specweave/docs/changelog/2025-10.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Should see new entry</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="troubleshooting">Troubleshooting<a href="#troubleshooting" class="hash-link" aria-label="Direct link to Troubleshooting" title="Direct link to Troubleshooting" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="issue-workflow-not-triggering">Issue: Workflow not triggering<a href="#issue-workflow-not-triggering" class="hash-link" aria-label="Direct link to Issue: Workflow not triggering" title="Direct link to Issue: Workflow not triggering" translate="no">​</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li class="">Label issue with &#x27;feature&#x27;, but nothing happens</li>
+<li class="">PR opened, but no validation comment</li>
+</ul>
+<p><strong>Causes &amp; Solutions</strong>:</p>
+<ol>
+<li class="">
+<p><strong>API key not set</strong></p>
+<ul>
+<li class="">Check: Settings → Secrets → <code>ANTHROPIC_API_KEY</code> exists</li>
+<li class="">Fix: Add API key</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Workflow file missing or disabled</strong></p>
+<ul>
+<li class="">Check: <code>.github/workflows/specweave-*.yml</code> exists</li>
+<li class="">Check: Actions tab shows workflow</li>
+<li class="">Fix: Copy workflow file, commit, push</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Incorrect permissions</strong></p>
+<ul>
+<li class="">Check: Workflow has <code>permissions:</code> set</li>
+<li class="">Fix: Ensure permissions in YAML</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Branch protection blocking bot</strong></p>
+<ul>
+<li class="">Check: Settings → Branches → Protection rules</li>
+<li class="">Fix: Add SpecWeave Bot to allowed list</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="issue-authentication-failures">Issue: Authentication failures<a href="#issue-authentication-failures" class="hash-link" aria-label="Direct link to Issue: Authentication failures" title="Direct link to Issue: Authentication failures" translate="no">​</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li class="">Workflow fails with &quot;401 Unauthorized&quot;</li>
+<li class="">Error: &quot;Invalid API key&quot;</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li class="">
+<p><strong>Verify API key</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Test locally</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">curl</span><span class="token plain"> https://api.anthropic.com/v1/messages </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter variable" style="color:#36acaa">-H</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;x-api-key: YOUR_KEY&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter variable" style="color:#36acaa">-H</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;anthropic-version: 2023-06-01&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter variable" style="color:#36acaa">-d</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;{&quot;model&quot;:&quot;claude-sonnet-4-6&quot;,&quot;max_tokens&quot;:10,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Hi&quot;}]}&#x27;</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Check key format</strong></p>
+<ul>
+<li class="">Must start with <code>sk-ant-</code></li>
+<li class="">No extra spaces or quotes</li>
+<li class="">Copy-paste carefully</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Regenerate key</strong></p>
+<ul>
+<li class="">Create new key in Anthropic console</li>
+<li class="">Update GitHub secret</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="issue-high-costs">Issue: High costs<a href="#issue-high-costs" class="hash-link" aria-label="Direct link to Issue: High costs" title="Direct link to Issue: High costs" translate="no">​</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li class="">Anthropic bill higher than expected</li>
+</ul>
+<p><strong>Causes &amp; Solutions</strong>:</p>
+<ol>
+<li class="">
+<p><strong>Using wrong model</strong></p>
+<ul>
+<li class="">Settings auto-detected</li>
+<li class="">Fix: Use Sonnet (not Opus)</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Too many tokens per run</strong></p>
+<ul>
+<li class="">Check: Workflow prompts (--max-tokens)</li>
+<li class="">Fix: Reduce max_tokens in claude_args</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Workflow running too often</strong></p>
+<ul>
+<li class="">Check: Actions tab → Filter by workflow</li>
+<li class="">Fix: Adjust triggers in YAML</li>
+</ul>
+</li>
+</ol>
+<p><strong>Cost optimization tips</strong>:</p>
+<ul>
+<li class="">Set reasonable max_tokens (8000-16000)</li>
+<li class="">Use Haiku for simple tasks</li>
+<li class="">Cache frequently-used context</li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="issue-skills-not-activating">Issue: Skills not activating<a href="#issue-skills-not-activating" class="hash-link" aria-label="Direct link to Issue: Skills not activating" title="Direct link to Issue: Skills not activating" translate="no">​</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li class="">Workflow runs but doesn&#x27;t use increment skill</li>
+<li class="">Skills not detected</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li class="">
+<p><strong>Skills not installed</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Install skills</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">npm</span><span class="token plain"> run install:skills</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Or manually</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">cp</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-r</span><span class="token plain"> src/skills/* .claude/skills/</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>SKILL.md missing frontmatter</strong></p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># Check skill format</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">head</span><span class="token plain"> </span><span class="token parameter variable" style="color:#36acaa">-10</span><span class="token plain"> .claude/skills/increment/SKILL.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># Should see:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># ---</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># description: Plan and create SpecWeave increments...</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># ---</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>Description doesn&#x27;t match</strong></p>
+<ul>
+<li class="">Check: SKILL.md description includes trigger keywords</li>
+<li class="">Fix: Update description with relevant keywords</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="issue-brownfield-protection-too-aggressive">Issue: Brownfield protection too aggressive<a href="#issue-brownfield-protection-too-aggressive" class="hash-link" aria-label="Direct link to Issue: Brownfield protection too aggressive" title="Direct link to Issue: Brownfield protection too aggressive" translate="no">​</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul>
+<li class="">Every PR blocked</li>
+<li class="">Can&#x27;t merge simple changes</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li class="">
+<p><strong>Document existing code first</strong></p>
+<ul>
+<li class="">Create specs in <code>docs/internal/strategy/</code></li>
+<li class="">Create tests in <code>tests/</code></li>
+<li class="">Then brownfield protection passes</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Disable for specific paths</strong></p>
+</li>
+<li class="">
+<p><strong>Temporarily disable</strong> (not recommended)</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">brownfield</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">enabled</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token boolean important" style="color:#36acaa">false</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="advanced-configuration">Advanced Configuration<a href="#advanced-configuration" class="hash-link" aria-label="Direct link to Advanced Configuration" title="Direct link to Advanced Configuration" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="custom-workflow-triggers">Custom Workflow Triggers<a href="#custom-workflow-triggers" class="hash-link" aria-label="Direct link to Custom Workflow Triggers" title="Direct link to Custom Workflow Triggers" translate="no">​</a></h3>
+<p><strong>Add custom labels</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">issues</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">types</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">labeled</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">jobs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">custom-trigger</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">if</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">|</span><span class="token scalar string" style="color:#e3116c"></span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      github.event.label.name == &#x27;urgent&#x27; ||</span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      github.event.label.name == &#x27;feature&#x27;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="conditional-execution">Conditional Execution<a href="#conditional-execution" class="hash-link" aria-label="Direct link to Conditional Execution" title="Direct link to Conditional Execution" translate="no">​</a></h3>
+<p><strong>Only run on specific branches</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">pull_request</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">branches</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> main</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> develop</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> release/</span><span class="token important">**</span><br></span></code></pre></div></div>
+<p><strong>Only run on specific paths</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">pull_request</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">paths</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;src/**&#x27;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;specifications/**&#x27;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;features/**&#x27;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="multiple-ai-models">Multiple AI Models<a href="#multiple-ai-models" class="hash-link" aria-label="Direct link to Multiple AI Models" title="Direct link to Multiple AI Models" translate="no">​</a></h3>
+<p><strong>Use different models for different tasks</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># In workflow</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Simple Triage</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">uses</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> anthropics/claude</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">code</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">action@v1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">with</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">claude_args</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">|</span><span class="token scalar string" style="color:#e3116c"></span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --model haiku  # Fast, cheap</span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --max-tokens 4000</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Complex Review</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">uses</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> anthropics/claude</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">code</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">action@v1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">with</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">claude_args</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">|</span><span class="token scalar string" style="color:#e3116c"></span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --model sonnet  # Balanced</span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --max-tokens 16000</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain"> </span><span class="token key atrule" style="color:#00a4db">name</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> Deep Analysis</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">uses</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> anthropics/claude</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">code</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">action@v1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">with</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">claude_args</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">|</span><span class="token scalar string" style="color:#e3116c"></span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --model opus  # Most capable (expensive!)</span><br></span><span class="token-line" style="color:#393A34"><span class="token scalar string" style="color:#e3116c">      --max-tokens 20000</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="parallel-execution">Parallel Execution<a href="#parallel-execution" class="hash-link" aria-label="Direct link to Parallel Execution" title="Direct link to Parallel Execution" translate="no">​</a></h3>
+<p><strong>Run validations in parallel</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token key atrule" style="color:#00a4db">jobs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">spec-validation</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">runs-on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> ubuntu</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">latest</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token comment" style="color:#999988;font-style:italic"># Runs in parallel</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">brownfield-check</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">runs-on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> ubuntu</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">latest</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token comment" style="color:#999988;font-style:italic"># Runs in parallel</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">test-coverage</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">runs-on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> ubuntu</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">latest</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token comment" style="color:#999988;font-style:italic"># Runs in parallel</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">security-scan</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">runs-on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> ubuntu</span><span class="token punctuation" style="color:#393A34">-</span><span class="token plain">latest</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token comment" style="color:#999988;font-style:italic"># Runs in parallel</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="branch-specific-workflows">Branch-Specific Workflows<a href="#branch-specific-workflows" class="hash-link" aria-label="Direct link to Branch-Specific Workflows" title="Direct link to Branch-Specific Workflows" translate="no">​</a></h3>
+<p><strong>Different workflows per branch</strong>:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># .github/workflows/specweave-main.yml</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">push</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">branches</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">main</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">jobs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Production validations only</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># .github/workflows/specweave-develop.yml</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">push</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">branches</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">develop</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">jobs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Development validations + performance tests</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># .github/workflows/specweave-feature.yml</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">on</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token key atrule" style="color:#00a4db">push</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token key atrule" style="color:#00a4db">branches</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">features/</span><span class="token important">**</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token key atrule" style="color:#00a4db">jobs</span><span class="token punctuation" style="color:#393A34">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic"># Basic validations only</span><br></span></code></pre></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="related-documentation">Related Documentation<a href="#related-documentation" class="hash-link" aria-label="Direct link to Related Documentation" title="Direct link to Related Documentation" translate="no">​</a></h2>
+<ul>
+<li class=""><a href="https://github.com/anton-abyzov/specweave/blob/develop/CLAUDE.md" target="_blank" rel="noopener noreferrer" class="">CLAUDE.md</a> - SpecWeave development guide</li>
+<li class="">Configuration reference - See <code>.specweave/config.json</code> in your project</li>
+<li class="">GitHub Actions workflows - See <code>.github/workflows/</code> in the SpecWeave repository</li>
+</ul>
+<hr>
+<p><strong>Questions?</strong> Open an issue with label <code>question</code> and tag <code>@claude</code></p>
+<p><strong>Need help?</strong> Check <a href="#troubleshooting" class="">Troubleshooting</a> or <a class="" href="/Actions">GitHub Actions Logs</a></p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/anton-abyzov/specweave/tree/develop/docs-site/docs/guides/github-action-setup.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><span class="theme-last-updated">Last updated<!-- --> on <b><time datetime="2026-03-01T07:19:40.000Z" itemprop="dateModified">Mar 1, 2026</time></b> by <b>Anton Abyzov</b></span></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#table-of-contents" class="table-of-contents__link toc-highlight">Table of Contents</a></li><li><a href="#overview" class="table-of-contents__link toc-highlight">Overview</a></li><li><a href="#prerequisites" class="table-of-contents__link toc-highlight">Prerequisites</a><ul><li><a href="#required" class="table-of-contents__link toc-highlight">Required</a></li><li><a href="#optional-for-advanced-features" class="table-of-contents__link toc-highlight">Optional (for advanced features)</a></li></ul></li><li><a href="#quick-start" class="table-of-contents__link toc-highlight">Quick Start</a><ul><li><a href="#step-1-choose-your-workflow-tier" class="table-of-contents__link toc-highlight">Step 1: Choose Your Workflow Tier</a></li><li><a href="#step-2-add-anthropic-api-key-to-github-secrets" class="table-of-contents__link toc-highlight">Step 2: Add Anthropic API Key to GitHub Secrets</a></li><li><a href="#step-3-enable-workflow" class="table-of-contents__link toc-highlight">Step 3: Enable Workflow</a></li><li><a href="#step-4-test-the-integration" class="table-of-contents__link toc-highlight">Step 4: Test the Integration</a></li></ul></li><li><a href="#workflow-tiers" class="table-of-contents__link toc-highlight">Workflow Tiers</a><ul><li><a href="#tier-1-starter-recommended-for-new-users" class="table-of-contents__link toc-highlight">Tier 1: Starter (Recommended for New Users)</a></li><li><a href="#tier-2-standard-recommended-for-production" class="table-of-contents__link toc-highlight">Tier 2: Standard (Recommended for Production)</a></li><li><a href="#tier-3-enterprise-for-large-organizations" class="table-of-contents__link toc-highlight">Tier 3: Enterprise (For Large Organizations)</a></li></ul></li><li><a href="#configuration" class="table-of-contents__link toc-highlight">Configuration</a><ul><li><a href="#specweaveconfigyaml" class="table-of-contents__link toc-highlight">.specweave/config.yaml</a></li></ul></li><li><a href="#authentication-setup" class="table-of-contents__link toc-highlight">Authentication Setup</a><ul><li><a href="#anthropic-api-required" class="table-of-contents__link toc-highlight">Anthropic API (Required)</a></li><li><a href="#jira-integration-optional" class="table-of-contents__link toc-highlight">JIRA Integration (Optional)</a></li><li><a href="#slack-integration-optional" class="table-of-contents__link toc-highlight">Slack Integration (Optional)</a></li><li><a href="#azure-devops-integration-optional" class="table-of-contents__link toc-highlight">Azure DevOps Integration (Optional)</a></li></ul></li><li><a href="#workflow-features" class="table-of-contents__link toc-highlight">Workflow Features</a><ul><li><a href="#1-auto-increment-planning" class="table-of-contents__link toc-highlight">1. Auto Increment Planning</a></li><li><a href="#2-spec-aware-pr-review" class="table-of-contents__link toc-highlight">2. Spec-Aware PR Review</a></li><li><a href="#3-brownfield-protection" class="table-of-contents__link toc-highlight">3. Brownfield Protection</a></li><li><a href="#4-test-coverage-validation" class="table-of-contents__link toc-highlight">4. Test Coverage Validation</a></li><li><a href="#5-auto-documentation-updates" class="table-of-contents__link toc-highlight">5. Auto-Documentation Updates</a></li><li><a href="#6-security-scanning-enterprise" class="table-of-contents__link toc-highlight">6. Security Scanning (Enterprise)</a></li><li><a href="#7-performance-regression-enterprise" class="table-of-contents__link toc-highlight">7. Performance Regression (Enterprise)</a></li></ul></li><li><a href="#testing-your-setup" class="table-of-contents__link toc-highlight">Testing Your Setup</a><ul><li><a href="#test-1-feature-planning" class="table-of-contents__link toc-highlight">Test 1: Feature Planning</a></li><li><a href="#test-2-pr-validation" class="table-of-contents__link toc-highlight">Test 2: PR Validation</a></li><li><a href="#test-3-brownfield-protection" class="table-of-contents__link toc-highlight">Test 3: Brownfield Protection</a></li><li><a href="#test-4-documentation-update" class="table-of-contents__link toc-highlight">Test 4: Documentation Update</a></li></ul></li><li><a href="#troubleshooting" class="table-of-contents__link toc-highlight">Troubleshooting</a><ul><li><a href="#issue-workflow-not-triggering" class="table-of-contents__link toc-highlight">Issue: Workflow not triggering</a></li><li><a href="#issue-authentication-failures" class="table-of-contents__link toc-highlight">Issue: Authentication failures</a></li><li><a href="#issue-high-costs" class="table-of-contents__link toc-highlight">Issue: High costs</a></li><li><a href="#issue-skills-not-activating" class="table-of-contents__link toc-highlight">Issue: Skills not activating</a></li><li><a href="#issue-brownfield-protection-too-aggressive" class="table-of-contents__link toc-highlight">Issue: Brownfield protection too aggressive</a></li></ul></li><li><a href="#advanced-configuration" class="table-of-contents__link toc-highlight">Advanced Configuration</a><ul><li><a href="#custom-workflow-triggers" class="table-of-contents__link toc-highlight">Custom Workflow Triggers</a></li><li><a href="#conditional-execution" class="table-of-contents__link toc-highlight">Conditional Execution</a></li><li><a href="#multiple-ai-models" class="table-of-contents__link toc-highlight">Multiple AI Models</a></li><li><a href="#parallel-execution" class="table-of-contents__link toc-highlight">Parallel Execution</a></li><li><a href="#branch-specific-workflows" class="table-of-contents__link toc-highlight">Branch-Specific Workflows</a></li></ul></li><li><a href="#related-documentation" class="table-of-contents__link toc-highlight">Related Documentation</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer_bfO1"><div class="container_dfK0"><div class="columns_EY9T"><div><div class="columnTitle_eE5r">Product</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/features">Features</a></li><li><a class="columnLink_Wrh6" href="/docs/enterprise">Enterprise</a></li><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Pricing</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/changelog">Changelog</a></li></ul></div><div><div class="columnTitle_eE5r">Docs</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">Introduction</a></li><li><a class="columnLink_Wrh6" href="/docs/getting-started">Getting Started</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/skills">Skills (100+)</a></li><li><a class="columnLink_Wrh6" href="/docs/reference/commands">Commands</a></li></ul></div><div><div class="columnTitle_eE5r">Community</div><ul class="columnLinks_NTAc"><li><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Discussions</a></li><li><a href="https://github.com/anton-abyzov/specweave/issues" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub Issues</a></li><li><a href="https://stackoverflow.com/questions/tagged/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">Stack Overflow</a></li><li><a class="columnLink_Wrh6" href="/blog">Blog</a></li></ul></div><div><div class="columnTitle_eE5r">Company</div><ul class="columnLinks_NTAc"><li><a class="columnLink_Wrh6" href="/docs/overview/introduction">About</a></li><li><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">GitHub</a></li><li><a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer" class="columnLink_Wrh6">npm</a></li></ul></div></div><hr class="divider_9vcx"><div class="bottom_KrJP"><div class="socialIcons_SghU"><a href="https://github.com/anton-abyzov/specweave" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg></a><a href="https://github.com/anton-abyzov/specweave/discussions" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="Discussions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg></a><a href="https://x.com/aabyzov" target="_blank" rel="noopener noreferrer" class="socialLink_T1Ot" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a></div><div class="copyright_vDPP">© <!-- -->2026<!-- --> SpecWeave. All rights reserved.</div></div></div></footer></div>
+</body>
+</html>
