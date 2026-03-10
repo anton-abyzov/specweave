@@ -16,11 +16,15 @@
   background: rgba(0, 0, 0, 0.25);
 }
 
+/*
+  Panel uses position:fixed so it escapes any ancestor overflow:hidden
+  and can be clamped to viewport edges via JS.
+  top/left are set inline by the component.
+*/
 .megaMenuPanel {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
+  top: 0;
+  left: 0;
   min-width: 580px;
   background: #ffffff;
   border: 1px solid var(--ifm-toc-border-color);
@@ -36,13 +40,13 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translateX(-50%) translateY(6px);
+  transform: translateY(6px);
 }
 
 .megaMenuPanel[data-visible='true'] {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 :global([data-theme='dark']) .megaMenuPanel {
@@ -98,9 +102,24 @@
   line-height: 1.4;
 }
 
+/*
+  Invisible bridge between trigger and panel.
+  Covers the gap so mouse can travel from trigger to panel
+  without triggering mouseleave on the container.
+*/
+.megaMenuBridge {
+  position: fixed;
+  z-index: 500;
+  pointer-events: auto;
+}
+
 /* Mobile accordion styles */
 @media (max-width: 768px) {
   .megaMenuBackdrop {
+    display: none;
+  }
+
+  .megaMenuBridge {
     display: none;
   }
 
