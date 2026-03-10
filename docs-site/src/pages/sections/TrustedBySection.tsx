@@ -6,10 +6,12 @@ import styles from './TrustedBySection.module.css';
 const BRANDS = [
   { brand: 'github', label: 'GitHub' },
   { brand: 'jira', label: 'JIRA' },
-  { brand: 'azure', label: 'Azure DevOps' },
   { brand: 'claude', label: 'Claude' },
   { brand: 'cursor', label: 'Cursor' },
+  { brand: 'azure', label: 'Azure DevOps' },
   { brand: 'copilot', label: 'Copilot' },
+  { brand: 'windsurf', label: 'Windsurf' },
+  { brand: 'linear', label: 'Linear' },
   { brand: 'discord', label: 'Discord' },
 ] as const;
 
