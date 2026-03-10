@@ -565,8 +565,9 @@ ${acList}
    */
   private async findStoryByTitle(usId: string): Promise<JiraStory | null> {
     // Search for user story by ID in summary — don't hardcode issuetype since
-    // projects may use Task, New Feature, etc. instead of Story
-    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype != Epic`;
+    // projects may use Task, New Feature, etc. instead of Story.
+    // NOTE: POST /search/jql doesn't support != operator — use "not in (Epic)" instead.
+    const jql = `project = ${this.config.projectKey} AND summary ~ "${usId}" AND issuetype not in (Epic)`;
 
     const issues = await searchAllIssues(this.client, {
       jql,
@@ -659,7 +660,7 @@ ${acList}
     }
 
     if (updates.description) {
-      payload.fields.description = updates.description;
+      payload.fields.description = toDescription(updates.description, this.config.domain);
     }
 
     await this.client.put(`/issue/${storyKey}`, payload);
