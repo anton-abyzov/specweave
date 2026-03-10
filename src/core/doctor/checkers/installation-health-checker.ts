@@ -503,6 +503,37 @@ export class InstallationHealthChecker implements HealthChecker {
    *
    * @since 1.0.395
    */
+  /**
+   * Run an npm command bypassing all auth config sources (user/global npmrc, env vars).
+   * Used as fallback when the default npm command fails with E401.
+   */
+  private execNpmNoAuth(command: string, timeout: number): string {
+    const env = { ...process.env };
+    // Strip auth-related env vars
+    delete env['NPM_TOKEN'];
+    for (const key of Object.keys(env)) {
+      if (
+        key.startsWith('npm_config_') &&
+        (key.includes('authToken') || key.includes('_auth') || key.includes('_password'))
+      ) {
+        delete env[key];
+      }
+    }
+    // Point user and global config to non-existent/empty files to bypass all npmrc auth
+    const emptyConfig = process.platform === 'win32' ? 'NUL' : '/dev/null';
+    env['npm_config_userconfig'] = emptyConfig;
+    env['npm_config_globalconfig'] = join(
+      process.platform === 'win32' ? (process.env['TEMP'] || 'C:\\Temp') : '/tmp',
+      '.specweave-npm-noop'
+    );
+    return execSync(`${command} --registry https://registry.npmjs.org`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout,
+      env,
+    }).trim();
+  }
+
   private checkUpdateHealth(fix: boolean): CheckResult {
     // Get installed version
     let installedVersion: string;
@@ -522,7 +553,7 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    // Get latest version from npm (retry with explicit registry on E401 from stale auth tokens)
+    // Get latest version from npm (retry with clean env on E401 from stale auth tokens)
     let latestVersion: string;
     try {
       try {
@@ -534,11 +565,7 @@ export class InstallationHealthChecker implements HealthChecker {
       } catch (e: any) {
         const stderr = e.stderr?.toString() || e.message || '';
         if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
-          latestVersion = execSync('npm view specweave version --registry https://registry.npmjs.org', {
-            encoding: 'utf-8',
-            stdio: ['pipe', 'pipe', 'pipe'],
-            timeout: 15000,
-          }).trim();
+          latestVersion = this.execNpmNoAuth('npm view specweave version', 15000);
         } else {
           throw e;
         }
@@ -562,11 +589,7 @@ export class InstallationHealthChecker implements HealthChecker {
 
     // Outdated — verify the latest version is actually installable (detect CDN issues)
     try {
-      execSync(`npm view specweave@${latestVersion} version`, {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 15000,
-      });
+      this.execNpmNoAuth(`npm view specweave@${latestVersion} version`, 15000);
       // Version is resolvable, just outdated
       return {
         name: 'Update health',
