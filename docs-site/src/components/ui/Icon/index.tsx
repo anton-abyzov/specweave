@@ -8,27 +8,27 @@ import {
   Play, Download, ExternalLink, Menu, X, ChevronDown,
 } from 'lucide-react';
 
-// Static imports — dynamic require(`./brands/${brand}.svg`) breaks webpack
-// bundling because it can't resolve template literals at build time.
-// On machines without browser cache, the SVGs were missing from the bundle.
-import azureSvg from './brands/azure.svg';
-import claudeSvg from './brands/claude.svg';
-import copilotSvg from './brands/copilot.svg';
-import cursorSvg from './brands/cursor.svg';
-import discordSvg from './brands/discord.svg';
-import githubSvg from './brands/github.svg';
-import jiraSvg from './brands/jira.svg';
-import youtubeSvg from './brands/youtube.svg';
+// Docusaurus 3 uses @svgr/webpack: SVG imports are React components, not URLs.
+// Rendering them via <BrandSvg /> instead of <img src={...}> ensures they work
+// on all machines (not just cached local builds).
+import AzureSvg from './brands/azure.svg';
+import ClaudeSvg from './brands/claude.svg';
+import CopilotSvg from './brands/copilot.svg';
+import CursorSvg from './brands/cursor.svg';
+import DiscordSvg from './brands/discord.svg';
+import GithubSvg from './brands/github.svg';
+import JiraSvg from './brands/jira.svg';
+import YoutubeSvg from './brands/youtube.svg';
 
-const brandMap: Record<string, string> = {
-  azure: azureSvg,
-  claude: claudeSvg,
-  copilot: copilotSvg,
-  cursor: cursorSvg,
-  discord: discordSvg,
-  github: githubSvg,
-  jira: jiraSvg,
-  youtube: youtubeSvg,
+const brandMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  azure: AzureSvg,
+  claude: ClaudeSvg,
+  copilot: CopilotSvg,
+  cursor: CursorSvg,
+  discord: DiscordSvg,
+  github: GithubSvg,
+  jira: JiraSvg,
+  youtube: YoutubeSvg,
 };
 
 const iconMap: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
@@ -55,12 +55,10 @@ interface IconProps {
 
 export default function Icon({ name, brand, size = 24, className }: IconProps) {
   if (brand) {
-    const brandSrc = brandMap[brand];
-    if (!brandSrc) return null;
+    const BrandComponent = brandMap[brand];
+    if (!BrandComponent) return null;
     return (
-      <img
-        src={brandSrc}
-        alt={brand}
+      <BrandComponent
         width={size}
         height={size}
         className={className}
