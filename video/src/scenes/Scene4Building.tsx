@@ -92,7 +92,7 @@ function CodeWindow({ frame, fps }: { frame: number; fps: number }) {
               <span style={{ color: COLORS.textDim, fontSize: 18, fontWeight: 500, minWidth: 32, textAlign: "right", userSelect: "none" }}>
                 {i + 1}
               </span>
-              <span style={{ color: line.color || COLORS.text, fontWeight: 500 }}>
+              <span style={{ color: line.color || COLORS.text, fontWeight: 500, whiteSpace: "pre" }}>
                 {text}
                 {progress > 0 && progress < 1 && (
                   <span style={{ color: COLORS.purple, animation: "none", opacity: 0.8 }}>█</span>
