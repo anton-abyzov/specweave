@@ -254,12 +254,58 @@ export interface CloneLaunchOptions {
 export async function launchCloneJob(options: CloneLaunchOptions): Promise<LaunchResult> {
   const { projectPath, repositories, foreground = false } = options;
 
+  // Pre-flight: check which repos already exist locally
+  const alreadyCloned: string[] = [];
+  const needsCloning: typeof repositories = [];
+
+  for (const repo of repositories) {
+    const repoGitDir = path.join(projectPath, repo.path, '.git');
+    if (fs.existsSync(repoGitDir)) {
+      alreadyCloned.push(repo.name);
+    } else {
+      needsCloning.push(repo);
+    }
+  }
+
+  // Report already-cloned repos
+  if (alreadyCloned.length > 0) {
+    const label = alreadyCloned.length === 1 ? 'repository already exists' : 'repositories already exist';
+    console.log(`\n   ℹ️  ${alreadyCloned.length} ${label} locally (skipped):`);
+    const previewCount = Math.min(alreadyCloned.length, 10);
+    for (let i = 0; i < previewCount; i++) {
+      console.log(`     ✓ ${alreadyCloned[i]}`);
+    }
+    if (alreadyCloned.length > 10) {
+      console.log(`     ... and ${alreadyCloned.length - 10} more`);
+    }
+  }
+
+  // If all repos already exist, skip the worker entirely
+  if (needsCloning.length === 0 && repositories.length > 0) {
+    console.log(`\n   ✅ All repositories already cloned — nothing to do.\n`);
+    const jobManager = getJobManager(projectPath);
+    const jobConfig: CloneJobConfig = {
+      type: 'clone-repos',
+      repositories: repositories.map(r => ({ owner: r.owner, name: r.name, path: r.path })),
+      projectPath
+    };
+    const job = jobManager.createJob('clone-repos', jobConfig, repositories.length);
+    jobManager.completeJob(job.id);
+    return { job, isBackground: false };
+  }
+
+  // If some repos were skipped, only clone the new ones
+  const reposToClone = needsCloning.length < repositories.length ? needsCloning : repositories;
+  if (needsCloning.length < repositories.length) {
+    console.log(`\n   Cloning ${needsCloning.length} new repository(ies)...\n`);
+  }
+
   // Create job via job manager
   const jobManager = getJobManager(projectPath);
 
   const jobConfig: CloneJobConfig = {
     type: 'clone-repos',
-    repositories: repositories.map(r => ({
+    repositories: reposToClone.map(r => ({
       owner: r.owner,
       name: r.name,
       path: r.path
@@ -267,18 +313,18 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
     projectPath
   };
 
-  const job = jobManager.createJob('clone-repos', jobConfig, repositories.length);
+  const job = jobManager.createJob('clone-repos', jobConfig, reposToClone.length);
 
   // Create job-specific directory for config and logs
   const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
   fs.ensureDirSync(jobDir);
 
-  // Write worker config (includes clone URLs with auth)
+  // Write worker config (includes clone URLs with auth) — only repos that need cloning
   const configPath = path.join(jobDir, 'config.json');
   fs.writeFileSync(configPath, JSON.stringify({
     jobId: job.id,
     projectPath,
-    repositories,
+    repositories: reposToClone,
     startedAt: new Date().toISOString()
   }, null, 2));
 
