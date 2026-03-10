@@ -14,13 +14,14 @@
   font-size: var(--sw-font-size-5xl);
   font-weight: var(--sw-font-weight-bold);
   line-height: var(--sw-line-height-none);
-  color: var(--sw-text-primary);
+  color: inherit;
   margin-bottom: var(--sw-space-2);
 }
 
 .label {
   font-size: var(--sw-font-size-sm);
-  color: var(--sw-text-secondary);
+  color: inherit;
+  opacity: 0.7;
   font-weight: var(--sw-font-weight-medium);
 }
 

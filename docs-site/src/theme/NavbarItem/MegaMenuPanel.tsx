@@ -18,9 +18,10 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   columns?: number;
+  autoFocus?: boolean;
 }
 
-export default function MegaMenuPanel({categories, visible, onClose, columns}: Props) {
+export default function MegaMenuPanel({categories, visible, onClose, columns, autoFocus}: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback(
@@ -51,11 +52,11 @@ export default function MegaMenuPanel({categories, visible, onClose, columns}: P
   );
 
   useEffect(() => {
-    if (visible && panelRef.current) {
+    if (visible && autoFocus && panelRef.current) {
       const firstLink = panelRef.current.querySelector<HTMLElement>('a[href]');
       firstLink?.focus();
     }
-  }, [visible]);
+  }, [visible, autoFocus]);
 
   const colStyle = columns && columns !== 3
     ? {gridTemplateColumns: `repeat(${columns}, 1fr)`} as React.CSSProperties
