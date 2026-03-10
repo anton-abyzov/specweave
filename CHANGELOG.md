@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.412] - 2026-03-10
+
+### Changes
+- fix: backfill JIRA/ADO external links to increment metadata.json
+- fix JIRA JQL syntax for /search/jql, ADF in updateStory
+- chore: update jira plugin build artifact
+- fix JIRA issue type fallback and story search query
+- chore: bump version to 1.0.409
+
+---
+
+
+
 ## [1.0.411] - 2026-03-10
 
 ### Changes
