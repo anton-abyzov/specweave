@@ -564,7 +564,9 @@ ${acList}
    * Find story by title pattern
    */
   private async findStoryByTitle(usId: string): Promise<JiraStory | null> {
-    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype = Story`;
+    // Search for user story by ID in summary — don't hardcode issuetype since
+    // projects may use Task, New Feature, etc. instead of Story
+    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype != Epic`;
 
     const issues = await searchAllIssues(this.client, {
       jql,
@@ -593,8 +595,9 @@ ${acList}
     priority?: string;
     type?: string;
   }): Promise<JiraStory> {
-    // Determine issue type (supports Bug for bug-type stories)
-    const issueType = this.mapTypeToJira(story.type, 'Story');
+    // Determine issue type with fallback for projects that lack "Story"
+    const preferredType = this.mapTypeToJira(story.type, 'Story');
+    const issueType = await this.resolveIssueType(preferredType);
 
     // Discover epic link field dynamically based on project style
     const { field: epicField, style } = await getEpicLinkFieldForProject(
@@ -691,6 +694,39 @@ ${acList}
         id: transition.id
       }
     });
+  }
+
+  /**
+   * Resolve the actual issue type name available in this project.
+   * Falls back through preferred → alternatives if the preferred type doesn't exist.
+   */
+  private async resolveIssueType(preferred: string): Promise<string> {
+    try {
+      const response = await this.client.get(
+        `/issue/createmeta/${this.config.projectKey}/issuetypes`
+      );
+      const types: Array<{ name: string; subtask: boolean }> = response.data.issueTypes || [];
+      const available = types.filter(t => !t.subtask).map(t => t.name);
+
+      if (available.includes(preferred)) return preferred;
+
+      // Fallback chain: Story → Task → New Feature → first available
+      const fallbacks = ['Story', 'Task', 'New Feature', 'Improvement'];
+      for (const fb of fallbacks) {
+        if (available.includes(fb)) {
+          console.log(`   ℹ️  Issue type "${preferred}" not available, using "${fb}"`);
+          return fb;
+        }
+      }
+
+      if (available.length > 0) {
+        console.log(`   ℹ️  Issue type "${preferred}" not available, using "${available[0]}"`);
+        return available[0];
+      }
+    } catch {
+      // If createmeta fails, just use preferred and let the create call handle it
+    }
+    return preferred;
   }
 
   /**
