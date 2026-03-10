@@ -277,20 +277,13 @@ async function installLazyMode(
     }
   }
 
-  // Show summary
-  console.log('');
-  console.log(chalk.green.bold('Lazy Loading Enabled'));
+  // Show summary - only installed plugins (on-demand plugins are auto-detected by LLM, no need to list)
   console.log('');
   console.log(chalk.cyan('Installed plugins:'));
   for (const plugin of essentialPlugins) {
     console.log(chalk.gray(`   ${plugin.name}@${plugin.marketplace} - ${plugin.description}`));
   }
-  console.log('');
-  console.log(chalk.cyan('On-demand plugins (loaded via keywords):'));
-  console.log(chalk.gray('   "GitHub sync" -> sw-github'));
-  console.log(chalk.gray('   "JIRA" -> sw-jira'));
-  console.log(chalk.gray('   "Kubernetes" -> k8s'));
-  console.log(chalk.gray('   "React/frontend" -> frontend'));
+  console.log(chalk.gray('   Additional plugins load automatically when needed'));
   console.log('');
 
   return {

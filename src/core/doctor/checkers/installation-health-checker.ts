@@ -522,14 +522,27 @@ export class InstallationHealthChecker implements HealthChecker {
       };
     }
 
-    // Get latest version from npm
+    // Get latest version from npm (retry with explicit registry on E401 from stale auth tokens)
     let latestVersion: string;
     try {
-      latestVersion = execSync('npm view specweave version', {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-        timeout: 15000,
-      }).trim();
+      try {
+        latestVersion = execSync('npm view specweave version', {
+          encoding: 'utf-8',
+          stdio: ['pipe', 'pipe', 'pipe'],
+          timeout: 15000,
+        }).trim();
+      } catch (e: any) {
+        const stderr = e.stderr?.toString() || e.message || '';
+        if (stderr.includes('E401') || stderr.includes('Unable to authenticate')) {
+          latestVersion = execSync('npm view specweave version --registry https://registry.npmjs.org', {
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+            timeout: 15000,
+          }).trim();
+        } else {
+          throw e;
+        }
+      }
     } catch {
       return {
         name: 'Update health',
