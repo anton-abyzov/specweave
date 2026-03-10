@@ -400,7 +400,7 @@ ${acList}
    * Find story by title pattern
    */
   async findStoryByTitle(usId) {
-    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype = Story`;
+    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]" AND issuetype != Epic`;
     const issues = await searchAllIssues(this.client, {
       jql,
       fields: "summary,description,status,labels",
@@ -419,7 +419,8 @@ ${acList}
    * Create Jira Story
    */
   async createStory(story) {
-    const issueType = this.mapTypeToJira(story.type, "Story");
+    const preferredType = this.mapTypeToJira(story.type, "Story");
+    const issueType = await this.resolveIssueType(preferredType);
     const { field: epicField, style } = await getEpicLinkFieldForProject(
       this.config.domain,
       this.config.projectKey,
@@ -492,6 +493,33 @@ ${acList}
         id: transition.id
       }
     });
+  }
+  /**
+   * Resolve the actual issue type name available in this project.
+   * Falls back through preferred → alternatives if the preferred type doesn't exist.
+   */
+  async resolveIssueType(preferred) {
+    try {
+      const response = await this.client.get(
+        `/issue/createmeta/${this.config.projectKey}/issuetypes`
+      );
+      const types = response.data.issueTypes || [];
+      const available = types.filter((t) => !t.subtask).map((t) => t.name);
+      if (available.includes(preferred)) return preferred;
+      const fallbacks = ["Story", "Task", "New Feature", "Improvement"];
+      for (const fb of fallbacks) {
+        if (available.includes(fb)) {
+          console.log(`   \u2139\uFE0F  Issue type "${preferred}" not available, using "${fb}"`);
+          return fb;
+        }
+      }
+      if (available.length > 0) {
+        console.log(`   \u2139\uFE0F  Issue type "${preferred}" not available, using "${available[0]}"`);
+        return available[0];
+      }
+    } catch {
+    }
+    return preferred;
   }
   /**
    * Map SpecWeave priority to JIRA priority name
