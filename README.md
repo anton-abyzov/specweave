@@ -354,6 +354,23 @@ All analytics data stays local in `.specweave/state/analytics/events.jsonl` — 
 
 **[spec-weave.com](https://spec-weave.com)** — guides, examples, and full reference.
 
+## Troubleshooting
+
+### npm E401 during `specweave update` or `npm install -g specweave`
+
+If you see `npm error code E401` / `Unable to authenticate`, your `~/.npmrc` has a stale auth token that npm sends even for public packages. Starting from **v1.0.416**, `specweave update` bypasses all user auth config automatically. To install or upgrade when blocked:
+
+```bash
+npm i -g specweave --registry https://registry.npmjs.org --userconfig /dev/null
+```
+
+To fix the root cause, remove the stale token from `~/.npmrc`:
+
+```bash
+# Remove stale registry.npmjs.org token (keeps other tokens like GitHub Packages)
+sed -i.bak '/registry.npmjs.org.:_authToken/d' ~/.npmrc
+```
+
 ## Community
 
 [Discord](https://discord.gg/UYg4BGJ65V) · [YouTube](https://www.youtube.com/@antonabyzov) · [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)

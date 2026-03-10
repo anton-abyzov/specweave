@@ -269,6 +269,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 | Plugins outdated | `specweave refresh-plugins` |
 | Out of sync | `/sw:sync-progress` |
 | Session stuck | `rm -f .specweave/state/*.lock` + restart |
+| npm E401 on update | `npm i -g specweave --registry https://registry.npmjs.org --userconfig /dev/null` |
 <!-- /SECTION -->
 
 <!-- SECTION:lazyloading -->
