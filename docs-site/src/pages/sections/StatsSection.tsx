@@ -6,10 +6,10 @@ import AnimateOnScroll from '@site/src/components/animation/AnimateOnScroll';
 import styles from './StatsSection.module.css';
 
 const STATS = [
-  { target: 500, suffix: '+', label: 'Verified Skills' },
-  { target: 10, suffix: 'K+', label: 'Autonomous Hours' },
-  { target: 50, suffix: 'K+', label: 'Increments Shipped' },
-  { target: 2, suffix: 'K+', label: 'Community Members' },
+  { target: 100, suffix: '+', label: 'Skills Available' },
+  { target: 3200, suffix: '+', label: 'Commits Shipped' },
+  { target: 10, suffix: '+', label: 'Active Projects' },
+  { target: 12, suffix: '', label: 'Core Plugins' },
 ] as const;
 
 export default function StatsSection() {
