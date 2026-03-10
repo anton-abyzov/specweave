@@ -22,8 +22,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="/img/favicon-192x192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="stylesheet" href="/assets/css/styles.e01c7434.css">
-<script src="/assets/js/runtime~main.d4ffc139.js" defer="defer"></script>
-<script src="/assets/js/main.f94f6686.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.0b4bb650.js" defer="defer"></script>
+<script src="/assets/js/main.140d8847.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -46,7 +46,7 @@
 <p>The <strong><a class="" href="/docs/skills/extensible/extensible-skills-guide">Implementation Guide</a></strong> covers:</p>
 <ul>
 <li class=""><strong>Getting started</strong> -- For Claude Code users and SpecWeave users</li>
-<li class=""><strong>Architecture</strong> -- Cascading lookup, DCI blocks, and the Reflect system</li>
+<li class=""><strong>Architecture</strong> -- Cascading lookup, injection blocks, and the Reflect system</li>
 <li class=""><strong>Real-world examples</strong> -- How corrections become persistent preferences</li>
 <li class=""><strong>Skill memory format</strong> -- Structured Markdown for customizations</li>
 <li class=""><strong>FAQ</strong> -- Common questions and troubleshooting</li>
@@ -78,14 +78,14 @@
 
 
 
-<table><thead><tr><th>Category</th><th>Meaning</th><th>Detection</th></tr></thead><tbody><tr><td><strong>Extensible</strong></td><td>DCI block with skill-memories. Standard, discoverable customization.</td><td>DCI block referencing <code>skill-memories</code></td></tr><tr><td><strong>Semi-Extensible</strong></td><td>Mentions customization but not through the standard system.</td><td>Keyword signals or DCI without skill-memories</td></tr><tr><td><strong>Not Extensible</strong></td><td>No customization mechanism. Fork to change.</td><td>No signals detected</td></tr></tbody></table>
+<table><thead><tr><th>Category</th><th>Meaning</th><th>Detection</th></tr></thead><tbody><tr><td><strong>Extensible</strong></td><td>Injection block with skill-memories. Standard, discoverable customization.</td><td>Injection block referencing <code>skill-memories</code></td></tr><tr><td><strong>Semi-Extensible</strong></td><td>Mentions customization but not through the standard system.</td><td>Keyword signals or injection block without skill-memories</td></tr><tr><td><strong>Not Extensible</strong></td><td>No customization mechanism. Fork to change.</td><td>No signals detected</td></tr></tbody></table>
 <hr>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="see-also">See Also<a href="#see-also" class="hash-link" aria-label="Direct link to See Also" title="Direct link to See Also" translate="no">​</a></h2>
 <ul>
 <li class=""><strong><a class="" href="/docs/skills/">Skills Overview</a></strong> -- Both skill standards at a glance</li>
 <li class=""><strong><a class="" href="/docs/skills/extensible/claude-skills-deep-dive">Claude Skills Deep Dive</a></strong> -- How skills work under the hood</li>
 <li class=""><strong><a class="" href="/docs/skills/extensible/self-improving-skills">Self-Improving Skills</a></strong> -- The Reflect auto-learning system</li>
-<li class=""><strong><a class="" href="/docs/skills/extensible/skill-development-guidelines">Development Guidelines</a></strong> -- SOLID principles for skill authoring</li>
+<li class=""><strong><a class="" href="/docs/skills/extensible/skill-development-guidelines">Development Guidelines</a></strong> -- Design principles for skill authoring</li>
 <li class=""><strong><a class="" href="/docs/skills/verified/verified-skills">Verified Skills Standard</a></strong> -- How skills earn trust through 3-tier security certification</li>
 </ul>
 <hr>
