@@ -59,8 +59,8 @@ export class AdoSpecSync {
   private config: AdoConfig;
   private availableTypes: Set<string> | null = null;
 
-  constructor(config: AdoConfig, projectRoot: string = process.cwd()) {
-    this.specManager = new SpecMetadataManager(projectRoot);
+  constructor(config: AdoConfig, projectRoot: string = process.cwd(), projectId?: string) {
+    this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
 
     // Create ADO API client

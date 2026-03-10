@@ -1043,7 +1043,7 @@ export class GitHubFeatureSync {
       if (!currentlyClosed) {
         // Idempotency check: skip completion comment if already posted by another sync path
         const lastComment = await this.client.getLastComment(issueNumber);
-        const commentAlreadyPosted = lastComment && lastComment.body.includes('✅ User Story Complete');
+        const commentAlreadyPosted = lastComment?.body?.includes('✅ User Story Complete');
         if (commentAlreadyPosted) {
           // Close without duplicate comment
           await execFileNoThrow('gh', [
@@ -1211,7 +1211,7 @@ export class GitHubFeatureSync {
           } else {
             // Idempotency check: skip completion comment if already posted
             const lastComment = await this.client.getLastComment(issueNumber);
-            if (lastComment && lastComment.body.includes('✅ User Story Complete')) {
+            if (lastComment?.body?.includes('✅ User Story Complete')) {
               // Comment already exists — close without posting duplicate
               await execFileNoThrow('gh', [
                 'issue',

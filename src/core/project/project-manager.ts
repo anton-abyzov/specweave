@@ -145,6 +145,16 @@ export class ProjectManager {
   getSpecsPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
     if (!project || !project.projectId) {
+      // Fallback: if projectId was explicitly provided, construct path directly
+      // even if project isn't registered. The specs folder may already exist
+      // (created by living docs sync) without formal project registration.
+      if (projectId) {
+        return path.join(
+          this.projectRoot,
+          '.specweave/docs/internal/specs',
+          projectId
+        );
+      }
       throw new Error(`Project '${projectId}' not found`);
     }
 

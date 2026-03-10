@@ -2,9 +2,9 @@ import { SpecMetadataManager } from "../../../src/core/specs/spec-metadata-manag
 import { SpecParser } from "../../../src/core/specs/spec-parser.js";
 import axios from "axios";
 class AdoSpecSync {
-  constructor(config, projectRoot = process.cwd()) {
+  constructor(config, projectRoot = process.cwd(), projectId) {
     this.availableTypes = null;
-    this.specManager = new SpecMetadataManager(projectRoot);
+    this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
     this.client = axios.create({
       baseURL: `https://dev.azure.com/${config.organization}/${config.project}/_apis`,
