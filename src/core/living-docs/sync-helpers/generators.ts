@@ -103,7 +103,8 @@ export function generateFeatureFile(
   featureId: string,
   parsed: ParsedSpec,
   incrementId: string,
-  context?: Partial<GeneratorContext>
+  context?: Partial<GeneratorContext>,
+  existingFrontmatter?: Record<string, any>
 ): string {
   const ctx = resolveContext(context);
   const lines: string[] = [];
@@ -126,6 +127,15 @@ export function generateFeatureFile(
   lines.push('tldr: "' + tldrSummary.replace(/"/g, "'") + '"');
   lines.push('complexity: ' + (parsed.userStories.length > 3 ? 'high' : parsed.userStories.length > 1 ? 'medium' : 'low'));
   lines.push('stakeholder_relevant: true');
+  // Preserve external tool metadata from existing FEATURE.md (prevents duplicate creation)
+  if (existingFrontmatter?.external_tools) {
+    lines.push('external_tools:');
+    lines.push(yamlSerializeNested(existingFrontmatter.external_tools, 2));
+  }
+  if (existingFrontmatter?.externalLinks) {
+    lines.push('externalLinks:');
+    lines.push(yamlSerializeNested(existingFrontmatter.externalLinks, 2));
+  }
   lines.push('---');
   lines.push('');
   lines.push('# ' + parsed.title);
@@ -172,6 +182,26 @@ export function generateFeatureFile(
     lines.push('');
   }
 
+  return lines.join('\n');
+}
+
+/**
+ * Serialize a nested object to YAML lines with proper indentation.
+ * Used to preserve external tool metadata in FEATURE.md frontmatter.
+ */
+function yamlSerializeNested(obj: Record<string, any>, indent: number): string {
+  const pad = ' '.repeat(indent);
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) continue;
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      lines.push(`${pad}${key}:`);
+      lines.push(yamlSerializeNested(value, indent + 2));
+    } else {
+      const formatted = typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : String(value);
+      lines.push(`${pad}${key}: ${formatted}`);
+    }
+  }
   return lines.join('\n');
 }
 

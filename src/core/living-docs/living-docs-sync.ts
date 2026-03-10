@@ -299,6 +299,22 @@ export class LivingDocsSync {
           if (!options.dryRun) {
             await ensureDir(crossProjectPath);
 
+            // Preserve existing external metadata for cross-project FEATURE.md
+            const crossProjectFeatureFilePath = path.join(crossProjectPath, 'FEATURE.md');
+            let crossExistingFrontmatter: Record<string, any> | undefined;
+            if (existsSync(crossProjectFeatureFilePath)) {
+              try {
+                const existingContent = await fs.readFile(crossProjectFeatureFilePath, 'utf-8');
+                const matter = await import('gray-matter');
+                const parsed_existing = matter.default(existingContent);
+                crossExistingFrontmatter = {};
+                if (parsed_existing.data.externalLinks) crossExistingFrontmatter.externalLinks = parsed_existing.data.externalLinks;
+                if (parsed_existing.data.external_tools) crossExistingFrontmatter.external_tools = parsed_existing.data.external_tools;
+              } catch {
+                // Ignore parse errors
+              }
+            }
+
             // Generate FEATURE.md with cross-references (now uses target paths)
             const crossRefs = this.crossProjectSync.generateCrossReferences(
               featureId,
@@ -308,7 +324,7 @@ export class LivingDocsSync {
             let featureContent = generateFeatureFile(featureId, {
               ...parsed,
               userStories: projectStories  // Only this target's USs
-            }, incrementId);
+            }, incrementId, undefined, crossExistingFrontmatter);
             // Append cross-references section
             if (crossRefs) {
               featureContent += crossRefs;
@@ -469,7 +485,22 @@ export class LivingDocsSync {
 
       if (!options.dryRun) {
         await ensureDir(projectPath);
-        let featureContent = generateFeatureFile(featureId, parsed, incrementId);
+        // Preserve existing external metadata (externalLinks, external_tools)
+        // to prevent JIRA/ADO/GitHub duplicate creation on re-sync
+        let existingFrontmatter: Record<string, any> | undefined;
+        if (existsSync(featureFile)) {
+          try {
+            const existingContent = await fs.readFile(featureFile, 'utf-8');
+            const matter = await import('gray-matter');
+            const parsed_existing = matter.default(existingContent);
+            existingFrontmatter = {};
+            if (parsed_existing.data.externalLinks) existingFrontmatter.externalLinks = parsed_existing.data.externalLinks;
+            if (parsed_existing.data.external_tools) existingFrontmatter.external_tools = parsed_existing.data.external_tools;
+          } catch {
+            // Ignore parse errors — just regenerate
+          }
+        }
+        let featureContent = generateFeatureFile(featureId, parsed, incrementId, undefined, existingFrontmatter);
 
         // Generate feature illustration image (v1.0.148+)
         // Skip if SPECWEAVE_SKIP_IMAGE_GEN is set (for CI/testing)
