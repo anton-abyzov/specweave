@@ -43,4 +43,9 @@ describe('Icon', () => {
     expect(svg).toHaveAttribute('width', '24');
     expect(svg).toHaveAttribute('height', '24');
   });
+
+  it('returns null for unknown brand', () => {
+    const { container } = render(<Icon brand="nonexistent" />);
+    expect(container.firstChild).toBeNull();
+  });
 });
