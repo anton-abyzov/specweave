@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.405] - 2026-03-10
+
+### Changes
+- deferred sync on activation, user story file loader, subagent strategy docs
+- fix code indentation in Scene4 quality gates video
+- replace fake auth code in video slide with real NextAuth v5 code
+
+---
+
+
+
 ## [1.0.404] - 2026-03-10
 
 ### Changes
