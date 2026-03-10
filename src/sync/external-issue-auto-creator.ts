@@ -1178,10 +1178,14 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       synced: now,
     };
 
-    // Populate externalLinks.jira.userStories with per-story JIRA keys
+    // Populate externalLinks.jira with epic-level and per-story JIRA keys
+    if (!metadata.externalLinks) metadata.externalLinks = {};
+    if (!metadata.externalLinks.jira) metadata.externalLinks.jira = {};
+    metadata.externalLinks.jira.epicKey = issueKey;
+    metadata.externalLinks.jira.epicUrl = issueUrl;
+    metadata.externalLinks.jira.syncedAt = now;
+
     if (userStories && userStories.length > 0) {
-      if (!metadata.externalLinks) metadata.externalLinks = {};
-      if (!metadata.externalLinks.jira) metadata.externalLinks.jira = {};
       if (!metadata.externalLinks.jira.userStories) metadata.externalLinks.jira.userStories = {};
 
       for (const us of userStories) {
@@ -1227,10 +1231,14 @@ ${userStoriesList || '<li><em>No user stories defined</em></li>'}
       synced: now,
     };
 
-    // Populate externalLinks.ado.userStories with per-story work item IDs
+    // Populate externalLinks.ado with feature-level and per-story work item IDs
+    if (!metadata.externalLinks) metadata.externalLinks = {};
+    if (!metadata.externalLinks.ado) metadata.externalLinks.ado = {};
+    metadata.externalLinks.ado.featureId = workItemId.toString();
+    metadata.externalLinks.ado.featureUrl = workItemUrl;
+    metadata.externalLinks.ado.syncedAt = now;
+
     if (userStories && userStories.length > 0) {
-      if (!metadata.externalLinks) metadata.externalLinks = {};
-      if (!metadata.externalLinks.ado) metadata.externalLinks.ado = {};
       if (!metadata.externalLinks.ado.userStories) metadata.externalLinks.ado.userStories = {};
 
       for (const us of userStories) {
