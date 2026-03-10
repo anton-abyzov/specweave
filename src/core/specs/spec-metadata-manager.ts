@@ -72,8 +72,13 @@ export class SpecMetadataManager {
       const metadata = parsed.data as SpecMetadata;
       metadata.id = specId;
 
-      // Parse user stories from markdown content
-      const userStories = this.parseUserStories(parsed.content);
+      // Parse user stories from markdown content (inline format)
+      let userStories = this.parseUserStories(parsed.content);
+
+      // Fallback: read separate us-*.md files (living docs folder format)
+      if (userStories.length === 0 && filePath.endsWith('FEATURE.md')) {
+        userStories = await this.loadUserStoriesFromFiles(path.dirname(filePath));
+      }
 
       // Parse increments from markdown content
       const increments = this.parseIncrements(parsed.content);
@@ -276,6 +281,67 @@ export class SpecMetadataManager {
     // Fall back to flat file format
     const normalizedId = specId.startsWith('spec-') ? specId : `spec-${specId}`;
     return path.join(this.specsDir, `${normalizedId}.md`);
+  }
+
+  /**
+   * Load user stories from separate us-*.md files in a living docs feature folder.
+   * Mirrors the approach used by GitHubFeatureSync.findUserStories() but returns
+   * the UserStory type expected by JIRA/ADO sync.
+   */
+  private async loadUserStoriesFromFiles(specDir: string): Promise<UserStory[]> {
+    if (!fs.existsSync(specDir)) return [];
+
+    const files = await fs.readdir(specDir);
+    const usFiles = files.filter(f => f.startsWith('us-') && f.endsWith('.md')).sort();
+
+    const userStories: UserStory[] = [];
+
+    for (const file of usFiles) {
+      try {
+        const filePath = path.join(specDir, file);
+        const content = await fs.readFile(filePath, 'utf-8');
+        const parsed = matter(content);
+        const frontmatter = parsed.data;
+
+        if (!frontmatter.id) continue;
+
+        // Parse ACs from file body — supports both AC-USX-YY and AC-XXX-YY formats
+        const acPattern = /- \[([x ])\] \*\*([^*]+)\*\*:\s*(.+?)(?=\n|$)/g;
+        const acceptanceCriteria: AcceptanceCriteria[] = [];
+        for (const acMatch of parsed.content.matchAll(acPattern)) {
+          const acId = acMatch[2].trim();
+          if (!acId.startsWith('AC-')) continue;
+          acceptanceCriteria.push({
+            id: acId,
+            description: acMatch[3].trim(),
+            status: acMatch[1] === 'x' ? 'done' : 'todo' as 'done' | 'todo'
+          });
+        }
+
+        userStories.push({
+          id: frontmatter.id,
+          title: frontmatter.title || 'Untitled User Story',
+          status: this.mapFrontmatterStatus(frontmatter.status),
+          priority: (frontmatter.priority || 'P1') as 'P1' | 'P2' | 'P3',
+          acceptanceCriteria
+        });
+      } catch {
+        // Skip malformed files
+      }
+    }
+
+    return userStories;
+  }
+
+  /**
+   * Map living docs frontmatter status to UserStory status
+   */
+  private mapFrontmatterStatus(status?: string): 'todo' | 'in-progress' | 'done' {
+    if (!status) return 'todo';
+    const s = status.toLowerCase();
+    if (s === 'completed' || s === 'done') return 'done';
+    if (s === 'in-progress' || s === 'active') return 'in-progress';
+    return 'todo';
   }
 
   /**
