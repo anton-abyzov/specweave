@@ -1,16 +1,23 @@
 #!/bin/bash
-# increment-existence-guard.sh - Enforces spec-first principle for team creation
+# increment-existence-guard.sh - Mode-aware guard for team creation
 #
 # PURPOSE:
-# Team creation (TeamCreate) MUST NOT proceed until at least one increment
-# exists with a substantive spec.md. This enforces the core SpecWeave principle:
-#   /sw:increment → /sw:team-lead (never skip the spec phase)
+# Enforces spec-first principle for IMPLEMENTATION teams while allowing
+# non-implementation teams (review, brainstorm, analysis) to proceed freely.
 #
-# Without a spec, agents have no source of truth for scope, acceptance criteria,
-# or task boundaries. Skipping /sw:increment leads to uncoordinated implementation
-# where agents infer scope from natural language alone.
+# MODES:
+# - implementation (default): Requires increment with substantive spec.md
+# - review: PR reviews, code audits, architecture reviews — no increment needed
+# - brainstorm: Multi-perspective ideation sessions — no increment needed
+# - analysis: Codebase research, exploration, audits — no increment needed
 #
-# DETECTION:
+# MODE DETECTION (in priority order):
+# 1. team_name prefix: review-*, brainstorm-*, analysis-*, audit-*
+# 2. description keywords: "review", "brainstorm", "analyze", "audit", "explore",
+#    "ideate", "pr #", "pull request", "code review", "architecture review"
+# 3. Default: implementation mode (requires increment)
+#
+# DETECTION (implementation mode only):
 # - Fires on TeamCreate tool calls (global via hooks.json + skill-scoped via frontmatter)
 # - Scans .specweave/increments/ and repositories/*/*/.specweave/increments/
 # - Requires spec.md to pass ALL checks:
@@ -21,6 +28,7 @@
 # - ALLOWS if at least one passes all checks
 #
 # @since 1.0.342
+# @updated 1.0.417 — multi-mode support
 
 set -e
 
@@ -32,6 +40,64 @@ if [[ "$TOOL_NAME" != "TeamCreate" ]]; then
   echo '{"decision":"allow"}'
   exit 0
 fi
+
+# --- MODE DETECTION ---
+# Extract team_name and description from the tool input
+TEAM_NAME=$(echo "$INPUT" | jq -r '.tool_input.team_name // .input.team_name // ""' 2>/dev/null)
+DESCRIPTION=$(echo "$INPUT" | jq -r '.tool_input.description // .input.description // ""' 2>/dev/null)
+
+# Lowercase for matching
+TEAM_NAME_LC=$(echo "$TEAM_NAME" | tr '[:upper:]' '[:lower:]')
+DESCRIPTION_LC=$(echo "$DESCRIPTION" | tr '[:upper:]' '[:lower:]')
+
+# Check 1: team_name prefix
+NON_IMPL_MODE=false
+case "$TEAM_NAME_LC" in
+  review-*|brainstorm-*|analysis-*|audit-*|explore-*|ideate-*)
+    NON_IMPL_MODE=true
+    ;;
+esac
+
+# Check 2: description keywords (only if prefix didn't match)
+if [[ "$NON_IMPL_MODE" == "false" ]]; then
+  NON_IMPL_KEYWORDS=(
+    "review"
+    "brainstorm"
+    "analyze"
+    "audit"
+    "explore"
+    "ideate"
+    "pull request"
+    "pr #"
+    "pr review"
+    "code review"
+    "architecture review"
+    "security audit"
+    "performance audit"
+    "code audit"
+    "ideation"
+    "exploration"
+    "research"
+    "perspectives"
+    "devil's advocate"
+    "pros and cons"
+  )
+
+  for keyword in "${NON_IMPL_KEYWORDS[@]}"; do
+    if [[ "$DESCRIPTION_LC" == *"$keyword"* ]]; then
+      NON_IMPL_MODE=true
+      break
+    fi
+  done
+fi
+
+# Non-implementation modes bypass the spec check entirely
+if [[ "$NON_IMPL_MODE" == "true" ]]; then
+  echo '{"decision":"allow"}'
+  exit 0
+fi
+
+# --- IMPLEMENTATION MODE: Require increment with spec ---
 
 # Template markers — spec.md with these is a template, not a real spec
 TEMPLATE_MARKERS=(
@@ -121,10 +187,11 @@ if [[ "$FOUND" == "true" ]]; then
   exit 0
 fi
 
-# BLOCK — no qualifying increment found
+# BLOCK — no qualifying increment found (implementation mode only)
 REASON="SPEC-FIRST ENFORCEMENT: Increment Required Before Team Creation
 
 TeamCreate CANNOT proceed without an existing increment with a substantive spec.md.
+This requirement applies to IMPLEMENTATION teams only.
 
 No qualifying increment found. A valid spec.md must have:
   - At least 500 bytes of real content (not templates)
@@ -140,8 +207,10 @@ REQUIRED ACTION:
   2. Review and approve the spec, plan, and tasks
   3. THEN run: /sw:team-lead to parallelize execution
 
-WHY: Without a spec, agents have no source of truth for scope, acceptance criteria,
-or task boundaries. Skipping /sw:increment leads to uncoordinated implementation.
+ALTERNATIVE: For non-implementation work, use a mode-prefixed team name:
+  - review-*     → PR reviews, code audits (no increment needed)
+  - brainstorm-* → Ideation sessions (no increment needed)
+  - analysis-*   → Research and exploration (no increment needed)
 
 Workflow: /sw:increment → /sw:team-lead → /sw:done"
 
