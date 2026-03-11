@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.421] - 2026-03-11
+
+### Added
+- **sw:debug skill** — Systematic 4-phase debugging (root cause investigation → pattern analysis → hypothesis testing → implementation) with 3-attempt escalation protocol and anti-rationalization table
+- **Per-task review gates in sw:do** — Opt-in (`quality.perTaskReview: true`) spec-compliance and code-quality sub-reviews after each task, catching drift before closure
+- **Adversarial spec reviewer in sw:grill** — New Phase 0 runs AC-by-AC verification with adversarial framing before code quality review; adds `acCompliance` section to grill-report.json
+- **Fresh verification discipline in sw:do** — Iron Law: "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" — tasks cannot be marked complete without running their test command
+- **Anti-rationalization tables** — Explicit excuse/rebuttal tables added to sw:tdd-cycle (8 entries) and sw:grill (6 entries) to counter common discipline-breaking rationalizations
+
+---
+
 ## [1.0.420] - 2026-03-11
 
 ### Changes

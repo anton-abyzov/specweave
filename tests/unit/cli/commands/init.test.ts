@@ -89,6 +89,7 @@ const {
   mockDetectUmbrellaParent,
   mockDetectSuspiciousPath,
   mockDetectProvider,
+  mockScanUmbrellaRepos,
   mockPromptSmartReinit,
   mockInstallAllPlugins,
   mockPromptLanguageSelection,
@@ -105,6 +106,7 @@ const {
   mockDetectUmbrellaParent: vi.fn().mockReturnValue(null),
   mockDetectSuspiciousPath: vi.fn().mockReturnValue(null),
   mockDetectProvider: vi.fn().mockReturnValue(null),
+  mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
   mockPromptLanguageSelection: vi.fn().mockResolvedValue({ language: 'en', keepEnglishOriginals: false }),
@@ -155,6 +157,12 @@ const { mockApplySmartDefaults } = vi.hoisted(() => ({
 
 const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
   mockDisplaySummaryBanner: vi.fn(),
+}));
+
+const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
+  mockPromptProjectSetup: vi.fn().mockResolvedValue('existing' as const),
+  mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
+  mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
 
 // ============================================================================
@@ -229,6 +237,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectUmbrellaParent: mockDetectUmbrellaParent,
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
+  scanUmbrellaRepos: mockScanUmbrellaRepos,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
   promptLanguageSelection: mockPromptLanguageSelection,
@@ -269,6 +278,12 @@ vi.mock('../../../../src/cli/helpers/init/smart-defaults.js', () => ({
 
 vi.mock('../../../../src/cli/helpers/init/summary-banner.js', () => ({
   displaySummaryBanner: mockDisplaySummaryBanner,
+}));
+
+vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
+  promptProjectSetup: mockPromptProjectSetup,
+  promptRepoUrls: mockPromptRepoUrls,
+  cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
 }));
 
 // ============================================================================
@@ -1388,7 +1403,8 @@ describe('init command', () => {
         false, // usedDotNotation
         expect.objectContaining({
           pluginAutoInstalled: true,
-        })
+        }),
+        expect.objectContaining({ isUmbrella: false })
       );
     });
 
@@ -1403,7 +1419,8 @@ describe('init command', () => {
         expect.any(String),
         'en',
         true, // usedDotNotation
-        expect.anything()
+        expect.anything(),
+        expect.objectContaining({ isUmbrella: false })
       );
     });
 
@@ -1424,7 +1441,8 @@ describe('init command', () => {
         'generic',
         'en',
         false,
-        undefined
+        undefined,
+        expect.objectContaining({ isUmbrella: false })
       );
     });
   });
@@ -1521,20 +1539,21 @@ describe('init command', () => {
       }
     });
 
-    it('should prompt for project name when not provided in interactive mode', async () => {
+    it('should use current directory when no args in interactive mode (not prompt for subdirectory)', async () => {
       if (process.stdin.isTTY) {
         mockExistsSync.mockReturnValue(false);
         mockConfirm.mockResolvedValue(true);
-        mockInput.mockResolvedValue('my-cool-project');
 
         await initCommand(undefined, {});
 
-        expect(mockInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: 'Project name:',
-            default: 'my-saas',
-          })
+        // Should NOT prompt for project name with 'my-saas' default (old behavior)
+        const projectNameCalls = mockInput.mock.calls.filter(
+          (call: any[]) => call[0]?.message === 'Project name:' && call[0]?.default === 'my-saas'
         );
+        expect(projectNameCalls).toHaveLength(0);
+
+        // Should use CWD — verify createDirectoryStructure was called
+        expect(mockCreateDirectoryStructure).toHaveBeenCalled();
       }
     });
 

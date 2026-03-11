@@ -1215,7 +1215,31 @@ specweave init .
 
 ---
 
-## SECTION 11: THE LEARNING PATH (29:00 - 31:00)
+## SECTION 10.5: SHIFTING QUALITY LEFT (29:00 - 30:30)
+
+**[SCREEN: Show sw:do SKILL.md with Iron Law section]**
+
+> "SpecWeave now shifts quality checks LEFT — from closure to EVERY task. Three new capabilities."
+
+**[SCREEN: Show per-task review gate in sw:do]**
+
+> "**Per-Task Review Gates**. Opt-in via `quality.perTaskReview: true`. After each task, two lightweight reviews fire automatically — a spec-compliance check asking 'did we build the right thing?' and a code-quality check asking 'did we build it right?' Issues get fixed before the next task, not at the end."
+
+**[SCREEN: Show Phase 0 in sw:grill]**
+
+> "**Adversarial Spec Reviewer**. The grill now has a Phase 0 that runs BEFORE code quality review. It loads every acceptance criterion and verifies each one with adversarial framing — 'the implementer finished suspiciously quickly, verify everything independently.' AC-level pass/fail goes into the grill report."
+
+```bash
+/sw:debug "login fails after password reset"  # Systematic 4-phase debugging
+```
+
+> "And the new **sw:debug skill**. Four phases — root cause investigation, pattern analysis, hypothesis testing, implementation. Three failed fixes triggers automatic escalation. No more guess-and-check debugging."
+
+> "Plus anti-rationalization tables in TDD and grill skills. Explicit excuse-rebuttal pairs like 'I'll test after' — 'tests written after pass immediately, proving nothing.' Closes the loopholes that let AI agents rationalize skipping discipline."
+
+---
+
+## SECTION 11: THE LEARNING PATH (30:30 - 32:30)
 
 **[SCREEN: Navigate to docs/guides/lessons/index (SpecWeave Academy)]**
 
