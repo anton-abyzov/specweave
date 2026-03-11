@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.424] - 2026-03-11
+
+### Changes
+- update save command plugin
+
+---
+
+
+
 ## [1.0.423] - 2026-03-11
 
 ### Changes
