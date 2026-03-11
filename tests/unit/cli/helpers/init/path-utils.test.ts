@@ -14,6 +14,7 @@ import {
   findPackageRoot,
   detectNestedSpecweave,
   countFilesRecursive,
+  scanUmbrellaRepos,
 } from '../../../../../src/cli/helpers/init/path-utils.js';
 
 function tmpPath(name: string): string {
@@ -147,6 +148,90 @@ describe('path-utils', () => {
 
     it('should return 0 for non-existent directory', () => {
       expect(countFilesRecursive('/nonexistent/dir/xyz')).toBe(0);
+    });
+  });
+
+  // ─── scanUmbrellaRepos ──────────────────────────────────────────
+
+  describe('scanUmbrellaRepos', () => {
+    let dir: string;
+
+    beforeEach(() => {
+      dir = tmpPath('umbrella');
+      mkdirSync(dir, { recursive: true });
+    });
+
+    afterEach(async () => {
+      await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+    });
+
+    it('should return null when no repositories/ directory exists', () => {
+      expect(scanUmbrellaRepos(dir)).toBeNull();
+    });
+
+    it('should return null when repositories/ is empty', () => {
+      mkdirSync(path.join(dir, 'repositories'));
+      expect(scanUmbrellaRepos(dir)).toBeNull();
+    });
+
+    it('should return null when repositories/ has org dirs but no git repos', () => {
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'foo'), { recursive: true });
+      expect(scanUmbrellaRepos(dir)).toBeNull();
+    });
+
+    it('should discover repos with .git directories', () => {
+      const repoPath = path.join(dir, 'repositories', 'acme', 'my-app');
+      mkdirSync(path.join(repoPath, '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir);
+      expect(result).not.toBeNull();
+      expect(result!.isUmbrella).toBe(true);
+      expect(result!.totalRepoCount).toBe(1);
+      expect(result!.orgs).toEqual(['acme']);
+      expect(result!.repos).toHaveLength(1);
+      expect(result!.repos[0].org).toBe('acme');
+      expect(result!.repos[0].name).toBe('my-app');
+      expect(result!.repos[0].hasGit).toBe(true);
+    });
+
+    it('should discover multiple repos across multiple orgs', () => {
+      mkdirSync(path.join(dir, 'repositories', 'org-a', 'repo1', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'org-a', 'repo2', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'org-b', 'repo3', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir);
+      expect(result).not.toBeNull();
+      expect(result!.totalRepoCount).toBe(3);
+      expect(result!.orgs).toContain('org-a');
+      expect(result!.orgs).toContain('org-b');
+    });
+
+    it('should skip directories without .git', () => {
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'has-git', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'no-git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir);
+      expect(result).not.toBeNull();
+      expect(result!.totalRepoCount).toBe(1);
+      expect(result!.repos[0].name).toBe('has-git');
+    });
+
+    it('should skip hidden directories', () => {
+      mkdirSync(path.join(dir, 'repositories', '.hidden', 'repo', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'visible', '.hidden-repo', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'visible', 'real-repo', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir);
+      expect(result).not.toBeNull();
+      expect(result!.totalRepoCount).toBe(1);
+      expect(result!.repos[0].name).toBe('real-repo');
+    });
+
+    it('should include relative path in repo results', () => {
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'my-app', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir);
+      expect(result!.repos[0].path).toBe(path.join('repositories', 'acme', 'my-app'));
     });
   });
 });

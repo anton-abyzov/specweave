@@ -250,6 +250,11 @@ cd your-project
 specweave init .
 ```
 
+Init automatically detects your project setup:
+- **Git provider** — GitHub, Azure DevOps, or Bitbucket from `.git/config`
+- **Umbrella structure** — discovers all child repos in `repositories/` and configures multi-repo coordination
+- **AI tool** — Claude Code, Cursor, Copilot, Codex, or generic
+
 The `specweave` CLI ships with 49 commands — project init, LSP code intelligence, skill management, dashboard, plugin marketplace, diagnostics, and more.
 
 Then in any AI coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot):

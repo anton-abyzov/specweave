@@ -28,6 +28,7 @@ import {
   detectUmbrellaParent,
   detectSuspiciousPath,
   detectProvider,
+  scanUmbrellaRepos,
   promptSmartReinit,
   installAllPlugins,
   promptLanguageSelection,
@@ -299,6 +300,9 @@ export async function initCommand(
     // Provider auto-detection from .git/config (silent, no prompts)
     const providerInfo = detectProvider(targetDir);
 
+    // Umbrella auto-detection: scan repositories/ subdirectory
+    const umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+
     // Create directory structure
     if (!continueExisting) {
       await createDirectoryStructure(targetDir, toolName);
@@ -370,6 +374,30 @@ export async function initCommand(
         applySmartDefaults(config, { adapter: toolName, language, isGitRepo });
         if (languageResult.keepEnglishOriginals && config.translation) {
           config.translation.keepEnglishOriginals = true;
+        }
+
+        // Auto-enable umbrella if repositories/ directory was discovered
+        if (umbrellaDiscovery && !config.umbrella?.enabled) {
+          // Generate prefixes with deduplication
+          const usedPrefixes = new Set<string>();
+          const childRepos = umbrellaDiscovery.repos.map(r => {
+            let prefix = r.name.substring(0, 3).toUpperCase();
+            if (usedPrefixes.has(prefix)) {
+              // Disambiguate by appending incrementing suffix
+              let suffix = 2;
+              while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
+              prefix = prefix.substring(0, 2) + suffix;
+            }
+            usedPrefixes.add(prefix);
+            return { id: r.name, path: r.path, name: r.name, prefix };
+          });
+
+          config.umbrella = {
+            enabled: true,
+            projectName: finalProjectName,
+            childRepos,
+          };
+          config.repository = { ...config.repository, umbrellaRepo: true };
         }
 
         // LSP auto-enable (Claude only)
@@ -457,6 +485,7 @@ export async function initCommand(
         adapter: toolName,
         language,
         defaults: finalDefaults,
+        umbrellaDiscovery: umbrellaDiscovery || undefined,
       });
     }
 
@@ -465,7 +494,8 @@ export async function initCommand(
       toolName,
       language,
       usedDotNotation,
-      toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined
+      toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined,
+      { isUmbrella: !!umbrellaDiscovery }
     );
   } catch (error) {
     spinner.fail('Failed to create project');
