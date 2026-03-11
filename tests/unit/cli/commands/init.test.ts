@@ -584,6 +584,53 @@ describe('init command', () => {
       // Should proceed without asking in CI mode
       expect(mockCreateDirectoryStructure).toHaveBeenCalled();
     });
+
+    it('should show non-empty directory info for dot notation when no .specweave exists', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        // .specweave doesn't exist, .git doesn't exist, config doesn't exist
+        return false;
+      });
+      mockReaddirSync.mockReturnValue(['file1.ts', 'file2.ts', 'package.json']);
+
+      await initCommand('.', { quick: true });
+
+      // Should log info about non-empty directory
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('3 file(s)')
+      );
+      // Should still proceed
+      expect(mockCreateDirectoryStructure).toHaveBeenCalled();
+    });
+
+    it('should not show non-empty directory info when directory is empty', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockReaddirSync.mockReturnValue([]);
+
+      await initCommand('.', { quick: true });
+
+      // Should NOT show the "contains N file(s)" message
+      const fileCountCalls = consoleSpy.mock.calls.filter(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('file(s)')
+      );
+      expect(fileCountCalls).toHaveLength(0);
+    });
+
+    it('should not show non-empty directory info when .specweave exists (re-init path)', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.endsWith('.specweave')) return true;
+        return false;
+      });
+      mockPromptSmartReinit.mockResolvedValue({ action: 'continue', continueExisting: true });
+      mockReaddirSync.mockReturnValue(['file1.ts', 'file2.ts']);
+
+      await initCommand('.', { quick: true });
+
+      // Should NOT show non-empty info (re-init path handles it)
+      const fileCountCalls = consoleSpy.mock.calls.filter(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('file(s)')
+      );
+      expect(fileCountCalls).toHaveLength(0);
+    });
   });
 
   // ==========================================================================
@@ -945,7 +992,7 @@ describe('init command', () => {
       );
     });
 
-    it('should write ADO provider info when detected', async () => {
+    it('should write ADO provider info with organization when detected', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('config.json')) return true;
         return false;
@@ -963,6 +1010,7 @@ describe('init command', () => {
         expect.objectContaining({
           repository: expect.objectContaining({
             provider: 'ado',
+            organization: 'my-ado-org',
           }),
         }),
         expect.anything()
@@ -1015,6 +1063,73 @@ describe('init command', () => {
         expect.objectContaining({
           provider: expect.objectContaining({
             name: 'Local',
+          }),
+        })
+      );
+    });
+
+    it('should write GitHub repo field to config when detected', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
+      mockReadJsonSync.mockReturnValue({});
+      mockDetectProvider.mockReturnValue({
+        provider: 'github',
+        owner: 'my-org',
+        repo: 'my-repo',
+      });
+
+      await initCommand('github-repo-test', { quick: true });
+
+      expect(mockWriteJsonSync).toHaveBeenCalledWith(
+        expect.stringContaining('config.json'),
+        expect.objectContaining({
+          repository: expect.objectContaining({
+            provider: 'github',
+            organization: 'my-org',
+            repo: 'my-repo',
+          }),
+        }),
+        expect.anything()
+      );
+    });
+
+    it('should pass ADO organization to displaySummaryBanner', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue({
+        provider: 'ado',
+        organization: 'my-ado-org',
+      });
+
+      await initCommand('ado-banner-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'Azure DevOps',
+            organization: 'my-ado-org',
+          }),
+        })
+      );
+    });
+
+    it('should pass Bitbucket owner and repo to displaySummaryBanner', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue({
+        provider: 'bitbucket',
+        owner: 'my-workspace',
+        repo: 'my-repo',
+      });
+
+      await initCommand('bb-banner-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'Bitbucket',
+            owner: 'my-workspace',
+            repo: 'my-repo',
           }),
         })
       );

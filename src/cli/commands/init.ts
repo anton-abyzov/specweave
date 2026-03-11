@@ -136,6 +136,14 @@ export async function initCommand(
       const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
       if (result.action === 'cancel') process.exit(0);
       continueExisting = result.continueExisting;
+    } else {
+      // Info: initializing in a non-empty directory
+      try {
+        const existingFiles = fs.readdirSync(targetDir).filter((f: string) => !f.startsWith('.'));
+        if (existingFiles.length > 0) {
+          console.log(chalk.gray(`\n   ℹ Directory contains ${existingFiles.length} file(s). Init is non-destructive — only adds .specweave/.\n`));
+        }
+      } catch { /* ignore read errors */ }
     }
   } else {
     if (!projectName) {
@@ -350,9 +358,11 @@ export async function initCommand(
 
         // Provider info from .git/config
         if (providerInfo) {
+          const org = providerInfo.owner || providerInfo.organization;
           config.repository = {
             provider: providerInfo.provider,
-            ...(providerInfo.owner && { organization: providerInfo.owner }),
+            ...(org && { organization: org }),
+            ...(providerInfo.repo && { repo: providerInfo.repo }),
           };
         }
 
@@ -422,7 +432,12 @@ export async function initCommand(
       let bannerProvider: { name: string; owner?: string; repo?: string; organization?: string } | undefined;
       if (providerInfo) {
         const providerNames: Record<string, string> = { github: 'GitHub', ado: 'Azure DevOps', bitbucket: 'Bitbucket' };
-        bannerProvider = { name: providerNames[providerInfo.provider] || providerInfo.provider, owner: providerInfo.owner };
+        bannerProvider = {
+            name: providerNames[providerInfo.provider] || providerInfo.provider,
+            owner: providerInfo.owner,
+            repo: providerInfo.repo,
+            organization: providerInfo.organization,
+          };
       } else {
         bannerProvider = { name: 'Local' };
       }
