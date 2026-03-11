@@ -176,6 +176,72 @@ describe('summary-banner', () => {
       expect(output).toContain('Quick reference:');
     });
 
+    // ─── Project structure ──────────────────────────────────────
+
+    it('should show "Single repository" when no umbrella discovery', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).toContain('Structure:');
+      expect(output).toContain('Single repository');
+    });
+
+    it('should show "Umbrella" with repo count when umbrella discovered', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos: [
+            { org: 'acme', name: 'api', path: 'repositories/acme/api', hasGit: true },
+            { org: 'acme', name: 'web', path: 'repositories/acme/web', hasGit: true },
+          ],
+          totalRepoCount: 2,
+        },
+      })));
+      expect(output).toContain('Structure:');
+      expect(output).toContain('Umbrella (2 repositories)');
+      expect(output).toContain('acme/api');
+      expect(output).toContain('acme/web');
+      expect(output).not.toContain('Single repository');
+    });
+
+    it('should use singular "repository" for count of 1', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos: [
+            { org: 'acme', name: 'api', path: 'repositories/acme/api', hasGit: true },
+          ],
+          totalRepoCount: 1,
+        },
+      })));
+      expect(output).toContain('Umbrella (1 repository)');
+    });
+
+    it('should cap repo display at 10 and show overflow message', () => {
+      const repos = Array.from({ length: 15 }, (_, i) => ({
+        org: 'acme',
+        name: `repo-${i}`,
+        path: `repositories/acme/repo-${i}`,
+        hasGit: true,
+      }));
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos,
+          totalRepoCount: 15,
+        },
+      })));
+      expect(output).toContain('Umbrella (15 repositories)');
+      expect(output).toContain('acme/repo-0');
+      expect(output).toContain('acme/repo-9');
+      expect(output).not.toContain('acme/repo-10');
+      expect(output).toContain('... and 5 more');
+    });
+
     // ─── Coverage targets ──────────────────────────────────────
 
     it('should show coverage targets when TDD with coverageTargets', () => {

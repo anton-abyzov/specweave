@@ -8,6 +8,7 @@
 import chalk from 'chalk';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import type { NextStepsContext } from './types.js';
 
 function getNextStepsStrings(language: SupportedLanguage) {
   const strings: Record<SupportedLanguage, {
@@ -104,18 +105,21 @@ export interface ShowNextStepsOptions {
   marketplaceOnly?: boolean;
 }
 
+export type { NextStepsContext };
+
 /**
  * Show next steps after initialization.
  *
- * Displays plugin status (Claude only) followed by 3 guided follow-up commands:
- * sync-setup, increment, migrate-to-umbrella.
+ * Displays plugin status (Claude only) followed by contextual guided follow-up commands.
+ * migrate-to-umbrella is hidden when already in an umbrella structure.
  */
 export function showNextSteps(
   projectName: string,
   adapterName: string,
   language: SupportedLanguage,
   usedDotNotation: boolean = false,
-  options: boolean | ShowNextStepsOptions = false
+  options: boolean | ShowNextStepsOptions = false,
+  context: NextStepsContext = {}
 ): void {
   const opts: ShowNextStepsOptions = typeof options === 'boolean'
     ? { pluginAutoInstalled: options }
@@ -152,7 +156,11 @@ export function showNextSteps(
   // Guided follow-up commands
   console.log(`   ${stepNumber}. ${chalk.white('specweave sync-setup')}          ${chalk.gray(strings.syncSetup)}`);
   console.log(`   ${stepNumber + 1}. ${chalk.white('specweave increment "feature"')}  ${chalk.gray(strings.firstIncrement)}`);
-  console.log(`   ${stepNumber + 2}. ${chalk.white('specweave migrate-to-umbrella')} ${chalk.gray(strings.multiRepo)}`);
+
+  // Only show migrate-to-umbrella for single-repo projects
+  if (!context.isUmbrella) {
+    console.log(`   ${stepNumber + 2}. ${chalk.white('specweave migrate-to-umbrella')} ${chalk.gray(strings.multiRepo)}`);
+  }
 
   console.log('');
   console.log(chalk.green.bold(locale.t('cli', 'init.nextSteps.footer')));
