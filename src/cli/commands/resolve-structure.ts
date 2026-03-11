@@ -1,10 +1,8 @@
 /**
  * Resolve Structure CLI Command
  *
- * @deprecated Since v1.0.415: Init no longer sets structureDeferred.
- * This command is kept for backward compatibility with existing projects
- * that may still have project.structureDeferred in their config.json.
- * Use `specweave migrate-to-umbrella` for multi-repo setup instead.
+ * Resolves deferred repository structure decision for greenfield projects.
+ * Called during the first increment when project.structureDeferred is true.
  *
  * Usage: specweave resolve-structure --type single|multiple
  *

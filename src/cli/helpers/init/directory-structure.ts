@@ -11,7 +11,7 @@ import { ClaudeMdGenerator } from '../../../adapters/claude-md-generator.js';
 import { AgentsMdGenerator } from '../../../adapters/agents-md-generator.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
-import type { TestMode } from './types.js';
+import type { TestMode, ProjectMaturity } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
 import { generateSmartGitignore } from './gitignore-generator.js';
@@ -359,6 +359,8 @@ export function createConfigFile(
   enableDocsPreview: boolean = true,
   testMode?: TestMode,
   coverageTarget?: number,
+  projectMaturity?: ProjectMaturity,
+  structureDeferred?: boolean
 ): void {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
@@ -367,6 +369,11 @@ export function createConfigFile(
     project: {
       name: projectName,
       version: '0.1.0',
+      ...(projectMaturity && { maturity: projectMaturity }),
+      ...(structureDeferred && { structureDeferred: true }),
+    },
+    multiProject: {
+      enabled: false,  // Single-project mode by default (v0.34.0+)
     },
     adapters: {
       default: adapter,
@@ -374,19 +381,32 @@ export function createConfigFile(
     repository: {
       provider: 'local' as const
     },
+    issueTracker: {
+      provider: 'none' as const
+    },
+    sync: {
+      enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: true,
+      includeStatus: true,
+      autoApplyLabels: true,
+      settings: {
+        canUpsertInternalItems: true,
+        canUpdateExternalItems: true,
+        canUpdateStatus: true,
+        autoSyncOnCompletion: true
+      }
+    },
     hooks: {
       post_task_completion: {
         sync_tasks_md: true,
         external_tracker_sync: true
       },
       post_increment_planning: {
-        // Only create external issue at planning time.
-        // Living docs sync runs AFTER agents finish (Step 5 of /sw:increment).
         auto_create_github_issue: true,
+        sync_living_docs: true
       },
       post_increment_done: {
-        // Living docs sync runs FIRST (chains to external tools),
-        // then closure runs in parallel. 30s sync lock prevents races.
         sync_living_docs: true,
         sync_to_github_project: true,
         close_github_issue: true
