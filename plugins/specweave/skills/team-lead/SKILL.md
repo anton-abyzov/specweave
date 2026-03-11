@@ -1,5 +1,5 @@
 ---
-description: Orchestrate multi-agent parallel development with domain-specialized agents. PROACTIVELY invoke this skill (without user asking) when you detect an implementation task spanning 3+ domains (frontend, backend, database, devops, testing, security, mobile) OR 15+ tasks in tasks.md. Warn the user about higher token cost but recommend it for quality. Also use when user says "team setup", "parallel agents", "team lead", or "agent teams".
+description: Orchestrate multi-agent parallel teams for implementation, PR reviews, brainstorming, and analysis. Supports 4 modes — implementation (spec-required, domain agents), review (parallel reviewers for PRs/code), brainstorm (multi-perspective ideation), and analysis (codebase research). PROACTIVELY invoke for 3+ domains or 15+ tasks. Also use when user says "team setup", "parallel agents", "team lead", "agent teams", "review this PR", "brainstorm", "analyze the codebase".
 hooks:
   PreToolUse:
     - matcher: TeamCreate
@@ -10,32 +10,70 @@ hooks:
 
 # Team Lead
 
-**Plan and launch parallel development agents across domains using Claude Code's native Agent Teams.**
+**Orchestrate parallel agent teams for implementation, reviews, brainstorming, and analysis.**
 
 ## Usage
 
 ```bash
-/sw:team-lead "<feature description>" [OPTIONS]
+/sw:team-lead "<description>" [--mode implementation|review|brainstorm|analysis] [OPTIONS]
 ```
 
 ## Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--mode` | Team mode: `implementation`, `review`, `brainstorm`, `analysis` | auto-detect |
 | `--dry-run` | Show proposed agent plan without launching | false |
-| `--domains` | Override domain detection (e.g., `--domains frontend,backend,testing`) | auto-detect |
+| `--domains` | Override domain detection (implementation mode) | auto-detect |
 | `--max-agents` | Maximum number of concurrent agents | 6 |
 
 ---
 
-## 0. Increment Pre-Flight (BLOCKING)
+## 0. Mode Detection (FIRST STEP)
 
-**CRITICAL: /sw:team-lead REQUIRES an existing increment with a substantive spec.md.**
+**Before anything else, determine which mode this team operates in.** The mode dictates the entire workflow — different modes have fundamentally different agent structures, naming conventions, and requirements.
+
+### Auto-Detection Rules
+
+| Signal | Mode | Examples |
+|--------|------|---------|
+| Explicit `--mode` flag | As specified | `--mode review` |
+| PR/review keywords | **review** | "review PR #63", "code review", "audit the auth module", "review this pull request" |
+| Brainstorm keywords | **brainstorm** | "brainstorm approaches", "explore ideas", "pros and cons", "ideate on", "what are our options" |
+| Analysis keywords | **analysis** | "analyze the codebase", "research how X works", "explore the architecture", "investigate performance" |
+| Implementation signals | **implementation** | "build X", "implement Y", "add feature Z", 3+ domains detected, 15+ tasks in tasks.md |
+
+### Keyword Priority
+
+If multiple signals conflict, explicit `--mode` flag wins. Otherwise: review > brainstorm > analysis > implementation.
+
+### Team Naming Convention (CRITICAL for Guard)
+
+The PreToolUse guard uses team_name prefix to determine mode. **You MUST use these prefixes:**
+
+| Mode | team_name pattern | Example |
+|------|------------------|---------|
+| Implementation | `impl-*` or any non-prefixed name | `impl-checkout`, `feature-auth` |
+| Review | `review-*` | `review-pr-63`, `review-auth-module` |
+| Brainstorm | `brainstorm-*` | `brainstorm-architecture`, `brainstorm-pricing` |
+| Analysis | `analysis-*` | `analysis-performance`, `analysis-codebase` |
+
+**WHY**: The guard only enforces spec-first for implementation teams. Using the correct prefix lets review/brainstorm/analysis teams proceed without an increment.
+
+---
+
+## Mode 1: Implementation (Spec-Required)
+
+**When to use**: Building features, fixing bugs, any work that produces code changes requiring spec-driven coordination.
+
+**Requires**: An existing increment with substantive spec.md (enforced by guard).
+
+### 0a. Increment Pre-Flight (BLOCKING)
+
+**CRITICAL: Implementation mode REQUIRES an existing increment with a substantive spec.md.**
 A PreToolUse guard on TeamCreate will BLOCK team creation if no increment exists.
 
-**You MUST verify an increment exists BEFORE proceeding to Step 1.**
-
-### Check for Existing Increment
+**You MUST verify an increment exists BEFORE proceeding.**
 
 ```bash
 # Single-repo
@@ -45,7 +83,7 @@ find .specweave/increments -maxdepth 2 -name "spec.md" 2>/dev/null | head -5
 find repositories -path "*/.specweave/increments/*/spec.md" -maxdepth 6 2>/dev/null | head -5
 ```
 
-### If NO increment exists → Auto-invoke /sw:increment
+#### If NO increment exists → Auto-invoke /sw:increment
 
 Do NOT ask permission. Invoke the increment skill with the user's feature description:
 
@@ -54,42 +92,280 @@ Skill({ skill: "sw:increment", args: "the user's feature description" })
 ```
 
 Wait for /sw:increment to complete (spec.md, plan.md, tasks.md created and approved).
-Then continue to Step 1.
+Then continue. If /sw:increment fails: **STOP. Do NOT proceed.**
 
-If /sw:increment fails (user rejects plan, skill errors, etc.): **STOP. Do NOT proceed.**
-Report the failure to the user and ask them to run `/sw:increment` manually.
-
-### If increment exists → Read the master spec
+#### If increment exists → Read the master spec
 
 Read the increment's spec.md. This is the **source of truth** for all agent work:
 - Scope and boundaries
 - User stories and acceptance criteria
 - Task breakdown and dependencies
 
-Store the increment path as `MASTER_INCREMENT_PATH` — you will reference it in agent prompts.
+Store the increment path as `MASTER_INCREMENT_PATH`.
 
-**WHY THIS MATTERS**: Without a spec, agents infer scope from natural language alone.
-This leads to uncoordinated implementation, scope creep, and missing acceptance criteria.
-The spec-first principle exists because specs are the contract between user intent and agent execution.
+#### Activate the Master Increment (MANDATORY)
 
-### Activate the Master Increment (MANDATORY)
-
-**Before spawning ANY agents**, transition the master increment to `"active"` status. The `specweave complete` command silently exits on increments with `"planned"` or `"backlog"` status — if you skip this step, closure will fail.
+**Before spawning ANY agents**, transition the master increment to `"active"` status.
 
 ```bash
-# Read current status
 STATUS=$(jq -r '.status' [MASTER_INCREMENT_PATH]/metadata.json)
-
-# If not already active, activate it
 if [ "$STATUS" != "active" ] && [ "$STATUS" != "ready_for_review" ]; then
-  # Edit metadata.json: set status to "active" and update lastActivity
-  Edit metadata.json:
-    "status": "planned" → "status": "active"
-    "lastActivity": "<current ISO timestamp>"
+  Edit metadata.json: "status": "planned" → "status": "active"
 fi
 ```
 
-**Why**: Agents implement tasks but don't manage the increment lifecycle. The team-lead owns status transitions — activate before work begins, close after work completes.
+### Implementation Workflow
+
+Follow Sections 1-11 below (the full implementation protocol).
+
+---
+
+## Mode 2: Review (No Increment Required)
+
+**When to use**: PR reviews, code audits, architecture reviews, security audits, pre-release quality checks.
+
+**Does NOT require**: An increment or spec.md. Reviews examine existing code.
+
+### Review Workflow
+
+#### Step 1: Determine Review Scope
+
+Identify what's being reviewed:
+- **PR review**: Extract PR number, fetch diff with `gh pr diff <number>`
+- **Code audit**: Identify target files/modules
+- **Architecture review**: Identify system boundaries and components
+
+#### Step 2: Create Review Team
+
+```typescript
+TeamCreate({
+  team_name: "review-pr-63",  // MUST use review-* prefix
+  description: "Review PR #63 for security, logic, and performance"
+});
+```
+
+#### Step 3: Spawn Review Agents (All Parallel)
+
+Review agents run in parallel — they examine code independently from different perspectives. **Read the agent definition files** from `agents/` directory, replace placeholders, and spawn.
+
+| Agent | File | Focus |
+|-------|------|-------|
+| Security Reviewer | `agents/reviewer-security.md` | Vulnerabilities, injection, auth flaws, secrets exposure, OWASP |
+| Logic Reviewer | `agents/reviewer-logic.md` | Correctness, edge cases, error handling, race conditions, logic bugs |
+| Performance Reviewer | `agents/reviewer-performance.md` | N+1 queries, memory leaks, unnecessary allocations, algorithmic complexity |
+
+```typescript
+// Spawn ALL reviewers in parallel — no dependencies between them
+Task({
+  team_name: "review-pr-63",
+  name: "security-reviewer",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/reviewer-security.md with placeholders replaced>
+});
+
+Task({
+  team_name: "review-pr-63",
+  name: "logic-reviewer",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/reviewer-logic.md with placeholders replaced>
+});
+
+Task({
+  team_name: "review-pr-63",
+  name: "performance-reviewer",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/reviewer-performance.md with placeholders replaced>
+});
+```
+
+#### Step 4: Collect and Merge Reviews
+
+Wait for all agents to signal REVIEW_COMPLETE. Each agent produces a structured findings report. The team-lead:
+
+1. Collects all REVIEW_COMPLETE messages
+2. Deduplicates overlapping findings
+3. Prioritizes by severity (CRITICAL > HIGH > MEDIUM > LOW)
+4. Produces a unified review summary with:
+   - **Must Fix** (blocking): Security vulnerabilities, logic bugs, data loss risks
+   - **Should Fix** (non-blocking): Performance issues, code quality, missing error handling
+   - **Consider** (optional): Style improvements, documentation gaps, refactoring opportunities
+
+#### Step 5: Deliver Review
+
+Present the merged review to the user. If reviewing a PR, optionally post the review as a PR comment via `gh pr review`.
+
+### Review Agent Communication Protocol
+
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `REVIEW_COMPLETE:` | Agent finished reviewing | Review agent | team-lead |
+| `REVIEW_QUESTION:` | Agent needs clarification | Review agent | team-lead |
+
+---
+
+## Mode 3: Brainstorm (No Increment Required)
+
+**When to use**: Exploring ideas, evaluating approaches, multi-perspective ideation, architecture decision exploration, trade-off analysis.
+
+**Does NOT require**: An increment or spec.md. Brainstorming is pre-spec exploration.
+
+### Brainstorm Workflow
+
+#### Step 1: Frame the Question
+
+Extract the core question or decision to brainstorm:
+- "How should we architect the payment system?"
+- "What approach for real-time notifications?"
+- "Should we use microservices or monolith?"
+
+#### Step 2: Create Brainstorm Team
+
+```typescript
+TeamCreate({
+  team_name: "brainstorm-payment-arch",  // MUST use brainstorm-* prefix
+  description: "Brainstorm payment system architecture approaches"
+});
+```
+
+#### Step 3: Spawn Perspective Agents (All Parallel)
+
+Brainstorm agents represent different thinking perspectives. **Read the agent definition files** from `agents/` directory, replace placeholders, and spawn.
+
+| Agent | File | Perspective |
+|-------|------|------------|
+| Advocate | `agents/brainstorm-advocate.md` | Champions the most ambitious/innovative approach. Pushes boundaries. |
+| Critic | `agents/brainstorm-critic.md` | Devil's advocate. Finds risks, edge cases, failure modes. Questions assumptions. |
+| Pragmatist | `agents/brainstorm-pragmatist.md` | Practical realist. Considers timelines, team skills, maintenance burden. |
+
+```typescript
+// Spawn ALL perspective agents in parallel
+Task({
+  team_name: "brainstorm-payment-arch",
+  name: "advocate",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/brainstorm-advocate.md with placeholders replaced>
+});
+
+Task({
+  team_name: "brainstorm-payment-arch",
+  name: "critic",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/brainstorm-critic.md with placeholders replaced>
+});
+
+Task({
+  team_name: "brainstorm-payment-arch",
+  name: "pragmatist",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: <content of agents/brainstorm-pragmatist.md with placeholders replaced>
+});
+```
+
+#### Step 4: Synthesize Perspectives
+
+Wait for all agents to signal PERSPECTIVE_COMPLETE. The team-lead:
+
+1. Collects all perspectives
+2. Identifies areas of agreement (strong signals)
+3. Maps areas of disagreement (decision points)
+4. Produces a **Decision Matrix**:
+
+```
+| Approach | Advocate View | Critic Concerns | Pragmatist Assessment | Score |
+|----------|--------------|-----------------|----------------------|-------|
+| Option A | Pro: X, Y    | Risk: Z         | Feasible, 2 weeks    | 7/10  |
+| Option B | Pro: A, B    | Risk: C, D      | Complex, 4 weeks     | 5/10  |
+```
+
+5. Recommends a path forward with clear rationale
+6. If the user wants to proceed → suggest `/sw:increment` to formalize the chosen approach
+
+### Brainstorm Agent Communication Protocol
+
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `PERSPECTIVE_COMPLETE:` | Agent finished their analysis | Perspective agent | team-lead |
+| `INSIGHT:` | Important finding during analysis | Perspective agent | team-lead |
+
+---
+
+## Mode 4: Analysis (No Increment Required)
+
+**When to use**: Codebase research, dependency analysis, architecture mapping, performance profiling, tech debt assessment, migration feasibility studies.
+
+**Does NOT require**: An increment or spec.md. Analysis is exploratory.
+
+### Analysis Workflow
+
+#### Step 1: Define Analysis Scope
+
+Identify what needs to be analyzed and what questions need answers:
+- "How are API endpoints structured?"
+- "What's the dependency graph for the auth module?"
+- "Where are the performance bottlenecks?"
+
+#### Step 2: Create Analysis Team
+
+```typescript
+TeamCreate({
+  team_name: "analysis-auth-deps",  // MUST use analysis-* prefix
+  description: "Analyze authentication module dependencies and architecture"
+});
+```
+
+#### Step 3: Spawn Analysis Agents
+
+Unlike fixed-role review/brainstorm agents, analysis agents are **dynamically composed** based on the analysis scope. Common patterns:
+
+| Pattern | Agents | Use Case |
+|---------|--------|----------|
+| **Architecture mapping** | structure-agent, dependency-agent, pattern-agent | Understanding system design |
+| **Performance analysis** | profiler-agent, bottleneck-agent, optimization-agent | Finding performance issues |
+| **Tech debt assessment** | complexity-agent, coverage-agent, freshness-agent | Evaluating maintenance burden |
+| **Migration feasibility** | source-agent, target-agent, risk-agent | Planning technology migrations |
+
+Agents are spawned with focused prompts tailored to the specific analysis question. There are no fixed agent templates — the team-lead crafts prompts from the analysis scope.
+
+```typescript
+// Example: Architecture mapping
+Task({
+  team_name: "analysis-auth-deps",
+  name: "structure-agent",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: "Analyze the directory structure and module organization of the auth system. Map all files in src/auth/, src/middleware/auth*, and related test files. Report: file count, module boundaries, export/import graph, and any circular dependencies. Signal completion with ANALYSIS_COMPLETE: prefix."
+});
+
+Task({
+  team_name: "analysis-auth-deps",
+  name: "dependency-agent",
+  subagent_type: "general-purpose",
+  mode: "bypassPermissions",
+  prompt: "Analyze external dependencies used by the auth module. Check package.json for auth-related packages, trace their usage, check for CVEs, and assess upgrade paths. Signal completion with ANALYSIS_COMPLETE: prefix."
+});
+```
+
+#### Step 4: Synthesize Findings
+
+Wait for all ANALYSIS_COMPLETE signals. Produce a structured analysis report:
+
+1. **Findings Summary**: Key discoveries from each agent
+2. **Diagrams**: ASCII architecture diagrams, dependency graphs
+3. **Recommendations**: Prioritized list of actions
+4. **Next Steps**: Suggest `/sw:increment` if actionable improvements are identified
+
+### Analysis Agent Communication Protocol
+
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `ANALYSIS_COMPLETE:` | Agent finished analysis | Analysis agent | team-lead |
+| `FINDING:` | Significant discovery during analysis | Analysis agent | team-lead |
 
 ---
 
@@ -104,7 +380,7 @@ fi
 
 ---
 
-## 2. Domain-to-Skill Mapping
+## 2. Domain-to-Skill Mapping (Implementation Mode)
 
 Analyze the feature request and map affected domains to SpecWeave skills.
 
@@ -126,7 +402,7 @@ The orchestrator infers domains from the feature description and codebase struct
 
 ---
 
-## 3. Contract-First Spawning Protocol
+## 3. Contract-First Spawning Protocol (Implementation Mode)
 
 Agents are NOT all spawned simultaneously. The orchestrator follows a two-phase dependency protocol to prevent integration conflicts.
 
@@ -192,10 +468,6 @@ umbrella-project/
 │   │   └── .specweave/increments/0001-shared-types/
 │   └── {ORG}/sw-ecom-api/
 │       └── .specweave/increments/0001-api-endpoints/
-
-# WRONG: All agents dumping into umbrella root
-umbrella-project/
-├── .specweave/increments/0001-everything/               # WRONG!
 ```
 
 **Rules:**
@@ -262,7 +534,7 @@ Analyze domains
 
 ---
 
-## 3b. Plan Review Workflow
+## 3b. Plan Review Workflow (Implementation Mode)
 
 The team lead acts as **architectural reviewer** for all sub-agent plans. Do NOT auto-accept plans.
 
@@ -276,7 +548,7 @@ Without review, agents may duplicate work across domains, misinterpret scope, ma
 - Agents run as separate processes that encounter folder trust prompts
 - Trust prompts require interactive input that agents CANNOT provide
 - Without `bypassPermissions`, agents get STUCK waiting for trust confirmation and never execute
-- This applies to ALL agent spawns — upstream and downstream
+- This applies to ALL agent spawns — upstream and downstream, ALL MODES
 
 **NEVER use `mode: "plan"` for agent spawns** — it causes agents to block on the trust-folder prompt.
 
@@ -331,10 +603,6 @@ SendMessage({
 
 Plan review MUST NOT block other agents. Review plans as they arrive — agents waiting for approval are idle, but other agents continue working normally.
 
-### Multi-Increment Consideration
-
-For very large features, the team lead MAY split work into multiple increments per domain for better tracking and independent closure. Decide this during initial analysis (Step 1), before spawning agents.
-
 ### Task Cap Per Agent (CRITICAL — Context Overflow Prevention)
 
 **Maximum 15 tasks per agent.** Agents with more tasks accumulate too much context in auto-mode, leading to extended thinking loops and stuck agents.
@@ -344,22 +612,15 @@ When distributing tasks from the master spec:
 2. If a domain has >15 tasks: **split into 2 agents** (e.g., `jira-agent-a`, `jira-agent-b`) with non-overlapping task ranges
 3. If splitting isn't natural, group tasks into phases and create 2 increments per domain
 
-```
-Domain tasks analysis:
-  Frontend: 12 tasks -> 1 agent (OK)
-  Backend:  8 tasks  -> 1 agent (OK)
-  JIRA:     23 tasks -> SPLIT into 2 agents (tasks 1-12, tasks 13-23)
-```
-
 **Why**: Each auto-mode iteration adds context (spec reads, edits, test outputs). At 20+ tasks, accumulated context causes the model to enter extended thinking (30+ min) and effectively hang. The 15-task cap keeps agents within a safe context budget.
 
 ---
 
 ## 4. Agent Spawn Prompt Templates
 
-Agent definitions live as reusable `.md` files in the `agents/` subdirectory. When spawning a domain agent, **Read the agent file and use its full content as the Task() prompt**, with placeholders replaced.
+Agent definitions live as reusable `.md` files in the `agents/` subdirectory. When spawning an agent, **Read the agent file and use its full content as the Task() prompt**, with placeholders replaced.
 
-### Agent Reference Table
+### Implementation Agent Reference
 
 | Agent | File | Domain | Phase | Primary Skills |
 |-------|------|--------|-------|---------------|
@@ -369,32 +630,41 @@ Agent definitions live as reusable `.md` files in the `agents/` subdirectory. Wh
 | Testing | `agents/testing.md` | Unit, integration, E2E | 2 (downstream) | `testing:qa`, `testing:e2e` |
 | Security | `agents/security.md` | Auth, validation, audit | 2 (downstream) | `sw:security` |
 
+### Review Agent Reference
+
+| Agent | File | Focus |
+|-------|------|-------|
+| Security Reviewer | `agents/reviewer-security.md` | Vulnerabilities, injection, auth, secrets, OWASP |
+| Logic Reviewer | `agents/reviewer-logic.md` | Correctness, edge cases, error handling, race conditions |
+| Performance Reviewer | `agents/reviewer-performance.md` | N+1 queries, memory leaks, algorithmic complexity |
+
+### Brainstorm Agent Reference
+
+| Agent | File | Perspective |
+|-------|------|------------|
+| Advocate | `agents/brainstorm-advocate.md` | Champions innovative/ambitious approaches |
+| Critic | `agents/brainstorm-critic.md` | Devil's advocate — finds risks and failure modes |
+| Pragmatist | `agents/brainstorm-pragmatist.md` | Practical realist — timelines, skills, maintenance |
+
 ### How to Use Agent Files
 
-For each domain agent to spawn:
+For each agent to spawn:
 
-1. **Read** the agent definition: `Read("agents/{domain}.md")`
+1. **Read** the agent definition: `Read("agents/{name}.md")`
 2. **Replace placeholders** in the content:
-   - `[INCREMENT_ID]` → the increment ID (e.g., `0042-checkout-flow`)
-   - `[MASTER_INCREMENT_PATH]` → full path to the master increment directory
+   - `[REVIEW_TARGET]` → PR number, file paths, or module name being reviewed
+   - `[BRAINSTORM_QUESTION]` → the core question being explored
+   - `[INCREMENT_ID]` → the increment ID (implementation mode)
+   - `[MASTER_INCREMENT_PATH]` → full path to the master increment directory (implementation mode)
    - `{ORG}` → the discovered organization name
    - `{repo-name}` → the assigned repository name
-3. **Spawn** via Task() with the replaced content as the prompt:
-   ```
-   Task({
-     team_name: "<team-name>",
-     name: "<domain>-agent",
-     subagent_type: "general-purpose",
-     mode: "bypassPermissions",
-     prompt: <replaced agent content>
-   })
-   ```
+3. **Spawn** via Task() with the replaced content as the prompt
 
 **CRITICAL**: Always use `mode: "bypassPermissions"` — agents cannot handle interactive trust-folder prompts.
 
 ---
 
-## 5. File Ownership
+## 5. File Ownership (Implementation Mode)
 
 Each agent has exclusive WRITE access to specific file patterns. This prevents merge conflicts.
 
@@ -421,51 +691,49 @@ Each agent has exclusive WRITE access to specific file patterns. This prevents m
 5. **Conflict detection** -- the orchestrator checks for ownership overlap before spawning and resolves ambiguity upfront
 6. **Repository directory structure** -- for multi-repo setups, ALL repository cloning and creation MUST use the `repositories/{ORG}/` directory convention
 
+**Note**: Review, brainstorm, and analysis mode agents have READ-ONLY access to all files. They do not write code (unless explicitly asked to produce fixes in review mode).
+
 ---
 
 ## 6. Communication Protocol
 
-Agents communicate contract readiness, blocking issues, and completion status using `SendMessage`.
+Agents communicate using `SendMessage`. The message prefix convention varies by mode.
 
-### Message Types
+### Implementation Mode Messages
 
 | Prefix | Purpose | Sender | Receiver |
 |--------|---------|--------|----------|
-| `CONTRACT_READY:` | Upstream contract is published | Upstream agent | team-lead (broadcasts to downstream) |
+| `CONTRACT_READY:` | Upstream contract is published | Upstream agent | team-lead |
 | `BLOCKING_ISSUE:` | Agent is stuck, needs help | Any agent | team-lead |
 | `COMPLETION:` | Agent finished all tasks | Any agent | team-lead |
+| `PLAN_READY:` | Agent's plan is ready for review | Any agent | team-lead |
+| `PLAN_APPROVED:` | Plan approved, proceed | team-lead | Agent |
+| `PLAN_REJECTED:` | Plan needs revision | team-lead | Agent |
 
-### Message Examples
+### Review Mode Messages
 
-```typescript
-// Upstream agent signals contract is ready
-SendMessage({
-  type: "message",
-  recipient: "team-lead",
-  content: "CONTRACT_READY: TypeScript interfaces written to src/types/checkout.ts. Exports: CheckoutItem, CartSummary, PaymentIntent.",
-  summary: "Shared types contract ready"
-});
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `REVIEW_COMPLETE:` | Review findings ready | Review agent | team-lead |
+| `REVIEW_QUESTION:` | Needs clarification about code | Review agent | team-lead |
 
-// Agent reports a blocking issue
-SendMessage({
-  type: "message",
-  recipient: "team-lead",
-  content: "BLOCKING_ISSUE: Cannot implement payment webhook -- Stripe webhook secret not found in .env. Need STRIPE_WEBHOOK_SECRET to proceed.",
-  summary: "Blocked on missing Stripe secret"
-});
+### Brainstorm Mode Messages
 
-// Agent signals completion
-SendMessage({
-  type: "message",
-  recipient: "team-lead",
-  content: "COMPLETION: All 8 tasks done. Tests passing (24/24). Ready for team-lead closure.",
-  summary: "Frontend agent completed all tasks"
-});
-```
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `PERSPECTIVE_COMPLETE:` | Perspective analysis done | Brainstorm agent | team-lead |
+| `INSIGHT:` | Important finding during analysis | Brainstorm agent | team-lead |
+
+### Analysis Mode Messages
+
+| Prefix | Purpose | Sender | Receiver |
+|--------|---------|--------|----------|
+| `ANALYSIS_COMPLETE:` | Analysis findings ready | Analysis agent | team-lead |
+| `FINDING:` | Significant discovery | Analysis agent | team-lead |
 
 ---
 
-## 7. Spawning Agents
+## 7. Spawning Agents (Implementation Mode)
 
 ### Step 1: Create the Team
 
@@ -480,10 +748,9 @@ TeamCreate({
 
 All agents are spawned with `mode: "bypassPermissions"` to prevent blocking on trust-folder prompts. Plan review is enforced via the SendMessage PLAN_READY/PLAN_APPROVED protocol (see Section 3b).
 
-For each agent: **Read the agent definition file** (see Section 4 reference table), replace placeholders (`[INCREMENT_ID]`, `[MASTER_INCREMENT_PATH]`, `{ORG}`, `{repo-name}`), and use the full content as the Task() prompt.
+For each agent: **Read the agent definition file** (see Section 4 reference table), replace placeholders, and use the full content as the Task() prompt.
 
 ```typescript
-// Read agents/database.md, replace placeholders, then:
 Task({
   team_name: "feature-checkout",
   name: "database-agent",
@@ -500,8 +767,6 @@ Messages are delivered automatically via SendMessage from upstream agents.
 ### Step 4: Spawn Downstream Agents (Phase 2)
 
 ```typescript
-// Read agents/backend.md, agents/frontend.md, agents/testing.md
-// Replace placeholders, then spawn each:
 Task({
   team_name: "feature-checkout",
   name: "backend-agent",
@@ -529,7 +794,7 @@ Task({
 
 ---
 
-## 8. Quality Gates
+## 8. Quality Gates (Implementation Mode)
 
 Quality gates are split: agents handle tests, team-lead handles closure (grill, done, judge-llm). This prevents context overflow in agents from loading 4+ additional skill definitions during closure.
 
@@ -546,8 +811,6 @@ Agent Workflow:
   7. Do NOT run /sw:grill or /sw:done — team-lead handles closure centrally
 ```
 
-**Why agents don't run /sw:done**: The /sw:done skill invokes 4 sub-skills (grill, judge-llm, sync-docs, qa), each loading a full SKILL.md. After 15+ tasks of auto-mode context, this pushes agents into extended thinking (30+ min hangs). Centralizing closure on the team-lead (which has a cleaner context) avoids this.
-
 ### Orchestrator Quality Gate (Centralized Closure)
 
 After all agents complete, the team-lead runs closure **centrally** for each increment.
@@ -562,7 +825,7 @@ Orchestrator Final Check:
   4. For EACH increment in dependency order (shared → database → backend → frontend → testing → security):
      a. PRE-CLOSURE STATUS CHECK:
         - Read metadata.json status
-        - If status is "planned" or "backlog" → Edit to "active" (agents may not have activated)
+        - If status is "planned" or "backlog" → Edit to "active"
         - If status is "completed" → Skip (already closed)
      b. Run /sw:grill on the increment
      c. If grill finds CRITICAL/BLOCKER issues:
@@ -570,7 +833,7 @@ Orchestrator Final Check:
         → Re-run /sw:grill (max 2 retries)
         → If still failing after 2 retries → log failure, move to next increment
      d. Run /sw:done --auto <id>
-     e. If /sw:done fails (quality gate, desync, missing reports):
+     e. If /sw:done fails:
         → Read the error output carefully
         → Fix the root cause (sync ACs, update task counts, write missing reports)
         → Re-run /sw:done --auto <id> (max 2 retries)
@@ -578,7 +841,6 @@ Orchestrator Final Check:
   5. After all increments attempted:
      - If ALL closed → /sw:team-merge
      - If SOME failed → report which increments are still open with failure reasons
-     - Do NOT leave increments in limbo — either close them or clearly report why they can't close
 ```
 
 **Common closure failures and fixes:**
@@ -592,17 +854,6 @@ Orchestrator Final Check:
 | Task count mismatch | tasks.md frontmatter != actual checked tasks | Update `completed_tasks` in tasks.md frontmatter |
 | ACs not all checked | Some ACs still `[ ]` in spec.md | Verify implementation, then check them `[x]` |
 
-### Grill Checklist per Domain
-
-| Domain | Grill Checks |
-|--------|-------------|
-| Frontend | Components render, no console errors, accessibility, responsive |
-| Backend | API endpoints return correct status codes, validation works, error handling |
-| Database | Migrations apply cleanly, seed data loads, rollback works |
-| Testing | All tests pass, coverage threshold met, no flaky tests |
-| Security | No exposed secrets, input validation, auth working |
-| DevOps | Docker builds, CI passes, deployment config valid |
-
 ---
 
 ## 8b. Agent Timeout and Stuck Detection
@@ -611,83 +862,102 @@ Agents can get stuck in extended thinking if their context overflows. The team-l
 
 ### Stuck Detection Rules
 
-**Note**: Claude Code has no built-in timers. These are best-effort heuristics applied when the team-lead regains control (e.g., after processing other agent messages).
+**Note**: Claude Code has no built-in timers. These are best-effort heuristics applied when the team-lead regains control.
 
 | Condition | Action |
 |-----------|--------|
 | Agent has not messaged since team-lead's last turn | Send `STATUS_CHECK` message to agent |
 | Agent does not respond to STATUS_CHECK on next team-lead turn | Declare agent stuck |
-| Agent stuck | Log warning, proceed with other agents, handle stuck agent's increment manually in team-merge |
+| Agent stuck | Log warning, proceed with other agents, handle stuck agent's work manually |
 | All agents stuck | STOP team, report to user |
 
 ### Stuck Agent Recovery
 
-When an agent is declared stuck:
-1. Do NOT wait for it — proceed with closure of other agents' increments
-2. Note the stuck agent's increment ID and last known task progress
-3. During /sw:team-merge, the stuck agent's increment is left open for manual completion
-4. Send shutdown_request to the stuck agent to free resources
+1. Do NOT wait for it — proceed with closure of other agents' work
+2. Note the stuck agent's last known progress
+3. Send shutdown_request to the stuck agent to free resources
+4. For implementation mode: leave stuck agent's increment open for manual completion
 
 ### Preventing Stuck Agents
 
-- Enforce the 15-task cap (Section 3b)
-- Agents use `--simple` flag in auto-mode (reduces context per iteration)
+- Enforce the 15-task cap (implementation mode)
+- Agents use `--simple` flag in auto-mode
 - Agents do NOT run /sw:done (team-lead handles closure centrally)
-- If an agent's task count exceeds 15 despite the cap, the team-lead should split it before spawning
+- Review/brainstorm/analysis agents have inherently bounded scope
 
 ---
 
 ## 9. Workflow Summary
 
+### Implementation Mode
+
 ```
 /sw:team-lead "Build checkout flow"
   │
-  ├── Step 0: VERIFY INCREMENT EXISTS (BLOCKING)
+  ├── Step 0: MODE DETECTION → implementation (default)
+  ├── Step 0a: VERIFY INCREMENT EXISTS (BLOCKING)
   │     ├── Found? → Read master spec.md as source of truth
   │     └── Missing? → Auto-invoke /sw:increment, wait for completion
-  ├── Step 0b: ACTIVATE MASTER INCREMENT (MANDATORY)
-  │     └── Edit metadata.json: set status to "active" BEFORE spawning agents
-  ├── Step 1: Analyze feature (from master spec) -> identify domains -> decide increment split
-  ├── Step 2: Create team via TeamCreate
-  ├── Step 3: Create per-domain increments (derived from master spec)
+  ├── Step 0b: ACTIVATE MASTER INCREMENT
+  │     └── Edit metadata.json: set status to "active"
+  ├── Step 1: Analyze feature → identify domains → decide increment split
+  ├── Step 2: Create team via TeamCreate (team_name: "impl-*" or any)
+  ├── Step 3: Create per-domain increments
   ├── Step 4: Contract-first spawning (all agents with mode: "bypassPermissions")
-  │     ├── Phase 1: Spawn shared + database
-  │     │     └── Receive PLAN_READY, review & approve via SendMessage (Section 3b)
-  │     │     └── Wait for CONTRACT_READY after approval
+  │     ├── Phase 1: Spawn shared + database → wait for CONTRACT_READY
   │     └── Phase 2: Spawn backend + frontend + testing
-  │           └── Receive PLAN_READY, review & approve via SendMessage
-  ├── Step 5: Monitor progress via SendMessage (timeout: 20min idle → STATUS_CHECK)
-  ├── Step 6: Agents signal COMPLETION (tests pass, no /sw:grill or /sw:done on agents)
-  ├── Step 7: Team-lead runs centralized closure per increment:
-  │     ├── Pre-closure: verify/fix metadata.json status → must be "active"
-  │     ├── /sw:grill → fix findings → retry if needed (max 2)
-  │     └── /sw:done --auto → fix gate failures → retry if needed (max 2)
+  ├── Step 5: Monitor progress via SendMessage
+  ├── Step 6: Agents signal COMPLETION
+  ├── Step 7: Team-lead runs centralized closure per increment
   └── Step 8: Merge and close (/sw:team-merge)
 ```
 
-**IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
-Direct invocation of `/sw:team-lead` without an existing increment will trigger the guard and auto-invoke `/sw:increment`.
-
-### --dry-run Output
-
-When `--dry-run` is specified, display the proposed plan without executing.
-**Do NOT call TeamCreate in dry-run mode** — just show the formatted plan text.
+### Review Mode
 
 ```
-Team Orchestration Plan (DRY RUN)
-==================================================
-Feature: Build checkout flow | Domains: 4
+/sw:team-lead "Review PR #63" --mode review
+  │
+  ├── Step 0: MODE DETECTION → review
+  ├── Step 1: Determine review scope (PR diff, target files)
+  ├── Step 2: Create team (team_name: "review-pr-63")
+  ├── Step 3: Spawn all reviewers in parallel
+  │     ├── Security Reviewer
+  │     ├── Logic Reviewer
+  │     └── Performance Reviewer
+  ├── Step 4: Collect REVIEW_COMPLETE from all agents
+  ├── Step 5: Merge, deduplicate, prioritize findings
+  └── Step 6: Deliver unified review to user
+```
 
-Phase 1 (upstream):
-  1. shared-types -> sw:architect, sw:code-simplifier  | Increment: 0200-checkout-shared
-  2. database     -> sw:architect                 | Increment: 0201-checkout-database
+### Brainstorm Mode
 
-Phase 2 (downstream, parallel):
-  3. backend      -> sw:architect, infra:devops              | Increment: 0202-checkout-backend
-  4. frontend     -> frontend:architect                     | Increment: 0203-checkout-frontend
+```
+/sw:team-lead "Brainstorm payment architecture" --mode brainstorm
+  │
+  ├── Step 0: MODE DETECTION → brainstorm
+  ├── Step 1: Frame the core question
+  ├── Step 2: Create team (team_name: "brainstorm-payment-arch")
+  ├── Step 3: Spawn all perspective agents in parallel
+  │     ├── Advocate (champions innovative approaches)
+  │     ├── Critic (finds risks and failure modes)
+  │     └── Pragmatist (practical feasibility)
+  ├── Step 4: Collect PERSPECTIVE_COMPLETE from all agents
+  ├── Step 5: Synthesize into decision matrix
+  └── Step 6: Recommend path forward → suggest /sw:increment if proceeding
+```
 
-Max agents: 4 (2 sequential + 2 parallel)
-To execute, run without --dry-run.
+### Analysis Mode
+
+```
+/sw:team-lead "Analyze auth module architecture" --mode analysis
+  │
+  ├── Step 0: MODE DETECTION → analysis
+  ├── Step 1: Define analysis scope and questions
+  ├── Step 2: Create team (team_name: "analysis-auth-deps")
+  ├── Step 3: Spawn analysis agents (dynamically composed)
+  ├── Step 4: Collect ANALYSIS_COMPLETE from all agents
+  ├── Step 5: Synthesize findings into structured report
+  └── Step 6: Deliver report → suggest /sw:increment if actionable
 ```
 
 ---
@@ -696,29 +966,27 @@ To execute, run without --dry-run.
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| **TeamCreate blocked by guard** | No increment with spec.md exists | Run `/sw:increment "feature"` first, then retry `/sw:team-lead`. The guard requires a substantive spec.md (>200 bytes, not a template) |
-| **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"`. Trust prompts require interactive input agents cannot provide |
-| **Agents editing same files** | Overlapping file ownership patterns | Review ownership map; reassign conflicting files to a single owner; use `--dry-run` to validate before launch |
-| **Token cost too high** | Too many agents or overly large prompts | Reduce `--max-agents`; use `--domains` to limit scope; split feature into smaller increments |
-| **Agent stuck in extended thinking** | Too many tasks (>15) causing context overflow | Enforce 15-task cap per agent; split large domains into 2 agents; agents use `--simple` mode |
-| **Agent hung on /sw:done** | Closure loads 4+ skill definitions into already-full context | Agents should NOT run /sw:done — team-lead handles closure centrally |
-| **Contract agent takes too long** | Large schema or complex type system | Set a timeout in the agent prompt; if stuck >15 min, check agent output and consider splitting the contract work |
-| **Phase 2 starts before Phase 1 finishes** | CONTRACT_READY not received yet | Ensure upstream agents send CONTRACT_READY via SendMessage before team-lead spawns downstream |
-| **Agent fails mid-task** | Build error, test failure, or dependency issue | Send message to agent to fix; restart the agent with `/sw:auto` on its increment |
-| **`specweave complete` exits silently** | metadata.json status is "planned" (not "active") | Agents don't manage lifecycle status. Team-lead MUST activate the increment before spawning agents (see Step 0). Fix: edit metadata.json to set `"status": "active"` before running `specweave complete` |
-| **Closure fails on multiple increments** | Quality gates fail (grill, desync, missing reports) | Fix each issue and retry `/sw:done --auto` (max 2 retries per increment). See Section 8 closure failure table |
+| **TeamCreate blocked by guard** | No increment exists AND team_name doesn't have a non-impl prefix | For implementation: run `/sw:increment` first. For review/brainstorm/analysis: use the correct team_name prefix (review-*, brainstorm-*, analysis-*) |
+| **Agent stuck on trust folder** | Agent spawned without `bypassPermissions` | ALWAYS use `mode: "bypassPermissions"` — NEVER `mode: "plan"` |
+| **Agents editing same files** | Overlapping file ownership (implementation mode) | Review ownership map; reassign conflicting files |
+| **Token cost too high** | Too many agents | Reduce `--max-agents`; use `--domains` to limit scope |
+| **Agent stuck in extended thinking** | Too many tasks (>15) | Enforce 15-task cap; split large domains |
+| **Review agents missing context** | PR diff not provided in prompt | Ensure PR number or file paths are in [REVIEW_TARGET] placeholder |
+| **Brainstorm too shallow** | Agents not exploring deeply enough | Add more specific context to [BRAINSTORM_QUESTION] placeholder |
+| **Wrong mode detected** | Ambiguous description | Use explicit `--mode` flag or correct team_name prefix |
+| **`specweave complete` exits silently** | metadata.json status is "planned" | Edit metadata.json: set status to "active" before closure |
 
 ---
 
 ## 11. Examples
 
-### Example 1: Full-Stack Feature
+### Example 1: Full-Stack Feature (Implementation Mode)
 
 ```
 User: /sw:team-lead "Build user authentication with login, signup, password reset, and OAuth"
 
-Orchestrator detects domains: shared/types, database, backend, frontend, testing, security
-Creates 6 increments.
+Mode: implementation (auto-detected)
+Domains: shared/types, database, backend, frontend, testing, security
 
 Phase 1:
   - shared-types agent: Auth types (User, Session, AuthToken interfaces)
@@ -731,18 +999,73 @@ Phase 2 (after contracts ready):
   - security agent: Password hashing, JWT validation, rate limiting, CSRF
 ```
 
-### Example 2: Frontend-Only (No Dependencies)
+### Example 2: PR Review (Review Mode)
 
 ```
-User: /sw:team-lead "Redesign dashboard" --domains frontend,testing
--> No upstream dependencies. Both agents spawn in parallel immediately.
+User: /sw:team-lead "Review PR #63"
+
+Mode: review (auto-detected from "PR #63")
+Team: review-pr-63
+
+Spawns 3 parallel reviewers:
+  - Security: Checks for injection, auth bypass, secrets in diff
+  - Logic: Verifies correctness, edge cases, error handling in changed code
+  - Performance: Identifies N+1 queries, unnecessary allocations in diff
+
+Output: Unified review with Must Fix / Should Fix / Consider categories
 ```
 
-### Example 3: Dry Run
+### Example 3: Architecture Brainstorm (Brainstorm Mode)
+
+```
+User: /sw:team-lead "Brainstorm: microservices vs monolith for our growing app"
+
+Mode: brainstorm (auto-detected from "brainstorm")
+Team: brainstorm-arch-decision
+
+Spawns 3 parallel perspective agents:
+  - Advocate: Champions microservices — independent scaling, team autonomy, polyglot
+  - Critic: Warns about distributed complexity, network latency, operational overhead
+  - Pragmatist: Evaluates team size, current traffic, migration cost, timeline
+
+Output: Decision matrix with scored options and recommended path
+```
+
+### Example 4: Codebase Analysis (Analysis Mode)
+
+```
+User: /sw:team-lead "Analyze our dependency tree for security risks" --mode analysis
+
+Mode: analysis (explicit flag)
+Team: analysis-dep-security
+
+Spawns dynamically composed agents:
+  - npm-audit-agent: Runs npm audit, maps CVEs to severity
+  - license-agent: Checks license compliance across all deps
+  - freshness-agent: Identifies outdated packages and upgrade paths
+
+Output: Structured report with findings, risk assessment, prioritized action items
+```
+
+### Example 5: Dry Run
 
 ```
 User: /sw:team-lead "Add payment processing" --dry-run
--> Shows plan with domains, phases, file ownership. No agents spawned.
+
+Team Orchestration Plan (DRY RUN)
+==================================================
+Feature: Add payment processing | Mode: implementation | Domains: 4
+
+Phase 1 (upstream):
+  1. shared-types -> sw:architect  | Increment: 0200-payment-shared
+  2. database     -> sw:architect  | Increment: 0201-payment-database
+
+Phase 2 (downstream, parallel):
+  3. backend      -> sw:architect  | Increment: 0202-payment-backend
+  4. frontend     -> frontend:architect | Increment: 0203-payment-frontend
+
+Max agents: 4 (2 sequential + 2 parallel)
+To execute, run without --dry-run.
 ```
 
 ---
@@ -753,6 +1076,8 @@ User: /sw:team-lead "Add payment processing" --dry-run
 |-------|---------|
 | `/sw:team-status` | Show progress of all agents in the current team session |
 | `/sw:team-merge` | Merge completed agent work in dependency order |
+| `/sw:team-build` | Preset-driven team spawning (full-stack, review, testing, tdd, migration) |
 | `/sw:auto` | Autonomous execution (single-agent mode) |
 | `/sw:architect` | System architecture and ADRs |
 | `/sw:grill` | Quality validation gate |
+| `/sw:brainstorm` | Single-agent brainstorming (for simpler ideation without teams) |

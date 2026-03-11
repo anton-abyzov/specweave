@@ -1,5 +1,5 @@
 ---
-description: "Preset-driven team building — spawn coordinated multi-agent teams from battle-tested presets for full-stack, review, testing, TDD, and migration workflows"
+description: "Preset-driven team building — spawn coordinated multi-agent teams from battle-tested presets for full-stack, review, brainstorm, testing, TDD, and migration workflows. Review and brainstorm presets work without an increment."
 hooks:
   PreToolUse:
     - matcher: TeamCreate
@@ -17,21 +17,35 @@ Spawn a coordinated team of agents from a preset configuration. Each preset defi
 ```
 /sw:team-build --preset full-stack "Build checkout flow"
 /sw:team-build --preset review "Review auth module"
+/sw:team-build --preset brainstorm "Brainstorm payment architecture"
 /sw:team-build --preset testing "Test payment service"
 /sw:team-build --preset tdd "Implement rate limiter"
 /sw:team-build --preset migration "Migrate users to v2 schema"
 ```
 
-**Note:** For the complete 9-domain skill mapping table, see `/sw:team-lead`.
+**Note:** For the complete mode documentation and 9-domain skill mapping, see `/sw:team-lead`.
 
 ## How It Works
 
 1. Parse the `--preset` flag to select a team configuration
-2. Read the active increment from `.specweave/increments/` for context
-3. Spawn agents with assigned skills, ownership scopes, and dependencies
-4. Coordinate execution order (sequential gates or parallel fan-out)
-5. Each agent operates via `/sw:do` or `/sw:auto` within its ownership boundary
-6. Quality gates run `/sw:grill` before any agent marks work complete
+2. Determine team mode from preset (implementation vs review vs brainstorm)
+3. For implementation presets (`full-stack`, `testing`, `tdd`, `migration`): read the active increment
+4. For non-implementation presets (`review`, `brainstorm`): proceed without increment
+5. Spawn agents with assigned roles and dependencies
+6. Coordinate execution order (sequential gates or parallel fan-out)
+
+### Preset-to-Mode Mapping
+
+| Preset | Mode | Increment Required? | team_name prefix |
+|--------|------|-------------------|-----------------|
+| `full-stack` | implementation | Yes | `impl-*` or any |
+| `review` | review | **No** | `review-*` |
+| `brainstorm` | brainstorm | **No** | `brainstorm-*` |
+| `testing` | implementation | Yes | `impl-*` or any |
+| `tdd` | implementation | Yes | `impl-*` or any |
+| `migration` | implementation | Yes | `impl-*` or any |
+
+**CRITICAL**: `review` and `brainstorm` presets MUST use their mode-prefixed team_name to bypass the spec-first guard.
 
 ---
 
@@ -89,46 +103,50 @@ This spawns:
 
 **Agents**: 3
 **Execution order**: All parallel (independent, no dependencies)
+**Mode**: review (NO increment required)
+**team_name**: MUST use `review-*` prefix (e.g., `review-auth-module`)
 
-Three specialized reviewers examine the codebase simultaneously from different angles. Each agent produces findings independently — no agent blocks another.
+Three specialized reviewers examine the codebase simultaneously from different angles. Each agent produces findings independently — no agent blocks another. Uses agent templates from `agents/reviewer-*.md`.
 
 #### Agent Composition
 
-| # | Role | Skill(s) | Owns | Responsibility |
-|---|------|----------|------|----------------|
-| 1 | Security | `sw:security` + `sw:security-patterns` | All files (read-only analysis) | Audit for vulnerabilities, injection vectors, auth flaws, secrets exposure, dependency CVEs |
-| 2 | Quality | `sw:grill` + `sw:code-simplifier` | All files (read-only analysis) | Review code quality, complexity, naming, duplication, SOLID violations, performance anti-patterns |
-| 3 | Docs | `sw:docs-updater` | All files (read-only analysis) | Check doc coverage, stale comments, missing JSDoc, README accuracy, spec-to-code alignment |
+| # | Role | Agent Template | Focus | Responsibility |
+|---|------|---------------|-------|----------------|
+| 1 | Security Reviewer | `agents/reviewer-security.md` | All files (read-only) | Vulnerabilities, injection, auth flaws, secrets, OWASP Top 10 |
+| 2 | Logic Reviewer | `agents/reviewer-logic.md` | All files (read-only) | Correctness, edge cases, error handling, race conditions, logic bugs |
+| 3 | Performance Reviewer | `agents/reviewer-performance.md` | All files (read-only) | N+1 queries, memory leaks, algorithmic complexity, scalability |
 
 #### Execution Chain
 
 ```
-+---------------+---------------+---------------+
-|               |               |               |
-v               v               v               |
-Agent 1         Agent 2         Agent 3         |
-(Security)      (Quality)       (Docs)          |
-|               |               |               |
-v               v               v               |
-Report          Report          Report          |
-+---------------+---------------+---------------+
-                |
-                v
-        Merged review summary
++-------------------+-------------------+-------------------+
+|                   |                   |                   |
+v                   v                   v                   |
+Agent 1             Agent 2             Agent 3             |
+(Security)          (Logic)             (Performance)       |
+|                   |                   |                   |
+v                   v                   v                   |
+REVIEW_COMPLETE     REVIEW_COMPLETE     REVIEW_COMPLETE     |
++-------------------+-------------------+-------------------+
+                    |
+                    v
+            Merged review summary
+            (Must Fix / Should Fix / Consider)
 ```
 
-**All agents run in parallel.** Each produces an independent report. Reports are merged into a single review summary upon completion.
+**All agents run in parallel.** Each uses its agent template and signals `REVIEW_COMPLETE:`. Team-lead merges, deduplicates, and prioritizes by severity.
 
 #### Example
 
 ```
 /sw:team-build --preset review "Review auth module before release"
+/sw:team-build --preset review "Review PR #63"
 ```
 
 This spawns three parallel reviewers:
-- **Security** agent checks for token leakage, CSRF, injection, and insecure defaults
-- **Quality** agent evaluates code structure, test coverage gaps, and complexity hotspots
-- **Docs** agent verifies API docs, inline comments, and spec alignment
+- **Security** reviewer checks for token leakage, CSRF, injection, and insecure defaults
+- **Logic** reviewer verifies correctness, edge cases, and error handling
+- **Performance** reviewer identifies N+1 queries, memory leaks, and scalability issues
 
 ---
 
@@ -284,26 +302,79 @@ This spawns:
 
 ---
 
+### 6. `brainstorm` — Multi-Perspective Ideation
+
+**Agents**: 3
+**Execution order**: All parallel (independent, no dependencies)
+**Mode**: brainstorm (NO increment required)
+**team_name**: MUST use `brainstorm-*` prefix (e.g., `brainstorm-arch-decision`)
+
+Three perspective agents explore a question simultaneously from different angles. Uses agent templates from `agents/brainstorm-*.md`.
+
+#### Agent Composition
+
+| # | Role | Agent Template | Perspective | Responsibility |
+|---|------|---------------|-------------|----------------|
+| 1 | Advocate | `agents/brainstorm-advocate.md` | Innovation | Champions the most ambitious approach, pushes boundaries |
+| 2 | Critic | `agents/brainstorm-critic.md` | Risk | Devil's advocate — finds failure modes, hidden costs, red lines |
+| 3 | Pragmatist | `agents/brainstorm-pragmatist.md` | Feasibility | Practical realist — timelines, team skills, maintenance burden |
+
+#### Execution Chain
+
+```
++-------------------+-------------------+-------------------+
+|                   |                   |                   |
+v                   v                   v                   |
+Agent 1             Agent 2             Agent 3             |
+(Advocate)          (Critic)            (Pragmatist)        |
+|                   |                   |                   |
+v                   v                   v                   |
+PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE PERSPECTIVE_COMPLETE|
++-------------------+-------------------+-------------------+
+                    |
+                    v
+            Decision matrix + recommendation
+            → /sw:increment if proceeding
+```
+
+**All agents run in parallel.** Each signals `PERSPECTIVE_COMPLETE:`. Team-lead synthesizes into a decision matrix with scored options.
+
+#### Example
+
+```
+/sw:team-build --preset brainstorm "Microservices vs monolith for our growing app"
+```
+
+This spawns:
+- **Advocate** champions microservices — independent scaling, team autonomy, polyglot support
+- **Critic** warns about distributed complexity, network latency, operational overhead
+- **Pragmatist** evaluates team size, current traffic, migration cost, and timeline
+
+---
+
 ## Flags
 
 | Flag | Required | Description |
 |------|----------|-------------|
-| `--preset` | Yes | One of: `full-stack`, `review`, `testing`, `tdd`, `migration` |
-| `--increment` | No | Increment ID to operate on (defaults to active increment) |
+| `--preset` | Yes | One of: `full-stack`, `review`, `brainstorm`, `testing`, `tdd`, `migration` |
+| `--increment` | No | Increment ID to operate on (defaults to active increment; ignored for review/brainstorm) |
 | `--dry-run` | No | Show what agents would be spawned without actually spawning them |
 | `--max-agents` | No | Override max concurrent agents (default: 3) |
 
 ## Execution Order Summary
 
-| Preset | Order | Pattern |
-|--------|-------|---------|
-| `full-stack` | Sequential gate + parallel | Agent 1 first, then [Agent 2 + Agent 3] in parallel |
-| `review` | All parallel | [Agent 1 + Agent 2 + Agent 3] simultaneously |
-| `testing` | All parallel | [Agent 1 + Agent 2 + Agent 3] simultaneously |
-| `tdd` | Strict sequential | Agent 1 -> Agent 2 -> Agent 3 (no parallelism) |
-| `migration` | Sequential gate + parallel | Agent 1 first, then [Agent 2 + Agent 3] in parallel |
+| Preset | Order | Pattern | Increment? |
+|--------|-------|---------|-----------|
+| `full-stack` | Sequential gate + parallel | Agent 1 first, then [Agent 2 + Agent 3] in parallel | Yes |
+| `review` | All parallel | [Agent 1 + Agent 2 + Agent 3] simultaneously | **No** |
+| `brainstorm` | All parallel | [Agent 1 + Agent 2 + Agent 3] simultaneously | **No** |
+| `testing` | All parallel | [Agent 1 + Agent 2 + Agent 3] simultaneously | Yes |
+| `tdd` | Strict sequential | Agent 1 -> Agent 2 -> Agent 3 (no parallelism) | Yes |
+| `migration` | Sequential gate + parallel | Agent 1 first, then [Agent 2 + Agent 3] in parallel | Yes |
 
 ## SpecWeave Workflow Integration
+
+### Implementation Presets (full-stack, testing, tdd, migration)
 
 Each spawned agent integrates with the standard SpecWeave workflow:
 
@@ -313,6 +384,16 @@ Each spawned agent integrates with the standard SpecWeave workflow:
 4. **Progress tracking** — task status updates flow back to `tasks.md` with AC linkage
 5. **Ownership boundaries** — agents only modify files within their assigned directories
 6. **Conflict prevention** — ownership scopes are non-overlapping to prevent merge conflicts
+
+### Non-Implementation Presets (review, brainstorm)
+
+These presets operate without increments:
+
+1. **Read-only analysis** — agents examine code but do not modify it
+2. **Independent reports** — each agent produces findings independently
+3. **Team-lead synthesis** — team-lead merges and deduplicates agent outputs
+4. **No closure needed** — no `/sw:done` or `/sw:grill` required
+5. **Follow-up bridge** — if actionable items found, suggest `/sw:increment` to formalize
 
 ### Organization Discovery (resolve BEFORE spawning agents)
 
@@ -349,7 +430,7 @@ Spawn → Load increment context → Claim tasks → /sw:do or /sw:auto → /sw:
 If user provides an unknown preset name:
 
 ```
-Error: Unknown preset "xyz". Available presets: full-stack, review, testing, tdd, migration.
+Error: Unknown preset "xyz". Available presets: full-stack, review, brainstorm, testing, tdd, migration.
 Use /sw:team-build --help to see preset details.
 ```
 
