@@ -1,9 +1,5 @@
 /**
  * Init command helpers - barrel export
- *
- * Simplified (v1.0.415): Removed exports for helpers no longer used by init
- * (external tool setup, brownfield analysis, testing/translation config).
- * Those modules still exist for use by other commands but aren't re-exported here.
  */
 
 // Wizard navigation (go-back support)
@@ -38,12 +34,6 @@ export {
   detectAllConfigs,
 } from './config-detection.js';
 
-// Provider detection (git remote → provider/owner/repo)
-export {
-  detectProvider,
-  type ProviderInfo,
-} from './provider-detection.js';
-
 // Smart re-initialization
 export {
   promptSmartReinit,
@@ -64,6 +54,21 @@ export {
   enablePlugin,
 } from './claude-plugin-enabler.js';
 
+// Repository setup
+export {
+  setupRepositoryHosting,
+  type RepositorySetupOptions,
+  type RepositorySetupResult,
+  type AdoProjectSelection,
+} from './repository-setup.js';
+
+// Testing configuration
+export {
+  promptTestingConfig,
+  updateConfigWithTesting,
+  type TestingConfigResult,
+} from './testing-config.js';
+
 // Language selection (MUST be first in init)
 export {
   promptLanguageSelection,
@@ -71,6 +76,20 @@ export {
   getLanguageNativeName,
   type LanguageSelectionResult,
 } from './language-selection.js';
+
+// Translation configuration
+export {
+  promptTranslationConfig,
+  updateConfigWithTranslation,
+  getDefaultTranslationConfig,
+  type TranslationConfigResult,
+  type TranslationScope,
+} from './translation-config.js';
+
+// External import
+export {
+  promptAndRunExternalImport,
+} from './external-import.js';
 
 // Directory structure
 export {
@@ -93,6 +112,20 @@ export {
   areGitHooksInstalled,
 } from './git-hooks-installer.js';
 
+// v1.0.27: Removed initial-increment-generator exports
+// Reason: Automatic increment creation removed - requires **Project**: field per US
+// File kept for reference but no longer used
+
+// Brownfield analysis configuration
+export {
+  promptBrownfieldAnalysis,
+  updateConfigWithBrownfield,
+  detectExistingDocsLocations,
+  type BrownfieldAnalysisConfig,
+  type AnalysisDepth,
+  type DetectedDocsLocation,
+} from './brownfield-analysis.js';
+
 // Instruction file merger (CLAUDE.md/AGENTS.md)
 export {
   mergeInstructionFile,
@@ -114,3 +147,20 @@ export {
   type TechCategory,
   type TechStackDetection,
 } from './gitignore-generator.js';
+
+// Deep interview mode configuration (v1.0.195+)
+export {
+  promptDeepInterviewConfig,
+  updateConfigWithDeepInterview,
+  type DeepInterviewConfigResult,
+} from './deep-interview-config.js';
+
+// Quality gates configuration (v1.0.226+)
+export {
+  promptQualityGatesConfig,
+  updateConfigWithQualityGates,
+  getQualityGatePreset,
+  type QualityGatesConfigResult,
+  type QualityGatePreset,
+  type QualityGateSettings,
+} from './quality-gates-config.js';
