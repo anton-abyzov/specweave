@@ -16,6 +16,8 @@ interface ServiceInfo {
   status: string;
   detail: string;
   port: number;
+  startCommand?: string;
+  stopCommand?: string;
 }
 
 export function ServicesPage() {
@@ -40,12 +42,12 @@ export function ServicesPage() {
   const conflicts = Array.from(portConflicts.entries()).filter(([, names]) => names.length > 1);
 
   const handleStart = async (commandName: string) => {
-    await execute(commandName);
+    await execute(commandName, { timeoutMs: 300000 });
     setTimeout(() => refetch(), 3000);
   };
 
   const handleStop = async (commandName: string) => {
-    await execute(commandName);
+    await execute(commandName, { timeoutMs: 300000 });
     setTimeout(() => refetch(), 2000);
   };
 
@@ -118,7 +120,7 @@ export function ServicesPage() {
                 ) : (
                   <Badge label="Stopped" variant="default" />
                 )}
-                {svc.name === 'Docs Preview' && (
+                {svc.startCommand && svc.stopCommand ? (
                   svc.status === 'running' ? (
                     <div className="flex items-center gap-1">
                       <a
@@ -130,7 +132,7 @@ export function ServicesPage() {
                         Open
                       </a>
                       <button
-                        onClick={() => handleStop('docs-preview-stop')}
+                        onClick={() => handleStop(svc.stopCommand!)}
                         disabled={running}
                         className="px-2 py-1 text-[10px] text-rose-400 hover:text-rose-300 border border-rose-500/30 rounded transition-colors disabled:opacity-50"
                       >
@@ -139,23 +141,24 @@ export function ServicesPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => handleStart('docs-preview-start')}
+                      onClick={() => handleStart(svc.startCommand!)}
                       disabled={running}
                       className="px-2 py-1 text-[10px] text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 rounded transition-colors disabled:opacity-50"
                     >
                       {running ? 'Starting...' : 'Start'}
                     </button>
                   )
-                )}
-                {svc.status === 'running' && svc.name !== 'Docs Preview' && (
-                  <a
-                    href={svc.detail}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2 py-1 text-[10px] text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 rounded transition-colors"
-                  >
-                    Open
-                  </a>
+                ) : (
+                  svc.status === 'running' && (
+                    <a
+                      href={svc.detail}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-1 text-[10px] text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 rounded transition-colors"
+                    >
+                      Open
+                    </a>
+                  )
                 )}
               </div>
             </div>
