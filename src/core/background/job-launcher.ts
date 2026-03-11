@@ -48,6 +48,8 @@ export interface LaunchResult {
   pid?: number;
   /** Whether running in background */
   isBackground: boolean;
+  /** Whether all repos were already cloned (pre-flight skip) */
+  skippedPreFlight?: boolean;
 }
 
 /**
@@ -291,21 +293,20 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
     };
     const job = jobManager.createJob('clone-repos', jobConfig, repositories.length);
     jobManager.completeJob(job.id);
-    return { job, isBackground: false };
+    return { job, isBackground: false, skippedPreFlight: true };
   }
 
-  // If some repos were skipped, only clone the new ones
-  const reposToClone = needsCloning.length < repositories.length ? needsCloning : repositories;
-  if (needsCloning.length < repositories.length) {
+  // Log when some repos were skipped
+  if (alreadyCloned.length > 0) {
     console.log(`\n   Cloning ${needsCloning.length} new repository(ies)...\n`);
   }
 
-  // Create job via job manager
+  // Create job via job manager — only for repos that need cloning
   const jobManager = getJobManager(projectPath);
 
   const jobConfig: CloneJobConfig = {
     type: 'clone-repos',
-    repositories: reposToClone.map(r => ({
+    repositories: needsCloning.map(r => ({
       owner: r.owner,
       name: r.name,
       path: r.path
@@ -313,7 +314,7 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
     projectPath
   };
 
-  const job = jobManager.createJob('clone-repos', jobConfig, reposToClone.length);
+  const job = jobManager.createJob('clone-repos', jobConfig, needsCloning.length);
 
   // Create job-specific directory for config and logs
   const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
@@ -324,7 +325,7 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
   fs.writeFileSync(configPath, JSON.stringify({
     jobId: job.id,
     projectPath,
-    repositories: reposToClone,
+    repositories: needsCloning,
     startedAt: new Date().toISOString()
   }, null, 2));
 
