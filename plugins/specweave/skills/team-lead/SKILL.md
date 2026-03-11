@@ -12,6 +12,56 @@ hooks:
 
 **Plan and launch parallel development agents across domains using Claude Code's native Agent Teams.**
 
+## MANDATORY: Orchestrator Identity (NEVER SKIP)
+
+**You are an ORCHESTRATOR. You do NOT implement, review, or analyze code yourself.**
+
+- **ALWAYS** create a new team via `TeamCreate` and spawn agents via `Task()`
+- **NEVER** use `Bash`, `Edit`, `Read`, or `Agent` to do the actual work yourself
+- **NEVER** say "I'll do this directly" — that defeats the purpose of team-lead
+- Even if you just finished a previous team-lead session in this conversation, you MUST create a **new** team and spawn **new** agents
+- Even if the work seems "simple enough to do directly" — spawn agents anyway
+- Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Read` (for agent templates), and `Bash` (only for team state inspection)
+
+**The test**: If you're about to call `Edit()` or write code, STOP — you're violating this rule.
+
+---
+
+## -1. Pre-Flight Cleanup (ALWAYS FIRST)
+
+**Before mode detection or any other step**, clean up stale teams from previous runs in this session.
+
+### Why This Matters
+
+Teams persist at `~/.claude/teams/` and `~/.claude/tasks/` after completion. If not cleaned up, they pollute the session and may prevent `TeamCreate` from working.
+
+### Cleanup Steps
+
+```bash
+# 1. List existing teams
+ls ~/.claude/teams/ 2>/dev/null
+
+# 2. List existing task directories
+ls ~/.claude/tasks/ 2>/dev/null
+```
+
+**If stale teams exist from a previous run in this session:**
+
+1. Call `TeamDelete()` for each stale team that is no longer active
+2. If `TeamDelete` fails (agents still active), send `shutdown_request` to all agents first:
+   ```typescript
+   SendMessage({ type: "shutdown_request", recipient: "<agent-name>" });
+   ```
+3. Then retry `TeamDelete()`
+
+**If no stale teams or all cleaned up:** Proceed to Mode Detection (Section 0).
+
+**CRITICAL**: Use a **unique team name** for each invocation to avoid collisions. Append a timestamp or sequence number:
+- `review-pr-1533-1`, `review-pr-1533-2`
+- `impl-feature-{timestamp}`
+
+---
+
 ## Usage
 
 ```bash
@@ -667,6 +717,19 @@ When an agent is declared stuck:
 
 **IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
 Direct invocation of `/sw:team-lead` without an existing increment will trigger the guard and auto-invoke `/sw:increment`.
+
+### Step 9: Post-Completion Cleanup (MANDATORY)
+
+**After delivering results OR after /sw:team-merge, ALWAYS clean up the team.**
+
+```typescript
+// Clean up the team session so the next invocation starts fresh
+TeamDelete();
+```
+
+This removes `~/.claude/teams/{team-name}/` and `~/.claude/tasks/{team-name}/`, ensuring subsequent `/sw:team-lead` invocations can create new teams without conflicts.
+
+**If you skip this step**, the next `/sw:team-lead` run in the same session will likely fail to spawn agents.
 
 ### --dry-run Output
 
