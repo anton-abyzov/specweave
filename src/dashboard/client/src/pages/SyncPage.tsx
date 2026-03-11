@@ -359,7 +359,7 @@ function UmbrellaHealthView({
                 <span className="text-[10px] text-gray-600">{repo.repoPath}</span>
               </div>
               <button
-                onClick={() => execute('sync-push', { repo: repo.repoId })}
+                onClick={() => execute('sync-push', { queryParams: { repo: repo.repoId } })}
                 disabled={running || !repo.hasSpecweave}
                 title={!repo.hasSpecweave ? 'Initialize .specweave in this repo to enable sync' : 'Sync this repository'}
                 className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs rounded-lg transition-colors"
