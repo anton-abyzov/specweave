@@ -1,14 +1,9 @@
 /**
  * SpecWeave Init Command
  *
- * Initializes a new SpecWeave project with:
- * - Directory structure (.specweave/)
- * - Configuration files
- * - Plugin installation (Claude Code)
- * - Issue tracker setup
- * - Initial increment
- *
- * Refactored: Logic extracted to src/cli/helpers/init/
+ * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
+ * External tool setup moved to `specweave sync-setup`.
+ * Multi-repo setup moved to `specweave migrate-to-umbrella`.
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -16,31 +11,25 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { input, confirm, select } from '@inquirer/prompts';
+import { input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { isLanguageSupported, getSupportedLanguages } from '../../core/i18n/language-manager.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../core/i18n/types.js';
-import { readEnvFile, parseEnvFile } from '../../utils/env-file.js';
-import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
 
-// Import helpers
 import {
   type InitOptions,
-  type RepositoryHosting,
   type LanguageSelectionResult,
-  type ProjectMaturity,
   findSourceDir,
   findPackageRoot,
   detectNestedSpecweave,
   detectUmbrellaParent,
   detectSuspiciousPath,
-  detectGitHubRemote,
+  detectProvider,
   promptSmartReinit,
   installAllPlugins,
-  setupRepositoryHosting,
   promptLanguageSelection,
   getDefaultLanguageSelection,
   createDirectoryStructure,
@@ -49,25 +38,18 @@ import {
   showNextSteps,
   installGitHooks,
 } from '../helpers/init/index.js';
-import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
-import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js';
-import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
-import { createProjectFolders } from '../helpers/init/multi-project-folders.js';
 import { setupLspEnvVar } from '../helpers/init/shell-config.js';
-import { getPluginScope, getScopeArgs } from '../../core/types/plugin-scope.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
-import { isGreenfield as isGreenfieldCheck } from '../helpers/init/greenfield-detection.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
 
 const __dirname = getDirname(import.meta.url);
+const PROJECT_NAME_PATTERN = /^[a-z0-9-]+$/;
+const PROJECT_NAME_VALIDATION_MSG = 'Must be lowercase letters, numbers, and hyphens only';
 
-// Re-export InitOptions for external use
 export type { InitOptions };
 
 /**
  * Unified CI/non-interactive detection.
- * Single source of truth for determining if wizard should skip prompts.
- * Covers all major CI platforms and non-TTY environments.
  */
 export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
   return !!(
@@ -82,215 +64,20 @@ export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
 }
 
 /**
- * Detect if we're in the SpecWeave framework repository itself
- */
-async function isSpecWeaveFrameworkRepo(targetDir: string): Promise<boolean> {
-  try {
-    const packageJsonPath = path.join(targetDir, 'package.json');
-    if (!fs.existsSync(packageJsonPath)) {
-      return false;
-    }
-    const packageJson = await fs.readJson(packageJsonPath);
-    return packageJson.name === 'specweave';
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Create Multi-Project Folders based on Issue Tracker Configuration
- */
-async function createMultiProjectFolders(targetDir: string): Promise<void> {
-  const envPath = path.join(targetDir, '.env');
-  const configPath = path.join(targetDir, '.specweave', 'config.json');
-
-  if (!fs.existsSync(envPath)) {
-    return;
-  }
-
-  const envContent = readEnvFile(envPath);
-  const envVars = parseEnvFile(envContent);
-
-  const jiraProjects = envVars.JIRA_PROJECTS?.split(',').map((p: string) => p.trim()).filter(Boolean);
-  const jiraStrategy = envVars.JIRA_STRATEGY;
-
-  if (!jiraProjects?.length) {
-    return;
-  }
-
-  let config: Record<string, unknown> = {};
-  if (fs.existsSync(configPath)) {
-    config = await fs.readJson(configPath);
-  }
-
-  if (!config.sync) {
-    config.sync = {
-      enabled: true,
-      profiles: {},
-      defaultProfile: undefined,
-      settings: {
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
-      }
-    };
-  }
-
-  if (jiraProjects?.length && jiraStrategy === 'project-per-team') {
-    const profileId = 'jira-default';
-    const syncConfig = config.sync as Record<string, unknown>;
-    const profiles = syncConfig.profiles as Record<string, unknown>;
-
-    if (!profiles[profileId]) {
-      const jiraProfile: SyncProfile = {
-        provider: 'jira',
-        displayName: 'Jira Default',
-        config: {
-          domain: envVars.JIRA_DOMAIN || '',
-          projects: jiraProjects
-        } as JiraConfig,
-        timeRange: { default: '1M', max: '6M' },
-        rateLimits: { maxItemsPerSync: 500, warnThreshold: 100 }
-      };
-
-      profiles[profileId] = jiraProfile;
-      syncConfig.defaultProfile = profileId;
-
-      await fs.writeJson(configPath, config, { spaces: 2 });
-
-      console.log(chalk.blue('\n📁 Creating Multi-Project Folders'));
-      console.log(chalk.gray('   Detected: ' + jiraProjects.length + ' Jira projects (' + jiraProjects.join(', ') + ')'));
-
-      for (const projectKey of jiraProjects) {
-        const projectId = projectKey.toLowerCase();
-        const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectId);
-
-        if (!fs.existsSync(specsPath)) {
-          fs.mkdirSync(specsPath, { recursive: true });
-        }
-
-        console.log(chalk.green('   ✓ Created project: ' + projectKey + ' (simplified structure)'));
-      }
-      console.log('');
-    }
-  }
-
-  // ADO Multi-Area Folder Creation (reads from config.json, not .env)
-  // CRITICAL FIX (2025-12-01): Iterate ALL ADO profiles, not just the first one
-  // Bug: .find() only returned first profile, causing multi-project folders to be skipped
-  const syncConfig = config.sync as Record<string, unknown> | undefined;
-  const profiles = (syncConfig?.profiles || {}) as Record<string, { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[] } }>;
-
-  // Filter ALL ADO profiles (not .find() which only returns first!)
-  const adoProfiles = Object.values(profiles).filter(p => p.provider === 'ado');
-
-  if (adoProfiles.length > 0) {
-    console.log(chalk.blue('\n📁 Creating Azure DevOps Folders'));
-
-    for (const adoProfile of adoProfiles) {
-      if (!adoProfile?.config) continue;
-
-      const { organization, project, areaPaths } = adoProfile.config;
-
-      if (organization && project) {
-        console.log(chalk.gray(`   Project: ${project}`));
-
-        const projectFolder = project.replace(/\s+/g, '-').toLowerCase();
-
-        if (areaPaths?.length) {
-          // Create folder per area path
-          for (const areaPath of areaPaths) {
-            const areaName = areaPath.split('\\').pop() || areaPath;
-            const areaFolder = areaName.replace(/\s+/g, '-').toLowerCase();
-            const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, areaFolder);
-
-            if (!fs.existsSync(specsPath)) {
-              fs.mkdirSync(specsPath, { recursive: true });
-            }
-            console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${areaFolder}/`));
-          }
-        } else {
-          // Single project folder (no area paths)
-          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
-
-          if (!fs.existsSync(specsPath)) {
-            fs.mkdirSync(specsPath, { recursive: true });
-          }
-          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
-        }
-      }
-    }
-    console.log('');
-  }
-
-  // JIRA Multi-Board Folder Creation (reads from config.json, similar to ADO)
-  // CRITICAL FIX (2025-12-09): Creates folders from JIRA sync profiles
-  // Bug: JIRA folders were only created from legacy .env JIRA_PROJECTS, not from config.json profiles
-  const jiraProfiles = Object.values(profiles).filter(p => p.provider === 'jira') as Array<{
-    provider?: string;
-    config?: {
-      domain?: string;
-      projectKey?: string;
-      boards?: Array<{ id: string; name?: string }>;
-    }
-  }>;
-
-  if (jiraProfiles.length > 0) {
-    console.log(chalk.blue('\n📁 Creating JIRA Folders'));
-
-    for (const jiraProfile of jiraProfiles) {
-      if (!jiraProfile?.config?.projectKey) continue;
-
-      const { projectKey, boards } = jiraProfile.config;
-      console.log(chalk.gray(`   Project: ${projectKey}`));
-
-      const projectFolder = projectKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-      if (boards?.length) {
-        // Create folder per board (2-level structure)
-        for (const board of boards) {
-          const boardName = board.name || `board-${board.id}`;
-          const boardFolder = boardName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, boardFolder);
-
-          if (!fs.existsSync(specsPath)) {
-            fs.mkdirSync(specsPath, { recursive: true });
-          }
-          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${boardFolder}/`));
-        }
-      } else {
-        // Single project folder (no boards)
-        const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
-
-        if (!fs.existsSync(specsPath)) {
-          fs.mkdirSync(specsPath, { recursive: true });
-        }
-        console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
-      }
-    }
-    console.log('');
-  }
-}
-
-/**
- * Main init command
+ * Main init command — simplified to core scaffolding only.
  */
 export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
-  // Detect CI/non-interactive environment or quick mode (unified, 0188)
   const isCI = isNonInteractive(options);
 
-  // In quick mode, show a brief message
   if (options.quick) {
-    console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults (local git, no external tools)'));
+    console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults'));
   }
 
-  // STEP 1: LANGUAGE SELECTION (FIRST QUESTION!)
-  // This must be asked before anything else so all prompts are in user's language
+  // STEP 1: Language selection (FIRST!)
   let languageResult: LanguageSelectionResult;
-
-  // Validate CLI language option if provided
   const cliLanguage = options.language?.toLowerCase() as SupportedLanguage | undefined;
   if (cliLanguage && !isLanguageSupported(cliLanguage)) {
     console.error(chalk.red('\n❌ Invalid language: ' + options.language));
@@ -298,7 +85,6 @@ export async function initCommand(
     process.exit(1);
   }
 
-  // Ask for language (or use CLI option / CI default)
   if (isCI) {
     languageResult = getDefaultLanguageSelection(cliLanguage || 'en');
   } else if (cliLanguage) {
@@ -309,21 +95,18 @@ export async function initCommand(
 
   const language = languageResult.language;
   const locale = getLocaleManager(language);
-
-  // Now show welcome message in selected language
   console.log(chalk.blue.bold('\n' + locale.t('cli', 'init.welcome') + '\n'));
 
+  // STEP 2: Path resolution
   let targetDir: string = '';
   let finalProjectName: string = '';
   let usedDotNotation = false;
   let continueExisting = false;
 
-  // Handle "." for current directory
   if (projectName === '.') {
     usedDotNotation = true;
     targetDir = process.cwd();
 
-    // Safety: Prevent init in home directory
     if (path.resolve(targetDir) === path.resolve(os.homedir())) {
       console.log(chalk.red.bold('\n❌ DANGEROUS: Cannot initialize SpecWeave in home directory!\n'));
       console.log(chalk.yellow('   Your home directory contains ALL your projects.'));
@@ -333,122 +116,71 @@ export async function initCommand(
     }
 
     const dirName = path.basename(targetDir);
-
-    // Validate directory name
-    if (!/^[a-z0-9-]+$/.test(dirName)) {
+    if (!PROJECT_NAME_PATTERN.test(dirName)) {
       const suggestedName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
       if (isCI) {
-        console.log(chalk.yellow('\n' + locale.t('cli', 'init.warnings.invalidDirName', { dirName })));
-        console.log(chalk.gray('   → CI mode: Auto-sanitizing to "' + suggestedName + '"'));
         finalProjectName = suggestedName;
       } else {
-        console.log(chalk.yellow('\n' + locale.t('cli', 'init.warnings.invalidDirName', { dirName })));
         finalProjectName = await input({
           message: 'Project name (for templates):',
           default: suggestedName,
-          validate: (val: string) => /^[a-z0-9-]+$/.test(val) || 'Project name must be lowercase letters, numbers, and hyphens only',
+          validate: (val: string) => PROJECT_NAME_PATTERN.test(val) || PROJECT_NAME_VALIDATION_MSG,
         });
       }
     } else {
       finalProjectName = dirName;
     }
 
-    // Warn if directory not empty
-    const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
-    if (existingFiles.length > 0 && !options.force) {
-      if (isCI) {
-        console.log(chalk.yellow('\n' + locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })));
-        console.log(chalk.gray('   → CI mode: Proceeding with initialization'));
-      } else {
-        console.log(chalk.yellow('\n' + locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })));
-        const proceed = await confirm({ message: 'Initialize SpecWeave in current directory?', default: false });
-        if (!proceed) {
-          console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-          process.exit(0);
-        }
-      }
-    }
-
-    // Smart re-initialization
+    // Smart re-init
     if (fs.existsSync(path.join(targetDir, '.specweave'))) {
       const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-      if (result.action === 'cancel') {
-        process.exit(0);
-      }
+      if (result.action === 'cancel') process.exit(0);
       continueExisting = result.continueExisting;
     }
   } else {
-    // Create subdirectory OR use current directory in quick mode
     if (!projectName) {
       if (isCI) {
-        // CI/quick mode without project name: use current directory (like "." notation)
-        // This enables: specweave init --quick (without any args)
         usedDotNotation = true;
         targetDir = process.cwd();
         const dirName = path.basename(targetDir);
+        finalProjectName = !PROJECT_NAME_PATTERN.test(dirName)
+          ? dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+          : dirName;
 
-        // Sanitize directory name for project name
-        if (!/^[a-z0-9-]+$/.test(dirName)) {
-          finalProjectName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-          console.log(chalk.gray(`   → Quick mode: Using current directory "${dirName}" as "${finalProjectName}"`));
-        } else {
-          finalProjectName = dirName;
-          console.log(chalk.gray(`   → Quick mode: Using current directory "${finalProjectName}"`));
-        }
-
-        // Smart re-initialization for quick mode
         if (fs.existsSync(path.join(targetDir, '.specweave'))) {
           const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-          if (result.action === 'cancel') {
-            process.exit(0);
-          }
+          if (result.action === 'cancel') process.exit(0);
           continueExisting = result.continueExisting;
         }
-
-        // Quick mode handled: targetDir and finalProjectName already set
-        // Skip to nested .specweave check below
       } else {
         projectName = await input({
           message: 'Project name:',
           default: 'my-saas',
-          validate: (val: string) => /^[a-z0-9-]+$/.test(val) || 'Project name must be lowercase letters, numbers, and hyphens only',
+          validate: (val: string) => PROJECT_NAME_PATTERN.test(val) || PROJECT_NAME_VALIDATION_MSG,
         });
       }
     }
 
-    // Only process subdirectory creation if projectName was provided/set
-    // (Quick mode without args already set targetDir and finalProjectName above)
     if (projectName) {
       targetDir = path.resolve(process.cwd(), projectName);
-      // CRITICAL FIX (v1.0.23): Normalize projectName to strip path prefixes like ./
-      // Bug: "specweave init ./my-project" stored "./my-project" in config.json
-      // which later caused split('/')[0] to return "." and fail validation
       finalProjectName = path.basename(projectName);
 
       if (fs.existsSync(targetDir)) {
         const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
-
         if (hasSpecweave) {
           const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-          if (result.action === 'cancel') {
-            process.exit(0);
-          }
+          if (result.action === 'cancel') process.exit(0);
           continueExisting = result.continueExisting;
         } else {
           const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
           if (existingFiles.length > 0) {
-            console.log(chalk.yellow('\nDirectory ' + projectName + ' exists with ' + existingFiles.length + ' file(s).'));
-            if (isCI) {
-              // CI/quick mode: proceed without asking
-              console.log(chalk.gray('   → CI/quick mode: Proceeding with initialization'));
-            } else {
+            if (!isCI) {
               const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
               if (!initExisting) {
                 console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
                 process.exit(0);
               }
             }
-            console.log(chalk.green('   ✅ Initializing in existing directory (brownfield-safe)\n'));
           }
         }
       } else {
@@ -457,66 +189,45 @@ export async function initCommand(
     }
   }
 
-  // Guard: Prevent init inside umbrella sub-repos
+  // STEP 3: Guard clauses
   const umbrellaResult = detectUmbrellaParent(targetDir);
   if (umbrellaResult) {
     if (options.force) {
-      console.log(chalk.yellow(`\n⚠️  Warning: This directory is inside an umbrella project at ${umbrellaResult.umbrellaRoot}`));
-      console.log(chalk.yellow('   Proceeding because --force was specified.\n'));
+      console.log(chalk.yellow(`\n⚠️  Warning: Inside umbrella project at ${umbrellaResult.umbrellaRoot}. Proceeding with --force.\n`));
     } else {
-      console.log(chalk.red.bold('\n❌ Cannot initialize here: this directory is inside an umbrella project.\n'));
+      console.log(chalk.red.bold('\n❌ Cannot initialize here: inside an umbrella project.\n'));
       console.log(chalk.yellow(`   Umbrella root: ${umbrellaResult.umbrellaRoot}`));
-      console.log(chalk.yellow(`   Detected via: ${umbrellaResult.reason === 'config-umbrella-repo' ? 'config.json umbrellaRepo flag' : 'repositories/ directory'}`));
       console.log(chalk.cyan('\n💡 Run specweave init in the umbrella root instead, or use --force to override.\n'));
       process.exit(1);
     }
   }
 
-  // Guard: Prevent init in suspicious paths (node_modules, dist, .git, etc.)
   const suspiciousResult = detectSuspiciousPath(targetDir);
   if (suspiciousResult) {
     if (options.force) {
-      console.log(chalk.yellow(`\n⚠️  Warning: Path contains suspicious segment "${suspiciousResult.segment}"`));
-      console.log(chalk.yellow('   Proceeding because --force was specified.\n'));
+      console.log(chalk.yellow(`\n⚠️  Warning: Path contains suspicious segment "${suspiciousResult.segment}". Proceeding with --force.\n`));
     } else {
-      console.log(chalk.red.bold(`\n❌ Cannot initialize here: path contains "${suspiciousResult.segment}" which is not a project root.\n`));
+      console.log(chalk.red.bold(`\n❌ Cannot initialize here: path contains "${suspiciousResult.segment}".\n`));
       console.log(chalk.yellow(`   Suggested project root: ${suspiciousResult.suggestedRoot}`));
-      console.log(chalk.cyan('\n💡 Run specweave init in your project root instead, or use --force to override.\n'));
       process.exit(1);
     }
   }
 
-  // Check for nested .specweave/
-  // EXCEPTION: User-level folders are VALID (e.g., ~/.specweave for global memory/state)
-  // EXCEPTION: Stale folders (no config.json) are NOT real projects and don't block init
   const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
   if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
-    // Filter out user-level and stale folders
     const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel && !f.isStale);
     const staleFolders = parentSpecweaveFolders.filter(f => f.isStale);
 
-    // Warn about stale folders and offer cleanup
-    if (staleFolders.length > 0) {
-      console.log(chalk.yellow('\n⚠️  Found stale .specweave/ folder(s) without config.json (not a real project):\n'));
+    if (staleFolders.length > 0 && !isCI) {
+      console.log(chalk.yellow('\n⚠️  Found stale .specweave/ folder(s) without config.json:\n'));
       for (const folder of staleFolders) {
         console.log(chalk.gray('   ' + path.join(folder.path, '.specweave') + '/'));
       }
-      if (!isCI) {
-        const cleanup = await confirm({ message: 'Remove stale .specweave/ folder(s)?', default: true });
-        if (cleanup) {
-          for (const folder of staleFolders) {
-            const stalePath = path.join(folder.path, '.specweave');
-            try {
-              fs.rmSync(stalePath, { recursive: true, force: true });
-              console.log(chalk.green('   ✅ Removed ' + stalePath));
-            } catch {
-              console.log(chalk.yellow('   ⚠️  Could not remove ' + stalePath));
-            }
-          }
-          console.log('');
+      const cleanup = await confirm({ message: 'Remove stale .specweave/ folder(s)?', default: true });
+      if (cleanup) {
+        for (const folder of staleFolders) {
+          try { fs.rmSync(path.join(folder.path, '.specweave'), { recursive: true, force: true }); } catch { /* skip */ }
         }
-      } else {
-        console.log(chalk.gray('\n   → Ignoring stale folders (no config.json)\n'));
       }
     }
 
@@ -525,31 +236,27 @@ export async function initCommand(
       for (const folder of problematicFolders) {
         console.log(chalk.yellow('   Found .specweave/ at: ' + folder.path));
       }
-      console.log(chalk.cyan.bold('\n   💡 SpecWeave doesn\'t support nested projects.'));
-      console.log(chalk.white('   Initialize in a different directory or remove the parent .specweave/ folder.\n'));
       process.exit(1);
     }
-    // User-level or stale folders found but no problematic ones - allow init to proceed
   }
 
+  // STEP 4: Create project
   const spinner = ora('Creating SpecWeave project...').start();
 
   try {
-    // Detect or select tool
+    // Adapter detection
     const adapterLoader = new AdapterLoader();
     let toolName: string;
 
     if (options.adapter) {
       toolName = options.adapter;
-      spinner.text = 'Using ' + toolName + '...';
     } else {
       let existingAdapter: string | null = null;
       if (continueExisting) {
         const existingConfigPath = path.join(targetDir, '.specweave', 'config.json');
         if (fs.existsSync(existingConfigPath)) {
           try {
-            const existingConfig = fs.readJsonSync(existingConfigPath);
-            existingAdapter = existingConfig?.adapters?.default || null;
+            existingAdapter = fs.readJsonSync(existingConfigPath)?.adapters?.default || null;
           } catch { /* ignore */ }
         }
       }
@@ -557,101 +264,47 @@ export async function initCommand(
       const detectedTool = await adapterLoader.detectTool();
       spinner.stop();
 
-      console.log(chalk.cyan('\n🔍 ' + locale.t('cli', 'init.toolDetection.header')));
-      if (existingAdapter) {
-        console.log(chalk.blue('   📋 Current adapter: ' + existingAdapter));
-      } else {
-        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })));
-      }
-      console.log('');
-
       if (isCI) {
-        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })));
         toolName = detectedTool;
       } else {
-        // CRITICAL (v1.0.25): Ask user if they want to use Claude.
-        // If YES → use Claude (CLAUDE.md)
-        // If NO → use generic (AGENTS.md for all non-Claude tools)
-        // No need to ask which specific non-Claude tool - AGENTS.md works for all!
+        console.log(chalk.cyan('\n🔍 ' + locale.t('cli', 'init.toolDetection.header')));
+        if (existingAdapter) {
+          console.log(chalk.blue('   📋 Current adapter: ' + existingAdapter));
+        } else {
+          console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })));
+        }
+        console.log('');
+
         const confirmTool = await confirm({
           message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
           default: true
         });
-
+        toolName = confirmTool ? detectedTool : 'generic';
         if (!confirmTool) {
-          // User declined Claude → use generic adapter (AGENTS.md)
-          // AGENTS.md is the universal standard for all non-Claude AI tools
-          toolName = 'generic';
           console.log(chalk.gray('   → Using AGENTS.md (universal format for non-Claude tools)'));
-        } else {
-          toolName = detectedTool;
         }
       }
 
       spinner.start('Using ' + toolName + '...');
     }
 
-    // ========================================================================
-    // PROJECT MATURITY: Greenfield vs Brownfield (v1.0.342)
-    // Ask BEFORE repository hosting so greenfield users can defer structure.
-    // ========================================================================
-    spinner.stop();
-    let projectMaturity: ProjectMaturity;
-    const autoDetectedGreenfield = isGreenfieldCheck(targetDir);
-
-    if (isCI) {
-      projectMaturity = autoDetectedGreenfield ? 'greenfield' : 'brownfield';
-      console.log(chalk.gray(`   → Auto-detected: ${projectMaturity} project\n`));
-    } else {
-      console.log(chalk.cyan.bold('\n🌱 Project Type\n'));
-      projectMaturity = await select<ProjectMaturity>({
-        message: locale.t('cli', 'init.maturity.question'),
-        choices: [
-          {
-            name: `🆕 ${locale.t('cli', 'init.maturity.greenfield')} ${chalk.gray('- ' + locale.t('cli', 'init.maturity.greenfieldDesc'))}`,
-            value: 'greenfield' as const,
-          },
-          {
-            name: `📦 ${locale.t('cli', 'init.maturity.brownfield')} ${chalk.gray('- ' + locale.t('cli', 'init.maturity.brownfieldDesc'))}`,
-            value: 'brownfield' as const,
-          },
-        ],
-        default: autoDetectedGreenfield ? 'greenfield' : 'brownfield',
-      });
-    }
-    spinner.start('Configuring project...');
-
-    // ========================================================================
-    // INTERACTIVE: Repository hosting + umbrella selection (BEFORE file creation)
-    // v1.0.286: Moved BEFORE directory structure creation so that:
-    // - Umbrella clone runs on a clean slate (no .specweave/ to conflict with)
-    // - No git init needed if umbrella provides .git
-    // - No file merging or .git replacement required
-    // ========================================================================
-    spinner.stop();
-    const gitHubRemote = detectGitHubRemote(targetDir);
-    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language, projectMaturity });
-    spinner.start('Creating project files...');
+    // Provider auto-detection from .git/config (silent, no prompts)
+    const providerInfo = detectProvider(targetDir);
 
     // Create directory structure
     if (!continueExisting) {
       await createDirectoryStructure(targetDir, toolName);
       spinner.text = 'Directory structure created...';
-    } else {
-      spinner.text = 'Using existing directory structure...';
     }
-
-    // Note: Marketplace registration happens in installAllPlugins or via fallback
-    // No fake success message here - actual registration is done below
 
     // Copy templates
     const templatesDir = findSourceDir('templates', __dirname);
     if (!continueExisting) {
       await copyTemplates(templatesDir, targetDir, finalProjectName, language);
-      spinner.text = 'Base templates copied...';
+      spinner.text = 'Templates copied...';
     }
 
-    // Install based on tool
+    // Non-Claude adapter install
     if (toolName === 'claude') {
       spinner.text = 'Configuring for Claude Code...';
       console.log('\n' + locale.t('cli', 'init.claudeNativeComplete'));
@@ -659,7 +312,7 @@ export async function initCommand(
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }
 
-    // Initialize git
+    // Git init
     const gitDir = path.join(targetDir, '.git');
     if (!fs.existsSync(gitDir)) {
       const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, shell: false });
@@ -685,14 +338,51 @@ export async function initCommand(
       }
     }
 
-    // Create config.json
-    createConfigFile(targetDir, finalProjectName, toolName, language, false, undefined, undefined, projectMaturity, repoResult.structureDeferred);
+    // Create config.json (simplified — no maturity, no structureDeferred)
+    createConfigFile(targetDir, finalProjectName, toolName, language, false);
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
 
-    // Auto-install plugins for Claude ONLY
+    // Batch config updates: provider + smart defaults + LSP (single read-modify-write)
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = fs.readJsonSync(configPath);
+
+        // Provider info from .git/config
+        if (providerInfo) {
+          config.repository = {
+            provider: providerInfo.provider,
+            ...(providerInfo.owner && { organization: providerInfo.owner }),
+          };
+        }
+
+        // Smart defaults
+        applySmartDefaults(config, { adapter: toolName, language, isGitRepo });
+        if (languageResult.keepEnglishOriginals && config.translation) {
+          config.translation.keepEnglishOriginals = true;
+        }
+
+        // LSP auto-enable (Claude only)
+        if (toolName === 'claude') {
+          config.lsp = {
+            enabled: true,
+            autoInstallPlugins: true,
+            marketplace: 'boostvolt/claude-code-lsps',
+          };
+        }
+
+        fs.writeJsonSync(configPath, config, { spaces: 2 });
+      } catch (err) {
+        console.log(chalk.yellow('   ⚠ Could not update config defaults (non-critical)'));
+      }
+    }
+
+    // Plugin install (Claude only)
+    // CRITICAL FIX (v0.34.6): Skip plugin installation when continuing existing config.
+    // Previously, re-running `specweave init .` would deregister all marketplace plugins.
     let autoInstallSucceeded = false;
     let marketplaceOnly = false;
     if (toolName === 'claude') {
-      // CRITICAL FIX (v0.34.6): Skip plugin installation in "continue existing" mode
       if (continueExisting) {
         console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
         autoInstallSucceeded = true;
@@ -700,354 +390,68 @@ export async function initCommand(
         const result = await installAllPlugins({
           dirname: __dirname,
           forceRefresh: options.forceRefresh,
-          lazyMode: !options.fullInstall,  // Lazy mode by default, --full disables it
+          lazyMode: !options.fullInstall,
         });
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
-
-        // NOTE: sw@specweave is enabled at USER level by plugin-installer.ts
-        // Do NOT enable it at project level — that would make the core framework
-        // plugin appear as "Project" scope instead of "User" scope in Claude Code UI.
       }
 
-      // Enable agent teams env var in .claude/settings.json
+      // Enable agent teams env var
       try {
         const { enableAgentTeamsEnvVar } = await import('../helpers/init/claude-settings-env.js');
         enableAgentTeamsEnvVar(targetDir);
       } catch {
-        // Non-critical - agent teams can be enabled later via `specweave team`
+        console.log(chalk.yellow('   ⚠ Could not enable agent teams env var (non-critical)'));
       }
+
+      setupLspEnvVar();
     }
 
-    // Track background job IDs for living docs dependencies
-    const pendingJobIds: string[] = [];
-
-    // ADO Repository cloning (for multi-repo setups)
-    if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
-      try {
-        const cloneJobId = await triggerAdoRepoCloning(
-          targetDir,
-          repoResult.adoProjectSelection,
-          repoResult.adoClonePatternResult
-        );
-        if (cloneJobId) {
-          pendingJobIds.push(cloneJobId);
-        }
-      } catch (cloneError: unknown) {
-        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
-        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
-        console.log(chalk.gray('   You can clone repositories later with /sw-ado:clone-repos\n'));
-      }
-    }
-
-    // GitHub Repository cloning (for multi-repo setups)
-    // Note: umbrella repo is cloned inside setupRepositoryHosting (right after user selects it)
-    // Exclude umbrella repo from nested cloning (it's already at the project root)
-    let githubClonedRepos: string[] = [];
-    if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
-      const excludeRepos = repoResult.umbrellaRepo ? [repoResult.umbrellaRepo] : [];
-      try {
-        const cloningResult = await triggerGitHubRepoCloning(
-          targetDir,
-          repoResult.githubRepoSelection,
-          repoResult.adoClonePatternResult,
-          repoResult.gitUrlFormat || 'https',
-          excludeRepos
-        );
-        if (cloningResult.jobId) {
-          pendingJobIds.push(cloningResult.jobId);
-        }
-        githubClonedRepos = cloningResult.clonedRepos;
-      } catch (cloneError: unknown) {
-        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
-        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
-        console.log(chalk.gray('   You can clone repositories later with /sw-github:clone-repos\n'));
-      }
-    }
-
-    // Bitbucket Repository cloning (for multi-repo setups)
-    if (repoResult.bitbucketRepoSelection && repoResult.adoClonePatternResult) {
-      try {
-        const cloneJobId = await triggerBitbucketRepoCloning(
-          targetDir,
-          repoResult.bitbucketRepoSelection,
-          repoResult.adoClonePatternResult
-        );
-        if (cloneJobId) {
-          pendingJobIds.push(cloneJobId);
-        }
-      } catch (cloneError: unknown) {
-        const msg = cloneError instanceof Error ? cloneError.message : String(cloneError);
-        console.log(chalk.yellow(`\n   ⚠️ Background clone failed to start: ${msg}`));
-        console.log(chalk.gray('   You can clone repositories later\n'));
-      }
-    }
-
-    // Update repository config based on hosting selection
-    // Bug fix: repository.provider was always "local" and organization was never set
-    {
-      const configPath = path.join(targetDir, '.specweave', 'config.json');
-      if (fs.existsSync(configPath)) {
-        try {
-          const config = await fs.readJson(configPath);
-          const hosting = repoResult.hosting;
-          if (hosting.startsWith('github')) {
-            const org = repoResult.githubRepoSelection?.org || gitHubRemote?.owner || config.repository?.organization;
-            config.repository = {
-              ...config.repository,
-              provider: 'github',
-              ...(org && { organization: org }),
-              ...(repoResult.umbrellaRepo && { umbrellaRepo: repoResult.umbrellaRepo }),
-            };
-          } else if (hosting.startsWith('ado')) {
-            const org = repoResult.adoProjectSelection?.org || config.repository?.organization;
-            config.repository = {
-              ...config.repository,
-              provider: 'ado',
-              ...(org && { organization: org }),
-            };
-          } else if (hosting.startsWith('bitbucket')) {
-            const org = repoResult.bitbucketRepoSelection?.workspace || config.repository?.organization;
-            config.repository = {
-              ...config.repository,
-              provider: 'bitbucket',
-              ...(org && { organization: org }),
-            };
-          }
-          // When user selected an umbrella repo, enable umbrella mode
-          // and register cloned repos as child repos
-          if (repoResult.umbrellaRepo) {
-            const org = config.repository?.organization;
-            config.umbrella = {
-              enabled: true,
-              projectName: path.basename(targetDir),
-              childRepos: githubClonedRepos.map(repoName => ({
-                id: repoName,
-                name: repoName,
-                path: `repositories/${org ? org + '/' : ''}${repoName}`,
-                prefix: repoName.substring(0, 3).toUpperCase(),
-                ...(org && {
-                  sync: {
-                    github: { owner: org, repo: repoName },
-                    // Inherit global JIRA/ADO config so child repos don't need manual setup
-                    ...(config.sync?.jira?.projectKey && {
-                      jira: { projectKey: config.sync.jira.projectKey },
-                    }),
-                    ...(config.sync?.ado?.project && {
-                      ado: { organization: config.sync.ado.organization, project: config.sync.ado.project },
-                    }),
-                  },
-                }),
-              })),
-            };
-            // Copy global sync config as umbrella.sync so umbrella-scoped
-            // increments route to the umbrella repo, not a child
-            if (config.sync?.github?.owner && config.sync?.github?.repo) {
-              config.umbrella.sync = {
-                github: { owner: config.sync.github.owner, repo: config.sync.github.repo },
-              };
-              if (config.sync?.jira?.projectKey) {
-                config.umbrella.sync.jira = { projectKey: config.sync.jira.projectKey };
-              }
-              if (config.sync?.ado?.project) {
-                config.umbrella.sync.ado = { project: config.sync.ado.project };
-              }
-            }
-          }
-
-          await fs.writeJson(configPath, config, { spaces: 2 });
-        } catch {
-          // Non-critical — config update failed but init can continue
-        }
-      }
-    }
-
-    // Create multi-project folders for GitHub repos (0188: provider symmetry)
-    if (githubClonedRepos.length > 0) {
-      console.log(chalk.blue('\n📁 Creating GitHub Project Folders'));
-      const created = await createProjectFolders(targetDir, githubClonedRepos);
-      for (const folder of created) {
-        console.log(chalk.green(`   ✓ Created: specs/${folder}/`));
-      }
-      console.log('');
-    }
-
-    // Issue tracker setup
-    // Skip when greenfield user deferred structure — they'll configure via /sw:sync-setup
-    let externalPluginInstalled: boolean | undefined;
-    if (repoResult.structureDeferred) {
-      console.log(chalk.gray('\n⏭️  Skipping issue tracker setup (deferred with repository structure)'));
-      console.log(chalk.gray('   Configure later via /sw:sync-setup\n'));
-    } else {
-      const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
-      const githubRepoSelection = repoResult.githubRepoSelection
-        ? {
-            org: repoResult.githubRepoSelection.org,
-            pat: repoResult.githubRepoSelection.pat,
-            clonedRepos: githubClonedRepos
-          }
-        : undefined;
-
-      await setupIssueTrackerWrapper(
-        targetDir,
-        language,
-        isFrameworkRepo,
-        repoResult.hosting,
-        isCI,
-        repoResult.adoProjectSelection,
-        githubRepoSelection,
-        repoResult.gitUrlFormat
-      );
-
-      // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
-      if (toolName === 'claude' && autoInstallSucceeded) {
-        externalPluginInstalled = await autoInstallSelectedExternalPlugin(targetDir);
-      }
-    }
-
-    // Multi-project folders
-    await createMultiProjectFolders(targetDir);
-
-    // ========================================================================
-    // PHASE: Apply Smart Defaults (0200 — replaces wizard loop)
-    // No more testing/interview/quality-gates/translation prompts.
-    // Everything is auto-provisioned and shown in the summary banner.
-    // ========================================================================
-    {
-      const smartDefaultsConfigPath = path.join(targetDir, '.specweave', 'config.json');
-      if (fs.existsSync(smartDefaultsConfigPath)) {
-        const config = fs.readJsonSync(smartDefaultsConfigPath);
-        const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
-        applySmartDefaults(config, { adapter: toolName, language, isGitRepo });
-
-        // Preserve keepEnglishOriginals from language selection
-        if (languageResult.keepEnglishOriginals && config.translation) {
-          config.translation.keepEnglishOriginals = true;
-        }
-
-        fs.writeJsonSync(smartDefaultsConfigPath, config, { spaces: 2 });
-      }
-    }
-
-    // ========================================================================
-    // PHASE: Auto-install Git Hooks (0200 — no prompt)
-    // ========================================================================
-    const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
+    // Git hooks
     if (isGitRepo && !continueExisting) {
       installGitHooks(targetDir, templatesDir);
     }
 
-    // ========================================================================
-    // PHASE: Auto-enable LSP for Claude (0200 — no prompt)
-    // ========================================================================
-    if (toolName === 'claude') {
-      const lspConfigPath = path.join(targetDir, '.specweave', 'config.json');
-      if (fs.existsSync(lspConfigPath)) {
-        try {
-          const lspConfig = await fs.readJson(lspConfigPath);
-          lspConfig.lsp = {
-            enabled: true,
-            autoInstallPlugins: true,
-            marketplace: 'boostvolt/claude-code-lsps',
-          };
-          await fs.writeJson(lspConfigPath, lspConfig, { spaces: 2 });
-        } catch { /* Non-critical */ }
-      }
-      setupLspEnvVar();
-    }
-
-    // ========================================================================
-    // PHASE: Greenfield Detection + Summary Banner (0200)
-    // ========================================================================
+    // Summary banner
     {
-      const greenfieldStatus = isGreenfieldCheck(targetDir);
+      let bannerConfig: Record<string, any> | undefined;
+      if (fs.existsSync(configPath)) {
+        try { bannerConfig = fs.readJsonSync(configPath); } catch { /* ignore */ }
+      }
 
-      // Build provider info for banner
       let bannerProvider: { name: string; owner?: string; repo?: string; organization?: string } | undefined;
-      if (repoResult.hosting.startsWith('github')) {
-        bannerProvider = { name: 'GitHub', owner: gitHubRemote?.owner, repo: gitHubRemote?.repo };
-      } else if (repoResult.hosting.startsWith('ado')) {
-        bannerProvider = { name: 'Azure DevOps', organization: repoResult.adoProjectSelection?.org };
-      } else if (repoResult.hosting.startsWith('bitbucket')) {
-        bannerProvider = { name: 'Bitbucket' };
+      if (providerInfo) {
+        const providerNames: Record<string, string> = { github: 'GitHub', ado: 'Azure DevOps', bitbucket: 'Bitbucket' };
+        bannerProvider = { name: providerNames[providerInfo.provider] || providerInfo.provider, owner: providerInfo.owner };
       } else {
         bannerProvider = { name: 'Local' };
       }
 
-      // Single config read for banner data
-      const bannerConfigPath = path.join(targetDir, '.specweave', 'config.json');
-      let bannerConfig: Record<string, any> | undefined;
-      if (fs.existsSync(bannerConfigPath)) {
-        try { bannerConfig = fs.readJsonSync(bannerConfigPath); } catch { /* ignore */ }
-      }
-
-      // Read tracker from config
-      let bannerTracker: { name: string } | undefined;
-      if (bannerConfig) {
-        const syncCfg = bannerConfig.sync;
-        if (syncCfg?.defaultProfile && syncCfg?.profiles) {
-          const profile = syncCfg.profiles[syncCfg.defaultProfile];
-          if (profile?.provider === 'github') bannerTracker = { name: 'GitHub Issues' };
-          else if (profile?.provider === 'jira') bannerTracker = { name: 'Jira' };
-          else if (profile?.provider === 'ado') bannerTracker = { name: 'Azure DevOps Boards' };
-        }
-      }
-
-      // Read sync permissions
-      let syncPermissions: { canCreate: boolean; canUpdate: boolean; canUpdateStatus: boolean } | undefined;
-      if (bannerConfig?.sync?.settings) {
-        const s = bannerConfig.sync.settings;
-        syncPermissions = {
-          canCreate: !!s.canUpsertInternalItems,
-          canUpdate: !!s.canUpdateExternalItems,
-          canUpdateStatus: !!s.canUpdateStatus,
-        };
-      }
-
-      // Read defaults (including coverage targets)
-      let finalDefaults: {
-        testing: string;
-        qualityGates: string;
-        lspEnabled: boolean;
-        gitHooksInstalled: boolean;
-        translationEnabled: boolean;
-        coverageTargets?: { unit: number; integration: number; e2e: number };
-      } = {
-        testing: 'TDD',
-        qualityGates: 'standard',
-        lspEnabled: toolName === 'claude',
+      const finalDefaults = {
+        testing: bannerConfig?.testing?.defaultTestMode || 'TDD',
+        qualityGates: bannerConfig?.qualityGates?.preset || 'standard',
+        lspEnabled: !!bannerConfig?.lsp?.enabled,
         gitHooksInstalled: isGitRepo,
-        translationEnabled: false,
+        translationEnabled: !!bannerConfig?.translation?.enabled,
+        coverageTargets: bannerConfig?.testing?.coverageTargets,
       };
-      if (bannerConfig) {
-        finalDefaults = {
-          testing: bannerConfig.testing?.defaultTestMode || 'TDD',
-          qualityGates: bannerConfig.qualityGates?.preset || 'standard',
-          lspEnabled: !!bannerConfig.lsp?.enabled,
-          gitHooksInstalled: isGitRepo,
-          translationEnabled: !!bannerConfig.translation?.enabled,
-          coverageTargets: bannerConfig.testing?.coverageTargets,
-        };
-      }
 
       displaySummaryBanner({
         projectName: finalProjectName,
         provider: bannerProvider,
-        tracker: bannerTracker,
-        repoCount: 1 + githubClonedRepos.length,
-        isGreenfield: greenfieldStatus,
-        hasPendingClones: pendingJobIds.length > 0,
         adapter: toolName,
         language,
         defaults: finalDefaults,
-        externalPluginInstalled,
-        syncPermissions,
-        projectMaturity,
-        structureDeferred: repoResult.structureDeferred,
       });
     }
 
-    showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);
+    showNextSteps(
+      finalProjectName,
+      toolName,
+      language,
+      usedDotNotation,
+      toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined
+    );
   } catch (error) {
     spinner.fail('Failed to create project');
     console.error(chalk.red('\n' + locale.t('cli', 'init.genericError')), error);
@@ -1114,129 +518,5 @@ async function installNonClaudeAdapter(
     }
   } catch {
     spinner.warn('Could not install core plugin');
-  }
-}
-
-/**
- * Wrapper for issue tracker setup
- */
-async function setupIssueTrackerWrapper(
-  targetDir: string,
-  language: SupportedLanguage,
-  isFrameworkRepo: boolean,
-  repositoryHosting: RepositoryHosting,
-  isCI: boolean,
-  adoProjectSelection?: { org: string; pat: string; projects: string[] },
-  githubCredentialsFromRepoSetup?: { org: string; pat: string; clonedRepos?: string[] },
-  gitUrlFormat?: 'ssh' | 'https'
-): Promise<void> {
-  try {
-    const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
-
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    let existingTracker: string | null = null;
-
-    if (fs.existsSync(configPath)) {
-      const config = await fs.readJson(configPath);
-      if (config.sync?.defaultProfile && config.sync?.profiles) {
-        const defaultProfile = config.sync.profiles[config.sync.defaultProfile];
-        existingTracker = defaultProfile?.provider || null;
-      }
-    }
-
-    if (existingTracker) {
-      console.log(chalk.blue('\n🔍 Existing Issue Tracker Configuration Detected'));
-      console.log(chalk.gray('   Current: ' + existingTracker.charAt(0).toUpperCase() + existingTracker.slice(1)));
-
-      if (isCI) {
-        console.log(chalk.gray('   → CI mode: Keeping existing configuration\n'));
-        return;
-      }
-
-      const reconfigure = await confirm({ message: 'Do you want to reconfigure your issue tracker?', default: false });
-      if (!reconfigure) {
-        console.log(chalk.gray('   ✓ Keeping existing configuration\n'));
-        return;
-      }
-    }
-
-    await setupIssueTracker({
-      projectPath: targetDir,
-      language,
-      maxRetries: 3,
-      isFrameworkRepo,
-      repositoryHosting,
-      adoCredentialsFromRepoSetup: adoProjectSelection,
-      githubCredentialsFromRepoSetup,
-      gitUrlFormat,
-      isCI
-    });
-  } catch {
-    console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
-  }
-}
-
-/**
- * Auto-install external tool plugin based on issue tracker selection
- *
- * NEW (v1.0.122): Smart plugin installation
- * Instead of loading all 24 plugins (~60K tokens), we:
- * 1. Load router skill by default (~500 tokens)
- * 2. Auto-load ONLY the selected external tool plugin (~5K tokens)
- * 3. Other plugins load on-demand via keywords
- *
- * Result: ~30K max instead of ~60K (50% token savings)
- */
-async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<boolean> {
-  const configPath = path.join(targetDir, '.specweave', 'config.json');
-
-  if (!fs.existsSync(configPath)) {
-    return false;
-  }
-
-  try {
-    const config = await fs.readJson(configPath);
-    const syncConfig = config.sync as { defaultProfile?: string; profiles?: Record<string, { provider?: string }> } | undefined;
-
-    if (!syncConfig?.defaultProfile || !syncConfig?.profiles) {
-      return false;
-    }
-
-    const defaultProfile = syncConfig.profiles[syncConfig.defaultProfile];
-    if (!defaultProfile?.provider) {
-      return false;
-    }
-
-    // Map provider to plugin name
-    const providerToPlugin: Record<string, string> = {
-      github: 'specweave-github',
-      jira: 'specweave-jira',
-      ado: 'specweave-ado',
-    };
-
-    const pluginToInstall = providerToPlugin[defaultProfile.provider];
-    if (!pluginToInstall) {
-      return false;
-    }
-
-    // Install plugin via Claude CLI directly (v1.0.210 - removed PluginCacheManager)
-    console.log(chalk.cyan(`\n📦 Auto-installing ${defaultProfile.provider.toUpperCase()} plugin...`));
-
-    const scopeArgs = getScopeArgs(getPluginScope(pluginToInstall, 'specweave'));
-    const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', `${pluginToInstall}@specweave`, ...scopeArgs]);
-    if (cliResult.success) {
-      console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
-      return true;
-    } else {
-      console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
-      console.log(chalk.gray(`   → Install manually: claude plugin install ${pluginToInstall}@specweave`));
-      return false;
-    }
-  } catch (error) {
-    // Non-blocking - just log and continue
-    if (process.env.DEBUG) {
-      console.log(chalk.gray(`   → Auto-install skipped: ${error instanceof Error ? error.message : String(error)}`));
-    }
-    return false;
   }
 }

@@ -86,6 +86,71 @@ describe('JobLauncher', () => {
       expect(result.job.progress.total).toBe(0);
     });
 
+    it('should skip worker when all repos already exist', async () => {
+      // Create fake existing repos with .git dirs
+      const repo1Path = path.join(testDir, 'repositories', 'org', 'repo1', '.git');
+      const repo2Path = path.join(testDir, 'repositories', 'org', 'repo2', '.git');
+      fs.mkdirSync(repo1Path, { recursive: true });
+      fs.mkdirSync(repo2Path, { recursive: true });
+
+      const result = await launchCloneJob({
+        projectPath: testDir,
+        repositories: [
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' },
+          { owner: 'org', name: 'repo2', path: 'repositories/org/repo2', cloneUrl: 'https://example.com/repo2.git' }
+        ],
+        foreground: true
+      });
+
+      expect(result.skippedPreFlight).toBe(true);
+      expect(result.isBackground).toBe(false);
+      expect(result.job.type).toBe('clone-repos');
+      // Job should be created and immediately completed
+      expect(result.job).toBeDefined();
+    });
+
+    it('should only clone repos that do not already exist', async () => {
+      // Create only repo1 as existing
+      const repo1Path = path.join(testDir, 'repositories', 'org', 'repo1', '.git');
+      fs.mkdirSync(repo1Path, { recursive: true });
+
+      const result = await launchCloneJob({
+        projectPath: testDir,
+        repositories: [
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' },
+          { owner: 'org', name: 'repo2', path: 'repositories/org/repo2', cloneUrl: 'https://example.com/repo2.git' }
+        ],
+        foreground: true
+      });
+
+      expect(result.skippedPreFlight).toBeUndefined();
+      // Job should only include repo2
+      expect(result.job.progress.total).toBe(1);
+
+      // Worker config should only contain repo2
+      const configPath = path.join(testDir, '.specweave', 'state', 'jobs', result.job.id, 'config.json');
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      expect(config.repositories).toHaveLength(1);
+      expect(config.repositories[0].name).toBe('repo2');
+    });
+
+    it('should treat directory without .git as needing clone', async () => {
+      // Create repo dir but WITHOUT .git — should still be cloned
+      const repo1Dir = path.join(testDir, 'repositories', 'org', 'repo1');
+      fs.mkdirSync(repo1Dir, { recursive: true });
+
+      const result = await launchCloneJob({
+        projectPath: testDir,
+        repositories: [
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' }
+        ],
+        foreground: true
+      });
+
+      expect(result.skippedPreFlight).toBeUndefined();
+      expect(result.job.progress.total).toBe(1);
+    });
+
     it('should fallback to foreground when worker not found in background mode', async () => {
       // Background mode but worker won't be found in test environment
       // v1.0.21: repositories/{org}/{repo} structure

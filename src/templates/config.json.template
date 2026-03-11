@@ -1,88 +1,13 @@
 {
   "$schema": "https://spec-weave.com/schemas/config.json",
-  "version": "0.24.0",
-
-  "sync": {
-    "enabled": true,
-    "provider": "github",
-    "autoSync": true,
-    "includeStatus": true,
-    "autoApplyLabels": true,
-    "defaultProfile": "main",
-
-    "settings": {
-      "canUpsertInternalItems": true,
-      "canUpdateExternalItems": true,
-      "canUpdateStatus": true,
-      "autoSyncOnCompletion": true,
-      "autoCreateOnIncrement": true
-    },
-
-    "github": {
-      "enabled": true,
-      "owner": "your-org",
-      "repo": "your-repo"
-    },
-
-    "profiles": {
-      "main": {
-        "provider": "github",
-        "displayName": "Main GitHub Profile",
-        "description": "Primary GitHub repository",
-        "config": {
-          "owner": "your-org",
-          "repo": "your-repo"
-        },
-        "timeRange": {
-          "default": "1M",
-          "max": "6M"
-        },
-        "rateLimits": {
-          "maxItemsPerSync": 500,
-          "warnThreshold": 100
-        }
-      }
-    },
-
-    "statusSync": {
-      "enabled": true,
-      "autoSync": true,
-      "promptUser": false,
-      "conflictResolution": "external-wins",
-      "mappings": {
-        "github": {
-          "planning": "Planning",
-          "in-progress": "In Progress",
-          "completed": "Done",
-          "paused": "On Hold",
-          "abandoned": "Cancelled"
-        },
-        "jira": {
-          "planning": "To Do",
-          "in-progress": "In Progress",
-          "completed": "Done",
-          "paused": "On Hold",
-          "abandoned": "Cancelled"
-        },
-        "ado": {
-          "planning": "New",
-          "in-progress": "Active",
-          "completed": "Closed",
-          "paused": "On Hold",
-          "abandoned": "Removed"
-        }
-      }
-    }
-  },
-
+  "version": "2.0",
   "hooks": {
     "post_task_completion": {
       "sync_tasks_md": true,
       "external_tracker_sync": true
     },
     "post_increment_planning": {
-      "auto_create_github_issue": true,
-      "sync_living_docs": true
+      "auto_create_github_issue": true
     },
     "post_increment_done": {
       "sync_living_docs": true,
