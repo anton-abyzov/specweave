@@ -86,10 +86,6 @@ describe('init-architecture (integration)', () => {
       const output = formatSummaryBanner({
         projectName: 'test-project',
         provider: { name: 'GitHub', owner: 'org', repo: 'repo' },
-        tracker: { name: 'GitHub Issues' },
-        repoCount: 1,
-        isGreenfield: true,
-        hasPendingClones: false,
         adapter: 'claude',
         language: 'en',
         defaults: {
@@ -157,14 +153,10 @@ describe('init-architecture (integration)', () => {
       applySmartDefaults(config, { adapter: 'claude', language: 'en', isGitRepo: true });
       expect(config.testing.defaultTestMode).toBe('TDD');
 
-      // Phase 5: Generate summary banner
+      // Phase 5: Generate summary banner (simplified - no tracker/greenfield/repoCount)
       const banner = formatSummaryBanner({
         projectName: 'my-app',
         provider: { name: 'GitHub', owner: provider!.owner, repo: provider!.repo },
-        tracker: { name: 'GitHub Issues' },
-        repoCount: 1,
-        isGreenfield: greenfield,
-        hasPendingClones: false,
         adapter: 'claude',
         language: 'en',
         defaults: {
@@ -183,7 +175,6 @@ describe('init-architecture (integration)', () => {
       expect(stripped).toContain('acme/my-app');
       expect(stripped).toContain('TDD');
       expect(stripped).toContain('LSP');
-      expect(stripped).not.toContain('/sw:living-docs'); // Greenfield = no living docs suggestion
     });
 
     it('full pipeline: GitHub single repo with code (brownfield)', () => {
@@ -216,10 +207,6 @@ describe('init-architecture (integration)', () => {
       const banner = formatSummaryBanner({
         projectName: 'backend',
         provider: { name: 'GitHub', owner: 'corp', repo: 'backend' },
-        tracker: { name: 'GitHub Issues' },
-        repoCount: 1,
-        isGreenfield: greenfield,
-        hasPendingClones: false,
         adapter: 'claude',
         language: 'es',
         defaults: {
@@ -232,7 +219,6 @@ describe('init-architecture (integration)', () => {
       });
 
       const stripped = banner.replace(/\x1B\[[0-9;]*m/g, '');
-      expect(stripped).toContain('/sw:living-docs'); // Brownfield = living docs suggestion
       expect(stripped).toContain('Auto-translation (es)');
     });
 
