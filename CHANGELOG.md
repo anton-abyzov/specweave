@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.417] - 2026-03-11
+
+### Changes
+- fix(team-lead): update SKILL.md
+- fix: ADO org dropped from config, sync_living_docs contradiction, non-empty dir warning
+- simplify init: reduce from 1242 to ~350 lines, remove external tool setup
+- Revert "simplify init: reduce from 1242 to ~350 lines, remove external tool setup"
+- simplify init: reduce from 1242 to ~350 lines, remove external tool setup
+- skip already-cloned repos in clone job launcher
+- docs: add npm E401 troubleshooting to docs site
+- chore: bump version to 1.0.416
+- fix: always bypass npm auth for self-update, add E401 troubleshooting docs
+- fix: universal npm E401 auth bypass for specweave update
+
+---
+
+
+
 ## [1.0.416] - 2026-03-10
 
 ### Changes
