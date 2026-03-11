@@ -46,6 +46,47 @@ I approach code like a demanding tech lead:
 
 ## Grill Process
 
+### Phase 0: Spec Compliance Interrogation (ALWAYS RUNS)
+
+**This phase runs before any code quality review. It is not opt-in — it always executes.**
+
+The implementer finished suspiciously quickly. Their report may be incomplete, inaccurate, or optimistic. You MUST verify everything independently.
+
+**DO NOT**: Take the implementer's word for completion. Trust claims about AC satisfaction. Accept their interpretation of requirements without checking.
+
+**DO**: Read actual code. Compare implementation to requirements line by line. Check for missing pieces. Look for extras.
+
+#### Process
+
+1. **Load spec.md** and extract every acceptance criterion matching pattern `AC-US*-*`:
+   ```bash
+   grep -oE 'AC-US[0-9]+-[0-9]+' .specweave/increments/{id}/spec.md | sort -u
+   ```
+
+2. **For each AC**, run adversarial verification:
+   - Read the AC text — what exactly does it require?
+   - Search the codebase for the implementation — does it exist?
+   - **Prove this AC is satisfied** — find concrete evidence (code, test, output) or mark it failed
+   - Check for misinterpretations — does the implementation do what the AC says, or what the developer assumed it says?
+
+3. **Detect scope creep** — look for implemented functionality that is NOT traceable to any AC in spec.md. Unrequested features are a finding (category: scope-creep).
+
+4. **Record findings** in this format for each AC:
+
+   | AC ID | Expected Behavior | Actual Behavior | Status |
+   |-------|-------------------|-----------------|--------|
+   | AC-US1-01 | [from spec.md] | [from code/tests] | pass/fail |
+
+5. **Produce `acCompliance` output** for the grill-report.json (see Persistent Report section).
+
+#### Phase 0 Gate
+
+- If ANY AC fails: the finding is automatically severity **CRITICAL** (spec non-compliance is a blocker)
+- If scope creep detected: severity **MAJOR** (unrequested work must be justified or removed)
+- Phase 0 findings are included in the main grill report alongside Phase 2 code quality findings
+
+---
+
 ### Phase 1: Context Gathering
 
 ```bash
@@ -286,15 +327,32 @@ Then write the report using the Write tool:
 
 ```json
 {
-  "version": "1.0",
+  "version": "1.1",
   "incrementId": "<id>",
   "timestamp": "<ISO-8601>",
   "verdict": "PASS|FAIL",
   "shipReadiness": "READY|NEEDS REVIEW|NOT READY",
   "summary": { "totalFindings": 0, "critical": 0, "high": 0, "medium": 0 },
+  "acCompliance": {
+    "totalACs": 5,
+    "passed": 4,
+    "failed": 1,
+    "scopeCreep": ["Unrequested admin panel endpoint"],
+    "results": [
+      { "acId": "AC-US1-01", "status": "pass", "evidence": "Implemented in src/auth.ts:42, test in auth.test.ts:15" },
+      { "acId": "AC-US1-02", "status": "fail", "evidence": "AC requires email notification on signup — no email logic found" }
+    ]
+  },
   "findings": []
 }
 ```
+
+**`acCompliance` fields**:
+- `totalACs`: Total number of ACs extracted from spec.md
+- `passed`: ACs with confirmed implementation evidence
+- `failed`: ACs without satisfactory implementation
+- `scopeCreep`: Array of descriptions for functionality not traceable to any AC
+- `results`: Array of per-AC verdicts — `status` is "pass" or "fail", `evidence` is a brief explanation with file references
 
 **Ship readiness**: `READY` = 0 critical + 0 high | `NEEDS REVIEW` = 0 critical + 1+ high | `NOT READY` = 1+ critical
 
@@ -337,6 +395,21 @@ You can also run `/sw:grill` standalone at any time for early feedback.
 - Magic numbers without constants
 - Inconsistent error handling
 - Missing type annotations
+
+---
+
+## Anti-Rationalization Table
+
+These excuses signal you're about to let substandard work pass the grill. Recognize them and hold the line.
+
+| Excuse | Rebuttal | Why It Matters |
+|--------|----------|----------------|
+| "Close enough to the spec" | Close enough ships bugs. If the AC says X and the code does X-minus, that's a defect. | Spec drift compounds across tasks — small deviations add up to a broken feature |
+| "It works in testing" | Working is not the same as correct, and correct is not the same as complete. Does it satisfy every AC? | "Works" means "passes the tests I wrote" — not "meets the requirements" |
+| "Minor deviation, not worth fixing" | Who decides what's minor? The spec does. If it deviates, it's a finding. | Today's minor deviation is tomorrow's production incident |
+| "The AC is ambiguous" | Ambiguity means clarify with the spec author, not assume and ship. Flag it as a finding. | Shipping on assumptions turns an ambiguity into a defect |
+| "We can fix it later" | Tech debt with interest starts now. "Later" means "after users hit it." | Every "fix later" item has a 70% chance of never being fixed |
+| "The tests pass" | Tests prove what was tested, not what should have been tested. AC compliance is a separate verification. | Passing tests with missing ACs is a false green — the most dangerous kind |
 
 ---
 

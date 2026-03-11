@@ -7,7 +7,7 @@
  * 3. Project folders in specs/
  * 4. Sync profile projects
  *
- * Used by PM Agent, spec generators, and initial-increment-generator
+ * Used by PM Agent and spec generators
  * to determine whether to generate project-scoped user stories.
  *
  * @module utils/multi-project-detector

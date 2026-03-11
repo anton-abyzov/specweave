@@ -104,6 +104,17 @@ export {
   type MergeResult,
 } from './instruction-file-merger.js';
 
+// Repo connect (post-scaffold project setup)
+export {
+  parseRepoInput,
+  promptProjectSetup,
+  promptRepoUrls,
+  cloneReposIntoWorkspace,
+  type ProjectSetupChoice,
+  type ParsedRepo,
+  type RepoConnectResult,
+} from './repo-connect.js';
+
 // Smart .gitignore generator (v1.0.130+)
 export {
   generateSmartGitignore,

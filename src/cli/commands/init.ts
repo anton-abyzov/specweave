@@ -104,7 +104,8 @@ export async function initCommand(
   let usedDotNotation = false;
   let continueExisting = false;
 
-  if (projectName === '.') {
+  if (!projectName || projectName === '.') {
+    // No args or '.' → init in current directory
     usedDotNotation = true;
     targetDir = process.cwd();
 
@@ -123,7 +124,7 @@ export async function initCommand(
         finalProjectName = suggestedName;
       } else {
         finalProjectName = await input({
-          message: 'Project name (for templates):',
+          message: 'Project name (for config):',
           default: suggestedName,
           validate: (val: string) => PROJECT_NAME_PATTERN.test(val) || PROJECT_NAME_VALIDATION_MSG,
         });
@@ -147,29 +148,7 @@ export async function initCommand(
       } catch { /* ignore read errors */ }
     }
   } else {
-    if (!projectName) {
-      if (isCI) {
-        usedDotNotation = true;
-        targetDir = process.cwd();
-        const dirName = path.basename(targetDir);
-        finalProjectName = !PROJECT_NAME_PATTERN.test(dirName)
-          ? dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-')
-          : dirName;
-
-        if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-          const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-          if (result.action === 'cancel') process.exit(0);
-          continueExisting = result.continueExisting;
-        }
-      } else {
-        projectName = await input({
-          message: 'Project name:',
-          default: 'my-saas',
-          validate: (val: string) => PROJECT_NAME_PATTERN.test(val) || PROJECT_NAME_VALIDATION_MSG,
-        });
-      }
-    }
-
+    // Explicit project name → create subdirectory
     if (projectName) {
       targetDir = path.resolve(process.cwd(), projectName);
       finalProjectName = path.basename(projectName);
@@ -301,7 +280,8 @@ export async function initCommand(
     const providerInfo = detectProvider(targetDir);
 
     // Umbrella auto-detection: scan repositories/ subdirectory
-    const umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+    // Mutable — may be updated after repo cloning in post-scaffold step
+    let umbrellaDiscovery = scanUmbrellaRepos(targetDir);
 
     // Create directory structure
     if (!continueExisting) {
@@ -412,6 +392,55 @@ export async function initCommand(
         fs.writeJsonSync(configPath, config, { spaces: 2 });
       } catch (err) {
         console.log(chalk.yellow('   ⚠ Could not update config defaults (non-critical)'));
+      }
+    }
+
+    // Post-scaffold: Project setup question
+    // Ask how the user wants to set up code — skip if already has .git, repositories/, or CI mode
+    if (!isCI && !continueExisting) {
+      const hasGit = fs.existsSync(path.join(targetDir, '.git'));
+      const hasRepos = fs.existsSync(path.join(targetDir, 'repositories'));
+
+      if (!hasGit && !hasRepos) {
+        spinner.stop();
+        try {
+          const { promptProjectSetup, promptRepoUrls, cloneReposIntoWorkspace } = await import('../helpers/init/repo-connect.js');
+          const setupChoice = await promptProjectSetup(language);
+
+          if (setupChoice === 'clone-repos') {
+            const repos = await promptRepoUrls(language);
+            if (repos.length > 0) {
+              const result = cloneReposIntoWorkspace(targetDir, repos);
+              console.log(chalk.green(`\n   ✓ Cloned ${result.totalCloned} repo(s)`));
+              if (result.totalFailed > 0) {
+                console.log(chalk.yellow(`   ⚠ ${result.totalFailed} repo(s) failed to clone`));
+              }
+
+              // Re-scan for umbrella and update config
+              umbrellaDiscovery = scanUmbrellaRepos(targetDir);
+              if (umbrellaDiscovery && fs.existsSync(configPath)) {
+                try {
+                  const config = fs.readJsonSync(configPath);
+                  const usedPrefixes = new Set<string>();
+                  const childRepos = umbrellaDiscovery.repos.map(r => {
+                    let prefix = r.name.substring(0, 3).toUpperCase();
+                    if (usedPrefixes.has(prefix)) {
+                      let suffix = 2;
+                      while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
+                      prefix = prefix.substring(0, 2) + suffix;
+                    }
+                    usedPrefixes.add(prefix);
+                    return { id: r.name, path: r.path, name: r.name, prefix };
+                  });
+                  config.umbrella = { enabled: true, projectName: finalProjectName, childRepos };
+                  config.repository = { ...config.repository, umbrellaRepo: true };
+                  fs.writeJsonSync(configPath, config, { spaces: 2 });
+                } catch { /* non-fatal */ }
+              }
+            }
+          }
+        } catch { /* non-fatal — user can set up repos later */ }
+        spinner.start('Finalizing...');
       }
     }
 
