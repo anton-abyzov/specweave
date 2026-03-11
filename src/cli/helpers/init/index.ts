@@ -27,6 +27,7 @@ export {
   countFilesRecursive,
   detectUmbrellaParent,
   detectSuspiciousPath,
+  scanUmbrellaRepos,
   SUSPICIOUS_PATH_SEGMENTS,
 } from './path-utils.js';
 

@@ -6,6 +6,7 @@
  */
 
 import chalk from 'chalk';
+import type { UmbrellaDiscoveryResult } from './types.js';
 
 export interface SummaryBannerOptions {
   projectName: string;
@@ -25,6 +26,7 @@ export interface SummaryBannerOptions {
     translationEnabled: boolean;
     coverageTargets?: { unit: number; integration: number; e2e: number };
   };
+  umbrellaDiscovery?: UmbrellaDiscoveryResult;
 }
 
 const adapterDisplayNames: Record<string, string> = {
@@ -53,6 +55,21 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
         ? `(${options.provider.owner}/${options.provider.repo})`
         : '';
     lines.push(chalk.cyan('  Provider:  ') + `${options.provider.name} ${providerDetail}`.trim());
+  }
+
+  // Project structure
+  if (options.umbrellaDiscovery) {
+    const d = options.umbrellaDiscovery;
+    lines.push(chalk.cyan('  Structure: ') + `Umbrella (${d.totalRepoCount} ${d.totalRepoCount === 1 ? 'repository' : 'repositories'})`);
+    const displayRepos = d.repos.slice(0, 10);
+    for (const repo of displayRepos) {
+      lines.push(chalk.gray(`    - ${repo.org}/${repo.name}`));
+    }
+    if (d.totalRepoCount > 10) {
+      lines.push(chalk.gray(`    ... and ${d.totalRepoCount - 10} more`));
+    }
+  } else {
+    lines.push(chalk.cyan('  Structure: ') + 'Single repository');
   }
 
   // Adapter info
