@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.436] - 2026-03-12
+
+### Changes
+- chore: add e2e sync-verify tests
+- chore: bump version to 1.0.435
+- feat: add specweave sync-setup CLI command + detect misplaced repos on init
+
+---
+
+
+
 ## [1.0.435] - 2026-03-12
 
 ### Changes
