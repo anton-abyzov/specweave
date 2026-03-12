@@ -1,5 +1,5 @@
 ---
-description: Clone GitHub repositories to local workspace. Use after init if cloning was skipped, to resume interrupted cloning, or to add repos later. Already-cloned repos are automatically skipped.
+description: Clone GitHub repositories to local workspace. Supports single repo (--repo owner/repo) or org-level bulk cloning (--org). Use after init to add repos. Already-cloned repos are automatically skipped.
 ---
 
 # Clone GitHub Repositories Command
@@ -9,6 +9,7 @@ You are a GitHub repository cloning expert. Help users clone repositories from G
 ## Purpose
 
 This command clones GitHub repositories **after** initial SpecWeave setup (`specweave init`). Use when:
+- **Adding a single repo** with `--repo owner/repo` (any URL format supported)
 - User skipped cloning during init
 - **Resuming interrupted cloning** (already-cloned repos are skipped!)
 - Adding repositories from organization
@@ -26,6 +27,21 @@ This command clones GitHub repositories **after** initial SpecWeave setup (`spec
 ## Command Syntax
 
 ```bash
+# Clone a single repo (owner/repo shorthand)
+/sw-github:clone --repo "owner/repo"
+
+# Clone a single repo (full URL)
+/sw-github:clone --repo "https://github.com/owner/repo"
+
+# Clone a single repo (SSH URL)
+/sw-github:clone --repo "git@github.com:owner/repo.git"
+
+# Clone a single repo (bare host)
+/sw-github:clone --repo "github.com/owner/repo"
+
+# Single repo dry-run (validate only)
+/sw-github:clone --repo "owner/repo" --dry-run
+
 # Interactive mode (prompts for everything)
 /sw-github:clone
 
@@ -45,9 +61,62 @@ This command clones GitHub repositories **after** initial SpecWeave setup (`spec
 /sw-github:clone
 ```
 
+**Flag precedence**: When `--repo` is provided, `--org` and `--pattern` are ignored.
+
 ## Your Task
 
 When the user runs this command:
+
+### Step 0: Single Repo Mode (--repo)
+
+If the user provided `--repo`, bypass org-level cloning entirely:
+
+```typescript
+import { cloneSingleGitHubRepo } from '../../../src/cli/helpers/init/github-repo-cloning.js';
+import { readEnvFile, parseEnvFile } from '../../../src/utils/env-file.js';
+
+if (args.repo) {
+  // Resolve token
+  let pat = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+  if (!pat) {
+    const envContent = readEnvFile(projectPath);
+    if (envContent) {
+      const parsed = parseEnvFile(envContent);
+      pat = parsed.GH_TOKEN || parsed.GITHUB_TOKEN;
+    }
+  }
+
+  const result = await cloneSingleGitHubRepo({
+    repoIdentifier: args.repo,
+    projectPath,
+    pat,
+    dryRun: args.dryRun,
+  });
+
+  if (result.error) {
+    console.log(chalk.red(`❌ ${result.error}`));
+  } else if (result.alreadyCloned) {
+    console.log(chalk.green(`✅ ${result.owner}/${result.repo} already cloned.`));
+  } else if (result.cloned) {
+    console.log(chalk.green(`\n✅ Cloning ${result.owner}/${result.repo} started!`));
+    console.log(chalk.cyan(`   /sw:jobs → Check progress`));
+  } else if (args.dryRun) {
+    console.log(chalk.cyan(`🔎 DRY RUN: Would clone ${result.owner}/${result.repo}`));
+  }
+
+  return; // Skip all remaining steps
+}
+```
+
+**Supported input formats for `--repo`:**
+- `owner/repo` — shorthand (assumes github.com, uses HTTPS with PAT)
+- `github.com/owner/repo` — bare host (uses HTTPS with PAT)
+- `https://github.com/owner/repo` — full HTTPS URL (uses HTTPS with PAT)
+- `git@github.com:owner/repo.git` — SSH URL (uses SSH key, no PAT needed)
+
+**Token requirement:** HTTPS/shorthand formats require `GH_TOKEN` or `GITHUB_TOKEN`. SSH format uses SSH key authentication and does not require a token.
+
+---
 
 ### Step 1: Check Prerequisites
 
@@ -460,6 +529,41 @@ Clone 425 repositories to current directory? (Y/n)
 
 🔎 DRY RUN: No repositories will be cloned.
    Remove --dry-run to actually clone.
+```
+
+### Example 5: Clone Single Repo
+**User**: `/sw-github:clone --repo "anton-abyzov/vskill"`
+
+**Output**:
+```
+📦 GitHub Repository Cloning
+
+   ✓ GitHub token found
+   Validating repository...
+   ✓ Repository anton-abyzov/vskill exists
+
+🔄 Cloning anton-abyzov/vskill...
+
+   ✓ Clone job started (Job ID: abc12345)
+   Target: repositories/anton-abyzov/vskill
+   Check progress: /sw:jobs
+
+✅ Cloning anton-abyzov/vskill started!
+```
+
+### Example 6: Single Repo (Already Cloned)
+**User**: `/sw-github:clone --repo "anton-abyzov/vskill"`
+
+**Output**:
+```
+✅ anton-abyzov/vskill already cloned.
+```
+
+## Post-Init Tip
+
+After `specweave init` completes, you can add individual repos at any time:
+```bash
+/sw-github:clone --repo "owner/repo"
 ```
 
 ## Important Notes
