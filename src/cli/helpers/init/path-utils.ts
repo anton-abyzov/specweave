@@ -291,6 +291,39 @@ export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | 
 }
 
 /**
+ * Build umbrella config fragment from discovered repos.
+ * Generates 3-char uppercase prefixes with deduplication (2-char + numeric suffix on collision).
+ *
+ * @param discovery - Result of scanUmbrellaRepos()
+ * @param projectName - Name of the umbrella project
+ * @returns Config fragment with umbrella and repository fields
+ */
+export function buildUmbrellaConfig(
+  discovery: UmbrellaDiscoveryResult,
+  projectName: string
+): {
+  umbrella: { enabled: true; projectName: string; childRepos: Array<{ id: string; path: string; name: string; prefix: string }> };
+  repository: { umbrellaRepo: true };
+} {
+  const usedPrefixes = new Set<string>();
+  const childRepos = discovery.repos.map(r => {
+    let prefix = r.name.substring(0, 3).toUpperCase();
+    if (usedPrefixes.has(prefix)) {
+      let suffix = 2;
+      while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
+      prefix = prefix.substring(0, 2) + suffix;
+    }
+    usedPrefixes.add(prefix);
+    return { id: r.name, path: r.path, name: r.name, prefix };
+  });
+
+  return {
+    umbrella: { enabled: true, projectName, childRepos },
+    repository: { umbrellaRepo: true },
+  };
+}
+
+/**
  * Count files recursively in a directory
  * Used for logging before deletion
  *
