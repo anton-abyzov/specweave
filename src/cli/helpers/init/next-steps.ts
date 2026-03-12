@@ -168,4 +168,21 @@ export function showNextSteps(
   console.log(chalk.gray(locale.t('cli', 'init.nextSteps.docsLink')));
   console.log(chalk.gray(locale.t('cli', 'init.nextSteps.githubLink')));
   console.log('');
+
+  // Warn about repos found in non-standard layout (repositories/{name} instead of {org}/{name})
+  if (context.misplacedRepos && context.misplacedRepos.length > 0) {
+    const example = context.misplacedRepos[0];
+    console.log(chalk.yellow.bold('   ⚠  Non-standard repository layout detected'));
+    console.log(chalk.gray('   The following repos were found directly under repositories/'));
+    console.log(chalk.gray('   (expected: repositories/{org}/{repo}/, got: repositories/{repo}/):'));
+    for (const repoName of context.misplacedRepos) {
+      console.log(chalk.gray(`     repositories/${repoName}/`));
+    }
+    console.log('');
+    console.log(chalk.cyan('   To fix, move repos into an org subfolder and re-init:'));
+    console.log(chalk.white(`     mkdir -p repositories/my-org`));
+    console.log(chalk.white(`     mv repositories/${example} repositories/my-org/${example}`));
+    console.log(chalk.white(`     specweave init .`));
+    console.log('');
+  }
 }
