@@ -492,3 +492,137 @@ export async function triggerGitHubRepoCloning(
     clonedRepos: filteredRepos.map(r => r.name)
   };
 }
+
+/**
+ * Options for cloning a single GitHub repository
+ */
+export interface SingleRepoCloneOptions {
+  /** Raw repo identifier (any format: owner/repo, URL, SSH) */
+  repoIdentifier: string;
+  /** Project root path */
+  projectPath: string;
+  /** GitHub PAT (optional for SSH) */
+  pat?: string;
+  /** Dry-run mode — validate only, don't clone */
+  dryRun?: boolean;
+}
+
+/**
+ * Result of a single repo clone operation
+ */
+export interface SingleRepoCloneResult {
+  /** Whether the clone job was launched */
+  cloned: boolean;
+  /** Job ID if clone was launched */
+  jobId?: string;
+  /** Whether repo was already cloned locally */
+  alreadyCloned?: boolean;
+  /** Parsed owner */
+  owner?: string;
+  /** Parsed repo name */
+  repo?: string;
+  /** Error message if failed */
+  error?: string;
+}
+
+/**
+ * Clone a single GitHub repository into the umbrella workspace.
+ *
+ * Validates the repo exists, checks for local duplicates, then
+ * launches a background clone job via existing infrastructure.
+ *
+ * @param options - Clone options including repo identifier and project path
+ * @returns Result with clone status, job ID, or error
+ */
+export async function cloneSingleGitHubRepo(
+  options: SingleRepoCloneOptions
+): Promise<SingleRepoCloneResult> {
+  const { repoIdentifier, projectPath, pat, dryRun } = options;
+
+  // Step 1: Parse input
+  const parsed = parseRepoIdentifier(repoIdentifier);
+  if (!parsed) {
+    return {
+      cloned: false,
+      error: 'Invalid repo format. Supported formats: owner/repo, github.com/owner/repo, https://github.com/owner/repo, git@github.com:owner/repo.git'
+    };
+  }
+
+  const { owner, repo, inputType } = parsed;
+  const urlFormat: 'ssh' | 'https' = inputType === 'ssh' ? 'ssh' : 'https';
+
+  // Step 2: Resolve token — required for HTTPS/shorthand, optional for SSH
+  if (!pat && inputType !== 'ssh') {
+    return {
+      cloned: false,
+      owner,
+      repo,
+      error: 'No GitHub token found. Set GH_TOKEN or GITHUB_TOKEN environment variable, or use SSH format (git@github.com:owner/repo.git).'
+    };
+  }
+
+  // Step 3: Validate repo exists via GitHub API (if token available)
+  if (pat) {
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        headers: {
+          'Authorization': `Bearer ${pat}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
+      if (!response.ok) {
+        return {
+          cloned: false,
+          owner,
+          repo,
+          error: `Repository ${owner}/${repo} not found or you don't have access. Check the repo name and ensure your token has 'repo' scope.`
+        };
+      }
+    } catch (err) {
+      console.log(chalk.yellow(`   ⚠️ Could not validate repo (network error), proceeding with clone...`));
+    }
+  }
+
+  // Step 4: Check local existence
+  const localGitPath = path.join(projectPath, 'repositories', owner, repo, '.git');
+  if (fs.existsSync(localGitPath)) {
+    console.log(chalk.green(`   ✓ Repository ${owner}/${repo} already cloned at repositories/${owner}/${repo}`));
+    return { cloned: false, alreadyCloned: true, owner, repo };
+  }
+
+  // Step 5: Dry-run — validate only, don't clone
+  if (dryRun) {
+    console.log(chalk.cyan(`   🔎 DRY RUN: Would clone ${owner}/${repo} to repositories/${owner}/${repo}`));
+    return { cloned: false, owner, repo };
+  }
+
+  // Step 6: Build clone URL and launch job
+  const cloneUrl = buildGitHubCloneUrl(owner, repo, pat || '', urlFormat);
+
+  console.log(chalk.blue(`\n🔄 Cloning ${owner}/${repo}...\n`));
+
+  const result = await launchCloneJob({
+    projectPath,
+    repositories: [{
+      owner,
+      name: repo,
+      path: `repositories/${owner}/${repo}`,
+      cloneUrl
+    }]
+  });
+
+  if (!result.skippedPreFlight) {
+    console.log(chalk.green(`   ✓ Clone job started (Job ID: ${result.job.id})`));
+    console.log(chalk.gray(`   Target: repositories/${owner}/${repo}`));
+    console.log(chalk.cyan(`   Check progress: /sw:jobs`));
+  }
+
+  return {
+    cloned: true,
+    jobId: result.job.id,
+    owner,
+    repo
+  };
+}
