@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.434] - 2026-03-12
+
+### Changes
+- fix ADO/JIRA sync: process-aware states, parent linking, metadata fallback
+
+---
+
+
+
 ## [1.0.433] - 2026-03-12
 
 ### Changes
