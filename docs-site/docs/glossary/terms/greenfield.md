@@ -503,7 +503,7 @@ Break project into small, testable increments:
 
 ```bash
 # Increment 1: Core infrastructure
-/specweave:increment "0001-project-setup-and-auth"
+/specweave:increment "core-infrastructure-and-auth"
 
 # Increment 2: Basic features
 /specweave:increment "0002-project-and-task-crud"

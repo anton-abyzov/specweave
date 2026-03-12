@@ -13,11 +13,9 @@
 <!-- SW:SECTION:start version="1.0.272" -->
 ## Getting Started
 
-**Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
+Your first increment starts at `0001`. Just describe what you want to build:
 
-**Options**:
-1. **Start fresh**: Delete `.specweave/increments/0001-project-setup/` → `/sw:increment "your-feature"`
-2. **Customize**: Edit spec.md and use for setup tasks
+`/sw:increment "your-feature"`
 <!-- SW:END:start -->
 
 <!-- SW:SECTION:autodetect version="1.0.272" -->

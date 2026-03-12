@@ -244,6 +244,14 @@ src/**/*.d.ts.map
 # Temporary backups (do not commit)
 dist-backup/
 
+# Backup/original image copies (git history preserves old versions)
+docs-site/static/img/hero/backup/
+docs-site/static/img/hero/*_original.*
+
+# Nested plugin runtime state (root patterns don't match nested paths)
+plugins/**/.specweave/state/
+plugins/**/.specweave/logs/
+
 # External content (marketing/non-technical content)
 youtube-content/
 SOCIAL_MEDIA_*.md

@@ -1,10 +1,12 @@
 /**
  * Comprehensive unit tests for the init command
  *
- * Tests: isNonInteractive, isSpecWeaveFrameworkRepo (via initCommand),
- * createMultiProjectFolders (via initCommand), initCommand main flow,
- * installNonClaudeAdapter (via initCommand), setupIssueTrackerWrapper (via initCommand),
- * saveLivingDocsConfig, displayLivingDocsInstructions, autoInstallSelectedExternalPlugin.
+ * Tests: isNonInteractive, initCommand main flow, installNonClaudeAdapter (via initCommand),
+ * detectProvider integration, config creation, plugin installation, smart defaults,
+ * LSP setup, showNextSteps, error handling, git hooks.
+ *
+ * Simplified (v1.0.415): Removed tests for setupRepositoryHosting, repo cloning,
+ * issue tracker, multi-project folders, greenfield/brownfield, living docs.
  *
  * Strategy: Mock ALL external dependencies to isolate the init command logic.
  * Uses vi.hoisted() + vi.mock() pattern for ESM mocking.
@@ -75,11 +77,6 @@ const { mockGetLocaleManager, mockLocaleT } = vi.hoisted(() => {
   };
 });
 
-const { mockReadEnvFile, mockParseEnvFile } = vi.hoisted(() => ({
-  mockReadEnvFile: vi.fn().mockReturnValue(''),
-  mockParseEnvFile: vi.fn().mockReturnValue({}),
-}));
-
 const { mockInput, mockConfirm } = vi.hoisted(() => ({
   mockInput: vi.fn(),
   mockConfirm: vi.fn(),
@@ -91,78 +88,36 @@ const {
   mockDetectNestedSpecweave,
   mockDetectUmbrellaParent,
   mockDetectSuspiciousPath,
-  mockDetectGitHubRemote,
+  mockDetectProvider,
+  mockScanUmbrellaRepos,
+  mockBuildUmbrellaConfig,
   mockPromptSmartReinit,
   mockInstallAllPlugins,
-  mockSetupRepositoryHosting,
-  mockPromptTestingConfig,
-  mockUpdateConfigWithTesting,
   mockPromptLanguageSelection,
   mockGetDefaultLanguageSelection,
-  mockPromptTranslationConfig,
-  mockUpdateConfigWithTranslation,
-  mockGetDefaultTranslationConfig,
-  mockPromptAndRunExternalImport,
   mockCreateDirectoryStructure,
   mockCopyTemplates,
   mockCreateConfigFile,
   mockShowNextSteps,
   mockInstallGitHooks,
-  mockPromptDeepInterviewConfig,
-  mockUpdateConfigWithDeepInterview,
-  mockPromptQualityGatesConfig,
-  mockUpdateConfigWithQualityGates,
-  mockLogGoingBack,
-  MOCK_WIZARD_BACK,
 } = vi.hoisted(() => ({
   mockFindSourceDir: vi.fn().mockReturnValue('/mock/templates'),
   mockFindPackageRoot: vi.fn().mockReturnValue('/mock/package-root'),
   mockDetectNestedSpecweave: vi.fn().mockReturnValue(null),
   mockDetectUmbrellaParent: vi.fn().mockReturnValue(null),
   mockDetectSuspiciousPath: vi.fn().mockReturnValue(null),
-  mockDetectGitHubRemote: vi.fn().mockReturnValue(null),
+  mockDetectProvider: vi.fn().mockReturnValue(null),
+  mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
+  mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ umbrella: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
-  mockSetupRepositoryHosting: vi.fn().mockResolvedValue({ hosting: 'local' }),
-  mockPromptTestingConfig: vi.fn().mockResolvedValue({ testMode: 'test-after', coverageTarget: 80, goBack: null }),
-  mockUpdateConfigWithTesting: vi.fn(),
   mockPromptLanguageSelection: vi.fn().mockResolvedValue({ language: 'en', keepEnglishOriginals: false }),
   mockGetDefaultLanguageSelection: vi.fn().mockReturnValue({ language: 'en', keepEnglishOriginals: false }),
-  mockPromptTranslationConfig: vi.fn().mockResolvedValue({ enabled: false, languages: ['en'], primary: 'en', method: 'none', preserveFrameworkTerms: true, scope: { incrementSpecs: false, livingDocs: false, externalSync: false }, keepEnglishOriginals: false }),
-  mockUpdateConfigWithTranslation: vi.fn(),
-  mockGetDefaultTranslationConfig: vi.fn().mockReturnValue({ enabled: false, languages: ['en'], primary: 'en', method: 'none', preserveFrameworkTerms: true, scope: { incrementSpecs: false, livingDocs: false, externalSync: false }, keepEnglishOriginals: false }),
-  mockPromptAndRunExternalImport: vi.fn().mockResolvedValue({ totalCount: 0, platforms: [] }),
   mockCreateDirectoryStructure: vi.fn(),
   mockCopyTemplates: vi.fn(),
   mockCreateConfigFile: vi.fn(),
   mockShowNextSteps: vi.fn(),
   mockInstallGitHooks: vi.fn(),
-  mockPromptDeepInterviewConfig: vi.fn().mockResolvedValue({ enabled: false, goBack: null }),
-  mockUpdateConfigWithDeepInterview: vi.fn(),
-  mockPromptQualityGatesConfig: vi.fn().mockResolvedValue({ preset: 'standard', goBack: null }),
-  mockUpdateConfigWithQualityGates: vi.fn(),
-  mockLogGoingBack: vi.fn(),
-  MOCK_WIZARD_BACK: Symbol('WIZARD_BACK'),
-}));
-
-const { mockTriggerAdoRepoCloning } = vi.hoisted(() => ({
-  mockTriggerAdoRepoCloning: vi.fn().mockResolvedValue(null),
-}));
-
-const { mockTriggerGitHubRepoCloning } = vi.hoisted(() => ({
-  mockTriggerGitHubRepoCloning: vi.fn().mockResolvedValue({ jobId: null, clonedRepos: [] }),
-}));
-
-const { mockTriggerBitbucketRepoCloning } = vi.hoisted(() => ({
-  mockTriggerBitbucketRepoCloning: vi.fn().mockResolvedValue(null),
-}));
-
-const { mockCreateProjectFolders } = vi.hoisted(() => ({
-  mockCreateProjectFolders: vi.fn().mockResolvedValue([]),
-}));
-
-const { mockCollectLivingDocsInputs } = vi.hoisted(() => ({
-  mockCollectLivingDocsInputs: vi.fn().mockResolvedValue(null),
 }));
 
 const { mockSetupLspEnvVar } = vi.hoisted(() => ({
@@ -198,20 +153,18 @@ const { mockEnableAgentTeamsEnvVar } = vi.hoisted(() => ({
   mockEnableAgentTeamsEnvVar: vi.fn(),
 }));
 
-const { mockSetupIssueTracker } = vi.hoisted(() => ({
-  mockSetupIssueTracker: vi.fn(),
-}));
-
 const { mockApplySmartDefaults } = vi.hoisted(() => ({
   mockApplySmartDefaults: vi.fn().mockReturnValue({}),
 }));
 
-const { mockIsGreenfieldCheck } = vi.hoisted(() => ({
-  mockIsGreenfieldCheck: vi.fn().mockReturnValue(false),
-}));
-
 const { mockDisplaySummaryBanner } = vi.hoisted(() => ({
   mockDisplaySummaryBanner: vi.fn(),
+}));
+
+const { mockPromptProjectSetup, mockPromptRepoUrls, mockCloneReposIntoWorkspace } = vi.hoisted(() => ({
+  mockPromptProjectSetup: vi.fn().mockResolvedValue('existing' as const),
+  mockPromptRepoUrls: vi.fn().mockResolvedValue([]),
+  mockCloneReposIntoWorkspace: vi.fn().mockReturnValue({ repos: [], totalCloned: 0, totalFailed: 0 }),
 }));
 
 // ============================================================================
@@ -258,11 +211,6 @@ vi.mock('../../../../src/core/i18n/locale-manager.js', () => ({
   getLocaleManager: mockGetLocaleManager,
 }));
 
-vi.mock('../../../../src/utils/env-file.js', () => ({
-  readEnvFile: mockReadEnvFile,
-  parseEnvFile: mockParseEnvFile,
-}));
-
 vi.mock('../../../../src/utils/logger.js', () => ({
   Logger: vi.fn(),
   consoleLogger: { log: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn(), verbose: vi.fn() },
@@ -290,49 +238,18 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectNestedSpecweave: mockDetectNestedSpecweave,
   detectUmbrellaParent: mockDetectUmbrellaParent,
   detectSuspiciousPath: mockDetectSuspiciousPath,
-  detectGitHubRemote: mockDetectGitHubRemote,
+  detectProvider: mockDetectProvider,
+  scanUmbrellaRepos: mockScanUmbrellaRepos,
+  buildUmbrellaConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,
-  setupRepositoryHosting: mockSetupRepositoryHosting,
-  promptTestingConfig: mockPromptTestingConfig,
-  updateConfigWithTesting: mockUpdateConfigWithTesting,
   promptLanguageSelection: mockPromptLanguageSelection,
   getDefaultLanguageSelection: mockGetDefaultLanguageSelection,
-  promptTranslationConfig: mockPromptTranslationConfig,
-  updateConfigWithTranslation: mockUpdateConfigWithTranslation,
-  getDefaultTranslationConfig: mockGetDefaultTranslationConfig,
-  promptAndRunExternalImport: mockPromptAndRunExternalImport,
   createDirectoryStructure: mockCreateDirectoryStructure,
   copyTemplates: mockCopyTemplates,
   createConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
-  promptDeepInterviewConfig: mockPromptDeepInterviewConfig,
-  updateConfigWithDeepInterview: mockUpdateConfigWithDeepInterview,
-  promptQualityGatesConfig: mockPromptQualityGatesConfig,
-  updateConfigWithQualityGates: mockUpdateConfigWithQualityGates,
-  logGoingBack: mockLogGoingBack,
-  WIZARD_BACK: MOCK_WIZARD_BACK,
-}));
-
-vi.mock('../../../../src/cli/helpers/init/ado-repo-cloning.js', () => ({
-  triggerAdoRepoCloning: mockTriggerAdoRepoCloning,
-}));
-
-vi.mock('../../../../src/cli/helpers/init/github-repo-cloning.js', () => ({
-  triggerGitHubRepoCloning: mockTriggerGitHubRepoCloning,
-}));
-
-vi.mock('../../../../src/cli/helpers/init/bitbucket-repo-cloning.js', () => ({
-  triggerBitbucketRepoCloning: mockTriggerBitbucketRepoCloning,
-}));
-
-vi.mock('../../../../src/cli/helpers/init/multi-project-folders.js', () => ({
-  createProjectFolders: mockCreateProjectFolders,
-}));
-
-vi.mock('../../../../src/cli/helpers/init/living-docs-preflight.js', () => ({
-  collectLivingDocsInputs: mockCollectLivingDocsInputs,
 }));
 
 vi.mock('../../../../src/cli/helpers/init/shell-config.js', () => ({
@@ -353,10 +270,6 @@ vi.mock('../../../../src/cli/helpers/init/claude-settings-env.js', () => ({
   enableAgentTeamsEnvVar: mockEnableAgentTeamsEnvVar,
 }));
 
-vi.mock('../../../../src/cli/helpers/issue-tracker/index.js', () => ({
-  setupIssueTracker: mockSetupIssueTracker,
-}));
-
 vi.mock('../../../../src/cli/commands/lsp.js', () => ({
   scanLanguagesAcrossRepos: vi.fn().mockResolvedValue({ success: false, languages: [], reposScanned: [] }),
   handleLspSetup: vi.fn(),
@@ -366,12 +279,14 @@ vi.mock('../../../../src/cli/helpers/init/smart-defaults.js', () => ({
   applySmartDefaults: mockApplySmartDefaults,
 }));
 
-vi.mock('../../../../src/cli/helpers/init/greenfield-detection.js', () => ({
-  isGreenfield: mockIsGreenfieldCheck,
-}));
-
 vi.mock('../../../../src/cli/helpers/init/summary-banner.js', () => ({
   displaySummaryBanner: mockDisplaySummaryBanner,
+}));
+
+vi.mock('../../../../src/cli/helpers/init/repo-connect.js', () => ({
+  promptProjectSetup: mockPromptProjectSetup,
+  promptRepoUrls: mockPromptRepoUrls,
+  cloneReposIntoWorkspace: mockCloneReposIntoWorkspace,
 }));
 
 // ============================================================================
@@ -429,15 +344,12 @@ describe('init command', () => {
     mockFindSourceDir.mockReturnValue('/mock/templates');
     mockFindPackageRoot.mockReturnValue('/mock/package-root');
     mockDetectNestedSpecweave.mockReturnValue(null);
-    mockDetectGitHubRemote.mockReturnValue(null);
+    mockDetectUmbrellaParent.mockReturnValue(null);
+    mockDetectSuspiciousPath.mockReturnValue(null);
+    mockDetectProvider.mockReturnValue(null);
     mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
-    mockPromptTestingConfig.mockResolvedValue({ testMode: 'test-after', coverageTarget: 80, goBack: null });
     mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
     mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
-    mockPromptAndRunExternalImport.mockResolvedValue({ totalCount: 0, platforms: [] });
-    mockPromptDeepInterviewConfig.mockResolvedValue({ enabled: false, goBack: null });
-    mockPromptQualityGatesConfig.mockResolvedValue({ preset: 'standard', goBack: null });
-    mockGetDefaultTranslationConfig.mockReturnValue({ enabled: false });
     mockGetPluginScope.mockReturnValue('user');
     mockGetScopeArgs.mockReturnValue([]);
 
@@ -455,28 +367,17 @@ describe('init command', () => {
     mockOraInstance.fail.mockReturnThis();
     mockOraInstance.warn.mockReturnThis();
 
-    // Smart defaults & new modules
+    // Smart defaults
     mockApplySmartDefaults.mockReturnValue({});
-    mockIsGreenfieldCheck.mockReturnValue(false);
 
     // getDirname
     mockGetDirname.mockReturnValue('/mock/dirname');
 
-    // Cloning defaults
-    mockTriggerAdoRepoCloning.mockResolvedValue(null);
-    mockTriggerGitHubRepoCloning.mockResolvedValue({ jobId: null, clonedRepos: [] });
-    mockTriggerBitbucketRepoCloning.mockResolvedValue(null);
-    mockCreateProjectFolders.mockResolvedValue([]);
-    mockCollectLivingDocsInputs.mockResolvedValue(null);
+    // LSP
     mockSetupLspEnvVar.mockReturnValue({ success: true, alreadyConfigured: false, configPath: '~/.zshrc', exportSyntax: 'export ENABLE_LSP_TOOL=1' });
 
     // Default: CI/quick mode for most tests
     process.env.CI = 'true';
-
-    // Setup repository hosting default
-    mockSetupRepositoryHosting.mockResolvedValue({
-      hosting: 'local',
-    });
   });
 
   afterEach(() => {
@@ -620,10 +521,6 @@ describe('init command', () => {
         expect.any(String),
         expect.any(String),
         false,
-        undefined,
-        undefined,
-        expect.any(String), // projectMaturity
-        undefined,
       );
     });
 
@@ -686,10 +583,6 @@ describe('init command', () => {
         expect.any(String),
         expect.any(String),
         false,
-        undefined,
-        undefined,
-        expect.any(String), // projectMaturity
-        undefined,
       );
 
       cwdSpy.mockRestore();
@@ -708,6 +601,53 @@ describe('init command', () => {
 
       // Should proceed without asking in CI mode
       expect(mockCreateDirectoryStructure).toHaveBeenCalled();
+    });
+
+    it('should show non-empty directory info for dot notation when no .specweave exists', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        // .specweave doesn't exist, .git doesn't exist, config doesn't exist
+        return false;
+      });
+      mockReaddirSync.mockReturnValue(['file1.ts', 'file2.ts', 'package.json']);
+
+      await initCommand('.', { quick: true });
+
+      // Should log info about non-empty directory
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('3 file(s)')
+      );
+      // Should still proceed
+      expect(mockCreateDirectoryStructure).toHaveBeenCalled();
+    });
+
+    it('should not show non-empty directory info when directory is empty', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockReaddirSync.mockReturnValue([]);
+
+      await initCommand('.', { quick: true });
+
+      // Should NOT show the "contains N file(s)" message
+      const fileCountCalls = consoleSpy.mock.calls.filter(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('file(s)')
+      );
+      expect(fileCountCalls).toHaveLength(0);
+    });
+
+    it('should not show non-empty directory info when .specweave exists (re-init path)', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.endsWith('.specweave')) return true;
+        return false;
+      });
+      mockPromptSmartReinit.mockResolvedValue({ action: 'continue', continueExisting: true });
+      mockReaddirSync.mockReturnValue(['file1.ts', 'file2.ts']);
+
+      await initCommand('.', { quick: true });
+
+      // Should NOT show non-empty info (re-init path handles it)
+      const fileCountCalls = consoleSpy.mock.calls.filter(
+        (call: any[]) => typeof call[0] === 'string' && call[0].includes('file(s)')
+      );
+      expect(fileCountCalls).toHaveLength(0);
     });
   });
 
@@ -762,7 +702,7 @@ describe('init command', () => {
       expect(exitSpy).toHaveBeenCalledWith(0);
     });
 
-    it('should skip external import step when continuing existing project', async () => {
+    it('should skip directory structure and templates when continuing existing project', async () => {
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.endsWith('.specweave')) return true;
         if (typeof p === 'string' && p.includes('config.json')) return true;
@@ -773,9 +713,8 @@ describe('init command', () => {
 
       await initCommand('.', { quick: true });
 
-      // External import is skipped when continueExisting
-      // Wizard starts at living-docs instead
-      expect(mockPromptAndRunExternalImport).not.toHaveBeenCalled();
+      expect(mockCreateDirectoryStructure).not.toHaveBeenCalled();
+      expect(mockCopyTemplates).not.toHaveBeenCalled();
     });
   });
 
@@ -814,6 +753,70 @@ describe('init command', () => {
       mockDetectNestedSpecweave.mockReturnValue(null);
 
       await initCommand('clean-project', { quick: true });
+
+      expect(mockCreateDirectoryStructure).toHaveBeenCalled();
+    });
+  });
+
+  // ==========================================================================
+  // initCommand - Umbrella parent detection
+  // ==========================================================================
+
+  describe('initCommand - umbrella parent detection', () => {
+    it('should block init inside umbrella project without --force', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectUmbrellaParent.mockReturnValue({
+        umbrellaRoot: '/parent/umbrella',
+        reason: 'repositories-dir',
+      });
+
+      await expect(
+        initCommand('sub-project', { quick: true })
+      ).rejects.toThrow('process.exit called');
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('should allow init inside umbrella project with --force', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectUmbrellaParent.mockReturnValue({
+        umbrellaRoot: '/parent/umbrella',
+        reason: 'repositories-dir',
+      });
+
+      await initCommand('sub-project', { quick: true, force: true });
+
+      expect(mockCreateDirectoryStructure).toHaveBeenCalled();
+    });
+  });
+
+  // ==========================================================================
+  // initCommand - Suspicious path detection
+  // ==========================================================================
+
+  describe('initCommand - suspicious path detection', () => {
+    it('should block init on suspicious path without --force', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectSuspiciousPath.mockReturnValue({
+        segment: 'node_modules',
+        suggestedRoot: '/project',
+      });
+
+      await expect(
+        initCommand('bad-path', { quick: true })
+      ).rejects.toThrow('process.exit called');
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('should allow init on suspicious path with --force', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectSuspiciousPath.mockReturnValue({
+        segment: 'node_modules',
+        suggestedRoot: '/project',
+      });
+
+      await initCommand('bad-path', { quick: true, force: true });
 
       expect(mockCreateDirectoryStructure).toHaveBeenCalled();
     });
@@ -959,13 +962,194 @@ describe('init command', () => {
       expect(mockCreateConfigFile).toHaveBeenCalledWith(
         expect.stringContaining('config-test'),
         'config-test',
-        expect.any(String),
-        'en',
-        false,
-        undefined,
-        undefined,
-        expect.any(String), // projectMaturity
-        undefined,
+        expect.any(String), // adapter
+        'en', // language
+        false, // enableDocsPreview
+      );
+    });
+  });
+
+  // ==========================================================================
+  // initCommand - Provider detection (replaces setupRepositoryHosting)
+  // ==========================================================================
+
+  describe('initCommand - provider detection', () => {
+    it('should call detectProvider with target directory', async () => {
+      mockExistsSync.mockReturnValue(false);
+
+      await initCommand('detect-test', { quick: true });
+
+      expect(mockDetectProvider).toHaveBeenCalledWith(
+        expect.stringContaining('detect-test')
+      );
+    });
+
+    it('should write provider info to config when detected', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
+      mockReadJsonSync.mockReturnValue({});
+      mockDetectProvider.mockReturnValue({
+        provider: 'github',
+        owner: 'my-org',
+        repo: 'my-repo',
+      });
+
+      await initCommand('github-detect', { quick: true });
+
+      expect(mockWriteJsonSync).toHaveBeenCalledWith(
+        expect.stringContaining('config.json'),
+        expect.objectContaining({
+          repository: expect.objectContaining({
+            provider: 'github',
+            organization: 'my-org',
+          }),
+        }),
+        expect.anything()
+      );
+    });
+
+    it('should write ADO provider info with organization when detected', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
+      mockReadJsonSync.mockReturnValue({});
+      mockDetectProvider.mockReturnValue({
+        provider: 'ado',
+        organization: 'my-ado-org',
+      });
+
+      await initCommand('ado-detect', { quick: true });
+
+      expect(mockWriteJsonSync).toHaveBeenCalledWith(
+        expect.stringContaining('config.json'),
+        expect.objectContaining({
+          repository: expect.objectContaining({
+            provider: 'ado',
+            organization: 'my-ado-org',
+          }),
+        }),
+        expect.anything()
+      );
+    });
+
+    it('should not write provider info when none detected', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
+      mockDetectProvider.mockReturnValue(null);
+
+      await initCommand('no-provider', { quick: true });
+
+      // writeJsonSync should not be called for provider update (but may be called for smart defaults)
+      const providerCalls = mockWriteJsonSync.mock.calls.filter(
+        (call: any[]) => call[1]?.repository?.provider
+      );
+      expect(providerCalls).toHaveLength(0);
+    });
+
+    it('should pass provider info to displaySummaryBanner', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue({
+        provider: 'github',
+        owner: 'my-org',
+        repo: 'my-repo',
+      });
+
+      await initCommand('banner-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'GitHub',
+            owner: 'my-org',
+          }),
+        })
+      );
+    });
+
+    it('should use Local provider name when none detected', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue(null);
+
+      await initCommand('local-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'Local',
+          }),
+        })
+      );
+    });
+
+    it('should write GitHub repo field to config when detected', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.includes('config.json')) return true;
+        return false;
+      });
+      mockReadJsonSync.mockReturnValue({});
+      mockDetectProvider.mockReturnValue({
+        provider: 'github',
+        owner: 'my-org',
+        repo: 'my-repo',
+      });
+
+      await initCommand('github-repo-test', { quick: true });
+
+      expect(mockWriteJsonSync).toHaveBeenCalledWith(
+        expect.stringContaining('config.json'),
+        expect.objectContaining({
+          repository: expect.objectContaining({
+            provider: 'github',
+            organization: 'my-org',
+            repo: 'my-repo',
+          }),
+        }),
+        expect.anything()
+      );
+    });
+
+    it('should pass ADO organization to displaySummaryBanner', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue({
+        provider: 'ado',
+        organization: 'my-ado-org',
+      });
+
+      await initCommand('ado-banner-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'Azure DevOps',
+            organization: 'my-ado-org',
+          }),
+        })
+      );
+    });
+
+    it('should pass Bitbucket owner and repo to displaySummaryBanner', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectProvider.mockReturnValue({
+        provider: 'bitbucket',
+        owner: 'my-workspace',
+        repo: 'my-repo',
+      });
+
+      await initCommand('bb-banner-test', { quick: true });
+
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: expect.objectContaining({
+            name: 'Bitbucket',
+            owner: 'my-workspace',
+            repo: 'my-repo',
+          }),
+        })
       );
     });
   });
@@ -1102,161 +1286,10 @@ describe('init command', () => {
   });
 
   // ==========================================================================
-  // initCommand - Repository hosting setup
+  // initCommand - Smart defaults
   // ==========================================================================
 
-  describe('initCommand - repository hosting', () => {
-    it('should call setupRepositoryHosting', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('repo-test', { quick: true });
-
-      expect(mockSetupRepositoryHosting).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isCI: true,
-          language: 'en',
-        })
-      );
-    });
-
-    it('should update config with github provider when hosting is github', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockResolvedValue({ repository: {} });
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'github-single',
-        githubRepoSelection: { org: 'my-org', pat: 'token' },
-      });
-
-      await initCommand('github-repo', { quick: true });
-
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('config.json'),
-        expect.objectContaining({
-          repository: expect.objectContaining({ provider: 'github' }),
-        }),
-        expect.anything()
-      );
-    });
-
-    it('should update config with ado provider when hosting is ado', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockResolvedValue({ repository: {} });
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'ado-single',
-        adoProjectSelection: { org: 'my-ado-org', pat: 'token', projects: ['proj'] },
-      });
-
-      await initCommand('ado-repo', { quick: true });
-
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('config.json'),
-        expect.objectContaining({
-          repository: expect.objectContaining({ provider: 'ado' }),
-        }),
-        expect.anything()
-      );
-    });
-
-    it('should update config with bitbucket provider', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockResolvedValue({ repository: {} });
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'bitbucket-single',
-        bitbucketRepoSelection: { workspace: 'my-workspace' },
-      });
-
-      await initCommand('bb-repo', { quick: true });
-
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('config.json'),
-        expect.objectContaining({
-          repository: expect.objectContaining({ provider: 'bitbucket' }),
-        }),
-        expect.anything()
-      );
-    });
-
-    it('should trigger ADO repo cloning when adoProjectSelection exists', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'ado-multirepo',
-        adoProjectSelection: { org: 'org', pat: 'pat', projects: ['p1'] },
-        adoClonePatternResult: { pattern: 'all' },
-      });
-
-      await initCommand('ado-clone', { quick: true });
-
-      expect(mockTriggerAdoRepoCloning).toHaveBeenCalled();
-    });
-
-    it('should trigger GitHub repo cloning when githubRepoSelection exists', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'github-multirepo',
-        githubRepoSelection: { org: 'gh-org', pat: 'token' },
-        adoClonePatternResult: { pattern: 'all' },
-        gitUrlFormat: 'https',
-      });
-      mockTriggerGitHubRepoCloning.mockResolvedValue({ jobId: 'job-1', clonedRepos: ['repo-a', 'repo-b'] });
-
-      await initCommand('gh-clone', { quick: true });
-
-      expect(mockTriggerGitHubRepoCloning).toHaveBeenCalled();
-    });
-
-    it('should trigger Bitbucket repo cloning when bitbucketRepoSelection exists', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'bitbucket-multirepo',
-        bitbucketRepoSelection: { workspace: 'ws' },
-        adoClonePatternResult: { pattern: 'all' },
-      });
-
-      await initCommand('bb-clone', { quick: true });
-
-      expect(mockTriggerBitbucketRepoCloning).toHaveBeenCalled();
-    });
-  });
-
-  // ==========================================================================
-  // initCommand - GitHub project folder creation
-  // ==========================================================================
-
-  describe('initCommand - GitHub project folder creation', () => {
-    it('should create project folders when repos are cloned', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockSetupRepositoryHosting.mockResolvedValue({
-        hosting: 'github-multirepo',
-        githubRepoSelection: { org: 'org', pat: 'token' },
-        adoClonePatternResult: { pattern: 'all' },
-        gitUrlFormat: 'https',
-      });
-      mockTriggerGitHubRepoCloning.mockResolvedValue({ jobId: 'job-1', clonedRepos: ['repo-a', 'repo-b'] });
-      mockCreateProjectFolders.mockResolvedValue(['repo-a', 'repo-b']);
-
-      await initCommand('multi-repo', { quick: true });
-
-      expect(mockCreateProjectFolders).toHaveBeenCalledWith(
-        expect.stringContaining('multi-repo'),
-        ['repo-a', 'repo-b']
-      );
-    });
-  });
-
-  // ==========================================================================
-  // initCommand - Wizard flow (external import, testing, etc.)
-  // ==========================================================================
-
-  describe('initCommand - wizard steps', () => {
+  describe('initCommand - smart defaults application', () => {
     it('should apply smart defaults for new projects', async () => {
       // config.json must exist for smart defaults to be applied
       mockExistsSync.mockImplementation((p: string) => {
@@ -1266,59 +1299,10 @@ describe('init command', () => {
 
       await initCommand('wizard-test', { quick: true });
 
-      // Smart defaults replace the old wizard prompts
       expect(mockApplySmartDefaults).toHaveBeenCalled();
     });
 
-    it('should handle background import results', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockPromptAndRunExternalImport.mockResolvedValue({
-        isBackground: true,
-        jobId: 'import-job-1',
-      });
-
-      await initCommand('bg-import', { quick: true });
-
-      // Should continue without error
-      expect(mockShowNextSteps).toHaveBeenCalled();
-    });
-
-    it('should handle import failure gracefully', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockPromptAndRunExternalImport.mockRejectedValue(new Error('Import failed'));
-
-      await initCommand('import-fail', { quick: true });
-
-      // Should continue past the error
-      expect(mockShowNextSteps).toHaveBeenCalled();
-    });
-
-    it('should skip testing config in CI mode', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('ci-test', { quick: true });
-
-      // CI mode skips interactive testing config
-      expect(mockPromptTestingConfig).not.toHaveBeenCalled();
-    });
-
-    it('should skip deep interview config in CI mode', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('ci-interview', { quick: true });
-
-      expect(mockPromptDeepInterviewConfig).not.toHaveBeenCalled();
-    });
-
-    it('should skip quality gates config in CI mode', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('ci-quality', { quick: true });
-
-      expect(mockPromptQualityGatesConfig).not.toHaveBeenCalled();
-    });
-
-    it('should apply smart defaults including translation in CI mode', async () => {
+    it('should apply smart defaults including adapter and language', async () => {
       // config.json must exist for smart defaults to be applied
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('config.json')) return true;
@@ -1327,44 +1311,23 @@ describe('init command', () => {
 
       await initCommand('ci-translation', { quick: true });
 
-      // Translation is now handled via applySmartDefaults, not separate prompts
       expect(mockApplySmartDefaults).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({ language: 'en' })
       );
     });
-  });
 
-  // ==========================================================================
-  // initCommand - Living docs
-  // ==========================================================================
-
-  describe('initCommand - living docs', () => {
-    it('should skip living docs when noLivingDocs option is set', async () => {
+    it('should call displaySummaryBanner after init completes', async () => {
       mockExistsSync.mockReturnValue(false);
 
-      await initCommand('no-docs', { quick: true, noLivingDocs: true });
+      await initCommand('summary-test', { quick: true });
 
-      expect(mockCollectLivingDocsInputs).not.toHaveBeenCalled();
-    });
-
-    it('should not call collectLivingDocsInputs (removed from init flow)', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('with-docs', { quick: true });
-
-      // Living docs collection was removed from the init flow (0200 redesign)
-      expect(mockCollectLivingDocsInputs).not.toHaveBeenCalled();
-    });
-
-    it('should handle living docs failure gracefully', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockCollectLivingDocsInputs.mockRejectedValue(new Error('Living docs failed'));
-
-      await initCommand('docs-fail', { quick: true });
-
-      // Should continue without crashing
-      expect(mockShowNextSteps).toHaveBeenCalled();
+      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectName: 'summary-test',
+          adapter: 'claude',
+        })
+      );
     });
   });
 
@@ -1392,13 +1355,13 @@ describe('init command', () => {
         if (typeof p === 'string' && p.includes('config.json')) return true;
         return false;
       });
-      mockReadJson.mockResolvedValue({ repository: {} });
+      mockReadJsonSync.mockReturnValue({ repository: {} });
       mockDetectTool.mockResolvedValue('claude');
 
       await initCommand('lsp-config', { quick: true });
 
-      // Should have written LSP config
-      expect(mockWriteJson).toHaveBeenCalledWith(
+      // LSP config is now written in the batched config update (writeJsonSync)
+      expect(mockWriteJsonSync).toHaveBeenCalledWith(
         expect.stringContaining('config.json'),
         expect.objectContaining({
           lsp: expect.objectContaining({
@@ -1443,7 +1406,8 @@ describe('init command', () => {
         false, // usedDotNotation
         expect.objectContaining({
           pluginAutoInstalled: true,
-        })
+        }),
+        expect.objectContaining({ isUmbrella: false })
       );
     });
 
@@ -1458,7 +1422,8 @@ describe('init command', () => {
         expect.any(String),
         'en',
         true, // usedDotNotation
-        expect.anything()
+        expect.anything(),
+        expect.objectContaining({ isUmbrella: false })
       );
     });
 
@@ -1479,7 +1444,8 @@ describe('init command', () => {
         'generic',
         'en',
         false,
-        undefined
+        undefined,
+        expect.objectContaining({ isUmbrella: false })
       );
     });
   });
@@ -1508,7 +1474,6 @@ describe('init command', () => {
 
   describe('initCommand - existing directory without .specweave', () => {
     it('should proceed in CI when existing dir has files but no .specweave', async () => {
-      let callCount = 0;
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.endsWith('.specweave')) return false;
         if (typeof p === 'string' && p.endsWith('.git')) return false;
@@ -1548,62 +1513,6 @@ describe('init command', () => {
   });
 
   // ==========================================================================
-  // initCommand - Auto-install external plugin
-  // ==========================================================================
-
-  describe('initCommand - auto-install external plugin', () => {
-    it('should auto-install github plugin when default profile is github', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockDetectTool.mockResolvedValue('claude');
-      mockReadJson.mockResolvedValue({
-        repository: {},
-        sync: {
-          defaultProfile: 'github-default',
-          profiles: {
-            'github-default': { provider: 'github' },
-          },
-        },
-      });
-      mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '', exitCode: 0 });
-
-      await initCommand('auto-plugin', { quick: true });
-
-      expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['plugin', 'install', 'specweave-github@specweave']),
-      );
-    });
-
-    it('should auto-install jira plugin when default profile is jira', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockDetectTool.mockResolvedValue('claude');
-      mockReadJson.mockResolvedValue({
-        repository: {},
-        sync: {
-          defaultProfile: 'jira-default',
-          profiles: {
-            'jira-default': { provider: 'jira' },
-          },
-        },
-      });
-      mockExecFileNoThrowSync.mockReturnValue({ success: true, stdout: '', stderr: '', exitCode: 0 });
-
-      await initCommand('auto-jira', { quick: true });
-
-      expect(mockExecFileNoThrowSync).toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['plugin', 'install', 'specweave-jira@specweave']),
-      );
-    });
-  });
-
-  // ==========================================================================
   // initCommand - Interactive mode (non-CI)
   // ==========================================================================
 
@@ -1616,13 +1525,6 @@ describe('init command', () => {
     });
 
     it('should prompt for language selection in interactive mode', async () => {
-      // We need stdin.isTTY to be true for interactive detection
-      // Since we can't easily control that, check that the right path is taken
-      // based on isNonInteractive returning false
-
-      // With no CI vars and TTY, should call promptLanguageSelection
-      // But in test env, stdin.isTTY might be false, making it non-interactive
-      // So we test with quick=false and no CI vars
       if (!process.stdin.isTTY) {
         // Non-TTY: still CI-like, uses defaults
         mockExistsSync.mockReturnValue(false);
@@ -1640,20 +1542,21 @@ describe('init command', () => {
       }
     });
 
-    it('should prompt for project name when not provided in interactive mode', async () => {
+    it('should use current directory when no args in interactive mode (not prompt for subdirectory)', async () => {
       if (process.stdin.isTTY) {
         mockExistsSync.mockReturnValue(false);
         mockConfirm.mockResolvedValue(true);
-        mockInput.mockResolvedValue('my-cool-project');
 
         await initCommand(undefined, {});
 
-        expect(mockInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: 'Project name:',
-            default: 'my-saas',
-          })
+        // Should NOT prompt for project name with 'my-saas' default (old behavior)
+        const projectNameCalls = mockInput.mock.calls.filter(
+          (call: any[]) => call[0]?.message === 'Project name:' && call[0]?.default === 'my-saas'
         );
+        expect(projectNameCalls).toHaveLength(0);
+
+        // Should use CWD — verify createDirectoryStructure was called
+        expect(mockCreateDirectoryStructure).toHaveBeenCalled();
       }
     });
 
@@ -1726,25 +1629,6 @@ describe('init command', () => {
   });
 
   // ==========================================================================
-  // initCommand - Smart defaults (replaces old wizard go-back)
-  // ==========================================================================
-
-  describe('initCommand - smart defaults application', () => {
-    it('should call displaySummaryBanner after init completes', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('summary-test', { quick: true });
-
-      expect(mockDisplaySummaryBanner).toHaveBeenCalledWith(
-        expect.objectContaining({
-          projectName: 'summary-test',
-          adapter: 'claude',
-        })
-      );
-    });
-  });
-
-  // ==========================================================================
   // initCommand - Git hooks (CI mode)
   // ==========================================================================
 
@@ -1757,8 +1641,20 @@ describe('init command', () => {
 
       await initCommand('hooks-ci', { quick: true });
 
-      // In the new flow (0200), git hooks are auto-installed without prompts
       expect(mockInstallGitHooks).toHaveBeenCalled();
+    });
+
+    it('should skip git hooks for continue-existing projects', async () => {
+      mockExistsSync.mockImplementation((p: string) => {
+        if (typeof p === 'string' && p.endsWith('.specweave')) return true;
+        if (typeof p === 'string' && p.endsWith('.git')) return true;
+        return false;
+      });
+      mockPromptSmartReinit.mockResolvedValue({ action: 'continue', continueExisting: true });
+
+      await initCommand('.', { quick: true });
+
+      expect(mockInstallGitHooks).not.toHaveBeenCalled();
     });
   });
 
@@ -1780,66 +1676,12 @@ describe('init command', () => {
         return {};
       });
 
+      // isSpecWeaveFrameworkRepo is private but called internally.
+      // In the simplified init, it is only used internally for context.
+      // Just verify the init completes without error.
       await initCommand('framework-project', { quick: true });
 
-      // setupIssueTracker should be called with isFrameworkRepo=true
-      expect(mockSetupIssueTracker).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isFrameworkRepo: true,
-        })
-      );
-    });
-
-    it('should not flag as framework repo for other packages', async () => {
-      mockExistsSync.mockImplementation((p: string) => {
-        if (typeof p === 'string' && p.includes('package.json')) return true;
-        if (typeof p === 'string' && p.includes('config.json')) return true;
-        return false;
-      });
-      mockReadJson.mockImplementation(async (p: string) => {
-        if (typeof p === 'string' && p.includes('package.json')) {
-          return { name: 'my-regular-project' };
-        }
-        return {};
-      });
-
-      await initCommand('regular-project', { quick: true });
-
-      expect(mockSetupIssueTracker).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isFrameworkRepo: false,
-        })
-      );
-    });
-  });
-
-  // ==========================================================================
-  // initCommand - Issue tracker wrapper
-  // ==========================================================================
-
-  describe('initCommand - issue tracker setup', () => {
-    it('should call setupIssueTracker during init', async () => {
-      mockExistsSync.mockReturnValue(false);
-
-      await initCommand('tracker-test', { quick: true });
-
-      expect(mockSetupIssueTracker).toHaveBeenCalledWith(
-        expect.objectContaining({
-          language: 'en',
-          maxRetries: 3,
-          isCI: true,
-        })
-      );
-    });
-
-    it('should handle issue tracker setup failure gracefully', async () => {
-      mockExistsSync.mockReturnValue(false);
-      mockSetupIssueTracker.mockRejectedValue(new Error('Tracker fail'));
-
-      await initCommand('tracker-fail', { quick: true });
-
-      // Should continue without crashing
-      expect(mockShowNextSteps).toHaveBeenCalled();
+      expect(mockCreateDirectoryStructure).toHaveBeenCalled();
     });
   });
 
