@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.426] - 2026-03-12
+
+### Changes
+- feat(sync): add external sync resilience layer with circuit breakers and retry queue
+
+---
+
+
+
 ## [1.0.425] - 2026-03-12
 
 ### Changes
