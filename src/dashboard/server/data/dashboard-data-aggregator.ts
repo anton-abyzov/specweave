@@ -651,6 +651,7 @@ export class DashboardDataAggregator {
           provider: e.provider,
           incrementId: e.incrementId,
           error: e.error || e.outcome,
+          errorStack: e.errorStack,
           timestamp: e.timestamp,
           outcome: e.outcome,
         }));
@@ -723,6 +724,7 @@ export interface SyncErrorEntry {
   provider: string;
   incrementId: string;
   error: string;
+  errorStack?: string;
   timestamp: string;
   outcome: string;
 }
