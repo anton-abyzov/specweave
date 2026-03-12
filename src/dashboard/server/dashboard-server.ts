@@ -804,6 +804,22 @@ export class DashboardServer {
       sendJson(res, { ok: true, data });
     });
 
+    // Sync errors (from resilience audit log)
+    this.router.get('/api/sync/errors', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.aggregator.getSyncErrors();
+      sendJson(res, { ok: true, data });
+    });
+
+    // Sync gaps (increments with partial provider coverage)
+    this.router.get('/api/sync/gaps', async (req, res) => {
+      const project = this.resolveProject(req);
+      if (!project) return sendJson(res, { ok: false, error: 'No projects registered' }, 404);
+      const data = await project.aggregator.getSyncGaps();
+      sendJson(res, { ok: true, data });
+    });
+
     // === Phase 2: Enhanced Plugins ===
 
     this.router.get('/api/plugins/full', async (req, res) => {

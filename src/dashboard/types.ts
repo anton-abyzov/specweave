@@ -17,7 +17,8 @@ export type SSEEventType =
   | 'submission-update'
   | 'verification-complete'
   | 'hook-event'
-  | 'hook-agent';
+  | 'hook-agent'
+  | 'sync-error';
 
 export interface SSEMessage {
   type: SSEEventType;
