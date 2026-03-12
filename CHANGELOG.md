@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.427] - 2026-03-12
+
+### Changes
+- feat(sync): add sync resilience audit logging and dashboard integration
+- fix: resolve CircuitBreakerState type in sync-status command
+
+---
+
+
+
 ## [1.0.426] - 2026-03-12
 
 ### Changes
