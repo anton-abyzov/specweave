@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest';
 import {
   generateGitRemoteUrl,
   parseGitRemoteUrl,
+  parseRepoIdentifier,
   detectGitPlatform
 } from '../../../../src/core/repo-structure/url-generator.js';
 
@@ -192,6 +193,63 @@ describe('url-generator', () => {
       // But lowercase works
       expect(detectGitPlatform('github.com')).toBe('github');
       expect(detectGitPlatform('gitlab.com')).toBe('gitlab');
+    });
+  });
+
+  describe('parseRepoIdentifier', () => {
+    it('should parse owner/repo shorthand', () => {
+      const result = parseRepoIdentifier('owner/repo');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'shorthand' });
+    });
+
+    it('should parse github.com/owner/repo (bare host, no protocol)', () => {
+      const result = parseRepoIdentifier('github.com/owner/repo');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'https' });
+    });
+
+    it('should parse https://github.com/owner/repo', () => {
+      const result = parseRepoIdentifier('https://github.com/owner/repo');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'https' });
+    });
+
+    it('should parse https://github.com/owner/repo.git', () => {
+      const result = parseRepoIdentifier('https://github.com/owner/repo.git');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'https' });
+    });
+
+    it('should parse git@github.com:owner/repo.git (SSH)', () => {
+      const result = parseRepoIdentifier('git@github.com:owner/repo.git');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'ssh' });
+    });
+
+    it('should return null for invalid string', () => {
+      const result = parseRepoIdentifier('invalid-string');
+      expect(result).toBeNull();
+    });
+
+    it('should return null for empty string', () => {
+      const result = parseRepoIdentifier('');
+      expect(result).toBeNull();
+    });
+
+    it('should strip trailing slash from shorthand', () => {
+      const result = parseRepoIdentifier('owner/repo/');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'shorthand' });
+    });
+
+    it('should strip trailing .git from shorthand', () => {
+      const result = parseRepoIdentifier('owner/repo.git');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'shorthand' });
+    });
+
+    it('should handle HTTPS URL with extra path segments (e.g. /tree/main)', () => {
+      const result = parseRepoIdentifier('https://github.com/owner/repo/tree/main');
+      expect(result).toEqual({ owner: 'owner', repo: 'repo', inputType: 'https' });
+    });
+
+    it('should handle owner and repo names with hyphens and dots', () => {
+      const result = parseRepoIdentifier('my-org/my.repo');
+      expect(result).toEqual({ owner: 'my-org', repo: 'my.repo', inputType: 'shorthand' });
     });
   });
 });
