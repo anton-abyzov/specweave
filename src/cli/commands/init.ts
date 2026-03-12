@@ -29,6 +29,7 @@ import {
   detectSuspiciousPath,
   detectProvider,
   scanUmbrellaRepos,
+  buildUmbrellaConfig,
   promptSmartReinit,
   installAllPlugins,
   promptLanguageSelection,
@@ -99,13 +100,16 @@ export async function initCommand(
   console.log(chalk.blue.bold('\n' + locale.t('cli', 'init.welcome') + '\n'));
 
   // STEP 2: Path resolution
+  // No args = init in CWD, same as explicit '.'
+  if (!projectName) projectName = '.';
+
   let targetDir: string = '';
   let finalProjectName: string = '';
   let usedDotNotation = false;
   let continueExisting = false;
 
-  if (!projectName || projectName === '.') {
-    // No args or '.' → init in current directory
+  if (projectName === '.') {
+    // Init in current directory
     usedDotNotation = true;
     targetDir = process.cwd();
 
@@ -149,31 +153,29 @@ export async function initCommand(
     }
   } else {
     // Explicit project name → create subdirectory
-    if (projectName) {
-      targetDir = path.resolve(process.cwd(), projectName);
-      finalProjectName = path.basename(projectName);
+    targetDir = path.resolve(process.cwd(), projectName);
+    finalProjectName = path.basename(projectName);
 
-      if (fs.existsSync(targetDir)) {
-        const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
-        if (hasSpecweave) {
-          const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-          if (result.action === 'cancel') process.exit(0);
-          continueExisting = result.continueExisting;
-        } else {
-          const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
-          if (existingFiles.length > 0) {
-            if (!isCI) {
-              const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
-              if (!initExisting) {
-                console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-                process.exit(0);
-              }
+    if (fs.existsSync(targetDir)) {
+      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
+      if (hasSpecweave) {
+        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
+        if (result.action === 'cancel') process.exit(0);
+        continueExisting = result.continueExisting;
+      } else {
+        const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
+        if (existingFiles.length > 0) {
+          if (!isCI) {
+            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
+            if (!initExisting) {
+              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+              process.exit(0);
             }
           }
         }
-      } else {
-        fs.mkdirSync(targetDir, { recursive: true });
       }
+    } else {
+      fs.mkdirSync(targetDir, { recursive: true });
     }
   }
 
@@ -358,26 +360,9 @@ export async function initCommand(
 
         // Auto-enable umbrella if repositories/ directory was discovered
         if (umbrellaDiscovery && !config.umbrella?.enabled) {
-          // Generate prefixes with deduplication
-          const usedPrefixes = new Set<string>();
-          const childRepos = umbrellaDiscovery.repos.map(r => {
-            let prefix = r.name.substring(0, 3).toUpperCase();
-            if (usedPrefixes.has(prefix)) {
-              // Disambiguate by appending incrementing suffix
-              let suffix = 2;
-              while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
-              prefix = prefix.substring(0, 2) + suffix;
-            }
-            usedPrefixes.add(prefix);
-            return { id: r.name, path: r.path, name: r.name, prefix };
-          });
-
-          config.umbrella = {
-            enabled: true,
-            projectName: finalProjectName,
-            childRepos,
-          };
-          config.repository = { ...config.repository, umbrellaRepo: true };
+          const umbrellaFragment = buildUmbrellaConfig(umbrellaDiscovery, finalProjectName);
+          config.umbrella = umbrellaFragment.umbrella;
+          config.repository = { ...config.repository, ...umbrellaFragment.repository };
         }
 
         // LSP auto-enable (Claude only)
@@ -421,19 +406,9 @@ export async function initCommand(
               if (umbrellaDiscovery && fs.existsSync(configPath)) {
                 try {
                   const config = fs.readJsonSync(configPath);
-                  const usedPrefixes = new Set<string>();
-                  const childRepos = umbrellaDiscovery.repos.map(r => {
-                    let prefix = r.name.substring(0, 3).toUpperCase();
-                    if (usedPrefixes.has(prefix)) {
-                      let suffix = 2;
-                      while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
-                      prefix = prefix.substring(0, 2) + suffix;
-                    }
-                    usedPrefixes.add(prefix);
-                    return { id: r.name, path: r.path, name: r.name, prefix };
-                  });
-                  config.umbrella = { enabled: true, projectName: finalProjectName, childRepos };
-                  config.repository = { ...config.repository, umbrellaRepo: true };
+                  const umbrellaFragment = buildUmbrellaConfig(umbrellaDiscovery, finalProjectName);
+                  config.umbrella = umbrellaFragment.umbrella;
+                  config.repository = { ...config.repository, ...umbrellaFragment.repository };
                   fs.writeJsonSync(configPath, config, { spaces: 2 });
                 } catch { /* non-fatal */ }
               }
