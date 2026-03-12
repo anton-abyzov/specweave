@@ -133,12 +133,24 @@ If status is "planned", update to "in-progress" with start date in spec.md front
 
 ### Step 6: Execute Tasks Sequentially
 
+#### Iron Law: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+
+Before marking ANY task `[x]`, you MUST run verification and see it pass:
+
+1. **Run the task's test command** — if the task has a `**Test**:` or `**Test Plan**:` block, execute the test command specified there. Capture the output.
+2. **Fallback to project-level tests** — if no task-specific test exists, run the project test command (e.g., `npx vitest run`, `pytest`, `go test ./...`).
+3. **Failing test = task stays `[ ]`** — if the test command fails, the task is NOT complete. Present the failure output, diagnose, fix, and re-run until green.
+4. **Evidence is mandatory** — "should work" is not evidence. "Tests pass" without running them is not evidence. Only fresh command output counts.
+
+---
+
 For each task:
 
 1. **Read task details**: ID, model hint, description, ACs, file paths
 2. **Select model**: Use task hint or `--model` override
 3. **Execute**: Follow plan.md architecture, implement, write clean code
-4. **Mark complete**: Change `[ ]` to `[x]` in tasks.md
+4. **Verify**: Run the task's test command (see Iron Law above). Only proceed if green.
+5. **Mark complete**: Change `[ ]` to `[x]` in tasks.md — ONLY after verification passes
 
 **After EVERY task completion** (CRITICAL):
 
@@ -146,6 +158,41 @@ For each task:
 - **Update docs inline**: CLAUDE.md (new commands/config/skills), README.md (user-facing changes), CHANGELOG.md (API/breaking changes), openapi.yaml (if API task + apiDocs.enabled)
 - **GitHub sync** (if plugin enabled): close task issue, check off in epic, post completion comment
 - Continue to next incomplete task
+
+### Step 6.5: Per-Task Review Gate (Opt-In)
+
+**Check config flag**:
+```bash
+PER_TASK_REVIEW=$(jq -r '.quality.perTaskReview // false' .specweave/config.json 2>/dev/null)
+```
+
+**Skip this gate entirely if**:
+- `quality.perTaskReview` is absent or `false` (default — backward compatible)
+- Running inside `/sw:team-lead` (team-lead has its own review flow). Detect via: `ls ~/.claude/teams/ 2>/dev/null | head -1` — if any entries exist, skip.
+
+**When the gate is active** (`perTaskReview: true`), after each task passes verification (Step 6) but before moving to the next task:
+
+#### Sub-review 1: Spec Compliance
+
+Dispatch a lightweight review checking whether this task's implementation satisfies its linked ACs:
+
+- Read the task's `**Satisfies ACs**:` field to get the relevant AC IDs
+- For each AC, verify the implementation matches the spec requirement
+- Adversarial framing: "Prove each AC is satisfied with evidence from the code diff"
+- If any AC is not satisfied: fix before proceeding
+
+#### Sub-review 2: Code Quality
+
+Dispatch a focused code quality review of ONLY this task's diff:
+
+- Review only files changed by this task (not the entire codebase)
+- Check: correctness, error handling, naming, no obvious security issues
+- Severity threshold: only CRITICAL and HIGH findings block progress
+- MINOR and SUGGESTION findings are noted but don't block
+
+#### Gate Rule
+
+Both sub-reviews must pass before marking the task `[x]` and moving to the next task. If either review finds blocking issues (CRITICAL/HIGH), fix them first. This prevents drift from accumulating across tasks.
 
 ### Step 7: Handle Blockers
 

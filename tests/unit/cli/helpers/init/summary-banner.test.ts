@@ -1,6 +1,9 @@
 /**
  * Tests for summary banner output
  * T-010 [RED] → T-011 [GREEN]
+ *
+ * Simplified (v1.0.415): Removed tests for fields no longer in SummaryBannerOptions
+ * (tracker, repoCount, isGreenfield, hasPendingClones, syncPermissions, externalPluginInstalled).
  */
 
 import { describe, it, expect } from 'vitest';
@@ -19,10 +22,6 @@ function makeOptions(overrides: Partial<SummaryBannerOptions> = {}): SummaryBann
   return {
     projectName: 'my-app',
     provider: { name: 'GitHub', owner: 'acme', repo: 'my-app' },
-    tracker: { name: 'GitHub Issues' },
-    repoCount: 1,
-    isGreenfield: true,
-    hasPendingClones: false,
     adapter: 'claude',
     language: 'en',
     defaults: {
@@ -71,32 +70,6 @@ describe('summary-banner', () => {
         provider: { name: 'Local' },
       })));
       expect(output).toContain('Local');
-    });
-
-    // ─── Tracker info ─────────────────────────────────────────
-
-    it('should show tracker name', () => {
-      const output = strip(formatSummaryBanner(makeOptions()));
-      expect(output).toContain('GitHub Issues');
-    });
-
-    it('should show Jira tracker', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        tracker: { name: 'Jira' },
-      })));
-      expect(output).toContain('Jira');
-    });
-
-    // ─── Repo count ───────────────────────────────────────────
-
-    it('should show "single repo" for 1 repo', () => {
-      const output = strip(formatSummaryBanner(makeOptions({ repoCount: 1 })));
-      expect(output).toContain('1 (single repo)');
-    });
-
-    it('should show "multi-repo" for >1 repos', () => {
-      const output = strip(formatSummaryBanner(makeOptions({ repoCount: 3 })));
-      expect(output).toContain('3 (multi-repo)');
     });
 
     // ─── Enabled defaults ─────────────────────────────────────
@@ -162,35 +135,6 @@ describe('summary-banner', () => {
       expect(output).toContain('specweave config');
     });
 
-    // ─── Brownfield / living docs hints ───────────────────────
-
-    it('should show living docs suggestion when brownfield', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        isGreenfield: false,
-      })));
-      expect(output).toContain('/sw:living-docs');
-      expect(output).toContain('Existing code detected');
-    });
-
-    it('should show pending clones message when cloning', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        isGreenfield: true,
-        hasPendingClones: true,
-      })));
-      expect(output).toContain('cloning in background');
-      expect(output).toContain('/sw:living-docs');
-    });
-
-    it('should omit living docs when greenfield and no pending clones', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        isGreenfield: true,
-        hasPendingClones: false,
-      })));
-      expect(output).not.toContain('/sw:living-docs');
-      expect(output).not.toContain('Existing code');
-      expect(output).not.toContain('cloning');
-    });
-
     // ─── Adapter info ──────────────────────────────────────────
 
     it('should show adapter display name for claude', () => {
@@ -232,6 +176,72 @@ describe('summary-banner', () => {
       expect(output).toContain('Quick reference:');
     });
 
+    // ─── Project structure ──────────────────────────────────────
+
+    it('should show "Single repository" when no umbrella discovery', () => {
+      const output = strip(formatSummaryBanner(makeOptions()));
+      expect(output).toContain('Structure:');
+      expect(output).toContain('Single repository');
+    });
+
+    it('should show "Umbrella" with repo count when umbrella discovered', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos: [
+            { org: 'acme', name: 'api', path: 'repositories/acme/api', hasGit: true },
+            { org: 'acme', name: 'web', path: 'repositories/acme/web', hasGit: true },
+          ],
+          totalRepoCount: 2,
+        },
+      })));
+      expect(output).toContain('Structure:');
+      expect(output).toContain('Umbrella (2 repositories)');
+      expect(output).toContain('acme/api');
+      expect(output).toContain('acme/web');
+      expect(output).not.toContain('Single repository');
+    });
+
+    it('should use singular "repository" for count of 1', () => {
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos: [
+            { org: 'acme', name: 'api', path: 'repositories/acme/api', hasGit: true },
+          ],
+          totalRepoCount: 1,
+        },
+      })));
+      expect(output).toContain('Umbrella (1 repository)');
+    });
+
+    it('should cap repo display at 10 and show overflow message', () => {
+      const repos = Array.from({ length: 15 }, (_, i) => ({
+        org: 'acme',
+        name: `repo-${i}`,
+        path: `repositories/acme/repo-${i}`,
+        hasGit: true,
+      }));
+      const output = strip(formatSummaryBanner(makeOptions({
+        umbrellaDiscovery: {
+          isUmbrella: true,
+          repositoriesDir: '/tmp/repos',
+          orgs: ['acme'],
+          repos,
+          totalRepoCount: 15,
+        },
+      })));
+      expect(output).toContain('Umbrella (15 repositories)');
+      expect(output).toContain('acme/repo-0');
+      expect(output).toContain('acme/repo-9');
+      expect(output).not.toContain('acme/repo-10');
+      expect(output).toContain('... and 5 more');
+    });
+
     // ─── Coverage targets ──────────────────────────────────────
 
     it('should show coverage targets when TDD with coverageTargets', () => {
@@ -263,58 +273,6 @@ describe('summary-banner', () => {
       })));
       expect(output).toContain('test-after (testing)');
       expect(output).not.toContain('coverage:');
-    });
-
-    // ─── Sync permissions ──────────────────────────────────────
-
-    it('should show sync permissions when provided', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        syncPermissions: { canCreate: true, canUpdate: true, canUpdateStatus: true },
-      })));
-      expect(output).toContain('Sync:');
-      expect(output).toContain('create');
-      expect(output).toContain('update');
-      expect(output).toContain('status');
-    });
-
-    it('should show partial sync permissions', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        syncPermissions: { canCreate: true, canUpdate: false, canUpdateStatus: true },
-      })));
-      expect(output).toContain('create + status');
-    });
-
-    it('should omit sync line when no permissions provided', () => {
-      const output = strip(formatSummaryBanner(makeOptions()));
-      expect(output).not.toContain('Sync:');
-    });
-
-    // ─── External plugin health ────────────────────────────────
-
-    it('should show plugin pending warning when external plugin failed', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        tracker: { name: 'GitHub Issues' },
-        externalPluginInstalled: false,
-      })));
-      expect(output).toContain('GitHub Issues');
-      expect(output).toMatch(/plugin pending/);
-    });
-
-    it('should NOT show warning when external plugin succeeded', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        tracker: { name: 'GitHub Issues' },
-        externalPluginInstalled: true,
-      })));
-      expect(output).toContain('GitHub Issues');
-      expect(output).not.toContain('plugin pending');
-    });
-
-    it('should NOT show warning when externalPluginInstalled is undefined', () => {
-      const output = strip(formatSummaryBanner(makeOptions({
-        tracker: { name: 'GitHub Issues' },
-      })));
-      expect(output).toContain('GitHub Issues');
-      expect(output).not.toContain('plugin pending');
     });
   });
 });

@@ -58,7 +58,13 @@ export function useCommand() {
     };
   }, []);
 
-  const execute = useCallback(async (commandName: string, queryParams?: Record<string, string>) => {
+  const execute = useCallback(async (
+    commandName: string,
+    options?: { queryParams?: Record<string, string>; timeoutMs?: number },
+  ) => {
+    const queryParams = options?.queryParams;
+    const timeoutMs = options?.timeoutMs ?? 60000;
+
     setRunning(true);
     setError(null);
     setOutput([`> specweave ${commandName}${queryParams ? ` (${Object.values(queryParams).join(', ')})` : ''}`]);
@@ -78,16 +84,17 @@ export function useCommand() {
       setResult(json.data);
       activeCommandRef.current = json.data?.id || null;
 
-      // 60-second safety timeout
+      // Safety timeout (configurable, default 60s)
+      const timeoutSec = Math.round(timeoutMs / 1000);
       timeoutRef.current = setTimeout(() => {
         if (activeCommandRef.current) {
           activeCommandRef.current = null;
           setRunning(false);
           setStatus('error');
-          setError('Command timed out after 60 seconds');
-          setOutput(prev => [...prev, 'Timed out after 60 seconds.']);
+          setError(`Command timed out after ${timeoutSec} seconds`);
+          setOutput(prev => [...prev, `Timed out after ${timeoutSec} seconds.`]);
         }
-      }, 60000);
+      }, timeoutMs);
 
       return json.data;
     } catch (err) {

@@ -186,6 +186,21 @@ Track and report:
 - Ignoring failing tests
 - Writing tests after implementation
 
+## Anti-Rationalization Table
+
+These excuses signal you're about to break TDD discipline. Recognize them and return to the correct phase.
+
+| Excuse | Rebuttal | Why It Matters |
+|--------|----------|----------------|
+| "I'll test after" | Tests written after implementation pass immediately, proving nothing. You can't verify a test catches bugs if you never saw it fail. | Tests-after are biased by implementation — you test what you built, not what's required |
+| "This is too simple to test" | Simple code has the most unexamined assumptions. Simple code breaks at integration boundaries where you least expect it. | The simpler it seems, the more likely you'll miss an edge case |
+| "TDD slows me down" | TDD prevents 2-3 hour debugging sessions. Writing a test takes minutes; debugging an untested bug takes hours. | The time you "save" skipping tests is borrowed against future debugging |
+| "Just this once" | Every "just this once" becomes the new standard. Discipline has no exceptions — the exception IS the precedent. | One skip normalizes skipping. There is no "just this once" |
+| "I already manually tested it" | Manual testing leaves no record, isn't repeatable, and doesn't catch regressions. It proves nothing to anyone but you, right now. | Manual tests evaporate. Automated tests compound |
+| "Deleting my code is wasteful" | Sunk cost fallacy — keeping bad code costs more than writing it correctly. Code written without tests is unverified code. | Bad code costs more to maintain than to rewrite correctly |
+| "The spirit matters, not the ritual" | The ritual IS the spirit — the specific order (test → fail → implement → pass → refactor) is what produces the quality guarantee. | Skipping steps while claiming to follow TDD is not following TDD |
+| "I'll keep deleted code as reference" | Reference code biases you toward the wrong implementation. Start fresh — the test tells you what to write. | Prior code anchors you to assumptions that may be wrong |
+
 ## Success Criteria
 
 - 100% of code written test-first

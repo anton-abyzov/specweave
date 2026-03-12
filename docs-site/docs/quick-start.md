@@ -57,7 +57,6 @@ specweave init .
 .specweave/
 ├── config.json          # Project configuration
 ├── increments/          # Feature snapshots
-│   └── 0001-project-setup/
 └── docs/               # Living documentation
 ```
 
@@ -72,7 +71,7 @@ Open Claude Code and run:
 **Claude will create three files:**
 
 ```
-.specweave/increments/0002-click-counter/
+.specweave/increments/0001-click-counter/
 ├── spec.md    # WHAT: User stories, acceptance criteria
 ├── plan.md    # HOW: Architecture decisions
 └── tasks.md   # DO: Implementation checklist
@@ -80,7 +79,7 @@ Open Claude Code and run:
 
 ### Step 3: Review the Spec
 
-Open `.specweave/increments/0002-click-counter/spec.md`:
+Open `.specweave/increments/0001-click-counter/spec.md`:
 
 ```markdown
 ## User Stories
@@ -132,7 +131,7 @@ You'll see real-time labels showing progress:
 When all tasks are done, run the **code grill** first:
 
 ```bash
-/sw:grill 0002
+/sw:grill 0001
 ```
 
 The grill acts as a demanding senior engineer, checking for:
@@ -141,12 +140,12 @@ The grill acts as a demanding senior engineer, checking for:
 - ⚡ Performance issues
 - 🧹 Code maintainability
 
-If issues are found, fix them and re-run `/sw:grill 0002`.
+If issues are found, fix them and re-run `/sw:grill 0001`.
 
 Once grill passes:
 
 ```bash
-/sw:done 0002
+/sw:done 0001
 ```
 
 SpecWeave validates:
@@ -206,15 +205,15 @@ Run multiple AI agents on the same repository — local Claude Code sessions, cl
 
 ```bash
 # Terminal 1 (local Claude Code)
-/sw:increment "User authentication"    # Creates 0002-auth
+/sw:increment "User authentication"    # Creates 0001-auth
 /sw:auto                               # Agent works on auth tasks only
 
 # Terminal 2 (another session or OpenClaw)
-/sw:increment "Payment processing"     # Creates 0003-payments
+/sw:increment "Payment processing"     # Creates 0002-payments
 /sw:auto                               # Agent works on payments tasks only
 
 # Terminal 3 (cloud/remote agent)
-/sw:increment "Email notifications"    # Creates 0004-notifications
+/sw:increment "Email notifications"    # Creates 0003-notifications
 /sw:auto                               # Agent works on notifications tasks only
 ```
 
