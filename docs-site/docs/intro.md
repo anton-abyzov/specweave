@@ -1,15 +1,17 @@
 ---
 sidebar_position: 1
 title: Welcome to SpecWeave
-description: The Development Loom — weave specs into shipping software. Get started with AI-powered development.
+description: AI-assisted development, under control. Configure your standards once — your AI enforces them in every session, automatically.
 keywords: [specweave, ai coding, autonomous agents, claude code, spec-driven development]
 ---
 
 # Welcome to SpecWeave
 
-**The Development Loom** — weave specs into shipping software.
+**AI-assisted development, under control.**
 
-SpecWeave turns plain-English descriptions into production features. Describe what you want, AI interviews you, generates specs, and builds autonomously while you sleep.
+SpecWeave is a behavior layer that changes how your AI works. Configure your standards once — spec-first planning, TDD, quality gates, external sync — and every AI interaction in your project follows them automatically. No commands to memorize. Just describe the work.
+
+When you say "build me X," your AI doesn't improvise. It writes a spec, plans the architecture, breaks it into tasks, implements with tests, runs quality gates, and syncs to GitHub or JIRA. Automatically.
 
 ## Get Started
 
