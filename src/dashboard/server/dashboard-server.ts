@@ -20,6 +20,7 @@ import { preToolUseHandler } from './hooks/handlers/pre-tool-use.js';
 import { createSubagentStartHandler, createSubagentStopHandler } from './hooks/handlers/subagent-lifecycle.js';
 import { passthroughHandler } from './hooks/handlers/passthrough.js';
 import { isPortReachable } from '../../hooks/hooks-status.js';
+import { SCOPE_PORTS } from '../../utils/docs-preview/types.js';
 import type { SSEEventType, ProjectInfo } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -908,11 +909,14 @@ export class DashboardServer {
     this.router.get('/api/services', async (req, res) => {
       const project = this.resolveProject(req);
       if (!project) return sendJson(res, { ok: true, data: [] });
-      const config = await project.aggregator.getConfig() as any;
-      const docsPort = config?.documentation?.previewPort ?? 3000;
+      const [internalUp, publicUp] = await Promise.all([
+        isPortReachable(SCOPE_PORTS.internal),
+        isPortReachable(SCOPE_PORTS.public),
+      ]);
       const services = [
         { name: 'Dashboard Server', status: 'running', detail: `http://localhost:${this.options.port}`, port: this.options.port },
-        { name: 'Docs Preview', status: await isPortReachable(docsPort) ? 'running' : 'stopped', detail: `http://localhost:${docsPort}`, port: docsPort },
+        { name: 'Internal Docs', status: internalUp ? 'running' : 'stopped', detail: `http://localhost:${SCOPE_PORTS.internal}`, port: SCOPE_PORTS.internal, startCommand: 'docs-internal-start', stopCommand: 'docs-internal-stop' },
+        { name: 'Public Docs', status: publicUp ? 'running' : 'stopped', detail: `http://localhost:${SCOPE_PORTS.public}`, port: SCOPE_PORTS.public, startCommand: 'docs-public-start', stopCommand: 'docs-public-stop' },
       ];
       sendJson(res, { ok: true, data: services });
     });

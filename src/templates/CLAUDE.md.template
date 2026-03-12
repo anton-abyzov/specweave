@@ -50,11 +50,9 @@ If auto-activation fails, invoke explicitly: `Skill({ skill: "name" })`
 <!-- SECTION:start -->
 ## Getting Started
 
-**Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
+Your first increment starts at `0001`. Just describe what you want to build:
 
-**Options**:
-1. **Start fresh**: Delete `.specweave/increments/0001-project-setup/` → `/sw:increment "your-feature"`
-2. **Customize**: Edit spec.md and use for setup tasks
+`/sw:increment "your-feature"`
 <!-- /SECTION -->
 
 <!-- SECTION:autodetect -->

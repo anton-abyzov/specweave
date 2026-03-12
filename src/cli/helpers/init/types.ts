@@ -201,6 +201,34 @@ export interface UmbrellaParentResult {
 }
 
 /**
+ * A discovered child repository inside repositories/{org}/{name}
+ */
+export interface DiscoveredRepo {
+  org: string;
+  name: string;
+  path: string;
+  hasGit: boolean;
+}
+
+/**
+ * Result of scanning the repositories/ directory for umbrella detection
+ */
+export interface UmbrellaDiscoveryResult {
+  isUmbrella: boolean;
+  repositoriesDir: string;
+  orgs: string[];
+  repos: DiscoveredRepo[];
+  totalRepoCount: number;
+}
+
+/**
+ * Context for conditional next steps display
+ */
+export interface NextStepsContext {
+  isUmbrella?: boolean;
+}
+
+/**
  * Result of suspicious path detection
  */
 export interface SuspiciousPathResult {

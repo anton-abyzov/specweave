@@ -210,6 +210,7 @@ Ensure code quality and test coverage.
 | `sw:tdd-cycle` | core | Full TDD workflow |
 | `sw:code-reviewer` | core | Elite code review with AI techniques |
 | `sw:increment-quality-judge-v2` | core | LLM-as-Judge quality assessment |
+| `sw:debug` | core | Systematic 4-phase debugging with escalation protocol |
 | `unit-testing` | testing | Unit test patterns and Vitest |
 | `e2e-testing` | testing | Playwright E2E testing |
 | `qa-engineer` | testing | Manual QA processes |

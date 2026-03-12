@@ -150,6 +150,37 @@ describe('smart-defaults', () => {
       expect(config.planning.incrementInterview.minQuestions).toBe(10);
     });
 
+    // ─── Sync/hooks defaults ──────────────────────────────────
+
+    it('should set auto_create_github_issue in post_increment_planning when provider configured', () => {
+      const config = applySmartDefaults(
+        { repository: { provider: 'github' } },
+        makeOptions()
+      );
+      expect(config.hooks.post_increment_planning.auto_create_github_issue).toBe(true);
+    });
+
+    it('should NOT set sync_living_docs in post_increment_planning', () => {
+      const config = applySmartDefaults(
+        { repository: { provider: 'github' } },
+        makeOptions()
+      );
+      // sync_living_docs should NOT be set by smart defaults
+      // (it runs after agents finish, not at planning time)
+      expect(config.hooks.post_increment_planning.sync_living_docs).toBeUndefined();
+    });
+
+    it('should preserve existing post_increment_planning hooks', () => {
+      const config = applySmartDefaults(
+        {
+          repository: { provider: 'github' },
+          hooks: { post_increment_planning: { custom_hook: true } },
+        },
+        makeOptions()
+      );
+      expect(config.hooks.post_increment_planning.custom_hook).toBe(true);
+    });
+
     // ─── Overall behavior ─────────────────────────────────────
 
     it('should return the modified config object', () => {

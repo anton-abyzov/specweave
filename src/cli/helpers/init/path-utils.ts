@@ -6,7 +6,7 @@
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
-import type { ParentSpecweaveFolder, UmbrellaParentResult, SuspiciousPathResult } from './types.js';
+import type { ParentSpecweaveFolder, UmbrellaParentResult, SuspiciousPathResult, DiscoveredRepo, UmbrellaDiscoveryResult } from './types.js';
 
 /**
  * Find the package root by walking up the directory tree looking for package.json
@@ -226,6 +226,101 @@ export function detectSuspiciousPath(targetDir: string): SuspiciousPathResult | 
   }
 
   return null;
+}
+
+/**
+ * Scan the repositories/ subdirectory to discover child repos in an umbrella structure.
+ * Looks for repositories/{org}/{repo}/.git at exactly 2 levels deep.
+ *
+ * @param targetDir - The project root directory to scan
+ * @returns UmbrellaDiscoveryResult if repos found, null otherwise
+ */
+export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | null {
+  const reposDir = path.join(targetDir, 'repositories');
+  try {
+    if (!fs.existsSync(reposDir) || !fs.statSync(reposDir).isDirectory()) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  const repos: DiscoveredRepo[] = [];
+  const orgs = new Set<string>();
+
+  let orgNames: string[];
+  try {
+    orgNames = fs.readdirSync(reposDir).filter((name: string) => !name.startsWith('.'));
+  } catch {
+    return null;
+  }
+
+  for (const orgName of orgNames) {
+    const orgPath = path.join(reposDir, orgName);
+    try {
+      if (!fs.statSync(orgPath).isDirectory()) continue;
+      const repoNames = fs.readdirSync(orgPath).filter((name: string) => !name.startsWith('.'));
+
+      for (const repoName of repoNames) {
+        const repoPath = path.join(orgPath, repoName);
+        if (!fs.statSync(repoPath).isDirectory()) continue;
+        if (fs.existsSync(path.join(repoPath, '.git'))) {
+          orgs.add(orgName);
+          repos.push({
+            org: orgName,
+            name: repoName,
+            path: path.relative(targetDir, repoPath),
+            hasGit: true,
+          });
+        }
+      }
+    } catch {
+      continue; // skip unreadable org dir
+    }
+  }
+
+  if (repos.length === 0) return null;
+
+  return {
+    isUmbrella: true,
+    repositoriesDir: reposDir,
+    orgs: Array.from(orgs),
+    repos,
+    totalRepoCount: repos.length,
+  };
+}
+
+/**
+ * Build umbrella config fragment from discovered repos.
+ * Generates 3-char uppercase prefixes with deduplication (2-char + numeric suffix on collision).
+ *
+ * @param discovery - Result of scanUmbrellaRepos()
+ * @param projectName - Name of the umbrella project
+ * @returns Config fragment with umbrella and repository fields
+ */
+export function buildUmbrellaConfig(
+  discovery: UmbrellaDiscoveryResult,
+  projectName: string
+): {
+  umbrella: { enabled: true; projectName: string; childRepos: Array<{ id: string; path: string; name: string; prefix: string }> };
+  repository: { umbrellaRepo: true };
+} {
+  const usedPrefixes = new Set<string>();
+  const childRepos = discovery.repos.map(r => {
+    let prefix = r.name.substring(0, 3).toUpperCase();
+    if (usedPrefixes.has(prefix)) {
+      let suffix = 2;
+      while (usedPrefixes.has(prefix.substring(0, 2) + suffix)) suffix++;
+      prefix = prefix.substring(0, 2) + suffix;
+    }
+    usedPrefixes.add(prefix);
+    return { id: r.name, path: r.path, name: r.name, prefix };
+  });
+
+  return {
+    umbrella: { enabled: true, projectName, childRepos },
+    repository: { umbrellaRepo: true },
+  };
 }
 
 /**

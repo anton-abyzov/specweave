@@ -4,6 +4,62 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.424] - 2026-03-11
+
+### Changes
+- update save command plugin
+
+---
+
+
+
+## [1.0.423] - 2026-03-11
+
+### Changes
+- Patch release
+
+---
+
+
+
+## [1.0.422] - 2026-03-11
+
+### Changes
+- Patch release
+
+---
+
+
+
+## [1.0.421] - 2026-03-11
+
+### Added
+- **sw:debug skill** — Systematic 4-phase debugging (root cause investigation → pattern analysis → hypothesis testing → implementation) with 3-attempt escalation protocol and anti-rationalization table
+- **Per-task review gates in sw:do** — Opt-in (`quality.perTaskReview: true`) spec-compliance and code-quality sub-reviews after each task, catching drift before closure
+- **Adversarial spec reviewer in sw:grill** — New Phase 0 runs AC-by-AC verification with adversarial framing before code quality review; adds `acCompliance` section to grill-report.json
+- **Fresh verification discipline in sw:do** — Iron Law: "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" — tasks cannot be marked complete without running their test command
+- **Anti-rationalization tables** — Explicit excuse/rebuttal tables added to sw:tdd-cycle (8 entries) and sw:grill (6 entries) to counter common discipline-breaking rationalizations
+
+---
+
+## [1.0.420] - 2026-03-11
+
+### Changes
+- Patch release
+
+---
+
+
+
+## [1.0.419] - 2026-03-11
+
+### Changes
+- Patch release
+
+---
+
+
+
 ## [1.0.418] - 2026-03-11
 
 ### Changes
@@ -16,7 +72,9 @@ All notable changes to SpecWeave will be documented in this file.
 ## [1.0.417] - 2026-03-11
 
 ### Changes
-- multi-mode team-lead: support review, brainstorm, analysis without increment
+- fix(team-lead): update SKILL.md
+- fix: ADO org dropped from config, sync_living_docs contradiction, non-empty dir warning
+- simplify init: reduce from 1242 to ~350 lines, remove external tool setup
 - Revert "simplify init: reduce from 1242 to ~350 lines, remove external tool setup"
 - simplify init: reduce from 1242 to ~350 lines, remove external tool setup
 - skip already-cloned repos in clone job launcher
