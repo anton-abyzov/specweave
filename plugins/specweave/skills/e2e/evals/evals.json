@@ -1,0 +1,122 @@
+{
+  "skill_name": "sw:e2e",
+  "evals": [
+    {
+      "id": 1,
+      "name": "generate-from-spec",
+      "prompt": "Generate E2E tests for increment 0042-auth-flow. The spec.md has 2 user stories: US-001 (Login) with AC-US1-01 (see login form), AC-US1-02 (submit credentials), AC-US1-03 (see dashboard after login); US-002 (Logout) with AC-US2-01 (click logout), AC-US2-02 (redirected to login page).",
+      "expected_output": "Playwright test files created in e2e/ directory with one file per user story and AC-IDs in test titles",
+      "assertions": [
+        {
+          "id": "a1",
+          "text": "Reads spec.md from .specweave/increments/0042-auth-flow/spec.md to extract ACs",
+          "type": "boolean"
+        },
+        {
+          "id": "a2",
+          "text": "Creates e2e/us-001.spec.ts with test titles containing AC-US1-01, AC-US1-02, AC-US1-03",
+          "type": "boolean"
+        },
+        {
+          "id": "a3",
+          "text": "Creates e2e/us-002.spec.ts with test titles containing AC-US2-01, AC-US2-02",
+          "type": "boolean"
+        },
+        {
+          "id": "a4",
+          "text": "Checks for playwright.config.ts before generating test files",
+          "type": "boolean"
+        },
+        {
+          "id": "a5",
+          "text": "Groups AC-US1-01 through AC-US1-03 as a journey since they are sequential login steps",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "run-and-report",
+      "prompt": "Run E2E tests for increment 0042-auth-flow and produce the AC-mapped report. Tests already exist in e2e/ directory.",
+      "expected_output": "Playwright tests executed, e2e-report.json written to reports/ with AC-ID mapping and pass/fail summary",
+      "assertions": [
+        {
+          "id": "a1",
+          "text": "Runs npx playwright test with --reporter=json flag",
+          "type": "boolean"
+        },
+        {
+          "id": "a2",
+          "text": "Writes e2e-report.json to .specweave/increments/0042-auth-flow/reports/ directory",
+          "type": "boolean"
+        },
+        {
+          "id": "a3",
+          "text": "Report contains summary object with total, passed, failed, skipped counts",
+          "type": "boolean"
+        },
+        {
+          "id": "a4",
+          "text": "Report results array maps test outcomes to AC-IDs extracted from test titles",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "a11y-scan",
+      "prompt": "Run E2E tests with accessibility auditing for increment 0042-auth-flow. Include WCAG 2.1 AA compliance checks.",
+      "expected_output": "Tests run with @axe-core/playwright scans, violations attached to per-AC results in report",
+      "assertions": [
+        {
+          "id": "a1",
+          "text": "Checks for @axe-core/playwright installation before running a11y scans",
+          "type": "boolean"
+        },
+        {
+          "id": "a2",
+          "text": "Uses AxeBuilder with wcag2a, wcag2aa, wcag21aa tags",
+          "type": "boolean"
+        },
+        {
+          "id": "a3",
+          "text": "Attaches a11y violations to per-AC result entries in e2e-report.json",
+          "type": "boolean"
+        },
+        {
+          "id": "a4",
+          "text": "Reports zero violations as { violations: [], passes: N }",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "no-playwright-detected",
+      "prompt": "Generate E2E tests for increment 0099-new-feature. The project has no playwright.config.ts and no @playwright/test in package.json.",
+      "expected_output": "Skill detects missing Playwright and outputs installation instructions without generating files",
+      "assertions": [
+        {
+          "id": "a1",
+          "text": "Searches for playwright.config.ts and playwright.config.js in project root and common locations",
+          "type": "boolean"
+        },
+        {
+          "id": "a2",
+          "text": "Searches for @playwright/test in package.json dependencies",
+          "type": "boolean"
+        },
+        {
+          "id": "a3",
+          "text": "Outputs error message mentioning npm init playwright@latest for installation",
+          "type": "boolean"
+        },
+        {
+          "id": "a4",
+          "text": "Does NOT create any test files or e2e-report.json",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

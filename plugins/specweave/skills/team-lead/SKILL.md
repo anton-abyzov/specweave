@@ -164,7 +164,7 @@ Analyze the feature request and map affected domains to SpecWeave skills.
 | **Backend** | `sw:architect` | `infra:devops` | API endpoints, services, business logic |
 | **Database** | `sw:architect` | | Schema design, migrations, seed data |
 | **Shared/Types** | `sw:architect` | `sw:code-simplifier` | TypeScript interfaces, shared constants, API contracts |
-| **Testing** | `testing:qa` | `testing:e2e`, `testing:unit` | Test strategy, E2E suites, integration tests |
+| **Testing** | `sw:e2e` | `sw:tdd-red`, `sw:validate` | Test strategy, E2E suites, integration tests |
 | **Security** | `sw:security` | `security:patterns` | Auth, authorization, threat modeling, OWASP |
 | **DevOps** | `infra:devops` | `k8s:deployment-generate`, `infra:observability` | CI/CD, Docker, K8s, monitoring |
 | **Mobile** | `mobile:react-native` | `mobile:screen-generate`, `mobile:expo` | Native/cross-platform mobile apps |
@@ -416,7 +416,7 @@ Agent definitions live as reusable `.md` files in the `agents/` subdirectory. Wh
 | Frontend | `agents/frontend.md` | UI, components, pages | 2 (downstream) | `frontend:architect`, `frontend:design` |
 | Backend | `agents/backend.md` | API, services, middleware | 2 (downstream) | `sw:architect`, `infra:devops` |
 | Database | `agents/database.md` | Schema, migrations, seeds | 1 (upstream) | `sw:architect` |
-| Testing | `agents/testing.md` | Unit, integration, E2E | 2 (downstream) | `testing:qa`, `testing:e2e` |
+| Testing | `agents/testing.md` | Unit, integration, E2E | 2 (downstream) | `sw:e2e`, `sw:tdd-red` |
 | Security | `agents/security.md` | Auth, validation, audit | 2 (downstream) | `sw:security` |
 
 ### How to Use Agent Files

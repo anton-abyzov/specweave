@@ -157,15 +157,15 @@ This spawns three parallel reviewers:
 
 Generate comprehensive test coverage across all test levels simultaneously. Each agent focuses on a different testing layer and operates independently.
 
-> **Note:** `testing:qa` is the primary orchestration skill for testing workflows. This preset splits its responsibilities into specialized agents for parallel execution.
+> **Note:** SpecWeave testing skills (`sw:tdd-red`, `sw:e2e`, `sw:validate`) provide the testing workflows. This preset splits responsibilities into specialized agents for parallel execution.
 
 #### Agent Composition
 
 | # | Role | Skill(s) | Owns | Responsibility |
 |---|------|----------|------|----------------|
-| 1 | Unit | `testing:unit` | `tests/unit/` | Write unit tests for individual functions, classes, and modules with proper mocking |
-| 2 | E2E | `testing:e2e` | `tests/e2e/` | Write end-to-end tests for user flows, API sequences, and cross-service interactions |
-| 3 | Coverage | `testing:qa` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
+| 1 | Unit | `sw:tdd-red` | `tests/unit/` | Write unit tests for individual functions, classes, and modules with proper mocking |
+| 2 | E2E | `sw:e2e` | `tests/e2e/` | Write end-to-end tests for user flows, API sequences, and cross-service interactions |
+| 3 | Coverage | `sw:validate` | `tests/` (analysis scope) | Analyze coverage gaps, generate missing test cases, ensure threshold compliance |
 
 #### Execution Chain
 
