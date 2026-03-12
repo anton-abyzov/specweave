@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.435] - 2026-03-12
+
+### Changes
+- feat: add specweave sync-setup CLI command + detect misplaced repos on init
+
+---
+
+
+
 ## [1.0.434] - 2026-03-12
 
 ### Changes
