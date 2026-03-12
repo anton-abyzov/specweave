@@ -23,6 +23,15 @@ vi.mock('../../../../../src/cli/helpers/selection-strategy.js', () => ({
   filterRepositoriesByPattern: mockFilterRepositoriesByPattern
 }));
 
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    default: { ...actual, existsSync: mockExistsSync },
+    existsSync: mockExistsSync,
+  };
+});
+
 // Suppress chalk output in tests
 vi.mock('chalk', () => ({
   default: {
