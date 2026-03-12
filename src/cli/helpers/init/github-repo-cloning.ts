@@ -14,8 +14,11 @@
  */
 
 import chalk from 'chalk';
+import * as fs from 'fs';
+import * as path from 'path';
 import { filterRepositoriesByPattern, type ClonePatternResult } from '../selection-strategy.js';
 import { launchCloneJob } from '../../../core/background/job-launcher.js';
+import { parseRepoIdentifier } from '../../../core/repo-structure/url-generator.js';
 import { REPO_FETCH_LIMITS } from './types.js';
 
 /**
@@ -336,7 +339,7 @@ function buildGitHubSshCloneUrl(owner: string, repo: string): string {
  * @param gitUrlFormat - User's preference: 'ssh' or 'https'
  * @returns Clone URL in the requested format
  */
-function buildGitHubCloneUrl(
+export function buildGitHubCloneUrl(
   owner: string,
   repo: string,
   pat: string,
