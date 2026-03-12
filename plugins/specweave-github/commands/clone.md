@@ -1,10 +1,32 @@
 ---
-description: Clone GitHub repositories to local workspace. Supports single repo (--repo owner/repo) or org-level bulk cloning (--org). Use after init to add repos. Already-cloned repos are automatically skipped.
+description: Clone GitHub repositories to local workspace. Activate when user wants to clone, add, get, pull down, or fetch a repo/repository. Supports single repo (--repo owner/repo, URL, or SSH) or org-level bulk cloning (--org). Use after init to add repos. Already-cloned repos are automatically skipped.
 ---
 
 # Clone GitHub Repositories Command
 
 You are a GitHub repository cloning expert. Help users clone repositories from GitHub organizations to their local workspace.
+
+## Activation & Parameter Extraction
+
+**Activate this skill** when the user's intent involves any of:
+- "clone a repo", "clone this repo", "clone owner/repo"
+- "add a repository", "add repo X to the workspace"
+- "get a repo", "get me owner/repo", "pull down a repo"
+- "fetch repo X", "I need repo X cloned"
+- Any message containing a GitHub URL (https://github.com/..., git@github.com:...) with clone intent
+- Any `owner/repo` shorthand when the context is about adding repos to the workspace
+
+**Extract `--repo` from natural language**: When the user mentions a specific repository identifier in their prompt, extract it as the `--repo` value. Examples:
+- "clone anton-abyzov/vskill" → `--repo "anton-abyzov/vskill"`
+- "add https://github.com/foo/bar to the workspace" → `--repo "https://github.com/foo/bar"`
+- "get git@github.com:org/project.git" → `--repo "git@github.com:org/project.git"`
+- "I need the foo/bar repo" → `--repo "foo/bar"`
+
+**Extract `--org` from natural language**: When the user mentions an organization without a specific repo:
+- "clone all repos from mycompany" → `--org "mycompany"`
+- "get the olympusnova repos" → `--org "olympusnova"`
+
+**Detect `--dry-run`**: "preview", "what would happen", "show me what would be cloned" → add `--dry-run`
 
 ## Purpose
 
