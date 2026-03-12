@@ -148,6 +148,7 @@ export interface SyncOptions {
   dryRun?: boolean;
   force?: boolean;
   explicitFeatureId?: string;
+  skipExternalSync?: boolean;
 }
 
 export interface SyncResult {

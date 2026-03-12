@@ -431,7 +431,7 @@ export class LivingDocsSync {
           (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
         );
 
-        if (!options.dryRun && !skipExternalSync) {
+        if (!options.dryRun && !skipExternalSync && !options.skipExternalSync) {
           // For cross-project, sync external tools for EACH project's feature folder
           // Pass targetPath as projectName so resolveSyncTarget routes to correct child repo
           for (const [targetPath, _projectStories] of validGroups) {
@@ -440,6 +440,8 @@ export class LivingDocsSync {
             const projectNameForSync = targetPath.split('/')[0];
             await this.syncToExternalTools(incrementId, featureId, crossProjectFeaturePath, projectNameForSync);
           }
+        } else if (options.skipExternalSync) {
+          this.logger.log(`   ⏭️  External tool sync skipped (AC gate: no new AC transitions)`);
         } else if (skipExternalSync) {
           this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
           this.logger.log(`   ℹ️  Run /sw:sync-progress to manually sync when ready`);
@@ -625,8 +627,10 @@ export class LivingDocsSync {
         (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
       );
 
-      if (!options.dryRun && !skipExternalSync) {
+      if (!options.dryRun && !skipExternalSync && !options.skipExternalSync) {
         await this.syncToExternalTools(incrementId, featureId, projectPath, defaultProject);
+      } else if (options.skipExternalSync) {
+        this.logger.log(`   ⏭️  External tool sync skipped (AC gate: no new AC transitions)`);
       } else if (skipExternalSync) {
         this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
         this.logger.log(`   ℹ️  Run /sw:sync-progress to manually sync when ready`);

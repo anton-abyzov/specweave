@@ -55,6 +55,20 @@ interface ActivityItem {
   timestamp?: string;
 }
 
+interface SyncErrorItem {
+  provider: string;
+  incrementId: string;
+  error: string;
+  timestamp: string;
+  outcome: string;
+}
+
+interface SyncGapItem {
+  incrementId: string;
+  syncedProviders: string[];
+  missingProviders: string[];
+}
+
 function syncStatusVariant(status?: string): 'default' | 'success' | 'warning' | 'error' | 'info' {
   switch (status) {
     case 'connected': return 'success';
@@ -82,12 +96,15 @@ export function OverviewPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const { data, loading, error, refetch } = useProjectApi<OverviewData>(`/api/overview?_r=${refreshKey}`);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [syncErrors, setSyncErrors] = useState<SyncErrorItem[]>([]);
+  const [syncGaps, setSyncGaps] = useState<SyncGapItem[]>([]);
   const { activeProject } = useProject();
 
   // Refresh overview data when increments, notifications, or sync change
   useSSEEvent('increment-update', () => setRefreshKey(k => k + 1));
   useSSEEvent('notification', () => setRefreshKey(k => k + 1));
   useSSEEvent('sync-update', () => setRefreshKey(k => k + 1));
+  useSSEEvent('sync-error', () => setRefreshKey(k => k + 1));
   useSSEEvent('cost-update', () => setRefreshKey(k => k + 1));
 
   // Seed with recent historical events; re-fetch when project changes
@@ -112,6 +129,18 @@ export function OverviewPage() {
   }, []);
 
   useSSEEvent('activity', handleActivity);
+
+  // Fetch sync errors and gaps on mount and refresh
+  useEffect(() => {
+    fetch('/api/sync/errors?hours=24&limit=5')
+      .then(r => r.json())
+      .then(json => { if (json.ok && Array.isArray(json.data)) setSyncErrors(json.data); })
+      .catch(() => {});
+    fetch('/api/sync/gaps')
+      .then(r => r.json())
+      .then(json => { if (json.ok && Array.isArray(json.data)) setSyncGaps(json.data); })
+      .catch(() => {});
+  }, [refreshKey]);
 
   if (loading) return <PageLoader />;
   if (error) return <ErrorAlert message={error} onRetry={refetch} />;
@@ -284,6 +313,43 @@ export function OverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Sync Gap Indicator */}
+      {syncGaps.length > 0 && (
+        <Link to="/sync" className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-center gap-3 hover:border-amber-500/30 transition-colors block">
+          <Badge label={`${syncGaps.length} gaps`} variant="warning" />
+          <span className="text-xs text-gray-300">
+            {syncGaps.length} increment{syncGaps.length !== 1 ? 's have' : ' has'} partial sync coverage
+          </span>
+        </Link>
+      )}
+
+      {/* Recent Sync Errors */}
+      {syncErrors.length > 0 && (
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-300">Recent Sync Errors</h3>
+            <Link to="/sync" className="text-[10px] text-indigo-400 hover:text-indigo-300">
+              View all
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {syncErrors.map((err, i) => (
+              <div key={i} className="flex items-start gap-2 p-3 bg-gray-800/50 rounded-lg">
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 bg-rose-400" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-300 capitalize">{err.provider}</span>
+                    <Badge label={err.incrementId} variant="default" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 truncate">{err.error}</div>
+                  <div className="text-[10px] text-gray-600 mt-0.5">{timeAgo(err.timestamp)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Type breakdown */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
