@@ -226,6 +226,8 @@ export interface UmbrellaDiscoveryResult {
  */
 export interface NextStepsContext {
   isUmbrella?: boolean;
+  /** Repo names found at repositories/{name}/.git (1-level, missing org subfolder) */
+  misplacedRepos?: string[];
 }
 
 /**
