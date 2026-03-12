@@ -34,7 +34,7 @@ vi.mock('chalk', () => ({
   }
 }));
 
-import { triggerGitHubRepoCloning } from '../../../../../src/cli/helpers/init/github-repo-cloning.js';
+import { triggerGitHubRepoCloning, cloneSingleGitHubRepo } from '../../../../../src/cli/helpers/init/github-repo-cloning.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -419,6 +419,218 @@ describe('github-repo-cloning', () => {
 
       const launchCall = mockLaunchCloneJob.mock.calls[0][0];
       expect(launchCall.repositories).toHaveLength(1);
+    });
+  });
+
+  describe('cloneSingleGitHubRepo', () => {
+    // T-003: Validation tests
+    it('validates repo exists on GitHub (200 = success)', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1, name: 'repo' }));
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-456' },
+        isBackground: true,
+        pid: 5678
+      });
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      expect(result.error).toBeUndefined();
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.github.com/repos/owner/repo',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer ghp_test'
+          })
+        })
+      );
+    });
+
+    it('returns error when repo not found (404)', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({}, 404));
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      expect(result.error).toBe(
+        "Repository owner/repo not found or you don't have access. Check the repo name and ensure your token has 'repo' scope."
+      );
+      expect(result.cloned).toBe(false);
+    });
+
+    it('returns error when no PAT for HTTPS/shorthand input', async () => {
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+      });
+
+      expect(result.error).toContain('token');
+      expect(result.cloned).toBe(false);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('allows SSH input without PAT (skips API validation)', async () => {
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-789' },
+        isBackground: true,
+        pid: 9999
+      });
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'git@github.com:owner/repo.git',
+        projectPath: '/project',
+      });
+
+      // SSH without PAT should not require token
+      expect(result.error).toBeUndefined();
+      expect(result.cloned).toBe(true);
+    });
+
+    // T-004: Clone path, skip, URL format tests
+    it('clones repo to repositories/{owner}/{repo} path', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-456' },
+        isBackground: true,
+        pid: 5678
+      });
+
+      await cloneSingleGitHubRepo({
+        repoIdentifier: 'my-org/my-repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories[0].path).toBe('repositories/my-org/my-repo');
+      expect(launchCall.repositories[0].owner).toBe('my-org');
+      expect(launchCall.repositories[0].name).toBe('my-repo');
+    });
+
+    it('skips clone when repo already exists locally', async () => {
+      // Mock fs.existsSync to return true for .git path
+      const fs = await import('fs');
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
+
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      expect(result.alreadyCloned).toBe(true);
+      expect(result.cloned).toBe(false);
+      expect(mockLaunchCloneJob).not.toHaveBeenCalled();
+      existsSpy.mockRestore();
+    });
+
+    it('uses SSH clone URL for SSH input', async () => {
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-ssh' },
+        isBackground: true,
+        pid: 1111
+      });
+
+      await cloneSingleGitHubRepo({
+        repoIdentifier: 'git@github.com:owner/repo.git',
+        projectPath: '/project',
+      });
+
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories[0].cloneUrl).toBe('git@github.com:owner/repo.git');
+      expect(launchCall.repositories[0].cloneUrl).not.toContain('ghp_');
+    });
+
+    it('uses HTTPS clone URL with PAT for shorthand input', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-https' },
+        isBackground: true,
+        pid: 2222
+      });
+
+      await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_mytoken',
+      });
+
+      const launchCall = mockLaunchCloneJob.mock.calls[0][0];
+      expect(launchCall.repositories[0].cloneUrl).toContain('ghp_mytoken@github.com');
+      expect(launchCall.repositories[0].cloneUrl).toMatch(/^https:\/\//);
+    });
+
+    // T-006: Dry-run and parse-error tests
+    it('dry-run validates but does not launch clone job', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+        dryRun: true,
+      });
+
+      expect(result.cloned).toBe(false);
+      expect(result.owner).toBe('owner');
+      expect(result.repo).toBe('repo');
+      expect(mockFetch).toHaveBeenCalled(); // Validation still runs
+      expect(mockLaunchCloneJob).not.toHaveBeenCalled(); // But no clone
+    });
+
+    it('dry-run still reports validation errors', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({}, 404));
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/nonexistent',
+        projectPath: '/project',
+        pat: 'ghp_test',
+        dryRun: true,
+      });
+
+      expect(result.error).toContain('not found');
+      expect(result.cloned).toBe(false);
+    });
+
+    it('returns error with supported formats for unparseable input', async () => {
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'not-a-repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      expect(result.error).toContain('Invalid repo format');
+      expect(result.error).toContain('owner/repo');
+      expect(result.cloned).toBe(false);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('returns jobId on successful clone', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
+      mockLaunchCloneJob.mockResolvedValue({
+        job: { id: 'job-final' },
+        isBackground: true,
+        pid: 3333
+      });
+
+      const result = await cloneSingleGitHubRepo({
+        repoIdentifier: 'owner/repo',
+        projectPath: '/project',
+        pat: 'ghp_test',
+      });
+
+      expect(result.cloned).toBe(true);
+      expect(result.jobId).toBe('job-final');
+      expect(result.owner).toBe('owner');
+      expect(result.repo).toBe('repo');
     });
   });
 });

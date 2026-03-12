@@ -104,6 +104,69 @@ export function parseGitRemoteUrl(url: string): {
 }
 
 /**
+ * Parse a repository identifier from various input formats.
+ *
+ * Supports:
+ * - `owner/repo` shorthand (assumes github.com)
+ * - `github.com/owner/repo` (bare host, no protocol)
+ * - `https://github.com/owner/repo[.git][/tree/main/...]`
+ * - `git@github.com:owner/repo[.git]`
+ *
+ * Delegates to `parseGitRemoteUrl()` for standard git URL formats.
+ *
+ * @param input - Repository identifier in any supported format
+ * @returns Parsed owner/repo with input type, or null if unparseable
+ */
+export function parseRepoIdentifier(input: string): {
+  owner: string;
+  repo: string;
+  inputType: 'ssh' | 'https' | 'shorthand';
+} | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  // 1. Try HTTPS URLs with extra path segments (e.g. /tree/main)
+  //    Strip to https://host/owner/repo before delegating
+  const httpsExtraPath = trimmed.match(
+    /^(https?:\/\/github\.com\/[\w.-]+\/[\w.-]+?)(?:\.git)?(?:\/.*)?$/
+  );
+  if (httpsExtraPath) {
+    const gitResult = parseGitRemoteUrl(httpsExtraPath[1]);
+    if (gitResult) {
+      return { owner: gitResult.owner, repo: gitResult.repo, inputType: 'https' };
+    }
+  }
+
+  // 2. Try standard git URL formats via existing parser
+  const gitResult = parseGitRemoteUrl(trimmed);
+  if (gitResult && gitResult.host.includes('github')) {
+    return {
+      owner: gitResult.owner,
+      repo: gitResult.repo.replace(/\.git$/, ''),
+      inputType: gitResult.urlType
+    };
+  }
+
+  // 3. github.com/owner/repo (bare host, no protocol)
+  const bareHostMatch = trimmed.match(
+    /^github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?(?:\/.*)?$/
+  );
+  if (bareHostMatch) {
+    return { owner: bareHostMatch[1], repo: bareHostMatch[2], inputType: 'https' };
+  }
+
+  // 4. owner/repo shorthand (exactly two segments)
+  const shorthandMatch = trimmed.match(
+    /^([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/
+  );
+  if (shorthandMatch) {
+    return { owner: shorthandMatch[1], repo: shorthandMatch[2], inputType: 'shorthand' };
+  }
+
+  return null;
+}
+
+/**
  * Detect Git platform from hostname
  *
  * @param host - Hostname (e.g., 'github.com', 'gitlab.company.com')
