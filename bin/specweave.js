@@ -968,6 +968,17 @@ program
     process.exitCode = result.exitCode;
   });
 
+// Sync-setup command - Interactive wizard to connect GitHub Issues, JIRA, or ADO
+program
+  .command('sync-setup')
+  .description('Interactive wizard to connect GitHub Issues, JIRA, or Azure DevOps')
+  .option('--provider <name>', 'Provider to configure (github|jira|ado) — skips selection prompt')
+  .option('--quick', 'Non-interactive mode: print hint and exit (for CI environments)')
+  .action(async (opts) => {
+    const { syncSetupCommand } = await import('../dist/src/cli/commands/sync-setup.js');
+    await syncSetupCommand({ provider: opts.provider, quick: opts.quick });
+  });
+
 // Docs command - Documentation preview, build, validation
 const docsCmd = program
   .command('docs')

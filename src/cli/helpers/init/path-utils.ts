@@ -291,6 +291,49 @@ export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | 
 }
 
 /**
+ * Scan for repositories placed directly under repositories/ without an org subfolder.
+ *
+ * The standard umbrella layout is repositories/{org}/{repo}/.git (2 levels).
+ * This function detects the non-standard 1-level pattern: repositories/{repo}/.git.
+ * It is called only when scanUmbrellaRepos() returns null (mutually exclusive).
+ *
+ * @param targetDir - The project root directory to scan
+ * @returns Array of misplaced repo names, or empty array if none found
+ */
+export function scanMisplacedRepos(targetDir: string): string[] {
+  const reposDir = path.join(targetDir, 'repositories');
+  try {
+    if (!fs.existsSync(reposDir) || !fs.statSync(reposDir).isDirectory()) {
+      return [];
+    }
+  } catch {
+    return [];
+  }
+
+  const misplaced: string[] = [];
+  let entries: string[];
+  try {
+    entries = fs.readdirSync(reposDir).filter((name: string) => !name.startsWith('.'));
+  } catch {
+    return [];
+  }
+
+  for (const name of entries) {
+    const entryPath = path.join(reposDir, name);
+    try {
+      if (!fs.statSync(entryPath).isDirectory()) continue;
+      if (fs.existsSync(path.join(entryPath, '.git'))) {
+        misplaced.push(name);
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return misplaced;
+}
+
+/**
  * Build umbrella config fragment from discovered repos.
  * Generates 3-char uppercase prefixes with deduplication (2-char + numeric suffix on collision).
  *

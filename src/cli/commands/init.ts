@@ -29,6 +29,7 @@ import {
   detectSuspiciousPath,
   detectProvider,
   scanUmbrellaRepos,
+  scanMisplacedRepos,
   buildUmbrellaConfig,
   promptSmartReinit,
   installAllPlugins,
@@ -285,6 +286,10 @@ export async function initCommand(
     // Mutable — may be updated after repo cloning in post-scaffold step
     let umbrellaDiscovery = scanUmbrellaRepos(targetDir);
 
+    // Detect repos in non-standard layout (repositories/{repo}/.git instead of {org}/{repo}/.git)
+    // Only called when standard detection failed — the two cases are mutually exclusive
+    const misplacedRepos = !umbrellaDiscovery ? scanMisplacedRepos(targetDir) : [];
+
     // Create directory structure
     if (!continueExisting) {
       await createDirectoryStructure(targetDir, toolName);
@@ -499,7 +504,7 @@ export async function initCommand(
       language,
       usedDotNotation,
       toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined,
-      { isUmbrella: !!umbrellaDiscovery }
+      { isUmbrella: !!umbrellaDiscovery, misplacedRepos }
     );
   } catch (error) {
     spinner.fail('Failed to create project');

@@ -28,6 +28,7 @@ export {
   detectUmbrellaParent,
   detectSuspiciousPath,
   scanUmbrellaRepos,
+  scanMisplacedRepos,
   buildUmbrellaConfig,
   SUSPICIOUS_PATH_SEGMENTS,
 } from './path-utils.js';
