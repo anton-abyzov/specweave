@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.425] - 2026-03-12
+
+### Changes
+- fix: update docs, living-docs sync, and image generator
+- refactor init path resolution and extract buildUmbrellaConfig helper
+- untrack backup images, originals, and plugin runtime state
+- chore: bump version to 1.0.424
+- update save command plugin
+- chore: bump version to 1.0.418
+- 1.0.417
+- multi-mode team-lead: support review, brainstorm, analysis without increment
+
+---
+
+
+
 ## [1.0.424] - 2026-03-11
 
 ### Changes
