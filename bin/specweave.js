@@ -933,6 +933,41 @@ program
     await syncTask([incrementId]);
   });
 
+// Sync-retry command - Process retry queue for failed syncs
+program
+  .command('sync-retry')
+  .description('Process the sync retry queue (retry failed external syncs with backoff)')
+  .option('--dry-run', 'Show what would be retried without executing')
+  .option('--force', 'Retry all entries regardless of backoff timing')
+  .option('--clear', 'Clear the entire retry queue')
+  .action(async (options) => {
+    const { syncRetryCommand } = await import('../dist/src/cli/commands/sync-retry.js');
+    const result = await syncRetryCommand(process.cwd(), options);
+    if (result.failed > 0) process.exitCode = 1;
+  });
+
+// Sync-gaps command - Detect increments with partial external sync
+program
+  .command('sync-gaps')
+  .description('Detect increments with partial external sync coverage')
+  .option('--json', 'Output as JSON')
+  .option('--fix', 'Attempt missing syncs for each gap')
+  .action(async (options) => {
+    const { syncGapsCommand } = await import('../dist/src/cli/commands/sync-gaps.js');
+    const result = await syncGapsCommand(process.cwd(), options);
+    process.exitCode = result.exitCode;
+  });
+
+// Sync-status command - Overall sync health report
+program
+  .command('sync-status')
+  .description('Show sync health: retry queue, circuit breakers, rate limits, recent errors')
+  .action(async () => {
+    const { syncStatusCommand } = await import('../dist/src/cli/commands/sync-status.js');
+    const result = await syncStatusCommand(process.cwd());
+    process.exitCode = result.exitCode;
+  });
+
 // Docs command - Documentation preview, build, validation
 const docsCmd = program
   .command('docs')
