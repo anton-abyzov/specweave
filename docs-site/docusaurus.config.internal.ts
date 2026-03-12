@@ -29,6 +29,9 @@ const config: Config = {
   markdown: {
     mermaid: true,
     format: 'md',  // Use standard markdown, not MDX (avoids JSX parsing errors)
+    hooks: {
+      onBrokenMarkdownImages: () => {},  // Images are generated artifacts, may not exist on disk
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 

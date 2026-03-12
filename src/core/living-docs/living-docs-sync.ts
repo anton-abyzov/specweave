@@ -343,7 +343,7 @@ export class LivingDocsSync {
                   featureId,
                   docContext
                 );
-                if (imageResult.featureImage) {
+                if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
                   const imagePath = getRelativeImagePath(crossProjectFeatureFile, imageResult.featureImage);
                   const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
                   featureContent = featureContent.replace(
@@ -516,7 +516,7 @@ export class LivingDocsSync {
               featureId,
               docContext
             );
-            if (imageResult.featureImage) {
+            if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
               // Add image reference to feature content (after TL;DR section)
               const imagePath = getRelativeImagePath(featureFile, imageResult.featureImage);
               const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
