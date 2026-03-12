@@ -539,6 +539,8 @@ function PlatformCard({
 // --- Shared Sub-Components ---
 
 function AuditTable({ entries }: { entries: AuditEntry[] }) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
   if (entries.length === 0) {
     return (
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center">
@@ -569,30 +571,50 @@ function AuditTable({ entries }: { entries: AuditEntry[] }) {
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry, i) => (
-            <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
-              <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(entry.timestamp)}</td>
-              <td className="px-4 py-2">
-                <div className="flex items-center gap-1.5">
-                  <PlatformIcon platform={entry.platform} />
-                  <span className="text-xs text-gray-400 capitalize">{entry.platform}</span>
-                </div>
-              </td>
-              <td className="px-4 py-2 text-xs text-gray-400">{entry.operation}</td>
-              <td className="px-4 py-2 text-xs text-gray-500 font-mono max-w-[120px] truncate">{entry.itemId || '-'}</td>
-              <td className="px-4 py-2">
-                <Badge label={entry.direction} variant={entry.direction === 'push' ? 'info' : 'default'} />
-              </td>
-              <td className="px-4 py-2">
-                <Badge label={entry.result} variant={(resultVariant[entry.result] || 'default') as any} />
-              </td>
-              <td className="px-4 py-2 text-xs text-gray-600 text-right">
-                {entry.duration ? `${entry.duration}ms` : '-'}
-              </td>
-            </tr>
-          ))}
+          {entries.map((entry, i) => {
+            const hasMessage = !!entry.message;
+            const isExpanded = expandedIdx === i;
+            return (
+              <tr
+                key={i}
+                className={`border-b border-gray-800/50 hover:bg-gray-800/30 ${hasMessage ? 'cursor-pointer' : ''}`}
+                onClick={() => hasMessage && setExpandedIdx(isExpanded ? null : i)}
+              >
+                <td className="px-4 py-2 text-xs text-gray-500">{timeAgo(entry.timestamp)}</td>
+                <td className="px-4 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <PlatformIcon platform={entry.platform} />
+                    <span className="text-xs text-gray-400 capitalize">{entry.platform}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-2 text-xs text-gray-400">{entry.operation}</td>
+                <td className="px-4 py-2 text-xs text-gray-500 font-mono max-w-[120px] truncate">{entry.itemId || '-'}</td>
+                <td className="px-4 py-2">
+                  <Badge label={entry.direction} variant={entry.direction === 'push' ? 'info' : 'default'} />
+                </td>
+                <td className="px-4 py-2">
+                  <div className="flex items-center gap-1">
+                    <Badge label={entry.result} variant={(resultVariant[entry.result] || 'default') as any} />
+                    {hasMessage && (
+                      <span className="text-[10px] text-gray-600">{isExpanded ? '\u25B2' : '\u25BC'}</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-4 py-2 text-xs text-gray-600 text-right">
+                  {entry.duration ? `${entry.duration}ms` : '-'}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+      {expandedIdx !== null && entries[expandedIdx]?.message && (
+        <div className="border-t border-gray-800 px-4 py-3 bg-gray-800/20">
+          <pre className="text-xs text-gray-400 whitespace-pre-wrap font-mono max-h-40 overflow-y-auto">
+            {entries[expandedIdx].message}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
