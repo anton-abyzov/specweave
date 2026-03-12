@@ -45,6 +45,37 @@ interface AdoWorkItem {
 const ADO_CLOSED_STATES = ['Closed', 'Done', 'Resolved', 'Removed'];
 const ADO_OPEN_STATES = ['Active', 'New', 'In Progress', 'Committed'];
 
+// Process-template-aware state maps
+type AdoTemplateName = 'Basic' | 'Agile' | 'Scrum' | 'CMMI' | 'SAFe';
+
+const TEMPLATE_CLOSED_MAP: Record<AdoTemplateName, string> = {
+  Basic: 'Done',
+  Agile: 'Closed',
+  Scrum: 'Done',
+  CMMI: 'Closed',
+  SAFe: 'Closed',
+};
+
+const TEMPLATE_ACTIVE_MAP: Record<AdoTemplateName, string> = {
+  Basic: 'Doing',
+  Agile: 'Active',
+  Scrum: 'Committed',
+  CMMI: 'Active',
+  SAFe: 'Active',
+};
+
+const TEMPLATE_WIT_MAP: Record<AdoTemplateName, string> = {
+  Basic: 'Issue',
+  Agile: 'User Story',
+  Scrum: 'Product Backlog Item',
+  CMMI: 'Requirement',
+  SAFe: 'User Story',
+};
+
+interface CachedTemplate {
+  template: AdoTemplateName;
+}
+
 // ---------------------------------------------------------------------------
 // AdoAdapter
 // ---------------------------------------------------------------------------
@@ -58,6 +89,8 @@ export class AdoAdapter implements ProviderAdapter {
   private pat: string;
   private baseUrl: string;
   private config: AdoAdapterConfig;
+  private cachedTemplate?: CachedTemplate;
+  private templateDetected = false;
 
   constructor(config: AdoAdapterConfig) {
     this.organization = config.organization;
@@ -85,7 +118,7 @@ export class AdoAdapter implements ProviderAdapter {
     const title = formatIssueTitle(story.id, story.title);
     const description = this.buildDescription(story, feature);
 
-    const operations = [
+    const operations: Array<{ op: string; path: string; value: unknown }> = [
       { op: 'add', path: '/fields/System.Title', value: title },
       { op: 'add', path: '/fields/System.Description', value: description },
       { op: 'add', path: '/fields/System.Tags', value: `specweave;priority:${story.priority || 'P2'}` },
@@ -96,8 +129,25 @@ export class AdoAdapter implements ProviderAdapter {
       operations.push({ op: 'add', path: '/fields/Microsoft.VSTS.Common.AcceptanceCriteria', value: `<ul>${acHtml}</ul>` });
     }
 
-    // Work item type varies by process template — configurable via config.workItemType
-    const workItemType = encodeURIComponent(this.config.workItemType || 'User Story');
+    // Parent linking: add hierarchy relation when feature has an ADO work item
+    if (feature.externalRef?.id) {
+      operations.push({
+        op: 'add',
+        path: '/relations/-',
+        value: {
+          rel: 'System.LinkTypes.Hierarchy-Reverse',
+          url: `https://dev.azure.com/${this.organization}/${this.project}/_apis/wit/workItems/${feature.externalRef.id}`,
+        },
+      });
+    }
+
+    // Work item type: resolve from process template, fall back to config
+    const template = await this.getTemplate();
+    const wit = template
+      ? (TEMPLATE_WIT_MAP[template.template] ?? this.config.workItemType ?? 'User Story')
+      : (this.config.workItemType ?? 'User Story');
+    const workItemType = encodeURIComponent(wit);
+
     const response = await this.apiRequest(
       'POST',
       `/wit/workitems/$${workItemType}?api-version=7.1`,
@@ -137,7 +187,8 @@ export class AdoAdapter implements ProviderAdapter {
       operations.push({ op: 'add', path: '/fields/System.Description', value: changes.description });
     }
     if (changes.status) {
-      operations.push({ op: 'add', path: '/fields/System.State', value: this.mapStatusToAdo(changes.status) });
+      const adoState = await this.mapStatusToAdo(changes.status);
+      operations.push({ op: 'add', path: '/fields/System.State', value: adoState });
     }
 
     if (operations.length > 0) {
@@ -151,7 +202,7 @@ export class AdoAdapter implements ProviderAdapter {
   }
 
   async closeIssue(ref: ExternalRef, comment?: string): Promise<void> {
-    const closedState = this.config.closedState || 'Closed';
+    const closedState = await this.getClosedState();
     const operations: Array<{ op: string; path: string; value: unknown }> = [
       { op: 'add', path: '/fields/System.State', value: closedState },
     ];
@@ -173,7 +224,7 @@ export class AdoAdapter implements ProviderAdapter {
   }
 
   async reopenIssue(ref: ExternalRef): Promise<void> {
-    const activeState = this.config.activeState || 'Active';
+    const activeState = await this.getActiveState();
     const reopenResponse = await this.apiRequest(
       'PATCH',
       `/wit/workitems/${ref.id}?api-version=7.1`,
@@ -360,6 +411,63 @@ export class AdoAdapter implements ProviderAdapter {
   // Private helpers
   // -------------------------------------------------------------------------
 
+  /**
+   * Lazy-cached process template detection.
+   * Calls ADO project capabilities API on first invocation, caches result.
+   * Returns undefined if detection fails (no throw).
+   */
+  private async getTemplate(): Promise<CachedTemplate | undefined> {
+    if (this.templateDetected) return this.cachedTemplate;
+    this.templateDetected = true;
+
+    try {
+      const response = await this.apiRequest(
+        'GET',
+        `https://dev.azure.com/${this.organization}/_apis/projects/${this.project}?includeCapabilities=true&api-version=7.1`
+      );
+      if (!response.ok) return undefined;
+
+      const data = await response.json() as {
+        capabilities?: { processTemplate?: { templateName?: string } };
+      };
+      const templateName = data.capabilities?.processTemplate?.templateName;
+      if (!templateName) return undefined;
+
+      // Normalize template name to known types
+      const normalized = this.normalizeTemplateName(templateName);
+      if (normalized) {
+        this.cachedTemplate = { template: normalized };
+      }
+      return this.cachedTemplate;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private normalizeTemplateName(name: string): AdoTemplateName | undefined {
+    const lower = name.toLowerCase();
+    if (lower.includes('basic')) return 'Basic';
+    if (lower.includes('agile')) return 'Agile';
+    if (lower.includes('scrum')) return 'Scrum';
+    if (lower.includes('cmmi')) return 'CMMI';
+    if (lower.includes('safe')) return 'SAFe';
+    return undefined;
+  }
+
+  private async getClosedState(): Promise<string> {
+    if (this.config.closedState) return this.config.closedState;
+    const template = await this.getTemplate();
+    if (template) return TEMPLATE_CLOSED_MAP[template.template] ?? 'Closed';
+    return 'Closed';
+  }
+
+  private async getActiveState(): Promise<string> {
+    if (this.config.activeState) return this.config.activeState;
+    const template = await this.getTemplate();
+    if (template) return TEMPLATE_ACTIVE_MAP[template.template] ?? 'Active';
+    return 'Active';
+  }
+
   private buildDescription(story: UserStoryData, feature: FeatureData): string {
     const lines: string[] = [];
     lines.push(`<b>Feature</b>: ${feature.id} — ${feature.title}<br/>`);
@@ -368,16 +476,25 @@ export class AdoAdapter implements ProviderAdapter {
     return lines.join('\n');
   }
 
-  private mapStatusToAdo(status: string): string {
-    const map: Record<string, string> = {
-      completed: 'Closed',
-      abandoned: 'Removed',
-      active: 'Active',
+  private async mapStatusToAdo(status: string): Promise<string> {
+    const lower = status.toLowerCase();
+
+    // For terminal states, resolve via template
+    if (lower === 'completed' || lower === 'done') {
+      return await this.getClosedState();
+    }
+    if (lower === 'abandoned') return 'Removed';
+
+    // For active states, resolve via template
+    if (lower === 'active') {
+      return await this.getActiveState();
+    }
+
+    const staticMap: Record<string, string> = {
       planning: 'New',
       backlog: 'New',
-      done: 'Closed',
     };
-    return map[status.toLowerCase()] || 'Active';
+    return staticMap[lower] || 'Active';
   }
 
   private extractUsId(title: string): string | null {

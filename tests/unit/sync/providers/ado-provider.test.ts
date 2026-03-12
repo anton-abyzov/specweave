@@ -103,9 +103,13 @@ describe('AdoAdapter', () => {
   let adapter: AdoAdapter;
   let fetchSpy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     adapter = new AdoAdapter(makeConfig());
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockResponse(true, {}));
+    // Pre-cache template detection so tests don't need to account for
+    // the extra API call introduced by process-aware state resolution.
+    await (adapter as any).getTemplate();
+    fetchSpy.mockClear();
     mockGenerateLabels.mockClear();
     mockFormatIssueTitle.mockClear();
   });
