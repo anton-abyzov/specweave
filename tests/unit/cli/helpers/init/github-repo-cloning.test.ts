@@ -525,9 +525,7 @@ describe('github-repo-cloning', () => {
 
     it('skips clone when repo already exists locally', async () => {
       // Mock fs.existsSync to return true for .git path
-      const fs = await import('fs');
-      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-
+      mockExistsSync.mockReturnValueOnce(true);
       mockFetch.mockResolvedValueOnce(createMockResponse({ id: 1 }));
 
       const result = await cloneSingleGitHubRepo({
@@ -539,7 +537,6 @@ describe('github-repo-cloning', () => {
       expect(result.alreadyCloned).toBe(true);
       expect(result.cloned).toBe(false);
       expect(mockLaunchCloneJob).not.toHaveBeenCalled();
-      existsSpy.mockRestore();
     });
 
     it('uses SSH clone URL for SSH input', async () => {
