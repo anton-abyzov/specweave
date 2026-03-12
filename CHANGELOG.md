@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.430] - 2026-03-12
+
+### Changes
+- update clone command docs
+
+---
+
+
+
 ## [1.0.429] - 2026-03-12
 
 ### Changes
