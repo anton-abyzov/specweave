@@ -420,6 +420,12 @@ export async function generateImage(
 
   try {
     await downloadImage(url, absoluteOutputPath);
+    // Verify the file was actually written and has content
+    if (!fs.existsSync(absoluteOutputPath) || fs.statSync(absoluteOutputPath).size === 0) {
+      logger.error(`Image file missing or empty after download: ${absoluteOutputPath}`);
+      try { fs.unlinkSync(absoluteOutputPath); } catch {}
+      return null;
+    }
     logger.info(`Image saved: ${absoluteOutputPath}`);
     return absoluteOutputPath;
   } catch (error) {

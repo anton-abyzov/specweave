@@ -120,6 +120,7 @@ const config = {
     format: 'md',
     hooks: {
       onBrokenMarkdownLinks: 'warn',
+      onBrokenMarkdownImages: 'warn',
     },
   },
   themes: ['@docusaurus/theme-mermaid'],
