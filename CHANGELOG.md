@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.428] - 2026-03-12
+
+### Changes
+- fix test formatting
+- update github repo cloning tests
+- update github repo cloning
+- update github repo cloning and url generator
+
+---
+
+
+
 ## [1.0.427] - 2026-03-12
 
 ### Changes
