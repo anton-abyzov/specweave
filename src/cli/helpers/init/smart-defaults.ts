@@ -83,11 +83,11 @@ export function applySmartDefaults(
       ...(config.sync?.enabled === false ? { enabled: true } : {}),
     };
     // Ensure auto-create GitHub issue is on
+    // Note: sync_living_docs intentionally omitted — runs after agents finish, not at planning time
     config.hooks = {
       ...config.hooks,
       post_increment_planning: {
         auto_create_github_issue: true,
-        sync_living_docs: true,
         ...config.hooks?.post_increment_planning,
       },
     };
