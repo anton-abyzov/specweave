@@ -7,9 +7,9 @@ MASTER SPEC (SOURCE OF TRUTH):
   Read the master spec BEFORE planning any work.
 
 SKILLS TO INVOKE:
-  Skill({ skill: "testing:qa" })
-  Skill({ skill: "testing:e2e" })        // for E2E test suites
-  Skill({ skill: "testing:unit" })       // for unit test coverage
+  Skill({ skill: "sw:e2e", args: "--generate [INCREMENT_ID]" })  // generate E2E tests from ACs
+  Skill({ skill: "sw:e2e", args: "--run [INCREMENT_ID]" })       // run E2E + produce e2e-report.json
+  Skill({ skill: "sw:e2e", args: "--a11y [INCREMENT_ID]" })      // E2E + accessibility audit
 
 FILE OWNERSHIP (WRITE access):
   tests/**
