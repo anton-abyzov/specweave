@@ -276,6 +276,28 @@ export class LifecycleHookDispatcher {
       };
 
       await Promise.all([syncClosure(), syncGitHubProject()]);
+
+      // STEP 3: Drain retry queue for this increment before closure completes.
+      // Failed syncs queued during the increment's lifetime get one final attempt.
+      try {
+        const { drainRetryQueueForIncrement } = await import(
+          '../../cli/commands/sync-retry.js'
+        );
+        const drainResult = await drainRetryQueueForIncrement(
+          projectRoot,
+          incrementId,
+        );
+        if (drainResult.attempted > 0) {
+          result.syncSuccess.push(
+            `Retry queue drained: ${drainResult.succeeded}/${drainResult.attempted} succeeded`,
+          );
+        }
+      } catch (error) {
+        // Retry queue drain failure must not block closure
+        const msg = error instanceof Error ? error.message : String(error);
+        result.syncErrors.push(`Retry queue drain failed: ${msg}`);
+        LifecycleHookDispatcher.logError('onIncrementDone:retryDrain', error);
+      }
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       result.syncErrors.push(`Hook dispatch failed: ${msg}`);

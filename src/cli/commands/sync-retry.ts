@@ -112,11 +112,24 @@ export async function syncRetryCommand(
       const errMsg = error instanceof Error ? error.message : String(error);
       result.failed++;
 
-      if (entry.attemptCount + 1 >= entry.maxAttempts) {
+      // Increment attempt count and re-enqueue with updated backoff
+      const newAttemptCount = entry.attemptCount + 1;
+      if (newAttemptCount >= entry.maxAttempts) {
         await retryQueue.markFailed(entry.id);
         logger.log(`  ❌ ${entry.provider}/${entry.incrementId} — failed (${errMsg}), max attempts reached`);
       } else {
-        logger.log(`  ⚠️ ${entry.provider}/${entry.incrementId} — failed (${errMsg}), will retry later`);
+        // Remove old entry and re-enqueue with incremented attempt count
+        await retryQueue.remove(entry.id);
+        await retryQueue.enqueue({
+          incrementId: entry.incrementId,
+          provider: entry.provider,
+          featureId: entry.featureId,
+          projectPath: entry.projectPath,
+          projectName: entry.projectName,
+          error: errMsg,
+          attemptCount: newAttemptCount,
+        });
+        logger.log(`  ⚠️ ${entry.provider}/${entry.incrementId} — failed (${errMsg}), will retry later (attempt ${newAttemptCount}/${entry.maxAttempts})`);
       }
     }
   }

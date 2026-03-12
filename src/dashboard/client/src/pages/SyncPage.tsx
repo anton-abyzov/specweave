@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProjectApi } from '../hooks/useProjectApi.js';
 import { useSSEEvent } from '../contexts/SSEContext.js';
@@ -55,6 +55,15 @@ interface AuditEntry {
   conflict?: boolean;
 }
 
+interface SyncErrorItem {
+  provider: string;
+  incrementId: string;
+  error: string;
+  errorStack?: string;
+  timestamp: string;
+  outcome: string;
+}
+
 interface AuditSummary {
   [platform: string]: {
     total: number;
@@ -95,8 +104,17 @@ export function SyncPage() {
   const [tab, setTab] = useState<Tab>('health');
   const [verifying, setVerifying] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [syncErrors, setSyncErrors] = useState<SyncErrorItem[]>([]);
   useSSEEvent('sync-update', () => setRefreshKey((k) => k + 1));
+  useSSEEvent('sync-error', () => setRefreshKey((k) => k + 1));
   const { data, loading, error, refetch } = useProjectApi<SyncData>(`/api/sync/status?_r=${refreshKey}`);
+
+  useEffect(() => {
+    fetch('/api/sync/errors?hours=24&limit=20')
+      .then(r => r.json())
+      .then(json => { if (json.ok && Array.isArray(json.data)) setSyncErrors(json.data); })
+      .catch(() => {});
+  }, [refreshKey]);
   const { data: audit, loading: al } = useProjectApi<AuditEntry[]>(`/api/sync/audit?limit=100&_r=${refreshKey}`);
   const { data: auditSummary, loading: asl } = useProjectApi<AuditSummary>(`/api/sync/audit/summary?_r=${refreshKey}`);
   const { execute, running } = useCommand();
@@ -212,6 +230,10 @@ export function SyncPage() {
             />
           )}
         </>
+      )}
+
+      {tab === 'health' && syncErrors.length > 0 && (
+        <SyncErrorList errors={syncErrors} />
       )}
 
       {tab === 'audit' && <AuditTable entries={audit || []} />}
@@ -531,6 +553,59 @@ function PlatformCard({
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// --- Sync Error List (expandable rows for resilience audit errors) ---
+
+function SyncErrorList({ errors }: { errors: SyncErrorItem[] }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  return (
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+      <h3 className="text-sm font-medium text-gray-300 mb-4">Sync Errors (last 24h)</h3>
+      <div className="space-y-2">
+        {errors.map((err, i) => {
+          const id = `${err.provider}-${err.incrementId}-${i}`;
+          const isExpanded = expandedId === id;
+          return (
+            <div key={id}>
+              <button
+                data-testid={`sync-error-row-${i}`}
+                onClick={() => setExpandedId(isExpanded ? null : id)}
+                className="w-full flex items-start gap-2 p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/80 transition-colors text-left"
+              >
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 bg-rose-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-300 capitalize">{err.provider}</span>
+                    <Badge label={err.incrementId} variant="default" />
+                    <Badge label={err.outcome} variant="error" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 truncate">{err.error}</div>
+                  <div className="text-[10px] text-gray-600 mt-0.5">{timeAgo(err.timestamp)}</div>
+                </div>
+                <span className="text-[10px] text-gray-600 mt-1">{isExpanded ? '\u25B2' : '\u25BC'}</span>
+              </button>
+              {isExpanded && (
+                <div data-testid={`sync-error-detail-${i}`} className="mt-1 p-3 bg-gray-800/30 rounded-lg border border-gray-800/50">
+                  <div className="text-xs text-gray-400 mb-2 font-medium">Full Error</div>
+                  <pre className="text-xs text-gray-500 whitespace-pre-wrap font-mono mb-2">{err.error}</pre>
+                  {err.errorStack && (
+                    <>
+                      <div className="text-xs text-gray-400 mb-1 font-medium">Stack Trace</div>
+                      <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono max-h-32 overflow-y-auto">
+                        {err.errorStack.split('\n').slice(0, 3).join('\n')}
+                      </pre>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -13,12 +13,14 @@ import * as path from 'path';
 import { SyncRetryQueue } from '../../core/sync/sync-retry-queue.js';
 import { CircuitBreakerRegistry } from '../../core/sync/circuit-breaker-registry.js';
 import { SyncResilienceAuditLogger } from '../../core/sync/sync-resilience-audit-logger.js';
+import { CachedRateLimiter, RateLimitStatus } from '../../core/sync/cached-rate-limiter.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 export interface SyncStatusResult {
   retryQueuePending: number;
   retryQueueFailed: number;
   circuitBreakers: Record<string, string>;
+  rateLimitStatus?: { remaining: number; limit: number; percentUsed: number };
   recentErrors: number;
   hasIssues: boolean;
   exitCode: number;
@@ -30,6 +32,7 @@ export async function syncStatusCommand(
     retryQueue?: SyncRetryQueue;
     registry?: CircuitBreakerRegistry;
     auditLogger?: SyncResilienceAuditLogger;
+    rateLimiter?: CachedRateLimiter;
   },
 ): Promise<SyncStatusResult> {
   const statePath = path.join(projectRoot, '.specweave', 'state');
@@ -59,6 +62,18 @@ export async function syncStatusCommand(
   const breakerStates = registry.getAll();
   for (const [provider, stateObj] of Object.entries(breakerStates)) {
     result.circuitBreakers[provider] = stateObj.state;
+  }
+
+  // Rate limit (if a cached limiter is provided)
+  if (deps?.rateLimiter) {
+    const status = deps.rateLimiter.getStatus();
+    if (status) {
+      result.rateLimitStatus = {
+        remaining: status.remaining,
+        limit: status.limit,
+        percentUsed: status.percentUsed,
+      };
+    }
   }
 
   // Recent errors (last 24h)
@@ -103,6 +118,15 @@ export async function syncStatusCommand(
     }
     logger.log('');
   }
+
+  // Rate limit section
+  logger.log('Rate Limits:');
+  if (result.rateLimitStatus) {
+    logger.log(`  GitHub: ${result.rateLimitStatus.remaining}/${result.rateLimitStatus.limit} remaining (${result.rateLimitStatus.percentUsed.toFixed(0)}% used)`);
+  } else {
+    logger.log('  No rate limit data available (checked on first sync)');
+  }
+  logger.log('');
 
   // Recent errors section
   logger.log('Recent Errors (24h):');
