@@ -11,7 +11,6 @@
  */
 
 import { promises as fs } from 'fs';
-import nodeFs from 'fs';
 import path from 'path';
 
 export interface ResilienceAuditEntry {
