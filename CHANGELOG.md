@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.438] - 2026-03-12
+
+### Changes
+- feat(e2e): add e2e skill; update team-build, team-lead agents
+
+---
+
+
+
 ## [1.0.437] - 2026-03-12
 
 ### Changes
