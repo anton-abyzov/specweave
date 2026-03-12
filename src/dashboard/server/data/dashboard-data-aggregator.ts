@@ -630,4 +630,106 @@ export class DashboardDataAggregator {
     }
     return result;
   }
+
+  /**
+   * Get recent sync errors from the resilience audit log.
+   * Returns up to `limit` failure entries from the last `hours` hours.
+   */
+  async getSyncErrors(hours = 24, limit = 5): Promise<SyncErrorEntry[]> {
+    try {
+      const { SyncResilienceAuditLogger } = await import(
+        '../../../core/sync/sync-resilience-audit-logger.js'
+      );
+      const statePath = path.join(this.projectRoot, '.specweave', 'state');
+      const logger = new SyncResilienceAuditLogger({ statePath });
+      const entries = await logger.readRecent(hours);
+      return entries
+        .filter((e) => e.outcome === 'failure' || e.outcome === 'skipped_circuit_open' || e.outcome === 'skipped_rate_limit')
+        .slice(-limit)
+        .reverse()
+        .map((e) => ({
+          provider: e.provider,
+          incrementId: e.incrementId,
+          error: e.error || e.outcome,
+          timestamp: e.timestamp,
+          outcome: e.outcome,
+        }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Detect sync gaps: increments that are synced to some providers but not all configured ones.
+   */
+  async getSyncGaps(): Promise<SyncGapEntry[]> {
+    const gaps: SyncGapEntry[] = [];
+    try {
+      const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
+      const configRaw = await readFile(configPath, 'utf-8');
+      const config = JSON.parse(configRaw);
+
+      // Determine configured providers
+      const configuredProviders = new Set<string>();
+      if (config.hooks?.post_increment_done?.sync_to_github_project) configuredProviders.add('github');
+      if (config.hooks?.post_increment_done?.close_github_issue) configuredProviders.add('github');
+      if (config.sync?.jira) configuredProviders.add('jira');
+      if (config.sync?.ado) configuredProviders.add('ado');
+
+      if (configuredProviders.size === 0) return [];
+
+      // Scan increments
+      const incBase = path.join(this.projectRoot, '.specweave', 'increments');
+      let entries: string[];
+      try {
+        entries = await readdir(incBase);
+      } catch {
+        return [];
+      }
+
+      for (const entry of entries) {
+        const metaPath = path.join(incBase, entry, 'metadata.json');
+        try {
+          const metaRaw = await readFile(metaPath, 'utf-8');
+          const meta = JSON.parse(metaRaw);
+          if (meta.status !== 'active' && meta.status !== 'in-progress') continue;
+
+          const syncedProviders = new Set<string>();
+          if (meta.externalLinks?.github) syncedProviders.add('github');
+          if (meta.externalLinks?.jira) syncedProviders.add('jira');
+          if (meta.externalLinks?.ado) syncedProviders.add('ado');
+
+          const missing = [...configuredProviders].filter((p) => !syncedProviders.has(p));
+          if (missing.length > 0) {
+            gaps.push({
+              incrementId: meta.id || entry,
+              syncedProviders: [...syncedProviders],
+              missingProviders: missing,
+              lastSyncTimestamp: meta.lastActivity || meta.created,
+            });
+          }
+        } catch {
+          // Skip unreadable metadata
+        }
+      }
+    } catch {
+      // Config missing or unreadable
+    }
+    return gaps;
+  }
+}
+
+export interface SyncErrorEntry {
+  provider: string;
+  incrementId: string;
+  error: string;
+  timestamp: string;
+  outcome: string;
+}
+
+export interface SyncGapEntry {
+  incrementId: string;
+  syncedProviders: string[];
+  missingProviders: string[];
+  lastSyncTimestamp?: string;
 }

@@ -99,7 +99,7 @@ export class LifecycleHookDispatcher {
   static async onTaskCompleted(
     projectRoot: string,
     incrementId: string,
-    options: DispatchOptions = {},
+    options: DispatchOptions & { taskId?: string } = {},
   ): Promise<void> {
     if (LifecycleHookDispatcher.shouldSkip(options)) return;
 
@@ -108,12 +108,40 @@ export class LifecycleHookDispatcher {
       const taskConfig = hooks?.post_task_completion;
       if (!taskConfig) return;
 
+      // AC Gate: determine if external sync should fire
+      // Living docs sync always fires (internal, cheap). External sync only fires
+      // when a NEW AC transitions from unchecked to fully satisfied.
+      let skipExternalSync = false;
+      if (options.taskId) {
+        try {
+          const { ACGate } = await import('../sync/ac-gate.js');
+          const fs = await import('fs');
+          const path = await import('path');
+
+          const incDir = await LifecycleHookDispatcher.resolveIncrementDir(projectRoot, incrementId);
+          const specPath = path.join(incDir, 'spec.md');
+          const tasksPath = path.join(incDir, 'tasks.md');
+
+          if (fs.existsSync(specPath) && fs.existsSync(tasksPath)) {
+            const specContent = fs.readFileSync(specPath, 'utf-8');
+            const tasksContent = fs.readFileSync(tasksPath, 'utf-8');
+            const gateResult = ACGate.shouldSyncExternal(specContent, tasksContent, options.taskId);
+            skipExternalSync = !gateResult.shouldSync;
+          }
+        } catch (error) {
+          // AC Gate failures should not block sync — fall through to sync
+          LifecycleHookDispatcher.logError('onTaskCompleted:acGate', error);
+        }
+      }
+
+      const syncOptions = skipExternalSync ? { skipExternalSync: true } : {};
+
       if (taskConfig.sync_tasks_md) {
         const { LivingDocsSync } = await import(
           '../living-docs/living-docs-sync.js'
         );
         const sync = new LivingDocsSync(projectRoot);
-        await sync.syncIncrement(incrementId);
+        await sync.syncIncrement(incrementId, syncOptions);
       }
 
       // (0348) external_tracker_sync now routes through LivingDocsSync → GitHubFeatureSync
@@ -126,7 +154,7 @@ export class LifecycleHookDispatcher {
               '../living-docs/living-docs-sync.js'
             );
             const sync = new LivingDocsSync(projectRoot);
-            await sync.syncIncrement(incrementId);
+            await sync.syncIncrement(incrementId, syncOptions);
           } catch (error) {
             LifecycleHookDispatcher.logError('onTaskCompleted:livingDocsFallback', error);
           }
@@ -268,6 +296,34 @@ export class LifecycleHookDispatcher {
     if (process.env.VITEST || process.env.NODE_ENV === 'test') return true;
 
     return false;
+  }
+
+  /**
+   * Resolve increment directory path from incrementId.
+   * Handles both full IDs ("0499-feature") and short IDs ("0499").
+   */
+  private static async resolveIncrementDir(
+    projectRoot: string,
+    incrementId: string,
+  ): Promise<string> {
+    const fs = await import('fs');
+    const path = await import('path');
+
+    const incBase = path.join(projectRoot, '.specweave', 'increments');
+
+    // Try exact match first
+    const exactPath = path.join(incBase, incrementId);
+    if (fs.existsSync(exactPath)) return exactPath;
+
+    // Try prefix match (e.g., "0499" → "0499-external-sync-resilience")
+    const prefix = incrementId.match(/^\d+/)?.[0];
+    if (prefix) {
+      const entries = fs.readdirSync(incBase);
+      const match = entries.find((e) => e.startsWith(prefix));
+      if (match) return path.join(incBase, match);
+    }
+
+    return exactPath; // Fall through — caller checks existence
   }
 
   /**

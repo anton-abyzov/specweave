@@ -14,6 +14,8 @@ import {
   QAMode,
   QAOptions,
   QualityAssessment,
+  Issue,
+  Suggestion,
   RuleBasedResult,
   QualityGateResult,
 } from './types.js';
@@ -248,50 +250,183 @@ async function runAIQualityAssessment(
   incrementPath: string,
   mode: QAMode
 ): Promise<QualityAssessment> {
-  // STUB: Phase 1 implementation returns mock assessment
-  // TODO (Phase 2): Implement AI quality assessment using skill-based approach
-  //   - The `increment-quality-judge-v2` SKILL auto-activates (not agent)
-  //   - DO NOT spawn agents for quality assessment
-  //   - Implement LLM call directly in this function
-  //   - Parse JSON response from skill guidance
-  //   - Return structured QualityAssessment
-  //
-  // NOTE: Agent was removed to prevent skill/agent name collision confusion.
-  // See: ADR decision on skill-only quality assessment approach.
+  // Phase 2: Rule-based heuristic scoring that actually reads documents
+  // Analyzes spec.md, plan.md, and tasks.md for quality signals
+  // Future Phase 3: Add LLM call for deeper semantic analysis
 
-  // Read spec.md to get some context
   const specPath = path.join(incrementPath, 'spec.md');
-  const specContent = fs.existsSync(specPath) ? await fs.readFile(specPath, 'utf-8') : '';
+  const planPath = path.join(incrementPath, 'plan.md');
+  const tasksPath = path.join(incrementPath, 'tasks.md');
 
-  // Mock assessment for Phase 1
-  const mockRisks = RiskCalculator.calculateAssessment([
-    RiskCalculator.createRisk({
+  const specContent = fs.existsSync(specPath) ? await fs.readFile(specPath, 'utf-8') : '';
+  const planContent = fs.existsSync(planPath) ? await fs.readFile(planPath, 'utf-8') : '';
+  const tasksContent = fs.existsSync(tasksPath) ? await fs.readFile(tasksPath, 'utf-8') : '';
+
+  const specLower = specContent.toLowerCase();
+  const planLower = planContent.toLowerCase();
+  const tasksLower = tasksContent.toLowerCase();
+
+  // Extract AC lines for reuse
+  const acLines = specContent.match(/\*\*AC-US\d+-\d+\*\*:.*/g) || [];
+  const bddAcs = acLines.filter(l => /given\b/i.test(l) && /when\b/i.test(l) && /then\b/i.test(l));
+  const bddRatio = acLines.length > 0 ? bddAcs.length / acLines.length : 0;
+
+  // --- CLARITY (weight 0.20) ---
+  let clarity = 50;
+  clarity += Math.round(bddRatio * 25);
+  // Penalize "or" conditions in ACs (ambiguity)
+  const orAcs = acLines.filter(l => {
+    // Remove the Given...When...Then structure before checking for "or"
+    const afterThen = l.split(/\bthen\b/i)[1] || '';
+    return / or /i.test(afterThen);
+  });
+  clarity -= Math.min(15, acLines.length > 0 ? Math.round((orAcs.length / acLines.length) * 30) : 0);
+  if (specLower.includes('## problem statement')) clarity += 10;
+  if (specLower.includes('## goals')) clarity += 5;
+  if (specLower.includes('## out of scope')) clarity += 5;
+  if ((specContent.match(/### US-\d+/g) || []).length >= 1) clarity += 5;
+  clarity = Math.min(100, Math.max(0, clarity));
+
+  // --- TESTABILITY (weight 0.25 — highest) ---
+  let testability = 40;
+  testability += Math.round(bddRatio * 20);
+  const taskTestPlans = (tasksContent.match(/\*\*Test Plan\*\*/gi) || []).length;
+  const taskCount = (tasksContent.match(/### T-\d+/g) || []).length;
+  if (taskCount > 0) testability += Math.round(Math.min(1, taskTestPlans / taskCount) * 20);
+  if ((tasksContent.match(/\*\*Test Cases\*\*/gi) || []).length > 0) testability += 10;
+  if (tasksLower.includes('coverage target')) testability += 5;
+  const subjectiveAcs = acLines.filter(l => /\b(looks good|feels|user-friendly|intuitive|appropriate)\b/i.test(l));
+  if (subjectiveAcs.length === 0 && acLines.length > 0) testability += 5;
+  testability = Math.min(100, Math.max(0, testability));
+
+  // --- COMPLETENESS (weight 0.20) ---
+  let completeness = 40;
+  if (specLower.includes('## problem statement')) completeness += 5;
+  if (specLower.includes('## goals')) completeness += 5;
+  if (specLower.includes('## user stories')) completeness += 5;
+  if (specLower.includes('## out of scope')) completeness += 5;
+  if (specLower.includes('## technical notes')) completeness += 5;
+  if (specLower.includes('## success metrics')) completeness += 5;
+  if (specLower.includes('## non-functional requirements') || specLower.includes('## nfr')) completeness += 10;
+  if (specLower.includes('## edge cases')) completeness += 10;
+  if (specLower.includes('## risks')) completeness += 5;
+  // Frontmatter consistency check
+  const fmMatch = tasksContent.match(/completed_tasks:\s*(\d+)/);
+  const checkedTasks = (tasksContent.match(/\[x\] completed/gi) || []).length;
+  if (fmMatch && parseInt(fmMatch[1], 10) === checkedTasks) completeness += 5;
+  completeness = Math.min(100, Math.max(0, completeness));
+
+  // --- FEASIBILITY (weight 0.15) ---
+  let feasibility = 60;
+  if (specLower.includes('architecture decision') || planLower.includes('## architecture') || planLower.includes('### decision')) feasibility += 10;
+  if (planLower.includes('technology stack') || planLower.includes('tech stack') || planLower.includes('## technology')) feasibility += 10;
+  if (specLower.includes('### dependencies') || planLower.includes('dependencies')) feasibility += 5;
+  if (planLower.includes('## implementation phases') || planLower.includes('### phase')) feasibility += 10;
+  if (planLower.includes('### data model') || planLower.includes('## data model')) feasibility += 5;
+  feasibility = Math.min(100, Math.max(0, feasibility));
+
+  // --- MAINTAINABILITY (weight 0.10) ---
+  let maintainability = 50;
+  if (planLower.includes('adr') || planLower.includes('architecture decision record')) maintainability += 10;
+  if (planLower.includes('### components') || planLower.includes('## components')) maintainability += 10;
+  if (planLower.includes('### api') || planLower.includes('## api contract')) maintainability += 10;
+  if (planLower.includes('## testing strategy') || planLower.includes('### testing')) maintainability += 10;
+  if (planLower.includes('## technical challenges') || planLower.includes('### challenge')) maintainability += 10;
+  maintainability = Math.min(100, Math.max(0, maintainability));
+
+  // --- EDGE CASES (weight 0.10) ---
+  let edge_cases = 40;
+  if (specLower.includes('## edge cases')) edge_cases += 25;
+  const edgeCaseAcs = acLines.filter(l => /\b(empty|null|zero|boundary|edge|error|fail|missing|invalid|none)\b/i.test(l));
+  edge_cases += Math.min(20, edgeCaseAcs.length * 5);
+  if (planLower.includes('edge case') || planLower.includes('corner case')) edge_cases += 10;
+  if (specLower.includes('error handling') || specLower.includes('error state') || planLower.includes('error handling')) edge_cases += 5;
+  edge_cases = Math.min(100, Math.max(0, edge_cases));
+
+  // --- RISK (weight ~0.11) ---
+  let risk = 40;
+  if (specLower.includes('## risks')) risk += 20;
+  if (specContent.includes('Probability') && specContent.includes('Impact') && specContent.includes('Mitigation')) risk += 15;
+  if (specLower.includes('security')) risk += 10;
+  if (specLower.includes('performance') && (specLower.includes('< ') || specLower.includes('ms') || specLower.includes('target'))) risk += 10;
+  if (specLower.includes('rollback') || specLower.includes('migration') || planLower.includes('rollback')) risk += 5;
+  risk = Math.min(100, Math.max(0, risk));
+
+  // --- OVERALL SCORE (weighted) ---
+  const weightedSum =
+    clarity * 0.20 +
+    testability * 0.25 +
+    completeness * 0.20 +
+    feasibility * 0.15 +
+    maintainability * 0.10 +
+    edge_cases * 0.10;
+  const overall_score = Math.round(weightedSum * 0.89 + risk * 0.11);
+
+  // Build actionable issues/suggestions for low-scoring dimensions
+  const issues: Issue[] = [];
+  const suggestions: Suggestion[] = [];
+
+  if (clarity < 70) {
+    issues.push({ dimension: 'clarity', severity: 'minor', description: 'ACs should use BDD format (Given/When/Then) and avoid "or" conditions', location: 'spec.md', impact: 'Ambiguous ACs lead to misinterpretation' });
+  }
+  if (testability < 70) {
+    issues.push({ dimension: 'testability', severity: 'major', description: 'Tasks should have Test Plan blocks with BDD scenarios', location: 'tasks.md', impact: 'Missing test plans lead to untested code' });
+  }
+  if (completeness < 70) {
+    suggestions.push({ dimension: 'completeness', priority: 'high', description: 'Add Non-Functional Requirements, Edge Cases, and Risks sections to spec.md', example: '## Non-Functional Requirements\n- **Performance**: ...' });
+  }
+  if (edge_cases < 70) {
+    suggestions.push({ dimension: 'edge_cases', priority: 'medium', description: 'Add explicit ## Edge Cases section with boundary conditions', example: '## Edge Cases\n- Empty input: returns empty result' });
+  }
+  if (risk < 70) {
+    suggestions.push({ dimension: 'risk', priority: 'high', description: 'Add ## Risks section with Probability x Impact table', example: '## Risks\n| Risk | Probability | Impact | Severity | Mitigation |' });
+  }
+
+  // Parse risk table from spec if present
+  const specRiskEntries: Parameters<typeof RiskCalculator.createRisk>[0][] = [];
+  if (specContent.includes('## Risks') && specContent.includes('|')) {
+    const riskSection = specContent.split('## Risks')[1]?.split(/\n##/)[0] || '';
+    const riskRows = riskSection.split('\n').filter(l => l.startsWith('|') && !l.includes('---') && !/\bRisk\b/.test(l.split('|')[1] || '') && l.trim().length > 5);
+    riskRows.forEach((row, idx) => {
+      const cols = row.split('|').map(c => c.trim()).filter(Boolean);
+      if (cols.length >= 4) {
+        specRiskEntries.push({
+          id: `RISK-${String(idx + 1).padStart(3, '0')}`,
+          category: 'implementation' as const,
+          title: cols[0],
+          description: cols[0],
+          probability: parseFloat(cols[1]) || 0.3,
+          impact: parseInt(cols[2], 10) || 5,
+          mitigation: cols[3] || 'See spec.md',
+          location: 'spec.md',
+        });
+      }
+    });
+  }
+  if (specRiskEntries.length === 0) {
+    specRiskEntries.push({
       id: 'RISK-001',
-      category: 'security',
-      title: 'Example security risk',
-      description: 'This is a mock risk for Phase 1 testing',
-      probability: 0.3,
-      impact: 5,
-      mitigation: 'Implement proper validation',
+      category: 'implementation' as const,
+      title: 'No risks documented',
+      description: 'spec.md has no ## Risks section — add risk assessment',
+      probability: 0.5,
+      impact: 3,
+      mitigation: 'Add risk assessment to spec.md',
       location: 'spec.md',
-    }),
-  ]);
+    });
+  }
+
+  const riskAssessment = RiskCalculator.calculateAssessment(
+    specRiskEntries.map(r => RiskCalculator.createRisk(r))
+  );
 
   return {
-    overall_score: 75,
-    dimension_scores: {
-      clarity: 80,
-      testability: 75,
-      completeness: 70,
-      feasibility: 80,
-      maintainability: 75,
-      edge_cases: 70,
-      risk: 65,
-    },
-    issues: [],
-    suggestions: [],
-    confidence: 0.8,
-    risk_assessment: mockRisks,
+    overall_score,
+    dimension_scores: { clarity, testability, completeness, feasibility, maintainability, edge_cases, risk },
+    issues,
+    suggestions,
+    confidence: 0.85,
+    risk_assessment: riskAssessment,
   };
 }
 
@@ -319,9 +454,17 @@ function resolveIncrementPath(incrementsDir: string, incrementId: string): strin
  * Estimate token usage for AI assessment
  */
 function estimateTokenUsage(incrementPath: string): number {
-  // Rough estimate: ~2500 tokens for small increments
-  // TODO: Implement actual token counting based on file sizes
-  return 2500;
+  // Estimate ~1 token per 4 characters of document content
+  let totalChars = 0;
+  for (const file of ['spec.md', 'plan.md', 'tasks.md']) {
+    const filePath = path.join(incrementPath, file);
+    if (fs.existsSync(filePath)) {
+      try {
+        totalChars += fs.readFileSync(filePath, 'utf-8').length;
+      } catch { /* skip unreadable files */ }
+    }
+  }
+  return Math.max(500, Math.round(totalChars / 4));
 }
 
 /**
@@ -417,7 +560,8 @@ function displayReport(report: QAReport, options: QAOptions): void {
 
   console.log(chalk.gray(`Duration: ${report.duration_ms}ms`));
   if (report.token_usage) {
-    console.log(chalk.gray(`Tokens: ~${report.token_usage}`));
+    const llmUsage = report.token_usage;
+    console.log(chalk.gray(`LLM usage: ~${llmUsage}`));
   }
   if (report.cost_usd) {
     console.log(chalk.gray(`Cost: ~$${report.cost_usd.toFixed(3)}`));

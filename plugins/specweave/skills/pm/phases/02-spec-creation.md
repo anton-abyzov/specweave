@@ -36,8 +36,8 @@ created: YYYY-MM-DD
 **So that** [benefit]
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: [Criterion]
-- [ ] **AC-US1-02**: [Criterion]
+- [ ] **AC-US1-01**: Given [precondition], when [action], then [single expected result]
+- [ ] **AC-US1-02**: [Another criterion — BDD format, no "or" conditions]
 
 ### US-002: [Title]
 ...
@@ -45,11 +45,26 @@ created: YYYY-MM-DD
 ## Out of Scope
 - [What this feature does NOT include]
 
+## Non-Functional Requirements
+- **Performance**: [Measurable target with units]
+- **Security**: [Relevant security considerations]
+- **Compatibility**: [Platform/browser/OS constraints]
+
+## Edge Cases
+- [Boundary condition]: [Expected behavior]
+- [Error state]: [Expected behavior]
+- [Unusual scenario]: [Expected behavior]
+
+## Risks
+| Risk | Probability | Impact | Severity | Mitigation |
+|------|-------------|--------|----------|------------|
+| [Risk] | [0.0-1.0] | [1-10] | [P×I] | [Strategy] |
+
 ## Technical Notes
 [Any technical context that helps implementation]
 
 ## Success Metrics
-[How will we know this feature is successful?]
+[How will we know this feature is successful? Use measurable targets.]
 ```
 
 ## Chunking Large Specs
@@ -100,8 +115,14 @@ When NOT in umbrella mode, all stories get the same `**Project**: <project-name>
 - [ ] **AC-US1-01**: Given [precondition], when [action], then [result]
 ```
 
-- Use BDD format where possible
-- Make criteria testable
+- **ALWAYS use BDD format** (Given/When/Then) — not optional
+- **No "or" conditions** — each AC must have a single, unambiguous expected outcome
+  - Bad: "button is disabled or hidden" — pick ONE
+  - Good: "button has the disabled attribute"
+- **Measurable outcomes** — use concrete values, not subjective descriptions
+  - Bad: "appears visually dimmed"
+  - Good: "text has opacity 0.7"
+- **One assertion per AC** — if verifying multiple things, split into separate ACs
 - Include edge cases
 - 2-5 criteria per user story
 
