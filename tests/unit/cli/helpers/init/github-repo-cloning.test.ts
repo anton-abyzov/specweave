@@ -13,6 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockLaunchCloneJob = vi.hoisted(() => vi.fn());
 const mockFilterRepositoriesByPattern = vi.hoisted(() => vi.fn());
+const mockExistsSync = vi.hoisted(() => vi.fn(() => false));
 
 vi.mock('../../../../../src/core/background/job-launcher.js', () => ({
   launchCloneJob: mockLaunchCloneJob
