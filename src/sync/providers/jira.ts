@@ -31,6 +31,7 @@ export interface JiraAdapterConfig {
   email: string;
   apiToken: string;
   projectKey: string;
+  closedStatus?: string;  // Default: 'Done'
 }
 
 interface JiraIssue {
@@ -70,6 +71,7 @@ export class JiraAdapter implements ProviderAdapter {
   private apiToken: string;
   private projectKey: string;
   private baseUrl: string;
+  private closedStatus: string;
 
   constructor(config: JiraAdapterConfig) {
     this.domain = config.domain;
@@ -77,6 +79,7 @@ export class JiraAdapter implements ProviderAdapter {
     this.apiToken = config.apiToken;
     this.projectKey = config.projectKey;
     this.baseUrl = `https://${this.domain}/rest/api/3`;
+    this.closedStatus = config.closedStatus || 'Done';
   }
 
   async testConnection(): Promise<{ ok: boolean; error?: string }> {
@@ -157,7 +160,7 @@ export class JiraAdapter implements ProviderAdapter {
     if (comment) {
       await this.addComment(ref.id, comment);
     }
-    await this.transitionIssue(ref.id, 'Done');
+    await this.transitionIssue(ref.id, this.closedStatus);
   }
 
   async reopenIssue(ref: ExternalRef): Promise<void> {
@@ -361,6 +364,9 @@ export class JiraAdapter implements ProviderAdapter {
       await this.apiRequest('POST', `/issue/${issueKey}/transitions`, {
         transition: { id: transition.id },
       });
+    } else {
+      const available = data.transitions.map(t => t.to.name).join(', ');
+      console.warn(`[SpecWeave] No matching JIRA transition for ${issueKey} to "${targetStatusName}". Available: ${available}`);
     }
   }
 

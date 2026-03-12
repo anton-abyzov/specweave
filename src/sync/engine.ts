@@ -38,6 +38,7 @@ export interface UserStoryData {
 export interface FeatureData {
   id: string;
   title: string;
+  externalRef?: { id: string; url?: string };
 }
 
 export interface FieldChanges {
