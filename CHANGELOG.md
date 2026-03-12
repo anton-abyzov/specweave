@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.437] - 2026-03-12
+
+### Changes
+- docs: update README and description
+
+---
+
+
+
 ## [1.0.436] - 2026-03-12
 
 ### Changes
