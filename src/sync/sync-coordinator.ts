@@ -279,15 +279,41 @@ export class SyncCoordinator {
       });
 
       // Target state for completion (configurable via statusSync.mappings.ado.completed)
+      // Falls back to process-template-aware detection (Basic=Done, Agile=Closed, etc.)
       const adoSyncConfigExt = config.sync as SyncConfigurationExtended | undefined;
-      const targetStateConfig = adoSyncConfigExt?.statusSync?.mappings?.ado?.completed || { state: 'Closed' };
-      const targetState = typeof targetStateConfig === 'string' ? targetStateConfig : targetStateConfig.state;
+      const targetStateConfig = adoSyncConfigExt?.statusSync?.mappings?.ado?.completed;
+      let targetState: string;
+      if (targetStateConfig) {
+        targetState = typeof targetStateConfig === 'string' ? targetStateConfig : targetStateConfig.state;
+      } else {
+        // Detect process template to determine correct closed state
+        try {
+          const templateInfo = await adoClient.detectProcessTemplate();
+          const templateClosedMap: Record<string, string> = {
+            Basic: 'Done', Agile: 'Closed', Scrum: 'Done', CMMI: 'Closed', SAFe: 'Closed',
+          };
+          targetState = templateClosedMap[templateInfo.template] || 'Closed';
+        } catch {
+          targetState = 'Closed';
+        }
+      }
 
-      // Collect work item IDs to fetch
+      // Read metadata.json once for fallback resolution
+      let metadataAdoId: string | undefined;
+      try {
+        const metadataPath = path.join(this.projectRoot, '.specweave/increments', this.incrementId, 'metadata.json');
+        if (existsSync(metadataPath)) {
+          const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
+          metadataAdoId = metadata?.external_tools?.ado?.id || metadata?.ado?.work_item_id;
+        }
+      } catch {
+        // metadata read failure is not fatal
+      }
+
+      // Collect work item IDs to fetch (3-layer resolution: frontmatter → external_id → metadata.json)
       const workItemIds: { id: number; usId: string }[] = [];
       for (const usFile of userStories) {
-        // Check if US has ADO reference in frontmatter (id not work_item_id per type def)
-        const adoId = usFile.external_tools?.ado?.id || usFile.external_id;
+        const adoId = usFile.external_tools?.ado?.id || usFile.external_id || metadataAdoId;
         if (adoId && !isNaN(Number(adoId))) {
           workItemIds.push({ id: Number(adoId), usId: usFile.id });
         } else {
