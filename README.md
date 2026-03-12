@@ -1,6 +1,8 @@
 # SpecWeave
 
-**The spec-driven Skill Fabric for AI coding agents.** Program your AI in English. Ship features while you sleep.
+**AI-assisted development, under control.**
+
+Your AI responds to natural language — and now follows a structured, spec-first, quality-gated process every time. Configure your standards once. Every developer, every AI tool, every session enforces them automatically.
 
 *Works with Claude Code, Cursor, Copilot, Codex, Antigravity & any LLM-powered coding tool.*
 
@@ -11,6 +13,99 @@
 
 ```bash
 npm install -g specweave   # Requires Node.js 20.12.0+
+```
+
+---
+
+## No Commands to Memorize
+
+SpecWeave is not a workflow you switch into. It is a behavior layer that changes how your AI works — installed once, active in every conversation.
+
+When you describe what you want, your AI routes internally to the right skill. You just work naturally:
+
+| You say | Your AI runs — automatically |
+|---------|------------------------------|
+| "Build me X" / "Let's add Y" | `/sw:increment` → spec + plan + tasks |
+| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
+| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
+| "Split this into teams" | `/sw:team-lead` → parallel agents |
+| "Review the code" | `/sw:grill` → critical code review |
+
+You can also invoke these directly for fine-grained control — but you rarely need to.
+
+---
+
+## What You Control
+
+SpecWeave's behavior is driven by configuration. Define your standards once; every AI interaction in your project enforces them.
+
+```json
+// .specweave/config.json
+{
+  "testing": {
+    "defaultTestMode": "TDD",       // AI always follows red-green-refactor
+    "tddEnforcement": "strict"      // Tasks cannot close without passing tests
+  },
+  "quality": {
+    "grillRequired": true,          // Code review gate before every close
+    "judgeLlmRequired": true        // Independent AI validation gate
+  },
+  "sync": {
+    "github": true,                 // Auto-sync to GitHub Issues / PRs
+    "jira": true                    // Bidirectional JIRA sync on close
+  }
+}
+```
+
+This is the difference between **asking** an AI to follow a process and **configuring** it to. No prompting required. No hoping it remembers. The config is the contract.
+
+---
+
+## The Workflow
+
+Just describe what you want. Your AI handles the orchestration.
+
+```
+You: "Build me a checkout flow with Stripe"
+  ↓
+AI asks 5-10 clarifying questions
+  (What payment methods? Guest checkout? Subscriptions? Which UI library?)
+  ↓
+Creates: spec.md → plan.md → tasks.md   ← you review the plan here
+  ↓
+You: "Go ahead and build it"
+  → autonomous execution for hours
+  (writes code, runs tests, fixes failures, syncs to GitHub/JIRA)
+  ↓
+You wake up. Review finished work.
+  Tests cover technical correctness. You check the UI and UX.
+  ↓
+You: "Looks good, ship it"
+  → validated, documented, closed.
+```
+
+**Solo developer:**
+```
+You: "I need user authentication with OAuth and magic links"
+  → AI interviews you, creates spec + plan + tasks
+You: "Build it"
+  → AI works autonomously for hours
+You: "Ship it"
+  → reviewed, validated, done.
+```
+
+**Agent team (parallel):**
+```
+You: "Build an e-commerce MVP"
+  → SpecWeave splits into auth, payments, catalog
+  → 3 agents work in parallel across iTerm/tmux panes
+```
+
+**Brownfield project:**
+```
+You: "Migrate the checkout page to React"
+  → SpecWeave analyzes existing code, plans strangler fig migration
+  → TDD-first autonomous execution
 ```
 
 ---
@@ -34,70 +129,7 @@ Each skill is a **programmable AI behavior** you can customize without forking. 
 
 ---
 
-## The Workflow
-
-Just describe what you want. SpecWeave handles the rest.
-
-```
-You: "Build me a checkout flow with Stripe"
-  ↓
-SpecWeave asks 5-10 clarifying questions
-  (What payment methods? Guest checkout? Subscriptions? Which UI library?)
-  ↓
-Creates: spec.md → plan.md → tasks.md
-  ↓
-You: "Go ahead and build it"
-  → autonomous execution for hours
-  (writes code, runs tests, fixes failures, syncs to GitHub/JIRA)
-  ↓
-You wake up. Review finished work.
-  Tests cover technical correctness. You check the UI and UX.
-  ↓
-You: "Looks good, ship it"
-  → validated, documented, shipped.
-```
-
-**Solo developer:**
-```
-You: "I need user authentication with OAuth and magic links"
-  → SpecWeave interviews you, creates spec + plan + tasks
-You: "Build it"
-  → AI works autonomously for hours
-You: "Ship it"
-  → reviewed, validated, done.
-```
-
-**Agent team (parallel):**
-```
-You: "Build an e-commerce MVP"
-  → SpecWeave splits into auth, payments, catalog
-  → 3 agents work in parallel across iTerm/tmux panes
-```
-
-**Brownfield project:**
-```
-You: "Migrate the checkout page to React"
-  → SpecWeave analyzes existing code, plans strangler fig migration
-  → TDD-first autonomous execution
-```
-
-<details>
-<summary><strong>Under the hood</strong> — SpecWeave auto-activates these skills from natural language:</summary>
-
-| You say | SpecWeave runs |
-|---------|---------------|
-| "Build me X" | `/sw:increment` → spec + plan + tasks |
-| "Go ahead" / "Build it" | `/sw:auto` → autonomous execution |
-| "Ship it" / "We're done" | `/sw:done` → quality gates + close |
-| "Split this into teams" | `/sw:team-lead` → parallel agents |
-| "Review the code" | `/sw:grill` → critical code review |
-
-You can also invoke commands directly for fine-grained control.
-</details>
-
----
-
-## Why SpecWeave?
+## Why Spec-First?
 
 **The plan is more important than the code.**
 
@@ -271,7 +303,7 @@ You: "Add dark mode to the app"
 
 ## Core Commands
 
-All commands activate automatically from natural language. Use directly for fine-grained control.
+These run automatically from natural language — see the table above. Use directly when you want fine-grained control.
 
 | Command | Purpose | Natural trigger |
 |---------|---------|----------------|
