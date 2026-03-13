@@ -1461,6 +1461,11 @@ program
   .option('--role <role>', 'Repository role (frontend, backend, mobile, infra, shared)')
   .option('--no-init', 'Skip specweave init on cloned repo')
   .option('--yes', 'Skip confirmation prompts')
+  .option('--all', 'Clone all repositories in an org (source is org name)')
+  .option('--pattern <pattern>', 'Filter repos by glob pattern, e.g. "service-*" (use with --all or org/* source)')
+  .option('--limit <n>', 'Max repos to fetch in bulk mode (default: 1000)', parseInt)
+  .option('--no-archived', 'Skip archived repositories in bulk mode')
+  .option('--no-forks', 'Skip forked repositories in bulk mode')
   .action(async (source, opts) => {
     const { getCommand } = await import('../dist/src/cli/commands/get.js');
     await getCommand(source, opts);
