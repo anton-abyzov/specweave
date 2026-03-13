@@ -174,18 +174,24 @@ export class PluginsChecker implements HealthChecker {
 
     if (fix) {
       const specweaveRoot = findSpecweaveRoot(__dirname);
-      if (specweaveRoot) {
-        const result = execFileNoThrowSync(
-          'claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 }
-        );
-        if (result.success) {
-          return {
-            name: 'SpecWeave marketplace',
-            status: 'warn',
-            message: 're-registered (was missing)',
-            fixSuggestion: 'Marketplace re-registered successfully',
-          };
-        }
+      if (!specweaveRoot) {
+        return {
+          name: 'SpecWeave marketplace',
+          status: 'fail',
+          message: 'not registered — could not locate specweave installation to fix',
+          fixSuggestion: 'Run: specweave update',
+        };
+      }
+      const result = execFileNoThrowSync(
+        'claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 }
+      );
+      if (result.success) {
+        return {
+          name: 'SpecWeave marketplace',
+          status: 'pass',
+          message: 're-registered (was missing)',
+          fixSuggestion: 'Marketplace re-registered successfully',
+        };
       }
       return {
         name: 'SpecWeave marketplace',
@@ -213,7 +219,8 @@ export class PluginsChecker implements HealthChecker {
       const content = fs.readFileSync(installedPluginsPath, 'utf8');
       const data = JSON.parse(content);
       const plugins = data.plugins ?? data;
-      isInstalled = 'sw@specweave' in plugins;
+      isInstalled = !Array.isArray(plugins) && typeof plugins === 'object' && plugins !== null
+        && 'sw@specweave' in plugins;
     } catch {
       isInstalled = false;
     }
@@ -227,13 +234,14 @@ export class PluginsChecker implements HealthChecker {
     }
 
     if (fix) {
+      // sw@specweave always uses user scope (per plugin-scope.ts override)
       const result = execFileNoThrowSync(
-        'claude', ['plugin', 'install', 'sw@specweave'], { timeout: 15_000 }
+        'claude', ['plugin', 'install', 'sw@specweave', '--scope', 'user'], { timeout: 15_000 }
       );
       if (result.success) {
         return {
           name: 'Core plugin (sw)',
-          status: 'warn',
+          status: 'pass',
           message: 'installed (was missing)',
           fixSuggestion: 'Installed sw@specweave successfully',
         };
