@@ -80,7 +80,7 @@ When generating components:
 
 You PROGRAM the AI. It remembers forever.
 
-Full spec: https://spec-weave.com/docs/skills/extensible-skills
+Full spec: https://verified-skill.com/docs/skills/extensible-skills
 
 ### Tweet 5 (Innovation #2: Working LSP - 100x Faster)
 **INNOVATION #2**: Working LSP Integration (100x faster than text search)
@@ -115,7 +115,7 @@ Most docs die in 6 months. SpecWeave's docs SYNC with code automatically.
 
 **Your documentation IS your project tracker.**
 
-Docs: https://spec-weave.com/docs/guides/living-docs
+Docs: https://verified-skill.com/docs/guides/living-docs
 
 ### Tweet 7 (Innovation #4: Enterprise Multi-Repo)
 **INNOVATION #4**: Enterprise Multi-Repo Coordination
@@ -206,7 +206,7 @@ specweave init .
 
 **The future is programmable AI. SpecWeave proves it works.**
 
-Docs: https://spec-weave.com
+Docs: https://verified-skill.com
 
 Credits: @AnthropicAI for pioneering this with Claude Code 🙏
 
@@ -292,7 +292,7 @@ If Skills are structured instructions, then software engineering principles shou
 
 **Innovation**: **FIRST** to make AI skills extendable without forking
 
-**Full specification**: https://spec-weave.com/docs/skills/extensible-skills
+**Full specification**: https://verified-skill.com/docs/skills/extensible-skills
 
 ### Real-World Example
 
@@ -400,7 +400,7 @@ specweave lsp hover src/app.ts paymentService
 
 **Why This Matters**: In production, token efficiency = speed + cost savings. LSP makes AI viable for LARGE codebases.
 
-**Guide**: https://spec-weave.com/docs/guides/lsp-integration
+**Guide**: https://verified-skill.com/docs/guides/lsp-integration
 
 ---
 
@@ -484,7 +484,7 @@ acceptance_criteria:
 
 **Your commit is blocked until you fix it.** This PREVENTS drift before it starts.
 
-**Documentation**: https://spec-weave.com/docs/guides/living-docs
+**Documentation**: https://verified-skill.com/docs/guides/living-docs
 
 ---
 
@@ -585,7 +585,7 @@ Status: [x] completed
 
 **Real brownfield project**: 100 repos, 15 teams, 350+ living docs. SpecWeave coordinates all of it.
 
-**Guide**: https://spec-weave.com/docs/guides/multi-project-sync-architecture
+**Guide**: https://verified-skill.com/docs/guides/multi-project-sync-architecture
 
 ---
 
@@ -792,10 +792,10 @@ This is the **future of AI tools**: transparent, customizable, production-proven
 
 **The standards exist. They're documented. They're production-proven.**
 
-- ✅ Extendable skills: https://spec-weave.com/docs/skills/extensible-skills
-- ✅ LSP integration: https://spec-weave.com/docs/guides/lsp-integration
-- ✅ Living docs: https://spec-weave.com/docs/guides/living-docs
-- ✅ Multi-repo: https://spec-weave.com/docs/guides/multi-project-sync-architecture
+- ✅ Extendable skills: https://verified-skill.com/docs/skills/extensible-skills
+- ✅ LSP integration: https://verified-skill.com/docs/guides/lsp-integration
+- ✅ Living docs: https://verified-skill.com/docs/guides/living-docs
+- ✅ Multi-repo: https://verified-skill.com/docs/guides/multi-project-sync-architecture
 - ✅ Quality gates: [Pre-commit hooks](https://github.com/anthropics/specweave/blob/main/.git/hooks/pre-commit)
 
 **Stop building black boxes. Build platforms users can program.**
@@ -829,13 +829,13 @@ specweave lsp refs src/payment.ts PaymentService
 /sw:progress-sync
 ```
 
-**Full documentation**: https://spec-weave.com
+**Full documentation**: https://verified-skill.com
 
 **Key guides**:
-- Extendable skills: https://spec-weave.com/docs/skills/extensible-skills
-- LSP integration: https://spec-weave.com/docs/guides/lsp-integration
-- Living docs: https://spec-weave.com/docs/guides/living-docs
-- Multi-repo: https://spec-weave.com/docs/guides/multi-project-sync-architecture
+- Extendable skills: https://verified-skill.com/docs/skills/extensible-skills
+- LSP integration: https://verified-skill.com/docs/guides/lsp-integration
+- Living docs: https://verified-skill.com/docs/guides/living-docs
+- Multi-repo: https://verified-skill.com/docs/guides/multi-project-sync-architecture
 
 ---
 
@@ -863,7 +863,7 @@ Structured human-language programming starts now.
 **Author**: Anton Abyzov
 **Date**: February 13, 2026
 **Framework**: SpecWeave v1.0+ (MIT License)
-**Documentation**: https://spec-weave.com
+**Documentation**: https://verified-skill.com
 **GitHub**: https://github.com/anthropics/specweave
 
 ---
@@ -934,7 +934,7 @@ See what structured AI instructions look like:
 https://github.com/anton-abyzov/specweave
 
 Read the deep-dive on Extensible Skills:
-https://spec-weave.com/docs/skills/extensible-skills
+https://verified-skill.com/docs/skills/extensible-skills
 
 "Prompt engineering" was the assembly language phase.
 
@@ -952,25 +952,25 @@ Structured human-language programming starts now.
    - First framework to apply software engineering principles to AI customization
    - skill-memories/ = your extensions, SKILL.md = stable core
    - Git-versioned learnings that persist forever
-   - Documented standard: https://spec-weave.com/docs/skills/extensible-skills
+   - Documented standard: https://verified-skill.com/docs/skills/extensible-skills
 
 2. **Working LSP Integration** (100x Faster)
    - 97% token reduction vs text search (30x cost savings)
    - Semantic code intelligence: findReferences, goToDefinition, hover
    - Supports TypeScript, Python, C#, Go
-   - Guide: https://spec-weave.com/docs/guides/lsp-integration
+   - Guide: https://verified-skill.com/docs/guides/lsp-integration
 
 3. **Living Documentation** (Never Drifts)
    - Auto-sync: tasks.md → spec.md → living docs → GitHub/JIRA
    - Pre-commit blocks outdated docs
    - 350+ living docs in production, zero drift
-   - Guide: https://spec-weave.com/docs/guides/living-docs
+   - Guide: https://verified-skill.com/docs/guides/living-docs
 
 4. **Multi-Repo Coordination** (Enterprise-Ready)
    - 100+ repos coordinated in real brownfield project
    - Frontend + Backend + Mobile in sync
    - One spec → multiple GitHub/JIRA projects
-   - Guide: https://spec-weave.com/docs/guides/multi-project-sync-architecture
+   - Guide: https://verified-skill.com/docs/guides/multi-project-sync-architecture
 
 5. **Quality Gate Enforcement** (15 Pre-Commit Validations)
    - Blocks wrong file formats, security issues, drift
@@ -999,5 +999,5 @@ Massive credit to @AnthropicAI, @bchernay, @tharik, and the Claude Code team for
 
 **Last Updated**: February 13, 2026
 **Framework**: SpecWeave v1.0+ (MIT License)
-**Website**: https://spec-weave.com
+**Website**: https://verified-skill.com
 **GitHub**: https://github.com/anthropics/specweave

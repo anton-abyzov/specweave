@@ -499,7 +499,7 @@ See `/examples` directory for:
 
 - **Issues**: https://github.com/anton-abyzov/specweave/issues
 - **Discussions**: https://github.com/anton-abyzov/specweave/discussions
-- **Website**: https://spec-weave.com
+- **Website**: https://verified-skill.com
 
 ---
 

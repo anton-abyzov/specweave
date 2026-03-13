@@ -304,7 +304,7 @@ export async function getStaticPaths() {
 // docusaurus.config.js
 module.exports = {
   title: 'SpecWeave',
-  url: 'https://spec-weave.com',
+  url: 'https://verified-skill.com',
   onBrokenLinks: 'throw',
 
   presets: [

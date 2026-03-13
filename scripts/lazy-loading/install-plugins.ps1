@@ -278,12 +278,12 @@ if (-not $Silent) {
         { $_ -in "cursor", "windsurf" } {
             Write-Host "Skills copied to $ActiveDir"
             Write-Host "Configure your AI tool to read from this directory."
-            Write-Host "See: https://spec-weave.com/docs/integrations/$Target"
+            Write-Host "See: https://verified-skill.com/docs/integrations/$Target"
         }
         "generic" {
             Write-Host "Skills copied to $ActiveDir"
             Write-Host "Include SKILL.md files in your AI tool's context."
-            Write-Host "See: https://spec-weave.com/docs/integrations/generic"
+            Write-Host "See: https://verified-skill.com/docs/integrations/generic"
         }
     }
 }

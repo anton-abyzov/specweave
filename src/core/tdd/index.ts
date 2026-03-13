@@ -4,7 +4,7 @@
  * Task template generation and TDD enforcement utilities.
  *
  * @module tdd
- * @see {@link https://spec-weave.com/docs/tdd} TDD Documentation
+ * @see {@link https://verified-skill.com/docs/tdd} TDD Documentation
  */
 
 export * from './types.js';

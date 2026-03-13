@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://spec-weave.com/schemas/specweave-config.json",
+  "$id": "https://verified-skill.com/schemas/specweave-config.json",
   "title": "SpecWeave Configuration",
   "description": "Schema for .specweave/config.yaml configuration file",
   "type": "object",

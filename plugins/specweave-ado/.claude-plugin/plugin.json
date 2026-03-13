@@ -4,9 +4,9 @@
   "description": "Azure DevOps integration for SpecWeave - sync increments with ADO work items, track progress, and manage project workflows",
   "author": {
     "name": "SpecWeave Team",
-    "url": "https://spec-weave.com"
+    "url": "https://verified-skill.com"
   },
-  "homepage": "https://spec-weave.com",
+  "homepage": "https://verified-skill.com",
   "repository": "https://github.com/anton-abyzov/specweave",
   "keywords": [
     "azure-devops",
