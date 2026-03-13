@@ -73,7 +73,29 @@ This ensures the execution loop stays focused on the contextually correct increm
    ```
    If fails: manually add ACs to spec.md, then retry. Do NOT proceed without ACs in spec.md.
 
-### Step 2.5: Execution Strategy Check
+### Step 2.5: PR-Based Branch Setup (conditional)
+
+Check push strategy:
+```bash
+PUSH_STRATEGY=$(jq -r '.cicd.pushStrategy // "direct"' .specweave/config.json 2>/dev/null)
+```
+
+**If `pr-based`:**
+1. Read git config:
+   ```bash
+   BRANCH_PREFIX=$(jq -r '.cicd.git.branchPrefix // "sw/"' .specweave/config.json 2>/dev/null)
+   ```
+2. Compute branch name: `BRANCH_NAME="${BRANCH_PREFIX}${INCREMENT_ID}"`
+3. Check current branch: `CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)`
+4. If not on the feature branch:
+   - Branch exists? `git branch --list ${BRANCH_NAME}` → `git checkout ${BRANCH_NAME}`
+   - Branch doesn't exist? `git checkout -b ${BRANCH_NAME}`
+5. For umbrella/multi-repo: repeat in each `repositories/*/*/` that has a `.git` directory
+6. Log: `"Working on feature branch: ${BRANCH_NAME}"`
+
+**If `direct`:** Skip this step entirely (no-op, current behavior preserved).
+
+### Step 2.7: Execution Strategy Check
 
 **Skip this step if already running inside `/sw:auto` or `/sw:team-lead`.** Check `.specweave/state/auto-mode.json` — if `active: true`, skip.
 

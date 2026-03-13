@@ -732,6 +732,40 @@ export interface PlanningConfig {
 }
 
 /**
+ * Git branching configuration for pr-based push strategy (v1.0.437+)
+ */
+export interface GitConfig {
+  /** Branch name prefix for increment branches. Default: 'sw/' */
+  branchPrefix?: string;
+  /** Target branch for pull requests. Default: 'main' */
+  targetBranch?: string;
+  /** Auto-delete branch after PR merge. Default: true */
+  deleteOnMerge?: boolean;
+}
+
+/**
+ * Environment definition for release promotion (v1.0.437+, enterprise)
+ */
+export interface EnvironmentConfig {
+  /** Environment name (e.g., 'dev', 'staging', 'prod') */
+  name: string;
+  /** Target branch for this environment */
+  branch?: string;
+  /** Whether manual approval is required to promote to this env */
+  requiresApproval?: boolean;
+}
+
+/**
+ * Release strategy configuration (v1.0.437+, enterprise)
+ */
+export interface ReleaseConfig {
+  /** Release strategy: 'trunk' (default), 'gitflow', 'env-promotion' */
+  strategy?: 'trunk' | 'gitflow' | 'env-promotion';
+  /** Ordered list of environments for env-promotion strategy */
+  environments?: EnvironmentConfig[];
+}
+
+/**
  * CI/CD Configuration (v1.0.231+)
  * Controls push strategy, auto-fix behavior, and monitoring defaults.
  * The cicd config-loader reads from this section first, then falls back to env vars.
@@ -739,6 +773,10 @@ export interface PlanningConfig {
 export interface CiCdConfig {
   /** Push strategy: 'direct' pushes to branch, 'pr-based' creates pull requests */
   pushStrategy: 'direct' | 'pr-based';
+  /** Git branching configuration for pr-based push strategy (v1.0.437+) */
+  git?: GitConfig;
+  /** Release strategy and environment promotion (v1.0.437+, enterprise) */
+  release?: ReleaseConfig;
   /** Auto-fix configuration for CI failures */
   autoFix: {
     /** Enable automatic fix attempts on CI failure */
@@ -1117,6 +1155,11 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
   },
   cicd: {
     pushStrategy: 'direct',
+    git: {
+      branchPrefix: 'sw/',
+      targetBranch: 'main',
+      deleteOnMerge: true,
+    },
     autoFix: {
       enabled: true,
       maxRetries: 1,

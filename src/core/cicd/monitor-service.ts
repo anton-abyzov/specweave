@@ -29,11 +29,24 @@ export interface MonitorServiceConfig {
   /** Push strategy from unified config (v1.0.231+) */
   pushStrategy?: 'direct' | 'pr-based';
 
+  /** Git branching configuration for pr-based push strategy (v1.0.437+) */
+  git?: {
+    branchPrefix?: string;
+    targetBranch?: string;
+    deleteOnMerge?: boolean;
+  };
+
   /** Auto-fix configuration from unified config (v1.0.231+) */
   autoFix?: {
     enabled: boolean;
     maxRetries: number;
     allowedBranches: string[];
+  };
+
+  /** Release strategy and environment promotion config (v1.0.437+, enterprise) */
+  release?: {
+    strategy?: 'trunk' | 'env-promotion';
+    environments?: Array<{ name: string; branch: string; requiresApproval?: boolean }>;
   };
 }
 
@@ -79,7 +92,9 @@ export class MonitorService {
       rootDir: config.rootDir ?? process.cwd(),
       autoNotify: config.autoNotify ?? true,
       pushStrategy: config.pushStrategy ?? 'direct',
+      git: config.git ?? { branchPrefix: 'sw/', targetBranch: 'main', deleteOnMerge: true },
       autoFix: config.autoFix ?? { enabled: true, maxRetries: 1, allowedBranches: ['develop', 'main'] },
+      release: config.release ?? {},
     };
 
     this.stateManager = new StateManager(this.config.rootDir);
