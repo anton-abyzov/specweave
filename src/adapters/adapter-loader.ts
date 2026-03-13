@@ -13,6 +13,15 @@ import { CursorAdapter } from './cursor/adapter.js';
 import { GeminiAdapter } from './gemini/adapter.js';
 import { CodexAdapter } from './codex/adapter.js';
 import { GenericAdapter } from './generic/adapter.js';
+import { CopilotAdapter } from './copilot/adapter.js';
+import { WindsurfAdapter } from './windsurf/adapter.js';
+import { ContinueAdapter } from './continue/adapter.js';
+import { ClineAdapter } from './cline/adapter.js';
+import { ZedAdapter } from './zed/adapter.js';
+import { AmazonQAdapter } from './amazonq/adapter.js';
+import { JetBrainsAdapter } from './jetbrains/adapter.js';
+import { AiderAdapter } from './aider/adapter.js';
+import { TabnineAdapter } from './tabnine/adapter.js';
 import { getDirname } from '../utils/esm-helpers.js';
 import { detectClaudeCli } from '../utils/claude-cli-detector.js';
 
@@ -55,6 +64,15 @@ export class AdapterLoader {
     this.adapters.set('gemini', new GeminiAdapter());
     this.adapters.set('codex', new CodexAdapter());
     this.adapters.set('generic', new GenericAdapter());
+    this.adapters.set('copilot', new CopilotAdapter());
+    this.adapters.set('windsurf', new WindsurfAdapter());
+    this.adapters.set('continue', new ContinueAdapter());
+    this.adapters.set('cline', new ClineAdapter());
+    this.adapters.set('zed', new ZedAdapter());
+    this.adapters.set('amazonq', new AmazonQAdapter());
+    this.adapters.set('jetbrains', new JetBrainsAdapter());
+    this.adapters.set('aider', new AiderAdapter());
+    this.adapters.set('tabnine', new TabnineAdapter());
   }
 
   /**
@@ -123,7 +141,7 @@ export class AdapterLoader {
     }
 
     // Claude not available - check other tools (passive indicators)
-    const detectionOrder = ['cursor', 'gemini', 'codex'];
+    const detectionOrder = ['cursor', 'windsurf', 'continue', 'cline', 'zed', 'gemini', 'codex', 'copilot', 'amazonq', 'jetbrains', 'aider', 'tabnine'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -245,7 +263,7 @@ export class AdapterLoader {
 
       const adapter = this.adapters.get(explicitChoice);
       if (!adapter) {
-        throw new Error(`Invalid adapter: ${explicitChoice}. Use 'claude', 'cursor', or 'generic'`);
+        throw new Error(`Invalid adapter: ${explicitChoice}. Valid values: claude, cursor, copilot, windsurf, continue, cline, zed, gemini, codex, amazonq, jetbrains, aider, tabnine, generic`);
       }
       return adapter;
     }
