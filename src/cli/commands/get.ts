@@ -3,11 +3,17 @@
  *
  * Clone an existing repository into the workspace and register it.
  *
- * Usage:
+ * Usage (single repo):
  *   specweave get owner/repo
  *   specweave get https://github.com/org/repo
  *   specweave get git@github.com:org/repo
  *   specweave get ./path/to/local-repo
+ *
+ * Usage (bulk):
+ *   specweave get "org/service-*"   # glob
+ *   specweave get "org/*"           # all repos in org
+ *   specweave get --all org         # all repos in org (flag form)
+ *   specweave get --all org --pattern "svc-*"
  */
 
 import chalk from 'chalk';
@@ -16,6 +22,8 @@ import * as path from 'path';
 import { parseSource } from '../helpers/get/source-parser.js';
 import { cloneRepo } from '../helpers/get/clone-repo.js';
 import { registerRepo } from '../helpers/get/register-repo.js';
+import { parseBulkSource, getAuthToken, buildBulkRepoList } from '../helpers/get/bulk-get.js';
+import { launchCloneJob } from '../../core/background/job-launcher.js';
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 import { detectRepository } from '../../utils/git-utils.js';
 
@@ -26,6 +34,16 @@ export interface GetOptions {
   /** true by default, false when --no-init is passed */
   init?: boolean;
   yes?: boolean;
+  /** Bulk: clone all repos in org */
+  all?: boolean;
+  /** Bulk: glob pattern filter (used with --all) */
+  pattern?: string;
+  /** Bulk: max repos to fetch (default 1000) */
+  limit?: number;
+  /** Bulk: skip archived repos */
+  noArchived?: boolean;
+  /** Bulk: skip forked repos */
+  noForks?: boolean;
 }
 
 export async function getCommand(source: string, options: GetOptions = {}): Promise<void> {
@@ -45,6 +63,13 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   } catch {
     console.log(chalk.red('\n  Could not read .specweave/config.json\n'));
     process.exit(1);
+    return;
+  }
+
+  // Bulk mode: detect glob/--all before single-repo path
+  const bulkSource = parseBulkSource(source, { all: options.all, pattern: options.pattern });
+  if (bulkSource) {
+    await _handleBulkGet(projectRoot, bulkSource, options);
     return;
   }
 
@@ -135,6 +160,52 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     }
     console.log(chalk.green(`\n  Done! Repository available at ./${repo}/\n`));
   }
+}
+
+async function _handleBulkGet(
+  projectRoot: string,
+  bulkSource: { org: string; pattern: string | null },
+  options: GetOptions,
+): Promise<void> {
+  const { org, pattern } = bulkSource;
+  const patternDisplay = pattern ?? '*';
+
+  console.log(chalk.blue(`\n  Fetching repos from ${org} (pattern: ${patternDisplay})...\n`));
+
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch (err) {
+    console.log(chalk.red(`\n  ${err instanceof Error ? err.message : String(err)}\n`));
+    process.exit(1);
+    return;
+  }
+
+  let repositories: Array<{ owner: string; name: string; path: string; cloneUrl: string }>;
+  try {
+    repositories = await buildBulkRepoList(org, token, pattern, {
+      noArchived: options.noArchived,
+      noForks: options.noForks,
+      limit: options.limit,
+    });
+  } catch (err) {
+    console.log(chalk.red(`\n  Failed to fetch repos: ${err instanceof Error ? err.message : String(err)}\n`));
+    process.exit(1);
+    return;
+  }
+
+  if (repositories.length === 0) {
+    console.log(chalk.yellow(`  No repos found matching "${patternDisplay}" in ${org}.\n`));
+    return;
+  }
+
+  console.log(chalk.green(`   Found ${repositories.length} repo(s) matching "${patternDisplay}". Launching background clone job...\n`));
+
+  const result = await launchCloneJob({ projectPath: projectRoot, repositories });
+  const jobId = result.job?.id ?? 'unknown';
+
+  console.log(chalk.green(`  Job ${jobId} started.`));
+  console.log(chalk.dim(`   Monitor: specweave jobs\n`));
 }
 
 async function _registerAndInit(

@@ -108,7 +108,7 @@ function sleep(ms: number): Promise<void> {
  * @param maxRepos - Maximum repos to fetch (default 1000, configurable via REPO_FETCH_LIMITS)
  * @returns Fetch result with repos and metadata
  */
-async function fetchGitHubRepos(
+export async function fetchGitHubRepos(
   org: string,
   pat: string,
   maxRepos: number = REPO_FETCH_LIMITS.DEFAULT_MAX_REPOS

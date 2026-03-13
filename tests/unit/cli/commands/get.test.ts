@@ -17,6 +17,15 @@ vi.mock('../../../../src/cli/helpers/get/clone-repo.js', () => ({ cloneRepo: moc
 vi.mock('../../../../src/cli/helpers/get/register-repo.js', () => ({ registerRepo: mockRegisterRepo }));
 vi.mock('../../../../src/utils/execFileNoThrow.js', () => ({ execFileNoThrow: mockExecFileNoThrow }));
 vi.mock('../../../../src/utils/git-utils.js', () => ({ detectRepository: mockDetectRepository }));
+// Stub bulk-get so single-repo tests are unaffected (parseBulkSource always returns null here)
+vi.mock('../../../../src/cli/helpers/get/bulk-get.js', () => ({
+  parseBulkSource: vi.fn().mockReturnValue(null),
+  getAuthToken: vi.fn(),
+  buildBulkRepoList: vi.fn(),
+}));
+vi.mock('../../../../src/core/background/job-launcher.js', () => ({
+  launchCloneJob: vi.fn(),
+}));
 vi.mock('fs', () => mockFs);
 
 // Silence console output during tests
