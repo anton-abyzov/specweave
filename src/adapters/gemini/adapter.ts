@@ -146,7 +146,7 @@ export class GeminiAdapter extends AdapterBase {
    * Get installed plugins for Gemini by scanning `.gemini/`.
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.gemini');
+    return await this.listInstalledPluginsInDir('.gemini');
   }
 
   /**

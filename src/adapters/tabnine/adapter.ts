@@ -48,7 +48,7 @@ export class TabnineAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.tabnine/guidelines');
+    return await this.listInstalledPluginsInDir('.tabnine/guidelines');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {

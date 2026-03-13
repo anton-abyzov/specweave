@@ -88,7 +88,7 @@ export class WindsurfAdapter extends AdapterBase {
    * Get list of installed plugins for Windsurf
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.windsurf/rules');
+    return await this.listInstalledPluginsInDir('.windsurf/rules');
   }
 
   /**

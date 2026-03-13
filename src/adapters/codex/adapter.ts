@@ -146,7 +146,7 @@ export class CodexAdapter extends AdapterBase {
    * Get installed plugins for Codex by scanning `.codex/rules/`.
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.codex/rules');
+    return await this.listInstalledPluginsInDir('.codex/rules');
   }
 
   /**

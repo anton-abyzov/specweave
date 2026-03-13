@@ -48,7 +48,7 @@ export class ZedAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.rules');
+    return await this.listInstalledPluginsInDir('.rules');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
