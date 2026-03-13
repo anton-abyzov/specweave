@@ -310,7 +310,22 @@ export function installPlugin(
   const lock = ensureLockfile(lockDir);
 
   if (!options.force && lock.skills[pluginName]?.sha === sha) {
-    return { success: true, sha, skipped: true };
+    // Hash unchanged — but only skip if the plugin is actually installed in Claude Code.
+    // installed_plugins.json can be wiped by a Claude Code update, in which case we must
+    // reinstall even though the source content hasn't changed.
+    const installedPluginsPath = join(homedir(), '.claude', 'plugins', 'installed_plugins.json');
+    let isActuallyInstalled = false;
+    try {
+      const data = JSON.parse(readFileSync(installedPluginsPath, 'utf-8'));
+      const plugins = data.plugins ?? data;
+      isActuallyInstalled = !Array.isArray(plugins) && typeof plugins === 'object'
+        && plugins !== null && `${pluginName}@specweave` in plugins;
+    } catch { /* file missing — not installed */ }
+
+    if (isActuallyInstalled) {
+      return { success: true, sha, skipped: true };
+    }
+    // Plugin missing from installed_plugins.json — fall through to reinstall
   }
 
   // 5. Install via Claude Code's native plugin system (scope per plugin-scope config)
