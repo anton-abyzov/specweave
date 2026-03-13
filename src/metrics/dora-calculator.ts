@@ -9,6 +9,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { GitHubClient } from './github-client.js';
+import { resolveEffectiveRoot } from '../utils/find-project-root.js';
 import { calculateDeploymentFrequency } from './calculators/deployment-frequency.js';
 import { calculateLeadTime } from './calculators/lead-time.js';
 import { calculateChangeFailureRate } from './calculators/change-failure-rate.js';
@@ -127,13 +128,13 @@ async function main() {
     const result = await calculateDORAMetrics(client);
 
     // Write JSON file
-    const jsonOutputPath = path.join(process.cwd(), '.specweave', 'metrics', 'dora-latest.json');
+    const jsonOutputPath = path.join(resolveEffectiveRoot(), '.specweave', 'metrics', 'dora-latest.json');
     writeMetricsJSON(result.metrics, jsonOutputPath);
 
     // Generate and write markdown report
     console.log('\n📝 Generating detailed report...');
     const report = generateMarkdownReport(result.metrics, result.releases, result.issues);
-    const reportOutputPath = path.join(process.cwd(), '.specweave', 'metrics', 'dora-report.md');
+    const reportOutputPath = path.join(resolveEffectiveRoot(), '.specweave', 'metrics', 'dora-report.md');
     writeReport(report, reportOutputPath);
 
     console.log('\n🎉 DORA metrics calculation complete!');
