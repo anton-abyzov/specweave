@@ -86,7 +86,7 @@ export class PlanCommandOrchestrator {
       }
 
       // Step 5: Invoke Task Generator
-      const plannerResult = await this.agentInvoker.invokeTestAwarePlanner(context);
+      const plannerResult = await this.agentInvoker.invokePlannerAgent(context);
       if (plannerResult.success) {
         // Use AgentInvoker's temporary task generation
         // In production Claude Code context, this would be replaced by actual agent output
