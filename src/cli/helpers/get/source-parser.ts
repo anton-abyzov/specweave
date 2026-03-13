@@ -53,7 +53,7 @@ export function parseSource(source: string): ParsedSource {
   }
 
   // 2. SSH URL: git@github.com:owner/repo[.git]
-  const sshGitHub = trimmed.match(/^git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/);
+  const sshGitHub = trimmed.match(/^git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/);
   if (sshGitHub) {
     return {
       type: 'github',
@@ -64,7 +64,7 @@ export function parseSource(source: string): ParsedSource {
   }
 
   // 3. Generic SSH: git@host:org/repo
-  const sshGeneric = trimmed.match(/^git@([^:]+):([^/]+)\/(.+?)(?:\.git)?$/);
+  const sshGeneric = trimmed.match(/^git@([^:]+):([^/]+)\/([^/]+?)(?:\.git)?$/);
   if (sshGeneric) {
     return {
       type: 'git',
