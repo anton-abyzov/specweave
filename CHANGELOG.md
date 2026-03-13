@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.440] - 2026-03-13
+
+### Changes
+- sync docs, templates, locales, and plugin metadata
+
+---
+
+
+
 ## [1.0.439] - 2026-03-13
 
 ### Changes
