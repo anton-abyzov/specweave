@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.444] - 2026-03-13
+
+### Changes
+- chore: update done skill
+- chore: update skills
+
+---
+
+
+
 ## [1.0.443] - 2026-03-13
 
 ### Changes
