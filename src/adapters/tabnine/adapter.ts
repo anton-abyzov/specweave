@@ -14,7 +14,7 @@ export class TabnineAdapter extends AdapterBase {
   automationLevel = 'basic' as const;
 
   async detect(): Promise<boolean> {
-    return this.fileExists('.tabnine');
+    return await this.fileExists('.tabnine');
   }
 
   getFiles(): AdapterFile[] {

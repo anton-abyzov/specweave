@@ -23,7 +23,7 @@ export class ContinueAdapter extends AdapterBase {
    * - .continue/ directory exists
    */
   async detect(): Promise<boolean> {
-    return this.fileExists('.continue');
+    return await this.fileExists('.continue');
   }
 
   /**

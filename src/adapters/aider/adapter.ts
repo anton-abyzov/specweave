@@ -14,7 +14,7 @@ export class AiderAdapter extends AdapterBase {
   automationLevel = 'semi' as const;
 
   async detect(): Promise<boolean> {
-    return this.commandExists('aider');
+    return await this.commandExists('aider');
   }
 
   getFiles(): AdapterFile[] {
