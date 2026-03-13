@@ -718,6 +718,19 @@ program
     await runJiraValidation(options);
   });
 
+// Link PR - Link pull requests to external tickets (JIRA remote links, ADO hyperlinks)
+program
+  .command('link-pr')
+  .description('Link a pull request to external tickets (JIRA, ADO)')
+  .requiredOption('--increment <id>', 'Increment ID')
+  .requiredOption('--pr-url <url>', 'Pull request URL')
+  .requiredOption('--pr-number <num>', 'Pull request number')
+  .option('--branch <name>', 'Branch name')
+  .action(async (options) => {
+    const { runLinkPr } = await import('../dist/src/cli/commands/link-pr.js');
+    await runLinkPr(options);
+  });
+
 // Jobs command - Monitor and manage background jobs (imports, cloning, sync)
 program
   .command('jobs')

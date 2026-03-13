@@ -45,6 +45,9 @@ export interface CompletionCommentData {
   acceptanceCriteria: ACCompletionInfo[];
   progressPercentage: number;
   livingDocsUrl?: string;
+  prUrl?: string;
+  prBranch?: string;
+  prNumber?: number;
 }
 
 export class FormatPreservationSyncService {
@@ -308,6 +311,16 @@ export class FormatPreservationSyncService {
     const completed = completedTasks.length;
     lines.push(`**Progress**: ${completed}/${totalTasks} tasks completed (${data.progressPercentage}%)`);
     lines.push('');
+
+    // Pull request link
+    if (data.prUrl) {
+      lines.push('### Pull Request');
+      lines.push(`- **PR**: [#${data.prNumber || ''}](${data.prUrl})`);
+      if (data.prBranch) {
+        lines.push(`- **Branch**: \`${data.prBranch}\``);
+      }
+      lines.push('');
+    }
 
     // Living docs link
     if (data.livingDocsUrl) {

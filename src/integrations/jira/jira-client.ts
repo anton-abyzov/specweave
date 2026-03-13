@@ -897,6 +897,52 @@ export class JiraClient {
   }
 
   /**
+   * Add remote link to JIRA issue (for PR linking)
+   *
+   * POST /rest/api/3/issue/{issueIdOrKey}/remotelink
+   * Uses globalId for idempotency — re-running won't create duplicates.
+   */
+  public async addRemoteLink(issueKey: string, link: {
+    url: string;
+    title: string;
+    globalId: string;
+    relationship?: string;
+  }): Promise<void> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${issueKey}/remotelink`;
+
+    const body = {
+      globalId: link.globalId,
+      application: {
+        type: 'com.specweave',
+        name: 'SpecWeave'
+      },
+      relationship: link.relationship || 'pull request',
+      object: {
+        url: link.url,
+        title: link.title,
+        icon: {
+          url16x16: 'https://github.githubassets.com/favicons/favicon.svg',
+          title: 'GitHub'
+        }
+      }
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to add remote link to JIRA issue ${issueKey}: ${response.status} ${error}`);
+    }
+  }
+
+  /**
    * Execute raw JQL search query
    *
    * Used by FilterProcessor for custom JQL filtering

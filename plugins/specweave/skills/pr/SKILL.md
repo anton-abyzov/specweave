@@ -39,9 +39,26 @@ If `prRefs` already has an entry with `state: "open"`, skip PR creation and repo
 
 ## Step 2: Determine Branch Name
 
+**External ticket key prefix** — If the increment was imported from JIRA/ADO, prefix the branch with the external ticket key for native integration linking:
+
 ```bash
-BRANCH_NAME="${BRANCH_PREFIX}${INCREMENT_ID}"
-# e.g., sw/0520-pr-based-increment-closure
+# Check metadata for external ticket key (JIRA or ADO)
+JIRA_KEY=$(jq -r '.jira.issue // .jira.issueKey // .externalLinks.jira.epicKey // .externalLinks.jira.issueKey // empty' \
+  .specweave/increments/${INCREMENT_ID}/metadata.json 2>/dev/null)
+ADO_ID=$(jq -r '.externalLinks.ado.featureId // .externalLinks.ado.workItemId // empty' \
+  .specweave/increments/${INCREMENT_ID}/metadata.json 2>/dev/null)
+EXTERNAL_KEY_BRANCHING=$(jq -r '.cicd.git.externalKeyBranching // true' .specweave/config.json 2>/dev/null)
+
+if [ "$EXTERNAL_KEY_BRANCHING" = "true" ] && [ -n "$JIRA_KEY" ]; then
+  BRANCH_NAME="${JIRA_KEY}/${INCREMENT_ID}"
+  # e.g., ID-300/0520-auth-gateway-otel
+elif [ "$EXTERNAL_KEY_BRANCHING" = "true" ] && [ -n "$ADO_ID" ]; then
+  BRANCH_NAME="AB#${ADO_ID}/${INCREMENT_ID}"
+  # e.g., AB#4567/0520-auth-gateway-otel
+else
+  BRANCH_NAME="${BRANCH_PREFIX}${INCREMENT_ID}"
+  # e.g., sw/0520-pr-based-increment-closure
+fi
 ```
 
 Check current branch:
@@ -146,6 +163,26 @@ Update increment metadata with PR reference. Edit `metadata.json` to add/update 
 ```
 
 Use `jq` or direct JSON edit to update metadata.json.
+
+## Step 7b: Link PR to External Tickets
+
+After PR creation, link the PR to any associated JIRA/ADO tickets. This creates remote links (JIRA) or hyperlinks (ADO) so the PR appears in the external tool's UI.
+
+```bash
+specweave link-pr \
+  --increment "${INCREMENT_ID}" \
+  --pr-url "${PR_URL}" \
+  --pr-number "${PR_NUMBER}" \
+  --branch "${BRANCH_NAME}"
+```
+
+This is **non-blocking** — if linking fails, the PR is still created successfully. Errors are logged as warnings.
+
+The link-pr command:
+- Reads metadata.json for JIRA issue keys and ADO work item IDs
+- Creates JIRA remote links via `/rest/api/3/issue/{key}/remotelink` (idempotent via `globalId`)
+- Creates ADO work item hyperlinks via JSON Patch on work item relations
+- Reports linked tickets and any errors
 
 ## Step 8: Multi-Repo / Umbrella Mode
 
