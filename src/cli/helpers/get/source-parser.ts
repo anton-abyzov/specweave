@@ -11,6 +11,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 export type SourceType = 'github' | 'git' | 'local';
 
@@ -33,16 +34,15 @@ export interface ParsedSource {
 export function parseSource(source: string): ParsedSource {
   const trimmed = source.trim().replace(/\/+$/, ''); // strip trailing slashes
 
-  // 1. Local path — starts with ./ ../ / or ~ or exists on disk
+  // 1. Explicit local path indicators: ./ ../ / ~
   if (
     trimmed.startsWith('./') ||
     trimmed.startsWith('../') ||
     trimmed.startsWith('/') ||
-    trimmed.startsWith('~') ||
-    fs.existsSync(trimmed)
+    trimmed.startsWith('~')
   ) {
     const resolved = trimmed.startsWith('~')
-      ? path.join(process.env.HOME || '~', trimmed.slice(1))
+      ? path.join(os.homedir(), trimmed.slice(1))
       : path.resolve(trimmed);
     return {
       type: 'local',
@@ -75,7 +75,7 @@ export function parseSource(source: string): ParsedSource {
   }
 
   // 4. HTTPS GitHub URL
-  const httpsGitHub = trimmed.match(/^https?:\/\/github\.com\/([^/]+)\/(.+?)(?:\.git)?$/);
+  const httpsGitHub = trimmed.match(/^https?:\/\/github\.com\/([^/]+)\/([^/?#]+?)(?:\.git)?$/);
   if (httpsGitHub) {
     const owner = httpsGitHub[1];
     const repo = httpsGitHub[2];
@@ -87,8 +87,8 @@ export function parseSource(source: string): ParsedSource {
     };
   }
 
-  // 5. Generic HTTPS/HTTP git URL
-  const httpsGeneric = trimmed.match(/^https?:\/\/([^/]+)\/([^/]+)\/(.+?)(?:\.git)?$/);
+  // 5. Generic HTTPS/HTTP git URL — matches exactly host/owner/repo (no nested paths)
+  const httpsGeneric = trimmed.match(/^https?:\/\/([^/]+)\/([^/]+)\/([^/?#]+?)(?:\.git)?$/);
   if (httpsGeneric) {
     return {
       type: 'git',
@@ -99,6 +99,7 @@ export function parseSource(source: string): ParsedSource {
   }
 
   // 6. GitHub shorthand: owner/repo (exactly one slash, no protocol)
+  // Checked BEFORE fs.existsSync to avoid ambiguity with local dirs named "owner/repo"
   const shorthand = trimmed.match(/^([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)$/);
   if (shorthand) {
     const owner = shorthand[1];
@@ -108,6 +109,17 @@ export function parseSource(source: string): ParsedSource {
       owner,
       repo,
       cloneUrl: `https://github.com/${owner}/${repo}.git`,
+    };
+  }
+
+  // 7. Bare name fallback: check if it exists as a local path on disk
+  if (fs.existsSync(trimmed)) {
+    const resolved = path.resolve(trimmed);
+    return {
+      type: 'local',
+      owner: '',
+      repo: path.basename(resolved),
+      absolutePath: resolved,
     };
   }
 
