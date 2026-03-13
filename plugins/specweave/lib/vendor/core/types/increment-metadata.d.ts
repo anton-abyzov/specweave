@@ -399,5 +399,42 @@ export interface IncrementMetadataV2 extends IncrementMetadata {
      * ```
      */
     syncTarget?: SyncTarget;
+    /**
+     * Pull request references for pr-based push strategy (v1.0.437+)
+     *
+     * Tracks branch names and PR URLs created during increment closure.
+     * Single-repo: array with one entry. Multi-repo/umbrella: one entry per touched repo.
+     *
+     * @example
+     * ```json
+     * {
+     *   "prRefs": [{
+     *     "branch": "sw/0520-pr-based-closure",
+     *     "prNumber": 42,
+     *     "prUrl": "https://github.com/org/repo/pull/42",
+     *     "state": "open",
+     *     "createdAt": "2026-03-12T10:00:00Z"
+     *   }]
+     * }
+     * ```
+     */
+    prRefs?: PrRef[];
+}
+/**
+ * Pull request reference for a single repository (v1.0.437+)
+ */
+export interface PrRef {
+    /** Branch name (e.g., 'sw/0016-checkout-flow') */
+    branch: string;
+    /** PR number */
+    prNumber?: number;
+    /** PR URL */
+    prUrl?: string;
+    /** Repository slug (owner/repo) for multi-repo. Omit for single-repo. */
+    repoSlug?: string;
+    /** PR state */
+    state?: 'open' | 'merged' | 'closed';
+    /** When the PR was created */
+    createdAt?: string;
 }
 //# sourceMappingURL=increment-metadata.d.ts.map
