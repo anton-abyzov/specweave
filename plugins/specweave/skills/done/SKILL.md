@@ -115,6 +115,21 @@ PM validation report goes in: `.specweave/increments/####-name/reports/PM-VALIDA
 - If GitHub issue exists, reopen it with failure details
 - Increment remains in-progress
 
+### Step 8.5: Pull Request Creation (pr-based only)
+
+Check push strategy:
+```bash
+PUSH_STRATEGY=$(jq -r '.cicd.pushStrategy // "direct"' .specweave/config.json 2>/dev/null)
+```
+
+**If `pr-based`:**
+1. Invoke `sw:pr` skill: `Skill({ skill: "sw:pr", args: "<increment-id>" })`
+2. Verify PR was created: check metadata.json for `prRefs` with `state: "open"`
+3. If PR creation failed: **warn but do NOT block closure**. The increment is already completed. PR is a distribution mechanism, not a quality gate.
+4. Display PR URL(s) for human review.
+
+**If `direct`:** Skip this step entirely (existing behavior unchanged).
+
 ### Step 9: Post-Closure Sync (AUTOMATIC via CLI hooks)
 
 The `specweave complete` call in Step 8 triggers `LifecycleHookDispatcher.onIncrementDone()` which automatically handles:

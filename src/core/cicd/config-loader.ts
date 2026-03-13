@@ -37,6 +37,11 @@ interface RawConfig {
 
     // Unified config format fields (v1.0.231+)
     pushStrategy?: 'direct' | 'pr-based';
+    git?: {
+      branchPrefix?: string;
+      targetBranch?: string;
+      deleteOnMerge?: boolean;
+    };
     autoFix?: {
       enabled: boolean;
       maxRetries: number;
@@ -45,6 +50,11 @@ interface RawConfig {
     monitoring?: {
       pollInterval?: number;
       autoNotify?: boolean;
+    };
+    // Enterprise release/environment promotion (v1.0.437+)
+    release?: {
+      strategy?: 'trunk' | 'env-promotion';
+      environments?: Array<{ name: string; branch: string; requiresApproval?: boolean }>;
     };
   };
 }
@@ -141,8 +151,14 @@ async function loadFromConfigFile(
     if (rawConfig.cicd?.pushStrategy) {
       config.pushStrategy = rawConfig.cicd.pushStrategy;
     }
+    if (rawConfig.cicd?.git) {
+      config.git = rawConfig.cicd.git;
+    }
     if (rawConfig.cicd?.autoFix) {
       config.autoFix = rawConfig.cicd.autoFix;
+    }
+    if (rawConfig.cicd?.release) {
+      config.release = rawConfig.cicd.release;
     }
 
     return config;
@@ -173,6 +189,11 @@ function getDefaults(): MonitorServiceConfig {
     rootDir: process.cwd(),
     autoNotify: true,
     pushStrategy: 'direct',
+    git: {
+      branchPrefix: 'sw/',
+      targetBranch: 'main',
+      deleteOnMerge: true,
+    },
     autoFix: {
       enabled: true,
       maxRetries: 1,
@@ -204,7 +225,9 @@ function mergeConfigs(
     rootDir: env.rootDir || configFile.rootDir || defaults.rootDir,
     autoNotify: env.autoNotify ?? configFile.autoNotify ?? defaults.autoNotify,
     pushStrategy: configFile.pushStrategy ?? defaults.pushStrategy,
-    autoFix: configFile.autoFix ?? defaults.autoFix
+    git: { ...defaults.git, ...(configFile.git || {}) },
+    autoFix: configFile.autoFix ?? defaults.autoFix,
+    release: configFile.release ?? defaults.release
   };
 }
 
