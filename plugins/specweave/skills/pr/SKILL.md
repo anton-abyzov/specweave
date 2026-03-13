@@ -102,7 +102,7 @@ cat > /tmp/sw-pr-body-${INCREMENT_ID}.md << 'PREOF'
 
 ---
 
-*Created by [SpecWeave](https://spec-weave.com) increment `{INCREMENT_ID}`*
+*Created by [SpecWeave](https://verified-skill.com) increment `{INCREMENT_ID}`*
 PREOF
 ```
 

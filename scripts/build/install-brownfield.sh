@@ -333,7 +333,7 @@ echo -e "${BLUE}📚 Documentation:${NC}"
 echo ""
 echo "   • Getting Started: .specweave/docs/public/guides/getting-started/"
 echo "   • Commands: .claude/commands/README.md"
-echo "   • Website: https://spec-weave.com"
+echo "   • Website: https://verified-skill.com"
 echo ""
 
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

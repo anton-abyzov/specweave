@@ -2,7 +2,7 @@
 
 ## ✅ What's Been Built
 
-I've set up a **production-ready documentation site** for SpecWeave using **Docusaurus 3** (the same framework used by react-native.dev), configured to deploy to **spec-weave.com** via **Cloudflare Pages**.
+I've set up a **production-ready documentation site** for SpecWeave using **Docusaurus 3** (the same framework used by react-native.dev), configured to deploy to **verified-skill.com** via **Cloudflare Pages**.
 
 ### 📦 Components Delivered
 
@@ -74,15 +74,15 @@ Open http://localhost:3000 to see your site locally.
    - Root directory: `/` (leave empty)
 5. Click **Save and Deploy**
 
-#### Configure Custom Domain (spec-weave.com)
+#### Configure Custom Domain (verified-skill.com)
 
 After first deployment:
 1. Go to **Pages** → **specweave-docs** → **Custom domains**
 2. Click **Set up a custom domain**
-3. Enter: `spec-weave.com`
+3. Enter: `verified-skill.com`
 4. Cloudflare auto-configures DNS (since domain is on Cloudflare)
 
-Done! Your site will be live at https://spec-weave.com
+Done! Your site will be live at https://verified-skill.com
 
 ### Step 3: Secrets Management
 
@@ -117,7 +117,7 @@ git commit -m "feat: add Docusaurus documentation site
 - GitHub Actions build validation workflow
 - Responsive design with dark mode support
 
-Ready for deployment to spec-weave.com"
+Ready for deployment to verified-skill.com"
 
 # Push
 git push origin features/002-core-enhancements
@@ -128,7 +128,7 @@ git push origin features/002-core-enhancements
 After pushing, Cloudflare Pages will:
 1. Detect the push via webhook
 2. Run build command
-3. Deploy to https://spec-weave.com
+3. Deploy to https://verified-skill.com
 4. Complete in ~2 minutes
 
 Check deployment status:
@@ -287,15 +287,15 @@ Some internal links in `.specweave/docs/public/` reference files outside the pub
 
 ### Cloudflare Configuration
 I need you to:
-1. **Confirm your Cloudflare account has access** to spec-weave.com domain
+1. **Confirm your Cloudflare account has access** to verified-skill.com domain
 2. **Decide on deployment method**:
    - Option A: Git integration (recommended, no secrets needed)
    - Option B: GitHub Actions + API (more control, requires secrets)
 
 ### Domain Configuration
 I need to know:
-1. **Is spec-weave.com already configured** in Cloudflare?
-2. **Do you want www.spec-weave.com** as well?
+1. **Is verified-skill.com already configured** in Cloudflare?
+2. **Do you want www.verified-skill.com** as well?
 3. **Any DNS records** to preserve?
 
 ### Customization Preferences
@@ -313,10 +313,10 @@ Before deploying to production:
 - [ ] Review landing page content
 - [ ] Check all navigation links
 - [ ] Configure Cloudflare Pages (Step 2)
-- [ ] Set up custom domain (spec-weave.com)
+- [ ] Set up custom domain (verified-skill.com)
 - [ ] Push to GitHub
 - [ ] Verify deployment in Cloudflare Dashboard
-- [ ] Test production site at https://spec-weave.com
+- [ ] Test production site at https://verified-skill.com
 - [ ] (Optional) Set up GitHub Secrets for Actions
 - [ ] (Optional) Enable Algolia search
 - [ ] (Optional) Add custom logo/favicon
@@ -337,7 +337,7 @@ Before deploying to production:
 
 ## 🎉 Ready to Deploy!
 
-Your documentation site is **production-ready** and can be deployed to **spec-weave.com** right now!
+Your documentation site is **production-ready** and can be deployed to **verified-skill.com** right now!
 
 **What I built for you**:
 - ✅ Beautiful landing page (react-native.dev style)
@@ -352,6 +352,6 @@ Your documentation site is **production-ready** and can be deployed to **spec-we
 1. Review the site locally: `cd docs-site && npm start`
 2. Configure Cloudflare Pages (5 minutes)
 3. Push to GitHub
-4. Site goes live at https://spec-weave.com! 🚀
+4. Site goes live at https://verified-skill.com! 🚀
 
 **Questions?** Let me know what you need clarified or customized!

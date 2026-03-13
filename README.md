@@ -17,6 +17,24 @@ npm install -g specweave   # Requires Node.js 20.12.0+
 
 ---
 
+## The Problem No Tool Solved
+
+Multi-repository microservices in brownfield codebases — this is the reality for most enterprise teams. Dozens of repos, years of undocumented decisions, existing systems that must be extended and maintained, not replaced.
+
+AI coding tools weren't built for this. They're designed for greenfield, single-repo demos. Cross into enterprise brownfield territory and they fall apart: standards vanish between sessions, parallel agents have no coordination layer, and there's no way to enforce a process consistently across a team.
+
+Nothing on the market solved this. So SpecWeave was built — open source, born from the same frustration.
+
+**Two design decisions make it work:**
+
+**Deterministic configuration** — your standards encoded in version-controlled files. `.specweave/config.json` defines how AI behaves in your project. Every increment carries `metadata.json`, `spec.md`, `plan.md`, `tasks.md`. This is configuration, not prompting — reproducible, auditable, enforced identically for every developer, every agent, every session.
+
+**Context-aware routing** — describe what you want in natural language. SpecWeave reads context and activates the right skill automatically: PM agent for planning, Architect for design, TDD cycle for implementation, Grill for review. No orchestration overhead. No manual tool selection.
+
+This combination makes structured AI development practical at the scale and complexity of real enterprise systems — not just demo apps.
+
+---
+
 ## No Commands to Memorize
 
 SpecWeave is not a workflow you switch into. It is a behavior layer that changes how your AI works — installed once, active in every conversation.
@@ -112,7 +130,7 @@ You: "Migrate the checkout page to React"
 
 ## What Are Skills?
 
-**Skills are programs written in English** — not prompts, not templates, but reusable logic that controls how AI thinks, decides, and acts.
+**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.** Each skill packages domain expertise: patterns, rules, and examples that make AI produce consistent, production-grade output instead of generic guesses.
 
 ```
 Without SpecWeave:                          With SpecWeave:
@@ -123,7 +141,7 @@ Without SpecWeave:                          With SpecWeave:
 "Wait, I told you this yesterday..."        → Fix once, learned permanently.
 ```
 
-Each skill is a **programmable AI behavior** you can customize without forking. Fix once, remembered permanently. 100+ skills ship out of the box — PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML.
+100+ skills ship out of the box — PM, Architect, QA, Security, DevOps, Frontend, Backend, Mobile, ML. Every skill is customizable without forking: write corrections once in `skill-memories/`, and they apply forever across every session and every agent.
 
 **You don't need to learn Claude Code docs.** SpecWeave handles hooks, plugins, CLAUDE.md, and context management for you. Install, describe your feature, skills do the rest.
 
@@ -192,7 +210,7 @@ iTerm2 / tmux split panes:
 
 `/sw:team-lead "feature"` splits work → each agent runs `/sw:auto` → quality gates ensure consistency → progress syncs to GitHub/JIRA.
 
-**[Full agent teams guide](https://spec-weave.com/docs/guides/agent-teams-and-swarms)**
+**[Full agent teams guide](https://verified-skill.com/docs/guides/agent-teams-and-swarms)**
 
 ---
 
@@ -206,7 +224,7 @@ SpecWeave is built for the reality of enterprise development.
 - **External sync** — GitHub Issues, JIRA, Azure DevOps — bidirectional, real-time. Local-first, works offline.
 - **Multi-environment** — dev, QA, staging, UAT, production deployment pipelines.
 
-**[Enterprise documentation](https://spec-weave.com/docs/enterprise)**
+**[Enterprise documentation](https://verified-skill.com/docs/enterprise)**
 
 ---
 
@@ -236,7 +254,7 @@ specweave lsp def src/cli/commands/init.ts init   # Go to definition
 specweave lsp hover src/core/config.ts Config     # Type information
 ```
 
-**[LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
+**[LSP documentation](https://verified-skill.com/docs/guides/lsp-code-intelligence)**
 
 ---
 
@@ -270,7 +288,7 @@ Claude: *automatically uses React Hook Form + Zod*
 /sw:reflect-status   # See what Claude has learned
 ```
 
-**[Skills deep dive](https://spec-weave.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://spec-weave.com/docs/guides/skill-development-guidelines)**
+**[Skills deep dive](https://verified-skill.com/docs/overview/skills-as-programs)** | **[Skill development guidelines](https://verified-skill.com/docs/guides/skill-development-guidelines)**
 
 ---
 
@@ -295,7 +313,7 @@ You: "Add dark mode to the app"
 → SpecWeave creates spec, plans architecture, builds it autonomously.
 ```
 
-> **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
+> **Node.js 20.12.0+** required (22 LTS recommended). Getting `SyntaxError`? [Upgrade instructions](https://verified-skill.com/docs/guides/troubleshooting/common-errors#node-version-error).
 
 **Plugin Installation**: SpecWeave detects which plugins your project needs and suggests them with install commands, but never auto-installs without your consent. To opt into automatic installation, set `"pluginAutoLoad": { "suggestOnly": false }` in `.specweave/config.json`.
 
@@ -315,7 +333,7 @@ These run automatically from natural language — see the table above. Use direc
 | `/sw:progress-sync` | Push to GitHub / JIRA / ADO | "Sync progress" |
 | `/sw:next` | Auto-close + suggest next | "What's next?" |
 
-**[Full command reference](https://spec-weave.com/docs/commands/overview)**
+**[Full command reference](https://verified-skill.com/docs/commands/overview)**
 
 ---
 
@@ -375,7 +393,7 @@ specweave dashboard
 
 All analytics data stays local in `.specweave/state/analytics/events.jsonl` — nothing is sent externally.
 
-**[Analytics dashboard guide](https://spec-weave.com/docs/guides/analytics-dashboard)**
+**[Analytics dashboard guide](https://verified-skill.com/docs/guides/analytics-dashboard)**
 
 ---
 
@@ -389,7 +407,7 @@ All analytics data stays local in `.specweave/state/analytics/events.jsonl` — 
 
 ## Documentation
 
-**[spec-weave.com](https://spec-weave.com)** — guides, examples, and full reference.
+**[verified-skill.com](https://verified-skill.com)** — guides, examples, and full reference.
 
 ## Troubleshooting
 

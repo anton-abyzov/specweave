@@ -20,7 +20,7 @@ To qualify for free DocSearch, your site must:
 - ✅ **Have meaningful content** (not just placeholder pages)
 
 **SpecWeave qualifies** because:
-- Public documentation at spec-weave.com
+- Public documentation at verified-skill.com
 - Open-source project (MIT license)
 - Official documentation site
 - Comprehensive content (guides, API docs, glossary, etc.)
@@ -35,7 +35,7 @@ Fill out the application form with:
 
 | Field | Value for SpecWeave |
 |-------|---------------------|
-| **Website URL** | https://spec-weave.com |
+| **Website URL** | https://verified-skill.com |
 | **Email** | [your-email@domain.com] |
 | **Repository** | https://github.com/anton-abyzov/specweave |
 | **Description** | Autonomous AI agents for production software - spec-driven development framework with intelligent model selection, living documentation, and multi-project support |

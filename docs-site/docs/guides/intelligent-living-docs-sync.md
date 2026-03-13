@@ -774,7 +774,7 @@ A: Fast! ~10-50ms to parse, classify, and distribute. Async (non-blocking).
 
 ## Support
 
-**Documentation**: https://spec-weave.com/docs/intelligent-living-docs-sync
+**Documentation**: https://verified-skill.com/docs/intelligent-living-docs-sync
 **Issues**: https://github.com/anton-abyzov/specweave/issues
 **Discussions**: https://github.com/anton-abyzov/specweave/discussions
 

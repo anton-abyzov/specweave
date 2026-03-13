@@ -40,7 +40,7 @@ flowchart LR
 
 ## Skills — The Building Block
 
-A skill is a **markdown file** (`SKILL.md`) that tells Claude what to do. It's a detailed playbook written in markdown.
+**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.** It's a detailed playbook written in markdown.
 
 ### Where Skills Live
 

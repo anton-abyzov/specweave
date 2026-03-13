@@ -17,13 +17,15 @@ A video walkthrough of these concepts is coming soon. Subscribe to the [SpecWeav
 
 ## What is a Skill?
 
+**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.**
+
 The core insight: **same prompt, dramatically different quality.**
 
 Without a skill, the AI produces generic output that looks like every other AI-generated code. With a skill, the AI produces output that's unique, polished, and production-grade — because it knows your domain.
 
 ![What is a Skill? — Before/after comparison showing generic output vs production-grade output](/img/skills/what-is-a-skill.svg)
 
-A skill is a structured set of instructions that tells the AI _how_ to work in your specific domain. It's not just a better prompt — it's formalized expertise that produces consistent results every time.
+Each skill packages domain expertise — patterns, rules, and examples — that the AI draws from every time it's active. Not just a better prompt: formalized knowledge that produces consistent results, session after session.
 
 ## How Skills Work
 

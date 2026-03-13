@@ -354,6 +354,6 @@ specweave context projects
 |----------|---------|
 | CLAUDE.md | Quick reference (Claude Code) |
 | AGENTS.md | This file (all AI tools) |
-| spec-weave.com | Official documentation |
+| verified-skill.com | Official documentation |
 | .specweave/docs/ | Project-specific docs |
 <!-- SW:END:docs -->

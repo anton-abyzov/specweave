@@ -130,7 +130,7 @@
       "header": "🎯 Следующие шаги:",
       "cd": "cd {{projectName}}",
       "footer": "🚀 Готов к разработке с SpecWeave!",
-      "docsLink": "Документация: https://spec-weave.com",
+      "docsLink": "Документация: https://verified-skill.com",
       "githubLink": "GitHub: https://github.com/anton-abyzov/specweave",
       "claude": {
         "step1": "Откройте Claude Code в этой директории",

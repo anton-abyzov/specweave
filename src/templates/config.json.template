@@ -1,5 +1,5 @@
 {
-  "$schema": "https://spec-weave.com/schemas/config.json",
+  "$schema": "https://verified-skill.com/schemas/config.json",
   "version": "2.0",
   "hooks": {
     "post_task_completion": {

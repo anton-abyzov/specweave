@@ -225,7 +225,7 @@ export async function installLocalLspPlugin(projectDir: string): Promise<boolean
     description: 'Auto-configured LSP servers for code intelligence',
     author: {
       name: 'SpecWeave',
-      url: 'https://spec-weave.com',
+      url: 'https://verified-skill.com',
     },
     keywords: ['lsp', 'code-intelligence'],
   };

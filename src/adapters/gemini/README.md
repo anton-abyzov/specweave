@@ -88,7 +88,7 @@ gemini "Read spec.md, plan.md, tasks.md from increment 0001, then implement T001
 
 - [Gemini CLI Documentation](https://developers.google.com/gemini-code-assist/docs/gemini-cli)
 - [GitHub Repository](https://github.com/google-gemini/gemini-cli)
-- [SpecWeave Website](https://spec-weave.com)
+- [SpecWeave Website](https://verified-skill.com)
 
 ---
 

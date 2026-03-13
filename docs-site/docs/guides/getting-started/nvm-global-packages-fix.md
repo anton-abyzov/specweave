@@ -248,4 +248,4 @@ cat ~/.nvm-global-packages.txt | xargs npm install -g
 
 ---
 
-**Share this guide**: [spec-weave.com/guides/nvm-global-packages-fix](https://spec-weave.com/guides/getting-started/nvm-global-packages-fix)
+**Share this guide**: [verified-skill.com/guides/nvm-global-packages-fix](https://verified-skill.com/guides/getting-started/nvm-global-packages-fix)

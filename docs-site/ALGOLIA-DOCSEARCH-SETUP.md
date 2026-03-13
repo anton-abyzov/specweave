@@ -30,7 +30,7 @@ Provide the following information:
 
 | Field | Value for SpecWeave |
 |-------|---------------------|
-| **Website URL** | `https://spec-weave.com` |
+| **Website URL** | `https://verified-skill.com` |
 | **Email** | Your maintainer email (GitHub-associated) |
 | **Repository URL** | `https://github.com/anton-abyzov/specweave` |
 | **Description** | Spec-driven development framework with autonomous AI agents |

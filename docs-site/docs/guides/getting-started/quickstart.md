@@ -12,6 +12,8 @@ specweave init .
 
 **That's it.** SpecWeave is ready.
 
+> **Built for the problem most AI tools ignore**: multi-repository microservices in brownfield codebases. Deterministic configuration (your standards in version-controlled files) combined with context-aware routing (describe what you want — the right skill activates automatically) makes structured AI development practical at enterprise scale.
+
 ---
 
 ## Your First Feature (2 minutes)
@@ -130,7 +132,7 @@ specweave lsp hover src/file.ts SymbolName   # Type information
 
 LSP activates automatically for supported languages. No configuration needed.
 
-**[Full LSP documentation](https://spec-weave.com/docs/guides/lsp-code-intelligence)**
+**[Full LSP documentation](https://verified-skill.com/docs/guides/lsp-code-intelligence)**
 
 ---
 
@@ -182,7 +184,9 @@ Stripe payments, deployed on Hetzner Cloud"
 
 ## Joining an Existing Project (Brownfield)
 
-If you're working with legacy code, SpecWeave can analyze your codebase for documentation gaps:
+**This is what SpecWeave was built for.** Multi-repository microservices, years of undocumented decisions, existing systems that need extending — not replacing. No other tool on the market addressed this gap. SpecWeave was created specifically because nothing else worked for real enterprise brownfield development.
+
+SpecWeave analyzes your codebase, surfaces documentation gaps, and keeps your specs in sync as code evolves:
 
 ```bash
 specweave init .

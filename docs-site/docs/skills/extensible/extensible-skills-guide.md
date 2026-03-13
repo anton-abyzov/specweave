@@ -293,7 +293,7 @@ Yes. The `.claude/skill-memories/` and `~/.claude/skill-memories/` paths work wi
 
 ## Resources
 
-- **Documentation**: https://spec-weave.com
+- **Documentation**: https://verified-skill.com
 - **GitHub**: https://github.com/specweave/specweave
 - **Discord**: https://discord.gg/UYg4BGJ65V
 - **Twitter**: [@aabyzov](https://x.com/aabyzov)

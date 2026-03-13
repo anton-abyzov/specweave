@@ -1,14 +1,14 @@
 ---
 sidebar_position: 2
 title: "Skills Are Structured Expertise"
-description: "SpecWeave skills are reusable, extensible structured markdown instructions — not prompts, not templates, but programmable AI behavior."
+description: "A skill is a SKILL.md file with instructions — Claude adds it to its toolkit and uses it when relevant, or you invoke it with /skill-name."
 ---
 
 # Skills Are Structured Expertise
 
 Most AI coding tools give you prompts. SpecWeave gives you **structured expertise**.
 
-A SpecWeave skill is a structured document that controls how AI thinks, decides, and acts. It has logic, conditions, extension points, and memory. It runs the same way every time — but you can customize it without touching the source.
+**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.** Each skill packages domain knowledge: patterns, rules, and examples that make AI produce consistent, production-grade output instead of generic guesses. It runs the same way every time — but you can customize it without touching the source.
 
 ## What Makes a Skill Different from a Prompt?
 

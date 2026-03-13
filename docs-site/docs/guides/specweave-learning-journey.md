@@ -1659,7 +1659,7 @@ It will guide you through the entire cycle.
 
 ## Resources
 
-- **Documentation**: [spec-weave.com](https://spec-weave.com)
+- **Documentation**: [verified-skill.com](https://verified-skill.com)
 - **Discord**: [discord.gg/UYg4BGJ65V](https://discord.gg/UYg4BGJ65V)
 - **YouTube**: [@antonabyzov](https://www.youtube.com/@antonabyzov)
 - **GitHub**: [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)

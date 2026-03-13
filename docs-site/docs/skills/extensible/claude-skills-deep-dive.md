@@ -14,9 +14,9 @@ This guide explains how Claude Code Skills work, their architecture, and how the
 
 ## What Are Skills?
 
-**Skills are organized folders that package expertise that Claude can automatically invoke when relevant to the task at hand.**
+**A skill is a `SKILL.md` file with instructions — Claude adds it to its toolkit, uses it automatically when relevant, or you invoke it directly with `/skill-name`.**
 
-Think of skills as domain experts that Claude can consult. Unlike general knowledge, skills provide specialized expertise for specific domains, frameworks, or workflows.
+Each skill packages domain expertise for a specific area, framework, or workflow. Think of skills as domain experts Claude can consult on demand: unlike general knowledge, they provide specialized, repeatable guidance that produces consistent results.
 
 ### Key Characteristics
 

@@ -438,6 +438,6 @@ Description of what needs to be done.
 
 ## Resources
 
-- [SpecWeave Documentation](https://spec-weave.com)
+- [SpecWeave Documentation](https://verified-skill.com)
 - [GitHub Repository](https://github.com/anton-abyzov/specweave)
-- [Auto Mode Documentation](https://spec-weave.com/docs/commands/auto)
+- [Auto Mode Documentation](https://verified-skill.com/docs/commands/auto)
