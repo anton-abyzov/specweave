@@ -290,7 +290,11 @@ export function installPlugin(
     return { success: false, sha: '', error: `Source dir not found: ${sourceDir}` };
   }
 
-  // 3. Compute hash and check lockfile
+  // 3. Always ensure marketplace is registered (idempotent — must run even when hash is
+  //    unchanged, so that known_marketplaces.json is repaired after Claude Code resets).
+  execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
+
+  // 4. Compute hash and check lockfile
   const sha = computePluginHash(sourceDir);
   const lockDir = getProjectRoot();
   const lock = ensureLockfile(lockDir);
@@ -298,9 +302,6 @@ export function installPlugin(
   if (!options.force && lock.skills[pluginName]?.sha === sha) {
     return { success: true, sha, skipped: true };
   }
-
-  // 4. Register marketplace with Claude CLI
-  execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
 
   // 5. Install via Claude Code's native plugin system (scope per plugin-scope config)
   const scope = getPluginScope(pluginName, 'specweave');

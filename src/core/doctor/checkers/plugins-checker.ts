@@ -12,6 +12,11 @@ import type {
   DoctorOptions,
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
+import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
+import { findSpecweaveRoot } from '../../../utils/plugin-copier.js';
+import { getDirname } from '../../../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 interface PluginsCheckerOptions {
   homeDir?: string;
@@ -145,91 +150,107 @@ export class PluginsChecker implements HealthChecker {
     }
   }
 
-  private checkMarketplaceDirectory(_fix: boolean): CheckResult {
-    const marketplaceDir = path.join(
-      this.homeDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave'
+  private checkMarketplaceDirectory(fix: boolean): CheckResult {
+    const knownMarketplacesPath = path.join(
+      this.homeDir, '.claude', 'plugins', 'known_marketplaces.json'
     );
 
-    if (!fs.existsSync(marketplaceDir)) {
-      return {
-        name: 'SpecWeave marketplace',
-        status: 'warn',
-        message: 'not installed',
-        fixSuggestion:
-          'Run: claude plugin marketplace add specweave/specweave-plugins',
-      };
+    let isRegistered = false;
+    try {
+      const content = fs.readFileSync(knownMarketplacesPath, 'utf8');
+      const marketplaces = JSON.parse(content);
+      isRegistered = 'specweave' in marketplaces;
+    } catch {
+      isRegistered = false;
     }
 
-    try {
-      const pluginsDir = path.join(marketplaceDir, 'plugins');
-      if (!fs.existsSync(pluginsDir)) {
-        return {
-          name: 'SpecWeave marketplace',
-          status: 'warn',
-          message: 'installed but empty',
-          fixSuggestion: 'Run: specweave update',
-        };
-      }
-
-      const plugins = fs.readdirSync(pluginsDir);
+    if (isRegistered) {
       return {
         name: 'SpecWeave marketplace',
         status: 'pass',
-        message: `${plugins.length} plugin(s) available`,
-      };
-    } catch {
-      return {
-        name: 'SpecWeave marketplace',
-        status: 'warn',
-        message: 'could not read marketplace',
+        message: 'registered in Claude Code',
       };
     }
-  }
 
-  private checkCorePlugin(_fix: boolean): CheckResult {
-    const corePluginDir = path.join(
-      this.homeDir,
-      '.claude',
-      'plugins',
-      'marketplaces',
-      'specweave',
-      'plugins',
-      'specweave'
-    );
-
-    if (!fs.existsSync(corePluginDir)) {
+    if (fix) {
+      const specweaveRoot = findSpecweaveRoot(__dirname);
+      if (specweaveRoot) {
+        const result = execFileNoThrowSync(
+          'claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 }
+        );
+        if (result.success) {
+          return {
+            name: 'SpecWeave marketplace',
+            status: 'warn',
+            message: 're-registered (was missing)',
+            fixSuggestion: 'Marketplace re-registered successfully',
+          };
+        }
+      }
       return {
-        name: 'Core plugin (sw)',
-        status: 'warn',
-        message: 'not installed',
+        name: 'SpecWeave marketplace',
+        status: 'fail',
+        message: 'not registered, fix failed',
         fixSuggestion: 'Run: specweave update',
       };
     }
 
-    // Check for essential files
-    const skillsDir = path.join(corePluginDir, 'skills');
-    const commandsDir = path.join(corePluginDir, 'commands');
+    return {
+      name: 'SpecWeave marketplace',
+      status: 'warn',
+      message: 'not registered in Claude Code',
+      fixSuggestion: 'Run: specweave doctor --fix (or specweave update)',
+    };
+  }
 
-    const hasSkills = fs.existsSync(skillsDir);
-    const hasCommands = fs.existsSync(commandsDir);
+  private checkCorePlugin(fix: boolean): CheckResult {
+    const installedPluginsPath = path.join(
+      this.homeDir, '.claude', 'plugins', 'installed_plugins.json'
+    );
 
-    if (!hasSkills && !hasCommands) {
+    let isInstalled = false;
+    try {
+      const content = fs.readFileSync(installedPluginsPath, 'utf8');
+      const data = JSON.parse(content);
+      const plugins = data.plugins ?? data;
+      isInstalled = 'sw@specweave' in plugins;
+    } catch {
+      isInstalled = false;
+    }
+
+    if (isInstalled) {
+      return {
+        name: 'Core plugin (sw)',
+        status: 'pass',
+        message: 'installed',
+      };
+    }
+
+    if (fix) {
+      const result = execFileNoThrowSync(
+        'claude', ['plugin', 'install', 'sw@specweave'], { timeout: 15_000 }
+      );
+      if (result.success) {
+        return {
+          name: 'Core plugin (sw)',
+          status: 'warn',
+          message: 'installed (was missing)',
+          fixSuggestion: 'Installed sw@specweave successfully',
+        };
+      }
       return {
         name: 'Core plugin (sw)',
         status: 'fail',
-        message: 'incomplete installation',
+        message: 'not installed, fix failed',
         fixSuggestion: 'Run: specweave update',
       };
     }
 
     return {
       name: 'Core plugin (sw)',
-      status: 'pass',
-      message: 'installed',
+      status: 'warn',
+      message: 'not installed',
+      fixSuggestion: 'Run: specweave doctor --fix (or specweave update)',
     };
   }
 }
