@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.439] - 2026-03-13
+
+### Changes
+- chore: update vendor build artifacts for pr-based metadata types
+- add pr-based push strategy with sw:pr skill and branch automation
+
+---
+
+
+
 ## [1.0.438] - 2026-03-12
 
 ### Changes
