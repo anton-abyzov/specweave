@@ -19,6 +19,7 @@ import * as fs from '../../utils/fs-native.js';
 import { appendFileSync } from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
+import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
  * Judge verdict levels
@@ -280,7 +281,7 @@ export class SkillJudge {
     this.timeout_ms = options?.timeout_ms ?? 60000;  // 60s default
     this.verbose = options?.verbose ?? false;
     this.model = options?.model ?? 'opus';  // Use generic model name
-    this.projectRoot = options?.projectRoot ?? process.cwd();
+    this.projectRoot = options?.projectRoot ?? resolveEffectiveRoot();
 
     // Default log path
     this.logPath = options?.logFile ??
