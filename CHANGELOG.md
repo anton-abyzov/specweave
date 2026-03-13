@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.447] - 2026-03-13
+
+### Changes
+- fix: tighten SSH regex, add cloneUrl guard, add tilde test
+- chore: bump version to 1.0.446
+- test(get): add 46 unit tests + fix 8 edge cases found in grill
+- chore: sync docs and skills
+- chore: bump version to 1.0.445
+- feat: add specweave get command — clone and register existing repos into workspace
+
+---
+
+
+
 ## [1.0.446] - 2026-03-13
 
 ### Changes
