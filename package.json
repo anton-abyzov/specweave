@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "1.0.440",
+  "version": "1.0.441",
   "description": "AI-assisted development, under control. Configure your standards once — spec-first, TDD, quality gates — and every AI interaction enforces them automatically. Works with Claude Code, Cursor, Copilot, Codex & more.",
   "type": "module",
   "main": "dist/index.js",
