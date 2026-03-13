@@ -161,6 +161,6 @@ Docs: AGENTS.md, .cursor/README.md
    * Get installed plugins for Cursor by scanning `.cursor/rules/`.
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.cursor/rules');
+    return await this.listInstalledPluginsInDir('.cursor/rules');
   }
 }

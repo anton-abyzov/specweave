@@ -90,7 +90,7 @@ export class CopilotAdapter extends AdapterBase {
    * Get list of installed plugins for GitHub Copilot
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.github/instructions');
+    return await this.listInstalledPluginsInDir('.github/instructions');
   }
 
   /**

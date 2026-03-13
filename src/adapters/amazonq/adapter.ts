@@ -48,7 +48,7 @@ export class AmazonQAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.amazonq/rules');
+    return await this.listInstalledPluginsInDir('.amazonq/rules');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
