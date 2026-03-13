@@ -50,7 +50,7 @@ STEP 1:  Pre-flight (TDD mode, multi-project, Deep Interview check)
 STEP 2:  Project Context (resolve project/board)
 STEP 3:  Create Increment (via Template API) ← folder + ID exist after this
 STEP 3a: Deep Interview (if enabled) ← runs AFTER folder exists
-STEP 4:  Delegation (architect + test-aware-planner)
+STEP 4:  Delegation (architect + planner)
 STEP 5:  Post-Creation Sync
 STEP 6:  Execution Strategy Recommendation
 ```

@@ -17,7 +17,7 @@ description: Generate plan.md and tasks.md for increment. Use when saying "creat
 
 ---
 
-Generate `plan.md` and `tasks.md` for an increment using Architect Agent and test-aware-planner.
+Generate `plan.md` and `tasks.md` for an increment using Architect Agent.
 
 ## Usage
 
@@ -68,7 +68,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
    - Dependencies
    - Risk assessment
 
-4. **Generate tasks.md** (via test-aware-planner):
+4. **Generate tasks.md**:
    - Checkable task list
    - Embedded test plans (BDD format)
    - Coverage targets
@@ -227,7 +227,7 @@ Planning for framework features requires different considerations than user apps
 - `IncrementDetector`: Auto-detect or validate increment
 - `PlanValidator`: Validate pre-conditions
 - `ArchitectAgentInvoker`: Generate plan.md via Architect Agent
-- `TaskGeneratorInvoker`: Generate tasks.md via test-aware-planner
+- `TaskGeneratorInvoker`: Generate tasks.md with BDD test plans
 - `PlanCommandOrchestrator`: Coordinate execution pipeline
 
 **State transitions**:
