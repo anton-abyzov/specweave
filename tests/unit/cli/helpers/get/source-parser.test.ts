@@ -111,6 +111,14 @@ describe('parseSource', () => {
       const result = parseSource('./my-repo/');
       expect(result.repo).toBe('my-repo');
     });
+
+    it('expands tilde to home directory', () => {
+      const result = parseSource('~/my-repo');
+      expect(result.type).toBe('local');
+      expect(result.repo).toBe('my-repo');
+      expect(result.absolutePath).not.toContain('~');
+      expect(result.absolutePath).toMatch(/^\/.*\/my-repo$/);
+    });
   });
 
   describe('shorthand takes priority over local fs check', () => {

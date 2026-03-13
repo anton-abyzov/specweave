@@ -68,7 +68,11 @@ export async function cloneRepo(
     );
   }
 
-  const args = ['clone', source.cloneUrl!, repoName];
+  if (!source.cloneUrl) {
+    throw new Error('Cannot clone: no clone URL provided (local sources should not reach cloneRepo)');
+  }
+
+  const args = ['clone', source.cloneUrl, repoName];
   if (options.branch) {
     args.push('--branch', options.branch);
   }
