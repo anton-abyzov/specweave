@@ -1596,7 +1596,7 @@ Deepen your understanding of key concepts:
 4. **Join the Community**
    - [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
    - [Discord Community](https://discord.gg/specweave)
-   - [Documentation](https://spec-weave.com)
+   - [Documentation](https://verified-skill.com)
 
 ### Additional Resources
 

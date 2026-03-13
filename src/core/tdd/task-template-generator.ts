@@ -5,7 +5,7 @@
  * or standard implementation-first tasks for other modes.
  *
  * @module tdd/task-template-generator
- * @see {@link https://spec-weave.com/docs/tdd} TDD Documentation
+ * @see {@link https://verified-skill.com/docs/tdd} TDD Documentation
  */
 
 import type {

@@ -304,6 +304,6 @@ git commit -m "feat: add Claude settings for auto-marketplace registration"
 
 ## Support
 
-- **Docs**: https://spec-weave.com
+- **Docs**: https://verified-skill.com
 - **GitHub**: https://github.com/anton-abyzov/specweave
 - **Issues**: https://github.com/anton-abyzov/specweave/issues

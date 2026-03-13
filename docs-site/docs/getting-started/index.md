@@ -194,7 +194,7 @@ Then restart Claude Code.
 
 ## Community
 
-- **[Documentation](https://spec-weave.com)** — Full guides and tutorials
+- **[Documentation](https://verified-skill.com)** — Full guides and tutorials
 - **[Discord](https://discord.gg/UYg4BGJ65V)** — Get help, share tips
 - **[YouTube](https://www.youtube.com/@antonabyzov)** — Video tutorials
 - **[GitHub](https://github.com/anton-abyzov/specweave)** — Star the repo, contribute

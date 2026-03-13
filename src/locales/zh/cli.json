@@ -130,7 +130,7 @@
       "header": "🎯 后续步骤：",
       "cd": "cd {{projectName}}",
       "footer": "🚀 准备好使用 SpecWeave 构建了！",
-      "docsLink": "文档：https://spec-weave.com",
+      "docsLink": "文档：https://verified-skill.com",
       "githubLink": "GitHub：https://github.com/anton-abyzov/specweave",
       "claude": {
         "step1": "在此目录中打开 Claude Code",

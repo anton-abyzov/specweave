@@ -680,6 +680,6 @@ jobs:
 
 ## 🆘 Getting Help
 
-- **Documentation**: https://spec-weave.com
+- **Documentation**: https://verified-skill.com
 - **GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
-- **Enterprise Support**: enterprise@spec-weave.com
+- **Enterprise Support**: enterprise@verified-skill.com

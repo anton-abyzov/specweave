@@ -479,9 +479,9 @@ specweave generate-migration-plan \
 ## Expert Support Available
 
 ### Free Resources
-- 📺 [Video: 10 Steps to Microservices](https://spec-weave.com/tutorials)
-- 📚 [E-Book: Microservices Migration Guide](https://spec-weave.com/ebook)
-- 💬 [Community Slack](https://spec-weave.com/slack)
+- 📺 [Video: 10 Steps to Microservices](https://verified-skill.com/tutorials)
+- 📚 [E-Book: Microservices Migration Guide](https://verified-skill.com/ebook)
+- 💬 [Community Slack](https://verified-skill.com/slack)
 
 ### Professional Services
 - **Assessment**: 2-week deep dive analysis ($25k)
@@ -493,4 +493,4 @@ specweave generate-migration-plan \
 
 ---
 
-*Ready to break free from your monolith? [Start your free trial](https://spec-weave.com/start) or [book a consultation](https://spec-weave.com/enterprise) with our migration experts.*
+*Ready to break free from your monolith? [Start your free trial](https://verified-skill.com/start) or [book a consultation](https://verified-skill.com/enterprise) with our migration experts.*

@@ -129,7 +129,7 @@ I've added comprehensive guides to SpecWeave documentation:
 - Updated installation guide with this warning
 
 Once SpecWeave docs are published, you'll find them at:
-`https://spec-weave.com/guides/getting-started/nvm-global-packages-fix`
+`https://verified-skill.com/guides/getting-started/nvm-global-packages-fix`
 
 ---
 

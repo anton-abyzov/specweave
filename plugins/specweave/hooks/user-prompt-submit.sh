@@ -666,7 +666,7 @@ if [[ -f "$LSP_STATE_FILE" ]] && command -v jq >/dev/null 2>&1; then
     MISSING_SERVERS=$(jq -r '.missing[] | "- **\(.language)**: `\(.install)`"' "$LSP_STATE_FILE" 2>/dev/null)
 
     if [[ -n "$MISSING_SERVERS" ]]; then
-      LSP_WARNING_MSG="LSP missing: ${MISSING_SERVERS}. Install for semantic code intelligence. Guide: https://spec-weave.com/docs/guides/lsp-integration
+      LSP_WARNING_MSG="LSP missing: ${MISSING_SERVERS}. Install for semantic code intelligence. Guide: https://verified-skill.com/docs/guides/lsp-integration
 
 "
       # Mark as warned so we don't show again this session

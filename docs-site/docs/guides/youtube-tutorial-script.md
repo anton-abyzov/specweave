@@ -1,7 +1,7 @@
 ---
 sidebar_position: 99
 title: YouTube Tutorial Script
-description: Video script for SpecWeave introduction tutorial - comprehensive walkthrough of spec-weave.com
+description: Video script for SpecWeave introduction tutorial - comprehensive walkthrough of verified-skill.com
 draft: true
 ---
 
@@ -106,7 +106,7 @@ draft: true
 >
 > You could automate your YouTube publishing pipeline, your content calendar, your weekly knowledge reviews. If you can describe acceptance criteria for it, SpecWeave can coordinate AI to deliver it.
 >
-> Full guide at spec-weave.com — link in the description.
+> Full guide at verified-skill.com — link in the description.
 >
 > But for this video, let's focus on the core developer workflow. That's where the foundation is."
 
@@ -118,7 +118,7 @@ draft: true
 
 ## SECTION 1: WHAT IS SPECWEAVE (2:30 - 4:30)
 
-**[SCREEN: Navigate to spec-weave.com homepage]**
+**[SCREEN: Navigate to verified-skill.com homepage]**
 
 > "SpecWeave is the spec-driven Skill Fabric for AI coding agents. And the key idea is this: **skills are structured markdown instructions**.
 >
@@ -2075,7 +2075,7 @@ wrangler deploy
 >
 > OpenClaw handles the social media identity — the voice, the persona, the posting schedule. SpecWeave handles the workflow structure — what to post, when to analyze, how to iterate. Together, they turn social media growth into a managed, reproducible process instead of a guessing game.
 >
-> We have a full Life Automation guide at spec-weave.com covering Obsidian automation, internet research, rapid prototyping, publishing workflows, social media growth, and more. Link in the description.
+> We have a full Life Automation guide at verified-skill.com covering Obsidian automation, internet research, rapid prototyping, publishing workflows, social media growth, and more. Link in the description.
 >
 > And the beautiful part? Quality gates work the same way for all of it."
 
@@ -2306,7 +2306,7 @@ cat plugins/specweave/hooks/user-prompt-submit.sh  # See what hooks execute
 >
 > Why does this matter? Because prompt injection attacks often come THROUGH skills and plugins. A framework that can silently install software can silently install malware. SpecWeave skills are 100% open source markdown — you can literally `cat` any skill file and read every instruction. No compiled code. No binaries. No black boxes.
 >
-> We have a full security guide at spec-weave.com/docs/guides/agent-security-best-practices — covers prompt injection, plugin vetting, credential management, container isolation, the consent model, and a pre-flight checklist for agent swarms.
+> We have a full security guide at verified-skill.com/docs/guides/agent-security-best-practices — covers prompt injection, plugin vetting, credential management, container isolation, the consent model, and a pre-flight checklist for agent swarms.
 >
 > The bottom line: agent swarms are incredibly powerful. But power without safety is recklessness. Take the five minutes to vet your tools, scope your credentials, and review your diffs. The speed you gain from parallel agents means nothing if one of them leaks your production database credentials."
 
@@ -2884,7 +2884,7 @@ specweave init .
 
 > "Resources to help you:
 >
-> - **Documentation**: spec-weave.com — everything we covered today and more
+> - **Documentation**: verified-skill.com — everything we covered today and more
 > - **Discord**: Link in description — ask questions, share wins, get help
 > - **GitHub**: Star the repo, report issues, contribute
 > - **Academy**: 16 lessons from beginner to expert"
@@ -2927,7 +2927,7 @@ specweave init .
 │    100+ skills | Agent swarms | Zero config                 │
 │    Powered by Claude Opus 4.6 & Sonnet 4.6                 │
 │                                                              │
-│    spec-weave.com                                           │
+│    verified-skill.com                                           │
 │    discord.gg/UYg4BGJ65V                                    │
 │    github.com/anton-abyzov/specweave                        │
 │                                                              │
@@ -2956,7 +2956,7 @@ specweave init .
 >
 > And one more thing — you don't have to be a professional developer to use this. If you do knowledge work, research, content creation, personal automation — SpecWeave works for all of it. If you can describe what you want in a spec, SpecWeave can coordinate AI to build it.
 >
-> Check out our Life Automation guide at spec-weave.com for concrete examples. Link in the description.
+> Check out our Life Automation guide at verified-skill.com for concrete examples. Link in the description.
 >
 > Install SpecWeave today. Describe your first feature. Go to sleep. Review in the morning.
 >
@@ -3111,7 +3111,7 @@ specweave init .
 7. **Auto mode flow**: Pick → Execute → Test → Pass? → Mark Complete loop (38:30)
 8. **Bidirectional sync**: SpecWeave ↔ GitHub/JIRA two-way arrows (47:30)
 9. **DORA metrics**: Four quadrant diagram with Elite tier thresholds (55:30)
-10. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (61:30)
+10. **Outro slide**: SpecWeave logo + links (verified-skill.com, Discord, YouTube, GitHub) (61:30)
 
 ### Mermaid Diagrams (Already in docs - no work needed)
 
@@ -3250,7 +3250,7 @@ SpecWeave: Program Your AI in English. | 100% Free & Open Source
 
 Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on your weekend MVP, or scale it to 50 teams. 3 commands to ship. 190+ self-built features. 0% change failure rate.
 
-In this 71-minute comprehensive tutorial, I walk through the complete spec-weave.com
+In this 71-minute comprehensive tutorial, I walk through the complete verified-skill.com
 documentation, showing you how to go from "vibe coding" to spec-driven development.
 Includes deep dive into Claude Code's architecture (plugins, skills, agents, marketplace)
 and a detailed showcase of 5 production apps built in ONE MONTH — 100x faster than before.
@@ -3290,7 +3290,7 @@ See the actual apps built with SpecWeave:
 - EasyChamp: Enterprise sports platform (20+ microservices, K8s, ML pipelines)
 
 Links:
-- Documentation: https://spec-weave.com
+- Documentation: https://verified-skill.com
 - GitHub: https://github.com/anton-abyzov/specweave
 - Discord: https://discord.gg/UYg4BGJ65V
 - Install: npm install -g specweave
@@ -3591,8 +3591,8 @@ npx vskill install claude-memory-manager
 - Snyk ToxicSkills study: https://snyk.io/blog/toxicskills
 - ToxicSkills PoC repo: https://github.com/snyk-labs/toxicskills-goof
 - Verified Skills registry: https://verifiedskill.com
-- Security landscape docs: https://spec-weave.com/docs/skills/skills-ecosystem-security
-- Verified Skills standard: https://spec-weave.com/docs/skills/verified-skills
+- Security landscape docs: https://verified-skill.com/docs/skills/skills-ecosystem-security
+- Verified Skills standard: https://verified-skill.com/docs/skills/verified-skills
 
 **[TRANSITION]**
 
