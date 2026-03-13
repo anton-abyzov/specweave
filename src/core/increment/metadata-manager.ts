@@ -15,6 +15,7 @@ import {
   IncrementStatus,
   IncrementType,
   SyncTarget,
+  PrRef,
   createDefaultMetadata,
   isValidTransition,
   isStale,
@@ -1073,6 +1074,48 @@ export class MetadataManager {
   static hasSyncTarget(incrementId: string, rootDir?: string): boolean {
     const metadata = this.read(incrementId, rootDir) as IncrementMetadataV2;
     return !!metadata.syncTarget;
+  }
+
+  /**
+   * Add a pull request reference to an increment (v1.0.437+)
+   *
+   * Appends a PrRef to the prRefs array. Deduplicates by repoSlug
+   * (or by branch name for single-repo increments without repoSlug).
+   *
+   * @param incrementId - Increment ID
+   * @param ref - Pull request reference to add
+   * @param rootDir - Optional root directory
+   * @returns Updated metadata
+   */
+  static addPrRef(
+    incrementId: string,
+    ref: PrRef,
+    rootDir?: string
+  ): IncrementMetadataV2 {
+    const metadata = this.read(incrementId, rootDir) as IncrementMetadataV2;
+    const existing = metadata.prRefs || [];
+
+    // Deduplicate by repoSlug (multi-repo) or branch (single-repo)
+    const key = ref.repoSlug || ref.branch;
+    const filtered = existing.filter(r => (r.repoSlug || r.branch) !== key);
+    metadata.prRefs = [...filtered, ref];
+    metadata.lastActivity = new Date().toISOString();
+    this.write(incrementId, metadata, rootDir);
+
+    this.logger.debug(`Added PR ref for ${incrementId}: ${ref.branch} → ${ref.prUrl || '(no URL yet)'}`);
+    return metadata;
+  }
+
+  /**
+   * Get pull request references for an increment
+   *
+   * @param incrementId - Increment ID
+   * @param rootDir - Optional root directory
+   * @returns Array of PR refs, or empty array if none
+   */
+  static getPrRefs(incrementId: string, rootDir?: string): PrRef[] {
+    const metadata = this.read(incrementId, rootDir) as IncrementMetadataV2;
+    return metadata.prRefs || [];
   }
 
   /**
