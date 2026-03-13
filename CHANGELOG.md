@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.445] - 2026-03-13
+
+### Changes
+- feat: add specweave get command — clone and register existing repos into workspace
+
+---
+
+
+
 ## [1.0.444] - 2026-03-13
 
 ### Changes
