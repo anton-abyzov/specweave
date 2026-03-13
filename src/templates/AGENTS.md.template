@@ -126,7 +126,7 @@ Good: npm run build → node script.js → Success
 
 ### Test Before Ship
 - Tests pass at every step — unit after each task, E2E before close, no exceptions
-- `/sw:test-aware-planner` generates BDD test plans during design — verify they exist before `/sw:do`
+- `/sw:increment` generates BDD test plans during design via the sw-planner agent — verify they exist before `/sw:do`
 - TDD cycle: `/sw:tdd-red` → `/sw:tdd-green` → `/sw:tdd-refactor`
 - E2E with Playwright CLI (`npx playwright test`) is a blocking closure gate
 <!-- /SECTION -->
@@ -378,7 +378,7 @@ specweave context projects
 5. Create `tasks.md` (task checklist with BDD tests)
 6. Optional: `plan.md` for complex features
 7. **Verify** tasks.md has `**Test Plan**:` for every task with testable ACs
-8. **Verify** E2E scenarios exist for user-facing user stories — re-run `/sw:test-aware-planner` if missing
+8. **Verify** E2E scenarios exist for user-facing user stories — re-run `/sw:plan --force` if missing
 
 ### Completing Tasks
 1. Implement the task

@@ -72,7 +72,7 @@ These have **explicit task instructions** (e.g., "create tests", "generate code"
 | `docs-writer` | ✅ "Generates docs ONE SECTION AT A TIME" | ✅ Keep |
 | `devops` (infra) | ✅ "Generates IaC ONE LAYER AT A TIME" | ✅ Keep |
 | `increment` | ✅ Creates increment structure | ✅ Keep |
-| `test-aware-planner` | ✅ Generates tasks.md with tests | ✅ Keep |
+| `test-aware-planner` | Merged into sw-planner agent | ❌ Removed |
 | `tdd-cycle` | ✅ Coordinates TDD workflow | ✅ Keep |
 | (etc.) | | |
 

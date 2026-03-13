@@ -139,13 +139,13 @@ describe('AnalyticsCollector', () => {
       const collector = AnalyticsCollector.getInstance(testDir);
       collector.trackCommand('/sw:do');
       collector.trackCommand('/sw:progress');
-      collector.trackSkill('spec-generator');
+      collector.trackSkill('pm');
 
       const events = collector.readEvents();
       expect(events).toHaveLength(3);
       expect(events[0].name).toBe('/sw:do');
       expect(events[1].name).toBe('/sw:progress');
-      expect(events[2].name).toBe('spec-generator');
+      expect(events[2].name).toBe('pm');
     });
   });
 

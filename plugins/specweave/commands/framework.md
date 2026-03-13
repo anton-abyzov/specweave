@@ -347,7 +347,7 @@ Until hooks are fully automated, **YOU MUST**:
 ### Core vs. Plugin
 
 **Core Framework** (always loaded):
-- 8 core skills (increment, spec-generator, context-loader, etc.)
+- 7 core skills (increment, plan, context-loader, etc.)
 - 3 core agents (PM, Architect, Tech Lead)
 - 7 core commands (/sw:inc, /sw:do, etc.)
 
@@ -518,7 +518,7 @@ I activate when you ask about:
 - **PM agent** - Leading increment creation (auto-invoked by /sw:inc)
 - **Architect agent** - Designing system architecture
 - **Tech Lead agent** - Code review, best practices
-- **spec-generator** - Creating detailed technical RFCs
+- **plan** - Regenerating plan.md and tasks.md for existing increments
 - **context-loader** - Explaining context efficiency
 - **diagrams** - Creating C4/Mermaid diagrams
 

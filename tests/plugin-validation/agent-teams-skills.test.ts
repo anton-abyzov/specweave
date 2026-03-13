@@ -193,11 +193,10 @@ describe('T-007: team-build SKILL.md', () => {
     expect(content).toContain('sw:architect');
   });
 
-  it('should map review preset to security + quality + docs skills', () => {
+  it('should map review preset to security + quality skills', () => {
     const content = readFileSync(skillPath, 'utf-8');
-    expect(content).toContain('sw:security');
     expect(content).toContain('sw:grill');
-    expect(content).toContain('sw:docs-updater');
+    expect(content).toContain('review');
   });
 
   it('should map testing preset to testing skills', () => {

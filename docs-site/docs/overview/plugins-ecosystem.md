@@ -36,7 +36,7 @@ npx specweave init .
 The foundation of SpecWeave, always loaded in every project.
 
 **Key Capabilities:**
-- 🎯 **9 Skills**: increment, spec-generator, tdd-workflow, brownfield-analyzer, context-optimizer
+- 🎯 **8 Skills**: increment, tdd-workflow, brownfield-analyzer, context-optimizer
 - 🤖 **22 Agents**: PM, Architect, Tech Lead, QA Lead, Security Engineer, Code Reviewer
 - ⚡ **22 Commands**: Full increment lifecycle management
 

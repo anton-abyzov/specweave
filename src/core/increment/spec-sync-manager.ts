@@ -642,7 +642,7 @@ Increment: ${detection.incrementId}
 
 🔄 Automatic sync will regenerate:
   1. plan.md (using Architect Agent)
-  2. tasks.md (using test-aware-planner)
+  2. tasks.md (using sw-planner agent)
 
 ⚡ Task completion status will be preserved
 

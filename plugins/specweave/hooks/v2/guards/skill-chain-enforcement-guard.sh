@@ -21,7 +21,7 @@
 # 1. /sw:increment creates folder + metadata.json (ALLOWED)
 # 2. /sw:increment MUST invoke Skill("sw:pm") for spec.md
 # 3. /sw:increment MUST invoke Skill("sw:architect") for plan.md
-# 4. /sw:increment MUST invoke Skill("sw:test-aware-planner") for tasks.md
+# 4. /sw:increment MUST delegate to sw-planner agent for tasks.md
 # 5. Each sub-skill writes a marker to .specweave/state/skill-chain-{increment-id}.json
 # 6. This guard checks for that marker before allowing the write
 #
@@ -133,8 +133,8 @@ case "$FILENAME" in
     STATE_KEY="architect_invoked"
     ;;
   tasks.md)
-    REQUIRED_SKILL="sw:test-aware-planner"
-    SKILL_LABEL="Test-Aware Planner"
+    REQUIRED_SKILL="sw-planner"
+    SKILL_LABEL="Planner"
     STATE_KEY="planner_invoked"
     ;;
 esac
@@ -205,7 +205,7 @@ The ${SKILL_LABEL} skill will:
 SKILL CHAIN (all 3 MUST be invoked):
   spec.md  --> Skill({ skill: \"sw:pm\", args: \"...\" })
   plan.md  --> Skill({ skill: \"sw:architect\", args: \"...\" })
-  tasks.md --> Skill({ skill: \"sw:test-aware-planner\", args: \"...\" })
+  tasks.md --> Agent({ subagent_type: \"sw:sw-planner\", ... })
 
 Each skill writes its marker to:
   ${STATE_DIR}/skill-chain-${INCREMENT_ID}.json

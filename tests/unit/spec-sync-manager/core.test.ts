@@ -149,7 +149,7 @@ describe('SpecSyncManager - Core', () => {
       expect(message).toContain('0001-test');
       expect(message).toContain('spec.md was modified AFTER plan.md');
       expect(message).toContain('plan.md (using Architect Agent)');
-      expect(message).toContain('tasks.md (using test-aware-planner)');
+      expect(message).toContain('tasks.md (using sw-planner agent)');
       expect(message).toContain('--skip-sync');
     });
   });

@@ -38,7 +38,7 @@ const CAPABILITIES = [
     title: 'Living Documentation',
     description:
       'Specs, ADRs, and runbooks sync automatically. Documentation that never drifts from code.',
-    code: '/sw:docs-updater',
+    code: '/sw:sync-docs',
   },
   {
     icon: 'refresh-cw',
