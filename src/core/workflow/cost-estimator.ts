@@ -130,7 +130,7 @@ export class CostEstimator {
   }
 
   /**
-   * Estimate planning cost (Architect + test-aware-planner = 2 calls)
+   * Estimate planning cost (Architect + Planner = 2 calls)
    */
   private estimatePlanning(): CostBreakdown {
     return {

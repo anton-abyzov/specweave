@@ -41,8 +41,7 @@ These skills form the foundation of spec-driven development.
 | [`sw:architect`](#architect) | System architect for technical designs and ADRs | Architecture decisions |
 | [`sw:role-orchestrator`](#role-orchestrator) | Multi-agent coordination (PM, Architect, DevOps, QA) | Complex full-stack features |
 | [`sw:roadmap-planner`](#roadmap-planner) | Product roadmap and feature prioritization | Quarterly planning |
-| [`sw:spec-generator`](#spec-generator) | Generate spec.md, plan.md, tasks.md from ideas | Converting ideas to specs |
-| [`sw:test-aware-planner`](#test-aware-planner) | Tasks with embedded BDD test plans | Test-first planning |
+| [`sw:plan`](#plan) | Generate plan.md and tasks.md for an existing increment | Regenerating plan/tasks |
 | [`sw:brainstorm`](#brainstorm) | Multi-perspective ideation with cognitive lenses | Exploring approaches before committing |
 
 ### brainstorm
@@ -605,7 +604,6 @@ Create and maintain documentation.
 | Skill | Plugin | Description |
 |-------|--------|-------------|
 | `docs-writer` | core | Technical documentation |
-| `docs-updater` | core | Living docs synchronization |
 | `living-docs` | core | Living documentation management |
 | `living-docs-navigator` | core | Navigate project docs |
 | `technical-writing` | docs | Technical writing best practices |

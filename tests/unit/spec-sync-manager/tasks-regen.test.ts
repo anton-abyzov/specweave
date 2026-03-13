@@ -24,7 +24,7 @@ describe('SpecSyncManager - Tasks Regeneration', () => {
   });
 
   describe('tasks context preparation', () => {
-    it('should prepare plan.md content for test-aware-planner', async () => {
+    it('should prepare plan.md content for sw-planner agent', async () => {
       const incrementId = '0200-tasks-regen-test';
       const incrementDir = path.join(incrementsDir, incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });

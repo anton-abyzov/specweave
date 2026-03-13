@@ -124,7 +124,7 @@ The sw:pm skill is preloaded with full domain logic.
 |----------|---------------|--------|-------|
 | `sw-pm` | `sw:pm` | spec.md | Opus |
 | `sw-architect` | `sw:architect` | plan.md | Opus |
-| `sw-planner` | `sw:test-aware-planner` | tasks.md | Sonnet |
+| `sw-planner` | (inline BDD logic) | tasks.md | Sonnet |
 
 ---
 
@@ -137,15 +137,13 @@ plugins/specweave/
 ├── agents/
 │   ├── sw-pm.md            # Subagent: memory, model, skills: [sw:pm]
 │   ├── sw-architect.md     # Subagent: memory, model, skills: [sw:architect]
-│   └── sw-planner.md       # Subagent: memory, model, skills: [sw:test-aware-planner]
+│   └── sw-planner.md       # Subagent: memory, model, inline BDD task logic
 ├── skills/
 │   ├── pm/
 │   │   ├── SKILL.md        # Domain logic, phases, templates
 │   │   ├── phases/         # Supporting files loaded on demand
 │   │   └── templates/
-│   ├── architect/
-│   │   └── SKILL.md
-│   └── test-aware-planner/
+│   └── architect/
 │       └── SKILL.md
 ```
 
