@@ -78,6 +78,12 @@ Use Read/Write/Edit/Glob tools directly (no CLI needed):
 
 **1c. Activate increments** — Edit `metadata.json`: set `"status": "active"`, update timestamp
 
+**1c.5. PR-Based Branch Setup (conditional):**
+```bash
+PUSH_STRATEGY=$(jq -r '.cicd.pushStrategy // "direct"' .specweave/config.json 2>/dev/null)
+```
+If `pr-based`: create/checkout feature branch before starting work (same logic as `sw:do` Step 2.5). Branch name: `{branchPrefix}{increment-id}`. If `direct`: skip.
+
 **1d. Write session marker** — `.specweave/state/auto-mode.json`:
 
 ```json
