@@ -4,7 +4,7 @@
  * Handles CRUD operations for increment metadata (status, type, timestamps).
  * Part of increment 0007: Smart Status Management
  */
-import { IncrementMetadata, IncrementMetadataExtended, IncrementMetadataV2, IncrementStatus, IncrementType, SyncTarget } from '../types/increment-metadata.js';
+import { IncrementMetadata, IncrementMetadataExtended, IncrementMetadataV2, IncrementStatus, IncrementType, SyncTarget, PrRef } from '../types/increment-metadata.js';
 import { Logger } from '../../utils/logger.js';
 /**
  * Error thrown when metadata operations fail
@@ -238,6 +238,26 @@ export declare class MetadataManager {
      * @returns true if sync target is set
      */
     static hasSyncTarget(incrementId: string, rootDir?: string): boolean;
+    /**
+     * Add a pull request reference to an increment (v1.0.437+)
+     *
+     * Appends a PrRef to the prRefs array. Deduplicates by repoSlug
+     * (or by branch name for single-repo increments without repoSlug).
+     *
+     * @param incrementId - Increment ID
+     * @param ref - Pull request reference to add
+     * @param rootDir - Optional root directory
+     * @returns Updated metadata
+     */
+    static addPrRef(incrementId: string, ref: PrRef, rootDir?: string): IncrementMetadataV2;
+    /**
+     * Get pull request references for an increment
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns Array of PR refs, or empty array if none
+     */
+    static getPrRefs(incrementId: string, rootDir?: string): PrRef[];
     /**
      * Get all increments with a specific sync provider
      *
