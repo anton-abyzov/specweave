@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.443] - 2026-03-13
+
+### Changes
+- fix: show active status instead of skipped, clarify plugin refresh output
+
+---
+
+
+
 ## [1.0.442] - 2026-03-13
 
 ### Changes
