@@ -119,7 +119,30 @@ Write the following:
 }
 ```
 
-### Step 7: Dry Run
+### Step 7: Integration Health Check
+
+After credentials are validated, run a deeper health check to catch misconfigurations early (e.g., wrong issue types, missing permissions, unavailable integrations):
+
+```typescript
+// Import and run health checks for each enabled provider
+import { checkJiraIntegration, checkAdoIntegration, checkGitHubIntegration, formatHealthCheckResults } from '../../src/sync/integration-health-check.js';
+
+const results = [];
+if (jiraEnabled) results.push(await checkJiraIntegration({ domain, projectKey, email, apiToken }));
+if (adoEnabled)  results.push(await checkAdoIntegration({ organization, project, pat }));
+if (githubEnabled) results.push(await checkGitHubIntegration());
+
+console.log(formatHealthCheckResults(results));
+```
+
+This checks:
+- **JIRA**: API auth, project access, issue type availability (catches "The issue type selected is invalid"), edit permissions for remote links
+- **ADO**: API auth, work item type availability
+- **GitHub**: gh CLI authentication
+
+Warnings are advisory — they don't block setup but alert the user to fix issues before they hit them at increment closure.
+
+### Step 8: Dry Run
 
 Run a test sync (read-only) to verify configuration:
 
