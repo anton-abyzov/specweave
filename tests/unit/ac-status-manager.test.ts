@@ -519,7 +519,7 @@ AC-US11-02: Missing checkbox
 - [ ] AC-US11-02: Automatically regenerate plan.md using Architect Agent
   - ❌ TODO: Architect Agent invocation not implemented
 - [ ] AC-US11-03: Automatically regenerate tasks.md based on updated plan.md
-  - ❌ TODO: test-aware-planner invocation not implemented
+  - ❌ TODO: sw-planner agent invocation not implemented
 - [x] AC-US11-06: User can skip auto-sync with --skip-sync flag
   - ✅ Implemented in \`syncIncrement(incrementId, skipSync)\` parameter
       `;

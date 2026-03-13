@@ -131,12 +131,10 @@ your-project/
 │   │   ├── performance/      # Performance Engineer
 │   │   ├── docs-writer/      # Technical Documentation
 │   │   ├── tdd-cycle/        # TDD Workflow
-│   │   ├── test-aware-planner/ # Test Planning
 │   │   ├── translator/       # Multilingual Support
 │   │   └── code-reviewer.md  # Code Review (standalone file)
 │   ├── skills/               # 17 development skills (installed from plugins)
 │   │   ├── increment/
-│   │   ├── spec-generator/
 │   │   ├── context-loader/
 │   │   ├── tdd-workflow/
 │   │   ├── brownfield-analyzer/
@@ -149,8 +147,7 @@ your-project/
 │   │   ├── specweave-detector/
 │   │   ├── specweave-framework/
 │   │   ├── task-builder/
-│   │   ├── translator/
-│   │   └── docs-updater/
+│   │   └── translator/
 │   ├── commands/             # 22 slash commands (installed from plugins)
 │   │   ├── increment.md
 │   │   ├── do.md

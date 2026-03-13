@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 /**
  * Unit tests for AgentInvoker
  *
- * Tests the agent invocation system that orchestrates Architect and test-aware-planner agents.
+ * Tests the agent invocation system that orchestrates Architect and Planner agents.
  *
  * Coverage target: 95%+
  */
@@ -422,7 +422,7 @@ Users must authenticate.
     });
   });
 
-  describe('invokeTestAwarePlanner', () => {
+  describe('invokePlannerAgent', () => {
     it('should invoke planner with valid context', async () => {
       const context: PlanPipelineContext = {
         config: {},
@@ -441,12 +441,12 @@ Users must authenticate.
         warnings: []
       };
 
-      const result = await invoker.invokeTestAwarePlanner(context);
+      const result = await invoker.invokePlannerAgent(context);
 
       expect(result.success).toBe(true);
-      expect(result.agentName).toBe('test-aware-planner');
+      expect(result.agentName).toBe('planner');
       expect(result.content).toBeDefined();
-      expect(result.content).toContain('Test-Aware Planner');
+      expect(result.content).toContain('Planner Agent');
       expect(result.executionMode).toBe('instruction');
     });
 
@@ -466,7 +466,7 @@ Users must authenticate.
         warnings: []
       };
 
-      const result = await invoker.invokeTestAwarePlanner(context);
+      const result = await invoker.invokePlannerAgent(context);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('AC-US1-01');

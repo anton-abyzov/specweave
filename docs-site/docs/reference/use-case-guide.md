@@ -19,7 +19,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | Design system architecture | `/sw:architect` | Skill |
 | Plan a product roadmap | `/sw:roadmap-planner` | Skill |
 | Break down a complex feature | `/sw:role-orchestrator` | Skill |
-| Create tasks with test plans | `/sw:test-aware-planner` | Skill |
+| Create tasks with test plans | `/sw:plan` | Skill |
 
 ### Implementing Features
 
@@ -76,7 +76,7 @@ Find the right SpecWeave skill or command for what you're trying to do.
 | I want to... | Use this | Type |
 |--------------|----------|------|
 | Write technical docs | `/sw:docs-writer` | Skill |
-| Update living docs | `/sw:docs-updater` | Skill |
+| Update living docs | `/sw:sync-docs` | Skill |
 | Navigate project docs | `/sw:living-docs-navigator` | Skill |
 | Build Docusaurus site | `/docs:docusaurus` | Skill |
 | Preview documentation | `/docs:preview` | Skill |

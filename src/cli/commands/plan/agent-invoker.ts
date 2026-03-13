@@ -1,7 +1,7 @@
 /**
  * Agent Invoker - Orchestrates AI agent invocations for plan generation
  *
- * This module provides utilities to invoke the Architect and test-aware-planner
+ * This module provides utilities to invoke the Architect and Planner
  * agents within the Claude Code ecosystem.
  *
  * @module cli/commands/plan/agent-invoker
@@ -61,12 +61,12 @@ export class AgentInvoker {
   }
 
   /**
-   * Invoke test-aware-planner Agent to generate tasks.md
+   * Invoke Planner Agent to generate tasks.md
    *
    * @param context - Pipeline context with spec.md and plan.md content
    * @returns Agent invocation result with generated tasks.md content
    */
-  async invokeTestAwarePlanner(context: PlanPipelineContext): Promise<AgentInvocationResult> {
+  async invokePlannerAgent(context: PlanPipelineContext): Promise<AgentInvocationResult> {
     const specContent = context.specContent;
     const planContent = context.generatedPlanContent!;
     const incrementId = context.incrementId;
@@ -87,7 +87,7 @@ export class AgentInvoker {
     return {
       success: true,
       content: plannerPrompt,
-      agentName: 'test-aware-planner',
+      agentName: 'planner',
       executionMode: 'instruction'
     };
   }
@@ -243,7 +243,7 @@ Follow the standard SpecWeave plan.md format with:
   }
 
   /**
-   * Build prompt for test-aware-planner Agent
+   * Build prompt for Planner Agent
    */
   private buildPlannerPrompt(
     incrementId: string,
@@ -253,7 +253,7 @@ Follow the standard SpecWeave plan.md format with:
   ): string {
     const acList = Array.from(acceptanceCriteria.keys());
 
-    return `# Test-Aware Planner Invocation for ${incrementId}
+    return `# Planner Agent Invocation for ${incrementId}
 
 ## Task
 Generate a tasks.md file with embedded test plans for increment ${incrementId}.
@@ -438,7 +438,7 @@ coverage_target: 95%
 
 ---
 
-**Note**: This is a placeholder tasks file. Run the test-aware-planner Agent to generate the complete task breakdown with embedded test plans.
+**Note**: This is a placeholder tasks file. Run the Planner agent (sw-planner) to generate the complete task breakdown with embedded test plans.
 
 **Total Acceptance Criteria**: ${acceptanceCriteria.size}
 **Mapped to Tasks**: 1 (placeholder)

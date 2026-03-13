@@ -221,7 +221,7 @@ Primary: `/sw:progress-sync`. Individual: `/sw-github:push`, `/sw-github:close`.
 **Testing is a pipeline step, not an afterthought.**
 
 ### During Design (`/sw:increment`)
-- `/sw:test-aware-planner` generates tasks.md with BDD test plans (Given/When/Then) for every AC
+- `/sw:increment` generates tasks.md with BDD test plans (Given/When/Then) for every AC via the sw-planner agent
 - Every task MUST have a `**Test Plan**:` block before implementation begins
 - E2E test scenarios MUST be specified for user-facing features
 
