@@ -18,6 +18,7 @@ import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import { AgentsMdGenerator } from '../agents-md-generator.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import type { Plugin } from '../../core/types/plugin.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -110,6 +111,42 @@ export class CodexAdapter extends AdapterBase {
    */
   async postInstall(options: AdapterOptions): Promise<void> {
     console.log(this.getInstructions());
+  }
+
+  /**
+   * Check if Codex adapter supports plugins
+   */
+  supportsPlugins(): boolean {
+    return true;
+  }
+
+  /**
+   * Compile and install a plugin for OpenAI Codex.
+   * Writes each SKILL.md as a separate file in `.codex/rules/`.
+   */
+  async compilePlugin(plugin: Plugin): Promise<void> {
+    const rulesDir = '.codex/rules';
+    console.log(`\n📦 Installing plugin skills for Codex: ${plugin.manifest.name}`);
+    await this.writeSkillFiles(plugin, rulesDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Codex!`);
+  }
+
+  /**
+   * Unload a plugin from Codex — removes skill files from `.codex/rules/`.
+   */
+  async unloadPlugin(pluginName: string): Promise<void> {
+    console.log(`\n🗑️  Unloading plugin from Codex: ${pluginName}`);
+    await this.removeSkillFiles(pluginName, '.codex/rules');
+    console.log(`   ✓ Removed from .codex/rules/`);
+    console.log(`\n✅ Plugin ${pluginName} unloaded!`);
+  }
+
+  /**
+   * Get installed plugins for Codex by scanning `.codex/rules/`.
+   */
+  async getInstalledPlugins(): Promise<string[]> {
+    return this.listInstalledPluginsInDir('.codex/rules');
   }
 
   /**
