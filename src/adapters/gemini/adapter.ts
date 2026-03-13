@@ -18,6 +18,7 @@ import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import { AgentsMdGenerator } from '../agents-md-generator.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import type { Plugin } from '../../core/types/plugin.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -110,6 +111,42 @@ export class GeminiAdapter extends AdapterBase {
    */
   async postInstall(options: AdapterOptions): Promise<void> {
     console.log(this.getInstructions());
+  }
+
+  /**
+   * Check if Gemini adapter supports plugins
+   */
+  supportsPlugins(): boolean {
+    return true;
+  }
+
+  /**
+   * Compile and install a plugin for Gemini CLI.
+   * Writes each SKILL.md as a separate file in `.gemini/`.
+   */
+  async compilePlugin(plugin: Plugin): Promise<void> {
+    const rulesDir = '.gemini';
+    console.log(`\n📦 Installing plugin skills for Gemini: ${plugin.manifest.name}`);
+    await this.writeSkillFiles(plugin, rulesDir);
+    console.log(`   ✓ ${plugin.skills.length} skill(s) written to ${rulesDir}/`);
+    console.log(`\n✅ Plugin ${plugin.manifest.name} installed for Gemini!`);
+  }
+
+  /**
+   * Unload a plugin from Gemini — removes skill files from `.gemini/`.
+   */
+  async unloadPlugin(pluginName: string): Promise<void> {
+    console.log(`\n🗑️  Unloading plugin from Gemini: ${pluginName}`);
+    await this.removeSkillFiles(pluginName, '.gemini');
+    console.log(`   ✓ Removed from .gemini/`);
+    console.log(`\n✅ Plugin ${pluginName} unloaded!`);
+  }
+
+  /**
+   * Get installed plugins for Gemini by scanning `.gemini/`.
+   */
+  async getInstalledPlugins(): Promise<string[]> {
+    return this.listInstalledPluginsInDir('.gemini');
   }
 
   /**

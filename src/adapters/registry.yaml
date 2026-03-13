@@ -54,19 +54,18 @@ adapters:
     priority: P1
 
   - name: copilot
-    description: "GitHub Copilot adapter - Basic automation with workspace instructions"
+    description: "GitHub Copilot adapter - Skills installed in .github/instructions/"
     automation_level: basic
     status: active
     directory: copilot
     features:
-      - .github/copilot/instructions.md workspace guidance
-      - Copilot reads context manifests for suggestions
-      - Works with built-in Copilot features only
-      - Decent experience, basic automation
+      - .github/instructions/*.instructions.md per-context skill files
+      - Works with GitHub Copilot VS Code extension and IDE integrations
+      - Skills auto-read as workspace instructions
     requirements:
-      - GitHub Copilot extension (VS Code)
+      - GitHub Copilot extension (VS Code or JetBrains)
       - Node.js >= 18.0.0
-    market_share: 40%
+    market_share: 35%
     priority: P1
 
   - name: generic
@@ -120,23 +119,138 @@ adapters:
     market_share: 20%
     priority: P1
 
-# Future adapters (P2/P3)
-future_adapters:
   - name: windsurf
-    description: "Windsurf adapter (if requested by community)"
+    description: "Windsurf adapter - Skills installed in .windsurf/rules/"
     automation_level: semi
-    status: planned
+    status: active
+    directory: windsurf
+    features:
+      - .windsurf/rules/*.md skill files auto-loaded by Windsurf
+      - Semi-automation with AGENTS.md workflow instructions
+    requirements:
+      - Windsurf editor installed
+      - Node.js >= 18.0.0
+    market_share: 15%
+    priority: P1
+
+  - name: continue
+    description: "Continue.dev adapter - Skills installed in .continue/rules/"
+    automation_level: semi
+    status: active
+    directory: continue
+    features:
+      - .continue/rules/*.md skill files auto-loaded by Continue extension
+      - Files loaded in lexicographic order
+    requirements:
+      - Continue.dev VS Code or JetBrains extension
+      - Node.js >= 18.0.0
+    market_share: 10%
+    priority: P1
+
+  - name: cline
+    description: "Cline adapter - Skills installed in .cline/rules/"
+    automation_level: semi
+    status: active
+    directory: cline
+    features:
+      - .cline/rules/*.md skill context files
+      - Agentic task execution support
+    requirements:
+      - Cline VS Code extension
+      - Node.js >= 18.0.0
+    market_share: 10%
+    priority: P1
+
+  - name: zed
+    description: "Zed adapter - Skills installed in .rules/"
+    automation_level: semi
+    status: active
+    directory: zed
+    features:
+      - .rules/*.md project rule files auto-loaded by Zed AI
+      - MCP support for extensibility
+    requirements:
+      - Zed editor installed
+      - Node.js >= 18.0.0
+    market_share: 5%
     priority: P2
+
+  - name: amazonq
+    description: "Amazon Q Developer adapter - Skills installed in .amazonq/rules/"
+    automation_level: semi
+    status: active
+    directory: amazonq
+    features:
+      - .amazonq/rules/*.md files auto-loaded on startup
+      - Enterprise-grade AI coding assistant
+    requirements:
+      - Amazon Q Developer extension or CLI
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
+  - name: jetbrains
+    description: "JetBrains AI Assistant adapter - Skills installed in .aiassistant/rules/"
+    automation_level: semi
+    status: active
+    directory: jetbrains
+    features:
+      - .aiassistant/rules/*.md rule files loaded by JetBrains AI
+      - Works with IntelliJ IDEA, WebStorm, PyCharm, etc.
+    requirements:
+      - JetBrains IDE with AI Assistant plugin
+      - Node.js >= 18.0.0
+    market_share: 10%
+    priority: P2
+
+  - name: aider
+    description: "Aider adapter - Skills installed in .aider/"
+    automation_level: semi
+    status: active
+    directory: aider
+    features:
+      - .aider/*.md skill context files
+      - CLI-first AI coding assistant
+    requirements:
+      - Aider CLI installed (pip install aider-chat)
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
+  - name: tabnine
+    description: "Tabnine adapter - Skills installed in .tabnine/guidelines/"
+    automation_level: basic
+    status: active
+    directory: tabnine
+    features:
+      - .tabnine/guidelines/*.md custom guideline files auto-loaded
+      - Enterprise AI code completion
+    requirements:
+      - Tabnine extension (VS Code, JetBrains, etc.)
+      - Node.js >= 18.0.0
+    market_share: 5%
+    priority: P2
+
+# Future adapters (P2/P3)
+future_adapters: []
 
 # Adapter capabilities comparison
 capabilities:
   skills:
     claude: full
-    cursor: via_agents_md
-    copilot: via_agents_md
-    gemini: via_agents_md
-    codex: via_agents_md
-    generic: via_agents_md
+    cursor: via_rules_folder
+    copilot: via_rules_folder
+    gemini: via_rules_folder
+    codex: via_rules_folder
+    windsurf: via_rules_folder
+    continue: via_rules_folder
+    cline: via_rules_folder
+    zed: via_rules_folder
+    amazonq: via_rules_folder
+    jetbrains: via_rules_folder
+    aider: via_rules_folder
+    tabnine: via_rules_folder
+    generic: via_rules_folder
 
   agents:
     claude: full
@@ -144,6 +258,14 @@ capabilities:
     copilot: via_agents_md
     gemini: via_agents_md
     codex: via_agents_md
+    windsurf: via_agents_md
+    continue: via_agents_md
+    cline: via_agents_md
+    zed: via_agents_md
+    amazonq: via_agents_md
+    jetbrains: via_agents_md
+    aider: via_agents_md
+    tabnine: via_agents_md
     generic: via_agents_md
 
   hooks:
@@ -152,14 +274,30 @@ capabilities:
     copilot: none
     gemini: none
     codex: none
+    windsurf: none
+    continue: none
+    cline: none
+    zed: none
+    amazonq: none
+    jetbrains: none
+    aider: none
+    tabnine: none
     generic: none
 
   instruction_file:
     claude: .claude/skills + agents
-    cursor: AGENTS.md
-    copilot: AGENTS.md
-    gemini: AGENTS.md
-    codex: AGENTS.md
+    cursor: .cursor/rules/
+    copilot: .github/instructions/
+    gemini: .gemini/
+    codex: .codex/rules/
+    windsurf: .windsurf/rules/
+    continue: .continue/rules/
+    cline: .cline/rules/
+    zed: .rules/
+    amazonq: .amazonq/rules/
+    jetbrains: .aiassistant/rules/
+    aider: .aider/
+    tabnine: .tabnine/guidelines/
     generic: AGENTS.md
 
   context_manifests:
@@ -168,6 +306,14 @@ capabilities:
     copilot: manual_reference
     gemini: manual_reference
     codex: manual_reference
+    windsurf: manual_reference
+    continue: manual_reference
+    cline: manual_reference
+    zed: manual_reference
+    amazonq: manual_reference
+    jetbrains: manual_reference
+    aider: manual_reference
+    tabnine: manual_reference
     generic: manual_copy_paste
 
 # Target market coverage

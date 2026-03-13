@@ -183,6 +183,78 @@ export abstract class AdapterBase implements IAdapter {
   }
 
   /**
+   * Helper: Write plugin skill files to a tool-specific rules directory.
+   * Each skill is written as `<plugin>-<skill>.md` (or with custom suffix).
+   */
+  protected async writeSkillFiles(
+    plugin: Plugin,
+    rulesDir: string,
+    fileSuffix = '.md',
+  ): Promise<void> {
+    const projectPath = process.cwd();
+    const targetDir = path.join(projectPath, rulesDir);
+    await fs.ensureDir(targetDir);
+
+    const language = await this.getLanguageConfig();
+
+    for (const skill of plugin.skills) {
+      const skillMdPath = path.join(skill.path, 'SKILL.md');
+      if (!(await fs.pathExists(skillMdPath))) continue;
+
+      const content = await fs.readFile(skillMdPath, 'utf-8');
+      const modified = this.injectSystemPrompt(content, language);
+      const fileName = `${plugin.manifest.name}-${skill.name}${fileSuffix}`;
+      await fs.writeFile(path.join(targetDir, fileName), modified, 'utf-8');
+    }
+  }
+
+  /**
+   * Helper: Remove all skill files for a plugin from a rules directory.
+   * Deletes files matching `<pluginName>-*.md` (or custom suffix).
+   */
+  protected async removeSkillFiles(
+    pluginName: string,
+    rulesDir: string,
+    fileSuffix = '.md',
+  ): Promise<void> {
+    const projectPath = process.cwd();
+    const targetDir = path.join(projectPath, rulesDir);
+
+    if (!(await fs.pathExists(targetDir))) return;
+
+    const files = await fs.readdir(targetDir);
+    for (const file of files) {
+      if (file.startsWith(`${pluginName}-`) && file.endsWith(fileSuffix)) {
+        await fs.remove(path.join(targetDir, file));
+      }
+    }
+  }
+
+  /**
+   * Helper: List unique plugin names installed in a rules directory.
+   * Extracts plugin name from `<plugin>-<skill>.md` filename pattern.
+   */
+  protected async listInstalledPluginsInDir(rulesDir: string): Promise<string[]> {
+    const projectPath = process.cwd();
+    const targetDir = path.join(projectPath, rulesDir);
+
+    if (!(await fs.pathExists(targetDir))) return [];
+
+    const files = await fs.readdir(targetDir);
+    const pluginNames = new Set<string>();
+
+    for (const file of files) {
+      if (!file.endsWith('.md')) continue;
+      const dashIdx = file.indexOf('-');
+      if (dashIdx > 0) {
+        pluginNames.add(file.slice(0, dashIdx));
+      }
+    }
+
+    return Array.from(pluginNames);
+  }
+
+  /**
    * Read language configuration from project config
    */
   protected async getLanguageConfig(): Promise<SupportedLanguage> {
