@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.441] - 2026-03-13
+
+### Changes
+- fix: grill fixes — marketplace check deduplication, scope, null root, array guard, fix status
+- fix: always register marketplace before hash check, fix doctor plugin checks
+- chore: bump version to 1.0.440
+- sync docs, templates, locales, and plugin metadata
+
+---
+
+
+
 ## [1.0.440] - 2026-03-13
 
 ### Changes
