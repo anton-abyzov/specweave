@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.442] - 2026-03-13
+
+### Changes
+- fix: skip only when plugin is actually installed in installed_plugins.json
+
+---
+
+
+
 ## [1.0.441] - 2026-03-13
 
 ### Changes
