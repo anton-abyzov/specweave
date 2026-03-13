@@ -48,7 +48,7 @@ export class AiderAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.aider');
+    return await this.listInstalledPluginsInDir('.aider');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {
