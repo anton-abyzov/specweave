@@ -776,7 +776,7 @@ cat .specweave/increments/0020-feature/metadata.json
 
 ## 🆘 Getting Help
 
-- **Documentation**: https://spec-weave.com
+- **Documentation**: https://verified-skill.com
 - **GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
 - **Discussions**: https://github.com/anton-abyzov/specweave/discussions
-- **Enterprise Support**: enterprise@spec-weave.com
+- **Enterprise Support**: enterprise@verified-skill.com

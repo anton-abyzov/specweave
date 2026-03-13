@@ -877,7 +877,7 @@ az boards area project create \
 
 ## 🆘 Getting Help
 
-- **Documentation**: https://spec-weave.com
+- **Documentation**: https://verified-skill.com
 - **GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
 - **Azure DevOps Docs**: https://docs.microsoft.com/azure/devops
-- **Enterprise Support**: enterprise@spec-weave.com
+- **Enterprise Support**: enterprise@verified-skill.com

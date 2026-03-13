@@ -203,7 +203,7 @@ nvm install <new-version> --reinstall-packages-from=<old-version>
 
 This auto-copies all your global packages.
 
-Full guide: https://spec-weave.com/guides/getting-started/nvm-global-packages-fix
+Full guide: https://verified-skill.com/guides/getting-started/nvm-global-packages-fix
 ```
 
 ---

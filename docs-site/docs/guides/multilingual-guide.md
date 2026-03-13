@@ -118,7 +118,7 @@ function calculateTotal(items: Item[]): number {
 
 ✅ **File Paths**: `src/components/Header.tsx`
 
-✅ **URLs**: `https://spec-weave.com`
+✅ **URLs**: `https://verified-skill.com`
 
 ---
 
@@ -692,7 +692,7 @@ For better organization, use separate commits for source changes vs. translation
 ## Support
 
 **Documentation**:
-- [SpecWeave Website](https://spec-weave.com)
+- [SpecWeave Website](https://verified-skill.com)
 - [CLAUDE.md](../../CLAUDE) (contributor guide)
 - [README.md](../../../../README) (project overview)
 

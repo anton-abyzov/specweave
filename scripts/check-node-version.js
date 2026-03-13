@@ -116,7 +116,7 @@ if (!isVersionSatisfied(CURRENT_NODE_VERSION, MIN_NODE_VERSION)) {
   console.error(getUpgradeInstructions());
   console.error('');
   console.error(`${BOLD}Full guide:${RESET}`);
-  console.error(`  ${CYAN}${UNDERLINE}https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error${RESET}`);
+  console.error(`  ${CYAN}${UNDERLINE}https://verified-skill.com/docs/guides/troubleshooting/common-errors#node-version-error${RESET}`);
   console.error('');
   console.error(`${DIM}After upgrading, run: npm install -g specweave${RESET}`);
   console.error('');

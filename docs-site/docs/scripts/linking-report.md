@@ -800,7 +800,7 @@
 
 - **Line 1:** `# Intelligent Living Docs Sync - User Guide...`
 - **Line 33:** `## What Is Intelligent Living Docs Sync?...`
-- **Line 725:** `**Documentation**: https://spec-weave.com/docs/intelligent-living-docs-sync...`
+- **Line 725:** `**Documentation**: https://verified-skill.com/docs/intelligent-living-docs-sync...`
 - **Line 1:** `# Intelligent Living Docs Sync - User Guide...`
 - **Line 33:** `## What Is Intelligent Living Docs Sync?...`
 

@@ -382,12 +382,12 @@ if [[ "$SILENT" != "true" ]]; then
         cursor|windsurf)
             echo "Skills copied to $ACTIVE_DIR"
             echo "Configure your AI tool to read from this directory."
-            echo "See: https://spec-weave.com/docs/integrations/$TARGET"
+            echo "See: https://verified-skill.com/docs/integrations/$TARGET"
             ;;
         generic)
             echo "Skills copied to $ACTIVE_DIR"
             echo "Include SKILL.md files in your AI tool's context."
-            echo "See: https://spec-weave.com/docs/integrations/generic"
+            echo "See: https://verified-skill.com/docs/integrations/generic"
             ;;
     esac
 fi
