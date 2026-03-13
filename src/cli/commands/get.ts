@@ -36,6 +36,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   if (!fs.existsSync(configPath)) {
     console.log(chalk.red('\n  Not a SpecWeave project. Run `specweave init` first.\n'));
     process.exit(1);
+    return;
   }
 
   let config: Record<string, any> = {};
@@ -44,6 +45,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   } catch {
     console.log(chalk.red('\n  Could not read .specweave/config.json\n'));
     process.exit(1);
+    return;
   }
 
   const isUmbrella = config.umbrella?.enabled === true;
@@ -55,6 +57,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   } catch (err) {
     console.log(chalk.red(`\n  ${err instanceof Error ? err.message : String(err)}\n`));
     process.exit(1);
+    return;
   }
 
   // Resolve owner/repo for local paths
@@ -67,10 +70,12 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     if (!fs.existsSync(absolutePath)) {
       console.log(chalk.red(`\n  Path does not exist: ${absolutePath}\n`));
       process.exit(1);
+      return;
     }
     if (!fs.existsSync(path.join(absolutePath, '.git'))) {
       console.log(chalk.red(`\n  Not a git repository: ${absolutePath}\n`));
       process.exit(1);
+      return;
     }
 
     // Detect owner/repo from git remote
@@ -87,7 +92,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     console.log(chalk.blue(`\n  Registering local repo: ${absolutePath}\n`));
 
     if (isUmbrella) {
-      const relPath = path.relative(projectRoot, absolutePath);
+      const relPath = path.relative(projectRoot, absolutePath).replace(/\\/g, '/');
       await _registerAndInit(projectRoot, owner, repo, relPath, absolutePath, options, false);
     } else {
       console.log(chalk.yellow('  Not an umbrella workspace — skipping registration.\n'));
@@ -96,11 +101,13 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   }
 
   // Remote source: determine target directory
+  // Use '_unknown' as owner fallback for generic git URLs with no detected org
+  const ownerDir = owner || '_unknown';
   const targetDir = isUmbrella
-    ? path.join(projectRoot, 'repositories', owner, repo)
+    ? path.join(projectRoot, 'repositories', ownerDir, repo)
     : path.join(projectRoot, repo);
 
-  console.log(chalk.blue(`\n  Getting ${owner}/${repo}...\n`));
+  console.log(chalk.blue(`\n  Getting ${owner || repo}...\n`));
 
   // Clone
   try {
@@ -113,6 +120,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
   } catch (err) {
     console.log(chalk.red(`\n  Clone failed: ${err instanceof Error ? err.message : String(err)}\n`));
     process.exit(1);
+    return;
   }
 
   // Register + init
