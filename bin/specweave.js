@@ -1439,6 +1439,20 @@ hooksCmd
     console.log('Hooks settings written to .claude/settings.json');
   });
 
+// Get command - Clone and register an existing repository into the workspace
+program
+  .command('get <source>')
+  .description('Clone and register an existing repository into the workspace')
+  .option('--branch <branch>', 'Clone a specific branch')
+  .option('--prefix <prefix>', 'User story prefix (default: first 3 chars uppercase)')
+  .option('--role <role>', 'Repository role (frontend, backend, mobile, infra, shared)')
+  .option('--no-init', 'Skip specweave init on cloned repo')
+  .option('--yes', 'Skip confirmation prompts')
+  .action(async (source, opts) => {
+    const { getCommand } = await import('../dist/src/cli/commands/get.js');
+    await getCommand(source, opts);
+  });
+
 // Migrate-to-umbrella command - Convert single-repo to umbrella workspace
 program
   .command('migrate-to-umbrella')
