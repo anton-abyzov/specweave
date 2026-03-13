@@ -49,10 +49,24 @@ export async function cloneRepo(
     };
   }
 
+  // Early check: targetDir exists but is not a git repo
+  if (fs.existsSync(targetDir)) {
+    throw new Error(
+      `Directory already exists but is not a git repository: ${targetDir}\n` +
+      'Remove or rename the directory, then try again.'
+    );
+  }
+
   const parentDir = path.dirname(targetDir);
   const repoName = path.basename(targetDir);
 
-  await fs.promises.mkdir(parentDir, { recursive: true });
+  try {
+    await fs.promises.mkdir(parentDir, { recursive: true });
+  } catch (err) {
+    throw new Error(
+      `Cannot create directory ${parentDir}: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
 
   const args = ['clone', source.cloneUrl!, repoName];
   if (options.branch) {
