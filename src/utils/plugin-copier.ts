@@ -290,9 +290,19 @@ export function installPlugin(
     return { success: false, sha: '', error: `Source dir not found: ${sourceDir}` };
   }
 
-  // 3. Always ensure marketplace is registered (idempotent — must run even when hash is
-  //    unchanged, so that known_marketplaces.json is repaired after Claude Code resets).
-  execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
+  // 3. Ensure marketplace is registered — runs before the hash check so that
+  //    known_marketplaces.json is repaired even when the plugin content is unchanged.
+  //    We check the file first to avoid a CLI spawn on every call when already healthy.
+  const knownMarketplacesPath = join(homedir(), '.claude', 'plugins', 'known_marketplaces.json');
+  let marketplaceRegistered = false;
+  try {
+    const mkts = JSON.parse(readFileSync(knownMarketplacesPath, 'utf-8'));
+    marketplaceRegistered = typeof mkts === 'object' && mkts !== null && 'specweave' in mkts;
+  } catch { /* file missing or invalid — treat as not registered */ }
+
+  if (!marketplaceRegistered) {
+    execFileNoThrowSync('claude', ['plugin', 'marketplace', 'add', specweaveRoot], { timeout: 10_000 });
+  }
 
   // 4. Compute hash and check lockfile
   const sha = computePluginHash(sourceDir);
