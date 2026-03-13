@@ -141,37 +141,36 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   const processedPlugins: string[] = [];
 
   for (const plugin of pluginsToProcess) {
-    console.log(chalk.blue(`  Installing ${plugin.name}...`));
-
     const result = copyPlugin(plugin.name, specweaveRoot, {
       force: options.force,
     });
 
     if (result.success && result.skipped) {
-      if (options.verbose) {
-        console.log(chalk.gray(`  - ${plugin.name}: unchanged (skipped)`));
-      }
+      console.log(chalk.green(`  ✓ ${plugin.name}: active`));
       skipped++;
       processedPlugins.push(plugin.name);
     } else if (result.success) {
+      console.log(chalk.green(`  + ${plugin.name}: installed`));
       installed++;
       processedPlugins.push(plugin.name);
-      console.log(chalk.green(`  + ${plugin.name} installed`));
     } else {
-      failed++;
-      console.log(chalk.red(`  x ${plugin.name} failed`));
+      console.log(chalk.red(`  ✗ ${plugin.name}: failed`));
       if (result.error) {
         console.log(chalk.gray(`    ${result.error}`));
       }
+      failed++;
     }
   }
 
   // Step 5: Summary
   console.log('');
   console.log(chalk.blue.bold('  Summary'));
-  console.log(chalk.green(`  Installed: ${installed}`));
-  if (skipped > 0) console.log(chalk.gray(`  Skipped (unchanged): ${skipped}`));
+  if (installed > 0) console.log(chalk.green(`  Installed: ${installed}`));
+  if (skipped > 0) console.log(chalk.green(`  Active: ${skipped}`));
   if (failed > 0) console.log(chalk.red(`  Failed: ${failed}`));
+  if (installed === 0 && skipped === 0 && failed === 0) {
+    console.log(chalk.gray('  No plugins processed'));
+  }
   console.log('');
 
   if (lazyMode) {
