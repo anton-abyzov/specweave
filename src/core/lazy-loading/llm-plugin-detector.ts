@@ -133,7 +133,7 @@ export function readPluginAutoLoadConfig(): PluginAutoLoadConfig {
  * Note: Release, diagrams, and docs are now merged into CORE sw plugin (v1.0.130+)
  * - sw:npm, sw:release skills are built-in
  * - mermaid, c4, architecture diagram skills are built-in
- * - docs-writer, docs-updater skills are built-in
+ * - docs-writer, sync-docs skills are built-in
  *
  * v2.1.0: Domain skills live in vskill marketplace as per-category plugins.
  * Only workflow/integration plugins remain here.

@@ -99,8 +99,6 @@ plugins/specweave/
 │   │   └── templates/
 │   ├── architect/
 │   │   └── SKILL.md
-│   └── test-aware-planner/
-│       └── SKILL.md
 ```
 
 ### How It Works
@@ -204,7 +202,7 @@ Agent({ subagent_type: "general-purpose", prompt: "Research Stripe integration p
 |-------|----------|---------------|--------|-------|
 | **PM** | `sw-pm` | `sw:pm` | spec.md | Opus |
 | **Architect** | `sw-architect` | `sw:architect` | plan.md | Opus |
-| **Planner** | `sw-planner` | `sw:test-aware-planner` | tasks.md | Sonnet |
+| **Planner** | `sw-planner` | (inline BDD logic) | tasks.md | Sonnet |
 
 ### Standalone Skills (context: fork)
 

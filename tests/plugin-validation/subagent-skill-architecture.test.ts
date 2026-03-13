@@ -36,10 +36,10 @@ function parseYamlFrontmatter(content: string): Record<string, unknown> {
 // ─────────────────────────────────────────────────────────────────────
 
 describe('Core subagent files exist and have correct structure', () => {
+  // sw-planner has inline BDD logic (no skills: field) — tested separately below
   const subagents = [
     { file: 'sw-pm.md', skill: 'sw:pm', model: 'opus', name: 'sw-pm' },
     { file: 'sw-architect.md', skill: 'sw:architect', model: 'opus', name: 'sw-architect' },
-    { file: 'sw-planner.md', skill: 'sw:test-aware-planner', model: 'sonnet', name: 'sw-planner' },
   ];
 
   for (const agent of subagents) {
@@ -102,11 +102,38 @@ describe('Core subagent files exist and have correct structure', () => {
 // Corresponding skill files validation
 // ─────────────────────────────────────────────────────────────────────
 
+describe('sw-planner subagent has inline BDD logic (no preloaded skill)', () => {
+  const filePath = join(agentsDir, 'sw-planner.md');
+
+  it('should exist', () => expect(existsSync(filePath)).toBe(true));
+
+  it('should have name, model, memory fields', () => {
+    const fm = parseYamlFrontmatter(readFileSync(filePath, 'utf-8'));
+    expect(fm.name).toBe('sw-planner');
+    expect(fm.model).toBe('sonnet');
+    expect(fm.memory).toBe('project');
+  });
+
+  it('should NOT have a skills: field (logic is inlined)', () => {
+    const fm = parseYamlFrontmatter(readFileSync(filePath, 'utf-8'));
+    expect(fm.skills).toBeUndefined();
+  });
+
+  it('should contain skill-chain marker registration (STEP 0)', () => {
+    const content = readFileSync(filePath, 'utf-8');
+    expect(content).toMatch(/STEP 0|planner_invoked/i);
+  });
+
+  it('should contain BDD task format', () => {
+    const content = readFileSync(filePath, 'utf-8');
+    expect(content).toMatch(/Given.*When.*Then/i);
+  });
+});
+
 describe('Core skill files exist with domain logic', () => {
   const skills = [
     { dir: 'pm', minLines: 100 },
     { dir: 'architect', minLines: 50 },
-    { dir: 'test-aware-planner', minLines: 50 },
   ];
 
   for (const skill of skills) {
@@ -189,7 +216,7 @@ describe('Subagent skill references match actual skill directories', () => {
   const mappings = [
     { agent: 'sw-pm.md', skillRef: 'sw:pm', skillDir: 'pm' },
     { agent: 'sw-architect.md', skillRef: 'sw:architect', skillDir: 'architect' },
-    { agent: 'sw-planner.md', skillRef: 'sw:test-aware-planner', skillDir: 'test-aware-planner' },
+    // sw-planner uses inline BDD logic — no corresponding skill dir
   ];
 
   for (const mapping of mappings) {

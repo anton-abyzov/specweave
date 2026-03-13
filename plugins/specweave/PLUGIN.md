@@ -15,8 +15,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | pm | Product Manager for spec-driven development with user stories, acceptance criteria, and MVP planning |
 | architect | System architect for scalable, maintainable technical designs and ADRs |
 | roadmap-planner | Product roadmap and feature prioritization with RICE, MoSCoW, and Kano frameworks |
-| spec-generator | Generates comprehensive specifications (spec.md, plan.md, tasks.md) for increments |
-| test-aware-planner | Generate tasks.md with embedded BDD test plans |
 | code-simplifier | Code refinement agent that simplifies and improves code clarity |
 | performance | Performance engineering for web apps, databases, and distributed systems |
 | security | Security engineer for vulnerability assessment and secure code review |
@@ -25,7 +23,6 @@ SpecWeave framework core plugin. Provides increment planning (PM, Architect, Tec
 | serverless-recommender | Serverless platform selection expert for AWS Lambda, Azure Functions, etc. |
 | service-connect | Smart external service connection orchestrator (MCP, REST, SDK, CLI) |
 | external-sync-wizard | Guide for bidirectional sync with GitHub, JIRA, Azure DevOps |
-| docs-updater | Living documentation updater that syncs implementation progress |
 | update-instructions | Smart merge for CLAUDE.md and AGENTS.md instruction files |
 | translator | LLM-native translation skill for SpecWeave content |
 | framework | Expert on SpecWeave framework structure, rules, and conventions |

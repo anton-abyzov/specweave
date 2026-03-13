@@ -61,7 +61,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Commands**: `/specweave:tdd-cycle`, `/specweave:tdd-red`, `/specweave:tdd-green`, `/specweave:tdd-refactor`
 - **Output**: TDD workflow guidance, test implementation
 
-**6. Test-Aware Planner Agent** (`test-aware-planner`)
+**6. Planner Agent** (`sw-planner`)
 - **Role**: Test-Focused Task Planner
 - **Expertise**: Creating tasks with embedded test plans (BDD format)
 - **Activates**: When generating `tasks.md` with test coverage
@@ -296,7 +296,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 - Report bugs with reproduction steps
 - Validate features against acceptance criteria
 
-**SpecWeave Agents: QA Engineer + Test-Aware Planner** (`testing:qa`, `test-aware-planner`)
+**SpecWeave Agents: QA Engineer + Planner** (`testing:qa`, `sw-planner`)
 
 **How QA Agents Help**:
 

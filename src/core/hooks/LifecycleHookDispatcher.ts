@@ -213,7 +213,7 @@ export class LifecycleHookDispatcher {
           // STEP 1b: Update cross-references in existing docs after feature specs are created.
           // This ensures FEATURE-CATALOG, module docs, and specs README contain links
           // to the newly created feature spec files. Without this, the link update is
-          // deferred to the AI skill step (sw:docs-updater) which may not always run.
+          // deferred to the done step which may not always run.
           if (syncResult.success && syncResult.featureId) {
             try {
               await LifecycleHookDispatcher.updateDocsLinks(
