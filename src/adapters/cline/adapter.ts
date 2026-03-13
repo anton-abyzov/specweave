@@ -48,7 +48,7 @@ export class ClineAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.cline/rules');
+    return await this.listInstalledPluginsInDir('.cline/rules');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {

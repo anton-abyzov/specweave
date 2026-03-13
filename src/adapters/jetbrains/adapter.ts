@@ -48,7 +48,7 @@ export class JetBrainsAdapter extends AdapterBase {
   }
 
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.aiassistant/rules');
+    return await this.listInstalledPluginsInDir('.aiassistant/rules');
   }
 
   async postInstall(options: AdapterOptions): Promise<void> {

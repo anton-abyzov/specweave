@@ -85,7 +85,7 @@ export class ContinueAdapter extends AdapterBase {
    * Get list of installed plugins for Continue.dev
    */
   async getInstalledPlugins(): Promise<string[]> {
-    return this.listInstalledPluginsInDir('.continue/rules');
+    return await this.listInstalledPluginsInDir('.continue/rules');
   }
 
   /**
