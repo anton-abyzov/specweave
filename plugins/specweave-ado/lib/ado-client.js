@@ -128,6 +128,28 @@ class AdoClient {
     return response;
   }
   /**
+   * Add hyperlink relation to work item (for PR linking)
+   *
+   * @see https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/update
+   */
+  async addHyperlink(workItemId, url, comment) {
+    const apiUrl = `${this.baseUrl}/_apis/wit/workitems/${workItemId}?api-version=7.1`;
+    const operations = [{
+      op: "add",
+      path: "/relations/-",
+      value: {
+        rel: "Hyperlink",
+        url,
+        attributes: {
+          comment
+        }
+      }
+    }];
+    await this.request("PATCH", apiUrl, operations, {
+      "Content-Type": "application/json-patch+json"
+    });
+  }
+  /**
    * Get comments for work item
    *
    * @see https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/comments/list
