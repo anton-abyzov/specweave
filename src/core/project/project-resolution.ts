@@ -7,7 +7,7 @@
  * 3. Intelligent keyword detection (multi-project mode)
  * 4. Ultimate fallback ("default")
  *
- * Key Architecture Decision (ADR-0140):
+ * Key Architecture Decision (ADR-0195):
  * - Frontmatter project: field REMOVED as source
  * - Per-US fields are now the single source of truth
  * - This service centralizes all project resolution logic
