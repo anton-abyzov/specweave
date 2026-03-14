@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.449] - 2026-03-14
+
+### Changes
+- fix: update ado-client plugin
+- docs: rewrite introduction — fix coverage thresholds, skills count, add LSP and social proof
+- fix: add missing await to all listInstalledPluginsInDir return calls
+- fix: add missing await in detect() for continue, aider, tabnine adapters
+- feat: install plugin skills into tool-native folders instead of AGENTS.md
+- fix: brand SVG icons use brand colors instead of currentColor
+- guard: block process.cwd() + .specweave/ path regressions in pre-commit
+- fix: use resolveEffectiveRoot in skill-judge and dora-calculator to handle umbrella repos
+
+---
+
+
+
 ## [1.0.448] - 2026-03-13
 
 ### Changes
