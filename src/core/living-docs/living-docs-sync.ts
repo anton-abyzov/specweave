@@ -19,6 +19,7 @@
 import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
+import matter from 'gray-matter';
 import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
@@ -221,12 +222,19 @@ export class LivingDocsSync {
 
       this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
 
+      // Hoist SKIP_EXTERNAL_SYNC check once — used by both cross-project and single-project paths.
+      // P1-3 FIX: proper boolean parsing handles "false" string correctly.
+      // See: ADR-0129 (US Sync Guard Rails), TODOWRITE-CRASH-RECOVERY.md
+      const skipExternalSync = ['true', '1', 'yes'].includes(
+        (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
+      );
+
       // Step 4: Parse increment spec
       const parsed = await this.parseIncrementSpec(incrementId);
 
       // Step 4b: Detect cross-project/cross-board increments (v0.33.0+, v0.34.0 2-level)
       // If USs target different projects (or project/board combinations), sync to multiple folders
-      // v0.34.1: Use ProjectResolutionService instead of frontmatter.project (ADR-0140)
+      // v0.34.1: Use ProjectResolutionService instead of frontmatter.project (ADR-0195)
       const resolved = await this.projectResolution.resolveProjectForIncrement(incrementId);
       const defaultProject = resolved.projectId;
       this.logger.debug(`   Resolved project: ${defaultProject} (${resolved.source}, ${resolved.confidence})`);
@@ -305,8 +313,7 @@ export class LivingDocsSync {
             if (existsSync(crossProjectFeatureFilePath)) {
               try {
                 const existingContent = await fs.readFile(crossProjectFeatureFilePath, 'utf-8');
-                const matter = await import('gray-matter');
-                const parsed_existing = matter.default(existingContent);
+                const parsed_existing = matter(existingContent);
                 crossExistingFrontmatter = {};
                 if (parsed_existing.data.externalLinks) crossExistingFrontmatter.externalLinks = parsed_existing.data.externalLinks;
                 if (parsed_existing.data.external_tools) crossExistingFrontmatter.external_tools = parsed_existing.data.external_tools;
@@ -316,9 +323,11 @@ export class LivingDocsSync {
             }
 
             // Generate FEATURE.md with cross-references (now uses target paths)
+            // CRITICAL FIX (0523): Use validGroups (not groups) so filtered-out placeholder
+            // projects don't appear as dead cross-reference links in FEATURE.md
             const crossRefs = this.crossProjectSync.generateCrossReferences(
               featureId,
-              [...groups.keys()],
+              [...validGroups.keys()],
               targetPath
             );
             let featureContent = generateFeatureFile(featureId, {
@@ -331,38 +340,17 @@ export class LivingDocsSync {
             }
 
             // Generate feature illustration image for cross-project (v1.0.148+)
-            // Detect doc context: internal by default (living docs are internal)
-            const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
-            const docContext: DocContext = crossProjectPath.includes('/public/') ? 'public' : 'internal';
-            if (!skipImageGen) {
-              try {
-                const crossProjectFeatureFile = path.join(crossProjectPath, 'FEATURE.md');
-                const imageResult = await generateLivingDocsImagesEnhanced(
-                  crossProjectPath,
-                  parsed.title,
-                  featureId,
-                  docContext
-                );
-                if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
-                  const imagePath = getRelativeImagePath(crossProjectFeatureFile, imageResult.featureImage);
-                  const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
-                  featureContent = featureContent.replace(
-                    /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
-                    `$1${imageMarkdown}\n\n`
-                  );
-                  this.logger.log(`   🖼️  Generated ${docContext} feature illustration: ${path.basename(imageResult.featureImage)}`);
-                  result.filesCreated.push(imageResult.featureImage);
-                }
-              } catch (imgError) {
-                this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
-              }
-            }
+            const crossProjectFeatureFile = path.join(crossProjectPath, 'FEATURE.md');
+            featureContent = await this.generateAndInjectImage(
+              crossProjectPath, crossProjectFeatureFile, parsed.title, featureId, featureContent, result
+            );
 
             await fs.writeFile(path.join(crossProjectPath, 'FEATURE.md'), featureContent, 'utf-8');
             result.filesCreated.push(path.join(crossProjectPath, 'FEATURE.md'));
 
             // Create user story files for this target path
-            const allTargetPaths = [...groups.keys()];
+            // Use validGroups so related_projects frontmatter only references valid projects
+            const allTargetPaths = [...validGroups.keys()];
             for (const story of projectStories) {
               const existingFile = await findExistingUserStoryFile(crossProjectPath, story.id, this.logger);
               const storySlug = slugifyTitle(story.title);
@@ -427,10 +415,6 @@ export class LivingDocsSync {
         // CRITICAL FIX (2025-12-23): Cross-project increments were skipping external sync!
         // Bug: Early return at line 319 bypassed syncToExternalTools() entirely
         // Fix: Add external sync for each project in the cross-project scenario
-        const skipExternalSync = ['true', '1', 'yes'].includes(
-          (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
-        );
-
         if (!options.dryRun && !skipExternalSync && !options.skipExternalSync) {
           // For cross-project, sync external tools for EACH project's feature folder
           // Pass targetPath as projectName so resolveSyncTarget routes to correct child repo
@@ -493,8 +477,7 @@ export class LivingDocsSync {
         if (existsSync(featureFile)) {
           try {
             const existingContent = await fs.readFile(featureFile, 'utf-8');
-            const matter = await import('gray-matter');
-            const parsed_existing = matter.default(existingContent);
+            const parsed_existing = matter(existingContent);
             existingFrontmatter = {};
             if (parsed_existing.data.externalLinks) existingFrontmatter.externalLinks = parsed_existing.data.externalLinks;
             if (parsed_existing.data.external_tools) existingFrontmatter.external_tools = parsed_existing.data.external_tools;
@@ -505,37 +488,9 @@ export class LivingDocsSync {
         let featureContent = generateFeatureFile(featureId, parsed, incrementId, undefined, existingFrontmatter);
 
         // Generate feature illustration image (v1.0.148+)
-        // Skip if SPECWEAVE_SKIP_IMAGE_GEN is set (for CI/testing)
-        // Enhanced in v1.0.149: Context-aware enterprise styling (public vs internal)
-        const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
-        if (!skipImageGen) {
-          try {
-            // Detect document context based on path for enterprise-appropriate styling
-            const docContext: DocContext = projectPath.includes('/public/') ? 'public' : 'internal';
-            const imageResult = await generateLivingDocsImagesEnhanced(
-              projectPath,
-              parsed.title,
-              featureId,
-              docContext
-            );
-            if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
-              // Add image reference to feature content (after TL;DR section)
-              const imagePath = getRelativeImagePath(featureFile, imageResult.featureImage);
-              const imageMarkdown = markdownImage(`${parsed.title} illustration`, imagePath);
-              // Insert after ## TL;DR section
-              featureContent = featureContent.replace(
-                /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
-                `$1${imageMarkdown}\n\n`
-              );
-              const styleLabel = docContext === 'public' ? 'marketing-grade' : 'functional';
-              this.logger.log(`   🖼️  Generated ${styleLabel} feature illustration: ${path.basename(imageResult.featureImage)}`);
-              result.filesCreated.push(imageResult.featureImage);
-            }
-          } catch (imgError) {
-            // Image generation is non-blocking - log but continue
-            this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
-          }
-        }
+        featureContent = await this.generateAndInjectImage(
+          projectPath, featureFile, parsed.title, featureId, featureContent, result
+        );
 
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
@@ -620,13 +575,7 @@ export class LivingDocsSync {
       }
 
       // Step 7: Sync to external tools (GitHub, JIRA, ADO)
-      // CRITICAL (v0.25.1): Check SKIP_EXTERNAL_SYNC to prevent recursion cascade
-      // P1-3 FIX: Proper boolean parsing (handles "false" string correctly)
-      // See: ADR-0129 (US Sync Guard Rails), TODOWRITE-CRASH-RECOVERY.md
-      const skipExternalSync = ['true', '1', 'yes'].includes(
-        (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
-      );
-
+      // skipExternalSync is hoisted above the cross-project/single-project branch.
       if (!options.dryRun && !skipExternalSync && !options.skipExternalSync) {
         await this.syncToExternalTools(incrementId, featureId, projectPath, defaultProject);
       } else if (options.skipExternalSync) {
@@ -1179,111 +1128,6 @@ export class LivingDocsSync {
       }
       this.logger.log(`   ⚠️  Could not prompt - using default project: ${this.projectId}`);
       return this.projectId;
-    }
-  }
-
-  /**
-   * Detect if multi-project mode is enabled
-   * Checks config.json for: umbrella.enabled, multiProject.enabled, or multiple board/area mappings
-   */
-  private async detectMultiProjectMode(): Promise<{
-    isMultiProject: boolean;
-    projects: Array<{ id: string; name: string; source: string }>;
-    detectionReason: string;
-  }> {
-    const configPath = path.join(this.projectRoot, '.specweave/config.json');
-
-    if (!existsSync(configPath)) {
-      return { isMultiProject: false, projects: [], detectionReason: 'no-config' };
-    }
-
-    try {
-      const config = await readJson(configPath);
-      const projects: Array<{ id: string; name: string; source: string }> = [];
-
-      // Check umbrella.enabled (multi-repo setup)
-      if (config.umbrella?.enabled && config.umbrella?.childRepos?.length > 0) {
-        for (const repo of config.umbrella.childRepos) {
-          if (typeof repo === 'string') {
-            projects.push({ id: repo, name: repo, source: 'umbrella' });
-          } else if (repo.name) {
-            projects.push({ id: repo.name, name: repo.name, source: 'umbrella' });
-          }
-        }
-        if (projects.length > 0) {
-          return { isMultiProject: true, projects, detectionReason: 'umbrella' };
-        }
-      }
-
-      // Check multiProject.enabled
-      if (config.multiProject?.enabled && config.multiProject?.projects) {
-        const configProjects = config.multiProject.projects;
-        for (const [id, project] of Object.entries(configProjects)) {
-          const p = project as { name?: string };
-          projects.push({ id, name: p.name || id, source: 'multiProject' });
-        }
-        if (projects.length > 0) {
-          return { isMultiProject: true, projects, detectionReason: 'multiProject' };
-        }
-      }
-
-      // Check ADO area path mapping
-      if (config.sync?.profiles) {
-        for (const [_profileName, profile] of Object.entries(config.sync.profiles)) {
-          const p = profile as { provider?: string; config?: { areaPathMapping?: { mappings?: Array<{ specweaveProject: string }> }; boardMapping?: { boards?: Array<{ specweaveProject: string }> } } };
-          if (p.provider === 'ado' && p.config?.areaPathMapping?.mappings?.length) {
-            for (const mapping of p.config.areaPathMapping.mappings) {
-              if (!projects.find(proj => proj.id === mapping.specweaveProject)) {
-                projects.push({
-                  id: mapping.specweaveProject,
-                  name: mapping.specweaveProject,
-                  source: 'ado-area-path'
-                });
-              }
-            }
-          }
-          // Check JIRA board mapping
-          if (p.provider === 'jira' && p.config?.boardMapping?.boards?.length) {
-            for (const board of p.config.boardMapping.boards) {
-              if (!projects.find(proj => proj.id === board.specweaveProject)) {
-                projects.push({
-                  id: board.specweaveProject,
-                  name: board.specweaveProject,
-                  source: 'jira-board'
-                });
-              }
-            }
-          }
-        }
-        if (projects.length > 1) {
-          return { isMultiProject: true, projects, detectionReason: 'sync-profiles' };
-        }
-      }
-
-      // Check existing folders in specs/
-      const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
-      if (existsSync(specsBase)) {
-        try {
-          const entries = await fs.readdir(specsBase, { withFileTypes: true });
-          const folders = entries
-            .filter(e => e.isDirectory() && !e.name.startsWith('_'))
-            .map(e => e.name);
-          if (folders.length > 1) {
-            for (const folder of folders) {
-              if (!projects.find(p => p.id === folder)) {
-                projects.push({ id: folder, name: folder, source: 'existing-folder' });
-              }
-            }
-            return { isMultiProject: true, projects, detectionReason: 'multiple-folders' };
-          }
-        } catch {
-          // Ignore read errors
-        }
-      }
-
-      return { isMultiProject: false, projects, detectionReason: 'single-project' };
-    } catch {
-      return { isMultiProject: false, projects: [], detectionReason: 'config-error' };
     }
   }
 
@@ -2292,6 +2136,54 @@ export class LivingDocsSync {
       // Non-blocking
       this.logger.warn(`      ⚠️ ${provider} metadata backfill failed: ${(error as Error).message}`);
     }
+  }
+
+  /**
+   * Generate feature illustration image and inject after TL;DR section
+   *
+   * Encapsulates SPECWEAVE_SKIP_IMAGE_GEN check, DocContext derivation,
+   * generateLivingDocsImagesEnhanced() call, TL;DR regex replacement,
+   * logging, and non-blocking error handling.
+   *
+   * @returns Modified content with image injected, or original content if skipped/failed
+   */
+  private async generateAndInjectImage(
+    featureFolderPath: string,
+    featureFilePath: string,
+    title: string,
+    featureId: string,
+    content: string,
+    result: SyncResult
+  ): Promise<string> {
+    const skipImageGen = process.env.SPECWEAVE_SKIP_IMAGE_GEN === 'true';
+    if (skipImageGen) {
+      return content;
+    }
+    try {
+      const docContext: DocContext = featureFolderPath.includes('/public/') ? 'public' : 'internal';
+      const imageResult = await generateLivingDocsImagesEnhanced(
+        featureFolderPath,
+        title,
+        featureId,
+        docContext
+      );
+      if (imageResult.featureImage && existsSync(imageResult.featureImage)) {
+        const imagePath = getRelativeImagePath(featureFilePath, imageResult.featureImage);
+        const imageMarkdown = markdownImage(`${title} illustration`, imagePath);
+        // Insert after ## TL;DR section
+        const modified = content.replace(
+          /^(## TL;DR\n\n(?:[^\n]+\n)*\n)/m,
+          `$1${imageMarkdown}\n\n`
+        );
+        const styleLabel = docContext === 'public' ? 'marketing-grade' : 'functional';
+        this.logger.log(`   🖼️  Generated ${styleLabel} feature illustration: ${path.basename(imageResult.featureImage)}`);
+        result.filesCreated.push(imageResult.featureImage);
+        return modified;
+      }
+    } catch (imgError) {
+      this.logger.log(`   ⚠️  Image generation skipped: ${imgError}`);
+    }
+    return content;
   }
 
   /**
