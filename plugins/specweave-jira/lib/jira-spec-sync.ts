@@ -17,6 +17,8 @@ import { SpecMetadataManager } from '../../../src/core/specs/spec-metadata-manag
 import { SpecParser } from '../../../src/core/specs/spec-parser.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { existsSync } from 'fs';
+import yaml from 'yaml';
 import {
   SpecContent,
   UserStory,
@@ -90,8 +92,10 @@ export class JiraSpecSync {
   private specManager: SpecMetadataManager;
   private client: AxiosInstance;
   private config: JiraConfig;
+  private projectRoot: string;
 
   constructor(config: JiraConfig, projectRoot: string = process.cwd(), projectId?: string) {
+    this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
 
@@ -377,6 +381,7 @@ export class JiraSpecSync {
       // Check if story already exists (scoped to this spec to avoid US-ID collisions)
       const existingStory = await this.findStoryByTitle(us.id, spec.metadata.id);
 
+      let storyKey: string;
       if (existingStory) {
         // UPDATE existing story (also set epicLink to fix orphaned stories)
         await this.updateStory(existingStory.key, {
@@ -386,6 +391,7 @@ export class JiraSpecSync {
           epicLink: epicKey
         });
 
+        storyKey = existingStory.key;
         updated.push(us.id);
         console.log(`   ✅ Updated ${us.id}`);
       } else {
@@ -398,12 +404,57 @@ export class JiraSpecSync {
           priority: us.priority
         });
 
+        storyKey = newStory.key;
         created.push(us.id);
         console.log(`   ✅ Created ${us.id} → Story ${newStory.key}`);
       }
+
+      // Write JIRA story key back to living doc US file frontmatter
+      await this.writeJiraKeyToUSFile(spec.metadata.id, us.id, storyKey);
     }
 
     return { created, updated, deleted };
+  }
+
+  /**
+   * Write JIRA story key back to living doc US file frontmatter.
+   * Searches all project subdirs for the matching US file and adds external_tools.jira.key.
+   */
+  private async writeJiraKeyToUSFile(featureId: string, usId: string, storyKey: string): Promise<void> {
+    try {
+      const specsRoot = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      if (!existsSync(specsRoot)) return;
+
+      for (const proj of await fs.readdir(specsRoot)) {
+        const featureDir = path.join(specsRoot, proj, featureId);
+        if (!existsSync(featureDir)) continue;
+
+        for (const file of await fs.readdir(featureDir)) {
+          if (!file.startsWith('us-') || !file.endsWith('.md')) continue;
+          const filePath = path.join(featureDir, file);
+          const content = await fs.readFile(filePath, 'utf-8');
+          const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+          if (!fmMatch) continue;
+
+          const frontmatter = yaml.parse(fmMatch[1]);
+          if (frontmatter.id !== usId) continue;
+
+          // Already has the key - skip
+          if (frontmatter.external_tools?.jira?.key === storyKey) return;
+
+          // Update external_tools.jira.key
+          if (!frontmatter.external_tools) frontmatter.external_tools = {};
+          if (!frontmatter.external_tools.jira) frontmatter.external_tools.jira = {};
+          frontmatter.external_tools.jira.key = storyKey;
+
+          const newFm = yaml.stringify(frontmatter).trimEnd();
+          const rest = content.slice(fmMatch[0].length);
+          await fs.writeFile(filePath, `---\n${newFm}\n---${rest}`, 'utf-8');
+          console.log(`      📝 Saved JIRA key ${storyKey} to ${file}`);
+          return;
+        }
+      }
+    } catch { /* non-blocking */ }
   }
 
   /**
