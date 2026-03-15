@@ -5,23 +5,24 @@ import axios from "axios";
 import { consoleLogger } from "../../specweave/lib/vendor/utils/logger.js";
 import { autoDetectProjectIdSync } from "../../specweave/lib/vendor/utils/project-detection.js";
 import { deriveFeatureId } from "../../specweave/lib/vendor/utils/feature-id-derivation.js";
+import { getApiBaseUrl } from "./jira-deployment-detector.js";
 import { GitHubACCheckboxSync } from "../../specweave-github/lib/github-ac-checkbox-sync.js";
-class AdoACCheckboxSync {
+class JiraACCheckboxSync {
   constructor(options) {
     this.projectRoot = options.projectRoot;
     this.incrementId = options.incrementId;
     this.logger = options.logger ?? consoleLogger;
     this.projectId = autoDetectProjectIdSync(this.projectRoot) || "default";
   }
-  async syncACCheckboxesToAdo(config) {
+  async syncACCheckboxesToJira(config) {
     const result = { success: true, updated: 0, issues: [] };
     try {
-      const adoConfig = this.resolveAdoConfig(config);
-      if (!adoConfig) {
-        this.logger.log("\u2139\uFE0F  ADO sync not configured \u2014 skipping AC checkbox sync");
+      const jiraConfig = this.resolveJiraConfig(config);
+      if (!jiraConfig) {
+        this.logger.log("\u2139\uFE0F  JIRA sync not configured \u2014 skipping AC checkbox sync");
         return result;
       }
-      const client = this.buildClient(adoConfig);
+      const client = this.buildClient(jiraConfig);
       const specPath = path.join(
         this.projectRoot,
         ".specweave/increments",
@@ -39,23 +40,25 @@ class AdoACCheckboxSync {
         return result;
       }
       this.logger.log(`
-\u{1F4CA} Syncing AC checkboxes to ADO (${acStatus.size} ACs found)...`);
+\u{1F4CA} Syncing AC checkboxes to JIRA (${acStatus.size} ACs found)...`);
       const userStories = await this.loadUserStoriesForIncrement();
       if (userStories.length === 0) {
         this.logger.log("\u2139\uFE0F  No user stories found for increment");
         return result;
       }
       for (const usFile of userStories) {
-        const adoInfo = usFile.external_tools?.ado;
-        const storyId = adoInfo?.id ?? adoInfo?.workItemId;
-        if (!storyId) {
-          this.logger.log(`   \u23ED\uFE0F  ${usFile.id} \u2014 no ADO work item ID linked`);
+        const jiraInfo = usFile.external_tools?.jira;
+        const storyKey = jiraInfo?.key;
+        if (!storyKey) {
+          this.logger.log(`   \u23ED\uFE0F  ${usFile.id} \u2014 no JIRA story key linked`);
           continue;
         }
         const acPrefix = GitHubACCheckboxSync.buildACPrefix(usFile.id);
         const usAcStatus = /* @__PURE__ */ new Map();
         for (const [acId, completed] of acStatus) {
-          if (acId.startsWith(acPrefix)) usAcStatus.set(acId, completed);
+          if (acId.startsWith(acPrefix)) {
+            usAcStatus.set(acId, completed);
+          }
         }
         if (usAcStatus.size === 0) {
           this.logger.log(`   \u23ED\uFE0F  ${usFile.id} \u2014 no matching ACs`);
@@ -64,106 +67,125 @@ class AdoACCheckboxSync {
         try {
           const updated = await this.updateStoryCheckboxes(
             client,
-            adoConfig,
-            Number(storyId),
+            jiraConfig.domain,
+            storyKey,
             usAcStatus
           );
           if (updated > 0) {
             result.updated += updated;
-            result.issues.push(Number(storyId));
-            this.logger.log(`   \u2705 ${usFile.id} #${storyId} \u2014 updated ${updated} checkbox(es) + posted comment`);
+            result.issues.push(storyKey);
+            this.logger.log(`   \u2705 ${usFile.id} ${storyKey} \u2014 updated ${updated} checkbox(es)`);
           } else {
-            this.logger.log(`   \u23ED\uFE0F  ${usFile.id} #${storyId} \u2014 no changes needed`);
+            this.logger.log(`   \u23ED\uFE0F  ${usFile.id} ${storyKey} \u2014 no changes needed`);
           }
         } catch (err) {
-          this.logger.log(`   \u26A0\uFE0F  ${usFile.id} #${storyId} \u2014 update failed: ${err}`);
+          this.logger.log(`   \u26A0\uFE0F  ${usFile.id} ${storyKey} \u2014 update failed: ${err}`);
           result.success = false;
         }
       }
       this.logger.log(`
-\u{1F4CA} ADO AC Sync: updated ${result.updated} checkbox(es) in ${result.issues.length} work item(s)`);
+\u{1F4CA} JIRA AC Sync: updated ${result.updated} checkbox(es) in ${result.issues.length} story/stories`);
       return result;
     } catch (error) {
-      this.logger.error("\u274C ADO AC checkbox sync failed:", error);
+      this.logger.error("\u274C JIRA AC checkbox sync failed:", error);
       result.success = false;
       return result;
     }
   }
   /**
-   * Fetch current HTML description, regex-flip ☐/☑ for matching ACs, PATCH back.
-   * Posts a comment listing all AC statuses when any AC changed.
+   * Fetch the current ADF description from JIRA, walk taskItem nodes,
+   * update state based on acStatus map, then PUT back.
    */
-  async updateStoryCheckboxes(client, adoConfig, storyId, acStatus) {
+  async updateStoryCheckboxes(client, domain, storyKey, acStatus) {
     const resp = await client.get(
-      `/wit/workitems/${storyId}?fields=System.Description&api-version=7.0`
+      `/issue/${storyKey}?fields=description`,
+      { headers: { Accept: "application/json" } }
     );
-    let description = resp.data?.fields?.["System.Description"] ?? "";
-    const original = description;
-    let updatedCount = 0;
-    for (const [acId, completed] of acStatus) {
-      const escaped = acId.replace(/-/g, "\\-");
-      const beforeRegex = new RegExp(`(\u2610|\u2611)\\s+(${escaped}:)`, "g");
-      const newCheckbox = completed ? "\u2611" : "\u2610";
-      const replaced = description.replace(beforeRegex, `${newCheckbox} $2`);
-      if (replaced !== description) {
-        updatedCount++;
-        description = replaced;
+    const description = resp.data?.fields?.description;
+    if (!description || typeof description !== "object") {
+      return 0;
+    }
+    let updated = 0;
+    this.walkAdf(description, (node) => {
+      if (node.type !== "taskItem") return;
+      const text = this.extractText(node);
+      for (const [acId, completed] of acStatus) {
+        if (text.includes(acId)) {
+          const newState = completed ? "DONE" : "TODO";
+          if (node.attrs?.state !== newState) {
+            node.attrs = { ...node.attrs, state: newState };
+            updated++;
+          }
+          break;
+        }
+      }
+    });
+    if (updated > 0) {
+      await client.put(`/issue/${storyKey}`, {
+        fields: { description }
+      });
+    }
+    return updated;
+  }
+  /** Recursively walk ADF nodes calling visitor for each */
+  walkAdf(node, visitor) {
+    visitor(node);
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        this.walkAdf(child, visitor);
       }
     }
-    if (description === original) return 0;
-    await client.patch(
-      `/wit/workitems/${storyId}?api-version=7.0`,
-      [{ op: "replace", path: "/fields/System.Description", value: description }],
-      { headers: { "Content-Type": "application/json-patch+json" } }
-    );
-    const completedCount = [...acStatus.values()].filter(Boolean).length;
-    const totalCount = acStatus.size;
-    const percentage = Math.round(completedCount / totalCount * 100);
-    const acLines = [...acStatus.entries()].map(([id, done]) => `<li>${done ? "\u2705" : "\u2B1C"} ${id}</li>`).join("\n");
-    const commentHtml = `<h3>\u{1F4CA} AC Progress Update</h3>
-<p><strong>Acceptance Criteria</strong>: ${completedCount}/${totalCount} (${percentage}%)</p>
-<ul>
-${acLines}
-</ul>
-<p>\u{1F916} Auto-updated by SpecWeave AC Completion Gate</p>`;
-    await client.post(
-      `/wit/workItems/${storyId}/comments?api-version=7.1-preview.3`,
-      { text: commentHtml }
-    );
-    return updatedCount;
   }
-  buildClient(adoConfig) {
-    const token = Buffer.from(`:${adoConfig.pat}`).toString("base64");
+  /** Extract plain text from an ADF node (concat all text leaves) */
+  extractText(node) {
+    if (node.type === "text") return node.text ?? "";
+    if (!Array.isArray(node.content)) return "";
+    return node.content.map((c) => this.extractText(c)).join("");
+  }
+  buildClient(jiraConfig) {
+    const token = Buffer.from(`${jiraConfig.email}:${jiraConfig.apiToken}`).toString("base64");
     return axios.create({
-      baseURL: `https://dev.azure.com/${adoConfig.organization}/${adoConfig.project}/_apis`,
+      baseURL: getApiBaseUrl(jiraConfig.domain),
       headers: {
         Authorization: `Basic ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json"
+        "Content-Type": "application/json"
       }
     });
   }
-  resolveAdoConfig(config) {
+  resolveJiraConfig(config) {
     const profiles = config.sync?.profiles;
     if (profiles) {
       for (const profile of Object.values(profiles)) {
-        if (profile?.provider === "ado" && profile?.organization) {
-          const pat2 = profile.personalAccessToken || profile.pat || process.env.AZURE_DEVOPS_PAT || "";
-          if (pat2) return { organization: profile.organization, project: profile.project, pat: pat2 };
+        if (profile?.provider === "jira" && profile?.domain) {
+          const email2 = profile.email || process.env.JIRA_EMAIL || "";
+          const apiToken2 = profile.apiToken || profile.token || process.env.JIRA_API_TOKEN || "";
+          if (email2 && apiToken2) {
+            return { domain: profile.domain, email: email2, apiToken: apiToken2 };
+          }
         }
       }
     }
-    const ado = config.sync?.ado;
-    if (ado?.organization) {
-      const pat2 = ado.personalAccessToken || ado.pat || process.env.AZURE_DEVOPS_PAT || "";
-      if (pat2) return { organization: ado.organization, project: ado.project, pat: pat2 };
+    const jira = config.sync?.jira;
+    if (jira?.domain) {
+      const email2 = jira.email || process.env.JIRA_EMAIL || "";
+      const apiToken2 = jira.apiToken || jira.token || process.env.JIRA_API_TOKEN || "";
+      if (email2 && apiToken2) {
+        return { domain: jira.domain, email: email2, apiToken: apiToken2 };
+      }
     }
-    const pat = process.env.AZURE_DEVOPS_PAT || "";
-    const org = process.env.AZURE_DEVOPS_ORG || "";
-    const proj = process.env.AZURE_DEVOPS_PROJECT || "";
-    if (pat && org && proj) return { organization: org, project: proj, pat };
+    const email = process.env.JIRA_EMAIL || "";
+    const apiToken = process.env.JIRA_API_TOKEN || "";
+    const baseUrl = process.env.JIRA_BASE_URL || "";
+    if (email && apiToken && baseUrl) {
+      const domain = baseUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      return { domain, email, apiToken };
+    }
     return null;
   }
+  /**
+   * Load user stories from living docs for the increment.
+   * Reuses the same logic as GitHubACCheckboxSync.
+   */
   async loadUserStoriesForIncrement() {
     const specFile = path.join(
       this.projectRoot,
@@ -202,11 +224,12 @@ ${acLines}
     const specsRoot = path.join(this.projectRoot, ".specweave/docs/internal/specs");
     const usFiles = [];
     const projectDirs = [];
-    const primary = path.join(specsRoot, this.projectId, featureId);
-    if (existsSync(primary)) projectDirs.push(primary);
+    const primaryPath = path.join(specsRoot, this.projectId, featureId);
+    if (existsSync(primaryPath)) projectDirs.push(primaryPath);
     if (existsSync(specsRoot)) {
       try {
-        for (const proj of await fs.readdir(specsRoot)) {
+        const allProjects = await fs.readdir(specsRoot);
+        for (const proj of allProjects) {
           if (proj === this.projectId) continue;
           const p = path.join(specsRoot, proj, featureId);
           if (existsSync(p)) projectDirs.push(p);
@@ -215,12 +238,14 @@ ${acLines}
       }
     }
     for (const featurePath of projectDirs) {
-      for (const file of await fs.readdir(featurePath)) {
+      const files = await fs.readdir(featurePath);
+      for (const file of files) {
         if (!file.startsWith("us-") || !file.endsWith(".md")) continue;
         const fileContent = await fs.readFile(path.join(featurePath, file), "utf-8");
         const match = fileContent.match(/^---\n([\s\S]*?)\n---/);
         if (match) {
           const fm = yaml.parse(match[1]);
+          const externalTools = fm.external_tools || fm.external;
           usFiles.push({
             id: fm.id,
             title: fm.title,
@@ -231,7 +256,7 @@ ${acLines}
             external_url: fm.external_url,
             imported_at: fm.imported_at,
             origin: fm.origin,
-            external_tools: fm.external_tools || fm.external
+            external_tools: externalTools
           });
         }
       }
@@ -240,5 +265,5 @@ ${acLines}
   }
 }
 export {
-  AdoACCheckboxSync
+  JiraACCheckboxSync
 };

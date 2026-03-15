@@ -12,17 +12,17 @@ import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { GitHubClientV2 } from './github-client-v2.js';
-import { Logger, consoleLogger } from '../../../src/utils/logger.js';
-import { autoDetectProjectIdSync } from '../../../src/utils/project-detection.js';
-import { deriveFeatureId } from '../../../src/utils/feature-id-derivation.js';
+import { Logger, consoleLogger } from '../../specweave/lib/vendor/utils/logger.js';
+import { autoDetectProjectIdSync } from '../../specweave/lib/vendor/utils/project-detection.js';
+import { deriveFeatureId } from '../../specweave/lib/vendor/utils/feature-id-derivation.js';
 import {
   ProviderRouter,
   GitHubRepoConfig,
-} from '../../../src/sync/provider-router.js';
+} from '../../specweave/lib/vendor/sync/provider-router.js';
 import {
   isProviderEnabled,
-} from '../../../src/sync/status-mapper.js';
-import { resolvePermissions, SyncPreset } from '../../../src/sync/config.js';
+} from '../../specweave/lib/vendor/sync/status-mapper.js';
+import { resolvePermissions, SyncPreset } from '../../specweave/lib/vendor/sync/config.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
 import type { LivingDocsUSFile } from '../../../src/types/living-docs-us-file.js';
 
