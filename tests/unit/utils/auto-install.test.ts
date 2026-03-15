@@ -371,4 +371,69 @@ describe('auto-install', () => {
       expect(result.agents).toEqual(['agent-a']);
     });
   });
+
+  // ========== COMPONENT_MAPPING - mobile keywords ==========
+
+  describe('COMPONENT_MAPPING - mobile keywords', () => {
+    it('should map "react native" to frontend skill', () => {
+      expect(COMPONENT_MAPPING['react native']).toBeDefined();
+      expect(COMPONENT_MAPPING['react native'].skills).toContain('frontend');
+    });
+
+    it('should map "react-native" to frontend skill', () => {
+      expect(COMPONENT_MAPPING['react-native']).toBeDefined();
+      expect(COMPONENT_MAPPING['react-native'].skills).toContain('frontend');
+    });
+
+    it('should map "expo" to frontend skill', () => {
+      expect(COMPONENT_MAPPING['expo']).toBeDefined();
+      expect(COMPONENT_MAPPING['expo'].skills).toContain('frontend');
+    });
+
+    it('should map "ios" to empty arrays', () => {
+      expect(COMPONENT_MAPPING['ios']).toBeDefined();
+      expect(COMPONENT_MAPPING['ios'].skills).toEqual([]);
+      expect(COMPONENT_MAPPING['ios'].agents).toEqual([]);
+    });
+
+    it('should map "android" to empty arrays', () => {
+      expect(COMPONENT_MAPPING['android']).toBeDefined();
+      expect(COMPONENT_MAPPING['android'].skills).toEqual([]);
+      expect(COMPONENT_MAPPING['android'].agents).toEqual([]);
+    });
+
+    it('should map "mobile" to empty arrays', () => {
+      expect(COMPONENT_MAPPING['mobile']).toBeDefined();
+      expect(COMPONENT_MAPPING['mobile'].skills).toEqual([]);
+      expect(COMPONENT_MAPPING['mobile'].agents).toEqual([]);
+    });
+
+    it('should map "app store" to empty arrays', () => {
+      expect(COMPONENT_MAPPING['app store']).toBeDefined();
+      expect(COMPONENT_MAPPING['app store'].skills).toEqual([]);
+      expect(COMPONENT_MAPPING['app store'].agents).toEqual([]);
+    });
+
+    it('should map "play store" to empty arrays', () => {
+      expect(COMPONENT_MAPPING['play store']).toBeDefined();
+      expect(COMPONENT_MAPPING['play store'].skills).toEqual([]);
+      expect(COMPONENT_MAPPING['play store'].agents).toEqual([]);
+    });
+
+    it('should install frontend skill exactly once for combined "react native ios" prompt', () => {
+      const result = analyzeUserIntent('Create a react native ios app');
+      const frontendCount = result.skills.filter(s => s === 'frontend').length;
+      expect(frontendCount).toBe(1);
+    });
+
+    it('should have no phantom mobile plugin in any mobile COMPONENT_MAPPING entry', () => {
+      const mobileKeys = ['react native', 'react-native', 'expo', 'ios', 'android', 'mobile', 'app store', 'play store'];
+      for (const key of mobileKeys) {
+        const entry = COMPONENT_MAPPING[key];
+        expect(entry, `entry for "${key}" should exist`).toBeDefined();
+        expect(entry.skills).not.toContain('mobile');
+        expect(entry.agents).not.toContain('mobile');
+      }
+    });
+  });
 });
