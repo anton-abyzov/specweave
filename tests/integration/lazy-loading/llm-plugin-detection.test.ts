@@ -126,7 +126,7 @@ describe('LLM Plugin Detection', () => {
   });
 
   describeIfCli('With Claude CLI Available', () => {
-    it('should detect frontend plugins for React prompt', async () => {
+    it('should return empty plugins for React prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM('Build a React dashboard with charts');
 
       // Skip gracefully if LLM API isn't working (auth error, rate limit, etc.)
@@ -136,12 +136,12 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('frontend');
-      expect(result.confidence).toBeGreaterThan(0.5);
+      // Domain plugins (frontend, backend, etc.) are no longer returned - only sw-* plugins
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
       expect(result.durationMs).toBeLessThan(30000);
     }, 60000);
 
-    it('should detect backend plugins for API prompt', async () => {
+    it('should return empty plugins for API prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM('Create a Node.js REST API with Express');
 
       if (!result.success) {
@@ -150,11 +150,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('backend');
-      expect(result.confidence).toBeGreaterThan(0.5);
+      // Domain plugins (backend, etc.) are no longer returned - only sw-* plugins
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect multiple plugins for full-stack prompt', async () => {
+    it('should return only sw-* plugins for full-stack prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Build a full-stack app with React frontend, Node.js backend, and Playwright tests'
       );
@@ -165,12 +165,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('frontend');
-      expect(result.plugins).toContain('backend');
-      expect(result.plugins).toContain('testing');
+      // Domain plugins (frontend, backend, testing) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect K8s plugins for Kubernetes prompt', async () => {
+    it('should return only sw-* plugins for Kubernetes prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Deploy the app to Kubernetes with Helm charts'
       );
@@ -181,10 +180,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('k8s');
+      // Domain plugins (k8s) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect infrastructure plugins for Terraform prompt', async () => {
+    it('should return only sw-* plugins for Terraform prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Set up AWS infrastructure using Terraform with VPC and ECS'
       );
@@ -195,10 +195,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('infra');
+      // Domain plugins (infra) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect payment plugins for Stripe prompt', async () => {
+    it('should return only sw-* plugins for Stripe prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Integrate Stripe checkout for subscription billing'
       );
@@ -209,10 +210,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('payments');
+      // Domain plugins (payments) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect testing plugins for TDD prompt', async () => {
+    it('should return only sw-* plugins for TDD prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Use TDD to implement the user authentication with Vitest'
       );
@@ -223,10 +225,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('testing');
+      // Domain plugins (testing) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect ML plugins for machine learning prompt', async () => {
+    it('should return only sw-* plugins for ML prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Train a PyTorch model for image classification'
       );
@@ -237,10 +240,11 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('ml');
+      // Domain plugins (ml) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect mobile plugins for React Native prompt', async () => {
+    it('should return only sw-* plugins for React Native prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Build a React Native app for iOS and Android'
       );
@@ -251,7 +255,8 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('mobile');
+      // Domain plugins (mobile) are no longer returned
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
     it('should return empty plugins for unrelated prompt', async () => {
@@ -286,7 +291,7 @@ describe('LLM Plugin Detection', () => {
 
   // Nuanced negative context tests - verifying LLM understands INTENT
   describeIfCli('Nuanced Negative Context Handling', () => {
-    it('should NOT detect frontend when user wants CLI tool only', async () => {
+    it('should NOT detect domain plugins when user wants CLI tool only', async () => {
       const result = await detectPluginsViaLLM(
         'Build a simple CLI tool in Node.js. Don\'t use React or any frontend framework.'
       );
@@ -297,13 +302,13 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should NOT include frontend plugin - user explicitly wants CLI/backend only
+      // Domain plugins are no longer returned - only sw-* plugins
       expect(result.plugins).not.toContain('frontend');
-      // Should include backend for Node.js
-      expect(result.plugins).toContain('backend');
+      expect(result.plugins).not.toContain('backend');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect frontend when user wants Vue instead of React', async () => {
+    it('should return only sw-* plugins for Vue prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Don\'t use React, I prefer Vue.js for this dashboard project'
       );
@@ -314,11 +319,12 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should STILL include frontend - Vue is frontend technology!
-      expect(result.plugins).toContain('frontend');
+      // Domain plugins (frontend) are no longer returned
+      expect(result.plugins).not.toContain('frontend');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect mobile when user wants mobile instead of web', async () => {
+    it('should return only sw-* plugins for mobile prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Don\'t use React web, make it a React Native mobile app instead'
       );
@@ -329,12 +335,12 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should include mobile
-      expect(result.plugins).toContain('mobile');
-      // Frontend is optional here - React Native can be considered either way
+      // Domain plugins (mobile) are no longer returned
+      expect(result.plugins).not.toContain('mobile');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect frontend when migrating from one framework to another', async () => {
+    it('should return only sw-* plugins for framework migration prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'I tried React but it was too complex. Help me build a simple Vue.js app instead.'
       );
@@ -345,12 +351,12 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should detect frontend (Vue is frontend)
-      expect(result.plugins).toContain('frontend');
-      expect(result.confidence).toBeGreaterThan(0.5);
+      // Domain plugins (frontend) are no longer returned
+      expect(result.plugins).not.toContain('frontend');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect frontend when user hates React but needs web UI', async () => {
+    it('should return only sw-* plugins for Angular prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'I hate React but I need to build a web dashboard with Angular'
       );
@@ -361,11 +367,12 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      // Negative sentiment about React shouldn't exclude frontend domain
-      expect(result.plugins).toContain('frontend');
+      // Domain plugins (frontend) are no longer returned
+      expect(result.plugins).not.toContain('frontend');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
-    it('should detect backend only for terminal/server application', async () => {
+    it('should return only sw-* plugins for server application prompt (domain plugins removed)', async () => {
       const result = await detectPluginsViaLLM(
         'Build a terminal-based server application. No UI, just API endpoints.'
       );
@@ -376,8 +383,10 @@ describe('LLM Plugin Detection', () => {
       }
 
       expect(result.success).toBe(true);
-      expect(result.plugins).toContain('backend');
+      // Domain plugins (backend, frontend) are no longer returned
+      expect(result.plugins).not.toContain('backend');
       expect(result.plugins).not.toContain('frontend');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
   });
 
@@ -489,7 +498,7 @@ describe('Hook Output Format', () => {
     // Hook output must be valid JSON with specific fields
     const hookOutput = {
       continue: true,
-      systemMessage: 'SpecWeave: Loaded frontend, backend plugins for your React + Node.js project.',
+      systemMessage: 'SpecWeave: Loaded sw-github plugin for your project.',
     };
 
     // Must be valid JSON
@@ -815,10 +824,11 @@ describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should have backend (for .NET)
-      expect(result.plugins).toContain('backend');
+      // Domain plugins (backend) are no longer returned - only sw-* plugins
+      expect(result.plugins).not.toContain('backend');
       // Should NOT have broken csharp-lsp from official marketplace
       expect(result.plugins).not.toContain('csharp-lsp');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
     it('should NOT return gopls-lsp for Go prompt', async () => {
@@ -830,10 +840,11 @@ describe('LLM Detection Should NOT Suggest Broken LSP Plugins', () => {
       }
 
       expect(result.success).toBe(true);
-      // Should have backend (for Go)
-      expect(result.plugins).toContain('backend');
+      // Domain plugins (backend) are no longer returned - only sw-* plugins
+      expect(result.plugins).not.toContain('backend');
       // Should NOT have broken gopls-lsp from official marketplace
       expect(result.plugins).not.toContain('gopls-lsp');
+      expect(result.plugins.every((p: string) => p === 'sw' || p.startsWith('sw-'))).toBe(true);
     }, 60000);
 
     it('should NOT return any *-lsp plugins from official marketplace', async () => {
