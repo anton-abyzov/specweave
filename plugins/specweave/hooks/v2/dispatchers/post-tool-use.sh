@@ -325,12 +325,12 @@ case "$FILE_PATH" in
     # TASK-AC SYNC (v0.35.2+): Sync task completion to spec.md ACs
     # ========================================================================
     # When tasks.md is edited, sync completed task ACs to spec.md
-    # This runs SYNCHRONOUSLY but is NON-BLOCKING (never fails)
+    # Runs in BACKGROUND (non-blocking) — FILE_PATH passed as $1 argument
     if [[ "$FILE_PATH" == *tasks.md ]]; then
       SYNC_SCRIPT="$HOOK_DIR/guards/task-ac-sync-guard.sh"
       if [[ -f "$SYNC_SCRIPT" ]]; then
         log_debug "Running task-ac-sync guard (background)"
-        safe_run_background "$SYNC_SCRIPT" "task-ac-sync"
+        safe_run_background "$SYNC_SCRIPT" "task-ac-sync" "$FILE_PATH"
       fi
 
       # ========================================================================
