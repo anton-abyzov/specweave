@@ -19,6 +19,7 @@ import { enableAgentTeamsEnvVar } from '../helpers/init/claude-settings-env.js';
 
 export interface TeamCommandOptions {
   mode?: 'tmux' | 'in-process';
+  noIncrement?: boolean;
 }
 
 const VALID_MODES = ['tmux', 'in-process'] as const;
@@ -91,27 +92,34 @@ export async function handleTeamCommand(
   // Determine mode
   const mode = resolveTeammateMode(options.mode);
 
-  // Build args — always interactive (no -p flag, which is non-interactive one-shot)
+  // Build args — interactive mode with optional initial prompt as positional arg
   const args: string[] = ['--dangerously-skip-permissions', '--teammate-mode', mode];
+
+  // Build env
+  const spawnEnv: Record<string, string> = {
+    ...process.env as Record<string, string>,
+    CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
+  };
+
+  if (options.noIncrement) {
+    spawnEnv.SPECWEAVE_NO_INCREMENT = '1';
+  }
 
   // Spawn claude with team env
   console.log(chalk.cyan(`Launching Claude Code with agent teams (${mode} mode)...`));
+  if (options.noIncrement) {
+    console.log(chalk.yellow('Free-form mode: no increment required. Agents can be spawned without a spec.'));
+  }
   console.log(chalk.gray('Agent Teams is an experimental feature. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in your env.'));
 
-  // Print description as suggested prompt for user to type in interactive Claude
+  // Pass description as positional arg (interactive session with initial prompt)
   if (description) {
-    console.log('');
-    console.log(chalk.green('Once Claude Code opens, paste this prompt:'));
-    console.log(chalk.white(`  ${description}`));
-    console.log('');
+    args.push(description);
   }
 
   const child = spawn('claude', args, {
     stdio: 'inherit',
-    env: {
-      ...process.env,
-      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
-    },
+    env: spawnEnv,
   });
 
   child.on('error', (err) => {

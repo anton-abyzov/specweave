@@ -38,12 +38,14 @@ Spawn a coordinated team of agents from a preset configuration. Each preset defi
 
 | Preset | Mode | Increment Required? | team_name prefix |
 |--------|------|-------------------|-----------------|
-| `full-stack` | implementation | Yes | `impl-*` or any |
+| `full-stack` | implementation | Yes* | `impl-*` or any |
 | `review` | review | **No** | `review-*` |
 | `brainstorm` | brainstorm | **No** | `brainstorm-*` |
-| `testing` | implementation | Yes | `impl-*` or any |
-| `tdd` | implementation | Yes | `impl-*` or any |
-| `migration` | implementation | Yes | `impl-*` or any |
+| `testing` | implementation | Yes* | `impl-*` or any |
+| `tdd` | implementation | Yes* | `impl-*` or any |
+| `migration` | implementation | Yes* | `impl-*` or any |
+
+\* Bypassed when `SPECWEAVE_NO_INCREMENT=1` is set (e.g. `specweave team --no-increment`). In free-form mode, agents work from natural language descriptions without spec.md.
 
 **CRITICAL**: `review` and `brainstorm` presets MUST use their mode-prefixed team_name to bypass the spec-first guard.
 

@@ -78,14 +78,20 @@ ls ~/.claude/tasks/ 2>/dev/null
 
 ---
 
-## 0. Increment Pre-Flight (BLOCKING)
+## 0. Increment Pre-Flight (CONDITIONAL)
 
-**CRITICAL: /sw:team-lead REQUIRES an existing increment with a substantive spec.md.**
-A PreToolUse guard on TeamCreate will BLOCK team creation if no increment exists.
+The team-lead works best with an increment (spec.md, plan.md, tasks.md) but can also run **without one** in free-form mode.
 
-**You MUST verify an increment exists BEFORE proceeding to Step 1.**
+### Check: Is an increment required?
 
-### Check for Existing Increment
+**Free-form mode** (no increment needed) applies when:
+- `SPECWEAVE_NO_INCREMENT=1` is set (via `specweave team --no-increment`)
+- The team_name uses a non-implementation prefix (`review-*`, `brainstorm-*`, `analysis-*`)
+- The user explicitly opted out of increment creation
+
+In free-form mode: **skip the rest of Section 0** and proceed directly to Step 1. Agents will work from the natural language description instead of a spec. Note: without a spec, `/sw:done` closure is not available — the team-lead simply coordinates agent completion.
+
+### Standard mode: Verify increment exists
 
 ```bash
 # Single-repo
@@ -122,7 +128,7 @@ Store the increment path as `MASTER_INCREMENT_PATH` — you will reference it in
 This leads to uncoordinated implementation, scope creep, and missing acceptance criteria.
 The spec-first principle exists because specs are the contract between user intent and agent execution.
 
-### Activate the Master Increment (MANDATORY)
+### Activate the Master Increment (MANDATORY — standard mode only)
 
 **Before spawning ANY agents**, transition the master increment to `"active"` status. The `specweave complete` command silently exits on increments with `"planned"` or `"backlog"` status — if you skip this step, closure will fail.
 
@@ -661,51 +667,28 @@ ALLOWED but use with caution:
 
 **Why**: Closure loads 4+ skill definitions into context. Running it while agents are active causes the orchestrator to enter extended thinking (30+ min) and stop responding to agent messages — freezing the entire session.
 
-### Orchestrator Quality Gate — Closure Phase (After ALL Agents Complete)
+### Orchestrator Quality Gate — Closure Phase (SIMPLIFIED)
 
 **Closure begins ONLY after ALL agents have signaled COMPLETION (or been declared stuck).**
 
-The team-lead runs closure **centrally** for each increment, sequentially in dependency order.
-
-**CRITICAL: Increments MUST be closed sequentially, not skipped on failure.**
+**Do NOT manually run grill/done per increment — delegate to `/sw:team-merge`.**
 
 ```
-Closure Phase (triggered when all COMPLETION signals received):
-  1. Verify: all agents signaled COMPLETION (or declared stuck)
-  2. No unresolved BLOCKING_ISSUE messages
-  3. Run full test suite (all domains combined)
-  4. For EACH increment in dependency order (shared → database → backend → frontend → testing → security):
-     a. PRE-CLOSURE STATUS CHECK:
-        - Read metadata.json status
-        - If status is "planned" or "backlog" → Edit to "active" (agents may not have activated)
-        - If status is "completed" → Skip (already closed)
-     b. Run /sw:grill on the increment
-     c. If grill finds CRITICAL/BLOCKER issues:
-        → Fix them directly (team-lead has cleaner context than agents)
-        → Re-run /sw:grill (max 2 retries)
-        → If still failing after 2 retries → log failure, move to next increment
-     d. Run /sw:done --auto <id>
-     e. If /sw:done fails (quality gate, desync, missing reports):
-        → Read the error output carefully
-        → Fix the root cause (sync ACs, update task counts, write missing reports)
-        → Re-run /sw:done --auto <id> (max 2 retries)
-     f. Verify closure: check metadata.json status == "completed"
-  5. After all increments attempted:
-     - If ALL closed → /sw:team-merge
-     - If SOME failed → report which increments are still open with failure reasons
-     - Do NOT leave increments in limbo — either close them or clearly report why they can't close
+AFTER ALL AGENTS COMPLETE (3 steps only):
+  1. Verify ALL agents signaled COMPLETION (no unresolved BLOCKING_ISSUE)
+  2. Invoke /sw:team-merge — it handles:
+     - Status validation (activates "planned" increments)
+     - /sw:done per increment in dependency order
+     - Sync to GitHub/JIRA/ADO
+     - Team state archival
+  3. Run Step 9 cleanup (TeamDelete + kill tmux panes)
 ```
 
-**Common closure failures and fixes:**
+**CRITICAL**: Do NOT attempt inline closure (grill → done → retry loops) yourself.
+The team-merge skill has its own retry logic and error handling.
+Attempting inline closure bloats the orchestrator's context and causes the "stuck after first agent" bug.
 
-| Failure | Root Cause | Fix |
-|---------|-----------|-----|
-| `specweave complete` exits silently | metadata.json status is "planned" | Edit metadata.json: set status to "active" |
-| Desync error | spec.md AC count != metadata.json | Run `specweave sync-acs <id>` or fix manually |
-| Missing grill-report.json | Grill wasn't run or didn't write report | Run `/sw:grill <id>` — it writes the report |
-| Missing judge-llm-report.json | Judge wasn't run | Write WAIVED report if no external model consent |
-| Task count mismatch | tasks.md frontmatter != actual checked tasks | Update `completed_tasks` in tasks.md frontmatter |
-| ACs not all checked | Some ACs still `[ ]` in spec.md | Verify implementation, then check them `[x]` |
+**If /sw:team-merge fails**, report the failure to the user with the error message. Do NOT retry inline.
 
 ### Grill Checklist per Domain
 
@@ -804,31 +787,41 @@ When an agent is declared stuck:
   │     └── DO NOT run grill/done/closure during this phase
   ├── Step 6: Collect all COMPLETION signals (or declare remaining agents stuck)
   │
-  │ ── CLOSURE PHASE (all agents done, team-lead runs quality gates) ──
+  │ ── CLOSURE PHASE (all agents done) ──
   │
-  ├── Step 7: Team-lead runs centralized closure per increment (dependency order):
-  │     ├── Pre-closure: verify/fix metadata.json status → must be "active"
-  │     ├── /sw:grill → fix findings → retry if needed (max 2)
-  │     └── /sw:done --auto → fix gate failures → retry if needed (max 2)
-  ├── Step 8: Merge and close (/sw:team-merge)
-  └── Step 9: Post-completion cleanup (TeamDelete → removes ~/.claude/teams/ and tasks/)
+  ├── Step 7: Invoke /sw:team-merge (handles all closure: done, sync, archival)
+  ├── Step 8: TeamDelete() + kill orphaned tmux panes (MANDATORY)
+  └── Done.
 ```
 
 **IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.
 Direct invocation of `/sw:team-lead` without an existing increment will trigger the guard and auto-invoke `/sw:increment`.
 
-### Step 9: Post-Completion Cleanup (MANDATORY)
+### Step 9: Post-Completion Cleanup (MANDATORY — NEVER SKIP)
 
-**After delivering results OR after /sw:team-merge, ALWAYS clean up the team.**
+**After delivering results OR after /sw:team-merge, ALWAYS clean up the team AND its tmux panes.**
+
+TeamDelete() only removes filesystem state — it does NOT close tmux panes. You MUST kill orphaned panes manually.
 
 ```typescript
-// Clean up the team session so the next invocation starts fresh
+// 1. Clean up team filesystem state
 TeamDelete();
 ```
 
-This removes `~/.claude/teams/{team-name}/` and `~/.claude/tasks/{team-name}/`, ensuring subsequent `/sw:team-lead` invocations can create new teams without conflicts.
+```bash
+// 2. Kill orphaned tmux panes (MANDATORY — panes persist after TeamDelete)
+// List all panes, kill any teammate panes that are no longer needed
+tmux list-panes -a -F '#{pane_id} #{pane_current_command}' 2>/dev/null | grep -i claude | head -20
+# Kill specific panes (replace %ID with actual pane IDs from above):
+# tmux kill-pane -t %ID
 
-**If you skip this step**, the next `/sw:team-lead` run in the same session will likely fail to spawn agents.
+// 3. Or kill the entire tmux session if all work is done:
+# tmux kill-session -t <session-name>
+```
+
+**Why this matters**: Claude Code only kills panes when the ENTIRE session exits via its cleanup hook. If agents finish but the main session continues, their panes stay open indefinitely — consuming terminal resources and confusing the user.
+
+**If you skip this step**, orphaned tmux panes accumulate and the next `/sw:team-lead` run will fail to spawn agents due to stale team state.
 
 ### --dry-run Output
 
