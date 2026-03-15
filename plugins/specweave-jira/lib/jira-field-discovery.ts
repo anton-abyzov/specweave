@@ -124,10 +124,9 @@ export async function getEpicLinkFieldForProject(
 
   const epicLinkFieldId = await discoverEpicLinkField(domain, auth);
   if (!epicLinkFieldId) {
-    throw new Error(
-      `Could not discover Epic Link custom field for ${domain}. ` +
-      `Ensure the JIRA instance has the Epic Link field and API credentials have field read access.`
-    );
+    // Modern Jira Cloud has deprecated the "Epic Link" custom field even for company-managed
+    // projects. Fall back to the native `parent` field (same object form as next-gen).
+    return { field: 'parent', style: 'next-gen' };
   }
   return { field: epicLinkFieldId, style };
 }
