@@ -480,11 +480,15 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
       }
     }
 
-    // PHASE 3: Verification (Count check for duplicates)
+    // PHASE 3: Verification — SKIPPED BY DEFAULT to reduce API calls (FS-529)
+    // Phase 1 already searched for duplicates. Phase 3 only adds value if there's a
+    // race condition from parallel sync sessions, which is rare. Enable with
+    // SPECWEAVE_VERIFY_DUPLICATES=1 env var if needed.
+    let duplicatesClosed = 0;
+
+    if (process.env.SPECWEAVE_VERIFY_DUPLICATES === '1') {
     console.log(`\n━━━ PHASE 3: VERIFICATION ━━━`);
     const verification = await this.verifyAfterCreate(titlePattern, 1, repo);
-
-    let duplicatesClosed = 0;
 
     if (!verification.success && verification.duplicates.length > 0) {
       // PHASE 4: Reflection (Auto-correct duplicates)
@@ -506,11 +510,11 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
     } else if (verification.success) {
       console.log(`   ✅ No duplicates detected!`);
     }
+    } // end SPECWEAVE_VERIFY_DUPLICATES guard
 
     // Final Summary
     console.log(`\n✅ Issue creation complete!`);
     console.log(`   Issue: #${issueNumber}`);
-    console.log(`   Duplicates found: ${verification.duplicates.length}`);
     console.log(`   Duplicates closed: ${duplicatesClosed}`);
     console.log(`   Reused existing: ${wasReused ? 'Yes' : 'No'}`);
 
@@ -520,7 +524,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
         title,
         url: issueUrl
       },
-      duplicatesFound: verification.duplicates.length,
+      duplicatesFound: duplicatesClosed,
       duplicatesClosed,
       wasReused
     };

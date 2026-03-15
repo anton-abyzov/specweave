@@ -38,18 +38,19 @@ WORKFLOW:
        content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [test strategy, frameworks]\nFiles: [test file list]\nCoverage plan: [unit/integration/E2E breakdown]",
        summary: "Testing plan ready — proceeding to implementation" })
   9. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
-  10. Write unit tests for new services/components
-  11. Write integration tests for API endpoints
-  12. Write E2E tests for user journeys
-  13. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  14. After EACH task completion, send heartbeat:
+  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+      Tasks should include: unit tests for services/components, integration tests for APIs, E2E tests for user journeys
+  11. During /sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Testing agent: task {N} of {total} done" })
-  15. Run all tests (unit + integration + E2E): npm test && npx playwright test
-  16. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
-  17. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
-  18. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  12. Run all tests (unit + integration + E2E): npm test && npx playwright test
+  13. Do NOT signal completion until all tests pass -- if tests fail, fix and repeat
+  14. Signal COMPLETION with structured summary:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nCoverage: [percentage]\nACs satisfied: [AC-IDs]",
+       summary: "Testing agent: all tasks complete, tests passing" })
+  15. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to test files (listed above)

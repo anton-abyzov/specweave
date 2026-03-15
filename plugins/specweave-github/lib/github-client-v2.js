@@ -1,5 +1,5 @@
 import { execFileNoThrow } from "../../specweave/lib/vendor/utils/execFileNoThrow.js";
-class GitHubClientV2 {
+const _GitHubClientV2 = class _GitHubClientV2 {
   /**
    * Create GitHub client from sync profile
    */
@@ -36,7 +36,7 @@ class GitHubClientV2 {
       config: { owner, repo },
       timeRange: { default: "1M", max: "6M" }
     };
-    return new GitHubClientV2(profile);
+    return new _GitHubClientV2(profile);
   }
   /**
    * Get repository owner
@@ -320,6 +320,11 @@ ${body}`;
    * Get issue details
    */
   async getIssue(issueNumber) {
+    const cacheKey = `${this.fullRepo}#${issueNumber}`;
+    const cached = _GitHubClientV2.issueCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < _GitHubClientV2.CACHE_TTL_MS) {
+      return cached.data;
+    }
     const result = await execFileNoThrow("gh", [
       "issue",
       "view",
@@ -335,7 +340,7 @@ ${body}`;
       );
     }
     const issue = JSON.parse(result.stdout);
-    return {
+    const normalized = {
       ...issue,
       // gh CLI returns state as UPPERCASE ("OPEN"/"CLOSED"), normalize to lowercase
       // for consistency with GitHub REST API which uses lowercase
@@ -343,6 +348,8 @@ ${body}`;
       html_url: issue.url,
       labels: issue.labels?.map((l) => l.name) || []
     };
+    _GitHubClientV2.issueCache.set(cacheKey, { data: normalized, fetchedAt: Date.now() });
+    return normalized;
   }
   /**
    * Search for issue by exact title match
@@ -789,7 +796,11 @@ ${body}`;
     }
     return events;
   }
-}
+};
+// Session cache: avoids redundant API calls for the same issue within 30s
+_GitHubClientV2.issueCache = /* @__PURE__ */ new Map();
+_GitHubClientV2.CACHE_TTL_MS = 3e4;
+let GitHubClientV2 = _GitHubClientV2;
 export {
   GitHubClientV2
 };
