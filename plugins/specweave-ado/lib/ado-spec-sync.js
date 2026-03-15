@@ -271,7 +271,8 @@ class AdoSpecSync {
         await this.updateStory(existingStory.id, {
           title: storyTitle,
           description: storyDescription,
-          state: us.status === "done" ? "Closed" : us.status === "in-progress" ? "Active" : "New"
+          state: us.status === "done" ? "Closed" : us.status === "in-progress" ? "Active" : "New",
+          parentId: featureId
         });
         updated.push(us.id);
         console.log(`   \u2705 Updated ${us.id}`);
@@ -496,9 +497,29 @@ ${acList}
         value: updates.state
       });
     }
-    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
-      headers: { "Content-Type": "application/json-patch+json" }
-    });
+    if (payload.length > 0) {
+      await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
+        headers: { "Content-Type": "application/json-patch+json" }
+      });
+    }
+    if (updates.parentId) {
+      try {
+        await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
+          {
+            op: "add",
+            path: "/relations/-",
+            value: {
+              rel: "System.LinkTypes.Hierarchy-Reverse",
+              url: `https://dev.azure.com/${this.config.organization}/${this.config.project}/_apis/wit/workitems/${updates.parentId}`,
+              attributes: { name: "Parent" }
+            }
+          }
+        ], {
+          headers: { "Content-Type": "application/json-patch+json" }
+        });
+      } catch {
+      }
+    }
   }
   /**
    * Map SpecWeave priority to ADO priority value
