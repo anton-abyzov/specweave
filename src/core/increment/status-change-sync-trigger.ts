@@ -38,6 +38,12 @@ import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 export class StatusChangeSyncTrigger {
   private static circuitBreaker = new SyncCircuitBreaker();
   private static logger: Logger = consoleLogger;
+  /**
+   * When true, triggerIfNeeded() is a no-op.
+   * Set by completeIncrement() to prevent double-sync:
+   * onIncrementDone() is the single sync point during completion.
+   */
+  static suppressForCompletion = false;
 
   /**
    * Trigger sync if status transition warrants it
@@ -56,6 +62,10 @@ export class StatusChangeSyncTrigger {
   ): Promise<void> {
     // Skip sync in test environment to prevent real API calls and unhandled rejections
     if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      return;
+    }
+    // Skip when completeIncrement() is running — onIncrementDone() handles sync
+    if (StatusChangeSyncTrigger.suppressForCompletion) {
       return;
     }
     // CRITICAL FIX (2025-11-24): Check if feature_id is null for ACTIVE increments
