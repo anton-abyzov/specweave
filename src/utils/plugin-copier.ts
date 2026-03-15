@@ -12,8 +12,11 @@
 
 import {
   chmodSync,
+  copyFileSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
   existsSync,
   rmSync,
@@ -386,3 +389,156 @@ export function installPlugin(
  * @deprecated Use installPlugin() instead. Alias kept for backward compatibility.
  */
 export const copyPlugin = installPlugin;
+
+// ---------------------------------------------------------------------------
+// Core: copyPluginSkillsToProject (v1.0.535 — direct file copy, no CLI)
+// ---------------------------------------------------------------------------
+
+/**
+ * Copy all skills from a specweave plugin directly into .claude/skills/.
+ *
+ * Instead of using `claude plugin install` (which writes to global cache),
+ * this walks the plugin's skills/ directory and copies each SKILL.md to
+ * the project-local `.claude/skills/{skillName}/SKILL.md`.
+ *
+ * @param pluginName - Name of the plugin in marketplace.json
+ * @param specweaveRoot - Root of the specweave package
+ * @param projectRoot - Root of the user's project (where .claude/ lives)
+ * @param options - Installation options
+ * @returns Installation result
+ */
+export function copyPluginSkillsToProject(
+  pluginName: string,
+  specweaveRoot: string,
+  projectRoot: string,
+  options: CopyPluginOptions = {},
+): CopyPluginResult {
+  // 1. Find marketplace.json
+  const marketplacePath = join(specweaveRoot, '.claude-plugin', 'marketplace.json');
+  if (!existsSync(marketplacePath)) {
+    return { success: false, sha: '', error: 'marketplace.json not found' };
+  }
+
+  // 2. Resolve plugin source directory
+  const plugins = parseMarketplace(marketplacePath);
+  const pluginEntry = plugins.find(p => p.name === pluginName);
+  if (!pluginEntry) {
+    return { success: false, sha: '', error: `Plugin "${pluginName}" not in marketplace.json` };
+  }
+
+  const sourceDir = resolve(specweaveRoot, pluginEntry.source);
+  if (!existsSync(sourceDir)) {
+    return { success: false, sha: '', error: `Source dir not found: ${sourceDir}` };
+  }
+
+  // 3. Compute hash and check lockfile for skip
+  const sha = computePluginHash(sourceDir);
+  const lock = ensureLockfile(projectRoot);
+
+  if (!options.force && lock.skills[pluginName]?.sha === sha) {
+    return { success: true, sha, skipped: true };
+  }
+
+  // 4. Find skills/ subdirectory in the plugin source
+  const skillsDir = join(sourceDir, 'skills');
+  if (!existsSync(skillsDir)) {
+    // Plugin has no skills (e.g. hooks-only plugin) — nothing to copy
+    return { success: true, sha, skipped: true };
+  }
+
+  // 5. Copy each skill's SKILL.md to .claude/skills/{skillName}/
+  const targetSkillsBase = join(projectRoot, '.claude', 'skills');
+  let copiedCount = 0;
+
+  try {
+    const skillDirs = readdirSync(skillsDir, { encoding: 'utf-8' });
+    for (const skillName of skillDirs) {
+      const skillSourceDir = join(skillsDir, skillName);
+
+      // Skip non-directories
+      try {
+        const stat = statSync(skillSourceDir);
+        if (!stat.isDirectory()) continue;
+      } catch {
+        continue;
+      }
+
+      const skillMdPath = join(skillSourceDir, 'SKILL.md');
+      if (!existsSync(skillMdPath)) continue;
+
+      // Create target directory and copy SKILL.md
+      const targetDir = join(targetSkillsBase, skillName);
+      mkdirSync(targetDir, { recursive: true });
+      copyFileSync(skillMdPath, join(targetDir, 'SKILL.md'));
+      copiedCount++;
+
+      // Also copy any agents/*.md files if present
+      const agentsDir = join(skillSourceDir, 'agents');
+      if (existsSync(agentsDir)) {
+        const targetAgentsDir = join(targetDir, 'agents');
+        mkdirSync(targetAgentsDir, { recursive: true });
+        try {
+          const agentFiles = readdirSync(agentsDir, { encoding: 'utf-8' });
+          for (const agentFile of agentFiles) {
+            if (agentFile.endsWith('.md')) {
+              copyFileSync(join(agentsDir, agentFile), join(targetAgentsDir, agentFile));
+            }
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+    }
+  } catch (err) {
+    return { success: false, sha, error: `Failed to copy skills: ${err}` };
+  }
+
+  // 6. Copy hooks to .claude/hooks/ if present
+  const hooksDir = join(sourceDir, 'hooks');
+  if (existsSync(hooksDir)) {
+    const targetHooksDir = join(projectRoot, '.claude', 'hooks');
+    mkdirSync(targetHooksDir, { recursive: true });
+    try {
+      const hookFiles = readdirSync(hooksDir, { encoding: 'utf-8' });
+      for (const hookFile of hookFiles) {
+        const srcPath = join(hooksDir, hookFile);
+        const destPath = join(targetHooksDir, hookFile);
+        try {
+          const stat = statSync(srcPath);
+          if (stat.isFile()) {
+            copyFileSync(srcPath, destPath);
+            if (hookFile.endsWith('.sh')) {
+              chmodSync(destPath, 0o755);
+            }
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  // 7. Migrate: remove legacy ~/.claude/commands/<name>/ if present
+  migrateLegacyCommandsDir(pluginName);
+
+  // 8. Update lockfile
+  lock.skills[pluginName] = {
+    version: pluginEntry.version || '0.0.0',
+    sha,
+    tier: 'BUNDLED',
+    installedAt: new Date().toISOString(),
+    source: 'local:specweave',
+  };
+  if (!lock.agents.includes('claude-code')) {
+    lock.agents.push('claude-code');
+  }
+  try {
+    writeLockfile(lock, projectRoot);
+  } catch {
+    // Non-fatal: lockfile write failure shouldn't block install
+  }
+
+  return { success: true, sha, targetDir: targetSkillsBase };
+}

@@ -26,7 +26,7 @@ draft: true
 
 **[PAUSE. New line.]**
 
-> "Nearly 2,000 commits. 0% failure rate across 235 releases."
+> "Nearly 4,000 commits across four repositories. 700 releases — roughly four every single day."
 
 **[PAUSE. New line.]**
 
@@ -36,7 +36,7 @@ draft: true
 
 > "Boris Cherny — the creator of Claude Code at Anthropic — said something recently that stopped me mid-sentence: that software development as we knew it is essentially done. Not the craft. Not the thinking. But the idea that writing code is the bottleneck? Done.
 >
-> I've been living that statement for the past year. And I want to show you what it actually looks like, not as a demo — as a life.
+> I've been living that statement for the past five months. And I want to show you what it actually looks like, not as a demo — as a life.
 >
 > I never sat down and said 'I want to build 10 apps.' I never planned a content strategy or thought about growing a social media following. I just had ideas I wanted to ship. And I built a system that handled everything else — the specs, the code, the tests, the documentation, the GitHub sync, the social posts, the publishing.
 >
@@ -44,7 +44,7 @@ draft: true
 >
 > The apps. The open source project. The Slack channels where AI agents report progress to me. The AppleScript that posts to social media while I sleep. And verified-skill.com — the platform that makes skills safe to share and trust.
 >
-> I'm one developer. I have a full-time job and a family. And in the last year I shipped what a small team would call a full year's roadmap — across ten projects, simultaneously. Not because I worked harder. Because the system removed everything that used to stand between an idea and a shipped product."
+> I'm one developer. I have a full-time job and a family. And in five months I shipped what a small team would call a full year's roadmap — across ten projects, simultaneously. Not because I worked harder. Because the system removed everything that used to stand between an idea and a shipped product."
 
 **[SCREEN: Fast 4-second montage — App Store pages, Slack threads with agent messages, terminal with /sw:auto running, verified-skill.com]**
 
@@ -58,9 +58,9 @@ draft: true
 
 > "Before I explain anything, I want to give you the numbers.
 >
-> SpecWeave — the spec-first layer I built that makes everything you're about to see possible — has nearly 2,000 commits over 14 months. At peak velocity: 100 commits in a single day. 448,000 lines of code. 934 TypeScript files. 209 Architecture Decision Records. 24 plugins, 136 skills, 64 hooks.
+> SpecWeave — the spec-first layer I built that makes everything you're about to see possible — has nearly 4,000 commits across four repositories in just five months. At peak velocity: 100 commits in a single day. Nearly 900,000 lines of TypeScript. 3,200 source files. 828 test files. 24 plugins, 136 skills, 64 hooks.
 >
-> DORA metrics: 0% change failure rate across 235 releases. Deployment frequency: 100 per month, Elite tier. Nothing failed in production."
+> 700 version releases — that's roughly four per day. Deployment frequency: 120 per month, Elite tier by any DORA standard. And every single release went through automated quality gates before shipping."
 
 **[SCREEN: Show App Store pages for Lulla, WC26, BizZone]**
 
@@ -599,7 +599,7 @@ specweave analyze .
 
 > "I want to close with something honest.
 >
-> I'm not a tech influencer. I'm a developer who had a problem — too many ideas, too little time — and built a system to solve it. SpecWeave started as a tool for myself. Now it has nearly 2,000 commits, 10 production apps running on it, and social media growth I couldn't have imagined six months ago.
+> I'm not a tech influencer. I'm a developer who had a problem — too many ideas, too little time — and built a system to solve it. SpecWeave started as a tool for myself. Now it has nearly 4,000 commits across four repos, 700 releases, 10 production apps running on it, and social media growth I couldn't have imagined six months ago.
 >
 > The growth on Threads and X didn't come from clever marketing. It came from consistently building in public, letting AI help me communicate what I'm working on, and creating real content from real work. 700% is a number, but the actual value is that I stayed consistent through months when building felt slow.
 >
@@ -718,9 +718,11 @@ specweave analyze .
 - verified-skill.com/docs/guides/life-automation — social + Obsidian automation
 
 **Stats to verify before filming** (check git log + analytics):
-- Total commits: ~1,986 (verify with `git log --oneline | wc -l`)
-- DORA change failure rate: 0% across 235 releases
-- Deployment frequency: 100/month
+- Total commits: ~3,913 across 4 repos (specweave: 2,594 | vskill-platform: 581 | vskill: 393 | umbrella: 345)
+- Version releases: 706 total (specweave: 597 tags | vskill: 109 tags) — ~4/day
+- Deployment frequency: ~120/month (Elite DORA tier)
+- Lines of TS/JS: ~888,000 | Test files: 828 | Source files: 3,194 (specweave)
+- Development timeline: 5 months (Oct 25, 2025 – Mar 15, 2026)
 - Social stats (as of Mar 14): Threads 169K views, 12.4K interactions, 194 followers | X 35.5K impressions, 70 followers
 - Started from: ~25 X followers, ~40 Threads followers (~1 month ago)
 - TypeScript files, skills count, plugins count: run `specweave status`
