@@ -352,11 +352,12 @@ export class JiraSpecSync {
       const existingStory = await this.findStoryByTitle(us.id);
 
       if (existingStory) {
-        // UPDATE existing story
+        // UPDATE existing story (also set epicLink to fix orphaned stories)
         await this.updateStory(existingStory.key, {
           summary: storySummary,
           description: storyDescription,
-          status: us.status === 'done' ? 'Done' : us.status === 'in-progress' ? 'In Progress' : 'To Do'
+          status: us.status === 'done' ? 'Done' : us.status === 'in-progress' ? 'In Progress' : 'To Do',
+          epicLink: epicKey
         });
 
         updated.push(us.id);
@@ -392,8 +393,11 @@ export class JiraSpecSync {
 h1. ${spec.metadata.title}
 
 *Spec ID*: ${spec.metadata.id}
+
 *Priority*: ${spec.metadata.priority}
+
 *Status*: ${spec.metadata.status}
+
 ${progressText}
 
 ----
@@ -649,7 +653,7 @@ ${acList}
    */
   private async updateStory(
     storyKey: string,
-    updates: { summary?: string; description?: string; status?: string }
+    updates: { summary?: string; description?: string; status?: string; epicLink?: string }
   ): Promise<void> {
     const payload: any = {
       fields: {}
@@ -661,6 +665,19 @@ ${acList}
 
     if (updates.description) {
       payload.fields.description = toDescription(updates.description, this.config.domain);
+    }
+
+    if (updates.epicLink) {
+      const { field: epicField, style } = await getEpicLinkFieldForProject(
+        this.config.domain,
+        this.config.projectKey,
+        { email: this.config.email, apiToken: this.config.apiToken }
+      );
+      if (style === 'next-gen') {
+        payload.fields.parent = { key: updates.epicLink };
+      } else {
+        payload.fields[epicField] = updates.epicLink;
+      }
     }
 
     await this.client.put(`/issue/${storyKey}`, payload);
