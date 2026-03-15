@@ -229,7 +229,8 @@ class JiraSpecSync {
         await this.updateStory(existingStory.key, {
           summary: storySummary,
           description: storyDescription,
-          status: us.status === "done" ? "Done" : us.status === "in-progress" ? "In Progress" : "To Do"
+          status: us.status === "done" ? "Done" : us.status === "in-progress" ? "In Progress" : "To Do",
+          epicLink: epicKey
         });
         updated.push(us.id);
         console.log(`   \u2705 Updated ${us.id}`);
@@ -257,8 +258,11 @@ class JiraSpecSync {
 h1. ${spec.metadata.title}
 
 *Spec ID*: ${spec.metadata.id}
+
 *Priority*: ${spec.metadata.priority}
+
 *Status*: ${spec.metadata.status}
+
 ${progressText}
 
 ----
@@ -469,6 +473,18 @@ ${acList}
     }
     if (updates.description) {
       payload.fields.description = toDescription(updates.description, this.config.domain);
+    }
+    if (updates.epicLink) {
+      const { field: epicField, style } = await getEpicLinkFieldForProject(
+        this.config.domain,
+        this.config.projectKey,
+        { email: this.config.email, apiToken: this.config.apiToken }
+      );
+      if (style === "next-gen") {
+        payload.fields.parent = { key: updates.epicLink };
+      } else {
+        payload.fields[epicField] = updates.epicLink;
+      }
     }
     await this.client.put(`/issue/${storyKey}`, payload);
     if (updates.status) {

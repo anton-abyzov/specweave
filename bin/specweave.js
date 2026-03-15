@@ -711,7 +711,7 @@ program
 // Validate Jira command - Jira resource validation
 program
   .command('validate-jira')
-  .description('Validate Jira configuration and create missing resources')
+  .description('Validate Jira connection, project, and issue-type configuration; create missing issue types if needed')
   .option('--env <path>', 'Path to .env file', '.env')
   .action(async (options) => {
     const { runJiraValidation } = await import('../dist/src/cli/commands/validate-jira.js');

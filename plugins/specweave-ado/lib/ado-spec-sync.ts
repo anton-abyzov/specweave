@@ -391,11 +391,12 @@ export class AdoSpecSync {
       const existingStory = await this.findStoryByTitle(us.id);
 
       if (existingStory) {
-        // UPDATE existing story
+        // UPDATE existing story (also re-apply parent to fix orphaned stories)
         await this.updateStory(existingStory.id, {
           title: storyTitle,
           description: storyDescription,
-          state: us.status === 'done' ? 'Closed' : us.status === 'in-progress' ? 'Active' : 'New'
+          state: us.status === 'done' ? 'Closed' : us.status === 'in-progress' ? 'Active' : 'New',
+          parentId: featureId
         });
 
         updated.push(us.id);
@@ -646,7 +647,7 @@ ${acList}
    */
   private async updateStory(
     storyId: number,
-    updates: { title?: string; description?: string; state?: string }
+    updates: { title?: string; description?: string; state?: string; parentId?: number }
   ): Promise<void> {
     const payload: any[] = [];
 
@@ -674,9 +675,33 @@ ${acList}
       });
     }
 
-    await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
-      headers: { 'Content-Type': 'application/json-patch+json' }
-    });
+    if (payload.length > 0) {
+      await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload, {
+        headers: { 'Content-Type': 'application/json-patch+json' }
+      });
+    }
+
+    // Re-apply parent link separately — ADO rejects adding a duplicate relation,
+    // so we catch that error and continue (parent is already set, which is correct).
+    if (updates.parentId) {
+      try {
+        await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, [
+          {
+            op: 'add',
+            path: '/relations/-',
+            value: {
+              rel: 'System.LinkTypes.Hierarchy-Reverse',
+              url: `https://dev.azure.com/${this.config.organization}/${this.config.project}/_apis/wit/workitems/${updates.parentId}`,
+              attributes: { name: 'Parent' }
+            }
+          }
+        ], {
+          headers: { 'Content-Type': 'application/json-patch+json' }
+        });
+      } catch {
+        // Duplicate relation — parent already set, ignore
+      }
+    }
   }
 
   /**
