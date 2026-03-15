@@ -13,7 +13,6 @@ import path from 'path';
 import yaml from 'yaml';
 import { GitHubClientV2 } from './github-client-v2.js';
 import { Logger, consoleLogger } from '../../specweave/lib/vendor/utils/logger.js';
-import { autoDetectProjectIdSync } from '../../../src/utils/project-detection.js';
 import { deriveFeatureId } from '../../specweave/lib/vendor/utils/feature-id-derivation.js';
 import {
   ProviderRouter,
@@ -35,7 +34,6 @@ export interface ACCheckboxSyncResult {
 export class GitHubACCheckboxSync {
   private projectRoot: string;
   private incrementId: string;
-  private projectId: string;
   private logger: Logger;
   private providerRouter: ProviderRouter;
 
@@ -47,7 +45,6 @@ export class GitHubACCheckboxSync {
     this.projectRoot = options.projectRoot;
     this.incrementId = options.incrementId;
     this.logger = options.logger ?? consoleLogger;
-    this.projectId = autoDetectProjectIdSync(this.projectRoot) || 'default';
     this.providerRouter = new ProviderRouter({ projectRoot: this.projectRoot, logger: this.logger });
   }
 
@@ -342,23 +339,13 @@ ${[...usAcStatus.entries()].map(([id, done]) =>
     const specsRoot = path.join(this.projectRoot, '.specweave/docs/internal/specs');
     const usFiles: LivingDocsUSFile[] = [];
 
-    // Collect all project folders that have this feature
+    // Scan all project folders for this feature
     const projectDirs: string[] = [];
-    const primaryPath = path.join(specsRoot, this.projectId, featureId);
-    if (existsSync(primaryPath)) {
-      projectDirs.push(primaryPath);
-    }
-
-    // For cross-project increments, also scan other project folders
     if (existsSync(specsRoot)) {
       try {
-        const allProjects = await fs.readdir(specsRoot);
-        for (const proj of allProjects) {
-          if (proj === this.projectId) continue;
+        for (const proj of await fs.readdir(specsRoot)) {
           const projFeaturePath = path.join(specsRoot, proj, featureId);
-          if (existsSync(projFeaturePath)) {
-            projectDirs.push(projFeaturePath);
-          }
+          if (existsSync(projFeaturePath)) projectDirs.push(projFeaturePath);
         }
       } catch {
         // Ignore readdir errors
