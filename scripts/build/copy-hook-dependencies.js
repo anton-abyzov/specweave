@@ -70,7 +70,12 @@ const PLUGIN_DEPENDENCIES = {
     // Universal Auto-Create - creates per-user-story items in JIRA/ADO
     // Used by universal-auto-create-dispatcher.sh hook
     'dist/src/core/universal-auto-create.js',
-    'dist/src/utils/feature-id-derivation.js'
+    'dist/src/utils/feature-id-derivation.js',
+    // AC Checkbox Sync deps - used by update-ac-status.ts via github/jira/ado plugin imports
+    'dist/src/utils/project-detection.js',
+    'dist/src/sync/provider-router.js',
+    'dist/src/sync/status-mapper.js',
+    'dist/src/sync/config.js',
   ]
 };
 

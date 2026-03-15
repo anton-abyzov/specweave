@@ -2,9 +2,9 @@ import { promises as fs, existsSync } from "fs";
 import path from "path";
 import yaml from "yaml";
 import axios from "axios";
-import { consoleLogger } from "../../../src/utils/logger.js";
-import { autoDetectProjectIdSync } from "../../../src/utils/project-detection.js";
-import { deriveFeatureId } from "../../../src/utils/feature-id-derivation.js";
+import { consoleLogger } from "../../specweave/lib/vendor/utils/logger.js";
+import { autoDetectProjectIdSync } from "../../specweave/lib/vendor/utils/project-detection.js";
+import { deriveFeatureId } from "../../specweave/lib/vendor/utils/feature-id-derivation.js";
 import { GitHubACCheckboxSync } from "../../specweave-github/lib/github-ac-checkbox-sync.js";
 class AdoACCheckboxSync {
   constructor(options) {
