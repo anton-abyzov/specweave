@@ -18,11 +18,13 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
-import { resolveVskillPath as _resolveVskillPath, resolveSpecweaveDir as _resolveSpecweaveDir } from '../../utils/vskill-resolver.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
 import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
+import { installPlugin as installPluginNative, findSpecweaveRoot } from '../../utils/plugin-copier.js';
+import { getDirname } from '../../utils/esm-helpers.js';
+const __dirname = getDirname(import.meta.url);
 
 // ============================================================
 // Prompt safety constants and truncation utilities (v1.0.254)
@@ -149,57 +151,17 @@ export const SPECWEAVE_PLUGINS = [
   'sw-media',      // AI image/video generation
 ] as const;
 
-/**
- * Domain skill plugins in the vskill marketplace.
- *
- * Each category is a standalone plugin (e.g., `frontend@vskill`, `backend@vskill`).
- * Skills are invoked as `plugin:skill` (e.g., `frontend:nextjs`, `backend:dotnet`).
- *
- * v2.1.0: Split from monolithic `vs` plugin into per-category plugins for granularity.
- */
-export const VSKILL_PLUGINS = [
-  'mobile',          // React Native, iOS, Android, Expo, app store publishing
-  'skills',          // Skill discovery — find and install skills
-] as const;
-
-/**
- * Plugins that are planned but not yet available (no directory on disk).
- * Kept here so the LLM prompt can inform users these are not yet installable.
- * v1.0.397: Removed from VSKILL_PLUGINS to prevent suggesting non-existent plugins.
- */
-export const VSKILL_PLUGINS_PLANNED = [
-  'frontend',        // React, Vue, Angular, Next.js, UI components [NOT YET AVAILABLE]
-  'backend',         // Java Spring Boot, Rust Axum [NOT YET AVAILABLE]
-  'testing',         // Jest, Vitest, Playwright, E2E [NOT YET AVAILABLE]
-  'infra',           // Terraform, AWS, Azure, GCP, Docker, CI/CD [NOT YET AVAILABLE]
-  'k8s',             // K8s, Helm, pods, deployments [NOT YET AVAILABLE]
-  'payments',        // Stripe, PayPal, checkout [NOT YET AVAILABLE]
-  'ml',              // Machine learning, PyTorch, TensorFlow [NOT YET AVAILABLE]
-  'kafka',           // Apache Kafka, event streaming, n8n [NOT YET AVAILABLE]
-  'confluent',       // Confluent Cloud, Schema Registry, ksqlDB [NOT YET AVAILABLE]
-  'cost',            // Cloud cost optimization [NOT YET AVAILABLE]
-  'docs',            // Extended documentation [NOT YET AVAILABLE]
-  'security',        // Security scanning and hardening [NOT YET AVAILABLE]
-  'blockchain',      // Web3, Solidity, smart contracts [NOT YET AVAILABLE]
-] as const;
-
-/** @deprecated Use VSKILL_PLUGINS */
-export const VSKILL_CATEGORIES = VSKILL_PLUGINS;
-
 export type SpecWeavePlugin = (typeof SPECWEAVE_PLUGINS)[number];
-export type VskillPlugin = (typeof VSKILL_PLUGINS)[number];
-/** @deprecated Use VskillPlugin */
-export type VskillCategory = VskillPlugin;
 
 /**
  * Combined list of all known plugins for validation.
- * Includes specweave plugins and vskill marketplace plugins.
+ * Only specweave plugins — vskill marketplace plugins have been removed (v1.0.533).
  */
-export const ALL_KNOWN_PLUGINS = [...SPECWEAVE_PLUGINS, ...VSKILL_PLUGINS] as const;
-export type KnownPlugin = SpecWeavePlugin | VskillPlugin;
+export const ALL_KNOWN_PLUGINS = [...SPECWEAVE_PLUGINS] as const;
+export type KnownPlugin = SpecWeavePlugin;
 
 /**
- * All valid plugins — specweave plugins and vskill plugins.
+ * All valid plugins — only specweave plugins (v1.0.533: vskill removed).
  */
 export const ALL_VALID_PLUGINS = ALL_KNOWN_PLUGINS;
 export type ValidPlugin = KnownPlugin;
@@ -212,28 +174,10 @@ export function isSpecWeavePlugin(plugin: string): plugin is SpecWeavePlugin {
 }
 
 /**
- * Check if a plugin is a vskill marketplace plugin.
- */
-export function isVskillPlugin(plugin: string): plugin is VskillPlugin {
-  return VSKILL_PLUGINS.includes(plugin as VskillPlugin);
-}
-
-/**
- * Check if a plugin is any known plugin (specweave or vskill).
+ * Check if a plugin is any known plugin (specweave only, v1.0.533).
  */
 export function isKnownPlugin(plugin: string): plugin is KnownPlugin {
   return (ALL_KNOWN_PLUGINS as readonly string[]).includes(plugin);
-}
-
-/**
- * Get the marketplace name for a plugin.
- * Returns 'specweave' for sw-* plugins, 'vskill' for domain skills.
- */
-export function getPluginMarketplace(plugin: string): string {
-  if (isVskillPlugin(plugin)) {
-    return 'vskill';
-  }
-  return 'specweave';
 }
 
 /**
@@ -537,30 +481,27 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
  */
 function buildDetectionPrompt(): string {
   return `You detect which plugins to load based on the user's prompt.
-Return specweave (sw-*) or vskill domain plugin names.
+Return specweave (sw-*) plugin names ONLY.
 
 DETECTION RULES:
-1. EXPLICIT tech - user says "React" → frontend, ".NET" → backend
-2. IMPLIED - "dashboard" needs API → backend
-3. Questions/discussions → ZERO plugins
-4. ONLY suggest @specweave plugins (sw-*) for workflow/integrations, or vskill plugins for domain skills
+1. EXPLICIT mention of integrations - "GitHub sync" → sw-github, "JIRA" → sw-jira
+2. Questions/discussions → ZERO plugins
+3. ONLY suggest @specweave plugins (sw-*)
+4. Domain plugins (frontend, backend, testing, etc.) are NOT available — do NOT suggest them
 
 OUTPUT FORMAT (JSON only):
-{"plugins":["frontend"],"confidence":0.9,"reasoning":"one-line"}
+{"plugins":["sw-github"],"confidence":0.9,"reasoning":"one-line"}
 
 ═══════════════════════════════════════════════════════════════
-PLUGINS - Use specweave (sw-*) or vskill domain plugin names
+AVAILABLE PLUGINS (specweave only — sw-*)
 ═══════════════════════════════════════════════════════════════
 
-mobile: React Native, iOS, Android, Expo, Flutter (ONLY if explicit)
-scout: find skill, discover skill, what skills available, search registry, install a skill, recommend skills, browse skills, vskill, skill for, which skill, explore skills (ONLY if asking about finding/discovering skills — NOT for domain work)
-sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
-
-[NOT YET AVAILABLE — DO NOT suggest these plugins, they are planned but not installable]:
-frontend, backend, testing, infra, k8s, payments, ml, kafka, confluent, security, blockchain
-sw-github: GitHub issues, PRs, Actions, sync
+sw-github: GitHub issues, PRs, Actions, sync (ONLY if explicit)
 sw-jira: JIRA, Atlassian (ONLY if explicit)
 sw-ado: Azure DevOps, work items (ONLY if explicit)
+sw-media: AI image generation, AI video generation, Remotion, text-to-image, text-to-video, Imagen, Veo, generate image, generate video, create video, media generation, Pollinations (ONLY if explicit)
+
+DO NOT suggest: frontend, backend, testing, infra, k8s, mobile, skills, payments, ml, kafka, confluent, security, blockchain — these are NOT available as plugins.
 
 ═══════════════════════════════════════════════════════════════
 INCREMENT RECOMMENDATION (v1.0.241 - DEFAULT: create increment)
@@ -628,17 +569,14 @@ EXPLICIT OPT-OUT → action: "none":
 - "just a quick fix", "without tracking", "already tracking"
 
 ═══════════════════════════════════════════════════════════════
-EXAMPLES (one per action type — keep prompt size minimal)
+EXAMPLES
 ═══════════════════════════════════════════════════════════════
 
-"Build a React Native mobile app with app store publishing"
-{"plugins":["mobile"],"confidence":0.95,"reasoning":"React Native→mobile","increment":{"action":"new","confidence":0.95,"mandatory":true,"suggestedName":"react-native-mobile-app","reasoning":"Multi-component mobile feature"}}
+"Sync our GitHub issues"
+{"plugins":["sw-github"],"confidence":0.95,"reasoning":"GitHub sync→sw-github","increment":{"action":"new","confidence":0.9,"mandatory":false,"suggestedName":"sync-github-issues","reasoning":"GitHub integration work"}}
 
 "The auth feature is broken again"
-{"plugins":[],"confidence":0.7,"reasoning":"No specific tech mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
-
-"Urgent: production mobile app is crashing"
-{"plugins":["mobile"],"confidence":0.9,"reasoning":"Mobile app issue","increment":{"action":"hotfix","confidence":0.95,"mandatory":true,"suggestedName":"mobile-crash-hotfix","reasoning":"Production issue"}}
+{"plugins":[],"confidence":0.7,"reasoning":"No specific integration mentioned","increment":{"action":"reopen","confidence":0.8,"mandatory":false,"relatedKeyword":"auth","reasoning":"Related to previous auth work"}}
 
 "Fix typo in README"
 {"plugins":[],"confidence":0.9,"reasoning":"Typo fix","increment":{"action":"small_fix","confidence":0.9,"mandatory":false,"suggestedName":"fix-readme-typo","reasoning":"Trivial 1-line change"}}
@@ -648,65 +586,6 @@ EXAMPLES (one per action type — keep prompt size minimal)
 
 "Investigate why the API sync keeps failing across multiple services"
 {"plugins":[],"confidence":0.8,"reasoning":"Investigation/debugging work","increment":{"action":"new","confidence":0.85,"mandatory":false,"suggestedName":"investigate-api-sync-failure","reasoning":"Multi-component investigation requiring structured tracking"}}
-
-═══════════════════════════════════════════════════════════════
-SKILL INVOCATION (v2.1.0 - tell Claude which plugin:skill to use)
-═══════════════════════════════════════════════════════════════
-
-ALSO specify which skill Claude SHOULD invoke for this task.
-Skills use "plugin:skill" format (e.g., "mobile:react-native", "mobile:appstore").
-
-"skillInvocation" field with:
-- skill: full skill name as plugin:skill (e.g., "mobile:react-native", "mobile:appstore")
-- reason: why this skill should be used
-- mandatory: true if Claude MUST use this skill, false if optional
-
-⚠️ IMPORTANT: DO NOT suggest *-lsp plugins - they are BROKEN in official marketplace!
-LSP is handled separately via boostvolt/claude-code-lsps + ENABLE_LSP_TOOL=1 env var.
-
-SKILL CATALOG (use exact plugin:skill names — ONLY suggest skills from AVAILABLE plugins):
-mobile: mobile:appstore, mobile:capacitor, mobile:deep-linking, mobile:expo, mobile:flutter, mobile:jetpack, mobile:react-native, mobile:swiftui, mobile:testing
-skills: skills:scout
-
-[NOT YET AVAILABLE — DO NOT suggest these skills]:
-frontend, backend, testing, infra, k8s, ml, kafka, confluent, payments, docs, cost, security, blockchain
-
-SKILL INVOCATION RULES (pick the most specific skill):
-- .NET/C# → backend:dotnet MANDATORY
-- Go/Golang → backend:go MANDATORY
-- Python/FastAPI/Django → backend:python MANDATORY
-- Java/Spring → backend:java-spring MANDATORY
-- Rust → backend:rust MANDATORY
-- Node.js/Express/NestJS → backend:nodejs MANDATORY
-- GraphQL → backend:graphql MANDATORY
-- Next.js → frontend:nextjs MANDATORY
-- React/Vue/Angular → frontend:frontend-core MANDATORY
-- Figma design → frontend:figma MANDATORY
-- ML/AI → ml:engineer MANDATORY
-- Stripe/PayPal → payments:payment-core MANDATORY
-- Unit testing → testing:unit MANDATORY
-- E2E testing → testing:e2e MANDATORY
-- React Native → mobile:react-native MANDATORY
-- Flutter → mobile:flutter MANDATORY
-- SwiftUI/iOS → mobile:swiftui MANDATORY
-- Jetpack/Android → mobile:jetpack MANDATORY
-- Expo → mobile:expo MANDATORY
-- Terraform → infra:terraform MANDATORY
-- AWS → infra:aws MANDATORY
-- Azure → infra:azure MANDATORY
-- GCP → infra:gcp MANDATORY
-- GitHub Actions → infra:github-actions MANDATORY
-- Kubernetes → k8s:manifests recommended
-- Architecture → frontend:architect or relevant architect skill recommended
-- DO NOT suggest *-lsp plugins (broken in marketplace)
-
-SKILL EXAMPLES:
-
-"Build Spring Boot API with JPA"
-{"plugins":["backend"],"confidence":0.95,"reasoning":"Spring Boot→backend","increment":{"action":"new","confidence":0.9,"mandatory":true,"suggestedName":"spring-boot-api","reasoning":"New API"},"skillInvocation":{"skill":"backend:java-spring","reason":"Spring Boot patterns and JPA","mandatory":true}}
-
-"Write unit tests for the auth service"
-{"plugins":["testing"],"confidence":0.95,"reasoning":"Unit testing","increment":{"action":"small_fix","confidence":0.7,"mandatory":false,"reasoning":"Testing extends existing work"},"skillInvocation":{"skill":"testing:unit","reason":"Vitest/Jest patterns and TDD","mandatory":true}}
 
 ═══════════════════════════════════════════════════════════════
 LSP OPERATION DETECTION (v1.0.198 - unified detection)
@@ -729,7 +608,7 @@ LSP EXAMPLES:
 {"plugins":[],"confidence":0.95,"reasoning":"Code navigation","lsp":{"needed":true,"operation":"references","language":"typescript","warmupRequired":true}}
 
 "Build a React dashboard" (NO LSP needed)
-{"plugins":["frontend"],"confidence":0.95,"reasoning":"React development"}`;
+{"plugins":[],"confidence":0.95,"reasoning":"React development"}`;
 }
 
 /**
@@ -1214,30 +1093,6 @@ Which plugins should be loaded?`;
   }
 }
 
-/**
- * Check if a plugin is already installed via vskill lockfile
- *
- * Reads vskill.lock from cwd and checks if the plugin has an entry.
- * This provides a fast-path to skip installation when plugin is
- * already present with a matching hash.
- *
- * @param pluginName - Name of the plugin to check
- * @returns true if plugin is in the lockfile
- */
-function isPluginInVskillLock(pluginName: string): boolean {
-  try {
-    const lockPath = path.join(getProjectRoot(), 'vskill.lock');
-    if (!fs.existsSync(lockPath)) {
-      return false;
-    }
-    const content = fs.readFileSync(lockPath, 'utf-8');
-    const lock = JSON.parse(content);
-    return lock.skills && pluginName in lock.skills;
-  } catch {
-    return false;
-  }
-}
-
 /** Track which plugins have already been reported this session (daily dedup) */
 const _reportedPlugins = new Set<string>();
 
@@ -1266,22 +1121,8 @@ async function reportInstallsForPlugin(pluginName: string): Promise<void> {
       .filter(d => d.isDirectory() && fs.existsSync(path.join(skillsDir, d.name, 'SKILL.md')));
     if (skillDirs.length === 0) return;
 
-    // Read repoUrl from lockfile
-    let repoUrl: string | undefined;
-    try {
-      const lockPath = path.join(projectRoot, 'vskill.lock');
-      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf-8'));
-      const entry = lock.skills?.[pluginName];
-      if (entry?.source) {
-        // source format: "github:owner/repo#plugin:name" → extract "owner/repo"
-        const match = entry.source.match(/github:([^#]+)/);
-        if (match) repoUrl = match[1];
-      }
-    } catch { /* best-effort */ }
-
     const skills = skillDirs.map(d => ({
       skillName: d.name,
-      ...(repoUrl ? { repoUrl } : {}),
     }));
 
     const controller = new AbortController();
@@ -1305,143 +1146,14 @@ async function reportInstallsForPlugin(pluginName: string): Promise<void> {
   }
 }
 
-/** Resolve vskill path from this module's location */
-function resolveVskillCliPath(): string {
-  return _resolveVskillPath(__dirname);
-}
-
-/** Resolve specweave source directory */
-function resolveSpecweaveDir(): string {
-  return _resolveSpecweaveDir(__dirname);
-}
-
 /**
- * Install a specweave local plugin via vskill install with --plugin-dir
- * (v1.0.343: fixed 'add' → 'install' to match vskill CLI)
+ * Install a plugin using native Claude plugin system (v1.0.533: replaced vskill)
  *
- * @param pluginName - Name of the sw-* plugin to install
- * @param timeout - Timeout in milliseconds
- * @returns Installation result
- */
-async function installSpecweaveLocalPlugin(
-  pluginName: string,
-  timeout: number
-): Promise<PluginInstallResult> {
-  try {
-    const vskillPath = resolveVskillCliPath();
-    const pluginDir = resolveSpecweaveDir();
-
-    const result = spawnSync('node', [
-      vskillPath,
-      'install',
-      '--plugin-dir', pluginDir,
-      '--plugin', pluginName,
-      '--force', // Auto-accept scan results during lazy loading
-      '--yes',
-    ], {
-      encoding: 'utf8',
-      timeout,
-      maxBuffer: 1024 * 1024,
-      windowsHide: true,
-      cwd: process.cwd(),
-    });
-
-    if (result.error) {
-      return { success: false, plugin: pluginName, error: `Install error: ${result.error.message}` };
-    }
-
-    const stdout = result.stdout || '';
-    const stderr = result.stderr || '';
-    const combined = `${stdout} ${stderr}`.toLowerCase();
-
-    if (combined.includes('already')) {
-      return { success: true, plugin: pluginName, alreadyInstalled: true };
-    }
-
-    if (result.status === 0) {
-      return { success: true, plugin: pluginName };
-    }
-
-    return { success: false, plugin: pluginName, error: stderr || stdout || `Exit code ${result.status}` };
-  } catch (error) {
-    return { success: false, plugin: pluginName, error: `Install failed: ${error}` };
-  }
-}
-
-/**
- * Install a vskill repo plugin via vskill install --repo
- * (v1.0.343: fixed 'add' → 'install' to match vskill CLI)
- *
- * v2.1.0: Per-category plugins in vskill marketplace (frontend, backend, etc.).
- * Uses: vskill install --repo anton-abyzov/vskill --plugin <name> --force --yes
- *
- * @param pluginName - Name of the vskill plugin (e.g., "frontend", "backend")
- * @param timeout - Timeout in milliseconds
- * @returns Installation result
- */
-async function installVskillRepoPlugin(
-  pluginName: string,
-  timeout: number,
-  skillFilter?: string
-): Promise<PluginInstallResult> {
-  try {
-    const vskillPath = resolveVskillCliPath();
-
-    const args = [
-      vskillPath,
-      'install',
-      '--repo', 'anton-abyzov/vskill',
-      '--plugin', pluginName,
-      '--force',
-      '--yes',
-    ];
-
-    // Filter skills within the plugin to only install relevant ones
-    if (skillFilter) {
-      args.push('--only-skills', skillFilter);
-      logger.debug(`Installing ${pluginName} with skill filter: ${skillFilter}`);
-    }
-
-    const result = spawnSync('node', args, {
-      encoding: 'utf8',
-      timeout,
-      maxBuffer: 1024 * 1024,
-      windowsHide: true,
-      cwd: process.cwd(),
-    });
-
-    if (result.error) {
-      return { success: false, plugin: pluginName, error: `Install error: ${result.error.message}` };
-    }
-
-    const stdout = result.stdout || '';
-    const stderr = result.stderr || '';
-    const combined = `${stdout} ${stderr}`.toLowerCase();
-
-    if (combined.includes('already')) {
-      return { success: true, plugin: pluginName, alreadyInstalled: true };
-    }
-
-    if (result.status === 0) {
-      return { success: true, plugin: pluginName };
-    }
-
-    return { success: false, plugin: pluginName, error: stderr || stdout || `Exit code ${result.status}` };
-  } catch (error) {
-    return { success: false, plugin: pluginName, error: `Install failed: ${error}` };
-  }
-}
-
-/**
- * Install a plugin using vskill (routes to correct installer)
- *
- * v2.1.0: Routes to installSpecweaveLocalPlugin for sw-* plugins,
- * or installVskillRepoPlugin for vskill domain plugins.
- *
- * Fast-path: If plugin is already in vskill.lock, skip installation.
+ * Uses plugin-copier.ts's installPlugin() which runs `claude plugin install`.
+ * Only supports specweave plugins (sw-*). Domain plugins removed.
  *
  * @param pluginName - Name of the plugin to install
- * @param timeout - Timeout in milliseconds
+ * @param timeout - Timeout in milliseconds (unused, kept for API compat)
  * @returns Installation result
  */
 export async function installPluginViaCli(
@@ -1449,43 +1161,36 @@ export async function installPluginViaCli(
   timeout: number = 30000,
   skillFilter?: string
 ): Promise<PluginInstallResult> {
-  // v2.1.0: Accept both specweave and vskill plugins
   if (!isKnownPlugin(pluginName)) {
     return {
       success: false,
       plugin: pluginName,
-      error: `Unknown plugin: ${pluginName}. Only @specweave or vskill repo plugins are allowed.`,
+      error: `Unknown plugin: ${pluginName}. Only specweave (sw-*) plugins are supported.`,
     };
   }
 
-  // Check CLI availability (still needed for detect-intent etc.)
-  const cliStatus = isClaudeCliAvailable();
-  if (!cliStatus.available) {
+  // Find specweave root for the plugin copier
+  const specweaveRoot = findSpecweaveRoot(__dirname);
+  if (!specweaveRoot) {
     return {
       success: false,
       plugin: pluginName,
-      error: cliStatus.error,
+      error: 'Could not find specweave installation root.',
     };
   }
 
-  // Fast-path: Check vskill.lock - skip if already installed (works for both sources)
-  if (isPluginInVskillLock(pluginName)) {
-    logger.debug(`Plugin ${pluginName} already in vskill.lock, skipping installation`);
-    // Still report installs even on fast-path — specweave is long-lived so fire-and-forget is safe
-    reportInstallsForPlugin(pluginName).catch(() => {});
-    return {
-      success: true,
-      plugin: pluginName,
-      alreadyInstalled: true,
-    };
+  // Use native plugin installer (claude plugin install)
+  const result = installPluginNative(pluginName, specweaveRoot, { force: false });
+
+  if (result.success && result.skipped) {
+    return { success: true, plugin: pluginName, alreadyInstalled: true };
   }
 
-  // Route to correct installer based on plugin source
-  if (isVskillPlugin(pluginName)) {
-    return installVskillRepoPlugin(pluginName, timeout, skillFilter);
+  if (result.success) {
+    return { success: true, plugin: pluginName };
   }
 
-  return installSpecweaveLocalPlugin(pluginName, timeout);
+  return { success: false, plugin: pluginName, error: result.error || 'Installation failed' };
 }
 
 /**
@@ -1500,22 +1205,10 @@ export async function installPluginsViaCli(
 ): Promise<PluginInstallResult[]> {
   const results: PluginInstallResult[] = [];
 
-  // Extract sub-skill filter from skillInvocation (e.g., "backend:dotnet" → "dotnet")
-  let skillFilterMap: Map<string, string> | undefined;
-  if (skillInvocation?.skill && skillInvocation.skill.includes(':')) {
-    const [pluginPart, skillPart] = skillInvocation.skill.split(':');
-    if (pluginPart && skillPart) {
-      skillFilterMap = new Map([[pluginPart, skillPart]]);
-      logger.debug(`Skill filter from invocation: ${pluginPart} → only install ${skillPart}`);
-    }
-  }
-
   for (const plugin of plugins) {
-    const skillFilter = skillFilterMap?.get(plugin);
-    const result = await installPluginViaCli(plugin, 30000, skillFilter);
+    const result = await installPluginViaCli(plugin);
     results.push(result);
 
-    // Log progress
     if (result.success) {
       if (result.alreadyInstalled) {
         logger.debug(`Plugin ${plugin} already installed`);
@@ -1624,12 +1317,7 @@ Plugin auto-loading is disabled. Install Claude CLI to enable automatic plugin d
     // SUGGEST-ONLY MODE: Show which plugins would help, but don't install
     if (suggestOnly) {
       const installCmds = detection.plugins
-        .map((p) => {
-          if (p.startsWith('sw-') || p === 'sw') {
-            return `  npx vskill install --repo anton-abyzov/specweave --plugin ${p} --agent claude-code`;
-          }
-          return `  npx vskill install --repo anton-abyzov/vskill --plugin ${p} --agent claude-code`;
-        })
+        .map((p) => `  claude plugin install ${p}@specweave`)
         .join('\n');
       const reason = detection.reasoning ? `\nWhy: ${detection.reasoning}` : '';
       output.systemMessage = `SpecWeave: Suggested plugins for this task: ${detection.plugins.join(', ')}${reason}
