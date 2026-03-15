@@ -373,6 +373,7 @@ ${userStory.technicalContext}
         return mapping.task || "Task";
       case "Subtask":
         return mapping.task || "Task";
+      // ADO doesn't have subtasks, use Task
       default:
         return "User Story";
     }
