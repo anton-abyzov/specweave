@@ -8,6 +8,9 @@ build/
 
 # Environment variables
 .env
+
+# Temporary B-Roll renders
+tmp-broll/
 .env.local
 .env.production
 .env.test

@@ -1192,149 +1192,13 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
             fi
 
             # ==================================================================
-            # PLUGIN INSTALLATION/SUGGESTION (from LLM response)
+            # PLUGIN INSTALLATION/SUGGESTION — REMOVED (v1.0.535)
             # ==================================================================
-            if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
-              DETECTED_PLUGINS=$(echo "$JSON_OUTPUT" | jq -r '.plugins[]?' 2>/dev/null | tr '\n' ' ')
-
-              if [[ -n "$DETECTED_PLUGINS" ]]; then
-                # v1.0.158/v1.0.397: SUGGEST-ONLY MODE (now the default) - suggest with install commands, don't auto-install
-                if [[ "$PLUGIN_SUGGEST_ONLY" == "true" ]]; then
-                  SUGGEST_CMDS=""
-                  for plugin in $DETECTED_PLUGINS; do
-                    [[ -z "$plugin" ]] && continue
-                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
-                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`claude plugin install ${plugin}@specweave\`\\n"
-                    fi
-                  done
-                  LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
-                  if [[ -n "$SUGGEST_CMDS" ]]; then
-                    AUTOLOAD_PLUGINS_MSG="**Suggested plugins for this task**:\\n${SUGGEST_CMDS}"
-                    [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*Why*: ${LLM_REASON}\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, **restart Claude Code** to use new plugins.\\n\\n---\\n"
-                  fi
-                  PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
-                  echo "[$(date -Iseconds)] plugins | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
-                elif command -v claude >/dev/null 2>&1; then
-                  # NORMAL MODE - Actually install plugins
-                  PLUGINS_INSTALLED=""
-                  PLUGINS_ALREADY=""
-
-                  # v1.0.210: All plugins install with PROJECT scope by default
-                  # This prevents global pollution - plugins stay scoped to current project
-                  SPECWEAVE_PLUGIN_SCOPE="project"
-                  DEFAULT_PLUGIN_SCOPE="project"
-                  if [[ -f "$CONFIG_PATH" ]] && command -v jq >/dev/null 2>&1; then
-                    SCOPE_VAL=$(jq -r '.plugins.scope.specweaveScope // "project"' "$CONFIG_PATH" 2>/dev/null)
-                    [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && SPECWEAVE_PLUGIN_SCOPE="$SCOPE_VAL"
-                    SCOPE_VAL=$(jq -r '.plugins.scope.defaultScope // "project"' "$CONFIG_PATH" 2>/dev/null)
-                    [[ "$SCOPE_VAL" == "user" || "$SCOPE_VAL" == "project" || "$SCOPE_VAL" == "local" ]] && DEFAULT_PLUGIN_SCOPE="$SCOPE_VAL"
-                  fi
-
-                  for plugin in $DETECTED_PLUGINS; do
-                    [[ -z "$plugin" ]] && continue
-
-                    # v1.0.533: sw-* plugins → claude plugin install @specweave, others → @claude-plugins-official
-                    if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
-                      # ---- SW-* PLUGINS: Install via claude plugin install (v1.0.533) ----
-                      if check_plugin_in_vskill_lock "$plugin"; then
-                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                      elif check_plugin_installed_from_json "$plugin" "specweave"; then
-                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                      else
-                        # Install via native Claude plugin system
-                        local OUT=""
-                        if command -v timeout >/dev/null 2>&1; then
-                          OUT=$(timeout 10 claude plugin install "${plugin}@specweave" --scope project 2>&1) || true
-                        else
-                          OUT=$(claude plugin install "${plugin}@specweave" --scope project 2>&1) || true
-                        fi
-                        if echo "$OUT" | grep -qiE "(success|installed)"; then
-                          [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                          PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                        else
-                          echo "[$(date -Iseconds)] claude-install | ${plugin} | FAILED: ${OUT:-unknown}" >> "$LAZY_LOAD_LOG"
-                        fi
-                      fi
-                    else
-                      # ---- NON-SW PLUGINS: Install via claude CLI (unchanged) ----
-                      MARKETPLACE="claude-plugins-official"
-                      PLUGIN_SCOPE="$DEFAULT_PLUGIN_SCOPE"
-                      FULL_PLUGIN_NAME="${plugin}@${MARKETPLACE}"
-                      ALREADY_INSTALLED=false
-
-                      if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
-                        ALREADY_INSTALLED=true
-                      else
-                        CURRENT_PLUGINS=""
-                        if command -v timeout >/dev/null 2>&1; then
-                          CURRENT_PLUGINS=$(timeout 10 claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                        else
-                          CURRENT_PLUGINS=$(claude plugin list 2>/dev/null | grep -E "^  ❯ " | sed 's/^  ❯ //' || true)
-                        fi
-                        if echo "$CURRENT_PLUGINS" | grep -q "^${FULL_PLUGIN_NAME}$"; then
-                          ALREADY_INSTALLED=true
-                        fi
-                      fi
-
-                      if [[ "$ALREADY_INSTALLED" == "true" ]]; then
-                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                      else
-                        if command -v timeout >/dev/null 2>&1; then
-                          OUT=$(timeout 10 claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                        else
-                          OUT=$(claude plugin install "${FULL_PLUGIN_NAME}" --scope "$PLUGIN_SCOPE" 2>&1) || true
-                        fi
-                        if echo "$OUT" | grep -qiE "(success|installed)"; then
-                          sleep 0.5
-                          if check_plugin_installed_from_json "$plugin" "$MARKETPLACE"; then
-                            [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                            PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-                          else
-                            [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                            PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                          fi
-                        fi
-                      fi
-                    fi
-                  done
-
-                  # Build feedback message
-                  if [[ -n "$PLUGINS_INSTALLED" ]]; then
-                    # v1.0.260: Compacted RESTART message (~400 chars vs ~2000 chars)
-                    # ASCII art boxes were wasting ~1600 chars of the 3000-char context budget.
-                    AUTOLOAD_PLUGINS_MSG="RESTART REQUIRED: Plugins installed (${PLUGINS_INSTALLED}) but NOT loaded in current session.\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}ALL tools BLOCKED (Write, Edit, Bash, Task). DO NOT proceed.\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}Restart: VSCode \\\`Cmd+Shift+P\\\` > 'Claude: New Session' | CLI: exit + \\\`claude\\\`\\n"
-                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}STOP COMPLETELY. Do NOT help, do NOT implement, do NOT ignore this.\\n"
-                  elif [[ -n "$PLUGINS_ALREADY" ]]; then
-                    # v1.0.260: Daily caching — "Using plugins" shown once per day
-                    # Uses date-based marker (like archive-suggestion) to auto-reset daily
-                    _PLUGINS_SHOWN_FLAG="${SPECWEAVE_DIR}/state/plugins-shown.marker"
-                    _TODAY=$(date +%Y-%m-%d)
-                    _LAST_SHOWN=""
-                    [[ -f "$_PLUGINS_SHOWN_FLAG" ]] && _LAST_SHOWN=$(cat "$_PLUGINS_SHOWN_FLAG" 2>/dev/null)
-                    if [[ "$_LAST_SHOWN" != "$_TODAY" ]]; then
-                      AUTOLOAD_PLUGINS_MSG="🔌 **Using plugins**: ${PLUGINS_ALREADY}\\n"
-                      mkdir -p "$(dirname "$_PLUGINS_SHOWN_FLAG")" 2>/dev/null
-                      echo "$_TODAY" > "$_PLUGINS_SHOWN_FLAG" 2>/dev/null
-                    fi
-                  fi
-                  if [[ -n "$AUTOLOAD_PLUGINS_MSG" ]]; then
-                    # v1.0.260: Skip LLM reasoning to save context budget — it's informational only
-                    :
-                  fi
-
-                  echo "[$(date -Iseconds)] plugins | installed=${PLUGINS_INSTALLED:-none} | already=${PLUGINS_ALREADY:-none}" >> "$LAZY_LOAD_LOG"
-
-                  # v1.0.240 (0198): Playwright MCP suggestion removed
-                  # Browser automation handled by @playwright/cli (CLI-only mode)
-                fi
-              fi
-            fi
+            # On-demand plugin installation via `claude plugin install` has been
+            # removed. All plugins are now installed at init time by copying
+            # SKILL.md files directly into .claude/skills/ (project-local).
+            # Use `specweave refresh-plugins` to update plugin skills.
+            # ==================================================================
 
             # ==================================================================
             # EXTRACT ROUTING INFO EARLY (v1.0.155 - needed for agent directives)
@@ -1580,55 +1444,12 @@ After increment, chain domain skills per tech stack (see CLAUDE.md Skill Chainin
         fi
 
         # ==================================================================
-        # KEYWORD FALLBACK: PLUGIN INSTALLATION (v1.0.343)
+        # KEYWORD FALLBACK: PLUGIN INSTALLATION — REMOVED (v1.0.535)
         # ==================================================================
-        # When LLM detection fails/times out, try lightweight keyword-based
-        # plugin detection. Only installs if plugin NOT already in vskill.lock.
-        # Targeted domain keywords (not generic action verbs) to avoid over-installing.
-        if [[ "$LLM_DETECTION_FAILED" == "true" && "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]]; then
-          FALLBACK_PLUGINS=""
-          if echo "$PROMPT" | grep -qiE "(react|vue|angular|next\.?js|svelte|frontend|component|tailwind|CSS|UI design|dashboard)"; then
-            check_plugin_in_vskill_lock "frontend" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}frontend "
-          fi
-          if echo "$PROMPT" | grep -qiE "(API|REST|GraphQL|\.NET|C#|express|fastapi|django|spring boot|NestJS|backend|database|postgres|mongo)"; then
-            check_plugin_in_vskill_lock "backend" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}backend "
-          fi
-          if echo "$PROMPT" | grep -qiE "(vitest|playwright|jest|cypress|E2E|unit test|integration test|test coverage|TDD|mutation test)"; then
-            check_plugin_in_vskill_lock "testing" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}testing "
-          fi
-          if echo "$PROMPT" | grep -qiE "(react native|iOS|android|expo|flutter|swift|kotlin|mobile app)"; then
-            check_plugin_in_vskill_lock "mobile" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}mobile "
-          fi
-          if echo "$PROMPT" | grep -qiE "(terraform|AWS|Azure|GCP|docker|kubernetes|k8s|CI/CD|github actions|helm)"; then
-            check_plugin_in_vskill_lock "infra" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}infra "
-          fi
-          if echo "$PROMPT" | grep -qiE "(security scan|vulnerability|OWASP|penetration|CVE|hardening|devsecops)"; then
-            check_plugin_in_vskill_lock "security" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}security "
-          fi
-          if echo "$PROMPT" | grep -qiE "(kafka|event stream|confluent|schema registry)"; then
-            check_plugin_in_vskill_lock "kafka" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}kafka "
-          fi
-          if echo "$PROMPT" | grep -qiE "(machine learning|pytorch|tensorflow|LLM|RAG|fine.?tun|hugging.?face|langchain)"; then
-            check_plugin_in_vskill_lock "ml" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}ml "
-          fi
-          if echo "$PROMPT" | grep -qiE "(stripe|payment|billing|subscription|checkout|PCI)"; then
-            check_plugin_in_vskill_lock "payments" || FALLBACK_PLUGINS="${FALLBACK_PLUGINS}payments "
-          fi
-
-          # Install detected plugins (limit to first 2 to avoid long delays)
-          if [[ -n "$FALLBACK_PLUGINS" ]]; then
-            FALLBACK_INSTALLED=""
-            FALLBACK_COUNT=0
-            for fp in $FALLBACK_PLUGINS; do
-              [[ "$FALLBACK_COUNT" -ge 2 ]] && break
-              if install_vskill_repo_plugin "$fp"; then
-                FALLBACK_INSTALLED="${FALLBACK_INSTALLED}${fp} "
-                FALLBACK_COUNT=$((FALLBACK_COUNT + 1))
-              fi
-            done
-            [[ -n "$FALLBACK_INSTALLED" ]] && echo "[$(date -Iseconds)] keyword-plugin-fallback | installed=${FALLBACK_INSTALLED}" >> "$LAZY_LOAD_LOG"
-          fi
-        fi
+        # Keyword-based plugin installation removed. All plugins are now
+        # installed at init time via `specweave init` (direct file copy
+        # to .claude/skills/). No on-demand marketplace lookups.
+        # ==================================================================
 
         # ==================================================================
         # KEYWORD FALLBACK FOR INCREMENT DISCIPLINE (v1.0.257)

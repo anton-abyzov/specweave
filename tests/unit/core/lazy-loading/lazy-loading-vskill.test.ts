@@ -1,11 +1,9 @@
 /**
  * Tests for lazy loading vskill integration
  *
- * TC-020: Detector uses vskill for installation
- * TC-021: Fast-path skip for already-installed plugins
- *
- * Updated for v1.0.315 migration: plugin names changed from sw-* to short names
- * (e.g., sw-frontend → frontend, sw-backend → backend)
+ * v1.0.535: installPluginViaCli and installPluginsViaCli are now no-ops.
+ * All plugins are pre-installed at init time via direct file copy.
+ * These tests verify the no-op behavior.
  *
  * @module tests/unit/core/lazy-loading/lazy-loading-vskill
  */
@@ -29,8 +27,6 @@ const mockFs = vi.hoisted(() => ({
 }));
 
 const mockGetProjectRoot = vi.hoisted(() => vi.fn(() => '/tmp/test-project'));
-const mockResolveVskillPath = vi.hoisted(() => vi.fn(() => '/usr/local/lib/node_modules/vskill/dist/cli.js'));
-const mockResolveSpecweaveDir = vi.hoisted(() => vi.fn(() => '/usr/local/lib/node_modules/specweave'));
 
 vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
   detectClaudeCli: mockDetectClaudeCli,
@@ -50,11 +46,6 @@ vi.mock('../../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
 }));
 
-vi.mock('../../../../src/utils/vskill-resolver.js', () => ({
-  resolveVskillPath: mockResolveVskillPath,
-  resolveSpecweaveDir: mockResolveSpecweaveDir,
-}));
-
 vi.mock('child_process', () => ({
   spawnSync: mockSpawnSync,
 }));
@@ -72,251 +63,39 @@ import {
   clearCliCache,
 } from '../../../../src/core/lazy-loading/llm-plugin-detector.js';
 
-// ---- helpers ----
-
-function setupCliAvailable() {
-  mockDetectClaudeCli.mockReturnValue({
-    available: true,
-    commandExists: true,
-    commandPath: '/usr/local/bin/claude',
-    pluginCommandsWork: true,
-    version: '2.0.0',
-  });
-}
-
-function mockVskillLock(skills: Record<string, any>) {
-  mockFs.existsSync.mockImplementation((p: any) => {
-    if (String(p).includes('vskill.lock')) return true;
-    return false;
-  });
-  mockFs.readFileSync.mockImplementation((p: any) => {
-    if (String(p).includes('vskill.lock')) {
-      return JSON.stringify({
-        version: 1,
-        agents: ['claude-code'],
-        skills,
-        createdAt: '2026-02-17T00:00:00Z',
-        updatedAt: '2026-02-17T00:00:00Z',
-      });
-    }
-    return '';
-  });
-}
-
 // ---- tests ----
 
-describe('lazy loading vskill integration', () => {
+describe('lazy loading vskill integration (v1.0.535: no-op)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearCliCache();
-    // Default: no vskill.lock exists
-    mockFs.existsSync.mockReturnValue(false);
   });
 
-  // ============================================================
-  // TC-020: Detector uses vskill for installation
-  // ============================================================
-  describe('TC-020: Detector uses vskill for installation', () => {
-    it('should invoke vskill install instead of claude plugin install', async () => {
-      setupCliAvailable();
-
-      // Mock spawnSync to simulate successful vskill execution
-      mockSpawnSync.mockReturnValue({
-        status: 0,
-        stdout: 'Installed mobile to 1 agent',
-        stderr: '',
-        error: null,
-      });
-
+  describe('installPluginViaCli — no-op', () => {
+    it('should return success with alreadyInstalled for any plugin', async () => {
       const result = await installPluginViaCli('mobile');
 
       expect(result.success).toBe(true);
       expect(result.plugin).toBe('mobile');
-
-      // CRITICAL: Verify that vskill was invoked via node, NOT claude plugin install
-      const allCalls = mockSpawnSync.mock.calls;
-      const claudePluginCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = String(call[0]);
-          const args = call[1] || [];
-          return cmd.includes('claude') && args.includes('plugin') && args.includes('install');
-        }
-      );
-
-      // After migration: ZERO calls to claude plugin install
-      expect(claudePluginCalls).toHaveLength(0);
-
-      // Should have calls to node with vskill args (install, --plugin, --repo)
-      const vskillCalls = allCalls.filter(
-        (call: any[]) => {
-          const args = (call[1] || []).join(' ');
-          return args.includes('install') && args.includes('--plugin');
-        }
-      );
-      expect(vskillCalls.length).toBeGreaterThan(0);
+      expect(result.alreadyInstalled).toBe(true);
     });
 
-    it('should use vskill install with correct plugin name for vskill plugins', async () => {
-      setupCliAvailable();
-
-      mockSpawnSync.mockReturnValue({
-        status: 0,
-        stdout: 'Installed mobile to 1 agent',
-        stderr: '',
-        error: null,
-      });
-
+    it('should NOT invoke any CLI commands', async () => {
       await installPluginViaCli('mobile');
 
-      // Verify vskill install was called with --plugin mobile --repo
-      const allCalls = mockSpawnSync.mock.calls;
-      const addCalls = allCalls.filter((call: any[]) => {
-        const args = (call[1] || []).join(' ');
-        return args.includes('install') && args.includes('--plugin') && args.includes('mobile');
-      });
-      expect(addCalls.length).toBeGreaterThan(0);
-    });
-
-    it('should handle vskill install failure gracefully', async () => {
-      setupCliAvailable();
-
-      mockSpawnSync.mockReturnValue({
-        status: 1,
-        stdout: '',
-        stderr: 'Plugin "mobile" not found in marketplace.json',
-        error: null,
-      });
-
-      const result = await installPluginViaCli('mobile');
-
-      expect(result.success).toBe(false);
-      expect(result.plugin).toBe('mobile');
-      expect(result.error).toBeDefined();
-    });
-
-    it('should install multiple plugins via vskill', async () => {
-      setupCliAvailable();
-
-      mockSpawnSync.mockReturnValue({
-        status: 0,
-        stdout: 'Installed plugin to 1 agent',
-        stderr: '',
-        error: null,
-      });
-
-      const results = await installPluginsViaCli(['mobile', 'skills']);
-
-      expect(results).toHaveLength(2);
-      expect(results[0].success).toBe(true);
-      expect(results[1].success).toBe(true);
-
-      // Verify each plugin triggered a vskill call (not claude plugin install)
-      const allCalls = mockSpawnSync.mock.calls;
-      const claudePluginCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = String(call[0]);
-          const args = call[1] || [];
-          return cmd.includes('claude') && args.includes('plugin') && args.includes('install');
-        }
-      );
-      expect(claudePluginCalls).toHaveLength(0);
-    });
-  });
-
-  // ============================================================
-  // TC-021: Fast-path skip for already-installed plugins
-  // ============================================================
-  describe('TC-021: Fast-path skip for already-installed plugins', () => {
-    it('should skip installation when plugin is in vskill.lock with matching hash', async () => {
-      setupCliAvailable();
-
-      // Mock vskill.lock with mobile already installed
-      mockVskillLock({
-        'mobile': {
-          version: '1.0.272',
-          sha: 'abc123def456',
-          tier: 'SCANNED',
-          installedAt: '2026-02-17T00:00:00Z',
-          source: 'local:specweave',
-        },
-      });
-
-      const result = await installPluginViaCli('mobile');
-
-      // Should succeed without invoking vskill
-      expect(result.success).toBe(true);
-      expect(result.alreadyInstalled).toBe(true);
-
-      // CRITICAL: NO vskill invocation when lockfile has matching entry
       expect(mockSpawnSync).not.toHaveBeenCalled();
     });
 
-    it('should install when plugin is NOT in vskill.lock', async () => {
-      setupCliAvailable();
-
-      // Mock vskill.lock WITHOUT mobile
-      mockVskillLock({});
-
-      mockSpawnSync.mockReturnValue({
-        status: 0,
-        stdout: 'Installed mobile to 1 agent',
-        stderr: '',
-        error: null,
-      });
-
-      const result = await installPluginViaCli('mobile');
+    it('should handle any plugin name gracefully', async () => {
+      const result = await installPluginViaCli('nonexistent-plugin');
 
       expect(result.success).toBe(true);
-
-      // When NOT in lockfile, vskill SHOULD be invoked
-      expect(mockSpawnSync).toHaveBeenCalled();
+      expect(result.alreadyInstalled).toBe(true);
     });
+  });
 
-    it('should install when vskill.lock does not exist', async () => {
-      setupCliAvailable();
-
-      // Mock fs: no vskill.lock
-      mockFs.existsSync.mockImplementation((p: any) => {
-        if (String(p).includes('vskill.lock')) return false;
-        return false;
-      });
-
-      mockSpawnSync.mockReturnValue({
-        status: 0,
-        stdout: 'Installed mobile to 1 agent',
-        stderr: '',
-        error: null,
-      });
-
-      const result = await installPluginViaCli('mobile');
-
-      expect(result.success).toBe(true);
-
-      // Without lockfile, vskill should be invoked to install
-      expect(mockSpawnSync).toHaveBeenCalled();
-    });
-
-    it('should skip entirely for multiple plugins when all are in lockfile', async () => {
-      setupCliAvailable();
-
-      // Mock vskill.lock with both plugins
-      mockVskillLock({
-        'mobile': {
-          version: '1.0.272',
-          sha: 'abc123',
-          tier: 'SCANNED',
-          installedAt: '2026-02-17T00:00:00Z',
-          source: 'local:specweave',
-        },
-        'skills': {
-          version: '1.0.272',
-          sha: 'def456',
-          tier: 'SCANNED',
-          installedAt: '2026-02-17T00:00:00Z',
-          source: 'local:specweave',
-        },
-      });
-
+  describe('installPluginsViaCli — no-op', () => {
+    it('should return success for all plugins', async () => {
       const results = await installPluginsViaCli(['mobile', 'skills']);
 
       expect(results).toHaveLength(2);
@@ -324,8 +103,11 @@ describe('lazy loading vskill integration', () => {
       expect(results[0].alreadyInstalled).toBe(true);
       expect(results[1].success).toBe(true);
       expect(results[1].alreadyInstalled).toBe(true);
+    });
 
-      // NO vskill invocation when all plugins are in lockfile
+    it('should NOT invoke any CLI commands', async () => {
+      await installPluginsViaCli(['mobile', 'skills']);
+
       expect(mockSpawnSync).not.toHaveBeenCalled();
     });
   });

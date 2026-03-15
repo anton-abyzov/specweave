@@ -437,7 +437,6 @@ export async function initCommand(
         const result = await installAllPlugins({
           dirname: __dirname,
           forceRefresh: options.forceRefresh,
-          lazyMode: !options.fullInstall,
         });
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;

@@ -1,16 +1,11 @@
 /**
  * Refresh SpecWeave Plugins
  *
- * Installs first-party plugins via Claude Code's native plugin system
- * (`claude plugin install`). Uses inline installer (no vskill dependency).
- *
- * Modes:
- *   - Default (lazy): Install only core `sw` plugin
- *   - --all: Install all plugins from marketplace.json
- *   - Hash comparison: Skip plugins whose content hash hasn't changed
+ * Copies plugin skills directly into project .claude/skills/.
+ * No Claude CLI dependency. No marketplace lookups.
  *
  * @since 1.0.279
- * @updated 1.0.356 - Migrated from copy-to-commands to native plugin install
+ * @updated 1.0.535 - Migrated from CLI-based install to direct file copy
  */
 
 import chalk from 'chalk';
@@ -19,9 +14,10 @@ import * as path from 'path';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import {
-  copyPlugin,
+  copyPluginSkillsToProject,
   findSpecweaveRoot,
 } from '../../utils/plugin-copier.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -32,7 +28,7 @@ const __dirname = getDirname(import.meta.url);
 export interface RefreshPluginsOptions {
   verbose?: boolean;
   force?: boolean;
-  /** Install ALL plugins (not just core). Default: false (lazy mode - core only). */
+  /** @deprecated All plugins are always installed. Kept for CLI compat. */
   all?: boolean;
 }
 
@@ -44,26 +40,16 @@ interface MarketplacePlugin {
 }
 
 // ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-/** Core plugins that are always installed in lazy mode */
-const CORE_PLUGINS = ['sw'];
-
-// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
  * Resolve the path to the specweave root directory.
- * Tries multiple strategies for both development and production layouts.
  */
 function resolveSpecweaveRoot(): string | null {
-  // Strategy 1: Walk up from this file's location
   const fromFile = findSpecweaveRoot(__dirname);
   if (fromFile) return fromFile;
 
-  // Strategy 2: Check known installed marketplace location
   const home = process.env.HOME || process.env.USERPROFILE || '';
   const installedMarketplace = path.join(home, '.claude/plugins/marketplaces/specweave');
   if (fs.existsSync(path.join(installedMarketplace, '.claude-plugin/marketplace.json'))) {
@@ -97,17 +83,13 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Refresh plugins using inline copier.
+ * Refresh plugins by copying skills directly into .claude/skills/.
  *
- * Default (lazy mode): installs only core `sw` plugin.
- * With --all flag: installs all plugins from marketplace.json.
- * Uses hash comparison to skip unchanged plugins.
+ * Always installs all plugins. Uses hash comparison to skip unchanged ones.
  */
 export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<void> {
-  const lazyMode = !(options.all ?? false);
-
   console.log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));
-  console.log(chalk.blue.bold(`  Mode: ${lazyMode ? 'lazy (core only)' : 'all plugins'}\n`));
+  console.log(chalk.blue.bold(`  Mode: direct copy to .claude/skills/\n`));
 
   // Step 1: Find specweave root
   const specweaveRoot = resolveSpecweaveRoot();
@@ -129,30 +111,25 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
 
   console.log(chalk.gray(`  Found ${allPlugins.length} plugins in marketplace.json`));
 
-  // Step 3: Determine which plugins to process
-  const pluginsToProcess = lazyMode
-    ? allPlugins.filter(p => CORE_PLUGINS.includes(p.name))
-    : allPlugins;
+  // Step 3: Determine project root
+  const projectRoot = getProjectRoot();
 
-  // Step 4: Process each plugin
+  // Step 4: Process each plugin — direct copy to .claude/skills/
   let installed = 0;
   let skipped = 0;
   let failed = 0;
-  const processedPlugins: string[] = [];
 
-  for (const plugin of pluginsToProcess) {
-    const result = copyPlugin(plugin.name, specweaveRoot, {
+  for (const plugin of allPlugins) {
+    const result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, {
       force: options.force,
     });
 
     if (result.success && result.skipped) {
       console.log(chalk.green(`  ✓ ${plugin.name}: active`));
       skipped++;
-      processedPlugins.push(plugin.name);
     } else if (result.success) {
       console.log(chalk.green(`  + ${plugin.name}: installed`));
       installed++;
-      processedPlugins.push(plugin.name);
     } else {
       console.log(chalk.red(`  ✗ ${plugin.name}: failed`));
       if (result.error) {
@@ -171,12 +148,6 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   if (installed === 0 && skipped === 0 && failed === 0) {
     console.log(chalk.gray('  No plugins processed'));
   }
-  console.log('');
-
-  if (lazyMode) {
-    console.log(chalk.cyan('  Lazy mode: Only core plugin installed.'));
-    console.log(chalk.gray('  Use --all to install all plugins.'));
-  }
-
+  console.log(chalk.gray(`  Location: .claude/skills/ (project-local)`));
   console.log('');
 }

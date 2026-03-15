@@ -1,22 +1,18 @@
 /**
  * Tests for plugin-installer.ts
  *
- * Covers: installAllPlugins, installLazyMode, installPluginsFullMode
- * (inline copier-based plugin installation via plugin-copier.ts)
+ * Covers: installAllPlugins — direct file copy to .claude/skills/
+ * (v1.0.535: replaced CLI-based installation with project-local copy)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // ---- hoisted mocks (ESM-safe) ----
 
-const mockCopyPlugin = vi.hoisted(() => vi.fn());
+const mockCopyPluginSkillsToProject = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
-const mockDetectClaudeCli = vi.hoisted(() => vi.fn());
-const mockGetClaudeCliDiagnostic = vi.hoisted(() => vi.fn());
-const mockGetClaudeCliSuggestions = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
-const mockCleanupStalePlugins = vi.hoisted(() => vi.fn());
-const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
+const mockGetProjectRoot = vi.hoisted(() => vi.fn());
 
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
@@ -43,11 +39,6 @@ const mockOra = vi.hoisted(() => {
 
 vi.mock('../../../../../src/utils/fs-native.js', () => mockFs);
 
-vi.mock('os', () => ({
-  default: { homedir: () => '/mock-home' },
-  homedir: () => '/mock-home',
-}));
-
 vi.mock('ora', () => ({ default: mockOra }));
 
 vi.mock('chalk', () => {
@@ -67,7 +58,7 @@ vi.mock('chalk', () => {
 });
 
 vi.mock('../../../../../src/utils/plugin-copier.js', () => ({
-  copyPlugin: mockCopyPlugin,
+  copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   findSpecweaveRoot: mockFindSpecweaveRoot,
 }));
 
@@ -75,22 +66,12 @@ vi.mock('../../../../../src/utils/esm-helpers.js', () => ({
   getDirname: () => '/mock/src/cli/helpers/init',
 }));
 
-vi.mock('../../../../../src/utils/claude-cli-detector.js', () => ({
-  detectClaudeCli: mockDetectClaudeCli,
-  getClaudeCliDiagnostic: mockGetClaudeCliDiagnostic,
-  getClaudeCliSuggestions: mockGetClaudeCliSuggestions,
-}));
-
 vi.mock('../../../../../src/cli/helpers/init/path-utils.js', () => ({
   findSourceDir: mockFindSourceDir,
 }));
 
-vi.mock('../../../../../src/utils/cleanup-stale-plugins.js', () => ({
-  cleanupStalePlugins: mockCleanupStalePlugins,
-}));
-
-vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
-  enablePluginsInSettings: mockEnablePluginsInSettings,
+vi.mock('../../../../../src/utils/find-project-root.js', () => ({
+  getProjectRoot: mockGetProjectRoot,
 }));
 
 // ---- import under test (AFTER mocks) ----
@@ -104,29 +85,25 @@ function marketplaceJson(plugins: Array<{ name: string }> = [{ name: 'sw' }, { n
   return JSON.stringify({ plugins });
 }
 
-/** Setup mocks for a successful inline copier flow */
+/** Setup mocks for a successful flow */
 function setupHappyPath(overrides?: {
   plugins?: Array<{ name: string }>;
-  cleanupResult?: { removedCount: number; removedPlugins: string[] };
 }) {
   const plugins = overrides?.plugins ?? [{ name: 'sw' }, { name: 'sw-github' }];
-  const cleanup = overrides?.cleanupResult ?? { removedCount: 0, removedPlugins: [] };
 
-  mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
   mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
   mockFs.existsSync.mockReturnValue(true);
   mockFs.readFileSync.mockReturnValue(marketplaceJson(plugins));
-  mockCleanupStalePlugins.mockResolvedValue({ success: true, ...cleanup });
-  mockEnablePluginsInSettings.mockReturnValue(true);
+  mockGetProjectRoot.mockReturnValue('/mock/project');
 
-  // Inline copier: findSpecweaveRoot returns valid root
+  // findSpecweaveRoot returns valid root
   mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
 
-  // Default copyPlugin: succeeds
-  mockCopyPlugin.mockReturnValue({
+  // Default copyPluginSkillsToProject: succeeds
+  mockCopyPluginSkillsToProject.mockReturnValue({
     success: true,
     sha: 'abc123def456',
-    targetDir: '/mock-home/.claude/commands/sw',
+    targetDir: '/mock/project/.claude/skills',
   });
 }
 
@@ -140,63 +117,10 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // installAllPlugins - Claude CLI not available
-  // ============================================================
-  describe('installAllPlugins - Claude CLI not available', () => {
-    it('should return failure when Claude CLI is not available', async () => {
-      mockDetectClaudeCli.mockReturnValue({
-        available: false,
-        commandExists: false,
-        pluginCommandsWork: false,
-        error: 'command_not_found',
-      });
-      mockGetClaudeCliDiagnostic.mockReturnValue('Claude CLI not found');
-      mockGetClaudeCliSuggestions.mockReturnValue(['Install Claude CLI']);
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result).toEqual({ success: false, successCount: 0, failCount: 0, failedPlugins: [] });
-    });
-
-    it('should show SSH diagnostic when command exists but verification fails', async () => {
-      mockDetectClaudeCli.mockReturnValue({
-        available: false,
-        commandExists: true,
-        commandPath: '/usr/local/bin/claude',
-        exitCode: 1,
-        error: 'version_check_failed',
-      });
-      mockGetClaudeCliDiagnostic.mockReturnValue('Version check failed');
-      mockGetClaudeCliSuggestions.mockReturnValue(['Update Claude CLI']);
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-      expect(mockGetClaudeCliDiagnostic).toHaveBeenCalled();
-      expect(mockGetClaudeCliSuggestions).toHaveBeenCalled();
-    });
-
-    it('should show alternatives when error is command_not_found', async () => {
-      mockDetectClaudeCli.mockReturnValue({
-        available: false,
-        commandExists: false,
-        error: 'command_not_found',
-      });
-      mockGetClaudeCliDiagnostic.mockReturnValue('not found');
-      mockGetClaudeCliSuggestions.mockReturnValue([]);
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-    });
-  });
-
-  // ============================================================
-  // installAllPlugins - marketplace.json not found
+  // installAllPlugins - marketplace errors
   // ============================================================
   describe('installAllPlugins - marketplace errors', () => {
     it('should handle missing marketplace.json', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockFs.existsSync.mockReturnValue(false);
 
@@ -206,7 +130,6 @@ describe('plugin-installer', () => {
     });
 
     it('should handle empty plugins array in marketplace.json', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(JSON.stringify({ plugins: [] }));
@@ -218,100 +141,46 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // installAllPlugins - Lazy mode (default)
+  // installAllPlugins - all plugins installed (always full mode)
   // ============================================================
-  describe('installAllPlugins - lazy mode', () => {
-    it('should install only core plugin in lazy mode', async () => {
+  describe('installAllPlugins - full install', () => {
+    it('should install all plugins from marketplace.json', async () => {
       setupHappyPath();
 
       const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-      expect(result.failCount).toBe(0);
-      expect(result.marketplaceOnly).toBe(false);
-    });
-
-    it('should default to lazy mode (lazyMode=true)', async () => {
-      setupHappyPath();
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // In lazy mode only core sw plugin is installed, not all marketplace plugins
-      expect(result.successCount).toBe(1);
-    });
-
-    it('should handle core plugin already installed', async () => {
-      setupHappyPath();
-      // copyPlugin returns skipped=true for already-installed plugin
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-    });
-
-    it('should handle core plugin install failure in lazy mode', async () => {
-      setupHappyPath();
-      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(false);
-      expect(result.failCount).toBe(1);
-      expect(result.failedPlugins).toEqual(['sw']);
-    });
-
-    it('should enable plugins after successful lazy install', async () => {
-      setupHappyPath();
-
-      await installAllPlugins({ dirname: '/test' });
-
-      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw'], 'specweave');
-    });
-
-    it('should handle enablePluginsInSettings returning false', async () => {
-      setupHappyPath();
-      mockEnablePluginsInSettings.mockReturnValue(false);
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Still succeeds overall even if enabling fails
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle "already" in stderr for already-installed plugins', async () => {
-      setupHappyPath();
-      // copyPlugin returns skipped
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-    });
-  });
-
-  // ============================================================
-  // installAllPlugins - Full mode (lazyMode=false)
-  // ============================================================
-  describe('installAllPlugins - full mode', () => {
-    it('should install all plugins in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(2);
       expect(result.failCount).toBe(0);
-      expect(result.marketplaceOnly).toBe(false);
     });
 
-    it('should report partial failures in full mode', async () => {
+    it('should call copyPluginSkillsToProject for each plugin', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: any[]) => c[0]);
+      expect(calledPlugins).toContain('sw-github');
+      expect(calledPlugins).toContain('sw-jira');
+    });
+
+    it('should pass project root as third argument to copyPluginSkillsToProject', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        '/mock/project',
+        expect.any(Object),
+      );
+    });
+
+    it('should report partial failures', async () => {
       setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
       let callCount = 0;
-      mockCopyPlugin.mockImplementation(() => {
+      mockCopyPluginSkillsToProject.mockImplementation(() => {
         callCount++;
         if (callCount === 1) {
           return { success: true, sha: 'abc123' };
@@ -319,7 +188,7 @@ describe('plugin-installer', () => {
         return { success: false, sha: '', error: 'timeout' };
       });
 
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
+      const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(1);
@@ -327,89 +196,11 @@ describe('plugin-installer', () => {
       expect(result.failedPlugins).toContain('sw-jira');
     });
 
-    it('should install all plugins via copyPlugin in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-
-      await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      // Both plugins should have been installed via copyPlugin
-      const calledPlugins = mockCopyPlugin.mock.calls.map((c: any[]) => c[0]);
-      expect(calledPlugins).toContain('sw-github');
-      expect(calledPlugins).toContain('sw-jira');
-    });
-
-    it('should enable plugins after full mode installation', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-
-      await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(mockEnablePluginsInSettings).toHaveBeenCalled();
-    });
-
-    it('should handle enablePluginsInSettings returning false in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      mockEnablePluginsInSettings.mockReturnValue(false);
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  // ============================================================
-  // Stale plugin cleanup
-  // ============================================================
-  describe('stale plugin cleanup', () => {
-    it('should clean up stale plugins when found', async () => {
-      setupHappyPath({
-        cleanupResult: { removedCount: 2, removedPlugins: ['sw-tooling@specweave', 'sw-old@specweave'] }
-      });
+    it('should handle already-installed (skipped) plugins', async () => {
+      setupHappyPath();
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
 
       const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-      expect(mockCleanupStalePlugins).toHaveBeenCalled();
-    });
-
-    it('should continue when no stale plugins found', async () => {
-      setupHappyPath({ cleanupResult: { removedCount: 0, removedPlugins: [] } });
-
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  // ============================================================
-  // installPluginsFullMode via copyPlugin
-  // ============================================================
-  describe('installPluginsFullMode via copyPlugin (full mode)', () => {
-    it('should install plugin via copyPlugin in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
-
-      // Verify copyPlugin was called
-      expect(mockCopyPlugin).toHaveBeenCalled();
-    });
-
-    it('should handle copyPlugin failure in full mode', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }] });
-      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'plugin not found' });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
-
-      expect(result.failCount).toBe(1);
-      expect(result.failedPlugins).toContain('sw-github');
-    });
-
-    it('should install multiple plugins sequentially via copyPlugin', async () => {
-      setupHappyPath({ plugins: [{ name: 'sw-github' }, { name: 'sw-jira' }] });
-
-      const result = await installAllPlugins({ dirname: '/test', lazyMode: false });
 
       expect(result.success).toBe(true);
       expect(result.successCount).toBe(2);
@@ -417,19 +208,27 @@ describe('plugin-installer', () => {
   });
 
   // ============================================================
-  // Error handling in main try/catch
+  // Error handling
   // ============================================================
   describe('error handling', () => {
     it('should handle marketplace.json with no plugins key', async () => {
-      mockDetectClaudeCli.mockReturnValue({ available: true, commandExists: true, pluginCommandsWork: true });
       mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(JSON.stringify({}));
 
       const result = await installAllPlugins({ dirname: '/test' });
 
-      // Empty plugins array from `marketplace.plugins || []`
       expect(result.success).toBe(false);
+    });
+
+    it('should handle findSpecweaveRoot returning null', async () => {
+      setupHappyPath();
+      mockFindSpecweaveRoot.mockReturnValue(null);
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(false);
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
   });
 
@@ -445,16 +244,17 @@ describe('plugin-installer', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should accept all option combinations', async () => {
-      setupHappyPath();
+    it('should pass force option to copyPluginSkillsToProject', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
 
-      const result = await installAllPlugins({
-        dirname: '/test',
-        forceRefresh: true,
-        lazyMode: false,
-      });
+      await installAllPlugins({ dirname: '/test', forceRefresh: true });
 
-      expect(result.success).toBe(true);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        '/mock/project',
+        { force: true },
+      );
     });
   });
 
@@ -462,24 +262,26 @@ describe('plugin-installer', () => {
   // Edge cases
   // ============================================================
   describe('edge cases', () => {
-    it('should handle findSpecweaveRoot returning null', async () => {
-      setupHappyPath();
-      mockFindSpecweaveRoot.mockReturnValue(null);
+    it('should handle all plugins failing', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
 
       const result = await installAllPlugins({ dirname: '/test' });
 
       expect(result.success).toBe(false);
-      expect(mockCopyPlugin).not.toHaveBeenCalled();
+      expect(result.failCount).toBe(1);
+      expect(result.failedPlugins).toEqual(['sw']);
     });
 
-    it('should handle copyPlugin returning skipped=true', async () => {
-      setupHappyPath();
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
+    it('should ensure .claude/skills/ directory exists', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
 
-      const result = await installAllPlugins({ dirname: '/test' });
+      await installAllPlugins({ dirname: '/test' });
 
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(1);
+      expect(mockFs.mkdirSync).toHaveBeenCalledWith(
+        '/mock/project/.claude/skills',
+        { recursive: true },
+      );
     });
   });
 });

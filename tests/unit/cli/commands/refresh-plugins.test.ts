@@ -1,10 +1,9 @@
 /**
  * Unit tests for refresh-plugins command
  *
- * Tests the inline copier-backed plugin refresh workflow:
- * - TC-014: Lazy mode installs only core plugin (sw)
- * - TC-015: All mode installs all marketplace plugins
- * - TC-016: Hash-based skip via copyPlugin
+ * Tests the direct file copy plugin refresh workflow (v1.0.535):
+ * - All plugins installed to .claude/skills/ (no lazy mode)
+ * - Hash-based skip via copyPluginSkillsToProject
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -14,28 +13,30 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const {
-  mockCopyPlugin,
+  mockCopyPluginSkillsToProject,
   mockFindSpecweaveRoot,
   mockExistsSync,
   mockReadFileSync,
+  mockGetProjectRoot,
 } = vi.hoisted(() => ({
-  mockCopyPlugin: vi.fn(),
+  mockCopyPluginSkillsToProject: vi.fn(),
   mockFindSpecweaveRoot: vi.fn(),
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
+  mockGetProjectRoot: vi.fn(),
 }));
 
-// Mock plugin-copier (replaces vskill shell-out)
+// Mock plugin-copier
 vi.mock('../../../../src/utils/plugin-copier.js', () => ({
-  copyPlugin: mockCopyPlugin,
+  copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
   findSpecweaveRoot: mockFindSpecweaveRoot,
-  computePluginHash: vi.fn().mockReturnValue('abc123def456'),
-  readLockfile: vi.fn(),
-  writeLockfile: vi.fn(),
-  ensureLockfile: vi.fn(),
 }));
 
-// Mock ESM helpers (provides __dirname equivalent)
+vi.mock('../../../../src/utils/find-project-root.js', () => ({
+  getProjectRoot: mockGetProjectRoot,
+}));
+
+// Mock ESM helpers
 vi.mock('../../../../src/utils/esm-helpers.js', () => ({
   getDirname: () => '/mock/src/cli/commands',
 }));
@@ -51,7 +52,7 @@ vi.mock('../../../../src/utils/logger.js', () => ({
   },
 }));
 
-// Mock chalk – identity proxy (strip formatting for easy assertions)
+// Mock chalk
 vi.mock('chalk', () => {
   const identity = (s: unknown) => String(s);
   const handler: ProxyHandler<typeof identity> = {
@@ -83,7 +84,7 @@ vi.mock('fs', async (importOriginal) => {
 });
 
 // ---------------------------------------------------------------------------
-// Import after mocks (the module under test)
+// Import after mocks
 // ---------------------------------------------------------------------------
 
 import { refreshPluginsCommand } from '../../../../src/cli/commands/refresh-plugins.js';
@@ -92,14 +93,13 @@ import { refreshPluginsCommand } from '../../../../src/cli/commands/refresh-plug
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Sample marketplace.json content */
 const MARKETPLACE_JSON = JSON.stringify({
   name: 'specweave',
   version: '1.0.0',
   plugins: [
     { name: 'sw', source: './plugins/specweave', version: '1.0.272', description: 'Core framework' },
-    { name: 'frontend', source: './plugins/frontend', version: '1.0.50', description: 'Frontend' },
     { name: 'sw-github', source: './plugins/specweave-github', version: '1.0.30', description: 'GitHub sync' },
+    { name: 'sw-jira', source: './plugins/specweave-jira', version: '1.0.0', description: 'JIRA sync' },
   ],
 });
 
@@ -111,10 +111,9 @@ describe('refresh-plugins', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Default: findSpecweaveRoot returns a valid root
     mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
+    mockGetProjectRoot.mockReturnValue('/mock/project');
 
-    // Default: marketplace.json exists and is readable
     mockExistsSync.mockImplementation((p: string) => {
       if (typeof p === 'string' && p.includes('marketplace.json')) return true;
       return false;
@@ -125,79 +124,62 @@ describe('refresh-plugins', () => {
       return '';
     });
 
-    // Default: copyPlugin succeeds
-    mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123def456' });
+    mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123def456' });
   });
 
-  // =========================================================================
-  // TC-014: Lazy mode installs only core plugin (sw)
-  // =========================================================================
-  describe('TC-014: lazy mode installs only core plugin', () => {
-    it('should install only sw plugin when no flags are passed (default lazy mode)', async () => {
+  describe('installs all plugins by default', () => {
+    it('should install all plugins from marketplace.json', async () => {
       await refreshPluginsCommand({});
 
-      // copyPlugin should be called exactly once, for 'sw'
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(1);
-      expect(mockCopyPlugin).toHaveBeenCalledWith('sw', '/mock/specweave', { force: undefined });
-    });
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
 
-    it('should not install frontend or sw-github in lazy mode', async () => {
-      await refreshPluginsCommand({});
-
-      const calledPlugins = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
-      expect(calledPlugins).not.toContain('frontend');
-      expect(calledPlugins).not.toContain('sw-github');
-    });
-  });
-
-  // =========================================================================
-  // TC-015: All mode installs all marketplace plugins
-  // =========================================================================
-  describe('TC-015: all mode installs all marketplace plugins', () => {
-    it('should install all plugins from marketplace.json when --all flag is set', async () => {
-      await refreshPluginsCommand({ all: true });
-
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
-
-      const calledPlugins = mockCopyPlugin.mock.calls.map((c: unknown[]) => c[0]);
+      const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(calledPlugins).toContain('sw');
-      expect(calledPlugins).toContain('frontend');
       expect(calledPlugins).toContain('sw-github');
+      expect(calledPlugins).toContain('sw-jira');
+    });
+
+    it('should pass project root to copyPluginSkillsToProject', async () => {
+      await refreshPluginsCommand({});
+
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        '/mock/project',
+        { force: undefined },
+      );
     });
   });
 
-  // =========================================================================
-  // TC-016: Hash-based skip via copyPlugin
-  // =========================================================================
-  describe('TC-016: hash comparison and skip', () => {
-    it('should report skipped plugins when copyPlugin returns skipped=true', async () => {
-      mockCopyPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
+  describe('hash comparison and skip', () => {
+    it('should report skipped plugins when copyPluginSkillsToProject returns skipped=true', async () => {
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
 
-      await refreshPluginsCommand({ all: true, verbose: true });
+      await refreshPluginsCommand({});
 
-      // All 3 plugins called, all returned skipped
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
     });
 
-    it('should pass force flag to copyPlugin', async () => {
+    it('should pass force flag to copyPluginSkillsToProject', async () => {
       await refreshPluginsCommand({ force: true });
 
-      expect(mockCopyPlugin).toHaveBeenCalledWith('sw', '/mock/specweave', { force: true });
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        '/mock/project',
+        { force: true },
+      );
     });
 
     it('should handle plugin failures with error messages', async () => {
-      mockCopyPlugin.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'Source dir not found' });
 
-      // Should not throw
       await refreshPluginsCommand({});
 
-      expect(mockCopyPlugin).toHaveBeenCalledTimes(1);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
     });
   });
 
-  // =========================================================================
-  // Edge cases
-  // =========================================================================
   describe('edge cases', () => {
     it('should handle missing specweave root gracefully', async () => {
       mockFindSpecweaveRoot.mockReturnValue(null);
@@ -205,7 +187,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({});
 
-      expect(mockCopyPlugin).not.toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
 
     it('should handle empty marketplace.json', async () => {
@@ -216,7 +198,7 @@ describe('refresh-plugins', () => {
 
       await refreshPluginsCommand({});
 
-      expect(mockCopyPlugin).not.toHaveBeenCalled();
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
     });
   });
 });
