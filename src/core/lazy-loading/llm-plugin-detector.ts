@@ -21,10 +21,7 @@ import { consoleLogger as logger } from '../../utils/logger.js';
 import { getProjectRoot } from '../../utils/find-project-root.js';
 // IMPORTANT: Use canonical Claude CLI detection from utils (handles shell functions, nvm, etc.)
 import { detectClaudeCli, getCleanEnv } from '../../utils/claude-cli-detector.js';
-import { getPluginScope, getScopeArgs } from '../types/plugin-scope.js';
-import { installPlugin as installPluginNative, findSpecweaveRoot } from '../../utils/plugin-copier.js';
-import { getDirname } from '../../utils/esm-helpers.js';
-const __dirname = getDirname(import.meta.url);
+
 
 // ============================================================
 // Prompt safety constants and truncation utilities (v1.0.254)
@@ -1147,91 +1144,49 @@ async function reportInstallsForPlugin(pluginName: string): Promise<void> {
 }
 
 /**
- * Install a plugin using native Claude plugin system (v1.0.533: replaced vskill)
+ * Install a plugin using native Claude plugin system.
  *
- * Uses plugin-copier.ts's installPlugin() which runs `claude plugin install`.
- * Only supports specweave plugins (sw-*). Domain plugins removed.
+ * @deprecated v1.0.535: On-demand plugin installation removed.
+ * All plugins are now installed at init time via direct file copy
+ * to .claude/skills/. This function is a no-op that returns success.
  *
  * @param pluginName - Name of the plugin to install
- * @param timeout - Timeout in milliseconds (unused, kept for API compat)
- * @returns Installation result
+ * @param timeout - Timeout in milliseconds (unused)
+ * @returns Installation result (always success/alreadyInstalled)
  */
 export async function installPluginViaCli(
   pluginName: string,
   timeout: number = 30000,
   skillFilter?: string
 ): Promise<PluginInstallResult> {
-  if (!isKnownPlugin(pluginName)) {
-    return {
-      success: false,
-      plugin: pluginName,
-      error: `Unknown plugin: ${pluginName}. Only specweave (sw-*) plugins are supported.`,
-    };
-  }
-
-  // Find specweave root for the plugin copier
-  const specweaveRoot = findSpecweaveRoot(__dirname);
-  if (!specweaveRoot) {
-    return {
-      success: false,
-      plugin: pluginName,
-      error: 'Could not find specweave installation root.',
-    };
-  }
-
-  // Use native plugin installer (claude plugin install)
-  const result = installPluginNative(pluginName, specweaveRoot, { force: false });
-
-  if (result.success && result.skipped) {
-    return { success: true, plugin: pluginName, alreadyInstalled: true };
-  }
-
-  if (result.success) {
-    return { success: true, plugin: pluginName };
-  }
-
-  return { success: false, plugin: pluginName, error: result.error || 'Installation failed' };
+  // v1.0.535: No-op — plugins are pre-installed at init time
+  return { success: true, plugin: pluginName, alreadyInstalled: true };
 }
 
 /**
  * Install multiple plugins via CLI
  *
+ * @deprecated v1.0.535: No-op — plugins are pre-installed at init time.
  * @param plugins - Array of plugin names to install
- * @returns Array of installation results
+ * @returns Array of installation results (all alreadyInstalled)
  */
 export async function installPluginsViaCli(
   plugins: string[],
   skillInvocation?: SkillInvocation
 ): Promise<PluginInstallResult[]> {
-  const results: PluginInstallResult[] = [];
-
-  for (const plugin of plugins) {
-    const result = await installPluginViaCli(plugin);
-    results.push(result);
-
-    if (result.success) {
-      if (result.alreadyInstalled) {
-        logger.debug(`Plugin ${plugin} already installed`);
-      } else {
-        logger.info(`Installed plugin: ${plugin}`);
-      }
-    } else {
-      logger.warn(`Failed to install ${plugin}: ${result.error}`);
-    }
-  }
-
-  return results;
+  // v1.0.535: No-op — plugins are pre-installed at init time
+  return plugins.map(plugin => ({ success: true, plugin, alreadyInstalled: true }));
 }
 
 /**
  * Full pipeline: detect plugins from prompt and optionally install them
  *
- * Respects .specweave/config.json pluginAutoLoad settings:
- * - enabled: false → skip detection entirely
- * - suggestOnly: true → detect but don't install, return suggestions
+ * @deprecated v1.0.535: Plugin installation removed. Detection still works
+ * for increment suggestions but no longer triggers installation.
+ * All plugins are pre-installed at init time via direct file copy.
  *
  * @param userPrompt - The user's prompt
- * @returns Detection and installation results
+ * @returns Detection results (installations always empty)
  */
 export async function detectAndInstallPlugins(userPrompt: string): Promise<{
   detection: LLMDetectionResult;
@@ -1256,32 +1211,13 @@ export async function detectAndInstallPlugins(userPrompt: string): Promise<{
     };
   }
 
-  // Step 1: Detect needed plugins
+  // Step 1: Detect needed plugins (still used for increment suggestions)
   const detection = await detectPluginsViaLLM(userPrompt);
 
-  if (!detection.success || detection.plugins.length === 0) {
-    return {
-      detection,
-      installations: [],
-    };
-  }
-
-  // Step 2: If suggestOnly mode, DON'T install - just return suggestions
-  if (config.suggestOnly) {
-    logger.info(`[detectAndInstallPlugins] Suggest-only mode: detected ${detection.plugins.join(', ')}`);
-    return {
-      detection,
-      installations: [],
-      suggestOnly: true,
-    };
-  }
-
-  // Step 3: Install detected plugins with skill-level filtering from LLM detection
-  const installations = await installPluginsViaCli(detection.plugins, detection.skillInvocation);
-
+  // v1.0.535: No installation — plugins are pre-installed at init time
   return {
     detection,
-    installations,
+    installations: [],
   };
 }
 
@@ -1314,45 +1250,8 @@ Plugin auto-loading is disabled. Install Claude CLI to enable automatic plugin d
     }
     // Don't show message for other errors (silent degradation)
   } else if (detection.plugins.length > 0) {
-    // SUGGEST-ONLY MODE: Show which plugins would help, but don't install
-    if (suggestOnly) {
-      const installCmds = detection.plugins
-        .map((p) => `  claude plugin install ${p}@specweave`)
-        .join('\n');
-      const reason = detection.reasoning ? `\nWhy: ${detection.reasoning}` : '';
-      output.systemMessage = `SpecWeave: Suggested plugins for this task: ${detection.plugins.join(', ')}${reason}
-
-To install:
-${installCmds}
-
-To enable auto-install: set "pluginAutoLoad": { "suggestOnly": false } in .specweave/config.json
-After installing, restart Claude Code session to use new plugins.`;
-      return JSON.stringify(output);
-    }
-
-    // NORMAL MODE: Show what was installed
-    const installed = installations.filter((i) => i.success && !i.alreadyInstalled);
-    const alreadyInstalled = installations.filter((i) => i.alreadyInstalled);
-    const failed = installations.filter((i) => !i.success);
-
-    const parts: string[] = [];
-
-    if (installed.length > 0) {
-      parts.push(`Loaded: ${installed.map((i) => i.plugin).join(', ')}`);
-    }
-
-    if (alreadyInstalled.length > 0 && installed.length === 0) {
-      // Only mention already installed if nothing new was loaded
-      parts.push(`Using: ${alreadyInstalled.map((i) => i.plugin).join(', ')}`);
-    }
-
-    if (failed.length > 0) {
-      parts.push(`Failed: ${failed.map((i) => i.plugin).join(', ')}`);
-    }
-
-    if (parts.length > 0) {
-      output.systemMessage = `SpecWeave: ${parts.join(' | ')}`;
-    }
+    // v1.0.535: Plugin installation removed — plugins are pre-installed at init time.
+    // No need for suggest-only or normal install mode messages.
   }
 
   return JSON.stringify(output);
