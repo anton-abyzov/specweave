@@ -1,0 +1,8 @@
+import { readFileSync, writeFileSync } from 'fs';
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const version = pkg.version;
+const date = new Date().toISOString().split('T')[0];
+let existing = '';
+try { existing = readFileSync('CHANGELOG.md', 'utf8'); } catch {}
+const entry = `## [${version}] - ${date}\n\n- Patch release\n\n`;
+writeFileSync('CHANGELOG.md', entry + existing);
