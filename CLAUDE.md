@@ -190,7 +190,7 @@ When `testing.defaultTestMode: "TDD"` in config.json: RED→GREEN→REFACTOR. Us
 <!-- SW:SECTION:lazyloading version="1.0.272" -->
 ## Plugin Auto-Loading
 
-Plugins load automatically. Manual: `vskill install --repo anton-abyzov/vskill --plugin frontend`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
+Plugins load automatically. Manual: `specweave refresh-plugins` or `claude plugin install <name>@specweave`. Disable: `export SPECWEAVE_DISABLE_AUTO_LOAD=1`
 <!-- SW:END:lazyloading -->
 
 <!-- SW:SECTION:principles version="1.0.272" -->

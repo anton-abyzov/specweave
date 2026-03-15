@@ -1,14 +1,10 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.343 - vskill Plugin Installation Fix)
+# SpecWeave UserPromptSubmit Hook (v1.0.533 - Native Plugin Installation)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v1.0.272: VSKILL PLUGIN INSTALL - sw-* plugins now installed via vskill instead of
-#   `claude plugin install`. Includes security scanning (tier1 PASS/CONCERNS/FAIL) and
-#   vskill.lock fast-path for already-installed plugins. Non-specweave plugins (LSP, etc.)
-#   still use `claude plugin install`.
 # - v1.0.201: LSP CLI FALLBACK INSTRUCTIONS - When LSP requested, instruct Claude to use
 #   `specweave lsp` commands instead of Grep. These use TsServerClient for REAL semantic
 #   analysis. Key fix: "find references" now gets semantic refs, not text matches!
@@ -294,11 +290,9 @@ if [[ "$SCOPE_GUARD_RUN" == "true" ]] && command -v jq >/dev/null 2>&1 && comman
       for plugin_key in $POLLUTED_PLUGINS; do
         # Uninstall from user scope
         if timeout 5 claude plugin uninstall "$plugin_key" >/dev/null 2>&1; then
-          # v1.0.272: sw-* plugins reinstall via vskill, LSP plugins via claude CLI
           if [[ "$plugin_key" == sw-*@specweave ]]; then
-            # Extract plugin name from "sw-name@specweave" format
-            _sw_name="${plugin_key%%@*}"
-            if install_plugin_via_vskill "$_sw_name"; then
+            # Reinstall at project scope via native Claude plugin system (v1.0.533)
+            if timeout 10 claude plugin install "$plugin_key" --scope project >/dev/null 2>&1; then
               [[ -n "$MIGRATED" ]] && MIGRATED="$MIGRATED, "
               MIGRATED="${MIGRATED}${plugin_key}"
             fi
@@ -477,71 +471,6 @@ check_plugin_in_vskill_lock() {
     return 0  # Already installed via vskill
   else
     return 1  # Not in lockfile
-  fi
-}
-
-# Helper: Install plugin via vskill (v1.0.272, fixed v1.0.343, v1.0.344: --repo)
-# Uses npx vskill install with --repo anton-abyzov/specweave for sw-* plugins.
-# Args: $1=plugin name (e.g., "sw-github")
-# Returns: 0 if installed successfully, 1 if failed
-# Sets VSKILL_INSTALL_OUTPUT with stdout/stderr for scan result display
-# v1.0.344 (0394): Uses --repo anton-abyzov/specweave instead of local marketplace directory
-install_plugin_via_vskill() {
-  local plugin="$1"
-  VSKILL_INSTALL_OUTPUT=""
-
-  if command -v npx >/dev/null 2>&1; then
-    if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill install --repo anton-abyzov/specweave --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
-    else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill install --repo anton-abyzov/specweave --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
-    fi
-  else
-    VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
-    return 1
-  fi
-
-  # Check if install succeeded
-  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-# Domain skill plugins in vskill marketplace (per-category plugins).
-# Each is a standalone plugin: mobile@vskill, skills@vskill.
-# Skills are invoked as plugin:skill (e.g., mobile:react-native).
-# v1.0.397: Reduced to plugins with actual directories on disk. Phantom entries removed.
-VSKILL_REPO_PLUGINS="mobile skills"
-
-# Check if plugin name is a vskill marketplace plugin
-is_vskill_repo_plugin() {
-  local plugin="$1"
-  echo " $VSKILL_REPO_PLUGINS " | grep -q " $plugin "
-}
-
-# Install vskill marketplace plugin via --repo flag. (fixed v1.0.343: add→install)
-# Args: $1=plugin name (e.g., "frontend")
-install_vskill_repo_plugin() {
-  local plugin="$1"
-  VSKILL_INSTALL_OUTPUT=""
-  if command -v npx >/dev/null 2>&1; then
-    if command -v timeout >/dev/null 2>&1; then
-      VSKILL_INSTALL_OUTPUT=$(timeout 30 npx vskill install --repo anton-abyzov/vskill --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
-    else
-      VSKILL_INSTALL_OUTPUT=$(npx vskill install --repo anton-abyzov/vskill --plugin "$plugin" --agent claude-code --force --yes 2>&1) || true
-    fi
-  else
-    VSKILL_INSTALL_OUTPUT="vskill not available (npx not found)"
-    return 1
-  fi
-
-  # Check if install succeeded
-  if echo "$VSKILL_INSTALL_OUTPUT" | grep -qiE "(installed|Installed)"; then
-    return 0
-  else
-    return 1
   fi
 }
 
@@ -1275,16 +1204,15 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
-                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`npx vskill install --repo anton-abyzov/specweave --plugin ${plugin} --agent claude-code\`\\n"
-                    elif is_vskill_repo_plugin "$plugin"; then
-                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`npx vskill install --repo anton-abyzov/vskill --plugin ${plugin} --agent claude-code\`\\n"
+                      SUGGEST_CMDS="${SUGGEST_CMDS}  - **${plugin}**: \`claude plugin install ${plugin}@specweave\`\\n"
                     fi
                   done
                   LLM_REASON=$(echo "$JSON_OUTPUT" | jq -r '.reasoning // empty' 2>/dev/null)
-                  AUTOLOAD_PLUGINS_MSG="**Suggested plugins for this task**:\\n${SUGGEST_CMDS}"
-                  [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*Why*: ${LLM_REASON}\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}\\nTo enable auto-install: set \`\"pluginAutoLoad\": { \"suggestOnly\": false }\` in \`.specweave/config.json\`\\n"
-                  AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, **restart Claude Code** to use new plugins.\\n\\n---\\n"
+                  if [[ -n "$SUGGEST_CMDS" ]]; then
+                    AUTOLOAD_PLUGINS_MSG="**Suggested plugins for this task**:\\n${SUGGEST_CMDS}"
+                    [[ -n "$LLM_REASON" ]] && AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}*Why*: ${LLM_REASON}\\n"
+                    AUTOLOAD_PLUGINS_MSG="${AUTOLOAD_PLUGINS_MSG}After installing, **restart Claude Code** to use new plugins.\\n\\n---\\n"
+                  fi
                   PLUGIN_LIST=$(echo "$DETECTED_PLUGINS" | tr ' ' ', ' | sed 's/,$//')
                   echo "[$(date -Iseconds)] plugins | suggested=${PLUGIN_LIST} | mode=suggestOnly" >> "$LAZY_LOAD_LOG"
                 elif command -v claude >/dev/null 2>&1; then
@@ -1306,54 +1234,28 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
                   for plugin in $DETECTED_PLUGINS; do
                     [[ -z "$plugin" ]] && continue
 
-                    # v1.0.159: Determine marketplace based on plugin name
-                    # sw-* plugins → @specweave (via vskill), others → @claude-plugins-official (via claude CLI)
-                    # v1.0.240 (0198): context7/playwright removed from auto-install
-                    # v1.0.272 (0232): sw-* plugins now installed via vskill instead of claude plugin install
-                    # v1.0.344 (0394): docs plugin routes through specweave repo (not vskill)
+                    # v1.0.533: sw-* plugins → claude plugin install @specweave, others → @claude-plugins-official
                     if [[ "$plugin" == sw-* ]] || [[ "$plugin" == "sw" ]] || [[ "$plugin" == "docs" ]]; then
-                      # ---- SW-* PLUGINS: Install via vskill (v1.0.272) ----
-                      # Fast-path: check vskill.lock first (no CLI invocation needed)
+                      # ---- SW-* PLUGINS: Install via claude plugin install (v1.0.533) ----
                       if check_plugin_in_vskill_lock "$plugin"; then
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       elif check_plugin_installed_from_json "$plugin" "specweave"; then
-                        # Fallback: check installed_plugins.json (legacy installations)
                         [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
                         PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
                       else
-                        # Not installed - install via vskill add
-                        if install_plugin_via_vskill "$plugin"; then
-                          [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
-                          PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-
-                          # Display scan result if available
-                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
-                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
-                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
-                          fi
+                        # Install via native Claude plugin system
+                        local OUT=""
+                        if command -v timeout >/dev/null 2>&1; then
+                          OUT=$(timeout 10 claude plugin install "${plugin}@specweave" --scope project 2>&1) || true
                         else
-                          echo "[$(date -Iseconds)] vskill | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
+                          OUT=$(claude plugin install "${plugin}@specweave" --scope project 2>&1) || true
                         fi
-                      fi
-                    elif is_vskill_repo_plugin "$plugin"; then
-                      # ---- VSKILL MARKETPLACE PLUGINS ----
-                      # Each category is a standalone plugin (frontend@vskill, backend@vskill, etc.)
-                      if check_plugin_in_vskill_lock "$plugin"; then
-                        [[ -n "$PLUGINS_ALREADY" ]] && PLUGINS_ALREADY="$PLUGINS_ALREADY, "
-                        PLUGINS_ALREADY="${PLUGINS_ALREADY}${plugin}"
-                      else
-                        if install_vskill_repo_plugin "$plugin"; then
+                        if echo "$OUT" | grep -qiE "(success|installed)"; then
                           [[ -n "$PLUGINS_INSTALLED" ]] && PLUGINS_INSTALLED="$PLUGINS_INSTALLED, "
                           PLUGINS_INSTALLED="${PLUGINS_INSTALLED}${plugin}"
-
-                          # Display scan result if available
-                          if [[ -n "$VSKILL_INSTALL_OUTPUT" ]]; then
-                            SCAN_RESULT=$(echo "$VSKILL_INSTALL_OUTPUT" | grep -oE "Score:[[:space:]]*[0-9]+/100[[:space:]]*Verdict:[[:space:]]*[A-Z]+" || true)
-                            [[ -n "$SCAN_RESULT" ]] && echo "[$(date -Iseconds)] vskill-repo | ${plugin} | ${SCAN_RESULT}" >> "$LAZY_LOAD_LOG"
-                          fi
                         else
-                          echo "[$(date -Iseconds)] vskill-repo | ${plugin} | FAILED: ${VSKILL_INSTALL_OUTPUT:-unknown}" >> "$LAZY_LOAD_LOG"
+                          echo "[$(date -Iseconds)] claude-install | ${plugin} | FAILED: ${OUT:-unknown}" >> "$LAZY_LOAD_LOG"
                         fi
                       fi
                     else
