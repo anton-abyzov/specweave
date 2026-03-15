@@ -18,6 +18,10 @@ export class GitHubClientV2 {
   private fullRepo: string;
   private token?: string;
 
+  // Session cache: avoids redundant API calls for the same issue within 30s
+  private static issueCache = new Map<string, { data: any; fetchedAt: number }>();
+  private static readonly CACHE_TTL_MS = 30_000;
+
   /**
    * Create GitHub client from sync profile
    */
@@ -429,6 +433,13 @@ export class GitHubClientV2 {
    * Get issue details
    */
   async getIssue(issueNumber: number): Promise<GitHubIssue> {
+    // Check session cache first (30s TTL)
+    const cacheKey = `${this.fullRepo}#${issueNumber}`;
+    const cached = GitHubClientV2.issueCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < GitHubClientV2.CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     const result = await execFileNoThrow('gh', [
       'issue',
       'view',
@@ -446,7 +457,7 @@ export class GitHubClientV2 {
     }
 
     const issue = JSON.parse(result.stdout);
-    return {
+    const normalized = {
       ...issue,
       // gh CLI returns state as UPPERCASE ("OPEN"/"CLOSED"), normalize to lowercase
       // for consistency with GitHub REST API which uses lowercase
@@ -454,6 +465,10 @@ export class GitHubClientV2 {
       html_url: issue.url,
       labels: issue.labels?.map((l: any) => l.name) || [],
     };
+
+    // Cache the result
+    GitHubClientV2.issueCache.set(cacheKey, { data: normalized, fetchedAt: Date.now() });
+    return normalized;
   }
 
   /**
