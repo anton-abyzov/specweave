@@ -11,7 +11,6 @@ import { describe, it, expect } from 'vitest';
 import {
   SPECWEAVE_PLUGINS,
   isSpecWeavePlugin,
-  getPluginMarketplace,
 } from '../../../../src/core/lazy-loading/llm-plugin-detector.js';
 
 describe('sw-media Plugin Registry', () => {
@@ -21,10 +20,6 @@ describe('sw-media Plugin Registry', () => {
 
   it('should recognize sw-media as a SpecWeave plugin', () => {
     expect(isSpecWeavePlugin('sw-media')).toBe(true);
-  });
-
-  it('should return specweave marketplace for sw-media', () => {
-    expect(getPluginMarketplace('sw-media')).toBe('specweave');
   });
 });
 

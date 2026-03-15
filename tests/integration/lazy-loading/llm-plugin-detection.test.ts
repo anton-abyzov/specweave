@@ -30,7 +30,6 @@ import {
   clearCliCache,
   getCliStatus,
   SPECWEAVE_PLUGINS,
-  VSKILL_PLUGINS,
   ALL_KNOWN_PLUGINS,
   type LLMDetectionResult,
 } from '../../../src/core/lazy-loading/llm-plugin-detector.js';
@@ -584,11 +583,9 @@ describe('Error Handling', () => {
   it('should validate plugin names against known list', () => {
     const unknownPlugin = 'sw-unknown-plugin';
     const knownSpecweavePlugin = 'sw-github';
-    const knownVskillPlugin = 'frontend';
 
     expect(SPECWEAVE_PLUGINS.includes(unknownPlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(false);
     expect(SPECWEAVE_PLUGINS.includes(knownSpecweavePlugin as typeof SPECWEAVE_PLUGINS[number])).toBe(true);
-    expect(VSKILL_PLUGINS.includes(knownVskillPlugin as typeof VSKILL_PLUGINS[number])).toBe(true);
   });
 });
 
@@ -597,11 +594,6 @@ describe('Plugin List Validation', () => {
     // Core specweave plugins use sw-* prefix
     expect(SPECWEAVE_PLUGINS).toContain('sw');
     expect(SPECWEAVE_PLUGINS).toContain('sw-github');
-    // Domain plugins migrated to vskill repo (no prefix)
-    expect(VSKILL_PLUGINS).toContain('frontend');
-    expect(VSKILL_PLUGINS).toContain('backend');
-    expect(VSKILL_PLUGINS).toContain('testing');
-    expect(VSKILL_PLUGINS).toContain('mobile');
   });
 
   // ============================================================================
@@ -630,10 +622,16 @@ describe('Plugin List Validation', () => {
     }
   });
 
-  it('should have all expected infrastructure plugins', () => {
-    // Infrastructure plugins migrated to vskill repo
-    expect(VSKILL_PLUGINS).toContain('infra');
-    expect(VSKILL_PLUGINS).toContain('k8s');
+  it('should not include removed vskill domain plugins', () => {
+    // Domain plugins have been removed from the known plugins list
+    expect(ALL_KNOWN_PLUGINS).not.toContain('frontend');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('backend');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('testing');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('mobile');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('infra');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('k8s');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('payments');
+    expect(ALL_KNOWN_PLUGINS).not.toContain('ml');
   });
 
   it('should have all expected integration plugins', () => {
@@ -642,12 +640,11 @@ describe('Plugin List Validation', () => {
     expect(SPECWEAVE_PLUGINS).toContain('sw-ado');
   });
 
-  it('should have all expected specialized plugins', () => {
-    // Specialized plugins migrated to vskill repo
-    expect(VSKILL_PLUGINS).toContain('payments');
-    expect(VSKILL_PLUGINS).toContain('ml');
-    expect(VSKILL_PLUGINS).toContain('kafka');
-    expect(VSKILL_PLUGINS).toContain('confluent');
+  it('should have all expected integration plugins in SPECWEAVE_PLUGINS', () => {
+    expect(SPECWEAVE_PLUGINS).toContain('sw-release');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-diagrams');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-docs');
+    expect(SPECWEAVE_PLUGINS).toContain('sw-media');
   });
 
   it('should use sw-* marketplace prefix (not specweave-*)', () => {
