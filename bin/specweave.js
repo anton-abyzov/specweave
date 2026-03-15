@@ -732,6 +732,15 @@ program
     await runLinkPr(options);
   });
 
+// Branch-name command - Compute branch name with optional external ticket key
+program
+  .command('branch-name <increment-id>')
+  .description('Output the computed branch name for an increment (with optional JIRA/ADO ticket key)')
+  .action(async (incrementId) => {
+    const { branchNameCommand } = await import('../dist/src/cli/commands/branch-name.js');
+    await branchNameCommand(incrementId);
+  });
+
 // Jobs command - Monitor and manage background jobs (imports, cloning, sync)
 program
   .command('jobs')
@@ -991,6 +1000,18 @@ program
   .action(async (opts) => {
     const { syncSetupCommand } = await import('../dist/src/cli/commands/sync-setup.js');
     await syncSetupCommand({ provider: opts.provider, quick: opts.quick });
+  });
+
+// Sync-health command - Validate external integration health
+program
+  .command('sync-health')
+  .description('Validate external integration health (GitHub, JIRA, ADO)')
+  .option('--json', 'Output results as JSON for CI pipelines')
+  .option('--provider <name>', 'Check only a specific provider (github|jira|ado)')
+  .action(async (opts) => {
+    const { syncHealthCommand } = await import('../dist/src/cli/commands/sync-health.js');
+    const exitCode = await syncHealthCommand({ json: opts.json, provider: opts.provider });
+    process.exitCode = exitCode;
   });
 
 // Docs command - Documentation preview, build, validation
