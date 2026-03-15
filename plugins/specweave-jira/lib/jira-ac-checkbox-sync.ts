@@ -16,7 +16,6 @@ import path from 'path';
 import yaml from 'yaml';
 import axios, { AxiosInstance } from 'axios';
 import { Logger, consoleLogger } from '../../specweave/lib/vendor/utils/logger.js';
-import { autoDetectProjectIdSync } from '../../specweave/lib/vendor/utils/project-detection.js';
 import { deriveFeatureId } from '../../specweave/lib/vendor/utils/feature-id-derivation.js';
 import { detectDeploymentType, getApiBaseUrl } from './jira-deployment-detector.js';
 import type { SpecWeaveConfig } from '../../../src/core/config/types.js';
@@ -32,7 +31,6 @@ export interface JiraACCheckboxSyncResult {
 export class JiraACCheckboxSync {
   private projectRoot: string;
   private incrementId: string;
-  private projectId: string;
   private logger: Logger;
 
   constructor(options: {
@@ -43,7 +41,6 @@ export class JiraACCheckboxSync {
     this.projectRoot = options.projectRoot;
     this.incrementId = options.incrementId;
     this.logger = options.logger ?? consoleLogger;
-    this.projectId = autoDetectProjectIdSync(this.projectRoot) || 'default';
   }
 
   async syncACCheckboxesToJira(config: SpecWeaveConfig): Promise<JiraACCheckboxSyncResult> {
@@ -299,15 +296,11 @@ export class JiraACCheckboxSync {
     const specsRoot = path.join(this.projectRoot, '.specweave/docs/internal/specs');
     const usFiles: LivingDocsUSFile[] = [];
 
+    // Search all project directories for the feature
     const projectDirs: string[] = [];
-    const primaryPath = path.join(specsRoot, this.projectId, featureId);
-    if (existsSync(primaryPath)) projectDirs.push(primaryPath);
-
     if (existsSync(specsRoot)) {
       try {
-        const allProjects = await fs.readdir(specsRoot);
-        for (const proj of allProjects) {
-          if (proj === this.projectId) continue;
+        for (const proj of await fs.readdir(specsRoot)) {
           const p = path.join(specsRoot, proj, featureId);
           if (existsSync(p)) projectDirs.push(p);
         }

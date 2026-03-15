@@ -3,7 +3,7 @@ import path from "path";
 import yaml from "yaml";
 import { GitHubClientV2 } from "./github-client-v2.js";
 import { consoleLogger } from "../../specweave/lib/vendor/utils/logger.js";
-import { autoDetectProjectIdSync } from "../../specweave/lib/vendor/utils/project-detection.js";
+import { autoDetectProjectIdSync } from "../../../src/utils/project-detection.js";
 import { deriveFeatureId } from "../../specweave/lib/vendor/utils/feature-id-derivation.js";
 import {
   ProviderRouter

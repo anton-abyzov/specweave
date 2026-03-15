@@ -8,7 +8,7 @@
  * - Secure command execution (no shell injection)
  */
 
-import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { execFileNoThrow } from '../../specweave/lib/vendor/utils/execFileNoThrow.js';
 import { GitHubIssue, GitHubMilestone, GitHubExternalChange } from './types';
 import { SyncProfile, GitHubConfig, TimeRangePreset } from '../../../src/core/types/sync-profile';
 
