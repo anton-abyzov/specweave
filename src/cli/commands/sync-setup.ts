@@ -14,6 +14,7 @@ import * as path from 'path';
 import type { SupportedLanguage } from '../../core/i18n/types.js';
 import { setupIssueTracker } from '../helpers/issue-tracker/index.js';
 import type { RepositoryHosting } from '../helpers/issue-tracker/types.js';
+import { runHealthChecksForConfig, formatHealthCheckResults } from './sync-health.js';
 
 export type SyncSetupProvider = 'github' | 'jira' | 'ado';
 
@@ -93,7 +94,21 @@ export async function syncSetupCommand(options: SyncSetupOptions = {}): Promise<
   if (success) {
     console.log('');
     console.log(chalk.green.bold('✅ Sync setup complete!'));
-    console.log(chalk.gray('   Run specweave sync-status to verify the connection.'));
+    console.log('');
+
+    // Run health checks for the configured provider(s)
+    try {
+      const updatedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const results = await runHealthChecksForConfig(updatedConfig, projectPath);
+      if (results.length > 0) {
+        console.log(formatHealthCheckResults(results));
+      }
+    } catch {
+      // Health check failure should not block setup success
+      console.log(chalk.gray('   ⚠ Could not run health checks. Run specweave sync-health manually.'));
+    }
+
+    console.log(chalk.gray('   Run specweave sync-health to re-check integration health.'));
     console.log(chalk.gray('   Run specweave sync-progress to push increment progress to external tools.'));
     console.log('');
   }
