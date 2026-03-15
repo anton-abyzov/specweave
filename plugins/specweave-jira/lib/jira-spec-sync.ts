@@ -38,7 +38,7 @@ import axios, { AxiosInstance } from 'axios';
  */
 export function buildStoryDescription(us: UserStory): string {
   const acList = us.acceptanceCriteria
-    .map(ac => `${ac.status === 'done' ? '[x]' : '[ ]'} ${ac.description}`)
+    .map(ac => `${ac.status === 'done' ? '[x]' : '[ ]'} ${ac.id}: ${ac.description}`)
     .join('\n');
 
   return `

@@ -10,7 +10,7 @@ import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
 function buildStoryDescription(us) {
-  const acList = us.acceptanceCriteria.map((ac) => `${ac.status === "done" ? "[x]" : "[ ]"} ${ac.description}`).join("\n");
+  const acList = us.acceptanceCriteria.map((ac) => `${ac.status === "done" ? "[x]" : "[ ]"} ${ac.id}: ${ac.description}`).join("\n");
   return `
 h2. User Story
 
