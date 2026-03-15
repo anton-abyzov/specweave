@@ -100,9 +100,17 @@ function getAvailablePlugins(marketplacePath: string): MarketplacePlugin[] {
  * Always installs all plugins. Uses hash comparison to skip unchanged ones.
  */
 export async function refreshPluginsCommand(options: RefreshPluginsOptions = {}): Promise<void> {
-  // Step 0: Detect Claude CLI for native install support
-  const cliStatus = detectClaudeCli();
-  const useNativeCli = cliStatus.available && cliStatus.pluginCommandsWork;
+  // Step 0: Detect Claude CLI for native install support.
+  // Wrapped in try-catch because detectClaudeCli() spawns child processes
+  // (which, claude --version, claude plugin --help) that could fail unexpectedly.
+  let useNativeCli = false;
+  try {
+    const cliStatus = detectClaudeCli();
+    useNativeCli = cliStatus.available && cliStatus.pluginCommandsWork;
+  } catch {
+    // CLI detection failed — fall back to direct copy silently
+    logger.debug('Claude CLI detection failed, falling back to direct copy');
+  }
 
   console.log(chalk.blue.bold('\n  SpecWeave Plugin Refresh'));
   if (useNativeCli) {
@@ -131,7 +139,8 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
 
   console.log(chalk.gray(`  Found ${allPlugins.length} plugins in marketplace.json`));
 
-  // Step 3: Determine project root
+  // Step 3: Determine project root (always needed — fallback copy uses it,
+  // and installPlugin() calls getProjectRoot() internally for the lockfile)
   const projectRoot = getProjectRoot();
 
   // Step 4: Process each plugin
@@ -141,9 +150,18 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   const installedPluginNames: string[] = [];
 
   for (const plugin of allPlugins) {
-    const result = useNativeCli
-      ? installPlugin(plugin.name, specweaveRoot, { force: options.force })
-      : copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+    let result;
+
+    if (useNativeCli) {
+      // Try native install first; fall back to direct copy if it fails
+      result = installPlugin(plugin.name, specweaveRoot, { force: options.force });
+      if (!result.success) {
+        logger.debug(`Native install failed for ${plugin.name}, trying direct copy`);
+        result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+      }
+    } else {
+      result = copyPluginSkillsToProject(plugin.name, specweaveRoot, projectRoot, { force: options.force });
+    }
 
     if (result.success && result.skipped) {
       console.log(chalk.green(`  ✓ ${plugin.name}: active`));
@@ -165,8 +183,8 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
   // Step 4b: Enable plugins in Claude Code settings (native mode only)
   if (useNativeCli && installedPluginNames.length > 0) {
     const enabled = enablePluginsInSettings(installedPluginNames);
-    if (enabled) {
-      logger.debug('Enabled plugins in ~/.claude/settings.json');
+    if (!enabled) {
+      console.log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));
     }
   }
 

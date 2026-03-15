@@ -234,7 +234,27 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({});
 
       expect(mockInstallPlugin).toHaveBeenCalledTimes(3);
+      // copyPluginSkillsToProject should not be called when all native installs succeed
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to copyPluginSkillsToProject when native install fails for a plugin', async () => {
+      mockInstallPlugin
+        .mockReturnValueOnce({ success: true, sha: 'abc123' })
+        .mockReturnValueOnce({ success: false, sha: '', error: 'CLI crash' })
+        .mockReturnValueOnce({ success: true, sha: 'def456' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'fallback' });
+
+      await refreshPluginsCommand({});
+
+      // Plugin 2 (sw-github) failed natively, should have been retried via copy
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(1);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledWith(
+        'sw-github',
+        '/mock/specweave',
+        '/mock/project',
+        { force: undefined },
+      );
     });
 
     it('should install all plugins from marketplace.json via native CLI', async () => {
@@ -263,19 +283,23 @@ describe('refresh-plugins', () => {
       expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
     });
 
-    it('should only enable successfully installed plugins', async () => {
+    it('should only enable successfully installed plugins (excludes double-failures)', async () => {
+      // Native fails for sw-github, AND fallback also fails
       mockInstallPlugin
         .mockReturnValueOnce({ success: true, sha: 'abc123' })
         .mockReturnValueOnce({ success: false, sha: '', error: 'install failed' })
         .mockReturnValueOnce({ success: true, sha: 'def456' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'copy also failed' });
 
       await refreshPluginsCommand({});
 
       expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-jira']);
     });
 
-    it('should not call enablePluginsInSettings when all plugins fail', async () => {
-      mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'all failed' });
+    it('should not call enablePluginsInSettings when all plugins fail (native + fallback)', async () => {
+      // Both native and fallback fail for every plugin
+      mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'native failed' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'copy also failed' });
 
       await refreshPluginsCommand({});
 
@@ -349,6 +373,47 @@ describe('refresh-plugins', () => {
 
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
       expect(mockInstallPlugin).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to direct copy when detectClaudeCli() throws', async () => {
+      mockDetectClaudeCli.mockImplementation(() => {
+        throw new Error('Segfault in child process');
+      });
+
+      await refreshPluginsCommand({});
+
+      // Should gracefully fall back to copy mode, not crash
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+    });
+
+    it('should warn user when enablePluginsInSettings fails', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_AVAILABLE);
+      mockEnablePluginsInSettings.mockReturnValue(false);
+      const consoleSpy = vi.spyOn(console, 'log');
+
+      await refreshPluginsCommand({});
+
+      const warningLogged = consoleSpy.mock.calls.some(
+        (args) => String(args[0]).includes('Could not enable plugins'),
+      );
+      expect(warningLogged).toBe(true);
+      consoleSpy.mockRestore();
+    });
+
+    it('should recover when all native installs fail by falling back to copy', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_AVAILABLE);
+      mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'CLI broken' });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'fallback123' });
+
+      await refreshPluginsCommand({});
+
+      // Each plugin: native fails → fallback copy succeeds
+      expect(mockInstallPlugin).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      // All plugins recovered via copy, so enablement should still happen
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
     });
   });
 });
