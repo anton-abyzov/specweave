@@ -7,8 +7,9 @@
 
 import type { GitHubRepoInfo } from '../submission-queue-types.js';
 import type { DiscoveryProvider } from './source-registry.js';
+import { NPM_REGISTRY_URL } from '../../../utils/npm-constants.js';
 
-const NPM_SEARCH_URL = 'https://registry.npmjs.org/-/v1/search';
+const NPM_SEARCH_URL = `${NPM_REGISTRY_URL}/-/v1/search`;
 const SEARCH_KEYWORDS = [
   'claude-code-skill',
   'agent-skill',

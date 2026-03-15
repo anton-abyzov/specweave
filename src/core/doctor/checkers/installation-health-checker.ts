@@ -26,6 +26,7 @@ import type {
 } from '../types.js';
 import { calculateOverallStatus } from '../types.js';
 import { computePluginHash } from '../../../utils/plugin-copier.js';
+import { npmRegistryFlag } from '../../../utils/npm-constants.js';
 
 interface InstallationHealthOptions {
   commandsDir?: string;
@@ -524,7 +525,7 @@ export class InstallationHealthChecker implements HealthChecker {
       process.platform === 'win32' ? (process.env['TEMP'] || 'C:\\Temp') : '/tmp',
       '.specweave-npm-noop'
     );
-    return execSync(`${command} --registry https://registry.npmjs.org`, {
+    return execSync(`${command} ${npmRegistryFlag()}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       timeout,

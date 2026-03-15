@@ -11,23 +11,24 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { tmpdir } from 'os';
+import { npmRegistryFlag } from '../../../../src/utils/npm-constants.js';
 
 describe('Update Robustness - Source Code Verification', () => {
   const updateTsPath = path.join(process.cwd(), 'src/cli/commands/update.ts');
   const updateInstructionsTsPath = path.join(process.cwd(), 'src/cli/commands/update-instructions.ts');
 
   describe('npm timeout protection', () => {
-    it('should have timeout on npm view command via npmExecWithAuthFallback', () => {
+    it('should have timeout on npm view command via npmPublicExec', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      // npmExecWithAuthFallback passes timeout to execSync internally
+      // npmPublicExec passes timeout to execSync internally
       // Verify the call passes a timeout value
-      expect(content).toContain("npmExecWithAuthFallback('npm view specweave version', 30000)");
+      expect(content).toContain("npmPublicExec('npm view specweave version', 30000)");
     });
 
-    it('should have timeout on npm install command via npmExecWithAuthFallback', () => {
+    it('should have timeout on npm install command via npmPublicExec', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      // installWithFallback passes timeout through npmExecWithAuthFallback
-      expect(content).toMatch(/npmExecWithAuthFallback\(`npm install -g specweave@\$\{.*\}`, 120000\)/);
+      // installWithFallback passes timeout through npmPublicExec
+      expect(content).toMatch(/npmPublicExec\(`npm install -g specweave@\$\{.*\}`, 120000\)/);
     });
 
     it('should handle timeout errors in catch block', () => {
@@ -94,30 +95,29 @@ describe('Update Robustness - Source Code Verification', () => {
     });
   });
 
-  describe('E401 auth fallback', () => {
-    it('should have npmExecWithAuthFallback helper that retries with explicit registry', () => {
+  describe('E401 prevention via npmPublicExec', () => {
+    it('should use npmPublicExec with registry flag to prevent E401 from stale tokens', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      expect(content).toContain('npmExecWithAuthFallback');
-      expect(content).toContain('--registry https://registry.npmjs.org');
-      expect(content).toContain('E401');
-      expect(content).toContain('Unable to authenticate');
+      expect(content).toContain('npmPublicExec');
+      expect(content).toContain('npmRegistryFlag()');
+      // npmPublicExec always bypasses user auth config
+      expect(content).toContain('buildPublicRegistryEnv');
     });
 
-    it('should use npmExecWithAuthFallback for npm view in selfUpdateSpecWeave', () => {
+    it('should use npmPublicExec for npm view in selfUpdateSpecWeave', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
-      // The self-update function should call the helper, not raw execSync
       const selfUpdateStart = content.indexOf('async function selfUpdateSpecWeave');
       const selfUpdateSection = content.substring(selfUpdateStart, selfUpdateStart + 600);
-      expect(selfUpdateSection).toContain("npmExecWithAuthFallback('npm view specweave version'");
+      expect(selfUpdateSection).toContain("npmPublicExec('npm view specweave version'");
     });
 
-    it('should use npmExecWithAuthFallback for npm install in installWithFallback', () => {
+    it('should use npmPublicExec for npm install in installWithFallback', () => {
       const content = fs.readFileSync(updateTsPath, 'utf-8');
       const installSection = content.substring(
         content.indexOf('function installWithFallback'),
         content.indexOf('function installWithFallback') + 600
       );
-      expect(installSection).toContain('npmExecWithAuthFallback');
+      expect(installSection).toContain('npmPublicExec');
       expect(installSection).not.toMatch(/execSync\(`npm install/);
     });
   });
