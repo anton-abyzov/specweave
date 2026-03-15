@@ -31,34 +31,23 @@ hooks:
 
 **Before mode detection or any other step**, clean up stale teams from previous runs in this session.
 
-### Why This Matters
+### Cleanup Protocol
 
-Teams persist at `~/.claude/teams/` and `~/.claude/tasks/` after completion. If not cleaned up, they pollute the session and may prevent `TeamCreate` from working.
+1. **First team-lead invocation in this session**: Nothing to clean. Proceed to Section 0.
 
-### Cleanup Steps
+2. **Repeat invocation** (you previously ran team-lead and remember the team name + agent names):
+   - Send `shutdown_request` to each agent you previously spawned:
+     ```typescript
+     SendMessage({ type: "shutdown_request", recipient: "<previous-agent-name>" });
+     ```
+   - Call `TeamDelete()` with the previous team name
+   - If `TeamDelete` fails (agents still shutting down), wait 3 seconds, retry once
 
-```bash
-# 1. List existing teams
-ls ~/.claude/teams/ 2>/dev/null
+3. **Use a unique team name** for each invocation to avoid collisions:
+   - `impl-checkout-1`, `impl-checkout-2`
+   - `review-auth-{timestamp}`
 
-# 2. List existing task directories
-ls ~/.claude/tasks/ 2>/dev/null
-```
-
-**If stale teams exist from a previous run in this session:**
-
-1. Call `TeamDelete()` for each stale team that is no longer active
-2. If `TeamDelete` fails (agents still active), send `shutdown_request` to all agents first:
-   ```typescript
-   SendMessage({ type: "shutdown_request", recipient: "<agent-name>" });
-   ```
-3. Then retry `TeamDelete()`
-
-**If no stale teams or all cleaned up:** Proceed to Increment Pre-Flight (Section 0).
-
-**CRITICAL**: Use a **unique team name** for each invocation to avoid collisions. Append a timestamp or sequence number:
-- `review-pr-1533-1`, `review-pr-1533-2`
-- `impl-feature-{timestamp}`
+**Do NOT** inspect the filesystem (`ls`, `jq`, reading config files). You either know the previous team name from this session, or there is nothing to clean.
 
 ---
 
@@ -790,7 +779,7 @@ When an agent is declared stuck:
   │ ── CLOSURE PHASE (all agents done) ──
   │
   ├── Step 7: Invoke /sw:team-merge (handles all closure: done, sync, archival)
-  ├── Step 8: TeamDelete() + kill orphaned tmux panes (MANDATORY)
+  ├── Step 8: Shutdown agents → TeamDelete() → orphaned pane safety net (Step 9 below)
   └── Done.
 ```
 
@@ -799,29 +788,44 @@ Direct invocation of `/sw:team-lead` without an existing increment will trigger 
 
 ### Step 9: Post-Completion Cleanup (MANDATORY — NEVER SKIP)
 
-**After delivering results OR after /sw:team-merge, ALWAYS clean up the team AND its tmux panes.**
+**After delivering results OR after /sw:team-merge, clean up the team.**
 
-TeamDelete() only removes filesystem state — it does NOT close tmux panes. You MUST kill orphaned panes manually.
+#### Phase 1: Graceful Agent Shutdown
+
+Send `shutdown_request` to every agent you spawned. You know their names — you spawned them via `Task()`.
 
 ```typescript
-// 1. Clean up team filesystem state
+// Replace with your actual agent names from this session
+SendMessage({ type: "shutdown_request", recipient: "<agent-1-name>", content: "Team work complete" });
+SendMessage({ type: "shutdown_request", recipient: "<agent-2-name>", content: "Team work complete" });
+// ... for every agent you spawned
+```
+
+Harmless if agents already exited. When an agent receives `shutdown_request` and approves, Claude Code handles its pane cleanup natively.
+
+#### Phase 2: Destroy Team
+
+```typescript
 TeamDelete();
 ```
 
+If `TeamDelete` fails (agents still shutting down), wait 3 seconds, retry once.
+
+#### Phase 3: Orphaned Pane Safety Net (macOS/Linux tmux only)
+
+SpecWeave agents often exit via auto-mode before receiving `shutdown_request`, so their panes survive. This catches those orphans. **Skip entirely on Windows or non-tmux terminals.**
+
 ```bash
-// 2. Kill orphaned tmux panes (MANDATORY — panes persist after TeamDelete)
-// List all panes, kill any teammate panes that are no longer needed
-tmux list-panes -a -F '#{pane_id} #{pane_current_command}' 2>/dev/null | grep -i claude | head -20
-# Kill specific panes (replace %ID with actual pane IDs from above):
-# tmux kill-pane -t %ID
-
-// 3. Or kill the entire tmux session if all work is done:
-# tmux kill-session -t <session-name>
+if command -v tmux >/dev/null 2>&1 && [ -n "$TMUX" ]; then
+  CURRENT_PANE=$(tmux display-message -p '#{pane_id}')
+  for pane_id in $(tmux list-panes -a -F '#{pane_id}'); do
+    [ "$pane_id" = "$CURRENT_PANE" ] && continue
+    if tmux capture-pane -t "$pane_id" -p -S -50 2>/dev/null | grep -q "Resume this session"; then
+      tmux kill-pane -t "$pane_id" 2>/dev/null
+    fi
+  done
+fi
 ```
-
-**Why this matters**: Claude Code only kills panes when the ENTIRE session exits via its cleanup hook. If agents finish but the main session continues, their panes stay open indefinitely — consuming terminal resources and confusing the user.
-
-**If you skip this step**, orphaned tmux panes accumulate and the next `/sw:team-lead` run will fail to spawn agents due to stale team state.
 
 ### --dry-run Output
 

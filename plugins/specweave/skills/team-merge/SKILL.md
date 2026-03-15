@@ -104,45 +104,57 @@ For each closed increment, trigger external sync:
 /sw-jira:push <increment-id>
 ```
 
-### Step 6: Archive Team Execution Data
+### Step 6: Execution Summary
 
-Before destroying the team, preserve execution logs for debugging and tracing:
+The team's durable artifacts are already in `.specweave/increments/` (spec.md, tasks.md, grill-report.json, metadata.json). No additional archival of ephemeral Claude Code state is needed.
+
+Print a structured execution summary as the final output:
+
+```
+Team Execution Summary
+═══════════════════════
+Team: {team_name}
+
+Agents:
+  {agent-1}: COMPLETED (T-8/8, tests passing)
+  {agent-2}: COMPLETED (T-12/12, tests passing)
+
+Increments closed: {list}
+Sync: {GitHub/JIRA status}
+```
+
+### Step 7: Shutdown Agents and Destroy Team
+
+**7a. Send shutdown_request to all agents** you know from the team session:
+
+```typescript
+SendMessage({ type: "shutdown_request", recipient: "<agent-1>", content: "Merge complete" });
+SendMessage({ type: "shutdown_request", recipient: "<agent-2>", content: "Merge complete" });
+// ... for every agent in this team
+```
+
+Harmless if agents already exited.
+
+**7b. Destroy team:**
+
+```typescript
+TeamDelete()
+```
+
+If `TeamDelete` fails (agents still shutting down), wait 3 seconds, retry once.
+
+**7c. Orphaned pane safety net (macOS/Linux tmux only — skip on Windows):**
 
 ```bash
-# Determine team name from current session context
-# Read ~/.claude/teams/{team-name}/config.json for team metadata
-
-TEAM_NAME="<team-name>"
-TIMESTAMP=$(date +%Y%m%dT%H%M%S)
-ARCHIVE_DIR=".specweave/team-logs/${TEAM_NAME}--${TIMESTAMP}"
-
-mkdir -p "$ARCHIVE_DIR"
-
-# Copy team config and message inboxes
-cp -r ~/.claude/teams/${TEAM_NAME}/ "$ARCHIVE_DIR/team/"
-
-# Copy shared task list (ownership, status transitions, dependencies)
-cp -r ~/.claude/tasks/${TEAM_NAME}/ "$ARCHIVE_DIR/tasks/"
-```
-
-This preserves:
-- **Team config** — members, roles, models, spawn timestamps
-- **Message inboxes** — full inter-agent communication history
-- **Task list** — ownership, status, dependency chains, completion order
-
-### Step 7: Destroy Team Session
-
-After archiving, call `TeamDelete` to clear the session's team context. This allows creating a new team in the same terminal without restarting.
-
-```
-TeamDelete()   # Removes ~/.claude/teams/{name}/ and ~/.claude/tasks/{name}/, clears session context
-```
-
-**Important**: `TeamDelete` fails if teammates are still active. Ensure all teammates were shut down in Step 4 (via `/sw:done` which triggers shutdown).
-
-If `TeamDelete` fails due to active members, send shutdown requests to remaining teammates first:
-```
-SendMessage({ type: "shutdown_request", recipient: "<teammate-name>", content: "Merge complete, shutting down" })
+if command -v tmux >/dev/null 2>&1 && [ -n "$TMUX" ]; then
+  CURRENT_PANE=$(tmux display-message -p '#{pane_id}')
+  for pane_id in $(tmux list-panes -a -F '#{pane_id}'); do
+    [ "$pane_id" = "$CURRENT_PANE" ] && continue
+    if tmux capture-pane -t "$pane_id" -p -S -50 2>/dev/null | grep -q "Resume this session"; then
+      tmux kill-pane -t "$pane_id" 2>/dev/null
+    fi
+  done
+fi
 ```
 
 ## Options
@@ -174,11 +186,17 @@ Syncing to GitHub...
   0301 -> issue #46 closed
   0302 -> issue #47 closed
 
-Archiving team execution data...
-  -> .specweave/team-logs/feature-0300--20260302T143012/
+Team Execution Summary
+═══════════════════════
+Team: feature-checkout
+Agents:
+  shared-agent:   COMPLETED (T-4/4, tests passing)
+  backend-agent:  COMPLETED (T-8/8, tests passing)
+  frontend-agent: COMPLETED (T-6/6, tests passing)
+Increments closed: 0300, 0301, 0302
+Sync: GitHub issues #45, #46, #47 closed
 
-Cleaning up team session...
-  -> TeamDelete: session context cleared
-
-All increments merged, synced, and team archived.
+Shutting down agents... done
+TeamDelete: team cleaned up.
+All increments merged and synced.
 ```
