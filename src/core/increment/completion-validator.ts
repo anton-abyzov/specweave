@@ -150,14 +150,14 @@ export class IncrementCompletionValidator {
       if (drift.externalToolsConfigured && drift.hasDrift) {
         const hoursSince = drift.hoursSinceSync || 0;
 
-        // CRITICAL: Block closure if drift > 7 days (168 hours)
+        // Drift > 7 days (168 hours): strong warning (non-blocking)
+        // External tools will be synced by onIncrementDone() after completion.
         if (hoursSince > 168) {
-          errors.push(
-            `CRITICAL: External tools severely out of sync (${Math.floor(hoursSince / 168)} weeks)!\n` +
+          warnings.push(
+            `⚠️  External tools severely out of sync (${Math.floor(hoursSince / 168)} weeks)!\n` +
             `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
-            `  External tools (GitHub/JIRA/ADO) are critically stale.\n` +
-            `  Run: /sw:sync-progress ${incrementId} before closing.\n\n` +
-            `  Closing without sync will leave external tools outdated.`
+            `  External tools (GitHub/JIRA/ADO) are stale but will be synced on completion.\n` +
+            `  To sync manually first: /sw:sync-progress ${incrementId}`
           );
         }
         // WARNING: Drift > 24h but < 7 days (non-blocking, but strongly recommended)
