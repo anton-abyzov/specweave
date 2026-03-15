@@ -626,6 +626,7 @@ program
   .command('team [description]')
   .description('Launch Claude Code with agent teams (tmux/iTerm2 split panes)')
   .option('--mode <mode>', 'Display mode: tmux (default) or in-process', 'tmux')
+  .option('--no-increment', 'Launch without requiring a SpecWeave increment (free-form agent swarm)')
   .action(async (description, options) => {
     try {
       const { handleTeamCommand } = await import('../dist/src/cli/commands/team.js');

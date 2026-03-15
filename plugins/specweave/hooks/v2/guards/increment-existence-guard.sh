@@ -41,6 +41,12 @@ if [[ "$TOOL_NAME" != "TeamCreate" ]]; then
   exit 0
 fi
 
+# Env var bypass — allows team creation without increment (e.g. specweave team --no-increment)
+if [[ "${SPECWEAVE_NO_INCREMENT:-}" == "1" ]]; then
+  echo '{"decision":"allow"}'
+  exit 0
+fi
+
 # --- MODE DETECTION ---
 # Extract team_name and description from the tool input
 TEAM_NAME=$(echo "$INPUT" | jq -r '.tool_input.team_name // .input.team_name // ""' 2>/dev/null)
