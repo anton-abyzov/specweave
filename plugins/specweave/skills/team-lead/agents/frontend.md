@@ -46,13 +46,16 @@ WORKFLOW:
        summary: "Frontend plan ready — proceeding to implementation" })
   10. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
   11. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  12. After EACH task completion, send heartbeat:
+  12. During /sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Frontend agent: task {N} of {total} done" })
   13. Run all tests for owned code (unit + integration): npm test
   14. Do NOT signal completion until all tests pass
-  15. Signal COMPLETION via SendMessage to team-lead with summary of tasks done and test results
+  15. Signal COMPLETION with structured summary:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nACs satisfied: [AC-IDs]\nFiles changed: [list]",
+       summary: "Frontend agent: all tasks complete, tests passing" })
   16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:

@@ -72,6 +72,10 @@ export class GitHubReconciler {
   private client: GitHubClientV2 | null = null;
   private configCache: any | null = null;
 
+  // Debounce: prevent reconciliation from running more than once per 5 minutes
+  private static lastReconcileTime = 0;
+  private static readonly DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes
+
   constructor(options: ReconcileOptions) {
     this.projectRoot = options.projectRoot;
     this.dryRun = options.dryRun ?? false;
@@ -81,7 +85,7 @@ export class GitHubReconciler {
   /**
    * Main reconciliation entry point
    */
-  async reconcile(): Promise<ReconcileResult> {
+  async reconcile(options?: { force?: boolean }): Promise<ReconcileResult> {
     const result: ReconcileResult = {
       scanned: 0,
       mismatches: 0,
@@ -92,6 +96,13 @@ export class GitHubReconciler {
     };
 
     try {
+      // Debounce: skip if last run was less than 5 minutes ago
+      const now = Date.now();
+      if (!options?.force && now - GitHubReconciler.lastReconcileTime < GitHubReconciler.DEBOUNCE_MS) {
+        const ago = Math.floor((now - GitHubReconciler.lastReconcileTime) / 1000);
+        this.logger.log(`⏭️  Reconciliation debounced (last run ${ago}s ago, min interval 300s)`);
+        return result;
+      }
       // 1. Check if GitHub sync is enabled
       const config = await this.loadConfig();
       // v1.0.240 FIX: Honor preset when explicit settings absent
@@ -117,7 +128,16 @@ export class GitHubReconciler {
         return result;
       }
 
-      // 3. Scan all non-archived increments
+      // 2b. Rate limit pre-flight check
+      try {
+        const rateLimit = await this.client.checkRateLimit();
+        if (rateLimit.remaining < 100) {
+          this.logger.log(`⚠️  Rate limit low (${rateLimit.remaining}/${rateLimit.limit}). Skipping reconciliation.`);
+          return result;
+        }
+      } catch { /* Non-blocking: proceed if rate limit check fails */ }
+
+      // 3. Scan active increments only (archived/abandoned are skipped)
       const increments = await this.scanIncrements();
       result.scanned = increments.length;
 
@@ -141,6 +161,9 @@ export class GitHubReconciler {
         this.logger.log('\n   ⚠️  DRY RUN - No changes were made');
       }
       this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+      // Update debounce timestamp on successful reconciliation
+      GitHubReconciler.lastReconcileTime = Date.now();
 
       return result;
     } catch (error: any) {
@@ -302,12 +325,9 @@ This typically happens when:
       return results;
     }
 
-    // Collect all directories to scan: active + archive + abandoned
+    // Only scan active increments directory — archived/abandoned issues are already closed
+    // and don't need reconciliation. This reduces API calls from O(all_increments) to O(active).
     const dirsToScan = [incrementsDir];
-    for (const sub of ['_archive', '_abandoned']) {
-      const subPath = path.join(incrementsDir, sub);
-      if (existsSync(subPath)) dirsToScan.push(subPath);
-    }
 
     for (const dir of dirsToScan) {
       const entries = await fs.readdir(dir, { withFileTypes: true });

@@ -21,7 +21,7 @@ hooks:
 - **NEVER** say "I'll do this directly" — that defeats the purpose of team-lead
 - Even if you just finished a previous team-lead session in this conversation, you MUST create a **new** team and spawn **new** agents
 - Even if the work seems "simple enough to do directly" — spawn agents anyway
-- Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Read` (for agent templates), and `Bash` (only for team state inspection)
+- Your only tools are: `TeamCreate`, `Task`, `SendMessage`, `Read` (for agent templates; during active phase use PLAN_READY summaries instead of reading full plan files), `Bash` (only for team state inspection), and `Skill()` (only during closure phase for grill/done)
 
 **The test**: If you're about to call `Edit()` or write code, STOP — you're violating this rule.
 
@@ -54,7 +54,7 @@ ls ~/.claude/tasks/ 2>/dev/null
    ```
 3. Then retry `TeamDelete()`
 
-**If no stale teams or all cleaned up:** Proceed to Mode Detection (Section 0).
+**If no stale teams or all cleaned up:** Proceed to Increment Pre-Flight (Section 0).
 
 **CRITICAL**: Use a **unique team name** for each invocation to avoid collisions. Append a timestamp or sequence number:
 - `review-pr-1533-1`, `review-pr-1533-2`
@@ -103,7 +103,7 @@ Do NOT ask permission. Invoke the increment skill with the user's feature descri
 Skill({ skill: "sw:increment", args: "the user's feature description" })
 ```
 
-Wait for /sw:increment to complete (spec.md, plan.md, tasks.md created and approved).
+Wait for /sw:increment to complete (spec.md, plan.md, tasks.md created and user exits plan mode).
 Then continue to Step 1.
 
 If /sw:increment fails (user rejects plan, skill errors, etc.): **STOP. Do NOT proceed.**
@@ -318,8 +318,8 @@ The team lead reviews agent plans **asynchronously**. Agents do NOT wait for app
 
 ### Why Async Review
 
-The previous blocking PLAN_READY/PLAN_APPROVED handshake caused sessions to freeze:
-- When 3-5 Phase 2 agents spawned simultaneously, they ALL blocked waiting for approval
+The previous blocking handshake (where agents waited for explicit approval before implementing) caused sessions to freeze:
+- When 3-5 Phase 2 agents spawned simultaneously, they ALL blocked waiting for a response
 - Team-lead had to review each plan sequentially while all agents sat idle
 - If team-lead was processing another message (or in extended thinking), agents waited indefinitely
 - In tmux/iTerm2, this appeared as a completely frozen session
@@ -351,7 +351,11 @@ SendMessage({
 });
 ```
 4. **Proceed to implementation IMMEDIATELY.** Do NOT wait for any response.
-5. If team-lead sends `PLAN_CORRECTION`, pause current work, revise the plan, and continue.
+5. If team-lead sends `PLAN_CORRECTION` during implementation:
+   - **Finish the current task** (don't leave half-done code)
+   - Read the correction and update plan.md/tasks.md accordingly
+   - Send `STATUS: Applied PLAN_CORRECTION. Revised [what changed]. Continuing from T-{N}.`
+   - Resume implementation with the revised plan
 
 **Team-lead side**:
 1. Receive `PLAN_READY` notification from agent
@@ -649,6 +653,10 @@ FORBIDDEN during active phase:
   ✗ Run /sw:done on any increment
   ✗ Invoke any closure-related skills (judge-llm, sync-docs, qa)
   ✗ Read full plan/spec files (use PLAN_READY summaries instead)
+  ✗ Call TeamDelete() (kills all running agents — only use after all agents done or stuck)
+
+ALLOWED but use with caution:
+  ~ Spawn a replacement agent for a stuck agent that was shut down (same domain, remaining tasks)
 ```
 
 **Why**: Closure loads 4+ skill definitions into context. Running it while agents are active causes the orchestrator to enter extended thinking (30+ min) and stop responding to agent messages — freezing the entire session.
@@ -722,8 +730,8 @@ The team-lead maintains a mental log of the last STATUS received from each agent
 
 ```
 Agent Heartbeat Log (example):
-  backend-agent:  STATUS T-003/8  (last seen: 2 turns ago)
-  frontend-agent: STATUS T-005/12 (last seen: this turn)
+  backend-agent:  STATUS: T-003/8  (last seen: 2 turns ago)
+  frontend-agent: STATUS: T-005/12 (last seen: this turn)
   database-agent: COMPLETION       (done)
   testing-agent:  STATUS T-001/6  (last seen: 4 turns ago) ← STUCK?
 ```
@@ -802,7 +810,8 @@ When an agent is declared stuck:
   │     ├── Pre-closure: verify/fix metadata.json status → must be "active"
   │     ├── /sw:grill → fix findings → retry if needed (max 2)
   │     └── /sw:done --auto → fix gate failures → retry if needed (max 2)
-  └── Step 8: Merge and close (/sw:team-merge)
+  ├── Step 8: Merge and close (/sw:team-merge)
+  └── Step 9: Post-completion cleanup (TeamDelete → removes ~/.claude/teams/ and tasks/)
 ```
 
 **IMPORTANT**: The intended entry point is: `/sw:increment` → `/sw:do` (detects 3+ domains) → `/sw:team-lead`.

@@ -33,18 +33,20 @@ WORKFLOW:
        content: "PLAN_READY: Created [increment path]\nTasks: [count]\nACs covered: [AC-IDs]\nKey decisions: [security findings, hardening approach]\nFiles: [file list]\nRisk areas: [identified vulnerabilities]",
        summary: "Security plan ready — proceeding to implementation" })
   9. Proceed to implementation IMMEDIATELY. If team-lead sends "PLAN_CORRECTION", pause current work, revise, then continue.
-  10. Implement auth/authz middleware if needed
-  11. Add input validation and sanitization
-  12. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
-  13. After EACH task completion, send heartbeat:
+  10. Execute tasks autonomously: /sw:auto --simple (minimal context mode to prevent context overflow)
+      Tasks should include: auth/authz middleware, input validation, sanitization, OWASP hardening
+  11. During /sw:auto execution, after EACH task completion send heartbeat:
      SendMessage({ type: "message", recipient: "team-lead",
        content: "STATUS: T-{N}/{total} complete. Next: T-{N+1}. Tests: [pass/fail count].",
        summary: "Security agent: task {N} of {total} done" })
-  14. Run all tests for owned code (security tests): npm test
-  15. Run security audit tools (npm audit, dependency check)
-  16. Do NOT signal completion until all tests pass
-  17. Signal COMPLETION via SendMessage to team-lead with summary of tasks done, test results, and security findings
-  18. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
+  12. Run all tests for owned code (security tests): npm test
+  13. Run security audit tools (npm audit, dependency check)
+  14. Do NOT signal completion until all tests pass
+  15. Signal COMPLETION with structured summary:
+     SendMessage({ type: "message", recipient: "team-lead",
+       content: "COMPLETION: [increment path]\nTasks: {completed}/{total}\nTests: [pass/fail/skip]\nAudit: [npm audit results]\nACs satisfied: [AC-IDs]\nFindings: [security issues found/fixed]",
+       summary: "Security agent: all tasks complete, audit clean" })
+  16. Do NOT run /sw:done or /sw:grill yourself — team-lead handles closure centrally
 
 RULES:
   - WRITE only to files you own (listed above)
