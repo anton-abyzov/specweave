@@ -188,7 +188,33 @@ export class LifecycleHookDispatcher {
       const doneConfig = hooks?.post_increment_done;
       if (!doneConfig) return result;
 
-      const shouldSyncLivingDocs = doneConfig.sync_living_docs === true;
+      // Global skip: autoSyncOnCompletion flag (defaults to true)
+      let autoSync = true;
+      try {
+        const configManager = new ConfigManager(projectRoot);
+        const fullConfig = await configManager.read();
+        autoSync = fullConfig.sync?.settings?.autoSyncOnCompletion ?? true;
+      } catch {
+        // Default: sync enabled
+      }
+
+      // Per-increment skip: skipLivingDocsSync flag in metadata.json
+      let perIncrementSkip = false;
+      if (autoSync) {
+        try {
+          const { MetadataManager } = await import(
+            '../increment/metadata-manager.js'
+          );
+          const metadata = MetadataManager.read(incrementId);
+          if ((metadata as unknown as Record<string, unknown>).skipLivingDocsSync === true) {
+            perIncrementSkip = true;
+          }
+        } catch {
+          // Metadata read failure shouldn't block — default: don't skip
+        }
+      }
+
+      const shouldSyncLivingDocs = doneConfig.sync_living_docs === true && autoSync && !perIncrementSkip;
       const shouldSyncGitHubProject = doneConfig.sync_to_github_project === true;
       // v1.0.357: Support closing issues for ALL providers (JIRA/ADO/GitHub)
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.

@@ -260,6 +260,8 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       log(chalk.red(`❌ Cannot complete increment ${incrementId}`));
       log(chalk.gray(`   Current status: ${metadata.status}`));
       log(chalk.gray(`   No valid transition path to completed`));
+      // Always log to stderr so auto/silent mode failures are visible
+      process.stderr.write(`[completeIncrement] Cannot complete ${incrementId}: no valid transition from "${metadata.status}" to "completed"\n`);
       return false;
     }
 
@@ -271,8 +273,10 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
         MetadataManager.updateStatus(incrementId, intermediateStatus);
         Object.assign(metadata, MetadataManager.read(incrementId));
       } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
-        log(chalk.gray(`   ${error instanceof Error ? error.message : String(error)}`));
+        log(chalk.gray(`   ${errMsg}`));
+        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
         return false;
       }
     }
@@ -290,6 +294,8 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
           log(chalk.yellow(`\n⚠️  Warnings:\n`));
           validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
         }
+        // Always log to stderr so auto/silent mode failures are visible
+        process.stderr.write(`[completeIncrement] ${incrementId} failed quality gates: ${validation.errors.join('; ')}\n`);
         return false;
       }
 
@@ -303,20 +309,8 @@ export async function completeIncrement(options: CompleteOptions): Promise<boole
       log(chalk.gray(`   Run: specweave complete ${incrementId} --yes (without --skip-validation) for enforced closure`));
     }
 
-    // Pre-completion sync: ensure GitHub issues exist before marking COMPLETED.
-    // This catches up if planning sync was missed (e.g., increment created without
-    // running through LifecycleHookDispatcher.onIncrementPlanned()).
-    try {
-      const { LivingDocsSync } = await import(
-        '../living-docs/living-docs-sync.js'
-      );
-      const sync = new LivingDocsSync(resolveEffectiveRoot());
-      await sync.syncIncrement(incrementId);
-      log(chalk.gray(`   Pre-completion sync: living docs synced`));
-    } catch (syncError) {
-      const msg = syncError instanceof Error ? syncError.message : String(syncError);
-      log(chalk.yellow(`⚠️  Pre-completion sync warning: ${msg}`));
-    }
+    // Living docs sync is handled by LifecycleHookDispatcher.onIncrementDone()
+    // after status is set to COMPLETED. No pre-completion sync needed.
 
     // Update status to completed (final transition)
     // This triggers StatusChangeSyncTrigger → external tool sync!
