@@ -741,6 +741,8 @@ export interface GitConfig {
   targetBranch?: string;
   /** Auto-delete branch after PR merge. Default: true */
   deleteOnMerge?: boolean;
+  /** Include external ticket key (JIRA/ADO) as branch prefix. Default: false */
+  includeExternalKey?: boolean;
 }
 
 /**
@@ -1159,6 +1161,7 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
       branchPrefix: 'sw/',
       targetBranch: 'main',
       deleteOnMerge: true,
+      includeExternalKey: false,
     },
     autoFix: {
       enabled: true,

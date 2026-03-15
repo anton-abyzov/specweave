@@ -41,6 +41,7 @@ interface RawConfig {
       branchPrefix?: string;
       targetBranch?: string;
       deleteOnMerge?: boolean;
+      includeExternalKey?: boolean;
     };
     autoFix?: {
       enabled: boolean;
