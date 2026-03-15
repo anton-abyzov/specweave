@@ -561,7 +561,7 @@ function displayReport(report: QAReport, options: QAOptions): void {
   console.log(chalk.gray(`Duration: ${report.duration_ms}ms`));
   if (report.token_usage) {
     const llmUsage = report.token_usage;
-    console.log(chalk.gray(`LLM usage: ~${llmUsage}`));
+    console.log(chalk.gray(`Tokens: ~${llmUsage}`));
   }
   if (report.cost_usd) {
     console.log(chalk.gray(`Cost: ~$${report.cost_usd.toFixed(3)}`));

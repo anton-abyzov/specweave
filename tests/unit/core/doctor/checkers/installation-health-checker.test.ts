@@ -520,7 +520,7 @@ describe('InstallationHealthChecker', () => {
     it('TC-UH-01: should pass when installed version matches npm latest', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'specweave --version') return '1.0.394';
-        if (cmd === 'npm view specweave version') return '1.0.394';
+        if (cmd === 'npm view specweave version --registry https://registry.npmjs.org') return '1.0.394';
         if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
         return '';
       });
@@ -556,8 +556,8 @@ describe('InstallationHealthChecker', () => {
     it('TC-UH-03: should fail when CDN propagation issue detected', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'specweave --version') return '1.0.393';
-        if (cmd === 'npm view specweave version') return '1.0.394';
-        if (cmd === 'npm view specweave@1.0.394 version') {
+        if (cmd === 'npm view specweave version --registry https://registry.npmjs.org') return '1.0.394';
+        if (cmd === 'npm view specweave@1.0.394 version --registry https://registry.npmjs.org') {
           const err = new Error('ETARGET') as any;
           err.stderr = 'ETARGET No matching version found for specweave@1.0.394';
           throw err;
@@ -579,8 +579,8 @@ describe('InstallationHealthChecker', () => {
     it('TC-UH-04: should clear npm cache on CDN issue with fix=true', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'specweave --version') return '1.0.393';
-        if (cmd === 'npm view specweave version') return '1.0.394';
-        if (cmd === 'npm view specweave@1.0.394 version') {
+        if (cmd === 'npm view specweave version --registry https://registry.npmjs.org') return '1.0.394';
+        if (cmd === 'npm view specweave@1.0.394 version --registry https://registry.npmjs.org') {
           const err = new Error('ETARGET') as any;
           err.stderr = 'ETARGET';
           throw err;
@@ -617,7 +617,7 @@ describe('InstallationHealthChecker', () => {
     it('TC-UH-06: should warn when npm registry unreachable', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'specweave --version') return '1.0.394';
-        if (cmd === 'npm view specweave version') throw new Error('ETIMEDOUT');
+        if (cmd === 'npm view specweave version --registry https://registry.npmjs.org') throw new Error('ETIMEDOUT');
         if (cmd.includes('npm root -g')) return '/usr/local/lib/node_modules';
         return '';
       });
