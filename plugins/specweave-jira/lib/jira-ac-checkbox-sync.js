@@ -122,6 +122,43 @@ class JiraACCheckboxSync {
       await client.put(`/issue/${storyKey}`, {
         fields: { description }
       });
+      const completedCount = [...acStatus.values()].filter(Boolean).length;
+      const totalCount = acStatus.size;
+      const percentage = Math.round(completedCount / totalCount * 100);
+      const acLines = [...acStatus.entries()].map(([id, done]) => `${done ? "\u2705" : "\u2B1C"} ${id}`).join("\n");
+      const commentAdf = {
+        version: 1,
+        type: "doc",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 3 },
+            content: [{ type: "text", text: "\u{1F4CA} AC Progress Update" }]
+          },
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "Acceptance Criteria", marks: [{ type: "strong" }] },
+              { type: "text", text: `: ${completedCount}/${totalCount} (${percentage}%)` }
+            ]
+          },
+          {
+            type: "codeBlock",
+            attrs: { language: "text" },
+            content: [{ type: "text", text: acLines }]
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "\u{1F916} Auto-updated by SpecWeave AC Completion Gate" }]
+          }
+        ]
+      };
+      try {
+        await client.post(`/issue/${storyKey}/comment`, {
+          body: commentAdf
+        });
+      } catch {
+      }
     }
     return updated;
   }
