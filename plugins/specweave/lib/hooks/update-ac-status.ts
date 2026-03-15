@@ -84,6 +84,9 @@ async function updateACStatus(incrementId: string): Promise<void> {
 
       // Sync AC checkboxes to JIRA story descriptions
       await syncACsToJIRA(projectRoot, incrementId);
+
+      // Sync AC checkboxes to ADO work item descriptions + post comments
+      await syncACsToADO(projectRoot, incrementId);
     } else if (result.synced) {
       console.log('✅ All ACs already in sync (no changes needed)');
     } else {
@@ -267,6 +270,50 @@ async function syncACsToJIRA(projectRoot: string, incrementId: string): Promise<
 
   } catch (error: any) {
     console.log(`   ⚠️  JIRA AC sync failed: ${error.message}`);
+  }
+}
+
+/**
+ * Sync AC checkbox states to ADO work item descriptions.
+ * Updates ☐/☑ in the HTML description and posts a progress comment.
+ */
+async function syncACsToADO(projectRoot: string, incrementId: string): Promise<void> {
+  try {
+    const configPath = path.join(projectRoot, '.specweave/config.json');
+    if (!existsSync(configPath)) return;
+
+    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+
+    const profiles = config.sync?.profiles;
+    const hasAdoProfile = profiles &&
+      Object.values(profiles).some((p: any) => p?.provider === 'ado');
+    const hasAdoDirect = config.sync?.ado?.organization;
+    const hasAdoEnv = process.env.AZURE_DEVOPS_PAT &&
+      process.env.AZURE_DEVOPS_ORG && process.env.AZURE_DEVOPS_PROJECT;
+
+    if (!hasAdoProfile && !hasAdoDirect && !hasAdoEnv) return;
+
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems !== false;
+    if (!canUpdateExternal) return;
+
+    console.log('\n🔗 Syncing AC checkboxes to ADO...');
+
+    const { AdoACCheckboxSync } = await import(
+      '../../../../plugins/specweave-ado/lib/ado-ac-checkbox-sync.js'
+    );
+
+    const sync = new AdoACCheckboxSync({ projectRoot, incrementId, logger: consoleLogger });
+    const syncResult = await sync.syncACCheckboxesToAdo(config);
+
+    if (syncResult.success && syncResult.updated > 0) {
+      console.log(`   ✅ Updated ${syncResult.updated} AC(s) in ADO: #${syncResult.issues.join(', #')}`);
+    } else if (syncResult.success) {
+      console.log('   ℹ️  No ADO updates needed');
+    } else {
+      console.log('   ⚠️  ADO sync had errors (non-blocking)');
+    }
+  } catch (error: any) {
+    console.log(`   ⚠️  ADO AC sync failed: ${error.message}`);
   }
 }
 
