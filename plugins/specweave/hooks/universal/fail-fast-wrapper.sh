@@ -49,6 +49,11 @@ case "$script_name" in
     # May run tests + LLM evaluation + validation
     HOOK_TIMEOUT="${HOOK_TIMEOUT_STOP_AUTO:-120}"
     ;;
+  post-tool-use.sh)
+    # Dispatcher runs task-ac-sync (awk/sed/jq) + spawns background detectors
+    # 5s is too tight for synchronous file processing + background spawning
+    HOOK_TIMEOUT="${HOOK_TIMEOUT_POST_TOOL_USE:-15}"
+    ;;
   pre-compact.sh)
     # Pressure signal is ultra-fast (just writes a JSON file)
     HOOK_TIMEOUT="${HOOK_TIMEOUT_PRE_COMPACT:-5}"
