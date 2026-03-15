@@ -30,6 +30,32 @@ import { getEpicLinkFieldForProject } from './jira-field-discovery.js';
 import { searchAllIssues } from './jira-paginated-search.js';
 import axios, { AxiosInstance } from 'axios';
 
+/**
+ * Build a JIRA story description from a UserStory.
+ * ACs are rendered as [ ]/[x] which content-format-adapter converts to native ADF taskList/taskItem checkboxes.
+ */
+export function buildStoryDescription(us: UserStory): string {
+  const acList = us.acceptanceCriteria
+    .map(ac => `${ac.status === 'done' ? '[x]' : '[ ]'} ${ac.description}`)
+    .join('\n');
+
+  return `
+h2. User Story
+
+${us.title}
+
+h2. Acceptance Criteria
+
+${acList}
+
+----
+
+*Priority*: ${us.priority}
+
+*Status*: ${us.status}
+`.trim();
+}
+
 export interface JiraEpic {
   id: string;
   key: string; // e.g., SPEC-1
@@ -420,24 +446,7 @@ Last updated: ${new Date().toISOString()}
    * Generate story description from user story
    */
   private generateStoryDescription(us: UserStory): string {
-    const acList = us.acceptanceCriteria
-      .map(ac => `* ${ac.status === 'done' ? '(/)' : '(x)'} ${ac.description}`)
-      .join('\n');
-
-    return `
-h2. User Story
-
-${us.title}
-
-h2. Acceptance Criteria
-
-${acList}
-
-----
-
-*Priority*: ${us.priority}
-*Status*: ${us.status}
-`.trim();
+    return buildStoryDescription(us);
   }
 
   /**

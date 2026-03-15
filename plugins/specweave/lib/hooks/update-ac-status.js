@@ -31,6 +31,7 @@ async function updateACStatus(incrementId) {
       }
       await syncACsToLivingDocs(projectRoot, incrementId);
       await syncACsToGitHub(projectRoot, incrementId);
+      await syncACsToJIRA(projectRoot, incrementId);
     } else if (result.synced) {
       console.log("\u2705 All ACs already in sync (no changes needed)");
     } else {
@@ -106,6 +107,40 @@ async function syncACsToGitHub(projectRoot, incrementId) {
     }
   } catch (error) {
     console.log(`   \u26A0\uFE0F  GitHub sync failed: ${error.message}`);
+  }
+}
+async function syncACsToJIRA(projectRoot, incrementId) {
+  try {
+    const configPath = path.join(projectRoot, ".specweave/config.json");
+    if (!existsSync(configPath)) {
+      return;
+    }
+    const configContent = readFileSync(configPath, "utf-8");
+    const config = JSON.parse(configContent);
+    const profiles = config.sync?.profiles;
+    const hasJiraProfile = profiles && Object.values(profiles).some((p) => p?.provider === "jira");
+    const hasJiraDirect = config.sync?.jira?.domain;
+    const hasJiraEnv = process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN && (process.env.JIRA_BASE_URL || hasJiraDirect);
+    if (!hasJiraProfile && !hasJiraDirect && !hasJiraEnv) {
+      return;
+    }
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems !== false;
+    if (!canUpdateExternal) {
+      return;
+    }
+    console.log("\n\u{1F517} Syncing AC checkboxes to JIRA...");
+    const { JiraACCheckboxSync } = await import("../../../../plugins/specweave-jira/lib/jira-ac-checkbox-sync.js");
+    const sync = new JiraACCheckboxSync({ projectRoot, incrementId, logger: consoleLogger });
+    const syncResult = await sync.syncACCheckboxesToJira(config);
+    if (syncResult.success && syncResult.updated > 0) {
+      console.log(`   \u2705 Updated ${syncResult.updated} AC(s) in JIRA: ${syncResult.issues.join(", ")}`);
+    } else if (syncResult.success) {
+      console.log("   \u2139\uFE0F  No JIRA updates needed");
+    } else {
+      console.log("   \u26A0\uFE0F  JIRA sync had errors (non-blocking)");
+    }
+  } catch (error) {
+    console.log(`   \u26A0\uFE0F  JIRA AC sync failed: ${error.message}`);
   }
 }
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;

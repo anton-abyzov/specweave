@@ -81,6 +81,9 @@ async function updateACStatus(incrementId: string): Promise<void> {
 
       // NEW v1.0.68: Auto-sync AC checkboxes to GitHub issues
       await syncACsToGitHub(projectRoot, incrementId);
+
+      // Sync AC checkboxes to JIRA story descriptions
+      await syncACsToJIRA(projectRoot, incrementId);
     } else if (result.synced) {
       console.log('✅ All ACs already in sync (no changes needed)');
     } else {
@@ -208,6 +211,62 @@ async function syncACsToGitHub(projectRoot: string, incrementId: string): Promis
     // Non-blocking: Log but don't fail the hook
     console.log(`   ⚠️  GitHub sync failed: ${error.message}`);
     // Continue - local AC sync already succeeded
+  }
+}
+
+/**
+ * Sync AC checkbox states to JIRA story descriptions.
+ *
+ * Fetches the current ADF description from each linked JIRA story,
+ * updates taskItem states (TODO/DONE) to match spec.md, and PUTs back.
+ * No comment is posted — only the description checkboxes are updated silently.
+ */
+async function syncACsToJIRA(projectRoot: string, incrementId: string): Promise<void> {
+  try {
+    const configPath = path.join(projectRoot, '.specweave/config.json');
+    if (!existsSync(configPath)) {
+      return;
+    }
+
+    const configContent = readFileSync(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    // Check whether JIRA sync is enabled
+    const profiles = config.sync?.profiles;
+    const hasJiraProfile = profiles &&
+      Object.values(profiles).some((p: any) => p?.provider === 'jira');
+    const hasJiraDirect = config.sync?.jira?.domain;
+    const hasJiraEnv = process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN &&
+      (process.env.JIRA_BASE_URL || hasJiraDirect);
+
+    if (!hasJiraProfile && !hasJiraDirect && !hasJiraEnv) {
+      return;
+    }
+
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems !== false;
+    if (!canUpdateExternal) {
+      return;
+    }
+
+    console.log('\n🔗 Syncing AC checkboxes to JIRA...');
+
+    const { JiraACCheckboxSync } = await import(
+      '../../../../plugins/specweave-jira/lib/jira-ac-checkbox-sync.js'
+    );
+
+    const sync = new JiraACCheckboxSync({ projectRoot, incrementId, logger: consoleLogger });
+    const syncResult = await sync.syncACCheckboxesToJira(config);
+
+    if (syncResult.success && syncResult.updated > 0) {
+      console.log(`   ✅ Updated ${syncResult.updated} AC(s) in JIRA: ${syncResult.issues.join(', ')}`);
+    } else if (syncResult.success) {
+      console.log('   ℹ️  No JIRA updates needed');
+    } else {
+      console.log('   ⚠️  JIRA sync had errors (non-blocking)');
+    }
+
+  } catch (error: any) {
+    console.log(`   ⚠️  JIRA AC sync failed: ${error.message}`);
   }
 }
 
