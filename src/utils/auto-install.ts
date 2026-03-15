@@ -62,6 +62,16 @@ export const COMPONENT_MAPPING: Record<string, { skills: string[], agents: strin
   'ado': { skills: ['ado-sync'], agents: [] },
   'azure devops': { skills: ['ado-sync'], agents: [] },
   'github': { skills: ['github-sync'], agents: [] },
+
+  // Mobile detection
+  'react native':  { skills: ['frontend'], agents: [] },
+  'react-native':  { skills: ['frontend'], agents: [] },
+  'expo':          { skills: ['frontend'], agents: [] },
+  'ios':           { skills: [], agents: [] },
+  'android':       { skills: [], agents: [] },
+  'mobile':        { skills: [], agents: [] },
+  'app store':     { skills: [], agents: [] },
+  'play store':    { skills: [], agents: [] },
 };
 
 /**

@@ -214,10 +214,10 @@ describe('refresh-plugins', () => {
       );
     });
 
-    it('should NOT call enablePluginsInSettings in fallback mode', async () => {
+    it('should call enablePluginsInSettings even in fallback mode', async () => {
       await refreshPluginsCommand({});
 
-      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
     });
   });
 
@@ -385,7 +385,8 @@ describe('refresh-plugins', () => {
       // Should gracefully fall back to copy mode, not crash
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
       expect(mockInstallPlugin).not.toHaveBeenCalled();
-      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+      // Even in fallback mode, enablement should happen
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
     });
 
     it('should warn user when enablePluginsInSettings fails', async () => {

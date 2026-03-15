@@ -66,18 +66,14 @@ export interface PluginScopeConfig {
  * Default plugin scope configuration
  *
  * - LSP plugins: project scope (language-specific, don't pollute global)
- * - SpecWeave/vskill plugins (frontend, backend, sw-github, etc.): project scope
- * - Core SpecWeave plugin (sw): user scope (needed across all projects)
+ * - SpecWeave/vskill plugins (sw, sw-github, etc.): user scope (framework tools, needed across all projects)
  * - Other plugins: user scope (default)
  */
 export const DEFAULT_PLUGIN_SCOPE_CONFIG: PluginScopeConfig = {
   defaultScope: 'user',
   lspScope: 'project',
-  specweaveScope: 'project',
-  scopeOverrides: {
-    // Core SW plugin stays at user level - it's the framework itself
-    'sw': 'user',
-  },
+  specweaveScope: 'user',
+  scopeOverrides: {},
 };
 
 /**

@@ -180,8 +180,8 @@ export async function refreshPluginsCommand(options: RefreshPluginsOptions = {})
     }
   }
 
-  // Step 4b: Enable plugins in Claude Code settings (native mode only)
-  if (useNativeCli && installedPluginNames.length > 0) {
+  // Step 4b: Enable plugins in Claude Code settings (all modes)
+  if (installedPluginNames.length > 0) {
     const enabled = enablePluginsInSettings(installedPluginNames);
     if (!enabled) {
       console.log(chalk.yellow('  ⚠ Could not enable plugins in ~/.claude/settings.json'));

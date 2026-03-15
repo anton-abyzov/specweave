@@ -13,6 +13,7 @@ const mockCopyPluginSkillsToProject = vi.hoisted(() => vi.fn());
 const mockFindSpecweaveRoot = vi.hoisted(() => vi.fn());
 const mockFindSourceDir = vi.hoisted(() => vi.fn());
 const mockGetProjectRoot = vi.hoisted(() => vi.fn());
+const mockEnablePluginsInSettings = vi.hoisted(() => vi.fn());
 
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
@@ -72,6 +73,10 @@ vi.mock('../../../../../src/cli/helpers/init/path-utils.js', () => ({
 
 vi.mock('../../../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
+}));
+
+vi.mock('../../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
+  enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
 
 // ---- import under test (AFTER mocks) ----
@@ -282,6 +287,56 @@ describe('plugin-installer', () => {
         '/mock/project/.claude/skills',
         { recursive: true },
       );
+    });
+  });
+
+  // ============================================================
+  // Settings enablement (AC-US2-01, AC-US2-02, AC-US2-03)
+  // ============================================================
+  describe('settings enablement', () => {
+    it('should call enablePluginsInSettings with successful plugin names', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }, { name: 'sw-github' }] });
+      mockEnablePluginsInSettings.mockReturnValue(true);
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github']);
+    });
+
+    it('should exclude failed plugins from enablePluginsInSettings call', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }, { name: 'sw-github' }, { name: 'sw-jira' }] });
+      mockEnablePluginsInSettings.mockReturnValue(true);
+      let callCount = 0;
+      mockCopyPluginSkillsToProject.mockImplementation(() => {
+        callCount++;
+        if (callCount === 2) {
+          return { success: false, sha: '', error: 'timeout' };
+        }
+        return { success: true, sha: 'abc123' };
+      });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-jira']);
+    });
+
+    it('should not call enablePluginsInSettings when no plugins succeed', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+      mockCopyPluginSkillsToProject.mockReturnValue({ success: false, sha: '', error: 'fail' });
+
+      await installAllPlugins({ dirname: '/test' });
+
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+    });
+
+    it('should not throw when enablePluginsInSettings returns false', async () => {
+      setupHappyPath({ plugins: [{ name: 'sw' }] });
+      mockEnablePluginsInSettings.mockReturnValue(false);
+
+      const result = await installAllPlugins({ dirname: '/test' });
+
+      expect(result.success).toBe(true);
+      expect(result.successCount).toBe(1);
     });
   });
 });
