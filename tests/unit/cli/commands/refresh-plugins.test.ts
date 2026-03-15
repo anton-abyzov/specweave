@@ -1,9 +1,9 @@
 /**
  * Unit tests for refresh-plugins command
  *
- * Tests the direct file copy plugin refresh workflow (v1.0.535):
- * - All plugins installed to .claude/skills/ (no lazy mode)
- * - Hash-based skip via copyPluginSkillsToProject
+ * Tests both installation modes:
+ * - Native Claude CLI mode (claude plugin install) when CLI is available
+ * - Direct file copy fallback (.claude/skills/) when CLI is unavailable
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -14,26 +14,43 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 const {
   mockCopyPluginSkillsToProject,
+  mockInstallPlugin,
   mockFindSpecweaveRoot,
   mockExistsSync,
   mockReadFileSync,
   mockGetProjectRoot,
+  mockDetectClaudeCli,
+  mockEnablePluginsInSettings,
 } = vi.hoisted(() => ({
   mockCopyPluginSkillsToProject: vi.fn(),
+  mockInstallPlugin: vi.fn(),
   mockFindSpecweaveRoot: vi.fn(),
   mockExistsSync: vi.fn(),
   mockReadFileSync: vi.fn(),
   mockGetProjectRoot: vi.fn(),
+  mockDetectClaudeCli: vi.fn(),
+  mockEnablePluginsInSettings: vi.fn(),
 }));
 
 // Mock plugin-copier
 vi.mock('../../../../src/utils/plugin-copier.js', () => ({
   copyPluginSkillsToProject: mockCopyPluginSkillsToProject,
+  installPlugin: mockInstallPlugin,
   findSpecweaveRoot: mockFindSpecweaveRoot,
 }));
 
 vi.mock('../../../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
+}));
+
+// Mock Claude CLI detector
+vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
+  detectClaudeCli: mockDetectClaudeCli,
+}));
+
+// Mock plugin enabler
+vi.mock('../../../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
+  enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
 
 // Mock ESM helpers
@@ -103,6 +120,30 @@ const MARKETPLACE_JSON = JSON.stringify({
   ],
 });
 
+const CLI_UNAVAILABLE = {
+  available: false,
+  commandExists: false,
+  pluginCommandsWork: false,
+  platform: 'darwin' as const,
+};
+
+const CLI_AVAILABLE = {
+  available: true,
+  commandExists: true,
+  pluginCommandsWork: true,
+  platform: 'darwin' as const,
+  version: '2.1.3',
+  detectionMethod: 'binary' as const,
+};
+
+const CLI_PARTIAL = {
+  available: false,
+  commandExists: true,
+  pluginCommandsWork: false,
+  platform: 'darwin' as const,
+  error: 'plugin_commands_not_supported' as const,
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -113,6 +154,8 @@ describe('refresh-plugins', () => {
 
     mockFindSpecweaveRoot.mockReturnValue('/mock/specweave');
     mockGetProjectRoot.mockReturnValue('/mock/project');
+    mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
+    mockEnablePluginsInSettings.mockReturnValue(true);
 
     mockExistsSync.mockImplementation((p: string) => {
       if (typeof p === 'string' && p.includes('marketplace.json')) return true;
@@ -125,13 +168,34 @@ describe('refresh-plugins', () => {
     });
 
     mockCopyPluginSkillsToProject.mockReturnValue({ success: true, sha: 'abc123def456' });
+    mockInstallPlugin.mockReturnValue({ success: true, sha: 'abc123def456' });
   });
 
-  describe('installs all plugins by default', () => {
-    it('should install all plugins from marketplace.json', async () => {
+  // -------------------------------------------------------------------------
+  // Fallback mode: direct copy (Claude CLI unavailable)
+  // -------------------------------------------------------------------------
+
+  describe('fallback mode (Claude CLI unavailable)', () => {
+    it('should use copyPluginSkillsToProject when Claude CLI is not available', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_UNAVAILABLE);
+
       await refreshPluginsCommand({});
 
       expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
+    });
+
+    it('should use fallback when CLI exists but plugin commands do not work', async () => {
+      mockDetectClaudeCli.mockReturnValue(CLI_PARTIAL);
+
+      await refreshPluginsCommand({});
+
+      expect(mockCopyPluginSkillsToProject).toHaveBeenCalledTimes(3);
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
+    });
+
+    it('should install all plugins from marketplace.json', async () => {
+      await refreshPluginsCommand({});
 
       const calledPlugins = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
       expect(calledPlugins).toContain('sw');
@@ -149,7 +213,87 @@ describe('refresh-plugins', () => {
         { force: undefined },
       );
     });
+
+    it('should NOT call enablePluginsInSettings in fallback mode', async () => {
+      await refreshPluginsCommand({});
+
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+    });
   });
+
+  // -------------------------------------------------------------------------
+  // Native mode: Claude CLI available
+  // -------------------------------------------------------------------------
+
+  describe('native mode (Claude CLI available)', () => {
+    beforeEach(() => {
+      mockDetectClaudeCli.mockReturnValue(CLI_AVAILABLE);
+    });
+
+    it('should use installPlugin when Claude CLI is available', async () => {
+      await refreshPluginsCommand({});
+
+      expect(mockInstallPlugin).toHaveBeenCalledTimes(3);
+      expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+    });
+
+    it('should install all plugins from marketplace.json via native CLI', async () => {
+      await refreshPluginsCommand({});
+
+      const calledPlugins = mockInstallPlugin.mock.calls.map((c: unknown[]) => c[0]);
+      expect(calledPlugins).toContain('sw');
+      expect(calledPlugins).toContain('sw-github');
+      expect(calledPlugins).toContain('sw-jira');
+    });
+
+    it('should pass specweave root and force option to installPlugin', async () => {
+      await refreshPluginsCommand({ force: true });
+
+      expect(mockInstallPlugin).toHaveBeenCalledWith(
+        'sw',
+        '/mock/specweave',
+        { force: true },
+      );
+    });
+
+    it('should call enablePluginsInSettings with all successful plugin names', async () => {
+      await refreshPluginsCommand({});
+
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledTimes(1);
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+    });
+
+    it('should only enable successfully installed plugins', async () => {
+      mockInstallPlugin
+        .mockReturnValueOnce({ success: true, sha: 'abc123' })
+        .mockReturnValueOnce({ success: false, sha: '', error: 'install failed' })
+        .mockReturnValueOnce({ success: true, sha: 'def456' });
+
+      await refreshPluginsCommand({});
+
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-jira']);
+    });
+
+    it('should not call enablePluginsInSettings when all plugins fail', async () => {
+      mockInstallPlugin.mockReturnValue({ success: false, sha: '', error: 'all failed' });
+
+      await refreshPluginsCommand({});
+
+      expect(mockEnablePluginsInSettings).not.toHaveBeenCalled();
+    });
+
+    it('should include skipped plugins in enablement list', async () => {
+      mockInstallPlugin.mockReturnValue({ success: true, sha: 'abc123', skipped: true });
+
+      await refreshPluginsCommand({});
+
+      expect(mockEnablePluginsInSettings).toHaveBeenCalledWith(['sw', 'sw-github', 'sw-jira']);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Hash comparison and skip (both modes)
+  // -------------------------------------------------------------------------
 
   describe('hash comparison and skip', () => {
     it('should report skipped plugins when copyPluginSkillsToProject returns skipped=true', async () => {
@@ -180,6 +324,10 @@ describe('refresh-plugins', () => {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // Edge cases
+  // -------------------------------------------------------------------------
+
   describe('edge cases', () => {
     it('should handle missing specweave root gracefully', async () => {
       mockFindSpecweaveRoot.mockReturnValue(null);
@@ -188,6 +336,7 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({});
 
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
 
     it('should handle empty marketplace.json', async () => {
@@ -199,6 +348,7 @@ describe('refresh-plugins', () => {
       await refreshPluginsCommand({});
 
       expect(mockCopyPluginSkillsToProject).not.toHaveBeenCalled();
+      expect(mockInstallPlugin).not.toHaveBeenCalled();
     });
   });
 });
