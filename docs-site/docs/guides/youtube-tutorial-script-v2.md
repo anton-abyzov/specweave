@@ -9,7 +9,7 @@ draft: true
 
 **Duration**: ~65–75 minutes (full tutorial)
 **Format**: Face-cam cold open → screen-sharing demos → terminal → live Slack → social media proof
-**Key new elements**: 700%+ organic growth proof, vSkill Studio demo, Draw it AI, Slack control, OpenClaw + AppleScript social posting, remote control development, 10 projects
+**Key new elements**: 700%+ organic growth proof, vSkill Studio demo, Sketchmate, Slack control, OpenClaw + AppleScript social posting, remote control development, 10 projects
 **Positioning**: SpecWeave is a **spec-first layer** for AI coding agents — NOT a framework
 
 ---
@@ -18,19 +18,19 @@ draft: true
 
 **[SCREEN: Black. White text appears typewriter-style. No music.]**
 
-> "10 production apps."
+> "10 production apps. Built in weeks, not months."
 
 **[PAUSE 1 second. New line appears.]**
 
-> "Three live in the App Store right now. One uses AI as a referee in a drawing game."
+> "Three live in the App Store. From baby sleep tech to enterprise sports leagues."
 
 **[PAUSE. New line.]**
 
-> "Nearly 2,000 commits. 448,000 lines of code. 0% change failure rate across 235 releases."
+> "Nearly 2,000 commits. 0% failure rate across 235 releases."
 
 **[PAUSE. New line.]**
 
-> "One developer. One system."
+> "One developer. One system. Open source."
 
 **[SCREEN: Cut to face-cam. Direct, grounded energy.]**
 
@@ -62,9 +62,9 @@ draft: true
 >
 > DORA metrics: 0% change failure rate across 235 releases. Deployment frequency: 100 per month, Elite tier. Nothing failed in production."
 
-**[SCREEN: Show App Store pages for Lulla, WC26]**
+**[SCREEN: Show App Store pages for Lulla, WC26, BizZone]**
 
-> "Three apps live in the App Store. An enterprise platform running for four years. A drawing game with an AI referee. Ten production projects total.
+> "Three apps live in the App Store right now. A fourth — Sketchmate — going through review. An enterprise platform running for four years. Ten production projects total.
 >
 > Boris Cherny — the creator of Claude Code at Anthropic — shared that he didn't open his IDE once for an entire month. 259 pull requests, 497 commits, 40,000 lines of code. All AI.
 >
@@ -120,15 +120,15 @@ draft: true
 >
 > I'll show you the brownfield integration in detail later. This is the most important demo in this video for anyone working on an existing codebase."
 
-**[SCREEN: Draw it AI — game screenshots + gameplay clip]**
+**[SCREEN: Sketchmate — App Store Connect page + gameplay screenshots]**
 
-> "**Draw it AI** — this one is pure fun with serious technology underneath.
+> "**Sketchmate — AI Draw Game** — this one is pure fun with serious technology underneath.
 >
-> It's a party drawing game with an AI referee. Players draw something, and an AI judge evaluates who was closest to the target image. Not voting, not human judging — the AI looks at both drawings and decides which one captures the concept better. It's semantic, contextual, and surprisingly accurate.
+> It's a party drawing game where an AI acts as the referee. Players draw something, and the AI judge evaluates who captured the concept better. Not voting, not human judging — the AI compares both drawings semantically and decides.
 >
-> Built for iOS. The interesting engineering challenge: how do you make AI judgment feel fair and fun at the same time? The answer involved multi-model evaluation — comparing embeddings, visual similarity, and semantic meaning — then presenting the result with an explanation the players can actually argue with.
+> Built for iOS. Currently going through App Store review — you'll see the real App Store Connect page right here, rejection feedback and all. That's part of the story too. Building the app took a weekend. The App Store review process? That's its own adventure.
 >
-> I built the first version of this in a weekend. Two increments for the core game loop. Three for the AI judge. One for multiplayer sync. And it was live in TestFlight the following Monday."
+> The engineering challenge: how do you make AI judgment feel fair and fun? Multi-model evaluation — comparing embeddings, visual similarity, and semantic meaning — then presenting the result with an explanation players can argue with. That argument IS the gameplay."
 
 **[SCREEN: Show the Slack channels used for development]**
 
@@ -605,7 +605,7 @@ specweave analyze .
 >
 > The 10 apps didn't come from working harder. They came from having a system that removes the friction between 'I want to build this' and 'this is shipped and tested.'
 >
-> Draw it AI took one weekend. Lulla took two weeks. EasyChamp now gets new features shipped in hours that used to take days.
+> Sketchmate took one weekend. Lulla took two weeks. EasyChamp now gets new features shipped in hours that used to take days.
 >
 > And none of this required expertise in AI. It required a spec, a plan, and a system to execute it."
 
@@ -649,9 +649,9 @@ specweave analyze .
 
 **[Duration: ~6 min | Timestamp: 72:00 – 78:00]**
 
-**[SCREEN: Show Draw it AI gameplay — two players drawing, AI result screen]**
+**[SCREEN: Show Sketchmate gameplay — two players drawing, AI result screen]**
 
-> "Let me go deeper on Draw it AI because the engineering is interesting.
+> "Let me go deeper on Sketchmate because the engineering is interesting.
 >
 > The core challenge: you have two hand-drawn images and a target concept. How do you decide which drawing is closer? Human judges are inconsistent. Voting systems get gamed. Point scoring misses creativity.
 >
@@ -694,7 +694,7 @@ specweave analyze .
 **B-roll needed**:
 - App Store pages for Lulla, WC26, BizZone (live screenshots)
 - EasyChamp GCP/ArgoCD dashboard (with blurred PII)
-- Draw it AI gameplay clip (30 sec)
+- Sketchmate gameplay clip (30 sec) + App Store Connect rejection screen (shows real process)
 - Slack development channels (with agent messages visible)
 - Threads analytics (showing hockey-stick, 700%+ growth)
 - Terminal recordings: specweave init, /sw:auto, npx vskill studio, npx vskill verify
@@ -735,5 +735,5 @@ specweave analyze .
 - Layer diagram (SpecWeave architecture)
 - SSP badge renders (E2/S3)
 - Multi-agent coordination diagram
-- AI Judge pipeline for Draw it AI
+- AI Judge pipeline for Sketchmate
 - Stats overlays (700% growth, commit counts, DORA metrics)

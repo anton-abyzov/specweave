@@ -411,7 +411,7 @@ ${SpecParser.extractOverview(spec.markdown).replace(/\n/g, "<br>")}
    * Generate story description from user story
    */
   generateStoryDescription(us) {
-    const acList = us.acceptanceCriteria.map((ac) => `<li>${ac.status === "done" ? "\u2611" : "\u2610"} ${ac.description}</li>`).join("\n");
+    const acList = us.acceptanceCriteria.map((ac) => `<li>${ac.status === "done" ? "\u2611" : "\u2610"} ${ac.id}: ${ac.description}</li>`).join("\n");
     return `
 <h2>User Story</h2>
 

@@ -291,7 +291,7 @@ export class SpecToLivingDocsSync {
     }
 
     const metadata = JSON.parse(await readFile(metadataPath, 'utf-8'));
-    const featureId = metadata.featureId;
+    const featureId = metadata.featureId || metadata.id;
 
     if (!featureId) {
       this.logger.warn('No featureId in metadata, cannot find living docs');
