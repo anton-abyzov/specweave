@@ -71,11 +71,13 @@ const PLUGIN_DEPENDENCIES = {
     // Used by universal-auto-create-dispatcher.sh hook
     'dist/src/core/universal-auto-create.js',
     'dist/src/utils/feature-id-derivation.js',
-    // AC Checkbox Sync deps - used by update-ac-status.ts via github/jira/ado plugin imports
-    'dist/src/utils/project-detection.js',
+    // AC Checkbox Sync (GitHub) — provider routing + config utils
     'dist/src/sync/provider-router.js',
     'dist/src/sync/status-mapper.js',
     'dist/src/sync/config.js',
+    // github-client-v2 transitive dep (used by github-ac-checkbox-sync.js)
+    'dist/src/utils/execFileNoThrow.js',
+    'dist/src/utils/clean-env.js',
   ]
 };
 

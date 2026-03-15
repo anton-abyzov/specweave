@@ -3,7 +3,6 @@ import path from "path";
 import yaml from "yaml";
 import axios from "axios";
 import { consoleLogger } from "../../specweave/lib/vendor/utils/logger.js";
-import { autoDetectProjectIdSync } from "../../specweave/lib/vendor/utils/project-detection.js";
 import { deriveFeatureId } from "../../specweave/lib/vendor/utils/feature-id-derivation.js";
 import { GitHubACCheckboxSync } from "../../specweave-github/lib/github-ac-checkbox-sync.js";
 class AdoACCheckboxSync {
@@ -11,7 +10,6 @@ class AdoACCheckboxSync {
     this.projectRoot = options.projectRoot;
     this.incrementId = options.incrementId;
     this.logger = options.logger ?? consoleLogger;
-    this.projectId = autoDetectProjectIdSync(this.projectRoot) || "default";
   }
   async syncACCheckboxesToAdo(config) {
     const result = { success: true, updated: 0, issues: [] };
@@ -202,12 +200,9 @@ ${acLines}
     const specsRoot = path.join(this.projectRoot, ".specweave/docs/internal/specs");
     const usFiles = [];
     const projectDirs = [];
-    const primary = path.join(specsRoot, this.projectId, featureId);
-    if (existsSync(primary)) projectDirs.push(primary);
     if (existsSync(specsRoot)) {
       try {
         for (const proj of await fs.readdir(specsRoot)) {
-          if (proj === this.projectId) continue;
           const p = path.join(specsRoot, proj, featureId);
           if (existsSync(p)) projectDirs.push(p);
         }
