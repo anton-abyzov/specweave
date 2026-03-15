@@ -563,7 +563,7 @@ ${SpecParser.extractOverview(spec.markdown).replace(/\n/g, '<br>')}
    */
   private generateStoryDescription(us: UserStory): string {
     const acList = us.acceptanceCriteria
-      .map(ac => `<li>${ac.status === 'done' ? '☑' : '☐'} ${ac.description}</li>`)
+      .map(ac => `<li>${ac.status === 'done' ? '☑' : '☐'} ${ac.id}: ${ac.description}</li>`)
       .join('\n');
 
     return `
