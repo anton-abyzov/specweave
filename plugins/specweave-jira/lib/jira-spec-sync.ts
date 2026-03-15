@@ -348,8 +348,8 @@ export class JiraSpecSync {
       const storySummary = `[${us.id}] ${us.title}`;
       const storyDescription = this.generateStoryDescription(us);
 
-      // Check if story already exists (by searching for US-ID in summary)
-      const existingStory = await this.findStoryByTitle(us.id);
+      // Check if story already exists (scoped to this spec to avoid US-ID collisions)
+      const existingStory = await this.findStoryByTitle(us.id, spec.metadata.id);
 
       if (existingStory) {
         // UPDATE existing story (also set epicLink to fix orphaned stories)
@@ -565,13 +565,15 @@ ${acList}
   }
 
   /**
-   * Find story by title pattern
+   * Find story by title pattern scoped to a specific spec (via label).
+   * US IDs like "US-001" are reused across features, so we must scope to
+   * the spec label (e.g. "spec:FS-526") to avoid false matches.
    */
-  private async findStoryByTitle(usId: string): Promise<JiraStory | null> {
-    // Search for user story by ID in summary — don't hardcode issuetype since
-    // projects may use Task, New Feature, etc. instead of Story.
+  private async findStoryByTitle(usId: string, specId?: string): Promise<JiraStory | null> {
+    // Scope to spec label when available — prevents matching same US-ID from another feature
+    const specFilter = specId ? ` AND labels = "spec:${specId}"` : '';
     // NOTE: POST /search/jql doesn't support != operator — use "not in (Epic)" instead.
-    const jql = `project = ${this.config.projectKey} AND summary ~ "${usId}" AND issuetype not in (Epic)`;
+    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]"${specFilter} AND issuetype not in (Epic)`;
 
     const issues = await searchAllIssues(this.client, {
       jql,
