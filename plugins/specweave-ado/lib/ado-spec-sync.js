@@ -1,6 +1,9 @@
 import { SpecMetadataManager } from "../../../src/core/specs/spec-metadata-manager.js";
 import { SpecParser } from "../../../src/core/specs/spec-parser.js";
 import axios from "axios";
+import { promises as fsPromises, existsSync } from "fs";
+import path from "path";
+import yaml from "yaml";
 class AdoSpecSync {
   constructor(config, projectRoot = process.cwd(), projectId) {
     this.availableTypes = null;
@@ -12,6 +15,7 @@ class AdoSpecSync {
      * Maps canonical states: 'New' → todo, 'Active' → in-progress, 'Closed' → done
      */
     this.stateCache = /* @__PURE__ */ new Map();
+    this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
     this.config = config;
     this.client = axios.create({
@@ -300,6 +304,7 @@ class AdoSpecSync {
       const storyTitle = `[${us.id}] ${us.title}`;
       const storyDescription = this.generateStoryDescription(us);
       const existingStory = await this.findStoryByTitle(us.id);
+      let storyId;
       if (existingStory) {
         const resolvedStoryType = await this.resolveWorkItemType("User Story");
         const canonicalState = us.status === "done" ? "Closed" : us.status === "in-progress" ? "Active" : "New";
@@ -310,6 +315,7 @@ class AdoSpecSync {
           state: resolvedState,
           parentId: featureId
         });
+        storyId = existingStory.id;
         updated.push(us.id);
         console.log(`   \u2705 Updated ${us.id}`);
       } else {
@@ -320,9 +326,11 @@ class AdoSpecSync {
           tags: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`].join("; "),
           priority: us.priority
         });
+        storyId = newStory.id;
         created.push(us.id);
         console.log(`   \u2705 Created ${us.id} \u2192 User Story #${newStory.id}`);
       }
+      await this.writeAdoIdToUSFile(spec.metadata.id, us.id, storyId);
     }
     const allDone = spec.metadata.userStories.every((us) => us.status === "done");
     if (allDone && spec.metadata.userStories.length > 0 && created.length === 0) {
@@ -337,6 +345,40 @@ class AdoSpecSync {
       }
     }
     return { created, updated, deleted };
+  }
+  /**
+   * Write ADO work item ID back to living doc US file frontmatter.
+   */
+  async writeAdoIdToUSFile(featureId, usId, workItemId) {
+    try {
+      const specsRoot = path.join(this.projectRoot, ".specweave/docs/internal/specs");
+      if (!existsSync(specsRoot)) return;
+      for (const proj of await fsPromises.readdir(specsRoot)) {
+        const featureDir = path.join(specsRoot, proj, featureId);
+        if (!existsSync(featureDir)) continue;
+        for (const file of await fsPromises.readdir(featureDir)) {
+          if (!file.startsWith("us-") || !file.endsWith(".md")) continue;
+          const filePath = path.join(featureDir, file);
+          const content = await fsPromises.readFile(filePath, "utf-8");
+          const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+          if (!fmMatch) continue;
+          const frontmatter = yaml.parse(fmMatch[1]);
+          if (frontmatter.id !== usId) continue;
+          if (frontmatter.external_tools?.ado?.id === workItemId) return;
+          if (!frontmatter.external_tools) frontmatter.external_tools = {};
+          if (!frontmatter.external_tools.ado) frontmatter.external_tools.ado = {};
+          frontmatter.external_tools.ado.id = workItemId;
+          const newFm = yaml.stringify(frontmatter).trimEnd();
+          const rest = content.slice(fmMatch[0].length);
+          await fsPromises.writeFile(filePath, `---
+${newFm}
+---${rest}`, "utf-8");
+          console.log(`      \u{1F4DD} Saved ADO ID #${workItemId} to ${file}`);
+          return;
+        }
+      }
+    } catch {
+    }
   }
   /**
    * Generate feature description from spec
