@@ -560,9 +560,11 @@ describe('formatHookOutput', () => {
     expect(parsed.systemMessage).toBeUndefined();
   });
 
-  // --- suggestOnly mode ---
+  // --- v1.0.535: Plugin installation messaging removed ---
+  // All plugins are pre-installed at init time. formatHookOutput no longer
+  // generates systemMessage for plugin installation/suggestion scenarios.
 
-  it('should show suggest message with per-plugin install commands in suggestOnly mode', () => {
+  it('should not have systemMessage for suggestOnly mode (v1.0.535: removed)', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
@@ -573,57 +575,10 @@ describe('formatHookOutput', () => {
     });
     const parsed = JSON.parse(result);
     expect(parsed.continue).toBe(true);
-    expect(parsed.systemMessage).toContain('Suggested plugins for this task');
-    expect(parsed.systemMessage).toContain('sw-github, sw-jira');
-    expect(parsed.systemMessage).toContain('claude plugin install');
-    expect(parsed.systemMessage).toContain('@specweave');
-    expect(parsed.systemMessage).toContain('suggestOnly');
+    expect(parsed.systemMessage).toBeUndefined();
   });
 
-  it('should show single plugin in suggestOnly mode', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['sw-github'] as any,
-      }),
-      installations: [],
-      suggestOnly: true,
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('sw-github');
-    expect(parsed.systemMessage).toContain('Suggested plugins for this task');
-  });
-
-  it('should show specweave install command for sw-* plugins in suggestOnly mode', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['sw-github'] as any,
-      }),
-      installations: [],
-      suggestOnly: true,
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('claude plugin install sw-github@specweave');
-  });
-
-  it('should include reasoning in suggestOnly mode when available', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['mobile'] as any,
-        reasoning: 'React Native app detected',
-      }),
-      installations: [],
-      suggestOnly: true,
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('React Native app detected');
-  });
-
-  // --- Normal mode: newly installed plugins ---
-
-  it('should show "Loaded:" for newly installed plugins', () => {
+  it('should not have systemMessage for detected plugins with installations (v1.0.535: removed)', () => {
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
@@ -634,131 +589,10 @@ describe('formatHookOutput', () => {
       ],
     });
     const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: frontend');
-  });
-
-  it('should show multiple loaded plugins', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend' }),
-        makeInstall({ success: true, plugin: 'backend' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: frontend, backend');
-  });
-
-  // --- Normal mode: already installed plugins ---
-
-  it('should show "Using:" when only already-installed plugins', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: frontend');
-  });
-
-  it('should NOT show "Using:" when there are newly installed plugins too', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend' }),
-        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Loaded: frontend');
-    expect(parsed.systemMessage).not.toContain('Using:');
-  });
-
-  // --- Normal mode: failed installations ---
-
-  it('should show "Failed:" for failed installations', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: false, plugin: 'frontend', error: 'timeout' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Failed: frontend');
-  });
-
-  // --- Mix of installed and failed ---
-
-  it('should show combined message for mix of installed, already-installed, and failed', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend', 'testing'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend' }),
-        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
-        makeInstall({ success: false, plugin: 'testing', error: 'network error' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.continue).toBe(true);
-    // Should have Loaded + Failed (no Using since there are new installs)
-    expect(parsed.systemMessage).toContain('Loaded: frontend');
-    expect(parsed.systemMessage).toContain('Failed: testing');
-    expect(parsed.systemMessage).not.toContain('Using:');
-    expect(parsed.systemMessage).toContain(' | ');
-  });
-
-  it('should show "Using:" and "Failed:" when no new installs', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
-        makeInstall({ success: false, plugin: 'backend', error: 'err' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: frontend');
-    expect(parsed.systemMessage).toContain('Failed: backend');
-    expect(parsed.systemMessage).toContain(' | ');
-  });
-
-  it('should prefix all messages with "SpecWeave:"', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toMatch(/^SpecWeave:/);
+    expect(parsed.systemMessage).toBeUndefined();
   });
 
   it('should not have systemMessage when plugins detected but installations array is empty', () => {
-    // This can happen when suggestOnly is NOT set but installations are empty
-    // Looking at the code: it enters the `detection.plugins.length > 0` branch,
-    // then checks suggestOnly (false), then builds parts from empty installations list
-    // parts will be empty, so no systemMessage is set
     const result = formatHookOutput({
       detection: makeDetection({
         success: true,
@@ -768,37 +602,6 @@ describe('formatHookOutput', () => {
     });
     const parsed = JSON.parse(result);
     expect(parsed.systemMessage).toBeUndefined();
-  });
-
-  it('should handle multiple failed installations', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend'] as any,
-      }),
-      installations: [
-        makeInstall({ success: false, plugin: 'frontend', error: 'err1' }),
-        makeInstall({ success: false, plugin: 'backend', error: 'err2' }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Failed: frontend, backend');
-  });
-
-  it('should handle all already-installed with multiple plugins', () => {
-    const result = formatHookOutput({
-      detection: makeDetection({
-        success: true,
-        plugins: ['frontend', 'backend', 'testing'] as any,
-      }),
-      installations: [
-        makeInstall({ success: true, plugin: 'frontend', alreadyInstalled: true }),
-        makeInstall({ success: true, plugin: 'backend', alreadyInstalled: true }),
-        makeInstall({ success: true, plugin: 'testing', alreadyInstalled: true }),
-      ],
-    });
-    const parsed = JSON.parse(result);
-    expect(parsed.systemMessage).toContain('Using: frontend, backend, testing');
   });
 
   it('should always have continue: true even when detection fails with "not found"', () => {
