@@ -261,23 +261,26 @@ const DETECTION_RULES: DetectionRule[] = [
   // Mobile
   {
     type: 'react-native',
-    plugins: ['mobile'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, 'react-native') || fileExists(p, 'metro.config.js'),
   },
   {
     type: 'expo',
-    plugins: ['mobile'],
+    plugins: [],
     detect: (p) => packageJsonHas(p, 'expo') || fileExists(p, 'app.json'),
   },
   {
     type: 'ios',
-    plugins: ['mobile'],
+    plugins: [],
     detect: (p) => dirExists(p, 'ios') || fileExists(p, 'Podfile'),
   },
   {
     type: 'android',
-    plugins: ['mobile'],
-    detect: (p) => dirExists(p, 'android') || fileExists(p, 'build.gradle'),
+    plugins: [],
+    detect: (p) =>
+      dirExists(p, 'android') ||
+      fileContains(p, 'build.gradle', 'com.android') ||
+      fileContains(p, 'build.gradle.kts', 'com.android'),
   },
 
   // ML/AI

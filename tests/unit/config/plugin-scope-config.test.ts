@@ -48,13 +48,13 @@ describe('Plugin Scope Configuration', () => {
       expect(config.lspScope).toBe('project');
     });
 
-    it('should define specweaveScope as project by default', () => {
+    it('should support specweaveScope field', () => {
       const config: PluginScopeConfig = {
         defaultScope: 'user',
-        specweaveScope: 'project',
+        specweaveScope: 'user',
       };
 
-      expect(config.specweaveScope).toBe('project');
+      expect(config.specweaveScope).toBe('user');
     });
 
     it('should support scopeOverrides for specific plugins', () => {
@@ -82,12 +82,12 @@ describe('Plugin Scope Configuration', () => {
       expect(DEFAULT_PLUGIN_SCOPE_CONFIG.lspScope).toBe('project');
     });
 
-    it('should have project as specweaveScope', () => {
-      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.specweaveScope).toBe('project');
+    it('should have user as specweaveScope', () => {
+      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.specweaveScope).toBe('user');
     });
 
-    it('should override core sw plugin to user scope', () => {
-      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.scopeOverrides?.['sw']).toBe('user');
+    it('should not have redundant sw override in scopeOverrides', () => {
+      expect(DEFAULT_PLUGIN_SCOPE_CONFIG.scopeOverrides?.['sw']).toBeUndefined();
     });
   });
 
@@ -116,18 +116,19 @@ describe('Plugin Scope Configuration', () => {
       expect(getPluginScope('rust-analyzer', 'claude-code-lsps', config)).toBe('project');
     });
 
-    it('should return project scope for domain SpecWeave plugins', () => {
-      // sw-github and sw-jira match specweave marketplace → specweaveScope = 'project'
-      expect(getPluginScope('sw-github', 'specweave')).toBe('project');
-      expect(getPluginScope('sw-jira', 'specweave')).toBe('project');
+    it('should return user scope for all SpecWeave plugins', () => {
+      // All specweave marketplace plugins should now return user scope
+      expect(getPluginScope('sw-github', 'specweave')).toBe('user');
+      expect(getPluginScope('sw-jira', 'specweave')).toBe('user');
+      expect(getPluginScope('sw', 'specweave')).toBe('user');
+      expect(getPluginScope('docs', 'specweave')).toBe('user');
+      expect(getPluginScope('sw-ado', 'specweave')).toBe('user');
+      expect(getPluginScope('sw-release', 'specweave')).toBe('user');
+      expect(getPluginScope('sw-diagrams', 'specweave')).toBe('user');
+      expect(getPluginScope('sw-media', 'specweave')).toBe('user');
       // vskill marketplace plugins without sw- prefix fall through to defaultScope = 'user'
       expect(getPluginScope('frontend', 'vskill')).toBe('user');
       expect(getPluginScope('backend', 'vskill')).toBe('user');
-    });
-
-    it('should return user scope for core sw plugin via override', () => {
-      // Core sw plugin stays at user level via scopeOverrides
-      expect(getPluginScope('sw', 'specweave')).toBe('user');
     });
 
     it('should return defaultScope for other plugins', () => {

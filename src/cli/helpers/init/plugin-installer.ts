@@ -15,6 +15,7 @@ import { findSourceDir } from './path-utils.js';
 import { copyPluginSkillsToProject, findSpecweaveRoot } from '../../../utils/plugin-copier.js';
 import { getDirname } from '../../../utils/esm-helpers.js';
 import { getProjectRoot } from '../../../utils/find-project-root.js';
+import { enablePluginsInSettings } from './claude-plugin-enabler.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -107,6 +108,17 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
         failCount++;
         failedPlugins.push(pluginName);
         spinner.warn(`${pluginName} failed: ${result.error || 'unknown'}`);
+      }
+    }
+
+    // Enable successfully installed plugins in Claude Code settings
+    if (successCount > 0) {
+      const successfulPluginNames = allPlugins
+        .map((p: { name: string }) => p.name)
+        .filter((name: string) => !failedPlugins.includes(name));
+      const enabled = enablePluginsInSettings(successfulPluginNames);
+      if (!enabled) {
+        console.log(chalk.yellow('  Could not enable plugins in ~/.claude/settings.json'));
       }
     }
 
