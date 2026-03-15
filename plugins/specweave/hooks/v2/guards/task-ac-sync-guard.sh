@@ -91,11 +91,14 @@ log_success() {
 # INPUT PARSING (with safe fallbacks)
 # ============================================================================
 
-# Read stdin with timeout protection
-INPUT=$(timeout 1 cat 2>/dev/null || cat 2>/dev/null || echo '{}')
-
-# Extract file_path from tool input
-FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"/\1/')
+# Accept file path as $1 argument (background mode) or fall back to stdin (sync mode)
+if [[ -n "${1:-}" ]] && [[ "$1" == *tasks.md ]]; then
+  FILE_PATH="$1"
+else
+  # Legacy: read from stdin (when called via safe_run_sync)
+  INPUT=$(timeout 1 cat 2>/dev/null || cat 2>/dev/null || echo '{}')
+  FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"/\1/')
+fi
 
 # Only care about tasks.md files in increments folder
 if [[ "$FILE_PATH" != */.specweave/increments/*/tasks.md ]]; then
