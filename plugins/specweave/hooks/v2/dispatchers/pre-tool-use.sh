@@ -11,7 +11,7 @@
 # @updated 1.0.196 - Added status-completion-guard for Edit operations
 # @updated 1.0.352 - Added interview-enforcement-guard for agent-spawned spec.md writes
 
-set -e
+set +e  # CRITICAL: Never exit on error - matches all other hook scripts
 
 # Read input once and store
 INPUT=$(cat)

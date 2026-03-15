@@ -329,8 +329,8 @@ case "$FILE_PATH" in
     if [[ "$FILE_PATH" == *tasks.md ]]; then
       SYNC_SCRIPT="$HOOK_DIR/guards/task-ac-sync-guard.sh"
       if [[ -f "$SYNC_SCRIPT" ]]; then
-        log_debug "Running task-ac-sync guard"
-        safe_run_sync "$SYNC_SCRIPT" "task-ac-sync" "$INPUT"
+        log_debug "Running task-ac-sync guard (background)"
+        safe_run_background "$SYNC_SCRIPT" "task-ac-sync"
       fi
 
       # ========================================================================
