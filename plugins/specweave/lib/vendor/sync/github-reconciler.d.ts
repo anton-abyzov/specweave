@@ -50,11 +50,15 @@ export declare class GitHubReconciler {
     private logger;
     private client;
     private configCache;
+    private static lastReconcileTime;
+    private static readonly DEBOUNCE_MS;
     constructor(options: ReconcileOptions);
     /**
      * Main reconciliation entry point
      */
-    reconcile(): Promise<ReconcileResult>;
+    reconcile(options?: {
+        force?: boolean;
+    }): Promise<ReconcileResult>;
     /**
      * Reconcile a single increment
      */
