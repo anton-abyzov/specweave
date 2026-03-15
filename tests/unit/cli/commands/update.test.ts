@@ -126,6 +126,7 @@ import {
   migrateDeepInterviewConfig,
   registerUpdateCommand,
 } from '../../../../src/cli/commands/update.js';
+import { npmRegistryFlag } from '../../../../src/utils/npm-constants.js';
 
 // ============================================================================
 // Helpers
@@ -401,7 +402,7 @@ describe('update command', () => {
         await updateCommand({ noPlugins: true });
 
         expect(mockExecSync).toHaveBeenCalledWith(
-          'npm view specweave version',
+          `npm view specweave version ${npmRegistryFlag()}`,
           expect.objectContaining({ encoding: 'utf-8' })
         );
       });
@@ -520,7 +521,7 @@ describe('update command', () => {
         // Should call npm view but NOT npm install
         expect(mockExecSync).toHaveBeenCalledTimes(1);
         expect(mockExecSync).toHaveBeenCalledWith(
-          'npm view specweave version',
+          `npm view specweave version ${npmRegistryFlag()}`,
           expect.any(Object)
         );
       });
@@ -604,19 +605,11 @@ describe('update command', () => {
         );
       });
 
-      it('should retry with --registry on E401 auth error from stale npmrc token', async () => {
+      it('should always use --registry flag to prevent E401 from stale npmrc tokens', async () => {
         setupSpecWeaveProject();
-        let callCount = 0;
         mockExecSync.mockImplementation((cmd: string) => {
-          callCount++;
-          // First call: npm view fails with E401
-          if (callCount === 1 && cmd === 'npm view specweave version') {
-            const err = new Error('Command failed') as any;
-            err.stderr = 'npm error code E401\nnpm error Unable to authenticate, your authentication token seems to be invalid.';
-            throw err;
-          }
-          // Second call: retry with --registry succeeds
-          if (callCount === 2 && cmd.includes('--registry https://registry.npmjs.org')) {
+          // npmPublicExec always includes registry flag, preventing E401
+          if (cmd === `npm view specweave version ${npmRegistryFlag()}`) {
             return '1.0.100\n'; // same version, no update needed
           }
           return '';
@@ -624,9 +617,9 @@ describe('update command', () => {
 
         await updateCommand({ noPlugins: true });
 
-        // Should have retried with explicit registry
+        // Verify the registry flag is always included in npm view calls
         expect(mockExecSync).toHaveBeenCalledWith(
-          expect.stringContaining('--registry https://registry.npmjs.org'),
+          expect.stringContaining(npmRegistryFlag()),
           expect.any(Object)
         );
         // No exitCode set since update succeeded (same version)
@@ -639,7 +632,7 @@ describe('update command', () => {
         mockExecSync.mockImplementation((cmd: string) => {
           callCount++;
           // npm view succeeds (newer version)
-          if (cmd === 'npm view specweave version') return '1.0.200\n';
+          if (cmd === `npm view specweave version ${npmRegistryFlag()}`) return '1.0.200\n';
           // First npm install fails with E401
           if (cmd === 'npm install -g specweave@1.0.200') {
             const err = new Error('Command failed') as any;
@@ -660,7 +653,7 @@ describe('update command', () => {
         await updateCommand({ noPlugins: true });
 
         expect(mockExecSync).toHaveBeenCalledWith(
-          expect.stringContaining('npm install -g specweave@1.0.200 --registry https://registry.npmjs.org'),
+          expect.stringContaining(`npm install -g specweave@1.0.200 ${npmRegistryFlag()}`),
           expect.any(Object)
         );
       });

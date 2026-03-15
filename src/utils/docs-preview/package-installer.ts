@@ -8,6 +8,7 @@ import * as fs from '../../utils/fs-native.js';
 import { spawn } from 'child_process';
 import { execFileNoThrow } from '../execFileNoThrow.js';
 import { NodeVersion, InstallOptions } from './types.js';
+import { NPM_REGISTRY_URL } from '../npm-constants.js';
 
 /**
  * Check Node.js version
@@ -63,7 +64,7 @@ export async function installPackages(options: InstallOptions): Promise<void> {
   // Use public npm registry to avoid authentication issues with private registries
   const args = [
     'install',
-    '--registry=https://registry.npmjs.org',
+    `--registry=${NPM_REGISTRY_URL}`,
     '--legacy-peer-deps' // Handle React 19 peer dependency issues
   ];
   if (dev) {

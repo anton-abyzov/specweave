@@ -33,6 +33,7 @@ import { updateInstructionsCommand } from './update-instructions.js';
 import { refreshPluginsCommand } from './refresh-plugins.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 import { pruneSkillMemories, listSkillMemoryFiles } from '../../core/reflection/skill-memories.js';
+import { npmRegistryFlag } from '../../utils/npm-constants.js';
 // LSP imports removed (v1.0.210) - LSP is opt-in only, not forced during update
 
 interface UpdateOptions {
@@ -840,7 +841,7 @@ function buildPublicRegistryEnv(): NodeJS.ProcessEnv {
  * Used for all specweave self-update operations (view, install).
  */
 function npmPublicExec(command: string, timeout: number): string {
-  return execSync(`${command} --registry https://registry.npmjs.org`, {
+  return execSync(`${command} ${npmRegistryFlag()}`, {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout,
