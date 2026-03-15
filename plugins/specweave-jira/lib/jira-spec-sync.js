@@ -7,6 +7,24 @@ import { toDescription } from "./content-format-adapter.js";
 import { getEpicLinkFieldForProject } from "./jira-field-discovery.js";
 import { searchAllIssues } from "./jira-paginated-search.js";
 import axios from "axios";
+function buildStoryDescription(us) {
+  const acList = us.acceptanceCriteria.map((ac) => `${ac.status === "done" ? "[x]" : "[ ]"} ${ac.description}`).join("\n");
+  return `
+h2. User Story
+
+${us.title}
+
+h2. Acceptance Criteria
+
+${acList}
+
+----
+
+*Priority*: ${us.priority}
+
+*Status*: ${us.status}
+`.trim();
+}
 class JiraSpecSync {
   constructor(config, projectRoot = process.cwd(), projectId) {
     this.specManager = new SpecMetadataManager(projectRoot, projectId);
@@ -224,7 +242,7 @@ class JiraSpecSync {
     for (const us of spec.metadata.userStories) {
       const storySummary = `[${us.id}] ${us.title}`;
       const storyDescription = this.generateStoryDescription(us);
-      const existingStory = await this.findStoryByTitle(us.id);
+      const existingStory = await this.findStoryByTitle(us.id, spec.metadata.id);
       if (existingStory) {
         await this.updateStory(existingStory.key, {
           summary: storySummary,
@@ -284,21 +302,7 @@ Last updated: ${(/* @__PURE__ */ new Date()).toISOString()}
    * Generate story description from user story
    */
   generateStoryDescription(us) {
-    const acList = us.acceptanceCriteria.map((ac) => `* ${ac.status === "done" ? "(/)" : "(x)"} ${ac.description}`).join("\n");
-    return `
-h2. User Story
-
-${us.title}
-
-h2. Acceptance Criteria
-
-${acList}
-
-----
-
-*Priority*: ${us.priority}
-*Status*: ${us.status}
-`.trim();
+    return buildStoryDescription(us);
   }
   /**
    * Detect conflicts between spec and Jira
@@ -401,10 +405,13 @@ ${acList}
     };
   }
   /**
-   * Find story by title pattern
+   * Find story by title pattern scoped to a specific spec (via label).
+   * US IDs like "US-001" are reused across features, so we must scope to
+   * the spec label (e.g. "spec:FS-526") to avoid false matches.
    */
-  async findStoryByTitle(usId) {
-    const jql = `project = ${this.config.projectKey} AND summary ~ "${usId}" AND issuetype not in (Epic)`;
+  async findStoryByTitle(usId, specId) {
+    const specFilter = specId ? ` AND labels = "spec:${specId}"` : "";
+    const jql = `project = ${this.config.projectKey} AND summary ~ "[${usId}]"${specFilter} AND issuetype not in (Epic)`;
     const issues = await searchAllIssues(this.client, {
       jql,
       fields: "summary,description,status,labels",
@@ -576,5 +583,6 @@ ${acList}
   }
 }
 export {
-  JiraSpecSync
+  JiraSpecSync,
+  buildStoryDescription
 };
