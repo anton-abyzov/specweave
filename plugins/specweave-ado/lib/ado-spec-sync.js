@@ -288,6 +288,16 @@ class AdoSpecSync {
         console.log(`   \u2705 Created ${us.id} \u2192 User Story #${newStory.id}`);
       }
     }
+    const allDone = spec.metadata.userStories.every((us) => us.status === "done");
+    if (allDone && spec.metadata.userStories.length > 0 && created.length === 0) {
+      try {
+        await this.client.patch(`/wit/workitems/${featureId}?api-version=7.0`, [
+          { op: "replace", path: "/fields/System.State", value: "Closed" }
+        ], { headers: { "Content-Type": "application/json-patch+json" } });
+        console.log(`   \u2705 All stories done \u2014 closed parent Epic #${featureId}`);
+      } catch {
+      }
+    }
     return { created, updated, deleted };
   }
   /**
@@ -315,8 +325,6 @@ ${SpecParser.extractOverview(spec.markdown).replace(/\n/g, "<br>")}
 <p>${spec.metadata.userStories?.length || 0} user stories tracked in this feature.</p>
 
 <hr>
-
-<p>Last updated: ${(/* @__PURE__ */ new Date()).toISOString()}</p>
 `.trim();
   }
   /**
@@ -390,11 +398,12 @@ ${acList}
    * Find story by title pattern
    */
   async findStoryByTitle(usId) {
+    const resolvedType = await this.resolveWorkItemType("User Story");
     const wiql = `
       SELECT [System.Id], [System.Title], [System.Description], [System.State]
       FROM WorkItems
       WHERE [System.TeamProject] = '${this.config.project}'
-        AND [System.WorkItemType] = 'User Story'
+        AND [System.WorkItemType] = '${resolvedType}'
         AND [System.Title] CONTAINS '[${usId}]'
     `;
     const response = await this.client.post("/wit/wiql?api-version=7.0", {

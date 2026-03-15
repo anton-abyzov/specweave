@@ -416,6 +416,19 @@ export class AdoSpecSync {
       }
     }
 
+    // Auto-close parent Epic when all user stories are done
+    const allDone = spec.metadata.userStories.every(us => us.status === 'done');
+    if (allDone && spec.metadata.userStories.length > 0 && created.length === 0) {
+      try {
+        await this.client.patch(`/wit/workitems/${featureId}?api-version=7.0`, [
+          { op: 'replace', path: '/fields/System.State', value: 'Closed' }
+        ], { headers: { 'Content-Type': 'application/json-patch+json' } });
+        console.log(`   ✅ All stories done — closed parent Epic #${featureId}`);
+      } catch {
+        // Non-blocking — state transition may not be valid for all ADO project configs
+      }
+    }
+
     return { created, updated, deleted };
   }
 
@@ -447,8 +460,6 @@ ${SpecParser.extractOverview(spec.markdown).replace(/\n/g, '<br>')}
 <p>${spec.metadata.userStories?.length || 0} user stories tracked in this feature.</p>
 
 <hr>
-
-<p>Last updated: ${new Date().toISOString()}</p>
 `.trim();
   }
 
@@ -543,11 +554,14 @@ ${acList}
    * Find story by title pattern
    */
   private async findStoryByTitle(usId: string): Promise<AdoUserStory | null> {
+    // Use the resolved type ('Issue' for Basic process, 'User Story' for Agile) so the
+    // WIQL query matches exactly what createStory() created — prevents duplicate creation.
+    const resolvedType = await this.resolveWorkItemType('User Story');
     const wiql = `
       SELECT [System.Id], [System.Title], [System.Description], [System.State]
       FROM WorkItems
       WHERE [System.TeamProject] = '${this.config.project}'
-        AND [System.WorkItemType] = 'User Story'
+        AND [System.WorkItemType] = '${resolvedType}'
         AND [System.Title] CONTAINS '[${usId}]'
     `;
 

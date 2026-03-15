@@ -32,6 +32,7 @@ async function updateACStatus(incrementId) {
       await syncACsToLivingDocs(projectRoot, incrementId);
       await syncACsToGitHub(projectRoot, incrementId);
       await syncACsToJIRA(projectRoot, incrementId);
+      await syncACsToADO(projectRoot, incrementId);
     } else if (result.synced) {
       console.log("\u2705 All ACs already in sync (no changes needed)");
     } else {
@@ -141,6 +142,33 @@ async function syncACsToJIRA(projectRoot, incrementId) {
     }
   } catch (error) {
     console.log(`   \u26A0\uFE0F  JIRA AC sync failed: ${error.message}`);
+  }
+}
+async function syncACsToADO(projectRoot, incrementId) {
+  try {
+    const configPath = path.join(projectRoot, ".specweave/config.json");
+    if (!existsSync(configPath)) return;
+    const config = JSON.parse(readFileSync(configPath, "utf-8"));
+    const profiles = config.sync?.profiles;
+    const hasAdoProfile = profiles && Object.values(profiles).some((p) => p?.provider === "ado");
+    const hasAdoDirect = config.sync?.ado?.organization;
+    const hasAdoEnv = process.env.AZURE_DEVOPS_PAT && process.env.AZURE_DEVOPS_ORG && process.env.AZURE_DEVOPS_PROJECT;
+    if (!hasAdoProfile && !hasAdoDirect && !hasAdoEnv) return;
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems !== false;
+    if (!canUpdateExternal) return;
+    console.log("\n\u{1F517} Syncing AC checkboxes to ADO...");
+    const { AdoACCheckboxSync } = await import("../../../../plugins/specweave-ado/lib/ado-ac-checkbox-sync.js");
+    const sync = new AdoACCheckboxSync({ projectRoot, incrementId, logger: consoleLogger });
+    const syncResult = await sync.syncACCheckboxesToAdo(config);
+    if (syncResult.success && syncResult.updated > 0) {
+      console.log(`   \u2705 Updated ${syncResult.updated} AC(s) in ADO: #${syncResult.issues.join(", #")}`);
+    } else if (syncResult.success) {
+      console.log("   \u2139\uFE0F  No ADO updates needed");
+    } else {
+      console.log("   \u26A0\uFE0F  ADO sync had errors (non-blocking)");
+    }
+  } catch (error) {
+    console.log(`   \u26A0\uFE0F  ADO AC sync failed: ${error.message}`);
   }
 }
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;
