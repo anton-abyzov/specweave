@@ -92,6 +92,32 @@ export function toADF(text: string): AdfDocument {
       continue;
     }
 
+    // Task item: [ ] text or [x] text → ADF taskList/taskItem (native JIRA checkboxes)
+    const taskMatch = line.match(/^\[( |x)\]\s+(.+)$/i);
+    if (taskMatch) {
+      flushParagraph();
+      const isDone = taskMatch[1].toLowerCase() === 'x';
+      const taskItem: AdfNode = {
+        type: 'taskItem',
+        attrs: {
+          localId: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          state: isDone ? 'DONE' : 'TODO',
+        },
+        content: [{ type: 'text', text: taskMatch[2] }],
+      };
+      const lastNode = content[content.length - 1];
+      if (lastNode && lastNode.type === 'taskList' && lastNode.content) {
+        lastNode.content.push(taskItem);
+      } else {
+        content.push({
+          type: 'taskList',
+          attrs: { localId: `list-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` },
+          content: [taskItem],
+        });
+      }
+      continue;
+    }
+
     // Empty line = paragraph break
     if (line.trim() === '') {
       flushParagraph();
